@@ -37,8 +37,6 @@ class ApplicationController < ActionController::Base
 
   private
   def current_zookeeper
-    puts params.inspect
-    puts session.inspect
     @current_zookeeper ||= Zookeeper.find_by_id(params[:zookeeper_id]) || Zookeeper.find_by_id(session[:current_zookeeper_id])
     if @current_zookeeper.nil?
       if request.xhr?

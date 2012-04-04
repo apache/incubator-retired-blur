@@ -73,7 +73,7 @@ BlurAdmin::Application.routes.draw do
       post 'delete_file'
       get 'upload_form'
       post 'upload'
-      get 'structure'
+      get 'structure', :action => :file_tree
       get 'stats'
     end
   end

@@ -55,7 +55,7 @@ $(document).ready(function(){
           title: 'Select a Zookeeper Instance to use:',
           shown: function(){
             $('#zookeeper_selector').change(function(){
-              window.location = window.location.href + 'zookeepers/' + $(this).val() + ($(self).attr('data-url-extension') || '');
+              window.location = window.location.origin + '/zookeepers/' + $(this).val() + ($(self).attr('data-url-extension') || '');
             });
           }
         });
@@ -65,7 +65,7 @@ $(document).ready(function(){
   }
 
   $('#zookeeper_id').change(function(){
-    window.location = window.location.href.replace(/zookeepers\/\d/, 'zookeepers/' + $(this).val());
+    window.location = window.location.href.replace(/(zookeepers\/)\d/, '$1' + $(this).val());
   });
 
   $('.dropdown-toggle').dropdown();

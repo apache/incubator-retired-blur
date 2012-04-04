@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe SearchController do
+describe SearchesController do
   describe "actions" do
     before (:each) do
       @ability = Ability.new User.new

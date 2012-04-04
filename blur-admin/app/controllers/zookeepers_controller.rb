@@ -87,7 +87,7 @@ class ZookeepersController < ApplicationController
     redirect_to :zookeeper
   end
   
-  def destroy_zookeeper
+  def destroy
     @current_zookeeper.delete
     redirect_to :zookeeper
   end

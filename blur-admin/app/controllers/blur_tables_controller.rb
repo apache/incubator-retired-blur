@@ -49,13 +49,13 @@ class BlurTablesController < ApplicationController
 
   def schema
     respond_to do |format|
-      format.html {render :partial => 'schema', :locals => {:blur_table => @current_zookeeper.blur_tables.find(params[:id])}}
+      format.html {render :partial => 'schema', :locals => {:blur_table => @current_zookeeper.blur_tables.find_by_id(params[:id])}}
     end
   end
 
   def hosts
     respond_to do |format|
-      format.html {render :partial => 'hosts', :locals => {:blur_table => @current_zookeeper.blur_tables.find(params[:id])}}
+      format.html {render :partial => 'hosts', :locals => {:blur_table => @current_zookeeper.blur_tables.find_by_id(params[:id])}}
     end
   end
 

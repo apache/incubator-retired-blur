@@ -49,6 +49,7 @@ public class MergerBlurResultIterable implements Merger<BlurResultIterable> {
         BlurResultIterable blurResultIterable = service.getResultThrowException(future, _blurQuery);
         iterable.addBlurResultIterable(blurResultIterable);
         if (iterable.getTotalResults() >= _minimumNumberOfResults) {
+          service.cancelAll();// Called to stop execution of any other running queries.
           return iterable;
         }
       } else {

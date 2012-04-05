@@ -66,10 +66,15 @@ public class ForkJoin {
     return new ParallelReturn<OUTPUT>() {
       @Override
       public OUTPUT merge(Merger<OUTPUT> merger) throws BlurException {
+        boolean exception = true;
         try {
-          return merger.merge(service);
+          OUTPUT merge = merger.merge(service);
+          exception = false;
+          return merge;
         } finally {
-          service.cancelAll();
+          if (exception) {
+            service.cancelAll();
+          }
         }
       }
     };

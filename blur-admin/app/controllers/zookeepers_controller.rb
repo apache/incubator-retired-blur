@@ -2,7 +2,7 @@ class ZookeepersController < ApplicationController
 
   before_filter :zookeepers, :only => :show
   before_filter :set_zookeeper, :except => [:index, :dashboard]
-  before_filter :current_zookeeper, :only => [:show, :destroy_shard, :destroy_controller, :destroy_cluster, :destroy_zookeeper]
+  before_filter :current_zookeeper, :only => [:show]
 
   QUERY = "
     select
@@ -45,9 +45,8 @@ class ZookeepersController < ApplicationController
   end
 
   def show
-    @zookeeper = Zookeeper.find params[:id]
-    @shard_nodes = @zookeeper.shards.count 'DISTINCT blur_version'
-    @controller_nodes = @zookeeper.controllers.count 'DISTINCT blur_version'
+    @shard_nodes = @current_zookeeper.shards.count 'DISTINCT blur_version'
+    @controller_nodes = @current_zookeeper.controllers.count 'DISTINCT blur_version'
   end
 
   def dashboard
@@ -70,25 +69,26 @@ class ZookeepersController < ApplicationController
   end
 
   def destroy_shard
-    shard = @current_zookeeper.shards.find_by_id(params[:shard_id])
+    shard = Zookeeper.find(params[:id]).shards.find_by_id(params[:shard_id])
     shard.destroy unless shard.nil?
     redirect_to :zookeeper
   end
   
   def destroy_cluster
-    cluster = @current_zookeeper.clusters.find_by_id(params[:cluster_id])
+    cluster = Zookeeper.find(params[:id]).clusters.find_by_id(params[:cluster_id])
     cluster.destroy unless cluster.nil?
     redirect_to :zookeeper
   end
 
   def destroy_controller
-    controller = @current_zookeeper.controllers.find_by_id(params[:controller_id])
+    controller = Zookeeper.find(params[:id]).controllers.find_by_id(params[:controller_id])
     controller.destroy unless controller.nil?
     redirect_to :zookeeper
   end
   
   def destroy
-    @current_zookeeper.delete
+    zookeeper = Zookeeper.find(params[:id])
+    zookeeper.destroy unless zookeeper.nil?
     redirect_to :zookeeper
   end
 end

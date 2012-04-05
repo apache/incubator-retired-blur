@@ -31,48 +31,42 @@ describe ZookeepersController do
 
     describe 'GET show' do
       it "assigns the current zookeeper to @zookeeper" do
-        get :show
-        assigns(:zookeeper).should == @zookeeper
+        get :show, :id => @zookeeper.id
+        assigns(:current_zookeeper).should == @zookeeper
       end
 
       it "assigns the current zookeeper to @zookeeper" do
-        get :show, :id => @zookeeper
-        assigns(:zookeeper).should == @zookeeper
+        get :show, :id => @zookeeper.id
+        assigns(:current_zookeeper).should == @zookeeper
         session[:current_zookeeper_id].should == @zookeeper.id
       end
 
       it "assigns the shards nodes and the controller nodes" do
         @zookeeper.stub_chain(:shards, :count).and_return(1)
         @zookeeper.stub_chain(:controllers, :count).and_return(1)
-        get :show
+        get :show, :id => @zookeeper.id
         assigns(:shard_nodes).should == 1
         assigns(:controller_nodes).should == 1
       end
 
       it "renders the show_current view" do
-        get :show
+        get :show, :id => @zookeeper.id
         response.should render_template :show
       end
 
       describe "testing ApplicationController current ZK logic" do
-        it "with only one zookeeper it should set the current_zookeeper to be the first zookeeper found" do
-          Zookeeper.should_receive(:first)
-          get :show, nil, nil
-          assigns(:current_zookeeper).should == @zookeeper
-          session[:current_zookeeper_id].should == @zookeeper.id
+        before :each do
+          Zookeeper.unstub!(:find_by_id)
         end
 
         it "with more than one zookeeper it should set the current_zookeeper to be the ZK with the session ID" do
-          session[:current_zookeeper_id] = 1
-          Zookeeper.should_receive(:find_by_id).with(1).and_return @zookeeper
-          Zookeeper.stub!(:count).and_return(2)
-          get :show, nil, nil
+          Zookeeper.should_receive(:find_by_id).twice.with('1').and_return @zookeeper
+          get :show, :id => 1
           assigns(:current_zookeeper).should == @zookeeper
           session[:current_zookeeper_id].should == @zookeeper.id
         end
 
         it "should not set the session ID if no ZK is found and should redirect to the root path" do
-          Zookeeper.stub!(:first).and_return nil
           get :show, nil, nil
           assigns(:current_zookeeper).should == nil
           session[:current_zookeeper_id].should == nil
@@ -81,7 +75,7 @@ describe ZookeepersController do
 
         it "should not set the session ID if no ZK is found and should redirect to the root path for xhr requests" do
           Zookeeper.stub!(:first).and_return nil
-          xhr :get, :show, nil, nil
+          xhr :get, :show, :id => '23456'
           assigns(:current_zookeeper).should == nil
           session[:current_zookeeper_id].should == nil
           response.response_code.should == 409
@@ -102,65 +96,85 @@ describe ZookeepersController do
     end
 
     describe 'DELETE destroy_shard' do
-      before(:each) do
-        Shard.stub!(:destroy)
+      before :each do
+        @shard = FactoryGirl.create :shard
       end
 
-      it "calls destroy on the shards model" do
-        Shard.should_receive(:destroy).with('1')
-        delete :destroy_shard, :shard_id => 1, :id => 1
+      it "calls destroy on the clusters model" do
+        Zookeeper.stub_chain(:find, :shards, :find_by_id).and_return(@shard)
+        @shard.should_receive(:destroy)
+        delete :destroy_shard, :shard_id => @shard.id, :id => @zookeeper.id
+      end
+
+      it "doesnt call destroy on nil clusters model" do
+        @shard.should_not_receive(:destroy)
+        delete :destroy_shard, :shard_id => @shard.id, :id => @zookeeper.id
       end
 
       it "redirects to the zookeeper page" do
-        delete :destroy_shard, :shard_id => 1, :id => 1
+        delete :destroy_shard, :shard_id => @shard.id, :id => @zookeeper.id
         response.should redirect_to :zookeeper
       end
     end
 
     describe 'DELETE destroy_cluster' do
-      before(:each) do
-        Cluster.stub!(:destroy)
+      before :each do
+        @cluster = FactoryGirl.create :cluster
       end
 
       it "calls destroy on the clusters model" do
-        Cluster.should_receive(:destroy).with('1')
-        delete :destroy_cluster, :cluster_id => 1, :id => 1
+        Zookeeper.stub_chain(:find, :clusters, :find_by_id).and_return(@cluster)
+        @cluster.should_receive(:destroy)
+        delete :destroy_cluster, :cluster_id => @cluster.id, :id => @zookeeper.id
+      end
+
+      it "doesnt call destroy on nil clusters model" do
+        @cluster.should_not_receive(:destroy)
+        delete :destroy_cluster, :cluster_id => @cluster.id, :id => @zookeeper.id
       end
 
       it "redirects to the zookeeper page" do
-        delete :destroy_cluster, :cluster_id => 1, :id => 1
+        delete :destroy_cluster, :cluster_id => @cluster.id, :id => @zookeeper.id
         response.should redirect_to :zookeeper
       end
     end
 
     describe 'DELETE destroy_controller' do
       before(:each) do
-        Controller.stub!(:destroy)
+        @created_controller = FactoryGirl.create :controller
       end
 
       it "calls destroy on the Controller model" do
-        Controller.should_receive(:destroy).with('1')
-        delete :destroy_controller, :controller_id => 1, :id => 1
+        Zookeeper.stub_chain(:find, :controllers, :find_by_id).and_return(@created_controller)
+        @created_controller.should_receive(:destroy)
+        delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper
+      end
+
+      it "doesnt call destroy on nil controllers model" do
+        @created_controller.should_not_receive(:destroy)
+        delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper.id
       end
 
       it "redirects to the zookeeper page" do
-        delete :destroy_controller, :controller_id => 1, :id => 1
+        delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper
         response.should redirect_to :zookeeper
       end
     end
 
     describe 'DELETE destroy_zookeeper' do
-      before(:each) do
-        Zookeeper.stub!(:destroy)
+      it "calls destroy on the Zookeeper model" do
+        Zookeeper.stub!(:find).and_return(@zookeeper)
+        @zookeeper.should_receive(:destroy)
+        delete :destroy, :id => @zookeeper.id
       end
 
-      it "calls destroy on the Zookeeper model" do
-        Zookeeper.should_receive(:destroy).with('1')
-        delete :destroy_zookeeper, :id => 1
+      it "doesnt call destroy on the nil Zookeeper model" do
+        @zookeeper.should_not_receive(:destroy)
+        delete :destroy, :id => @zookeeper.id
       end
 
       it "redirects to the zookeeper page" do
-        delete :destroy_zookeeper, :id => 1
+        delete :destroy, :id => @zookeeper.id
         response.should redirect_to :zookeeper
       end
     end

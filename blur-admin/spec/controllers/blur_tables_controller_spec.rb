@@ -145,11 +145,6 @@ describe BlurTablesController do
         end
         delete :forget, :tables => @tables
       end
-
-      #it "should render JSON" do
-      #  delete :forget, :tables => @tables
-      #  response.content_type.should == 'application/json'
-      #end
     end
 
     describe "GET schema" do

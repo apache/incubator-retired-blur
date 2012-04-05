@@ -218,7 +218,7 @@ describe Ability do
     end
 
     it "can view and use the search page" do
-      @ability.should be_able_to :access, :search
+      @ability.should be_able_to :access, :searches
     end
     it "can change own column preferences" do
       @preference = FactoryGirl.create :preference, :user_id => @user.id, :pref_type => 'column'

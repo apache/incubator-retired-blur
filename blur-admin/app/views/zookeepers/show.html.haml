@@ -1,22 +1,22 @@
 - content_for :title, 'Environment Status'
 
 #zookeeper_wrapper
-  - if @zookeeper
-    .zookeeper{ :id => @zookeeper.id }
+  - if @current_zookeeper
+    .zookeeper{ :id => @current_zookeeper.id }
       #zookeeper
         %h2 Zookeeper Information
         %table
           %tbody
             %tr
               %th Name:
-              %td.value= @zookeeper.name
+              %td.value= @current_zookeeper.name
             %tr
               %th Connection:
-              %td.value= @zookeeper.url
+              %td.value= @current_zookeeper.url
             %tr
               %th Status:
               %td.value
-                - if @zookeeper.status == 1
+                - if @current_zookeeper.status == 1
                   .status.btn-success
                     Online
                 - else
@@ -25,22 +25,22 @@
             -if can? :destroy_zookeeper, :zookeepers
               %tr
                 %td{:colspan => 2}
-                  =link_to 'Remove Zookeeper', zookeeper_path(@zookeeper), :method => :delete, :confirm=>'Are you sure you want to remove this zookeeper?'
+                  =link_to 'Remove Zookeeper', zookeeper_path(@current_zookeeper), :method => :delete, :confirm=>'Are you sure you want to remove this zookeeper?'
       #blur
         %h2 Blur Status
         .row-fluid
           #controllers.span6
             .blur_container
-              - unless @zookeeper.controllers.empty?
-                %h3= "Controllers(#{@zookeeper.controllers.length})"
+              - unless @current_zookeeper.controllers.empty?
+                %h3= "Controllers(#{@current_zookeeper.controllers.length})"
                 #controllers-placeholder
                   - if @controller_nodes == 1
-                    = "Blur version: #{@zookeeper.controllers.first.blur_version}"
+                    = "Blur version: #{@current_zookeeper.controllers.first.blur_version}"
                   - elsif @controller_nodes > 1
                     .warning
                       = "Controllers are not running the same blur version"
                   %ul
-                    - @zookeeper.controllers.sort_by{|c| [c.status, c.node_name]}.each do |controller|
+                    - @current_zookeeper.controllers.sort_by{|c| [c.status, c.node_name]}.each do |controller|
                       %li<
                         = "#{controller.node_name}"
                         - if @controller_nodes > 1
@@ -51,27 +51,27 @@
                         - else
                           .status.btn-danger
                             Offline
-                          = link_to 'Forget Offline Node', destroy_controller_zookeeper_path(@zookeeper, controller), :method=>:delete, :confirm=>'Are you sure you want to forget this node?'
+                          = link_to 'Forget Offline Node', destroy_controller_zookeeper_path(@current_zookeeper, controller), :method=>:delete, :confirm=>'Are you sure you want to forget this node?'
               - else
                 %h3 Controllers
                 #controllers-placeholder
                   %p Not Available
           #shards.span5
             .blur_container
-              - unless @zookeeper.shards.empty?
-                %h3= "Shards(#{@zookeeper.shards.length})"
+              - unless @current_zookeeper.shards.empty?
+                %h3= "Shards(#{@current_zookeeper.shards.length})"
                 #shards-placeholder
                   - if @shard_nodes == 1
-                    = "Blur version: #{@zookeeper.shards.first.blur_version}"
+                    = "Blur version: #{@current_zookeeper.shards.first.blur_version}"
                   - elsif @shard_nodes > 1
                     .warning
                       = "Shards are not running the same blur version"
                   %ul
-                    - @zookeeper.clusters.sort_by{|c| c.name}.each do |cluster|
+                    - @current_zookeeper.clusters.sort_by{|c| c.name}.each do |cluster|
                       %li
                         = "#{cluster.name}#{cluster.safe_mode ? " (safe mode)" :""}"
                         -if can? :destroy_cluster, :zookeepers
-                          =link_to 'Remove Cluster', destroy_cluster_zookeeper_path(@zookeeper, cluster.id), :method=>:delete, :confirm => 'Are you sure you want to remove this cluster?'
+                          =link_to 'Remove Cluster', destroy_cluster_zookeeper_path(@current_zookeeper, cluster.id), :method=>:delete, :confirm => 'Are you sure you want to remove this cluster?'
                         %ul
                           - cluster.shards.sort_by{|s| [s.status, s.node_name]}.each do |shard|
                             %li
@@ -84,7 +84,7 @@
                               - else
                                 .status.btn-danger
                                   Offline
-                                = link_to 'Forget Offline Node', destroy_shard_zookeeper_path(@zookeeper, shard), :method=>:delete, :confirm=>'Are you sure you want to forget this node?'
+                                = link_to 'Forget Offline Node', destroy_shard_zookeeper_path(@current_zookeeper, shard), :method=>:delete, :confirm=>'Are you sure you want to forget this node?'
               - else
                 %h3 Shards
                 %p Not Available

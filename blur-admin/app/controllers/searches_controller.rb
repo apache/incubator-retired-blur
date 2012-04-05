@@ -43,7 +43,7 @@ class SearchesController < ApplicationController
   #Create action is a large action that handles all of the filter data
   #and either saves the data or performs a search
   def create
-    params[:column_data].delete( "neighborhood")
+    params[:column_data].delete( "neighborhood") if params[:column_data]
     search = Search.new(:super_query    =>!params[:super_query].nil?,
                         :record_only    =>!params[:record_only].nil?,
                         :fetch          => params[:result_count].to_i,

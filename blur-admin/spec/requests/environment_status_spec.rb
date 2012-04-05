@@ -12,6 +12,7 @@ describe "environment status" do
     click_button 'Log In'
     @zookeeper = @zookeepers[1]
     visit "/zookeepers/#{@zookeeper.id}"
+    puts response.inspect
   end
 
   it "shows a current zookeeper selector in the header" do

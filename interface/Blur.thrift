@@ -241,21 +241,21 @@ struct SimpleQuery {
 }
 
 /**
- *
+ * The expert query allows for submission of a serialized query and filter object to be executed against all the queries.
  */
 struct ExpertQuery {
   /**
-   *
+   * The serialized query.
    */
   1:binary query,
   /**
-   *
+   * The serialized filter.
    */
   2:binary filter
 }
 
 /**
- *
+ * Blur facet.
  */
 struct Facet {
   1:string queryStr,

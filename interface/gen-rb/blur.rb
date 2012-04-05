@@ -420,6 +420,22 @@ require 'blur_types'
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'isInSafeMode failed: unknown result')
           end
 
+          def configuration()
+            send_configuration()
+            return recv_configuration()
+          end
+
+          def send_configuration()
+            send_message('configuration', Configuration_args)
+          end
+
+          def recv_configuration()
+            result = receive_message(Configuration_result)
+            return result.success unless result.success.nil?
+            raise result.ex unless result.ex.nil?
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'configuration failed: unknown result')
+          end
+
         end
 
         class Processor
@@ -709,6 +725,17 @@ require 'blur_types'
               result.ex = ex
             end
             write_result(result, oprot, 'isInSafeMode', seqid)
+          end
+
+          def process_configuration(seqid, iprot, oprot)
+            args = read_args(iprot, Configuration_args)
+            result = Configuration_result.new()
+            begin
+              result.success = @handler.configuration()
+            rescue Blur::BlurException => ex
+              result.ex = ex
+            end
+            write_result(result, oprot, 'configuration', seqid)
           end
 
         end
@@ -1595,6 +1622,39 @@ require 'blur_types'
 
           FIELDS = {
             SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+            EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => Blur::BlurException}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Configuration_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+
+          FIELDS = {
+
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Configuration_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SUCCESS = 0
+          EX = 1
+
+          FIELDS = {
+            SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
             EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => Blur::BlurException}
           }
 

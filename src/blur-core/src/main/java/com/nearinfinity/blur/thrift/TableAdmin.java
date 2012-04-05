@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.apache.zookeeper.ZooKeeper;
 
+import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.clusterstatus.ClusterStatus;
@@ -23,6 +24,7 @@ public abstract class TableAdmin implements Iface {
   private static final Log LOG = LogFactory.getLog(TableAdmin.class);
   protected ZooKeeper _zookeeper;
   protected ClusterStatus _clusterStatus;
+  protected BlurConfiguration _configuration;
   
   @Override
   public TableStats getTableStats(String table) throws BlurException, TException {
@@ -264,4 +266,8 @@ public abstract class TableAdmin implements Iface {
     _zookeeper = zookeeper;
   }
 
+  @Override
+  public Map<String, String> configuration() throws BlurException, TException {
+    return _configuration.getProperties();
+  }
 }

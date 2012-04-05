@@ -165,4 +165,9 @@ public class DoNothingServer implements Iface {
   public TableStats tableStats(String table) throws BlurException, TException {
     return null;
   }
+
+  @Override
+  public Map<String, String> configuration() throws BlurException, TException {
+    return null;
+  }
 }

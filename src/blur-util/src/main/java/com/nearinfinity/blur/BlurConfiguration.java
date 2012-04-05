@@ -3,6 +3,9 @@ package com.nearinfinity.blur;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 public class BlurConfiguration {
@@ -33,6 +36,14 @@ public class BlurConfiguration {
     Properties properties = new Properties();
     properties.load(inputStream);
     return properties;
+  }
+  
+  public Map<String,String> getProperties() {
+    Map<String,String> result = new HashMap<String, String>();
+    for (Entry<Object,Object> e : _properties.entrySet()) {
+      result.put(e.getKey().toString(), e.getValue().toString());
+    }
+    return result;
   }
 
   public String get(String name) {

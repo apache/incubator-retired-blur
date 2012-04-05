@@ -11,6 +11,7 @@
 <td>Blur</td><td><a href="Blur.html#Svc_Blur">Blur</a><br/>
 <ul>
 <li><a href="Blur.html#Fn_Blur_cancelQuery">cancelQuery</a></li>
+<li><a href="Blur.html#Fn_Blur_configuration">configuration</a></li>
 <li><a href="Blur.html#Fn_Blur_controllerServerList">controllerServerList</a></li>
 <li><a href="Blur.html#Fn_Blur_createTable">createTable</a></li>
 <li><a href="Blur.html#Fn_Blur_currentQueries">currentQueries</a></li>
@@ -209,16 +210,16 @@ through records of a row, this count will reflect the entire row.
 </table><br/>The SimpleQuery object holds the query string (normal Lucene syntax), filters and type of scoring (used when super query is on).
 <br/></div><div class="definition"><h3 id="Struct_ExpertQuery">Struct: ExpertQuery</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>query</td><td><code>binary</code></td><td>
+<tr><td>1</td><td>query</td><td><code>binary</code></td><td>The serialized query.
 </td><td>default</td><td></td></tr>
-<tr><td>2</td><td>filter</td><td><code>binary</code></td><td>
+<tr><td>2</td><td>filter</td><td><code>binary</code></td><td>The serialized filter.
 </td><td>default</td><td></td></tr>
-</table><br/><p/>
+</table><br/>The expert query allows for submission of a serialized query and filter object to be executed against all the queries.
 <br/></div><div class="definition"><h3 id="Struct_Facet">Struct: Facet</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
 <tr><td>1</td><td>queryStr</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 <tr><td>2</td><td>minimumNumberOfBlurResults</td><td><code>i64</code></td><td></td><td>default</td><td>9223372036854775807</td></tr>
-</table><br/><p/>
+</table><br/>Blur facet.
 <br/></div><div class="definition"><h3 id="Struct_BlurQuery">Struct: BlurQuery</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
 <tr><td>1</td><td>simpleQuery</td><td><code><a href="Blur.html#Struct_SimpleQuery">SimpleQuery</a></code></td><td>
@@ -516,5 +517,8 @@ through records of a row, this count will reflect the entire row.
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre></div><div class="definition"><h4 id="Fn_Blur_isInSafeMode">Function: Blur.isInSafeMode</h4>
 <pre><code>bool</code> isInSafeMode(<code>string</code> cluster)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_configuration">Function: Blur.configuration</h4>
+<pre><code>map&lt;<code>string</code>, <code>string</code>&gt;</code> configuration()
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre></div></body></html>

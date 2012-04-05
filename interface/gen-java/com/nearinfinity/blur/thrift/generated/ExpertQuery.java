@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ * The expert query allows for submission of a serialized query and filter object to be executed against all the queries.
  */
 public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQuery._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ExpertQuery");
@@ -30,22 +30,22 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
   private static final org.apache.thrift.protocol.TField FILTER_FIELD_DESC = new org.apache.thrift.protocol.TField("filter", org.apache.thrift.protocol.TType.STRING, (short)2);
 
   /**
-   * 
+   * The serialized query.
    */
   public ByteBuffer query; // required
   /**
-   * 
+   * The serialized filter.
    */
   public ByteBuffer filter; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
-     * 
+     * The serialized query.
      */
     QUERY((short)1, "query"),
     /**
-     * 
+     * The serialized filter.
      */
     FILTER((short)2, "filter");
 
@@ -155,7 +155,7 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
   }
 
   /**
-   * 
+   * The serialized query.
    */
   public byte[] getQuery() {
     setQuery(org.apache.thrift.TBaseHelper.rightSize(query));
@@ -167,7 +167,7 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
   }
 
   /**
-   * 
+   * The serialized query.
    */
   public ExpertQuery setQuery(byte[] query) {
     setQuery(query == null ? (ByteBuffer)null : ByteBuffer.wrap(query));
@@ -195,7 +195,7 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
   }
 
   /**
-   * 
+   * The serialized filter.
    */
   public byte[] getFilter() {
     setFilter(org.apache.thrift.TBaseHelper.rightSize(filter));
@@ -207,7 +207,7 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
   }
 
   /**
-   * 
+   * The serialized filter.
    */
   public ExpertQuery setFilter(byte[] filter) {
     setFilter(filter == null ? (ByteBuffer)null : ByteBuffer.wrap(filter));

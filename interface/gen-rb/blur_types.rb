@@ -271,16 +271,16 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
-    # 
+    # The expert query allows for submission of a serialized query and filter object to be executed against all the queries.
     class ExpertQuery
       include ::Thrift::Struct, ::Thrift::Struct_Union
       QUERY = 1
       FILTER = 2
 
       FIELDS = {
-        # 
+        # The serialized query.
         QUERY => {:type => ::Thrift::Types::STRING, :name => 'query', :binary => true},
-        # 
+        # The serialized filter.
         FILTER => {:type => ::Thrift::Types::STRING, :name => 'filter', :binary => true}
       }
 
@@ -292,7 +292,7 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
-    # 
+    # Blur facet.
     class Facet
       include ::Thrift::Struct, ::Thrift::Struct_Union
       QUERYSTR = 1

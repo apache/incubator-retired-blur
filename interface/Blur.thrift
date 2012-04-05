@@ -707,6 +707,8 @@ service Blur {
   void optimize(1:string table, 2:i32 numberOfSegmentsPerShard) throws (1:BlurException ex)
   
   bool isInSafeMode(1:string cluster) throws (1:BlurException ex)
+
+  map<string,string> configuration() throws (1:BlurException ex)
 }
 
 

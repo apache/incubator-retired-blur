@@ -4004,6 +4004,157 @@ sub write {
   return $xfer;
 }
 
+package Blur::Blur_configuration_args;
+use base qw(Class::Accessor);
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_configuration_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_configuration_args');
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_configuration_result;
+use base qw(Class::Accessor);
+Blur::Blur_configuration_result->mk_accessors( qw( success ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{success} = undef;
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{success}) {
+      $self->{success} = $vals->{success};
+    }
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_configuration_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^0$/ && do{      if ($ftype == TType::MAP) {
+        {
+          my $_size219 = 0;
+          $self->{success} = {};
+          my $_ktype220 = 0;
+          my $_vtype221 = 0;
+          $xfer += $input->readMapBegin(\$_ktype220, \$_vtype221, \$_size219);
+          for (my $_i223 = 0; $_i223 < $_size219; ++$_i223)
+          {
+            my $key224 = '';
+            my $val225 = '';
+            $xfer += $input->readString(\$key224);
+            $xfer += $input->readString(\$val225);
+            $self->{success}->{$key224} = $val225;
+          }
+          $xfer += $input->readMapEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_configuration_result');
+  if (defined $self->{success}) {
+    $xfer += $output->writeFieldBegin('success', TType::MAP, 0);
+    {
+      $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{success}}));
+      {
+        while( my ($kiter226,$viter227) = each %{$self->{success}}) 
+        {
+          $xfer += $output->writeString($kiter226);
+          $xfer += $output->writeString($viter227);
+        }
+      }
+      $xfer += $output->writeMapEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 package Blur::BlurIf;
 
 use strict;
@@ -4197,6 +4348,12 @@ sub optimize{
 sub isInSafeMode{
   my $self = shift;
   my $cluster = shift;
+
+  die 'implement interface';
+}
+
+sub configuration{
+  my $self = shift;
 
   die 'implement interface';
 }
@@ -4403,6 +4560,12 @@ sub isInSafeMode{
 
   my $cluster = ($request->{'cluster'}) ? $request->{'cluster'} : undef;
   return $self->{impl}->isInSafeMode($cluster);
+}
+
+sub configuration{
+  my ($self, $request) = @_;
+
+  return $self->{impl}->configuration();
 }
 
 package Blur::BlurClient;
@@ -5620,6 +5783,49 @@ sub recv_isInSafeMode{
   }
   die "isInSafeMode failed: unknown result";
 }
+sub configuration{
+  my $self = shift;
+
+    $self->send_configuration();
+  return $self->recv_configuration();
+}
+
+sub send_configuration{
+  my $self = shift;
+
+  $self->{output}->writeMessageBegin('configuration', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_configuration_args();
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_configuration{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_configuration_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{success} ) {
+    return $result->{success};
+  }
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  die "configuration failed: unknown result";
+}
 package Blur::BlurProcessor;
 
 use strict;
@@ -6091,6 +6297,23 @@ sub process_isInSafeMode {
       $result->{ex} = $@;
     }
     $output->writeMessageBegin('isInSafeMode', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_configuration {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_configuration_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_configuration_result();
+    eval {
+      $result->{success} = $self->{handler}->configuration();
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('configuration', TMessageType::REPLY, $seqid);
     $result->write($output);
     $output->writeMessageEnd();
     $output->getTransport()->flush();

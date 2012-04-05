@@ -27,13 +27,11 @@ import org.apache.hadoop.io.Writable;
 import com.nearinfinity.blur.utils.ReaderBlurRecord;
 
 public class BlurRecord implements Writable, ReaderBlurRecord {
-  
-
 
   private String _rowId;
   private String _recordId;
   private String _family;
-  
+
   private List<BlurColumn> _columns = new ArrayList<BlurColumn>();
 
   @Override
@@ -134,6 +132,5 @@ public class BlurRecord implements Writable, ReaderBlurRecord {
   public String toString() {
     return "{rowId=" + _rowId + ", recordId=" + _recordId + ", family=" + _family + ", columns=" + _columns + "}";
   }
-  
-  
+
 }

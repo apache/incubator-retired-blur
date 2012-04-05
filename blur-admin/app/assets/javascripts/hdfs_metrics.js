@@ -64,8 +64,8 @@ $(document).ready(function(){
 		//req_data.stat_mins for specifying a different range (overwrite)
 	var request_data = function(id, req_data){
 		$.ajax({
-			url: Routes.hdfs_stats_path(id),
-			type: 'PUT',
+			url: Routes.stats_hdfs_path(id),
+			type: 'GET',
 			data: req_data,
 			success: function(data){
 				if (data.length <= 0){

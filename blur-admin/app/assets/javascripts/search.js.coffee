@@ -22,8 +22,8 @@ $(document).ready ->
 
   get_filter_ajax = () ->
     options =
-      url: Routes.search_filters_path($('#blur_table').val()),
-      type: 'put'
+      url: Routes.filters_zookeeper_searches_path(CurrentZookeeper, $('#blur_table').val()),
+      type: 'get'
 
   # Function to enable or disable submit button based on checkbox status
   toggle_submit = () ->
@@ -134,7 +134,7 @@ $(document).ready ->
     $('#update_button').removeAttr('disabled')
 
   retrieve_search = (id) ->
-    $.ajax Routes.search_load_path(id),
+    $.ajax Routes.load_zookeeper_search_path(CurrentZookeeper, id),
       type: 'POST',
       success: (data) ->
         populate_form(data)
@@ -145,7 +145,7 @@ $(document).ready ->
     form_data = $(this).serializeArray()
     tree = $('.column_family_filter').dynatree('getTree')
     form_data = form_data.concat(tree.serializeArray())
-    $.ajax Routes.search_path(),
+    $.ajax Routes.fetch_results_zookeeper_searches_path(CurrentZookeeper, $('#blur_table').val()),
       data: form_data,
       type: 'post'
       success: (data, status, xhr) ->
@@ -171,7 +171,7 @@ $(document).ready ->
     	  class: 'primary'
     	  func: ->
       		$().closePopup();
-      		$.ajax Routes.delete_search_path(parent.attr("id"), $('#blur_table option:selected').val()),
+      		$.ajax Routes.delete_zookeeper_search_path(CurrentZookeeper ,parent.attr("id"), $('#blur_table option:selected').val()),
             type: 'DELETE',
             success: (data) ->
               $('#saved .body .saved').html(data)
@@ -189,7 +189,7 @@ $(document).ready ->
     form_data = $('#search_form').serializeArray()
     tree = $('.column_family_filter').dynatree('getTree')
     form_data = form_data.concat(tree.serializeArray())
-    $.ajax Routes.search_save_path(),
+    $.ajax Routes.save_zookeeper_searches_path(CurrentZookeeper),
       type: 'POST',
       data: form_data,
       success: (data) ->
@@ -215,7 +215,7 @@ $(document).ready ->
       form_data = $('#search_form').serializeArray()
       tree = $('.column_family_filter').dynatree('getTree')
       form_data = form_data.concat(tree.serializeArray())
-      $.ajax Routes.update_search_path(search_id),
+      $.ajax Routes.zookeeper_search_path(CurrentZookeeper, search_id),
         type: 'PUT',
         data: form_data
     else

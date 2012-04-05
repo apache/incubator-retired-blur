@@ -6,7 +6,7 @@ $(document).ready ->
   
   # Updates all fields on the dashboard
   load_dashboard = () ->
-    $.getJSON Routes.dashboard_path(), (data) ->
+    $.getJSON Routes.dashboard_zookeepers_path(), (data) ->
       # Updates the fields for each zookeeper
       for index, storedZK of Zookeeper.instances
         safe = false
@@ -48,9 +48,9 @@ $(document).ready ->
         query_message = '<div></div>'
         if parseInt(this.long_running_queries) > 0
           if parseInt(this.long_running_queries,10) == 1
-            query_message = '<div><a href="' + Routes.blur_queries_path({id: this.id}) + '" class="long_running_queries">1</a> query has been running for more than a minute</div>'
+            query_message = '<div><a href="' + Routes.long_running_queries_zookeeper_path(this.id) + '" class="long_running_queries">1</a> query has been running for more than a minute</div>'
           else
-            query_message = '<div><a href="' + Routes.blur_queries_path({id: this.id}) + '" class="long_running_queries">' + parseInt(this.long_running_queries) + '</a> queries have been running for more than a minute</div>'
+            query_message = '<div><a href="' + Routes.long_running_queries_zookeeper_path(this.id) + '" class="long_running_queries">' + parseInt(this.long_running_queries) + '</a> queries have been running for more than a minute</div>'
         zookeeper_table.find('.warning').html(query_message)
 
         # Updates the fields for the zookeeper's shards
@@ -206,30 +206,8 @@ $(document).ready ->
       # Sets auto updates to run every 5 secs
       setTimeout(load_dashboard, 5000)
 
-  if (typeof Zookeeper != 'undefined' && Zookeeper.instances)
-    $('#env_link, #tables_link, #queries_link, #search_link').click (evt) ->
-      self = this
-      if Zookeeper.instances.length == 0
-        alert 'There are no Zookeeper Instances registered yet.  This page will not work until then.'
-        return false
-      else if Zookeeper.instances.length == 1
-        return
-      else
-        select_box = "<div style='text-align:center'><select id='zookeeper_selector' style='font-size: 20px'><option value=''></option>"
-        $.each(Zookeeper.instances, () ->
-          select_box += "<option value='" + this.id + "'>" + this.name + "</option>"
-        )
-        select_box += "</select></div>"
-        $().popup
-          body: select_box
-          title: 'Select a Zookeeper Instance to use:'
-          shown: () ->
-            $('#zookeeper_selector').change ->
-              window.location = Routes.zookeeper_path({id: $(this).val()}); 
-        return false
-
   load_dashboard()
 
   $('.zookeeper_info').live 'click', ->
-    window.location = Routes.zookeeper_path({id: $(this).children('table').attr('id')})
+    window.location = Routes.zookeeper_path($(this).children('table').attr('id'))
 

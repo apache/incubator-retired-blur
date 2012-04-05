@@ -145,20 +145,11 @@ describe BlurTablesController do
         end
         delete :forget, :tables => @tables
       end
-
-      #it "should render JSON" do
-      #  delete :forget, :tables => @tables
-      #  response.content_type.should == 'application/json'
-      #end
     end
 
     describe "GET schema" do
       before(:each) do
-        BlurTable.stub(:find).and_return @blur_table
-      end
-      it "should the blur table whose schema is requested" do
-        BlurTable.should_receive(:find).with @blur_table.id.to_s
-        get :schema, :id => @blur_table.id
+        @zookeeper.stub_chain(:blur_tables, :find_by_id).and_return @blur_table
       end
       it "should render the schema partial" do
         get :schema, :id => @blur_table.id
@@ -168,11 +159,7 @@ describe BlurTablesController do
 
     describe "GET hosts" do
       before(:each) do
-        BlurTable.stub(:find).and_return @blur_table
-      end
-      it "finds the blur table being whose hosts is requested" do
-        BlurTable.should_receive(:find).with @blur_table.id.to_s
-        get :hosts, :id => @blur_table.id
+        @zookeeper.stub_chain(:blur_tables, :find_by_id)
       end
       it "should render the hosts partial" do
         get :hosts, :id => @blur_table.id

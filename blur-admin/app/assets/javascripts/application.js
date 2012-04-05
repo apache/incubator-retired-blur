@@ -36,5 +36,37 @@ $(document).ready(function(){
     $(this).children('.help-content').slideToggle('fast')
   });
 
+  if (typeof Zookeeper !== 'undefined' && Zookeeper.instances){
+    $('#env_link, #tables_link, #queries_link, #search_link').click( function(evt){
+      var self = this;
+      if (Zookeeper.instances.length === 0){
+        alert('There are no Zookeeper Instances registered yet.  This page will not work until then.');
+        return false;
+      } else if (Zookeeper.instances.length === 1 || CurrentZookeeper !== null){
+        return;
+      } else {
+        var select_box = "<div style='text-align:center'><select id='zookeeper_selector' style='font-size: 20px'><option value=''></option>";
+        $.each(Zookeeper.instances, function(){
+          select_box += "<option value='" + this.id + "'>" + this.name + "</option>";
+        });
+        select_box += "</select></div>";
+        $().popup({
+          body: select_box,
+          title: 'Select a Zookeeper Instance to use:',
+          shown: function(){
+            $('#zookeeper_selector').change(function(){
+              window.location = window.location.origin + '/zookeepers/' + $(this).val() + ($(self).attr('data-url-extension') || '');
+            });
+          }
+        });
+        return false;
+      }
+    });
+  }
+
+  $('#zookeeper_id').change(function(){
+    window.location = window.location.href.replace(/(zookeepers\/)\d/, '$1' + $(this).val());
+  });
+
   $('.dropdown-toggle').dropdown();
 });

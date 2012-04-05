@@ -9,6 +9,8 @@
 			:javascript
 				var Zookeeper = {};
 				Zookeeper.instances = #{@zookeepers.collect{|z| {:id=>z.id, :name=>z.name}}.to_json}
+		:javascript
+			var CurrentZookeeper = #{session[:current_zookeeper_id] || 'null'};
 		%title
 			= yield(:title)
 			| Blur Admin
@@ -37,21 +39,21 @@
 							%li{:class => controller == 'zookeepers' && action == 'index' && 'active'}
 								= link_to 'Dashboard', root_path
 							%li{:class => controller == 'zookeepers' && action == 'show' && 'active'}
-								= link_to 'Environment Status', zookeeper_path, :id => 'env_link'
+								= link_to 'Environment Status', stateful_nav_url('environment'), :id => 'env_link'
 							%li{:class => controller == 'blur_tables' && 'active'}
-								= link_to 'Blur Tables', blur_tables_path, :id => 'tables_link'
+								= link_to 'Blur Tables', stateful_nav_url('blur_table'), :id => 'tables_link', 'data-url-extension' => '/blur_tables'
 							%li{:class => controller == 'blur_queries' && 'active'}
-								= link_to 'Blur Queries', blur_queries_path, :id => 'queries_link'
-							- if can? :show, :search
-								%li{:class => controller == 'search' && 'active'}
-									= link_to 'Search', search_path, :id => 'search_link'
+								= link_to 'Blur Queries', stateful_nav_url('blur_query'), :id => 'queries_link', 'data-url-extension' => '/blur_queries'
+							- if can? :show, :searches
+								%li{:class => controller == 'searches' && 'active'}
+									= link_to 'Search', stateful_nav_url('search'), :id => 'search_link', 'data-url-extension' => '/searches'
 							%li.dropdown{:class => (controller == 'hdfs' || controller == 'hdfs_metrics') && 'active'}
 								%a.dropdown-toggle{:href=>'#', :data=>{:toggle=>'dropdown'}}
 									HDFS
 									%b.caret
 								%ul.dropdown-menu
 									%li{:class => controller == 'hdfs' && 'active'}
-										= link_to 'HDFS File Browser', hdfs_path
+										= link_to 'HDFS File Browser', hdfs_index_path
 									%li{:class => controller == 'hdfs_metrics' && 'active'}
 										= link_to 'HDFS Metrics', hdfs_metrics_path
 							- if can? :index, :users
@@ -66,7 +68,6 @@
 							%li
 								= link_to "Account", @current_user
 							- if session[:proof].blank?
-								%li.divider-vertical
 								%li= link_to "Log Out", logout_path
 			#bd.container-fluid
 				= yield

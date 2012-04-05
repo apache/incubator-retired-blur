@@ -1,8 +1,8 @@
 class ZookeepersController < ApplicationController
 
-  before_filter :set_zookeeper, :only => [:show]
-  before_filter :zookeepers, :only => [:show]
-  before_filter :current_zookeeper, :only => [:show, :long_running_queries]
+  before_filter :zookeepers, :only => :show
+  before_filter :set_zookeeper, :except => [:index, :dashboard]
+  before_filter :current_zookeeper, :only => [:show]
 
   QUERY = "
     select
@@ -32,6 +32,9 @@ class ZookeepersController < ApplicationController
   "
 
   def index
+    if Zookeeper.all.count == 1
+      session[:current_zookeeper_id] = Zookeeper.first.id
+    end
     @zookeepers = Zookeeper.select('name, id, status').order('name')
     @hdfs_all = Hdfs.all
     @hdfs_stats= Hdfs.all.collect do |h|
@@ -42,10 +45,8 @@ class ZookeepersController < ApplicationController
   end
 
   def show
-    @zookeeper = @current_zookeeper
-    @shard_nodes = @zookeeper.shards.count 'DISTINCT blur_version'
-    @controller_nodes = @zookeeper.controllers.count 'DISTINCT blur_version'
-    render :show
+    @shard_nodes = @current_zookeeper.shards.count 'DISTINCT blur_version'
+    @controller_nodes = @current_zookeeper.controllers.count 'DISTINCT blur_version'
   end
 
   def dashboard
@@ -61,28 +62,33 @@ class ZookeepersController < ApplicationController
   end
 
   def long_running_queries
-    long_queries = @current_zookeeper.blur_queries.where('created_at < ? and state = ?', 1.minute.ago, 2)
+    long_queries = Zookeeper.find(params[:id])
+      .blur_queries.where('created_at < ? and state = ?', 1.minute.ago, 2)
       .collect{|query| query.summary(current_user)}
     render :json => long_queries
   end
 
   def destroy_shard
-    Shard.destroy(params[:shard_id])
+    shard = Zookeeper.find(params[:id]).shards.find_by_id(params[:shard_id])
+    shard.destroy unless shard.nil?
     redirect_to :zookeeper
   end
   
   def destroy_cluster
-    Cluster.destroy(params[:cluster_id])
+    cluster = Zookeeper.find(params[:id]).clusters.find_by_id(params[:cluster_id])
+    cluster.destroy unless cluster.nil?
     redirect_to :zookeeper
   end
 
   def destroy_controller
-    Controller.destroy(params[:controller_id])
+    controller = Zookeeper.find(params[:id]).controllers.find_by_id(params[:controller_id])
+    controller.destroy unless controller.nil?
     redirect_to :zookeeper
   end
   
-  def destroy_zookeeper
-    Zookeeper.destroy(params[:id])
+  def destroy
+    zookeeper = Zookeeper.find(params[:id])
+    zookeeper.destroy unless zookeeper.nil?
     redirect_to :zookeeper
   end
 end

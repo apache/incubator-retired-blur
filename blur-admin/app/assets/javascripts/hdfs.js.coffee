@@ -77,7 +77,7 @@ $(document).ready ->
     to_id = location.attr('hdfs_id')
     to_path = location.attr('hdfs_path')
     if from_id == to_id
-      $.post Routes.hdfs_move_path(to_id), { 'from': from_path, 'to': to_path}, ()->
+      $.post Routes.move_hdfs_path(to_id), { 'from': from_path, 'to': to_path}, ()->
         $('#hdfs-dir-context-menu').disableContextMenuItems('#paste')
         reload_hdfs()
       
@@ -95,7 +95,7 @@ $(document).ready ->
           func: ()->
             newName = $('#newName input').val()
             newFullPath = "#{from_path.substring(0, from_path.lastIndexOf('/')+1)}#{newName}"
-            $.ajax Routes.hdfs_move_path(id),
+            $.ajax Routes.move_hdfs_path(id),
               type: 'post',
               data:
                 from: from_path
@@ -121,7 +121,7 @@ $(document).ready ->
     id = file.attr('hdfs_id');
     path = file.attr('hdfs_path');
     if(confirm("Are you sure you wish to delete " + path + "? This action can not be undone."))
-      $.post Routes.hdfs_delete_path(id), {'path': path}, ()->
+      $.post Routes.delete_hdfs_path(id), {'path': path}, ()->
         reload_hdfs()
       
   window.uploading = false
@@ -141,7 +141,7 @@ $(document).ready ->
     id = el.attr('hdfs_id')
     path = el.attr('hdfs_path')
     modal_container = $('<div id="upload_form_modal_container"></div>')
-    modal_container.load Routes.hdfs_upload_form_path(id), (data) ->
+    modal_container.load Routes.upload_form_hdfs_path(id), (data) ->
         $().popup
           body:data
           title: 'Upload File'
@@ -169,7 +169,7 @@ $(document).ready ->
         "Create":
           class: 'primary'
           func: ()->
-            $.ajax Routes.hdfs_mkdir_path(id),
+            $.ajax Routes.mkdir_hdfs_path(id),
               type: 'post',
               data:
                 fs_path: path
@@ -266,12 +266,12 @@ $(document).ready ->
   show_hdfs_props = (id, name) ->
     title = "HDFS Information (#{name})"
     $('.hdfs_instance[hdfs_id=' + id + ']').click()
-    $.get Routes.hdfs_info_path(id), (data) ->
+    $.get Routes.info_hdfs_path(id), (data) ->
       $(data).popup
         title: title
         titleClass: 'title'
         show: () ->
-          $.get Routes.hdfs_structure_path(id),{'fs_path':'/'},(data) ->
+          $.get Routes.structure_hdfs_path(id),{'fs_path':'/'},(data) ->
             draw_radial_graph(520, 400, data)
           $('#modal').css
             'width':'1120px'
@@ -282,16 +282,16 @@ $(document).ready ->
   show_dir_props = (id, path) ->
     title = "Properties for #{path}"
     $('.osxSelectable[hdfs_path="' + path + '"][hdfs_id=' + id + ']').click()
-    $.get Routes.hdfs_folder_info_path(id),{'fs_path':path},(data) ->
+    $.get Routes.folder_info_hdfs_path(id),{'fs_path':path},(data) ->
       $(data).popup
         titleClass: 'title'
         title: title
         show: () ->
-          $.get Routes.hdfs_slow_folder_info_path(id),{'fs_path':path},(data) ->
+          $.get Routes.slow_folder_hdfs_info_path(id),{'fs_path':path},(data) ->
             $('#file_count').html(data.file_count)
             $('#folder_count').html(data.folder_count)
             $('#file_size').html(data.file_size)
-          $.get Routes.hdfs_structure_path(id),{'fs_path':path},(data) ->
+          $.get Routes.structure_hdfs_path(id),{'fs_path':path},(data) ->
             draw_radial_graph(520, 400, data)            
           $('#modal').css
             'width':'1120px'

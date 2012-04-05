@@ -37,21 +37,29 @@ class ApplicationController < ActionController::Base
 
   private
   def current_zookeeper
-    if Zookeeper.count == 1
-      @current_zookeeper = Zookeeper.first
-    else
-      @current_zookeeper = Zookeeper.find_by_id session[:current_zookeeper_id]
-    end
-    session[:current_zookeeper_id] = @current_zookeeper.id unless @current_zookeeper.nil?
-
+    @current_zookeeper ||= Zookeeper.find_by_id(params[:zookeeper_id] || session[:current_zookeeper_id])
     if @current_zookeeper.nil?
-      if request.xhr?
-        render :status => :conflict, :text => "No Current Zookeeper"
-      else
-        redirect_to root_path
-      end
+      determine_error
+    else
+      session[:current_zookeeper_id] = @current_zookeeper.id
     end
-    @current_zookeeper
+  end
+
+  def set_zookeeper
+    if Zookeeper.find_by_id(params[:id]).nil?
+      determine_error
+    else
+      session[:current_zookeeper_id] = params[:id]
+    end
+  end
+
+  def determine_error
+    if request.xhr?
+      render :status => :conflict, :text => "No Current Zookeeper"
+    else
+      flash[:error] = "A Zookeeper with that particular id does not exist!"
+      redirect_to root_path
+    end
   end
 
   def zookeepers
@@ -60,9 +68,5 @@ class ApplicationController < ActionController::Base
 
   def current_user_session
     @current_user_session ||= UserSession.find
-  end
-
-  def set_zookeeper
-    session[:current_zookeeper_id] = params[:id] if params[:id]
   end
 end

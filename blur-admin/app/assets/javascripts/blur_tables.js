@@ -89,7 +89,7 @@ $(document).ready(function() {
       if (table === 'active') {
         var host_html = "<td class='blur_table_hosts_shards'>";
         if (blur_table['server']) {
-          host_html += "<a class='hosts' href='" + (Routes.blur_tables_hosts_path(id)) + "' data-remote='true'>" + host_info['hosts'] + " / " + host_info['shards'] + "</a>";
+          host_html += "<a class='hosts' href='" + (Routes.hosts_zookeeper_blur_table_path(CurrentZookeeper, id)) + "' data-remote='true'>" + host_info['hosts'] + " / " + host_info['shards'] + "</a>";
         } else {
           host_html += "Unknown";
         }
@@ -100,7 +100,7 @@ $(document).ready(function() {
         row.append("<td class='blur_table_record_count'>" + (number_commas(blur_table['record_count'])) + "</td>");
       }
       if (table === 'active') {
-        row.append("<td class='blur_table_info'><a class='info' href='" + (Routes.blur_tables_schema_path(id)) + "' data-remote='true'>view</a></td>");
+        row.append("<td class='blur_table_info'><a class='info' href='" + (Routes.schema_zookeeper_blur_table_path(CurrentZookeeper, id)) + "' data-remote='true'>view</a></td>");
       }
       return row;
     }
@@ -220,7 +220,7 @@ $(document).ready(function() {
   var reload_table_info = function() {
     $.ajax({
       type: 'POST',
-      url: Routes.blur_tables_reload_path(),
+      url: Routes.reload_zookeeper_blur_tables_path(CurrentZookeeper),
       success: function(data) {
         rebuild_table(data);
       }
@@ -265,7 +265,7 @@ $(document).ready(function() {
     if (typeof startWith === 'undefined') startWith = '';
     $.ajax({
       type: 'POST',
-      url: Routes.blur_tables_terms_path(table_id),
+      url: Routes.terms_zookeeper_blur_table_path(CurrentZookeeper, table_id),
       data: {
         family: family,
         column: column,
@@ -377,7 +377,7 @@ $(document).ready(function() {
             func: function() {
               $.extend(sharedAjaxSettings, {
                 type: 'PUT',
-                url: Routes.blur_tables_enable_selected_path()
+                url: Routes.enable_zookeeper_blur_tables_path(CurrentZookeeper)
               });
               $.ajax(sharedAjaxSettings);
               pending_change(cluster_id, table_ids, 'disabled', 'Enabling');
@@ -400,7 +400,7 @@ $(document).ready(function() {
             func: function() {
               $.extend(sharedAjaxSettings, {
                 type: 'PUT',
-                url: Routes.blur_tables_disable_selected_path()
+                url: Routes.disable_zookeeper_blur_tables_path(CurrentZookeeper)
               });
               $.ajax(sharedAjaxSettings);
               pending_change(cluster_id, table_ids, 'active', 'Disabling');
@@ -423,7 +423,7 @@ $(document).ready(function() {
             func: function() {
               $.extend(sharedAjaxSettings, {
                 type: 'DELETE',
-                url: Routes.blur_tables_forget_selected_path()
+                url: Routes.forget_zookeeper_blur_tables_path(CurrentZookeeper)
               });
               $.ajax(sharedAjaxSettings);
               pending_change(cluster_id, table_ids, 'deleted', 'Forgetting');
@@ -443,7 +443,7 @@ $(document).ready(function() {
         var delete_tables = function(delete_index) {
           $.extend(sharedAjaxSettings, {
             type: 'DELETE',
-            url: Routes.blur_tables_destroy_selected_path()
+            url: Routes.destroy_zookeeper_blur_tables_path(CurrentZookeeper)
           });
           sharedAjaxSettings.data.delete_index = delete_index;
           $.ajax(sharedAjaxSettings);
@@ -544,6 +544,6 @@ $(document).ready(function() {
     var table_id = searchDiv.attr('table_id');
     var family = searchDiv.attr('family_name');
     var column = searchDiv.attr('column_name');
-    window.location = Routes.search_path() + ("?table_id=" + table_id + "&query=") + encodeURIComponent("" + family + "." + column + ":" + term);
+    window.location = Routes.zookeeper_searches_path(CurrentZookeeper) + ("?table_id=" + table_id + "&query=") + encodeURIComponent("" + family + "." + column + ":" + term);
   });
 });

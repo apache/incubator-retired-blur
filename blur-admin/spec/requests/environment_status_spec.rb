@@ -11,7 +11,8 @@ describe "environment status" do
     fill_in 'user_session_password', :with => user.password
     click_button 'Log In'
     @zookeeper = @zookeepers[1]
-    visit "/zookeeper/#{@zookeeper.id}"
+    visit "/zookeepers/#{@zookeeper.id}"
+    puts response.inspect
   end
 
   it "shows a current zookeeper selector in the header" do

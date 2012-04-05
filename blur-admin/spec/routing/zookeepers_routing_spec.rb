@@ -7,16 +7,12 @@ describe ZookeepersController do
       get("/zookeepers").should route_to(:controller => "zookeepers", :action => "index")
     end
 
-    it "zookeeper routes to #show_current" do
-      get("/zookeeper").should route_to(:controller => "zookeepers", :action => "show")
-    end
-
     it "dashboard routes to #dashboard" do
       get("/zookeepers/dashboard").should route_to(:controller => "zookeepers", :action => "dashboard")
     end
 
     it "zookeepers with id routes to #show" do
-      get("/zookeeper/1").should route_to(:controller => "zookeepers", :action => "show", :id => '1')
+      get("/zookeepers/1").should route_to(:controller => "zookeepers", :action => "show", :id => '1')
     end
 
     it "zookeepers with id and controller_id routes to #destroy_controller" do
@@ -32,7 +28,7 @@ describe ZookeepersController do
     end
 
     it "delete zookeepers with id routes to #destroy_zookeeper" do
-      delete("/zookeepers/1").should route_to(:controller => "zookeepers", :action => "destroy_zookeeper", :id => '1')
+      delete("/zookeepers/1").should route_to(:controller => "zookeepers", :action => "destroy", :id => '1')
     end
   end
 end

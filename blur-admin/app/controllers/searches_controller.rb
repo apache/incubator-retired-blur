@@ -1,11 +1,10 @@
-class SearchController < ApplicationController
-  before_filter :set_zookeeper, :only => [:show]
-  before_filter :current_zookeeper, :only => [:show, :create]
-  before_filter :zookeepers, :only => :show
+class SearchesController < ApplicationController
+  before_filter :current_zookeeper, :only => [:index, :create]
+  before_filter :zookeepers, :only => :index
   before_filter :clean_column_data, :only => [:save, :update]
 
   #Show action that sets instance variables used to build the filter column
-  def show
+  def index
     # the .all call executes the SQL fetch, otherwise there are many more SQL fetches
     # required because of the lazy loading (in this case where a few more variables
     # depend on the result)
@@ -28,7 +27,7 @@ class SearchController < ApplicationController
 
   #Filter action to help build the tree for column families
   def filters
-    blur_table = BlurTable.find params[:blur_table_id]
+    blur_table = BlurTable.find params[:blur_table]
     columns = blur_table ? (blur_table.schema &preference_sort(current_user.column_preference.value)) : []
     
     filter_list = columns.collect do |family|
@@ -44,20 +43,14 @@ class SearchController < ApplicationController
   #Create action is a large action that handles all of the filter data
   #and either saves the data or performs a search
   def create
-    #if the search_id param is set than the user is trying to directly run a saved query
-    if params[:search_id]
-      search = Search.find params[:search_id]
-    #else build a new search to be used for this specific search
-    else
-      params[:column_data].delete( "neighborhood")
-      search = Search.new(:super_query    =>!params[:super_query].nil?,
-                          :record_only    =>!params[:record_only].nil?,
-                          :fetch          => params[:result_count].to_i,
-                          :offset         => params[:offset].to_i,
-                          :user_id        => current_user.id,
-                          :query          => params[:query_string])
-      search.column_object = params[:column_data]
-    end
+    params[:column_data].delete( "neighborhood") if params[:column_data]
+    search = Search.new(:super_query    =>!params[:super_query].nil?,
+                        :record_only    =>!params[:record_only].nil?,
+                        :fetch          => params[:result_count].to_i,
+                        :offset         => params[:offset].to_i,
+                        :user_id        => current_user.id,
+                        :query          => params[:query_string])
+    search.column_object = params[:column_data]
 
     #use the model to begin building the blurquery
     blur_table = BlurTable.find params[:blur_table]
@@ -121,13 +114,13 @@ class SearchController < ApplicationController
   def load
     #TODO logic to check if the saved search is valid if it is render the changes to the page
     #otherwise change the state of the save and load what you can
-    search = Search.find params['search_id']
+    search = Search.find params['id']
     render :json => search.to_json(:methods => :column_object)
   end
 
   #Delete action used for deleting a saved search from a user's saved searches
   def delete
-    Search.find(params[:search_id]).delete
+    Search.find(params[:id]).delete
     @searches = current_user.searches.reverse
     @blur_table = BlurTable.find params[:blur_table]
     respond_to do |format|
@@ -154,7 +147,7 @@ class SearchController < ApplicationController
   end
 
   def update
-    Search.update(params[:search_id],
+    Search.update(params[:id],
                         :name               => params[:save_name],
                         :super_query =>!params[:super_query].nil?,
                         :record_only =>!params[:record_only].nil?,

@@ -1,6 +1,6 @@
 #upload-file
   #status
-  = form_tag hdfs_upload_path, :method => 'post', :multipart => true, :target => 'upload_frame', :id => 'upload-form' do
+  = form_tag upload_hdfs_path, :method => 'post', :multipart => true, :target => 'upload_frame', :id => 'upload-form' do
     = file_field_tag 'upload', :id => 'file-input'
     %p File must be less than 25Mb
     = hidden_field_tag 'hdfs_id', nil, :id => 'hdfs-id-input'

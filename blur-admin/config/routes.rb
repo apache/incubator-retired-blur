@@ -51,7 +51,6 @@ BlurAdmin::Application.routes.draw do
     resources :blur_queries, :only => [:index, :update] do
       member do
         get 'more_info'
-        get 'times'
       end
 
       collection do

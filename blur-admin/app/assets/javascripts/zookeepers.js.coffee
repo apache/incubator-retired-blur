@@ -210,4 +210,6 @@ $(document).ready ->
 
   $('.zookeeper_info').live 'click', ->
     window.location = Routes.zookeeper_path($(this).children('table').attr('id'))
+  $('.hdfs_info').live 'click', ->
+    window.location = Routes.hdfs_index_path() + '/' + $(this).children('table').attr('id')
 

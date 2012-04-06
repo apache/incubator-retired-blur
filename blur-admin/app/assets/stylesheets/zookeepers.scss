@@ -58,9 +58,11 @@
     table{ margin:0; width:100%; }
     table tbody th { text-align:center; vertical-align:middle; }
   }
-  .zookeeper_info:hover{
-    cursor: pointer;
-    background: #FFFCD6;
+  .zookeeper_info, .hdfs_info{
+    &:hover{
+      cursor: pointer;
+      background: #FFFCD6;
+    }
   }
   .center{
     text-align:center;

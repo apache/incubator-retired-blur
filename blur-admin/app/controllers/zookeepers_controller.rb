@@ -32,9 +32,7 @@ class ZookeepersController < ApplicationController
   "
 
   def index
-    if Zookeeper.all.count == 1
-      session[:current_zookeeper_id] = Zookeeper.first.id
-    end
+    session[:current_zookeeper_id] = Zookeeper.first.id if Zookeeper.count == 1
     @zookeepers = Zookeeper.select('name, id, status').order('name')
     @hdfs_all = Hdfs.all
     @hdfs_stats= Hdfs.all.collect do |h|

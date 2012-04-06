@@ -60,10 +60,11 @@
 								%li{:class => controller == 'users' && action == 'index' && 'active'}
 									= link_to 'Admin', users_path
 						%ul.nav.pull-right
-							- if @current_zookeeper && @zookeepers && @zookeepers.length > 1
+							- if @zookeepers && @zookeepers.length > 1
 								%li
 									#zookeeper_select
-										= select_tag( :id, options_from_collection_for_select( @zookeepers, :id, :name, @current_zookeeper.id ), :id => 'zookeeper_id' )
+										-blank = @current_zookeeper.nil? && session[:current_zookeeper_id].nil?
+										= select('zookeeper', 'id', @zookeepers.collect{|zk| [zk.name, zk.id]}, {:id => 'zookeeper_id', :include_blank => blank, :selected => session[:current_zookeeper_id]})
 								%li.divider-vertical
 							%li
 								= link_to "Account", @current_user

@@ -4,7 +4,7 @@
 
 #search_page_wrapper
   #filter_section
-    = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
+    = form_tag zookeeper_searches_path, :method => 'post', :id=>'search_form', :remote => true do
       #filters_wrap
         #standard
           .search_field

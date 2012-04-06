@@ -7,5 +7,5 @@
     %ul#top_level
       - @instances.each do |instance|
         %li.osxSelectable.hdfs_instance{:hdfs_id=>instance.id, :hdfs_name=>instance.name, :hdfs_path=>'/'}
-          =link_to(instance.name, hdfs_expand_path(instance.id), :title=>instance.name)
+          =link_to(instance.name, expand_hdfs_path(instance.id), :title=>instance.name)
 

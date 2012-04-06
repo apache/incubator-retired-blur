@@ -65,7 +65,11 @@ $(document).ready(function(){
   }
 
   $('#zookeeper_id').change(function(){
-    window.location = window.location.href.replace(/(zookeepers\/)\d/, '$1' + $(this).val());
+    if (window.location.href.match(/(zookeepers\/)\d/)){
+      window.location = window.location.href.replace(/(zookeepers\/)\d/, '$1' + $(this).val());
+    } else {
+      window.location = '/zookeepers/' + + $(this).val();
+    }
   });
 
   $('.dropdown-toggle').dropdown();

@@ -13,9 +13,5 @@ describe BlurQueriesController do
     it "more_info routes to #more_info" do
       get("/zookeepers/1/blur_queries/1/more_info").should route_to(:controller => "blur_queries", :action => "more_info", :id => '1', :zookeeper_id => '1')
     end
-
-    it "times routes to #times" do
-      get("/zookeepers/1/blur_queries/1/times").should route_to(:controller => "blur_queries", :action => "times", :id => '1', :zookeeper_id => '1')
-    end
   end
 end

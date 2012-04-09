@@ -111,9 +111,9 @@ describe ZookeepersController do
         delete :destroy_shard, :shard_id => @shard.id, :id => @zookeeper.id
       end
 
-      it "redirects to the zookeeper page" do
+      it "renders nothing" do
         delete :destroy_shard, :shard_id => @shard.id, :id => @zookeeper.id
-        response.should redirect_to :zookeeper
+        response.body.should == ' '
       end
     end
 
@@ -133,9 +133,9 @@ describe ZookeepersController do
         delete :destroy_cluster, :cluster_id => @cluster.id, :id => @zookeeper.id
       end
 
-      it "redirects to the zookeeper page" do
+      it "renders nothing" do
         delete :destroy_cluster, :cluster_id => @cluster.id, :id => @zookeeper.id
-        response.should redirect_to :zookeeper
+        response.body.should == ' '
       end
     end
 
@@ -155,9 +155,9 @@ describe ZookeepersController do
         delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper.id
       end
 
-      it "redirects to the zookeeper page" do
+      it "renders nothing" do
         delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper
-        response.should redirect_to :zookeeper
+        response.body.should == ' '
       end
     end
 
@@ -173,9 +173,9 @@ describe ZookeepersController do
         delete :destroy, :id => @zookeeper.id
       end
 
-      it "redirects to the zookeeper page" do
+      it "renders nothing" do
         delete :destroy, :id => @zookeeper.id
-        response.should redirect_to :zookeeper
+        response.body.should == ' '
       end
     end
   end

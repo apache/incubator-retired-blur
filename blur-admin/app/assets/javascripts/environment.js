@@ -9,10 +9,12 @@ $(document).ready(function(){
             type: 'DELETE',
             url: self.attr('href'),
             success: function(data){
-              if (self.attr('data-remove') !== true){
+              if (self.attr('data-reload') === "true"){
+                window.location = window.location.origin;
+              } else {
                 self.closest('li').remove();
+                $().closePopup();
               }
-              $().closePopup();
             }
           });
         }

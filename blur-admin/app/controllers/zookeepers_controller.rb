@@ -87,6 +87,6 @@ class ZookeepersController < ApplicationController
   def destroy
     zookeeper = Zookeeper.find(params[:id])
     zookeeper.destroy unless zookeeper.nil?
-    redirect_to :zookeeper
+    render :nothing => true
   end
 end

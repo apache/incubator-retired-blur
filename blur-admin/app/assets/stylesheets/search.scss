@@ -44,7 +44,7 @@
     top: 95px;
     left: 0;
     padding: 10px 0px 0px 10px;
-    box-sizing: border-box;
+    @include box-sizing(border-box);
 		@include gradient-vertical(#fff, #F4F4F4);
     border-bottom: 1px solid #ccc;
     #filters_wrap{

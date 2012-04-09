@@ -30,7 +30,7 @@
   }
   #blur {
     @include zoo-widget;
-    #controllers, #shards{ padding: 5px; box-sizing: border-box; }
+    #controllers, #shards{ padding: 5px; @include box-sizing(border-box); }
     ul{ list-style-type: none; }
     .blur_container{ margin-bottom: 2em }
   }

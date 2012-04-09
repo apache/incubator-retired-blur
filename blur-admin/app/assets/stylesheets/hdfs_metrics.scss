@@ -4,7 +4,7 @@ $graph_height: $instance_height - $title_height;
 
 @mixin graph_component{
 	display: inline-block;
-	box-sizing: border-box;
+	@include box-sizing(border-box);
 }
 
 @mixin clickable_title{
@@ -71,7 +71,7 @@ $graph_height: $instance_height - $title_height;
 				}
 			}
 			.graph_data{
-				box-sizing: border-box;
+				@include box-sizing(border-box);
 				width: 100%;
 				padding: 10px 10px 0 3%;
 				.graph{

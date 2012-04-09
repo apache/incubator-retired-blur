@@ -27,7 +27,7 @@ $footer-height: 45px;
 html{
   height: 100%;
   padding-bottom: 45px;
-  box-sizing: border-box;
+  @include box-sizing(border-box);
   overflow: auto;
 }
 #modal{

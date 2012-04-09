@@ -69,6 +69,10 @@ input[placeholder].placeholder{
 	}
 }
 
+.dynatree-connector ~ .dynatree-title{
+	cursor: default;
+}
+
 // Tree overrides
 ul.dynatree-container {
 	background-color: inherit !important;

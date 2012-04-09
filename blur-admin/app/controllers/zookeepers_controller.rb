@@ -69,19 +69,19 @@ class ZookeepersController < ApplicationController
   def destroy_shard
     shard = Zookeeper.find(params[:id]).shards.find_by_id(params[:shard_id])
     shard.destroy unless shard.nil?
-    redirect_to :zookeeper
+    render :nothing => true
   end
   
   def destroy_cluster
     cluster = Zookeeper.find(params[:id]).clusters.find_by_id(params[:cluster_id])
     cluster.destroy unless cluster.nil?
-    redirect_to :zookeeper
+    render :nothing => true
   end
 
   def destroy_controller
     controller = Zookeeper.find(params[:id]).controllers.find_by_id(params[:controller_id])
     controller.destroy unless controller.nil?
-    redirect_to :zookeeper
+    render :nothing => true
   end
   
   def destroy

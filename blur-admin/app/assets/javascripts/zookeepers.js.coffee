@@ -120,7 +120,7 @@ $(document).ready ->
 
         if new_table
           $('#zookeepers').append(zookeeper_new)
-          Zookeeper.push
+          Zookeeper.instances.push
             id: this.id
             name: this.name
 
@@ -212,4 +212,31 @@ $(document).ready ->
     window.location = Routes.zookeeper_path($(this).children('table').attr('id'))
   $('.hdfs_info').live 'click', ->
     window.location = Routes.hdfs_index_path() + '/' + $(this).children('table').attr('id')
+  $('.long_running_queries').live 'click', ->
+    $.ajax
+      type: 'GET'
+      url: $(this).attr('href')
+      success: (data) ->
+        innerHtml = '<ul class="long-running-list">'
+        for datum in data
+          innerHtml += '<li class="long-running-entry"><div class="long-icon" title="Cancel This Query" data-id="' + datum.id + '"><i class="icon-remove"/></div><div class="query-info">'
+          innerHtml += 'User Id: ' + datum.userid + ' | Query: ' + datum.query
+          innerHtml += '</div></li>'
+        innerHtml += '</ul>'
+        $().popup
+          title: "Long Running Queries"
+          titleClass: 'title'
+          body: innerHtml
+    return false
+  $('.long-icon').live 'click', ->
+    self = $(this)
+    id = self.attr('data-id')
+    $.ajax
+      type: 'PUT'
+      url: Routes.zookeeper_blur_query_path(CurrentZookeeper, id)
+      data:
+        cancel: true
+      success: ->
+        self.closest('li').remove()
+
 

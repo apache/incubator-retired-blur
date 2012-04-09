@@ -97,7 +97,7 @@ $(document).ready(function() {
     if (action_td.html() === '') {
       action_td.append("<a href='" + (Routes.more_info_zookeeper_blur_query_path(CurrentZookeeper, data['id'])) + "' class='more_info' style='margin-right: 3px'>More Info</a>");
       if (data['state'] === 'Running' && data['can_update']) {
-        action_td.append("<form accept-charset='UTF-8' action='" + (Routes.zookeeper_blur_query_path(CurrentZookeeper, data['id'])) + "' class='cancel' data-remote='true' method='post'><div style='margin:0;padding:0;display:inline'><input name='_method' type='hidden' value='put'></div><input id='cancel' name='cancel' type='hidden' value='true'><input class='cancel_query_button btn btn-small' type='submit' value='Cancel'><img src='/assets/loading.gif' style='display:none'></form>");
+        action_td.append("<form accept-charset='UTF-8' action='" + (Routes.zookeeper_blur_query_path(CurrentZookeeper, data['id'])) + "' class='cancel' data-remote='true' method='put'><div style='margin:0;padding:0;display:inline'><input name='_method' type='hidden' value='put'></div><input id='cancel' name='cancel' type='hidden' value='true'><input class='cancel_query_button btn btn-small' type='submit' value='Cancel'><img src='/assets/loading.gif' style='display:none'></form>");
       }
     }
     var time = data.time.substring(0, data.time.indexOf(' ')).split(':');

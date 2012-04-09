@@ -61,7 +61,7 @@ class ZookeepersController < ApplicationController
 
   def long_running_queries
     long_queries = Zookeeper.find(params[:id])
-      .blur_queries.where('created_at < ? and state = ?', 1.minute.ago, 2)
+      .blur_queries.where('created_at < ? and state = ?', 1.minute.ago, 0)
       .collect{|query| query.summary(current_user)}
     render :json => long_queries
   end

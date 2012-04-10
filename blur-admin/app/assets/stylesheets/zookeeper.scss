@@ -1,0 +1,68 @@
+#zookeeper_wrapper {
+  i { cursor: pointer; }
+  $header-padding: 20px;
+  margin-top: 2em;
+  #blur, #zookeeper{ margin-bottom: 2em; }
+  #zookeeper {
+    @include border-radius();
+    height: 100px;
+    h2 {
+      font-size: 50px;
+      padding: 20px 20px 0px;
+      color: white;
+      line-height: 40px;
+      @include box-sizing(border-box);
+      height: 100%;
+      position: relative;
+      .connection-url {
+        position: absolute;
+        right: 10px;
+        bottom: 0px;
+        float: right;
+        font-size: 20px;
+        opacity: .8;
+      }
+      i {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+      }
+    }
+  }
+  #blur {
+    #controllers, #clusters{ padding: 5px; @include box-sizing(border-box); }
+    table tbody tr{
+      td{ 
+        background-color: rgba(91, 183, 91, .9); 
+        color: white;
+        border-color: #5BB75B;
+        a {
+          color: white;
+          text-decoration: underline;
+          cursor: pointer;
+        }
+      }
+
+      &.error{
+        &.error-failure {
+          td {
+            background-color: rgba(218, 79, 73, .8);
+            color: white;
+            border-color: #DA4F49;
+          }
+        }
+        td {
+          background-color: rgba(248, 148, 6, .8);
+          color: white;
+          border-color: #F89406;
+        }
+      }
+      td:last-child { text-align: center; width: 34px; }
+    }
+    ul{ list-style-type: none; }
+    .blur_container{ margin-bottom: 2em }
+  }
+  .status{ width:75px; @include zoo-status;}
+
+  h3 { margin-top: 0.5em; border-bottom: $twitter-border;}
+}

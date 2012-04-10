@@ -2,94 +2,57 @@
 - content_for :javascript do
   = javascript_include_tag 'environment'
 
-#zookeeper_wrapper
-  - if @current_zookeeper
-    .zookeeper{ :id => @current_zookeeper.id }
-      #zookeeper
-        %h2 Zookeeper Information
-        %table
-          %tbody
-            %tr
-              %th Name:
-              %td.value= @current_zookeeper.name
-            %tr
-              %th Connection:
-              %td.value= @current_zookeeper.url
-            %tr
-              %th Status:
-              %td.value
-                - if @current_zookeeper.status == 1
-                  .status.btn-success
-                    Online
-                - else
-                  .status.btn-danger
-                    Offline
-            -if can? :destroy_zookeeper, :zookeepers
+#zookeeper_wrapper.container
+  #zookeeper.btn-success
+    %h2.zookeeper-name
+      = @current_zookeeper.name.capitalize + " - " + @current_zookeeper.translated_status
+      .connection-url
+        = @current_zookeeper.url
+      %i.icon-remove-sign.icon-white.confirm-action{:title => "Remove This Zookeeper", 'data-reload' => 'true', 'data-message' => 'remove this zookeeper'}
+  #blur
+    .row
+      #controllers.span6
+        %h2
+          Controllers
+        -unless @current_zookeeper.controllers.empty?
+          %table.table.table-bordered
+            %thead
               %tr
-                %td{:colspan => 2}
-                  =link_to 'Remove Zookeeper', zookeeper_path(@current_zookeeper), {:class => 'confirm-action', 'data-reload' => true}
-      #blur
-        %h2 Blur Status
-        .row-fluid
-          #controllers.span6
-            .blur_container
-              - unless @current_zookeeper.controllers.empty?
-                %h3= "Controllers(#{@current_zookeeper.controllers.length})"
-                #controllers-placeholder
-                  - if @controller_nodes == 1
-                    = "Blur version: #{@current_zookeeper.controllers.first.blur_version}"
-                  - elsif @controller_nodes > 1
-                    .warning
-                      = "Controllers are not running the same blur version"
-                  %ul
-                    - @current_zookeeper.controllers.sort_by{|c| [c.status, c.node_name]}.each do |controller|
-                      %li<
-                        = "#{controller.node_name}"
-                        - if @controller_nodes > 1
-                          = "(blur version #{controller.blur_version})"
-                        - if controller.status == 1
-                          .status.btn-success
-                            Online
-                        - else
-                          .status.btn-danger
-                            Offline
-                          = link_to 'Forget Offline Node', destroy_controller_zookeeper_path(@current_zookeeper, controller), {:class => 'confirm-action'}
-              - else
-                %h3 Controllers
-                #controllers-placeholder
-                  %p Not Available
-          #shards.span5
-            .blur_container
-              - unless @current_zookeeper.shards.empty?
-                %h3= "Shards(#{@current_zookeeper.shards.length})"
-                #shards-placeholder
-                  - if @shard_nodes == 1
-                    = "Blur version: #{@current_zookeeper.shards.first.blur_version}"
-                  - elsif @shard_nodes > 1
-                    .warning
-                      = "Shards are not running the same blur version"
-                  %ul
-                    - @current_zookeeper.clusters.sort_by{|c| c.name}.each do |cluster|
-                      %li
-                        = "#{cluster.name}#{cluster.safe_mode ? " (safe mode)" :""}"
-                        -if can? :destroy_cluster, :zookeepers
-                          =link_to 'Remove Cluster', destroy_cluster_zookeeper_path(@current_zookeeper, cluster.id), {:class => 'confirm-action'}
-                        %ul
-                          - cluster.shards.sort_by{|s| [s.status, s.node_name]}.each do |shard|
-                            %li
-                              = shard.node_name
-                              - if @shard_nodes > 1
-                                = "(blur version #{shard.blur_version})"
-                              - if shard.status == 1
-                                .status.btn-success
-                                  Online
-                              - else
-                                .status.btn-danger
-                                  Offline
-                                = link_to 'Forget Offline Node', destroy_shard_zookeeper_path(@current_zookeeper, shard), {:class => 'confirm-action'}
-              - else
-                %h3 Shards
-                %p Not Available
+                %th Name
+                %th Blur Version
+                %th
+            %tbody
+              - @current_zookeeper.controllers.sort_by{|c| c.node_name}.each do |controller|
+                %tr{'data-controller-id' => controller.id, :class => ('error error-failure' if controller.status == 0)}
+                  %td
+                    =controller.node_name
+                  %td
+                    =controller.blur_version
+                  %td
+                    %i.icon-remove-sign.confirm-action.icon-white{:title => 'Remove This Controller','data-message' => 'remove this controller'}
 
-  - else
-    No Zookeeper Instances Available
+      #clusters.span6
+        %h2
+          Clusters
+        -unless @current_zookeeper.controllers.empty?
+          %table.table.table-bordered
+            %thead
+              %tr
+                %th Name
+                %th Shard Blur Version
+                %th Safe Mode
+                %th Shards
+                %th
+            %tbody
+              - @current_zookeeper.clusters.sort_by{|c| c.name}.each do |cluster|
+                %tr{'data-cluster-id' => cluster.id, :class => ('error' if cluster.has_errors?)}
+                  %td
+                    =cluster.name
+                  %td
+                    =@shard_nodes == 1 ? @current_zookeeper.shards.first.blur_version : "Inconsistent Blur Versions"
+                  %td
+                    =cluster.safe_mode ? "Yes" : "No"
+                  %td
+                    %a.more-shard-info View Shards
+                  %td
+                    %i.icon-remove-sign.confirm-action.icon-white{:title => 'Remove This Cluster','data-message' => 'remove this cluster'}

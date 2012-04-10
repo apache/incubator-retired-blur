@@ -21,24 +21,6 @@
   &.important{font-style:italic;}
 }
 
-#zookeeper_wrapper {
-  margin-top: 2em;
-  #blur, #zookeeper{ margin-bottom: 2em; }
-  #zookeeper {
-    @include zoo-widget;
-    table{ text-align: left; margin-left: 10px; }
-  }
-  #blur {
-    @include zoo-widget;
-    #controllers, #shards{ padding: 5px; @include box-sizing(border-box); }
-    ul{ list-style-type: none; }
-    .blur_container{ margin-bottom: 2em }
-  }
-  .status{ width:75px; @include zoo-status;}
-	h2 { color: $zk-header-color; @include box-title;}
-  h3 { margin-top: 0.5em; border-bottom: $twitter-border;}
-}
-
 #zookeepers_wrapper, #hdfs_dash_wrapper{
   display: none;
   @include standard-font; 

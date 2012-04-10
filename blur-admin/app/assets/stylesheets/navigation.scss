@@ -1,4 +1,3 @@
-$header-height: 55px;
 $nav-height: 40px;
 
 #root{
@@ -7,7 +6,6 @@ $nav-height: 40px;
     width:100%;
     #hd {
       top: 0px;
-      height: $header-height;
       z-index: 2;
       position: relative;
       #logo{
@@ -18,12 +16,13 @@ $nav-height: 40px;
         text-align: center;
         font-size: 1.2em;
         font-weight: bold;
-        top: 7px;
+        top: $nav-height;
         position: absolute;
         width: 100%;
         div{
           display: inline-block;
           padding: 10px 20px 10px 20px;
+          @include border-radius-top(0px);
         }
       }
     }

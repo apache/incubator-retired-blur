@@ -19,6 +19,10 @@ describe ZookeepersController do
       delete("/zookeepers/1/controller/1").should route_to(:controller => "zookeepers", :action => "destroy_controller", :id => '1', :controller_id => '1')
     end
 
+    it "zookeepers with id and routes to #shards" do
+      get("/zookeepers/1/shards").should route_to(:controller => "zookeepers", :action => "shards", :id => '1')
+    end
+
     it "zookeepers with id and shard_id routes to #destroy_shard" do
       delete("/zookeepers/1/shard/1").should route_to(:controller => "zookeepers", :action => "destroy_shard", :id => '1', :shard_id => '1')
     end

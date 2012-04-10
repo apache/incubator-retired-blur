@@ -40,4 +40,28 @@ $(document).ready(function(){
   if (numberOfErrors > 0){
     $('#zookeeper').removeClass('btn-success').addClass('btn-warning');
   }
+
+  $('.more-shard-info').live('click', function(){
+    $.ajax({
+      type: 'GET',
+      url: $(this).attr('href'),
+      success: function(data){
+        var innerHtml = '<ul class="modal-list">'
+        for (var index = 0; index < data.length; index++) {
+          var datum = data[index];
+          innerHtml += '<li><div class="icon" title="Remove This Shard" data-id="' + datum.id + '"><i class="icon-remove"/></div><div class="info">';
+          innerHtml += 'User Id: ' + datum.userid + ' | Query: ' + datum.query;
+          innerHtml += '</div></li>';
+        }
+        innerHtml += '</ul>';
+        $().popup({
+          title: "Shards",
+          titleClass: 'title',
+          body: innerHtml
+        });
+        $('.icon').tooltip();
+      }
+    })
+    return false;
+  });
 });

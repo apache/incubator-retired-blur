@@ -53,6 +53,6 @@
                   %td
                     =cluster.safe_mode ? "Yes" : "No"
                   %td
-                    %a.more-shard-info View Shards
+                    %a.more-shard-info{:href => shards_zookeeper_path()} View Shards
                   %td
                     %i.icon-remove-sign.confirm-action.icon-white{:title => 'Remove This Cluster','data-message' => 'remove this cluster'}

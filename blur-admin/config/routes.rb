@@ -10,6 +10,7 @@ BlurAdmin::Application.routes.draw do
       delete 'shard/:shard_id' => 'zookeepers#destroy_shard', :as => :destroy_shard
       delete 'cluster/:cluster_id' => 'zookeepers#destroy_cluster', :as => :destroy_cluster
       get 'long_running' => 'zookeepers#long_running_queries', :as => :long_running_queries
+      get 'shards'
     end
 
     collection do

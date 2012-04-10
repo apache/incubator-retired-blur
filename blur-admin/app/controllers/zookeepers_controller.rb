@@ -1,8 +1,8 @@
 class ZookeepersController < ApplicationController
 
   before_filter :zookeepers, :only => :show
-  before_filter :set_zookeeper, :except => [:index, :dashboard]
-  before_filter :current_zookeeper, :only => [:show]
+  before_filter :set_zookeeper, :only => [:show]
+  before_filter :current_zookeeper, :only => [:show, :shards]
 
   QUERY = "
     select
@@ -64,6 +64,10 @@ class ZookeepersController < ApplicationController
       .blur_queries.where('created_at < ? and state = ?', 1.minute.ago, 0)
       .collect{|query| query.summary(current_user)}
     render :json => long_queries
+  end
+
+  def shards
+    render :json => Zookeeper.find(params[:id]).shards, :except => :cluster_id
   end
 
   def destroy_shard

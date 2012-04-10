@@ -217,9 +217,9 @@ $(document).ready ->
       type: 'GET'
       url: $(this).attr('href')
       success: (data) ->
-        innerHtml = '<ul class="long-running-list">'
+        innerHtml = '<ul class="modal-list">'
         for datum in data
-          innerHtml += '<li class="long-running-entry"><div class="long-icon" title="Cancel This Query" data-id="' + datum.id + '"><i class="icon-remove"/></div><div class="query-info">'
+          innerHtml += '<li class="long-running-entry"><div class="icon" title="Cancel This Query" data-id="' + datum.id + '"><i class="icon-remove"/></div><div class="info">'
           innerHtml += 'User Id: ' + datum.userid + ' | Query: ' + datum.query
           innerHtml += '</div></li>'
         innerHtml += '</ul>'
@@ -228,7 +228,7 @@ $(document).ready ->
           titleClass: 'title'
           body: innerHtml
     return false
-  $('.long-icon').live 'click', ->
+  $('.icon').live 'click', ->
     self = $(this)
     id = self.attr('data-id')
     $.ajax

@@ -327,19 +327,19 @@ $(document).ready(function() {
     });
   });
 
-  $('.bulk-action-checkbox').live('change', function() {
-    var cluster_table = $(this).closest('table');
-    if (!$(this).hasClass('check-all')) {
+  var toggle_checkbox = function(element) {
+    var cluster_table = element.closest('table');
+    if (!element.hasClass('check-all')) {
       cluster_table.find('.check-all').prop('checked', false);
     }
-    var table_row = $(this).parents('.blur_table');
-    if (table_row.length === 1) row_highlight($(this).is(':checked'), table_row);
+    var table_row = element.parents('.blur_table');
+    if (table_row.length === 1) row_highlight(element.is(':checked'), table_row);
     disable_action(cluster_table);
     var num_checked = cluster_table.find('.bulk-action-checkbox:checked').length;
     if (num_checked === cluster_table.find('tbody tr .bulk-action-checkbox').length) {
       cluster_table.find('.check-all').prop('checked', true);
     }
-  });
+  };
 
   $('.btn').live('click', function() {
     var btns, msg, title;
@@ -545,5 +545,36 @@ $(document).ready(function() {
     var family = searchDiv.attr('family_name');
     var column = searchDiv.attr('column_name');
     window.location = Routes.zookeeper_searches_path(CurrentZookeeper) + ("?table_id=" + table_id + "&query=") + encodeURIComponent("" + family + "." + column + ":" + term);
+  });
+
+  $('table[blur_cluster_id]').on('click', '.bulk-action-checkbox', function(){
+    var self = $(this);
+    if (self.attr('checked') && self.siblings('.queries-running-icon:visible').length > 0){    
+      var body = '<div>This table has had queries run against it recently. Are you sure that you want to disable this table?</div>';
+      var btns = {
+        "Continue": {
+          "class": "danger",
+          func: function() {
+            self.attr('checked', 'checked');
+            toggle_checkbox(self);
+            $().closePopup();
+          }
+        },
+        "Cancel": {
+          func: function() {
+            $().closePopup();
+          }
+        }
+      };
+      $().popup({
+          title: "Table Recently Used",
+          titleClass: 'title',
+          body: body,
+          btns: btns
+      });
+      return false;
+    } else {
+      toggle_checkbox(self);
+    }
   });
 });

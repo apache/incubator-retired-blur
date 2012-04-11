@@ -1,6 +1,12 @@
 $nav-height: 40px;
 
 #root{
+  .navbar{
+    .brand{
+      padding-bottom: 0px;
+    }
+    overflow: hidden;
+  }
 	.navbar-inner {
 		background: transparent url('gradient.png') repeat-x 0 -58px;
 		@include border-radius(0);

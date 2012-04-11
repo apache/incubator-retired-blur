@@ -1,3 +1,4 @@
+$opacity-adjust: 0;
 #zookeeper_wrapper {
   i { cursor: pointer; }
   $header-padding: 20px;
@@ -5,6 +6,7 @@
   #blur, #zookeeper{ margin-bottom: 2em; }
   #zookeeper {
     @include border-radius();
+    opacity: .9;
     height: 100px;
     h2 {
       font-size: 50px;
@@ -33,7 +35,7 @@
     #controllers, #clusters{ padding: 5px; @include box-sizing(border-box); }
     table tbody tr{
       td{ 
-        background-color: rgba(91, 183, 91, .9); 
+        background-color: rgba(91, 183, 91, .9 - $opacity-adjust); 
         color: white;
         border-color: #5BB75B;
         a {
@@ -46,13 +48,13 @@
       &.error{
         &.error-failure {
           td {
-            background-color: rgba(218, 79, 73, .8);
+            background-color: rgba(218, 79, 73, .8 - $opacity-adjust);
             color: white;
             border-color: #DA4F49;
           }
         }
         td {
-          background-color: rgba(248, 148, 6, .8);
+          background-color: rgba(248, 148, 6, .8 - $opacity-adjust);
           color: white;
           border-color: #F89406;
         }

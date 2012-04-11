@@ -1,7 +1,6 @@
 = twitter_bootstrap_form_for user_session, :html => {:class => 'well'} do |f|
 	-if user_session.errors.any?
 		#error_explanation
-			%h4= "#{pluralize(user_session.errors.count, 'error')} prohibited successful login"
 			%ul
 				- user_session.errors.full_messages.each do |msg|
 					%li= msg

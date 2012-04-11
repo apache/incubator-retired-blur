@@ -341,6 +341,36 @@ $(document).ready(function() {
     }
   };
 
+  $('table[blur_cluster_id]').on('click', '.bulk-action-checkbox', function(){
+    var self = $(this);
+    if (self.attr('checked') && self.siblings('.queries-running-icon:visible').length > 0){ 
+      var btns = {
+        "Continue": {
+          "class": "danger",
+          func: function() {
+            self.attr('checked', 'checked');
+            toggle_checkbox(self);
+            $().closePopup();
+          }
+        },
+        "Cancel": {
+          func: function() {
+            $().closePopup();
+          }
+        }
+      };
+      $().popup({
+          title: "Table Recently Used",
+          titleClass: 'title',
+          body: '<div>This table has had queries run against it recently. Are you sure that you want to disable this table?</div>',
+          btns: btns
+      });
+      return false;
+    } else {
+      toggle_checkbox(self);
+    }
+  });
+
   $('.btn').live('click', function() {
     var btns, msg, title;
     var action = $(this).attr('blur_bulk_action');
@@ -545,36 +575,5 @@ $(document).ready(function() {
     var family = searchDiv.attr('family_name');
     var column = searchDiv.attr('column_name');
     window.location = Routes.zookeeper_searches_path(CurrentZookeeper) + ("?table_id=" + table_id + "&query=") + encodeURIComponent("" + family + "." + column + ":" + term);
-  });
-
-  $('table[blur_cluster_id]').on('click', '.bulk-action-checkbox', function(){
-    var self = $(this);
-    if (self.attr('checked') && self.siblings('.queries-running-icon:visible').length > 0){    
-      var body = '<div>This table has had queries run against it recently. Are you sure that you want to disable this table?</div>';
-      var btns = {
-        "Continue": {
-          "class": "danger",
-          func: function() {
-            self.attr('checked', 'checked');
-            toggle_checkbox(self);
-            $().closePopup();
-          }
-        },
-        "Cancel": {
-          func: function() {
-            $().closePopup();
-          }
-        }
-      };
-      $().popup({
-          title: "Table Recently Used",
-          titleClass: 'title',
-          body: body,
-          btns: btns
-      });
-      return false;
-    } else {
-      toggle_checkbox(self);
-    }
   });
 });

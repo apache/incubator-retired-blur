@@ -67,7 +67,8 @@ class ZookeepersController < ApplicationController
   end
 
   def shards
-    render :json => Zookeeper.find(params[:id]).shards, :except => :cluster_id
+    shards = Zookeeper.find(params[:id]).clusters.find_by_id(params[:cluster_id]).shards
+    render :json => shards, :except => :cluster_id
   end
 
   def destroy_shard

@@ -34,7 +34,7 @@
       #clusters.span6
         %h2
           Clusters
-        -unless @current_zookeeper.controllers.empty?
+        -unless @current_zookeeper.clusters.empty?
           %table.table.table-bordered
             %thead
               %tr
@@ -53,6 +53,6 @@
                   %td
                     =cluster.safe_mode ? "Yes" : "No"
                   %td
-                    %a.more-shard-info{:href => shards_zookeeper_path()} View Shards
+                    %a.more-shard-info{:href => shards_zookeeper_path(@current_zookeeper.id, cluster.id)} View Shards
                   %td
                     %i.icon-remove-sign.confirm-action.icon-white{:title => 'Remove This Cluster','data-message' => 'remove this cluster'}

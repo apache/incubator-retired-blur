@@ -20,7 +20,7 @@ describe ZookeepersController do
     end
 
     it "zookeepers with id and routes to #shards" do
-      get("/zookeepers/1/shards").should route_to(:controller => "zookeepers", :action => "shards", :id => '1')
+      get("/zookeepers/1/shards/1").should route_to(:controller => "zookeepers", :action => "shards", :id => '1', :cluster_id => '1')
     end
 
     it "zookeepers with id and shard_id routes to #destroy_shard" do

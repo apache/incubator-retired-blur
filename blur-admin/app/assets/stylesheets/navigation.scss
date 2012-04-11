@@ -1,32 +1,6 @@
 $nav-height: 40px;
 
 #root{
-  #top{
-    z-index:2;
-    width:100%;
-    #hd {
-      top: 0px;
-      z-index: 2;
-      position: relative;
-      #logo{
-        padding-top: 1.25em;
-        display: inline-block;
-      }
-      #flash {
-        text-align: center;
-        font-size: 1.2em;
-        font-weight: bold;
-        top: $nav-height;
-        position: absolute;
-        width: 100%;
-        div{
-          display: inline-block;
-          padding: 10px 20px 10px 20px;
-          @include border-radius-top(0px);
-        }
-      }
-    }
-  }
 	.navbar-inner {
 		background: transparent url('gradient.png') repeat-x 0 -58px;
 		@include border-radius(0);
@@ -68,6 +42,24 @@ $nav-height: 40px;
       color: $grey-color;
     }
   }
+
+  #flash {
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    bottom: $footer-height + 1;
+    position: absolute;
+    width: 100%;
+    div{
+      width: 400px;
+      margin: auto;
+      &:not(:first-child){
+        @include border-radius(0px);
+      }
+      @include border-radius-bottom(0px);
+    }
+  }
+
   
   #license {
     float: left;

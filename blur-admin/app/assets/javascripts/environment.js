@@ -46,7 +46,7 @@ $(document).ready(function(){
       type: 'GET',
       url: $(this).attr('href'),
       success: function(data){
-        var innerHtml = '<ul class="modal-list">'
+        var innerHtml = '<ul class="modal-list no-well">'
         for (var index = 0; index < data.length; index++) {
           var datum = data[index];
           innerHtml += '<li class="';
@@ -56,7 +56,7 @@ $(document).ready(function(){
             innerHtml += 'no-error"';
           }
           innerHtml +='><div class="icon" title="Remove This Shard" data-id="' + datum.id + '"><i class="icon-remove"/></div><div class="info">';
-          innerHtml += 'Shard: ' + datum.node_name + ' | Blur Version: ' + datum.blur_version + '| Status: ';
+          innerHtml += 'Shard: ' + datum.node_name + ' | Blur Version: ' + datum.blur_version + ' | Status: ';
           if (datum.status === 1){
             innerHtml += 'Online';
           } else {

@@ -16,17 +16,6 @@
 			| Blur Admin
 	%body
 		#root
-			#top
-				#hd
-					- if flash
-						#flash
-							- flash.each do |type, message|
-								-if type == :notice
-									.alert.alert-success{:class=>type}= message
-								-elsif type == :error
-									.alert.alert-error{:class=>type}= message
-								-else
-									.alert.alert-info{:class=>type}= message
 			- if @current_user
 				.navbar
 					%a.brand{:href => '/'}
@@ -72,6 +61,15 @@
 			#bd.container-fluid
 				= yield
 	#ft{:class => footer_class(license)}
+		- if flash
+			#flash
+				- flash.each do |type, message|
+					-if type == :notice
+						.alert.alert-success{:class=>type}= message
+					-elsif type == :error
+						.alert.alert-error{:class=>type}= message
+					-else
+						.alert.alert-info{:class=>type}= message
 		#license
 			%p
 				= license_text(license)

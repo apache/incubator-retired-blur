@@ -93,6 +93,7 @@ ul.dynatree-container {
 	}
 }
 .modal-list{
+  &.no-well{ background-color: white; }
   list-style-type:none;
   max-height:400px;
   overflow: auto;

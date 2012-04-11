@@ -3,7 +3,7 @@
 $(document).ready ->
   ########### METHODS ###############
   resizeSearch = () ->
-    headerHeight = parseInt($('#top').css('height')) + parseInt($('.navbar').css('height'))
+    headerHeight = parseInt($('.navbar').css('height'))
     footerHeight = parseInt($('#ft').css('height'))
     resultWrapper = $('#results_wrapper')
     $('#results_wrapper').css('max-height', window.innerHeight - (footerHeight + headerHeight + parseInt(resultWrapper.css('margin-top')) + 30))

@@ -9,27 +9,30 @@
 
 $(document).ready(function(){
   //fade out flash messages for logging in and out
-  $("#flash").delay(5000).fadeOut("slow");
+  $("#flash").delay(5000).fadeOut("slow", function(){
+    $(this).remove();
+  });
   
   //Initialize Help
   $('#page-help').click(function(){
     var url = window.location.pathname;
     var tab;
-    if (url == '/') {
+    if (url === '/' || url === 'zookeepers') {
       tab = "dashboard";
-    } else if (url.substring(1) == 'zookeeper') {
-      tab = "environment";
     } else if (url.substring(1) == 'users') {
       tab = "admin";
+    } else if (url.match(/hdfs(?!_)/)){
+      tab = "hdfs";
     } else {
-      var pre_tab = url.substring(1);
-      if (pre_tab.indexOf('/') != -1) {
-        tab = pre_tab.substring(0, pre_tab.indexOf('/'));
+      var pieces = url.substring(1).split('/');
+      if (pieces.length <= 2) {
+        tab = pieces[0];
       } else {
-        tab = pre_tab;
+        tab = pieces[2];
       }
     }
     window.open(Routes.help_path(tab), "Help Menu","menubar=0,resizable=0,width=500,height=800");
+    return false;
   });
       
   $('.help-section').live('click', function(){

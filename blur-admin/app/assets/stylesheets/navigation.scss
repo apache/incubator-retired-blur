@@ -53,6 +53,7 @@ $nav-height: 40px;
     div{
       width: 400px;
       margin: auto;
+      padding: 8px 14px 8px 14px;
       &:not(:first-child){
         @include border-radius(0px);
       }

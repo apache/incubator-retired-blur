@@ -49,8 +49,19 @@ $(document).ready(function(){
         var innerHtml = '<ul class="modal-list">'
         for (var index = 0; index < data.length; index++) {
           var datum = data[index];
-          innerHtml += '<li><div class="icon" title="Remove This Shard" data-id="' + datum.id + '"><i class="icon-remove"/></div><div class="info">';
-          innerHtml += 'User Id: ' + datum.userid + ' | Query: ' + datum.query;
+          innerHtml += '<li class="';
+          if (datum.status === 0){
+            innerHtml += 'error"';
+          } else {
+            innerHtml += 'no-error"';
+          }
+          innerHtml +='><div class="icon" title="Remove This Shard" data-id="' + datum.id + '"><i class="icon-remove"/></div><div class="info">';
+          innerHtml += 'Shard: ' + datum.node_name + ' | Blur Version: ' + datum.blur_version + '| Status: ';
+          if (datum.status === 1){
+            innerHtml += 'Online';
+          } else {
+            innerHtml += 'Offline';
+          }
           innerHtml += '</div></li>';
         }
         innerHtml += '</ul>';
@@ -63,5 +74,18 @@ $(document).ready(function(){
       }
     })
     return false;
+  });
+
+  $('.icon').live('click', function(){
+    var self = $(this);
+    var id = self.attr('data-id');
+    $.ajax({
+      type: 'DELETE',
+      url: Routes.destroy_shard_zookeeper_path(CurrentZookeeper, id),
+      success: function(data){
+        self.closest('li').remove();
+        $('.tooltip').remove();
+      }
+    });
   });
 });

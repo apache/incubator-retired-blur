@@ -99,6 +99,24 @@ ul.dynatree-container {
   padding: 5px;
   background-color: whitesmoke;
   li{
+    &.error div{
+      background-color: rgba(218, 79, 73, .8);
+      color: white;
+      border-color: #DA4F49;
+      &.icon:hover{
+        background-color: rgba(218, 79, 73, .6);
+      }
+    }
+
+    &.no-error div{
+      background-color: rgba(91, 183, 91, .9); 
+      color: white;
+      border-color: #5BB75B;
+      &.icon:hover{
+        background-color: rgba(91, 183, 91, .7);
+      }
+    }
+
     &:not(:last-child){
       padding-bottom: 3px;
     }

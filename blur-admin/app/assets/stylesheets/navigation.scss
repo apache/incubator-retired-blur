@@ -26,10 +26,35 @@ $nav-height: 40px;
   }
 }
 
+#flash {
+  text-align: center;
+  font-size: 1.2em;
+  font-weight: bold;
+  bottom: 0px;
+  right: -600px;
+  position: fixed;
+  z-index: 2;
+  @include transition(right 3s);
+  div{
+    cursor: pointer;
+    max-width: 600px;
+    min-width:300px;
+    $alert-height: 44px;
+    height: $alert-height;
+    line-height: $alert-height;
+    margin: auto;
+    padding: 0px 14px 0px 14px;
+    &:not(:first-child){
+      @include border-radius(0px);
+    }
+    @include border-radius-bottom(0px);
+    @include border-radius-right(0px);
+  }
+}
+
 #ft {
   bottom: 0;
   position:absolute;
-  z-index:2;
   width: 100%;
   $footer-color: lighten($base-theme-color, 20%);
   background-color: $footer-color;
@@ -46,25 +71,6 @@ $nav-height: 40px;
       color: $grey-color;
     }
   }
-
-  #flash {
-    text-align: center;
-    font-size: 1.2em;
-    font-weight: bold;
-    bottom: $footer-height + 1;
-    position: absolute;
-    width: 100%;
-    div{
-      width: 400px;
-      margin: auto;
-      padding: 8px 14px 8px 14px;
-      &:not(:first-child){
-        @include border-radius(0px);
-      }
-      @include border-radius-bottom(0px);
-    }
-  }
-
   
   #license {
     float: left;

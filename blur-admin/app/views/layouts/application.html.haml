@@ -60,16 +60,17 @@
 								%li= link_to "Log Out", logout_path
 			#bd.container-fluid
 				= yield
+
+	- if flash
+		#flash
+			- flash.each do |type, message|
+				-if type == :notice
+					.alert.alert-success{:class=>type}= message
+				-elsif type == :error
+					.alert.alert-error{:class=>type}= message
+				-else
+					.alert.alert-info{:class=>type}= message
 	#ft{:class => footer_class(license)}
-		- if flash
-			#flash
-				- flash.each do |type, message|
-					-if type == :notice
-						.alert.alert-success{:class=>type}= message
-					-elsif type == :error
-						.alert.alert-error{:class=>type}= message
-					-else
-						.alert.alert-info{:class=>type}= message
 		#license
 			%p
 				= license_text(license)

@@ -9,9 +9,12 @@
 
 $(document).ready(function(){
   //fade out flash messages for logging in and out
-  $("#flash").delay(5000).fadeOut("slow", function(){
-    $(this).remove();
-  });
+  $("#flash").css('right', '0px');
+  var hideFlash = setTimeout(function(){$("#flash").css('right', '-600px')}, 8000);
+  $("#flash").click(function(){
+    clearTimeout(hideFlash);
+    $(this).css('right', '-600px');
+  })
   
   //Initialize Help
   $('#page-help').click(function(){

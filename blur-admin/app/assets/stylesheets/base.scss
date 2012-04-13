@@ -26,9 +26,13 @@ $footer-height: 45px;
 
 html{
   height: 100%;
-  padding-bottom: 45px;
-  @include box-sizing(border-box);
   overflow: auto;
+  body{
+    min-height: 100%;
+    position: relative;
+    padding-bottom: $footer-height;
+    @include box-sizing(border-box);
+  }
 }
 #modal{
 	max-height:500px;

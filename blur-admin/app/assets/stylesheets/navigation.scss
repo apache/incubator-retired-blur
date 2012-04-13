@@ -23,13 +23,12 @@ $nav-height: 40px;
   #bd {
     @include clearfix;
     position:relative;
-    padding-bottom: 46px;
   }
 }
 
 #ft {
   bottom: 0;
-  position:fixed;
+  position:absolute;
   z-index:2;
   width: 100%;
   $footer-color: lighten($base-theme-color, 20%);

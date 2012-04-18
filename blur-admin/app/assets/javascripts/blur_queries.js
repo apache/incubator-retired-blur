@@ -168,11 +168,14 @@ $(document).ready(function() {
     });
   };
   $('.more_info').live('click', function(e) {
+    var self = $(this);
+    self.after(Spinner.clone());
     e.preventDefault();
     $.ajax({
-      url: $(this).attr('href'),
+      url: self.attr('href'),
       type: 'GET',
       success: function(data) {
+        self.siblings('#loading-spinner').remove();
         $().popup({
           title: "Additional Info",
           titleClass: 'title',

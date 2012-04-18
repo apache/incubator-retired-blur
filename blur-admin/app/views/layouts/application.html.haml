@@ -54,7 +54,7 @@
 										-blank = @current_zookeeper.nil? && session[:current_zookeeper_id].nil?
 										= select('zookeeper', 'id', @zookeepers.collect{|zk| [zk.name, zk.id]}, {:id => 'zookeeper_id', :include_blank => blank, :selected => session[:current_zookeeper_id]})
 								%li.divider-vertical
-							%li
+							%li{:class => controller == 'users' && action == 'show' && 'active'}
 								= link_to "Account", @current_user
 							- if session[:proof].blank?
 								%li= link_to "Log Out", logout_path

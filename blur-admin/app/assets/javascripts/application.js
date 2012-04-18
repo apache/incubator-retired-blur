@@ -8,6 +8,7 @@
 //= require_self
 
 $(document).ready(function(){
+  window.Spinner = $('<img id="loading-spinner" alt="Loading..." src="/assets/loader.gif"/>')
   //fade out flash messages for logging in and out
   $("#flash").css('right', '0px');
   var hideFlash = setTimeout(function(){$("#flash").css('right', '-600px')}, 8000);

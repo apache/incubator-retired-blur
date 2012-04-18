@@ -23,9 +23,9 @@ $(document).ready(function() {
   };
 
   var colspan_lookup = {
-    'active': 6,
-    'disabled': 4,
-    'deleted': 2
+    'active': 5,
+    'disabled': 3,
+    'deleted': 1
   };
 
   var number_commas = function(number) {
@@ -76,7 +76,8 @@ $(document).ready(function() {
     row.data('status', state);
     if (['disabling', 'enabling', 'deleting'].indexOf(state) >= 0) {
       var col_span = colspan_lookup[table];
-      row.append("<td colspan='" + col_span + "'>" + (capitalize_first(state) + ' ' + blur_table['table_name']) + "...</td>");
+      row.append("<td class='table-updating'/><td colspan='" + col_span + "'>" + (capitalize_first(state) + ' ' + blur_table['table_name']) + "...</td>")
+      row.find('.table-updating').css('padding', '6px').append(Spinner.clone());
     } else {
       var row_html = "<td class='checkbox-td'><input class='bulk-action-checkbox' type='checkbox'/><i class='icon-exclamation-sign queries-running-icon'></i>";
       row_html += "</td><td class='blur_table_name'>" + blur_table['table_name'] + "</td>";
@@ -102,8 +103,8 @@ $(document).ready(function() {
       if (table === 'active') {
         row.append("<td class='blur_table_info'><a class='info' href='" + (Routes.schema_zookeeper_blur_table_path(CurrentZookeeper, id)) + "' data-remote='true'>view</a></td>");
       }
-      return row;
     }
+    return row;
   };
 
   var no_data = function() {
@@ -123,30 +124,47 @@ $(document).ready(function() {
     }
   };
 
+  var disable_action = function(table) {
+    var checked = table.find('.bulk-action-checkbox:checked');
+    var disabled = checked.length === 0;
+    var actions = table.siblings('.btn');
+    actions.prop('disabled', disabled);
+    if (disabled) {
+      actions.addClass('suppress-button');
+    } else {
+      actions.removeClass('suppress-button');
+    }
+  };
+
   var set_checkbox_state = function() {
     var tables = $('table');
     for (var index = 0; index < tables.length; index++) {
       var table = tables[index];
-      var tbody = $(table).find('tbody');
-      var number_of_tables = tbody.children().length;
-      var number_of_checkboxes = tbody.find('.bulk-action-checkbox').length;
-      var number_checked = tbody.find('.bulk-action-checkbox:checked:not(.check-all)').length;
-      var tab_id = tbody.closest('div').attr('id');
-      $("a[href=#" + tab_id + "] .counter").text(number_of_tables);
-      if (number_of_tables === 0) {
-        $(table).find('.check-all').prop('disabled', true).prop('checked', false);
-        var num_col = tbody.closest('table').find('th').length;
-        tbody.append("<tr class='no-tables'><td/><td colspan='" + num_col + "'>No Tables Found</td></tr>");
+      set_checkbox_state_for_table(table);
+    }
+  };
+
+  var set_checkbox_state_for_table = function(table) {
+    var tbody = $(table).find('tbody');
+    var number_of_tables = tbody.children().length;
+    var number_of_checkboxes = tbody.find('.bulk-action-checkbox').length;
+    var number_checked = tbody.find('.bulk-action-checkbox:checked:not(.check-all)').length;
+    var tab_id = tbody.closest('div').attr('id');
+    $("a[href=#" + tab_id + "] .counter").text(number_of_tables);
+    if (number_of_tables === 0) {
+      $(table).find('.check-all').prop('disabled', true).prop('checked', false);
+      var num_col = tbody.closest('table').find('th').length;
+      tbody.append("<tr class='no-tables'><td/><td colspan='" + num_col + "'>No Tables Found</td></tr>");
+    } else {
+      var check_all = $(table).find('.check-all').removeAttr('disabled');
+      if (number_of_tables === number_checked) {
+        check_all.prop('checked', true);
       } else {
-        var check_all = $(table).find('.check-all').removeAttr('disabled');
-        if (number_of_tables === number_checked) {
-          check_all.prop('checked', true);
-        } else {
-          if (number_of_checkboxes === 0) check_all.prop('disabled', true);
-          check_all.prop('checked', false);
-        }
+        if (number_of_checkboxes === 0) check_all.prop('disabled', true);
+        check_all.prop('checked', false);
       }
     }
+    disable_action($(table));
   };
 
   var set_cluster_alert = function() {
@@ -184,10 +202,10 @@ $(document).ready(function() {
       for (var index_tables = 0; index_tables < tables.length; index_tables++) {
         var blur_table = tables[index_tables];
         var selected_row = $('tr[blur_table_id=' + blur_table.id + ']');
+        var new_row_container = $("div#cluster_" + blur_table['cluster_id'] + "_" + table_lookup[blur_table['status']] + " table tbody");
         if (selected_row.length) {
           if (selected_row.data('status') !== state_lookup[blur_table['status']]) {
             selected_row.remove();
-            var new_row_container = $("div#cluster_" + blur_table['cluster_id'] + "_" + table_lookup[blur_table['status']] + " table tbody");
             new_row_container.append(build_table_row(blur_table));
           }
           var properties_to_update = ['table_name', 'row_count', 'record_count'];
@@ -207,7 +225,6 @@ $(document).ready(function() {
             selected_row.find('blur_table_hosts_shards a').text("Unknown");
           }
         } else {
-          new_row_container = $("div#cluster_" + blur_table['cluster_id'] + "_" + table_lookup[blur_table['status']] + " table tbody");
           new_row_container.append(build_table_row(blur_table));
         }
       }
@@ -232,18 +249,6 @@ $(document).ready(function() {
       table_row.addClass('highlighted-row');
     } else {
       table_row.removeClass('highlighted-row');
-    }
-  };
-
-  var disable_action = function(table) {
-    var checked = table.find('.bulk-action-checkbox:checked');
-    var disabled = checked.length === 0;
-    var actions = table.siblings('.btn');
-    actions.prop('disabled', disabled);
-    if (disabled) {
-      actions.addClass('suppress-button');
-    } else {
-      actions.removeClass('suppress-button');
     }
   };
 
@@ -327,20 +332,6 @@ $(document).ready(function() {
     });
   });
 
-  var toggle_checkbox = function(element) {
-    var cluster_table = element.closest('table');
-    if (!element.hasClass('check-all')) {
-      cluster_table.find('.check-all').prop('checked', false);
-    }
-    var table_row = element.parents('.blur_table');
-    if (table_row.length === 1) row_highlight(element.is(':checked'), table_row);
-    disable_action(cluster_table);
-    var num_checked = cluster_table.find('.bulk-action-checkbox:checked').length;
-    if (num_checked === cluster_table.find('tbody tr .bulk-action-checkbox').length) {
-      cluster_table.find('.check-all').prop('checked', true);
-    }
-  };
-
   $('table[blur_cluster_id]').on('click', '.bulk-action-checkbox', function(){
     var self = $(this);
     if (self.attr('checked') && self.siblings('.queries-running-icon:visible').length > 0){ 
@@ -349,7 +340,7 @@ $(document).ready(function() {
           "class": "danger",
           func: function() {
             self.attr('checked', 'checked');
-            toggle_checkbox(self);
+            set_checkbox_state_for_table(self.closest('table'));
             $().closePopup();
           }
         },
@@ -367,7 +358,7 @@ $(document).ready(function() {
       });
       return false;
     } else {
-      toggle_checkbox(self);
+      set_checkbox_state_for_table(self.closest('table'));
     }
   });
 

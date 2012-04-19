@@ -52,16 +52,6 @@ describe BlurTablesController do
       end
     end
 
-    describe "GET Reload" do
-      it "render_table_json should render JSON" do
-        get :reload
-        response.content_type.should == 'application/json'
-        json = ActiveSupport::JSON.decode(response.body)
-        json['clusters'].first['id'].should == @cluster.first.id
-        json['tables'].first['id'].should == @blur_table.id
-      end
-    end
-
     describe "PUT enable" do
       before(:each) do
         @tables = [1, 2, 3]
@@ -77,11 +67,6 @@ describe BlurTablesController do
         @blur_table.should_receive(:enable).exactly(@tables.length).times
         put :enable, :tables => @tables
       end
-
-      #it "should render JSON" do
-      #  put :enable, :tables => @tables
-      #  response.content_type.should == 'application/json'
-      #end
     end
 
     describe "PUT disable" do

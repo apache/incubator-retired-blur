@@ -1,0 +1,28 @@
+<ul class="cluster-tabs nav-tabs nav" id="<%= 'inner-tabs-cluster_' + cluster.get('id') %>">
+  <li class="active">
+    <a href="<%= '#cluster_' + cluster.get('id') + '_active' %>" data-toggle="tab">
+      Active Tables( <span class="counter"><%= cluster.get('tables').where({state: 'active'}).length %></span> )
+    </a>
+  </li>
+  <li>
+    <a href="<%= '#cluster_' + cluster.get('id') + '_disabled' %>" data-toggle="tab">
+      Disabled Tables( <span class="counter"><%= cluster.get('tables').where({state: 'disabled'}).length %></span> )
+    </a>
+  </li>
+  <li>
+    <a href="<%= '#cluster_' + cluster.get('id') + '_deleted' %>" data-toggle="tab">
+      Deleted Tables( <span class="counter"><%= cluster.get('tables').where({state: 'deleted'}).length %></span> )
+    </a>
+  </li>
+</ul>
+<div class="tab-content">
+  <div class="tab-pane active" id="<%= 'cluster_' + cluster.get('id') + '_active' %>">
+    <%= JST['templates/blur_table/active_tables']({cluster: cluster}) %>
+  </div>
+  <div class="tab-pane" id="<%= 'cluster_' + cluster.get('id') + '_disabled' %>">
+    <%= JST['templates/blur_table/disabled_tables']({cluster: cluster}) %>
+  </div>
+  <div class="tab-pane" id="<%= 'cluster_' + cluster.get('id') + '_deleted' %>">
+    <%= JST['templates/blur_table/deleted_tables']({cluster: cluster}) %>
+  </div>
+</div>

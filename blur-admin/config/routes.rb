@@ -44,7 +44,6 @@ BlurAdmin::Application.routes.draw do
         put 'disable'
         delete 'forget'
         delete 'destroy'
-        post 'reload'
       end    
     end
 

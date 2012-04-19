@@ -10,6 +10,12 @@ class BlurTable < ActiveRecord::Base
   scope :disabled, where("status=?", 2)
   scope :active, where("status=?", 4)
 
+  def as_json(options={})
+    serial_properties = super(options)
+    serial_properties[:queried_recently] = self.has_queried_recently?
+    serial_properties
+  end
+
   # Returns a map of host => [shards] of all hosts/shards associated with the table
   def hosts
     JSON.parse read_attribute(:server)
@@ -28,6 +34,14 @@ class BlurTable < ActiveRecord::Base
     end
   end
 
+  def record_count
+    read_attribute(:record_count).to_s.reverse.gsub(%r{([0-9]{3}(?=([0-9])))}, "\\1#{','}").reverse
+  end
+
+  def row_count
+    read_attribute(:row_count).to_s.reverse.gsub(%r{([0-9]{3}(?=([0-9])))}, "\\1#{','}").reverse
+  end
+
   def has_queried_recently?
     self.blur_queries.where("created_at > '#{5.minutes.ago}'").count > 0
   end
@@ -43,9 +57,11 @@ class BlurTable < ActiveRecord::Base
   def is_deleted?
     self.status == 0
   end
+
   def terms(blur_urls,family,column,startWith,size)
     return BlurThriftClient.client(blur_urls).terms self.table_name, family, column, startWith, size
   end
+
   def enable(blur_urls)
     begin
       BlurThriftClient.client(blur_urls).enableTable self.table_name

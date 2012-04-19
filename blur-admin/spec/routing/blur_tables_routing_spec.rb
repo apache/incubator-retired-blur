@@ -6,6 +6,10 @@ describe BlurTablesController do
       get("/zookeepers/1/blur_tables").should route_to(:controller => "blur_tables", :action => "index", :zookeeper_id => '1')
     end
 
+    it "xhr index routes to #index" do
+      xhr("/zookeepers/1/blur_tables").should route_to(:controller => "blur_tables", :action => "index", :zookeeper_id => '1')
+    end
+
     it "enable routes to #enable" do
       put("/zookeepers/1/blur_tables/enable").should route_to(:controller => "blur_tables", :action => "enable", :zookeeper_id => '1')
     end
@@ -16,10 +20,6 @@ describe BlurTablesController do
 
     it "forget routes to #forget" do
       delete("/zookeepers/1/blur_tables/forget").should route_to(:controller => "blur_tables", :action => "forget", :zookeeper_id => '1')
-    end
-
-    it "reload routes to #reload" do
-      post("/zookeepers/1/blur_tables/reload").should route_to(:controller => "blur_tables", :action => "reload", :zookeeper_id => '1')
     end
 
     it "destroy routes to #destroy" do

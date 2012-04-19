@@ -2,6 +2,8 @@
 %html
 	%head
 		= csrf_meta_tag
+		:javascript
+			var CurrentZookeeper = #{session[:current_zookeeper_id] || 'null'};
 		= javascript_include_tag 'application', 'routes'
 		= yield(:javascript)
 		= stylesheet_link_tag 'application', :media => "all" 
@@ -9,8 +11,6 @@
 			:javascript
 				var Zookeeper = {};
 				Zookeeper.instances = #{@zookeepers.collect{|z| {:id=>z.id, :name=>z.name}}.to_json}
-		:javascript
-			var CurrentZookeeper = #{session[:current_zookeeper_id] || 'null'};
 		%title
 			= yield(:title)
 			| Blur Admin

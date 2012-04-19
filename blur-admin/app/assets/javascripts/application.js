@@ -5,6 +5,9 @@
 //= require placeholder
 //= require bootstrap
 //= require bootstrap-modal-helper
+//= require templates
+//= require underscore
+//= require backbone
 //= require_self
 
 $(document).ready(function(){

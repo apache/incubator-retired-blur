@@ -35,12 +35,12 @@ class Ability
         can :times, :blur_queries
 
         # View hosts and schema on blur_tables
-        can [:hosts, :schema, :reload, :terms], :blur_tables
+        can [:hosts, :schema, :terms], :blur_tables
 
       end
 
       if user.editor?
-        can [:enable, :disable, :destroy, :update_all, :delete_all, :forget, :forget_all], :blur_tables
+        can [:update, :enable, :disable, :destroy, :forget], :blur_tables
         can :update, :blur_queries
         can [:destroy_shard, :destroy_controller, :destroy_cluster, :destroy_zookeeper, :shards], :zookeepers
         can [:move_file, :delete_file, :mkdir,:upload_form,:upload], :hdfs

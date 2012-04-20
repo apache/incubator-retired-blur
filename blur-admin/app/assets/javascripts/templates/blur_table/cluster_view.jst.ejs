@@ -1,17 +1,17 @@
 <ul class="cluster-tabs nav-tabs nav" id="<%= 'inner-tabs-cluster_' + cluster.get('id') %>">
   <li class="active">
     <a href="<%= '#cluster_' + cluster.get('id') + '_active' %>" data-toggle="tab">
-      Active Tables( <span class="counter"><%= cluster.get('tables').where({state: 'active'}).length %></span> )
+      Active Tables ( <span class="active-counter"><%= cluster.get('tables').where({table: 'active'}).length %></span> )
     </a>
   </li>
   <li>
     <a href="<%= '#cluster_' + cluster.get('id') + '_disabled' %>" data-toggle="tab">
-      Disabled Tables( <span class="counter"><%= cluster.get('tables').where({state: 'disabled'}).length %></span> )
+      Disabled Tables ( <span class="disabled-counter"><%= cluster.get('tables').where({table: 'disabled'}).length %></span> )
     </a>
   </li>
   <li>
     <a href="<%= '#cluster_' + cluster.get('id') + '_deleted' %>" data-toggle="tab">
-      Deleted Tables( <span class="counter"><%= cluster.get('tables').where({state: 'deleted'}).length %></span> )
+      Deleted Tables ( <span class="deleted-counter"><%= cluster.get('tables').where({table: 'deleted'}).length %></span> )
     </a>
   </li>
 </ul>

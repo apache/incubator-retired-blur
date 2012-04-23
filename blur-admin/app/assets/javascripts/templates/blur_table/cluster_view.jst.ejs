@@ -16,13 +16,13 @@
   </li>
 </ul>
 <div class="tab-content">
-  <div class="tab-pane active" id="<%= 'cluster_' + cluster.get('id') + '_active' %>">
+  <div class="tab-pane active" id="<%= 'cluster_' + cluster.get('id') + '_active' %>" data-state="active">
     <%= JST['templates/blur_table/active_tables']({cluster: cluster}) %>
   </div>
-  <div class="tab-pane" id="<%= 'cluster_' + cluster.get('id') + '_disabled' %>">
+  <div class="tab-pane" id="<%= 'cluster_' + cluster.get('id') + '_disabled' %>" data-state="disabled">
     <%= JST['templates/blur_table/disabled_tables']({cluster: cluster}) %>
   </div>
-  <div class="tab-pane" id="<%= 'cluster_' + cluster.get('id') + '_deleted' %>">
+  <div class="tab-pane" id="<%= 'cluster_' + cluster.get('id') + '_deleted' %>" data-state="deleted">
     <%= JST['templates/blur_table/deleted_tables']({cluster: cluster}) %>
   </div>
 </div>

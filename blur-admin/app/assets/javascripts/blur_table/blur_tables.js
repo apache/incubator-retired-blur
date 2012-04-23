@@ -1,15 +1,13 @@
 //= require jquery.dynatree
 //= require bootstrap-tooltip
 //= require bootstrap-popover
-//= require ./cluster
-//= require ./table
+//= require_tree .
 
 $(document).ready(function() {
-  var setup_filter_tree = function(selector) {
-    return selector.dynatree();
-  };
+  // Dynatree Setup
   $.ui.dynatree.nodedatadefaults["icon"] = false;
 
+  // Create the cluster collection and start the stream
   window.clusters = new ClusterCollection();
   clusters.stream({interval: 10000, update: true});
 });

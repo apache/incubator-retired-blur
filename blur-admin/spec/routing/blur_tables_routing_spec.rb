@@ -26,16 +26,8 @@ describe BlurTablesController do
       delete("/zookeepers/1/blur_tables").should route_to(:controller => "blur_tables", :action => "destroy", :zookeeper_id => '1')
     end
 
-    it "host routes to #host" do
-      get("/zookeepers/1/blur_tables/1/hosts").should route_to(:controller => "blur_tables", :action => "hosts", :id => '1', :zookeeper_id => '1')
-    end
-
-    it "schema routes to #schema" do
-      get("/zookeepers/1/blur_tables/1/schema").should route_to(:controller => "blur_tables", :action => "schema", :id => '1', :zookeeper_id => '1')
-    end
-
     it "terms routes to #terms" do
-      post("/zookeepers/1/blur_tables/1/terms").should route_to(:controller => "blur_tables", :action => "terms", :id => '1', :zookeeper_id => '1')
+      get("/zookeepers/1/blur_tables/1/terms").should route_to(:controller => "blur_tables", :action => "terms", :id => '1', :zookeeper_id => '1')
     end
   end
 end

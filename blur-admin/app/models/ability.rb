@@ -35,7 +35,7 @@ class Ability
         can :times, :blur_queries
 
         # View hosts and schema on blur_tables
-        can [:hosts, :schema, :terms], :blur_tables
+        can [:terms], :blur_tables
 
       end
 

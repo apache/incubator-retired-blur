@@ -1,0 +1,39 @@
+<% if(table.get('schema')){ %>
+  <div class="schema_wrap">
+    <h4>Location</h4>
+    <a href="<%= '/hdfs/' + table.get('cluster_id') + '/show/' + table.parse_uri('path') %>"><%= table.get('table_uri') %></a>
+    <h4>Schema</h4>
+    <div class="info table_info_tree">
+      <ul>
+        <% _.each(table.get('schema'), function(family){ %>
+          <li>
+            <a href="#"><%= family.name + '(' + table.get('table_analyzer') + ')'%></a>
+            <ul>
+              <% _.each(family.columns, function(column){ %>
+                <li>
+                  <a href="#"><%= column.name %></a>
+                  <ul>
+                    <li><a href="#">Indexed?: <%= column.live %></a></li>
+                    <li><a href="#">Analyzer: <%= column.analyzer %></a></li>
+                    <li><a href="#">Full Text?: <%= column.fullText %></a></li>
+                    <li data-family_name="<%= family.name%>" data-column_name="<%= column.name %>">
+                      <a href="#">
+                        <span class="terms" 
+                          data-family-name="<%= family.name %>" 
+                          data-column-name="<%= column.name %>">
+                            View Terms
+                          </span>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+              <% }); %>
+            </ul>
+          </li>
+        <% }); %>
+      </ul>
+    </div>
+  </div>
+<% } else { %>
+  <div> Not Available </div>
+<% } %>

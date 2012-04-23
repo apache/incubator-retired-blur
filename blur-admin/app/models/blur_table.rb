@@ -12,7 +12,11 @@ class BlurTable < ActiveRecord::Base
 
   def as_json(options={})
     serial_properties = super(options)
+    serial_properties.delete('server')
+    serial_properties.delete('table_schema')
     serial_properties[:queried_recently] = self.has_queried_recently?
+    serial_properties[:hosts] = self.hosts
+    serial_properties[:schema] = self.schema
     serial_properties
   end
 

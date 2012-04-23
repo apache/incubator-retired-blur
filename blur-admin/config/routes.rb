@@ -34,9 +34,7 @@ BlurAdmin::Application.routes.draw do
     #Nested BlurTables Resource
     resources :blur_tables, :only => :index do
       member do
-        get 'hosts'
-        get 'schema'
-        post 'terms'
+        get 'terms'
       end
 
       collection do

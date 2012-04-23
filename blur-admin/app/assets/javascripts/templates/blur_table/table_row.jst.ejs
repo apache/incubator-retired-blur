@@ -13,7 +13,7 @@
   <td class='blur_table_name'><%= table.get('table_name') %></td>
   <% if (state === 'active'){ %>
     <td class='blur_table_hosts_shards'>
-      <a class='hosts' href="<%= Routes.hosts_zookeeper_blur_table_path(CurrentZookeeper, table.get('id')) %>" data-remote='true'>
+      <a class='hosts' href="#">
         <%= table.host_shard_string() %>
       </a>
     </td>
@@ -28,7 +28,7 @@
   <% } %>
   <% if (state === 'active'){ %>
     <td class='blur_table_info'>
-      <a class='info' href="<%= Routes.schema_zookeeper_blur_table_path(CurrentZookeeper, table.get('id')) %>" data-remote='true'>
+      <a class='info' href="#">
         View
       </a>
     </td>

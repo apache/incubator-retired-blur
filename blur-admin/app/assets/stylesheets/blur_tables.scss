@@ -17,10 +17,10 @@
 }
 .bulk-action-selector{ margin: 10px 5px 10px 0px; }
 tr.highlighted-row td{ background:#FAD08A !important; }
-.live-col > a{
+.live-col{
   color: $green-border-color ! important;
 }
-.disabled-col > a{
+.disabled-col{
   color: $red-border-color ! important;
 }
 .popover-close{
@@ -76,8 +76,9 @@ tr.highlighted-row td{ background:#FAD08A !important; }
 td .queries-running-icon{
   margin-left:15px;
 }
-.checkbox-td{
-  width:50px;
+.table .checkbox-td{
+  width:20px;
+  text-align: center;
 }
 
 

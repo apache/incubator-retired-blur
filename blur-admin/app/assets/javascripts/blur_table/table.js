@@ -56,7 +56,7 @@ var Table = Backbone.Model.extend({
       url: Routes.terms_zookeeper_blur_table_path(CurrentZookeeper, this.get('id'), {format: 'json'}),
       data: request_data,
       success: function(data) {
-        new TermsView({model: data});
+        new TermsView({model: data}).render();
       }
     });
   },
@@ -113,6 +113,8 @@ var TableView = Backbone.View.extend({
       table_model.get_terms({
         family: $(this).attr('data-family-name'),
         column: $(this).attr('data-column-name'),
+        startwith: '',
+        size: 2
       });
     });
   },

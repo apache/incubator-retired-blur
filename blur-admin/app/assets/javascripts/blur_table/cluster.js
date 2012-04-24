@@ -29,11 +29,168 @@ var Cluster = Backbone.Model.extend({
       $('li#cluster_tab_' + this.get('id') + ' .queries-running-icon').hide();
     }
   },
+  enable_tables: function(){
+    var selected_tables = this.get('tables').where({state: 'disabled', checked: true});
+    var table_ids = _.map(selected_tables, function(table){ return table.get('id'); });
+    this.send_action_request(selected_tables, _.bind(function(){
+      $().popup({
+        title: "Enable Tables",
+        titleClass: 'title',
+        body: "Are you sure you want to enable these tables?",
+        btns: {
+          "Enable": {
+            "class": "primary",
+            func: _.bind(function() {
+              $.ajax({
+                type: 'PUT',
+                url: Routes.enable_zookeeper_blur_tables_path(CurrentZookeeper),
+                data: {tables: table_ids}
+              });
+              _.each(selected_tables, function(table){
+                table.set({status: 5});
+              });
+              this.view.set_table_state();
+              $().closePopup();
+            }, this)
+          },
+          "Cancel": {
+            func: function() {
+              $().closePopup();
+            }
+          }
+        }
+      });
+    }, this));
+  },
+  disable_tables: function(){
+    var selected_tables = this.get('tables').where({state: 'active', checked: true});
+    var table_ids = _.map(selected_tables, function(table){ return table.get('id'); });
+    this.send_action_request(selected_tables, _.bind(function(){
+      $().popup({
+        title: "Disable Tables",
+        titleClass: 'title',
+        body: "Are you sure you want to disable these tables?",
+        btns: {
+          "Disable": {
+            "class": "primary",
+            func: _.bind(function() {
+              $.ajax({
+                type: 'PUT',
+                url: Routes.disable_zookeeper_blur_tables_path(CurrentZookeeper),
+                data: {tables: table_ids}
+              });
+              _.each(selected_tables, function(table){
+                table.set({status: 3});
+              });
+              this.view.set_table_state();
+              $().closePopup();
+            }, this)
+          },
+          "Cancel": {
+            func: function() {
+              $().closePopup();
+            }
+          }
+        }
+      });
+    }, this));
+  },
+  forget_tables: function(){
+    var selected_tables = this.get('tables').where({state: 'deleted', checked: true});
+    var table_ids = _.map(selected_tables, function(table){ return table.get('id'); });
+    this.send_action_request(selected_tables, _.bind(function(){
+      $().popup({
+        title: "Forget Tables",
+        titleClass: 'title',
+        body: "Are you sure you want to forget these tables?",
+        btns: {
+          "Forget": {
+            "class": "primary",
+            func: _.bind(function() {
+              $.ajax({
+                type: 'DELETE',
+                url: Routes.forget_zookeeper_blur_tables_path(CurrentZookeeper),
+                data: {tables: table_ids}
+              });
+              _.each(selected_tables, function(table){
+                table.view.remove();
+                table.destroy();
+              });
+              this.view.set_table_state();
+              $().closePopup();
+            }, this)
+          },
+          "Cancel": {
+            func: function() {
+              $().closePopup();
+            }
+          }
+        }
+      });
+    }, this));
+  },
+  delete_tables: function(){
+    var selected_tables = this.get('tables').where({state: 'disabled', checked: true});
+    var table_ids = _.map(selected_tables, function(table){ return table.get('id'); });
+    this.send_action_request(selected_tables, _.bind(function(){
+      var delete_tables = function(delete_index) {
+        $.ajax({
+          type: 'DELETE',
+          url: Routes.delete_zookeeper_blur_tables_path(CurrentZookeeper),
+          data: {
+            tables: table_ids,
+            delete_index: delete_index
+          }
+        });
+        _.each(selected_tables, function(table){
+          table.set({status: 3});
+        });
+        this.view.set_table_state();
+        $().closePopup();
+      };
+      $().popup({
+        title: "Delete Tables",
+        titleClass: 'title',
+        body: "Do you want to delete all of the underlying table indicies?",
+        btns: {
+          "Delete tables and indicies": {
+            "class": "danger",
+            func: function() {
+              _bind(delete_tables, this, true);
+            }
+          },
+          "Delete tables only": {
+            "class": "warning",
+            func: function() {
+              _bind(delete_tables, this, false);
+            }
+          },
+          "Cancel": {
+            func: function() {
+              $().closePopup();
+            }
+          }
+        }
+      });
+    }, this));
+  },
+  send_action_request: function(selected_tables, confirm_function){
+    if (_.find(selected_tables, function(table){ return table.get('queried_recently'); })){
+      $().popup({
+        title: 'Warning! You are attempting to change an active table!',
+        titleClass: 'title',
+        body: 'You are attempting to perform an action on a recently queried table, Do you wish to continue?',
+        btns: {
+          "Continue": { class: 'danger', func: confirm_function },
+          "Cancel": { func: function() { $().closePopup(); } }
+        }
+      });
+    } else {
+      confirm_function();
+    }
+  },
   perform_action: function(state, action){
     var selected_tables = this.get('tables').where({state: state, checked: true});
-    var table_ids = _.map(selected_tables, function(table){
-      return table.get('id');
-    });
     if (_.find(selected_tables, function(table){ return table.get('queried_recently'); })){
       $().popup({
         title: 'Warning! You are attempting to ' + action + ' an active table!',
@@ -56,143 +213,6 @@ var Cluster = Backbone.Model.extend({
     } else {
       this.move_forward_with_action(action, selected_tables);
     }
-  },
-  move_forward_with_action: function(action, selected_tables){
-    var table_ids = _.map(selected_tables, function(table){
-      return table.get('id');
-    });
-    switch (action) {
-      case 'enable':
-        btns = {
-          "Enable": {
-            "class": "primary",
-            func: _.bind(function() {
-              $.ajax({
-                type: 'PUT',
-                url: Routes.enable_zookeeper_blur_tables_path(CurrentZookeeper),
-                data: {tables: table_ids},
-                success: this.update_actioned_models
-              });
-              _.each(selected_tables, function(table){
-                table.set({status: 5});
-              });
-              $().closePopup();
-            }, this)
-          },
-          "Cancel": {
-            func: function() {
-              $().closePopup();
-            }
-          }
-        };
-        title = "Enable Tables";
-        msg = "Are you sure you want to enable these tables?";
-        break;
-      case 'disable':
-        btns = {
-          "Disable": {
-            "class": "primary",
-            func: _.bind(function() {
-              $.ajax({
-                type: 'PUT',
-                url: Routes.disable_zookeeper_blur_tables_path(CurrentZookeeper),
-                data: {tables: table_ids},
-                success: this.update_actioned_models
-              });
-              _.each(selected_tables, function(table){
-                table.set({status: 3});
-              });
-              $().closePopup();
-            }, this)
-          },
-          "Cancel": {
-            func: function() {
-              $().closePopup();
-            }
-          }
-        };
-        title = "Disable Tables";
-        msg = "Are you sure you want to disable these tables?";
-        break;
-      case 'forget':
-        btns = {
-          "Forget": {
-            "class": "primary",
-            func: _.bind(function() {
-              $.ajax({
-                type: 'DELETE',
-                url: Routes.forget_zookeeper_blur_tables_path(CurrentZookeeper),
-                data: {tables: table_ids},
-                success: this.update_actioned_models
-              });
-              _.each(selected_tables, function(table){
-                table.view.remove();
-                table.destroy();
-              });
-              $().closePopup();
-            }, this)
-          },
-          "Cancel": {
-            func: function() {
-              $().closePopup();
-            }
-          }
-        };
-        title = "Forget Tables";
-        msg = "Are you sure you want to forget these tables?";
-        break;
-      case 'delete':
-        var delete_tables = function(delete_index) {
-          $.ajax({
-            type: 'DELETE',
-            url: Routes.delete_zookeeper_blur_tables_path(CurrentZookeeper),
-            data: {
-              tables: table_ids,
-              delete_index: delete_index
-            },
-            success: this.update_actioned_models
-          });
-          _.each(selected_tables, function(table){
-            table.set({status: 3});
-          });
-          $().closePopup();
-        };
-        btns = {
-          "Delete tables and indicies": {
-            "class": "danger",
-            func: function() {
-              _bind(delete_tables, this, true);
-              $().closePopup();
-            }
-          },
-          "Delete tables only": {
-            "class": "warning",
-            func: function() {
-              _bind(delete_tables, this, false);
-              $().closePopup();
-            }
-          },
-          "Cancel": {
-            func: function() {
-              $().closePopup();
-            }
-          }
-        };
-        title = "Delete Tables";
-        msg = 'Do you want to delete all of the underlying table indicies?';
-        break;
-      default:
-        return;
-    }
-    $().popup({
-      title: title,
-      titleClass: 'title',
-      body: msg,
-      btns: btns
-    });
-  },
-  update_actioned_models: function(data){
-    data;
   }
 });
 
@@ -214,8 +234,12 @@ var ClusterView = Backbone.View.extend({
   events: {
     'click .bulk-action-checkbox' : 'set_table_state',
     'click .check-all' : 'check_all_boxes',
-    'click .btn[data-action]' : 'perform_action'
+    'click .btn[data-action=enable]' : 'enable_tables',
+    'click .btn[data-action=disable]' : 'disable_tables',
+    'click .btn[data-action=forget]' : 'forget_tables',
+    'click .btn[data-action=delete]' : 'delete_tables'
   },
+  colspan_lookup : {'active': 5, 'disabled': 3, 'deleted': 1},
   render: function(){
     this.$el.html(this.template({cluster: this.model}));
     this.populate_tables();
@@ -229,19 +253,24 @@ var ClusterView = Backbone.View.extend({
       table_parent.append(elementToAdd);
       table_parent.siblings('thead').find('.check-all').removeAttr('disabled');
     });
-    this.set_table_header_count();
+    this.set_table_values();
   },
-  set_table_header_count: function(){
+  set_table_values: function(){
     var table_prefixes = ['active', 'disabled', 'deleted'];
     for (var index = 0; index < table_prefixes.length; index++){
-      var table_children_count = this.$el.find('.' + table_prefixes[index] + '-table').children().length;
+      var table = this.$el.find('.' + table_prefixes[index] + '-table');
+      table.find('.no-data').remove();
+      var table_children_count = table.children().length;
       this.$el.find('.' + table_prefixes[index] + '-counter').text(table_children_count);
+      if (this.model.get('tables').where({table: table_prefixes[index]}).length <= 0){
+        table.append(this.no_table(this.colspan_lookup[table_prefixes[index]]));
+      }
     }
   },
   set_table_state: function(){
     var checked_count = this.$el.find('tbody tr.highlighted-row').length;
     var set_checkbox_state = _.bind(function(){
-      var row_count = this.$el.find('tbody tr').length;
+      var row_count = this.$el.find('tbody:visible tr').length;
       var check_all = this.$el.find('.tab-pane.active .check-all');
       checked_count === row_count ? check_all.attr('checked', 'checked') : check_all.removeAttr('checked');
     }, this);
@@ -260,9 +289,19 @@ var ClusterView = Backbone.View.extend({
       this.$el.find('.tab-pane.active .bulk-action-checkbox:checked').click();
     }
   },
-  perform_action: function(event){
-    var state = this.$el.find('.tab-pane.active').attr('data-state');
-    var action = $(event.target).attr('data-action');
-    this.model.perform_action(state, action);
+  no_table: function(colspan){
+    return $('<tr class="no-data"><td/><td colspan="' + colspan + '">No Tables for this Section</td></tr>')
+  },
+  enable_tables: function(event){
+    this.model.enable_tables();
+  },
+  disable_tables: function(event){
+    this.model.disable_tables();
+  },
+  forget_tables: function(event){
+    this.model.forget_tables();
+  },
+  delete_tables: function(event){
+    this.model.delete_tables();
   }
 });

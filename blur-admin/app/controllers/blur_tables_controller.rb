@@ -40,9 +40,9 @@ class BlurTablesController < ApplicationController
   end
 
   def terms
-      table = BlurTable.find(params[:id])
-      terms = table.terms @current_zookeeper.blur_urls, params[:family], params[:column], params[:startWith], params[:size].to_i
-      render :json => terms
+    table = BlurTable.find(params[:id])
+    terms = table.terms @current_zookeeper.blur_urls, params[:family], params[:column], params[:startWith], params[:size].to_i
+    render :json => terms
   end
       
   private
@@ -55,6 +55,6 @@ class BlurTablesController < ApplicationController
         yield table
         table.save
       end
-      render :json => updated_tables
+      render :nothing => true;
     end
 end

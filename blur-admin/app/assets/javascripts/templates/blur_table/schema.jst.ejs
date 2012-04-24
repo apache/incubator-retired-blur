@@ -7,11 +7,11 @@
       <ul>
         <% _.each(table.get('schema'), function(family){ %>
           <li>
-            <a href="#"><%= family.name + '(' + table.get('table_analyzer') + ')'%></a>
+            <a href="#"><%= family.name + ' (' + table.get('table_analyzer') + ')'%></a>
             <ul>
               <% _.each(family.columns, function(column){ %>
                 <li>
-                  <a href="#"><%= column.name %></a>
+                  <a href="#"><%= column.name + (column.live ? ' (<span class="live-col">Enabled</span>)' : ' (<span class="disabled-col">Disabled</span>)')%></a>
                   <ul>
                     <li><a href="#">Indexed?: <%= column.live %></a></li>
                     <li><a href="#">Analyzer: <%= column.analyzer %></a></li>

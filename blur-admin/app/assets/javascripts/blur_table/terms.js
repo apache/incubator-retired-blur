@@ -5,5 +5,6 @@ var TermsView = Backbone.View.extend({
   render: function(){
     // TODO: When the blur servers are back online
     // Implement the terms view and functionality
+    // popover
   },
 })

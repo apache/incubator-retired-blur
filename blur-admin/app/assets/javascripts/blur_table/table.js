@@ -55,9 +55,13 @@ var Table = Backbone.Model.extend({
       type: 'GET',
       url: Routes.terms_zookeeper_blur_table_path(CurrentZookeeper, this.get('id'), {format: 'json'}),
       data: request_data,
-      success: function(data) {
-        new TermsView({model: data}).render();
-      }
+      success: _.bind(function(data) {
+        new TermsView({
+          terms: data,
+          family: request_data.family,
+          column: request_data.column,
+          table_id: this.get('id')}).render();
+      }, this)
     });
   },
   capitalize_first: function(word){
@@ -114,7 +118,7 @@ var TableView = Backbone.View.extend({
         family: $(this).attr('data-family-name'),
         column: $(this).attr('data-column-name'),
         startwith: '',
-        size: 2
+        size: 20
       });
     });
   },

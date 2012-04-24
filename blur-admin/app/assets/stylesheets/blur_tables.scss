@@ -28,6 +28,7 @@ tr.highlighted-row td{ background:#FAD08A !important; }
   top:15px;
   right:15px;
   &:hover{
+    cursor: pointer;
     background-color:#CCC;
     border-radius:3px;
   }
@@ -50,11 +51,9 @@ tr.highlighted-row td{ background:#FAD08A !important; }
   max-height:400px;
   overflow-y:auto;
   padding:5px;
-  & > li{
-    margin-top:-12px;
-    &:first-child{
-      margin-top:0;
-    }
+  padding-bottom: 0px;
+  .uneditable-input{
+    margin-bottom: 0px;
   }
 }
 .search-term-link{

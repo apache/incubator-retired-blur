@@ -108,6 +108,7 @@ var TableView = Backbone.View.extend({
     });
     var table_model = this.model;
     schema_modal.on('click', '.terms', function(){
+      var clicked_element = $(this);
       var request_data = 
       {
         family: $(this).attr('data-family-name'),
@@ -117,6 +118,7 @@ var TableView = Backbone.View.extend({
       };
       table_model.get_terms(request_data, _.bind(function(data) {
         new TermsView({
+          clicked_element: clicked_element,
           parent: this,
           terms: data,
           family: request_data.family,

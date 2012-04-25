@@ -2,12 +2,13 @@ var TermsView = Backbone.View.extend({
   className: 'terms-view',
   template: JST['templates/blur_table/terms_view'],
   render: function(){
-    this.popover = $('.terms').popover({
+    this.popover = this.options.clicked_element.popover({
       title: this.options.column + " terms<i class='icon-remove popover-close' style='position:absolute; top:15px;right:15px'></i>",
       content: this.template(this.options),
       trigger: 'focus',
       placement: 'right'
     }).popover('show');
+    this.set_buttons_state();
 
     // Declare all events separate of the events hash
     // because the popover clones the html and reference
@@ -15,7 +16,7 @@ var TermsView = Backbone.View.extend({
     $('.popover')
       .on('click', function(event){event.stopPropagation();})
       .on('click', '.popover-close', _.bind(this.close_popover, this))
-      .on('click', '.more-terms-btn', _.bind(this.get_more_terms, this))
+      .on('click', '.more-terms-btn:not(.disabled)', _.bind(this.get_more_terms, this))
       .on('click', '.reset-terms', _.bind(this.refresh_list, this))
       .on('click', '.search-term-link', _.bind(this.redirect_to_search, this))
       .on('click', '.term-search-btn', _.bind(this.search_for_terms, this))
@@ -75,6 +76,7 @@ var TermsView = Backbone.View.extend({
     }, _.bind(function(data) {
       spinner.remove();
       $('.popover .terms-list').html(JST['templates/blur_table/terms_list']({terms: data}));
+      this.set_buttons_state();
     }, this));
   },
   search_using_enter: function(event){
@@ -88,5 +90,10 @@ var TermsView = Backbone.View.extend({
     window.location = Routes.zookeeper_searches_path(CurrentZookeeper)
       + ("?table_id=" + this.options.table_id + "&query=")
       + encodeURIComponent(this.options.family + "." + this.options.column + ":" + term);
+  },
+  set_buttons_state: function(){
+    if ($('.popover .terms-list').children().length < 20){
+      $('.popover .more-terms-btn').addClass('disabled');
+    }
   }
 })

@@ -318,14 +318,14 @@
     // Remove an attribute from the model, firing `"change"` unless you choose
     // to silence it. `unset` is a noop if the attribute doesn't exist.
     unset: function(attr, options) {
-      (options || (options = {})).unset = true;
+      options = _.extend({}, options, {unset: true});
       return this.set(attr, null, options);
     },
 
     // Clear all attributes on the model, firing `"change"` unless you choose
     // to silence it.
     clear: function(options) {
-      (options || (options = {})).unset = true;
+      options = _.extend({}, options, {unset: true});
       return this.set(_.clone(this.attributes), options);
     },
 
@@ -394,7 +394,7 @@
       options.error = Backbone.wrapError(options.error, model, options);
       var method = this.isNew() ? 'create' : 'update';
       var xhr = (this.sync || Backbone.sync).call(this, method, this, options);
-      if (options.wait) this.set(current, silentOptions);
+      if (options.wait) this.clear(silentOptions).set(current, silentOptions);
       return xhr;
     },
 
@@ -607,7 +607,7 @@
       // Remove duplicates.
       i = dups.length;
       while (i--) {
-        models.splice(dups[i], 1);
+        dups[i] = models.splice(dups[i], 1)[0];
       }
 
       // Listen to added models' events, and index models for lookup by
@@ -630,6 +630,16 @@
         options.index = i;
         model.trigger('add', model, this, options);
       }
+
+      // Merge in duplicate models.
+      if (options.merge) {
+        for (i = 0, length = dups.length; i < length; i++) {
+          if (model = this._byId[dups[i].id]) {
+            model.set(dups[i], options);
+          }
+        }
+      }
+
       return this;
     },
 
@@ -842,6 +852,11 @@
     // collection. The default implementation is just to pass it through.
     parse: function(resp, xhr) {
       return resp;
+    },
+
+    // Create a new collection with an identical list of models as this one.
+    clone: function() {
+      return new this.constructor(this.models);
     },
 
     // Proxy to _'s chain. Can't be proxied the same way the rest of the

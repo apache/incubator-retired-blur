@@ -38,12 +38,6 @@ describe BlurTablesController do
         get :index
         response.should render_template "index"
       end
-      
-      it "should assign @blur_tables to be the current zookeeper's blur_tables" do
-        @zookeeper.should_receive(:blur_tables)
-        get :index
-        assigns(:blur_tables).should == [@blur_table]
-      end
 
       it "should assign @clusters to be the current zookeeper's clusters" do
         @zookeeper.should_receive(:clusters)
@@ -125,30 +119,8 @@ describe BlurTablesController do
       end
 
       it "should forget all the given tables" do
-        @tables.each do |id|
-          BlurTable.should_receive(:destroy).with(id.to_s)
-        end
+        BlurTable.should_receive(:destroy).with(['1', '2', '3'])
         delete :forget, :tables => @tables
-      end
-    end
-
-    describe "GET schema" do
-      before(:each) do
-        @zookeeper.stub_chain(:blur_tables, :find_by_id).and_return @blur_table
-      end
-      it "should render the schema partial" do
-        get :schema, :id => @blur_table.id
-        response.should render_template :partial => "_schema"
-      end
-    end
-
-    describe "GET hosts" do
-      before(:each) do
-        @zookeeper.stub_chain(:blur_tables, :find_by_id)
-      end
-      it "should render the hosts partial" do
-        get :hosts, :id => @blur_table.id
-        response.should render_template :partial => "_hosts"
       end
     end
   end

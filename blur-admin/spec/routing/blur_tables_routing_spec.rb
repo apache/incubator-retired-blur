@@ -6,8 +6,8 @@ describe BlurTablesController do
       get("/zookeepers/1/blur_tables").should route_to(:controller => "blur_tables", :action => "index", :zookeeper_id => '1')
     end
 
-    it "xhr index routes to #index" do
-      xhr("/zookeepers/1/blur_tables").should route_to(:controller => "blur_tables", :action => "index", :zookeeper_id => '1')
+    it "json index routes to #index" do
+      get("/zookeepers/1/blur_tables.json").should route_to(:controller => "blur_tables", :action => "index", :zookeeper_id => '1', :format => 'json')
     end
 
     it "enable routes to #enable" do

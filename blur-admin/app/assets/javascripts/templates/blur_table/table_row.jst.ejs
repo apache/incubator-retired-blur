@@ -1,7 +1,7 @@
 <% var state = table.get('state'); %>
 <% if (['disabling', 'enabling', 'deleting'].indexOf(state) >= 0){ %>
   <% var colspan = table.colspan_lookup[table.get('table')]; %>
-  <td class='table-updating'>
+  <td class='table-updating checkbox-td'>
     <img id="loading-spinner" alt="Loading..." src="/assets/loader.gif"/>
   </td>
   <td colspan="<%= colspan %>"><%= table.capitalize_first(state) + ' ' + table.get('table_name') + '...' %></td>

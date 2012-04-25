@@ -7,8 +7,7 @@
 }
 
 @mixin zoo-widget{
-  border:$twitter-border;
-  @include border-radius(5px);
+  border-top:$twitter-border;
   padding-top:20px;
   position:relative;
 }

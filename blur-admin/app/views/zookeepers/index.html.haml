@@ -2,23 +2,24 @@
 - content_for :javascript do
   = javascript_include_tag 'zookeepers'
 
-#zookeepers_wrapper
-  %h2 Zookeepers
+.dashboard_wrapper.container
+  #zookeepers_wrapper
+    %h2 Zookeepers
 
-  - if @zookeepers.any?
-    #zookeepers
-      = render @zookeepers
-  - else
-    %h4 No Zookeeper Instances Available
-  .clearfix
+    - if @zookeepers.any?
+      #zookeepers
+        = render @zookeepers
+    - else
+      %h4 No Zookeeper Instances Available
+    .clearfix
 
-#hdfs_dash_wrapper
-  %h2 HDFS
+  #hdfs_dash_wrapper
+    %h2 HDFS
 
-  - if @hdfs_all.any?
-    #hdfses 
-      = render :partial => 'hdfs_stat', :collection => @hdfs_all, :as => :hdfs
-  - else
-    %h4 No HDFS found
-  .clearfix
+    - if @hdfs_all.any?
+      #hdfses 
+        = render :partial => 'hdfs_stat', :collection => @hdfs_all, :as => :hdfs
+    - else
+      %h4 No HDFS found
+    .clearfix
     

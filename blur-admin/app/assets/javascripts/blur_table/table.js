@@ -50,18 +50,12 @@ var Table = Backbone.Model.extend({
     return result[index];
 
   },
-  get_terms: function(request_data){
+  get_terms: function(request_data, success){
     $.ajax({
       type: 'GET',
       url: Routes.terms_zookeeper_blur_table_path(CurrentZookeeper, this.get('id'), {format: 'json'}),
       data: request_data,
-      success: _.bind(function(data) {
-        new TermsView({
-          terms: data,
-          family: request_data.family,
-          column: request_data.column,
-          table_id: this.get('id')}).render();
-      }, this)
+      success: success
     });
   },
   capitalize_first: function(word){
@@ -114,12 +108,22 @@ var TableView = Backbone.View.extend({
     });
     var table_model = this.model;
     schema_modal.on('click', '.terms', function(){
-      table_model.get_terms({
+      var request_data = 
+      {
         family: $(this).attr('data-family-name'),
         column: $(this).attr('data-column-name'),
-        startwith: '',
+        startwith: ' ',
         size: 20
-      });
+      };
+      table_model.get_terms(request_data, _.bind(function(data) {
+        new TermsView({
+          parent: this,
+          terms: data,
+          family: request_data.family,
+          column: request_data.column,
+          table_id: this.get('id')})
+        .render();
+      }, table_model));
     });
   },
   setup_filter_tree: function(selector) {

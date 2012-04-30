@@ -33,7 +33,6 @@ ul{ margin: 5px; }
   //user info box
   #user-info{
     @include info(#F9F9F9);
-    float: right;
     min-width: 175px;
     margin-top:2px;
     p{

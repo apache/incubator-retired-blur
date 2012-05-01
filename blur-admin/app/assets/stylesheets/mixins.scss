@@ -36,6 +36,15 @@
 	-moz-border-radius-bottomleft: $radius;
 }
 
+@mixin danger-progress-background{
+  background-image: -moz-linear-gradient(top, #EE5F5B, #C43C35);
+  background-image: -ms-linear-gradient(top, #EE5F5B, #C43C35);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#EE5F5B), to(#C43C35));
+  background-image: -webkit-linear-gradient(top, #EE5F5B, #C43C35);
+  background-image: -o-linear-gradient(top, #EE5F5B, #C43C35);
+  background-image: linear-gradient(top, #EE5F5B, #C43C35);
+}
+
 @mixin standard-border {
   @include border-radius;
   @include border;

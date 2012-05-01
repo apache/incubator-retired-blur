@@ -1,25 +1,15 @@
 - content_for :title, 'Blur Status'
 - content_for :javascript do
-  = javascript_include_tag 'zookeepers'
+  = javascript_include_tag 'dashboard/dashboard'
 
 .dashboard_wrapper.container
   #zookeepers_wrapper
     %h2 Zookeepers
-
-    - if @zookeepers.any?
-      #zookeepers
-        = render @zookeepers
-    - else
-      %h4 No Zookeeper Instances Available
+    #zookeepers
     .clearfix
 
   #hdfs_dash_wrapper
     %h2 HDFS
-
-    - if @hdfs_all.any?
-      #hdfses 
-        = render :partial => 'hdfs_stat', :collection => @hdfs_all, :as => :hdfs
-    - else
-      %h4 No HDFS found
+    #hdfses 
     .clearfix
     

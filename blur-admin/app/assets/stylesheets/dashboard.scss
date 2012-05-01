@@ -21,13 +21,12 @@
 }
 
 #zookeepers_wrapper, #hdfs_dash_wrapper{
-  display: none;
   @include standard-font; 
   @include zoo-widget;
   margin-top: 2em;
 
   .zookeeper_info, .hdfs_info {
-    width: 500px;
+    width: 400px;
     margin: 0px 10px 20px 20px;
     float: left;
     display: inline-block;
@@ -38,8 +37,9 @@
     &.wrning{ border-color: #F9A732;}
     table{ margin:0; width:100%; }
     table tbody th { text-align:center; vertical-align:middle; }
-  }
-  .zookeeper_info, .hdfs_info{
+    tbody{ margin: 10px; }
+    .status-bar{ @include border-radius() }
+
     &:hover{
       cursor: pointer;
       background: #FFFCD6;
@@ -57,36 +57,31 @@
     text-align: left;
 		@include border-radius-bottom(0);
   }
-  td div.warning{ height: 18px; text-align: center; }
+  td div.warning{
+    height: 18px;
+    text-align: center;
+    color: white;
+    @include border-radius;
+    &:hover{ opacity: .9; }
+  }
   .status{ width:160px; @include zoo-status; }
   #zookeepers,#hdfses{ height: 100%; }
 	h2 { color: $zk-header-color; @include box-title;}
-  .number, .word, .zookeeper-name, .zookeeper-status { display: inline-block; }
-  .number {width: 20px; text-align: right; }
-  .word {width: 130px; text-align: left;}
-}
+  .shards, .controllers{ text-align: center; }
 
-.grey_box { background-color: $grey-color; @include border; }
-
-.progress-up-down {
-  background-color: #DD514C;
-  background-image: -moz-linear-gradient(center top , #EE5F5B, #C43C35);
-  position: relative;
-  display: inline-block;
-  width: 190px;
-  margin-bottom: 0;
-  .bar.up {
-    background-color: #5EB95E;
-    padding-left: 10px;
-    text-align: left;
-    background-image: -moz-linear-gradient(center top , #62C462, #57A957);
-  }
-  .down {
-    padding-right: 10px;
-    position: absolute;
-    width: 50%;
-    text-align: right;
-    right: 0;
-    top: 0;
+  .progress-status{
+    @include danger-progress-background;
+    position: relative;
+    margin: 0px;
+    .bar{
+      @include border-radius();
+    }
+    span{
+      position: absolute;
+      color: white;
+      top: 0px;
+      &.online-nodes{ left: 5px; }
+      &.offline-nodes{ right: 5px; }
+    }
   }
 }

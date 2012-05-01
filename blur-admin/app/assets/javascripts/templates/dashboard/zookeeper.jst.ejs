@@ -1,0 +1,60 @@
+<table class="zookeeper-table">
+  <thead>
+    <tr>
+      <th class="zookeeper-title label btn-success" colspan="3">
+        <div class="zookeeper-name"><%= zookeeper.get('name') + ' - ' + zookeeper.status() %></div>
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="controllers">Controllers</td>
+      <td class="shards">Shards</td>
+    </tr>
+    <tr>
+      <td class="controllers">
+        <% if(zookeeper.consistent_controller_versions()){ %>
+          <div class="btn-success status-bar"><div>Consistent Blur Versions</div></div>
+        <% } else { %>
+          <div class="btn-danger status-bar"><div>Inconsistent Blur Versions</div></div>
+        <% } %>
+      </td>
+      <td class="shards">
+        <% if(zookeeper.consistent_shard_versions()){ %>
+          <div class="btn-success status-bar"><div>Consistent Blur Versions</div></div>
+        <% } else { %>
+          <div class="btn-danger status-bar"><div>Inconsistent Blur Versions</div></div>
+        <% } %>
+      </td>
+    </tr>
+    <tr>
+      <td class="controllers">
+        <div class="progress progress-success progress-status">
+          <div class="bar" style="width:<%= zookeeper.controller_progress_width() %>%"></div>
+          <span class="online-nodes"><%= zookeeper.online_controller_nodes() %> Online</span>
+          <span class="offline-nodes"><%= zookeeper.get('controller_offline_node') %></span>
+        </div>
+      </td>
+      <td class="shards">
+        <div class="progress progress-success progress-status">
+          <div class="bar" style="width:<%= zookeeper.shard_progress_width() %>%"></div>
+          <span class="online-nodes"><%= zookeeper.online_shard_nodes() %> Online</span>
+          <span class="offline-nodes"><%= zookeeper.get('shard_offline_node') %></span>
+        </div>
+      </td>
+    </tr>
+    <% if(zookeeper.get('long_running_queries') > 0){ %>
+      <tr>
+        <td colspan="2">
+          <div class="warning btn-danger">
+            <% if(zookeeper.get('long_running_queries') === 1){ %>
+              <%= zookeeper.get('long_running_queries') %> query has been running for more than a minute!
+            <% } else { %>
+              <%= zookeeper.get('long_running_queries') %> queries have been running for more than a minute!
+            <% } %>
+          </div>
+        </td>
+      </tr>
+    <% } %>
+  </tbody>
+</table>

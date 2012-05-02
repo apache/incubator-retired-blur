@@ -2,13 +2,14 @@
 - content_for :javascript do
   =javascript_include_tag 'blur_table/blur_tables'
 
-%ul#blur_tables.nav-tabs.nav
-  - @clusters.each_with_index do |cluster,i|
-    %li#cluster_tab{:id=>cluster.id, :class =>("active" unless i != 0)}
-      %a{:href=>"#cluster_#{cluster.id}", "data-toggle"=>"tab"}
-        %span.cluster-title= cluster.name
-        %i.icon-exclamation-sign.queries-running-icon{:style=>'display:none', :title=>'Has been queried within last 5 minutes'}
-        %i.icon-lock.safemode-icon{:style=>'display:none', :title=>'In Safe Mode'}
-#tables-wrapper.tab-content
-  Loading Tables...
-  %img#loading-spinner{:alt => "Loading...", :src=> "/assets/loader.gif"}
+.blur_table_page.container
+  %ul#blur_tables.nav-tabs.nav
+    - @clusters.each_with_index do |cluster,i|
+      %li#cluster_tab{:id=>cluster.id, :class =>("active" unless i != 0)}
+        %a{:href=>"#cluster_#{cluster.id}", "data-toggle"=>"tab"}
+          %span.cluster-title= cluster.name
+          %i.icon-exclamation-sign.queries-running-icon{:style=>'display:none', :title=>'Has been queried within last 5 minutes'}
+          %i.icon-lock.safemode-icon{:style=>'display:none', :title=>'In Safe Mode'}
+  #tables-wrapper.tab-content
+    Loading Tables...
+    %img#loading-spinner{:alt => "Loading...", :src=> "/assets/loader.gif"}

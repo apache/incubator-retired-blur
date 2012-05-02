@@ -4,7 +4,11 @@ class HdfsController < ApplicationController
   include ActionView::Helpers::NumberHelper
   
   def index
-    @instances = Hdfs.select 'id, name'
+    @instances = Hdfs.all
+    respond_to do |format|
+      format.html
+      format.json{render :json => @instances, :methods => [:most_recent_stats]}
+    end
   end
 
   def info

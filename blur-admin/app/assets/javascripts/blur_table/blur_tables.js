@@ -8,6 +8,5 @@ $(document).ready(function() {
   $.ui.dynatree.nodedatadefaults["icon"] = false;
 
   // Create the cluster collection and start the stream
-  window.clusters = new ClusterCollection();
-  clusters.stream({interval: 10000, update: true});
+  new ClusterCollection().stream({interval: 10000, update: true});
 });

@@ -21,7 +21,7 @@ describe HdfsController do
       end
 
       it "finds and assigns the instance variable" do
-        Hdfs.should_receive(:select).with('id, name')
+        Hdfs.should_receive(:all).and_return [@hdfs]
         get :index
         assigns(:instances).should == [@hdfs]
       end

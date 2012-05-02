@@ -18,11 +18,6 @@ describe ZookeepersController do
     end
 
     describe 'GET index' do
-      it "assigns the collection all zookeepers to @zookeepers" do
-        Zookeeper.stub_chain(:select, :order).and_return [@zookeeper]
-        get :index
-        assigns(:zookeepers).should == [@zookeeper]
-      end
       it "renders the index template" do
         get :index
         response.should render_template 'index'

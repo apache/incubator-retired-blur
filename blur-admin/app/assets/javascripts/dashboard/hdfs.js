@@ -37,7 +37,7 @@ var HdfsCollection = Backbone.Collection.extend({
 });
 
 var HdfsView = Backbone.View.extend({
-  className: 'hdfs_info',
+  className: 'hdfs_info online',
   events: {
     'click .hdfs-table' : 'navigate_to_hdfs'
   },

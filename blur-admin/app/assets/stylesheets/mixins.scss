@@ -45,6 +45,15 @@
   background-image: linear-gradient(top, #EE5F5B, #C43C35);
 }
 
+@mixin neutral-progress-background{
+  background-image: -moz-linear-gradient(top, #08C, #04C);
+  background-image: -ms-linear-gradient(top, #08C, #04C);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#08C), to(#04C));
+  background-image: -webkit-linear-gradient(top, #08C, #04C);
+  background-image: -o-linear-gradient(top, #08C, #04C);
+  background-image: linear-gradient(top, #08C, #04C);
+}
+
 @mixin standard-border {
   @include border-radius;
   @include border;

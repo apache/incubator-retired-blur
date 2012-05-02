@@ -26,15 +26,15 @@
   margin-top: 2em;
 
   .zookeeper_info, .hdfs_info {
-    width: 400px;
+    width: 500px;
     margin: 0px 10px 20px 20px;
-    float: left;
     display: inline-block;
     border: 1px solid;
+    font-size: 15px;
     @include border-radius(5px);
     &.online{ border-color: $green-border-color; }
     &.offline{ border-color: $red-border-color; }
-    &.wrning{ border-color: #F9A732;}
+    &.warning{ border-color: #F9A732;}
     table{ margin:0; width:100%; }
     table tbody th { text-align:center; vertical-align:middle; }
     tbody{ margin: 10px; }
@@ -67,10 +67,17 @@
   .status{ width:160px; @include zoo-status; }
   #zookeepers,#hdfses{ height: 100%; }
 	h2 { color: $zk-header-color; @include box-title;}
-  .shards, .controllers{ text-align: center; }
+  .shards, .controllers, .blocks, .usage{
+    text-align: center;
+    width: 50%;
+    div{
+      height: 20px;
+    }
+  }
 
   .progress-status{
-    @include danger-progress-background;
+    &.compare{ @include danger-progress-background; }
+    @include neutral-progress-background;
     position: relative;
     margin: 0px;
     .bar{
@@ -80,8 +87,13 @@
       position: absolute;
       color: white;
       top: 0px;
-      &.online-nodes{ left: 5px; }
-      &.offline-nodes{ right: 5px; }
+      &.online-nodes, &.live-nodes{ left: 5px; }
+      &.offline-nodes, &.dead-nodes{ right: 5px; }
     }
+  }
+
+  span.title-subtle{
+    float: right;
+    opacity: .7;
   }
 }

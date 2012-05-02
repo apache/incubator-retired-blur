@@ -1,0 +1,69 @@
+<% var stats = hdfs.get('most_recent_stats'); %>
+<table class="hdfs-table">
+  <thead>
+    <tr>
+      <th class="hdfs-title label btn-success" colspan="3">
+        <div class="hdfs-name">
+          <%= hdfs.get('name') %>
+          <span class="title-subtle"><%= hdfs.get('host') %></span>
+        </div>
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="blocks">Block Statistics</td>
+      <td class="usage">Usage Statistics</td>
+    </tr>
+    <tr>
+      <td class="blocks">
+        <% if(stats.corrupt_blocks === 0){ %>
+          <div class="btn-success status-bar"><div>No Corrupt Blocks</div></div>
+        <% } else if (stats.corrupt_blocks === -1) { %>
+          <div class="btn-primary status-bar"><div>Corrupt Blocks Data Unavailable</div></div>
+        <% } else { %>
+          <div class="btn-danger status-bar"><div><%= stats.corrupt_blocks %> Corrupt Block(s)</div></div>
+        <% } %>
+      </td>
+      <td class="usage">
+        <% if(stats.total_nodes === -1 || stats.dead_nodes === -1 || stats.live_nodes === -1){ %>
+          <div class="btn-primary status-bar"><div>Node Information Unavailable</div></div>
+        <% } else { %>
+          <div class="progress progress-success progress-status">
+            <div class="bar" style="width:<%= hdfs.node_width() %>%"></div>
+            <span class="live-nodes"><%= stats.live_nodes %> Live Nodes</span>
+            <span class="dead-nodes"><%= stats.dead_nodes %></span>
+          </div>
+        <% } %>
+      </td>
+    </tr>
+    <tr>
+      <td class="blocks">
+        <% if(stats.missing_blocks === 0){ %>
+          <div class="btn-success status-bar"><div>No Missing Blocks</div></div>
+        <% } else if (stats.missing_blocks === -1) { %>
+          <div class="btn-primary status-bar"><div>Missing Blocks Data Unavailable</div></div>
+        <% } else { %>
+          <div class="btn-danger status-bar"><div><%= stats.missing_blocks %> Missing Block(s)</div></div>
+        <% } %>
+      </td>
+      <td class="usage">
+        <div class="progress progress-status">
+          <div class="bar" style="width:<%= hdfs.usage_width() %>%"></div>
+          <span class="live-nodes"><%= hdfs.percent_used() %> Dfs Usage</span>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td class="blocks">
+        <% if(stats.under_replicated === 0){ %>
+          <div class="btn-success status-bar"><div>No Under Replicated Blocks</div></div>
+        <% } else if (stats.under_replicated === -1) { %>
+          <div class="btn-primary status-bar"><div>Under Replicated Data Unavailable</div></div>
+        <% } else { %>
+          <div class="btn-danger status-bar"><div><%= stats.under_replicated %> Under Replicated Block(s)</div></div>
+        <% } %>
+      </td>
+    </tr>
+  </tbody>
+</table>

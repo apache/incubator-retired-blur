@@ -8,9 +8,11 @@
 <% } else { %>
   <td class='checkbox-td'>
     <input class='bulk-action-checkbox' type='checkbox'/>
+  </td>
+  <td class='blur_table_name'>
+    <%= table.get('table_name') %>
     <i class="icon-exclamation-sign queries-running-icon" style="<% if (!table.get('queried_recently')) { %><%= 'display:none' %><% } %>"></i>
   </td>
-  <td class='blur_table_name'><%= table.get('table_name') %></td>
   <% if (state === 'active'){ %>
     <td class='blur_table_hosts_shards'>
       <a class='hosts' href="#">

@@ -270,9 +270,18 @@ var ClusterView = Backbone.View.extend({
   set_table_state: function(){
     var checked_count = this.$el.find('tbody tr.highlighted-row').length;
     var set_checkbox_state = _.bind(function(){
-      var row_count = this.$el.find('tbody:visible tr').length;
+      var row_count = this.$el.find('tbody:visible tr:not(.no-data, .changing-state)').length;
       var check_all = this.$el.find('.tab-pane.active .check-all');
-      checked_count === row_count ? check_all.attr('checked', 'checked') : check_all.removeAttr('checked');
+      if (checked_count === row_count){
+        if (checked_count === 0){
+          check_all.removeAttr('checked');
+          check_all.attr('disabled', 'disabled');
+        } else {
+          check_all.attr('checked', 'checked');
+        }
+      } else {
+        check_all.removeAttr('checked');
+      }
     }, this);
     var set_button_state = _.bind(function(){
       var toggle_button = this.$el.find('.tab-pane.active button');

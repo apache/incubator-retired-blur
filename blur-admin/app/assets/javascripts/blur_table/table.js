@@ -81,8 +81,10 @@ var TableView = Backbone.View.extend({
   template: JST['templates/blur_table/table_row'],
   render: function(){
     this.rendered = true;
+    this.$el.removeClass('changing-state')
     this.$el.attr('blur_table_id', this.model.get('id')).html(this.template({table: this.model})).removeClass('highlighted-row');
     if (this.model.get('checked')) this.$el.addClass('highlighted-row').find('.bulk-action-checkbox').prop('checked', 'checked');
+    if (['disabling', 'enabling', 'deleting'].indexOf(this.model.get('state')) >= 0) this.$el.addClass('changing-state');
     return this;
   },
   toggle_row: function(){

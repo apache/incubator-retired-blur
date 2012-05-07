@@ -63,7 +63,7 @@ var Table = Backbone.Model.extend({
   }
 });
 
-var TableCollection = Backbone.Collection.extend({
+var TableCollection = Backbone.StreamCollection.extend({
   model: Table,
   initialize: function(models, options){
     this.cluster = options.cluster;

@@ -7,7 +7,8 @@
 //= require bootstrap-modal-helper
 //= require templates
 //= require underscore
-//= require backbone
+//= require backbone/backbone
+//= require backbone/backbone-stream
 //= require_self
 
 $(document).ready(function(){

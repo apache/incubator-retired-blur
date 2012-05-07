@@ -22,7 +22,7 @@ var Hdfs = Backbone.Model.extend({
   }
 });
 
-var HdfsCollection = Backbone.Collection.extend({
+var HdfsCollection = Backbone.StreamCollection.extend({
   model: Hdfs,
   url: Routes.hdfs_index_path({format: 'json'}),
   initialize: function(models, options){

@@ -216,7 +216,7 @@ var Cluster = Backbone.Model.extend({
   }
 });
 
-var ClusterCollection = Backbone.Collection.extend({
+var ClusterCollection = Backbone.StreamCollection.extend({
   model: Cluster,
   url: Routes.zookeeper_blur_tables_path(CurrentZookeeper, {format: 'json'}),
   initialize: function(models, options){

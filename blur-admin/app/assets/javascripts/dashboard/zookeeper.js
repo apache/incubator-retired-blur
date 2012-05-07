@@ -29,7 +29,7 @@ var Zookeeper = Backbone.Model.extend({
   }
 });
 
-var ZookeeperCollection = Backbone.Collection.extend({
+var ZookeeperCollection = Backbone.StreamCollection.extend({
   model: Zookeeper,
   url: Routes.dashboard_zookeepers_path({format: 'json'}),
   initialize: function(models, options){

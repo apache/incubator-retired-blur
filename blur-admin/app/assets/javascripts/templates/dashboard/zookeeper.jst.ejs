@@ -34,14 +34,18 @@
         <div class="progress progress-success progress-status compare">
           <div class="bar" style="width:<%= zookeeper.controller_progress_width() %>%"></div>
           <span class="online-nodes"><%= zookeeper.online_controller_nodes() %> Online</span>
-          <span class="offline-nodes"><%= zookeeper.get('controller_offline_node') %></span>
+          <% if(zookeeper.get('controller_offline_node') !== 0){ %>
+            <span class="offline-nodes"><%= zookeeper.get('controller_offline_node') %></span>
+          <% } %>
         </div>
       </td>
       <td class="shards">
         <div class="progress progress-success progress-status compare">
           <div class="bar" style="width:<%= zookeeper.shard_progress_width() %>%"></div>
           <span class="online-nodes"><%= zookeeper.online_shard_nodes() %> Online</span>
-          <span class="offline-nodes"><%= zookeeper.get('shard_offline_node') %></span>
+          <% if(zookeeper.get('shard_offline_node') !== 0){ %>
+            <span class="offline-nodes"><%= zookeeper.get('shard_offline_node') %></span>
+          <% } %>
         </div>
       </td>
     </tr>

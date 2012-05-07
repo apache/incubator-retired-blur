@@ -2,12 +2,16 @@ $nav-height: 40px;
 
 #root{
   .navbar{
+    // A complete hack for FF width bug
+    padding-right: 3px;
+    background: url("gradient.png") repeat-x scroll 0 -58px;
     .brand{
       padding-bottom: 0px;
     }
   }
 	.navbar-inner {
-		background: transparent url('gradient.png') repeat-x 0 -58px;
+    // Also part of the browser hack for FF
+		background: transparent;
 		@include border-radius(0);
 		height: $nav-height;
 		> ul li {

@@ -127,7 +127,7 @@ public class BlurExecutorCompletionService<T> extends ExecutorCompletionService<
     } catch (InterruptedException e) {
       throw new BException("Call interrupted [{0}]", e, Arrays.asList(parameters));
     } catch (ExecutionException e) {
-      throw new BException("Call execution exception [{0}]", e, Arrays.asList(parameters));
+      throw new BException("Call execution exception [{0}]", e.getCause(), Arrays.asList(parameters));
     }
   }
 

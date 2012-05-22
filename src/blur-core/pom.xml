@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.nearinfinity.blur</groupId>
 		<artifactId>blur</artifactId>
-		<version>0.1.rc2-SNAPSHOT</version>
+		<version>0.1.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.nearinfinity.blur</groupId>
@@ -19,17 +19,17 @@
 		<dependency>
 			<groupId>com.nearinfinity.blur</groupId>
 			<artifactId>blur-thrift</artifactId>
-			<version>0.1.rc2-SNAPSHOT</version>
+			<version>0.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.nearinfinity.blur</groupId>
 			<artifactId>blur-store</artifactId>
-			<version>0.1.rc2-SNAPSHOT</version>
+			<version>0.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.nearinfinity.blur</groupId>
 			<artifactId>blur-util</artifactId>
-			<version>0.1.rc2-SNAPSHOT</version>
+			<version>0.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>

@@ -135,9 +135,8 @@ $(document).ready(function() {
     $('#queries-table_wrapper > .row:first-child').prepend(refresh_content);
     $('.dataTables_wrapper .row .span3:first-child .btn-group').append('<a id="refresh-queries" class="btn"><i class="icon-refresh"/></a>');
     $('#refresh-queries').click(function() {
-      if ($(this).attr('disabled') !== 'disabled'){
+     // if ($(this).attr('disabled') !== 'disabled'){
         data_table.fnReloadAjax();
-      }
     });
     $('a.refresh_option').click(function() {
       $('a.refresh_option').removeClass('btn-primary');
@@ -151,13 +150,13 @@ $(document).ready(function() {
       {
         clearTimeout(refresh_timeout);
       }
-      if (refresh_rate === -1) {
+      /*if (refresh_rate === -1) {
         $('#refresh-queries').removeAttr('disabled');
       }
       else
       {
         $('#refresh-queries').attr('disabled', 'disabled');
-      }
+      }*/
     });
   };
   var truncate = function(value, length, ommission) {

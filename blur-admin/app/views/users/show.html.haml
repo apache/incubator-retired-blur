@@ -38,7 +38,7 @@
               -if col_prefs.include? option
                 .my-select.fam{:id => "value_#{option}"}
                   =option
-              -else
+              -elsif option != "" && option != nil
                 .fam{:id => "value_#{option}"}
                   =option
 

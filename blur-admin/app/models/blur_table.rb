@@ -17,6 +17,8 @@ class BlurTable < ActiveRecord::Base
     serial_properties[:queried_recently] = self.has_queried_recently?
     serial_properties[:hosts] = self.hosts
     serial_properties[:schema] = self.schema
+    serial_properties[:recent_queries] = self.get_recent_queries
+    serial_properties[:average_queries] = self.average_queries
     serial_properties
   end
 
@@ -86,9 +88,21 @@ class BlurTable < ActiveRecord::Base
   def blur_destroy(underlying=false, blur_urls)
     begin
       BlurThriftClient.client(blur_urls).removeTable self.table_name, underlying
-      return true;
+      return true
     rescue
-      return false;
+      return false
     end
+  end
+
+  def get_recent_queries
+    recent_queries = Array.new
+    for i in 0..9
+      recent_queries << [i, self.blur_queries.where("created_at <= '#{(9-i).minutes.ago}' and created_at > '#{(10-i).minutes.ago}'").count ]
+    end
+    recent_queries
+  end
+
+  def average_queries
+    1.0 * self.blur_queries.where("created_at > '#{10.minutes.ago}'").count / 10.0
   end
 end

@@ -17,7 +17,7 @@
 			- elsif user[field_name]
 				%strong= "#{field_name}: "
 				= user[field_name]
-	- if (user.is?(:admin))
+	- if (current_user && current_user.is?(:admin))
 		= f.toggles 'Roles' do
 			- User::ROLES.each do |role|
 				%li

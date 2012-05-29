@@ -47,24 +47,29 @@ $(document).ready(function(){
       url: $(this).attr('href'),
       success: function(data){
         var innerHtml = '<ul class="modal-list no-well">'
-        for (var index = 0; index < data.length; index++) {
-          var datum = data[index];
-          innerHtml += '<li class="';
-          if (datum.status === 0){
-            innerHtml += 'error"';
-          } else {
-            innerHtml += 'no-error"';
-          }
-          innerHtml +='><div class="icon" title="Remove This Shard" data-id="' + datum.id + '"><i class="icon-remove-sign icon-white"/></div><div class="info">';
-          innerHtml += 'Shard: ' + datum.node_name + ' | Blur Version: ' + datum.blur_version + ' | Status: ';
-          if (datum.status === 1){
-            innerHtml += 'Online';
-          } else {
-            innerHtml += 'Offline';
-          }
-          innerHtml += '</div></li>';
+        if (data.length <= 0){
+          innerHtml = '<div>No shards available</div>'
         }
-        innerHtml += '</ul>';
+        else{
+          for (var index = 0; index < data.length; index++) {
+            var datum = data[index];
+            innerHtml += '<li class="';
+            if (datum.status === 0){
+              innerHtml += 'error"';
+            } else {
+              innerHtml += 'no-error"';
+            }
+            innerHtml +='><div class="icon" title="Remove This Shard" data-id="' + datum.id + '"><i class="icon-remove-sign icon-white"/></div><div class="info">';
+            innerHtml += 'Shard: ' + datum.node_name + ' | Blur Version: ' + datum.blur_version + ' | Status: ';
+            if (datum.status === 1){
+              innerHtml += 'Online';
+            } else {
+              innerHtml += 'Offline';
+            }
+            innerHtml += '</div></li>';
+          }
+          innerHtml += '</ul>';
+        }
         $().popup({
           title: "Shards",
           titleClass: 'title',

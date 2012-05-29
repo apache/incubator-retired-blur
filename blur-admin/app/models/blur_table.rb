@@ -18,6 +18,7 @@ class BlurTable < ActiveRecord::Base
     serial_properties[:hosts] = self.hosts
     serial_properties[:schema] = self.schema
     serial_properties[:recent_queries] = self.get_recent_queries
+    serial_properties[:average_queries] = self.average_queries
     serial_properties
   end
 
@@ -100,5 +101,8 @@ class BlurTable < ActiveRecord::Base
     end
     recent_queries
   end
-  
+
+  def average_queries
+    1.0 * self.blur_queries.where("created_at > '#{10.minutes.ago}'").count / 10.0
+  end
 end

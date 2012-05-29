@@ -2,7 +2,7 @@
 - content_for :javascript do
   = javascript_include_tag 'environment'
 
-#zookeeper_wrapper.container
+#zookeeper_wrapper
   #zookeeper.btn-success
     %h2.zookeeper-name
       = @current_zookeeper.name.capitalize + " - " + @current_zookeeper.translated_status

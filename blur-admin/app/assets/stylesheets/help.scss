@@ -3,6 +3,7 @@
 #help-window{
   overflow: auto;
   height: 600px;
+	max-width: 500px;
   .help-section{
     cursor: pointer;
     margin: 2px;

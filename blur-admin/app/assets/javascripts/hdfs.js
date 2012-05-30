@@ -55,7 +55,7 @@ $(document).ready(function() {
       $('.contextMenu').disableContextMenuItems('#paste,#mkdir,#cut,#rename,#delete');
     }
   };
-  
+
   var tree_context_menu = function() {
     return $(["<div class='context_menus'>",
         "<ul id='hdfs-root-context-menu' class='contextMenu'>",
@@ -157,7 +157,7 @@ $(document).ready(function() {
       );
     }
   };
-  
+
   var rename = function(el) {
     var id = el.attr('hdfs_id');
     var from_path = el.attr('hdfs_path');
@@ -217,7 +217,7 @@ $(document).ready(function() {
       });
     }
   };
-  
+
   var upload = function(el) {
     var id = el.attr('hdfs_id');
     var path = el.attr('hdfs_path');
@@ -315,7 +315,7 @@ $(document).ready(function() {
         titleClass: 'title',
         title: title,
         show: function() {
-          $.get(Routes.slow_folder_hdfs_info_path(id), {
+          $.get(Routes.slow_folder_info_hdfs_path(id), {
             'fs_path': path
           }, function(data) {
             $('#file_count').html(data.file_count);
@@ -343,10 +343,12 @@ $(document).ready(function() {
     switch (action) {
       case "delete":
         delete_file(el);
+        break;
       case "cut":
         paste_buffer.location = el;
         paste_buffer.action = action;
         $('#hdfs-dir-context-menu').enableContextMenuItems('#paste');
+        break;
       case "paste":
         if (paste_buffer.action) {
           if (paste_buffer.action === "cut") {
@@ -356,14 +358,19 @@ $(document).ready(function() {
         break;
       case "props":
         show_hdfs_props(el.attr('hdfs_id'), el.attr('hdfs_name'));
+        break;
       case "dirprops":
         show_dir_props(el.attr('hdfs_id'), el.attr('hdfs_path'));
+        break;
       case "mkdir":
         make_dir(el);
+        break;
       case "rename":
         rename(el);
+        break;
       case "upload":
         upload(el);
+        break;
     }
   };
 
@@ -391,7 +398,7 @@ $(document).ready(function() {
     $('.osxSelected').removeClass('osxSelected');
     navigateUsingPath();
   };
-  
+
   /*
     #Methods for HTML History manipulation
   */

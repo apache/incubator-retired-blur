@@ -2,7 +2,7 @@
 - content_for :javascript do
   =javascript_include_tag 'blur_table/blur_tables'
 
-.blur_table_page.container
+.blur_table_page
   %ul#blur_tables.nav-tabs.nav
     - @clusters.each_with_index do |cluster,i|
       %li#cluster_tab{:id=>cluster.id, :class =>("active" unless i != 0)}

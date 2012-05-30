@@ -2,7 +2,7 @@
 - content_for :javascript do
   =javascript_include_tag 'users'
 
-#show_user_wrapper.container{'data-user-id' => @user.id}
+#show_user_wrapper{'data-user-id' => @user.id}
   .info-contain.row
     - if can? :update, @column_preference
       - col_prefs = @column_preference.value || []

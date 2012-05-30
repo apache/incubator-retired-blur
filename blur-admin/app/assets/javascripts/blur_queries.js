@@ -51,16 +51,20 @@ $(document).ready(function() {
     if (visible_column_count === 8) {
       return [
         {
-          "mDataProp": "userid"
+          "mDataProp": "userid",
+					"sWidth": "75px"
         }, {
           "mDataProp": "query",
           "sWidth": "500px"
         }, {
-          "mDataProp": "tablename"
+          "mDataProp": "tablename",
+					"sWidth": "75px"
         }, {
-          "mDataProp": "start"
+          "mDataProp": "start",
+					"sWidth": "75px"
         }, {
-          "mDataProp": "time"
+          "mDataProp": "time",
+					"sWidth": "75px"
         }, {
           "mDataProp": "status",
           "sWidth": "150px"
@@ -68,7 +72,8 @@ $(document).ready(function() {
           "mDataProp": "state",
           "bVisible": false
         }, {
-          "mDataProp": "action"
+          "mDataProp": "action",
+					"sWidth": "75px"
         }
       ];
     }

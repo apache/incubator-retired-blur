@@ -39,13 +39,15 @@ $(document).ready(function(){
         tab = pieces[2];
       }
     }
-    window.open(Routes.help_path(tab), "Help Menu","menubar=0,resizable=0,width=500,height=800");
+    window.open(Routes.help_path(tab), "Help Menu","menubar=0,resizable=0,width=500,height=600");
     return false;
   });
       
   $('.help-section').live('click', function(){
     $(this).children('.help-content').slideToggle('fast')
   });
+
+  $('body:has(#help-window)').css('padding-bottom', '0');
 
   if (typeof Zookeeper !== 'undefined' && Zookeeper.instances){
     $('#env_link, #tables_link, #queries_link, #search_link').click( function(evt){

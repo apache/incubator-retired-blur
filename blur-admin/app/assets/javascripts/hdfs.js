@@ -159,7 +159,7 @@ $(document).ready(function() {
   };
 
   var rename = function(el) {
-    var id = el.agttr('hdfs_id');
+    var id = el.attr('hdfs_id');
     var from_path = el.attr('hdfs_path');
     $('<div id="newName"><input></input></div>').popup({
       title: 'New Name',

@@ -35,11 +35,11 @@
                 %tr.filter
                   %td Super Query:
                   %td 
-                    = check_box_tag :super_query, true, true
+                    %input#super_query{:type => :radio, :checked => 'checked'}                    
                 %tr.filter
                   %td Record Only:
                   %td 
-                    = check_box_tag :record_only, true, false,:disabled => 'disabled'
+                    %input#record_only{:type => :radio}
                 %tr.filter
                   %td Start:
                   %td 

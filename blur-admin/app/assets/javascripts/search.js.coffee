@@ -236,7 +236,7 @@ $(document).ready ->
       that = ro
     else
       that = sq
-    that.prop('disabled',$(this).is(':checked'))
+    that.prop('checked',false)
 setTimeout ->
   $('#search_submit').click()
 ,1000

@@ -61,19 +61,19 @@ $(document).ready(function() {
 					"sWidth": "75px"
         }, {
           "mDataProp": "start",
-					"sWidth": "75px"
+					"sWidth": "85px"
         }, {
           "mDataProp": "time",
-					"sWidth": "75px"
+					"sWidth": "95px"
         }, {
           "mDataProp": "status",
-          "sWidth": "150px"
+          "sWidth": "100px"
         }, {
           "mDataProp": "state",
           "bVisible": false
         }, {
           "mDataProp": "action",
-					"sWidth": "75px"
+					"sWidth": "100px"
         }
       ];
     }

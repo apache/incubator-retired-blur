@@ -36,7 +36,7 @@
     </td>
     <td>
       <div id='query_spark_line' style='width: 120px; height: 20px; display: inline;'></div>
-      <div style='display: inline;'>Average: <%= table.get('average_queries') %></div>
+      <div style='display: inline;'>Average: <%= (table.get('average_queries')).toFixed(1) %></div>
     </td>
   <% } %>
 <% } %>

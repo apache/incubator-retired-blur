@@ -36,7 +36,7 @@ $(document).ready ->
 
   ########### PAGE ACTIONS ##############
   # Setup the filters onload
-  $.ui.dynatree.nodedatadefaults["icon"] = false;
+  $.ui.dynatree.nodedatadefaults["icon"] = false
   setup_filter_tree()
   $(window).resize ()->
     if prevHeight != window.innerHeight
@@ -83,8 +83,6 @@ $(document).ready ->
       $(this).siblings('.body').slideDown 'fast'
       $(this).find('.arrow_down').hide()
       $(this).find('.arrow_up').show()
-      
-  
 
   ########### more Functions #############
 
@@ -122,9 +120,9 @@ $(document).ready ->
     $('#super_query').prop('checked',false).prop('disabled',false)
     $('#record_only').prop('checked',false).prop('disabled',false)
     if data.super_query
-      $('#super_query').click();
+      $('#super_query').click()
     if data.record_only
-      $('#record_only').click();
+      $('#record_only').click()
 
     #check everything in the tree
     for column in data.column_object
@@ -170,14 +168,14 @@ $(document).ready ->
     	"Delete Query":
     	  class: 'primary'
     	  func: ->
-      		$().closePopup();
+      		$().closePopup()
       		$.ajax Routes.delete_zookeeper_search_path(CurrentZookeeper ,parent.attr("id"), $('#blur_table option:selected').val()),
             type: 'DELETE',
             success: (data) ->
               $('#saved .body .saved').html(data)
     	"Cancel":
     	  func: ->
-      		$().closePopup();
+      		$().closePopup()
     $().popup
       btns:buttons
       title:"Delete this saved query?"
@@ -230,9 +228,9 @@ $(document).ready ->
         body: message
   #listener for the superquery and recordOnly checkboxes
   $('#super_query, #record_only').live 'change',(evt) ->
-    sq = $('#super_query');
-    ro = $('#record_only');
-    if sq[0] == $(this)[0]     
+    sq = $('#super_query')
+    ro = $('#record_only')
+    if sq[0] == $(this)[0]
       that = ro
     else
       that = sq
@@ -240,8 +238,4 @@ $(document).ready ->
 setTimeout ->
   $('#search_submit').click()
 ,1000
-    
-    
 
-  
-  

@@ -119,10 +119,13 @@ $(document).ready ->
     $('#save_name').val(data.name)
     $('#super_query').prop('checked',false).prop('disabled',false)
     $('#record_only').prop('checked',false).prop('disabled',false)
+    $('#simple_search').prop('checked',false).prop('disabled',false)
     if data.super_query
       $('#super_query').click()
     if data.record_only
       $('#record_only').click()
+    if data.simple_search
+      $('#simple_search').click()      
 
     #check everything in the tree
     for column in data.column_object
@@ -227,14 +230,19 @@ $(document).ready ->
         titleClass:'title'
         body: message
   #listener for the superquery and recordOnly checkboxes
-  $('#super_query, #record_only').live 'change',(evt) ->
+  $('#super_query, #record_only, #simple_search').live 'change',(evt) ->
     sq = $('#super_query')
     ro = $('#record_only')
+    ss = $('#simple_search')
     if sq[0] == $(this)[0]
-      that = ro
+      ro.prop('checked',false)
+      ss.prop('checked',false)
+    else if ro[0] == $(this)[0]
+      sq.prop('checked',false)
+      ss.prop('checked',false)
     else
-      that = sq
-    that.prop('checked',false)
+      sq.prop('checked',false)
+      ro.prop('checked',false)            
 setTimeout ->
   $('#search_submit').click()
 ,1000

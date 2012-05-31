@@ -187,7 +187,7 @@ $(document).ready ->
     form_data = $('#search_form').serializeArray()
     tree = $('.column_family_filter').dynatree('getTree')
     form_data = form_data.concat(tree.serializeArray())
-    $.ajax Routes.save_zookeeper_searches_path(CurrentZookeeper, $('#blur_table option:selected').val()),
+    $.ajax Routes.save_zookeeper_searches_path(CurrentZookeeper),
       type: 'POST',
       data: form_data,
       success: (data) ->

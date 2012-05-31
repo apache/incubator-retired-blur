@@ -25,8 +25,8 @@ BlurAdmin::Application.routes.draw do
       end
 
       collection do 
+        post 'save'
         post ':blur_table', :action => :create, :as => :fetch_results
-        post 'save/:blur_table', :action => :save, :as => :save
         get 'filters/:blur_table', :action => :filters, :as => :filters
       end
     end

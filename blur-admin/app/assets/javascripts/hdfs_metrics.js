@@ -4,15 +4,18 @@
 //= require_self
 
 $(document).ready(function(){
-	//Page constants
-	var hdfs_data = {};
+
+  // Page constants //
+
+  var hdfs_data = {};
 	var joinedGraphData = {disk: {metrics:[]}, nodes: {metrics:[]}, block: {metrics:[]}};
 	var time_length = 5;
 	var refresh_time = 15000;
 	var actions = ['disk', 'nodes', 'block'];
 
-	//hash of labels and object lookup strings for the various actions
-	var hdfs_request_lookup =
+	// Hash of labels and object lookup strings for the various actions //
+
+  var hdfs_request_lookup =
 	{
 		disk:
 		{
@@ -37,8 +40,9 @@ $(document).ready(function(){
 		}
 	};
 
-	// Page Methods
-	var draw_graph = function(selector, graph_data){
+	// Page Methods //
+
+  var draw_graph = function(selector, graph_data){
 		if (!graph_data.plot)
 		{
 			graph_data.plot = $.plot(selector, graph_data.metrics, 
@@ -54,7 +58,7 @@ $(document).ready(function(){
 		{
 			graph_data.plot.setData(graph_data.metrics);
 			graph_data.plot.setupGrid();
-			graph_data.plot.draw();
+      graph_data.plot.draw();
 		}
 	};
 
@@ -149,8 +153,9 @@ $(document).ready(function(){
 		container.find('.graph_title > h3').text('Composite Graph: ' + graphTitles.join(', '));
 	};
 
-	// Page listeners
-	$('.graph_instance').on('shown', 'a[data-toggle="tab"]', function(e){
+	// Page listeners //
+
+  $('.graph_instance').on('shown', 'a[data-toggle="tab"]', function(e){
 		var instance = $(this).closest('.graph_instance')
 		var hdfs_id = instance.attr('id');
 		var container = instance.find('.graph');
@@ -188,13 +193,10 @@ $(document).ready(function(){
 		request_data(hdfs_id, {stat_mins: time_length});
 	});
 
-	// Refresh Timers
+	// Refresh Timers //
 
 	setTimeout(function(){
 		update_live_graphs();
 	}, refresh_time);
 });
-
-
-
 	

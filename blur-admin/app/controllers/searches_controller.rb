@@ -112,8 +112,6 @@ class SearchesController < ApplicationController
 
   #save action that loads the state of a saved action and returns a json to be used to populate the form
   def load
-    #TODO logic to check if the saved search is valid if it is render the changes to the page
-    #otherwise change the state of the save and load what you can
     search = Search.find params['id']
     render :json => search.to_json(:methods => :column_object)
   end
@@ -139,10 +137,10 @@ class SearchesController < ApplicationController
     search.column_object = params[:column_data]
     search.save
     @searches = current_user.searches.reverse
-    @blur_table = BlurTable.find params[:blur_table]
+    #@blur_table = BlurTable.find params[:blur_table]
 
     respond_to do |format|
-      format.html {render :partial =>"saved", :locals => {:searches => @searches, :blur_table => @blur_table}}
+      format.html {render :partial =>"saved", :locals => {:searches => @searches}} #, :blur_table => @blur_table}}
     end
   end
 

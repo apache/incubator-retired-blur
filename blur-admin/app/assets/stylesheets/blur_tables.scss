@@ -83,6 +83,11 @@ tr.highlighted-row td{ background:#FAD08A !important; }
   }
 }
 
-
-
-
+.blur_table_spark_line{
+  .spark_line{
+    width: 120px;
+    height: 20px;
+    display: inline;
+  }
+  .average{ display: inline; }
+}

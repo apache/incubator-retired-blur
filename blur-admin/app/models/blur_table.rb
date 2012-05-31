@@ -11,14 +11,15 @@ class BlurTable < ActiveRecord::Base
   scope :active, where("status=?", 4)
 
   def as_json(options={})
+    table_query_info = self.recent_queries
     serial_properties = super(options)
     serial_properties.delete('server')
     serial_properties.delete('table_schema')
-    serial_properties[:queried_recently] = self.has_queried_recently?
+    serial_properties[:queried_recently] = table_query_info['queried_recently']
     serial_properties[:hosts] = self.hosts
     serial_properties[:schema] = self.schema
-    serial_properties[:recent_queries] = self.get_recent_queries
-    serial_properties[:average_queries] = self.average_queries
+    serial_properties[:sparkline] = table_query_info['sparkline']
+    serial_properties[:average_queries] = table_query_info['average_queries']
     serial_properties
   end
 
@@ -48,24 +49,20 @@ class BlurTable < ActiveRecord::Base
     read_attribute(:row_count).to_s.reverse.gsub(%r{([0-9]{3}(?=([0-9])))}, "\\1#{','}").reverse
   end
 
-  def has_queried_recently?
-    self.blur_queries.where("created_at > '#{5.minutes.ago}'").count > 0
-  end
-
   def is_enabled?
     self.status == 4
   end
-  
+
   def is_disabled?
     self.status == 2
   end
-  
+
   def is_deleted?
     self.status == 0
   end
 
   def terms(blur_urls,family,column,startWith,size)
-    puts 
+    puts
     return BlurThriftClient.client(blur_urls).terms(self.table_name, family, column, startWith, size)
   end
 
@@ -94,15 +91,32 @@ class BlurTable < ActiveRecord::Base
     end
   end
 
-  def get_recent_queries
-    recent_queries = Array.new
-    for i in 0..9
-      recent_queries << [i, self.blur_queries.where("created_at <= '#{(9-i).minutes.ago}' and created_at > '#{(10-i).minutes.ago}'").count ]
+  def recent_queries
+    queries = self.blur_queries.select("minute(created_at) as minute, count(created_at) as cnt").where("created_at > '#{10.minutes.ago}'").group("minute(created_at)").order("created_at")
+    sparkline = [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0]] #default format for sparkline
+    time = 10.minutes.ago.min
+    average_queries = 0.0
+    queried_recently = false
+
+    queries.each do |row|
+      min = row.minute
+      cnt = row.cnt
+
+      if min >= time
+        min = min - time
+      else
+        min = 60 - time + min
+      end
+
+      sparkline[min] = [min, cnt]
+      average_queries += cnt
+      if !queried_recently && min >= 5
+        queried_recently = true
+      end
     end
-    recent_queries
+    average_queries = average_queries / 10.0
+
+    recent_queries = Hash['sparkline' => sparkline, 'average_queries' => average_queries, 'queried_recently' => queried_recently]
   end
 
-  def average_queries
-    1.0 * self.blur_queries.where("created_at > '#{10.minutes.ago}'").count / 10.0
-  end
 end

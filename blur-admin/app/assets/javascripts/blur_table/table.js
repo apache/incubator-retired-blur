@@ -87,7 +87,7 @@ var TableView = Backbone.View.extend({
     this.$el.attr('blur_table_id', this.model.get('id')).html(this.template({table: this.model})).removeClass('highlighted-row');
     if (this.model.get('checked')) this.$el.addClass('highlighted-row').find('.bulk-action-checkbox').prop('checked', 'checked');
     if (['disabling', 'enabling', 'deleting'].indexOf(this.model.get('state')) >= 0) this.$el.addClass('changing-state');
-    this.draw_query_spark_line(this.model.get('recent_queries'), this.$el.find('.spark_line'));
+    this.draw_query_spark_line(this.model.get('sparkline'), this.$el.find('.spark_line'));
     return this;
   },
   draw_query_spark_line: function(data, target){

@@ -33,7 +33,7 @@ class BlurTablesController < ApplicationController
       table.blur_destroy destroy_index, @current_zookeeper.blur_urls
     end
   end
-  
+
   def forget
     BlurTable.destroy params[:tables]
     render :nothing => true
@@ -44,7 +44,7 @@ class BlurTablesController < ApplicationController
     terms = table.terms @current_zookeeper.blur_urls, params[:family], params[:column], params[:startwith], params[:size].to_i
     render :json => terms
   end
-      
+
   private
     STATUS = {:enabling => 5, :active => 4, :disabling => 3, :disabled => 2, :deleting => 1, :deleted => 0}
     STATUS_SELECTOR = {:active => [4, 3], :disabled => [2, 5, 1], :deleted => [0]}

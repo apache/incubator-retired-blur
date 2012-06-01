@@ -42,7 +42,7 @@ BlurAdmin::Application.routes.draw do
         put 'disable'
         delete 'forget'
         delete 'destroy'
-      end    
+      end
     end
 
     #Nested BlurQueries Resource

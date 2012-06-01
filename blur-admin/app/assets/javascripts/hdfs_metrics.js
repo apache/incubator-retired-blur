@@ -45,7 +45,7 @@ $(document).ready(function(){
   var draw_graph = function(selector, graph_data){
 		if (!graph_data.plot)
 		{
-			graph_data.plot = $.plot(selector, graph_data.metrics, 
+			graph_data.plot = $.plot(selector, graph_data.metrics,
 			{
 				xaxis:
 				{
@@ -67,12 +67,12 @@ $(document).ready(function(){
 		//req_data.stat_id for data after a certain ID (update)
 		//req_data.stat_mins for specifying a different range (overwrite)
 	var request_data = function(id, req_data){
-		$.ajax({
+    $.ajax({
 			url: Routes.stats_hdfs_path(id),
 			type: 'GET',
 			data: req_data,
 			success: function(data){
-				if (data.length <= 0){
+        if (data.length <= 0){
 					return;
 				}
 				if (!hdfs_data[id]){
@@ -82,11 +82,11 @@ $(document).ready(function(){
 					var request_options = hdfs_request_lookup[action];
 					var hdfs_data_1 = {label: request_options.label_1, data: []};
 					var hdfs_data_2 = {label: request_options.label_2, data: []};
-					for( var i in data ){
+          for( var i in data ){
 						var point = data[i];
 						var entry_date = new Date(point.created_at).getTime();
-						hdfs_data_1.data.push([entry_date, point[request_options.stat_1]]);
-						hdfs_data_2.data.push([entry_date, point[request_options.stat_2]]);
+            hdfs_data_1.data.push([entry_date - 4*60*60*1000, point[request_options.stat_1]]);
+						hdfs_data_2.data.push([entry_date - 4*60*60*1000, point[request_options.stat_2]]);
 					}
 					//Current implementation is a fixed size queue for storing data
 					// Future implementations may allow you to change the range (length of queue, still fixed to a size)
@@ -129,7 +129,7 @@ $(document).ready(function(){
 			var hdfs_id = $(this).attr('id');
 			for (var index = 0; index < actions.length; index++){
 				request_data(hdfs_id, {stat_id: hdfs_data[hdfs_id][actions[index]].largest_id});
-			}
+      }
 		});
 		setTimeout(function(){
 			update_live_graphs();
@@ -196,7 +196,7 @@ $(document).ready(function(){
 	// Refresh Timers //
 
 	setTimeout(function(){
-		update_live_graphs();
+	  update_live_graphs();
 	}, refresh_time);
 });
 	

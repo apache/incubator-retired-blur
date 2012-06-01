@@ -117,15 +117,18 @@ $(document).ready ->
     $('#offset').val(data.offset)
     $('#query_string').val(data.query)
     $('#save_name').val(data.name)
-    $('#super_query').prop('checked',false).prop('disabled',false)
-    $('#record_only').prop('checked',false).prop('disabled',false)
-    $('#simple_search').prop('checked',false).prop('disabled',false)
-    if data.super_query
-      $('#super_query').click()
-    if data.record_only
-      $('#record_only').click()
-    if data.simple_search
-      $('#simple_search').click()      
+    $('#search_row').prop('checked',false).prop('disabled',false)
+    $('#search_record').prop('checked',false).prop('disabled',false)
+    $('#return_row').prop('checked',false).prop('disabled',false)
+    $('#return_record').prop('checked',false).prop('disabled',false)
+    if data.search_row
+      $('#search_row').click()
+    if data.search_record
+      $('#search_record').click()
+    if data.return_row
+      $('#return_row').click()
+    if data.return_record
+      $('#return_record').click()   
 
     #check everything in the tree
     for column in data.column_object
@@ -144,6 +147,7 @@ $(document).ready ->
   # fetch the result of a new search
   $('#search_form').submit ->
     form_data = $(this).serializeArray()
+    console.log(form_data)
     tree = $('.column_family_filter').dynatree('getTree')
     form_data = form_data.concat(tree.serializeArray())
     $.ajax Routes.fetch_results_zookeeper_searches_path(CurrentZookeeper, $('#blur_table').val()),
@@ -229,20 +233,27 @@ $(document).ready ->
         title:"Update Error"
         titleClass:'title'
         body: message
-  #listener for the superquery and recordOnly checkboxes
-  $('#super_query, #record_only, #simple_search').live 'change',(evt) ->
+  #listener for the Search and Return Radiobuttons
+  $('#search_row, #search_record, #return_row, #return_record').live 'change',(evt) ->
+    sr = $('#search_row')
+    srec = $('#search_record')
+    rr = $('#return_row')
+    rrec = $('#return_record')
     sq = $('#super_query')
-    ro = $('#record_only')
-    ss = $('#simple_search')
-    if sq[0] == $(this)[0]
-      ro.prop('checked',false)
-      ss.prop('checked',false)
-    else if ro[0] == $(this)[0]
-      sq.prop('checked',false)
-      ss.prop('checked',false)
+    ro = $('#record_only')    
+    if sr[0] == $(this)[0]
+      srec.prop('checked', false)
+      rrec.prop('checked', false)
+      rrec.prop('disabled', true)
+      rr.prop('checked', true)
+    else if srec[0] == $(this)[0]
+      sr.prop('checked', false)
+      rrec.prop('disabled', false)      
+    else if rr[0] == $(this)[0]
+      rrec.prop('checked', false)
     else
-      sq.prop('checked',false)
-      ro.prop('checked',false)            
+      rr.prop('checked', false) 
+
 setTimeout ->
   $('#search_submit').click()
 ,1000

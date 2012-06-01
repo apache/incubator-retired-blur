@@ -96,6 +96,15 @@
         #filter_columns{
           max-height: 250px;
           overflow: auto;
+          align: right;
+        }
+        #radio_buttons{
+          margin-top: -15px;
+          margin-left: 25px;
+          margin-bottom: -15px;
+        }
+        #radio_headers{
+          margin-top: -20px;
         }
       }
 

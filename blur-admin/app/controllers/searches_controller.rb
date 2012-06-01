@@ -44,8 +44,8 @@ class SearchesController < ApplicationController
   #and either saves the data or performs a search
   def create
     params[:column_data].delete( "neighborhood") if params[:column_data]
-    search = Search.new(:super_query    =>!params[:super_query].nil?,
-                        :record_only    =>!params[:record_only].nil?,
+    search = Search.new(:super_query    => params[:search] == '0',
+                        :record_only    => params[:search] == '1' && params[:return] == '1',
                         :fetch          => params[:result_count].to_i,
                         :offset         => params[:offset].to_i,
                         :user_id        => current_user.id,

@@ -147,7 +147,6 @@ $(document).ready ->
   # fetch the result of a new search
   $('#search_form').submit ->
     form_data = $(this).serializeArray()
-    console.log(form_data)
     tree = $('.column_family_filter').dynatree('getTree')
     form_data = form_data.concat(tree.serializeArray())
     $.ajax Routes.fetch_results_zookeeper_searches_path(CurrentZookeeper, $('#blur_table').val()),

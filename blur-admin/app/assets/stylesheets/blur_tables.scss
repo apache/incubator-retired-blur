@@ -8,7 +8,7 @@
 #tables-wrapper{
   border: $twitter-border;
   padding:10px;
-  @include border-radius(5px)
+  @include border-radius(5px);
 }
 
 .cluster-tabs{
@@ -85,4 +85,5 @@ tr.highlighted-row td{ background:#FAD08A !important; }
 
 .blur_table_spark_line{
   .spark_line, .average{ display: inline; }
+  .average { vertical-align: top; }
 }

@@ -108,7 +108,12 @@ class BlurTable < ActiveRecord::Base
         min = 60 - time + min
       end
 
-      sparkline[min] = [min, cnt]
+      if min > 9
+        sparkline[9][1] += cnt
+      else
+        sparkline[min] = [min, cnt]
+      end
+
       average_queries += cnt
       if !queried_recently && min >= 5
         queried_recently = true
@@ -118,5 +123,4 @@ class BlurTable < ActiveRecord::Base
 
     recent_queries = Hash['sparkline' => sparkline, 'average_queries' => average_queries, 'queried_recently' => queried_recently]
   end
-
 end

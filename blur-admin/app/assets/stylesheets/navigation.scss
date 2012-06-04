@@ -58,7 +58,7 @@ $nav-height: 40px;
 
 #ft {
   bottom: 0;
-  position:absolute;
+  position: fixed;
   width: 100%;
   $footer-color: lighten($base-theme-color, 20%);
   background-color: $footer-color;

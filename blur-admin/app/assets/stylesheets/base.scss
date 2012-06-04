@@ -29,10 +29,8 @@ html{
 	min-width: 1000px;
   overflow: auto;
   body{
-    min-height: 100%;
     position: relative;
     padding-bottom: $footer-height;
-    @include box-sizing(border-box);
   }
 }
 #modal{

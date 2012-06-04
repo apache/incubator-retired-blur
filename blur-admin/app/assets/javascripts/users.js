@@ -1,6 +1,6 @@
-$(document).ready(function(){  
+$(document).ready(function(){
   //Ajax request that serializes your columns and persists them to the DB
-  var save_pref = function(){   
+  var save_pref = function(){
     var user_id = $('#show_user_wrapper').attr('data-user-id');
     $.ajax(Routes.user_preference_path(user_id, 'column'),
     {
@@ -8,7 +8,7 @@ $(document).ready(function(){
       data: $('#my-cols').sortable('serialize'),
     });
   };
-  
+
   //Sortable list of your chosen columns
   $('#my-cols').sortable({
     connectWith: "#actual-trash",
@@ -16,7 +16,7 @@ $(document).ready(function(){
       save_pref();
     }
   });
-  
+
   //Trash can droppable, removes from your chosen preferences
   $('#actual-trash').droppable({
     drop: function(event, ui){
@@ -26,7 +26,7 @@ $(document).ready(function(){
       save_pref();
     }
   });
-  
+
   //Click event for selecting a column from all possible columns
   $('.fam').live('click', function(){ 
     $(this).toggleClass('my-select');
@@ -56,7 +56,12 @@ $(document).ready(function(){
       });
     }
   });
+
+  $('#pref-title').on('ajaxStart', function(){
+    $(this).removeClass('hidden-spinner');
+  });
+  $('#pref-title').on('ajaxStop', function(){
+    $(this).addClass('hidden-spinner');
+  });
 });
-    
-    
-    
+

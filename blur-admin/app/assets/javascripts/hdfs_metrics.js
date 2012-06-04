@@ -146,6 +146,13 @@ $(document).ready(function(){
 		request_data(hdfs_id, {stat_mins: time_length});
 	});
 
+  $('.loading-spinner').on('ajaxStart', function(){
+    $(this).removeClass('hidden');
+  });
+  $('.loading-spinner').on('ajaxStop', function(){
+    $(this).addClass('hidden');
+  });
+
 	// Refresh Timers //
 
 	setTimeout(function(){

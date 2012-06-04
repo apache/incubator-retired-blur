@@ -59,23 +59,12 @@ $graph_height: $instance_height - $title_height;
 			height: $graph_height;
 			border: 1px solid #ccc;
 			position: absolute;
-			.graph_select{
-				@include graph_component;
-				width: 2%;
-				height: 100%;
-				float: left;
-				text-align: center;
-				border-right: 1px solid #ccc;
-				input{
-					margin-top: $graph_height/2 - 10;
-				}
-			}
 			.graph_data{
 				@include box-sizing(border-box);
 				width: 100%;
-				padding: 10px 10px 0 3%;
+				padding: 10px 10px 0 10px;
 				.graph{
-					margin: 5px 5px 5px 5px;
+          margin: 5px 5px 5px 5px;
 					height: $graph_height - 20;
 					.base{
 						//position: absolute;

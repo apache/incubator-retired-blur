@@ -2,11 +2,6 @@
 - content_for :javascript do
 	=javascript_include_tag 'hdfs_metrics'
 #metrics_page_wrapper
-	.create_graph_prompt
-		%h3
-			Join selected graphs
-	.combined_graph{:style => 'display:none'}
-		= render :partial => 'hdfs_joined_graph'
 	.all_graph
 		-@hdfs_index.each_with_index do |hdfs,i|
 			= render :partial => 'hdfs_graph', :locals => { :hdfs_instance => hdfs }

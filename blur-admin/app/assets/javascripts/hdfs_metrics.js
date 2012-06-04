@@ -8,7 +8,6 @@ $(document).ready(function(){
   // Page constants //
 
   var hdfs_data = {};
-	var joinedGraphData = {disk: {metrics:[]}, nodes: {metrics:[]}, block: {metrics:[]}};
 	var time_length = 5;
 	var refresh_time = 15000;
 	var actions = ['disk', 'nodes', 'block'];
@@ -43,9 +42,9 @@ $(document).ready(function(){
 	// Page Methods //
 
   var draw_graph = function(selector, graph_data){
-		if (!graph_data.plot)
+    if (!graph_data.plot)
 		{
-			graph_data.plot = $.plot(selector, graph_data.metrics,
+      graph_data.plot = $.plot(selector, graph_data.metrics,
 			{
 				xaxis:
 				{
@@ -110,22 +109,12 @@ $(document).ready(function(){
 						draw_graph(graph_container.find('.graph'), hdfs_data[id][action]);
 					}
 				}
-				update_joined_graphs();
 			}
 		});
 	};
 
-	var update_joined_graphs = function(){
-		var joinedInstance = $('.joined_instance#joinedGraph:visible');
-		if(joinedInstance.length > 0){
-			var action = joinedInstance.find('li.active > a').data('action');
-			draw_graph(joinedInstance.find('.tab-pane.active > .graph'), joinedGraphData[action]);
-		}
-	};
-
 	var update_live_graphs = function(){
 		$('.graph_instance').each(function(){
-			//TODO: check to see if live is checked
 			var hdfs_id = $(this).attr('id');
 			for (var index = 0; index < actions.length; index++){
 				request_data(hdfs_id, {stat_id: hdfs_data[hdfs_id][actions[index]].largest_id});
@@ -136,56 +125,14 @@ $(document).ready(function(){
 		}, refresh_time);
 	};
 
-	var gather_data_and_draw = function(action){
-		var joinedInstance = $('.joined_instance#joinedGraph');
-		var container = $('.combined_graph');
-		var graphTitles = [];
-		$('.graph_instance').each(function(){
-			if($(this).find('input[type=checkbox]:checked').length > 0){
-				var graphId = parseInt($(this).attr('id'), 10);
-				graphTitles.push($(this).find('.graph_title > h3').text());
-				if (!joinedGraphData[action].metrics.length > 0){
-					joinedGraphData[action].metrics = joinedGraphData[action].metrics.concat(hdfs_data[graphId][action].metrics);
-				}
-			}
-		});
-		draw_graph(joinedInstance.find('.tab-pane.active > .graph'), joinedGraphData[action]);
-		container.find('.graph_title > h3').text('Composite Graph: ' + graphTitles.join(', '));
-	};
-
 	// Page listeners //
 
   $('.graph_instance').on('shown', 'a[data-toggle="tab"]', function(e){
-		var instance = $(this).closest('.graph_instance')
+    var instance = $(this).closest('.graph_instance')
 		var hdfs_id = instance.attr('id');
-		var container = instance.find('.graph');
+		var container = instance.find('.active .graph');
 		var action = $(this).data('action');
-		draw_graph(container, hdfs_data[hdfs_id][action]);
-	});
-
-	$('.joined_instance').on('shown', 'a[data-toggle="tab"]', function(e){
-		var action = $(this).data('action');
-		gather_data_and_draw(action);
-	});
-
-	$('.create_graph_prompt').on('click', function(e){
-		$('.create_graph_prompt').hide();
-		$('.combined_graph').show();
-		gather_data_and_draw('disk');
-	});
-
-	$('.joined_instance#joinedGraph').find('i.icon-remove-sign').on('click', function(e){
-		var container = $('.combined_graph');
-		container.hide();
-		for(var action in joinedGraphData){
-			if(joinedGraphData[action].plot){
-				joinedGraphData[action].plot.shutdown();
-			}
-		}
-		container.find('.tab-pane > .graph').empty();
-		$('.create_graph_prompt').show();
-		container.find('.graph_title > h3').text('');
-		joinedGraphData = {disk: {metrics:[]}, nodes: {metrics:[]}, block: {metrics:[]}};
+    draw_graph(container, hdfs_data[hdfs_id][action]);
 	});
 
 	$('.graph_instance').each(function(){

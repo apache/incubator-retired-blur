@@ -17,8 +17,8 @@ ActiveRecord::Schema.define(:version => 20120604180240) do
     t.text     "query_string"
     t.integer  "complete_shards"
     t.integer  "uuid",                     :limit => 8
-    t.datetime "created_at",                                                      :null => false
-    t.datetime "updated_at",                                                      :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
     t.boolean  "super_query_on"
     t.string   "facets"
     t.integer  "start"
@@ -32,7 +32,7 @@ ActiveRecord::Schema.define(:version => 20120604180240) do
     t.string   "times"
     t.integer  "total_shards"
     t.integer  "state"
-    t.boolean  "record_only",                                  :default => false
+    t.boolean  "record_only"
   end
 
   add_index "blur_queries", ["blur_table_id"], :name => "index_blur_queries_on_blur_table_id"
@@ -88,7 +88,7 @@ ActiveRecord::Schema.define(:version => 20120604180240) do
     t.integer  "missing_blocks",   :limit => 8
     t.integer  "total_nodes"
     t.integer  "dead_nodes"
-    t.datetime "created_at",                    :null => false
+    t.datetime "created_at"
     t.string   "host"
     t.string   "port"
     t.integer  "hdfs_id"
@@ -110,8 +110,8 @@ ActiveRecord::Schema.define(:version => 20120604180240) do
     t.string   "name"
     t.string   "pref_type"
     t.text     "value"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
     t.integer  "user_id"
   end
 
@@ -126,8 +126,8 @@ ActiveRecord::Schema.define(:version => 20120604180240) do
     t.string   "query"
     t.integer  "blur_table_id"
     t.integer  "user_id"
-    t.datetime "created_at",                       :null => false
-    t.datetime "updated_at",                       :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
     t.boolean  "record_only",   :default => false
   end
 
@@ -166,8 +166,8 @@ ActiveRecord::Schema.define(:version => 20120604180240) do
     t.string   "crypted_password"
     t.string   "password_salt"
     t.string   "persistence_token"
-    t.datetime "created_at",        :null => false
-    t.datetime "updated_at",        :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
     t.integer  "roles_mask"
     t.string   "name"
   end

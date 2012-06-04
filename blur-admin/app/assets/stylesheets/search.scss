@@ -75,7 +75,7 @@
           padding: 6px 4px;
         }
       }
-      
+
       #blur-table{
         width: 9%;
         margin: 0 5px 0 15px;
@@ -83,8 +83,9 @@
           width: 100%;
         }
       }
-      
+
       #advanced{
+        .arrow_up { display: none; }
         @include search-tab;
         border-left: 1px solid #ccc;
         .body{
@@ -108,8 +109,9 @@
       }
 
       #loading-spinner { vertical-align: middle; }
-    
+
       #saved{
+        .arrow_up { display: none; }
         text-align: center;
         @include search-tab;
         .action-icon{ cursor: pointer; }

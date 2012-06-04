@@ -106,7 +106,7 @@ public class QueryCollector {
 											startTime = startCal.getTime();
 										}
 										
-										jdbc.update("insert into blur_queries (query_string, times, complete_shards, total_shards, state, uuid, created_at, updated_at, blur_table_id, super_query_on, facets, start, fetch_num, pre_filters, post_filters, selector_column_families, selector_columns, userid) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", 
+										jdbc.update("insert into blur_queries (query_string, times, complete_shards, total_shards, state, uuid, created_at, updated_at, blur_table_id, super_query_on, facets, start, fetch_num, pre_filters, post_filters, selector_column_families, selector_columns, userid, record_only) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", 
 													new Object[]{query.getQueryStr(), 
 														times,
 														blurQueryStatus.getCompleteShards(),
@@ -124,7 +124,8 @@ public class QueryCollector {
 														query.getPostSuperFilter(),
 														blurQueryStatus.getQuery().getSelector() == null ? null : JSONValue.toJSONString(blurQueryStatus.getQuery().getSelector().getColumnFamiliesToFetch()),
 														blurQueryStatus.getQuery().getSelector() == null ? null : JSONValue.toJSONString(blurQueryStatus.getQuery().getSelector().getColumnsToFetch()),
-														blurQueryStatus.getQuery().getUserContext()
+														blurQueryStatus.getQuery().getUserContext(),
+														blurQueryStatus.getQuery().getSelector() == null ? null : blurQueryStatus.getQuery().getSelector().isRecordOnly()
 													});
 									} else if (queryHasChanged(blurQueryStatus, times, existingRow.get(0))){
 										Calendar cal = getUTCCal(new Date().getTime());

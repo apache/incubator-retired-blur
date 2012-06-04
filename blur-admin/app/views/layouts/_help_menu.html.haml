@@ -67,16 +67,18 @@
               %li "Row Count" is the number of rows in that particular table.
               %li "Record Count" is the number of records in that particular table.
               %li
-                "Info" is a link that displays a list of Column families and their columns.
+                "Info" is a link that displays a list of Column families and their columns.s
                 %ul
                   %li The location of the table in the HDFS.
                   %li Each entry also shows the name of its analyzer.
+              %li "Queries/Minute" is a sparkline graph and an average number of queries on the corresponding table over the past 10 minutes.
           .head
             Depending on access, various actions will be available per status.
           .body
             %ul
               %li Active tables will have the option to disable the table
               %li Disabled tables will have the option to activate the table or delete the table.
+              %li Forget tables holds the information of any past deleted tables.
 
       .help-section
         %h3.help-label Blur Queries Help
@@ -113,7 +115,7 @@
             .head
               Use the "Saved" menu to load a previously saved query.
             .body
-              %ul
+              %ol
                 %li The pencil will load the save into the form.
                 %li The red "x" will delete the saved query.
                 %li 
@@ -125,7 +127,7 @@
             .head
               Use the "Search" box to begin building a query. Use the search button to the right to submit.
             .body
-              %ul
+              %ol
                 %li Basic field searches are in the format column_family.column:value
                 %li Fields can be grouped with parenthesis. Eg. (employee.name:bob employee.gender:male)
                 %li
@@ -141,7 +143,7 @@
             .head
               Use the "Advanced" menu to further modify a query.
             .body
-              %ul
+              %ol
                 %li The "Column Families" selector tree allows users to limit the returned columns.
                 %li The "Super Query" option allows you to turn superQuery on/off.
                 %li The "Start" option allows you to choose the starting element to display.

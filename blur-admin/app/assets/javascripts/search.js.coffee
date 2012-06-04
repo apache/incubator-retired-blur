@@ -254,6 +254,7 @@ $(document).ready ->
       rr.prop('checked', false) 
 
 setTimeout ->
-  $('#search_submit').click()
+  if (window.location.search.length > 1)
+    $('#search_submit').click()
 ,1000
 

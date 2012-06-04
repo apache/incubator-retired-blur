@@ -117,10 +117,10 @@ $(document).ready ->
     $('#offset').val(data.offset)
     $('#query_string').val(data.query)
     $('#save_name').val(data.name)
-    $('#search_row').prop('checked',false).prop('disabled',false)
-    $('#search_record').prop('checked',false).prop('disabled',false)
-    $('#return_row').prop('checked',false).prop('disabled',false)
-    $('#return_record').prop('checked',false).prop('disabled',false)
+    $('#search_row').prop('disabled',false)
+    $('#search_record').prop('disabled',false)
+    $('#return_row').prop('disabled',false)
+    $('#return_record').prop('disabled',false)
     if data.search_row
       $('#search_row').click()
     if data.search_record
@@ -238,8 +238,6 @@ $(document).ready ->
     srec = $('#search_record')
     rr = $('#return_row')
     rrec = $('#return_record')
-    sq = $('#super_query')
-    ro = $('#record_only')    
     if sr[0] == $(this)[0]
       srec.prop('checked', false)
       rrec.prop('checked', false)

@@ -128,8 +128,8 @@ class SearchesController < ApplicationController
 
   def save
     search = Search.new(:name         => params[:save_name],
-                  :super_query  =>!params[:super_query].nil?,
-                  :record_only  =>!params[:record_only].nil?,
+                  :super_query  => params[:search] == '0',
+                  :record_only  => params[:search] == '1' && params[:return] == '1',
                   :fetch        => params[:result_count].to_i,
                   :offset       => params[:offset].to_i,
                   :user_id      => current_user.id,
@@ -147,8 +147,8 @@ class SearchesController < ApplicationController
   def update
     Search.update(params[:id],
                         :name               => params[:save_name],
-                        :super_query =>!params[:super_query].nil?,
-                        :record_only =>!params[:record_only].nil?,
+                        :super_query => params[:search] == '0',
+                        :record_only => params[:search] == '1' && params[:return] == '1',
                         :fetch       => params[:result_count].to_i,
                         :offset      => params[:offset].to_i,
                         :user_id     => current_user.id,

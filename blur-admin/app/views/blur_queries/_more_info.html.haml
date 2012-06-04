@@ -47,6 +47,17 @@
           Off
         -else
           =empty_message
+          
+    %tr
+      %td{:class => "more-info-label"} Record Only
+      %td
+        -if @blur_query.record_only
+          On
+        -elsif @blur_query.record_only == false
+          Off
+        -else
+          =empty_message
+          
     %tr
       %td{:class => "more-info-label"} Facets
       %td

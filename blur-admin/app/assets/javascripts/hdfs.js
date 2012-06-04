@@ -210,7 +210,7 @@ $(document).ready(function() {
     var id = file.attr('hdfs_id');
     var path = file.attr('hdfs_path');
     if (confirm("Are you sure you wish to delete " + path + "? This action can not be undone.")) {
-      $.post(Routes.delete_hdfs_path(id), {
+      $.post(Routes.delete_file_hdfs_path(id), {
         'path': path
       }, function() {
         reload_hdfs();

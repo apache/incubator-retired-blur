@@ -20,7 +20,7 @@ $(document).ready(function(){
     clearTimeout(hideFlash);
     $(this).css('right', '-600px');
   })
-  
+
   //Initialize Help
   $('#page-help').click(function(){
     var url = window.location.pathname;
@@ -42,7 +42,7 @@ $(document).ready(function(){
     window.open(Routes.help_path(tab), "Help Menu","menubar=0,resizable=0,width=500,height=600");
     return false;
   });
-      
+
   $('.help-section').live('click', function(){
     $(this).children('.help-content').slideToggle('fast')
   });

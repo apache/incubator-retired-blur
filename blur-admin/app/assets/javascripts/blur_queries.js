@@ -52,7 +52,7 @@ $(document).ready(function() {
       return [
         {
           "mDataProp": "userid",
-					"sWidth": "75px"
+					"sWidth": "85px"
         }, {
           "mDataProp": "query",
           "sWidth": "500px"

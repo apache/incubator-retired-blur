@@ -72,7 +72,10 @@ $(document).ready(function(){
 			data: req_data,
 			success: function(data){
         if (data.length <= 0){
-					return;
+					$.each($('.graph_instance#' + id + ' .graph'), function(index, value) {
+            this.innerHTML = 'No data available';
+          });
+          return;
 				}
 				if (!hdfs_data[id]){
 					hdfs_data[id] = { disk: { metrics: [] }, nodes: { metrics: [] }, block: { metrics: [] } };
@@ -81,6 +84,8 @@ $(document).ready(function(){
 					var request_options = hdfs_request_lookup[action];
 					var hdfs_data_1 = {label: request_options.label_1, data: []};
 					var hdfs_data_2 = {label: request_options.label_2, data: []};
+          var graph_container = $('.graph_instance#' + id).find('.tab-pane#' + action + '_' + id)
+
           for( var i in data ){
 						var point = data[i];
 						var entry_date = new Date(point.created_at).getTime();
@@ -103,8 +108,7 @@ $(document).ready(function(){
 					if (point){
 						hdfs_data[id][action].largest_id = point.id;
 					}
-
-					var graph_container = $('.graph_instance#' + id).find('.tab-pane#' + action + '_' + id)
+		
 					if (graph_container.hasClass('active')){
 						draw_graph(graph_container.find('.graph'), hdfs_data[id][action]);
 					}
@@ -132,7 +136,9 @@ $(document).ready(function(){
 		var hdfs_id = instance.attr('id');
 		var container = instance.find('.active .graph');
 		var action = $(this).data('action');
-    draw_graph(container, hdfs_data[hdfs_id][action]);
+    if (hdfs_data[hdfs_id]){
+      draw_graph(container, hdfs_data[hdfs_id][action]);
+    };
 	});
 
 	$('.graph_instance').each(function(){

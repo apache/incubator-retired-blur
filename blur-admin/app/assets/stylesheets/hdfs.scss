@@ -30,6 +30,7 @@
           a {
             @include box-sizing(border-box);
             display: block;
+            width: 225px;
             overflow-x: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;

@@ -6,6 +6,8 @@
 
 $(document).ready(function() {
   var delete_file, draw_radial_graph, finishUploading, make_dir, navigateUsingPath, paste_buffer, perform_action, reload_hdfs, show_dir_props, show_hdfs_props, upload, uploadFailed;
+  var in_file = [];
+  
   // Old browser support for history push state
   if (typeof history.pushState === 'undefined') {
     history.pushState = function() {};
@@ -232,6 +234,14 @@ $(document).ready(function() {
     var id = el.attr('hdfs_id');
     var path = el.attr('hdfs_path');
     var modal_container = $('<div id="upload_form_modal_container"></div>');
+
+    in_file = [];
+    $('.osxSelectable[hdfs_path="' + path + '"][hdfs_id=' + id + ']').click();
+    if (path == '/')
+      var osxWindow = 1;
+    else
+      var osxWindow = path.split('/').length;
+
     modal_container.load(Routes.upload_form_hdfs_path(id), function(data) {
       $().popup({
         body: data,
@@ -240,6 +250,16 @@ $(document).ready(function() {
         show: function() {
           $('#fpath-input').val(path);
           $('#hdfs-id-input').val(id);
+          $.each( $($('.innerWindow')[osxWindow]).find('a'), function (index, value){
+            in_file.push($(value).attr('title'));
+          });
+          $('input[type=file]').change( function(event) {
+            console.log(in_file);
+            if (in_file.indexOf($('#file-input').val().split('\\').pop()) < 0)
+              $('#upload_file_warning').addClass('hidden');
+            else
+              $('#upload_file_warning').removeClass('hidden');
+          });
         },
         hide: function() {
           !window.uploading;

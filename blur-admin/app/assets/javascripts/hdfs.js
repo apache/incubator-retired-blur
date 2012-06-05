@@ -6,6 +6,8 @@
 
 $(document).ready(function() {
   var delete_file, draw_radial_graph, finishUploading, make_dir, navigateUsingPath, paste_buffer, perform_action, reload_hdfs, show_dir_props, show_hdfs_props, upload, uploadFailed;
+  var in_file = [];
+  
   // Old browser support for history push state
   if (typeof history.pushState === 'undefined') {
     history.pushState = function() {};
@@ -173,28 +175,38 @@ $(document).ready(function() {
           func: function() {
             var newName = $('#newName input').val();
             var newFullPath = "" + (from_path.substring(0, from_path.lastIndexOf('/') + 1)) + newName;
-            $.ajax(Routes.move_hdfs_path(id), {
-              type: 'post',
-              data: {
-                from: from_path,
-                to: newFullPath
-              },
-              success: function() {
-                el.attr('hdfs_path', newFullPath);
-                var link = el.find('a');
-                link.html(newName);
-                var href = link.attr('href');
-                link.attr('href', href.replace(from_path, newFullPath));
-                if (el.hasClass('osxSelected')) {
-                  var nextWin = el.parents('.innerWindow').next();
-                  var display_href = el.find('a').attr('href');
-                  nextWin.load(display_href);
-                } else {
-                  el.click();
-                }
-              }
+            var unique = true;
+            $.each(el.siblings(), function(index, value){
+              if(newFullPath == $(value).attr('hdfs_path')) unique = false;
             });
-            $().closePopup();
+            if (!unique){
+              $().closePopup();
+              errorPopup("Name already in use.");
+            }
+            else{
+              $.ajax(Routes.move_hdfs_path(id), {
+                type: 'post',
+                data: {
+                  from: from_path,
+                  to: newFullPath
+                },
+                success: function() {
+                  el.attr('hdfs_path', newFullPath);
+                  var link = el.find('a');
+                  link.html(newName);
+                  var href = link.attr('href');
+                  link.attr('href', href.replace(from_path, newFullPath));
+                  if (el.hasClass('osxSelected')) {
+                    var nextWin = el.parents('.innerWindow').next();
+                    var display_href = el.find('a').attr('href');
+                    nextWin.load(display_href);
+                  } else {
+                    el.click();
+                  }
+                }
+              });
+              $().closePopup();
+            }
           }
         },
         "Cancel": {
@@ -222,6 +234,14 @@ $(document).ready(function() {
     var id = el.attr('hdfs_id');
     var path = el.attr('hdfs_path');
     var modal_container = $('<div id="upload_form_modal_container"></div>');
+
+    in_file = [];
+    $('.osxSelectable[hdfs_path="' + path + '"][hdfs_id=' + id + ']').click();
+    if (path == '/')
+      var osxWindow = 1;
+    else
+      var osxWindow = path.split('/').length;
+
     modal_container.load(Routes.upload_form_hdfs_path(id), function(data) {
       $().popup({
         body: data,
@@ -230,6 +250,15 @@ $(document).ready(function() {
         show: function() {
           $('#fpath-input').val(path);
           $('#hdfs-id-input').val(id);
+          $.each( $($('.innerWindow')[osxWindow]).find('a'), function (index, value){
+            in_file.push($(value).attr('title'));
+          });
+          $('input[type=file]').change( function(event) {
+            if (in_file.indexOf($('#file-input').val().split('\\').pop()) < 0)
+              $('#upload_file_warning').addClass('hidden');
+            else
+              $('#upload_file_warning').removeClass('hidden');
+          });
         },
         hide: function() {
           !window.uploading;
@@ -413,6 +442,21 @@ $(document).ready(function() {
   window.onpopstate = function(e) {
     navigateUsingPath();
   };
+
+  errorPopup = function(message) {
+    $('<div id="error">' + message +'</div>').popup({
+      title: 'Error',
+      btns: {
+        "Ok": {
+          "class": "primary",
+          func: function(){
+            $().closePopup();
+          }
+        }
+      }
+    });
+  };
+
   /*
     # Methods to call on page load
   */

@@ -117,10 +117,22 @@ $(document).ready ->
     $('#offset').val(data.offset)
     $('#query_string').val(data.query)
     $('#save_name').val(data.name)
-    $('#search_row').prop('disabled',false)
-    $('#search_record').prop('disabled',false)
-    $('#return_row').prop('disabled',false)
-    $('#return_record').prop('disabled',false)
+    if(data.super_query)
+      $('#search_row').prop('checked', true)
+      $('#search_record').prop('checked', false)
+      $('#return_row').prop('checked', true)
+      $('#return_record').prop('checked', false).prop('disabled',true)
+    else if (data.record_only)
+      alert
+      $('#search_row').prop('checked', false)
+      $('#search_record').prop('checked', true)
+      $('#return_row').prop('checked', false)
+      $('#return_record').prop('checked', true).prop('disabled',false)
+    else
+      $('#search_row').prop('checked', false)
+      $('#search_record').prop('checked', true)
+      $('#return_row').prop('checked', true)
+      $('#return_record').prop('checked', false).prop('disabled',false)
     if data.search_row
       $('#search_row').click()
     if data.search_record

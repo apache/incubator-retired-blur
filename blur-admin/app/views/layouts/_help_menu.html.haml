@@ -29,7 +29,8 @@
         %h3.help-label Dashboard Help
         .help-content{ :style =>  tab != 'dashboard' && 'display: none' }
           .head
-            The "Dashboard" page is a high level view of the overall health of your system. Each box on this page represents a different zookeeper and displays information for that zookeeper.
+            The "Dashboard" page is a high level view of the overall health of your system.
+            Each box in the Zookeeper section represents a different zookeeper and displays information on that zookeeper.
           .body
             %ol
               %li The header of each zookeeper box displays whether or not the system is online.
@@ -47,16 +48,26 @@
                 %ul
                   %li This warning is a count of the number queries that have been running for more than a minute. Clicking the number will bring up a dialog with the list of long running queries.
 
+          .head
+            Each box in the Hdfs section represents a different hdfs instance and displays information about it.
+          .body
+            %ol
+              %li The header of each hdfs box displays whether or not the system is online.
+              %li
+                The information under Block Statistics displays whether or not hdfs blocks are missing, corrupt, or under replicated.
+              %li
+                The information under Usage Statistics displays the number of live nodes and the percentage of Dfs usage.
+
       .help-section
-        %h3.help-label Environment Help
+        %h3.help-label Environment Status Help
         .help-content{ :style =>  tab != 'zookeepers' && 'display: none' }
           .head
-            The "Environment" page is a zookeeper specific status page.
+            The "Environment Status" page is a zookeeper specific status page.
           .body
             %ol
               %li The top section lists some of the details about the current zookeeper such as the name, the connection (URL), and its current status.
               %li The "controllers" box lists each controller with its name, blur version, and status.
-              %li The "shards" box lists each shard with its name, blur version, and status.
+              %li The "clusters" box lists each shard with its name, blur version, and status. Click "view shards" for a list of the shards in that cluster and the status of each of them.
 
       .help-section
         %h3.help-label Blur Tables Help
@@ -113,18 +124,6 @@
       .help-section
         %h3.help-label Search Help
         .help-content{ :style =>  tab != 'search' && 'display: none' }
-          .help_list#saved_help
-            .head
-              Use the "Saved" menu to load a previously saved query.
-            .body
-              %ol
-                %li The pencil will load the save into the form.
-                %li The red "x" will delete the saved query.
-                %li 
-                  Use the "Save Options" tab to save the current query.
-                  %ul
-                    %li The "Name" field is used to name your saved searches.
-
           .help_list#search_help
             .head
               Use the "Search" box to begin building a query. Use the search button to the right to submit.
@@ -148,9 +147,21 @@
               %ol
                 %li The "Column Families" selector tree allows users to limit the returned columns.
                 %li The "Super Query" option allows you to turn superQuery on/off.
+                %li The "Record Only" option displays results as records only.
                 %li The "Start" option allows you to choose the starting element to display.
                 %li The "Fetch" option allows you to limit the amount of rows that are returned.
-                %li The "Record Only" option displays results as records only.
+
+          .help_list#saved_help
+            .head
+              Use the "Saved" menu to load a previously saved query.
+            .body
+              %ol
+                %li The pencil will load the save into the form.
+                %li The red "x" will delete the saved query.
+                %li 
+                  Use the "Save Options" tab to save the current query.
+                  %ul
+                    %li The "Name" field is used to name your saved searches.
 
       .help-section
         %h3.help-label HDFS help

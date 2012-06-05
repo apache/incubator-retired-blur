@@ -254,7 +254,6 @@ $(document).ready(function() {
             in_file.push($(value).attr('title'));
           });
           $('input[type=file]').change( function(event) {
-            console.log(in_file);
             if (in_file.indexOf($('#file-input').val().split('\\').pop()) < 0)
               $('#upload_file_warning').addClass('hidden');
             else

@@ -1,4 +1,11 @@
-<div class="zookeeper-title label"><%= zookeeper.get('name') %></div>
+<div class="zookeeper-title label">
+  <% if(zookeeper.get('status')) { %>
+    <img style="width: 15px;" class="zk-stoplight" src="/assets/green_light.png"/>
+  <% } else { %>
+    <img class="zk-stoplight" src="/assets/red_light.png"/>
+  <% } %>
+  <%= zookeeper.get('name') %>
+</div>
 <div class="zookeeper-info">
   <table>
     <tr>

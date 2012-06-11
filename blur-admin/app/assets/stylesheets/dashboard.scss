@@ -1,4 +1,4 @@
-@mixin box-title{
+@mixin box-title {
   position:absolute;
   display:block;
   top:-18px;
@@ -6,7 +6,7 @@
   background:#fff;
 }
 
-@mixin zoo-widget{
+@mixin zoo-widget {
   border-top:$twitter-border;
   padding-top:20px;
   position:relative;
@@ -46,12 +46,11 @@ $blue-dashboard-color: #93A7AC;
 
     &:hover{
       cursor: pointer;
-      background: #FFFCD6;
+      background: #F4F5F6;
     }
   }
 
   .zookeeper-title, .hdfs-title{
-		@include zoo-status;
     font-size:125%;
     padding: 5px 10px;
     margin:0;

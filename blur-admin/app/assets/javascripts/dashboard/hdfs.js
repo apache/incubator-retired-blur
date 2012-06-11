@@ -60,6 +60,7 @@ var HdfsView = Backbone.View.extend({
         pie: {
           show: true,
           radius: 1,
+          innerRadius: 0.6,
           label: {
             show: false,
             radius: 3/4,

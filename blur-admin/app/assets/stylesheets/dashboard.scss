@@ -63,24 +63,19 @@ $blue-dashboard-color: #93A7AC;
     width: 430px;
     margin: 10px;
     td {text-align: center;}
-    .zookeeper-pie-charts {}
-    .zookeeper-cont-pie-chart, .zookeeper-shard-pie-chart {width: 150px; height: 122px; }
     .zookeeper-cont-info, .zookeeper-shard-info {
       width: 65px;
-      .zk-cont-info, .zk-shard-info {vertical-align: middle;}
-      .zk-shard-info {text-align: right;}
-      .zk-cont-info {text-align: left;}
+      .zk-shard-info{
+        vertical-align: middle;
+        text-align: right;
+      }
+      .zk-cont-info{
+        vertical-align: middle;
+        text-align: left;
+      }
     }
-    .hdfs-pie-chart {width: 250px; height: 183px;}
+    .hdfs-chart {width: 250px; height: 250px;}
   }
-
-  /*td div.warning{
-    height: 18px;
-    text-align: center;
-    color: white;
-    @include border-radius;
-    &:hover{ opacity: .9; }
-  }*/
 
   #zookeepers,#hdfses{ height: 100%; }
 	h2 { color: $zk-header-color; @include box-title;}
@@ -94,23 +89,14 @@ $blue-dashboard-color: #93A7AC;
 
   .progress-status{
     &.compare{ @include danger-progress-background; }
-    //@include neutral-progress-background;
     background-image: none;
     background-color: #B9C6C9;
-    //@include border-radius(0);
     position: relative;
     margin: 0px;
     .bar{
       @include border-radius();
       background-image: none;
     }
-    /*span{
-      position: absolute;
-      color: white;
-      top: 0px;
-      &.online-nodes, &.live-nodes{ left: 5px; }
-      &.offline-nodes, &.dead-nodes{ right: 5px; }*/
-    //}
   }
 
 
@@ -118,8 +104,48 @@ $blue-dashboard-color: #93A7AC;
     float: right;
     opacity: .7;
   }
-  .label { background-color: $blue-dashboard-color; width: 430px; }
-  .cont-chart, .shard-chart { margin-left: 15px; width: 120px; height: 120px; }
-  .icon-check, .icon-x { width: 12px; height: 12px; background-image: none; }
-  .query-warning { color: red; margin-top: 10px; }
+
+  .label{
+    background-color: $blue-dashboard-color;
+    width: 430px;
+  }
+
+  .cont-chart, .shard-chart{
+    margin-left: 15px;
+    width: 120px;
+    height: 120px;
+  }
+
+  .icon-check, .icon-x {
+    width: 12px;
+    height: 12px;
+    background-image: none;
+  }
+
+  .query-warning{
+    color: red;
+    margin-top: 10px;
+  }
+
+  .hdfs-legend{
+    text-align: left;
+  }
+
+  .hdfs-legend{
+    margin: -85px 0 0 -15px;
+    .legend-box{
+      width: 12px;
+      height: 12px;
+      float: left;
+      margin: 2px 5px 0 0;
+      border: 1px solid $border_color;
+    }
+    h6{ float: left; }
+    .healthy{ background-color: #5DB95D; }
+    .corrupt{ background-color: #AFD8F8; }
+    .missing{ background-color: #CB4B4B; }
+    .under-replicated{ background-color: #EDC240;  }
+  }
+
+  h6{ color: $font-color; }
 }

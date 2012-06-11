@@ -47,10 +47,45 @@ var HdfsView = Backbone.View.extend({
   template: JST['templates/dashboard/hdfs'],
   render: function(){
     this.$el.html(this.template({hdfs: this.model}));
+    if (this.$el.find('.hdfs-chart')[0]){ this.draw_hdfs_chart(this.$el.find('.hdfs-chart')[0]);}
     return this;
   },
   navigate_to_hdfs: function(){
     var id = this.model.get('id');
     window.location = Routes.hdfs_index_path() + '/' + id + '/show';
+  },
+  draw_hdfs_chart: function(target){
+    var options = {
+      series: {
+        pie: {
+          show: true,
+          radius: 1,
+          label: {
+            show: false,
+            radius: 3/4,
+            formatter: function(label,series) {
+              return '<div style="font-size: 8pt; text-align: center; padding: 2px; color: white;">'+label+'<br/></div>';
+            },
+            background: {
+              opacity: 0.5,
+              color: '#000'
+            }
+          }
+        }
+      },
+      legend: {
+        show: false
+      }
+    };
+    var data = [
+      { label: "Healthy", data: this.model.get('most_recent_stats').live_nodes, color: '#5DB95D' },
+      { label: "Corrupt", data: this.model.get('corrupt_blocks'), color: '#AFD8F8' },
+      { label: "Missing", data: this.model.get('missing_blocks'), color: '#CB4B4B' },
+      { label: "Under-Rep", data: this.model.get('under_replicated'), color: '#EDC240' }
+    ];
+    console.log(this.model.get('most_recent_stats').live_nodes);
+    target.style.width = '175px';
+    target.style.height = '175px';
+    $.plot(target, data, options);
   }
 });

@@ -106,7 +106,7 @@ var ZookeeperView = Backbone.View.extend({
       }
     };
     var data = [
-      { label: "Online", data: total - offline, color: "green" },
+      { label: "Online", data: total - offline, color: "#5DB95D" },
       { label: "Offline", data: offline, color: "red" }
     ];
     target.style.width = '120px';

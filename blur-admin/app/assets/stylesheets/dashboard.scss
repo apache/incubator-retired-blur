@@ -20,24 +20,28 @@
   &.important{font-style:italic;}
 }
 
+$blue-dashboard-color: #93A7AC;
+
 #zookeepers_wrapper, #hdfs_dash_wrapper{
   @include standard-font; 
   @include zoo-widget;
   margin-top: 2em;
 
   .zookeeper_info, .hdfs_info {
-    width: 500px;
+    width: 450px;
     margin: 0px 10px 20px 20px;
     display: inline-block;
     border: 1px solid;
     font-size: 15px;
     @include border-radius(5px);
-    &.online{ border-color: $green-border-color; }
+
+    //TODO change offline and warning
+    &.online{ border-color: $blue-dashboard-color; }
     &.offline{ border-color: $red-border-color; }
     &.warning{ border-color: #F9A732;}
+
     table{ margin:0; width:100%; }
     table tbody th { text-align:center; vertical-align:middle; }
-    tbody{ margin: 10px; }
     .status-bar{ @include border-radius() }
 
     &:hover{
@@ -45,26 +49,39 @@
       background: #FFFCD6;
     }
   }
-  .center{
-    text-align:center;
-  }
+
   .zookeeper-title, .hdfs-title{
 		@include zoo-status;
     font-size:125%;
     padding: 5px 10px;
     margin:0;
-    display:table-cell;
     text-align: left;
 		@include border-radius-bottom(0);
   }
-  td div.warning{
+
+  .zookeeper-info, .hdfs-info{
+    width: 430px;
+    margin: 10px;
+    td {text-align: center;}
+    .zookeeper-pie-charts {}
+    .zookeeper-cont-pie-chart, .zookeeper-shard-pie-chart {width: 150px; height: 122px; }
+    .zookeeper-cont-info, .zookeeper-shard-info {
+      width: 65px;
+      .zk-cont-info, .zk-shard-info {vertical-align: middle;}
+      .zk-shard-info {text-align: right;}
+      .zk-cont-info {text-align: left;}
+    }
+    .hdfs-pie-chart {width: 250px; height: 183px;}
+  }
+
+  /*td div.warning{
     height: 18px;
     text-align: center;
     color: white;
     @include border-radius;
     &:hover{ opacity: .9; }
-  }
-  .status{ width:160px; @include zoo-status; }
+  }*/
+
   #zookeepers,#hdfses{ height: 100%; }
 	h2 { color: $zk-header-color; @include box-title;}
   .shards, .controllers, .blocks, .usage{
@@ -77,23 +94,32 @@
 
   .progress-status{
     &.compare{ @include danger-progress-background; }
-    @include neutral-progress-background;
+    //@include neutral-progress-background;
+    background-image: none;
+    background-color: #B9C6C9;
+    //@include border-radius(0);
     position: relative;
     margin: 0px;
     .bar{
       @include border-radius();
+      background-image: none;
     }
-    span{
+    /*span{
       position: absolute;
       color: white;
       top: 0px;
       &.online-nodes, &.live-nodes{ left: 5px; }
       &.offline-nodes, &.dead-nodes{ right: 5px; }
-    }
+    }*/
   }
+
 
   span.title-subtle{
     float: right;
     opacity: .7;
   }
+  .label { background-color: $blue-dashboard-color; width: 430px; }
+  h6 { color: $blue-dashboard-color; }
+  .legend { display: none; }
+  #pie { margin-left: 15px; }
 }

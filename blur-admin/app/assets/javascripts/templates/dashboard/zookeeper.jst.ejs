@@ -1,37 +1,76 @@
-<table class="zookeeper-table">
-  <thead>
+<div class="zookeeper-title label"><%= zookeeper.get('name') %>
+</div>
+<div class="zookeeper-info">
+  <table>
     <tr>
-      <th class="zookeeper-title label btn-success" colspan="3">
-        <div class="zookeeper-name"><%= zookeeper.get('name') %>
-          <span class="title-subtle"><%= zookeeper.status() %></span>
+      <td>Controllers</td>
+      <td></td>
+      <td></td>
+      <td>Shards</td>
+    </tr>
+    <tr>
+      <td class="zookeeper-cont-pie-chart">
+        <!--<div id="pie" style="width: 120px; height: 120px;"></div>-->
+        <img src="/assets/pie_chart.png">
+      </td>
+      <td class="zookeeper-cont-info">
+        <div class="zk-cont-info">
+          <h6>1 Online<br /></h6>
+          <h6>0 Offline<br /></h6>
+          <h6>CBV</h6>
         </div>
-      </th>
+      </td>
+      <td class="zookeeper-shard-info">
+        <div class="zk-shard-info">
+          <h6>4 Online<br /></h6>
+          <h6>0 Offline<br /></h6>
+          <h6>CBV</h6>
+        </div>
+      </td>
+      <td class="zookeeper-shard-pie-chart">
+        <img src="/assets/pie_chart.png">
+      </td>
     </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td class="controllers">Controllers</td>
-      <td class="shards">Shards</td>
+  </table>
+</div>
+
+    <!--<tr>
+      <td style="text-align: center;">Controllers: 1</td>
+      <td style="text-align: center;">Shards: 4</td>
     </tr>
     <tr>
-      <td class="controllers">
+      <td>
+        <img style="margin-left: auto; margin-right: auto; display: block; width: 150px;"src="/assets/pie_chart.png"/>
+      </td>
+      <td>
+        <img style="margin-left: auto; margin-right: auto; display: block; width: 150px;" src="/assets/pie_chart.png"/>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">Consistent Blur Versions</td>
+      <td style="text-align: center;">Consistent Blur Versions</td>
+    </tr>-->
+
+ 
+    <!--<tr>
+      <td colspan="2" style="text-align: center;">
         <% if(zookeeper.consistent_controller_versions()){ %>
-          <div class="btn-success status-bar"><div>Consistent Blur Versions</div></div>
+          <div>Consistent Blur Versions</div>
         <% } else { %>
-          <div class="btn-danger status-bar"><div>Inconsistent Blur Versions</div></div>
+          <div>Inconsistent Blur Versions</div>>
         <% } %>
       </td>
-      <td class="shards">
+      <td colspan="2" style="text-align: center;">
         <% if(zookeeper.consistent_shard_versions()){ %>
-          <div class="btn-success status-bar"><div>Consistent Blur Versions</div></div>
+          <div>Consistent Blur Versions</div>
         <% } else { %>
-          <div class="btn-danger status-bar"><div>Inconsistent Blur Versions</div></div>
+          <div>Inconsistent Blur Versions</div>
         <% } %>
       </td>
-    </tr>
-    <tr>
-      <td class="controllers">
-        <div class="progress progress-success progress-status compare">
+    </tr>-->
+    <!--<tr>
+      <td>
+        <div>
           <div class="bar" style="width:<%= zookeeper.controller_progress_width() %>%"></div>
           <span class="online-nodes"><%= zookeeper.online_controller_nodes() %> Online</span>
           <% if(zookeeper.get('controller_offline_node') !== 0){ %>
@@ -61,6 +100,4 @@
           </div>
         </td>
       </tr>
-    <% } %>
-  </tbody>
-</table>
+    <% } %>-->

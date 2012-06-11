@@ -1,3 +1,6 @@
+//=require flot/flot
+//=require flot/jquery.flot.pie.min.js
+
 var Hdfs = Backbone.Model.extend({
   initialize: function(){
     this.view = new HdfsView({model: this});

@@ -1,22 +1,31 @@
 <% var stats = hdfs.get('most_recent_stats'); %>
-<table class="hdfs-table">
-  <thead>
+<div class="hdfs-title label">
+  <%= hdfs.get('name') %>
+  <span class="title-subtle"><%= hdfs.get('host') %></span>
+</div>
+<div class="hdfs-info">
+  <table class="hdfs-table">
     <tr>
-      <th class="hdfs-title label btn-success" colspan="3">
-        <div class="hdfs-name">
-          <%= hdfs.get('name') %>
-          <span class="title-subtle"><%= hdfs.get('host') %></span>
+      <td class="hdfs-pie-chart">
+        <img src="/assets/pie_chart.png">
+      </td>
+      <td>
+        <div class="hdfs-live progress progress-success progress-status">
+          <div class="bar" style="width:<%= hdfs.node_width() %>%"></div>
         </div>
-      </th>
+        <%= stats.live_nodes %> out of <%= stats.total_nodes %> live nodes<br /><br />
+        <div class="hdfs-dfs progress progress-status">
+          <div class="bar" style="width:<%= hdfs.usage_width() %>%"></div>
+        </div>
+        <%= hdfs.percent_used() %> dfs usage
+      </td>
     </tr>
-  </thead>
-  <tbody>
+  </table>
+</div>
+
+<!--<tbody>
     <tr>
-      <td class="blocks">Block Statistics</td>
-      <td class="usage">Usage Statistics</td>
-    </tr>
-    <tr>
-      <td class="blocks">
+      <td>
         <% if(stats.corrupt_blocks === 0){ %>
           <div class="btn-success status-bar"><div>No Corrupt Blocks</div></div>
         <% } else if (stats.corrupt_blocks === -1) { %>
@@ -66,4 +75,4 @@
       </td>
     </tr>
   </tbody>
-</table>
+</table>-->

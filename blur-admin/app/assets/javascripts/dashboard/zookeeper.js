@@ -58,6 +58,7 @@ var ZookeeperView = Backbone.View.extend({
     } else {
       this.$el.addClass('online');
     }
+    //this.draw_zookeeper_pie_charts(this.$el.find('#pie')[0]);
     return this;
   },
   navigate_to_zookeeper: function(){
@@ -76,5 +77,34 @@ var ZookeeperView = Backbone.View.extend({
       }
     })
     return false;
+  },
+  draw_zookeeper_pie_charts: function(target){
+    var options = {
+      series: {
+        pie: {
+          show: true,
+          radius: 1,
+          label: {
+            show: true,
+            radius: 3/4,
+            formatter: function(label,series) {
+              return '<div style="font-size: 8pt; text-align: center; padding: 2px; color: white;">'+label+'<br/></div>';
+            },
+            background: {
+              opacity: 0.5,
+              color: '#000'
+            }
+          }
+        },
+        legend: {
+          show: true
+        }
+      }
+    };
+    var data = [
+      { label: "Online", data: 3, color: "green" },
+      { label: "Offline", data: 1, color: "red" }
+    ];
+    $.plot(target, data, options);
   }
 });

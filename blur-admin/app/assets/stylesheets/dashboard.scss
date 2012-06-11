@@ -109,8 +109,8 @@ $blue-dashboard-color: #93A7AC;
       color: white;
       top: 0px;
       &.online-nodes, &.live-nodes{ left: 5px; }
-      &.offline-nodes, &.dead-nodes{ right: 5px; }
-    }*/
+      &.offline-nodes, &.dead-nodes{ right: 5px; }*/
+    //}
   }
 
 
@@ -120,6 +120,5 @@ $blue-dashboard-color: #93A7AC;
   }
   .label { background-color: $blue-dashboard-color; width: 430px; }
   h6 { color: $blue-dashboard-color; }
-  .legend { display: none; }
-  #pie { margin-left: 15px; }
+  .cont-chart, .shard-chart { margin-left: 15px; width: 120px; height: 120px; }
 }

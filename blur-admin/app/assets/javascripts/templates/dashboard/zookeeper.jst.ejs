@@ -1,5 +1,4 @@
-<div class="zookeeper-title label"><%= zookeeper.get('name') %>
-</div>
+<div class="zookeeper-title label"><%= zookeeper.get('name') %></div>
 <div class="zookeeper-info">
   <table>
     <tr>
@@ -10,25 +9,24 @@
     </tr>
     <tr>
       <td class="zookeeper-cont-pie-chart">
-        <!--<div id="pie" style="width: 120px; height: 120px;"></div>-->
-        <img src="/assets/pie_chart.png">
+        <div class="cont-chart"></div>
       </td>
       <td class="zookeeper-cont-info">
         <div class="zk-cont-info">
-          <h6>1 Online<br /></h6>
-          <h6>0 Offline<br /></h6>
+          <h6><%= zookeeper.get('controller_total') - zookeeper.get('controller_offline_node') %> Online<br /></h6>
+          <h6><%= zookeeper.get('controller_offline_node') %> Offline<br /></h6>
           <h6>CBV</h6>
         </div>
       </td>
       <td class="zookeeper-shard-info">
         <div class="zk-shard-info">
-          <h6>4 Online<br /></h6>
-          <h6>0 Offline<br /></h6>
+          <h6><%= zookeeper.get('shard_total') - zookeeper.get('shard_offline_node') %> Online<br /></h6>
+          <h6><%= zookeeper.get('shard_offline_node') %> Offline<br /></h6>
           <h6>CBV</h6>
         </div>
       </td>
       <td class="zookeeper-shard-pie-chart">
-        <img src="/assets/pie_chart.png">
+        <div class="shard-chart"></div>
       </td>
     </tr>
   </table>

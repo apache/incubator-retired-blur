@@ -8,7 +8,7 @@ class BlurTablesController < ApplicationController
     @clusters.each{|cluster| cluster.can_update = can?(:update, :blur_tables)}
     respond_to do |format|
       format.html
-      format.json { render :json => @clusters }
+      format.json { render :json => @clusters, :methods => [:blur_tables] }
     end
   end
 

@@ -38,6 +38,10 @@ class ZookeepersController < ApplicationController
   def show
     @shard_nodes = @current_zookeeper.shards.count 'DISTINCT blur_version'
     @controller_nodes = @current_zookeeper.controllers.count 'DISTINCT blur_version'
+    respond_to do |format|
+      format.html
+      format.json { render :json => @current_zookeeper, :methods => [:clusters, :controllers] }
+    end
   end
 
   def dashboard

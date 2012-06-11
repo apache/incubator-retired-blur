@@ -3,14 +3,16 @@ $opacity-adjust: 0;
   i { cursor: pointer; }
   $header-padding: 20px;
   margin-top: 2em;
-  #blur, #zookeeper{ margin-bottom: 2em; }
+  #blur, #zookeeper{ margin-bottom: 2em;}
   #zookeeper {
     @include border-radius();
     opacity: .9;
-    height: 100px;
+    height: 70px;
+    width: 500px;
+    
     h2 {
-      font-size: 50px;
-      padding: 20px 20px 0px;
+      font-size: 25px;
+      padding: 10px 10px 0px;
       color: white;
       line-height: 40px;
       @include box-sizing(border-box);
@@ -18,22 +20,26 @@ $opacity-adjust: 0;
       position: relative;
       .connection-url {
         position: absolute;
-        right: 10px;
+        left: 10px;
         bottom: 0px;
-        float: right;
-        font-size: 20px;
+        float: left;
+        font-size: 13px;
         opacity: .8;
       }
       i {
         position: absolute;
-        top: 10px;
-        right: 10px;
+        top: 5px;
+        right: 5px;
       }
     }
   }
   #blur {
-    #controllers, #clusters{ padding: 5px; @include box-sizing(border-box); }
+    #controllers, #clusters{ padding: 5px; @include box-sizing(border-box); min-width: 550;}
+    thead{
+      background-color: whitesmoke;
+    }
     table tbody tr{
+      
       td{ 
         background-color: rgba(91, 183, 91, .9 - $opacity-adjust); 
         color: white;

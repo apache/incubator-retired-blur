@@ -119,6 +119,7 @@ $blue-dashboard-color: #93A7AC;
     opacity: .7;
   }
   .label { background-color: $blue-dashboard-color; width: 430px; }
-  h6 { color: $blue-dashboard-color; }
   .cont-chart, .shard-chart { margin-left: 15px; width: 120px; height: 120px; }
+  .icon-check, .icon-x { width: 12px; height: 12px; background-image: none; }
+  .query-warning { color: red; margin-top: 10px; }
 }

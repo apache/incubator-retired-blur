@@ -1,26 +1,24 @@
 <% var stats = hdfs.get('most_recent_stats'); %>
 <div class="hdfs-title label">
   <% if(hdfs.get('recent_stats')) { %>
-    <img class="stoplight" src="/assets/green_light.png"/>
+    <img src="/assets/green_light.png"/>
   <% } else { %>
-    <img class="stoplight" src="/assets/red_light.png"/>
+    <img src="/assets/red_light.png"/>
   <% } %>
   <%= hdfs.get('name') %>
   <span class="title-subtle"><%= hdfs.get('host') %></span>
 </div>
 <div class="hdfs-body">
-  <table class="hdfs-table">
+  <table>
     <tr>
       <td class="hdfs-chart-container">
         <div class="hdfs-chart"></div>
-        <span class="hdfs-legend">
-          <div class="legend">
-            <div class="legend-box healthy"></div><h6>Healthy</h6><br />
-            <div class="legend-box corrupt"></div><h6>Corrupt</h6><br />
-            <div class="legend-box missing"></div><h6>Missing</h6><br />
-            <div class="legend-box under-replicated"></div><h6>Under-Rep</h6>
-          </div>
-        </span>
+        <div class="legend">
+          <div class="legend-box healthy"></div><h6>Healthy</h6><br />
+          <div class="legend-box corrupt"></div><h6>Corrupt</h6><br />
+          <div class="legend-box missing"></div><h6>Missing</h6><br />
+          <div class="legend-box under-replicated"></div><h6>Under-Rep</h6>
+        </div>
       </td>
       <td class="hdfs-bar-container">
         <div class="hdfs-live progress progress-success progress-status">

@@ -7,11 +7,11 @@
   <%= zookeeper.get('name') %>
 </div>
 <div class="zookeeper-body">
-  <table class="zookeeper-table">
+  <table>
     <tr>
       <td class="zk-chart">
         <div class="cont-chart"></div>
-        <span class="chart-title"><div class="chart-title-text">Controllers</div></span>
+        <div class="chart-title-text">Controllers</div>
       </td>
       <td class="zookeeper-cont-info">
         <div class="zk-cont-info">
@@ -37,7 +37,7 @@
     </td>
     <td class="zk-chart">
       <div class="shard-chart"></div>
-      <span class="chart-title"><div class="chart-title-text">Shards</div></span>
+      <div class="chart-title-text">Shards</div>
     </td>
   </tr>
   <% if(zookeeper.get('long_running_queries') > 0){ %>

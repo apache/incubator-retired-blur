@@ -42,7 +42,7 @@ var HdfsCollection = Backbone.StreamCollection.extend({
 var HdfsView = Backbone.View.extend({
   className: 'hdfs_info online',
   events: {
-    'click .hdfs-table' : 'navigate_to_hdfs'
+    'click .hdfs-body' : 'navigate_to_hdfs'
   },
   template: JST['templates/dashboard/hdfs'],
   render: function(){

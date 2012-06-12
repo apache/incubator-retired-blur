@@ -44,10 +44,9 @@
     }
   }
 
-  .zookeeper-title, .hdfs-title{
-    font-size:125%;
+  .zookeeper-title, .hdfs-title {
+    font-size: 125%;
     padding: 5px 10px;
-    margin:0;
     text-align: left;
 		@include border-radius-bottom(0);
   }
@@ -55,77 +54,70 @@
   .zookeeper-body, .hdfs-body {
     width: 430px;
     margin: 10px;
+
     td {text-align: center;}
+    h6{ color: $font-color; }
+
     .zookeeper-cont-info, .zookeeper-shard-info {
       width: 65px;
-      .zk-shard-info{
-        vertical-align: middle;
-        text-align: right;
-      }
-      .zk-cont-info{
-        vertical-align: middle;
-        text-align: left;
-      }
+      vertical-align: middle;
+      .zk-shard-info { text-align: right; }
+      .zk-cont-info{ text-align: left; }
     }
+
     .hdfs-chart { margin-left: 30px; }
-    .cont-chart, .shard-chart{
-      margin-left: 5px;
-    }
-    .icon-check, .icon-x {
-      width: 12px;
-      height: 12px;
-      background-image: none;
-    }
-    .query-warning{
+    .cont-chart, .shard-chart { margin-left: 5px; }
+
+    .query-warning {
       color: $red-dashboard-color;
       margin-top: 10px;
     }
-    .hdfs-legend{
-      .legend-box{
+
+    .chart-title-text{
+      margin-top: -136px;
+      z-index: 1;
+    }
+
+    .legend{
+      margin: -122px 0 0 80px;
+      z-index: 1;
+      h6{ float: left; }
+
+      .legend-box {
         width: 12px;
         height: 12px;
         float: left;
         margin: 2px 5px 0 0;
         border: 1px solid $border_color;
       }
-      h6{ float: left; }
+
       .healthy{ background-color: $green-dashboard-color; }
       .corrupt{ background-color: $blue-chart-dashboard-color; }
       .missing{ background-color: $red-dashboard-color; }
       .under-replicated{ background-color: $yellow-dashboard-color; }
     }
-    h6{ color: $font-color; }
+
     .inconsistent-BV{ color: $red-dashboard-color; }
+
     .zk-chart{
-      $zk-width: 135px;
-      width: $zk-width;
-      line-height: $zk-width;
-      height: $zk-width;
+      $zk-size: 135px;
+      width: $zk-size;
+      line-height: $zk-size;
+      height: $zk-size;
       position: relative;
       text-align: center;
     }
+
     .hdfs-chart-container{
-      $hdfs-width: 175px;
-      width: $hdfs-width;
-      line-height: $hdfs-width;
-      height: $hdfs-width;
+      $hdfs-size: 175px;
+      width: $hdfs-size;
+      height: $hdfs-size;
       position: relative;
       text-align: center;
     }
-    .chart-title, .hdfs-legend{
-      z-index: 1;
-      .legend{
-        line-height: 18px;
-        margin-top: -122px;
-        margin-left: 80px;
-        z-index: 1;
-      }
-      .chart-title-text{
-        margin-top: -136px;
-        z-index: 1;
-      }
-    }
+
     .hdfs-chart { margin-top: -50px }
+
     .hdfs-bar-container {
       width: 130px;
       padding-right: 20px;
@@ -134,13 +126,6 @@
 
   #zookeepers,#hdfses{ height: 100%; }
 	h2 { color: $zk-header-color; @include box-title;}
-  .shards, .controllers, .blocks, .usage{
-    text-align: center;
-    width: 50%;
-    div{
-      height: 20px;
-    }
-  }
 
   .progress-status{
     &.compare{ @include danger-progress-background; }
@@ -152,7 +137,8 @@
       background-image: none;
     }
   }
-  .hdfs-live {background-color: $red-dashboard-color; }
+
+  .hdfs-live { background-color: $red-dashboard-color; }
   .hdfs-dfs { background-color: $faded-blue-dashboard-color; }
 
   span.title-subtle{

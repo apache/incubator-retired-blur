@@ -1,4 +1,4 @@
-//= require_tree .
+//= require_tree
 
 $(document).ready(function() {
   // Create the hdfs and blur instances and start streaming

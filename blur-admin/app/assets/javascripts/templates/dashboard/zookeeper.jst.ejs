@@ -6,49 +6,41 @@
   <% } %>
   <%= zookeeper.get('name') %>
 </div>
-<div class="zookeeper-info">
+<div class="zookeeper-body">
   <table>
     <tr>
-      <td>Controllers</td>
-      <td></td>
-      <td></td>
-      <td>Shards</td>
-    </tr>
-    <tr>
-      <td>
+      <td class="zk-chart">
         <div class="cont-chart"></div>
+        <span class="chart-title">Controllers</span>
       </td>
       <td class="zookeeper-cont-info">
         <div class="zk-cont-info">
           <h6><%= zookeeper.get('controller_total') - zookeeper.get('controller_offline_node') %> Online<br /></h6>
           <h6><%= zookeeper.get('controller_offline_node') %> Offline<br /></h6>
-          <h6>
-            <% if(zookeeper.consistent_controller_versions()){ %>
-              CBV <img class="icon-check" src="/assets/check.png"/>
-            <% } else { %>
-              CBV <img class="icon-x" src="/assets/x.png"/>
-            <% } %>
-          </h6>
-        </div>
-      </td>
-      <td class="zookeeper-shard-info">
-        <div class="zk-shard-info">
-          <h6><%= zookeeper.get('shard_total') - zookeeper.get('shard_offline_node') %> Online<br /></h6>
-          <h6><%= zookeeper.get('shard_offline_node') %> Offline<br /></h6>
-          <h6>
-            <% if(zookeeper.consistent_shard_versions()){ %>
-              CBV <img class="icon-check" src="/assets/check.png"/>
-            <% } else { %>
-              CBV <img class="icon-x" src="/assets/x.png"/>
-            <% } %>
-          </h6>
-        </div>
-      </td>
-      <td>
-        <div class="shard-chart"></div>
-      </td>
-    </tr>
-    <% if(zookeeper.get('long_running_queries') > 0){ %>
+          <% if(zookeeper.consistent_controller_versions()){ %>
+            <h6>CBV <i class="icon-ok"></i></h6>
+          <% } else { %>
+          <h6 class="inconsistent-BV">CBV <i class="icon-remove"</h6>
+        <% } %>
+      </div>
+    </td>
+    <td class="zookeeper-shard-info">
+      <div class="zk-shard-info">
+        <h6><%= zookeeper.get('shard_total') - zookeeper.get('shard_offline_node') %> Online<br /></h6>
+        <h6><%= zookeeper.get('shard_offline_node') %> Offline<br /></h6>
+        <% if(false){ %>
+          <h6>CBV <i class="icon-ok"></i></h6>
+        <% } else { %>
+          <h6 class="inconsistent-BV">CBV <i class="icon-remove"></i></h6>
+        <% } %>
+      </div>
+    </td>
+    <td class="zk-chart">
+      <div class="shard-chart"></div>
+      <span class="chart-title">Shards</span>
+    </td>
+  </tr>
+  <% if(zookeeper.get('long_running_queries') > 0){ %>
       <tr>
         <td colspan="4">
           <div class="query-warning">

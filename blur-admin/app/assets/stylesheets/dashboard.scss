@@ -20,10 +20,8 @@
   &.important{font-style:italic;}
 }
 
-$blue-dashboard-color: #93A7AC;
-
-#zookeepers_wrapper, #hdfs_dash_wrapper{
-  @include standard-font; 
+#zookeepers_wrapper, #hdfs_dash_wrapper {
+  @include standard-font;
   @include zoo-widget;
   margin-top: 2em;
 
@@ -35,11 +33,6 @@ $blue-dashboard-color: #93A7AC;
     font-size: 15px;
     border-color: $blue-dashboard-color;
     @include border-radius(5px);
-
-    //TODO change offline and warning
-    &.online{ border-color: $blue-dashboard-color; }
-    &.offline{ border-color: $red-border-color; }
-    &.warning{ border-color: #F9A732;}
 
     table{ margin:0; width:100%; }
     table tbody th { text-align:center; vertical-align:middle; }
@@ -59,7 +52,7 @@ $blue-dashboard-color: #93A7AC;
 		@include border-radius-bottom(0);
   }
 
-  .zookeeper-info, .hdfs-info{
+  .zookeeper-body, .hdfs-body{
     width: 430px;
     margin: 10px;
     td {text-align: center;}
@@ -74,7 +67,66 @@ $blue-dashboard-color: #93A7AC;
         text-align: left;
       }
     }
-    .hdfs-chart {width: 250px; height: 250px;}
+    .hdfs-chart { margin-left: 30px; }
+    .cont-chart, .shard-chart{
+      margin-left: 5px;
+    }
+    .icon-check, .icon-x {
+      width: 12px;
+      height: 12px;
+      background-image: none;
+    }
+    .query-warning{
+      color: $red-dashboard-color;
+      margin-top: 10px;
+    }
+    .hdfs-legend{
+      .legend-box{
+        width: 12px;
+        height: 12px;
+        float: left;
+        margin: 2px 5px 0 0;
+        border: 1px solid $border_color;
+      }
+      h6{ float: left; }
+      .healthy{ background-color: $green-dashboard-color; }
+      .corrupt{ background-color: $blue-chart-dashboard-color; }
+      .missing{ background-color: $red-dashboard-color; }
+      .under-replicated{ background-color: $yellow-dashboard-color; }
+    }
+    h6{ color: $font-color; }
+    .inconsistent-BV{ color: $red-dashboard-color; }
+    .zk-chart{
+      $zk-width: 135px;
+      width: $zk-width;
+      line-height: $zk-width;
+      height: $zk-width;
+      position: relative;
+      text-align: center;
+    }
+    .hdfs-chart-container{
+      $hdfs-width: 175px;
+      width: $hdfs-width;
+      line-height: $hdfs-width;
+      height: $hdfs-width;
+      position: relative;
+      text-align: center;
+    }
+    .chart-title, .hdfs-legend{
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      width: 100%;
+      .legend{
+        line-height: 18px;
+        margin: 52px 0 0 80px;
+      }
+    }
+    .hdfs-bar-container {
+      width: 130px;
+      padding-right: 20px;
+    }
   }
 
   #zookeepers,#hdfses{ height: 100%; }
@@ -90,7 +142,7 @@ $blue-dashboard-color: #93A7AC;
   .progress-status{
     &.compare{ @include danger-progress-background; }
     background-image: none;
-    background-color: #B9C6C9;
+    background-color: $faded-blue-dashboard-color;
     position: relative;
     margin: 0px;
     .bar{
@@ -98,7 +150,6 @@ $blue-dashboard-color: #93A7AC;
       background-image: none;
     }
   }
-
 
   span.title-subtle{
     float: right;
@@ -109,43 +160,4 @@ $blue-dashboard-color: #93A7AC;
     background-color: $blue-dashboard-color;
     width: 430px;
   }
-
-  .cont-chart, .shard-chart{
-    margin-left: 15px;
-    width: 120px;
-    height: 120px;
-  }
-
-  .icon-check, .icon-x {
-    width: 12px;
-    height: 12px;
-    background-image: none;
-  }
-
-  .query-warning{
-    color: red;
-    margin-top: 10px;
-  }
-
-  .hdfs-legend{
-    text-align: left;
-  }
-
-  .hdfs-legend{
-    margin: -85px 0 0 -15px;
-    .legend-box{
-      width: 12px;
-      height: 12px;
-      float: left;
-      margin: 2px 5px 0 0;
-      border: 1px solid $border_color;
-    }
-    h6{ float: left; }
-    .healthy{ background-color: #5DB95D; }
-    .corrupt{ background-color: #AFD8F8; }
-    .missing{ background-color: #CB4B4B; }
-    .under-replicated{ background-color: #EDC240;  }
-  }
-
-  h6{ color: $font-color; }
 }

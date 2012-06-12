@@ -55,12 +55,12 @@ var ZookeeperView = Backbone.View.extend({
   template: JST['templates/dashboard/zookeeper'],
   render: function(){
     this.$el.html(this.template({zookeeper: this.model}));
-    if(this.model.get('status') === 0){
+    /*if(this.model.get('status') === 0){
       this.$el.find('.zookeeper-title').addClass('btn-danger');
       this.$el.addClass('offline');
     } else {
       this.$el.addClass('online');
-    }
+    }*/
     if (this.$el.find('.cont-chart')[0]){ this.draw_zk_charts(this.$el.find('.cont-chart')[0], this.model.get('controller_total'), this.model.get('controller_offline_node'));}
     if (this.$el.find('.shard-chart')[0]){ this.draw_zk_charts(this.$el.find('.shard-chart')[0], this.model.get('shard_total'), this.model.get('shard_offline_node'));}
     return this;

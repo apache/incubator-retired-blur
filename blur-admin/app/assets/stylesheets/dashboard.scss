@@ -33,6 +33,7 @@ $blue-dashboard-color: #93A7AC;
     display: inline-block;
     border: 1px solid;
     font-size: 15px;
+    border-color: $blue-dashboard-color;
     @include border-radius(5px);
 
     //TODO change offline and warning

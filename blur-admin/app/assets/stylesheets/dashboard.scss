@@ -52,7 +52,7 @@
 		@include border-radius-bottom(0);
   }
 
-  .zookeeper-body, .hdfs-body{
+  .zookeeper-body, .hdfs-body {
     width: 430px;
     margin: 10px;
     td {text-align: center;}
@@ -113,16 +113,19 @@
       text-align: center;
     }
     .chart-title, .hdfs-legend{
-      position: absolute;
-      top: 0;
-      left: 0;
       z-index: 1;
-      width: 100%;
       .legend{
         line-height: 18px;
-        margin: 52px 0 0 80px;
+        margin-top: -122px;
+        margin-left: 80px;
+        z-index: 1;
+      }
+      .chart-title-text{
+        margin-top: -136px;
+        z-index: 1;
       }
     }
+    .hdfs-chart { margin-top: -50px }
     .hdfs-bar-container {
       width: 130px;
       padding-right: 20px;

@@ -58,50 +58,33 @@ $(document).ready(function(){
           innerHtml = '<div>No shards available</div>'
         }
         else{
-        
-        /*
-           //retrieve any offline shards.
-          var offline_shards = new Array(), shard_index = 0;
-          for(var i = 0; i < data.length; i++){
-            var datum1 = data[i];
-            if(datum1.status == 0){
-              offline_shards[shard_index] = datum1;
-              shard_index++;
+           
+          //Sort Shards by Name        
+          for(var i = 0, j, tmp; i < data.length; ++i){
+            tmp = data[i];
+            for(j = i - 1; j >= 0 && data[j].node_name > tmp.node_name; --j){
+              data[j + 1] = data[j];
             }
-          }
-          var sorted_data = new Array(), sorted_index = 0;
-          sorted_data = offline_shards;
-          console.log(sorted_data);
-          
-          for(i = 0; i < data.length; i++){
-            for(var index = 0; index < offline_shards.length; index++){
-              if(offline_shards[index].id == data[i].id){
-                break;
-              }else{
-                sorted_data[shard_index] = data[i];
-                shard_index++;
-                break;
-              }
-            }
-          }          
-          */
-          
+            data[j + 1] = tmp;
+          } 
+                    
           //Find offline shards and place them at the top of the list of shards.
           var offline_shards = new Array(), sorted_data = new Array();
           var offline_index = 0;
-          for(var i = 0; i < data.length; i++){
+          for(i = 0; i < data.length; i++){
             if(data[i].status == 0){
               offline_shards[offline_index] = data[i];
               data[i] = null;
               offline_index++;
             }            
           }
-          for(var i = 0; i < data.length; i++){
+          for(i = 0; i < data.length; i++){
             if(data[i] != null){
               offline_shards[offline_index] = data[i];
               offline_index++;
             }
           }
+
 
           //Retrieve and output Shards in modal.
           for (index = 0; index < offline_shards.length; index++) {

@@ -5,19 +5,19 @@
 #zookeeper_wrapper
   #zookeeper.btn-success
     %h2.zookeeper-name
-      = @current_zookeeper.name.capitalize + " - " + @current_zookeeper.translated_status
+      = @current_zookeeper.name.capitalize + " - " + "Zookeeper - " + @current_zookeeper.translated_status
       .connection-url
         = @current_zookeeper.url
-      %i.icon-remove-sign.icon-white.confirm-action{:title => "Remove This Zookeeper", 'data-reload' => 'true', 'data-message' => 'remove this zookeeper'}
+      %i.icon-remove-sign.icon-white.confirm-action{:title => "Forget This Zookeeper", 'data-reload' => 'true', 'data-message' => 'forget this zookeeper'}
   #blur
     .row
       #controllers.span6
-        %h2
+        %subHeaders
           Controllers
         -unless @current_zookeeper.controllers.empty?
           %table.table.table-bordered
-            %thead
-              %tr
+            %thead              
+              %tr               
                 %th Name
                 %th Blur Version
                 %th
@@ -32,7 +32,7 @@
                     %i.icon-remove-sign.confirm-action.icon-white{:title => 'Remove This Controller','data-message' => 'remove this controller'}
 
       #clusters.span6
-        %h2
+        %subHeaders
           Clusters
         -unless @current_zookeeper.clusters.empty?
           %table.table.table-bordered

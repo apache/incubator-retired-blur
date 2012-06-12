@@ -68,7 +68,7 @@ class ZookeepersController < ApplicationController
     shard.destroy unless shard.nil?
     render :nothing => true
   end
-  
+
   def destroy_cluster
     cluster = Zookeeper.find(params[:id]).clusters.find_by_id(params[:cluster_id])
     cluster.destroy unless cluster.nil?
@@ -80,7 +80,7 @@ class ZookeepersController < ApplicationController
     controller.destroy unless controller.nil?
     render :nothing => true
   end
-  
+
   def destroy
     zookeeper = Zookeeper.find(params[:id])
     zookeeper.destroy unless zookeeper.nil?

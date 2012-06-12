@@ -1,5 +1,10 @@
 <% var stats = hdfs.get('most_recent_stats'); %>
 <div class="hdfs-title label">
+  <% if(hdfs.get('recent_stats')) { %>
+    <img class="stoplight" src="/assets/green_light.png"/>
+  <% } else { %>
+    <img class="stoplight" src="/assets/red_light.png"/>
+  <% } %>
   <%= hdfs.get('name') %>
   <span class="title-subtle"><%= hdfs.get('host') %></span>
 </div>

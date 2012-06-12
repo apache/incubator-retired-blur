@@ -82,17 +82,9 @@ var ZookeeperView = Backbone.View.extend({
         pie: {
           show: true,
           radius: 1,
-          innerRadius: 0.6,
+          innerRadius: 0.63,
           label: {
-            show: false,
-            radius: 3/4,
-            formatter: function(label,series) {
-              return '<div style="font-size: 8pt; text-align: center; padding: 2px; color: white;">'+label+'<br/></div>';
-            },
-            background: {
-              opacity: 0.5,
-              color: '#000'
-            }
+            show: false
           }
         }
       },

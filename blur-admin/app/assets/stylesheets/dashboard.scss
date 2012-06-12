@@ -145,7 +145,6 @@
   .progress-status{
     &.compare{ @include danger-progress-background; }
     background-image: none;
-    background-color: $faded-blue-dashboard-color;
     position: relative;
     margin: 0px;
     .bar{
@@ -153,6 +152,8 @@
       background-image: none;
     }
   }
+  .hdfs-live {background-color: $red-dashboard-color; }
+  .hdfs-dfs { background-color: $faded-blue-dashboard-color; }
 
   span.title-subtle{
     float: right;

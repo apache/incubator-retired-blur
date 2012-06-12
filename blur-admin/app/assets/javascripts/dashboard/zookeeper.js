@@ -1,3 +1,6 @@
+//= require flot/flot
+//= require flot/jquery.flot.pie.min.js
+
 var Zookeeper = Backbone.Model.extend({
   initialize: function(){
     this.view = new ZookeeperView({model: this});
@@ -47,17 +50,19 @@ var ZookeeperView = Backbone.View.extend({
   className: 'zookeeper_info',
   events: {
     'click .zookeeper-table' : 'navigate_to_zookeeper',
-    'click .warning' : 'show_long_running'
+    'click .warning' : 'show_long_running',
   },
   template: JST['templates/dashboard/zookeeper'],
   render: function(){
     this.$el.html(this.template({zookeeper: this.model}));
-    if(this.model.get('status') === 0){
+    /*if(this.model.get('status') === 0){
       this.$el.find('.zookeeper-title').addClass('btn-danger');
       this.$el.addClass('offline');
     } else {
       this.$el.addClass('online');
-    }
+    }*/
+    if (this.$el.find('.cont-chart')[0]){ this.draw_zk_charts(this.$el.find('.cont-chart')[0], this.model.get('controller_total'), this.model.get('controller_offline_node'));}
+    if (this.$el.find('.shard-chart')[0]){ this.draw_zk_charts(this.$el.find('.shard-chart')[0], this.model.get('shard_total'), this.model.get('shard_offline_node'));}
     return this;
   },
   navigate_to_zookeeper: function(){
@@ -76,5 +81,38 @@ var ZookeeperView = Backbone.View.extend({
       }
     })
     return false;
+  },
+  draw_zk_charts: function(target, total, offline){
+    var options = {
+      series: {
+        pie: {
+          show: true,
+          radius: 1,
+          innerRadius: 0.6,
+          label: {
+            show: false,
+            radius: 3/4,
+            formatter: function(label,series) {
+              return '<div style="font-size: 8pt; text-align: center; padding: 2px; color: white;">'+label+'<br/></div>';
+            },
+            background: {
+              opacity: 0.5,
+              color: '#000'
+            }
+          }
+        }
+      },
+      legend: {
+        show: false
+      }
+    };
+    var data = [
+      { label: "Online", data: total - offline, color: "#5DB95D" },
+      { label: "Offline", data: offline, color: "red" }
+    ];
+    target.style.width = '120px';
+    target.style.height = '120px';
+    $.plot(target, data, options);
   }
 });
+

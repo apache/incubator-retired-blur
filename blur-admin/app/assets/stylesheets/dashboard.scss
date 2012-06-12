@@ -1,4 +1,4 @@
-@mixin box-title{
+@mixin box-title {
   position:absolute;
   display:block;
   top:-18px;
@@ -6,7 +6,7 @@
   background:#fff;
 }
 
-@mixin zoo-widget{
+@mixin zoo-widget {
   border-top:$twitter-border;
   padding-top:20px;
   position:relative;
@@ -20,51 +20,63 @@
   &.important{font-style:italic;}
 }
 
+$blue-dashboard-color: #93A7AC;
+
 #zookeepers_wrapper, #hdfs_dash_wrapper{
   @include standard-font; 
   @include zoo-widget;
   margin-top: 2em;
 
   .zookeeper_info, .hdfs_info {
-    width: 500px;
+    width: 450px;
     margin: 0px 10px 20px 20px;
     display: inline-block;
     border: 1px solid;
     font-size: 15px;
+    border-color: $blue-dashboard-color;
     @include border-radius(5px);
-    &.online{ border-color: $green-border-color; }
+
+    //TODO change offline and warning
+    &.online{ border-color: $blue-dashboard-color; }
     &.offline{ border-color: $red-border-color; }
     &.warning{ border-color: #F9A732;}
+
     table{ margin:0; width:100%; }
     table tbody th { text-align:center; vertical-align:middle; }
-    tbody{ margin: 10px; }
     .status-bar{ @include border-radius() }
 
     &:hover{
       cursor: pointer;
-      background: #FFFCD6;
+      background: #F4F5F6;
     }
   }
-  .center{
-    text-align:center;
-  }
+
   .zookeeper-title, .hdfs-title{
-		@include zoo-status;
     font-size:125%;
     padding: 5px 10px;
     margin:0;
-    display:table-cell;
     text-align: left;
 		@include border-radius-bottom(0);
   }
-  td div.warning{
-    height: 18px;
-    text-align: center;
-    color: white;
-    @include border-radius;
-    &:hover{ opacity: .9; }
+
+  .zookeeper-info, .hdfs-info{
+    width: 430px;
+    margin: 10px;
+    td {text-align: center;}
+    .zookeeper-cont-info, .zookeeper-shard-info {
+      width: 65px;
+      .zk-shard-info{
+        vertical-align: middle;
+        text-align: right;
+      }
+      .zk-cont-info{
+        vertical-align: middle;
+        text-align: left;
+      }
+    }
+    .hdfs-chart {width: 250px; height: 250px;}
   }
-  .status{ width:160px; @include zoo-status; }
+
   #zookeepers,#hdfses{ height: 100%; }
 	h2 { color: $zk-header-color; @include box-title;}
   .shards, .controllers, .blocks, .usage{
@@ -77,23 +89,63 @@
 
   .progress-status{
     &.compare{ @include danger-progress-background; }
-    @include neutral-progress-background;
+    background-image: none;
+    background-color: #B9C6C9;
     position: relative;
     margin: 0px;
     .bar{
       @include border-radius();
-    }
-    span{
-      position: absolute;
-      color: white;
-      top: 0px;
-      &.online-nodes, &.live-nodes{ left: 5px; }
-      &.offline-nodes, &.dead-nodes{ right: 5px; }
+      background-image: none;
     }
   }
+
 
   span.title-subtle{
     float: right;
     opacity: .7;
   }
+
+  .label{
+    background-color: $blue-dashboard-color;
+    width: 430px;
+  }
+
+  .cont-chart, .shard-chart{
+    margin-left: 15px;
+    width: 120px;
+    height: 120px;
+  }
+
+  .icon-check, .icon-x {
+    width: 12px;
+    height: 12px;
+    background-image: none;
+  }
+
+  .query-warning{
+    color: red;
+    margin-top: 10px;
+  }
+
+  .hdfs-legend{
+    text-align: left;
+  }
+
+  .hdfs-legend{
+    margin: -85px 0 0 -15px;
+    .legend-box{
+      width: 12px;
+      height: 12px;
+      float: left;
+      margin: 2px 5px 0 0;
+      border: 1px solid $border_color;
+    }
+    h6{ float: left; }
+    .healthy{ background-color: #5DB95D; }
+    .corrupt{ background-color: #AFD8F8; }
+    .missing{ background-color: #CB4B4B; }
+    .under-replicated{ background-color: #EDC240;  }
+  }
+
+  h6{ color: $font-color; }
 }

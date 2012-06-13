@@ -282,7 +282,7 @@ describe HdfsController do
 
       it "with only return the correct properties" do
         get :stats, :id => @hdfs.id
-        assigns(:results)[0].attribute_names.should == %w[id created_at present_capacity dfs_used live_nodes dead_nodes under_replicated corrupt_blocks]
+        assigns(:results)[0].attribute_names.should == %w[id created_at present_capacity dfs_used live_nodes dead_nodes under_replicated corrupt_blocks missing_blocks]
         response.content_type.should == 'application/json'
       end
 

@@ -120,7 +120,7 @@ class HdfsController < ApplicationController
   end
 
   def stats
-    @results = hdfs_stat_select [:present_capacity, :dfs_used, :live_nodes, :dead_nodes, :under_replicated, :corrupt_blocks]
+    @results = hdfs_stat_select [:present_capacity, :dfs_used, :live_nodes, :dead_nodes, :under_replicated, :corrupt_blocks, :missing_blocks]
     render :json => @results, :methods => [:capacity, :used], :except => [:present_capacity, :dfs_used]
   end
 

@@ -5,7 +5,11 @@
 #zookeeper_wrapper
   #zookeeper.btn-success
     %h2.zookeeper-name
-      = @current_zookeeper.name.capitalize + " - " + "Zookeeper - " + @current_zookeeper.translated_status
+      = @current_zookeeper.name.capitalize + " - " + "Zookeeper - " 
+      -if !@current_zookeeper.translated_status.blank?
+        = @current_zookeeper.translated_status
+      -else
+        = "Status Unavailable"
       .connection-url
         = @current_zookeeper.url
       %i.icon-remove-sign.icon-white.confirm-action{:title => "Forget This Zookeeper", 'data-reload' => 'true', 'data-message' => 'forget this zookeeper'}
@@ -14,7 +18,7 @@
       #controllers.span6
         %subHeaders
           Controllers
-        -unless @current_zookeeper.controllers.empty?
+        -if !@current_zookeeper.controllers.empty?
           %table.table.table-bordered
             %thead              
               %tr               
@@ -30,11 +34,13 @@
                     =controller.blur_version
                   %td
                     %i.icon-remove-sign.confirm-action.icon-white{:title => 'Remove This Controller','data-message' => 'remove this controller'}
+        -else
+          %noController No Available Controllers
 
       #clusters.span6
         %subHeaders
           Clusters
-        -unless @current_zookeeper.clusters.empty?
+        -if !@current_zookeeper.clusters.empty?
           %table.table.table-bordered
             %thead
               %tr
@@ -56,3 +62,5 @@
                     %a.more-shard-info{:href => shards_zookeeper_path(@current_zookeeper.id, cluster.id)} View Shards
                   %td
                     %i.icon-remove-sign.confirm-action.icon-white{:title => 'Remove This Cluster','data-message' => 'remove this cluster'}
+        -else
+          %noController No Available Clusters

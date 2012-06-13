@@ -92,10 +92,17 @@ var ZookeeperView = Backbone.View.extend({
         show: false
       }
     };
-    var data = [
-      { label: "Online", data: total - offline, color: "#5DB95D" },
-      { label: "Offline", data: offline, color: "#CB4B4B" }
-    ];
+    if (total == 0) {
+      var data = [
+        { label: "None", data: 1, color: "#CED7DA" }
+      ];
+    }
+    else {
+      var data = [
+        { label: "Online", data: total - offline, color: "#5DB95D" },
+        { label: "Offline", data: offline, color: "#CB4B4B" }
+      ];
+    }
     target.style.width = '135px';
     target.style.height = '135px';
     $.plot(target, data, options);

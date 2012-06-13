@@ -58,6 +58,7 @@ $nav-height: 40px;
 
 #ft {
   bottom: 0;
+  //padding-top: 15px;
   position: fixed;
   width: 100%;
   $footer-color: lighten($base-theme-color, 20%);

@@ -19,12 +19,12 @@ $(document).ready(function() {
     var footerHeight = 0;
     window.onload = function() {
       headerHeight = parseInt($('.navbar').css('height'), 10);
-      footerHeight = parseInt($('#ft').css('height'), 10);
+      footerHeight = parseInt($('#ft').css('height'), 15);
       var newHeight = window.innerHeight - (footerHeight + headerHeight) - 20;
       $('#hdfs_wrapper').animate({height: newHeight + 'px'}, 400);
     };
     $(window).resize(function() {
-      $('#hdfs_wrapper').css('height', window.innerHeight - (footerHeight + headerHeight) - 10);
+      $('#hdfs_wrapper').css('height', window.innerHeight - (footerHeight + headerHeight) - 15);
     });
   })();
 

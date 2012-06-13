@@ -1,6 +1,6 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
-  
+
   require 'thrift/blur'
   require 'blur_thrift_client'
 

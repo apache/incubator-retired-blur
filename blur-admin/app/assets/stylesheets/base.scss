@@ -21,12 +21,19 @@ $border_style: solid;
 
 $twitter-border: 1px solid #ccc;
 
+$blue-dashboard-color: #93A7AC;
+$faded-blue-dashboard-color: #CED7DA;
+$green-dashboard-color:  #5DB95D;
+$blue-chart-dashboard-color: #AFD8F8;
+$red-dashboard-color: #CB4B4B;
+$yellow-dashboard-color: #EDC240;
+
 // Page settings
 $footer-height: 45px;
 
 html{
   height: 100%;
-	min-width: 1000px;
+	min-width: 1300px;
   overflow: auto;
   body{
     position: relative;

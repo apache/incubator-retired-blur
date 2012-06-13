@@ -7,7 +7,7 @@ class HdfsController < ApplicationController
     @instances = Hdfs.all
     respond_to do |format|
       format.html
-      format.json{render :json => @instances, :methods => [:most_recent_stats]}
+      format.json{render :json => @instances, :methods => [:most_recent_stats, :recent_stats]}
     end
   end
 
@@ -115,7 +115,7 @@ class HdfsController < ApplicationController
 
   def file_tree
     client = build_client_from_id
-    file_structure = client.folder_tree params[:fs_path], 4    
+    file_structure = client.folder_tree params[:fs_path], 4
     render :json => file_structure
   end
 

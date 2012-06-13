@@ -1,3 +1,6 @@
+//= require flot/flot
+//= require flot/jquery.flot.pie.min.js
+
 var Zookeeper = Backbone.Model.extend({
   initialize: function(){
     this.view = new ZookeeperView({model: this});
@@ -46,18 +49,14 @@ var ZookeeperCollection = Backbone.StreamCollection.extend({
 var ZookeeperView = Backbone.View.extend({
   className: 'zookeeper_info',
   events: {
-    'click .zookeeper-table' : 'navigate_to_zookeeper',
+    'click .zookeeper-body' : 'navigate_to_zookeeper',
     'click .warning' : 'show_long_running'
   },
   template: JST['templates/dashboard/zookeeper'],
   render: function(){
     this.$el.html(this.template({zookeeper: this.model}));
-    if(this.model.get('status') === 0){
-      this.$el.find('.zookeeper-title').addClass('btn-danger');
-      this.$el.addClass('offline');
-    } else {
-      this.$el.addClass('online');
-    }
+    if (this.$el.find('.cont-chart')[0]){ this.draw_zk_charts(this.$el.find('.cont-chart')[0], this.model.get('controller_total'), this.model.get('controller_offline_node'));}
+    if (this.$el.find('.shard-chart')[0]){ this.draw_zk_charts(this.$el.find('.shard-chart')[0], this.model.get('shard_total'), this.model.get('shard_offline_node'));}
     return this;
   },
   navigate_to_zookeeper: function(){
@@ -76,5 +75,36 @@ var ZookeeperView = Backbone.View.extend({
       }
     })
     return false;
+  },
+  draw_zk_charts: function(target, total, offline){
+    var options = {
+      series: {
+        pie: {
+          show: true,
+          radius: 1,
+          innerRadius: 0.63,
+          label: {
+            show: false
+          }
+        }
+      },
+      legend: {
+        show: false
+      }
+    };
+    if (total == 0) {
+      var data = [
+        { label: "None", data: 1, color: "#CED7DA" }
+      ];
+    }
+    else {
+      var data = [
+        { label: "Online", data: total - offline, color: "#5DB95D" },
+        { label: "Offline", data: offline, color: "#CB4B4B" }
+      ];
+    }
+    target.style.width = '135px';
+    target.style.height = '135px';
+    $.plot(target, data, options);
   }
 });

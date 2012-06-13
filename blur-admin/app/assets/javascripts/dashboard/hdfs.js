@@ -1,3 +1,6 @@
+//=require flot/flot
+//=require flot/jquery.flot.pie.min.js
+
 var Hdfs = Backbone.Model.extend({
   initialize: function(){
     this.view = new HdfsView({model: this});
@@ -39,15 +42,49 @@ var HdfsCollection = Backbone.StreamCollection.extend({
 var HdfsView = Backbone.View.extend({
   className: 'hdfs_info online',
   events: {
-    'click .hdfs-table' : 'navigate_to_hdfs'
+    'click .hdfs-body' : 'navigate_to_hdfs'
   },
   template: JST['templates/dashboard/hdfs'],
   render: function(){
     this.$el.html(this.template({hdfs: this.model}));
+    if (this.$el.find('.hdfs-chart')[0]){ this.draw_hdfs_chart(this.$el.find('.hdfs-chart')[0]);}
     return this;
   },
   navigate_to_hdfs: function(){
     var id = this.model.get('id');
     window.location = Routes.hdfs_index_path() + '/' + id + '/show';
+  },
+  draw_hdfs_chart: function(target){
+    var options = {
+      series: {
+        pie: {
+          show: true,
+          radius: 1,
+          innerRadius: 0.63,
+          label: {
+            show: false
+          }
+        }
+      },
+      legend: {
+        show: false
+      }
+    };
+    if (this.model.get('most_recent_stats').total_nodes == 0) {
+      var data = [
+        { label: "None", data: 1, color: '#CED7DA' },
+      ];
+    }
+    else {
+      var data = [
+        { label: "Healthy", data: this.model.get('most_recent_stats').live_nodes, color: '#5DB95D' },
+        { label: "Corrupt", data: this.model.get('corrupt_blocks'), color: '#AFD8F8' },
+        { label: "Missing", data: this.model.get('missing_blocks'), color: '#CB4B4B' },
+        { label: "Under-Rep", data: this.model.get('under_replicated'), color: '#EDC240' }
+      ];
+    }
+    target.style.width = '175px';
+    target.style.height = '175px';
+    $.plot(target, data, options);
   }
 });

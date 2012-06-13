@@ -38,6 +38,10 @@ class ZookeepersController < ApplicationController
   def show
     @shard_nodes = @current_zookeeper.shards.count 'DISTINCT blur_version'
     @controller_nodes = @current_zookeeper.controllers.count 'DISTINCT blur_version'
+    respond_to do |format|
+      format.html
+      format.json { render :json => @current_zookeeper, :methods => [:clusters, :controllers] }
+    end
   end
 
   def dashboard
@@ -64,7 +68,7 @@ class ZookeepersController < ApplicationController
     shard.destroy unless shard.nil?
     render :nothing => true
   end
-  
+
   def destroy_cluster
     cluster = Zookeeper.find(params[:id]).clusters.find_by_id(params[:cluster_id])
     cluster.destroy unless cluster.nil?
@@ -76,7 +80,7 @@ class ZookeepersController < ApplicationController
     controller.destroy unless controller.nil?
     render :nothing => true
   end
-  
+
   def destroy
     zookeeper = Zookeeper.find(params[:id])
     zookeeper.destroy unless zookeeper.nil?

@@ -6,6 +6,6 @@ class HdfsStat < ActiveRecord::Base
   end
 
   def used
-	self.dfs_used.to_f / 1024**3
+	  self.dfs_used.to_f / 1024**3
   end
 end

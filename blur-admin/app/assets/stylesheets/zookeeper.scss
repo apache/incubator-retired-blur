@@ -23,8 +23,6 @@ $opacity-adjust: 0;
       
       .connection-url {
         position: relative;
-        //float: right;
-        //left: 175px;
         bottom: 20px;
         font-size: 12px;
         opacity: .8;
@@ -78,6 +76,12 @@ $opacity-adjust: 0;
 
   h3 { margin-top: 0.5em; border-bottom: $twitter-border;}
   
+  noController{
+    position: relative;
+    top: 40px;
+    font-size: 20px;
+    color: #93A7AC;
+  }
   subHeaders{
     font-size: 24px;
     font-weight: bold;

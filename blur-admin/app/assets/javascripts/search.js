@@ -9,7 +9,7 @@ $(document).ready(function() {
     headerHeight = parseInt($('.navbar').css('height'));
     footerHeight = parseInt($('#ft').css('height'));
     resultWrapper = $('#results_wrapper');
-    return $('#results_wrapper').css('max-height', window.innerHeight - (footerHeight + headerHeight + parseInt(resultWrapper.css('margin-top')) + 30));
+    return $('#results_wrapper').css('max-height', window.innerHeight - (footerHeight + headerHeight + parseInt(resultWrapper.css('margin-top')) + 50));
   };
   
   hide_all_tabs = function() {

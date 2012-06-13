@@ -43,28 +43,45 @@ $opacity-adjust: 0;
     }
     table tbody tr{
       
-      td{ 
-        background-color: rgba(93, 185, 93, .9 - $opacity-adjust); 
-        color: white;
-        border-color: #5BB75B;
+      td{
+         
+        //background-color: rgba(93, 185, 93, 1 - $opacity-adjust); 
+        //color: white;
+        //border-color: #5BB75B;
         a {
-          color: white;
+          //color: white;
           text-decoration: underline;
           cursor: pointer;
         }
+        
+        noColor{
+          background-color: transparent;
+          color:black;
+        }
+        color{
+          color: rgba(93, 185, 93, .9 - $opacity-adjust);
+          font-weight: bold;
+        }
       }
+      
       &.error{
         &.error-failure {
           td {
             background-color: rgba(203, 75, 75, .8 - $opacity-adjust);
             color: white;
-            border-color: #DA4F49;
+            border-color: #DA4F49;            
+            color{
+              color: white;
+            }            
           }
         }
         td {
           background-color: rgba(237, 194, 64, .8 - $opacity-adjust);
           color: white;
           border-color: #EDC240;
+          color{
+            color: white;
+          }
         }
       }
       td:last-child { text-align: center; width: 34px; }

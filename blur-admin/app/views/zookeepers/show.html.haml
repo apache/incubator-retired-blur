@@ -12,7 +12,7 @@
         = "Status Unavailable"
       .connection-url
         = @current_zookeeper.url
-      %i.icon-remove-sign.icon-white.confirm-action{:title => "Forget This Zookeeper", 'data-reload' => 'true', 'data-message' => 'forget this zookeeper'}
+      %i.icon-remove-sign.confirm-action{:title => "Forget This Zookeeper", 'data-reload' => 'true', 'data-message' => 'forget this zookeeper'}
   #blur
     .row
       #controllers.span6
@@ -29,11 +29,12 @@
               - @current_zookeeper.controllers.sort_by{|c| c.node_name}.each do |controller|
                 %tr{'data-controller-id' => controller.id, :class => ('error error-failure' if controller.status == 0)}
                   %td
-                    =controller.node_name
+                    %color
+                      =controller.node_name
                   %td
                     =controller.blur_version
                   %td
-                    %i.icon-remove-sign.confirm-action.icon-white{:title => 'Remove This Controller','data-message' => 'remove this controller'}
+                    %i.icon-remove-sign.confirm-action{:title => 'Remove This Controller','data-message' => 'remove this controller'}
         -else
           %noController No Available Controllers
 
@@ -53,7 +54,8 @@
               - @current_zookeeper.clusters.sort_by{|c| c.name}.each do |cluster|
                 %tr{'data-cluster-id' => cluster.id, :class => ('error' if cluster.has_errors?)}
                   %td
-                    =cluster.name
+                    %color
+                      =cluster.name
                   %td
                     =@shard_nodes == 1 ? @current_zookeeper.shards.first.blur_version : "Inconsistent Blur Versions"
                   %td
@@ -61,6 +63,6 @@
                   %td
                     %a.more-shard-info{:href => shards_zookeeper_path(@current_zookeeper.id, cluster.id)} View Shards
                   %td
-                    %i.icon-remove-sign.confirm-action.icon-white{:title => 'Remove This Cluster','data-message' => 'remove this cluster'}
+                    %i.icon-remove-sign.confirm-action{:title => 'Remove This Cluster','data-message' => 'remove this cluster'}
         -else
           %noController No Available Clusters

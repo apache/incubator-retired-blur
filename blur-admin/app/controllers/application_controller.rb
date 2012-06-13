@@ -4,6 +4,7 @@ class ApplicationController < ActionController::Base
   require 'thrift/blur'
   require 'blur_thrift_client'
 
+  before_filter :show_zookeeper_options
   before_filter :current_user_session, :current_user
   helper_method :license, :current_user
 
@@ -64,6 +65,10 @@ class ApplicationController < ActionController::Base
 
   def zookeepers
     @zookeepers ||= Zookeeper.order 'name'
+  end
+
+  def show_zookeeper_options
+    zookeepers if @current_zookeeper.nil?
   end
 
   def current_user_session

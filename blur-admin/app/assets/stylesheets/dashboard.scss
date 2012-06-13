@@ -73,7 +73,7 @@
       margin-top: 10px;
     }
 
-    .chart-title-text{
+    .chart-title-text {
       margin-top: -136px;
       z-index: 1;
     }
@@ -108,7 +108,7 @@
       text-align: center;
     }
 
-    .hdfs-chart-container{
+    .hdfs-chart-container {
       $hdfs-size: 175px;
       width: $hdfs-size;
       height: $hdfs-size;
@@ -128,18 +128,17 @@
 	h2 { color: $zk-header-color; @include box-title;}
 
   .progress-status{
-    &.compare{ @include danger-progress-background; }
     background-image: none;
     position: relative;
     margin: 0px;
     .bar{
       @include border-radius();
       background-image: none;
+      background-color: $green-dashboard-color;
     }
   }
-
-  .hdfs-live { background-color: $red-dashboard-color; }
-  .hdfs-dfs { background-color: $faded-blue-dashboard-color; }
+  .red-bar { background-color: $red-dashboard-color; }
+  .faded-bar { background-color: $faded-blue-dashboard-color; }
 
   span.title-subtle{
     float: right;

@@ -21,11 +21,11 @@
         </div>
       </td>
       <td class="hdfs-bar-container">
-        <div class="hdfs-live progress progress-success progress-status">
+        <div class="hdfs-live progress progress-status <% if (hdfs.node_width() > 1){%> red-bar <%}else{%> faded-bar <%}%>">
           <div class="bar" style="width:<%= hdfs.node_width() %>%"></div>
         </div>
         <%= stats.live_nodes %> out of <%= stats.total_nodes %> live nodes<br /><br />
-        <div class="hdfs-dfs progress progress-status">
+        <div class="hdfs-dfs progress progress-status<% if (hdfs.usage_width() > 1){%> red-bar <%}else{%> faded-bar <%}%>">
           <div class="bar" style="width:<%= hdfs.usage_width() %>%"></div>
         </div>
         <%= hdfs.percent_used() %> dfs usage

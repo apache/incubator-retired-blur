@@ -77,9 +77,9 @@ var HdfsView = Backbone.View.extend({
     }
     else {
       var data = [
-        { label: "Healthy", data: this.model.get('most_recent_stats').live_nodes, color: '#5DB95D' },
+        { label: "Healthy", data: this.model.get('most_recent_stats').live_nodes, color: '#7DC77D' },
         { label: "Corrupt", data: this.model.get('corrupt_blocks'), color: '#AFD8F8' },
-        { label: "Missing", data: this.model.get('missing_blocks'), color: '#CB4B4B' },
+        { label: "Missing", data: this.model.get('missing_blocks'), color: '#FF1919' },
         { label: "Under-Rep", data: this.model.get('under_replicated'), color: '#EDC240' }
       ];
     }

@@ -79,7 +79,7 @@
     }
 
     .legend{
-      margin: -122px 0 0 80px;
+      margin: -124px 0 0 77px;
       z-index: 1;
       h6{ float: left; }
 
@@ -131,6 +131,7 @@
     background-image: none;
     position: relative;
     margin: 0px;
+    @include border-radius();
     .bar{
       @include border-radius();
       background-image: none;

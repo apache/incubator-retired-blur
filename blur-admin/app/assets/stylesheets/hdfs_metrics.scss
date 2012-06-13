@@ -22,7 +22,7 @@ $graph_height: $instance_height - $title_height;
 	}
 }
 
-#metrics_page_wrapper{
+#metrics_page_wrapper {
 	.create_graph_prompt{
 		margin-top: 10px;
 		@include clickable_title;
@@ -40,7 +40,7 @@ $graph_height: $instance_height - $title_height;
 		}
 	}
 
-	.graph_instance, .joined_instance{
+	.graph_instance, .joined_instance {
 		margin: 10px 0 10px 0;
 		position: relative;
 		height: $instance_height;
@@ -66,16 +66,13 @@ $graph_height: $instance_height - $title_height;
 				.graph{
           margin: 5px 5px 5px 5px;
 					height: $graph_height - 20;
-					.base{
-						//position: absolute;
-					}
 				}
 			}
-
 		}
 	}
-  .loading-spinner{
+  .loading-spinner {
     float: left;
+    position: absolute;
     padding: 9px 0 0 9px;
   }
 }

@@ -68,7 +68,7 @@ $(document).ready(function(){
           title: 'Select a Zookeeper Instance to use:',
           shown: function(){
             $('#zookeeper_selector').change(function(){
-              window.location = window.location.origin + '/zookeepers/' + $(this).val() + ($(self).attr('data-url-extension') || '');
+              window.location = window.location.protocol + '//' + window.location.host + '/zookeepers/' + $(this).val() + ($(self).attr('data-url-extension') || '');
             });
           }
         });

@@ -1,8 +1,8 @@
 <div class="zookeeper-title label">
   <% if(zookeeper.get('status')) { %>
-    <img class="stoplight" src="/assets/green_light.png"/>
+    <img class="stoplight" src="/assets/green_light.png" title="online"/>
   <% } else { %>
-    <img class="stoplight" src="/assets/red_light.png"/>
+    <img class="stoplight" src="/assets/red_light.png" title="offline"/>
   <% } %>
   <%= zookeeper.get('name') %>
 </div>
@@ -18,9 +18,9 @@
           <h6><%= zookeeper.get('controller_total') - zookeeper.get('controller_offline_node') %> Online<br /></h6>
           <h6><%= zookeeper.get('controller_offline_node') %> Offline<br /></h6>
           <% if(zookeeper.consistent_controller_versions()){ %>
-            <h6>CBV <i class="icon-ok"></i></h6>
+            <h6 title="Consistent Blur Versions">Version <i class="icon-ok"></i></h6>
           <% } else { %>
-            <h6 class="inconsistent-BV">CBV <i class="icon-remove"></i></h6>
+            <h6 class="inconsistent-BV" title="Inconsistent Blur Versions">Version <i class="icon-remove"></i></h6>
           <% } %>
         </div>
       </td>
@@ -29,9 +29,9 @@
           <h6><%= zookeeper.get('shard_total') - zookeeper.get('shard_offline_node') %> Online<br /></h6>
           <h6><%= zookeeper.get('shard_offline_node') %> Offline<br /></h6>
           <% if(zookeeper.consistent_shard_versions()){ %>
-            <h6>CBV <i class="icon-ok"></i></h6>
+            <h6 title="Consistent Blur Versions">Version <i class="icon-ok"></i></h6>
           <% } else { %>
-            <h6 class="inconsistent-BV">CBV <i class="icon-remove"></i></h6>
+            <h6 class="inconsistent-BV" title="Inconsistent Blur Versions">Version <i class="icon-remove"></i></h6>
           <% } %>
         </div>
       </td>

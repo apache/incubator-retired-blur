@@ -95,7 +95,7 @@ $(document).ready(function(){
             } else {
               innerHtml += 'no-error"';
             }
-            innerHtml +='><div class="icon" title="Remove This Shard" data-id="' + datum.id + '"><i class="icon-remove-sign icon-white"/></div><div class="info">';
+            innerHtml +='><div class="icon" title="Remove This Shard" data-id="' + datum.id + '"><i class="icon-remove-sign"/></div><div class="info">';
             
             innerHtml += 'Shard: ' + datum.node_name + ' | Blur Version: ' + datum.blur_version + ' | Status: ';
             if (datum.status === 1){

@@ -74,7 +74,7 @@ public class BlockDirectory extends DirectIODirectory {
     _directory = directory;
     _blockSize = BLOCK_SIZE;
     _cache = cache;
-    if (_blockCacheFileTypes == null || _blockCacheFileTypes.isEmpty()) {
+    if (blockCacheFileTypes == null || blockCacheFileTypes.isEmpty()) {
       _blockCacheFileTypes = null;
     } else {
       _blockCacheFileTypes = blockCacheFileTypes;

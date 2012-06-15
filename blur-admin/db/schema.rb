@@ -11,14 +11,14 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120604180240) do
+ActiveRecord::Schema.define(:version => 20120615195724) do
 
   create_table "blur_queries", :force => true do |t|
-    t.text     "query_string"
+    t.text     "query_string",             :limit => 2147483647
     t.integer  "complete_shards"
     t.integer  "uuid",                     :limit => 8
-    t.datetime "created_at",                                   :null => false
-    t.datetime "updated_at",                                   :null => false
+    t.datetime "created_at",                                     :null => false
+    t.datetime "updated_at",                                     :null => false
     t.boolean  "super_query_on"
     t.string   "facets"
     t.integer  "start"

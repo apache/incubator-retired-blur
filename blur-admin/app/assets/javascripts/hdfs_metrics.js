@@ -54,9 +54,9 @@ $(document).ready(function(){
 					timeformat: "%0m/%0d %H:%M %p"
 				},
         yaxes:[
-          {},
+          { },
           {
-            position: 'right',
+            position: 'right'
           }
         ]
 			});

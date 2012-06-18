@@ -156,13 +156,13 @@ var Cluster = Backbone.Model.extend({
           "Delete tables and indicies": {
             "class": "danger",
             func: function() {
-              _bind(delete_tables, this, true);
+              _.bind(delete_tables, this, true);
             }
           },
           "Delete tables only": {
             "class": "warning",
             func: function() {
-              _bind(delete_tables, this, false);
+              _.bind(delete_tables, this, false);
             }
           },
           "Cancel": {

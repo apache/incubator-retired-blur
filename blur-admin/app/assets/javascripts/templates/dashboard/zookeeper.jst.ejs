@@ -20,7 +20,7 @@
           <% if(zookeeper.consistent_controller_versions()){ %>
             <h6 title="Consistent Blur Versions">Version <i class="icon-ok"></i></h6>
           <% } else { %>
-            <h6 class="inconsistent-BV" title="Inconsistent Blur Versions">Version <i class="icon-remove"></i></h6>
+            <h6 class="error-label" title="Inconsistent Blur Versions">Version <i class="icon-remove"></i></h6>
           <% } %>
         </div>
       </td>
@@ -31,7 +31,7 @@
           <% if(zookeeper.consistent_shard_versions()){ %>
             <h6 title="Consistent Blur Versions">Version <i class="icon-ok"></i></h6>
           <% } else { %>
-            <h6 class="inconsistent-BV" title="Inconsistent Blur Versions">Version <i class="icon-remove"></i></h6>
+            <h6 class="error-label" title="Inconsistent Blur Versions">Version <i class="icon-remove"></i></h6>
           <% } %>
         </div>
       </td>

@@ -5,9 +5,10 @@
 //= require_self
 
 $(document).ready(function() {
-  var delete_file, draw_radial_graph, finishUploading, make_dir, navigateUsingPath, paste_buffer, perform_action, reload_hdfs, show_dir_props, show_hdfs_props, upload, uploadFailed;
-  var in_file = [];
-  
+  var delete_file, draw_radial_graph, finishUploading, make_dir, navigateUsingPath, paste_buffer,
+    perform_action, reload_hdfs, show_dir_props, show_hdfs_props, upload, uploadFailed, in_file = [],
+    allSelected = [], columnSelected = [], lastClicked, ctrlHeld = false;
+
   // Old browser support for history push state
   if (typeof history.pushState === 'undefined') {
     history.pushState = function() {};
@@ -230,6 +231,13 @@ $(document).ready(function() {
     }
   };
 
+  var delete_additional_files = function(clicked_file) {
+    $.each(columnSelected, function(index, value){
+      if(!(clicked_file[0] == value))
+        delete_file($(value));
+    });
+  };
+
   var upload = function(el) {
     var id = el.attr('hdfs_id');
     var path = el.attr('hdfs_path');
@@ -372,16 +380,24 @@ $(document).ready(function() {
     switch (action) {
       case "delete":
         delete_file(el);
+        if (columnSelected.length > 0) { delete_additional_files(el) }
         break;
       case "cut":
         paste_buffer.location = el;
         paste_buffer.action = action;
+        paste_buffer.multiple = columnSelected;
         $('#hdfs-dir-context-menu').enableContextMenuItems('#paste');
         break;
       case "paste":
         if (paste_buffer.action) {
           if (paste_buffer.action === "cut") {
-            cut_file(paste_buffer.location, el);
+            if (paste_buffer.multiple.length > 0){
+              $.each(paste_buffer.multiple, function(index, value){
+                cut_file($(value), el);
+              });
+            } else {
+              cut_file(paste_buffer.location, el);
+            }
           }
         }
         break;
@@ -479,5 +495,54 @@ $(document).ready(function() {
     navigated: function(e, data) {
       history.pushState({}, '', data.url);
     }
+  });
+
+  $('#hdfs_browser').on('click', 'li', function(){
+    if(ctrlHeld){
+      var parent = $(this).parent();
+      if (columnSelected.length == 0){
+        $.each(allSelected, function(index, value){
+          $(value).addClass('osxSelected');
+        });
+      }
+      if ($(columnSelected[0]).parent()[0] == parent[0]){
+        $.each(columnSelected, function(index, value){
+          $(value).addClass('osxSelected');
+        });
+      }
+      else {
+        $.each(columnSelected, function(index, value){
+          $(value).removeClass('osxSelected');
+        });
+        $(lastClicked).addClass('osxSelected');
+      }
+      columnSelected = $(parent).find('.osxSelected');
+      lastClicked = this;
+    }
+    else if (lastClicked && !(lastClicked == this)) {
+      $(lastClicked).removeClass('osxSelected');
+      lastClicked = '';
+    }
+  });
+
+  $(document).on('click', function(){
+    if (!ctrlHeld){
+      $.each(columnSelected, function(index, value){
+        if (!(value == lastClicked))
+          $(value).removeClass('osxSelected');
+      });
+      columnSelected = [];
+    }
+  });
+
+  $(document).on('keydown', function(e) {
+    if (!ctrlHeld && e.ctrlKey){
+      ctrlHeld = e.ctrlKey;
+      allSelected = $('#hdfs_browser').find('.osxSelected');
+    }
+  });
+
+  $(document).on('keyup', function(e) {
+    ctrlHeld = e.ctrlKey;
   });
 });

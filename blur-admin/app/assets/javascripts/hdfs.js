@@ -498,6 +498,7 @@ $(document).ready(function() {
   });
 
   $('#hdfs_browser').on('click', 'li', function(){
+    var parent = $(this).parent();
     if(ctrlHeld){
       var parent = $(this).parent();
       if (columnSelected.length == 0){
@@ -519,7 +520,7 @@ $(document).ready(function() {
       columnSelected = $(parent).find('.osxSelected');
       lastClicked = this;
     }
-    else if (lastClicked && !(lastClicked == this)) {
+    else if (!(lastClicked == this) && $(lastClicked).parent()[0] == parent) {
       $(lastClicked).removeClass('osxSelected');
       lastClicked = '';
     }

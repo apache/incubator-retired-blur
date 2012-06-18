@@ -23,6 +23,7 @@ case $1 in
 start)
   ssh blur@$BLUR_VM_IP /home/blur/zookeeper-3.3.4-cdh3u3/bin/zkServer.sh start
   ssh blur@$BLUR_VM_IP /home/blur/hadoop-0.20.2-cdh3u3/bin/start-dfs.sh
+  echo "Waiting for safemode to exit"
   ssh blur@$BLUR_VM_IP /home/blur/hadoop-0.20.2-cdh3u3/bin/hadoop dfsadmin -safemode wait
   ssh blur@$BLUR_VM_IP /home/blur/blur/bin/start-all.sh
  ;;

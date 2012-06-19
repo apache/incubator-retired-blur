@@ -297,6 +297,14 @@ $(document).ready(function() {
   var make_dir = function(el) {
     var id = el.attr('hdfs_id');
     var path = el.attr('hdfs_path');
+
+    in_file = [];
+    $('.osxSelectable[hdfs_path="' + path + '"][hdfs_id=' + id + ']').click();
+    if (path == '/')
+      var osxWindow = 1;
+    else
+      var osxWindow = path.split('/').length;
+
     $('<div id="newFolder"><label>Folder Name:</label><input></input></div>').popup({
       title: 'New Folder',
       titleClass: 'title',
@@ -307,24 +315,41 @@ $(document).ready(function() {
         "Create": {
           "class": 'primary',
           func: function() {
-            $.ajax(Routes.mkdir_hdfs_path(id), {
-              type: 'post',
-              data: {
-                fs_path: path,
-                folder: $('#newFolder input').val()
-              },
-              success: function() {
-                var display_href, nextWin;
-                if (el.hasClass('osxSelected')) {
-                  nextWin = el.parents('.innerWindow').next();
-                  display_href = el.find('a').attr('href');
-                  nextWin.load(display_href);
-                } else {
-                  el.click();
-                }
-              }
+            var newName = $('#newFolder input').val();
+            var unique = true;
+
+            $.each( $($('.innerWindow')[osxWindow]).find('a'), function (index, value){
+              in_file.push($(value).attr('title'));
             });
+
+            $.each(in_file, function(index, value){
+              if(newName == value) unique = false;
+            });
+
+            if (!unique){
+              $().closePopup();
+              errorPopup("Folder or file with this name already in use.");
+            }
+            else{
+              $.ajax(Routes.mkdir_hdfs_path(id), {
+                type: 'post',
+                data: {
+                  fs_path: path,
+                  folder: $('#newFolder input').val()
+                },
+                success: function() {
+                  var display_href, nextWin;
+                  if (el.hasClass('osxSelected')) {
+                    nextWin = el.parents('.innerWindow').next();
+                    display_href = el.find('a').attr('href');
+                    nextWin.load(display_href);
+                  } else {
+                    el.click();
+                  }
+                }
+              });
             $().closePopup();
+            }
           }
         },
         "Cancel": {

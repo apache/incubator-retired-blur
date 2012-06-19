@@ -97,7 +97,7 @@
       .under-replicated{ background-color: $yellow-dashboard-color; }
     }
 
-    .inconsistent-BV{ color: $red-dashboard-color; }
+    .error-label{ color: $red-dashboard-color; }
 
     .zk-chart{
       $zk-size: 135px;

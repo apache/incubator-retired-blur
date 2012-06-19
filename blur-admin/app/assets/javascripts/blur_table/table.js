@@ -69,6 +69,13 @@ var TableCollection = Backbone.StreamCollection.extend({
   model: Table,
   initialize: function(models, options){
     this.cluster = options.cluster;
+    this.on('add', function(table){
+      table.collection.cluster.view.populate_tables();
+    });
+    this.on('remove', function(table){
+      table.view.remove();
+      table.collection.cluster.view.set_table_values();
+    });
   }
 });
 

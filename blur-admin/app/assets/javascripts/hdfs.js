@@ -242,13 +242,11 @@ $(document).ready(function() {
   var delete_file = function(file) {
     var id = file.attr('hdfs_id');
     var path = file.attr('hdfs_path');
-    if (confirm("Are you sure you wish to delete " + path + "? This action can not be undone.")) {
-      $.post(Routes.delete_file_hdfs_path(id), {
-        'path': path
-      }, function() {
-        reload_hdfs();
-      });
-    }
+    $.post(Routes.delete_file_hdfs_path(id), {
+      'path': path
+    }, function() {
+      reload_hdfs();
+    });
   };
 
   var delete_additional_files = function(clicked_file) {
@@ -399,8 +397,14 @@ $(document).ready(function() {
   var perform_action = function(action, el) {
     switch (action) {
       case "delete":
-        delete_file(el);
-        if (columnSelected.length > 0) { delete_additional_files(el) }
+        if (columnSelected.length > 0) {
+          if (confirm("Are you sure you wish to delete these files? This action can not be undone.")) {
+            delete_additional_files(el);
+            delete_file(el);
+          }
+        } else if (confirm("Are you sure you wish to delete " + el.attr('hdfs_path') + "? This action can not be undone.")) {
+          delete_file(el);
+        }
         break;
       case "cut":
         pre_cut_file(action, el);
@@ -560,7 +564,7 @@ $(document).ready(function() {
         if ($(columnSelected[0]).parent()[0] != parent[0])
           $(lastClicked).addClass('osxSelected');
         columnSelected = [];
-        $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
+        $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprop');
         lastClicked = null;
       }
     }

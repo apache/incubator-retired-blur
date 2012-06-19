@@ -506,9 +506,12 @@ $(document).ready(function() {
     });
   };
 
-  var add_selected = function(group_selected){
+  var add_selected = function(group_selected, current){
     $.each(group_selected, function(index, value){
-      $(value).addClass('osxSelected');
+      if (value == current && group_selected.length > 1)
+        $(value).removeClass('osxSelected');
+      else
+        $(value).addClass('osxSelected');
     });
   };
 
@@ -522,13 +525,16 @@ $(document).ready(function() {
       var parent = elems.parent();
       if(ctrlHeld){ //CTRL held down
         if (columnSelected.length == 0)
-          add_selected(allSelected);
+          add_selected(allSelected, null);
         else if ($(columnSelected[0]).parent()[0] == parent[0])
-          add_selected(columnSelected);
+          add_selected(columnSelected, elems[0]);
         else
           remove_selected(lastClicked);
         columnSelected = $(parent).find('.osxSelected');
-        lastClicked = elems[0];
+        if (columnSelected.length > 0)
+          lastClicked = elems[0];
+        else
+          lastClicked = null;
       }
       else { //CTRL not held down
         remove_selected(elems[0]);

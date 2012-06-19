@@ -85,7 +85,9 @@
     }
   }
 
-  //.ui-button, a { cursor: pointer; @include standard-font; text-decoration: none; }
+  .to-cut {
+    a { color: #AAA; }
+  }
 }
 
 #modal{

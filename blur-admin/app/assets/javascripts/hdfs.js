@@ -144,6 +144,26 @@ $(document).ready(function() {
   };
 
   // HDFS Actions
+  var pre_cut_file = function(action, el){
+    if (paste_buffer.multiple){
+      $.each(paste_buffer.multiple, function(index, value){
+        $(value).removeClass('to-cut');
+      });
+    }
+    if (paste_buffer.location)
+      $(paste_buffer.location).removeClass('to-cut');
+    paste_buffer.location = el;
+    paste_buffer.action = action;
+    paste_buffer.multiple = columnSelected;
+    $('#hdfs-dir-context-menu').enableContextMenuItems('#paste');
+    if (paste_buffer.multiple.length > 0){
+      $.each(paste_buffer.multiple, function(index, value){
+        $(value).addClass('to-cut');
+      });
+    }
+    else $(paste_buffer.location).addClass('to-cut');
+  };
+
   var cut_file = function(file, location) {
     var from_id = file.attr('hdfs_id');
     var from_path = file.attr('hdfs_path');
@@ -383,22 +403,16 @@ $(document).ready(function() {
         if (columnSelected.length > 0) { delete_additional_files(el) }
         break;
       case "cut":
-        paste_buffer.location = el;
-        paste_buffer.action = action;
-        paste_buffer.multiple = columnSelected;
-        $('#hdfs-dir-context-menu').enableContextMenuItems('#paste');
+        pre_cut_file(action, el);
         break;
       case "paste":
-        if (paste_buffer.action) {
-          if (paste_buffer.action === "cut") {
-            if (paste_buffer.multiple.length > 0){
-              $.each(paste_buffer.multiple, function(index, value){
-                cut_file($(value), el);
-              });
-            } else {
-              cut_file(paste_buffer.location, el);
-            }
+        if (paste_buffer.action && paste_buffer.action === "cut") {
+          if (paste_buffer.multiple.length > 0){
+            $.each(paste_buffer.multiple, function(index, value){
+              cut_file($(value), el);
+            });
           }
+          else cut_file(paste_buffer.location, el);
         }
         break;
       case "props":

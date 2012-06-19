@@ -150,8 +150,9 @@ $(document).ready(function() {
         $(value).removeClass('to-cut');
       });
     }
-    if (paste_buffer.location)
+    if (paste_buffer.location) {
       $(paste_buffer.location).removeClass('to-cut');
+    }
     paste_buffer.location = el;
     paste_buffer.action = action;
     paste_buffer.multiple = columnSelected;
@@ -534,38 +535,40 @@ $(document).ready(function() {
   };
 
   $(document).on('click', function(e){
-    var elems = $(e.target).closest('li');
-    if (elems.length == 0 && !ctrlHeld) { //click outside of the lists
-      remove_selected(lastClicked);
-      columnSelected = [];
-      $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
-    }
-    else { //click a list element
-      var parent = elems.parent();
-      if(ctrlHeld){ //CTRL held down
-        if (columnSelected.length == 0)
-          add_selected(allSelected, null);
-        else if ($(columnSelected[0]).parent()[0] == parent[0])
-          add_selected(columnSelected, elems[0]);
-        else
-          remove_selected(lastClicked);
-        columnSelected = $(parent).find('.osxSelected');
-        if (columnSelected.length > 1)
-          $('.contextMenu').disableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
-        else
-          $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
-        if (columnSelected.length > 0)
-          lastClicked = elems[0];
-        else
-          lastClicked = null;
-      }
-      else { //CTRL not held down
-        remove_selected(elems[0]);
-        if ($(columnSelected[0]).parent()[0] != parent[0])
-          $(lastClicked).addClass('osxSelected');
+    if(e.which == 1){
+      var elems = $(e.target).closest('li');
+      if (elems.length == 0 && !ctrlHeld) { //click outside of the lists
+        remove_selected(lastClicked);
         columnSelected = [];
-        $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprop');
-        lastClicked = null;
+        $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
+      }
+      else { //click a list element
+        var parent = elems.parent();
+        if(ctrlHeld){ //CTRL held down
+          if (columnSelected.length == 0)
+            add_selected(allSelected, null);
+          else if ($(columnSelected[0]).parent()[0] == parent[0])
+            add_selected(columnSelected, elems[0]);
+          else
+            remove_selected(lastClicked);
+          columnSelected = $(parent).find('.osxSelected');
+          if (columnSelected.length > 1)
+            $('.contextMenu').disableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
+          else
+            $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
+          if (columnSelected.length > 0)
+            lastClicked = elems[0];
+          else
+            lastClicked = null;
+        }
+        else { //CTRL not held down
+          remove_selected(elems[0]);
+          if ($(columnSelected[0]).parent()[0] != parent[0])
+            $(lastClicked).addClass('osxSelected');
+          columnSelected = [];
+          $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprop');
+          lastClicked = null;
+        }
       }
     }
   });

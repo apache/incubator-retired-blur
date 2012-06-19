@@ -534,6 +534,7 @@ $(document).ready(function() {
     if (elems.length == 0 && !ctrlHeld) { //click outside of the lists
       remove_selected(lastClicked);
       columnSelected = [];
+      $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
     }
     else { //click a list element
       var parent = elems.parent();
@@ -545,6 +546,10 @@ $(document).ready(function() {
         else
           remove_selected(lastClicked);
         columnSelected = $(parent).find('.osxSelected');
+        if (columnSelected.length > 1)
+          $('.contextMenu').disableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
+        else
+          $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
         if (columnSelected.length > 0)
           lastClicked = elems[0];
         else
@@ -555,6 +560,7 @@ $(document).ready(function() {
         if ($(columnSelected[0]).parent()[0] != parent[0])
           $(lastClicked).addClass('osxSelected');
         columnSelected = [];
+        $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
         lastClicked = null;
       }
     }

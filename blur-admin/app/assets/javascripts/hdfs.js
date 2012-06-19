@@ -497,42 +497,46 @@ $(document).ready(function() {
     }
   });
 
-  $('#hdfs_browser').on('click', 'li', function(){
-    var parent = $(this).parent();
-    if(ctrlHeld){
-      var parent = $(this).parent();
-      if (columnSelected.length == 0){
-        $.each(allSelected, function(index, value){
-          $(value).addClass('osxSelected');
-        });
+  /* Multiple select */
+  var remove_selected = function(keep_selected){
+    $.each(columnSelected, function(index, value){
+      if (value != keep_selected){
+        $(value).removeClass('osxSelected');
       }
-      if ($(columnSelected[0]).parent()[0] == parent[0]){
-        $.each(columnSelected, function(index, value){
-          $(value).addClass('osxSelected');
-        });
-      }
-      else {
-        $.each(columnSelected, function(index, value){
-          $(value).removeClass('osxSelected');
-        });
-        $(lastClicked).addClass('osxSelected');
-      }
-      columnSelected = $(parent).find('.osxSelected');
-      lastClicked = this;
-    }
-    else if (!(lastClicked == this) && $(lastClicked).parent()[0] == parent) {
-      $(lastClicked).removeClass('osxSelected');
-      lastClicked = '';
-    }
-  });
+    });
+  };
 
-  $(document).on('click', function(){
-    if (!ctrlHeld){
-      $.each(columnSelected, function(index, value){
-        if (!(value == lastClicked))
-          $(value).removeClass('osxSelected');
-      });
+  var add_selected = function(group_selected){
+    $.each(group_selected, function(index, value){
+      $(value).addClass('osxSelected');
+    });
+  };
+
+  $(document).on('click', function(e){
+    var elems = $(e.target).closest('li');
+    if (elems.length == 0 && !ctrlHeld) { //click outside of the lists
+      remove_selected(lastClicked);
       columnSelected = [];
+    }
+    else { //click a list element
+      var parent = elems.parent();
+      if(ctrlHeld){ //CTRL held down
+        if (columnSelected.length == 0)
+          add_selected(allSelected);
+        else if ($(columnSelected[0]).parent()[0] == parent[0])
+          add_selected(columnSelected);
+        else
+          remove_selected(lastClicked);
+        columnSelected = $(parent).find('.osxSelected');
+        lastClicked = elems[0];
+      }
+      else { //CTRL not held down
+        remove_selected(elems[0]);
+        if ($(columnSelected[0]).parent()[0] != parent[0])
+          $(lastClicked).addClass('osxSelected');
+        columnSelected = [];
+        lastClicked = null;
+      }
     }
   });
 

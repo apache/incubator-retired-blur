@@ -7,11 +7,11 @@
 $(document).ready(function() {
   var delete_file, draw_radial_graph, finishUploading, make_dir, navigateUsingPath, paste_buffer,
     perform_action, reload_hdfs, show_dir_props, show_hdfs_props, upload, uploadFailed, in_file = [],
-    allSelected = [], columnSelected = [], lastClicked, ctrlHeld = false;
+    allSelected = [], columnSelected = [], lastClicked, ctrlHeld = false, shiftHeld = false;
 
   // Old browser support for history push state
   if (typeof history.pushState === 'undefined') {
-    history.pushState = function() {};
+    history.pushState = function(a, b, c) {};
   }
 
   // One time use page variable initialization
@@ -537,11 +537,15 @@ $(document).ready(function() {
       navigateUsingPath();
     },
     navigated: function(e, data) {
-      history.pushState({}, '', data.url);
+      try {
+        history.pushState({}, '', data.url);
+      } catch(err) {}
     }
   });
 
   /* Multiple select */
+
+  //de-selects everything stored in columnSelected except for keep_selected
   var remove_selected = function(keep_selected){
     $.each(columnSelected, function(index, value){
       if (value != keep_selected){
@@ -550,13 +554,78 @@ $(document).ready(function() {
     });
   };
 
+  //selects everything in the group_selected, de-selects current if already selected
   var add_selected = function(group_selected, current){
     $.each(group_selected, function(index, value){
-      if (value == current && group_selected.length > 1)
+      if (value == current && group_selected.length > 1 && !shiftHeld)
         $(value).removeClass('osxSelected');
       else
         $(value).addClass('osxSelected');
     });
+  };
+
+  //select the item that was originally selected in the clicked column
+  var add_last_selected = function(parent) {
+    $.each(allSelected, function(index, value) {
+      if ($(value).parent()[0] == parent[0]){
+        $(value).addClass('osxSelected');
+        lastClicked = value;
+      }
+    });
+  };
+
+  var checkContextMenus = function() {
+    if (columnSelected.length > 1) {
+      $('.contextMenu').disableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
+    }
+    else {
+      $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
+    }
+  };
+
+  var shiftCtrlSelect = function (parent, elems) {
+    if (columnSelected.length > 1 && elems[0] != lastClicked) {
+      var sibs = parent.children();
+      var inside = false;
+      $.each(sibs, function(index, value){
+        if ($(value).attr('hdfs_path') == elems.attr('hdfs_path')
+            || $(value).attr('hdfs_path') == $(lastClicked).attr('hdfs_path')) {
+          inside = (inside ? false : true);
+        }
+        else if (inside){
+          $(value).addClass('osxSelected');
+        }
+      });
+      columnSelected = $(parent).find('.osxSelected');
+    }
+  };
+
+  var shiftSelect = function (parent, elems) {
+    if (columnSelected.length > 1) {
+      var inside = false;
+      var elemsPath = elems.attr('hdfs_path');
+      var colPath = $(columnSelected[0]).attr('hdfs_path');
+      var start = (elemsPath < colPath ? elemsPath : colPath);
+      var end = (start == elemsPath ? $(columnSelected[columnSelected.length-1]).attr('hdfs_path') : elemsPath);
+
+      $.each($(parent).children(), function(index, value){
+        if (!inside && $(value).attr('hdfs_path') == start) {
+          inside = true;
+          $(value).addClass('osxSelected');
+        }
+        else if (inside && $(value).attr('hdfs_path') == end) {
+          inside = false;
+          $(value).addClass('osxSelected');
+        }
+        else if (inside){
+          $(value).addClass('osxSelected');
+        }
+        else {
+          $(value).removeClass('osxSelected');
+        }
+      });
+      columnSelected = $(parent).find('.osxSelected');
+    }
   };
 
   $(document).on('click', function(e){
@@ -567,15 +636,17 @@ $(document).ready(function() {
       if (elems.length == 0 && !ctrlHeld) {
         remove_selected(lastClicked);
         columnSelected = [];
+        lastClicked = elems[0];
         $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
       }
 
       //click a list element
       else {
         var parent = elems.parent();
+
         if(ctrlHeld) { //CTRL held down
           if (columnSelected.length == 0) {
-            add_selected(allSelected, null);
+            add_last_selected(parent);
           }
           else if ($(columnSelected[0]).parent()[0] == parent[0]) {
             add_selected(columnSelected, elems[0]);
@@ -583,38 +654,57 @@ $(document).ready(function() {
           else {
             remove_selected(lastClicked);
           }
+
           columnSelected = $(parent).find('.osxSelected');
-          if (columnSelected.length > 1) {
-            $('.contextMenu').disableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
-          }
-          else {
-            $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
+          if (shiftHeld) {
+            shiftCtrlSelect(parent, elems);
           }
           lastClicked = ( columnSelected.length > 0 ? elems[0] : null);
         }
+
         else { //CTRL not held down
-          remove_selected(elems[0]);
-          if ($(columnSelected[0]).parent()[0] != parent[0]) {
-            $(lastClicked).addClass('osxSelected');
+          if (shiftHeld) {
+            if (columnSelected.length == 0) {
+              add_last_selected(parent);
+              columnSelected = $(parent).find('.osxSelected');
+              shiftSelect(parent, elems);
+            }
+            else if ($(columnSelected[0]).parent()[0] == parent[0]) {
+              shiftSelect(parent, elems);
+            }
+            else {
+              remove_selected(lastClicked);
+            }
+            lastClicked = elems[0];
           }
-          columnSelected = [];
-          $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprop');
-          lastClicked = null;
+
+          else {
+            remove_selected(elems[0]);
+            if ($(columnSelected[0]).parent()[0] != parent[0]) {
+              $(lastClicked).addClass('osxSelected');
+            }
+            columnSelected = [];
+            $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprop');
+            lastClicked = null;
+          }
         }
+        checkContextMenus();
       }
     }
   });
 
   // Method for holding down CTRL key
   $(document).on('keydown', function(e) {
-    if (!ctrlHeld && (e.ctrlKey || e.which == 224)){
-      ctrlHeld = (e.ctrlKey || e.which == 224);
+    shiftHeld = e.shiftKey;
+    ctrlHeld = (e.ctrlKey || e.which == 224);
+    if (shiftHeld || ctrlHeld) {
       allSelected = $('#hdfs_browser').find('.osxSelected');
     }
   });
 
   // Method when CTRL key is released
   $(document).on('keyup', function(e) {
-    ctrlHeld = (e.ctrlKey || e.which == 224);
+    ctrlHeld = (e.ctrlKey  || e.which == 224);
+    shiftHeld = e.shiftKey;
   });
 });

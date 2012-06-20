@@ -17,12 +17,12 @@
 					<h6 class="<%= stats.under_replicated === 0 ? '' : 'error-label'%>">Under-Replicated Blocks ( <%= stats.under_replicated %> )</h6>
       </td>
       <td class="hdfs-bar-container">
-        <div class="hdfs-live progress progress-status <% if (hdfs.node_width() > 1){%> red-bar <%}else{%> faded-bar <%}%>">
-          <div class="bar" style="width:<%= hdfs.node_width() %>%"></div>
+        <div class="hdfs-live progress progress-status <% if(stats.total_nodes < 1){ %>faded-bar<% }else{ %>red-bar<% } %>">
+          <div class="bar green-bar" style="width:<%= hdfs.node_width() %>%"></div>
         </div>
         <%= stats.live_nodes %> out of <%= stats.total_nodes %> live nodes<br /><br />
-        <div class="hdfs-dfs progress progress-status<% if (hdfs.usage_width() > 1){%> red-bar <%}else{%> faded-bar <%}%>">
-          <div class="bar" style="width:<%= hdfs.usage_width() %>%"></div>
+        <div class="hdfs-dfs progress progress-status faded-bar">
+          <div class="bar <% if(hdfs.usage_width()<70){ %>green-bar<% }else if(hdfs.usage_width()<90){ %>yellow-bar<% }else{ %>red-bar<% } %>" style="width:<%= hdfs.usage_width() %>%"></div>
         </div>
         <%= hdfs.percent_used() %> dfs usage
       </td>

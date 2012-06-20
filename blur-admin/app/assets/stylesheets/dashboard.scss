@@ -135,11 +135,12 @@
     .bar{
       @include border-radius();
       background-image: none;
-      background-color: $green-dashboard-color;
     }
   }
   .red-bar { background-color: $red-dashboard-color; }
   .faded-bar { background-color: $faded-blue-dashboard-color; }
+  .green-bar { background-color: $green-dashboard-color; }
+  .yellow-bar { background-color: $yellow-dashboard-color; }
 
   span.title-subtle{
     float: right;

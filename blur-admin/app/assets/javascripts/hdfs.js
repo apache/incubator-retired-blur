@@ -291,6 +291,7 @@ $(document).ready(function() {
         hide: function() {
           !window.uploading;
         }
+      });
     });
   };
 

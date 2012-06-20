@@ -113,7 +113,7 @@ $(document).ready(function() {
   /********** more Functions **********/
   
   fetch_error = function(error) {
-    $('#results_container').html("<div class='no-results'>Anerror has occured: " + error + "</div>");
+    $('#results_container').html("<div class='no-results'>An error has occured: " + error + "</div>");
     return $('#results_wrapper').addClass('noResults').removeClass('hidden');
   };
   

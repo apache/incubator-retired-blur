@@ -5,9 +5,10 @@
 //= require_self
 
 $(document).ready(function() {
-  var delete_file, draw_radial_graph, finishUploading, make_dir, navigateUsingPath, paste_buffer, perform_action, reload_hdfs, show_dir_props, show_hdfs_props, upload, uploadFailed;
-  var in_file = [];
-  
+  var delete_file, draw_radial_graph, finishUploading, make_dir, navigateUsingPath, paste_buffer,
+    perform_action, reload_hdfs, show_dir_props, show_hdfs_props, upload, uploadFailed, in_file = [],
+    allSelected = [], columnSelected = [], lastClicked, ctrlHeld = false;
+
   // Old browser support for history push state
   if (typeof history.pushState === 'undefined') {
     history.pushState = function() {};
@@ -143,6 +144,27 @@ $(document).ready(function() {
   };
 
   // HDFS Actions
+  var pre_cut_file = function(action, el){
+    if (paste_buffer.multiple){
+      $.each(paste_buffer.multiple, function(index, value){
+        $(value).removeClass('to-cut');
+      });
+    }
+    if (paste_buffer.location) {
+      $(paste_buffer.location).removeClass('to-cut');
+    }
+    paste_buffer.location = el;
+    paste_buffer.action = action;
+    paste_buffer.multiple = columnSelected;
+    $('#hdfs-dir-context-menu').enableContextMenuItems('#paste');
+    if (paste_buffer.multiple.length > 0){
+      $.each(paste_buffer.multiple, function(index, value){
+        $(value).addClass('to-cut');
+      });
+    }
+    else $(paste_buffer.location).addClass('to-cut');
+  };
+
   var cut_file = function(file, location) {
     var from_id = file.attr('hdfs_id');
     var from_path = file.attr('hdfs_path');
@@ -221,13 +243,18 @@ $(document).ready(function() {
   var delete_file = function(file) {
     var id = file.attr('hdfs_id');
     var path = file.attr('hdfs_path');
-    if (confirm("Are you sure you wish to delete " + path + "? This action can not be undone.")) {
-      $.post(Routes.delete_file_hdfs_path(id), {
-        'path': path
-      }, function() {
-        reload_hdfs();
-      });
-    }
+    $.post(Routes.delete_file_hdfs_path(id), {
+      'path': path
+    }, function() {
+      reload_hdfs();
+    });
+  };
+
+  var delete_additional_files = function(clicked_file) {
+    $.each(columnSelected, function(index, value){
+      if(!(clicked_file[0] == value))
+        delete_file($(value));
+    });
   };
 
   var upload = function(el) {
@@ -270,6 +297,14 @@ $(document).ready(function() {
   var make_dir = function(el) {
     var id = el.attr('hdfs_id');
     var path = el.attr('hdfs_path');
+
+    in_file = [];
+    $('.osxSelectable[hdfs_path="' + path + '"][hdfs_id=' + id + ']').click();
+    if (path == '/')
+      var osxWindow = 1;
+    else
+      var osxWindow = path.split('/').length;
+
     $('<div id="newFolder"><label>Folder Name:</label><input></input></div>').popup({
       title: 'New Folder',
       titleClass: 'title',
@@ -280,24 +315,41 @@ $(document).ready(function() {
         "Create": {
           "class": 'primary',
           func: function() {
-            $.ajax(Routes.mkdir_hdfs_path(id), {
-              type: 'post',
-              data: {
-                fs_path: path,
-                folder: $('#newFolder input').val()
-              },
-              success: function() {
-                var display_href, nextWin;
-                if (el.hasClass('osxSelected')) {
-                  nextWin = el.parents('.innerWindow').next();
-                  display_href = el.find('a').attr('href');
-                  nextWin.load(display_href);
-                } else {
-                  el.click();
-                }
-              }
+            var newName = $('#newFolder input').val();
+            var unique = true;
+
+            $.each( $($('.innerWindow')[osxWindow]).find('a'), function (index, value){
+              in_file.push($(value).attr('title'));
             });
+
+            $.each(in_file, function(index, value){
+              if(newName == value) unique = false;
+            });
+
+            if (!unique){
+              $().closePopup();
+              errorPopup("Folder or file with this name already in use.");
+            }
+            else{
+              $.ajax(Routes.mkdir_hdfs_path(id), {
+                type: 'post',
+                data: {
+                  fs_path: path,
+                  folder: $('#newFolder input').val()
+                },
+                success: function() {
+                  var display_href, nextWin;
+                  if (el.hasClass('osxSelected')) {
+                    nextWin = el.parents('.innerWindow').next();
+                    display_href = el.find('a').attr('href');
+                    nextWin.load(display_href);
+                  } else {
+                    el.click();
+                  }
+                }
+              });
             $().closePopup();
+            }
           }
         },
         "Cancel": {
@@ -371,18 +423,26 @@ $(document).ready(function() {
   var perform_action = function(action, el) {
     switch (action) {
       case "delete":
-        delete_file(el);
+        if (columnSelected.length > 0) {
+          if (confirm("Are you sure you wish to delete these files? This action can not be undone.")) {
+            delete_additional_files(el);
+            delete_file(el);
+          }
+        } else if (confirm("Are you sure you wish to delete " + el.attr('hdfs_path') + "? This action can not be undone.")) {
+          delete_file(el);
+        }
         break;
       case "cut":
-        paste_buffer.location = el;
-        paste_buffer.action = action;
-        $('#hdfs-dir-context-menu').enableContextMenuItems('#paste');
+        pre_cut_file(action, el);
         break;
       case "paste":
-        if (paste_buffer.action) {
-          if (paste_buffer.action === "cut") {
-            cut_file(paste_buffer.location, el);
+        if (paste_buffer.action && paste_buffer.action === "cut") {
+          if (paste_buffer.multiple.length > 0){
+            $.each(paste_buffer.multiple, function(index, value){
+              cut_file($(value), el);
+            });
           }
+          else cut_file(paste_buffer.location, el);
         }
         break;
       case "props":
@@ -479,5 +539,73 @@ $(document).ready(function() {
     navigated: function(e, data) {
       history.pushState({}, '', data.url);
     }
+  });
+
+  /* Multiple select */
+  var remove_selected = function(keep_selected){
+    $.each(columnSelected, function(index, value){
+      if (value != keep_selected){
+        $(value).removeClass('osxSelected');
+      }
+    });
+  };
+
+  var add_selected = function(group_selected, current){
+    $.each(group_selected, function(index, value){
+      if (value == current && group_selected.length > 1)
+        $(value).removeClass('osxSelected');
+      else
+        $(value).addClass('osxSelected');
+    });
+  };
+
+  $(document).on('click', function(e){
+    if(e.which == 1){
+      var elems = $(e.target).closest('li');
+      if (elems.length == 0 && !ctrlHeld) { //click outside of the lists
+        remove_selected(lastClicked);
+        columnSelected = [];
+        $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
+      }
+      else { //click a list element
+        var parent = elems.parent();
+        if(ctrlHeld){ //CTRL held down
+          if (columnSelected.length == 0)
+            add_selected(allSelected, null);
+          else if ($(columnSelected[0]).parent()[0] == parent[0])
+            add_selected(columnSelected, elems[0]);
+          else
+            remove_selected(lastClicked);
+          columnSelected = $(parent).find('.osxSelected');
+          if (columnSelected.length > 1)
+            $('.contextMenu').disableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
+          else
+            $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
+          if (columnSelected.length > 0)
+            lastClicked = elems[0];
+          else
+            lastClicked = null;
+        }
+        else { //CTRL not held down
+          remove_selected(elems[0]);
+          if ($(columnSelected[0]).parent()[0] != parent[0])
+            $(lastClicked).addClass('osxSelected');
+          columnSelected = [];
+          $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprop');
+          lastClicked = null;
+        }
+      }
+    }
+  });
+
+  $(document).on('keydown', function(e) {
+    if (!ctrlHeld && e.ctrlKey){
+      ctrlHeld = e.ctrlKey;
+      allSelected = $('#hdfs_browser').find('.osxSelected');
+    }
+  });
+
+  $(document).on('keyup', function(e) {
+    ctrlHeld = e.ctrlKey;
   });
 });

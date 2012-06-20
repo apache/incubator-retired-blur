@@ -20,6 +20,7 @@ var Cluster = Backbone.Model.extend({
   },
   update_child_tables: function(){
     this.get('tables').update(this.get('blur_tables'));
+    this.view.set_table_values();
   },
   set_running_query_header_state: function(){
     var tables_queried = this.get('tables').where({queried_recently: true}).length;
@@ -113,8 +114,7 @@ var Cluster = Backbone.Model.extend({
                 data: {tables: table_ids}
               });
               _.each(selected_tables, function(table){
-                table.view.remove();
-                table.destroy();
+                table.collection.remove(table);
               });
               this.view.set_table_state();
               $().closePopup();
@@ -133,10 +133,10 @@ var Cluster = Backbone.Model.extend({
     var selected_tables = this.get('tables').where({state: 'disabled', checked: true});
     var table_ids = _.map(selected_tables, function(table){ return table.get('id'); });
     this.send_action_request(selected_tables, _.bind(function(){
-      var delete_tables = function(delete_index) {
+      var delete_tables_send = function(delete_index) {
         $.ajax({
           type: 'DELETE',
-          url: Routes.delete_zookeeper_blur_tables_path(CurrentZookeeper),
+          url: Routes.zookeeper_blur_tables_path(CurrentZookeeper),
           data: {
             tables: table_ids,
             delete_index: delete_index
@@ -155,15 +155,11 @@ var Cluster = Backbone.Model.extend({
         btns: {
           "Delete tables and indicies": {
             "class": "danger",
-            func: function() {
-              _bind(delete_tables, this, true);
-            }
+            func: _.bind(delete_tables_send, this, true)
           },
           "Delete tables only": {
             "class": "warning",
-            func: function() {
-              _bind(delete_tables, this, false);
-            }
+            func: _.bind(delete_tables_send, this, false)
           },
           "Cancel": {
             func: function() {

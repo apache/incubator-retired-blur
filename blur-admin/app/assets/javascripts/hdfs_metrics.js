@@ -33,11 +33,9 @@ $(document).ready(function(){
 		block:
 		{
 			label_1: "Under Replicated Blocks",
-			label_2: "Corrupt Blocks",
-      label_3: "Missing Blocks",
+      label_2: "Missing Blocks",
 			stat_1: "under_replicated",
-			stat_2: "corrupt_blocks",
-      stat_3: "missing_blocks"
+      stat_2: "missing_blocks"
 		}
 	};
 
@@ -91,12 +89,7 @@ $(document).ready(function(){
 				for(var action in hdfs_request_lookup){
           var request_options = hdfs_request_lookup[action];
 					var hdfs_data_1 = {label: request_options.label_1, data: []};
-          if (action == 'block'){
-            var hdfs_data_2 = {label: request_options.label_2, data: []};
-            var hdfs_data_3 = {label: request_options.label_3, data: []};
-          }
-          else
-            var hdfs_data_2 = {label: request_options.label_2, data: [], yaxis: 2};
+          var hdfs_data_2 = {label: request_options.label_2, data: [], yaxis: 2};
           var graph_container = $('.graph_instance#' + id).find('.tab-pane#' + action + '_' + id)
 
           for( var i in data ){
@@ -104,8 +97,6 @@ $(document).ready(function(){
 						var entry_date = new Date(point.created_at).getTime();
             hdfs_data_1.data.push([entry_date - 4*60*60*1000, point[request_options.stat_1]]);
 						hdfs_data_2.data.push([entry_date - 4*60*60*1000, point[request_options.stat_2]]);
-            if(action == 'block')
-              hdfs_data_2.data.push([entry_date - 4*60*60*1000, point[request_options.stat_3]]);
 					}
 					//Current implementation is a fixed size queue for storing data
 					// Future implementations may allow you to change the range (length of queue, still fixed to a size)
@@ -116,14 +107,8 @@ $(document).ready(function(){
 							hdfs_data[id][action].metrics[1].data.splice(0, length);
 							hdfs_data[id][action].metrics[0].data = hdfs_data[id][action].metrics[0].data.concat(hdfs_data_1.data);
 							hdfs_data[id][action].metrics[1].data = hdfs_data[id][action].metrics[1].data.concat(hdfs_data_2.data);
-              if (action == 'block'){
-                hdfs_data[id][action].metrics[2].data = hdfs_data[id][action].metrics[2].data.concat(hdfs_data_3.data);
-							  hdfs_data[id][action].metrics[2].data = hdfs_data[id][action].metrics[2].data.concat(hdfs_data_3.data);
-              }
 					}	else {
 						hdfs_data[id][action].metrics.push(hdfs_data_1, hdfs_data_2);
-            if (action == 'block')
-              hdfs_data[id][action].metrics.push(hdfs_data_3);
 					}
 
 					if (point){

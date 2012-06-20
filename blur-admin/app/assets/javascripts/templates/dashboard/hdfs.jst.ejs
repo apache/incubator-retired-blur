@@ -12,13 +12,9 @@
   <table>
     <tr>
       <td class="hdfs-chart-container">
-        <div class="hdfs-chart"></div>
-        <div class="legend">
-          <div class="legend-box healthy"></div><h6>Healthy</h6><br />
-          <div class="legend-box corrupt"></div><h6><%= stats.corrupt_blocks %> Corrupt</h6><br />
-          <div class="legend-box missing"></div><h6><%= stats.missing_blocks %> Missing</h6><br />
-          <div class="legend-box under-replicated"></div><h6><%= stats.under_replicated %> Under-Rep</h6>
-        </div>
+				<div class="zk-cont-info">
+					<h6 class="<%= stats.missing_blocks === 0 ? '' : 'error-label'%>">Missing Blocks ( <%= stats.missing_blocks %> )</h6>
+					<h6 class="<%= stats.under_replicated === 0 ? '' : 'error-label'%>">Under-Replicated Blocks ( <%= stats.under_replicated %> )</h6>
       </td>
       <td class="hdfs-bar-container">
         <div class="hdfs-live progress progress-status <% if (hdfs.node_width() > 1){%> red-bar <%}else{%> faded-bar <%}%>">

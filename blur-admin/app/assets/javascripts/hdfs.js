@@ -11,7 +11,7 @@ $(document).ready(function() {
 
   // Old browser support for history push state
   if (typeof history.pushState === 'undefined') {
-    history.pushState = function(a, b, c) {};
+    history.pushState = function() {};
   }
 
   // One time use page variable initialization
@@ -574,6 +574,7 @@ $(document).ready(function() {
     });
   };
 
+  //disables or enables items in context menus
   var checkContextMenus = function() {
     if (columnSelected.length > 1) {
       $('.contextMenu').disableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
@@ -583,6 +584,7 @@ $(document).ready(function() {
     }
   };
 
+  //method for shift multiple select with Ctrl
   var shiftCtrlSelect = function (parent, elems) {
     if (columnSelected.length > 1 && elems[0] != lastClicked) {
       var sibs = parent.children();
@@ -600,7 +602,12 @@ $(document).ready(function() {
     }
   };
 
+  //method for shift multiple select without Ctrl
   var shiftSelect = function (parent, elems) {
+    if (columnSelected.length == 1 && $(lastClicked).parent()[0] == parent[0]) {
+      $(lastClicked).addClass('osxSelected');
+      columnSelected = $(parent).find('.osxSelected');
+    }
     if (columnSelected.length > 1) {
       var inside = false;
       var elemsPath = elems.attr('hdfs_path');
@@ -674,6 +681,7 @@ $(document).ready(function() {
             }
             else {
               remove_selected(lastClicked);
+              columnSelected = $(parent).find('.osxSelected');
             }
             lastClicked = elems[0];
           }

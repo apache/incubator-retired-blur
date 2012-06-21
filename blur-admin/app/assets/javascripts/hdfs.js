@@ -53,7 +53,15 @@ $(document).ready(function() {
         return false;
       }
     );
-    $('#hdfs-dir-context-menu').disableContextMenuItems('#paste');
+    $('#hdfs_browser .innerWindow').contextMenu(
+      {menu: 'hdfs-whitespace-context-menu'},
+      function(action, el, pos) {
+        var prev = el.prev().find('.osxSelected');
+        perform_action(action, prev);
+        return false;
+      }
+    );
+    $('#hdfs-dir-context-menu, #hdfs-whitespace-context-menu').disableContextMenuItems('#paste');
     if ($('#hdfs_browser').attr('hdfs_editor') === 'false') {
       $('.contextMenu').disableContextMenuItems('#paste,#mkdir,#cut,#rename,#delete');
     }
@@ -79,6 +87,12 @@ $(document).ready(function() {
           "<li class='rename'><a href='#rename'>Rename</a></li>",
           "<li class='cut'><a href='#cut'>Cut</a></li>",
           "<li class='delete'><a href='#delete'>Delete</a></li>",
+        "</ul>",
+        "<ul id='hdfs-whitespace-context-menu' class='contextMenu'>",
+          "<li class='mkdir'><a href='#mkdir'>New Folder</a></li>",
+          "<li class='edit'><a href='#upload'>Upload File</a></li>",
+          "<li class='paste'><a href='#paste'>Paste</a></li>",
+          "<li class='props separator'><a href='#dirprops'>Properties</a></li>",
         "</ul>",
       "</div>"].join('\n'));
   };
@@ -157,7 +171,7 @@ $(document).ready(function() {
     paste_buffer.location = el;
     paste_buffer.action = action;
     paste_buffer.multiple = columnSelected;
-    $('#hdfs-dir-context-menu').enableContextMenuItems('#paste');
+    $('#hdfs-dir-context-menu, #hdfs-whitespace-context-menu').enableContextMenuItems('#paste');
     if (paste_buffer.multiple.length > 0) {
       $.each(paste_buffer.multiple, function(index, value) {
         $(value).addClass('to-cut');
@@ -178,7 +192,7 @@ $(document).ready(function() {
           'from': from_path,
           'to': to_path
         }, function() {
-          $('#hdfs-dir-context-menu').disableContextMenuItems('#paste');
+          $('#hdfs-dir-context-menu, #hdfs-whitespace-context-menu').disableContextMenuItems('#paste');
           reload_hdfs();
         }
       );
@@ -434,7 +448,7 @@ $(document).ready(function() {
         if (columnSelected.length > 0) {
           confirmPopup("Are you sure you wish to delete these files? This action can not be undone.", function() {
             delete_additional_files(el);
-            delete_file(el);
+            delete_file(el);//need both - delete_file catches the clicked element when its not highlighted
           });
         }
         else {
@@ -511,6 +525,8 @@ $(document).ready(function() {
     var hdfsId = pathPieces.shift();
     var path = '/' + pathPieces.slice(1).join('/');
     $('#hdfs_browser').osxFinder('navigateToPath', path, hdfsId, true);
+    $('.innerWindow').first().disableContextMenu();
+    //TODO check the last window?
   };
   window.onpopstate = function(e) {
     navigateUsingPath();
@@ -586,9 +602,9 @@ $(document).ready(function() {
       navigateUsingPath();
     },
     navigated: function(e, data) {
-      try {
+      if (history.pushState) {
         history.pushState({}, '', data.url);
-      } catch(err) {}
+      }
     }
   });
 
@@ -746,6 +762,21 @@ $(document).ready(function() {
           }
         }
         checkContextMenus();
+      }
+      if (columnSelected.length > 1) {
+        $('.innerWindow').disableContextMenu();
+      }
+      else {
+        $('.innerWindow').enableContextMenu();
+        $('.innerWindow').first().disableContextMenu();
+      }
+    }
+    else {
+      //NOTE: this only works for FF 3.6
+      //TODO: fix for Chrome (this listener is not picking up right click in Chrome)
+      lastWindow = $('.innerWindow').last();
+      if (lastWindow.find('#file_table').length > 0) {
+        lastWindow.disableContextMenu();
       }
     }
   });

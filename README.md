@@ -8,6 +8,10 @@ Blur
 
 Blur is a NoSQL data store built on top of Lucene, Hadoop, Thrift, and Zookeeper.  Tables consist of a series of shards (Lucene indexes) that are distributed across a cluster of commodity servers.
 
+Mail List
+----
+blur-dev@googlegroups.com or go to http://groups.google.com/group/blur-dev
+
 Getting Started
 ----
 

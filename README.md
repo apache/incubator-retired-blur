@@ -1,3 +1,8 @@
+Note
+----
+There is a known bug with 0.1.0.x that can cause high memory usage during high read and writes with near real time updates.  This issue does not effect the M/R updates.
+
+
 Blur
 ====
 

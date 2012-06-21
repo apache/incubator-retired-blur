@@ -188,11 +188,12 @@ $(document).ready(function() {
   var rename = function(el) {
     var id = el.attr('hdfs_id');
     var from_path = el.attr('hdfs_path');
-    $('<div id="newName"><input></input></div>').popup({
+    $('<div id="newName"><lable>New name for '+ from_path.split('/').pop() +'</label><br/><br/><input></input></div>').popup({
       title: 'New Name',
       titleClass: 'title',
       shown: function() {
         $('#newName input').focus();
+        submitOnEnter();
       },
       btns: {
         "Create": {
@@ -204,7 +205,11 @@ $(document).ready(function() {
             $.each(el.siblings(), function(index, value){
               if(newFullPath == $(value).attr('hdfs_path')) unique = false;
             });
-            if (!unique){
+            if (newName == '') {
+              $().closePopup();
+              errorPopup("Name was not entered.");
+            }
+            else if (!unique){
               $().closePopup();
               errorPopup("Name already in use.");
             }
@@ -255,8 +260,9 @@ $(document).ready(function() {
 
   var delete_additional_files = function(clicked_file) {
     $.each(columnSelected, function(index, value){
-      if(!(clicked_file[0] == value))
+      if(!(clicked_file[0] == value)) {
         delete_file($(value));
+      }
     });
   };
 
@@ -302,11 +308,12 @@ $(document).ready(function() {
     $('.osxSelectable[hdfs_path="' + path + '"][hdfs_id=' + id + ']').click();
     var osxWindow = ( path == '/' ? 1 : path.split('/').length );
 
-    $('<div id="newFolder"><label>Folder Name:</label><input></input></div>').popup({
+    $('<div id="newFolder"><label>Folder Name:</label><input></input><br/><br/>Parent directory: '+ path +'</div>').popup({
       title: 'New Folder',
       titleClass: 'title',
       shown: function() {
         $('#newFolder input').focus();
+        submitOnEnter();
       },
       btns: {
         "Create": {
@@ -323,7 +330,11 @@ $(document).ready(function() {
               if(newName == value) unique = false;
             });
 
-            if (!unique) {
+            if (newName == '') {
+              $().closePopup();
+              errorPopup("Name was not entered.");
+            }
+            else if (!unique) {
               $().closePopup();
               errorPopup("Folder or file with this name already in use.");
             }
@@ -421,13 +432,15 @@ $(document).ready(function() {
     switch (action) {
       case "delete":
         if (columnSelected.length > 0) {
-          if (confirm("Are you sure you wish to delete these files? This action can not be undone.")) {
+          confirmPopup("Are you sure you wish to delete these files? This action can not be undone.", function() {
             delete_additional_files(el);
             delete_file(el);
-          }
+          });
         }
-        else if (confirm("Are you sure you wish to delete " + el.attr('hdfs_path') + "? This action can not be undone.")) {
-          delete_file(el);
+        else {
+          confirmPopup("Are you sure you wish to delete " + el.attr('hdfs_path') + "? This action can not be undone.", function() {
+            delete_file(el);
+          });
         }
         break;
       case "cut":
@@ -503,9 +516,13 @@ $(document).ready(function() {
     navigateUsingPath();
   };
 
+  // Methods for modals
   errorPopup = function(message) {
     $('<div id="error">' + message +'</div>').popup({
       title: 'Error',
+      shown: function() {
+        $('.btn-primary').focus();
+      },
       btns: {
         "Ok": {
           "class": "primary",
@@ -513,6 +530,38 @@ $(document).ready(function() {
             $().closePopup();
           }
         }
+      }
+    });
+  };
+
+  confirmPopup = function(message, confirmFnct) {
+    $('<div id="confirm">' + message +'</div>').popup({
+      title: 'Confirm',
+      shown: function() {
+        $('.btn-primary').focus();
+      },
+      btns: {
+        "Ok": {
+          "class": "primary",
+          func: function() {
+            $().closePopup();
+            confirmFnct();
+          }
+        },
+        "Cancel": {
+          func: function() {
+            $().closePopup();
+            return false;
+          }
+        }
+      }
+    });
+  };
+
+  var submitOnEnter = function() {
+    $('#modal').on('keyup', function(e){
+      if (e.which == 13){
+        $('.btn-primary').click();
       }
     });
   };

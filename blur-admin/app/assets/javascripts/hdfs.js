@@ -8,12 +8,14 @@ $(document).ready(function() {
   //document varss
   var delete_file, draw_radial_graph, finishUploading, make_dir, navigateUsingPath, paste_buffer,
     perform_action, reload_hdfs, show_dir_props, show_hdfs_props, upload, uploadFailed, in_file = [],
-    allSelected = [], columnSelected = [], lastClicked, ctrlHeld = false, shiftHeld = false;
+    allSelected = [], columnSelected = [], lastClicked, ctrlHeld = false, shiftHeld = false, historyUndef = false;
 
   //TODO: figure out why this doesn't work
   // Old browser support for history push state
   if (typeof history.pushState === 'undefined') {
-    history.pushState = function() {};
+    history.pushState = function() {
+      historyUndef = true;
+    };
   }
 
   // One time use page variable initialization
@@ -200,7 +202,12 @@ $(document).ready(function() {
           'to': to_path
         }, function() {
           $('#hdfs-dir-context-menu, #hdfs-whitespace-context-menu').disableContextMenuItems('#paste');
-          reload_hdfs();
+          if (!historyUndef) {
+            reload_hdfs();
+          }
+          else {
+            reload_hdfs_ff(to_path, to_id);
+          }
         }
       );
     }
@@ -275,7 +282,12 @@ $(document).ready(function() {
     $.post(Routes.delete_file_hdfs_path(id), {
       'path': path
     }, function() {
-      reload_hdfs();
+      if (!historyUndef) {
+        reload_hdfs();
+      }
+      else {
+        reload_hdfs_ff(path, id);
+      }
     });
   };
 
@@ -506,7 +518,12 @@ $(document).ready(function() {
     $("li[hdfs_path='" + path + "']").click();
     $().closePopup();
     window.uploading = false;
-    reload_hdfs();
+    if (!historyUndef) {
+      reload_hdfs();
+    }
+    else {
+      reload_hdfs_ff(path, $('.osxSelected').attr('hdfs_id'));
+    }
   };
 
   window.uploadFailed = function(error) {
@@ -525,6 +542,11 @@ $(document).ready(function() {
     navigateUsingPath();
   };
 
+  reload_hdfs_ff = function(path, hdfsId) { //fix for FF 3.6
+    $('.osxSelected').removeClass('osxSelected');
+    navigateOsxWindow(path, hdfsId);
+  }
+
   /*
     Methods for HTML History manipulation
   */
@@ -540,6 +562,10 @@ $(document).ready(function() {
   };
   window.onpopstate = function(e) {
     navigateUsingPath();
+  };
+  navigateOsxWindow = function(path, hdfsId) {
+    $('#hdfs_browser').osxFinder('navigateToPath', path, hdfsId, true);
+    $('.innerWindow').first().disableContextMenu();
   };
 
   /*

@@ -91,6 +91,7 @@ $(document).ready(function() {
           "<li class='rename'><a href='#rename'>Rename</a></li>",
           "<li class='cut'><a href='#cut'>Cut</a></li>",
           "<li class='delete'><a href='#delete'>Delete</a></li>",
+          "<li class='props separator'><a href='#dirprops'>Properties</a></li>",
         "</ul>",
         "<ul id='hdfs-whitespace-context-menu' class='contextMenu'>",
           "<li class='mkdir'><a href='#mkdir'>New Folder</a></li>",

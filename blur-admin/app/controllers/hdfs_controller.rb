@@ -55,6 +55,7 @@ class HdfsController < ApplicationController
       file_ending = stat.path.split('/').last
       {:name=> file_ending, :is_dir=>stat.isdir}
     end
+    @children.sort_by! {|c| [c[:is_dir] ? 1:0, c[:name].downcase]}
     respond_to do |format|
       format.html{render :partial => 'expand'}
     end

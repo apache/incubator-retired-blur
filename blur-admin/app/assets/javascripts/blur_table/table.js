@@ -50,7 +50,6 @@ var Table = Backbone.Model.extend({
     var index = _.indexOf(['url', 'scheme', 'slash', 'host', 'port', 'path', 'query', 'hash'], piece);
     if (index === -1) throw 'The index, ' + piece + ' does not exist as a part of a uri.';
     return result[index];
-
   },
   get_terms: function(request_data, success){
     $.ajax({

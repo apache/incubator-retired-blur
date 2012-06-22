@@ -5,7 +5,7 @@
     %p File must be less than 25Mb
     = hidden_field_tag 'hdfs_id', nil, :id => 'hdfs-id-input'
     = hidden_field_tag 'path', nil, :id => 'fpath-input'
-    = submit_tag 'Upload', :id => 'upload-button', :class => 'btn primary'
+    = submit_tag 'Upload', :id => 'upload-button', :class => 'btn-primary'
   %iframe#upload_frame{:name=>'upload_frame',:style=>'display:none'}
   #upload_file_warning.hidden
     Warning: File or folder with this name already exists. Uploading this file will replace the current one.

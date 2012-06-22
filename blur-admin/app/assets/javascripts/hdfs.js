@@ -221,8 +221,8 @@ $(document).ready(function() {
       titleClass: 'title',
       shown: function() {
         $('#newName input').focus();
-        submitOnEnter();
       },
+      onEnter: true,
       btns: {
         "Create": {
           "class": "primary",
@@ -346,8 +346,8 @@ $(document).ready(function() {
       titleClass: 'title',
       shown: function() {
         $('#newFolder input').focus();
-        submitOnEnter();
       },
+      onEnter: true,
       btns: {
         "Create": {
           "class": 'primary',
@@ -609,14 +609,6 @@ $(document).ready(function() {
             return false;
           }
         }
-      }
-    });
-  };
-
-  var submitOnEnter = function() {
-    $('#modal').on('keyup', function(e){
-      if (e.which == 13){
-        $('.btn-primary').click();
       }
     });
   };

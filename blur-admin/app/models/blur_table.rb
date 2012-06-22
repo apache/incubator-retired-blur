@@ -20,6 +20,7 @@ class BlurTable < ActiveRecord::Base
     serial_properties[:schema] = self.schema
     serial_properties[:sparkline] = table_query_info['sparkline']
     serial_properties[:average_queries] = table_query_info['average_queries']
+    serial_properties[:comments] = self.comments
     serial_properties
   end
 

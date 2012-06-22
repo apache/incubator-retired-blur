@@ -11,14 +11,14 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120618225024) do
+ActiveRecord::Schema.define(:version => 20120621155420) do
 
   create_table "blur_queries", :force => true do |t|
     t.text     "query_string",             :limit => 16777215
     t.integer  "complete_shards"
     t.integer  "uuid",                     :limit => 8
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                                                      :null => false
+    t.datetime "updated_at",                                                      :null => false
     t.boolean  "super_query_on"
     t.string   "facets"
     t.integer  "start"
@@ -32,7 +32,7 @@ ActiveRecord::Schema.define(:version => 20120618225024) do
     t.string   "times"
     t.integer  "total_shards"
     t.integer  "state"
-    t.boolean  "record_only"
+    t.boolean  "record_only",                                  :default => false
   end
 
   add_index "blur_queries", ["blur_table_id"], :name => "index_blur_queries_on_blur_table_id"
@@ -50,6 +50,7 @@ ActiveRecord::Schema.define(:version => 20120618225024) do
     t.text     "server"
     t.integer  "cluster_id"
     t.integer  "row_count",      :limit => 8
+    t.string   "comments"
   end
 
   add_index "blur_tables", ["cluster_id"], :name => "index_blur_tables_on_cluster_id"
@@ -88,7 +89,7 @@ ActiveRecord::Schema.define(:version => 20120618225024) do
     t.integer  "missing_blocks",   :limit => 8
     t.integer  "total_nodes"
     t.integer  "dead_nodes"
-    t.datetime "created_at"
+    t.datetime "created_at",                    :null => false
     t.string   "host"
     t.string   "port"
     t.integer  "hdfs_id"
@@ -110,8 +111,8 @@ ActiveRecord::Schema.define(:version => 20120618225024) do
     t.string   "name"
     t.string   "pref_type"
     t.text     "value"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
     t.integer  "user_id"
   end
 
@@ -126,8 +127,8 @@ ActiveRecord::Schema.define(:version => 20120618225024) do
     t.string   "query"
     t.integer  "blur_table_id"
     t.integer  "user_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                       :null => false
+    t.datetime "updated_at",                       :null => false
     t.boolean  "record_only",   :default => false
   end
 
@@ -166,8 +167,8 @@ ActiveRecord::Schema.define(:version => 20120618225024) do
     t.string   "crypted_password"
     t.string   "password_salt"
     t.string   "persistence_token"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",        :null => false
+    t.datetime "updated_at",        :null => false
     t.integer  "roles_mask"
     t.string   "name"
   end

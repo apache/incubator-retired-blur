@@ -6,7 +6,7 @@ var Table = Backbone.Model.extend({
   },
   state_lookup : ['deleted', 'deleting', 'disabled', 'disabling', 'active', 'enabling'],
   table_lookup : ['deleted', 'disabled', 'disabled', 'active', 'active', 'disabled'],
-  colspan_lookup : {'active': 6, 'disabled': 3, 'deleted': 1}, //changed active from 5 to 6 for spark
+  colspan_lookup : {'active': 7, 'disabled': 3, 'deleted': 1}, //changed active from 5 to 6 for spark, changed from 6 to 7 for comments
   initialize: function(){
     this.view = new TableView({model: this});
     this.set({
@@ -85,7 +85,8 @@ var TableView = Backbone.View.extend({
   events: {
     'click .bulk-action-checkbox' : 'toggle_row',
     'click .hosts' : 'show_hosts',
-    'click .info' : 'show_schema'
+    'click .info' : 'show_schema',
+    'click .comments' : 'show_comments'
   },
   template: JST['templates/blur_table/table_row'],
   render: function(){
@@ -165,6 +166,37 @@ var TableView = Backbone.View.extend({
           table_id: this.get('id')})
         .render();
       }, table_model));
+    });
+  },
+  show_comments: function(){
+    var comment_modal = $(JST['templates/blur_table/comments']({table: this.model}));
+    $().popup({
+      title: 'Comments',
+      titleClass: 'title',
+      body: comment_modal ,
+      btns: {
+        "Submit": {
+          "class": "primary",
+          func: _.bind(function() {
+            var input_comment = document.getElementById("comments").value;
+            $.ajax({
+              type: 'PUT',
+              url: Routes.comment_zookeeper_blur_table_path(CurrentZookeeper, this.model.get('id')) ,
+              data: {input: input_comment},
+              success: _.bind(function(){
+                this.model.set({comments: input_comment});
+              }, this)
+            });
+            
+            $().closePopup();
+          }, this)
+        },
+        "Cancel": {
+          func: function() {
+            $().closePopup();
+          }
+        }
+      }
     });
   },
   setup_filter_tree: function(selector) {

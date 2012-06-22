@@ -113,7 +113,7 @@ describe HdfsController do
         get :expand, :id => @hdfs.id
         assigns(:hdfs_id).should == @hdfs.id.to_s
         assigns(:path).should == '/'
-        assigns(:children).should == [{'name' => '3', 'is_dir' => true}, {'name' => '4', 'is_dir' => false}]
+        assigns(:children).should == [{'name' => '4', 'is_dir' => false}, {'name' => '3', 'is_dir' => true}, ]
       end
 
       it "assigns the correct instance variables with a given path" do
@@ -121,7 +121,7 @@ describe HdfsController do
         get :expand, :id => @hdfs.id, :fs_path => '/path'
         assigns(:hdfs_id).should == @hdfs.id.to_s
         assigns(:path).should == '/path/'
-        assigns(:children).should == [{'name' => '3', 'is_dir' => true}, {'name' => '4', 'is_dir' => false}]
+        assigns(:children).should == [{'name' => '4', 'is_dir' => false}, {'name' => '3', 'is_dir' => true}]
       end
 
       it "renders the expand partial" do

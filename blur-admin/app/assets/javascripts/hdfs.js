@@ -5,10 +5,12 @@
 //= require_self
 
 $(document).ready(function() {
+  //document varss
   var delete_file, draw_radial_graph, finishUploading, make_dir, navigateUsingPath, paste_buffer,
     perform_action, reload_hdfs, show_dir_props, show_hdfs_props, upload, uploadFailed, in_file = [],
     allSelected = [], columnSelected = [], lastClicked, ctrlHeld = false, shiftHeld = false;
 
+  //TODO: figure out why this doesn't work
   // Old browser support for history push state
   if (typeof history.pushState === 'undefined') {
     history.pushState = function() {};
@@ -29,7 +31,9 @@ $(document).ready(function() {
     });
   })();
 
-  //Page Widget Setup Methods
+  /*
+   * Page Widget Setup Methods
+  */
 
   var setup_context_menus = function() {
     $('#hdfs_browser li.hdfs_instance').contextMenu(
@@ -157,7 +161,9 @@ $(document).ready(function() {
     });
   };
 
-  // HDFS Actions
+  /*
+   * HDFS Actions
+  */
 
   var pre_cut_file = function(action, el) {
     if (paste_buffer.multiple) {
@@ -490,7 +496,10 @@ $(document).ready(function() {
     }
   };
 
-  //Upload Methods
+  /*
+   * Upload Methods
+  */
+
   // Upload methods on the window so returned JS can call them
   window.finishUploading = function(path) {
     $("li[hdfs_path='" + path + "']").click();
@@ -516,8 +525,9 @@ $(document).ready(function() {
   };
 
   /*
-    #Methods for HTML History manipulation
+    Methods for HTML History manipulation
   */
+
   navigateUsingPath = function() {
     var pathPieces = window.location.pathname.split('/').filter(function(member) {
       return member !== '';
@@ -526,13 +536,15 @@ $(document).ready(function() {
     var path = '/' + pathPieces.slice(1).join('/');
     $('#hdfs_browser').osxFinder('navigateToPath', path, hdfsId, true);
     $('.innerWindow').first().disableContextMenu();
-    //TODO check the last window?
   };
   window.onpopstate = function(e) {
     navigateUsingPath();
   };
 
-  // Methods for modals
+  /*
+   * Methods for modals
+  */
+
   errorPopup = function(message) {
     $('<div id="error">' + message +'</div>').popup({
       title: 'Error',
@@ -583,8 +595,9 @@ $(document).ready(function() {
   };
 
   /*
-    # Methods to call on page load
+    Methods to call on page load
   */
+
   $(document.body).append(tree_context_menu());
   setup_context_menus();
   paste_buffer = {};
@@ -608,7 +621,9 @@ $(document).ready(function() {
     }
   });
 
-  /* Multiple select */
+  /*
+   * Multiple select
+  */
 
   //de-selects everything stored in columnSelected except for keep_selected
   var remove_selected = function(keep_selected){

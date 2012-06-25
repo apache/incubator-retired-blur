@@ -25,12 +25,12 @@ import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.NRTManager;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.index.IndexWriter;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.manager.writer.nrt.NRTManager;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -285,8 +285,13 @@ public class TransactionRecorder {
 
   public void commit(IndexWriter writer) throws CorruptIndexException, IOException {
     synchronized (running) {
+      long s = System.nanoTime();
       writer.commit();
+      long m = System.nanoTime();
+      LOG.info("Commit took [{0}] for [{1}]", (m - s) / 1000000.0, writer);
       rollLog();
+      long e = System.nanoTime();
+      LOG.info("Log roller took [{0}] for [{1}]", (e - m) / 1000000.0, writer);
     }
   }
 

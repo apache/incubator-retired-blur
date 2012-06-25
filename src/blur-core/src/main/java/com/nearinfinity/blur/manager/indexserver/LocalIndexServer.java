@@ -156,6 +156,7 @@ public class LocalIndexServer extends AbstractIndexServer {
     index.setTable(table);
     index.setWalPath(new Path(new Path(_walPath,table),shard));
     index.setConfiguration(_configuration);
+    index.setCloser(_closer);
     index.init();
     return index;
   }

@@ -90,4 +90,8 @@ public class BlurConfiguration {
     set(name, Boolean.toString(value));
   }
 
+  public double getDouble(String name, double defaultValue) {
+    return Double.parseDouble(get(name, Double.toString(defaultValue)));
+  }
+
 }

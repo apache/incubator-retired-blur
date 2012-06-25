@@ -62,10 +62,11 @@ public class BlurShardServer extends TableAdmin implements Iface {
   private BlurQueryChecker _queryChecker;
   private ExecutorService _dataFetch;
   private String _cluster = BlurConstants.BLUR_CLUSTER;
+  private int _dataFetchThreadCount = 32;
 
   public void init() {
     _queryCache = new QueryCache("shard-cache", _maxQueryCacheElements, _maxTimeToLive);
-    _dataFetch = Executors.newThreadPool("data-fetch-", 32);
+    _dataFetch = Executors.newThreadPool("data-fetch-", _dataFetchThreadCount);
   }
 
   @Override
@@ -86,13 +87,18 @@ public class BlurShardServer extends TableAdmin implements Iface {
         }
       }
       BlurUtil.setStartTime(original);
+      BlurResultIterable hitsIterable = null;
       try {
         AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
-        BlurResultIterable hitsIterable = _indexManager.query(table, blurQuery, facetCounts);
+        hitsIterable = _indexManager.query(table, blurQuery, facetCounts);
         return _queryCache.cache(table, original, BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _dataFetch, blurQuery.selector, this, table));
       } catch (Exception e) {
         LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
         throw new BException(e.getMessage(), e);
+      } finally {
+        if (hitsIterable != null) {
+          hitsIterable.close();
+        }
       }
     } catch (IOException e) {
       LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
@@ -298,4 +304,11 @@ public class BlurShardServer extends TableAdmin implements Iface {
     }
   }
 
+  public int getDataFetchThreadCount() {
+    return _dataFetchThreadCount;
+  }
+
+  public void setDataFetchThreadCount(int dataFetchThreadCount) {
+    _dataFetchThreadCount = dataFetchThreadCount;
+  }
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -16,8 +17,6 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.NRTManager;
-import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.search.SearcherWarmer;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
@@ -27,6 +26,8 @@ import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.index.IndexWriter;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.manager.writer.nrt.NRTManager;
+import com.nearinfinity.blur.manager.writer.nrt.SearcherManager;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.utils.PrimeDocCache;
@@ -48,18 +49,21 @@ public class BlurNRTIndex extends BlurIndex {
   private ExecutorService _executorService;
   private String _table;
   private String _shard;
-  private long _timeBetweenCommits = TimeUnit.SECONDS.toMillis(60);
   private Similarity _similarity;
   private volatile long _lastRefresh;
-  private long _timeBetweenRefreshs = TimeUnit.MILLISECONDS.toMillis(500);
-  private double _nrtCachingMaxMergeSizeMB = 60;
-  private double _nrtCachingMaxCachedMB = 5.0;
   private Thread _refresher;
   private TransactionRecorder _recorder;
   private Configuration _configuration;
   private Path _walPath;
   private IndexDeletionPolicy _indexDeletionPolicy;
-
+  private BlurIndexCloser _closer;
+  private AtomicReference<IndexReader> _indexRef = new AtomicReference<IndexReader>();
+  private long _timeBetweenCommits = TimeUnit.SECONDS.toMillis(60);
+  private long _timeBetweenRefreshs = TimeUnit.MILLISECONDS.toMillis(500);
+  private long _timeBetweenRefreshsNano;
+  private double _nrtCachingMaxMergeSizeMB = 2;
+  private double _nrtCachingMaxCachedMB = 25.0;
+  private DirectoryReferenceFileGC _gc;
   private SearcherWarmer _warmer = new SearcherWarmer() {
     @Override
     public void warm(IndexSearcher s) throws IOException {
@@ -76,6 +80,9 @@ public class BlurNRTIndex extends BlurIndex {
   };
 
   public void init() throws IOException {
+
+    _timeBetweenRefreshsNano = TimeUnit.MILLISECONDS.toNanos(_timeBetweenRefreshs);
+
     Path walTablePath = new Path(_walPath, _table);
     Path walShardPath = new Path(walTablePath, _shard);
 
@@ -85,9 +92,13 @@ public class BlurNRTIndex extends BlurIndex {
     conf.setIndexDeletionPolicy(_indexDeletionPolicy);
     TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
-
-    NRTCachingDirectory cachingDirectory = new NRTCachingDirectory(_directory, _nrtCachingMaxMergeSizeMB, _nrtCachingMaxCachedMB);
-    _writer = new IndexWriter(cachingDirectory, conf);
+    DirectoryReferenceCounter referenceCounter = new DirectoryReferenceCounter(_directory, _gc);
+    // NRTCachingDirectory cachingDirectory = new
+    // NRTCachingDirectory(referenceCounter, _nrtCachingMaxMergeSizeMB,
+    // _nrtCachingMaxCachedMB);
+    // conf.setMergeScheduler(cachingDirectory.getMergeScheduler());
+    // _writer = new IndexWriter(cachingDirectory, conf);
+    _writer = new IndexWriter(referenceCounter, conf);
     _recorder = new TransactionRecorder();
     _recorder.setAnalyzer(_analyzer);
     _recorder.setConfiguration(_configuration);
@@ -95,10 +106,12 @@ public class BlurNRTIndex extends BlurIndex {
 
     _recorder.init();
     _recorder.replay(_writer);
-    
+
     _nrtManager = new NRTManager(_writer, _executorService, _warmer, APPLY_ALL_DELETES);
     _manager = _nrtManager.getSearcherManager(APPLY_ALL_DELETES);
     _lastRefresh = System.nanoTime();
+    IndexSearcher searcher = _manager.acquire();
+    _indexRef.set(searcher.getIndexReader());
     startCommiter();
     startRefresher();
   }
@@ -120,7 +133,7 @@ public class BlurNRTIndex extends BlurIndex {
             if (_isClosed.get()) {
               return;
             }
-            LOG.error("Unknown error with refresher thread [{0}/{1}].", _table, _shard, e);
+            LOG.error("Unknown error with refresher thread [{0}/{1}].", e, _table, _shard);
           }
         }
       }
@@ -139,9 +152,9 @@ public class BlurNRTIndex extends BlurIndex {
             LOG.info("Committing of [{0}/{1}].", _table, _shard);
             _recorder.commit(_writer);
           } catch (CorruptIndexException e) {
-            LOG.error("Error during commit of [{0}/{1}].", _table, _shard, e);
+            LOG.error("Curruption Error during commit of [{0}/{1}].", e, _table, _shard);
           } catch (IOException e) {
-            LOG.error("Error during commit of [{0}/{1}].", _table, _shard, e);
+            LOG.error("IO Error during commit of [{0}/{1}].", e, _table, _shard);
           }
           try {
             Thread.sleep(_timeBetweenCommits);
@@ -149,7 +162,7 @@ public class BlurNRTIndex extends BlurIndex {
             if (_isClosed.get()) {
               return;
             }
-            LOG.error("Unknown error with committer thread [{0}/{1}].", _table, _shard, e);
+            LOG.error("Unknown error with committer thread [{0}/{1}].", e, _table, _shard);
           }
         }
       }
@@ -178,8 +191,12 @@ public class BlurNRTIndex extends BlurIndex {
 
   @Override
   public IndexReader getIndexReader() throws IOException {
-    IndexSearcher searcher = _manager.acquire();
-    return searcher.getIndexReader();
+    IndexReader indexReader = _indexRef.get();
+    while (!indexReader.tryIncRef()) {
+      indexReader = _indexRef.get();
+    }
+    LOG.debug("Index fetched with ref of [{0}] [{1}]", indexReader.getRefCount(), indexReader);
+    return indexReader;
   }
 
   @Override
@@ -192,6 +209,7 @@ public class BlurNRTIndex extends BlurIndex {
       _recorder.close();
       _writer.close();
       _manager.close();
+      _closer.close(_indexRef.get());
       _nrtManager.close();
     } finally {
       _directory.close();
@@ -226,9 +244,14 @@ public class BlurNRTIndex extends BlurIndex {
   }
 
   private void maybeReopen() throws IOException {
-    if (_lastRefresh + _timeBetweenRefreshs < System.nanoTime()) {
-      if (_nrtManager.maybeReopen(true)) {
+    if (_lastRefresh + _timeBetweenRefreshsNano < System.nanoTime()) {
+      if (_manager.maybeReopen()) {
         _lastRefresh = System.nanoTime();
+        IndexSearcher searcher = _manager.acquire();
+        IndexReader indexReader = searcher.getIndexReader();
+        IndexReader oldIndexReader = _indexRef.getAndSet(indexReader);
+        _closer.close(oldIndexReader);
+        LOG.info("Refreshing index [{0}]", this);
       }
     }
   }
@@ -253,12 +276,12 @@ public class BlurNRTIndex extends BlurIndex {
     _shard = shard;
   }
 
-  public void setTimeBetweenCommits(long timeBetweenCommits) {
-    _timeBetweenCommits = timeBetweenCommits;
-  }
-
   public void setSimilarity(Similarity similarity) {
     _similarity = similarity;
+  }
+
+  public void setTimeBetweenCommits(long timeBetweenCommits) {
+    _timeBetweenCommits = timeBetweenCommits;
   }
 
   public void setTimeBetweenRefreshs(long timeBetweenRefreshs) {
@@ -269,7 +292,7 @@ public class BlurNRTIndex extends BlurIndex {
     _nrtCachingMaxMergeSizeMB = nrtCachingMaxMergeSizeMB;
   }
 
-  public void setNrtCachingMaxCachedMB(int nrtCachingMaxCachedMB) {
+  public void setNrtCachingMaxCachedMB(double nrtCachingMaxCachedMB) {
     _nrtCachingMaxCachedMB = nrtCachingMaxCachedMB;
   }
 
@@ -280,8 +303,21 @@ public class BlurNRTIndex extends BlurIndex {
   public void setConfiguration(Configuration configuration) {
     _configuration = configuration;
   }
-  
+
   public void setIndexDeletionPolicy(IndexDeletionPolicy indexDeletionPolicy) {
     _indexDeletionPolicy = indexDeletionPolicy;
   }
+
+  public void setCloser(BlurIndexCloser closer) {
+    _closer = closer;
+  }
+
+  public DirectoryReferenceFileGC getGc() {
+    return _gc;
+  }
+
+  public void setGc(DirectoryReferenceFileGC gc) {
+    _gc = gc;
+  }
+
 }

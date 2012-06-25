@@ -98,7 +98,7 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
   }
 
   private IndexOutput wrapOutput(String name) throws IOException {
-    return new CompressedIndexOutput_V1(name, _directory, _compression, _writingBlockSize);
+    return new CompressedIndexOutput_V0(name, _directory, _compression, _writingBlockSize);
   }
 
   public IndexInput openInput(String name) throws IOException {
@@ -530,7 +530,7 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
       setupBuffers(this);
       long e = System.nanoTime();
       double total = (e - s) / 1000000.0;
-      LOG.info("Took [" + total + " ms] to open file [" + name + "].");
+      LOG.debug("Took [" + total + " ms] to open file [" + name + "].");
     }
 
     private void readBlockPositions(final IndexInput indexInput, final String name) throws IOException {
@@ -546,7 +546,7 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
             }
             long e = System.nanoTime();
             double total = (e - s) / 1000000.0;
-            LOG.info("Took [{0} ms] to read block positions with blockCount of [{1}] in file [{2}].", total, _blockCount, name);
+            LOG.debug("Took [{0} ms] to read block positions with blockCount of [{1}] in file [{2}].", total, _blockCount, name);
             indexInput.close();
           } catch (Exception e) {
             LOG.error("Error during the reading of block positions in file [{0}] ", e, name);
@@ -725,7 +725,7 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
       double total = (e2 - s1) / 1000000.0;
       double _1st = (e1 - s1) / 1000000.0;
       double _2nd = (e2 - s2) / 1000000.0;
-      LOG.info("Took [" + total + " ms] to open [" + _1st + "] [" + _2nd + " with blockCount of " + blockCount + "].");
+      LOG.debug("Took [" + total + " ms] to open [" + _1st + "] [" + _2nd + " with blockCount of " + blockCount + "].");
     }
 
     private static void setupBuffers(CompressedIndexInput_V0 input) {

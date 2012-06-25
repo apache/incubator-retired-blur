@@ -60,6 +60,7 @@ import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexReader;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurNRTIndex;
+import com.nearinfinity.blur.manager.writer.DirectoryReferenceFileGC;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
@@ -106,6 +107,11 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private BlurIndexWarmup _warmup = new DefaultBlurIndexWarmup();
   private IndexDeletionPolicy _indexDeletionPolicy;
   private String cluster = BlurConstants.BLUR_CLUSTER;
+  private DirectoryReferenceFileGC _gc;
+  private long _timeBetweenCommits = TimeUnit.SECONDS.toMillis(60);
+  private long _timeBetweenRefreshs = TimeUnit.MILLISECONDS.toMillis(500);
+  private double _nrtCachingMaxMergeSizeMB = 2;
+  private double _nrtCachingMaxCachedMB = 25.0;
 
   public static interface ReleaseReader {
     void release() throws IOException;
@@ -115,6 +121,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
     setupZookeeper();
     _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
     _closer = new BlurIndexCloser();
+    _closer.init();
+    _gc = new DirectoryReferenceFileGC();
+    _gc.init();
     setupFlushCacheTimer();
     String lockPath = BlurUtil.lockForSafeMode(_zookeeper, getNodeName(), cluster);
     try {
@@ -381,6 +390,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _running.set(false);
     _timerCacheFlush.purge();
     _timerCacheFlush.cancel();
+    _closer.close();
+    _gc.close();
   }
 
   @Override
@@ -492,13 +503,15 @@ public class DistributedIndexServer extends AbstractIndexServer {
       writer.setShard(shard);
       writer.setTable(table);
       writer.setSimilarity(getSimilarity(table));
-      writer.setTimeBetweenCommits(TimeUnit.SECONDS.toMillis(60));
-      writer.setTimeBetweenRefreshs(TimeUnit.MILLISECONDS.toNanos(500));
-      writer.setNrtCachingMaxCachedMB(60);
-      writer.setNrtCachingMaxMergeSizeMB(5.0);
+      writer.setTimeBetweenCommits(_timeBetweenCommits);
+      writer.setTimeBetweenRefreshs(_timeBetweenRefreshs);
+      writer.setNrtCachingMaxCachedMB(_nrtCachingMaxCachedMB);
+      writer.setNrtCachingMaxMergeSizeMB(_nrtCachingMaxMergeSizeMB);
       writer.setWalPath(walTablePath);
       writer.setConfiguration(_configuration);
       writer.setIndexDeletionPolicy(_indexDeletionPolicy);
+      writer.setCloser(_closer);
+      writer.setGc(_gc);
       writer.init();
       index = writer;
     }
@@ -796,5 +809,21 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   public void setIndexDeletionPolicy(IndexDeletionPolicy indexDeletionPolicy) {
     _indexDeletionPolicy = indexDeletionPolicy;
+  }
+
+  public void setTimeBetweenCommits(long timeBetweenCommits) {
+    _timeBetweenCommits = timeBetweenCommits;
+  }
+
+  public void setTimeBetweenRefreshs(long timeBetweenRefreshs) {
+    _timeBetweenRefreshs = timeBetweenRefreshs;
+  }
+
+  public void setNrtCachingMaxMergeSizeMB(double nrtCachingMaxMergeSizeMB) {
+    _nrtCachingMaxMergeSizeMB = nrtCachingMaxMergeSizeMB;
+  }
+
+  public void setNrtCachingMaxCachedMB(double nrtCachingMaxCachedMB) {
+    _nrtCachingMaxCachedMB = nrtCachingMaxCachedMB;
   }
 }

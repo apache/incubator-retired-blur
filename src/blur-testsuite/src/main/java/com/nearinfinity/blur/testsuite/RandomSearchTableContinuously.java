@@ -50,6 +50,7 @@ public class RandomSearchTableContinuously {
     long responseTime = 0;
     int count = 0;
     long resultCount = 0;
+    Iface client = BlurClient.getClient(connectionStr);
     for (int i = 0; i < numberOfSearchesPerPass; i++) {
       long now = System.currentTimeMillis();
       if (s + timeBetweenReporting < now) {
@@ -59,6 +60,7 @@ public class RandomSearchTableContinuously {
         double rate = count / seconds;
         double responseTimeAvg = (responseTime / (double) count) / 1000000.0;
         System.out.println("Searches [" + i + "] at avg response time of [" + responseTimeAvg + " ms] at rate [" + rate + "/s] with avg rate [" + avgRate + "/s] results [" + resultCount + "]");
+        System.out.println("Record Count [" + getCount(client,tableName) + "]");
         s = now;
         responseTime = 0;
         count = 0;
@@ -73,13 +75,24 @@ public class RandomSearchTableContinuously {
       blurQuery.cacheResult = false;
       blurQuery.selector = new Selector();
       long qs = System.nanoTime();
-      Iface client = BlurClient.getClient(connectionStr);
+      
       BlurResults results = client.query(tableName, blurQuery);
       long qe = System.nanoTime();
       resultCount += results.totalResults;
       responseTime += (qe - qs);
       count++;
     }
+    
+  }
+
+  private static long getCount(Iface client, String tableName) throws BlurException, TException {
+    BlurQuery bq = new BlurQuery();
+    bq.simpleQuery = new SimpleQuery();
+    bq.simpleQuery.queryStr = "*";
+    bq.simpleQuery.superQueryOn = false;
+    bq.cacheResult = false;
+    BlurResults results = client.query(tableName, bq);
+    return results.totalResults;
   }
 
   private static String generateQuery(StringBuilder builder, Random random, List<String> sampleOfTerms, int numberOfTermsPerQuery) {

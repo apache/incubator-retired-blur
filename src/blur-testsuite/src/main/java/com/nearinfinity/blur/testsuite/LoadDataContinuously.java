@@ -49,18 +49,21 @@ public class LoadDataContinuously {
     final long start = System.currentTimeMillis();
 
     long s = start;
-    long recordCount = 0;
+    long recordCountTotal = 0;
     long rowCount = 0;
     
+    
+    long recordCount = 0;
     while (true) {
       long now = System.currentTimeMillis();
       if (s + timeBetweenReporting < now) {
         double avgSeconds = (now - start) / 1000.0;
         double seconds = (now - s) / 1000.0;
-        double avgRate = recordCount / avgSeconds;
+        double avgRate = recordCountTotal / avgSeconds;
         double rate = recordCount / seconds;
-        System.out.println("Records indexed [" + recordCount + "] Rows indexed [" + rowCount + "] at record rate [" + rate + "/s] with record avg rate [" + avgRate + "/s]");
+        System.out.println("Records indexed [" + recordCountTotal + "] Rows indexed [" + rowCount + "] at record rate [" + rate + "/s] with record avg rate [" + avgRate + "/s]");
         s = now;
+        recordCount = 0;
       }
 
       RowMutation mutation = new RowMutation();
@@ -75,6 +78,7 @@ public class LoadDataContinuously {
       client.mutate(mutation);
       rowCount++;
       recordCount += numberRecordsPerRow;
+      recordCountTotal += numberRecordsPerRow;
     }
   }
 

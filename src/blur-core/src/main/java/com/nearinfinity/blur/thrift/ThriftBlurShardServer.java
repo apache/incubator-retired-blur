@@ -24,13 +24,18 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_DI
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_SLAB_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIMETOLIVE;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_DATA_FETCH_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WARMUP_CLASS;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_NRT_MAX_CACHING_MB;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_NRT_MAX_MERGESIZE_MB;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_COMMITS;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_REFRESHS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
 import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
@@ -140,7 +145,7 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     BlurFilterCache filterCache = getFilterCache(configuration);
     BlurIndexWarmup indexWarmup = getIndexWarmup(configuration);
-    IndexDeletionPolicy indexDeletionPolicy = new TimeBasedIndexDeletionPolicy(configuration.getLong(BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE, 300000));
+    IndexDeletionPolicy indexDeletionPolicy = new TimeBasedIndexDeletionPolicy(configuration.getLong(BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE, 60000));
     
     final DistributedIndexServer indexServer = new DistributedIndexServer();
     indexServer.setBlurMetrics(blurMetrics);
@@ -155,6 +160,10 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexServer.setSafeModeDelay(configuration.getLong(BLUR_SHARD_SAFEMODEDELAY, 60000));
     indexServer.setWarmup(indexWarmup);
     indexServer.setIndexDeletionPolicy(indexDeletionPolicy);
+    indexServer.setNrtCachingMaxCachedMB(configuration.getDouble(BLUR_SHARD_NRT_MAX_CACHING_MB,25.0));
+    indexServer.setNrtCachingMaxMergeSizeMB(configuration.getDouble(BLUR_SHARD_NRT_MAX_MERGESIZE_MB,2.0));
+    indexServer.setTimeBetweenCommits(configuration.getLong(BLUR_SHARD_TIME_BETWEEN_COMMITS,60000));
+    indexServer.setTimeBetweenRefreshs(configuration.getLong(BLUR_SHARD_TIME_BETWEEN_REFRESHS,500));
     indexServer.init();
 
     final IndexManager indexManager = new IndexManager();
@@ -170,6 +179,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.setIndexManager(indexManager);
     shardServer.setZookeeper(zooKeeper);
     shardServer.setClusterStatus(clusterStatus);
+    shardServer.setDataFetchThreadCount(configuration.getInt(BLUR_SHARD_DATA_FETCH_THREAD_COUNT, 8));
     shardServer.setMaxQueryCacheElements(configuration.getInt(BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS, 128));
     shardServer.setMaxTimeToLive(configuration.getLong(BLUR_SHARD_CACHE_MAX_TIMETOLIVE, TimeUnit.MINUTES.toMillis(1)));
     shardServer.setQueryChecker(queryChecker);

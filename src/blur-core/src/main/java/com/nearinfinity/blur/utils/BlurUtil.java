@@ -168,7 +168,7 @@ public class BlurUtil {
     try {
       method.invoke(object, EMPTY_OBJECT_ARRAY);
     } catch (Exception e) {
-      LOG.error("Error while trying to close object [{0}]", object, e);
+      LOG.error("Error while trying to close object [{0}]", e, object);
     }
   }
 
@@ -178,14 +178,11 @@ public class BlurUtil {
     return selector;
   }
 
-  public static RecordMutation newRecordMutation(String family, String recordId,
-                                                 Column... columns) {
-    return newRecordMutation(RecordMutationType.REPLACE_ENTIRE_RECORD,
-                             family, recordId, columns);
+  public static RecordMutation newRecordMutation(String family, String recordId, Column... columns) {
+    return newRecordMutation(RecordMutationType.REPLACE_ENTIRE_RECORD, family, recordId, columns);
   }
 
-  public static RecordMutation newRecordMutation(RecordMutationType type, String family,
-                                                 String recordId, Column... columns) {
+  public static RecordMutation newRecordMutation(RecordMutationType type, String family, String recordId, Column... columns) {
     Record record = new Record();
     record.setRecordId(recordId);
     record.setFamily(family);
@@ -213,17 +210,14 @@ public class BlurUtil {
   }
 
   public static boolean match(Record left, Record right) {
-    return left.recordId.equals(right.recordId) &&
-           left.family.equals(right.family);
+    return left.recordId.equals(right.recordId) && left.family.equals(right.family);
   }
 
-  public static RowMutation newRowMutation(String table, String rowId,
-                                           RecordMutation... mutations) {
+  public static RowMutation newRowMutation(String table, String rowId, RecordMutation... mutations) {
     return newRowMutation(RowMutationType.REPLACE_ROW, table, rowId, mutations);
   }
 
-  public static RowMutation newRowMutation(RowMutationType type, String table,
-                                           String rowId, RecordMutation... mutations) {
+  public static RowMutation newRowMutation(RowMutationType type, String table, String rowId, RecordMutation... mutations) {
     RowMutation mutation = new RowMutation();
     mutation.setRowId(rowId);
     mutation.setTable(table);
@@ -559,7 +553,7 @@ public class BlurUtil {
       }
       return total;
     } catch (Exception e) {
-      LOG.error("Unknown error during getMemoryUsage call",e);
+      LOG.error("Unknown error during getMemoryUsage call", e);
       return 0;
     }
   }

@@ -36,6 +36,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -108,6 +110,7 @@ public class IndexManager {
 
   private IndexServer _indexServer;
   private ExecutorService _executor;
+  private ExecutorService _mutateExecutor;
   private int _threadCount;
   private QueryStatusManager _statusManager = new QueryStatusManager();
   private boolean _closed;
@@ -122,6 +125,7 @@ public class IndexManager {
 
   public void init() {
     _executor = Executors.newThreadPool("index-manager", _threadCount);
+    _mutateExecutor = Executors.newSingleThreadExecutor("index-manager-mutate");
     _statusManager.init();
     LOG.info("Init Complete");
   }
@@ -617,7 +621,24 @@ public class IndexManager {
     _statusManager.setStatusCleanupTimerDelay(delay);
   }
 
-  public void mutate(RowMutation mutation) throws BlurException, IOException {
+  public void mutate(final RowMutation mutation) throws BlurException, IOException {
+    Future<Void> future = _mutateExecutor.submit(new Callable<Void>() {
+      @Override
+      public Void call() throws Exception {
+        doMutate(mutation);
+        return null;
+      }
+    });
+    try {
+      future.get();
+    } catch (InterruptedException e) {
+      throw new BException("Unknown error during mutation", e);
+    } catch (ExecutionException e) {
+      throw new BException("Unknown error during mutation", e.getCause());
+    }
+  }
+
+  private void doMutate(RowMutation mutation) throws BlurException, IOException {
     String table = mutation.table;
     Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
     MutationHelper.validateMutation(mutation);
@@ -659,7 +680,7 @@ public class IndexManager {
       // Create a local copy of the mutation we can modify
       RowMutation mutationCopy = mutation.deepCopy();
 
-      // Match existing records against record mutations.  Once a record
+      // Match existing records against record mutations. Once a record
       // mutation has been processed, remove it from our local copy.
       for (Record existingRecord : existingRow.records) {
         RecordMutation recordMutation = findRecordMutation(mutationCopy, existingRecord);
@@ -673,28 +694,26 @@ public class IndexManager {
         }
       }
 
-      // Examine all remaining record mutations.  For any record replacements
+      // Examine all remaining record mutations. For any record replacements
       // we need to create a new record in the table even though an existing
-      // record did not match.  Record deletions are also ok here since the
-      // record is effectively already deleted.  Other record mutations are
+      // record did not match. Record deletions are also ok here since the
+      // record is effectively already deleted. Other record mutations are
       // an error and should generate an exception.
       for (RecordMutation recordMutation : mutationCopy.recordMutations) {
         RecordMutationType type = recordMutation.recordMutationType;
         switch (type) {
-          case DELETE_ENTIRE_RECORD:
-            // do nothing as missing record is already in desired state
-            break;
-          case APPEND_COLUMN_VALUES:
-            throw new BException("Mutation cannot append column values to non-existent record",
-                                 recordMutation);
-          case REPLACE_ENTIRE_RECORD:
-            newRow.addToRecords(recordMutation.record);
-            break;
-          case REPLACE_COLUMNS:
-            throw new BException("Mutation cannot replace columns in non-existent record",
-                                 recordMutation);
-          default:
-            throw new RuntimeException("Unsupported record mutation type [" + type + "]");
+        case DELETE_ENTIRE_RECORD:
+          // do nothing as missing record is already in desired state
+          break;
+        case APPEND_COLUMN_VALUES:
+          throw new BException("Mutation cannot append column values to non-existent record", recordMutation);
+        case REPLACE_ENTIRE_RECORD:
+          newRow.addToRecords(recordMutation.record);
+          break;
+        case REPLACE_COLUMNS:
+          throw new BException("Mutation cannot replace columns in non-existent record", recordMutation);
+        default:
+          throw new RuntimeException("Unsupported record mutation type [" + type + "]");
         }
       }
 
@@ -740,14 +759,15 @@ public class IndexManager {
     }
   }
 
-//  private boolean isSameRecord(Record existingRecord, Record mutationRecord) {
-//    if (existingRecord.recordId.equals(mutationRecord.recordId)) {
-//      if (existingRecord.family.equals(mutationRecord.family)) {
-//        return true;
-//      }
-//    }
-//    return false;
-//  }
+  // private boolean isSameRecord(Record existingRecord, Record mutationRecord)
+  // {
+  // if (existingRecord.recordId.equals(mutationRecord.recordId)) {
+  // if (existingRecord.family.equals(mutationRecord.family)) {
+  // return true;
+  // }
+  // }
+  // return false;
+  // }
 
   private int getNumberOfShards(String table) {
     return _indexServer.getShardCount(table);
@@ -763,8 +783,7 @@ public class IndexManager {
     private BlurMetrics _blurMetrics;
     private AtomicBoolean _running;
 
-    public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector,
-        BlurMetrics blurMetrics) {
+    public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector, BlurMetrics blurMetrics) {
       _running = running;
       _table = table;
       _status = status;
@@ -777,22 +796,17 @@ public class IndexManager {
     @Override
     public BlurResultIterable call(Entry<String, BlurIndex> entry) throws Exception {
       _status.attachThread();
-      IndexReader reader = null;
       try {
         BlurIndex index = entry.getValue();
-        reader = index.getIndexReader();
+        IndexReader reader = index.getIndexReader();
         String shard = entry.getKey();
         IndexReader escapeReader = EscapeRewrite.wrap(reader, _running);
         IndexSearcher searcher = new IndexSearcher(escapeReader);
         searcher.setSimilarity(_indexServer.getSimilarity(_table));
         Query rewrite = searcher.rewrite((Query) _query.clone());
-        return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector);
+        return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector, reader);
       } finally {
         _blurMetrics.queriesInternal.incrementAndGet();
-        // this will allow for closing of index
-        if (reader != null) {
-          reader.decRef();
-        }
         _status.deattachThread();
       }
     }
@@ -818,7 +832,7 @@ public class IndexManager {
       LOG.error("Unknown error while trying to fetch index readers.", e);
       throw new BException(e.getMessage(), e);
     }
-    
+
     Collection<BlurIndex> values = blurIndexes.values();
     for (BlurIndex index : values) {
       try {

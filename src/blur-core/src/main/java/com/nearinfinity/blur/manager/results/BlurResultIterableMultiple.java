@@ -16,6 +16,7 @@
 
 package com.nearinfinity.blur.manager.results;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -100,6 +101,13 @@ public class BlurResultIterableMultiple implements BlurResultIterable {
     @Override
     public void remove() {
 
+    }
+  }
+
+  @Override
+  public void close() throws IOException {
+    for (BlurResultIterable it : results) {
+      it.close();
     }
   }
 }

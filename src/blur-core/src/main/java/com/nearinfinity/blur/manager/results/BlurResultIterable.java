@@ -16,6 +16,7 @@
 
 package com.nearinfinity.blur.manager.results;
 
+import java.io.IOException;
 import java.util.Map;
 
 import com.nearinfinity.blur.thrift.generated.BlurResult;
@@ -27,5 +28,7 @@ public interface BlurResultIterable extends Iterable<BlurResult> {
   long getTotalResults();
 
   Map<String, Long> getShardInfo();
+  
+  void close() throws IOException;
 
 }

@@ -22,10 +22,13 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.IterablePaging;
 import com.nearinfinity.blur.lucene.search.IterablePaging.ProgressRef;
 import com.nearinfinity.blur.lucene.search.IterablePaging.TotalHitsRef;
@@ -38,6 +41,8 @@ import com.nearinfinity.blur.utils.Converter;
 import com.nearinfinity.blur.utils.IteratorConverter;
 
 public class BlurResultIterableSearcher implements BlurResultIterable {
+  
+  private static final Log LOG = LogFactory.getLog(BlurResultIterableSearcher.class);
 
   private Map<String, Long> _shardInfo = new TreeMap<String, Long>();
   private String _shard;
@@ -52,14 +57,16 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
   private TotalHitsRef _totalHitsRef = new TotalHitsRef();
   private ProgressRef _progressRef = new ProgressRef();
   private AtomicBoolean _running;
+  private IndexReader _reader;
 
-  public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard, IndexSearcher searcher, Selector selector) throws IOException {
+  public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard, IndexSearcher searcher, Selector selector, IndexReader reader) throws IOException {
     _running = running;
     _table = table;
     _query = query;
     _shard = shard;
     _searcher = searcher;
     _selector = selector;
+    _reader = reader;
     performSearch();
   }
 
@@ -113,5 +120,15 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
 
   private String resolveId(int docId) {
     return _shard + "/" + docId;
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (_reader != null) {
+      int refCount = _reader.getRefCount();
+      _reader.decRef();
+      LOG.debug("Decrementing reader old ref [{0}] new ref count [{1}]", refCount, _reader.getRefCount());
+      _reader = null;
+    }
   }
 }

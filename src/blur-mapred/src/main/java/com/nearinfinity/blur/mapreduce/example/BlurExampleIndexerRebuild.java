@@ -60,9 +60,6 @@ public class BlurExampleIndexerRebuild {
     
     BlurTask blurTask = new BlurTask();
     blurTask.setTableDescriptor(descriptor);
-    blurTask.setSpinLockPath("/copy-locks");
-    blurTask.setZookeeperConnectionStr("localhost");
-    blurTask.setMaxNumberOfConcurrentCopies(10);
     blurTask.setIndexingType(INDEXING_TYPE.REBUILD);
     blurTask.setOptimize(false);
     Job job = blurTask.configureJob(configuration);

@@ -43,8 +43,10 @@ public class DirectoryReferenceCounter extends Directory {
   }
 
   private void addToFileGC(String name) {
-    LOG.debug("Add file [{0}] to be GCed once refs are closed.", name);
-    gc.add(directory, name, refs);
+    if (gc != null) {
+      LOG.debug("Add file [{0}] to be GCed once refs are closed.", name);
+      gc.add(directory, name, refs);
+    }
   }
 
   public IndexOutput createOutput(String name) throws IOException {

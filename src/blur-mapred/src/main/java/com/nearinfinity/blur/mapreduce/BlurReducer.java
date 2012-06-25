@@ -61,9 +61,6 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.IOUtils;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
@@ -140,22 +137,12 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
     _blurTask = BlurTask.read(context.getConfiguration());
     _configuration = context.getConfiguration();
     setupCounters(context);
-    setupZookeeper(context);
     setupAnalyzer(context);
     setupDirectory(context);
     setupWriter(context);
     if (_blurTask.getIndexingType() == INDEXING_TYPE.UPDATE) {
       _reader = IndexReader.open(_directory, true);
     }
-  }
-
-  protected void setupZookeeper(Context context) throws IOException {
-    _zookeeper = new ZooKeeper(_blurTask.getZookeeperConnectionStr(), 30000, new Watcher() {
-      @Override
-      public void process(WatchedEvent event) {
-        // do nothing
-      }
-    });
   }
 
   protected void setupCounters(Context context) {
@@ -305,12 +292,6 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
     Path directoryPath = _blurTask.getDirectoryPath(context);
     remove(directoryPath);
 
-    TableDescriptor tableDescriptor = _blurTask.getTableDescriptor();
-    String cluster = tableDescriptor.cluster;
-    String table = tableDescriptor.name;
-    String shard = _blurTask.getShardName(context);
-//    ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, ZookeeperPathConstants.getLockPath(cluster, table), shard, getNodeName(context));
-    //@todo
     NoLockFactory lockFactory = NoLockFactory.getNoLockFactory();
 
     Directory destDirectory = getDestDirectory(descriptor, directoryPath);
@@ -333,7 +314,6 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
     } else {
       context.setStatus("Starting Copy-Optimize Phase");
       long s = System.currentTimeMillis();
-      copyLock(context, descriptor);
       List<String> files = getFilesOrderedBySize(_directory);
       long totalBytesToCopy = getTotalBytes(_directory);
       long totalBytesCopied = 0;
@@ -362,22 +342,6 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
     // }
     HdfsDirectory dir = new HdfsDirectory(directoryPath);
     return new CompressedFieldDataDirectory(dir, getInstance(compressionClass), compressionBlockSize);
-  }
-
-  protected void copyLock(Context context, TableDescriptor descriptor) throws IOException, InterruptedException {
-    String zkCon = _blurTask.getZookeeperConnectionStr();
-    String path = _blurTask.getSpinLockPath();
-    String name = descriptor.name + "_" + _blurTask.getShardName(context);
-    if (zkCon != null && path != null) {
-      try {
-        SpinLock spinLock = new SpinLock(context, zkCon, name, path);
-        spinLock.copyLock(context);
-      } catch (KeeperException e) {
-        throw new RuntimeException(e);
-      }
-    } else {
-      LOG.info("Spin lock not used because zookeeper connection str [{0}] or spin lock path not set [{1}]", zkCon, path);
-    }
   }
 
   protected CompressionCodec getInstance(String compressionClass) throws IOException {
@@ -455,13 +419,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
       Path directoryPath = _blurTask.getDirectoryPath(context);
       _directory = getDestDirectory(descriptor, directoryPath);
 
-      TableDescriptor tableDescriptor = _blurTask.getTableDescriptor();
-      String cluster = tableDescriptor.cluster;
-      String table = tableDescriptor.name;
-      String shard = _blurTask.getShardName(context);
-      //@todo
       NoLockFactory lockFactory = NoLockFactory.getNoLockFactory();
-//      ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, ZookeeperPathConstants.getLockPath(cluster, table), shard, getNodeName(context));
       _directory.setLockFactory(lockFactory);
       return;
     case REBUILD:

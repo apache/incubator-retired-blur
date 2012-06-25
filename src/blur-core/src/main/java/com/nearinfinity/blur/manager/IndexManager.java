@@ -135,6 +135,7 @@ public class IndexManager {
       _closed = true;
       _statusManager.close();
       _executor.shutdownNow();
+      _mutateExecutor.shutdownNow();
       _indexServer.close();
     }
   }

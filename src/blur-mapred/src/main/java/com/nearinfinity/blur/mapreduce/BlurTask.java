@@ -38,13 +38,8 @@ import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TIOStreamTransport;
-import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.ZooDefs.Ids;
-import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
@@ -92,9 +87,6 @@ public class BlurTask implements Writable {
   private long _maxRecordCount = Long.MAX_VALUE;
   private TableDescriptor _tableDescriptor;
   private int _maxRecordsPerRow = 16384;
-  private String _spinLockPath;
-  private String _zookeeperConnectionStr;
-  private int _maxNumberOfConcurrentCopies;
   private boolean _optimize = true;
   private INDEXING_TYPE _indexingType = INDEXING_TYPE.REBUILD;
   private transient ZooKeeper _zooKeeper;
@@ -166,7 +158,6 @@ public class BlurTask implements Writable {
   }
 
   public Job configureJob(Configuration configuration) throws IOException {
-    setupZookeeper();
     if (getIndexingType() == INDEXING_TYPE.UPDATE) {
       checkTable();
     }
@@ -180,7 +171,7 @@ public class BlurTask implements Writable {
     Job job = new Job(configuration, "Blur Indexer");
     job.setReducerClass(BlurReducer.class);
     job.setOutputKeyClass(BytesWritable.class);
-    job.setOutputValueClass(BlurRecord.class);
+    job.setOutputValueClass(BlurMutate.class);
     job.setNumReduceTasks(getNumReducers(configuration));
     return job;
   }
@@ -207,31 +198,6 @@ public class BlurTask implements Writable {
     
   }
 
-  private void setupZookeeper() throws IOException {
-    if (_zookeeperConnectionStr == null || _spinLockPath == null) {
-      LOG.warn("Cannot setup spin locks, please set zookeeper connection str and spin lock path.");
-      return;
-    }
-    _zooKeeper = new ZooKeeper(_zookeeperConnectionStr,60000,new Watcher(){
-      @Override
-      public void process(WatchedEvent event) {
-        
-      }
-    });
-    try {
-      Stat stat = _zooKeeper.exists(_spinLockPath, false);
-      if (stat == null) {
-        _zooKeeper.create(_spinLockPath, Integer.toString(_maxNumberOfConcurrentCopies).getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-      } else {
-        _zooKeeper.setData(_spinLockPath, Integer.toString(_maxNumberOfConcurrentCopies).getBytes(), -1);
-      }
-    } catch (KeeperException e) {
-      throw new RuntimeException(e);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   public static BlurTask read(Configuration configuration) throws IOException {  
     byte[] blurTaskBs = Base64.decodeBase64(configuration.get(BLUR_BLURTASK));
     BlurTask blurTask = new BlurTask();
@@ -241,9 +207,6 @@ public class BlurTask implements Writable {
 
   @Override
   public void readFields(DataInput input) throws IOException {
-    _zookeeperConnectionStr = readString(input);
-    _spinLockPath = readString(input);
-    _maxNumberOfConcurrentCopies = input.readInt();
     _maxRecordCount = input.readLong();
     _ramBufferSizeMB = input.readInt();
     _optimize = input.readBoolean();
@@ -270,9 +233,6 @@ public class BlurTask implements Writable {
 
   @Override
   public void write(DataOutput output) throws IOException {
-    writeString(output,_zookeeperConnectionStr);
-    writeString(output,_spinLockPath);
-    output.writeInt(_maxNumberOfConcurrentCopies);
     output.writeLong(_maxRecordCount);
     output.writeInt(_ramBufferSizeMB);
     output.writeBoolean(_optimize);
@@ -303,30 +263,6 @@ public class BlurTask implements Writable {
 
   public void setMaxRecordsPerRow(int maxRecordsPerRow) {
     _maxRecordsPerRow = maxRecordsPerRow;
-  }
-
-  public String getZookeeperConnectionStr() {
-    return _zookeeperConnectionStr;
-  }
-
-  public String getSpinLockPath() {
-    return _spinLockPath;
-  }
-
-  public void setSpinLockPath(String spinLockPath) {
-    _spinLockPath = spinLockPath;
-  }
-
-  public void setZookeeperConnectionStr(String zookeeperConnectionStr) {
-    _zookeeperConnectionStr = zookeeperConnectionStr;
-  }
-
-  public void setMaxNumberOfConcurrentCopies(int maxNumberOfConcurrentCopies) {
-    _maxNumberOfConcurrentCopies = maxNumberOfConcurrentCopies;
-  }
-  
-  public int getMaxNumberOfConcurrentCopies() {
-    return _maxNumberOfConcurrentCopies;
   }
 
   public boolean getOptimize() {

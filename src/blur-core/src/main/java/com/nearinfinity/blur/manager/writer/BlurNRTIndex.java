@@ -234,24 +234,28 @@ public class BlurNRTIndex extends BlurIndex {
   private void waitToBeVisible(boolean waitToBeVisible, long generation) throws IOException {
     if (waitToBeVisible) {
       // if visibility is required then reopen.
-      _lastRefresh = System.nanoTime();
       _nrtManager.maybeReopen(true);
-      _nrtManager.waitForGeneration(generation, APPLY_ALL_DELETES);
+      _manager = _nrtManager.waitForGeneration(generation, APPLY_ALL_DELETES);
+      swap();
     } else {
       // if not, then check to see if reopened is needed.
       maybeReopen();
     }
   }
 
+  private void swap() {
+    IndexSearcher searcher = _manager.acquire();
+    IndexReader indexReader = searcher.getIndexReader();
+    IndexReader oldIndexReader = _indexRef.getAndSet(indexReader);
+    _lastRefresh = System.nanoTime();
+    _closer.close(oldIndexReader);
+  }
+
   private void maybeReopen() throws IOException {
     if (_lastRefresh + _timeBetweenRefreshsNano < System.nanoTime()) {
-      if (_manager.maybeReopen()) {
-        _lastRefresh = System.nanoTime();
-        IndexSearcher searcher = _manager.acquire();
-        IndexReader indexReader = searcher.getIndexReader();
-        IndexReader oldIndexReader = _indexRef.getAndSet(indexReader);
-        _closer.close(oldIndexReader);
-        LOG.info("Refreshing index [{0}]", this);
+      if (_nrtManager.maybeReopen(true)) {
+        swap();
+        LOG.debug("Refreshing index [{0}]", this);
       }
     }
   }

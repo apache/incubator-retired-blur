@@ -99,6 +99,8 @@ public class IndexManagerTest {
   @After
   public void teardown() {
     indexManager.close();
+    indexManager = null;
+    server = null;
   }
 
   private void rm(File file) {
@@ -125,6 +127,7 @@ public class IndexManagerTest {
         newRecordMutation(FAMILY, "record-5A", newColumn("testcol1", "value13"), newColumn("testcol2", "value14"), newColumn("testcol3", "value15")),
         newRecordMutation(FAMILY, "record-5B", newColumn("testcol1", "value16"), newColumn("testcol2", "value17"), newColumn("testcol3", "value18"),
             newColumn("testcol3", "value19")));
+    mutation5.waitToBeVisible = true;
     indexManager.mutate(mutation1);
     indexManager.mutate(mutation2);
     indexManager.mutate(mutation3);
@@ -424,6 +427,7 @@ public class IndexManagerTest {
   public void testMutationReplaceRow() throws Exception {
     RowMutation mutation = newRowMutation(TABLE, "row-4",
         newRecordMutation(FAMILY, "record-4", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"), newColumn("testcol3", "value4")));
+    mutation.waitToBeVisible = true;
     indexManager.mutate(mutation);
 
     Selector selector = new Selector().setRowId("row-4");
@@ -443,6 +447,7 @@ public class IndexManagerTest {
     String rec = "record-6";
     RecordMutation rm = newRecordMutation(FAMILY, rec, c1, c2, c3);
     RowMutation mutation = newRowMutation(TABLE, "row-6", rm);
+    mutation.waitToBeVisible = true;
     indexManager.mutate(mutation);
 
     Selector selector = new Selector().setRowId("row-6");
@@ -458,6 +463,7 @@ public class IndexManagerTest {
   @Test
   public void testMutationDeleteRow() throws Exception {
     RowMutation mutation = newRowMutation(DELETE_ROW, TABLE, "row-2");
+    mutation.waitToBeVisible = true;
     indexManager.mutate(mutation);
 
     Selector selector = new Selector().setRowId("row-2");
@@ -469,6 +475,7 @@ public class IndexManagerTest {
   @Test
   public void testMutationDeleteMissingRow() throws Exception {
     RowMutation mutation = newRowMutation(DELETE_ROW, TABLE, "row-6");
+    mutation.waitToBeVisible = true;
     indexManager.mutate(mutation);
 
     Selector selector = new Selector().setRowId("row-6");
@@ -483,6 +490,7 @@ public class IndexManagerTest {
 
     RowMutation rowMutation = newRowMutation(UPDATE_ROW, TABLE, "row-2", rm);
 
+    rowMutation.waitToBeVisible = true;
     indexManager.mutate(rowMutation);
 
     Selector selector = new Selector().setRowId("row-2");
@@ -496,6 +504,7 @@ public class IndexManagerTest {
     RecordMutation rm = newRecordMutation(DELETE_ENTIRE_RECORD, FAMILY, "record-5A");
 
     RowMutation rowMutation = newRowMutation(UPDATE_ROW, TABLE, "row-5", rm);
+    rowMutation.waitToBeVisible = true;
     indexManager.mutate(rowMutation);
 
     Selector selector = new Selector().setRowId("row-5");
@@ -511,6 +520,7 @@ public class IndexManagerTest {
     RecordMutation rm = newRecordMutation(DELETE_ENTIRE_RECORD, FAMILY, "record-6");
 
     RowMutation rowMutation = newRowMutation(UPDATE_ROW, TABLE, "row-6", rm);
+    rowMutation.waitToBeVisible = true;
     indexManager.mutate(rowMutation);
   }
 
@@ -560,6 +570,7 @@ public class IndexManagerTest {
     RecordMutation rm2 = newRecordMutation(REPLACE_ENTIRE_RECORD, FAMILY, "record-5C", c4, c5, c6);
 
     RowMutation rowMutation = newRowMutation(UPDATE_ROW, TABLE, "row-5", rm1, rm2);
+    rowMutation.waitToBeVisible = true;
     indexManager.mutate(rowMutation);
 
     Selector selector = new Selector().setRowId("row-5");
@@ -753,6 +764,7 @@ public class IndexManagerTest {
 
   private Record updateAndFetchRecord(String rowId, String recordId, RecordMutation... recordMutations) throws Exception {
     RowMutation rowMutation = newRowMutation(UPDATE_ROW, TABLE, rowId, recordMutations);
+    rowMutation.waitToBeVisible = true;
     indexManager.mutate(rowMutation);
 
     Selector selector = new Selector().setRowId(rowId).setRecordId(recordId);

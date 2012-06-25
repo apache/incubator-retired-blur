@@ -17,8 +17,8 @@ ActiveRecord::Schema.define(:version => 20120621155420) do
     t.text     "query_string",             :limit => 16777215
     t.integer  "complete_shards"
     t.integer  "uuid",                     :limit => 8
-    t.datetime "created_at",                                                      :null => false
-    t.datetime "updated_at",                                                      :null => false
+    t.datetime "created_at",                                   :null => false
+    t.datetime "updated_at",                                   :null => false
     t.boolean  "super_query_on"
     t.string   "facets"
     t.integer  "start"
@@ -32,7 +32,7 @@ ActiveRecord::Schema.define(:version => 20120621155420) do
     t.string   "times"
     t.integer  "total_shards"
     t.integer  "state"
-    t.boolean  "record_only",                                  :default => false
+    t.boolean  "record_only"
   end
 
   add_index "blur_queries", ["blur_table_id"], :name => "index_blur_queries_on_blur_table_id"

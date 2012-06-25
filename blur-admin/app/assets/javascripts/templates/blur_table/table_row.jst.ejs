@@ -14,11 +14,13 @@
     <i class="icon-exclamation-sign queries-running-icon" style="<% if (!table.get('queried_recently')) { %><%= 'display:none' %><% } %>"></i>
   </td>
   <td class='comment_row' title= "<%= table.get('comments')%>" >
-    <%if (table.get('comments').length > 30) { %>
-      <%= table.get('comments').substring(0, 30) + "..." %>
-    <%}else { %>
-      <%= table.get('comments')%>
+    <%if (table.get('comments') != null) { %>
+      <% if (table.get('comments').length > 30) { %>
+        <%= table.get('comments').substring(0, 30) + "..." %>
+      <% }else { %>
+        <%= table.get('comments')%>
       <% } %>
+    <% } %>
     <a class='comments' href="#" style="float: right">
       <button class="btn" type="submit" style="padding: 2px 5px"> <i class="icon-pencil"></i> </button>
     </a>

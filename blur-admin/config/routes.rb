@@ -35,6 +35,7 @@ BlurAdmin::Application.routes.draw do
     resources :blur_tables, :only => :index do
       member do
         get 'terms'
+        put 'comment'
       end
 
       collection do

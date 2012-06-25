@@ -40,11 +40,18 @@ class BlurTablesController < ApplicationController
   end
 
   def terms
-    table = BlurTable.find(params[:id])
+    table = BlurTable.find params[:id]
     terms = table.terms @current_zookeeper.blur_urls, params[:family], params[:column], params[:startwith], params[:size].to_i
     render :json => terms
   end
 
+  def comment
+    table = BlurTable.find params[:id]
+    table.comments = params[:input]
+    table.save
+    render :nothing => true
+  end
+  
   private
     STATUS = {:enabling => 5, :active => 4, :disabling => 3, :disabled => 2, :deleting => 1, :deleted => 0}
     STATUS_SELECTOR = {:active => [4, 3], :disabled => [2, 5, 1], :deleted => [0]}
@@ -55,6 +62,6 @@ class BlurTablesController < ApplicationController
         yield table
         table.save
       end
-      render :nothing => true;
+      render :nothing => true
     end
 end

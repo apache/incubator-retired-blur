@@ -329,6 +329,19 @@ $(document).ready(function() {
         },
         hide: function() {
           !window.uploading;
+        },
+        btns: {
+          "Upload": {
+            "class": "primary",
+            func: function() {
+              $('#upload-form').submit();
+            }
+          },
+          "Cancel": {
+            func: function() {
+              $().closePopup();
+            }
+          }
         }
       });
     });
@@ -527,7 +540,7 @@ $(document).ready(function() {
   };
 
   window.uploadFailed = function(error) {
-    $('#upload-file').html(error);
+    errorPopup(error);
     window.uploading = false;
   };
 

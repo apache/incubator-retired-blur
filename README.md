@@ -37,7 +37,7 @@ Setup Hadoop's HDFS filesystem, which is required for clustered setup.  Though p
 
 HDFS is not required to be installed and running on the same servers as Blur.  However if the source HDFS is being used for heavy Map/Reduce or any other heavy I/O operations, performance could be affected.  The storage location for each table is setup independently and via a URI location (e.g. hdfs://&lt;namenode&gt;:&lt;port&gt;/blur/tables/table/path).  So there may be several tables online in a Blur cluster and each one could reference a different HDFS instance.  This assumes that all the HDFS instances are compatible with one another.
 	
-NOTE: The normal 0.20.2 is not compatible with Cloudera's 0.20.2 CDH3u2 version.  Meaning you cannot install CDH3 on your Blur servers and reference a normal 0.20.2 HDFS instance for storage.  Blur has not been tested with Hadoop version [0.20.203.0][0.20.203.0].
+NOTE: The normal 0.20.2 is not compatible with Cloudera's 0.20.2 CDH3u2 version.  Meaning you cannot install CDH3 on your Blur servers and reference a normal 0.20.2 HDFS instance for storage (you can not mix these Hadoop versions, and there may be other combinations of CDH and Apache Hadoop that do not work together).  Blur has not been tested with Hadoop version [0.20.203.0][0.20.203.0].
 
 ### blur-env.sh Configuration
 

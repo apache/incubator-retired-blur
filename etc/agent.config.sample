@@ -19,6 +19,7 @@ active.collectors=hdfs|queries|tables
 
 #hdfs.thrift.some-hdfs.url=
 #hdfs.some-hdfs.url=
+#hdfs.login.user=SOMEUSER (optional)
 
 # Blur properties
 #blur.instances=some-blur

@@ -21,7 +21,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class HDFSCollector {
 	private static final Log log = LogFactory.getLog(HDFSCollector.class);
 	
-	public static void startCollecting(final String uriString, final String name, final JdbcTemplate jdbc) {
+	public static void startCollecting(final String uriString, final String name, final String user, final JdbcTemplate jdbc) {
 		try {
 			new Thread(new Runnable(){
 				@Override
@@ -36,7 +36,7 @@ public class HDFSCollector {
 						
 						int hdfsId = jdbc.queryForInt("select id from hdfs where name = ?", name);
 						
-						FileSystem fileSystem = FileSystem.get(uri, new Configuration());
+						FileSystem fileSystem = (user != null) ? FileSystem.get(uri, new Configuration(), user) : FileSystem.get(uri, new Configuration());
 	
 						if (fileSystem instanceof DistributedFileSystem) {
 							DistributedFileSystem dfs = (DistributedFileSystem) fileSystem;

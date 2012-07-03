@@ -7,7 +7,7 @@ FactoryGirl.define do
     dfs_used_percent      { (present_capacity - dfs_used) / present_capacity }
     under_replicated      { rand 5 }
     corrupt_blocks        { rand 5 }
-    missing_blocks        { rand 5 } 
+    missing_blocks        { rand 5 }
     total_nodes           { rand 5 }
     dead_nodes            { rand 5 }
     sequence(:created_at, 0) {|n| ((n % 3) + 0.9).minute.ago }

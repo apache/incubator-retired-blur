@@ -8,10 +8,10 @@ describe ApplicationHelper do
 
     it 'should return the system defined plural if given a numbe larger than 1' do
       pluralize_no_count(2, 'rail').should == 'rails'
-    end 
+    end
 
     it 'should return the given plural if given a numbe larger than 1' do
       pluralize_no_count(2, 'rail', 'not rail').should == 'not rail'
-    end 
+    end
   end
 end

@@ -78,11 +78,6 @@ describe BlurTablesController do
         @blur_table.should_receive(:disable).exactly(@tables.length).times
         put :disable, :tables => @tables
       end
-
-      #it "should render JSON" do
-      #  put :disable, :tables => @tables
-      #  response.content_type.should == 'application/json'
-      #end
     end
 
     describe "DELETE destroy" do
@@ -121,6 +116,30 @@ describe BlurTablesController do
       it "should forget all the given tables" do
         BlurTable.should_receive(:destroy).with(['1', '2', '3'])
         delete :forget, :tables => @tables
+      end
+    end
+
+    describe "GET terms" do
+      before :each do
+        BlurTable.stub(:find).and_return @blur_table
+        @blur_table.stub(:terms)
+      end
+
+      it "should render a json" do
+        get :terms
+        response.content_type.should == 'application/json'
+      end
+    end
+
+    describe "PUT comment" do
+      before :each do
+        BlurTable.stub(:find).and_return @blur_table
+        @blur_table.stub(:save)
+      end
+
+      it "should change the comments in table" do
+        put :comment, :input => 'a comment'
+        @blur_table.comments.should == 'a comment'
       end
     end
   end

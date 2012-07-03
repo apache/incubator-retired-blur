@@ -90,6 +90,31 @@ describe ZookeepersController do
       end
     end
 
+    describe 'GET long running queries' do
+      before :each do
+        Zookeeper.stub!(:find).and_return(@zookeeper)
+      end
+
+      it "collects all long running queries" do
+        pending 'check long queries'
+        get :long_running_queries
+      end
+
+      it "renders a json object" do
+        get :long_running_queries
+        response.content_type.should == 'application/json'
+      end
+    end
+
+    describe 'GET shard' do
+      it "renders a json object" do
+        @shard = FactoryGirl.create :shard
+        Zookeeper.stub_chain(:find, :clusters, :find_by_id, :shards).and_return([@shard])
+        get :shards
+        response.content_type.should == 'application/json'
+      end
+    end
+
     describe 'DELETE destroy_shard' do
       before :each do
         @shard = FactoryGirl.create :shard

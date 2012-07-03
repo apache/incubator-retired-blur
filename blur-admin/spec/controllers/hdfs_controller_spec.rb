@@ -204,9 +204,9 @@ describe HdfsController do
       it "renders the upload form template" do
         get :upload_form
         response.should render_template :partial => "_upload_form"
-      end  
+      end
     end
-    
+
     describe "POST upload" do
       before(:each) do
         @hdfs_client.stub(:put)

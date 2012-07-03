@@ -1,11 +1,15 @@
 require 'spec_helper'
 
 describe BlurTable do
-  
+
   before(:each) do
     @client = mock(ThriftClient)
     BlurThriftClient.stub!(:client).and_return(@client)
     @table = FactoryGirl.create :blur_table
+  end
+
+  describe "as_json" do
+    it 'return the expected values'
   end
 
   describe "boolean state methods" do
@@ -30,20 +34,20 @@ describe BlurTable do
       end
     end
   end
-  
+
   describe "enable " do
     it "method sends the message to enable the table through thrift" do
       @client.should_receive(:enableTable).with @table.table_name
       @table.enable 'test:40000'
     end
   end
-  
+
   describe "disable" do
     it "should send the message to disable the table through thrift" do
       @client.should_receive(:disableTable).with(@table.table_name)
       @table.disable 'test:40000'
     end
-  end  
+  end
 
   describe "blur_destroy" do
     it "should send the message to remove the table through thrift with underlying false when not specified" do
@@ -60,8 +64,8 @@ describe BlurTable do
       @client.should_receive(:removeTable).with(@table.table_name, true).and_raise "Exception"
       @table.blur_destroy(true, 'test:40000').should == false
     end
-  end 
-  
+  end
+
   describe "schema" do
     it "returns the table schema in a ruby hash, with hosts as keys and array of shards as values" do
       @table.hosts.should == JSON.parse( @table.server )
@@ -198,6 +202,27 @@ describe BlurTable do
     it "returns nil when the server has not been populated" do
       blur_table = BlurTable.new
       blur_table.server.should be nil
+    end
+  end
+
+  describe "recent_queries" do
+    it "returns info in the expected format" do
+      #find way to test different cnt numbers
+      @table.recent_queries.should == {"sparkline"=>[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0]], "average_queries"=>0.0, "queried_recently"=>false}
+    end
+  end
+
+  describe "row_count" do
+    it "returns the row count" do
+      @table.row_count = 1234567
+      @table.row_count.should == "1,234,567"
+    end
+  end
+
+  describe "terms" do
+    it "requests terms from client" do
+      @client.should_receive(:terms).with(@table.table_name, 'colFam', 'col', '', 123)
+      @table.terms('test:40000', 'colFam', 'col', '', 123)
     end
   end
 end

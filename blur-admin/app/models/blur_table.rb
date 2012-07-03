@@ -103,11 +103,7 @@ class BlurTable < ActiveRecord::Base
       min = row.minute
       cnt = row.cnt
 
-      if min >= time
-        min = min - time
-      else
-        min = 60 - time + min
-      end
+      min = min >= time ? min - time : 60 - time + min
 
       if min > 9
         sparkline[9][1] += cnt

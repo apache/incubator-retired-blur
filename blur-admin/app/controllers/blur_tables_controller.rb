@@ -51,7 +51,7 @@ class BlurTablesController < ApplicationController
     table.save
     render :nothing => true
   end
-  
+
   private
     STATUS = {:enabling => 5, :active => 4, :disabling => 3, :disabled => 2, :deleting => 1, :deleted => 0}
     STATUS_SELECTOR = {:active => [4, 3], :disabled => [2, 5, 1], :deleted => [0]}

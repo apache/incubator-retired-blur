@@ -21,7 +21,7 @@ describe UsersController do
         get :index
         assigns(:users).should == @users
       end
-      
+
       it "should render index template" do
         get :index
         response.should render_template(:index)
@@ -161,7 +161,7 @@ describe UsersController do
         end
       end
     end
-    
+
     describe "DELETE destroy" do
       it "should find and destroy the user" do
         @user.should_receive(:destroy)

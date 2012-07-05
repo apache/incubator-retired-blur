@@ -7,31 +7,26 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.nearinfinity.blur</groupId>
-	<artifactId>blur-mapred</artifactId>
+	<artifactId>blur-jdbc</artifactId>
 	<packaging>jar</packaging>
-	<name>Blur Map Reduce</name>
+	<name>Blur JDBC</name>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.apache.zookeeper</groupId>
-			<artifactId>zookeeper</artifactId>
-			<version>3.3.4</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>com.nearinfinity.blur</groupId>
-			<artifactId>blur-core</artifactId>
-			<version>0.1.2</version>
-		</dependency>
-		<dependency>
-			<groupId>com.nearinfinity.blur</groupId>
-			<artifactId>blur-store</artifactId>
+			<artifactId>blur-thrift</artifactId>
 			<version>0.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>com.nearinfinity.blur</groupId>
 			<artifactId>blur-util</artifactId>
 			<version>0.1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.antlr</groupId>
+			<artifactId>antlr-runtime</artifactId>
+			<version>3.4</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
@@ -59,47 +54,48 @@
 		</dependency>
 	</dependencies>
 
-	<repositories>
-		<repository>
-			<id>libdir</id>
-			<url>file://${basedir}/../lib</url>
-		</repository>
-	</repositories>
-
 	<build>
+		<defaultGoal>install</defaultGoal>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
+				<groupId>org.antlr</groupId>
+				<artifactId>antlr3-maven-plugin</artifactId>
+				<version>3.4</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>antlr</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.0.2</version>
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
+					<sourceDirectory>src</sourceDirectory>
 				</configuration>
 			</plugin>
-
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.2</version>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+
 				<executions>
 					<execution>
-						<id>copy-dependencies</id>
+						<id>make-assembly</id>
 						<phase>package</phase>
 						<goals>
-							<goal>copy-dependencies</goal>
+							<goal>attached</goal>
 						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/../../../lib</outputDirectory>
-							<overWriteReleases>false</overWriteReleases>
-							<overWriteSnapshots>false</overWriteSnapshots>
-							<overWriteIfNewer>true</overWriteIfNewer>
-							<excludeTransitive>true</excludeTransitive>
-							<excludeArtifactIds>junit,commons-cli,commons-logging,hadoop-core,slf4j-api</excludeArtifactIds>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 		</plugins>
 	</build>
+
 </project>

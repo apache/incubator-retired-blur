@@ -137,13 +137,8 @@ All of the examples below require Thrift to execute, if you have successfully go
 
 ### Automatic connect/pool/error retry API example
 
-    BlurClientManager.execute("controller1:40010", new BlurCommand<Void>() {
-	    @Override
-	    public Void call(Client client) throws Exception {
-            //use client here
-            return null;
-	    }
-	});
+    Blur.Iface client = BlurClient.getClient("controller1:40010");
+    List<String> tableNames = client.tableList();
 	
 ### Async Thrift client helper API example
 
@@ -244,7 +239,6 @@ This is the shorter way of creating the same RowMutation.
       
         BlurTask blurTask = new BlurTask();
         blurTask.setTableDescriptor(td);
-        blurTask.setSpinLockPath("/copy-locks");
         blurTask.setZookeeperConnectionStr("localhost");
         blurTask.setMaxNumberOfConcurrentCopies(10);
 

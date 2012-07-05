@@ -93,7 +93,7 @@ public abstract class TableAdmin implements Iface {
   private void waitForTheTableToEnable(String cluster, String table) throws BlurException {
     LOG.info("Waiting for shards to engage on table [" + table + "]");
     while (true) {
-      if (_clusterStatus.isEnabled(true, cluster, table)) {
+      if (_clusterStatus.isEnabled(false, cluster, table)) {
         return;
       }
       try {

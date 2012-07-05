@@ -318,7 +318,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     if (useCache) {
       Boolean enabled = _enabledMap.get(getClusterTableKey(cluster, table));
       if (enabled == null) {
-        throw new RuntimeException("Table [" + table + "] does not exist.");
+//        throw new RuntimeException("Table [" + table + "] does not exist.");
+        return false;
       } else {
         return enabled;
       }

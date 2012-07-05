@@ -30,7 +30,7 @@ public class LoadData {
     final boolean wal = true;
     final int numberOfColumns = 3;
     int numberRows = 100000;
-    final int numberRecordsPerRow = 1;
+    final int numberRecordsPerRow = 3;
     final int numberOfFamilies = 3;
     final int numberOfWords = 30;
     int count = 0;

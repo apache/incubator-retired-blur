@@ -157,6 +157,9 @@ public class HdfsDirectory extends DirectIODirectory {
   public String[] listAll() throws IOException {
     FileStatus[] listStatus = getFileSystem().listStatus(_hdfsDirPath);
     List<String> files = new ArrayList<String>();
+    if (listStatus == null) {
+      return new String[] {};
+    }
     for (FileStatus status : listStatus) {
       if (!status.isDir()) {
         files.add(status.getPath().getName());

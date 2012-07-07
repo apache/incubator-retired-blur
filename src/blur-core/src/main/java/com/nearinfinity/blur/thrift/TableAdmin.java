@@ -25,7 +25,7 @@ public abstract class TableAdmin implements Iface {
   protected ZooKeeper _zookeeper;
   protected ClusterStatus _clusterStatus;
   protected BlurConfiguration _configuration;
-  
+
   @Override
   public TableStats getTableStats(String table) throws BlurException, TException {
     return tableStats(table);
@@ -68,9 +68,30 @@ public abstract class TableAdmin implements Iface {
         throw new BlurException("Table [" + table + "] not found.", null);
       }
       DisableTable.disableTable(_zookeeper, cluster, table);
+      waitForTheTableToDisable(cluster, table);
+      waitForTheTableToDisengage(cluster, table);
     } catch (Exception e) {
       LOG.error("Unknown error during disable of [table={0}]", e, table);
       throw new BException(e.getMessage(), e);
+    }
+  }
+
+  private void waitForTheTableToDisengage(String cluster, String table) throws BlurException, TException {
+    LOG.info("Waiting for shards to disengage on table [" + table + "]");
+  }
+
+  private void waitForTheTableToDisable(String cluster, String table) throws BlurException, TException {
+    LOG.info("Waiting for shards to disable on table [" + table + "]");
+    while (true) {
+      if (!_clusterStatus.isEnabled(false, cluster, table)) {
+        return;
+      }
+      try {
+        Thread.sleep(3000);
+      } catch (InterruptedException e) {
+        LOG.error("Unknown error while enabling table [" + table + "]", e);
+        throw new BException("Unknown error while enabling table [" + table + "]", e);
+      }
     }
   }
 
@@ -92,17 +113,17 @@ public abstract class TableAdmin implements Iface {
 
   private void waitForTheTableToEnable(String cluster, String table) throws BlurException {
     LOG.info("Waiting for shards to engage on table [" + table + "]");
-    while (true) {
-      if (_clusterStatus.isEnabled(false, cluster, table)) {
-        return;
-      }
-      try {
-        Thread.sleep(3000);
-      } catch (InterruptedException e) {
-        LOG.error("Unknown error while enabling table [" + table + "]", e);
-        throw new BException("Unknown error while enabling table [" + table + "]", e);
-      }
-    }
+//    while (true) {
+//      if (_clusterStatus.isEnabled(false, cluster, table)) {
+//        return;
+//      }
+//      try {
+//        Thread.sleep(3000);
+//      } catch (InterruptedException e) {
+//        LOG.error("Unknown error while enabling table [" + table + "]", e);
+//        throw new BException("Unknown error while enabling table [" + table + "]", e);
+//      }
+//    }
   }
 
   private void waitForTheTableToEngage(String cluster, String table) throws BlurException, TException {
@@ -143,6 +164,9 @@ public abstract class TableAdmin implements Iface {
   }
 
   public void checkTable(String table) throws BlurException {
+    if (table == null) {
+      throw new BlurException("Table cannot be null.", null);
+    }
     String cluster = _clusterStatus.getCluster(true, table);
     if (cluster == null) {
       throw new BlurException("Table [" + table + "] does not exist", null);

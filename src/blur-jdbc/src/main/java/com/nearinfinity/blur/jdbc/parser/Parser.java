@@ -10,12 +10,15 @@ public class Parser {
 
   private static final String SELECT = "select";
   private static final String WHERE = "where";
+  private static final String NATURAL = "natural";
   private static final String FROM = "from";
+  private static final String JOIN = "join";
   private static final String SEP = new String(new char[] { 1 });
 
   public static void main(String[] args) {
     // System.out.println(new
     // Parser().parse("select * from table where query('person.pn:(nice cool)')"));
+    System.out.println(new Parser().parse("select * from table natural join table2 where person.pn = 'coandol''s' and jon='asdndandanda' And person.pf ='niorce' or nice = 'be'"));
     System.out.println(new Parser().parse("select * from table where person.pn = 'coandol''s' and jon='asdndandanda' And person.pf ='niorce' or nice = 'be'"));
     // System.out.println(new
     // Parser().parse("select id,locationid,score,cf1.* from table where query('+person.pn:(nice cool) AND cool.a:nice')"));
@@ -24,12 +27,33 @@ public class Parser {
   private String where;
   private String tableName;
   private List<String> columnNames;
+  private String joinTable;
 
   public Parser parse(String query) {
     columnNames = getColumnNames(query);
     tableName = getTableName(query);
     where = getWhere(query);
+    joinTable = getJoin(query);
     return this;
+  }
+  
+  public String getJoinTable() {
+    return joinTable;
+  }
+
+  private String getJoin(String query) {
+    String table = null;
+    StringTokenizer tokenizer = new StringTokenizer(query);
+    while (tokenizer.hasMoreTokens()) {
+      if (NATURAL.equals(tokenizer.nextToken().toLowerCase())) {
+        if (JOIN.equals(tokenizer.nextToken().toLowerCase())) {
+          table = tokenizer.nextToken();
+        } else {
+          throw new RuntimeException();
+        }
+      }
+    }
+    return table;
   }
 
   private String getWhere(String query) {
@@ -61,24 +85,16 @@ public class Parser {
 
   private String changeQueryToLucene(String query) {
     query = fixAndsOrs(query);
-    // System.out.println(query);
     query = query.replaceAll("\\s*=\\s*", ":");
-    // System.out.println(query);
     query = query.replace("''", SEP);
-    // System.out.println(query);
     query = query.replaceAll("'", "");
-    // System.out.println(query);
     query = query.replace(SEP, "'");
-    // System.out.println(query);
     return query;
   }
 
   private String fixAndsOrs(String query) {
-//    System.out.println(query);
     query = fixToUpperToken(query, "AND");
-//    System.out.println(query);
     query = fixToUpperToken(query, "OR");
-//    System.out.println(query);
     return query;
   }
 
@@ -164,6 +180,6 @@ public class Parser {
 
   @Override
   public String toString() {
-    return "Parser [columnNames=" + columnNames + ", tableName=" + tableName + ", where=" + where + "]";
+    return "Parser [columnNames=" + columnNames + ", tableName=" + tableName + ", where=" + where + ", joinTable=" + joinTable + "]";
   }
 }

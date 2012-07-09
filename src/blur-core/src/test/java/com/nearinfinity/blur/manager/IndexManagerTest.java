@@ -133,6 +133,38 @@ public class IndexManagerTest {
     indexManager.mutate(mutation4);
     indexManager.mutate(mutation5);
   }
+  
+  @Test
+  public void testQueryWithFacetsWithWildCard() throws Exception {
+    BlurQuery blurQuery = new BlurQuery();
+    blurQuery.simpleQuery = new SimpleQuery();
+    blurQuery.simpleQuery.queryStr = "test-family.testcol1:value1";
+    blurQuery.simpleQuery.superQueryOn = true;
+    blurQuery.simpleQuery.type = ScoreType.SUPER;
+    blurQuery.fetch = 10;
+    blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
+    blurQuery.maxQueryTime = Long.MAX_VALUE;
+    blurQuery.uuid = 1;
+    blurQuery.facets = Arrays.asList(new Facet("test-family.testcol1:value*", Long.MAX_VALUE), new Facet("test-family.testcol1:value-nohit", Long.MAX_VALUE));
+
+    AtomicLongArray facetedCounts = new AtomicLongArray(2);
+    BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, facetedCounts);
+    assertEquals(iterable.getTotalResults(), 2);
+    for (BlurResult result : iterable) {
+      Selector selector = new Selector().setLocationId(result.getLocationId());
+      FetchResult fetchResult = new FetchResult();
+      indexManager.fetchRow(TABLE, selector, fetchResult);
+      assertNotNull(fetchResult.rowResult);
+      assertNull(fetchResult.recordResult);
+    }
+
+    assertEquals(2, facetedCounts.get(0));
+    assertEquals(0, facetedCounts.get(1));
+
+    assertFalse(indexManager.currentQueries(TABLE).isEmpty());
+    Thread.sleep(2000);// wait for cleanup to fire
+    assertTrue(indexManager.currentQueries(TABLE).isEmpty());
+  }
 
   @Test
   public void testFetchRowByLocationId() throws Exception {
@@ -416,6 +448,7 @@ public class IndexManagerTest {
     assertTrue(indexManager.currentQueries(TABLE).isEmpty());
   }
 
+  
   @Test
   public void testTerms() throws Exception {
     List<String> terms = indexManager.terms(TABLE, FAMILY, "testcol1", "", (short) 100);

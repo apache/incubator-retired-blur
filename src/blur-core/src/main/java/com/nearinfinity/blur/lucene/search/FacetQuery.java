@@ -63,6 +63,9 @@ public class FacetQuery extends AbstractWrapperQuery {
     if (_rewritten) {
       return this;
     }
+    for (int i = 0; i < facets.length; i++) {
+      facets[i] = facets[i].rewrite(reader);
+    }
     return new FacetQuery(_query.rewrite(reader), facets, counts, true);
   }
 

@@ -20,7 +20,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.SearcherWarmer;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.NRTCachingDirectory;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.index.IndexWriter;
@@ -61,8 +60,6 @@ public class BlurNRTIndex extends BlurIndex {
   private long _timeBetweenCommits = TimeUnit.SECONDS.toMillis(60);
   private long _timeBetweenRefreshs = TimeUnit.MILLISECONDS.toMillis(500);
   private long _timeBetweenRefreshsNano;
-  private double _nrtCachingMaxMergeSizeMB = 2;
-  private double _nrtCachingMaxCachedMB = 25.0;
   private DirectoryReferenceFileGC _gc;
   private SearcherWarmer _warmer = new SearcherWarmer() {
     @Override
@@ -290,14 +287,6 @@ public class BlurNRTIndex extends BlurIndex {
 
   public void setTimeBetweenRefreshs(long timeBetweenRefreshs) {
     _timeBetweenRefreshs = timeBetweenRefreshs;
-  }
-
-  public void setNrtCachingMaxMergeSizeMB(double nrtCachingMaxMergeSizeMB) {
-    _nrtCachingMaxMergeSizeMB = nrtCachingMaxMergeSizeMB;
-  }
-
-  public void setNrtCachingMaxCachedMB(double nrtCachingMaxCachedMB) {
-    _nrtCachingMaxCachedMB = nrtCachingMaxCachedMB;
   }
 
   public void setWalPath(Path walPath) {

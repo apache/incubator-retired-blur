@@ -65,10 +65,8 @@ public class PagingCollector extends TopDocsCollector<ScoreDoc> {
       // this hit was gathered on a previous page.
       return;
     } else if (score == previousPassLowest.score && doc <= previousPassLowest.doc) {
-      // if the scores are the same and the doc is less than or equal to
-      // the
-      // previous pass lowest hit doc then skip because this collector
-      // favors
+      // if the scores are the same and the doc is less than or equal to the
+      // previous pass lowest hit doc then skip because this collector favors
       // lower number documents.
       return;
     } else if (score < pqTop.score || (score == pqTop.score && doc > pqTop.doc)) {

@@ -110,8 +110,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private DirectoryReferenceFileGC _gc;
   private long _timeBetweenCommits = TimeUnit.SECONDS.toMillis(60);
   private long _timeBetweenRefreshs = TimeUnit.MILLISECONDS.toMillis(500);
-  private double _nrtCachingMaxMergeSizeMB = 2;
-  private double _nrtCachingMaxCachedMB = 25.0;
 
   public static interface ReleaseReader {
     void release() throws IOException;
@@ -505,8 +503,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
       writer.setSimilarity(getSimilarity(table));
       writer.setTimeBetweenCommits(_timeBetweenCommits);
       writer.setTimeBetweenRefreshs(_timeBetweenRefreshs);
-      writer.setNrtCachingMaxCachedMB(_nrtCachingMaxCachedMB);
-      writer.setNrtCachingMaxMergeSizeMB(_nrtCachingMaxMergeSizeMB);
       writer.setWalPath(walTablePath);
       writer.setConfiguration(_configuration);
       writer.setIndexDeletionPolicy(_indexDeletionPolicy);
@@ -817,13 +813,5 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   public void setTimeBetweenRefreshs(long timeBetweenRefreshs) {
     _timeBetweenRefreshs = timeBetweenRefreshs;
-  }
-
-  public void setNrtCachingMaxMergeSizeMB(double nrtCachingMaxMergeSizeMB) {
-    _nrtCachingMaxMergeSizeMB = nrtCachingMaxMergeSizeMB;
-  }
-
-  public void setNrtCachingMaxCachedMB(double nrtCachingMaxCachedMB) {
-    _nrtCachingMaxCachedMB = nrtCachingMaxCachedMB;
   }
 }

@@ -27,6 +27,7 @@ import static junit.framework.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
@@ -48,21 +49,36 @@ import org.junit.Test;
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.index.IndexWriter;
+import com.nearinfinity.blur.lucene.search.FacetQuery;
 import com.nearinfinity.blur.lucene.search.SuperQuery;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.utils.RowIndexWriter;
+
 public class SuperQueryTest {
+
+  private static final String PERSON_NAME = "person.name";
+  private static final String ADDRESS_STREET = "address.street";
+
+  private static final String STREET = "street";
+  private static final String ADDRESS = "address";
+  private static final String PERSON = "person";
+  private static final String NAME = "name";
+
+  private static final String NAME1 = "jon";
+  private static final String NAME2 = "jane";
+  private static final String STREET2 = "main st";
+  private static final String STREET1 = "main";
 
   @Test
   public void testSimpleSuperQuery() throws CorruptIndexException, IOException, InterruptedException {
     BooleanQuery booleanQuery = new BooleanQuery();
-    booleanQuery.add(wrapSuper(new TermQuery(new Term("person.name", "aaron"))), Occur.MUST);
-    booleanQuery.add(wrapSuper(new TermQuery(new Term("address.street", "sulgrave"))), Occur.MUST);
+    booleanQuery.add(wrapSuper(new TermQuery(new Term(PERSON_NAME, NAME1))), Occur.MUST);
+    booleanQuery.add(wrapSuper(new TermQuery(new Term(ADDRESS_STREET, STREET1))), Occur.MUST);
 
     Directory directory = createIndex();
     IndexReader reader = IndexReader.open(directory);
-    printAll(new Term("person.name", "aaron"), reader);
-    printAll(new Term("address.street", "sulgrave"), reader);
+    printAll(new Term(PERSON_NAME, NAME1), reader);
+    printAll(new Term(ADDRESS_STREET, STREET1), reader);
     printAll(new Term(PRIME_DOC, PRIME_DOC_VALUE), reader);
     IndexSearcher searcher = new IndexSearcher(reader);
     TopDocs topDocs = searcher.search(booleanQuery, 10);
@@ -75,8 +91,8 @@ public class SuperQueryTest {
   public void testAggregateScoreTypes() throws Exception {
     IndexSearcher searcher = createSearcher();
     BooleanQuery booleanQuery = new BooleanQuery();
-    booleanQuery.add(wrapSuper("person.name", "aaron", ScoreType.AGGREGATE), Occur.SHOULD);
-    booleanQuery.add(wrapSuper("address.street", "sulgrave", ScoreType.AGGREGATE), Occur.MUST);
+    booleanQuery.add(wrapSuper(PERSON_NAME, NAME1, ScoreType.AGGREGATE), Occur.SHOULD);
+    booleanQuery.add(wrapSuper(ADDRESS_STREET, STREET1, ScoreType.AGGREGATE), Occur.MUST);
     TopDocs topDocs = searcher.search(booleanQuery, 10);
     printTopDocs(topDocs);
     assertEquals(3, topDocs.totalHits);
@@ -89,8 +105,8 @@ public class SuperQueryTest {
   public void testBestScoreTypes() throws Exception {
     IndexSearcher searcher = createSearcher();
     BooleanQuery booleanQuery = new BooleanQuery();
-    booleanQuery.add(wrapSuper("person.name", "aaron", ScoreType.BEST), Occur.SHOULD);
-    booleanQuery.add(wrapSuper("address.street", "sulgrave", ScoreType.BEST), Occur.MUST);
+    booleanQuery.add(wrapSuper(PERSON_NAME, NAME1, ScoreType.BEST), Occur.SHOULD);
+    booleanQuery.add(wrapSuper(ADDRESS_STREET, STREET1, ScoreType.BEST), Occur.MUST);
     TopDocs topDocs = searcher.search(booleanQuery, 10);
     assertEquals(3, topDocs.totalHits);
     printTopDocs(topDocs);
@@ -110,8 +126,8 @@ public class SuperQueryTest {
   public void testConstantScoreTypes() throws Exception {
     IndexSearcher searcher = createSearcher();
     BooleanQuery booleanQuery = new BooleanQuery();
-    booleanQuery.add(wrapSuper("person.name", "aaron", ScoreType.CONSTANT), Occur.SHOULD);
-    booleanQuery.add(wrapSuper("address.street", "sulgrave", ScoreType.CONSTANT), Occur.MUST);
+    booleanQuery.add(wrapSuper(PERSON_NAME, NAME1, ScoreType.CONSTANT), Occur.SHOULD);
+    booleanQuery.add(wrapSuper(ADDRESS_STREET, STREET1, ScoreType.CONSTANT), Occur.MUST);
     TopDocs topDocs = searcher.search(booleanQuery, 10);
     assertEquals(3, topDocs.totalHits);
     printTopDocs(topDocs);
@@ -124,9 +140,32 @@ public class SuperQueryTest {
   public void testSuperScoreTypes() throws Exception {
     IndexSearcher searcher = createSearcher();
     BooleanQuery booleanQuery = new BooleanQuery();
-    booleanQuery.add(wrapSuper("person.name", "aaron", ScoreType.SUPER), Occur.SHOULD);
-    booleanQuery.add(wrapSuper("address.street", "sulgrave", ScoreType.SUPER), Occur.MUST);
+    booleanQuery.add(wrapSuper(PERSON_NAME, NAME1, ScoreType.SUPER), Occur.SHOULD);
+    booleanQuery.add(wrapSuper(ADDRESS_STREET, STREET1, ScoreType.SUPER), Occur.MUST);
     TopDocs topDocs = searcher.search(booleanQuery, 10);
+    assertEquals(3, topDocs.totalHits);
+    printTopDocs(topDocs);
+    assertEquals(3.10, topDocs.scoreDocs[0].score, 0.01);
+    assertEquals(3.00, topDocs.scoreDocs[1].score, 0.01);
+    assertEquals(0.75, topDocs.scoreDocs[2].score, 0.01);
+  }
+
+  @Test
+  public void testSuperScoreTypesWithFacet() throws Exception {
+    IndexSearcher searcher = createSearcher();
+    BooleanQuery booleanQuery = new BooleanQuery();
+    booleanQuery.add(wrapSuper(PERSON_NAME, NAME1, ScoreType.SUPER), Occur.SHOULD);
+    booleanQuery.add(wrapSuper(ADDRESS_STREET, STREET1, ScoreType.SUPER), Occur.MUST);
+
+    BooleanQuery f1 = new BooleanQuery();
+    f1.add(new TermQuery(new Term(PERSON_NAME,NAME1)),Occur.MUST);
+    f1.add(new TermQuery(new Term(PERSON_NAME,NAME2)),Occur.MUST);
+    
+    Query[] facets = new Query[] {new SuperQuery(f1, ScoreType.CONSTANT)};
+    AtomicLongArray counts = new AtomicLongArray(facets.length);
+    FacetQuery query = new FacetQuery(booleanQuery, facets, counts);
+
+    TopDocs topDocs = searcher.search(query, 10);
     assertEquals(3, topDocs.totalHits);
     printTopDocs(topDocs);
     assertEquals(3.10, topDocs.scoreDocs[0].score, 0.01);
@@ -152,12 +191,14 @@ public class SuperQueryTest {
     IndexWriter writer = new IndexWriter(DirectIODirectory.wrap(directory), new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)));
     BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(LUCENE_VERSION));
     RowIndexWriter indexWriter = new RowIndexWriter(writer, analyzer);
-    indexWriter.replace(false, newRow("1", newRecord("person", UUID.randomUUID().toString(), newColumn("name", "aaron")), newRecord("person", UUID.randomUUID().toString(),
-        newColumn("name", "aaron")), newRecord("address", UUID.randomUUID().toString(), newColumn("street", "sulgrave"))));
-    indexWriter.replace(false, newRow("2", newRecord("person", UUID.randomUUID().toString(), newColumn("name", "hannah")), newRecord("address", UUID.randomUUID().toString(),
-        newColumn("street", "sulgrave"))));
-    indexWriter.replace(false, newRow("3", newRecord("person", UUID.randomUUID().toString(), newColumn("name", "aaron")), newRecord("address", UUID.randomUUID().toString(),
-        newColumn("street", "sulgrave court"))));
+    indexWriter.replace(
+        false,
+        newRow("1", newRecord(PERSON, UUID.randomUUID().toString(), newColumn(NAME, NAME1)), newRecord(PERSON, UUID.randomUUID().toString(), newColumn(NAME, NAME1)),
+            newRecord(ADDRESS, UUID.randomUUID().toString(), newColumn(STREET, STREET1))));
+    indexWriter.replace(false,
+        newRow("2", newRecord(PERSON, UUID.randomUUID().toString(), newColumn(NAME, NAME2)), newRecord(ADDRESS, UUID.randomUUID().toString(), newColumn(STREET, STREET1))));
+    indexWriter.replace(false,
+        newRow("3", newRecord(PERSON, UUID.randomUUID().toString(), newColumn(NAME, NAME1)), newRecord(ADDRESS, UUID.randomUUID().toString(), newColumn(STREET, STREET2))));
     ;
     writer.close();
     return directory;

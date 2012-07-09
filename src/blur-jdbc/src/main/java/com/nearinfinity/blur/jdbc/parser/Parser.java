@@ -18,8 +18,10 @@ public class Parser {
   public static void main(String[] args) {
     // System.out.println(new
     // Parser().parse("select * from table where query('person.pn:(nice cool)')"));
-    System.out.println(new Parser().parse("select * from table natural join table2 where person.pn = 'coandol''s' and jon='asdndandanda' And person.pf ='niorce' or nice = 'be'"));
-    System.out.println(new Parser().parse("select * from table where person.pn = 'coandol''s' and jon='asdndandanda' And person.pf ='niorce' or nice = 'be'"));
+//    System.out.println(new Parser().parse("select * from table natural join table2 where person.pn = 'coandol''s' and jon='asdndandanda' And person.pf ='niorce' or nice = 'be'"));
+//    System.out.println(new Parser().parse("select * from table where person.pn = 'coandol''s' and jon='asdndandanda' And person.pf ='niorce' or nice = 'be'"));
+    System.out.println(new Parser().parse("SELECT * FROM TEST_TABLE T WHERE 1 = 0"));
+    System.out.println(new Parser().parse("select * from table t where 1 = 0"));
     // System.out.println(new
     // Parser().parse("select id,locationid,score,cf1.* from table where query('+person.pn:(nice cool) AND cool.a:nice')"));
   }
@@ -145,7 +147,7 @@ public class Parser {
     while (tokenizer.hasMoreTokens()) {
       if (SELECT.equals(tokenizer.nextToken().toLowerCase())) {
         while (tokenizer.hasMoreTokens()) {
-          String token = tokenizer.nextToken();
+          String token = tokenizer.nextToken().toLowerCase();
           if (FROM.equals(token)) {
             return columnNames;
           }

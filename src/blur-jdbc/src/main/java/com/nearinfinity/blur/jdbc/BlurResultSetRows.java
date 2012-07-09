@@ -56,6 +56,7 @@ public class BlurResultSetRows extends AbstractBlurResultSet {
     this.parser = parser;
     tableName = parser.getTableName();
     columnNames = parser.getColumnNames();
+    System.out.println(columnNames);
     runSearch(0, 100);
   }
 

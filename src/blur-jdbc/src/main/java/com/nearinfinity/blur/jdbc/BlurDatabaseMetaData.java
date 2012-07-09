@@ -92,14 +92,28 @@ public class BlurDatabaseMetaData extends AbstractBlurDatabaseMetaData {
   public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
     List<Map<String, String>> data = new ArrayList<Map<String, String>>();
     for (String table : tables) {
+      if (tableNamePattern != null && !table.equals(tableNamePattern)) {
+        continue;
+      }
       Schema schema = schemaMap.get(table);
       Map<String, Set<String>> columnFamilies = schema.columnFamilies;
       addTableRow(data, table, table);
       for (String columnFamily : columnFamilies.keySet()) {
-        addTableRow(data, table, table + "." + columnFamily);
+        String tablePlusCf = table + "." + columnFamily;
+        if (tableNamePattern != null && !tablePlusCf.equals(tableNamePattern)) {
+          continue;
+        }
+        addTableRow(data, table, tablePlusCf);
       }
     }
     return new TableDescriptorResultSet(data);
+  }
+  
+  
+
+  @Override
+  public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
+    return new EmptyResultSet();
   }
 
   private void addTableRow(List<Map<String, String>> data, String schem, String table) {

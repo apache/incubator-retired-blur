@@ -8,6 +8,14 @@ import java.util.Properties;
 
 public class BlurJdbc implements Driver {
 
+  static {
+    try {
+      java.sql.DriverManager.registerDriver(new BlurJdbc());
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   @Override
   public boolean acceptsURL(String url) throws SQLException {
     // jdbc:blur:host:port

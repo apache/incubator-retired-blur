@@ -53,25 +53,26 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 public class BlurClientManager {
 
   private static final Object NULL = new Object();
-  
+
   private static final Log LOG = LogFactory.getLog(BlurClientManager.class);
   private static final int MAX_RETRIES = 5;
   private static final long BACK_OFF_TIME = TimeUnit.MILLISECONDS.toMillis(250);
   private static final long MAX_BACK_OFF_TIME = TimeUnit.SECONDS.toMillis(10);
   private static final long ONE_SECOND = TimeUnit.SECONDS.toMillis(1);
-  
+
   private static Map<Connection, BlockingQueue<Client>> clientPool = new ConcurrentHashMap<Connection, BlockingQueue<Client>>();
   private static Thread daemon;
   private static AtomicBoolean running = new AtomicBoolean(true);
-  private static Map<Connection,Object> badConnections = new ConcurrentHashMap<Connection, Object>();
-  
+  private static Map<Connection, Object> badConnections = new ConcurrentHashMap<Connection, Object>();
+
   static {
     startDaemon();
   }
-  
+
   private static void startDaemon() {
     daemon = new Thread(new Runnable() {
       private Set<Connection> good = new HashSet<Connection>();
+
       @Override
       public void run() {
         while (running.get()) {
@@ -97,7 +98,7 @@ public class BlurClientManager {
     daemon.setName("Blur-Client-Manager-Connection-Checker");
     daemon.start();
   }
-  
+
   protected static boolean isConnectionGood(Connection connection) {
     try {
       returnClient(connection, getClient(connection));
@@ -113,108 +114,95 @@ public class BlurClientManager {
   public static <CLIENT, T> T execute(Connection connection, AbstractCommand<CLIENT, T> command) throws BlurException, TException, IOException {
     return execute(connection, command, MAX_RETRIES, BACK_OFF_TIME, MAX_BACK_OFF_TIME);
   }
-  
-  public static <CLIENT, T> T execute(Connection connection, AbstractCommand<CLIENT, T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws BlurException, TException, IOException {
+
+  public static <CLIENT, T> T execute(Connection connection, AbstractCommand<CLIENT, T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws BlurException,
+      TException, IOException {
     return execute(Arrays.asList(connection), command, maxRetries, backOffTime, maxBackOffTime);
   }
-  
+
   public static <CLIENT, T> T execute(List<Connection> connections, AbstractCommand<CLIENT, T> command) throws BlurException, TException, IOException {
     return execute(connections, command, MAX_RETRIES, BACK_OFF_TIME, MAX_BACK_OFF_TIME);
   }
-  
+
   private static class LocalResources {
     AtomicInteger retries = new AtomicInteger();
     AtomicReference<Blur.Client> client = new AtomicReference<Client>();
     List<Connection> shuffledConnections = new ArrayList<Connection>();
     Random random = new Random();
   }
-  
-//  private static ThreadLocal<LocalResources> resources = new ThreadLocal<BlurClientManager.LocalResources>() {
-//    @Override
-//    protected LocalResources initialValue() {
-//      return new LocalResources();
-//    }
-//  };
-  
+
   @SuppressWarnings("unchecked")
-  public static <CLIENT, T> T execute(List<Connection> connections, AbstractCommand<CLIENT, T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws BlurException, TException, IOException {
-//    LocalResources localResources = resources.get();
-    LocalResources localResources = null;
-    try {
-      if (localResources == null) {
-        localResources = new LocalResources();
-      }
-//      resources.set(null);
-      AtomicReference<Client> client = localResources.client;
-      Random random = localResources.random;
-      AtomicInteger retries = localResources.retries;
-      List<Connection> shuffledConnections = localResources.shuffledConnections;
-      
-      retries.set(0);
-      shuffledConnections.addAll(connections);
-      
-      Collections.shuffle(shuffledConnections, random);
-      boolean allBad = true;
-      int connectionErrorCount = 0;
-      while (true) {
-        for (Connection connection : shuffledConnections) {
-          if (isBadConnection(connection)) {
+  public static <CLIENT, T> T execute(List<Connection> connections, AbstractCommand<CLIENT, T> command, int maxRetries, long backOffTime, long maxBackOffTime)
+      throws BlurException, TException, IOException {
+    LocalResources localResources = new LocalResources();
+    AtomicReference<Client> client = localResources.client;
+    Random random = localResources.random;
+    AtomicInteger retries = localResources.retries;
+    List<Connection> shuffledConnections = localResources.shuffledConnections;
+
+    retries.set(0);
+    shuffledConnections.addAll(connections);
+
+    Collections.shuffle(shuffledConnections, random);
+    boolean allBad = true;
+    int connectionErrorCount = 0;
+    while (true) {
+      for (Connection connection : shuffledConnections) {
+        if (isBadConnection(connection)) {
+          continue;
+        }
+        client.set(null);
+        try {
+          client.set(getClient(connection));
+        } catch (IOException e) {
+          if (handleError(connection, client, retries, command, e, maxRetries, backOffTime, maxBackOffTime)) {
+            throw e;
+          } else {
+            markBadConnection(connection);
             continue;
           }
-          allBad = false;
-          client.set(null);
-          try {
-            client.set(getClient(connection));
-          } catch (IOException e) {
-            if (handleError(connection,client,retries,command,e,maxRetries,backOffTime,maxBackOffTime)) {
-              throw e;
-            } else {
-              markBadConnection(connection);
-              continue;
-            }
-          }
-          try {
-            return command.call((CLIENT) client.get());
-          } catch (RuntimeException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof TTransportException) {
-              TTransportException t = (TTransportException) cause;
-              if (handleError(connection,client,retries,command,t,maxRetries,backOffTime,maxBackOffTime)) {
-                throw t;
-              }
-            } else {
-              throw e;
-            }
-          } catch (TTransportException e) {
-            if (handleError(connection,client,retries,command,e,maxRetries,backOffTime,maxBackOffTime)) {
-              throw e;
-            }
-          } finally {
-            if (client.get() != null) {
-              returnClient(connection, client);
-            }
-          }
         }
-        if (allBad) {
-          connectionErrorCount++;
-          LOG.error("All connections are bad [" + connectionErrorCount + "].");
-          if (connectionErrorCount >= 5) {
-            throw new IOException("All connections are bad.");
+        try {
+          T result = command.call((CLIENT) client.get());
+          allBad = false;
+          return result;
+        } catch (RuntimeException e) {
+          Throwable cause = e.getCause();
+          if (cause instanceof TTransportException) {
+            TTransportException t = (TTransportException) cause;
+            if (handleError(connection, client, retries, command, t, maxRetries, backOffTime, maxBackOffTime)) {
+              throw t;
+            }
+          } else {
+            throw e;
           }
-          try {
-            Thread.sleep(1000);
-          } catch (InterruptedException e) {
-            throw new BException("Unknown error.", e);
+        } catch (TTransportException e) {
+          if (handleError(connection, client, retries, command, e, maxRetries, backOffTime, maxBackOffTime)) {
+            throw e;
+          }
+        } finally {
+          if (client.get() != null) {
+            returnClient(connection, client);
           }
         }
       }
-    } finally {
-//      resources.set(localResources);
+      if (allBad) {
+        connectionErrorCount++;
+        LOG.error("All connections are bad [" + connectionErrorCount + "].");
+        if (connectionErrorCount >= 5) {
+          throw new IOException("All connections are bad.");
+        }
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          throw new BException("Unknown error.", e);
+        }
+      }
     }
   }
 
   private static void markBadConnection(Connection connection) {
-    LOG.info("Marking bad connection [{0}]",connection);    
+    LOG.info("Marking bad connection [{0}]", connection);
     badConnections.put(connection, NULL);
   }
 
@@ -222,9 +210,10 @@ public class BlurClientManager {
     return badConnections.containsKey(connection);
   }
 
-  private static <CLIENT,T> boolean handleError(Connection connection, AtomicReference<Blur.Client> client, AtomicInteger retries, AbstractCommand<CLIENT, T> command, Exception e, int maxRetries, long backOffTime, long maxBackOffTime) {
+  private static <CLIENT, T> boolean handleError(Connection connection, AtomicReference<Blur.Client> client, AtomicInteger retries, AbstractCommand<CLIENT, T> command,
+      Exception e, int maxRetries, long backOffTime, long maxBackOffTime) {
     if (client.get() != null) {
-      trashConnections(connection,client);
+      trashConnections(connection, client);
       markBadConnection(connection);
       client.set(null);
     }
@@ -233,7 +222,7 @@ public class BlurClientManager {
       return true;
     }
     LOG.error("Retrying call [{0}] retry [{1}] out of [{2}] message [{3}]", command, retries.get(), maxRetries, e.getMessage());
-    sleep(backOffTime,maxBackOffTime,retries.get(),maxRetries);
+    sleep(backOffTime, maxBackOffTime, retries.get(), maxRetries);
     retries.incrementAndGet();
     return false;
   }
@@ -241,7 +230,7 @@ public class BlurClientManager {
   public static void sleep(long backOffTime, long maxBackOffTime, int retry, int maxRetries) {
     long extra = (maxBackOffTime - backOffTime) / maxRetries;
     long sleep = backOffTime + (extra * retry);
-    LOG.info("Backing off call for [{0} ms]",sleep);
+    LOG.info("Backing off call for [{0} ms]", sleep);
     try {
       Thread.sleep(sleep);
     } catch (InterruptedException e) {
@@ -249,10 +238,11 @@ public class BlurClientManager {
     }
   }
 
-  public static <CLIENT, T> T execute(String connectionStr, AbstractCommand<CLIENT, T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws BlurException, TException, IOException {
-    return execute(getConnections(connectionStr),command,maxRetries,backOffTime,maxBackOffTime);
+  public static <CLIENT, T> T execute(String connectionStr, AbstractCommand<CLIENT, T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws BlurException,
+      TException, IOException {
+    return execute(getConnections(connectionStr), command, maxRetries, backOffTime, maxBackOffTime);
   }
-  
+
   public static List<Connection> getConnections(String connectionStr) {
     int start = 0;
     int index = connectionStr.indexOf(',');
@@ -270,13 +260,13 @@ public class BlurClientManager {
   }
 
   public static <CLIENT, T> T execute(String connectionStr, AbstractCommand<CLIENT, T> command) throws BlurException, TException, IOException {
-    return execute(getConnections(connectionStr),command);
+    return execute(getConnections(connectionStr), command);
   }
 
   private static void returnClient(Connection connection, AtomicReference<Blur.Client> client) {
     returnClient(connection, client.get());
   }
-  
+
   private static void returnClient(Connection connection, Blur.Client client) {
     try {
       clientPool.get(connection).put(client);
@@ -288,15 +278,15 @@ public class BlurClientManager {
   private static void trashConnections(Connection connection, AtomicReference<Client> c) {
     BlockingQueue<Client> blockingQueue;
     synchronized (clientPool) {
-      blockingQueue = clientPool.put(connection,new LinkedBlockingQueue<Client>());
+      blockingQueue = clientPool.put(connection, new LinkedBlockingQueue<Client>());
       try {
         blockingQueue.put(c.get());
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
     }
-    
-    LOG.info("Trashing client for connections [{0}]",connection);
+
+    LOG.info("Trashing client for connections [{0}]", connection);
     for (Client client : blockingQueue) {
       client.getInputProtocol().getTransport().close();
       client.getOutputProtocol().getTransport().close();
@@ -328,14 +318,14 @@ public class BlurClientManager {
     TSocket trans;
     Socket socket;
     if (connection.isProxy()) {
-      Proxy proxy = new Proxy(Type.SOCKS, new InetSocketAddress(connection.getProxyHost(),connection.getProxyPort()));
+      Proxy proxy = new Proxy(Type.SOCKS, new InetSocketAddress(connection.getProxyHost(), connection.getProxyPort()));
       socket = new Socket(proxy);
     } else {
       socket = new Socket();
     }
     socket.connect(new InetSocketAddress(host, port));
     trans = new TSocket(socket);
-    
+
     TProtocol proto = new TBinaryProtocol(new TFramedTransport(trans));
     Client client = new Client(proto);
     return client;

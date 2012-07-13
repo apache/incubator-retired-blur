@@ -26,6 +26,13 @@ public class BlurColumn implements Writable {
 
   private String name;
   private String value;
+  
+  public BlurColumn(){}
+  
+  public BlurColumn(String name, String value){
+	  this.name = name;
+	  this.value = value;
+  }
 
   public boolean hasNull() {
     if (name == null || value == null) {

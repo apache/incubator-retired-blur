@@ -239,15 +239,13 @@ This is the shorter way of creating the same RowMutation.
       
         BlurTask blurTask = new BlurTask();
         blurTask.setTableDescriptor(td);
-        blurTask.setZookeeperConnectionStr("localhost");
-        blurTask.setMaxNumberOfConcurrentCopies(10);
 
         // The copy locks are used to throttle how many concurrent 
         // copies from the reducers are occuring at the same time.
         // This is normally needed because the indexing cluster is 
         // typically larger in size than the blur cluster.
 
-        Job job = blurTask.configureJob(configuration);  
+        Job job = blurTask.configureJob(new JobConf());  
         job.setJarByClass(BlurExampleIndexer.class);
         job.setMapperClass(BlurExampleMapper.class);
         job.setInputFormatClass(TextInputFormat.class);
@@ -259,24 +257,29 @@ This is the shorter way of creating the same RowMutation.
       }
 
       public static class BlurExampleMapper extends BlurMapper<LongWritable, Text> {
+        private BlurRecord record = _mutate.getRecord();
+  	
         @Override
-        protected void map(LongWritable k, Text value, Context context) throws IOException, InterruptedException {
+        protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
           // Reset record
-          _record.clearColumns();
-        
+          record.clearColumns();
+          
           // Set row id
-          _record.setRowId("rowid");
-        
+          record.setRowId("rowid");
+          
           // Set record id
-          _record.setRecordId("recordid");
-        
+          record.setRecordId("recordid");
+          
           // Set column family
-          _record.setColumnFamily("cf1");
-
-          // Set the key which is usual the rowid
-          byte[] bs = _record.getRowId().getBytes().
+          record.setFamily("cf1");
+          
+          // Add a column entry
+          record.addColumn(new BlurColumn("column name", "value"));
+          
+          // Set the key (usually the rowid)
+          byte[] bs = record.getRowId().getBytes();
           _key.set(bs, 0, bs.length);
-          context.write(_key, _record);
+          context.write(_key, _mutate);
           _recordCounter.increment(1);
           context.progress();
         }

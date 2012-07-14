@@ -229,11 +229,17 @@ This is the shorter way of creating the same RowMutation.
     // Driver Class
     public class BlurMapReduce {
       public static void main(String[] args) {
+	    Configuration configuration = new Configuration();
+	    String[] otherArgs = new GenericOptionsParser(configuration, args).getRemainingArgs();
+	    if (otherArgs.length != 2) {
+	      System.err.println("Usage: blurindexer <in> <out>");
+	      System.exit(2);
+	    }
       
         AnalyzerDefinition ad = new AnalyzerDefinition();
 
         TableDescriptor td = new TableDescriptor();
-        td.setShardCount(16);
+        td.setShardCount(1);
         td.setTableUri("hdfs://<namenode>:<port>/blur/tables/test-table"); // Location in HDFS
         td.setAnalyzerDefinition(ad);
       
@@ -245,7 +251,7 @@ This is the shorter way of creating the same RowMutation.
         // This is normally needed because the indexing cluster is 
         // typically larger in size than the blur cluster.
 
-        Job job = blurTask.configureJob(new JobConf());  
+        Job job = blurTask.configureJob(configuration);  
         job.setJarByClass(BlurExampleIndexer.class);
         job.setMapperClass(BlurExampleMapper.class);
         job.setInputFormatClass(TextInputFormat.class);
@@ -275,6 +281,8 @@ This is the shorter way of creating the same RowMutation.
           
           // Add a column entry
           record.addColumn(new BlurColumn("column name", "value"));
+
+          // Obviously you would probably parse the value being passed into the method to extract column data.
           
           // Set the key (usually the rowid)
           byte[] bs = record.getRowId().getBytes();

@@ -3,6 +3,7 @@ package com.nearinfinity.blur.testsuite;
 import static com.nearinfinity.blur.utils.BlurUtil.newColumn;
 import static com.nearinfinity.blur.utils.BlurUtil.newRecordMutation;
 
+import java.util.Random;
 import java.util.UUID;
 
 import org.apache.thrift.TException;
@@ -26,9 +27,11 @@ public class RapidlyCreateAndDeleteTables {
     while (true) {
       String tableName = UUID.randomUUID().toString();
       System.out.println("Creating [" + tableName + "]");
-      createTable(client, cluster, uri, shardCount, tableName);
-      System.out.println("Loading [" + tableName + "]");
-      loadTable(client, tableName);
+      boolean readOnly = createTable(client, cluster, uri, shardCount, tableName);
+      if (!readOnly) {
+        System.out.println("Loading [" + tableName + "]");
+        loadTable(client, tableName);
+      }
       System.out.println("Disabling [" + tableName + "]");
       disable(client, tableName);
       System.out.println("Removing [" + tableName + "]");
@@ -54,18 +57,21 @@ public class RapidlyCreateAndDeleteTables {
     client.mutate(mutation);
   }
 
-  private static void createTable(Iface client, final String cluster, String uri, int shardCount, String tableName) throws BlurException, TException {
+  private static boolean createTable(Iface client, final String cluster, String uri, int shardCount, String tableName) throws BlurException, TException {
+    Random random = new Random();
     final TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.analyzerDefinition = new AnalyzerDefinition();
     tableDescriptor.cluster = cluster;
 
     tableDescriptor.name = tableName;
-    tableDescriptor.readOnly = false;
+    tableDescriptor.readOnly = random.nextBoolean();
 
     tableDescriptor.shardCount = shardCount;
     tableDescriptor.tableUri = uri + "/" + tableName;
 
     client.createTable(tableDescriptor);
+
+    return tableDescriptor.readOnly;
   }
 
 }

@@ -63,7 +63,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     zooKeeper.getChildren("/", false);
 
     ZookeeperClusterStatus status = new ZookeeperClusterStatus(zooKeeper);
-    // for (int i = 0; i < 1; i++) {
     while (true) {
       System.out.println(status.isInSafeMode(true, "default"));
 

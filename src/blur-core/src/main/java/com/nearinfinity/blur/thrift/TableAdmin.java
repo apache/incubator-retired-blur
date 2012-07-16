@@ -77,7 +77,7 @@ public abstract class TableAdmin implements Iface {
   }
 
   private void waitForTheTableToDisengage(String cluster, String table) throws BlurException, TException {
-    LOG.info("Waiting for shards to disengage on table [" + table + "]");
+//    LOG.info("Waiting for shards to disengage on table [" + table + "]");
   }
 
   private void waitForTheTableToDisable(String cluster, String table) throws BlurException, TException {
@@ -113,17 +113,17 @@ public abstract class TableAdmin implements Iface {
 
   private void waitForTheTableToEnable(String cluster, String table) throws BlurException {
     LOG.info("Waiting for shards to engage on table [" + table + "]");
-//    while (true) {
-//      if (_clusterStatus.isEnabled(false, cluster, table)) {
-//        return;
-//      }
-//      try {
-//        Thread.sleep(3000);
-//      } catch (InterruptedException e) {
-//        LOG.error("Unknown error while enabling table [" + table + "]", e);
-//        throw new BException("Unknown error while enabling table [" + table + "]", e);
-//      }
-//    }
+    while (true) {
+      if (_clusterStatus.isEnabled(false, cluster, table)) {
+        return;
+      }
+      try {
+        Thread.sleep(3000);
+      } catch (InterruptedException e) {
+        LOG.error("Unknown error while enabling table [" + table + "]", e);
+        throw new BException("Unknown error while enabling table [" + table + "]", e);
+      }
+    }
   }
 
   private void waitForTheTableToEngage(String cluster, String table) throws BlurException, TException {

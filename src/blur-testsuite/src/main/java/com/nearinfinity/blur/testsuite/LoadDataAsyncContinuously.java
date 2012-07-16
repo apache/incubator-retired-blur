@@ -54,7 +54,7 @@ public class LoadDataAsyncContinuously {
             new AsyncMethodCallback<Blur.AsyncClient.mutate_call>() {
               @Override
               public void onError(Exception exception) {
-
+                exception.printStackTrace();
               }
 
               @Override

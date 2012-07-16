@@ -91,6 +91,7 @@ public class RandomSearchTableContinuously {
     bq.simpleQuery.queryStr = "*";
     bq.simpleQuery.superQueryOn = false;
     bq.cacheResult = false;
+    bq.useCacheIfPresent = false;
     BlurResults results = client.query(tableName, bq);
     return results.totalResults;
   }

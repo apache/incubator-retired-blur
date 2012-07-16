@@ -3,10 +3,11 @@ package com.nearinfinity.blur.thrift;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
-import org.apache.thrift.server.THsHaServer;
 import org.apache.thrift.server.TServer;
-import org.apache.thrift.server.THsHaServer.Args;
 import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TTransportException;
 
@@ -14,6 +15,7 @@ import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.thrift.ExecutorServicePerMethodCallThriftServer.Args;
 import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
@@ -55,8 +57,13 @@ public class ThriftServer {
     Args args = new Args(serverTransport);
     args.processor(processor);
     args.executorService(Executors.newThreadPool("thrift-processors", _threadCount));
-
-    _server = new THsHaServer(args);
+    Map<String, ExecutorService> methodCallsToExecutorService = new HashMap<String, ExecutorService>();
+    ExecutorService mutateExecutorService = Executors.newThreadPool("thrift-processors-mutate", _threadCount);
+    methodCallsToExecutorService.put("mutate", mutateExecutorService);
+    methodCallsToExecutorService.put("mutateBatch", mutateExecutorService);
+    methodCallsToExecutorService.put("query", Executors.newThreadPool("thrift-processors-query", _threadCount));
+    args.setMethodCallsToExecutorService(methodCallsToExecutorService);
+    _server = new ExecutorServicePerMethodCallThriftServer(args);
     LOG.info("Starting server [{0}]", _nodeName);
     _server.serve();
   }

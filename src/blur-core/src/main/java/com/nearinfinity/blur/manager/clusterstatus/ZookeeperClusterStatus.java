@@ -163,6 +163,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
     @Override
     public void action(List<String> tables) {
+      //@TODO this seems to have a problem
       synchronized (_tableToClusterCache) {
         Map<String, String> map = _tableToClusterCache.get();
         for (String t : tables) {
@@ -201,17 +202,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       }
     }));
   }
-
-  // private String forPathToExist(String path) throws KeeperException,
-  // InterruptedException {
-  // Stat stat = _zk.exists(path, false);
-  // while (stat == null) {
-  // LOG.info("Waiting for path [{0}] to exist before continuing.", path);
-  // Thread.sleep(1000);
-  // stat = _zk.exists(path, false);
-  // }
-  // return path;
-  // }
 
   private String getClusterTableKey(String cluster, String table) {
     return cluster + "." + table;
@@ -317,7 +307,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     if (useCache) {
       Boolean enabled = _enabledMap.get(getClusterTableKey(cluster, table));
       if (enabled == null) {
-//        throw new RuntimeException("Table [" + table + "] does not exist.");
         return false;
       } else {
         return enabled;
@@ -429,9 +418,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     if (useCache) {
       Map<String, String> map = _tableToClusterCache.get();
       String cluster = map.get(table);
-      if (cluster == null) {
-        return null;
-      } else {
+      if (cluster != null) {
         return cluster;
       }
     }
@@ -441,6 +428,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       try {
         Stat stat = _zk.exists(ZookeeperPathConstants.getTablePath(cluster, table), false);
         if (stat != null) {
+          Map<String, String> map = _tableToClusterCache.get();
+          map.put(table, cluster);
           return cluster;
         }
       } catch (KeeperException e) {

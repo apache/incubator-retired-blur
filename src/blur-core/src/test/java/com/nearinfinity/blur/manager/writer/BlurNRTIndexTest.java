@@ -26,8 +26,8 @@ import com.nearinfinity.blur.thrift.generated.Row;
 
 public class BlurNRTIndexTest {
 
-  private static final int TEST_NUMBER_WAIT_VISIBLE = 200;
-  private static final int TEST_NUMBER = 20000;
+  private static final int TEST_NUMBER_WAIT_VISIBLE = 500;
+  private static final int TEST_NUMBER = 50000;
   private BlurNRTIndex writer;
   private BlurIndexCloser closer;
   private Random random = new Random();
@@ -63,7 +63,7 @@ public class BlurNRTIndexTest {
     writer.setWalPath(new Path(new File(base,"wal").toURI()));
     
     writer.setConfiguration(configuration);
-    writer.setTimeBetweenRefreshs(25);
+    writer.setTimeBetweenRefreshs(2000);
     writer.init();
   }
 

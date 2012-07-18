@@ -23,7 +23,10 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -58,6 +61,8 @@ public class AsyncClientPool {
   private TAsyncClientManager _clientManager;
   private Collection<TNonblockingTransport> _transports = new LinkedBlockingQueue<TNonblockingTransport>();
   private Field _transportField;
+  
+  private Random random = new Random();
 
   public AsyncClientPool() throws IOException {
     this(DEFAULT_MAX_CONNECTIONS_PER_HOST, DEFAULT_CONNECTION_TIMEOUT);
@@ -98,7 +103,10 @@ public class AsyncClientPool {
    */
   @SuppressWarnings("unchecked")
   public <T> T getClient(final Class<T> asyncIfaceClass, final String connectionStr) {
-    final Connection connection = new Connection(connectionStr);
+	List<Connection> connections = BlurClientManager.getConnections(connectionStr);
+	Collections.shuffle(connections, random);
+	//randomness ftw
+    final Connection connection = connections.get(0);
     return (T) Proxy.newProxyInstance(asyncIfaceClass.getClassLoader(), new Class[] { asyncIfaceClass }, new InvocationHandler() {
       @Override
       public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -128,7 +136,7 @@ public class AsyncClientPool {
     if (!client.hasError()) {
       getQueue(connection).put(client);
     } else {
-      AtomicInteger counter = _numberOfConnections.get(connection._host);
+      AtomicInteger counter = _numberOfConnections.get(connection.getHost());
       if (counter != null) {
         counter.decrementAndGet();
       }
@@ -157,10 +165,10 @@ public class AsyncClientPool {
 
     AtomicInteger counter;
     synchronized (_numberOfConnections) {
-      counter = _numberOfConnections.get(connection._host);
+      counter = _numberOfConnections.get(connection.getHost());
       if (counter == null) {
         counter = new AtomicInteger();
-        _numberOfConnections.put(connection._host, counter);
+        _numberOfConnections.put(connection.getHost(), counter);
       }
     }
 
@@ -200,7 +208,7 @@ public class AsyncClientPool {
   }
 
   private TNonblockingSocket newTransport(Connection connection) throws IOException {
-    return new TNonblockingSocket(connection._host, connection._port);
+    return new TNonblockingSocket(connection.getHost(), connection.getPort());
   }
 
   private static class ClientPoolAsyncMethodCallback<T> implements AsyncMethodCallback<T> {
@@ -229,61 +237,13 @@ public class AsyncClientPool {
 
     @Override
     public void onError(Exception exception) {
-      AtomicInteger counter = _pool._numberOfConnections.get(_connection._host);
+      AtomicInteger counter = _pool._numberOfConnections.get(_connection.getHost());
       if (counter != null) {
         counter.decrementAndGet();
       }
       _realCallback.onError(exception);
       _pool.closeAndRemoveTransport(_client);
     }
-  }
-
-  private static class Connection {
-    String _host;
-    int _port;
-
-    public Connection(String connection) {
-      String[] split = connection.split(":");
-      if (split.length != 2) {
-        throw new RuntimeException("Connection [" + connection + "] invalid expecting {hostname:port}");
-      }
-      _host = split[0];
-      _port = Integer.parseInt(split[1]);
-    }
-
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((_host == null) ? 0 : _host.hashCode());
-      result = prime * result + _port;
-      return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj)
-        return true;
-      if (obj == null)
-        return false;
-      if (getClass() != obj.getClass())
-        return false;
-      Connection other = (Connection) obj;
-      if (_host == null) {
-        if (other._host != null)
-          return false;
-      } else if (!_host.equals(other._host))
-        return false;
-      if (_port != other._port)
-        return false;
-      return true;
-    }
-
-    @Override
-    public String toString() {
-      return "Connection [_host=" + _host + ", _port=" + _port + "]";
-    }
-
   }
 
   private static class AsyncCall {

@@ -40,7 +40,7 @@ public class LoadDataAsyncContinuously {
       int count = 0;
       int max = 1000;
       long start = System.currentTimeMillis();
-      final String table = "test-table";
+      final String table = "test_table";
       AsyncClientPool pool = new AsyncClientPool();
       AsyncIface client = pool.getClient(Blur.AsyncIface.class, args[0]);
       for (int i = 0; i < numberRows; i++) {
@@ -59,7 +59,13 @@ public class LoadDataAsyncContinuously {
 
               @Override
               public void onComplete(mutate_call response) {
-
+                try {
+                  response.getResult();
+                } catch (BlurException e) {
+                  e.printStackTrace();
+                } catch (TException e) {
+                  e.printStackTrace();
+                }
               }
             });
         count++;

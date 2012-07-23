@@ -52,6 +52,9 @@ public class LoadDataContinuously {
     long recordCountTotal = 0;
     long rowCount = 0;
     
+    int batchSize = 100;
+    
+    List<RowMutation> batch = new ArrayList<RowMutation>();
     
     long recordCount = 0;
     while (true) {
@@ -75,7 +78,11 @@ public class LoadDataContinuously {
       for (int j = 0; j < numberRecordsPerRow; j++) {
         mutation.addToRecordMutations(getRecordMutation(numberOfColumns, numberOfFamilies, numberOfWords));
       }
-      client.mutate(mutation);
+      batch.add(mutation);
+      if (batch.size() >= batchSize) {
+        client.mutateBatch(batch);
+        batch.clear();
+      }
       rowCount++;
       recordCount += numberRecordsPerRow;
       recordCountTotal += numberRecordsPerRow;

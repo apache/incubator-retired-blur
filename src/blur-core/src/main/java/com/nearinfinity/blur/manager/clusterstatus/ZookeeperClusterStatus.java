@@ -233,20 +233,20 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public List<String> getOnlineShardServers(boolean useCache, String cluster) {
-    if (useCache) {
-      synchronized (_onlineShardsNodes) {
-        Map<String, List<String>> map = _onlineShardsNodes.get();
-        if (map != null) {
-          List<String> shards = map.get(cluster);
-          if (shards != null) {
-            return shards;
-          }
-        } else {
-          _onlineShardsNodes.set(new ConcurrentHashMap<String, List<String>>());
-          watchForOnlineShardNodes(cluster);
-        }
-      }
-    }
+//    if (useCache) {
+//      synchronized (_onlineShardsNodes) {
+//        Map<String, List<String>> map = _onlineShardsNodes.get();
+//        if (map != null) {
+//          List<String> shards = map.get(cluster);
+//          if (shards != null) {
+//            return shards;
+//          }
+//        } else {
+//          _onlineShardsNodes.set(new ConcurrentHashMap<String, List<String>>());
+//          watchForOnlineShardNodes(cluster);
+//        }
+//      }
+//    }
     LOG.info("trace getOnlineShardServers");
     try {
       return _zk.getChildren(ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/online/shard-nodes", false);
@@ -281,15 +281,15 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public boolean exists(boolean useCache, String cluster, String table) {
-    if (useCache) {
-      Map<String, String> map = _tableToClusterCache.get();
-      if (map.containsKey(table)) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-    LOG.debug("trace exists");
+//    if (useCache) {
+//      Map<String, String> map = _tableToClusterCache.get();
+//      if (map.containsKey(table)) {
+//        return true;
+//      } else {
+//        return false;
+//      }
+//    }
+    LOG.info("trace exists");
     try {
       if (_zk.exists(ZookeeperPathConstants.getTablePath(cluster, table), false) == null) {
         return false;
@@ -330,13 +330,13 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public TableDescriptor getTableDescriptor(boolean useCache, String cluster, String table) {
-    if (useCache) {
-      TableDescriptor tableDescriptor = _tableDescriptorCache.get(table);
-      if (tableDescriptor != null) {
-        return tableDescriptor;
-      }
-    }
-    LOG.debug("trace getTableDescriptor");
+//    if (useCache) {
+//      TableDescriptor tableDescriptor = _tableDescriptorCache.get(table);
+//      if (tableDescriptor != null) {
+//        return tableDescriptor;
+//      }
+//    }
+    LOG.info("trace getTableDescriptor");
     TableDescriptor tableDescriptor = new TableDescriptor();
     try {
       if (_zk.exists(ZookeeperPathConstants.getTableEnabledPath(cluster, table), false) == null) {
@@ -463,14 +463,14 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public boolean isInSafeMode(boolean useCache, String cluster) {
-    if (useCache) {
-      Long safeModeTimestamp = _safeModeMap.get(cluster);
-      if (safeModeTimestamp == null) {
-        return true;
-      }
-      return safeModeTimestamp < System.currentTimeMillis() ? false : true;
-    }
-    LOG.debug("trace isInSafeMode");
+//    if (useCache) {
+//      Long safeModeTimestamp = _safeModeMap.get(cluster);
+//      if (safeModeTimestamp == null) {
+//        return true;
+//      }
+//      return safeModeTimestamp < System.currentTimeMillis() ? false : true;
+//    }
+    LOG.info("trace isInSafeMode");
     try {
       String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
       Stat stat = _zk.exists(blurSafemodePath, false);
@@ -496,11 +496,11 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public int getShardCount(boolean useCache, String cluster, String table) {
-    if (useCache) {
-      TableDescriptor tableDescriptor = getTableDescriptor(true, cluster, table);
-      return tableDescriptor.shardCount;
-    }
-    LOG.debug("trace getShardCount");
+//    if (useCache) {
+//      TableDescriptor tableDescriptor = getTableDescriptor(true, cluster, table);
+//      return tableDescriptor.shardCount;
+//    }
+    LOG.info("trace getShardCount");
     try {
       return Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableShardCountPath(cluster, table))));
     } catch (NumberFormatException e) {
@@ -514,7 +514,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public Set<String> getBlockCacheFileTypes(String cluster, String table) {
-    LOG.debug("trace getBlockCacheFileTypes");
+    LOG.info("trace getBlockCacheFileTypes");
     try {
       byte[] data = getData(ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table));
       if (data == null) {
@@ -538,7 +538,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public boolean isBlockCacheEnabled(String cluster, String table) {
-    LOG.debug("trace isBlockCacheEnabled");
+    LOG.info("trace isBlockCacheEnabled");
     try {
       if (_zk.exists(ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table), false) == null) {
         return false;
@@ -554,13 +554,13 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   @Override
   public boolean isReadOnly(boolean useCache, String cluster, String table) {
     String key = getClusterTableKey(cluster, table);
-    if (useCache) {
-      Boolean flag = _readOnlyMap.get(key);
-      if (flag != null) {
-        return flag;
-      }
-    }
-    LOG.debug("trace isReadOnly");
+//    if (useCache) {
+//      Boolean flag = _readOnlyMap.get(key);
+//      if (flag != null) {
+//        return flag;
+//      }
+//    }
+    LOG.info("trace isReadOnly");
     String path = ZookeeperPathConstants.getTableReadOnlyPath(cluster, table);
     Boolean flag = null;
     try {

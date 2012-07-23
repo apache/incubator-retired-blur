@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,15 +78,15 @@ import com.nearinfinity.blur.zookeeper.WatchChildren;
 import com.nearinfinity.blur.zookeeper.WatchChildren.OnChange;
 
 public class BlurControllerServer extends TableAdmin implements Iface {
-  
+
   public static abstract class BlurClient {
     public abstract <T> T execute(String node, BlurCommand<T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws Exception;
   }
-  
+
   public static class BlurClientRemote extends BlurClient {
     @Override
     public <T> T execute(String node, BlurCommand<T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws Exception {
-      return BlurClientManager.execute(node,command,maxRetries,backOffTime,maxBackOffTime);
+      return BlurClientManager.execute(node, command, maxRetries, backOffTime, maxBackOffTime);
     }
   }
 
@@ -584,8 +585,46 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     for (RowMutation mutation : mutations) {
       MutationHelper.validateMutation(mutation);
     }
+    Map<String, List<RowMutation>> batches = new HashMap<String, List<RowMutation>>();
     for (RowMutation mutation : mutations) {
-      mutate(mutation);
+      checkTable(mutation.table);
+      checkForUpdates(mutation.table);
+
+      MutationHelper.validateMutation(mutation);
+      String table = mutation.getTable();
+
+      int numberOfShards = getShardCount(table);
+      Map<String, String> tableLayout = _shardServerLayout.get().get(table);
+      if (tableLayout.size() != numberOfShards) {
+        throw new BlurException("Cannot update data while shard is missing", null);
+      }
+
+      String shardName = MutationHelper.getShardName(table, mutation.rowId, numberOfShards, _blurPartitioner);
+      String node = tableLayout.get(shardName);
+      List<RowMutation> list = batches.get(shardName);
+      if (list == null) {
+        list = new ArrayList<RowMutation>();
+        batches.put(node, list);
+      }
+      list.add(mutation);
+
+    }
+
+    for (Entry<String, List<RowMutation>> entry : batches.entrySet()) {
+      String node = entry.getKey();
+      final List<RowMutation> mutationsLst = entry.getValue();
+      try {
+        _client.execute(node, new BlurCommand<Void>() {
+          @Override
+          public Void call(Client client) throws BlurException, TException {
+            client.mutateBatch(mutationsLst);
+            return null;
+          }
+        }, _maxMutateRetries, _mutateDelay, _maxMutateDelay);
+      } catch (Exception e) {
+        LOG.error("Unknown error during mutations of [{0}]", e, mutationsLst);
+        throw new BException("Unknown error during mutations of [{0}]", e, mutationsLst);
+      }
     }
   }
 

@@ -294,6 +294,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       if (_zk.exists(ZookeeperPathConstants.getTablePath(cluster, table), false) == null) {
         return false;
       }
+      LOG.info("Exists [true]");
       return true;
     } catch (KeeperException e) {
       throw new RuntimeException(e);
@@ -304,14 +305,14 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public boolean isEnabled(boolean useCache, String cluster, String table) {
-    if (useCache) {
-      Boolean enabled = _enabledMap.get(getClusterTableKey(cluster, table));
-      if (enabled == null) {
-        return false;
-      } else {
-        return enabled;
-      }
-    }
+//    if (useCache) {
+//      Boolean enabled = _enabledMap.get(getClusterTableKey(cluster, table));
+//      if (enabled == null) {
+//        return false;
+//      } else {
+//        return enabled;
+//      }
+//    }
     LOG.debug("trace isEnabled");
     String tablePathIsEnabled = ZookeeperPathConstants.getTableEnabledPath(cluster, table);
     try {

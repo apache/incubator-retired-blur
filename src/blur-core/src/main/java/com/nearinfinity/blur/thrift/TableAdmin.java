@@ -77,7 +77,7 @@ public abstract class TableAdmin implements Iface {
   }
 
   private void waitForTheTableToDisengage(String cluster, String table) throws BlurException, TException {
-//    LOG.info("Waiting for shards to disengage on table [" + table + "]");
+    // LOG.info("Waiting for shards to disengage on table [" + table + "]");
   }
 
   private void waitForTheTableToDisable(String cluster, String table) throws BlurException, TException {
@@ -131,16 +131,22 @@ public abstract class TableAdmin implements Iface {
     int shardCount = describe.shardCount;
     LOG.info("Waiting for shards to engage on table [" + table + "]");
     while (true) {
-      Map<String, String> shardServerLayout = shardServerLayout(table);
-      LOG.info("Shards [" + shardServerLayout.size() + "/" + shardCount + "] of table [" + table + "] engaged");
-      if (shardServerLayout.size() == shardCount) {
-        return;
-      }
       try {
         Thread.sleep(3000);
       } catch (InterruptedException e) {
         LOG.error("Unknown error while engaging table [" + table + "]", e);
         throw new BException("Unknown error while engaging table [" + table + "]", e);
+      }
+      try {
+        Map<String, String> shardServerLayout = shardServerLayout(table);
+        LOG.info("Shards [" + shardServerLayout.size() + "/" + shardCount + "] of table [" + table + "] engaged");
+        if (shardServerLayout.size() == shardCount) {
+          return;
+        }
+      } catch (BlurException e) {
+        LOG.info("Stilling waiting", e);
+      } catch (TException e) {
+        LOG.info("Stilling waiting", e);
       }
     }
   }

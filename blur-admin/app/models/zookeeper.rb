@@ -3,9 +3,13 @@ class Zookeeper < ActiveRecord::Base
   has_many :clusters, :dependent => :destroy
   has_many :shards, :through => :clusters
   has_many :blur_tables, :through => :clusters
+  has_many :blur_queries, :through => :blur_tables
 
-  #rails 3.0 does not allow nested has_many :through relationships
-  def blur_queries
-    self.blur_tables.collect { |blur_table| blur_table.blur_queries }.flatten
+  def translated_status
+    case read_attribute(:status)
+      when 0 then "Offline"
+      when 1 then "Online"
+    end
   end
+  
 end

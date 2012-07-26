@@ -30,31 +30,19 @@
         %th.index
           Status
         %td.cont
-          .stat-cont
-            .controllers-online.label.status
-              .number
-                0
-              .word
-                Contollers Online
-            %br
-            .controllers-offline.label.status
-              .number
-                0
-              .word
-                Controllers Offline
+          .progress.progress-up-down.stat-cont
+            .bar.up.controllers-online{:style=>'width:100%'}
+              %span.number 0
+              Online/Offline
+            .down.controllers-offline
+              %span.number
         %td.shard
-          .stat-shard
-            .shards-online.label.status
-              .number
-                0
-              .word
-                Shards Online
-            %br
-            .shards-offline.label.status
-              .number
-                0
-              .word
-                Shards Offline
+          .progress.progress-up-down.stat-shard
+            .bar.up.shards-online{:style=>'width:100%'}
+              %span.number 0
+              Online/Offline
+            .down.shards-offline
+              %span.number
       %tr
         %td{ :colspan => 3 }
           .warning

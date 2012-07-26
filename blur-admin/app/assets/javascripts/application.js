@@ -2,102 +2,73 @@
 //= require jquery-ui
 //= require jquery_ujs
 //= require modernizr
+//= require placeholder
 //= require bootstrap
 //= require bootstrap-modal-helper
+//= require templates
+//= require underscore
+//= require backbone/backbone
+//= require backbone/backbone-stream
 //= require_self
 
 $(document).ready(function(){
-  //Zookeeper context switch
-  //reload page with new zookeeper
-  $('#zookeeper_id').live('change', function(){
-    $(this).closest('form').submit();
-  });
-	$('#change_current_zookeeper').bind('ajax:success', function() {
-		window.location.reload();
-	});
-        
+  window.Spinner = $('<img id="loading-spinner" alt="Loading..." src="/assets/loader.gif"/>')
   //fade out flash messages for logging in and out
-  $("#flash").delay(5000).fadeOut("slow");
-  
+  $("#flash").css('right', '0px');
+  var hideFlash = setTimeout(function(){$("#flash").css('right', '-600px')}, 8000);
+  $("#flash").click(function(){
+    clearTimeout(hideFlash);
+    $(this).css('right', '-600px');
+  })
+
   //Initialize Help
   $('#page-help').click(function(){
     var url = window.location.pathname;
     var tab;
-    if (url == '/')
-    {
+    if (url === '/' || url === 'zookeepers') {
       tab = "dashboard";
-    }
-    else if (url.substring(1) == 'zookeeper')
-    {
-      tab = "environment";
-    }
-    else if (url.substring(1) == 'users')
-    {
+    } else if (url.substring(1) == 'users') {
       tab = "admin";
-    }
-    else 
-    {
-      var pre_tab = url.substring(1);
-      if (pre_tab.indexOf('/') != -1)
-      {
-        tab = pre_tab.substring(0, pre_tab.indexOf('/'));
-      } 
-      else
-      {
-        tab = pre_tab;
+    } else if (url.match(/hdfs(?!_)/)){
+      tab = "hdfs";
+    } else {
+      var pieces = url.substring(1).split('/');
+      if (pieces.length <= 2) {
+        tab = pieces[0];
+      } else {
+        tab = pieces[2];
       }
     }
-    window.open(Routes.help_path(tab), "Help Menu","menubar=0,resizable=0,width=500,height=800");
+    window.open(Routes.help_path(tab), "Help Menu","menubar=0,resizable=0,width=500,height=600");
+    return false;
   });
-      
+
   $('.help-section').live('click', function(){
     $(this).children('.help-content').slideToggle('fast')
   });
 
-  $('.dropdown-toggle').dropdown();
-    
-  //Fix menus with no zookeeper context
-  if (typeof Zookeeper != 'undefined' && Zookeeper.instances)
-  {
-    $('#env_link, #tables_link, #queries_link, #search_link').click(function(evt){
+  $('body:has(#help-window)').css('padding-bottom', '0');
+
+  if (typeof Zookeeper !== 'undefined' && Zookeeper.instances){
+    $('#env_link, #tables_link, #queries_link, #search_link').click( function(evt){
       var self = this;
-      if (Zookeeper.instances.length == 0)
-      {
+      if (Zookeeper.instances.length === 0){
         alert('There are no Zookeeper Instances registered yet.  This page will not work until then.');
         return false;
-      }
-      else if (Zookeeper.instances.length == 1)
-      {
-        var self = this;
-        $.ajax(Routes.make_current_zookeeper_path(),
-        {
-          type: 'put',
-          data: { id: Zookeeper.instances[0].id },
-          success: function(){ window.location = self.href; }
-        });
-        return false;
-      }
-      else
-      {
+      } else if (Zookeeper.instances.length === 1 || CurrentZookeeper !== null){
+        return;
+      } else {
         var select_box = "<div style='text-align:center'><select id='zookeeper_selector' style='font-size: 20px'><option value=''></option>";
         $.each(Zookeeper.instances, function(){
           select_box += "<option value='" + this.id + "'>" + this.name + "</option>";
         });
-        select_box += "</select></div>" ;
+        select_box += "</select></div>";
         $().popup({
           body: select_box,
           title: 'Select a Zookeeper Instance to use:',
           shown: function(){
             $('#zookeeper_selector').change(function(){
-              $.ajax(Routes.make_current_zookeeper_path(), 
-              {
-                type: 'put',
-                data:{ id: $(this).val() },
-                success: function(){ 
-									window.location = self.href; 
-								}
-              });
-              $().closePopup();
+              window.location = window.location.protocol + '//' + window.location.host + '/zookeepers/' + $(this).val() + ($(self).attr('data-url-extension') || '');
             });
           }
         });
@@ -105,4 +76,14 @@ $(document).ready(function(){
       }
     });
   }
+
+  $('#zookeeper_id').change(function(){
+    if (window.location.href.match(/(zookeepers\/)\d/)){
+      window.location = window.location.href.replace(/(zookeepers\/)\d/, '$1' + $(this).val());
+    } else {
+      window.location = '/zookeepers/' + + $(this).val();
+    }
+  });
+
+  $('.dropdown-toggle').dropdown();
 });

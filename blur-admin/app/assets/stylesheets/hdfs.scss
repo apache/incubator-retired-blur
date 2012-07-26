@@ -13,10 +13,10 @@
   height: 300px;
 
   #hdfs_browser {
-    background-color: $grey-div-color;
+    background-color: #F8F8F8;
     @include border;
     @include border-radius;
-    overflow-y: hidden;
+    overflow-y: auto;
     div.innerWindow {
       @include border;
       background-color: white;
@@ -30,6 +30,7 @@
           a {
             @include box-sizing(border-box);
             display: block;
+            width: 225px;
             overflow-x: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -84,7 +85,9 @@
     }
   }
 
-  //.ui-button, a { cursor: pointer; @include standard-font; text-decoration: none; }
+  .to-cut {
+    a { color: #AAA; }
+  }
 }
 
 #modal{
@@ -119,6 +122,8 @@
       }
     }
   }
+  .hidden{ display: none; }
+  #upload_file_warning{ color: red; font-weight: bold; }
 }
 
 

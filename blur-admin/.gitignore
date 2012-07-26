@@ -16,6 +16,7 @@
 
 # Ignore compiled assets
 /public/assets/*
+/app/assets/javascripts/routes.js
 
 #ignore rubymine
 /.idea

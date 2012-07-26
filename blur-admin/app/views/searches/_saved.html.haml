@@ -1,0 +1,16 @@
+#searches.partial-section
+	-if searches.length != 0
+		-searches.each do |search|
+			//-val = is_valid_search?(search)
+			.search_element{:id => search.id}
+				.search-name{:title => search.name}
+					=search.name
+				.search-buttons
+					%a.btn#edit_icon{ :title => "Edit Query" }
+						%i.icon-pencil
+					%a.btn#delete_icon{ :title => "Delete Query" }
+						%i.icon-remove
+				.clearfix
+
+	-else
+		%div You do not have any saved searches.

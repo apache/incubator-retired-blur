@@ -66,6 +66,10 @@ describe HdfsController do
       get("/hdfs/1/upload_form").should route_to(:controller => "hdfs", :action => "upload_form", :id => '1')
     end
 
+    it "disk routes to #stats" do
+      get("/hdfs/1/stats").should route_to(:controller => "hdfs", :action => "stats", :id => "1")
+    end
+
     it "upload routes to #upload" do
       post("/hdfs/1/upload").should route_to(:controller => "hdfs", :action => "upload", :id => "1")
     end

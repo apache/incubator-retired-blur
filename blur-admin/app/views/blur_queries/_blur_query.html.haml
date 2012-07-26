@@ -21,8 +21,7 @@
   %td.query-actions
     - if can? :update, :blur_queries
       - if @blur_query.state == 0
-        = form_tag @blur_query_path(@blur_query), :method => :put, :remote => true, :class => :cancel do
+        = form_tag zookeeper_blur_query_path(@blur_query), :method => :put, :remote => true, :class => :cancel do
           = hidden_field_tag :cancel, true
           = tag :input, :type => :button, :value => 'Cancel', :class => "cancel_query_button btn"
-    = link_to "More Info", more_info_blur_query_path(@blur_query), :class => 'more_info', :remote => true, :style => 'margin-right: 3px'
-    = link_to "Times", times_blur_query_path(@blur_query), :class => 'times', :remote => true
+    = link_to "More Info", more_info_zookeeper_blur_query_path(@blur_query), :class => 'more_info', :remote => true, :style => 'margin-right: 3px'

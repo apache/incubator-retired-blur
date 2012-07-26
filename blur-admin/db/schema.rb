@@ -11,10 +11,10 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120309015311) do
+ActiveRecord::Schema.define(:version => 20120618225024) do
 
   create_table "blur_queries", :force => true do |t|
-    t.text     "query_string"
+    t.text     "query_string",             :limit => 16777215
     t.integer  "complete_shards"
     t.integer  "uuid",                     :limit => 8
     t.datetime "created_at",                                   :null => false
@@ -32,6 +32,7 @@ ActiveRecord::Schema.define(:version => 20120309015311) do
     t.string   "times"
     t.integer  "total_shards"
     t.integer  "state"
+    t.boolean  "record_only"
   end
 
   add_index "blur_queries", ["blur_table_id"], :name => "index_blur_queries_on_blur_table_id"

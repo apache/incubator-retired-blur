@@ -8,7 +8,10 @@
       - col_prefs = @column_preference.value || []
       #pref-col-info.span5
         #pref-row.row
-          #pref-title
+          #pref-title.hidden-spinner
+            %img{:class => "loading-spinner",
+              :src => image_path("loader.gif"),
+              :alt => "Loading..."}
             %h3 Search Result Column Preferences
           #pref-bin.span3
 
@@ -38,7 +41,7 @@
               -if col_prefs.include? option
                 .my-select.fam{:id => "value_#{option}"}
                   =option
-              -else
+              -elsif !option.blank?
                 .fam{:id => "value_#{option}"}
                   =option
 

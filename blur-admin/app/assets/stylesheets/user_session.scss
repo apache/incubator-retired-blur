@@ -1,8 +1,15 @@
 #login_wrapper{
   @include standard-font;
-  padding-top: 2em;
+  padding-top: 150px;
 	width: 400px;
 	margin-left: auto;
 	margin-right: auto;
 	text-align: center;
+}
+.help-inline{
+  display: none;
+}
+
+p{
+  padding-top: 5px;
 }

@@ -33,7 +33,6 @@ ul{ margin: 5px; }
   //user info box
   #user-info{
     @include info(#F9F9F9);
-    float: right;
     min-width: 175px;
     margin-top:2px;
     p{
@@ -75,8 +74,14 @@ ul{ margin: 5px; }
   }
   
   #pref-col{ @include pref-box; }
-  #pref-title{ text-align: center; }
-  
+  #pref-title{
+    h3{ text-align: center; }
+    .loading-spinner { margin-left: 20px; float: left; }
+  }
+  .hidden-spinner {
+    .loading-spinner { display: none !important; }
+    h3 { margin-left: 36px; } }
+
   #opt-col{
     @include info(white);
     @include pref-box;

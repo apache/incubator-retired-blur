@@ -1,0 +1,8 @@
+<% _.each(data, function(datum){ %>
+  <li class="long-running-entry">
+    <div class="icon" title="Cancel This Query" data-id="<%= datum.id %>">
+      <i class="icon-remove"/></div><div class="info">
+      <%= 'User Id: ' + datum.userid + ' | Query: ' + datum.query %>
+    </div>
+  </li>
+<% }); %>

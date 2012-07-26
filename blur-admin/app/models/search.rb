@@ -1,9 +1,9 @@
 class Search < ActiveRecord::Base
   belongs_to :blur_table
   belongs_to :user
-  
+
   before_save :marshal_columns
-  
+
   attr_accessor :column_object
 
   def blur_query
@@ -14,7 +14,7 @@ class Search < ActiveRecord::Base
                         :selector     => selector,
                         :userContext  => User.find(user_id).username
   end
-  
+
   def column_object
     @column_object = @column_object || (columns ? JSON.parse(columns) : [])
   end
@@ -22,7 +22,7 @@ class Search < ActiveRecord::Base
   def column_families
     column_object.collect{|value| value.split('_-sep-_')[1] if value.starts_with?('family')}.compact
   end
-  
+
   def columns_hash
     # hash with key = column_family and value = array of columns
     # just columns without column families, and with 'recordId' added in
@@ -37,7 +37,7 @@ class Search < ActiveRecord::Base
     end
     cols
   end
-  
+
   def selector
     Blur::Selector.new :columnFamiliesToFetch => column_families,
                        :columnsToFetch        => columns_hash,
@@ -60,7 +60,7 @@ class Search < ActiveRecord::Base
     end
     tmp_schema.sort
   end
-  
+
   private
   def marshal_columns
     write_attribute(:columns, column_object.to_json) if column_object

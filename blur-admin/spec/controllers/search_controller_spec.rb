@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe SearchController do
+describe SearchesController do
   describe "actions" do
     before (:each) do
       @ability = Ability.new User.new
@@ -10,7 +10,7 @@ describe SearchController do
       controller.stub(:current_user).and_return(@user)
     end
 
-    describe "show" do
+    describe "index" do
       before :each do
         @blur_tables = [FactoryGirl.create(:blur_table), FactoryGirl.create(:blur_table)]
         @blur_table = @blur_tables[0]
@@ -29,14 +29,14 @@ describe SearchController do
       end
 
       it "renders the show template" do
-        get :show
-        response.should render_template 'show'
+        get :index
+        response.should render_template :index
       end
       
       it "find and assign tables, and columns" do
         pending "The blurtables variable is empty and I think is a stub chain issue"
         @zookeeper.stub_chain(:blur_tables, :where, :order, :includes, :all).and_return(@blur_tables)
-        get :show
+        get :index
         assigns(:blur_tables).should == @blur_tables
         assigns(:blur_table).should == @blur_table
         assigns(:columns).should == @blur_table.schema
@@ -45,7 +45,7 @@ describe SearchController do
       describe "when no tables are available" do
         it "find and assign tables and columns" do
           @zookeeper.stub_chain(:blur_tables, :where, :order, :includes, :all).and_return []
-          get :show
+          get :index
           assigns(:blur_tables).should == []
           assigns(:blur_table).should be nil
           assigns(:columns).should be nil
@@ -60,17 +60,18 @@ describe SearchController do
       end
 
       it "renders the filters template" do
-        get :filters, :blur_table_id => @blur_table.id
+        get :filters, :blur_table => @blur_table.id
+        response.content_type.should == 'application/json'
       end
 
       it "should find the new columns" do
         BlurTable.should_receive(:find).with(@blur_table.id.inspect)
-        get :filters, :blur_table_id => @blur_table.id
+        get :filters, :blur_table => @blur_table.id
       end
       
       it "should return an empty array to columns when no blur table is selected" do
         BlurTable.should_receive(:find).and_return(nil)
-        get :filters, :blur_table_id => @blur_table.id
+        get :filters, :blur_table => @blur_table.id
       end
     end
 
@@ -146,12 +147,6 @@ describe SearchController do
           response.should render_template "create"
         end
       end
-      describe "when running an existing search" do
-        it "fetches the saved search object" do
-          Search.should_receive(:find).with(@search.id.inspect)
-          get :create, :search_id  => @search.id
-        end
-      end
       it "assigns the @schema variable to hold the sorted column families and columns of the search" do
         get :create, :search_id  => @search.id
         assigns(:schema).keys.should == %w[ColumnFamily1 ColumnFamily2 ColumnFamily3]
@@ -204,7 +199,7 @@ describe SearchController do
       it "finds the correct table and deletes it from the DB" do
         Search.should_receive(:find).with("1")
         @search.should_receive(:delete)
-        delete :delete, :search_id => 1, :blur_table => 1
+        delete :delete, :id => 1, :blur_table => 1
       end
     end
     

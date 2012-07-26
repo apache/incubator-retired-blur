@@ -1,0 +1,94 @@
+$nav-height: 40px;
+
+#root{
+  .navbar{
+    // A complete hack for FF width bug
+    padding-right: 3px;
+    background: url("gradient.png") repeat-x scroll 0 -58px;
+    .brand{
+      padding-bottom: 0px;
+    }
+  }
+	.navbar-inner {
+    // Also part of the browser hack for FF
+		background: transparent;
+		@include border-radius(0);
+		height: $nav-height;
+		> ul li {
+			&.active > a{
+				color: $base-theme-color;
+				background-color: transparent;
+			}
+		}
+    #zookeeper_select > select{
+      margin: 6px;
+    }
+	}
+  #bd {
+    @include clearfix;
+    position:relative;
+  }
+}
+
+#flash {
+  text-align: center;
+  font-size: 1.2em;
+  font-weight: bold;
+  bottom: 0px;
+  right: -600px;
+  position: fixed;
+  z-index: 2;
+  @include transition(right 3s);
+  div{
+    cursor: pointer;
+    max-width: 600px;
+    min-width:300px;
+    $alert-height: 44px;
+    height: $alert-height;
+    line-height: $alert-height;
+    margin: auto;
+    padding: 0px 14px 0px 14px;
+    &:not(:first-child){
+      @include border-radius(0px);
+    }
+    @include border-radius-bottom(0px);
+    @include border-radius-right(0px);
+  }
+}
+
+#ft {
+  bottom: 0;
+  //padding-top: 15px;
+  position: fixed;
+  width: 100%;
+  $footer-color: lighten($base-theme-color, 20%);
+  background-color: $footer-color;
+  text-align: center;
+  height: $footer-height;
+  line-height: $footer-height - 1;
+  border-top: 1px solid darken($footer-color, 10%);
+  @include box-shadow(0 1px 0 lighten($footer-color, 10%) inset);
+  text-align: right;
+  &.expiring_license {
+    background-color: $red-state-color;
+    color: $grey-color;
+    p, p a {
+      color: $grey-color;
+    }
+  }
+  
+  #license {
+    float: left;
+    margin-top: 15px;
+    margin-left: 50px;
+  }
+  #company-info {
+    float: right;
+    margin-top: 15px;
+  }
+  p{
+    color: darken($footer-color, 40%);
+    text-decoration: none;
+    margin-right: 50px;
+  }
+}

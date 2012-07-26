@@ -39,14 +39,7 @@ describe BlurQueriesController do
 
     describe "GET refresh" do
       before do
-        @zookeeper  = FactoryGirl.create :zookeeper
-        @blur_table = FactoryGirl.create :blur_table
-        @blur_query = FactoryGirl.create :blur_query
-
-        @zookeeper.stub(:blur_tables).and_return([@blur_table])
-        BlurQuery.stub_chain(:where_zookeeper, :where).and_return([@blur_query])
-        @blur_query.stub(:zookeeper).and_return(@zookeeper)
-        @blur_query.stub(:blur_table).and_return(@blur_table)
+        @zookeeper  = FactoryGirl.create :zookeeper_with_blur_queries
 
         # ApplicationController.current_zookeeper
         Zookeeper.stub(:find_by_id).and_return(@zookeeper)
@@ -60,21 +53,18 @@ describe BlurQueriesController do
       end
 
       it "calls the sql with the proper parameters" do
-        BlurTable.should_receive(:find_all_by_status).with(4).and_return([@blur_table])
-        @blur_table.stub_chain(:blur_queries, :where_zookeeper).and_return(@blur_query)
-        @blur_query.should_receive(:where)
-          .with('blur_queries.updated_at > ?', kind_of(ActiveSupport::TimeWithZone))
-          .and_return([@blur_query])
+        @zookeeper.blur_queries.should_receive(:where)
+          .with("blur_queries.updated_at > ? and blur_tables.status = ?", kind_of(ActiveSupport::TimeWithZone), 4)
+          .and_return([])
         get :refresh, :time_length => 1
       end
 
       it "calls summary on each of the queries" do
-        @blur_queries = FactoryGirl.create_list :blur_query, 3
-        @blur_queries.each do |query|
-          query.should_receive(:summary).with(@user).and_return({})
-        end
-        BlurTable.should_receive(:find_all_by_status).with(4).and_return([@blur_table])
-        @blur_table.stub_chain(:blur_queries, :where_zookeeper, :where).and_return(@blur_queries)
+        query = @zookeeper.blur_queries.first
+        query.should_receive(:summary).with(@user).and_return({})
+        @zookeeper.blur_queries.should_receive(:where)
+          .with("blur_queries.updated_at > ? and blur_tables.status = ?", kind_of(ActiveSupport::TimeWithZone), 4)
+          .and_return([query])
         get :refresh, :time_length => 1
       end
     end

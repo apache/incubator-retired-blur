@@ -7,46 +7,35 @@
             = hdfs.name + " - "
             %span.hdfs-host
               =hdfs.host
-      	
 
     %tbody
       %tr
-        %th{:colspan => 2}
-          Blocks
+        %th Blocks
+        %th Nodes
       %tr
         %td.center
           .blocks-corr.label.status.center
-            %span.number
-              0
-            Currupt Blocks
+            %span.number 0
+            Corrupt Blocks
+        %td.center
+          .progress.progress-up-down
+            .bar.up.nodes-live{:style=>'width:100%'}
+              %span.number 0
+              Online/Offline
+            .down.nodes-dead
+              %span.number
+      %tr
         %td.center
           .blocks-miss.label.status.center
-            %span.number
-              0
+            %span.number 0
             Missing Blocks
+        %td.center &nbsp;
       %tr
-        %th{:colspan => 2}
-          Nodes
-      %tr.node-access-row
-        %th{:colspan => 2}
-          Cannot access Live/Dead Nodes
-      %tr.node-row
         %td.center
-          .nodes-live.label.status.center
-            %span.number
-              0
-            Live Nodes
-        %td.center
-          .nodes-dead.label.status.center
-            %span.number
-              0
-            Dead Nodes
-      %tr
-        %td.center{:colspan => 2}
           .nodes-under.label.status.center
-            %span.number
-              0
-            Under Replicated Nodes
+            %span.number 0
+            Under Replicated Blocks
+        %td.center &nbsp;
       %tr
         %td{ :colspan => 2 }
           .warning

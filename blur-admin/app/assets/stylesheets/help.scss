@@ -1,0 +1,23 @@
+
+#page-help{ text-decoration: none; }
+#help-window{
+  overflow: auto;
+  height: 600px;
+	max-width: 500px;
+  .help-section{
+    cursor: pointer;
+    margin: 2px;
+    padding: 8px;
+    padding-left: 10px;
+    background: #EEE;
+    @include standard-border;
+    .help-label{
+      margin: 0px;
+      margin-bottom: 5px;
+    }
+    .head{
+      margin-bottom: 2px;
+    }
+    ul{ margin-top: 3px; }
+  }
+}

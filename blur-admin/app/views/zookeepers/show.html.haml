@@ -1,0 +1,68 @@
+- content_for :title, 'Environment Status'
+- content_for :javascript do
+  = javascript_include_tag 'environment'
+
+#zookeeper_wrapper
+  #zookeeper.btn-success
+    %h2.zookeeper-name
+      = @current_zookeeper.name.capitalize + " - " + "Zookeeper - " 
+      -if !@current_zookeeper.translated_status.blank?
+        = @current_zookeeper.translated_status
+      -else
+        = "Status Unavailable"
+      .connection-url
+        = @current_zookeeper.url
+      %i.icon-remove-sign.confirm-action{:title => "Forget This Zookeeper", 'data-reload' => 'true', 'data-message' => 'forget this zookeeper'}
+  #blur
+    .row
+      #controllers.span6
+        %subHeaders
+          Controllers
+        -if !@current_zookeeper.controllers.empty?
+          %table.table.table-bordered
+            %thead              
+              %tr               
+                %th Name
+                %th Blur Version
+                %th
+            %tbody
+              - @current_zookeeper.controllers.sort_by{|c| c.node_name}.each do |controller|
+                %tr{'data-controller-id' => controller.id, :class => ('error error-failure' if controller.status == 0)}
+                  %td
+                    %color
+                      =controller.node_name
+                  %td
+                    =controller.blur_version
+                  %td
+                    %i.icon-remove-sign.confirm-action{:title => 'Remove This Controller','data-message' => 'remove this controller'}
+        -else
+          %noController No Available Controllers
+
+      #clusters.span6
+        %subHeaders
+          Clusters
+        -if !@current_zookeeper.clusters.empty?
+          %table.table.table-bordered
+            %thead
+              %tr
+                %th Name
+                %th Shard Blur Version
+                %th Safe Mode
+                %th Shards
+                %th
+            %tbody
+              - @current_zookeeper.clusters.sort_by{|c| c.name}.each do |cluster|
+                %tr{'data-cluster-id' => cluster.id, :class => ('error' if cluster.has_errors?)}
+                  %td
+                    %color
+                      =cluster.name
+                  %td
+                    =@shard_nodes == 1 ? @current_zookeeper.shards.first.blur_version : "Inconsistent Blur Versions"
+                  %td
+                    =cluster.safe_mode ? "Yes" : "No"
+                  %td
+                    %a.more-shard-info{:href => shards_zookeeper_path(@current_zookeeper.id, cluster.id)} View Shards
+                  %td
+                    %i.icon-remove-sign.confirm-action{:title => 'Remove This Cluster','data-message' => 'remove this cluster'}
+        -else
+          %noController No Available Clusters

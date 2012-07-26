@@ -4,29 +4,44 @@ $graph_height: $instance_height - $title_height;
 
 @mixin graph_component{
 	display: inline-block;
-	box-sizing: border-box;
+	@include box-sizing(border-box);
 }
 
 @mixin clickable_title{
-	cursor: pointer;
-	&:hover{
-		opacity: .75;
-	}
 	height: $title_height;
 	h3{ line-height: $title_height; }
 	text-align: center;
-	border: 1px solid #ddd;
-	@include gradient-vertical(#fff, #e6e6e6);
+	border: 1px solid #ccc;
+	@include gradient-vertical(#fff, #F4F4F4);
 }
 
-#metrics_page_wrapper{
-	.create_graph_prompt{
-		@include border-radius(10px);
-		margin: 10px 0 10px 0;
-		@include clickable_title;
-
+@mixin clickable{
+	cursor: pointer;
+	&:hover{
+		opacity: .6;
 	}
-	.graph_instance{
+}
+
+#metrics_page_wrapper {
+	.create_graph_prompt{
+		margin-top: 10px;
+		@include clickable_title;
+		@include clickable;
+	}
+	.joined_instance{
+		.graph_title{
+			position: relative;
+			i{
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				@include clickable;
+			}
+		}
+	}
+
+	.graph_instance, .joined_instance {
+		margin: 10px 0 10px 0;
 		position: relative;
 		height: $instance_height;
 		&:not(:last-child){
@@ -42,32 +57,23 @@ $graph_height: $instance_height - $title_height;
 			@include graph_component;
 			width: 100%;
 			height: $graph_height;
-			border: 1px solid #ddd;
+			border: 1px solid #ccc;
 			position: absolute;
-			.graph_select{
-				@include graph_component;
-				width: 2%;
-				height: 100%;
-				float: left;
-				text-align: center;
-				border-right: 1px solid #ddd;
-				input{
-					margin-top: $graph_height/2 - 10;
-				}
-			}
 			.graph_data{
-				box-sizing: border-box;
+				@include box-sizing(border-box);
 				width: 100%;
-				padding: 10px 10px 0 3%;
+				padding: 10px 10px 0 10px;
 				.graph{
-					margin: 5px 5px 5px 5px;
+          margin: 5px 5px 5px 5px;
 					height: $graph_height - 20;
-					.base{
-						//position: absolute;
-					}
 				}
 			}
-
 		}
 	}
+  .loading-spinner {
+    float: left;
+    position: absolute;
+    padding: 9px 0 0 9px;
+  }
 }
+

@@ -10,11 +10,9 @@ describe HdfsController do
       @ability.stub!(:can?).and_return(true)
       controller.stub!(:current_ability).and_return(@ability)
 
-      @hdfs = FactoryGirl.create :hdfs
+      @hdfs = FactoryGirl.create :hdfs_with_stats
       Hdfs.stub!(:find).and_return(@hdfs)
       @file_strings = ["hdfs://file-location"]
-
-      @hdfs_stat = mock(ThriftHadoopFileSystem::FileStatus)
     end
 
     describe "GET index" do
@@ -23,7 +21,7 @@ describe HdfsController do
       end
 
       it "finds and assigns the instance variable" do
-        Hdfs.should_receive(:select).with('id, name')
+        Hdfs.should_receive(:all).and_return [@hdfs]
         get :index
         assigns(:instances).should == [@hdfs]
       end
@@ -36,13 +34,10 @@ describe HdfsController do
 
     describe "GET info" do
       context "Hdfs Stat found" do
-        before(:each) do
-          @hdfs.stub_chain(:hdfs_stats, :last).and_return(@hdfs_stat)
-        end
         it "finds and assigns the hdfs variable" do
           Hdfs.should_receive(:find).with(@hdfs.id.to_s)
           get :info, :id => @hdfs.id
-          assigns(:hdfs).should == @hdfs_stat
+          assigns(:hdfs).should == @hdfs.hdfs_stats.last
         end
 
         it "renders the info partial" do
@@ -274,6 +269,32 @@ describe HdfsController do
       it "renders json" do
         HdfsThriftClient.should_receive(:client).with("#{@hdfs.host}:#{@hdfs.port}")
         get :file_tree, :id => @hdfs.id, :fs_path => '/path/'
+        response.content_type.should == 'application/json'
+      end
+    end
+
+    describe "GET stats" do
+      it "with only id should return all within last minute" do
+        get :stats, :id => @hdfs.id
+        assigns(:results).length.should == 1
+        response.content_type.should == 'application/json'
+      end
+
+      it "with only return the correct properties" do
+        get :stats, :id => @hdfs.id
+        assigns(:results)[0].attribute_names.should == %w[id created_at present_capacity dfs_used live_nodes dead_nodes under_replicated corrupt_blocks missing_blocks]
+        response.content_type.should == 'application/json'
+      end
+
+      it "with stat_mins = 2 should return all within last 2 minutes" do
+        get :stats, :id => @hdfs.id, :stat_mins => 2
+        assigns(:results).length.should == 2
+        response.content_type.should == 'application/json'
+      end
+
+      it "with stat_id = @hdfs.hdfs_stats[1].id should return the last one" do
+        get :stats, :id => @hdfs.id, :stat_id => @hdfs.hdfs_stats[1].id
+        assigns(:results).length.should == 1
         response.content_type.should == 'application/json'
       end
     end

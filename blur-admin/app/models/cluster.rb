@@ -7,7 +7,7 @@ class Cluster < ActiveRecord::Base
 
   def as_json(options={})
     serial_properties = super(options)
-    serial_properties[:can_update] = self.can_update
+    serial_properties["can_update"] = self.can_update
     serial_properties
   end
 

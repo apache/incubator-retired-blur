@@ -14,7 +14,7 @@
 ActiveRecord::Schema.define(:version => 20120621155420) do
 
   create_table "blur_queries", :force => true do |t|
-    t.text     "query_string",             :limit => 16777215
+    t.text     "query_string",             :limit => 2147483647
     t.integer  "complete_shards"
     t.integer  "uuid",                     :limit => 8
     t.datetime "created_at",                                   :null => false
@@ -23,8 +23,8 @@ ActiveRecord::Schema.define(:version => 20120621155420) do
     t.string   "facets"
     t.integer  "start"
     t.integer  "fetch_num"
-    t.text     "pre_filters",              :limit => 16777215
-    t.text     "post_filters",             :limit => 16777215
+    t.text     "pre_filters",              :limit => 2147483647
+    t.text     "post_filters",             :limit => 2147483647
     t.text     "selector_column_families"
     t.text     "selector_columns"
     t.string   "userid"

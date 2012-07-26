@@ -11,5 +11,5 @@ class Zookeeper < ActiveRecord::Base
       when 1 then "Online"
     end
   end
-  
+
 end

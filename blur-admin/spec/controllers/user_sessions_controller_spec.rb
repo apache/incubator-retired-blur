@@ -20,7 +20,7 @@ describe UserSessionsController do
         get :new
         assigns(:user_session).should be(mock_user_session)
       end
-      
+
       it "should render new view" do
         get :new
         response.should render_template :new

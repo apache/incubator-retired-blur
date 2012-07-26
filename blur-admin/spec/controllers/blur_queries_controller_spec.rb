@@ -5,7 +5,7 @@ describe BlurQueriesController do
     before do
       @client = mock(Blur::Blur::Client)
       BlurThriftClient.stub!(:client).and_return(@client)
-      
+
       @user = User.new
       @ability = Ability.new @user
       @ability.stub!(:can?).and_return(true)
@@ -90,7 +90,7 @@ describe BlurQueriesController do
         @blur_query.should_receive(:cancel)
         put :update, :cancel => 'true', :id => '1'
       end
-      
+
       it "should render the blur_query partial" do
         put :update, :cancel => 'false', :id => '1'
         response.should render_template(:partial => '_blur_query')

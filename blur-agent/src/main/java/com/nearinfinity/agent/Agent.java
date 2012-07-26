@@ -432,11 +432,12 @@ public class Agent {
 			for (Map<String, String> instance : hdfsInstances.values()) {
 				final String uri = instance.get("default");
 				final String name = instance.get("name");
+				final String user = props.getProperty("hdfs.login.user");
 				new Thread(new Runnable(){
 					@Override
 					public void run() {
 						while(true) {
-							HDFSCollector.startCollecting(uri, name, jdbc);
+							HDFSCollector.startCollecting(uri, name, user, jdbc);
 							try {
 								Thread.sleep(COLLECTOR_SLEEP_TIME);
 							} catch (InterruptedException e) {

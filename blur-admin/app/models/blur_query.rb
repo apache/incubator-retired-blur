@@ -35,17 +35,17 @@ class BlurQuery < ActiveRecord::Base
   end
 
   def summary(user)
-    summary_hash = 
+    summary_hash =
     {
-      :id => id, 
-      :can_update => user.can?(:update, :blur_queries), 
-      :userid => print_value(userid), 
-      :query => print_value(query_string), 
-      :tablename => print_value(blur_table.table_name), 
-      :start => print_value(start, 0), 
-      :time => created_at.getlocal.strftime('%r'), 
-      :status => summary_state, 
-      :state => state_str 
+      :id => id,
+      :can_update => user.can?(:update, :blur_queries),
+      :userid => print_value(userid),
+      :query => print_value(query_string),
+      :tablename => print_value(blur_table.table_name),
+      :start => print_value(start, 0),
+      :time => created_at.getlocal.strftime('%r'),
+      :status => summary_state,
+      :state => state_str
     }
     summary_hash.delete(:query) if user.cannot?(:index, :blur_queries, :query_string)
     summary_hash
@@ -55,7 +55,7 @@ class BlurQuery < ActiveRecord::Base
 
   def summary_state
     if state == 0
-      formattedNumber = "%02d" % (100 * complete)
+      formattedNumber = "%01d" % (100 * complete)
       formattedNumber + '%'
     elsif state == 1
       "(Interrupted) - #{number_to_percentage(100 * complete, :precision => 0)}"
@@ -63,7 +63,7 @@ class BlurQuery < ActiveRecord::Base
       "Complete"
     end
   end
-  
+
   def print_value(conditional, default_message = "Not Available")
     return default_message unless conditional
     return conditional unless block_given?

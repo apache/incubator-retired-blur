@@ -206,6 +206,8 @@ $(document).ready(function() {
    /********** PAGE AJAX LISTENERS **********/
    // fetch the results of a new search
   $('#search_form').submit(function() {
+    $('#results_wrapper').addClass('noResults').removeClass('hidden');
+    $('#results_wrapper').html('<div id="results_container"><div class="no-results">Loading...</div></div>');
     var form_data = $(this).serializeArray();
     var tree = $('.column_family_filter').dynatree('getTree');
     form_data = form_data.concat(tree.serializeArray());

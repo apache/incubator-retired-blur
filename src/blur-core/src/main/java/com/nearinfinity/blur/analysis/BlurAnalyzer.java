@@ -201,7 +201,8 @@ public class BlurAnalyzer extends Analyzer {
       throw new RuntimeException(e);
     }
     trans.close();
-    return new String(trans.getArray());
+    byte[] array = trans.getArray();
+    return new String(array,0,trans.length());
   }
 
   public boolean isFullTextField(String fieldName) {

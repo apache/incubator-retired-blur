@@ -121,7 +121,9 @@ public class CreateTable {
       throw new RuntimeException(e);
     }
     trans.close();
-    return trans.getArray();
+    byte[] buf = new byte[trans.length()];
+    System.arraycopy(trans.getArray(), 0, buf, 0, trans.length());
+    return buf;
   }
 
   private static int zeroCheck(int i, String message) {

@@ -247,13 +247,17 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 //        }
 //      }
 //    }
-    LOG.info("trace getOnlineShardServers");
+    
+    long s = System.nanoTime();
     try {
       return _zk.getChildren(ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/online/shard-nodes", false);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
+    } finally {
+      long e = System.nanoTime();
+      LOG.info("trace getOnlineShardServers took [" + (e-s) / 1000000.0 + "]");
     }
   }
 
@@ -269,13 +273,16 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public List<String> getShardServerList(String cluster) {
-    LOG.debug("trace getShardServerList");
+    long s = System.nanoTime();
     try {
       return _zk.getChildren(ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/shard-nodes", false);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
+    } finally {
+      long e = System.nanoTime();
+      LOG.info("trace getShardServerList took [" + (e-s) / 1000000.0 + "]");
     }
   }
 
@@ -289,17 +296,19 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 //        return false;
 //      }
 //    }
-    LOG.info("trace exists");
+    long s = System.nanoTime();
     try {
       if (_zk.exists(ZookeeperPathConstants.getTablePath(cluster, table), false) == null) {
         return false;
       }
-      LOG.info("Exists [true]");
       return true;
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
+    } finally {
+      long e = System.nanoTime();
+      LOG.info("trace exists took [" + (e-s) / 1000000.0 + "]");
     }
   }
 
@@ -313,7 +322,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 //        return enabled;
 //      }
 //    }
-    LOG.debug("trace isEnabled");
+    long s = System.nanoTime();
     String tablePathIsEnabled = ZookeeperPathConstants.getTableEnabledPath(cluster, table);
     try {
       if (_zk.exists(tablePathIsEnabled, false) == null) {
@@ -323,6 +332,9 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
+    } finally {
+      long e = System.nanoTime();
+      LOG.info("trace isEnabled took [" + (e-s) / 1000000.0 + "]");
     }
     return true;
   }
@@ -337,7 +349,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 //        return tableDescriptor;
 //      }
 //    }
-    LOG.info("trace getTableDescriptor");
+    long s = System.nanoTime();
     TableDescriptor tableDescriptor = new TableDescriptor();
     try {
       if (_zk.exists(ZookeeperPathConstants.getTableEnabledPath(cluster, table), false) == null) {
@@ -362,6 +374,9 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
+    } finally {
+      long e = System.nanoTime();
+      LOG.info("trace getTableDescriptor took [" + (e-s) / 1000000.0 + "]");
     }
     tableDescriptor.cluster = cluster;
     _tableDescriptorCache.put(table, tableDescriptor);
@@ -399,13 +414,16 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public List<String> getTableList(String cluster) {
-    LOG.debug("trace getTableList");
+    long s = System.nanoTime();
     try {
       return _zk.getChildren(ZookeeperPathConstants.getTablesPath(cluster), false);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
+    } finally {
+      long e = System.nanoTime();
+      LOG.info("trace getTableList took [" + (e-s) / 1000000.0 + "]");
     }
   }
 
@@ -416,16 +434,16 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public String getCluster(boolean useCache, String table) {
-    if (useCache) {
-      Map<String, String> map = _tableToClusterCache.get();
-      String cluster = map.get(table);
-      if (cluster != null) {
-        return cluster;
-      }
-    }
-    LOG.debug("trace getCluster");
+//    if (useCache) {
+//      Map<String, String> map = _tableToClusterCache.get();
+//      String cluster = map.get(table);
+//      if (cluster != null) {
+//        return cluster;
+//      }
+//    }
     List<String> clusterList = getClusterList();
     for (String cluster : clusterList) {
+      long s = System.nanoTime();
       try {
         Stat stat = _zk.exists(ZookeeperPathConstants.getTablePath(cluster, table), false);
         if (stat != null) {
@@ -437,6 +455,9 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         throw new RuntimeException(e);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
+      } finally {
+        long e = System.nanoTime();
+        LOG.info("trace getCluster took [" + (e-s) / 1000000.0 + "]");
       }
     }
     return null;
@@ -444,8 +465,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public void clearLocks(String cluster, String table) {
-    LOG.debug("trace clearLocks");
     String lockPath = ZookeeperPathConstants.getLockPath(cluster, table);
+    long s = System.nanoTime();
     try {
       if (_zk.exists(lockPath, false) == null) {
         return;
@@ -459,6 +480,9 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
+    } finally {
+      long e = System.nanoTime();
+      LOG.info("trace clearLocks took [" + (e-s) / 1000000.0 + "]");
     }
   }
 
@@ -471,7 +495,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 //      }
 //      return safeModeTimestamp < System.currentTimeMillis() ? false : true;
 //    }
-    LOG.info("trace isInSafeMode");
+    long s = System.nanoTime();
     try {
       String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
       Stat stat = _zk.exists(blurSafemodePath, false);
@@ -492,6 +516,9 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
+    } finally {
+      long e = System.nanoTime();
+      LOG.info("trace isInSafeMode took [" + (e-s) / 1000000.0 + "]");
     }
   }
 
@@ -501,7 +528,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 //      TableDescriptor tableDescriptor = getTableDescriptor(true, cluster, table);
 //      return tableDescriptor.shardCount;
 //    }
-    LOG.info("trace getShardCount");
+    long s = System.nanoTime();
     try {
       return Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableShardCountPath(cluster, table))));
     } catch (NumberFormatException e) {
@@ -510,12 +537,15 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
+    } finally {
+      long e = System.nanoTime();
+      LOG.info("trace getShardCount took [" + (e-s) / 1000000.0 + "]");
     }
   }
 
   @Override
   public Set<String> getBlockCacheFileTypes(String cluster, String table) {
-    LOG.info("trace getBlockCacheFileTypes");
+    long s = System.nanoTime();
     try {
       byte[] data = getData(ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table));
       if (data == null) {
@@ -534,12 +564,15 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
+    } finally {
+      long e = System.nanoTime();
+      LOG.info("trace getBlockCacheFileTypes took [" + (e-s) / 1000000.0 + "]");
     }
   }
 
   @Override
   public boolean isBlockCacheEnabled(String cluster, String table) {
-    LOG.info("trace isBlockCacheEnabled");
+    long s = System.nanoTime();
     try {
       if (_zk.exists(ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table), false) == null) {
         return false;
@@ -548,6 +581,9 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
+    } finally {
+      long e = System.nanoTime();
+      LOG.info("trace isBlockCacheEnabled took [" + (e-s) / 1000000.0 + "]");
     }
     return true;
   }
@@ -561,7 +597,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 //        return flag;
 //      }
 //    }
-    LOG.info("trace isReadOnly");
+    long s = System.nanoTime();
     String path = ZookeeperPathConstants.getTableReadOnlyPath(cluster, table);
     Boolean flag = null;
     try {
@@ -577,6 +613,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       _readOnlyMap.put(key, flag);
+      long e = System.nanoTime();
+      LOG.info("trace isReadOnly took [" + (e-s) / 1000000.0 + "]");
     }
   }
 }

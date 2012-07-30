@@ -35,6 +35,8 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_SERVER_R
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_SERVER_THRIFT_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
 import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
 import java.io.IOException;
@@ -48,6 +50,7 @@ import org.apache.zookeeper.ZooKeeper;
 import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.concurrent.SimpleUncaughtExceptionHandler;
 import com.nearinfinity.blur.concurrent.ThreadWatcher;
+import com.nearinfinity.blur.gui.HttpJettyServer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
@@ -126,6 +129,8 @@ public class ThriftBlurControllerServer extends ThriftServer {
     server.setBindPort(bindPort);
     server.setThreadCount(threadCount);
     server.setIface(iface);
+    
+    HttpJettyServer httpServer = new HttpJettyServer(configuration.get(BLUR_GUI_CONTROLLER_PORT), "controller");
 
     // This will shutdown the server when the correct path is set in zk
     new BlurServerShutDown().register(new BlurShutdown() {

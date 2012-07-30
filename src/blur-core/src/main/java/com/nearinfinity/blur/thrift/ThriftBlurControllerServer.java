@@ -130,14 +130,14 @@ public class ThriftBlurControllerServer extends ThriftServer {
     server.setThreadCount(threadCount);
     server.setIface(iface);
     
-    HttpJettyServer httpServer = new HttpJettyServer(configuration.get(BLUR_GUI_CONTROLLER_PORT), "controller");
+    final HttpJettyServer httpServer = new HttpJettyServer(configuration.get(BLUR_GUI_CONTROLLER_PORT), "controller");
 
     // This will shutdown the server when the correct path is set in zk
     new BlurServerShutDown().register(new BlurShutdown() {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(server, controllerServer, clusterStatus, zooKeeper, threadWatcher);
+        quietClose(server, controllerServer, clusterStatus, zooKeeper, threadWatcher, httpServer);
         System.exit(0);
       }
     }, zooKeeper);

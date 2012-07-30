@@ -263,7 +263,12 @@ This is the shorter way of creating the same RowMutation.
       }
 
       public static class BlurExampleMapper extends BlurMapper<LongWritable, Text> {
-        private BlurRecord record = _mutate.getRecord();
+        @Override
+        protected void setup(Context context) throws IOException, InterruptedException {
+            super.setup(context);
+            record = _mutate.getRecord();
+            _mutate.setMutateType(MUTATE_TYPE.ADD);
+        }
   	
         @Override
         protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {

@@ -102,7 +102,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     BufferStore.init(configuration, blurMetrics);
     BlockCache blockCache;
     try {
-      long totalMemory = bankCount * numberOfBlocksPerBank * blockSize;
+      long totalMemory = (long) bankCount * (long) numberOfBlocksPerBank * (long) blockSize;
       blockCache = new BlockCache(blurMetrics, directAllocation, totalMemory, slabSize, blockSize);
     } catch (OutOfMemoryError e) {
       if ("Direct buffer memory".equals(e.getMessage())) {

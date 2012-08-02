@@ -20,7 +20,7 @@
         - @results.each do |result|
           - max_record_count = result[:max_record_count]
           - max_record_count.times do |i|
-            %tr{:class => (current_row_id != result[:id]) ? "first" : ""}
+            %tr.table-bordered{:class => (current_row_id != result[:id]) ? "first" : ""}
 
               - @schema.each_with_index do |(familyName,column_family), j|
                 - if i == 0 and j == 0

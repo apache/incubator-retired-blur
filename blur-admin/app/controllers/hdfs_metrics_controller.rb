@@ -2,4 +2,19 @@ class HdfsMetricsController < ApplicationController
   def index
     @hdfs_index = Hdfs.all
   end
+
+  def stats
+    @results = hdfs_stat_select [:present_capacity, :dfs_used, :live_nodes, :dead_nodes, :under_replicated, :corrupt_blocks, :missing_blocks]
+    render :json => @results, :methods => [:capacity, :used], :except => [:present_capacity, :dfs_used]
+  end
+
+  private
+  def hdfs_stat_select(properties)
+    hdfs = Hdfs.find params[:id]
+    properties = [:id, :created_at] + properties
+    minutes = params[:stat_mins].nil? ? 1 : params[:stat_mins].to_i
+    puts minutes
+    where_clause = params[:stat_id] ? "id > #{params[:stat_id]}" : "created_at >= '#{minutes.minute.ago}'"
+    return hdfs.hdfs_stats.where(where_clause).select(properties)
+  end
 end

@@ -56,7 +56,10 @@ var Table = Backbone.Model.extend({
       type: 'GET',
       url: Routes.terms_zookeeper_blur_table_path(CurrentZookeeper, this.get('id'), {format: 'json'}),
       data: request_data,
-      success: success
+      success: success,
+      error:function (xhr, ajaxOptions, thrownError){
+        alert(thrownError + ": Terms Currently Unavailable");
+      }
     });
   },
   capitalize_first: function(word){

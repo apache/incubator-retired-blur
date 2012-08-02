@@ -56,7 +56,7 @@ $graph_height: $instance_height - $title_height;
 		.graph_content{
 			@include graph_component;
 			width: 100%;
-			height: $graph_height;
+			height: $graph_height + 35;
 			border: 1px solid #ccc;
 			position: absolute;
 			.graph_data{
@@ -68,6 +68,21 @@ $graph_height: $instance_height - $title_height;
 					height: $graph_height - 20;
 				}
 			}
+      .slider{
+        width: 200px;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        margin: 10px 60px;
+      }
+      .slider-info{
+        position: absolute;
+        right: 320px;
+        bottom: 10px;
+        width: 400px;
+        height: 20px;
+        text-align: right;
+      }
 		}
 	}
   .loading-spinner {

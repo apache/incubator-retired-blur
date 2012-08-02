@@ -1,7 +1,7 @@
 - content_for :title, 'HDFS Metrics'
 - content_for :javascript do
-	=javascript_include_tag 'hdfs_metrics'
+  =javascript_include_tag 'hdfs_metrics'
 #metrics_page_wrapper
-	.all_graph
-		-@hdfs_index.each_with_index do |hdfs,i|
-			= render :partial => 'hdfs_graph', :locals => { :hdfs_instance => hdfs }
+  .all_graph
+    -@hdfs_index.each_with_index do |hdfs,i|
+      = render :partial => 'hdfs_graph', :locals => { :hdfs_instance => hdfs }

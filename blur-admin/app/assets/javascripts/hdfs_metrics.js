@@ -8,7 +8,7 @@ $(document).ready(function(){
   // Page constants //
 
   var hdfs_data = {};
-	var time_length = 5;
+	var time_length = 10;
 	var refresh_time = 15000;
 	var actions = ['disk', 'nodes', 'block'];
 
@@ -42,8 +42,8 @@ $(document).ready(function(){
 	// Page Methods //
 
   var draw_graph = function(selector, graph_data){
-    if (!graph_data.plot)
-		{
+    if (!graph_data.plot || selector.find(".base").length < 1)
+    {
       graph_data.plot = $.plot(selector, graph_data.metrics,
 			{
 				xaxis:
@@ -71,19 +71,22 @@ $(document).ready(function(){
 	//id : hdfs id, action: (disk, nodes, block), req_data(optional):
 		//req_data.stat_id for data after a certain ID (update)
 		//req_data.stat_mins for specifying a different range (overwrite)
-	var request_data = function(id, req_data){
+	var request_data = function(id, req_data, redraw){
     $.ajax({
 			url: Routes.stats_hdfs_path(id),
 			type: 'GET',
 			data: req_data,
 			success: function(data){
         if (data.length <= 0){
-					$.each($('.graph_instance#' + id + ' .graph'), function(index, value) {
-            this.innerHTML = 'No data available';
-          });
+          if (!hdfs_data[id]) {
+            $.each($('.graph_instance#' + id + ' .graph'), function(index, value) {
+              this.innerHTML = 'No data available';
+            });
+          }
           return;
 				}
-				if (!hdfs_data[id]){
+				if (!hdfs_data[id] || redraw){
+          $(".graph_instance").find(".active > .graph").empty();
 					hdfs_data[id] = { disk: { metrics: [] }, nodes: { metrics: [] }, block: { metrics: [] } };
 				}
 				for(var action in hdfs_request_lookup){
@@ -97,7 +100,7 @@ $(document).ready(function(){
 						var entry_date = new Date(point.created_at).getTime();
             hdfs_data_1.data.push([entry_date - 4*60*60*1000, point[request_options.stat_1]]);
 						hdfs_data_2.data.push([entry_date - 4*60*60*1000, point[request_options.stat_2]]);
-					}
+          }
 					//Current implementation is a fixed size queue for storing data
 					// Future implementations may allow you to change the range (length of queue, still fixed to a size)
 					// Future might also allow to grow the size of the queue overtime (length of queue appends data and never truncates)
@@ -113,10 +116,13 @@ $(document).ready(function(){
 
 					if (point){
 						hdfs_data[id][action].largest_id = point.id;
+            hdfs_data[id][action].max_time = new Date(point.created_at);
+            hdfs_data[id][action].min_time = new Date(hdfs_data[id][action].metrics[0].data[0][0] + 4*60*60*1000);
 					}
-		
+	
 					if (graph_container.hasClass('active')){
-						draw_graph(graph_container.find('.graph'), hdfs_data[id][action]);
+            draw_graph(graph_container.find('.graph'), hdfs_data[id][action]);
+            slider_info_vals(hdfs_data[id][action].min_time, hdfs_data[id][action].max_time, id);
 					}
 				}
 			}
@@ -126,9 +132,7 @@ $(document).ready(function(){
 	var update_live_graphs = function(){
 		$('.graph_instance').each(function(){
 			var hdfs_id = $(this).attr('id');
-			for (var index = 0; index < actions.length; index++){
-				request_data(hdfs_id, {stat_id: hdfs_data[hdfs_id][actions[index]].largest_id});
-      }
+      request_data(hdfs_id, {stat_id: hdfs_data[hdfs_id][actions[0]].largest_id});
 		});
 		setTimeout(function(){
 			update_live_graphs();
@@ -149,7 +153,7 @@ $(document).ready(function(){
 
 	$('.graph_instance').each(function(){
 		var hdfs_id = $(this).attr('id');
-		request_data(hdfs_id, {stat_mins: time_length});
+    request_data(hdfs_id, {stat_mins: time_length});
 	});
 
   $('.loading-spinner').on('ajaxStart', function(){
@@ -164,5 +168,32 @@ $(document).ready(function(){
 	setTimeout(function(){
 	  update_live_graphs();
 	}, refresh_time);
+
+  // Slider Methods - in progress //
+  // slider currently moves over any time period in the last 24 hours //
+  // min slide value changes the range of the graph //
+  // max slide value currently does not change the graph //
+  // TODO: change scale to 2 weeks, allow max to change graph //
+
+  $(".slider").slider({
+    range: true,
+    min: -1*24*60,//past day
+    max: 0,
+    values: [-5, 0],
+    slide: function(event, ui) {
+      date = new Date(hdfs_data[this.id][actions[0]].max_time).getTime();
+      minDate = new Date(date + ui.values[0]*1000*60);
+      maxDate = new Date(date + ui.values[1]*1000*60);
+      slider_info_vals(minDate, maxDate, this.id);
+    },
+    change: function(event, ui) {
+      request_data(this.id, {stat_mins: (-1 * ui.values[0])}, true);
+    }
+  });
+
+  var slider_info_vals = function(minDate, maxDate, hdfs_id){
+    $(".graph_instance#" + hdfs_id + " .slider-info").html( minDate.toLocaleTimeString().slice(0,5)
+                           + ' to ' + maxDate.toLocaleTimeString().slice(0,5) );
+	};
 });
 	

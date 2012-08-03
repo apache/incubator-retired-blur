@@ -56,7 +56,7 @@ $graph_height: $instance_height - $title_height;
 		.graph_content{
 			@include graph_component;
 			width: 100%;
-			height: $graph_height;
+			height: $graph_height + 60;
 			border: 1px solid #ccc;
 			position: absolute;
 			.graph_data{
@@ -68,6 +68,25 @@ $graph_height: $instance_height - $title_height;
 					height: $graph_height - 20;
 				}
 			}
+      .graph_info {
+				padding: 0 50px 0 205px;
+        bottom: 0;
+        .graph-info-table {
+          width: 100%;
+          margin: -5px 0 0 0;
+          .slider-info{
+            text-align: right;
+          }
+          .slider-box {
+            width: 350px;
+            .slider{
+              width: 300px;
+              margin-right: 15px;
+              float: right;
+            }
+          }
+        }
+      }
 		}
 	}
   .loading-spinner {

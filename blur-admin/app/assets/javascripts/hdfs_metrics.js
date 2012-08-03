@@ -19,22 +19,22 @@ $(document).ready(function(){
 	{
 		disk:
 		{
-			label_1: "Hdfs Disk Capacity (GB)",
-			label_2: "Hdfs Disk Usage (GB)",
+			label_1: "Hdfs Disk Capacity (GB) - left axis",
+			label_2: "Hdfs Disk Usage (GB) - right axis",
 			stat_1: "capacity",
 			stat_2: "used"
 		},
 		nodes:
 		{
-			label_1: "Live Nodes",
-			label_2: "Dead Nodes",
+			label_1: "Live Nodes - left axis",
+			label_2: "Dead Nodes - right axis",
 			stat_1: "live_nodes",
 			stat_2: "dead_nodes"
 		},
 		block:
 		{
-			label_1: "Under Replicated Blocks",
-      label_2: "Missing Blocks",
+			label_1: "Under Replicated Blocks - left axis",
+      label_2: "Missing Blocks - right axis",
 			stat_1: "under_replicated",
       stat_2: "missing_blocks"
 		}

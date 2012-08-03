@@ -9,7 +9,8 @@ $(document).ready(function(){
 
   var hdfs_data = {};
 	var time_length = 10;
-	var refresh_time = 15000;
+	var refresh_time = 5000;//15000;
+  var timer = null;
 	var actions = ['disk', 'nodes', 'block'];
 
 	// Hash of labels and object lookup strings for the various actions //
@@ -134,9 +135,7 @@ $(document).ready(function(){
 			var hdfs_id = $(this).attr('id');
       request_data(hdfs_id, {stat_id: hdfs_data[hdfs_id][actions[0]].largest_id});
 		});
-		setTimeout(function(){
-			update_live_graphs();
-		}, refresh_time);
+    timer = setTimeout(update_live_graphs, refresh_time);
 	};
 
 	// Page listeners //
@@ -165,19 +164,16 @@ $(document).ready(function(){
 
 	// Refresh Timers //
 
-	setTimeout(function(){
-	  update_live_graphs();
-	}, refresh_time);
+	timer = setTimeout(update_live_graphs, refresh_time);
 
   // Slider Methods - in progress //
-  // slider currently moves over any time period in the last 24 hours //
-  // min slide value changes the range of the graph //
-  // max slide value currently does not change the graph //
-  // TODO: change scale to 2 weeks, allow max to change graph //
+  // slider currently moves over any time period in the last hour //
+  // min & max slide values change the range of the graph //
+  // TODO: change scale to 2 weeks //
 
   $(".slider").slider({
     range: true,
-    min: -1*24*60,//past day
+    min: -1*60,//past hour
     max: 0,
     values: [-5, 0],
     slide: function(event, ui) {
@@ -187,7 +183,19 @@ $(document).ready(function(){
       slider_info_vals(minDate, maxDate, this.id);
     },
     change: function(event, ui) {
-      request_data(this.id, {stat_mins: (-1 * ui.values[0])}, true);
+      maxVal = ui.values[1];
+      if (maxVal != 0) {
+        if (timer) {
+          clearTimeout(timer);
+          timer = null;
+        }
+        request_data(this.id, {stat_mins: (-1 * ui.values[0]), max_mins: (-1 * ui.values[1])}, true);
+      }
+      else {
+        //if (!timer) { timer = setTimeout(update_live_graphs, refresh_time); }
+        timer = (!timer ? setTimeout(update_live_graphs, refresh_time) : null);
+        request_data(this.id, {stat_mins: (-1 * ui.values[0])}, true);
+      }
     }
   });
 

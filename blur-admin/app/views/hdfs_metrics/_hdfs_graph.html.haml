@@ -27,5 +27,12 @@
         %div.tab-pane{:id => "block_#{hdfs_instance.id}"}
           .graph
             Loading Graph...
-    .slider-info{:id => hdfs_instance.id}
-    .slider{:id => hdfs_instance.id}
+      .graph_info
+        %table.graph-info-table
+          %tbody
+            %tr
+              %td.graph-legend
+              %td
+                .slider-info{:id => hdfs_instance.id}
+              %td.slider-box
+                .slider{:id => hdfs_instance.id}

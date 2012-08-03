@@ -9,7 +9,7 @@ $(document).ready(function(){
 
   var hdfs_data = {};
 	var time_length = 10;
-	var refresh_time = 5000;//15000;
+	var refresh_time = 15000;
   var timer = null;
 	var actions = ['disk', 'nodes', 'block'];
 
@@ -57,7 +57,11 @@ $(document).ready(function(){
           {
             position: 'right'
           }
-        ]
+        ],
+        legend:
+        {
+          container: $(".graph-legend")
+        }
 			});
 		}
 		else
@@ -192,7 +196,6 @@ $(document).ready(function(){
         request_data(this.id, {stat_mins: (-1 * ui.values[0]), max_mins: (-1 * ui.values[1])}, true);
       }
       else {
-        //if (!timer) { timer = setTimeout(update_live_graphs, refresh_time); }
         timer = (!timer ? setTimeout(update_live_graphs, refresh_time) : null);
         request_data(this.id, {stat_mins: (-1 * ui.values[0])}, true);
       }

@@ -15,6 +15,8 @@ import com.nearinfinity.blur.thrift.BlurClient;
 import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
 import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.Blur.AsyncClient.mutateBatch_call;
+import com.nearinfinity.blur.thrift.generated.Blur.AsyncClient.mutate_call;
+import com.nearinfinity.blur.thrift.generated.Blur.AsyncIface;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
@@ -160,14 +162,18 @@ public class CreateInsertQueryRepeating {
 
 	private static void loadupTable(Iface client, String tableName, int rows)
 			throws BlurException, TException, IOException {
-		AsyncClientPool pool = new AsyncClientPool(10, 30000);
+		AsyncClientPool pool = new AsyncClientPool();//10, 30000);
+		AsyncIface poolClient = pool.getClient(Blur.AsyncIface.class, "localhost:40010");
 		
 		
 		long start = System.currentTimeMillis();
 		
 		List<RowMutation> mutates = new ArrayList<RowMutation>();
 		
+		long buildTotal = 0;
+		
 		for (int i = 1; i <= rows; i++) {
+			long buildStart = System.currentTimeMillis();
 			RowMutation mutation = new RowMutation();
 			mutation.table = tableName;
 			mutation.waitToBeVisible = true;
@@ -178,28 +184,46 @@ public class CreateInsertQueryRepeating {
 					newColumn("numberField", i + ""),
 					newColumn("fatTextField",randomString(1000))));
 			mutation.rowMutationType = RowMutationType.REPLACE_ROW;
-			mutates.add(mutation);
 			
-			if(mutates.size() == 10) {
-				pool.getClient(Blur.AsyncIface.class, "localhost:40010").mutateBatch(mutates,
-						new AsyncMethodCallback<Blur.AsyncClient.mutateBatch_call>() {
-						
-						@Override
-						public void onError(Exception exception) {	
-							exception.printStackTrace();
-						}
-						
-						@Override
-						public void onComplete(mutateBatch_call response) {
-						}
-					});
-				mutates.clear();
-			}
 			if (i % 50 == 0) {
 				System.out.println("loaded: " + i + " around "
 						+ df.format((i / ((System.currentTimeMillis() - start+0.0)/1000) ))
 						+ " rows/s");
-			}
+				System.out.println("Total time: " + (System.currentTimeMillis()-start+0.0)/1000 +
+						" Build time: "  + ((buildTotal/1000)+0.0) + " " + buildTotal);
+			}			
+			
+			buildTotal += System.currentTimeMillis() - buildStart;
+//			mutates.add(mutation);
+
+			poolClient.mutate(mutation, 
+					new AsyncMethodCallback<Blur.AsyncClient.mutate_call>() {
+
+						@Override
+						public void onComplete(mutate_call response) {
+						}
+
+						@Override
+						public void onError(Exception exception) {
+							exception.printStackTrace();
+						}
+					});
+
+//			if(mutates.size() == 10) {
+//				pool.getClient(Blur.AsyncIface.class, "localhost:40010").mutateBatch(mutates,
+//						new AsyncMethodCallback<Blur.AsyncClient.mutateBatch_call>() {
+//						
+//						@Override
+//						public void onError(Exception exception) {	
+//							exception.printStackTrace();
+//						}
+//						
+//						@Override
+//						public void onComplete(mutateBatch_call response) {
+//						}
+//					});
+//				mutates.clear();
+//			}
 		}
 		System.out.println("loaded: " + rows + " around "
 				+ df.format((rows / ((System.currentTimeMillis() - start+0.0)/1000))) + " rows/s");

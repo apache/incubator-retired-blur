@@ -16,6 +16,7 @@
 
 package com.nearinfinity.blur.thrift;
 
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_MAX_CLAUSE_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
@@ -51,6 +52,7 @@ import org.apache.zookeeper.ZooKeeper;
 import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.concurrent.SimpleUncaughtExceptionHandler;
 import com.nearinfinity.blur.concurrent.ThreadWatcher;
+import com.nearinfinity.blur.gui.HttpJettyServer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.index.TimeBasedIndexDeletionPolicy;
@@ -192,13 +194,17 @@ public class ThriftBlurShardServer extends ThriftServer {
     server.setThreadCount(threadCount);
     server.setIface(iface);
     server.setConfiguration(configuration);
+    
+    int webServerPort = Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT)) + serverIndex;
+    
+    final HttpJettyServer httpServer = new HttpJettyServer(webServerPort, "shard", blurMetrics);
 
     // This will shutdown the server when the correct path is set in zk
     new BlurServerShutDown().register(new BlurShutdown() {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(refresher, server, shardServer, indexManager, indexServer, threadWatcher);
+        quietClose(refresher, server, shardServer, indexManager, indexServer, threadWatcher, httpServer);
         System.exit(0);
       }
     }, zooKeeper);

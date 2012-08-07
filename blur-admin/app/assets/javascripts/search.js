@@ -2,15 +2,8 @@
 
 $(document).ready(function() {
   // PUSH STATE SEARCH QUERIES
-  // Old browser support for history push state
-  if (typeof history.pushState === 'undefined') {
-    backwardsCompatibleHistory = function(state, title, url) {
-      window.location = url;
-    };
-    history.pushState = backwardsCompatibleHistory;
-    history.replaceState = backwardsCompatibleHistory;
-  }
-
+  // When the history is popped add the query and table
+  // then submit the query
   window.onpopstate = function(e) {
     if(e.state){
       $('#blur_table').val(e.state.table_id);
@@ -19,19 +12,31 @@ $(document).ready(function() {
     }
   };
 
-  $('#search_form').on('submit', function() {
+  $('#search_form').on('submit', function(e) {
+    // if the browser doesnt support push state return
+    if (!Modernizr.history) {
+      return;
+    }
+
+    // History state object
     var state = {
       table_id: $('#blur_table').find('option:selected').val(),
       query: $('#query_string').val()
     };
+
+    // Build the new stateful query search
     var stateful_url = '?table_id=' + state.table_id + '&query=' + state.query;
+    var base_url = location.protocol + "//" + location.host + location.pathname;
+    var full_url = base_url + stateful_url;
+
+    // If the length is zero it is the first search
+    // and we want replace (avoid going back twice)
     if(location.search.length === 0){
-      history.replaceState(state, "Search | Blur Console", location.origin + location.pathname + stateful_url);
-      return;
-    }
-    if(location.search !== stateful_url){
-      history.pushState(state, "Search | Blur Console", location.origin + location.pathname + stateful_url);
-      return;
+      history.replaceState(state, "Search | Blur Console", full_url);
+    // Otherwise we need to check that we arent searching
+    // using the same query (dont push if it is the same)
+    } else if(location.search !== stateful_url){
+      history.pushState(state, "Search | Blur Console", full_url);
     }
   });
   

@@ -7,7 +7,7 @@ $(document).ready(function(){
         func: function() {
           $.ajax({
             type: 'DELETE',
-            url: self.attr('href'),
+            url: self.attr('data-url'),
             success: function(data){
               if (self.attr('data-reload') === "true"){
                 window.location = window.location.origin;

@@ -11,12 +11,12 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120807191217) do
+ActiveRecord::Schema.define(:version => 20120807192046) do
 
   create_table "audits", :force => true do |t|
     t.string   "user"
-    t.integer  "mutation"
-    t.integer  "model_affected"
+    t.string   "mutation"
+    t.string   "model_affected"
     t.string   "action"
     t.datetime "created_at",     :null => false
     t.datetime "updated_at",     :null => false

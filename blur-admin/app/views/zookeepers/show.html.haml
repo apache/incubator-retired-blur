@@ -12,7 +12,7 @@
         = "Status Unavailable"
       .connection-url
         = @current_zookeeper.url
-      %i.icon-remove-sign.confirm-action{:title => "Forget This Zookeeper", 'data-reload' => 'true', 'data-message' => 'forget this zookeeper'}
+      %i.icon-remove-sign.confirm-action{:title => "Forget This Zookeeper", 'data-reload' => 'true', 'data-message' => 'forget this zookeeper', 'data-url' => "#{zookeeper_path(@current_zookeeper)}"}
   #blur
     .row
       #controllers.span6

@@ -3,9 +3,14 @@ require 'spec_helper'
 describe ZookeepersController do
   describe "actions" do
     before do
-      @ability = Ability.new User.new
+      @user = FactoryGirl.create :user
+      @ability = Ability.new @user
       @ability.stub!(:can?).and_return(true)
       controller.stub!(:current_ability).and_return(@ability)
+      controller.stub!(:current_user).and_return(@user)
+
+      #stub out audit calls
+      Audit.stub!(:log_event)
 
       # Set up association chain
       @zookeeper  = FactoryGirl.create :zookeeper
@@ -118,15 +123,16 @@ describe ZookeepersController do
     describe 'DELETE destroy_shard' do
       before :each do
         @shard = FactoryGirl.create :shard
+        Zookeeper.stub_chain(:find, :shards, :find_by_id).and_return(@shard)
       end
 
       it "calls destroy on the clusters model" do
-        Zookeeper.stub_chain(:find, :shards, :find_by_id).and_return(@shard)
         @shard.should_receive(:destroy)
         delete :destroy_shard, :shard_id => @shard.id, :id => @zookeeper.id
       end
 
       it "doesnt call destroy on nil clusters model" do
+        Zookeeper.stub_chain(:find, :shards, :find_by_id).and_return(nil)
         @shard.should_not_receive(:destroy)
         delete :destroy_shard, :shard_id => @shard.id, :id => @zookeeper.id
       end
@@ -135,20 +141,26 @@ describe ZookeepersController do
         delete :destroy_shard, :shard_id => @shard.id, :id => @zookeeper.id
         response.body.should == ' '
       end
+
+      it "logs an audit" do
+        Audit.should_receive :log_event
+        delete :destroy_shard, :shard_id => @shard.id, :id => @zookeeper.id
+      end
     end
 
     describe 'DELETE destroy_cluster' do
       before :each do
         @cluster = FactoryGirl.create :cluster
+        Zookeeper.stub_chain(:find, :clusters, :find_by_id).and_return(@cluster)
       end
 
       it "calls destroy on the clusters model" do
-        Zookeeper.stub_chain(:find, :clusters, :find_by_id).and_return(@cluster)
         @cluster.should_receive(:destroy)
         delete :destroy_cluster, :cluster_id => @cluster.id, :id => @zookeeper.id
       end
 
       it "doesnt call destroy on nil clusters model" do
+        Zookeeper.stub_chain(:find, :clusters, :find_by_id).and_return(nil)
         @cluster.should_not_receive(:destroy)
         delete :destroy_cluster, :cluster_id => @cluster.id, :id => @zookeeper.id
       end
@@ -157,27 +169,38 @@ describe ZookeepersController do
         delete :destroy_cluster, :cluster_id => @cluster.id, :id => @zookeeper.id
         response.body.should == ' '
       end
+
+      it "logs an audit" do
+        Audit.should_receive :log_event
+        delete :destroy_cluster, :cluster_id => @cluster.id, :id => @zookeeper.id
+      end
     end
 
     describe 'DELETE destroy_controller' do
       before(:each) do
         @created_controller = FactoryGirl.create :controller
+        Zookeeper.stub_chain(:find, :controllers, :find_by_id).and_return(@created_controller)
       end
 
       it "calls destroy on the Controller model" do
-        Zookeeper.stub_chain(:find, :controllers, :find_by_id).and_return(@created_controller)
         @created_controller.should_receive(:destroy)
         delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper
       end
 
       it "doesnt call destroy on nil controllers model" do
+        Zookeeper.stub_chain(:find, :controllers, :find_by_id).and_return(nil)
         @created_controller.should_not_receive(:destroy)
         delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper.id
       end
 
       it "renders nothing" do
-        delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper
+        delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper.id
         response.body.should == ' '
+      end
+
+      it "logs an audit" do
+        Audit.should_receive :log_event
+        delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper.id
       end
     end
 
@@ -196,6 +219,11 @@ describe ZookeepersController do
       it "renders nothing" do
         delete :destroy, :id => @zookeeper.id
         response.body.should == ' '
+      end
+
+      it "logs an audit" do
+        Audit.should_receive :log_event
+        delete :destroy, :id => @zookeeper.id
       end
     end
   end

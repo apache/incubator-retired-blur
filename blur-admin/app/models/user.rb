@@ -3,6 +3,7 @@ class User < ActiveRecord::Base
 
   has_many :searches
   has_many :preferences
+  has_many :audits
 
   email_regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+/  
 

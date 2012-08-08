@@ -10,6 +10,7 @@ describe BlurQueriesController do
       @ability = Ability.new @user
       @ability.stub!(:can?).and_return(true)
       controller.stub!(:current_ability).and_return(@ability)
+      Audit.stub! :log_event
 
       @blur_query = FactoryGirl.create :blur_query
       @user = User.new
@@ -94,6 +95,11 @@ describe BlurQueriesController do
       it "should render the blur_query partial" do
         put :update, :cancel => 'false', :id => '1'
         response.should render_template(:partial => '_blur_query')
+      end
+
+      it "should log an audit event when a query is canceled" do
+        Audit.should_receive :log_event
+        put :update, :cancel => 'true', :id => '1'
       end
     end
 

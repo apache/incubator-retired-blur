@@ -12,7 +12,7 @@ $(document).ready(function(){
               if (self.attr('data-reload') === "true"){
                 window.location = window.location.origin;
               } else {
-                self.closest('li').remove();
+                self.closest('tr').remove();
                 $().closePopup();
               }
             }

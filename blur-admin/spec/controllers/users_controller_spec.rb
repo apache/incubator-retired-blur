@@ -7,6 +7,8 @@ describe UsersController do
       @ability = Ability.new @user
       User.stub(:find).and_return @user
       controller.stub!(:current_user).and_return(@user)
+      Audit.stub!(:log_event)
+      controller.stub!(:current_user).and_return(@user)
       controller.stub!(:current_ability).and_return(@ability)
     end
 
@@ -160,6 +162,11 @@ describe UsersController do
           response.should render_template(:edit)
         end
       end
+
+      it "should log an audit event" do
+        Audit.should_receive :log_event
+        put :update, :id => @user.id, :user => {:name => 'Bob'}
+      end
     end
 
     describe "DELETE destroy" do
@@ -172,6 +179,12 @@ describe UsersController do
         delete :destroy, :id => @user.id
         response.should redirect_to(users_path)
       end
+
+      it "should log an audit event" do
+        Audit.should_receive :log_event
+        delete :destroy, :id => @user.id
+      end
+
     end
   end
 end

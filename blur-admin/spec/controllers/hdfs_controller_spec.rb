@@ -3,13 +3,14 @@ require "spec_helper"
 describe HdfsController do
   describe "actions" do
     before(:each) do
+      # Universal setup
+      setup_tests
+
+      # Mock out the client connection to the hdfs
       @hdfs_client = mock(HdfsThriftClient::Client)
       HdfsThriftClient.stub!(:client).and_return(@hdfs_client)
 
-      @ability = Ability.new User.new
-      @ability.stub!(:can?).and_return(true)
-      controller.stub!(:current_ability).and_return(@ability)
-
+      # Create HDFS model
       @hdfs = FactoryGirl.create :hdfs_with_stats
       Hdfs.stub!(:find).and_return(@hdfs)
       @file_strings = ["hdfs://file-location"]
@@ -146,6 +147,11 @@ describe HdfsController do
         get :mkdir, :id => @hdfs.id, :fs_path => '/', :folder => 'folder'
         response.body.should be_blank
       end
+
+      it "logs an audit event" do
+        Audit.should_receive :log_event
+        get :mkdir, :id => @hdfs.id, :fs_path => '/', :folder => 'folder'
+      end
     end
 
     describe "GET file_info" do
@@ -181,6 +187,11 @@ describe HdfsController do
         get :move_file, :id => @hdfs.id, :from => '/', :to => '/folder/'
         response.body.should be_blank
       end
+
+      it "logs an audit event" do
+        Audit.should_receive :log_event
+        get :move_file, :id => @hdfs.id, :from => '/', :to => '/folder/'
+      end
     end
 
     describe "GET delete_file" do
@@ -197,6 +208,11 @@ describe HdfsController do
         HdfsThriftClient.should_receive(:client).with("#{@hdfs.host}:#{@hdfs.port}")
         get :delete_file, :id => @hdfs.id, :path => '/path/'
         response.body.should be_blank
+      end
+
+      it "logs an audit event" do
+        Audit.should_receive :log_event
+        get :delete_file, :id => @hdfs.id, :path => '/path/'
       end
     end
 
@@ -237,6 +253,12 @@ describe HdfsController do
           post :upload, :path => @path, :id => 1, :upload => @upload
           response.body.should render_template :partial => "_upload"
           assigns(:error).should_not be_blank
+        end
+
+        it "logs an audit event" do
+          @upload.tempfile.size = 50
+          Audit.should_receive :log_event
+          post :upload, :path => @path, :id => 1, :upload => @upload
         end
       end
 

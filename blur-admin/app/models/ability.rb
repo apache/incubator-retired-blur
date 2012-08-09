@@ -42,7 +42,7 @@ class Ability
       if user.editor?
         can [:update, :enable, :disable, :destroy, :forget, :comment], :blur_tables
         can :update, :blur_queries
-        can [:destroy_shard, :destroy_controller, :destroy_cluster, :destroy_zookeeper, :shards], :zookeepers
+        can [:destroy_shard, :destroy_controller, :destroy_cluster, :destroy, :shards], :zookeepers
         can [:move_file, :delete_file, :mkdir,:upload_form,:upload], :hdfs
       end
 

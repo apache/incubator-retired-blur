@@ -16,7 +16,10 @@ class BlurQueriesController < ApplicationController
 
   def update
     @blur_query = BlurQuery.find params[:id]
-    @blur_query.cancel if params[:cancel] == 'true'
+    if params[:cancel] == 'true'
+      @blur_query.cancel
+      Audit.log_event(current_user, "BlurQuery with UUID #{@blur_query.uuid}) was canceled", "blur_query", "update")
+    end
     respond_to do |format|
       format.html{render :partial => 'blur_query'}
     end

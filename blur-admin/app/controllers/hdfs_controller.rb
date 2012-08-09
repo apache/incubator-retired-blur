@@ -66,6 +66,7 @@ class HdfsController < ApplicationController
     path = "#{params[:fs_path]}/#{params[:folder]}/"
     path.gsub!(/\/\//, "/")
     client.mkdirs(path)
+    Audit.log_event(current_user, "A folder(#{params[:folder]} was created", "hdfs", "create")
     render :nothing => true
   end
 
@@ -80,6 +81,8 @@ class HdfsController < ApplicationController
   def move_file
     client = build_client_from_id
     client.rename(params[:from], params[:to])
+    file_name = params[:from].strip.split("/").last
+    Audit.log_event(current_user, "File/Folder named (#{file_name}) was moved or renamed to #{params[:to]}", "hdfs", "update")
     render :nothing => true
   end
 
@@ -87,6 +90,8 @@ class HdfsController < ApplicationController
     client = build_client_from_id
     path = params[:path]
     client.delete path, true
+    file_name = params[:path].strip.split("/").last
+    Audit.log_event(current_user, "File/Folder (#{file_name}) was deleted", "hdfs", "delete")
     render :nothing => true
   end
 
@@ -104,6 +109,7 @@ class HdfsController < ApplicationController
         else
           client = build_client_from_id
           client.put(f.tempfile.path,@path + '/' + f.original_filename)
+          Audit.log_event(current_user, "File (#{f.original_filename}) was uploaded", "hdfs", "create")
         end
       else
         @error = 'Problem with File Upload'

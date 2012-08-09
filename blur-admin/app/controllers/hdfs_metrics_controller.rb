@@ -8,6 +8,12 @@ class HdfsMetricsController < ApplicationController
     render :json => @results, :methods => [:capacity, :used], :except => [:present_capacity, :dfs_used]
   end
 
+  def most_recent_stat
+    hdfs = Hdfs.find params[:id]
+    last_stat = hdfs.hdfs_stats.select([:created_at]).order('created_at').last
+    render :json => last_stat
+  end
+
   private
   def hdfs_stat_select(properties)
     hdfs = Hdfs.find params[:id]

@@ -76,6 +76,10 @@ $graph_height: $instance_height - $title_height;
           margin: -5px 0 0 0;
           .slider-info{
             text-align: right;
+            .slider-time{
+              text-align: right;
+              width: 14px;
+            }
           }
           .slider-box {
             width: 350px;
@@ -95,4 +99,3 @@ $graph_height: $instance_height - $title_height;
     padding: 9px 0 0 9px;
   }
 }
-

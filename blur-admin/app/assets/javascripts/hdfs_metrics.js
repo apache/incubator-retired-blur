@@ -9,8 +9,8 @@ $(document).ready(function(){
 
   var hdfs_data = {};
 	var time_length = 10;
-	var refresh_time = 15000;
-  var timer = null;
+	var refresh_time = 30000;
+  var slider_max = {};
 	var actions = ['disk', 'nodes', 'block'];
 
 	// Hash of labels and object lookup strings for the various actions //
@@ -54,14 +54,9 @@ $(document).ready(function(){
 				},
         yaxes:[
           { },
-          {
-            position: 'right'
-          }
+          { position: 'right' }
         ],
-        legend:
-        {
-          container: $(".graph-legend")
-        }
+        legend:{ container: $(".graph-legend") }
 			});
 		}
 		else
@@ -76,6 +71,7 @@ $(document).ready(function(){
 	//id : hdfs id, action: (disk, nodes, block), req_data(optional):
 		//req_data.stat_id for data after a certain ID (update)
 		//req_data.stat_mins for specifying a different range (overwrite)
+      //for overwrite, also set redraw = true (optional)
 	var request_data = function(id, req_data, redraw){
     $.ajax({
 			url: Routes.stats_hdfs_metric_path(id),
@@ -107,7 +103,7 @@ $(document).ready(function(){
 						hdfs_data_2.data.push([entry_date - 4*60*60*1000, point[request_options.stat_2]]);
           }
 					//Current implementation is a fixed size queue for storing data
-					// Future implementations may allow you to change the range (length of queue, still fixed to a size)
+					// Also allows you to change the range (length of queue, still fixed to a size)
 					// Future might also allow to grow the size of the queue overtime (length of queue appends data and never truncates)
 					if (req_data && req_data.stat_id){
 							var length = data.length;
@@ -127,17 +123,32 @@ $(document).ready(function(){
 	
 					if (graph_container.hasClass('active')){
             draw_graph(graph_container.find('.graph'), hdfs_data[id][action]);
-            slider_info_vals(hdfs_data[id][action].min_time, hdfs_data[id][action].max_time, id);
+            set_slider_info(hdfs_data[id][action].min_time, hdfs_data[id][action].max_time, id);
 					}
 				}
 			}
 		});
 	};
 
+  var get_recent_stat = function(id){
+    $.ajax({
+			url: Routes.most_recent_stat_hdfs_metric_path(id),
+			type: 'GET',
+			success: function(data){
+        slider_max[id] = new Date(data.created_at);
+      }
+    });
+  };
+
 	var update_live_graphs = function(){
-		$('.graph_instance').each(function(){
+    $('.graph_instance').each(function(){
 			var hdfs_id = $(this).attr('id');
-      request_data(hdfs_id, {stat_id: hdfs_data[hdfs_id][actions[0]].largest_id});
+      var sliderVals = $(".graph_instance#" + hdfs_id + " .slider").slider('option', 'values');
+      var sliderMin = $(".graph_instance#" + hdfs_id + " .slider").slider('option', 'min');
+      if (sliderVals[1] == 0 || sliderMin == sliderVals[0]) {
+        request_data(hdfs_id, {stat_id: hdfs_data[hdfs_id][actions[0]].largest_id});
+      }
+      get_recent_stat(hdfs_id);
 		});
     timer = setTimeout(update_live_graphs, refresh_time);
 	};
@@ -157,6 +168,7 @@ $(document).ready(function(){
 	$('.graph_instance').each(function(){
 		var hdfs_id = $(this).attr('id');
     request_data(hdfs_id, {stat_mins: time_length});
+    get_recent_stat(hdfs_id);
 	});
 
   $('.loading-spinner').on('ajaxStart', function(){
@@ -170,40 +182,81 @@ $(document).ready(function(){
 
 	timer = setTimeout(update_live_graphs, refresh_time);
 
-  // Slider Methods - in progress //
+  // Slider - in progress //
   // slider currently moves over any time period in the last hour //
   // min & max slide values change the range of the graph //
-  // TODO: change scale to 2 weeks //
+  // TODO: allow for scale to go back 2 weeks //
+  // Flot recommends not going over 1,000 data points. We hit 1,000 if the scale is increased //
+  // to about 4 hours (need to consolidate data after that) //
 
   $(".slider").slider({
     range: true,
     min: -1*60,//past hour
     max: 0,
-    values: [-5, 0],
+    values: [-1 * time_length, 0],
     slide: function(event, ui) {
-      date = new Date(hdfs_data[this.id][actions[0]].max_time).getTime();
-      minDate = new Date(date + ui.values[0]*1000*60);
-      maxDate = new Date(date + ui.values[1]*1000*60);
-      slider_info_vals(minDate, maxDate, this.id);
+      set_slider_info_to_vals(ui.values, this.id);
     },
     change: function(event, ui) {
-      maxVal = ui.values[1];
-      if (maxVal != 0) {
-        if (timer) {
-          clearTimeout(timer);
-          timer = null;
-        }
-        request_data(this.id, {stat_mins: (-1 * ui.values[0]), max_mins: (-1 * ui.values[1])}, true);
-      }
-      else {
-        timer = (!timer ? setTimeout(update_live_graphs, refresh_time) : null);
+      if (ui.values[1] == 0){
         request_data(this.id, {stat_mins: (-1 * ui.values[0])}, true);
       }
-    }
+      else {
+        request_data(this.id, {stat_mins: (-1 * ui.values[0]), max_mins: (-1 * ui.values[1])}, true);
+      }
+   }
   });
 
-  var slider_info_vals = function(minDate, maxDate, hdfs_id){
-    $(".graph_instance#" + hdfs_id + " .slider-info").html( minDate.toLocaleTimeString().slice(0,5)
-                           + ' to ' + maxDate.toLocaleTimeString().slice(0,5) );
+  var set_slider_info = function(minDate, maxDate, hdfs_id){
+    minHour = minDate.getHours().toString();
+    minMinutes = minDate.getMinutes().toString();
+    if (minMinutes.length == 1) {
+      minMinutes = "0" + minMinutes;
+    }
+    maxHour = maxDate.getHours().toString();
+    maxMinutes = maxDate.getMinutes().toString();
+    if (maxMinutes.length == 1) {
+      maxMinutes = "0" + maxMinutes;
+    }
+    $(".graph_instance#" + hdfs_id + " .min-hour")[0].value = minHour;
+    $(".graph_instance#" + hdfs_id + " .min-minutes")[0].value = minMinutes;
+    $(".graph_instance#" + hdfs_id + " .max-hour")[0].value = maxHour;
+    $(".graph_instance#" + hdfs_id + " .max-minutes")[0].value = maxMinutes;
 	};
-});	
+
+  var set_slider_info_to_vals = function(vals, hdfs_id) {
+    maxSliderVal = slider_max[hdfs_id].getTime();
+    if (vals[1] > 0)
+      vals[1] = 0;
+    minDate = new Date(maxSliderVal + vals[0]*1000*60);
+    maxDate = new Date(maxSliderVal + vals[1]*1000*60);
+    set_slider_info(minDate, maxDate, hdfs_id);
+  };
+
+  var set_slider_vals_to_info = function(hdfs_id) {
+    maxSliderVal = slider_max[hdfs_id].getTime();;
+    minDate = new Date(maxSliderVal);
+    minDate.setHours($('.min-hour')[0].value);
+    minDate.setMinutes($('.min-minutes')[0].value);
+    maxDate = new Date(maxSliderVal);
+    maxDate.setHours($('.max-hour')[0].value);
+    maxDate.setMinutes($('.max-minutes')[0].value);
+
+    vals = [];
+    vals[0] = (maxSliderVal - minDate.getTime()) / (-1 * 60 * 1000);
+    vals[1] = (maxSliderVal - maxDate.getTime()) / (-1 * 60 * 1000);
+
+    min =$('.graph_instance#' + hdfs_id + ' .slider').slider('option', 'min');
+    if (!isNaN(vals[0]) && !isNaN(vals[1]) && vals[0] > min && vals[1] >= vals[0] && vals[1] <= 0){
+      $('.graph_instance#' + hdfs_id + ' .slider').slider('option', 'values', vals);
+    }
+    else {
+      vals = $('.graph_instance#' + hdfs_id + ' .slider').slider('option', 'values');
+      set_slider_info_to_vals(vals, hdfs_id);
+    }
+  };
+
+  $('.slider-redraw').on('click', function(e){
+    set_slider_vals_to_info($(this).parent()[0].id);
+  });
+});

@@ -48,6 +48,7 @@ class Ability
 
       if user.auditor?
         can :index, :blur_queries, :query_string
+        can :index, :audits
         can :more_info, :blur_queries, :query_string
       end
 

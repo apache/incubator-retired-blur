@@ -83,6 +83,8 @@ BlurAdmin::Application.routes.draw do
     end
   end
 
+  resources :audits, :only => [:index]
+
   match 'login' => 'user_sessions#new', :as => :login
   match 'logout' => 'user_sessions#destroy', :as => :logout
   match 'help/:tab' => 'application#help', :as => :help

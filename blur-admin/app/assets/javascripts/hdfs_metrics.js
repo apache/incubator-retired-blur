@@ -8,9 +8,10 @@ $(document).ready(function(){
   // Page constants //
 
   var hdfs_data = {};
-	var time_length = 10;
-	var refresh_time = 30000;
+	var time_length = 60;
+	var refresh_time = 20000;
   var slider_max = {};
+  var noRequest = false;
 	var actions = ['disk', 'nodes', 'block'];
 
 	// Hash of labels and object lookup strings for the various actions //
@@ -53,8 +54,11 @@ $(document).ready(function(){
 					timeformat: "%0m/%0d %H:%M %p"
 				},
         yaxes:[
-          { },
-          { position: 'right' }
+          { tickDecimals: 0 },
+          {
+            position: 'right',
+            tickDecimals: 0
+          }
         ],
         legend:{ container: $(".graph-legend") }
 			});
@@ -120,7 +124,8 @@ $(document).ready(function(){
             hdfs_data[id][action].max_time = new Date(point.created_at);
             hdfs_data[id][action].min_time = new Date(hdfs_data[id][action].metrics[0].data[0][0] + 4*60*60*1000);
 					}
-	
+
+          // Redraws active graph
 					if (graph_container.hasClass('active')){
             draw_graph(graph_container.find('.graph'), hdfs_data[id][action]);
             set_slider_info(hdfs_data[id][action].min_time, hdfs_data[id][action].max_time, id);
@@ -147,6 +152,10 @@ $(document).ready(function(){
       var sliderMin = $(".graph_instance#" + hdfs_id + " .slider").slider('option', 'min');
       if (sliderVals[1] == 0 || sliderMin == sliderVals[0]) {
         request_data(hdfs_id, {stat_id: hdfs_data[hdfs_id][actions[0]].largest_id});
+      }
+      else {
+        noRequest = true;
+        set_slider_vals_to_info(hdfs_id);
       }
       get_recent_stat(hdfs_id);
 		});
@@ -183,15 +192,21 @@ $(document).ready(function(){
 	timer = setTimeout(update_live_graphs, refresh_time);
 
   // Slider - in progress //
-  // slider currently moves over any time period in the last hour //
-  // min & max slide values change the range of the graph //
-  // TODO: allow for scale to go back 2 weeks //
-  // Flot recommends not going over 1,000 data points. We hit 1,000 if the scale is increased //
-  // to about 4 hours (need to consolidate data after that) //
+  // Slider currently moves over any time period in the last 12 hours //
+  // TODO
+  // Allow for scale to go back up to 2 weeks //
+  //   Flot recommends not going over 1,000 data points. We hit 1,000 if the scale is increased //
+  //   to about 4 hours (need to consolidate data after that) //
+  // Add functionality of grabbing center of slider and draging range //
+  // Look at other useful functionalities from flot //
+  //   Suggestion: tracking curves with crosshair //
 
+  // Creates slider
+  // Slide: changes the time fields as the slider is dragged
+  // Change: requests data for the graph when the slider is released
   $(".slider").slider({
     range: true,
-    min: -1*60,//past hour
+    min: -1*60*12,//past 12 hours
     max: 0,
     values: [-1 * time_length, 0],
     slide: function(event, ui) {
@@ -201,12 +216,15 @@ $(document).ready(function(){
       if (ui.values[1] == 0){
         request_data(this.id, {stat_mins: (-1 * ui.values[0])}, true);
       }
-      else {
+      else if (!noRequest) {
         request_data(this.id, {stat_mins: (-1 * ui.values[0]), max_mins: (-1 * ui.values[1])}, true);
+        noRequest = false;
       }
    }
   });
 
+  // Takes in the min and max values for the time fields as dates
+  // Sets the time fields to the minDate and maxDate
   var set_slider_info = function(minDate, maxDate, hdfs_id){
     minHour = minDate.getHours().toString();
     minMinutes = minDate.getMinutes().toString();
@@ -224,6 +242,8 @@ $(document).ready(function(){
     $(".graph_instance#" + hdfs_id + " .max-minutes")[0].value = maxMinutes;
 	};
 
+  // Sets the time fields to match the slider
+  // Have to pass in vals - used for 'slide' in slider (which does not change the slider values)
   var set_slider_info_to_vals = function(vals, hdfs_id) {
     maxSliderVal = slider_max[hdfs_id].getTime();
     if (vals[1] > 0)
@@ -233,6 +253,8 @@ $(document).ready(function(){
     set_slider_info(minDate, maxDate, hdfs_id);
   };
 
+  // Set the slider to match the change in the time fields
+  // If the time in the time fields is invalid, it will instead reset the time fields to match the slider
   var set_slider_vals_to_info = function(hdfs_id) {
     maxSliderVal = slider_max[hdfs_id].getTime();;
     minDate = new Date(maxSliderVal);
@@ -256,6 +278,7 @@ $(document).ready(function(){
     }
   };
 
+  // Listener for 'Redraw' button
   $('.slider-redraw').on('click', function(e){
     set_slider_vals_to_info($(this).parent()[0].id);
   });

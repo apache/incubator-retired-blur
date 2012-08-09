@@ -3,12 +3,11 @@ require 'spec_helper'
 describe PreferencesController do
   describe "actions" do
     before(:each) do
-      @user = FactoryGirl.create :user
-      @ability = Ability.new @user
-      @ability.stub!(:can?).and_return(true)
+      # Universal Setup
+      setup_tests
+      
+      # Preference for the current user
       @preference = FactoryGirl.create :preference
-      controller.stub!(:current_user).and_return(@user)
-      controller.stub!(:current_ability).and_return(@ability)
       User.stub!(:find).and_return @user
       Preference.stub(:find_by_pref_type_and_user_id).and_return(@preference)
     end

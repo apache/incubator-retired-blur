@@ -3,15 +3,14 @@ require "spec_helper"
 describe BlurQueriesController do
   describe "actions" do
     before do
+      # Universal Setup
+      setup_tests
+
+      # Mock out the blur client
       @client = mock(Blur::Blur::Client)
       BlurThriftClient.stub!(:client).and_return(@client)
 
-      @user = User.new
-      @ability = Ability.new @user
-      @ability.stub!(:can?).and_return(true)
-      controller.stub!(:current_ability).and_return(@ability)
-      Audit.stub! :log_event
-
+      # Blur Query model
       @blur_query = FactoryGirl.create :blur_query
       @user = User.new
       controller.stub!(:current_user).and_return(@user)

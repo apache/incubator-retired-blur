@@ -3,16 +3,16 @@ require "spec_helper"
 describe BlurTablesController do
   describe "actions" do
     before(:each) do
+      # Uninversal Setup
+      setup_tests
+
+      # Models used for model chain
       @zookeeper  = FactoryGirl.create :zookeeper
       @client = mock(Blur::Blur::Client)
       @blur_table = FactoryGirl.create :blur_table
       @cluster = FactoryGirl.create_list :cluster, 3
-      @user = FactoryGirl.create :user
-      @ability = Ability.new @user
-      controller.stub!(:current_user).and_return(@user)
 
-      Audit.stub! :log_event
-      @ability.stub!(:can?).and_return(true)
+      # Setup the chain
       @zookeeper.stub_chain(:blur_tables, :order).and_return [@blur_table]
       @zookeeper.stub_chain(:clusters, :order).and_return @cluster
       controller.stub!(:thrift_client).and_return(@client)

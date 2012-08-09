@@ -3,13 +3,12 @@ require 'spec_helper'
 describe UsersController do
   describe "actions" do
     before(:each) do
+      #Universal Setup
+      setup_tests
+
+      # Add preferences to the current user
       @user = FactoryGirl.create :user_with_preferences # user with all roles
-      @ability = Ability.new @user
       User.stub(:find).and_return @user
-      controller.stub!(:current_user).and_return(@user)
-      Audit.stub!(:log_event)
-      controller.stub!(:current_user).and_return(@user)
-      controller.stub!(:current_ability).and_return(@ability)
     end
 
     describe "GET index" do

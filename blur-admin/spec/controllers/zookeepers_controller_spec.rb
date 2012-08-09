@@ -3,14 +3,8 @@ require 'spec_helper'
 describe ZookeepersController do
   describe "actions" do
     before do
-      @user = FactoryGirl.create :user
-      @ability = Ability.new @user
-      @ability.stub!(:can?).and_return(true)
-      controller.stub!(:current_ability).and_return(@ability)
-      controller.stub!(:current_user).and_return(@user)
-
-      #stub out audit calls
-      Audit.stub!(:log_event)
+      # Universal setup
+      setup_tests
 
       # Set up association chain
       @zookeeper  = FactoryGirl.create :zookeeper
@@ -18,6 +12,7 @@ describe ZookeepersController do
       # ApplicationController.current_zookeeper
       Zookeeper.stub(:find_by_id).and_return(@zookeeper)
       Zookeeper.stub!(:first).and_return(@zookeeper)
+
       # ApplicationController.zookeepers
       Zookeeper.stub(:order).and_return [@zookeeper]
     end

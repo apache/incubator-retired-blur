@@ -1,10 +1,47 @@
 //= require jquery.dynatree
 
 $(document).ready(function() {
-  var fetch_error, get_filter_ajax, hide_all_tabs, no_results, populate_form, resizeSearch, retrieve_search, setup_filter_tree, toggle_submit;
+  // PUSH STATE SEARCH QUERIES
+  // When the history is popped add the query and table
+  // then submit the query
+  window.onpopstate = function(e) {
+    if(e.state){
+      $('#blur_table').val(e.state.table_id);
+      $('#query_string').val(e.state.query);
+      $('#search_submit').click();
+    }
+  };
+
+  $('#search_form').on('submit', function(e) {
+    // if the browser doesnt support push state return
+    if (!Modernizr.history) {
+      return;
+    }
+
+    // History state object
+    var state = {
+      table_id: $('#blur_table').find('option:selected').val(),
+      query: $('#query_string').val()
+    };
+
+    // Build the new stateful query search
+    var stateful_url = '?table_id=' + state.table_id + '&query=' + state.query;
+    var base_url = location.protocol + "//" + location.host + location.pathname;
+    var full_url = base_url + stateful_url;
+
+    // If the length is zero it is the first search
+    // and we want replace (avoid going back twice)
+    if(location.search.length === 0){
+      history.replaceState(state, "Search | Blur Console", full_url);
+    // Otherwise we need to check that we arent searching
+    // using the same query (dont push if it is the same)
+    } else if(location.search !== stateful_url){
+      history.pushState(state, "Search | Blur Console", full_url);
+    }
+  });
   
   /********** METHODS **********/
-  resizeSearch = function() {
+  var resizeSearch = function() {
     var footerHeight, headerHeight, resultWrapper;
     headerHeight = parseInt($('.navbar').css('height'));
     footerHeight = parseInt($('#ft').css('height'));
@@ -12,14 +49,14 @@ $(document).ready(function() {
     $('#results_wrapper').css('max-height', window.innerHeight - (footerHeight + headerHeight + parseInt(resultWrapper.css('margin-top')) + 50));
   };
   
-  hide_all_tabs = function() {
+  var hide_all_tabs = function() {
     $('.tab:visible').slideUp('fast');
     $('.arrow_up').hide();
     $('.arrow_down').show();
   };
   
   // method to initialize the filter tree
-  setup_filter_tree = function() {
+  var setup_filter_tree = function() {
     $('.column_family_filter').dynatree({
       checkbox: true,
       selectMode: 3,
@@ -27,7 +64,7 @@ $(document).ready(function() {
     });
   };
   
-  get_filter_ajax = function() {
+  var get_filter_ajax = function() {
     return {
       url: Routes.filters_zookeeper_searches_path(CurrentZookeeper, $('#blur_table').val()),
       type: 'get'
@@ -35,7 +72,7 @@ $(document).ready(function() {
   };
   
   // Function to enable or disable submit button based on checkbox status
-  toggle_submit = function() {
+  var toggle_submit = function() {
     if ($(".column_family_filter").dynatree("getTree").getSelectedNodes().length > 0 && $('#query_string').val() !== '') {
       $('#search_submit').removeAttr('disabled');
       if ($('#save_name').val() !== '') {
@@ -112,12 +149,12 @@ $(document).ready(function() {
   
   /********** more Functions **********/
   
-  fetch_error = function(error) {
+  var fetch_error = function(error) {
     $('#results_container').html("<div class='no-results'>An error has occured: " + error + "</div>");
     $('#results_wrapper').addClass('noResults').removeClass('hidden');
   };
   
-  no_results = function() {
+  var no_results = function() {
     $('#results_container').html('<div class="no-results">No results for your search.</div>');
     $('#results_wrapper').addClass('noResults').removeClass('hidden');
   };
@@ -144,7 +181,7 @@ $(document).ready(function() {
     return e.stopPropagation();
   });
   
-  populate_form = function(data) {
+  var populate_form = function(data) {
     var column, _i, _len, _ref;
     $(".column_family_filter").dynatree("getRoot").visit(function(node) {
       return node.select(false);
@@ -194,7 +231,7 @@ $(document).ready(function() {
     $('#update_button').removeAttr('disabled');
   };
   
-  retrieve_search = function(id) {
+  var retrieve_search = function(id) {
     $.ajax(Routes.load_zookeeper_search_path(CurrentZookeeper, id), {
       type: 'POST',
       success: function(data) {

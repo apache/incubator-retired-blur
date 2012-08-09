@@ -3,10 +3,10 @@ require 'spec_helper'
 describe ApplicationController do
   describe "actions" do
     before(:each) do
-      @user = FactoryGirl.create :user
-      @ability = Ability.new @user
-      @ability.stub!(:can?).and_return(true)
-      controller.stub!(:current_ability).and_return(@ability)
+      # Set up the stubs and variables
+      setup_variables_and_stubs
+      # Set the ability (leave current user unset for testing purposes)
+      set_ability
     end
 
     it "Current user should grab the current user session and set the current user" do

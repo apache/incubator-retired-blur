@@ -52,7 +52,7 @@
           background: url("folder16.png") no-repeat scroll left center transparent;
           padding-left: 20px;
         }
-        &:hover {
+        &:hover, &.rclicked{
           border:  1px solid #B8D6FD;
         }
         &.osxSelected {

@@ -3,11 +3,8 @@ require "spec_helper"
 describe SearchesController do
   describe "actions" do
     before (:each) do
-      @ability = Ability.new User.new
-      @user = User.new
-      @ability.stub(:can?).and_return(true)
-      controller.stub(:current_ability).and_return(@ability)
-      controller.stub(:current_user).and_return(@user)
+      # Universal Setup
+      setup_tests
     end
 
     describe "index" do

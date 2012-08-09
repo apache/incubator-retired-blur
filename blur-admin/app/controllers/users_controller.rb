@@ -31,6 +31,7 @@ class UsersController < ApplicationController
 
   def update
     if @user.update_attributes(params[:user])
+      Audit.log_event(current_user, "User(#{@user.username}) roles were updated", "users", "update")
       if can? :index, :users
         redirect_to users_path, :notice => "User Updated"
       else
@@ -43,6 +44,7 @@ class UsersController < ApplicationController
 
   def destroy
     @user.destroy
+    Audit.log_event(current_user, "User(#{@user.username}) was removed", "users", "delete")
     redirect_to users_path, :notice => "User Removed"
   end
 

@@ -3,13 +3,16 @@ require "spec_helper"
 describe BlurTablesController do
   describe "actions" do
     before(:each) do
+      # Uninversal Setup
+      setup_tests
+
+      # Models used for model chain
       @zookeeper  = FactoryGirl.create :zookeeper
       @client = mock(Blur::Blur::Client)
       @blur_table = FactoryGirl.create :blur_table
       @cluster = FactoryGirl.create_list :cluster, 3
-      @ability = Ability.new User.new
 
-      @ability.stub!(:can?).and_return(true)
+      # Setup the chain
       @zookeeper.stub_chain(:blur_tables, :order).and_return [@blur_table]
       @zookeeper.stub_chain(:clusters, :order).and_return @cluster
       controller.stub!(:thrift_client).and_return(@client)
@@ -61,6 +64,11 @@ describe BlurTablesController do
         @blur_table.should_receive(:enable).exactly(@tables.length).times
         put :enable, :tables => @tables
       end
+
+      it "should log an audit for every table enabled" do
+        Audit.should_receive(:log_event).exactly(@tables.length).times
+        put :enable, :tables => @tables
+      end
     end
 
     describe "PUT disable" do
@@ -76,6 +84,11 @@ describe BlurTablesController do
           BlurTable.should_receive(:find).with(id.to_s)
         end
         @blur_table.should_receive(:disable).exactly(@tables.length).times
+        put :disable, :tables => @tables
+      end
+
+      it "should log an audit for every table disabled" do
+        Audit.should_receive(:log_event).exactly(@tables.length).times
         put :disable, :tables => @tables
       end
     end
@@ -104,6 +117,11 @@ describe BlurTablesController do
       it "should set destroy index to false when the param is not true" do
         @blur_table.should_receive(:blur_destroy).at_least(:once).with(false, kind_of(String))
         delete :destroy, :tables => @tables, :delete_index => 'not true'
+      end
+
+      it "should log an audit for every table destroyed" do
+        Audit.should_receive(:log_event).exactly(@tables.length).times
+        put :destroy, :tables => @tables
       end
     end
 

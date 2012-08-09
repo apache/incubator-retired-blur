@@ -12,7 +12,7 @@
         = "Status Unavailable"
       .connection-url
         = @current_zookeeper.url
-      %i.icon-remove-sign.confirm-action{:title => "Forget This Zookeeper", 'data-reload' => 'true', 'data-message' => 'forget this zookeeper'}
+      %i.icon-remove-sign.confirm-action{:title => "Forget This Zookeeper", 'data-reload' => 'true', 'data-message' => 'forget this zookeeper', 'data-url' => "#{zookeeper_path(@current_zookeeper)}"}
   #blur
     .row
       #controllers.span6
@@ -34,7 +34,7 @@
                   %td
                     =controller.blur_version
                   %td
-                    %i.icon-remove-sign.confirm-action{:title => 'Remove This Controller','data-message' => 'remove this controller'}
+                    %i.icon-remove-sign.confirm-action{:title => 'Remove This Controller','data-message' => 'remove this controller', 'data-url' => "#{destroy_controller_zookeeper_path(@current_zookeeper, controller.id)}"}
         -else
           %noController No Available Controllers
 
@@ -63,6 +63,6 @@
                   %td
                     %a.more-shard-info{:href => shards_zookeeper_path(@current_zookeeper.id, cluster.id)} View Shards
                   %td
-                    %i.icon-remove-sign.confirm-action{:title => 'Remove This Cluster','data-message' => 'remove this cluster'}
+                    %i.icon-remove-sign.confirm-action{:title => 'Remove This Cluster','data-message' => 'remove this cluster', 'data-url' => "#{destroy_cluster_zookeeper_path(@current_zookeeper, cluster.id)}"}
         -else
           %noController No Available Clusters

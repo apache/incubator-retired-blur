@@ -6,7 +6,7 @@
 
 $(document).ready(function() {
   //document varss
-  var delete_file, draw_radial_graph, finishUploading, make_dir, navigateUsingPath, paste_buffer,
+  var delete_file, draw_radial_graph, finishUploading, make_dir, navigateUsingPath, paste_buffer, rightClicked,
     perform_action, reload_hdfs, show_dir_props, show_hdfs_props, upload, uploadFailed, in_file = [],
     allSelected = [], columnSelected = [], lastClicked, ctrlHeld = false, shiftHeld = false, historyUndef = false;
 
@@ -749,6 +749,7 @@ $(document).ready(function() {
 
   $(document).on('click', function(e){
     if(e.which == 1){ //checks for left mouse button (needed in FF 3.6)
+      $(rightClicked).removeClass('rclicked');
       var elems = $(e.target).closest('li');
 
       //click outside of the lists
@@ -817,6 +818,10 @@ $(document).ready(function() {
         $('.innerWindow').enableContextMenu();
         $('.innerWindow').first().disableContextMenu();
       }
+    }if(e.which == 3){ //to account for the right click
+      $(rightClicked).removeClass('rclicked');
+      rightClicked = $(e.target).closest('li');
+      $(rightClicked).addClass('rclicked');
     }
     else {
       //NOTE: this only works for FF 3.6
@@ -842,4 +847,5 @@ $(document).ready(function() {
     ctrlHeld = (e.ctrlKey  || e.which == 224);
     shiftHeld = e.shiftKey;
   });
+  
 });

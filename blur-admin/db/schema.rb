@@ -11,14 +11,23 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120621155420) do
+ActiveRecord::Schema.define(:version => 20120808182829) do
+
+  create_table "audits", :force => true do |t|
+    t.integer  "user_id"
+    t.string   "mutation"
+    t.string   "model_affected"
+    t.string   "action"
+    t.datetime "created_at",     :null => false
+    t.datetime "updated_at",     :null => false
+  end
 
   create_table "blur_queries", :force => true do |t|
     t.text     "query_string",             :limit => 2147483647
     t.integer  "complete_shards"
     t.integer  "uuid",                     :limit => 8
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",                                     :null => false
+    t.datetime "updated_at",                                     :null => false
     t.boolean  "super_query_on"
     t.string   "facets"
     t.integer  "start"

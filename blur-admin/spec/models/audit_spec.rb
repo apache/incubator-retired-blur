@@ -10,4 +10,10 @@ describe Audit do
       created_audit.model_affected == "model"
     end
   end
+
+  describe "scope" do
+    it "should return the audits within the given time range" do
+      pending "need to implement"
+    end
+  end
 end

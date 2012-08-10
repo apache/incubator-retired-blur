@@ -35,6 +35,10 @@
         }
       }
 
+      &.sorting_disabled{
+        cursor: default;
+      }
+
       &.headerSortDown{
         .icon-chevron-up{ display: none; }
         .icon-chevron-down{ display: block; }

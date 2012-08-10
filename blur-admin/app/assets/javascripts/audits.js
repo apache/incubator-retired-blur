@@ -13,7 +13,7 @@ $(document).ready(function() {
     null,
     null,
     null,
-    {asSorting: ['desc']}
+    {asSorting: ['desc', 'asc']}
   ];
 
   $('#audits_table > table').dataTable({

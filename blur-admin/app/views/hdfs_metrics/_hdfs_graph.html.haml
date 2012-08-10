@@ -36,10 +36,12 @@
                 .slider-info{:id => hdfs_instance.id}
                   %button{:class=>"slider-redraw"}
                     Redraw
+                  %input{:class=>"min-date", :type=>"text"}
                   %input{:class=>"min-hour slider-time", :type=>"textbox"}
                   =':'
                   %input{:class=>"min-minutes slider-time", :type=>"textbox"}
                   to
+                  %input{:class=>"max-date", :type=>"text"}
                   %input{:class=>"max-hour slider-time", :type=>"textbox"}
                   =':'
                   %input{:class=>"max-minutes slider-time", :type=>"textbox"}

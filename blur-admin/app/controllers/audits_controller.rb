@@ -5,8 +5,6 @@ class AuditsController < ApplicationController
     hours = params[:hours] || 48
     @audits = Audit.recent hours.to_i
 
-    puts @audits.length
-
     respond_to do |format|
       format.html
       format.json { render :json => @audits.as_json(

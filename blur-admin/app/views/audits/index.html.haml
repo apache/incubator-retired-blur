@@ -1,2 +1,24 @@
-%h1 Audit#index
-%p Find me in app/views/audit/index.html.haml
+- content_for :title, 'Audits'
+- content_for :javascript do
+  =javascript_include_tag 'audits.js'
+
+#audits_wrapper
+  %h2 Audits
+  #audits_table
+    %table.table.table-bordered.table-striped
+      %thead
+        %tr
+        - headers = ['Action Taken', 'Username', 'Model Affected', 'Mutation Type', 'Date']
+        - headers.each do |header|
+          %th
+            .header_content
+              %div=header
+              =render :partial => 'shared/icons'
+      %tbody
+        - for audit in @audits
+          %tr
+            %td= audit.action
+            %td= audit.user.username
+            %td= audit.model_affected
+            %td= audit.mutation
+            %td= audit.created_at

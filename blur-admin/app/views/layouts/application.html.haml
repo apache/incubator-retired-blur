@@ -45,9 +45,13 @@
 										= link_to 'HDFS File Browser', hdfs_index_path
 									%li{:class => controller == 'hdfs_metrics' && 'active'}
 										= link_to 'HDFS Metrics', hdfs_metrics_path
+							- if can? :index, :audits
+								%li{:class => controller == 'audits' && action == 'index' && 'active'}
+									= link_to 'Audits', audits_path
 							- if can? :index, :users
 								%li{:class => controller == 'users' && action == 'index' && 'active'}
 									= link_to 'Admin', users_path
+							
 						%ul.nav.pull-right
 							- if @zookeepers && @zookeepers.length > 1
 								%li

@@ -1,0 +1,63 @@
+#audits_wrapper{
+  #audits_table{
+      .row {
+        & > div:first-child {
+          vertical-align: top;
+          padding-top: 15px;
+        }
+
+        & > div:last-child {
+          float: right;
+        }
+      }
+
+      .dataTables_filter{ 
+        width: 100%;
+        float: right;
+        input{ width: 96%; }
+      }
+      
+      .dataTables_info {
+        padding-top: 8px;
+      }
+
+      .dataTables_processing {
+        padding-top: 8px;
+      }
+    th{
+      cursor: pointer;
+      margin-right: 10px;
+      .header_content {
+        position: relative;
+        div {
+          display: inline-block;
+          margin-right: 10px;
+        }
+      }
+
+      &.headerSortDown{
+        .icon-chevron-up{ display: none; }
+        .icon-chevron-down{ display: block; }
+      }
+
+      &.headerSortUp{
+        .icon-chevron-up{ display: block; }
+        .icon-chevron-down{ display: none; }
+      }
+
+      i{
+        position:absolute;
+        display: none;
+        &.icon-chevron-up{
+          top: 5px;
+          right: 10px;
+        }
+
+        &.icon-chevron-down{
+          bottom: 5px;
+          right: 10px;
+        }
+      }
+    }
+  }
+}

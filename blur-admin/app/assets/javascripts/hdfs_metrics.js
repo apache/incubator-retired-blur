@@ -192,7 +192,8 @@ $(document).ready(function(){
 	timer = setTimeout(update_live_graphs, refresh_time);
 
   // Slider - in progress //
-  // Slider currently moves over any time period in the last 12 hours //
+  // Slider currently moves over any time period in the last 24 hours //
+  // Change the slider min val to get a different range, make sure that datepicker matches this range
   // TODO
   // Allow for scale to go back up to 2 weeks //
   //   Flot recommends not going over 1,000 data points. We hit 1,000 if the scale is increased //
@@ -200,13 +201,14 @@ $(document).ready(function(){
   // Add functionality of grabbing center of slider and draging range //
   // Look at other useful functionalities from flot //
   //   Suggestion: tracking curves with crosshair //
+  // Change time to AM and PM (instead of military time //
 
   // Creates slider
   // Slide: changes the time fields as the slider is dragged
   // Change: requests data for the graph when the slider is released
   $(".slider").slider({
     range: true,
-    min: -1*60*12,//past 12 hours
+    min: -1*60*24,//past 24 hours in minutes **CHANGE TO GET DIF TIME SPAN (up to 2 weeks available - match slider)**
     max: 0,
     values: [-1 * time_length, 0],
     slide: function(event, ui) {
@@ -221,6 +223,11 @@ $(document).ready(function(){
         noRequest = false;
       }
    }
+  });
+
+  $(".min-date, .max-date").datepicker({
+    minDate: -1,//past 24 hours **CHANGE TO GET DIF TIME SPAN (up to 2 weeks available - match slider)**
+    maxDate: 0
   });
 
   // Takes in the min and max values for the time fields as dates
@@ -240,6 +247,9 @@ $(document).ready(function(){
     $(".graph_instance#" + hdfs_id + " .min-minutes")[0].value = minMinutes;
     $(".graph_instance#" + hdfs_id + " .max-hour")[0].value = maxHour;
     $(".graph_instance#" + hdfs_id + " .max-minutes")[0].value = maxMinutes;
+
+    $(".graph_instance#" + hdfs_id + " .min-date").datepicker('setDate', minDate);
+    $(".graph_instance#" + hdfs_id + " .max-date").datepicker('setDate', maxDate);
 	};
 
   // Sets the time fields to match the slider
@@ -257,10 +267,10 @@ $(document).ready(function(){
   // If the time in the time fields is invalid, it will instead reset the time fields to match the slider
   var set_slider_vals_to_info = function(hdfs_id) {
     maxSliderVal = slider_max[hdfs_id].getTime();;
-    minDate = new Date(maxSliderVal);
+    minDate = $(".graph_instance#" + hdfs_id + " .min-date").datepicker('getDate');
     minDate.setHours($('.min-hour')[0].value);
     minDate.setMinutes($('.min-minutes')[0].value);
-    maxDate = new Date(maxSliderVal);
+    maxDate = $(".graph_instance#" + hdfs_id + " .max-date").datepicker('getDate');
     maxDate.setHours($('.max-hour')[0].value);
     maxDate.setMinutes($('.max-minutes')[0].value);
 

@@ -80,6 +80,10 @@ $graph_height: $instance_height - $title_height;
               text-align: right;
               width: 14px;
             }
+            .min-date, .max-date {
+              text-align: right;
+              width: 64px;
+            }
             .slider-redraw { margin: 0 5px 8px 0; }
           }
           .slider-box {

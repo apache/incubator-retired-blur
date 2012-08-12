@@ -277,6 +277,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
 
     this.compressionBlockSize = 32768;
 
+    this.cluster = "default";
+
     this.blockCaching = true;
 
     this.readOnly = false;
@@ -376,7 +378,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
 
     this.compressionBlockSize = 32768;
 
-    this.cluster = null;
+    this.cluster = "default";
+
     this.name = null;
     this.similarityClass = null;
     this.blockCaching = true;

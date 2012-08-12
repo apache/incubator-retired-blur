@@ -727,7 +727,7 @@ module Blur
         # 
         COMPRESSIONBLOCKSIZE => {:type => ::Thrift::Types::I32, :name => 'compressionBlockSize', :default => 32768},
         # 
-        CLUSTER => {:type => ::Thrift::Types::STRING, :name => 'cluster'},
+        CLUSTER => {:type => ::Thrift::Types::STRING, :name => 'cluster', :default => %q"default"},
         # 
         NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
         # 

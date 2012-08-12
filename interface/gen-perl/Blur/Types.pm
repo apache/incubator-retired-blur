@@ -3060,7 +3060,7 @@ sub new {
   $self->{tableUri} = undef;
   $self->{compressionClass} = "org.apache.hadoop.io.compress.DefaultCodec";
   $self->{compressionBlockSize} = 32768;
-  $self->{cluster} = undef;
+  $self->{cluster} = "default";
   $self->{name} = undef;
   $self->{similarityClass} = undef;
   $self->{blockCaching} = 1;

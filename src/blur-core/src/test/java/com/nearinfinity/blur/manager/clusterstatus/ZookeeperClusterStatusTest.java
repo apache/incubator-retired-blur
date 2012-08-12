@@ -31,6 +31,8 @@ import org.junit.Test;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
+import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurUtil;
 
 public class ZookeeperClusterStatusTest {
@@ -71,8 +73,9 @@ public class ZookeeperClusterStatusTest {
       }
     });
     serverThread.start();
-    for (int i = 0; i < 10; i++) {
-      Thread.sleep(1000);
+    long s = System.nanoTime();
+    while (s + 10000000000L > System.nanoTime()) {
+      Thread.sleep(10);
       try {
         ZooKeeper zk = new ZooKeeper(connectionString, 30000, new Watcher() {
           @Override
@@ -193,9 +196,40 @@ public class ZookeeperClusterStatusTest {
     assertEquals(Arrays.asList(TEST), clusterStatus.getTableList());
   }
 
-  private void createTable(String test) throws KeeperException, InterruptedException {
-    String tablePath = ZookeeperPathConstants.getTablePath(DEFAULT, TEST);
-    zooKeeper.create(tablePath, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+  @Test
+  public void testIsEnabledNoTable() {
+    assertFalse(clusterStatus.isEnabled(false, DEFAULT, "notable"));
+    assertFalse(clusterStatus.isEnabled(true, DEFAULT, "notable"));
+  }
+
+  @Test
+  public void testIsEnabledDisabledTable() throws KeeperException, InterruptedException {
+    createTable("disabledtable", false);
+    assertFalse(clusterStatus.isEnabled(false, DEFAULT, "disabledtable"));
+    assertFalse(clusterStatus.isEnabled(true, DEFAULT, "disabledtable"));
+  }
+  
+  @Test
+  public void testIsEnabledEnabledTable() throws KeeperException, InterruptedException {
+    createTable("enabledtable", true);
+    assertTrue(clusterStatus.isEnabled(false, DEFAULT, "enabledtable"));
+    assertTrue(clusterStatus.isEnabled(true, DEFAULT, "enabledtable"));
+  }
+
+  private void createTable(String name) throws KeeperException, InterruptedException {
+    createTable(name, true);
+  }
+
+  private void createTable(String name, boolean enabled) throws KeeperException, InterruptedException {
+    TableDescriptor tableDescriptor = new TableDescriptor();
+    tableDescriptor.setName(name);
+    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
+    tableDescriptor.setTableUri("./tmp/zk_test_hdfs");
+    tableDescriptor.setIsEnabled(enabled);
+    clusterStatus.createTable(tableDescriptor);
+    if (enabled) {
+      clusterStatus.enableTable(tableDescriptor.getCluster(), name);
+    }
   }
 
   public abstract class WaitForAnswerToBeCorrect {

@@ -187,7 +187,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         String existingCluster = _tableToClusterCache.get(table);
         if (existingCluster == null) {
           _tableToClusterCache.put(table, cluster);
-          _enabledTableWatchers.put(table, new WatchNodeExistance(_zk, ZookeeperPathConstants.getTableEnabledPath(cluster, table)).watch(new WatchNodeExistance.OnChange() {
+          WatchNodeExistance watchNodeExistance = new WatchNodeExistance(_zk, ZookeeperPathConstants.getTableEnabledPath(cluster, table));
+          watchNodeExistance.watch(new WatchNodeExistance.OnChange() {
             @Override
             public void action(Stat stat) {
               String clusterTableKey = getClusterTableKey(cluster, table);
@@ -197,7 +198,10 @@ public class ZookeeperClusterStatus extends ClusterStatus {
                 _enabledMap.put(clusterTableKey, true);
               }
             }
-          }));
+          });
+          if (_enabledTableWatchers.putIfAbsent(table, watchNodeExistance) != null) {
+            watchNodeExistance.close();
+          }
         } else if (!existingCluster.equals(cluster)) {
           LOG.error("Error table [{0}] is being served by more than one cluster [{1},{2}].", table, existingCluster, cluster);
         }
@@ -331,14 +335,12 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public boolean isEnabled(boolean useCache, String cluster, String table) {
-    // if (useCache) {
-    // Boolean enabled = _enabledMap.get(getClusterTableKey(cluster, table));
-    // if (enabled == null) {
-    // return false;
-    // } else {
-    // return enabled;
-    // }
-    // }
+    if (useCache) {
+      Boolean enabled = _enabledMap.get(getClusterTableKey(cluster, table));
+      if (enabled != null) {
+        return enabled;
+      }
+    }
     long s = System.nanoTime();
     String tablePathIsEnabled = ZookeeperPathConstants.getTableEnabledPath(cluster, table);
     try {

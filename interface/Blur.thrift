@@ -590,7 +590,7 @@ struct TableDescriptor {
   /**
    *
    */
-  7:string cluster,
+  7:string cluster = 'default',
   /**
    *
    */

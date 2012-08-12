@@ -116,7 +116,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   public void init() throws KeeperException, InterruptedException, IOException {
-    setupZookeeper();
+    BlurUtil.setupZookeeper(_zookeeper, cluster);
     _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
     _closer = new BlurIndexCloser();
     _closer.init();
@@ -134,18 +134,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _running.set(true);
     setupTableWarmer();
     watchForShardServerChanges();
-  }
-
-  private void setupZookeeper() throws KeeperException, InterruptedException {
-    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getBasePath());
-    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getOnlineControllersPath());
-    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getClustersPath());
-    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getClusterPath(cluster));
-    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getSafemodePath(cluster));
-    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getRegisteredShardsPath(cluster));
-    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getOnlinePath(cluster));
-    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getOnlineShardsPath(cluster));
-    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getTablesPath(cluster));
   }
 
   private void watchForShardServerChanges() {

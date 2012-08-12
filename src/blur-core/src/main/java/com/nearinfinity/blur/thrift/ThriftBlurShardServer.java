@@ -144,7 +144,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     BlurFilterCache filterCache = getFilterCache(configuration);
     BlurIndexWarmup indexWarmup = getIndexWarmup(configuration);
     IndexDeletionPolicy indexDeletionPolicy = new TimeBasedIndexDeletionPolicy(configuration.getLong(BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE, 60000));
-    
+
     final DistributedIndexServer indexServer = new DistributedIndexServer();
     indexServer.setBlurMetrics(blurMetrics);
     indexServer.setCache(cache);
@@ -158,8 +158,8 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexServer.setSafeModeDelay(configuration.getLong(BLUR_SHARD_SAFEMODEDELAY, 60000));
     indexServer.setWarmup(indexWarmup);
     indexServer.setIndexDeletionPolicy(indexDeletionPolicy);
-    indexServer.setTimeBetweenCommits(configuration.getLong(BLUR_SHARD_TIME_BETWEEN_COMMITS,60000));
-    indexServer.setTimeBetweenRefreshs(configuration.getLong(BLUR_SHARD_TIME_BETWEEN_REFRESHS,500));
+    indexServer.setTimeBetweenCommits(configuration.getLong(BLUR_SHARD_TIME_BETWEEN_COMMITS, 60000));
+    indexServer.setTimeBetweenRefreshs(configuration.getLong(BLUR_SHARD_TIME_BETWEEN_REFRESHS, 500));
     indexServer.init();
 
     final IndexManager indexManager = new IndexManager();

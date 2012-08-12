@@ -10,14 +10,10 @@ import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.clusterstatus.ClusterStatus;
-import com.nearinfinity.blur.manager.indexserver.utils.CreateTable;
-import com.nearinfinity.blur.manager.indexserver.utils.DisableTable;
-import com.nearinfinity.blur.manager.indexserver.utils.EnableTable;
-import com.nearinfinity.blur.manager.indexserver.utils.RemoveTable;
+import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
-import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public abstract class TableAdmin implements Iface {
 
@@ -50,7 +46,7 @@ public abstract class TableAdmin implements Iface {
       } else if (tableDescriptor.compressionBlockSize < 8192) {
         tableDescriptor.compressionBlockSize = 8192;
       }
-      CreateTable.createTable(_zookeeper, tableDescriptor);
+      _clusterStatus.createTable(tableDescriptor);
     } catch (Exception e) {
       LOG.error("Unknown error during create of [table={0}, tableDescriptor={1}]", e, tableDescriptor.name, tableDescriptor);
       throw new BException(e.getMessage(), e);
@@ -67,7 +63,7 @@ public abstract class TableAdmin implements Iface {
       if (cluster == null) {
         throw new BlurException("Table [" + table + "] not found.", null);
       }
-      DisableTable.disableTable(_zookeeper, cluster, table);
+      _clusterStatus.disableTable(cluster, table);
       waitForTheTableToDisable(cluster, table);
       waitForTheTableToDisengage(cluster, table);
     } catch (Exception e) {
@@ -102,7 +98,7 @@ public abstract class TableAdmin implements Iface {
       if (cluster == null) {
         throw new BlurException("Table [" + table + "] not found.", null);
       }
-      EnableTable.enableTable(_zookeeper, cluster, table);
+      _clusterStatus.enableTable(cluster, table);
       waitForTheTableToEnable(cluster, table);
       waitForTheTableToEngage(cluster, table);
     } catch (Exception e) {
@@ -158,7 +154,7 @@ public abstract class TableAdmin implements Iface {
       if (cluster == null) {
         throw new BlurException("Table [" + table + "] not found.", null);
       }
-      RemoveTable.removeTable(_zookeeper, cluster, table, deleteIndexFiles);
+      _clusterStatus.removeTable(cluster, table, deleteIndexFiles);
     } catch (Exception e) {
       LOG.error("Unknown error during remove of [table={0}]", e, table);
       throw new BException(e.getMessage(), e);

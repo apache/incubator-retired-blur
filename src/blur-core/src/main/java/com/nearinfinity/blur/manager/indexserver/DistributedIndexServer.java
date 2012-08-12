@@ -54,7 +54,6 @@ import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.manager.BlurFilterCache;
 import com.nearinfinity.blur.manager.clusterstatus.ClusterStatus;
 import com.nearinfinity.blur.manager.clusterstatus.ZookeeperPathConstants;
-import com.nearinfinity.blur.manager.indexserver.utils.CreateTable;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexReader;
@@ -452,7 +451,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     if (compressionClass != null) {
       CompressionCodec compressionCodec;
       try {
-        compressionCodec = CreateTable.getInstance(compressionClass, CompressionCodec.class);
+        compressionCodec = BlurUtil.getInstance(compressionClass, CompressionCodec.class);
         directory = new CompressedFieldDataDirectory(directory, compressionCodec, compressionBlockSize);
       } catch (Exception e) {
         throw new IOException(e);

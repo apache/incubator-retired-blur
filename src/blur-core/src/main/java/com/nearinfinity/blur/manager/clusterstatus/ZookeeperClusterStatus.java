@@ -29,21 +29,29 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.DeflateCodec;
+import org.apache.lucene.search.Similarity;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TJSONProtocol;
 import org.apache.thrift.transport.TMemoryInputTransport;
+import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
 
+import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
 import com.nearinfinity.blur.thrift.generated.ColumnPreCache;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.zookeeper.WatchChildren;
 import com.nearinfinity.blur.zookeeper.WatchChildren.OnChange;
 import com.nearinfinity.blur.zookeeper.WatchNodeData;
@@ -143,7 +151,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     @Override
     public void action(Stat stat) {
       if (stat != null) {
-        _safeModeDataWatchers.put(cluster, new WatchNodeData(_zk, ZookeeperPathConstants.getSafemodePath(cluster)).watch(new WatchNodeData.OnChange() {
+        WatchNodeData watchNodeData = new WatchNodeData(_zk, ZookeeperPathConstants.getSafemodePath(cluster));
+        watchNodeData.watch(new WatchNodeData.OnChange() {
           @Override
           public void action(byte[] data) {
             if (data == null) {
@@ -155,7 +164,11 @@ public class ZookeeperClusterStatus extends ClusterStatus {
               _safeModeMap.put(cluster, Long.parseLong(value));
             }
           }
-        }));
+        });
+        WatchNodeData nodeData = _safeModeDataWatchers.put(cluster, watchNodeData);
+        if (nodeData != null) {
+          nodeData.close();
+        }
       }
     }
   }
@@ -513,10 +526,9 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   public boolean isInSafeMode(boolean useCache, String cluster) {
     if (useCache) {
       Long safeModeTimestamp = _safeModeMap.get(cluster);
-      if (safeModeTimestamp == Long.MIN_VALUE) {
-        return true;
+      if (safeModeTimestamp != Long.MIN_VALUE) {
+        return safeModeTimestamp < System.currentTimeMillis() ? false : true;
       }
-      return safeModeTimestamp < System.currentTimeMillis() ? false : true;
     }
     long s = System.nanoTime();
     try {
@@ -640,5 +652,149 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       long e = System.nanoTime();
       LOG.info("trace isReadOnly took [" + (e - s) / 1000000.0 + " ms]");
     }
+  }
+
+  @Override
+  public void createTable(TableDescriptor tableDescriptor) {
+    long s = System.nanoTime();
+    try {
+      if (tableDescriptor.compressionClass == null) {
+        tableDescriptor.compressionClass = DeflateCodec.class.getName();
+      }
+      if (tableDescriptor.similarityClass == null) {
+        tableDescriptor.similarityClass = FairSimilarity.class.getName();
+      }
+      String table = BlurUtil.nullCheck(tableDescriptor.name, "tableDescriptor.name cannot be null.");
+      String cluster = BlurUtil.nullCheck(tableDescriptor.cluster, "tableDescriptor.cluster cannot be null.");
+      BlurAnalyzer analyzer = new BlurAnalyzer(BlurUtil.nullCheck(tableDescriptor.analyzerDefinition, "tableDescriptor.analyzerDefinition cannot be null."));
+      String uri = BlurUtil.nullCheck(tableDescriptor.tableUri, "tableDescriptor.tableUri cannot be null.");
+      int shardCount = BlurUtil.zeroCheck(tableDescriptor.shardCount, "tableDescriptor.shardCount cannot be less than 1");
+      CompressionCodec compressionCodec = BlurUtil.getInstance(tableDescriptor.compressionClass, CompressionCodec.class);
+      // @TODO check block size
+      int compressionBlockSize = tableDescriptor.compressionBlockSize;
+      Similarity similarity = BlurUtil.getInstance(tableDescriptor.similarityClass, Similarity.class);
+      boolean blockCaching = tableDescriptor.blockCaching;
+      Set<String> blockCachingFileTypes = tableDescriptor.blockCachingFileTypes;
+      String blurTablePath = ZookeeperPathConstants.getTablePath(cluster, table);
+      ColumnPreCache columnPreCache = tableDescriptor.columnPreCache;
+
+      if (_zk.exists(blurTablePath, false) != null) {
+        throw new IOException("Table [" + table + "] already exists.");
+      }
+      BlurUtil.setupFileSystem(uri, shardCount);
+      BlurUtil.createPath(_zk, blurTablePath, analyzer.toJSON().getBytes());
+      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableColumnsToPreCache(cluster, table), BlurUtil.read(columnPreCache));
+      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableUriPath(cluster, table), uri.getBytes());
+      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableShardCountPath(cluster, table), Integer.toString(shardCount).getBytes());
+      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableCompressionCodecPath(cluster, table), compressionCodec.getClass().getName().getBytes());
+      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableCompressionBlockSizePath(cluster, table), Integer.toString(compressionBlockSize).getBytes());
+      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableSimilarityPath(cluster, table), similarity.getClass().getName().getBytes());
+      BlurUtil.createPath(_zk, ZookeeperPathConstants.getLockPath(cluster, table), null);
+      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableFieldNamesPath(cluster, table), null);
+      if (tableDescriptor.readOnly) {
+        BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableReadOnlyPath(cluster, table), null);
+      }
+      if (blockCaching) {
+        BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableBlockCachingPath(cluster, table), null);
+      }
+      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table), toBytes(blockCachingFileTypes));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } finally {
+      long e = System.nanoTime();
+      LOG.info("trace createTable took [" + (e - s) / 1000000.0 + " ms]");
+    }
+  }
+
+  @Override
+  public void disableTable(String cluster, String table) {
+    long s = System.nanoTime();
+    try {
+      if (_zk.exists(ZookeeperPathConstants.getTablePath(cluster, table), false) == null) {
+        throw new IOException("Table [" + table + "] does not exist.");
+      }
+      String blurTableEnabledPath = ZookeeperPathConstants.getTableEnabledPath(cluster, table);
+      if (_zk.exists(blurTableEnabledPath, false) == null) {
+        throw new IOException("Table [" + table + "] already disabled.");
+      }
+      _zk.delete(blurTableEnabledPath, -1);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } finally {
+      long e = System.nanoTime();
+      LOG.info("trace disableTable took [" + (e - s) / 1000000.0 + " ms]");
+    }
+  }
+
+  @Override
+  public void enableTable(String cluster, String table) {
+    long s = System.nanoTime();
+    try {
+      if (_zk.exists(ZookeeperPathConstants.getTablePath(cluster, table), false) == null) {
+        throw new IOException("Table [" + table + "] does not exist.");
+      }
+      String blurTableEnabledPath = ZookeeperPathConstants.getTableEnabledPath(cluster, table);
+      if (_zk.exists(blurTableEnabledPath, false) != null) {
+        throw new IOException("Table [" + table + "] already enabled.");
+      }
+      _zk.create(blurTableEnabledPath, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } finally {
+      long e = System.nanoTime();
+      LOG.info("trace enableTable took [" + (e - s) / 1000000.0 + " ms]");
+    }
+  }
+
+  @Override
+  public void removeTable(String cluster, String table, boolean deleteIndexFiles) {
+    long s = System.nanoTime();
+    try {
+      String blurTablePath = ZookeeperPathConstants.getTablePath(cluster, table);
+      if (_zk.exists(blurTablePath, false) == null) {
+        throw new IOException("Table [" + table + "] does not exist.");
+      }
+      if (_zk.exists(ZookeeperPathConstants.getTableEnabledPath(cluster, table), false) != null) {
+        throw new IOException("Table [" + table + "] must be disabled before it can be removed.");
+      }
+      byte[] data = getData(ZookeeperPathConstants.getTableUriPath(cluster, table));
+      String uri = new String(data);
+      BlurUtil.removeAll(_zk, blurTablePath);
+      if (deleteIndexFiles) {
+        BlurUtil.removeIndexFiles(uri);
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } finally {
+      long e = System.nanoTime();
+      LOG.info("trace removeTable took [" + (e - s) / 1000000.0 + " ms]");
+    }
+  }
+
+  private static byte[] toBytes(Set<String> blockCachingFileTypes) {
+    if (blockCachingFileTypes == null || blockCachingFileTypes.isEmpty()) {
+      return null;
+    }
+    StringBuilder builder = new StringBuilder();
+    for (String type : blockCachingFileTypes) {
+      builder.append(type).append(',');
+    }
+    return builder.substring(0, builder.length() - 1).getBytes();
   }
 }

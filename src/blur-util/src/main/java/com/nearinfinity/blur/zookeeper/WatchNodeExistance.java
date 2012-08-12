@@ -52,6 +52,7 @@ public class WatchNodeExistance implements Closeable {
       }
     });
     _path = path;
+    LOG.info("Creating watch [{0}]", instance);
   }
 
   public WatchNodeExistance(ZooKeeper zooKeeper, String path) {
@@ -79,6 +80,10 @@ public class WatchNodeExistance implements Closeable {
               onChange.action(_stat);
               _lock.wait();
             } catch (KeeperException e) {
+              if (!_running.get()) {
+                LOG.info("Error [{0}]", e.getMessage());
+                return;
+              }
               LOG.error("Unknown error", e);
               throw new RuntimeException(e);
             } catch (InterruptedException e) {
@@ -112,6 +117,10 @@ public class WatchNodeExistance implements Closeable {
               }
             }
           } catch (KeeperException e) {
+            if (!_running.get()) {
+              LOG.info("Error [{0}]", e.getMessage());
+              return;
+            }
             LOG.error("Unknown error", e);
             throw new RuntimeException(e);
           } catch (InterruptedException e) {
@@ -137,6 +146,7 @@ public class WatchNodeExistance implements Closeable {
 
   public void close() {
     if (_running.get()) {
+      LOG.warn("Closing [{0}]", instance);
       _running.set(false);
       _doubleCheckThread.interrupt();
       _watchThread.interrupt();

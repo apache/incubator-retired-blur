@@ -68,4 +68,12 @@ public abstract class ClusterStatus {
 
   public abstract boolean isReadOnly(boolean useCache, String cluster, String table);
 
+  public abstract void createTable(TableDescriptor tableDescriptor);
+
+  public abstract void disableTable(String cluster, String table);
+
+  public abstract void enableTable(String cluster, String table);
+
+  public abstract void removeTable(String cluster, String table, boolean deleteIndexFiles);
+
 }

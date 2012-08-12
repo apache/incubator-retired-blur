@@ -16,6 +16,8 @@
 
 package com.nearinfinity.blur.utils;
 
+import static com.nearinfinity.blur.utils.BlurConstants.SHARD_PREFIX;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -41,6 +43,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.SegmentReader;
 import org.apache.lucene.search.Filter;
@@ -49,6 +56,10 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.util.PagedBytes.PagedBytesDataInput;
 import org.apache.lucene.util.packed.PackedInts;
 import org.apache.lucene.util.packed.PackedInts.Reader;
+import org.apache.thrift.TBase;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TJSONProtocol;
+import org.apache.thrift.transport.TMemoryBuffer;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -110,7 +121,7 @@ public class BlurUtil {
     };
     return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[] { clazz }, handler);
   }
-  
+
   public static void setupZookeeper(ZooKeeper zookeeper, String cluster) throws KeeperException, InterruptedException {
     BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getBasePath());
     BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getOnlineControllersPath());
@@ -603,5 +614,124 @@ public class BlurUtil {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static void createPath(ZooKeeper zookeeper, String path, byte[] data) throws KeeperException, InterruptedException {
+    zookeeper.create(path, data, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+  }
+
+  public static void setupFileSystem(String uri, int shardCount) throws IOException {
+    Path tablePath = new Path(uri);
+    FileSystem fileSystem = FileSystem.get(tablePath.toUri(), new Configuration());
+    if (createPath(fileSystem, tablePath)) {
+      LOG.info("Table uri existed.");
+      validateShardCount(shardCount, fileSystem, tablePath);
+    }
+    for (int i = 0; i < shardCount; i++) {
+      String shardName = BlurUtil.getShardName(SHARD_PREFIX, i);
+      Path shardPath = new Path(tablePath, shardName);
+      createPath(fileSystem, shardPath);
+    }
+  }
+
+  public static void validateShardCount(int shardCount, FileSystem fileSystem, Path tablePath) throws IOException {
+    FileStatus[] listStatus = fileSystem.listStatus(tablePath);
+    if (listStatus.length != shardCount) {
+      LOG.error("Number of directories in table path [" + tablePath + "] does not match definition of [" + shardCount + "] shard count.");
+      throw new RuntimeException("Number of directories in table path [" + tablePath + "] does not match definition of [" + shardCount + "] shard count.");
+    }
+  }
+
+  public static boolean createPath(FileSystem fileSystem, Path path) throws IOException {
+    if (!fileSystem.exists(path)) {
+      LOG.info("Path [{0}] does not exist, creating.", path);
+      fileSystem.mkdirs(path);
+      return false;
+    }
+    return true;
+  }
+
+  public static int zeroCheck(int i, String message) {
+    if (i < 1) {
+      throw new RuntimeException(message);
+    }
+    return i;
+  }
+
+  public static <T> T nullCheck(T t, String message) {
+    if (t == null) {
+      throw new NullPointerException(message);
+    }
+    return t;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T> T getInstance(String className, Class<T> c) {
+    Class<?> clazz;
+    try {
+      clazz = Class.forName(className);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+    try {
+      return (T) configure(clazz.newInstance());
+    } catch (InstantiationException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> T configure(T t) {
+    if (t instanceof Configurable) {
+      Configurable configurable = (Configurable) t;
+      configurable.setConf(new Configuration());
+    }
+    return t;
+  }
+
+  public static byte[] read(TBase<?, ?> base) {
+    if (base == null) {
+      return null;
+    }
+    TMemoryBuffer trans = new TMemoryBuffer(1024);
+    TJSONProtocol protocol = new TJSONProtocol(trans);
+    try {
+      base.write(protocol);
+    } catch (TException e) {
+      throw new RuntimeException(e);
+    }
+    trans.close();
+    byte[] buf = new byte[trans.length()];
+    System.arraycopy(trans.getArray(), 0, buf, 0, trans.length());
+    return buf;
+  }
+
+  public static void write(byte[] data, TBase<?, ?> base) {
+    nullCheck(null, "Data cannot be null.");
+    TMemoryBuffer trans = new TMemoryBuffer(1024);
+    TJSONProtocol protocol = new TJSONProtocol(trans);
+    try {
+      trans.write(data);
+      base.read(protocol);
+    } catch (TException e) {
+      throw new RuntimeException(e);
+    }
+    trans.close();
+  }
+  
+  public static void removeAll(ZooKeeper zooKeeper, String path) throws KeeperException, InterruptedException {
+    List<String> list = zooKeeper.getChildren(path, false);
+    for (String p : list) {
+      removeAll(zooKeeper, path + "/" + p);
+    }
+    LOG.info("Removing path [{0}]", path);
+    zooKeeper.delete(path, -1);
+  }
+
+  public static void removeIndexFiles(String uri) throws IOException {
+    Path tablePath = new Path(uri);
+    FileSystem fileSystem = FileSystem.get(tablePath.toUri(), new Configuration());
+    fileSystem.delete(tablePath, true);
   }
 }

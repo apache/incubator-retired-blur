@@ -299,6 +299,69 @@ $(document).ready(function() {
     });
   };
 
+  //Drag and Drop Functionality
+  //Event listener functions for drag and drop
+   function dragEnter (evt){
+    $(this).addClass('currentDrop');
+    evt.stopPropagation();
+    evt.preventDefault();
+  }
+  function dragOver (evt){
+    evt.stopPropagation();
+    evt.preventDefault();
+  }
+  function dragExit(evt){
+    $(this).removeClass('currentDrop');
+    evt.stopPropagation();
+    evt.preventDefault();
+  }
+  function drop(evt){
+    evt.stopPropagation();
+    evt.preventDefault();
+    var files = evt.originalEvent.dataTransfer.files; //FileList object
+    var count = files.length;
+    if (count > 0)
+      handleFiles(files);
+  }
+  //Compatability check
+if (window.File && window.FileReader && window.FileList && window.Blob){
+
+  $('#hdfs_browser').on('dragenter', '.innerWindow', dragEnter);
+  $('#hdfs_browser').on('dragexit', '.innerWindow', dragExit);
+  $('#hdfs_browser').on('dragover', '.innerWindow', dragOver);
+  $('#hdfs_browser').on('drop', '.innerWindow', drop);
+
+}
+//Deals with the form data
+var handleFiles = function(files) {
+  var id =$('#top_level .osxSelected').attr('hdfs_id');
+  var target_path = $('.currentDrop').prev().find('.osxSelected').attr('hdfs_path');
+  var file = files[0];
+  if (file.size > 26214400){
+    console.error("File was too large. Needs to be less than 25 MB");
+  }
+
+  var formData = new FormData();
+  formData.append("upload", file);
+  formData.append("path", target_path);
+  formData.append("id", id);
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', "/hdfs/"+id+"/upload", true);
+  xhr.onload = function(e){
+    if (this.status == 200)
+      console.log("Loaded " + file.name);
+  };
+  xhr.send(formData);
+  if (!historyUndef) {
+        reload_hdfs();
+      }
+      else {
+        reload_hdfs_ff(target_path, id);
+      }
+
+}
+//End of DnD Functionality
+
   var upload = function(el) {
     var id = el.attr('hdfs_id');
     var path = el.attr('hdfs_path');
@@ -847,5 +910,5 @@ $(document).ready(function() {
     ctrlHeld = (e.ctrlKey  || e.which == 224);
     shiftHeld = e.shiftKey;
   });
-  
+
 });

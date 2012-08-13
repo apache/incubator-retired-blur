@@ -18,7 +18,7 @@ class HdfsController < ApplicationController
         format.html{render :partial => 'info'}
       end
     else
-      render :text => "<div>Stats for hdfs ##{params[:id]} not found, is the blur tools agent running?</div>"
+      render :text => "<div>Stats for hdfs ##{params[:id]} were not found, is the blur tools agent running?</div>"
     end
   end
 

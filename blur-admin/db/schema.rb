@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120808182829) do
+ActiveRecord::Schema.define(:version => 20120813203219) do
 
   create_table "audits", :force => true do |t|
     t.integer  "user_id"
@@ -91,7 +91,7 @@ ActiveRecord::Schema.define(:version => 20120808182829) do
     t.integer  "config_capacity",  :limit => 8
     t.integer  "present_capacity", :limit => 8
     t.integer  "dfs_remaining",    :limit => 8
-    t.integer  "dfs_used",         :limit => 8
+    t.integer  "dfs_used_real",    :limit => 8
     t.float    "dfs_used_percent"
     t.integer  "under_replicated", :limit => 8
     t.integer  "corrupt_blocks",   :limit => 8
@@ -103,6 +103,7 @@ ActiveRecord::Schema.define(:version => 20120808182829) do
     t.string   "port"
     t.integer  "hdfs_id"
     t.integer  "live_nodes"
+    t.integer  "dfs_used_logical", :limit => 8
   end
 
   add_index "hdfs_stats", ["hdfs_id"], :name => "index_hdfs_stats_on_hdfs_id"

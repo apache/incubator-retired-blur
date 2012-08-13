@@ -28,7 +28,7 @@ class SearchesController < ApplicationController
   #Filter action to help build the tree for column families
   def filters
     blur_table = BlurTable.find params[:blur_table]
-    columns = blur_table ? (blur_table.schema &preference_sort(current_user.column_preference.value)) : []
+    columns = blur_table ? (blur_table.schema &preference_sort(current_user.column_preference.value || [])) : []
     filter_children = columns.collect do |family|
       col_fam = {:title => family['name'], :key => "family_-sep-_#{family['name']}", :addClass => 'check_filter', :select => true}
       col_fam[:children] = family['columns'].collect do |column|

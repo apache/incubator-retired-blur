@@ -11,25 +11,35 @@
 
 ul{ margin: 5px; }
 
-#admin_wrapper, #new_user_wrapper, #edit_user_wrapper, #show_user_wrapper{   
+#admin_wrapper, #new_user_wrapper, #edit_user_wrapper, #show_user_wrapper{
   @include standard-font;
 
   $select-color: #FAD08A;
 
+  text-align: center;
   margin-top: 1em;
-
+  label {
+      font-size:20px;
+      margin: 5px 0px 5px 0px;
+      color:$blue-dashboard-color;
+  }
+  span{
+      font-weight:normal;
+  }
   #roles_wrapper{
     li{
       list-style-type:none;
       display:block;
     }
+
+
+
   }
-  
-  .info-contain{ 
+  .info-contain{
     @include clearfix;
     min-width: 580px;
   }
-  
+
   //user info box
   #user-info{
     @include info(#F9F9F9);
@@ -39,11 +49,11 @@ ul{ margin: 5px; }
       margin: 5px;
     }
   }
-  
+
   #pref-bin{
     @include clearfix;
   }
-  
+
   #pref-trash, #pref-key{
     @include pref-box;
     margin-top:5px;
@@ -60,19 +70,19 @@ ul{ margin: 5px; }
     #orange_color { @include info($select-color); }
     #blue_color { @include info($table-hd-color); }
   }
-  
+
   #actual-trash{
     div:not(#trash){
       display:none;
     }
   }
-  
+
   #pref-col-info{
     padding:5px;
     @include info(#F9F9F9);
     min-width: 300px;
   }
-  
+
   #pref-col{ @include pref-box; }
   #pref-title{
     h3{ text-align: center; }
@@ -96,29 +106,28 @@ ul{ margin: 5px; }
     margin:2px;
     @include info($table-hd-color);
   }
-  
+
   .section-label{ text-align:center; }
   .my-select{ background-color:$select-color; }
   #no-saved, #trash{
     text-align:center;
     font-weight:200;
   }
-  
+
   .sel-fam{
     cursor:grab;
     cursor:grab;
     cursor:-moz-grab;
     cursor:-webkit-grab;
-    
+
     @include info($select-color);
     padding:2px;
     margin:2px;
   }
-
   .inputs-list{
     list-style-type: none;
     li{
-      padding: 10px 0 10px 0;
+      padding: 5px 0 5px 0;
       input[type=checkbox]{
         display: inline-block;
       }

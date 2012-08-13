@@ -125,8 +125,13 @@ $(document).ready(function(){
       type: 'DELETE',
       url: Routes.destroy_shard_zookeeper_path(CurrentZookeeper, id),
       success: function(data){
+        parent = self.closest('ul')
         self.closest('li').remove();
+        siblings = parent.find('li')
         $('.tooltip').remove();
+        if (siblings.length <=0 ){
+          window.location.reload(true);
+        }
       }
     });
   });

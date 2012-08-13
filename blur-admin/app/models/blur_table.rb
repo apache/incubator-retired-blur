@@ -26,7 +26,7 @@ class BlurTable < ActiveRecord::Base
 
   # Returns a map of host => [shards] of all hosts/shards associated with the table
   def hosts
-    read_attribute(:server).nil? ? [] : (JSON.parse read_attribute(:server))
+    read_attribute(:server).nil? ? {} : (JSON.parse read_attribute(:server))
   end
 
   def schema
@@ -92,31 +92,41 @@ class BlurTable < ActiveRecord::Base
   end
 
   def recent_queries
-    queries = self.blur_queries.select("minute(created_at) as minute, count(created_at) as cnt").where("created_at > '#{10.minutes.ago}'").group("minute(created_at)").order("created_at")
-    sparkline = [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0]] #default format for sparkline
+    queries = self.blur_queries
+      .select("minute(created_at) as minute, count(*) as cnt")
+      .where("created_at > '#{10.minutes.ago}'")
+      .group("minute")
+      .order("created_at")
+
+    #default format for sparkline
+    sparkline = [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0]] 
     time = 10.minutes.ago.min
     average_queries = 0.0
     queried_recently = false
 
     queries.each do |row|
       min = row.minute
-      cnt = row.cnt
+      count = row.cnt
 
+      # Get the diff between the minute and ten minutes ago
+      # also compensate for queries that straddle the hour
       min = min >= time ? min - time : 60 - time + min
 
       if min > 9
-        sparkline[9][1] += cnt
+        sparkline[9][1] += count
       else
-        sparkline[min] = [min, cnt]
+        sparkline[min] = [min, count]
       end
 
-      average_queries += cnt
+      average_queries += count
+
       if !queried_recently && min >= 5
         queried_recently = true
       end
     end
-    average_queries = average_queries / 10.0
 
-    recent_queries = Hash['sparkline' => sparkline, 'average_queries' => average_queries, 'queried_recently' => queried_recently]
+    average_queries /= 10.0
+
+    recent_queries = {'sparkline' => sparkline, 'average_queries' => average_queries, 'queried_recently' => queried_recently}
   end
 end

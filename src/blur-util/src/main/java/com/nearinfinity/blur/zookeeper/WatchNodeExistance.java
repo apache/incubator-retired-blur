@@ -1,7 +1,6 @@
 package com.nearinfinity.blur.zookeeper;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,29 +29,6 @@ public class WatchNodeExistance implements Closeable {
 
   public static abstract class OnChange {
     public abstract void action(Stat stat);
-  }
-
-  public static void main(String[] args) throws IOException, InterruptedException {
-    WatchNodeExistance children = new WatchNodeExistance("localhost", 30000, "/testing");
-    children.watch(new OnChange() {
-      @Override
-      public void action(Stat stat) {
-        System.out.println(stat);
-      }
-    });
-
-    Thread.sleep(100000000);
-  }
-
-  public WatchNodeExistance(String connectString, int sessionTimeout, String path) throws IOException {
-    _zooKeeper = new ZooKeeper(connectString, sessionTimeout, new Watcher() {
-      @Override
-      public void process(WatchedEvent event) {
-
-      }
-    });
-    _path = path;
-    LOG.info("Creating watch [{0}]", instance);
   }
 
   public WatchNodeExistance(ZooKeeper zooKeeper, String path) {

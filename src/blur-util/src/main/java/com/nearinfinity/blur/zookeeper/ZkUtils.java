@@ -24,6 +24,7 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 
@@ -39,15 +40,33 @@ public class ZkUtils {
 
   public static final int DEFAULT_ZK_SESSION_TIMEOUT = 60000;
 
-  public static ZooKeeper newZooKeeper(final String zkConnectionString) throws IOException {
-    final int sessionTimeout = DEFAULT_ZK_SESSION_TIMEOUT;
-    // TODO Do we need to wait for the callback to Watcher before proceeding?
-    return new ZooKeeper(zkConnectionString, sessionTimeout, new Watcher() {
-      @Override
-      public void process(WatchedEvent event) {
-        LOG.info("Connected to ZooKeeper with connection string {0}, session timeout {1}", zkConnectionString, sessionTimeout);
-      }
-    });
+  public static class ConnectionWatcher implements Watcher {
+
+    private String zkConnectionString;
+    private int sessionTimeout;
+
+    public void setZkConnectionString(String zkConnectionString) {
+      this.zkConnectionString = zkConnectionString;
+    }
+
+    public void setSessionTimeout(int sessionTimeout) {
+      this.sessionTimeout = sessionTimeout;
+    }
+
+    @Override
+    public void process(WatchedEvent event) {
+      KeeperState state = event.getState();
+      LOG.info("ZooKeeper [{0}] timeout [{1}] changed to [{2}] state", zkConnectionString, sessionTimeout, state);
+    }
+
+  }
+
+  public static ZooKeeper newZooKeeper(String zkConnectionString) throws IOException {
+    int sessionTimeout = DEFAULT_ZK_SESSION_TIMEOUT;
+    ConnectionWatcher watcher = new ConnectionWatcher();
+    watcher.setSessionTimeout(sessionTimeout);
+    watcher.setZkConnectionString(zkConnectionString);
+    return new ZooKeeper(zkConnectionString, sessionTimeout, watcher);
   }
 
   public static void mkNodesStr(ZooKeeper zk, String path) {

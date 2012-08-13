@@ -61,35 +61,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   private static final Log LOG = LogFactory.getLog(ZookeeperClusterStatus.class);
 
-  public static void main(String[] args) throws IOException, KeeperException, InterruptedException {
-    ZooKeeper zooKeeper = new ZooKeeper("localhost", 30000, new Watcher() {
-      @Override
-      public void process(WatchedEvent event) {
-
-      }
-    });
-
-    zooKeeper.getChildren("/", false);
-
-    ZookeeperClusterStatus status = new ZookeeperClusterStatus(zooKeeper);
-    while (true) {
-      System.out.println(status.isInSafeMode(true, "default"));
-
-      List<String> tableList = status.getTableList();
-      for (String table : tableList) {
-        try {
-          String cluster = status.getCluster(true, table);
-          boolean enabled = status.isEnabled(true, cluster, table);
-          System.out.println("Table [" + table + "] in cluster[" + cluster + "] is enabled [" + enabled + "]");
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      }
-
-      Thread.sleep(100);
-    }
-  }
-
   private ZooKeeper _zk;
   private AtomicBoolean _running = new AtomicBoolean();
   private ConcurrentMap<String, Long> _safeModeMap = new ConcurrentHashMap<String, Long>();

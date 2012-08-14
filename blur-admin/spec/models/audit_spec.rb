@@ -13,7 +13,13 @@ describe Audit do
 
   describe "scope" do
     it "should return the audits within the given time range" do
-      pending "need to implement"
+      # Create a set of queries with different created at times
+      FactoryGirl.create :audit, :created_at => 10.days.ago
+      returned = [FactoryGirl.create(:audit, :created_at => 1.days.ago)]
+
+      # Grab all the audits within the last 72 hours
+      recent = Audit.recent 72, 0
+      recent.should == returned
     end
   end
 end

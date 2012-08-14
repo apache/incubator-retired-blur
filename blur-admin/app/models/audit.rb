@@ -1,8 +1,8 @@
 class Audit < ActiveRecord::Base
   belongs_to :user
 
-  scope :recent, lambda { |time|
-    where(:created_at => time.hours.ago..Time.now).
+  scope :recent, lambda { |from, to|
+    where(:created_at => from.hours.ago..to.hours.ago).
     includes(:user)
   }
 

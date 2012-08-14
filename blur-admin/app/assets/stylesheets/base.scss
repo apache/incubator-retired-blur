@@ -5,7 +5,7 @@ $red-border-color: #CD0A0A;
 $green-border-color: #62A630;
 
 $table-hd-color: #E4EDFF;
-$table-hd-text: #667495; 
+$table-hd-text: #667495;
 
 $grey-color: #EEEEEE;
 $grey-div-color: #F0F0F0;
@@ -40,6 +40,9 @@ html{
     position: relative;
     padding-bottom: $footer-height;
   }
+}
+h2{
+    color:$blue-dashboard-color;
 }
 #modal{
 	max-height:500px;
@@ -122,7 +125,7 @@ ul.dynatree-container {
     }
 
     &.no-error div{
-      //background-color: rgba(91, 183, 91, .9); 
+      //background-color: rgba(91, 183, 91, .9);
       //color: white;
       //border-color: #5BB75B;
       &.icon:hover{

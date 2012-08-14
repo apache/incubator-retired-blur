@@ -10,6 +10,7 @@ $.extend( $.fn.dataTableExt.oStdClasses, {
 $(document).ready(function() {
   var columnDefinitions = [
     {bSortable : false},
+    {bVisible : false, bSortable : false},
     null,
     null,
     null,

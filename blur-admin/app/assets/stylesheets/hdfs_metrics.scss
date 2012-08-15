@@ -84,7 +84,7 @@ $graph_height: $instance_height - $title_height;
               text-align: right;
               width: 64px;
             }
-            .slider-redraw { margin: 0 5px 8px 0; }
+            .slider-redraw { margin: 0 5px 9px 0; }
           }
           .slider-box {
             width: 350px;
@@ -93,6 +93,9 @@ $graph_height: $instance_height - $title_height;
               margin-right: 15px;
               float: right;
             }
+          }
+          span.axis-value{
+            font-weight: bold;
           }
         }
       }

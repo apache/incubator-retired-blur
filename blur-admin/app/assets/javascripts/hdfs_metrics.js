@@ -1,6 +1,8 @@
 //= require d3/d3
 //= require flot/flot
 //= require flot/jquery.flot.resize.min
+//= require flot/jquery.flot.selection.min
+//= require flot/jquery.flot.crosshair.min
 //= require_self
 
 $(document).ready(function(){
@@ -20,22 +22,22 @@ $(document).ready(function(){
 	{
 		disk:
 		{
-			label_1: "Hdfs Disk Capacity (GB) - left axis",
-			label_2: "Hdfs Disk Usage (GB) - right axis",
+			label_1: "Hdfs Disk Capacity (GB) - Left axis <span class='axis-value'></span>",
+			label_2: "Hdfs Disk Usage (GB) - Right axis <span class='axis-value'></span>",
 			stat_1: "capacity",
 			stat_2: "used"
 		},
 		nodes:
 		{
-			label_1: "Live Nodes - left axis",
-			label_2: "Dead Nodes - right axis",
+			label_1: "Live Nodes - Left axis <span class='axis-value'></span>",
+			label_2: "Dead Nodes - Right axis <span class='axis-value'></span>",
 			stat_1: "live_nodes",
 			stat_2: "dead_nodes"
 		},
 		block:
 		{
-			label_1: "Under Replicated Blocks - left axis",
-      label_2: "Missing Blocks - right axis",
+			label_1: "Under Replicated Blocks - Left axis <span class='axis-value'></span>",
+      label_2: "Missing Blocks - Right axis <span class='axis-value'></span>",
 			stat_1: "under_replicated",
       stat_2: "missing_blocks"
 		}
@@ -60,7 +62,9 @@ $(document).ready(function(){
             tickDecimals: 0
           }
         ],
-        legend:{ container: $(".graph-legend") }
+        legend:{ container: $(".graph-legend") },
+        crosshair: { mode: "x" },
+        grid: { hoverable: true, autoHighlight: false },
 			});
 		}
 		else
@@ -99,8 +103,6 @@ $(document).ready(function(){
 					var hdfs_data_1 = {label: request_options.label_1, data: []};
           var hdfs_data_2 = {label: request_options.label_2, data: [], yaxis: 2};
           var graph_container = $('.graph_instance#' + id).find('.tab-pane#' + action + '_' + id);
-
-          console.log(data.length)
 
           for( var i in data ){
 						var point = data[i];
@@ -162,7 +164,7 @@ $(document).ready(function(){
   $('.graph_instance').on('shown', 'a[data-toggle="tab"]', function(e){
     var instance = $(this).closest('.graph_instance')
 		var hdfs_id = instance.attr('id');
-		var container = instance.find('.active .graph');
+		var container = instance.find('.active > .graph');
 		var action = $(this).data('action');
     if (hdfs_data[hdfs_id]){
       draw_graph(container, hdfs_data[hdfs_id][action]);
@@ -185,16 +187,10 @@ $(document).ready(function(){
 
 	timer = setTimeout(update_live_graphs, refresh_time);
 
-  // Slider - in progress
-  // Slider currently moves over any time period in the last 24 hours
-  // Change the slider min val to get a different range, make sure that datepicker matches this range
+  // Slider
+  // Slider currently moves over any time period in the past 2 weeks
   // TODO
-  // Allow for scale to go back up to 2 weeks //
-  //   Flot recommends not going over 1,000 data points. We hit 1,000 if the scale is increased //
-  //   to about 4 hours (need to consolidate data after that) //
   // Add functionality of grabbing center of slider and draging range //
-  // Look at other useful functionalities from flot //
-  //   Suggestion: tracking curves with crosshair //
 
   // Creates slider
   // Slide: changes the time fields as the slider is dragged
@@ -205,10 +201,10 @@ $(document).ready(function(){
 
   $(".slider").slider({
     range: true,
-    min: -1*60*24*num_days_back, //past 24 hours in minutes **CHANGE TO GET DIF TIME SPAN (up to 2 weeks available - match slider)**
+    min: -1*60*24*num_days_back,
     max: 0,
     values: [-1 * time_length, 0],
-    slide: function(event, ui) {
+    stop: function(event, ui) {
       set_slider_info_to_vals(ui.values, this.id);
     },
     change: function(event, ui) {
@@ -223,7 +219,7 @@ $(document).ready(function(){
   });
 
   $(".min-date, .max-date").datepicker({
-    minDate: -1 * num_days_back,//past 24 hours **CHANGE TO GET DIF TIME SPAN (up to 2 weeks available - match slider)**
+    minDate: -1 * num_days_back,
     maxDate: 0
   });
 
@@ -263,7 +259,7 @@ $(document).ready(function(){
   // Set the slider to match the change in the time fields
   // If the time in the time fields is invalid, it will instead reset the time fields to match the slider
   var set_slider_vals_to_info = function(hdfs_id) {
-    maxSliderVal = slider_max[hdfs_id].getTime();;
+    maxSliderVal = new Date().getTime();
     minDate = $(".graph_instance#" + hdfs_id + " .min-date").datepicker('getDate');
     minDate.setHours($('.min-hour')[0].value);
     minDate.setMinutes($('.min-minutes')[0].value);
@@ -272,8 +268,8 @@ $(document).ready(function(){
     maxDate.setMinutes($('.max-minutes')[0].value);
 
     vals = [];
-    vals[0] = (maxSliderVal - minDate.getTime()) / (-1 * 60 * 1000);
-    vals[1] = (maxSliderVal - maxDate.getTime()) / (-1 * 60 * 1000);
+    vals[0] = Math.ceil((maxSliderVal - minDate.getTime()) / (-1 * 60 * 1000));
+    vals[1] = Math.ceil((maxSliderVal - maxDate.getTime()) / (-1 * 60 * 1000));
 
     min =$('.graph_instance#' + hdfs_id + ' .slider').slider('option', 'min');
     if (!isNaN(vals[0]) && !isNaN(vals[1]) && vals[0] > min && vals[1] >= vals[0] && vals[1] <= 0){
@@ -285,8 +281,43 @@ $(document).ready(function(){
     }
   };
 
+  // Update the legend on crosshair show     
+  $(".graph").bind("plothover",  function (event, pos, item) {    
+    // grab the plot from the global store
+    var graph_definition = $(event.target).closest('.active').attr('id');
+    var pieces = graph_definition.split('_');
+    var plot = hdfs_data[pieces[1]][pieces[0]].plot
+     
+    // get the datasets for searching
+    var axes = plot.getAxes();
+    var datasets = plot.getData();
+    var series = datasets[0];
+
+    // legend holder
+    var legends = $('.graph-info-table').find('.axis-value');
+
+    // break if we are hovering off the viewport
+    if (pos.x < axes.xaxis.min || pos.x > axes.xaxis.max ||
+        pos.y < axes.yaxis.min || pos.y > axes.yaxis.max){
+      legends.text('');
+      return;
+    }
+
+    // find the nearest points, x-wise
+    for (index = 0; index < series.data.length; ++index)
+      if (series.data[index][0] > pos.x)
+        break;
+            
+    // draw to the legend
+    for (plot_index = 0; plot_index < datasets.length; plot_index++){
+      var point = datasets[plot_index].data[index];
+      legends.eq(plot_index).text('(' + point[1].toFixed(2) + ')');
+    }
+  });
+
   // Listener for 'Redraw' button
   $('.slider-redraw').on('click', function(e){
+    noRequest = false;
     set_slider_vals_to_info($(this).parent()[0].id);
   });
 });

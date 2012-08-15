@@ -39,7 +39,7 @@ $(document).ready(function() {
       history.pushState(state, "Search | Blur Console", full_url);
     }
   });
-  
+
   /********** METHODS **********/
   var resizeSearch = function() {
     var footerHeight, headerHeight, resultWrapper;
@@ -48,13 +48,13 @@ $(document).ready(function() {
     resultWrapper = $('#results_wrapper');
     $('#results_wrapper').css('max-height', window.innerHeight - (footerHeight + headerHeight + parseInt(resultWrapper.css('margin-top')) + 50));
   };
-  
+
   var hide_all_tabs = function() {
     $('.tab:visible').slideUp('fast');
     $('.arrow_up').hide();
     $('.arrow_down').show();
   };
-  
+
   // method to initialize the filter tree
   var setup_filter_tree = function() {
     $('.column_family_filter').dynatree({
@@ -63,14 +63,14 @@ $(document).ready(function() {
       initAjax: get_filter_ajax()
     });
   };
-  
+
   var get_filter_ajax = function() {
     return {
       url: Routes.filters_zookeeper_searches_path(CurrentZookeeper, $('#blur_table').val()),
       type: 'get'
     };
   };
-  
+
   // Function to enable or disable submit button based on checkbox status
   var toggle_submit = function() {
     if ($(".column_family_filter").dynatree("getTree").getSelectedNodes().length > 0 && $('#query_string').val() !== '') {
@@ -82,7 +82,7 @@ $(document).ready(function() {
       $('#save_button, #update_button, #search_submit').attr('disabled', 'disabled');
     }
   };
-  
+
   /********** PAGE ACTIONS **********/
   // Setup the filters onload
   $.ui.dynatree.nodedatadefaults["icon"] = false;
@@ -94,7 +94,7 @@ $(document).ready(function() {
     }
     prevHeight = window.innerHeight;
   });
-  
+
   /********** PAGE ELEMENT LISTENERS **********/
   // Reload the filters when the table selector is changed
   $('#blur_table').change(function() {
@@ -105,7 +105,7 @@ $(document).ready(function() {
     tree.reload();
     tree.enableUpdate(prevMode);
   });
-  
+
   // listener that checks if the submit button should be enabled on keystrokes
   $('#query_string, #save_name').live("keydown", function(name) {
     if (name.keyCode === 13 && !name.shiftKey) {
@@ -128,7 +128,7 @@ $(document).ready(function() {
       toggle_submit();
     }
   });
-  
+
   // listener that accordion the filter sections
   $('.header').live('click', function() {
     if ($('.tab:visible').length > 0) {
@@ -146,19 +146,19 @@ $(document).ready(function() {
       $(this).find('.arrow_up').show();
     }
   });
-  
+
   /********** more Functions **********/
-  
+
   var fetch_error = function(error) {
     $('#results_container').html("<div class='no-results'>An error has occured: " + error + "</div>");
     $('#results_wrapper').addClass('noResults').removeClass('hidden');
   };
-  
+
   var no_results = function() {
     $('#results_container').html('<div class="no-results">No results for your search.</div>');
     $('#results_wrapper').addClass('noResults').removeClass('hidden');
   };
-  
+
   // disable buttons on load
   toggle_submit();
   //set up listeners for ajax to show spinner and disable buttons
@@ -180,7 +180,7 @@ $(document).ready(function() {
   $('.tab:visible, .header').live('click', function(e) {
     return e.stopPropagation();
   });
-  
+
   var populate_form = function(data) {
     var column, _i, _len, _ref;
     $(".column_family_filter").dynatree("getRoot").visit(function(node) {
@@ -218,19 +218,17 @@ $(document).ready(function() {
     if (data.return_record) {
       $('#return_record').click();
     }
-    
     //check everything in the tree
-    raw_columns = data.column_object
-    for(index = 0; index < raw_columns; index++){
-      column = raw_columns[index]
+    raw_columns = data.column_object;
+    for(index = 0; index < raw_columns.length; index++){
+      column = raw_columns[index];
       $(".column_family_filter").dynatree("getTree").selectKey(column);
     }
-
     $('#search_submit').removeAttr('disabled');
     $('#save_button').removeAttr('disabled');
     $('#update_button').removeAttr('disabled');
   };
-  
+
   var retrieve_search = function(id) {
     $.ajax(Routes.load_zookeeper_search_path(CurrentZookeeper, id), {
       type: 'POST',
@@ -239,7 +237,7 @@ $(document).ready(function() {
       }
     });
   };
-  
+
    /********** PAGE AJAX LISTENERS **********/
    // fetch the results of a new search
   $('#search_form').submit(function() {
@@ -266,12 +264,13 @@ $(document).ready(function() {
     });
     return false;
   });
-  
+
   // ajax listener for the edit action
   $('#edit_icon').live('click', function() {
     retrieve_search($(this).parents('.search_element').attr('id'));
+    hide_all_tabs();
   });
-  
+
   // ajax listener for the delete action
   $('#delete_icon').live('click', function() {
     var parent = $(this).parents('.search_element');
@@ -287,15 +286,13 @@ $(document).ready(function() {
             }
           });
         }
-      }
-    };
-    ({
-      "Cancel": {
+      },
+    "Cancel": {
         func: function() {
           $().closePopup();
         }
       }
-    });
+    };
     $().popup({
       btns: buttons,
       title: "Delete this saved query?",
@@ -303,7 +300,7 @@ $(document).ready(function() {
       body: "This will permanently delete the selected saved query. Do you wish to continue?"
     });
   });
-  
+
   //ajax listener for the save action
   $('#save_button').live('click', function(evt) {
     var form_data = $('#search_form').serializeArray();
@@ -319,7 +316,7 @@ $(document).ready(function() {
       }
     });
   });
-  
+
   //ajax listener for the update action
   $('#update_button').live('click', function(evt) {
     var match_found = false;
@@ -359,7 +356,7 @@ $(document).ready(function() {
       });
     }
   });
-  
+
   //listener for the Search and Return Radiobuttons
   $('#search_row, #search_record, #return_row, #return_record').live('change', function(evt) {
     var search_row = $('#search_row');

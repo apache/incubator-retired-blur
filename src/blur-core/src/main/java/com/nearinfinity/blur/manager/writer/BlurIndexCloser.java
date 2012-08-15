@@ -35,6 +35,7 @@ public class BlurIndexCloser implements Runnable {
   public void close() {
     running.set(false);
     daemon.interrupt();
+    executorService.shutdownNow();
   }
 
   public void close(IndexReader reader) {

@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -37,6 +38,7 @@ import org.apache.thrift.TException;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
+import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
@@ -76,6 +78,7 @@ import com.nearinfinity.blur.utils.QueryCacheEntry;
 import com.nearinfinity.blur.utils.QueryCacheKey;
 import com.nearinfinity.blur.zookeeper.WatchChildren;
 import com.nearinfinity.blur.zookeeper.WatchChildren.OnChange;
+import com.nearinfinity.blur.zookeeper.WatchNodeExistance;
 
 public class BlurControllerServer extends TableAdmin implements Iface {
 
@@ -119,6 +122,11 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private long _maxDefaultDelay = 2000;
 
   private long _defaultParallelCallTimeout = TimeUnit.MINUTES.toMillis(1);
+  private WatchChildren _watchForClusters;
+  private ConcurrentMap<String, WatchNodeExistance> _watchForTablesPerClusterExistance = new ConcurrentHashMap<String, WatchNodeExistance>();
+  private ConcurrentMap<String, WatchNodeExistance> _watchForOnlineShardsPerClusterExistance = new ConcurrentHashMap<String, WatchNodeExistance>();
+  private ConcurrentMap<String, WatchChildren> _watchForTablesPerCluster = new ConcurrentHashMap<String, WatchChildren>();
+  private ConcurrentMap<String, WatchChildren> _watchForOnlineShardsPerCluster = new ConcurrentHashMap<String, WatchChildren>();
 
   public void init() throws KeeperException, InterruptedException {
     setupZookeeper();
@@ -126,10 +134,12 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     _queryCache = new QueryCache("controller-cache", _maxQueryCacheElements, _maxTimeToLive);
     _executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL, _threadCount);
     _running.set(true);
+    watchForClusterChanges();
     List<String> clusterList = _clusterStatus.getClusterList();
     for (String cluster : clusterList) {
       watchForLayoutChanges(cluster);
     }
+    updateLayout();
   }
 
   private void setupZookeeper() throws KeeperException, InterruptedException {
@@ -138,22 +148,78 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getClustersPath());
   }
 
+  private void watchForClusterChanges() throws KeeperException, InterruptedException {
+    _watchForClusters = new WatchChildren(_zookeeper, ZookeeperPathConstants.getClustersPath());
+    _watchForClusters.watch(new OnChange() {
+      @Override
+      public void action(List<String> children) {
+        for (String cluster : children) {
+          try {
+            watchForLayoutChanges(cluster);
+          } catch (KeeperException e) {
+            LOG.error("Unknown error", e);
+            throw new RuntimeException(e);
+          } catch (InterruptedException e) {
+            LOG.error("Unknown error", e);
+            throw new RuntimeException(e);
+          }
+        }
+      }
+    });
+  }
+
   private void watchForLayoutChanges(final String cluster) throws KeeperException, InterruptedException {
-    // @TODO watch for cluster changes
-    new WatchChildren(_zookeeper, ZookeeperPathConstants.getTablesPath(cluster)).watch(new OnChange() {
+    WatchNodeExistance we1 = new WatchNodeExistance(_zookeeper,ZookeeperPathConstants.getTablesPath(cluster));
+    we1.watch(new WatchNodeExistance.OnChange() {
+      @Override
+      public void action(Stat stat) {
+        if (stat != null) {
+          watch(cluster, ZookeeperPathConstants.getTablesPath(cluster), _watchForTablesPerCluster);
+        }
+      }
+    });
+    WatchNodeExistance w1 = _watchForTablesPerClusterExistance.putIfAbsent(cluster, we1);
+    if (w1 != null) {
+      w1.close();
+    }
+    
+    WatchNodeExistance we2 = new WatchNodeExistance(_zookeeper,ZookeeperPathConstants.getTablesPath(cluster));
+    we2.watch(new WatchNodeExistance.OnChange() {
+      @Override
+      public void action(Stat stat) {
+        if (stat != null) {
+          watch(cluster, ZookeeperPathConstants.getOnlineShardsPath(cluster), _watchForOnlineShardsPerCluster);
+        }
+      }
+    });
+    WatchNodeExistance w2 = _watchForOnlineShardsPerClusterExistance.putIfAbsent(cluster, we2);
+    if (w2 != null) {
+      w2.close();
+    }
+  }
+
+  private void watch(String cluster, String path, ConcurrentMap<String, WatchChildren> map) {
+    WatchChildren watchForTables = new WatchChildren(_zookeeper, path);
+    watchForTables.watch(new OnChange() {
       @Override
       public void action(List<String> children) {
         LOG.info("Layout change.");
+        System.out.println("-------------------------------------");
+        System.out.println("-------------------------------------");
+        System.out.println("-------------------------------------");
+        System.out.println("-------------------------------------");
+        System.out.println("-------------------------------------");
+        System.out.println("-------------------------------------");
         updateLayout();
       }
     });
-    new WatchChildren(_zookeeper, ZookeeperPathConstants.getOnlineShardsPath(cluster)).watch(new OnChange() {
-      @Override
-      public void action(List<String> children) {
-        LOG.info("Layout change.");
-        updateLayout();
-      }
-    });
+
+    System.out.println("------------------------------------- running watch [" + cluster + "] [" + path + "]");
+    WatchChildren watch = map.putIfAbsent(cluster, watchForTables);
+    if (watch != null) {
+      System.out.println("_____Closing");
+      watch.close();
+    }
   }
 
   private synchronized void updateLayout() {

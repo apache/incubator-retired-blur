@@ -33,12 +33,18 @@ public class ThriftServer {
   private int _bindPort;
   private String _bindAddress;
   private BlurShutdown _shutdown;
+  private ExecutorService _executorService;
+  private ExecutorService _queryExexutorService;
+  private ExecutorService _mutateExecutorService;
 
   public synchronized void close() {
     if (!_closed) {
       _closed = true;
       _shutdown.shutdown();
       _server.stop();
+      _executorService.shutdownNow();
+      _queryExexutorService.shutdownNow();
+      _mutateExecutorService.shutdownNow();
     }
   }
 
@@ -59,12 +65,14 @@ public class ThriftServer {
 
     Args args = new Args(serverTransport);
     args.processor(processor);
-    args.executorService(Executors.newThreadPool("thrift-processors", _threadCount));
+    _executorService = Executors.newThreadPool("thrift-processors", _threadCount);
+    args.executorService(_executorService);
     Map<String, ExecutorService> methodCallsToExecutorService = new HashMap<String, ExecutorService>();
-    ExecutorService mutateExecutorService = Executors.newThreadPool("thrift-processors-mutate", _threadCount);
-    methodCallsToExecutorService.put("mutate", mutateExecutorService);
-    methodCallsToExecutorService.put("mutateBatch", mutateExecutorService);
-    methodCallsToExecutorService.put("query", Executors.newThreadPool("thrift-processors-query", _threadCount));
+    _mutateExecutorService = Executors.newThreadPool("thrift-processors-mutate", _threadCount);
+    methodCallsToExecutorService.put("mutate", _mutateExecutorService);
+    methodCallsToExecutorService.put("mutateBatch", _mutateExecutorService);
+    _queryExexutorService = Executors.newThreadPool("thrift-processors-query", _threadCount);
+    methodCallsToExecutorService.put("query", _queryExexutorService);
     args.setMethodCallsToExecutorService(methodCallsToExecutorService);
     _server = new ExecutorServicePerMethodCallThriftServer(args);
     LOG.info("Starting server [{0}]", _nodeName);

@@ -62,7 +62,7 @@ import com.nearinfinity.blur.manager.writer.BlurNRTIndex;
 import com.nearinfinity.blur.manager.writer.DirectoryReferenceFileGC;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
-import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
+import com.nearinfinity.blur.store.blockcache.Cache;
 import com.nearinfinity.blur.store.compressed.CompressedFieldDataDirectory;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
 import com.nearinfinity.blur.store.lock.BlurLockFactory;
@@ -91,7 +91,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private String _nodeName;
   private int _shardOpenerThreadCount;
   private BlurIndexRefresher _refresher;
-  private BlockDirectoryCache _cache;
+  private Cache _cache;
   private BlurMetrics _blurMetrics;
   private ZooKeeper _zookeeper;
 
@@ -375,8 +375,12 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _running.set(false);
     _timerCacheFlush.purge();
     _timerCacheFlush.cancel();
+    
+    _timerTableWarmer.purge();
+    _timerTableWarmer.cancel();
     _closer.close();
     _gc.close();
+    _openerService.shutdownNow();
   }
 
   @Override
@@ -762,7 +766,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _refresher = refresher;
   }
 
-  public void setCache(BlockDirectoryCache cache) {
+  public void setCache(Cache cache) {
     _cache = cache;
   }
 

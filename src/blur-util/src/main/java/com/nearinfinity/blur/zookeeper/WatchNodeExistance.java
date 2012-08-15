@@ -9,6 +9,7 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.log.Log;
@@ -95,6 +96,10 @@ public class WatchNodeExistance implements Closeable {
           } catch (KeeperException e) {
             if (!_running.get()) {
               LOG.info("Error [{0}]", e.getMessage());
+              return;
+            }
+            if (e.code() == Code.SESSIONEXPIRED) {
+              LOG.warn("Session expired for [" + _path + "] [" + instance + "]");
               return;
             }
             LOG.error("Unknown error", e);

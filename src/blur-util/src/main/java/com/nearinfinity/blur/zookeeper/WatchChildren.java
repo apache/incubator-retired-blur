@@ -42,38 +42,47 @@ public class WatchChildren implements Closeable {
     _watchThread = new Thread(new Runnable() {
       @Override
       public void run() {
-        startDoubleCheckThread();
-        while (_running.get()) {
-          synchronized (_lock) {
-            try {
-              _children = _zooKeeper.getChildren(_path, new Watcher() {
-                @Override
-                public void process(WatchedEvent event) {
-                  synchronized (_lock) {
-                    _lock.notify();
+        try {
+          startDoubleCheckThread();
+          while (_running.get()) {
+            synchronized (_lock) {
+              try {
+                System.out.println("+++++++++Executing watch on [" + _path + "] [" + instance + "]");
+                _children = _zooKeeper.getChildren(_path, new Watcher() {
+                  @Override
+                  public void process(WatchedEvent event) {
+                    synchronized (_lock) {
+                      _lock.notify();
+                    }
                   }
+                });
+                onChange.action(_children);
+                _lock.wait();
+              } catch (KeeperException e) {
+                e.printStackTrace();
+                if (!_running.get()) {
+                  LOG.info("Error [{0}]", e.getMessage());
+                  return;
                 }
-              });
-              onChange.action(_children);
-              _lock.wait();
-            } catch (KeeperException e) {
-              if (!_running.get()) {
-                LOG.info("Error [{0}]", e.getMessage());
+                if (e.code() == Code.NONODE) {
+                  LOG.info("Path for watching not found [{0}], no longer watching.", _path);
+                  close();
+                  return;
+                }
+                LOG.error("Unknown error", e);
+                throw new RuntimeException(e);
+              } catch (InterruptedException e) {
+                e.printStackTrace();
                 return;
               }
-              if (e.code() == Code.NONODE) {
-                LOG.info("Path for watching not found [{0}], no longer watching.", _path);
-                close();
-                return;
-              }
-              LOG.error("Unknown error", e);
-              throw new RuntimeException(e);
-            } catch (InterruptedException e) {
-              return;
             }
           }
+          _running.set(false);
+        } catch (Throwable e) {
+          e.printStackTrace();
+        } finally {
+          System.out.println("++++++++++++++++Exiting watch on [" + _path + "] [" + instance + "] [" + _running + "]");
         }
-        _running.set(false);
       }
     });
     _watchThread.setName("Watching for children on path [" + _path + "] instance [" + instance + "]");
@@ -98,7 +107,7 @@ public class WatchChildren implements Closeable {
             }
             List<String> children = _zooKeeper.getChildren(_path, false);
             if (!isCorrect(children)) {
-              LOG.error("Double check triggered for [" + _path + "]");
+              LOG.error("Double check triggered for [" + _path + "] [" + instance + "]");
               synchronized (_lock) {
                 _lock.notify();
               }
@@ -106,6 +115,10 @@ public class WatchChildren implements Closeable {
           } catch (KeeperException e) {
             if (!_running.get()) {
               LOG.info("Error [{0}]", e.getMessage());
+              return;
+            }
+            if (e.code() == Code.SESSIONEXPIRED) {
+              LOG.warn("Session expired for [" + _path + "] [" + instance + "]");
               return;
             }
             LOG.error("Unknown error", e);

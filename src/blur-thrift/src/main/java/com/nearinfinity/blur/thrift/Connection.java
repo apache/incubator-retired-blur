@@ -14,6 +14,7 @@ public class Connection {
     if (index >= 0) {
       _host = connectionStr.substring(0, index);
       _port = Integer.parseInt(connectionStr.substring(index + 1));
+      //@TODO make this connection parse proxy ports as well
     } else {
       throw new RuntimeException("Connection string of [" + connectionStr + "] does not match 'host1:port,host2:port,...'");
     }
@@ -95,5 +96,12 @@ public class Connection {
   @Override
   public String toString() {
     return "Connection [_host=" + _host + ", _port=" + _port + ", _proxy=" + _proxy + ", _proxyHost=" + _proxyHost + ", _proxyPort=" + _proxyPort + "]";
+  }
+
+  public Object getConnectionStr() {
+    if (_proxyHost != null) {
+      return _host + ":" + _port + "/" + _proxyHost + ":" + _proxyPort;
+    }
+    return _host + ":" + _port;
   }
 }

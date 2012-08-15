@@ -87,6 +87,8 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
     ZookeeperSystemTime.checkSystemTime(zooKeeper, configuration.getLong(BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE, 3000));
+    
+    BlurUtil.setupZookeeper(zooKeeper);
 
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper);
 

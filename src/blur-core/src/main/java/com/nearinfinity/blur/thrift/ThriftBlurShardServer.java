@@ -16,7 +16,7 @@
 
 package com.nearinfinity.blur.thrift;
 
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT;
+import static com.nearinfinity.blur.utils.BlurConstants.*;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_MAX_CLAUSE_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
@@ -68,6 +68,7 @@ import com.nearinfinity.blur.store.BufferStore;
 import com.nearinfinity.blur.store.blockcache.BlockCache;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
+import com.nearinfinity.blur.store.blockcache.Cache;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
@@ -94,28 +95,34 @@ public class ThriftBlurShardServer extends ThriftServer {
     int numberOfBlocksPerBank = 16384;
     int blockSize = BlockDirectory.BLOCK_SIZE;
     int bankCount = configuration.getInt(BLUR_SHARD_BLOCKCACHE_SLAB_COUNT, 1);
+    Cache cache;
     Configuration config = new Configuration();
     BlurMetrics blurMetrics = new BlurMetrics(config);
-    boolean directAllocation = configuration.getBoolean(BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION, true);
+    if (bankCount >= 1) {
+      BlockCache blockCache;
+      boolean directAllocation = configuration.getBoolean(BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION, true);
 
-    int slabSize = numberOfBlocksPerBank * blockSize;
-    LOG.info("Number of slabs of block cache [{0}] with direct memory allocation set to [{1}]", bankCount, directAllocation);
-    LOG.info("Block cache target memory usage, slab size of [{0}] will allocate [{1}] slabs and use ~[{2}] bytes", slabSize, bankCount, ((long) bankCount * (long) slabSize));
+      int slabSize = numberOfBlocksPerBank * blockSize;
+      LOG.info("Number of slabs of block cache [{0}] with direct memory allocation set to [{1}]", bankCount, directAllocation);
+      LOG.info("Block cache target memory usage, slab size of [{0}] will allocate [{1}] slabs and use ~[{2}] bytes", slabSize, bankCount, ((long) bankCount * (long) slabSize));
 
-    BufferStore.init(configuration, blurMetrics);
-    BlockCache blockCache;
-    try {
-      long totalMemory = (long) bankCount * (long) numberOfBlocksPerBank * (long) blockSize;
-      blockCache = new BlockCache(blurMetrics, directAllocation, totalMemory, slabSize, blockSize);
-    } catch (OutOfMemoryError e) {
-      if ("Direct buffer memory".equals(e.getMessage())) {
-        System.err
-            .println("The max direct memory is too low.  Either increase by setting (-XX:MaxDirectMemorySize=<size>g -XX:+UseLargePages) or disable direct allocation by (blur.shard.blockcache.direct.memory.allocation=false) in blur-site.properties");
-        System.exit(1);
+      BufferStore.init(configuration, blurMetrics);
+
+      try {
+        long totalMemory = (long) bankCount * (long) numberOfBlocksPerBank * (long) blockSize;
+        blockCache = new BlockCache(blurMetrics, directAllocation, totalMemory, slabSize, blockSize);
+      } catch (OutOfMemoryError e) {
+        if ("Direct buffer memory".equals(e.getMessage())) {
+          System.err
+              .println("The max direct memory is too low.  Either increase by setting (-XX:MaxDirectMemorySize=<size>g -XX:+UseLargePages) or disable direct allocation by (blur.shard.blockcache.direct.memory.allocation=false) in blur-site.properties");
+          System.exit(1);
+        }
+        throw e;
       }
-      throw e;
+      cache = new BlockDirectoryCache(blockCache, blurMetrics);
+    } else {
+      cache = BlockDirectory.NO_CACHE;
     }
-    BlockDirectoryCache cache = new BlockDirectoryCache(blockCache, blurMetrics);
 
     String bindAddress = configuration.get(BLUR_SHARD_BIND_ADDRESS);
     int bindPort = configuration.getInt(BLUR_SHARD_BIND_PORT, -1);
@@ -138,6 +145,8 @@ public class ThriftBlurShardServer extends ThriftServer {
         System.exit(1);
       }
     }
+    
+    BlurUtil.setupZookeeper(zooKeeper,configuration.get(BLUR_CLUSTER_NAME));
 
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper);
 

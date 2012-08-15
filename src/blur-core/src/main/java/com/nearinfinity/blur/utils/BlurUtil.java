@@ -122,16 +122,22 @@ public class BlurUtil {
     return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[] { clazz }, handler);
   }
 
+  public static void setupZookeeper(ZooKeeper zookeeper) throws KeeperException, InterruptedException {
+    setupZookeeper(zookeeper, null);
+  }
+
   public static void setupZookeeper(ZooKeeper zookeeper, String cluster) throws KeeperException, InterruptedException {
     BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getBasePath());
     BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getOnlineControllersPath());
     BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getClustersPath());
-    BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getClusterPath(cluster));
-    BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getSafemodePath(cluster));
-    BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getRegisteredShardsPath(cluster));
-    BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getOnlinePath(cluster));
-    BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getOnlineShardsPath(cluster));
-    BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getTablesPath(cluster));
+    if (cluster != null) {
+      BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getClusterPath(cluster));
+      BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getSafemodePath(cluster));
+      BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getRegisteredShardsPath(cluster));
+      BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getOnlinePath(cluster));
+      BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getOnlineShardsPath(cluster));
+      BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getTablesPath(cluster));
+    }
   }
 
   public static BlurQuery newSimpleQuery(String query) {
@@ -719,7 +725,7 @@ public class BlurUtil {
     }
     trans.close();
   }
-  
+
   public static void removeAll(ZooKeeper zooKeeper, String path) throws KeeperException, InterruptedException {
     List<String> list = zooKeeper.getChildren(path, false);
     for (String p : list) {

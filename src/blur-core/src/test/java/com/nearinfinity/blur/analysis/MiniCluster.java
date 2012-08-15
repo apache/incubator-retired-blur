@@ -1,5 +1,9 @@
 package com.nearinfinity.blur.analysis;
 
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_SLAB_COUNT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -31,7 +35,11 @@ import com.nearinfinity.blur.thrift.Connection;
 import com.nearinfinity.blur.thrift.ThriftBlurControllerServer;
 import com.nearinfinity.blur.thrift.ThriftBlurShardServer;
 import com.nearinfinity.blur.thrift.ThriftServer;
+import com.nearinfinity.blur.thrift.commands.BlurCommand;
+import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
+import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
 public abstract class MiniCluster {
 
@@ -42,19 +50,59 @@ public abstract class MiniCluster {
   private static ZooKeeperServerMainEmbedded zooKeeperServerMain;
   private static List<ThriftServer> controllers = new ArrayList<ThriftServer>();
   private static List<ThriftServer> shards = new ArrayList<ThriftServer>();
+  private static String controllerConnectionStr;
 
-  public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
+  public static void main(String[] args) throws IOException, InterruptedException, KeeperException, BlurException, TException {
     startDfs("./tmp");
     startZooKeeper("./tmp");
 
-    startControllers(2);
-//    startShards(1);
+    startControllers(1);
+    startShards(1);
 
-//    stopShards();
-    stopControllers();
+    try {
+      createTable("test");
+      for (int i = 0; i < 1000; i++) {
+        addRow("test", i);
+      }
 
-    shutdownZooKeeper();
-    shutdownDfs();
+      for (int i = 0; i < 1000; i++) {
+        searchRow("test", i);
+      }
+
+    } finally {
+      stopShards();
+      stopControllers();
+
+      shutdownZooKeeper();
+      shutdownDfs();
+    }
+  }
+
+  private static void createTable(String test) throws BlurException, TException, IOException {
+    final TableDescriptor descriptor = new TableDescriptor();
+    descriptor.setName(test);
+    descriptor.setShardCount(7);
+    descriptor.setAnalyzerDefinition(new AnalyzerDefinition());
+    descriptor.setTableUri(getFileSystemUri() + "/blur/" + test);
+    BlurClientManager.execute(getControllerConnectionStr(), new BlurCommand<Void>() {
+      @Override
+      public Void call(Client client) throws BlurException, TException {
+        client.createTable(descriptor);
+        return null;
+      }
+    });
+  }
+
+  public static String getControllerConnectionStr() {
+    return controllerConnectionStr;
+  }
+
+  private static void addRow(String string, int i) {
+    // @TODO
+  }
+
+  private static void searchRow(String string, int i) {
+    // @TODO
   }
 
   public static void stopControllers() {
@@ -82,23 +130,30 @@ public abstract class MiniCluster {
       LOG.error(e);
       throw new RuntimeException(e);
     }
-    configuration.set("blur.zookeeper.connection", getZkConnectionString());
-    configuration.set("blur.shard.blockcache.direct.memory.allocation", "false");
+    configuration.set(BLUR_ZOOKEEPER_CONNECTION, getZkConnectionString());
+    configuration.set(BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION, "false");
+    configuration.set(BLUR_SHARD_BLOCKCACHE_SLAB_COUNT, "0");
     return configuration;
   }
 
   public static void startControllers(BlurConfiguration configuration, int num) {
+    StringBuilder builder = new StringBuilder();
     for (int i = 0; i < num; i++) {
       try {
         ThriftServer server = ThriftBlurControllerServer.createServer(i, configuration);
         controllers.add(server);
         Connection connection = new Connection("localhost", 40010 + i);
+        if (builder.length() != 0) {
+          builder.append(',');
+        }
+        builder.append(connection.getConnectionStr());
         startServer(server, connection);
       } catch (Exception e) {
         LOG.error(e);
         throw new RuntimeException(e);
       }
     }
+    controllerConnectionStr = builder.toString();
   }
 
   public static void startShards(int num) {

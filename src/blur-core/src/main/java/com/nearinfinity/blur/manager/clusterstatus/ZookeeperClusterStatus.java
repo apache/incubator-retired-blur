@@ -281,13 +281,13 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public boolean exists(boolean useCache, String cluster, String table) {
-    if (useCache) {
-      if (_tableToClusterCache.containsKey(table)) {
-        return true;
-      } else {
-        return false;
-      }
-    }
+//    if (useCache) {
+//      if (_tableToClusterCache.containsKey(table)) {
+//        return true;
+//      } else {
+//        return false;
+//      }
+//    }
     long s = System.nanoTime();
     try {
       if (_zk.exists(ZookeeperPathConstants.getTablePath(cluster, table), false) == null) {
@@ -499,7 +499,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   public boolean isInSafeMode(boolean useCache, String cluster) {
     if (useCache) {
       Long safeModeTimestamp = _safeModeMap.get(cluster);
-      if (safeModeTimestamp != Long.MIN_VALUE) {
+      if (safeModeTimestamp != null && safeModeTimestamp != Long.MIN_VALUE) {
         return safeModeTimestamp < System.currentTimeMillis() ? false : true;
       }
     }

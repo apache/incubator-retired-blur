@@ -56,6 +56,7 @@ import com.nearinfinity.blur.zookeeper.WatchChildren;
 import com.nearinfinity.blur.zookeeper.WatchChildren.OnChange;
 import com.nearinfinity.blur.zookeeper.WatchNodeData;
 import com.nearinfinity.blur.zookeeper.WatchNodeExistance;
+import com.nearinfinity.blur.zookeeper.ZkUtils;
 
 public class ZookeeperClusterStatus extends ClusterStatus {
 
@@ -92,9 +93,13 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     public void action(List<String> clusters) {
       for (String cluster : clusters) {
         if (!_tableWatchers.containsKey(cluster)) {
-          WatchChildren clusterWatcher = new WatchChildren(_zk, ZookeeperPathConstants.getTablesPath(cluster)).watch(new Tables(cluster));
+          String tablesPath = ZookeeperPathConstants.getTablesPath(cluster);
+          ZkUtils.waitUntilExists(_zk, tablesPath);
+          WatchChildren clusterWatcher = new WatchChildren(_zk, tablesPath).watch(new Tables(cluster));
           _tableWatchers.put(cluster, clusterWatcher);
-          WatchNodeExistance watchNodeExistance = new WatchNodeExistance(_zk, ZookeeperPathConstants.getSafemodePath(cluster)).watch(new SafeExistance(cluster));
+          String safemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
+          ZkUtils.waitUntilExists(_zk, safemodePath);
+          WatchNodeExistance watchNodeExistance = new WatchNodeExistance(_zk, safemodePath).watch(new SafeExistance(cluster));
           _safeModeWatchers.put(cluster, watchNodeExistance);
         }
       }
@@ -201,6 +206,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   public List<String> getClusterList() {
     long s = System.nanoTime();
     try {
+      checkIfOpen();
       return _zk.getChildren(ZookeeperPathConstants.getClustersPath(), false);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
@@ -212,10 +218,18 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     }
   }
 
+  private void checkIfOpen() {
+    if (_running.get()) {
+      return;
+    }
+    throw new RuntimeException("not open");
+  }
+
   @Override
   public List<String> getControllerServerList() {
     long s = System.nanoTime();
     try {
+      checkIfOpen();
       return _zk.getChildren(ZookeeperPathConstants.getOnlineControllersPath(), false);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
@@ -240,6 +254,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
     long s = System.nanoTime();
     try {
+      checkIfOpen();
       return _zk.getChildren(ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/online/shard-nodes", false);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
@@ -268,6 +283,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   public List<String> getShardServerList(String cluster) {
     long s = System.nanoTime();
     try {
+      checkIfOpen();
       return _zk.getChildren(ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/shard-nodes", false);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
@@ -281,15 +297,16 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public boolean exists(boolean useCache, String cluster, String table) {
-//    if (useCache) {
-//      if (_tableToClusterCache.containsKey(table)) {
-//        return true;
-//      } else {
-//        return false;
-//      }
-//    }
+    // if (useCache) {
+    // if (_tableToClusterCache.containsKey(table)) {
+    // return true;
+    // } else {
+    // return false;
+    // }
+    // }
     long s = System.nanoTime();
     try {
+      checkIfOpen();
       if (_zk.exists(ZookeeperPathConstants.getTablePath(cluster, table), false) == null) {
         return false;
       }
@@ -315,6 +332,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     long s = System.nanoTime();
     String tablePathIsEnabled = ZookeeperPathConstants.getTableEnabledPath(cluster, table);
     try {
+      checkIfOpen();
       if (_zk.exists(tablePathIsEnabled, false) == null) {
         return false;
       }
@@ -342,6 +360,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     long s = System.nanoTime();
     TableDescriptor tableDescriptor = new TableDescriptor();
     try {
+      checkIfOpen();
       if (_zk.exists(ZookeeperPathConstants.getTableEnabledPath(cluster, table), false) == null) {
         tableDescriptor.isEnabled = false;
       } else {
@@ -406,6 +425,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   public List<String> getTableList(String cluster) {
     long s = System.nanoTime();
     try {
+      checkIfOpen();
       return _zk.getChildren(ZookeeperPathConstants.getTablesPath(cluster), false);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
@@ -418,13 +438,15 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   public void close() {
-    _running.set(false);
-    close(_clusterWatcher);
-    close(_onlineShardsNodesWatchers);
-    close(_tableWatchers);
-    close(_enabledTableWatchers);
-    close(_safeModeWatchers);
-    close(_safeModeDataWatchers);
+    if (_running.get()) {
+      _running.set(false);
+      close(_clusterWatcher);
+      close(_onlineShardsNodesWatchers);
+      close(_tableWatchers);
+      close(_enabledTableWatchers);
+      close(_safeModeWatchers);
+      close(_safeModeDataWatchers);
+    }
   }
 
   private void close(ConcurrentMap<String, ? extends Closeable> closableMap) {
@@ -455,6 +477,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     for (String cluster : clusterList) {
       long s = System.nanoTime();
       try {
+        checkIfOpen();
         Stat stat = _zk.exists(ZookeeperPathConstants.getTablePath(cluster, table), false);
         if (stat != null) {
           _tableToClusterCache.put(table, cluster);
@@ -477,6 +500,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     String lockPath = ZookeeperPathConstants.getLockPath(cluster, table);
     long s = System.nanoTime();
     try {
+      checkIfOpen();
       if (_zk.exists(lockPath, false) == null) {
         return;
       }
@@ -505,6 +529,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     }
     long s = System.nanoTime();
     try {
+      checkIfOpen();
       String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
       Stat stat = _zk.exists(blurSafemodePath, false);
       if (stat == null) {
@@ -583,6 +608,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   public boolean isBlockCacheEnabled(String cluster, String table) {
     long s = System.nanoTime();
     try {
+      checkIfOpen();
       if (_zk.exists(ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table), false) == null) {
         return false;
       }
@@ -610,6 +636,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     String path = ZookeeperPathConstants.getTableReadOnlyPath(cluster, table);
     Boolean flag = null;
     try {
+      checkIfOpen();
       if (_zk.exists(path, false) == null) {
         flag = false;
         return false;
@@ -631,6 +658,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   public void createTable(TableDescriptor tableDescriptor) {
     long s = System.nanoTime();
     try {
+      checkIfOpen();
       if (tableDescriptor.compressionClass == null) {
         tableDescriptor.compressionClass = DeflateCodec.class.getName();
       }
@@ -687,6 +715,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   public void disableTable(String cluster, String table) {
     long s = System.nanoTime();
     try {
+      checkIfOpen();
       if (_zk.exists(ZookeeperPathConstants.getTablePath(cluster, table), false) == null) {
         throw new IOException("Table [" + table + "] does not exist.");
       }
@@ -711,6 +740,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   public void enableTable(String cluster, String table) {
     long s = System.nanoTime();
     try {
+      checkIfOpen();
       if (_zk.exists(ZookeeperPathConstants.getTablePath(cluster, table), false) == null) {
         throw new IOException("Table [" + table + "] does not exist.");
       }
@@ -735,6 +765,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   public void removeTable(String cluster, String table, boolean deleteIndexFiles) {
     long s = System.nanoTime();
     try {
+      checkIfOpen();
       String blurTablePath = ZookeeperPathConstants.getTablePath(cluster, table);
       if (_zk.exists(blurTablePath, false) == null) {
         throw new IOException("Table [" + table + "] does not exist.");
@@ -769,5 +800,10 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       builder.append(type).append(',');
     }
     return builder.substring(0, builder.length() - 1).getBytes();
+  }
+
+  @Override
+  public boolean isOpen() {
+    return _running.get();
   }
 }

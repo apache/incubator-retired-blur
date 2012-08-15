@@ -740,4 +740,23 @@ public class BlurUtil {
     FileSystem fileSystem = FileSystem.get(tablePath.toUri(), new Configuration());
     fileSystem.delete(tablePath, true);
   }
+
+  public static RowMutation toRowMutation(String table, Row row) {
+    RowMutation rowMutation = new RowMutation();
+    rowMutation.setRowId(row.getId());
+    rowMutation.setTable(table);
+    rowMutation.setRowMutationType(RowMutationType.REPLACE_ROW);
+    List<Record> records = row.getRecords();
+    for (Record record : records) {
+      rowMutation.addToRecordMutations(toRecordMutation(record));      
+    }
+    return rowMutation;
+  }
+
+  public static RecordMutation toRecordMutation(Record record) {
+    RecordMutation recordMutation = new RecordMutation();
+    recordMutation.setRecord(record);
+    recordMutation.setRecordMutationType(RecordMutationType.REPLACE_ENTIRE_RECORD);
+    return recordMutation;
+  }
 }

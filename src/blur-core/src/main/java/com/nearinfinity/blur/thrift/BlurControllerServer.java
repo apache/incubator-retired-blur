@@ -16,7 +16,10 @@
 
 package com.nearinfinity.blur.thrift;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -169,7 +172,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   private void watchForLayoutChanges(final String cluster) throws KeeperException, InterruptedException {
-    WatchNodeExistance we1 = new WatchNodeExistance(_zookeeper,ZookeeperPathConstants.getTablesPath(cluster));
+    WatchNodeExistance we1 = new WatchNodeExistance(_zookeeper, ZookeeperPathConstants.getTablesPath(cluster));
     we1.watch(new WatchNodeExistance.OnChange() {
       @Override
       public void action(Stat stat) {
@@ -182,8 +185,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     if (w1 != null) {
       w1.close();
     }
-    
-    WatchNodeExistance we2 = new WatchNodeExistance(_zookeeper,ZookeeperPathConstants.getTablesPath(cluster));
+
+    WatchNodeExistance we2 = new WatchNodeExistance(_zookeeper, ZookeeperPathConstants.getTablesPath(cluster));
     we2.watch(new WatchNodeExistance.OnChange() {
       @Override
       public void action(Stat stat) {
@@ -204,25 +207,21 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       @Override
       public void action(List<String> children) {
         LOG.info("Layout change.");
-        System.out.println("-------------------------------------");
-        System.out.println("-------------------------------------");
-        System.out.println("-------------------------------------");
-        System.out.println("-------------------------------------");
-        System.out.println("-------------------------------------");
-        System.out.println("-------------------------------------");
         updateLayout();
       }
     });
 
-    System.out.println("------------------------------------- running watch [" + cluster + "] [" + path + "]");
     WatchChildren watch = map.putIfAbsent(cluster, watchForTables);
     if (watch != null) {
-      System.out.println("_____Closing");
       watch.close();
     }
   }
 
   private synchronized void updateLayout() {
+    if (!_clusterStatus.isOpen()) {
+      LOG.warn("The cluster status object has been closed.");
+      return;
+    }
     List<String> tableList = _clusterStatus.getTableList();
     HashMap<String, Map<String, String>> newLayout = new HashMap<String, Map<String, String>>();
     for (String table : tableList) {
@@ -274,6 +273,25 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       _closed.set(true);
       _running.set(false);
       _executor.shutdownNow();
+      close(_watchForClusters);
+      close(_watchForOnlineShardsPerCluster.values());
+      close(_watchForOnlineShardsPerClusterExistance.values());
+      close(_watchForTablesPerCluster.values());
+      close(_watchForTablesPerClusterExistance.values());
+    }
+  }
+
+  private void close(Collection<? extends Closeable> closableLst) {
+    for (Closeable closeable : closableLst) {
+      close(closeable);
+    }
+  }
+
+  private void close(Closeable closeable) {
+    try {
+      closeable.close();
+    } catch (IOException e) {
+      LOG.error("Unknown", e);
     }
   }
 

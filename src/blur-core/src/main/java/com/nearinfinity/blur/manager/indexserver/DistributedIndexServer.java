@@ -109,6 +109,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private DirectoryReferenceFileGC _gc;
   private long _timeBetweenCommits = TimeUnit.SECONDS.toMillis(60);
   private long _timeBetweenRefreshs = TimeUnit.MILLISECONDS.toMillis(500);
+  private WatchChildren _watchOnlineShards;
 
   public static interface ReleaseReader {
     void release() throws IOException;
@@ -137,7 +138,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   private void watchForShardServerChanges() {
     ZookeeperPathConstants.getOnlineShardsPath(cluster);
-    new WatchChildren(_zookeeper, ZookeeperPathConstants.getOnlineShardsPath(cluster)).watch(new OnChange() {
+    _watchOnlineShards = new WatchChildren(_zookeeper, ZookeeperPathConstants.getOnlineShardsPath(cluster)).watch(new OnChange() {
       private List<String> _prevOnlineShards = new ArrayList<String>();
 
       @Override
@@ -372,15 +373,33 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   @Override
   public void close() {
-    _running.set(false);
-    _timerCacheFlush.purge();
-    _timerCacheFlush.cancel();
-    
-    _timerTableWarmer.purge();
-    _timerTableWarmer.cancel();
-    _closer.close();
-    _gc.close();
-    _openerService.shutdownNow();
+    if (_running.get()) {
+      _running.set(false);
+      closeAllIndexes();
+      _watchOnlineShards.close();
+      _timerCacheFlush.purge();
+      _timerCacheFlush.cancel();
+
+      _timerTableWarmer.purge();
+      _timerTableWarmer.cancel();
+      _closer.close();
+      _gc.close();
+      _openerService.shutdownNow();
+    }
+  }
+
+  private void closeAllIndexes() {
+    for (Entry<String, Map<String, BlurIndex>> tableToShards : _indexes.entrySet()) {
+      for (Entry<String, BlurIndex> shard : tableToShards.getValue().entrySet()) {
+        BlurIndex index = shard.getValue();
+        try {
+          index.close();
+          LOG.info("Closed [{0}] [{1}] [{2}]", tableToShards.getKey(), shard.getKey(), index);
+        } catch (IOException e) {
+          LOG.info("Error during closing of [{0}] [{1}] [{2}]", tableToShards.getKey(), shard.getKey(), index);
+        }
+      }
+    }
   }
 
   @Override

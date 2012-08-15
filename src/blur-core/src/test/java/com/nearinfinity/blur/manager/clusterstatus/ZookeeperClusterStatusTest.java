@@ -26,7 +26,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.nearinfinity.blur.analysis.MiniCluster;
+import com.nearinfinity.blur.MiniCluster;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;

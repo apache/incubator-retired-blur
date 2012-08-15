@@ -27,6 +27,7 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
@@ -152,6 +153,33 @@ public class ZkUtils {
       if (e.code() == KeeperException.Code.NONODE) {
         return;
       }
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static void waitUntilExists(ZooKeeper zooKeeper, String path) {
+    final Object o = new Object();
+    try {
+      while (true) {
+        Stat stat = zooKeeper.exists(path, new Watcher() {
+          @Override
+          public void process(WatchedEvent event) {
+            synchronized (o) {
+              o.notifyAll();
+            }
+          }
+        });
+        if (stat == null) {
+          synchronized (o) {
+            o.wait();
+          }
+        } else {
+          return;
+        }
+      }
+    } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);

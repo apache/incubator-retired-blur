@@ -1,6 +1,8 @@
 package com.nearinfinity.blur.zookeeper;
 
 import java.io.Closeable;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +29,8 @@ public class WatchChildren implements Closeable {
   private final String instance = UUID.randomUUID().toString();
   private Thread _doubleCheckThread;
   private Thread _watchThread;
+  private boolean _debug = true;
+  private String _debugStackTrace;
 
   public static abstract class OnChange {
     public abstract void action(List<String> children);
@@ -39,50 +43,58 @@ public class WatchChildren implements Closeable {
   }
 
   public WatchChildren watch(final OnChange onChange) {
+    if (_debug) {
+      StringWriter writer = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(writer);
+      new Throwable().printStackTrace(printWriter);
+      printWriter.close();
+      _debugStackTrace = writer.toString();
+    }
     _watchThread = new Thread(new Runnable() {
       @Override
       public void run() {
-        try {
-          startDoubleCheckThread();
-          while (_running.get()) {
-            synchronized (_lock) {
-              try {
-                System.out.println("+++++++++Executing watch on [" + _path + "] [" + instance + "]");
-                _children = _zooKeeper.getChildren(_path, new Watcher() {
-                  @Override
-                  public void process(WatchedEvent event) {
-                    synchronized (_lock) {
-                      _lock.notify();
-                    }
+        startDoubleCheckThread();
+        while (_running.get()) {
+          synchronized (_lock) {
+            try {
+              _children = _zooKeeper.getChildren(_path, new Watcher() {
+                @Override
+                public void process(WatchedEvent event) {
+                  synchronized (_lock) {
+                    _lock.notify();
                   }
-                });
-                onChange.action(_children);
-                _lock.wait();
-              } catch (KeeperException e) {
-                e.printStackTrace();
-                if (!_running.get()) {
-                  LOG.info("Error [{0}]", e.getMessage());
-                  return;
                 }
-                if (e.code() == Code.NONODE) {
-                  LOG.info("Path for watching not found [{0}], no longer watching.", _path);
-                  close();
-                  return;
-                }
-                LOG.error("Unknown error", e);
-                throw new RuntimeException(e);
-              } catch (InterruptedException e) {
-                e.printStackTrace();
+              });
+              onChange.action(_children);
+              _lock.wait();
+            } catch (KeeperException e) {
+              LOG.error("Error in instance [{0}]", e, instance);
+              if (!_running.get()) {
+                LOG.info("Error [{0}]", e.getMessage());
                 return;
               }
+              if (e.code() == Code.NONODE) {
+                if (_debug) {
+                  LOG.info("Path for watching not found [{0}], no longer watching, debug [{1}].", _path, _debugStackTrace);
+                } else {
+                  LOG.info("Path for watching not found [{0}], no longer watching.", _path);
+                }
+                close();
+                return;
+              }
+              if (_debug) {
+                LOG.error("Unknown error [{0}]", e, _debugStackTrace);
+              } else {
+                LOG.error("Unknown error", e);
+              }
+              throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+              return;
             }
           }
-          _running.set(false);
-        } catch (Throwable e) {
-          e.printStackTrace();
-        } finally {
-          System.out.println("++++++++++++++++Exiting watch on [" + _path + "] [" + instance + "] [" + _running + "]");
         }
+        _running.set(false);
       }
     });
     _watchThread.setName("Watching for children on path [" + _path + "] instance [" + instance + "]");

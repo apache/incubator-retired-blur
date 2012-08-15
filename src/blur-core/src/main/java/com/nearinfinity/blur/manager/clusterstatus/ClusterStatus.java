@@ -76,4 +76,6 @@ public abstract class ClusterStatus {
 
   public abstract void removeTable(String cluster, String table, boolean deleteIndexFiles);
 
+  public abstract boolean isOpen();
+
 }

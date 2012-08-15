@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.analysis;
+package com.nearinfinity.blur;
 
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_SLAB_COUNT;
@@ -27,9 +27,9 @@ import org.apache.zookeeper.server.ZooKeeperServerMain;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
 
-import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.thrift.BlurClient;
 import com.nearinfinity.blur.thrift.BlurClientManager;
 import com.nearinfinity.blur.thrift.Connection;
 import com.nearinfinity.blur.thrift.ThriftBlurControllerServer;
@@ -38,8 +38,15 @@ import com.nearinfinity.blur.thrift.ThriftServer;
 import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
+import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.BlurQuery;
+import com.nearinfinity.blur.thrift.generated.BlurResults;
+import com.nearinfinity.blur.thrift.generated.Column;
+import com.nearinfinity.blur.thrift.generated.Record;
+import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.utils.BlurUtil;
 
 public abstract class MiniCluster {
 
@@ -61,12 +68,15 @@ public abstract class MiniCluster {
 
     try {
       createTable("test");
-      for (int i = 0; i < 1000; i++) {
-        addRow("test", i);
+      Iface client = BlurClient.getClient(getControllerConnectionStr());
+      for (int i = 0; i < 100; i++) {
+        addRow("test", i, client);
       }
+      
+      Thread.sleep(10000);
 
-      for (int i = 0; i < 1000; i++) {
-        searchRow("test", i);
+      for (int i = 0; i < 100; i++) {
+        searchRow("test", i, client);
       }
 
     } finally {
@@ -97,12 +107,25 @@ public abstract class MiniCluster {
     return controllerConnectionStr;
   }
 
-  private static void addRow(String string, int i) {
-    // @TODO
+  private static void addRow(String table, int i, Iface client) throws BlurException, TException {
+    Row row = new Row();
+    row.setId(Integer.toString(i));
+    Record record = new Record();
+    record.setRecordId(Integer.toString(i));
+    record.setFamily("test");
+    record.addToColumns(new Column("test", Integer.toString(i)));
+    row.addToRecords(record);
+    client.mutate(BlurUtil.toRowMutation(table, row));
   }
 
-  private static void searchRow(String string, int i) {
+  private static void searchRow(String table, int i, Iface client) throws BlurException, TException {
     // @TODO
+    BlurQuery blurQuery = BlurUtil.newSimpleQuery("test.test:" + i);
+    System.out.println("Running [" + blurQuery + "]");
+    BlurResults results = client.query(table, blurQuery);
+    if (results.getTotalResults() != 1L) {
+      throw new RuntimeException("we got a problem here.");
+    }
   }
 
   public static void stopControllers() {
@@ -189,6 +212,11 @@ public abstract class MiniCluster {
     }).start();
     while (true) {
       try {
+        Thread.sleep(50);
+      } catch (InterruptedException e) {
+        return;
+      }
+      try {
         Client client = BlurClientManager.newClient(connection);
         BlurClientManager.close(client);
         break;
@@ -262,7 +290,7 @@ public abstract class MiniCluster {
     long s = System.nanoTime();
     while (s + 10000000000L > System.nanoTime()) {
       try {
-        Thread.sleep(10);
+        Thread.sleep(50);
       } catch (InterruptedException e) {
         LOG.error(e);
         throw new RuntimeException(e);

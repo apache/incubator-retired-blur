@@ -19,7 +19,7 @@ class Ability
         can :show, [:zookeepers, :help]
         can [:dashboard, :long_running_queries], :zookeepers
         can [:expand, :file_info, :info, :folder_info, :slow_folder_info, :file_tree], :hdfs
-        can [:stats, :most_recent_stat], :hdfs_metrics
+        can :stats, :hdfs_metrics
         can :help, :application
 
         # can view everything but query_string on blur_tables:

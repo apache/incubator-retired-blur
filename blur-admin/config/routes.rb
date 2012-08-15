@@ -80,7 +80,6 @@ BlurAdmin::Application.routes.draw do
   resources :hdfs_metrics, :only => [:index] do
     member do
       get 'stats', :action => :stats
-      get 'most_recent_stat', :action => :most_recent_stat
     end
   end
 

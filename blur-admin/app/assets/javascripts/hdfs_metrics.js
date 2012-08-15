@@ -73,7 +73,7 @@ $(document).ready(function(){
 
 	//request graph data
 	//id : hdfs id, action: (disk, nodes, block), req_data(optional):
-		//req_data.stat_id for data after a certain ID (update)
+		//req_data.stat_id for dafta after a certain ID (update)
 		//req_data.stat_mins for specifying a different range (overwrite)
       //for overwrite, also set redraw = true (optional)
 	var request_data = function(id, req_data, redraw){
@@ -98,7 +98,9 @@ $(document).ready(function(){
           var request_options = hdfs_request_lookup[action];
 					var hdfs_data_1 = {label: request_options.label_1, data: []};
           var hdfs_data_2 = {label: request_options.label_2, data: [], yaxis: 2};
-          var graph_container = $('.graph_instance#' + id).find('.tab-pane#' + action + '_' + id)
+          var graph_container = $('.graph_instance#' + id).find('.tab-pane#' + action + '_' + id);
+
+          console.log(data.length)
 
           for( var i in data ){
 						var point = data[i];
@@ -106,6 +108,7 @@ $(document).ready(function(){
             hdfs_data_1.data.push([entry_date - 4*60*60*1000, point[request_options.stat_1]]);
 						hdfs_data_2.data.push([entry_date - 4*60*60*1000, point[request_options.stat_2]]);
           }
+
 					//Current implementation is a fixed size queue for storing data
 					// Also allows you to change the range (length of queue, still fixed to a size)
 					// Future might also allow to grow the size of the queue overtime (length of queue appends data and never truncates)
@@ -131,19 +134,12 @@ $(document).ready(function(){
             set_slider_info(hdfs_data[id][action].min_time, hdfs_data[id][action].max_time, id);
 					}
 				}
+
+        // set the slider max to the most recently retrieved stat
+        slider_max[id] = new Date(point.created_at);
 			}
 		});
 	};
-
-  var get_recent_stat = function(id){
-    $.ajax({
-			url: Routes.most_recent_stat_hdfs_metric_path(id),
-			type: 'GET',
-			success: function(data){
-        slider_max[id] = new Date(data.created_at);
-      }
-    });
-  };
 
 	var update_live_graphs = function(){
     $('.graph_instance').each(function(){
@@ -157,7 +153,6 @@ $(document).ready(function(){
         noRequest = true;
         set_slider_vals_to_info(hdfs_id);
       }
-      get_recent_stat(hdfs_id);
 		});
     timer = setTimeout(update_live_graphs, refresh_time);
 	};
@@ -177,7 +172,6 @@ $(document).ready(function(){
 	$('.graph_instance').each(function(){
 		var hdfs_id = $(this).attr('id');
     request_data(hdfs_id, {stat_mins: time_length});
-    get_recent_stat(hdfs_id);
 	});
 
   $('.loading-spinner').on('ajaxStart', function(){
@@ -187,12 +181,12 @@ $(document).ready(function(){
     $(this).addClass('hidden');
   });
 
-	// Refresh Timers //
+	// Refresh Timers
 
 	timer = setTimeout(update_live_graphs, refresh_time);
 
-  // Slider - in progress //
-  // Slider currently moves over any time period in the last 24 hours //
+  // Slider - in progress
+  // Slider currently moves over any time period in the last 24 hours
   // Change the slider min val to get a different range, make sure that datepicker matches this range
   // TODO
   // Allow for scale to go back up to 2 weeks //
@@ -201,14 +195,17 @@ $(document).ready(function(){
   // Add functionality of grabbing center of slider and draging range //
   // Look at other useful functionalities from flot //
   //   Suggestion: tracking curves with crosshair //
-  // Change time to AM and PM (instead of military time //
 
   // Creates slider
   // Slide: changes the time fields as the slider is dragged
   // Change: requests data for the graph when the slider is released
+
+  // Change this variable to modify the range of dates for stats
+  var num_days_back = 14;
+
   $(".slider").slider({
     range: true,
-    min: -1*60*24,//past 24 hours in minutes **CHANGE TO GET DIF TIME SPAN (up to 2 weeks available - match slider)**
+    min: -1*60*24*num_days_back, //past 24 hours in minutes **CHANGE TO GET DIF TIME SPAN (up to 2 weeks available - match slider)**
     max: 0,
     values: [-1 * time_length, 0],
     slide: function(event, ui) {
@@ -226,7 +223,7 @@ $(document).ready(function(){
   });
 
   $(".min-date, .max-date").datepicker({
-    minDate: -1,//past 24 hours **CHANGE TO GET DIF TIME SPAN (up to 2 weeks available - match slider)**
+    minDate: -1 * num_days_back,//past 24 hours **CHANGE TO GET DIF TIME SPAN (up to 2 weeks available - match slider)**
     maxDate: 0
   });
 

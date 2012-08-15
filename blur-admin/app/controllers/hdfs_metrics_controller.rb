@@ -8,12 +8,6 @@ class HdfsMetricsController < ApplicationController
     render :json => @results, :methods => [:capacity, :used], :except => [:present_capacity, :dfs_used]
   end
 
-  def most_recent_stat
-    hdfs = Hdfs.find params[:id]
-    last_stat = hdfs.hdfs_stats.select([:created_at]).order('created_at').last
-    render :json => last_stat
-  end
-
   private
   def hdfs_stat_select(properties)
     hdfs = Hdfs.find params[:id]
@@ -22,11 +16,15 @@ class HdfsMetricsController < ApplicationController
 
     if params[:stat_id]
       where_clause = "id > #{params[:stat_id]}"
-    elsif params[:max_mins]
-      max_min = params[:max_mins].to_i
-      where_clause = "created_at >= '#{minutes.minute.ago}' and created_at < '#{max_min.minute.ago}'"
     else
       where_clause = "created_at >= '#{minutes.minute.ago}'"
+      where_clause += " and created_at < '#{params[:max_mins].to_i.minute.ago}'" if params[:max_mins]
+    end
+
+    stat_number = hdfs.hdfs_stats.where(where_clause).select("count(*) as count")
+    if stat_number.count >= 800
+      remove_number = (stat_number.count / 800).floor
+      where_clause += "and hdfs_stats.id % #{remove_number} = 0"
     end
 
     return hdfs.hdfs_stats.where(where_clause).select(properties)

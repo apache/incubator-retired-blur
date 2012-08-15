@@ -37,12 +37,9 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTIO
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
 import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.thrift.transport.TTransportException;
-import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.BlurConfiguration;
@@ -56,7 +53,6 @@ import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
-import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
@@ -64,13 +60,16 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
   private static final Log LOG = LogFactory.getLog(ThriftBlurControllerServer.class);
 
-  public static void main(String[] args) throws TTransportException, IOException, KeeperException, InterruptedException, BlurException {
+  public static void main(String[] args) throws Exception {
     int serverIndex = getServerIndex(args);
     LOG.info("Setting up Controller Server");
-    Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
-
     BlurConfiguration configuration = new BlurConfiguration();
+    ThriftServer server = createServer(serverIndex, configuration);
+    server.start();
+  }
 
+  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration) throws Exception {
+    Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
     String bindAddress = configuration.get(BLUR_CONTROLLER_BIND_ADDRESS);
     int bindPort = configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1);
     bindPort += serverIndex;
@@ -128,15 +127,15 @@ public class ThriftBlurControllerServer extends ThriftServer {
     server.setIface(iface);
 
     // This will shutdown the server when the correct path is set in zk
-    new BlurServerShutDown().register(new BlurShutdown() {
+    BlurShutdown shutdown = new BlurShutdown() {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
         quietClose(server, controllerServer, clusterStatus, zooKeeper, threadWatcher);
-        System.exit(0);
       }
-    }, zooKeeper);
-
-    server.start();
+    };
+    server.setShutdown(shutdown);
+    new BlurServerShutDown().register(shutdown, zooKeeper);
+    return server;
   }
 }

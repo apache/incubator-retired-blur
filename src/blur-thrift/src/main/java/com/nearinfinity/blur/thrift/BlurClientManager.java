@@ -288,9 +288,13 @@ public class BlurClientManager {
 
     LOG.info("Trashing client for connections [{0}]", connection);
     for (Client client : blockingQueue) {
-      client.getInputProtocol().getTransport().close();
-      client.getOutputProtocol().getTransport().close();
+      close(client);
     }
+  }
+
+  public static void close(Client client) {
+    client.getInputProtocol().getTransport().close();
+    client.getOutputProtocol().getTransport().close();
   }
 
   private static Client getClient(Connection connection) throws TTransportException, IOException {
@@ -312,7 +316,7 @@ public class BlurClientManager {
     }
   }
 
-  private static Client newClient(Connection connection) throws TTransportException, IOException {
+  public static Client newClient(Connection connection) throws TTransportException, IOException {
     String host = connection.getHost();
     int port = connection.getPort();
     TSocket trans;

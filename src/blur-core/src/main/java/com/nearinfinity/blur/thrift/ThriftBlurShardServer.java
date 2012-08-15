@@ -38,12 +38,10 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTIO
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
 import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.index.IndexDeletionPolicy;
-import org.apache.thrift.transport.TTransportException;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooKeeper;
@@ -71,7 +69,6 @@ import com.nearinfinity.blur.store.blockcache.BlockCache;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
-import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
@@ -79,12 +76,18 @@ public class ThriftBlurShardServer extends ThriftServer {
 
   private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
 
-  public static void main(String[] args) throws TTransportException, IOException, KeeperException, InterruptedException, BlurException {
+  public static void main(String[] args) throws Exception {
     int serverIndex = getServerIndex(args);
     LOG.info("Setting up Shard Server");
 
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
     BlurConfiguration configuration = new BlurConfiguration();
+
+    ThriftServer server = createServer(serverIndex, configuration);
+    server.start();
+  }
+
+  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration) throws Exception {
     // setup block cache
     // 134,217,728 is the bank size, therefore there are 16,384 block
     // in a bank when using a block of 8,192
@@ -194,15 +197,16 @@ public class ThriftBlurShardServer extends ThriftServer {
     server.setConfiguration(configuration);
 
     // This will shutdown the server when the correct path is set in zk
-    new BlurServerShutDown().register(new BlurShutdown() {
+    BlurShutdown shutdown = new BlurShutdown() {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(refresher, server, shardServer, indexManager, indexServer, threadWatcher);
-        System.exit(0);
+        quietClose(refresher, server, shardServer, indexManager, indexServer, threadWatcher, zooKeeper);
       }
-    }, zooKeeper);
-    server.start();
+    };
+    server.setShutdown(shutdown);
+    new BlurServerShutDown().register(shutdown, zooKeeper);
+    return server;
   }
 
   private static BlurFilterCache getFilterCache(BlurConfiguration configuration) {

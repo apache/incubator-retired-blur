@@ -15,6 +15,7 @@ import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import com.nearinfinity.blur.thrift.ExecutorServicePerMethodCallThriftServer.Args;
 import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
@@ -31,19 +32,21 @@ public class ThriftServer {
   private int _threadCount;
   private int _bindPort;
   private String _bindAddress;
+  private BlurShutdown _shutdown;
 
   public synchronized void close() {
     if (!_closed) {
       _closed = true;
+      _shutdown.shutdown();
       _server.stop();
     }
   }
-  
+
   protected static int getServerIndex(String[] args) {
     for (int i = 0; i < args.length; i++) {
       if ("-s".equals(args[i])) {
         if (i + 1 < args.length) {
-          return Integer.parseInt(args[i+1]);
+          return Integer.parseInt(args[i + 1]);
         }
       }
     }
@@ -110,7 +113,7 @@ public class ThriftServer {
     }
     return hostName;
   }
-  
+
   public void setBindPort(int bindPort) {
     _bindPort = bindPort;
   }
@@ -121,5 +124,13 @@ public class ThriftServer {
 
   public void setThreadCount(int threadCount) {
     this._threadCount = threadCount;
+  }
+
+  public BlurShutdown getShutdown() {
+    return _shutdown;
+  }
+
+  public void setShutdown(BlurShutdown shutdown) {
+    this._shutdown = shutdown;
   }
 }

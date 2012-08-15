@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -19,8 +18,6 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
-import org.apache.zookeeper.server.ServerConfig;
-import org.apache.zookeeper.server.ZooKeeperServerMain;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
 import org.apache.zookeeper.server.quorum.QuorumPeerMain;
 import org.junit.After;
@@ -29,6 +26,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.nearinfinity.blur.analysis.MiniCluster;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
@@ -41,9 +39,6 @@ public class ZookeeperClusterStatusTest {
   private static final String DEFAULT = "default";
 
   private static final Log LOG = LogFactory.getLog(ZookeeperClusterStatusTest.class);
-
-  private static Thread serverThread;
-  private static String connectionString = "localhost:21810";
   private ZooKeeper zooKeeper;
   private ZookeeperClusterStatus clusterStatus;
 
@@ -56,61 +51,17 @@ public class ZookeeperClusterStatusTest {
 
   @BeforeClass
   public static void setupOnce() throws InterruptedException, IOException, KeeperException {
-    rm(new File("./tmp/zk_test"));
-    serverThread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          ServerConfig config = new ServerConfig();
-          config.parse("./src/test/resources/test_zoo.cfg");
-          ZooKeeperServerMain zooKeeperServerMain = new ZooKeeperServerMain();
-          zooKeeperServerMain.runFromConfig(config);
-        } catch (ConfigException e) {
-          LOG.error(e);
-        } catch (IOException e) {
-          LOG.error(e);
-        }
-      }
-    });
-    serverThread.start();
-    long s = System.nanoTime();
-    while (s + 10000000000L > System.nanoTime()) {
-      Thread.sleep(10);
-      try {
-        ZooKeeper zk = new ZooKeeper(connectionString, 30000, new Watcher() {
-          @Override
-          public void process(WatchedEvent event) {
-
-          }
-        });
-        zk.close();
-        break;
-      } catch (IOException e) {
-        LOG.error(e);
-      }
-    }
-  }
-
-  private static void rm(File file) {
-    if (!file.exists()) {
-      return;
-    }
-    if (file.isDirectory()) {
-      for (File f : file.listFiles()) {
-        rm(f);
-      }
-    }
-    file.delete();
+    MiniCluster.startZooKeeper("./tmp/zk_test");
   }
 
   @AfterClass
   public static void teardownOnce() {
-    serverThread.interrupt();
+    MiniCluster.shutdownZooKeeper();
   }
 
   @Before
   public void setup() throws KeeperException, InterruptedException, IOException {
-    zooKeeper = new ZooKeeper(connectionString, 30000, new Watcher() {
+    zooKeeper = new ZooKeeper(MiniCluster.getZkConnectionString(), 30000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 

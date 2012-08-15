@@ -14,4 +14,15 @@ class Audit < ActiveRecord::Base
       :action => "#{message} by #{user.username}"
     )
 	end
+
+  def summary
+    {
+      :action => action,
+      :date_audited => created_at.getutc.to_s,
+      :model => model_affected,
+      :mutation => mutation,
+      :username => user.username,
+      :user => user.name
+    }
+  end
 end

@@ -18,21 +18,25 @@ $(document).ready(function() {
     };
 
     var from_now = new Date();
-    var from_hours = urlVars['from'] || 48
+    var from_hours = urlVars['from']
     from_now.setMinutes(0);
 
     var to_now = new Date();
-    var to_hours = urlVars['to'] || 0
+    var to_hours = urlVars['to']
     to_now.setMinutes(0);
 
     var from_input = $('<input class="from-cal" placeholder="from"/>').datetimepicker(default_timepicker_options);
     var to_input = $('<input class="to-cal" placeholder="to"/>').datetimepicker(default_timepicker_options);
 
-    from_now.setHours(from_now.getHours() - from_hours)
-    from_input.datepicker('setDate', from_now);
+    if (from_hours){
+      from_now.setHours(from_now.getHours() - from_hours)
+      from_input.datepicker('setDate', from_now);
+    }
 
-    to_now.setHours(to_now.getHours() - to_hours)
-    to_input.datepicker('setDate', to_now);
+    if (to_hours){
+      to_now.setHours(to_now.getHours() - to_hours)
+      to_input.datepicker('setDate', to_now);
+    }
 
     $('.row > .span2').prepend('<label>Audit range:</label>', from_input, to_input ,'<button class="btn refresh-button">Refresh</button>');
   };

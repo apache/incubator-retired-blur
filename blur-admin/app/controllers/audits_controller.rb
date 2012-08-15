@@ -8,13 +8,7 @@ class AuditsController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.json { render :json => @audits.as_json(
-        :include =>
-          {:user =>
-            {:only => :username}
-          }
-        )
-      }
+      format.json { render :json => {:aaData => @audits.collect{|audit| audit.summary}}.to_json}
     end
   end
 end

@@ -9,6 +9,29 @@
         & > div:last-child {
           float: right;
         }
+
+        .span2, .span3{
+          float: right;
+        }
+
+        .span2{
+          width: 325px;
+          input{
+            width: 100px;
+            margin-right: 5px;
+          }
+          label{
+            display: inline-block;
+            width: 300px;
+            margin-bottom: 0px;
+          }
+          button{
+            margin-bottom: 10px;
+          }
+          .dataTables_processing{
+            display: none;
+          }
+        }
       }
 
       .dataTables_filter{ 

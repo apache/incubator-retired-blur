@@ -49,7 +49,8 @@ class SearchesController < ApplicationController
                                            :fetch                 => params[:result_count].to_i,
                                            :offset                => params[:offset].to_i,
                                            :user_id             => current_user.id,
-                                           :query                => params[:query_string])
+                                           :query                => params[:query_string],
+                                           :blur_table_id   => params[:blur_table])
     search.column_object = params[:column_data]
 
     #use the model to begin building the blurquery
@@ -114,7 +115,7 @@ class SearchesController < ApplicationController
   #save action that loads the state of a saved action and returns a json to be used to populate the form
   def load
     search = Search.find(params[:id])
-    puts search
+    puts search.to_json
     render :json => search.to_json(:methods => :column_object)
   end
 
@@ -135,7 +136,8 @@ class SearchesController < ApplicationController
                                           :fetch                 => params[:result_count].to_i,
                                           :offset                => params[:offset].to_i,
                                           :user_id             => current_user.id,
-                                          :query                => params[:query_string])
+                                          :query                => params[:query_string],
+                                          :blur_table_id    => params[:blur_table])
     search.column_object = params[:column_data]
     search.save
     @searches = current_user.searches.reverse
@@ -155,7 +157,8 @@ class SearchesController < ApplicationController
                         :offset                    => params[:offset].to_i,
                         :user_id                 => current_user.id,
                         :query                    => params[:query_string],
-                        :column_object     => params[:column_data])
+                        :column_object     => params[:column_data],
+                        :blur_table_id        => params[:blur_table])
     render :nothing => true
   end
   private

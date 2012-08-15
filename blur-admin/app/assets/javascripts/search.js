@@ -183,6 +183,7 @@ $(document).ready(function() {
 
   var populate_form = function(data) {
     var column, _i, _len, _ref;
+    var oldTableName = $('#blur_table').val();
     $(".column_family_filter").dynatree("getRoot").visit(function(node) {
       return node.select(false);
     });
@@ -190,6 +191,23 @@ $(document).ready(function() {
     $('#offset').val(data.offset);
     $('#query_string').val(data.query);
     $('#save_name').val(data.name);
+    //Checks to see if table still exists in hdfs before changing selector
+    if ($('#blur_table').find('option[value='+ data.blur_table_id + ']').length != 0){
+      $('#blur_table').val(data.blur_table_id);
+    }
+    /*
+    *This seems backwards, but the .change trigger was not firing when jQuery was changing the dropdown selector.
+    *This check forces the filter tree to refresh if the table changed
+    */
+    if (oldTableName != data.blur_table_id){
+      var prevMode, tree;
+      $(".column_family_filter").dynatree("option", "initAjax", get_filter_ajax());
+      tree = $(".column_family_filter").dynatree("getTree");
+      prevMode = tree.enableUpdate(false);
+      tree.reload();
+      tree.enableUpdate(prevMode);
+    }
+
     if (data.super_query) {
       $('#search_row').prop('checked', true);
       $('#search_record').prop('checked', false);
@@ -224,6 +242,7 @@ $(document).ready(function() {
       column = raw_columns[index];
       $(".column_family_filter").dynatree("getTree").selectKey(column);
     }
+
     $('#search_submit').removeAttr('disabled');
     $('#save_button').removeAttr('disabled');
     $('#update_button').removeAttr('disabled');

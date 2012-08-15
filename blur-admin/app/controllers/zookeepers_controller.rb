@@ -67,7 +67,7 @@ class ZookeepersController < ApplicationController
     shard = Zookeeper.find(params[:id]).shards.find_by_id(params[:shard_id])
     unless shard.nil?
       shard.destroy
-      Audit.log_event(current_user, "Shard(#{shard.node_name}) was forgotten", "shard", "delete") if shard.destroyed?
+      Audit.log_event(current_user, "Shard (#{shard.node_name}) was forgotten", "shard", "delete") if shard.destroyed?
     end
     render :nothing => true
   end
@@ -76,7 +76,7 @@ class ZookeepersController < ApplicationController
     cluster = Zookeeper.find(params[:id]).clusters.find_by_id(params[:cluster_id])
     unless cluster.nil? 
       cluster.destroy 
-      Audit.log_event(current_user, "Cluster(#{cluster.name}) was forgotten", "cluster", "delete") if cluster.destroyed?
+      Audit.log_event(current_user, "Cluster (#{cluster.name}) was forgotten", "cluster", "delete") if cluster.destroyed?
     end
     render :nothing => true
   end
@@ -85,7 +85,7 @@ class ZookeepersController < ApplicationController
     controller = Zookeeper.find(params[:id]).controllers.find_by_id(params[:controller_id])
     unless controller.nil?
       controller.destroy
-      Audit.log_event(current_user, "Controller(#{controller.node_name}) was forgotten", "controller", "delete") if controller.destroyed?
+      Audit.log_event(current_user, "Controller (#{controller.node_name}) was forgotten", "controller", "delete") if controller.destroyed?
     end
     render :nothing => true
   end
@@ -94,7 +94,7 @@ class ZookeepersController < ApplicationController
     zookeeper = Zookeeper.find(params[:id])
     unless zookeeper.nil?
       zookeeper.destroy
-      Audit.log_event(current_user, "Zookeeper(#{zookeeper.name}) was forgotten", "zookeeper", "delete") if zookeeper.destroyed?
+      Audit.log_event(current_user, "Zookeeper (#{zookeeper.name}) was forgotten", "zookeeper", "delete") if zookeeper.destroyed?
     end
     render :nothing => true
   end

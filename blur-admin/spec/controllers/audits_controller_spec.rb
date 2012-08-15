@@ -14,13 +14,23 @@ describe AuditsController do
       end
 
       it "grabs all audits within the last two days without given hours" do
-        Audit.should_receive(:recent).with(48)
+        Audit.should_receive(:recent).with(48, 0)
         get :index
       end
 
-      it "grabs all audits within the last hours given the hours" do
-        Audit.should_receive(:recent).with(40)
-        get :index, :hours => 40
+      it "grabs all audits within the last hours given the from hours" do
+        Audit.should_receive(:recent).with(40, 0)
+        get :index, :from => 40
+      end
+
+      it "grabs all audits within the last hours given the to hours" do
+        Audit.should_receive(:recent).with(48, 10)
+        get :index, :to => 10
+      end
+
+      it "grabs all audits within the the given range of hours" do
+        Audit.should_receive(:recent).with(50, 20)
+        get :index, :from => 50, :to => 20
       end
     end
   end

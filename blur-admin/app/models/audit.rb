@@ -1,8 +1,8 @@
 class Audit < ActiveRecord::Base
   belongs_to :user
 
-  scope :recent, lambda { |time|
-    where(:created_at => time.hours.ago..Time.now).
+  scope :recent, lambda { |from, to|
+    where(:created_at => from.hours.ago..to.hours.ago).
     includes(:user)
   }
 
@@ -14,4 +14,15 @@ class Audit < ActiveRecord::Base
       :action => "#{message} by #{user.username}"
     )
 	end
+
+  def summary
+    {
+      :action => action,
+      :date_audited => created_at.getutc.to_s,
+      :model => model_affected,
+      :mutation => mutation,
+      :username => user.username,
+      :user => user.name
+    }
+  end
 end

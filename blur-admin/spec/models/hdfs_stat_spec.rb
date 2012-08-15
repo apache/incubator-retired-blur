@@ -12,7 +12,7 @@ describe HdfsStat do
   end
 
   it 'capacity should return the capacity in gigabytes' do
-    @stat.dfs_used = 3 * 1024**3
+    @stat.dfs_used_real = 3 * 1024**3
     @stat.used.should == 3
     @stat.capacity.kind_of? Float 
   end

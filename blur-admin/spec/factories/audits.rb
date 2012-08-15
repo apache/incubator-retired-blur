@@ -2,9 +2,9 @@
 
 FactoryGirl.define do
   factory :audit do
-    user "MyString"
-    mutation 1
-    model_affected 1
-    action "MyString"
+    user            { FactoryGirl.create :user }
+    mutation        1
+    model_affected  1
+    action          "This is an action"
   end
 end

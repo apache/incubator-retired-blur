@@ -10,7 +10,7 @@ $(document).ready(function(){
   // Page constants //
 
   var hdfs_data = {};
-	var time_length = 60;
+	var time_length = 60 * 24;
 	var refresh_time = 20000;
   var slider_max = {};
   var noRequest = false;
@@ -65,6 +65,8 @@ $(document).ready(function(){
         legend:{ container: $(".graph-legend") },
         crosshair: { mode: "x" },
         grid: { hoverable: true, autoHighlight: false },
+        lines: { show: false },
+        points: { show: true }
 			});
 		}
 		else
@@ -304,7 +306,7 @@ $(document).ready(function(){
     }
 
     // find the nearest points, x-wise
-    for (index = 0; index < series.data.length; ++index)
+    for (index = 0; index < series.data.length - 1; ++index)
       if (series.data[index][0] > pos.x)
         break;
             

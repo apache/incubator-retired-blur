@@ -26,7 +26,7 @@ class BlurTable < ActiveRecord::Base
 
   # Returns a map of host => [shards] of all hosts/shards associated with the table
   def hosts
-    read_attribute(:server).nil? ? {} : (JSON.parse read_attribute(:server))
+    read_attribute(:server).blank? ? {} : (JSON.parse read_attribute(:server))
   end
 
   def schema

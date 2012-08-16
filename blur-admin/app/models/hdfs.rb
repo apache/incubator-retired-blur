@@ -6,6 +6,7 @@ class Hdfs < ActiveRecord::Base
   end
 
   def recent_stats
+    return false unless self.hdfs_stats.last
     self.hdfs_stats.last.created_at > 1.minute.ago
   end
 end

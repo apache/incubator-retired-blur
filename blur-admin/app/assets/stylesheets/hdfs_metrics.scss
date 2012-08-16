@@ -1,6 +1,7 @@
-$instance_height: 300px;
 $title_height: 35px;
-$graph_height: $instance_height - $title_height;
+$graph_height: 240px;
+$total_graph_height: $graph_height + 60px;
+$instance_height: $title_height + $total_graph_height;
 
 @mixin graph_component{
 	display: inline-block;
@@ -56,7 +57,7 @@ $graph_height: $instance_height - $title_height;
 		.graph_content{
 			@include graph_component;
 			width: 100%;
-			height: $graph_height + 60;
+			height: $total_graph_height;
 			border: 1px solid #ccc;
 			position: absolute;
 			.graph_data{

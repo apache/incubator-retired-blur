@@ -10,11 +10,12 @@ $(document).ready(function(){
   // Page constants //
 
   var hdfs_data = {};
-	var time_length = 60;
+	var time_length = 60 * 24;
 	var refresh_time = 20000;
   var slider_max = {};
   var noRequest = false;
 	var actions = ['disk', 'nodes', 'block'];
+  var initial_load = true;
 
 	// Hash of labels and object lookup strings for the various actions //
 
@@ -64,7 +65,9 @@ $(document).ready(function(){
         ],
         legend:{ container: $(".graph-legend") },
         crosshair: { mode: "x" },
-        grid: { hoverable: true, autoHighlight: false },
+        grid: { hoverable: true, autoHighlight: false},
+        lines: { show: false },
+        points: { show: true }
 			});
 		}
 		else
@@ -132,13 +135,38 @@ $(document).ready(function(){
 
           // Redraws active graph
 					if (graph_container.hasClass('active')){
+            var min_returned_time = hdfs_data[id][action].min_time;
+            var max_returned_time = hdfs_data[id][action].max_time;
+
+            if (initial_load){
+              set_slider_info(min_returned_time, max_returned_time, id);
+            } else {
+              var maxSliderVal = slider_max[id].getTime();
+              var sliderVals = $(".graph_instance#" + id + " .slider").slider('option', 'values');
+              var min_slider_date = new Date(maxSliderVal + sliderVals[0] * 1000 * 60);
+              var max_slider_date = new Date(maxSliderVal + sliderVals[1] * 1000 * 60);
+            }
+
             draw_graph(graph_container.find('.graph'), hdfs_data[id][action]);
-            set_slider_info(hdfs_data[id][action].min_time, hdfs_data[id][action].max_time, id);
+
+            if (req_data && req_data.stat_id){
+              set_slider_info(min_slider_date, max_returned_time, id);
+            } else if (!initial_load) {
+              var graph = hdfs_data[id][action].plot;
+              graph.getOptions().xaxis['from'] = min_slider_date.getTime();
+              graph.getOptions().xaxis['to'] = max_slider_date.getTime();
+              graph.setupGrid();
+              graph.draw();
+            }
+            
 					}
 				}
 
         // set the slider max to the most recently retrieved stat
         slider_max[id] = new Date(point.created_at);
+
+        // no longer the first load
+        initial_load = false;
 			}
 		});
 	};

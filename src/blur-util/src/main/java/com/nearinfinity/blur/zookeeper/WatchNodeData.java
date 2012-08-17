@@ -145,7 +145,7 @@ public class WatchNodeData implements Closeable {
 
   public void close() {
     if (_running.get()) {
-      LOG.warn("Closing [{0}]", instance);
+      LOG.debug("Closing [{0}]", instance);
       _running.set(false);
       if (_doubleCheckThread != null) {
         _doubleCheckThread.interrupt();

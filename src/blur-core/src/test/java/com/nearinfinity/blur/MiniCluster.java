@@ -48,6 +48,7 @@ import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
+import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurUtil;
 
@@ -72,13 +73,20 @@ public abstract class MiniCluster {
     try {
       Iface client = BlurClient.getClient(getControllerConnectionStr());
       createTable("test", client);
-      for (int i = 0; i < 100; i++) {
+      long start = System.nanoTime();
+      for (int i = 0; i < 1000; i++) {
+        long now = System.nanoTime();
+        if (start + 5000000000L < now) {
+          System.out.println("Total [" + i + "]");
+          start = now;
+        }
         addRow("test", i, client);
       }
 
-      Thread.sleep(10000);
+      //This waits for all the data to become visible.
+      Thread.sleep(2000);
 
-      for (int i = 0; i < 100; i++) {
+      for (int i = 0; i < 1000; i++) {
         searchRow("test", i, client);
       }
       
@@ -112,7 +120,9 @@ public abstract class MiniCluster {
     record.setFamily("test");
     record.addToColumns(new Column("test", Integer.toString(i)));
     row.addToRecords(record);
-    client.mutate(BlurUtil.toRowMutation(table, row));
+    RowMutation rowMutation = BlurUtil.toRowMutation(table, row);
+    rowMutation.setWal(false);
+    client.mutate(rowMutation);
   }
 
   private static void searchRow(String table, int i, Iface client) throws BlurException, TException {

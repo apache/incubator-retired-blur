@@ -138,11 +138,11 @@ public class ZookeeperClusterStatus extends ClusterStatus {
           @Override
           public void action(byte[] data) {
             if (data == null) {
-              LOG.info("Safe mode value for cluster [" + cluster + "] is not set.");
+              LOG.debug("Safe mode value for cluster [" + cluster + "] is not set.");
               _safeModeMap.put(cluster, Long.MIN_VALUE);
             } else {
               String value = new String(data);
-              LOG.info("Safe mode value for cluster [" + cluster + "] is [" + value + "].");
+              LOG.debug("Safe mode value for cluster [" + cluster + "] is [" + value + "].");
               _safeModeMap.put(cluster, Long.parseLong(value));
             }
           }

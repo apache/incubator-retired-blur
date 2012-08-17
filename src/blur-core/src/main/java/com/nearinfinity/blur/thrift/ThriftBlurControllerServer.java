@@ -36,6 +36,8 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_SERVER_T
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
 import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
 import java.io.IOException;
@@ -131,7 +133,12 @@ public class ThriftBlurControllerServer extends ThriftServer {
     
     int webServerPort = Integer.parseInt(configuration.get(BLUR_GUI_CONTROLLER_PORT)) + serverIndex;
     
-    final HttpJettyServer httpServer = new HttpJettyServer(webServerPort, "controller", blurMetrics);
+    final HttpJettyServer httpServer = new HttpJettyServer(bindPort, webServerPort,
+    		configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1),
+    		configuration.getInt(BLUR_SHARD_BIND_PORT, -1),
+    		Integer.parseInt(configuration.get(BLUR_GUI_CONTROLLER_PORT)),
+    		Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT)),
+    		"controller", blurMetrics);
 
     // This will shutdown the server when the correct path is set in zk
     new BlurServerShutDown().register(new BlurShutdown() {

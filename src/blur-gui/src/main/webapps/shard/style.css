@@ -1,0 +1,53 @@
+body {
+	font-family: sans-serif;
+	font-size: 11px;
+	line-height: 17px;
+}
+
+a {
+    color: #0044FF !important;
+    text-decoration: none !important;
+}
+
+h2 {
+	margin: 5px 5px 0px 0px;
+}
+
+hr {
+	-moz-border-bottom-colors: none;
+	-moz-border-image: none;
+	-moz-border-left-colors: none;
+	-moz-border-right-colors: none;
+	-moz-border-top-colors: none;
+	border-color: -moz-use-text-color #DDDDDD #DDDDDD;
+	border-right: 1px solid #DDDDDD;
+	border-style: none solid solid;
+	border-width: 0 1px 1px;
+}
+
+table {
+	font-size: 12px;
+	
+}
+
+td {
+	align: left;
+	font-size: 12px;
+	padding-left: 10px;
+	padding-right: 10px;
+	font-family: Verdana;
+}
+
+.statTable {
+	width: 500px;
+}
+
+.statTableTitle {
+	color: 55555;
+	align: left;
+	font-weight: bold;
+	font-size:14pt;
+	padding: 10px 5px 0px 5px;
+	font-family: Helvetica;
+	background-color: #DDDDDD;
+}

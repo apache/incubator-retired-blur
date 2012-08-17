@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+svg {
+	font: 10px sans-serif;
+}
+
+.line {
+	fill: none;
+	stroke: #000;
+	stroke-width: 1.5px;
+}
+
+.axis path,.axis line {
+	fill: none;
+	stroke: #000;
+	shape-rendering: crispEdges;
+}
+
+div { 
+	background: #CCC;
+}
+
+</style>
+
+</head>
+
+<script src="d3.v2.js"></script>
+<body>
+	<script>
+		//decimal formatter
+		var df = d3.format("4d");
+		//data holder
+		var dummy = [];
+		
+		var total = 10;
+		for(i=0;i<total-1;i++)
+			dummy.push(0);
+		
+		var div = null;
+
+		//not sure why i have to init inside the json method
+		d3.json("metrics", function(json) {
+			dummy.push(d3.round(json.methodCalls.mutate.invokes
+					/ (json.methodCalls.mutate.times / 1000000000.0), 3));
+
+			//select obj and bind data
+			div = d3.select("body")
+						.selectAll("div")
+						.data(dummy)
+						.enter()
+						.append("div")
+						.append("p")
+						.text(function(d) { return d + " mutates/s"});
+			dummy.shift();
+		
+		});
+
+		if(dummy === undefined)
+			alert("no metrics for mutates");
+
+		function tock() {
+			d3.json("metrics", function(json) {
+				dummy.push(d3.round(json.methodCalls.mutate.invokes
+						/ (json.methodCalls.mutate.times / 1000000000.0), 3));
+
+				alert("dummy.length: " + dummy.length + " dummy: " + dummy);
+	
+				div.transition()
+					.duration(1000)
+					.ease("linear")
+					//.text(function(d,i) { alert(d + " " + i);return d + " mutates/s"})
+					.each("end",tock());
+				dummy.shift();
+			});
+		}
+
+		tock();
+		
+		//after data add?
+//		div.enter().append("span").text(function(d) {
+//			return d + "<br/>\n";
+//		})
+
+
+	</script>
+
+</body>
+</html>

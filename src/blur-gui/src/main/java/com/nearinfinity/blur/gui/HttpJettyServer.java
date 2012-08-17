@@ -7,10 +7,10 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.webapp.WebAppContext;
 
+import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.metrics.BlurMetrics;
-import com.nearinfinity.blur.shard.ShardMetricsServlet;
 
 /**
  * Starts up a Jetty server to run the utility gui
@@ -23,18 +23,42 @@ public class HttpJettyServer {
 
 	private Server server = null;
 	
-	public HttpJettyServer(int port, String base, BlurMetrics bm) throws IOException  {
+	/**
+	 * @param bindPort port of the process that the gui is wrapping
+	 * @param port port to run gui on
+	 * @param baseControllerPort ports that service runs on
+	 * @param baseShardPort
+	 * @param baseGuiShardPort port to run gui on
+	 * @param baseGuiControllerPort port to run gui on
+	 * @param base location of webapp to serve
+	 * @param bm metrics object for using.
+	 * @throws IOException
+	 */
+	//TODO: this got ugly, move to a set/start pattern
+	public HttpJettyServer(int bindPort, int port, int baseControllerPort,
+			int baseShardPort, int baseGuiControllerPort, int baseGuiShardPort,
+			String base, BlurMetrics bm) throws IOException {
         server = new Server(port);
         
+        String blurLogFile = System.getProperty("blur.logs.dir") + "/" + System.getProperty("blur.log.file");
+        System.setProperty("blur.gui.servicing.port", bindPort+"");
+        System.setProperty("blur.base.shard.port",baseShardPort+"");
+        System.setProperty("blur.base.controller.port",baseControllerPort+"");
+        System.setProperty("baseGuiShardPort",baseGuiShardPort+"");
+        System.setProperty("baseGuiControllerPort",baseGuiControllerPort+"");
+        LOG.info("System props:" + System.getProperties().toString());
+
         WebAppContext context = new WebAppContext();
         context.setWar(getJarFolder() + "../src/blur-gui/src/main/webapps/" + base);
         context.setContextPath("/");
         context.setParentLoaderPriority(true);
-        context.setAttribute("bm", bm);
-        context.addServlet(new ServletHolder(new ShardMetricsServlet(bm)), "/metrics");
+        //servlets
+        context.addServlet(new ServletHolder(new MetricsServlet(bm)), "/metrics");
+        context.addServlet(new ServletHolder(new LogServlet(blurLogFile)), "/logs");
         
         LOG.info("WEB GUI coming up for resource: " + base);
         LOG.info("WEB GUI thinks its at: " + getJarFolder());
+        LOG.info("WEB GUI log file being exposed: " + blurLogFile);
         
         server.setHandler(context);
  
@@ -49,13 +73,9 @@ public class HttpJettyServer {
 	  private String getJarFolder() {
 		    String name = this.getClass().getName().replace('.', '/');
 		    String s = this.getClass().getResource("/" + name + ".class").toString();
-		    LOG.info("s: " + s);
 		    s = s.replace('/', File.separatorChar);
-		    LOG.info("s: " + s);
 		    s = s.substring(0, s.indexOf(".jar")+4);
-		    LOG.info("s: " + s);
 		    s = s.substring(s.lastIndexOf(':')+1);
-		    LOG.info("s: " + s);
 		    return s.substring(0, s.lastIndexOf(File.separatorChar)+1);
 		  } 
 	

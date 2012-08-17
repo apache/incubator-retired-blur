@@ -78,7 +78,7 @@
 <%
 	final String NONE = "none given";
 
-	String hostName = request.getServerName() + ":40010";
+	String hostName = request.getServerName() + ":" + System.getProperty("blur.gui.servicing.port");
 
 	Iface client = BlurClient.getClient(hostName);
 

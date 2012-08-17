@@ -72,7 +72,7 @@
 	}%>
 <%
 	//TODO: prop file the port
-	String hostName = request.getServerName() + ":40010";
+	String hostName = request.getServerName() + ":" + System.getProperty("blur.gui.servicing.port");
 
 	Iface client = BlurClient.getClient(hostName);
 %>
@@ -109,7 +109,9 @@
 		</tr>
 		<%=getConf(client)%>
 	</table>
-
+	<hr />
+	<br />
+	<a href="logs">logs</a>
 </body>
 
 </html>

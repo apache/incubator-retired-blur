@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.shard;
+package com.nearinfinity.blur.gui;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -12,17 +12,17 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import com.nearinfinity.blur.metrics.BlurMetrics;
 
-public class ShardMetricsServlet extends HttpServlet {
+public class MetricsServlet extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
 
 	private BlurMetrics bm = null;
 
-	public ShardMetricsServlet() {
+	public MetricsServlet() {
 	}
 
 	
-	public ShardMetricsServlet(BlurMetrics bm) {
+	public MetricsServlet(BlurMetrics bm) {
 		this.bm = bm;
 	}
 

@@ -16,6 +16,8 @@
 
 package com.nearinfinity.blur.thrift;
 
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_PORT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_MAX_CLAUSE_COUNT;
@@ -196,8 +198,13 @@ public class ThriftBlurShardServer extends ThriftServer {
     server.setConfiguration(configuration);
     
     int webServerPort = Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT)) + serverIndex;
-    
-    final HttpJettyServer httpServer = new HttpJettyServer(webServerPort, "shard", blurMetrics);
+
+    final HttpJettyServer httpServer = new HttpJettyServer(bindPort, webServerPort,
+    		Integer.parseInt(configuration.get(BLUR_GUI_CONTROLLER_PORT)),
+    		Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT)),
+    		configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1),
+    		configuration.getInt(BLUR_SHARD_BIND_PORT, -1),
+    		"shard", blurMetrics);
 
     // This will shutdown the server when the correct path is set in zk
     new BlurServerShutDown().register(new BlurShutdown() {

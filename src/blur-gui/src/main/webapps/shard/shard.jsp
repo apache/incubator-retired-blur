@@ -72,7 +72,7 @@
 	}%>
 <%
 	//TODO: prop file the port
-	String hostName = request.getServerName() + ":40010";
+	String hostName = request.getServerName() + ":" + System.getProperty("blur.gui.servicing.port");
 
 	Iface client = BlurClient.getClient(hostName);
 %>
@@ -90,17 +90,28 @@
 	</h1>
 	<br />
 	<h2>Controllers</h2>
-
+	<%=table(getControllers(client),"Name","Online") %>
 	<hr />
 	<br />
 	<h2>Clusters</h2>
+	<%=table(getClusters(client),"Cluster Name","Shard Servers","Enabled") %>
 	<hr />
 	<br />
 	<h2>Tables</h2>
+	<%=table(getTables(client),"Cluster Name","Table Name","Enabled")%>
 	<hr />
 	<br />
 	<h2>Configs</h2>
-
+	<table class="statTable" class="statTableTitle">
+		<tr>
+			<td class="statTableTitle">Param</td>
+			<td class="statTableTitle">Value</td>
+		</tr>
+		<%=getConf(client)%>
+	</table>
+	<hr />
+	<br />
+	<a href="logs">logs</a>
 </body>
 
 </html>

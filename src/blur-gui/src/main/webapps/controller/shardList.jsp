@@ -12,7 +12,12 @@
 		List<String> servers = client.shardServerList("default");
 		
 		for(String s : servers) {
-			ret += row(s,"","");
+			String[] split = s.split(":");
+			int base = Integer.parseInt(System.getProperty("blur.base.shard.port"));
+			int offset = Integer.parseInt(split[1])-base;
+			int baseShardPort = Integer.parseInt(System.getProperty("baseGuiShardPort"));
+			ret += row("<a href='http://" + split[0] + ":" + (baseShardPort + offset) + "'>" + s + "</a>","","");
+			
 		}
 		return ret;
 	}
@@ -20,7 +25,7 @@
 
 <%
 	//TODO: prop file the port
-	String hostName = request.getServerName() + ":40010";
+	String hostName = request.getServerName() + ":" + System.getProperty("blur.gui.servicing.port");
 
 	Iface client = BlurClient.getClient(hostName);
 
@@ -51,5 +56,6 @@
 		}
 	%>
 	<br/>
+	<a href="index.html">home</a> | <a href="logs">logs</a>
 </body>
 </html>

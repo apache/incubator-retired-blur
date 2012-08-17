@@ -8,12 +8,15 @@
 $(document).ready(function(){
   // Datastore for the current data on the plot
   var hdfs_data = {};
-  // Starting length for the data range
+  // Starting length for the data range (in minutes)
 	var time_length = 60 * 24;
+  // The max range of data that can be returned (in days)
+  var num_days_back = 14;
   // refresh speed for pulling new info (while live)
 	var refresh_time = 20000;
   // Different tab actions
 	var actions = ['disk', 'nodes', 'block'];
+  // Xaxis range 
 	// Hash of labels and object lookup strings for the various actions
   var hdfs_request_lookup =
   {
@@ -46,8 +49,7 @@ $(document).ready(function(){
    */
   var draw_graph = function(graph_data, selector){
     // if the plot doesnt already exist draw a new one
-    if (selector && !graph_data.plot)
-    {
+    if (selector && !graph_data.plot){
       graph_data.plot = $.plot(selector, graph_data.metrics,
 			{
         // Set the xaxis to a time plot
@@ -68,10 +70,8 @@ $(document).ready(function(){
         // Show the points
         points: { show: true, radius: 2 }
 			});
-		}
     // Otherwise update the current plot
-		else
-		{
+		} else {
       // Set the plot to the new data set
 			graph_data.plot.setData(graph_data.metrics);
       // recalculate the grid ranges
@@ -80,6 +80,8 @@ $(document).ready(function(){
       graph_data.plot.draw();
 		}
 	};
+
+  //------------- Page Methods -------------
 
 	/* Request new graph data
 	 * @arg id of the hdfs
@@ -94,57 +96,54 @@ $(document).ready(function(){
 			type: 'GET',
 			data: req_data,
 			success: function(data){
-        // If no data was returned then set all 3 graphs to the no data message
-        if (data.length <= 0){
-          if (!hdfs_data[id]) {
-            $.each($('.graph_instance#' + id + ' .graph'), function(index, value) {
-              this.innerHTML = 'No data available';
-            });
-          }
+        // If no data was returned then set the no data message
+        if (data.length <= 0 && !hdfs_data[id]){
+          $.each($('.graph_instance#' + id + ' .graph'), function(index, value) {
+            this.innerHTML = 'No data available';
+          });
           return;
 				}
 
+        // Loop over every action set and build with the returned data
 				for(var action in hdfs_request_lookup){
           var request_options = hdfs_request_lookup[action];
+          // Create the buffers for parsing the returned data
 					var hdfs_data_1 = {label: request_options.label_1, data: []};
           var hdfs_data_2 = {label: request_options.label_2, data: [], yaxis: 2};
+          // Grab the correct container from the page
           var graph_container = $('.graph_instance#' + id).find('.tab-pane#' + action + '_' + id);
 
+          // Add all of the data points to the buffers
           for( var i in data ){
 						var point = data[i];
 						var entry_date = new Date(point.created_at).getTime();
+            // Convert the dates to epoc time
             hdfs_data_1.data.push([entry_date - 4*60*60*1000, point[request_options.stat_1]]);
 						hdfs_data_2.data.push([entry_date - 4*60*60*1000, point[request_options.stat_2]]);
           }
 
-					//Current implementation is a fixed size queue for storing data
-					// Also allows you to change the range (length of queue, still fixed to a size)
-					// Future might also allow to grow the size of the queue overtime (length of queue appends data and never truncates)
+          // if we are updating the current data set then add the new data
+          // NOTE: the data is a fixed size queue therefore old data is dropped
 					if (req_data && req_data.stat_id){
 							var length = data.length;
 							hdfs_data[id][action].metrics[0].data.splice(0, length);
 							hdfs_data[id][action].metrics[1].data.splice(0, length);
 							hdfs_data[id][action].metrics[0].data = hdfs_data[id][action].metrics[0].data.concat(hdfs_data_1.data);
 							hdfs_data[id][action].metrics[1].data = hdfs_data[id][action].metrics[1].data.concat(hdfs_data_2.data);
-					}	else {
+					// otherwise we are loading a new dataset (clear and then add)
+          }	else {
+            hdfs_data[id][action].metrics = []
 						hdfs_data[id][action].metrics.push(hdfs_data_1, hdfs_data_2);
 					}
 
-					if (point){
-						hdfs_data[id][action].largest_id = point.id;
-            hdfs_data[id][action].max_time = new Date(point.created_at);
-            hdfs_data[id][action].min_time = new Date(hdfs_data[id][action].metrics[0].data[0][0] + 4*60*60*1000);
-					}
+          // Mark the largest id for update requests
+					hdfs_data[id][action].largest_id = point.id;
 
-          // Redraws active graph
+          // Only redraw the active graph
 					if (graph_container.hasClass('active')){
             draw_graph(graph_container.find('.graph'), hdfs_data[id][action]);
-            set_slider_info(hdfs_data[id][action].min_time, hdfs_data[id][action].max_time, id);
 					}
 				}
-
-        // set the slider max to the most recently retrieved stat
-        slider_max[id] = new Date(point.created_at);
 			}
 		});
 	};
@@ -164,67 +163,6 @@ $(document).ready(function(){
 		});
     timer = setTimeout(update_live_graphs, refresh_time);
 	};
-
-	// Page listeners //
-
-  $('.graph_instance').on('shown', 'a[data-toggle="tab"]', function(e){
-    var instance = $(this).closest('.graph_instance')
-		var hdfs_id = instance.attr('id');
-		var container = instance.find('.active > .graph');
-		var action = $(this).data('action');
-    if (hdfs_data[hdfs_id]){
-      draw_graph(container, hdfs_data[hdfs_id][action]);
-    };
-	});
-
-
-
-  $('.loading-spinner').on('ajaxStart', function(){
-    $(this).removeClass('hidden');
-  });
-  $('.loading-spinner').on('ajaxStop', function(){
-    $(this).addClass('hidden');
-  });
-
-	// Refresh Timers
-
-	timer = setTimeout(update_live_graphs, refresh_time);
-
-  // Slider
-  // Slider currently moves over any time period in the past 2 weeks
-  // TODO
-  // Add functionality of grabbing center of slider and draging range //
-
-  // Creates slider
-  // Slide: changes the time fields as the slider is dragged
-  // Change: requests data for the graph when the slider is released
-
-  // Change this variable to modify the range of dates for stats
-  var num_days_back = 14;
-
-  $(".slider").slider({
-    range: true,
-    min: -1*60*24*num_days_back,
-    max: 0,
-    values: [-1 * time_length, 0],
-    stop: function(event, ui) {
-      set_slider_info_to_vals(ui.values, this.id);
-    },
-    change: function(event, ui) {
-      if (ui.values[1] == 0){
-        request_data(this.id, {stat_mins: (-1 * ui.values[0])}, true);
-      }
-      else if (!noRequest) {
-        request_data(this.id, {stat_mins: (-1 * ui.values[0]), max_mins: (-1 * ui.values[1])}, true);
-        noRequest = false;
-      }
-   }
-  });
-
-  $(".min-date, .max-date").datepicker({
-    minDate: -1 * num_days_back,
-    maxDate: 0
-  });
 
   // Takes in the min and max values for the time fields as dates
   // Sets the time fields to the minDate and maxDate
@@ -246,7 +184,7 @@ $(document).ready(function(){
 
     $(".graph_instance#" + hdfs_id + " .min-date").datepicker('setDate', minDate);
     $(".graph_instance#" + hdfs_id + " .max-date").datepicker('setDate', maxDate);
-	};
+  };
 
   // Sets the time fields to match the slider
   // Have to pass in vals - used for 'slide' in slider (which does not change the slider values)
@@ -283,6 +221,70 @@ $(document).ready(function(){
       set_slider_info_to_vals(vals, hdfs_id);
     }
   };
+
+	//------------- Page Listeners -------------
+
+  // Draws the new graph when a new tab is shown
+  $('.graph_instance').on('shown', 'a[data-toggle="tab"]', function(e){
+    var instance = $(this).closest('.graph_instance')
+		var hdfs_id = instance.attr('id');
+		var container = instance.find('.active > .graph');
+		var action = $(this).data('action');
+    if (hdfs_data[hdfs_id]){
+      draw_graph(container, hdfs_data[hdfs_id][action]);
+    };
+	});
+
+
+  // Show the loading spinner when there is an ajax request taking place
+  $('.loading-spinner').on('ajaxStart', function(){
+    $(this).removeClass('hidden');
+  }).on('ajaxStop', function(){
+    $(this).addClass('hidden');
+  });
+
+	// Refresh Timers
+
+	timer = setTimeout(update_live_graphs, refresh_time);
+
+  // Slider
+  // Slider currently moves over any time period in the past 2 weeks
+  // TODO
+  // Add functionality of grabbing center of slider and draging range //
+
+  // Creates slider
+  // Slide: changes the time fields as the slider is dragged
+  // Change: requests data for the graph when the slider is released
+
+  
+
+  $(".slider").slider({
+    range: true,
+    min: -1*60*24*num_days_back,
+    max: 0,
+    values: [-1 * time_length, 0],
+    stop: function(event, ui) {
+      set_slider_info_to_vals(ui.values, this.id);
+    },
+    change: function(event, ui) {
+      if (ui.values[1] == 0){
+        request_data(this.id, {stat_mins: (-1 * ui.values[0])}, true);
+      }
+      else if (!noRequest) {
+        request_data(this.id, {stat_mins: (-1 * ui.values[0]), max_mins: (-1 * ui.values[1])}, true);
+        noRequest = false;
+      }
+   }
+  });
+
+  $(".min-date, .max-date").datepicker({
+    minDate: -1 * num_days_back,
+    maxDate: 0
+  });
+
+
+
+  
 
   // Update the legend on crosshair show     
   $(".graph").bind("plothover",  function (event, pos, item) {    

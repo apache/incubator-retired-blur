@@ -70,7 +70,7 @@ public class WatchNodeExistance implements Closeable {
         }
       }
     });
-    _watchThread.setName("Watching for node on path [" + _path + "] instance [" + instance + "]");
+    _watchThread.setName("Watch Existance [" + _path + "][" + instance + "]");
     _watchThread.setDaemon(true);
     _watchThread.start();
     return this;
@@ -88,7 +88,7 @@ public class WatchNodeExistance implements Closeable {
             }
             Stat stat = _zooKeeper.exists(_path, false);
             if (!isCorrect(stat)) {
-              LOG.error("Double check triggered for [" + _path + "]");
+              LOG.debug("Double check triggered for [" + _path + "]");
               synchronized (_lock) {
                 _lock.notify();
               }
@@ -110,7 +110,7 @@ public class WatchNodeExistance implements Closeable {
         }
       }
     });
-    _doubleCheckThread.setName("Double check watching for node on path [" + _path + "]");
+    _doubleCheckThread.setName("Poll Watch Existance [" + _path + "][" + instance + "]");
     _doubleCheckThread.setDaemon(true);
     _doubleCheckThread.start();
   }
@@ -129,10 +129,11 @@ public class WatchNodeExistance implements Closeable {
     if (_running.get()) {
       LOG.warn("Closing [{0}]", instance);
       _running.set(false);
-      _doubleCheckThread.interrupt();
-      _watchThread.interrupt();
-      synchronized (_lock) {
-        _lock.notify();
+      if (_doubleCheckThread != null) {
+        _doubleCheckThread.interrupt();
+      }
+      if (_watchThread != null) {
+        _watchThread.interrupt();
       }
     }
   }

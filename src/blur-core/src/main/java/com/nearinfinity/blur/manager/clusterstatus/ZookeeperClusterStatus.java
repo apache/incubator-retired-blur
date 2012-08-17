@@ -24,10 +24,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DeflateCodec;
@@ -40,8 +42,8 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
+import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
@@ -65,17 +67,19 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   private ZooKeeper _zk;
   private AtomicBoolean _running = new AtomicBoolean();
   private ConcurrentMap<String, Long> _safeModeMap = new ConcurrentHashMap<String, Long>();
-  private ConcurrentMap<String, Boolean> _enabledMap = new ConcurrentHashMap<String, Boolean>();
-  private ConcurrentMap<String, Boolean> _readOnlyMap = new ConcurrentHashMap<String, Boolean>();
-  private ConcurrentMap<String, String> _tableToClusterCache = new ConcurrentHashMap<String, String>();
   private ConcurrentMap<String, List<String>> _onlineShardsNodes = new ConcurrentHashMap<String, List<String>>();
+  private ConcurrentMap<String, Set<String>> _tablesPerCluster = new ConcurrentHashMap<String, Set<String>>();
+  private AtomicReference<Set<String>> _clusters = new AtomicReference<Set<String>>(new HashSet<String>());
+  private ConcurrentMap<String, Boolean> _enabled = new ConcurrentHashMap<String, Boolean>();
+  private ConcurrentMap<String, Boolean> _readOnly = new ConcurrentHashMap<String, Boolean>();
 
   private WatchChildren _clusterWatcher;
   private ConcurrentMap<String, WatchChildren> _onlineShardsNodesWatchers = new ConcurrentHashMap<String, WatchChildren>();
   private ConcurrentMap<String, WatchChildren> _tableWatchers = new ConcurrentHashMap<String, WatchChildren>();
-  private ConcurrentMap<String, WatchNodeExistance> _enabledTableWatchers = new ConcurrentHashMap<String, WatchNodeExistance>();
   private ConcurrentMap<String, WatchNodeExistance> _safeModeWatchers = new ConcurrentHashMap<String, WatchNodeExistance>();
   private ConcurrentMap<String, WatchNodeData> _safeModeDataWatchers = new ConcurrentHashMap<String, WatchNodeData>();
+  private ConcurrentMap<String, WatchNodeExistance> _enabledWatchNodeExistance = new ConcurrentHashMap<String, WatchNodeExistance>();
+  private ConcurrentMap<String, WatchNodeExistance> _readOnlyWatchNodeExistance = new ConcurrentHashMap<String, WatchNodeExistance>();
 
   public ZookeeperClusterStatus(ZooKeeper zooKeeper) {
     _zk = zooKeeper;
@@ -91,6 +95,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   class Clusters extends OnChange {
     @Override
     public void action(List<String> clusters) {
+      _clusters.set(new HashSet<String>(clusters));
       for (String cluster : clusters) {
         if (!_tableWatchers.containsKey(cluster)) {
           String tablesPath = ZookeeperPathConstants.getTablesPath(cluster);
@@ -103,6 +108,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
           _safeModeWatchers.put(cluster, watchNodeExistance);
         }
       }
+
       List<String> clustersToCloseAndRemove = new ArrayList<String>(clusters);
       clustersToCloseAndRemove.removeAll(_tableWatchers.keySet());
       for (String cluster : clustersToCloseAndRemove) {
@@ -158,30 +164,50 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
     @Override
     public void action(List<String> tables) {
-      for (String t : tables) {
-        final String table = t;
-        String existingCluster = _tableToClusterCache.get(table);
-        if (existingCluster == null) {
-          _tableToClusterCache.put(table, cluster);
-          WatchNodeExistance watchNodeExistance = new WatchNodeExistance(_zk, ZookeeperPathConstants.getTableEnabledPath(cluster, table));
-          watchNodeExistance.watch(new WatchNodeExistance.OnChange() {
-            @Override
-            public void action(Stat stat) {
-              String clusterTableKey = getClusterTableKey(cluster, table);
-              if (stat == null) {
-                _enabledMap.put(clusterTableKey, false);
-              } else {
-                _enabledMap.put(clusterTableKey, true);
-              }
+      Set<String> newSet = new HashSet<String>(tables);
+      Set<String> oldSet = _tablesPerCluster.put(cluster, newSet);
+      Set<String> newTables = getNewTables(newSet, oldSet);
+      for (String table : newTables) {
+        final String clusterTableKey = getClusterTableKey(cluster, table);
+
+        WatchNodeExistance readOnlyWatcher = new WatchNodeExistance(_zk, ZookeeperPathConstants.getTableReadOnlyPath(cluster, table));
+        readOnlyWatcher.watch(new WatchNodeExistance.OnChange() {
+          @Override
+          public void action(Stat stat) {
+            if (stat == null) {
+              _readOnly.put(clusterTableKey, Boolean.FALSE);
+            } else {
+              _readOnly.put(clusterTableKey, Boolean.TRUE);
             }
-          });
-          if (_enabledTableWatchers.putIfAbsent(table, watchNodeExistance) != null) {
-            watchNodeExistance.close();
           }
-        } else if (!existingCluster.equals(cluster)) {
-          LOG.error("Error table [{0}] is being served by more than one cluster [{1},{2}].", table, existingCluster, cluster);
+        });
+        if (_readOnlyWatchNodeExistance.putIfAbsent(clusterTableKey, readOnlyWatcher) != null) {
+          readOnlyWatcher.close();
+        }
+
+        WatchNodeExistance enabledWatcher = new WatchNodeExistance(_zk, ZookeeperPathConstants.getTableEnabledPath(cluster, table));
+        enabledWatcher.watch(new WatchNodeExistance.OnChange() {
+          @Override
+          public void action(Stat stat) {
+            if (stat == null) {
+              _enabled.put(clusterTableKey, Boolean.FALSE);
+            } else {
+              _enabled.put(clusterTableKey, Boolean.TRUE);
+            }
+          }
+        });
+        if (_enabledWatchNodeExistance.putIfAbsent(clusterTableKey, enabledWatcher) != null) {
+          enabledWatcher.close();
         }
       }
+    }
+
+    private Set<String> getNewTables(Set<String> newSet, Set<String> oldSet) {
+      Set<String> newTables = new HashSet<String>(newSet);
+      if (oldSet != null) {
+        newTables.removeAll(oldSet);
+      }
+      return newTables;
     }
   }
 
@@ -203,7 +229,10 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   @Override
-  public List<String> getClusterList() {
+  public List<String> getClusterList(boolean useCache) {
+    if (useCache) {
+      return new ArrayList<String>(_clusters.get());
+    }
     long s = System.nanoTime();
     try {
       checkIfOpen();
@@ -297,13 +326,14 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public boolean exists(boolean useCache, String cluster, String table) {
-    // if (useCache) {
-    // if (_tableToClusterCache.containsKey(table)) {
-    // return true;
-    // } else {
-    // return false;
-    // }
-    // }
+    if (useCache) {
+      Set<String> tables = _tablesPerCluster.get(cluster);
+      if (tables != null) {
+        if (tables.contains(table)) {
+          return true;
+        }
+      }
+    }
     long s = System.nanoTime();
     try {
       checkIfOpen();
@@ -324,9 +354,9 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   @Override
   public boolean isEnabled(boolean useCache, String cluster, String table) {
     if (useCache) {
-      Boolean enabled = _enabledMap.get(getClusterTableKey(cluster, table));
-      if (enabled != null) {
-        return enabled;
+      Boolean e = _enabled.get(getClusterTableKey(cluster, table));
+      if (e != null) {
+        return e;
       }
     }
     long s = System.nanoTime();
@@ -351,21 +381,17 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public TableDescriptor getTableDescriptor(boolean useCache, String cluster, String table) {
-    // if (useCache) {
-    // TableDescriptor tableDescriptor = _tableDescriptorCache.get(table);
-    // if (tableDescriptor != null) {
-    // return tableDescriptor;
-    // }
-    // }
+    if (useCache) {
+      TableDescriptor tableDescriptor = _tableDescriptorCache.get(table);
+      updateReadOnlyAndEnabled(useCache, tableDescriptor, cluster, table);
+      if (tableDescriptor != null) {
+        return tableDescriptor;
+      }
+    }
     long s = System.nanoTime();
     TableDescriptor tableDescriptor = new TableDescriptor();
     try {
       checkIfOpen();
-      if (_zk.exists(ZookeeperPathConstants.getTableEnabledPath(cluster, table), false) == null) {
-        tableDescriptor.isEnabled = false;
-      } else {
-        tableDescriptor.isEnabled = true;
-      }
       tableDescriptor.shardCount = Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableShardCountPath(cluster, table))));
       tableDescriptor.tableUri = new String(getData(ZookeeperPathConstants.getTableUriPath(cluster, table)));
       tableDescriptor.compressionClass = new String(getData(ZookeeperPathConstants.getTableCompressionCodecPath(cluster, table)));
@@ -379,6 +405,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       if (data != null) {
         tableDescriptor.similarityClass = new String(data);
       }
+      updateReadOnlyAndEnabled(useCache, tableDescriptor, cluster, table);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
@@ -390,6 +417,13 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     tableDescriptor.cluster = cluster;
     _tableDescriptorCache.put(table, tableDescriptor);
     return tableDescriptor;
+  }
+
+  private void updateReadOnlyAndEnabled(boolean useCache, TableDescriptor tableDescriptor, String cluster, String table) {
+    if (tableDescriptor != null) {
+      tableDescriptor.setReadOnly(isReadOnly(useCache, cluster, table));
+      tableDescriptor.setIsEnabled(isEnabled(useCache, cluster, table));
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -422,7 +456,13 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   @Override
-  public List<String> getTableList(String cluster) {
+  public List<String> getTableList(boolean useCache, String cluster) {
+    if (useCache) {
+      Set<String> tables = _tablesPerCluster.get(cluster);
+      if (tables != null) {
+        return new ArrayList<String>(tables);
+      }
+    }
     long s = System.nanoTime();
     try {
       checkIfOpen();
@@ -443,9 +483,10 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       close(_clusterWatcher);
       close(_onlineShardsNodesWatchers);
       close(_tableWatchers);
-      close(_enabledTableWatchers);
       close(_safeModeWatchers);
       close(_safeModeDataWatchers);
+      close(_enabledWatchNodeExistance);
+      close(_readOnlyWatchNodeExistance);
     }
   }
 
@@ -466,21 +507,21 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public String getCluster(boolean useCache, String table) {
-    // if (useCache) {
-    // Map<String, String> map = _tableToClusterCache.get();
-    // String cluster = map.get(table);
-    // if (cluster != null) {
-    // return cluster;
-    // }
-    // }
-    List<String> clusterList = getClusterList();
+    if (useCache) {
+      for (Entry<String, Set<String>> entry : _tablesPerCluster.entrySet()) {
+        if (entry.getValue().contains(table)) {
+          return entry.getKey();
+        }
+      }
+    }
+    List<String> clusterList = getClusterList(useCache);
     for (String cluster : clusterList) {
       long s = System.nanoTime();
       try {
         checkIfOpen();
         Stat stat = _zk.exists(ZookeeperPathConstants.getTablePath(cluster, table), false);
         if (stat != null) {
-          _tableToClusterCache.put(table, cluster);
+          // _tableToClusterCache.put(table, cluster);
           return cluster;
         }
       } catch (KeeperException e) {
@@ -493,30 +534,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       }
     }
     return null;
-  }
-
-  @Override
-  public void clearLocks(String cluster, String table) {
-    String lockPath = ZookeeperPathConstants.getLockPath(cluster, table);
-    long s = System.nanoTime();
-    try {
-      checkIfOpen();
-      if (_zk.exists(lockPath, false) == null) {
-        return;
-      }
-      List<String> children = _zk.getChildren(lockPath, false);
-      for (String c : children) {
-        LOG.warn("Removing lock [{0}] for table [{1}]", c, table);
-        _zk.delete(lockPath + "/" + c, -1);
-      }
-    } catch (KeeperException e) {
-      throw new RuntimeException(e);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    } finally {
-      long e = System.nanoTime();
-      LOG.info("trace clearLocks took [" + (e - s) / 1000000.0 + " ms]");
-    }
   }
 
   @Override
@@ -557,11 +574,10 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public int getShardCount(boolean useCache, String cluster, String table) {
-    // if (useCache) {
-    // TableDescriptor tableDescriptor = getTableDescriptor(true, cluster,
-    // table);
-    // return tableDescriptor.shardCount;
-    // }
+    if (useCache) {
+      TableDescriptor tableDescriptor = getTableDescriptor(true, cluster, table);
+      return tableDescriptor.shardCount;
+    }
     long s = System.nanoTime();
     try {
       return Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableShardCountPath(cluster, table))));
@@ -625,30 +641,25 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public boolean isReadOnly(boolean useCache, String cluster, String table) {
-    String key = getClusterTableKey(cluster, table);
-    // if (useCache) {
-    // Boolean flag = _readOnlyMap.get(key);
-    // if (flag != null) {
-    // return flag;
-    // }
-    // }
+    if (useCache) {
+      Boolean ro = _readOnly.get(getClusterTableKey(cluster, table));
+      if (ro != null) {
+        return ro;
+      }
+    }
     long s = System.nanoTime();
     String path = ZookeeperPathConstants.getTableReadOnlyPath(cluster, table);
-    Boolean flag = null;
     try {
       checkIfOpen();
       if (_zk.exists(path, false) == null) {
-        flag = false;
         return false;
       }
-      flag = true;
       return true;
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     } finally {
-      _readOnlyMap.put(key, flag);
       long e = System.nanoTime();
       LOG.info("trace isReadOnly took [" + (e - s) / 1000000.0 + " ms]");
     }

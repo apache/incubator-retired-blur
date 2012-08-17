@@ -138,7 +138,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     _executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL, _threadCount);
     _running.set(true);
     watchForClusterChanges();
-    List<String> clusterList = _clusterStatus.getClusterList();
+    List<String> clusterList = _clusterStatus.getClusterList(false);
     for (String cluster : clusterList) {
       watchForLayoutChanges(cluster);
     }
@@ -181,9 +181,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         }
       }
     });
-    WatchNodeExistance w1 = _watchForTablesPerClusterExistance.putIfAbsent(cluster, we1);
-    if (w1 != null) {
-      w1.close();
+    if (_watchForTablesPerClusterExistance.putIfAbsent(cluster, we1) != null) {
+      we1.close();
     }
 
     WatchNodeExistance we2 = new WatchNodeExistance(_zookeeper, ZookeeperPathConstants.getTablesPath(cluster));
@@ -195,9 +194,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         }
       }
     });
-    WatchNodeExistance w2 = _watchForOnlineShardsPerClusterExistance.putIfAbsent(cluster, we2);
-    if (w2 != null) {
-      w2.close();
+    if (_watchForOnlineShardsPerClusterExistance.putIfAbsent(cluster, we2) != null) {
+      we2.close();
     }
   }
 
@@ -211,9 +209,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       }
     });
 
-    WatchChildren watch = map.putIfAbsent(cluster, watchForTables);
-    if (watch != null) {
-      watch.close();
+    if (map.putIfAbsent(cluster, watchForTables) != null) {
+      watchForTables.close();
     }
   }
 
@@ -222,7 +219,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       LOG.warn("The cluster status object has been closed.");
       return;
     }
-    List<String> tableList = _clusterStatus.getTableList();
+    List<String> tableList = _clusterStatus.getTableList(false);
     HashMap<String, Map<String, String>> newLayout = new HashMap<String, Map<String, String>>();
     for (String table : tableList) {
       DistributedLayoutManager layoutManager = new DistributedLayoutManager();

@@ -11,6 +11,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.hadoop.conf.Configuration;
@@ -35,7 +39,6 @@ import com.nearinfinity.blur.thrift.Connection;
 import com.nearinfinity.blur.thrift.ThriftBlurControllerServer;
 import com.nearinfinity.blur.thrift.ThriftBlurShardServer;
 import com.nearinfinity.blur.thrift.ThriftServer;
-import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
@@ -67,18 +70,18 @@ public abstract class MiniCluster {
     startShards(1);
 
     try {
-      createTable("test");
       Iface client = BlurClient.getClient(getControllerConnectionStr());
+      createTable("test", client);
       for (int i = 0; i < 100; i++) {
         addRow("test", i, client);
       }
-      
+
       Thread.sleep(10000);
 
       for (int i = 0; i < 100; i++) {
         searchRow("test", i, client);
       }
-
+      
     } finally {
       stopShards();
       stopControllers();
@@ -88,19 +91,13 @@ public abstract class MiniCluster {
     }
   }
 
-  private static void createTable(String test) throws BlurException, TException, IOException {
+  private static void createTable(String test, Iface client) throws BlurException, TException, IOException {
     final TableDescriptor descriptor = new TableDescriptor();
     descriptor.setName(test);
     descriptor.setShardCount(7);
     descriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     descriptor.setTableUri(getFileSystemUri() + "/blur/" + test);
-    BlurClientManager.execute(getControllerConnectionStr(), new BlurCommand<Void>() {
-      @Override
-      public Void call(Client client) throws BlurException, TException {
-        client.createTable(descriptor);
-        return null;
-      }
-    });
+    client.createTable(descriptor);
   }
 
   public static String getControllerConnectionStr() {
@@ -119,7 +116,6 @@ public abstract class MiniCluster {
   }
 
   private static void searchRow(String table, int i, Iface client) throws BlurException, TException {
-    // @TODO
     BlurQuery blurQuery = BlurUtil.newSimpleQuery("test.test:" + i);
     System.out.println("Running [" + blurQuery + "]");
     BlurResults results = client.query(table, blurQuery);
@@ -184,10 +180,22 @@ public abstract class MiniCluster {
     startShards(configuration, num);
   }
 
-  public static void startShards(BlurConfiguration configuration, int num) {
+  public static void startShards(final BlurConfiguration configuration, int num) {
+    ExecutorService executorService = Executors.newFixedThreadPool(num);
+    List<Future<ThriftServer>> futures = new ArrayList<Future<ThriftServer>>();
+    for (int i = 0; i < num; i++) {
+      final int index = i;
+      futures.add(executorService.submit(new Callable<ThriftServer>() {
+        @Override
+        public ThriftServer call() throws Exception {
+          return ThriftBlurShardServer.createServer(index, configuration);
+        }
+      }));
+    }
+
     for (int i = 0; i < num; i++) {
       try {
-        ThriftServer server = ThriftBlurShardServer.createServer(i, configuration);
+        ThriftServer server = futures.get(i).get();
         shards.add(server);
         Connection connection = new Connection("localhost", 40020 + i);
         startServer(server, connection);

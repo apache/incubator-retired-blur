@@ -227,7 +227,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final List<String> shardClusterList() throws BlurException, TException {
     try {
-      return _clusterStatus.getClusterList();
+      return _clusterStatus.getClusterList(true);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get a cluster list.", e);
       throw new BException("Unknown error while trying to get a cluster list.", e);
@@ -251,7 +251,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final List<String> tableListByCluster(String cluster) throws BlurException, TException {
     try {
-      return _clusterStatus.getTableList(cluster);
+      return _clusterStatus.getTableList(true, cluster);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get a table list by cluster [" + cluster + "].", e);
       throw new BException("Unknown error while trying to get a table list by cluster [" + cluster + "].", e);
@@ -261,7 +261,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final List<String> tableList() throws BlurException, TException {
     try {
-      return _clusterStatus.getTableList();
+      return _clusterStatus.getTableList(true);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get a table list.", e);
       throw new BException("Unknown error while trying to get a table list.", e);

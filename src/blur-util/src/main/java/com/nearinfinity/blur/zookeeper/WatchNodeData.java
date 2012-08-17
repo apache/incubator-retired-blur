@@ -36,7 +36,7 @@ public class WatchNodeData implements Closeable {
   public WatchNodeData(ZooKeeper zooKeeper, String path) {
     _zooKeeper = zooKeeper;
     _path = path;
-    LOG.info("Creating watch [{0}]", instance);
+    LOG.debug("Creating watch [{0}]", instance);
   }
 
   public WatchNodeData watch(final OnChange onChange) {
@@ -50,7 +50,7 @@ public class WatchNodeData implements Closeable {
             try {
               Stat stat = _zooKeeper.exists(_path, false);
               if (stat == null) {
-                LOG.info("Path [{0}] not found.", _path);
+                LOG.debug("Path [{0}] not found.", _path);
                 return;
               }
               Watcher watcher = new Watcher() {
@@ -78,7 +78,7 @@ public class WatchNodeData implements Closeable {
         }
       }
     });
-    _watchThread.setName("Watching for node on path [" + _path + "] instance [" + instance + "]");
+    _watchThread.setName("Watch Data [" + _path + "][" + instance + "]");
     _watchThread.setDaemon(true);
     _watchThread.start();
     return this;
@@ -97,8 +97,7 @@ public class WatchNodeData implements Closeable {
             }
             Stat stat = _zooKeeper.exists(_path, false);
             if (stat == null) {
-              LOG.info("Path [{0}] not found.", _path);
-              LOG.error("Double check triggered for [" + _path + "]");
+              LOG.debug("Path [{0}] not found.", _path);
               synchronized (_lock) {
                 _lock.notify();
               }
@@ -107,7 +106,7 @@ public class WatchNodeData implements Closeable {
 
             byte[] data = _zooKeeper.getData(_path, false, stat);
             if (!isCorrect(data)) {
-              LOG.error("Double check triggered for [" + _path + "]");
+              LOG.debug("Double check triggered for [" + _path + "]");
               synchronized (_lock) {
                 _lock.notify();
               }
@@ -129,7 +128,7 @@ public class WatchNodeData implements Closeable {
         }
       }
     });
-    _doubleCheckThread.setName("Double check watching for path [" + _path + "]");
+    _doubleCheckThread.setName("Poll Watch Data [" + _path + "][" + instance + "]");
     _doubleCheckThread.setDaemon(true);
     _doubleCheckThread.start();
   }
@@ -148,10 +147,11 @@ public class WatchNodeData implements Closeable {
     if (_running.get()) {
       LOG.warn("Closing [{0}]", instance);
       _running.set(false);
-      _doubleCheckThread.interrupt();
-      _watchThread.interrupt();
-      synchronized (_lock) {
-        _lock.notify();
+      if (_doubleCheckThread != null) {
+        _doubleCheckThread.interrupt();
+      }
+      if (_watchThread != null) {
+        _watchThread.interrupt();
       }
     }
   }

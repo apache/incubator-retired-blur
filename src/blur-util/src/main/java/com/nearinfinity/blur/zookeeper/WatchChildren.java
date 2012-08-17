@@ -29,7 +29,7 @@ public class WatchChildren implements Closeable {
   private final String instance = UUID.randomUUID().toString();
   private Thread _doubleCheckThread;
   private Thread _watchThread;
-  private boolean _debug = true;
+  private final boolean _debug = true;
   private String _debugStackTrace;
 
   public static abstract class OnChange {
@@ -39,7 +39,7 @@ public class WatchChildren implements Closeable {
   public WatchChildren(ZooKeeper zooKeeper, String path) {
     _zooKeeper = zooKeeper;
     _path = path;
-    LOG.info("Creating watch [{0}]", instance);
+    LOG.debug("Creating watch [{0}]", instance);
   }
 
   public WatchChildren watch(final OnChange onChange) {
@@ -75,9 +75,9 @@ public class WatchChildren implements Closeable {
               }
               if (e.code() == Code.NONODE) {
                 if (_debug) {
-                  LOG.info("Path for watching not found [{0}], no longer watching, debug [{1}].", _path, _debugStackTrace);
+                  LOG.debug("Path for watching not found [{0}], no longer watching, debug [{1}].", _path, _debugStackTrace);
                 } else {
-                  LOG.info("Path for watching not found [{0}], no longer watching.", _path);
+                  LOG.debug("Path for watching not found [{0}], no longer watching.", _path);
                 }
                 close();
                 return;
@@ -89,7 +89,6 @@ public class WatchChildren implements Closeable {
               }
               throw new RuntimeException(e);
             } catch (InterruptedException e) {
-              e.printStackTrace();
               return;
             }
           }
@@ -97,7 +96,7 @@ public class WatchChildren implements Closeable {
         _running.set(false);
       }
     });
-    _watchThread.setName("Watching for children on path [" + _path + "] instance [" + instance + "]");
+    _watchThread.setName("Watch Children [" + _path + "][" + instance + "]");
     _watchThread.setDaemon(true);
     _watchThread.start();
     return this;
@@ -114,7 +113,7 @@ public class WatchChildren implements Closeable {
               return;
             }
             if (_zooKeeper.exists(_path, false) == null) {
-              LOG.info("Path for watching not found [{0}], no longer double checking.", _path);
+              LOG.debug("Path for watching not found [{0}], no longer double checking.", _path);
               return;
             }
             List<String> children = _zooKeeper.getChildren(_path, false);
@@ -141,7 +140,7 @@ public class WatchChildren implements Closeable {
         }
       }
     });
-    _doubleCheckThread.setName("Double check watching for node on path [" + _path + "]");
+    _doubleCheckThread.setName("Poll Watch Children [" + _path + "][" + instance + "]");
     _doubleCheckThread.setDaemon(true);
     _doubleCheckThread.start();
   }
@@ -160,10 +159,11 @@ public class WatchChildren implements Closeable {
     if (_running.get()) {
       LOG.warn("Closing [{0}]", instance);
       _running.set(false);
-      _doubleCheckThread.interrupt();
-      _watchThread.interrupt();
-      synchronized (_lock) {
-        _lock.notify();
+      if (_doubleCheckThread != null) {
+        _doubleCheckThread.interrupt();
+      }
+      if (_watchThread != null) {
+        _watchThread.interrupt();
       }
     }
   }

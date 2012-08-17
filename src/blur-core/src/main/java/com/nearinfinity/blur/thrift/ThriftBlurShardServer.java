@@ -210,7 +210,7 @@ public class ThriftBlurShardServer extends ThriftServer {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(refresher, server, shardServer, indexManager, indexServer, threadWatcher, zooKeeper);
+        quietClose(refresher, server, shardServer, indexManager, indexServer, threadWatcher, clusterStatus, zooKeeper);
       }
     };
     server.setShutdown(shutdown);

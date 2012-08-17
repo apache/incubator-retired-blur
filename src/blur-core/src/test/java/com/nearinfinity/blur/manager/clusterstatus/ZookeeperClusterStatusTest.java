@@ -80,7 +80,7 @@ public class ZookeeperClusterStatusTest {
   @Test
   public void testGetClusterList() {
     LOG.warn("testGetClusterList");
-    List<String> clusterList = clusterStatus.getClusterList();
+    List<String> clusterList = clusterStatus.getClusterList(false);
     assertEquals(Arrays.asList(DEFAULT), clusterList);
   }
 
@@ -144,7 +144,7 @@ public class ZookeeperClusterStatusTest {
 
   @Test
   public void testGetTableList() {
-    assertEquals(Arrays.asList(TEST), clusterStatus.getTableList());
+    assertEquals(Arrays.asList(TEST), clusterStatus.getTableList(false));
   }
 
   @Test

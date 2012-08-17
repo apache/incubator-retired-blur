@@ -126,7 +126,7 @@ public class BlurUtil {
     setupZookeeper(zookeeper, null);
   }
 
-  public static void setupZookeeper(ZooKeeper zookeeper, String cluster) throws KeeperException, InterruptedException {
+  public synchronized static void setupZookeeper(ZooKeeper zookeeper, String cluster) throws KeeperException, InterruptedException {
     BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getBasePath());
     BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getOnlineControllersPath());
     BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getClustersPath());

@@ -202,7 +202,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
       _zookeeper.setData(blurSafemodePath, Long.toString(timestamp).getBytes(), -1);
     }
     setupAnyMissingPaths();
-    removeAnyTableLocks();
   }
 
   private void setupAnyMissingPaths() throws KeeperException, InterruptedException {
@@ -214,13 +213,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
     }
   }
 
-  private void removeAnyTableLocks() {
-    List<String> tableList = _clusterStatus.getTableList(cluster);
-    for (String table : tableList) {
-      _clusterStatus.clearLocks(cluster, table);
-    }
-  }
-
   private void setupTableWarmer() {
     _timerTableWarmer = new Timer("Table-Warmer", true);
     _timerTableWarmer.schedule(new TimerTask() {
@@ -229,30 +221,36 @@ public class DistributedIndexServer extends AbstractIndexServer {
         try {
           warmup();
         } catch (Throwable t) {
-          LOG.error("Unknown error", t);
+          if (_running.get()) {
+            LOG.error("Unknown error", t);
+          } else {
+            LOG.debug("Unknown error", t);
+          }
         }
       }
 
       private void warmup() {
-        List<String> tableList = _clusterStatus.getTableList(cluster);
-        _blurMetrics.tableCount.set(tableList.size());
-        long indexCount = 0;
-        AtomicLong segmentCount = new AtomicLong();
-        AtomicLong indexMemoryUsage = new AtomicLong();
-        for (String table : tableList) {
-          try {
-            Map<String, BlurIndex> indexes = getIndexes(table);
-            int count = indexes.size();
-            indexCount += count;
-            updateMetrics(_blurMetrics, indexes, segmentCount, indexMemoryUsage);
-            LOG.debug("Table [{0}] has [{1}] number of shards online in this node.", table, count);
-          } catch (IOException e) {
-            LOG.error("Unknown error trying to warm table [{0}]", e, table);
+        if (_running.get()) {
+          List<String> tableList = _clusterStatus.getTableList(false, cluster);
+          _blurMetrics.tableCount.set(tableList.size());
+          long indexCount = 0;
+          AtomicLong segmentCount = new AtomicLong();
+          AtomicLong indexMemoryUsage = new AtomicLong();
+          for (String table : tableList) {
+            try {
+              Map<String, BlurIndex> indexes = getIndexes(table);
+              int count = indexes.size();
+              indexCount += count;
+              updateMetrics(_blurMetrics, indexes, segmentCount, indexMemoryUsage);
+              LOG.debug("Table [{0}] has [{1}] number of shards online in this node.", table, count);
+            } catch (IOException e) {
+              LOG.error("Unknown error trying to warm table [{0}]", e, table);
+            }
           }
+          _blurMetrics.indexCount.set(indexCount);
+          _blurMetrics.segmentCount.set(segmentCount.get());
+          _blurMetrics.indexMemoryUsage.set(indexMemoryUsage.get());
         }
-        _blurMetrics.indexCount.set(indexCount);
-        _blurMetrics.segmentCount.set(segmentCount.get());
-        _blurMetrics.indexMemoryUsage.set(indexMemoryUsage.get());
       }
 
       private void updateMetrics(BlurMetrics blurMetrics, Map<String, BlurIndex> indexes, AtomicLong segmentCount, AtomicLong indexMemoryUsage) throws IOException {

@@ -34,16 +34,8 @@
               %td.graph-legend
               %td
                 .slider-info{:id => hdfs_instance.id}
-                  %button{:class=>"slider-redraw btn"}
-                    Redraw
-                  %input{:class=>"min-date", :type=>"text"}
-                  %input{:class=>"min-hour slider-time", :type=>"textbox"}
-                  =':'
-                  %input{:class=>"min-minutes slider-time", :type=>"textbox"}
+                  %input{:class=>"min-date", :type=>"text", :placeholder => 'from'}
                   to
-                  %input{:class=>"max-date", :type=>"text"}
-                  %input{:class=>"max-hour slider-time", :type=>"textbox"}
-                  =':'
-                  %input{:class=>"max-minutes slider-time", :type=>"textbox"}
+                  %input{:class=>"max-date", :type=>"text", :placeholder => 'to'}
               %td.slider-box
                 .slider{:id => hdfs_instance.id}

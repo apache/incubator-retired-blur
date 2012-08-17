@@ -88,6 +88,8 @@ public class TableCollector {
 								TableMap.get().put(table + "_" + clusterName, tableInfo);
 							}
 							
+							System.out.println("Table: [" + table + "] Enabled: " + descriptor.isEnabled );
+							
 							if (descriptor.isEnabled) {
 								//strings that are being mocked to json
 								Schema schema = null;

@@ -3,15 +3,13 @@ package com.nearinfinity.agent.zookeeper.collectors;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.KeeperException;
 
 import com.nearinfinity.agent.zookeeper.InstanceManager;
 
 public class ControllerCollector extends Collector {
 
-	private static final Log log = LogFactory.getLog(ControllerCollector.class);
+//	private static final Log log = LogFactory.getLog(ControllerCollector.class);
 	private int zkId;
 
 	private ControllerCollector(InstanceManager manager, int zkId) throws KeeperException, InterruptedException {

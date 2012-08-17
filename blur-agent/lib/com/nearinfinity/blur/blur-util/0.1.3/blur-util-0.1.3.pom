@@ -7,32 +7,60 @@
 	</parent -->
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.nearinfinity.blur</groupId>
-	<artifactId>blur-thrift</artifactId>
+	<artifactId>blur-util</artifactId>
 	<packaging>jar</packaging>
-	<name>Blur Thrift</name>
-	<version>0.1.rc2</version>
+	<name>Blur Util</name>
+	<version>0.1.3</version>
 
 	<dependencies>
 		<dependency>
-			<groupId>com.nearinfinity.blur</groupId>
-			<artifactId>blur-util</artifactId>
-			<version>0.1.rc2</version>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1.1</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.thrift</groupId>
-			<artifactId>libthrift</artifactId>
-			<version>0.7.0</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.1</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.zookeeper</groupId>
+			<artifactId>zookeeper</artifactId>
+			<version>3.3.4</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.7</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-core</artifactId>
+			<version>0.20.2-cdh3u2</version>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 
-	<!-- repositories>
+	<repositories>
 		<repository>
 			<id>libdir</id>
 			<url>file://${basedir}/../lib</url>
 		</repository>
+		<repository>
+			<id>cloudera</id>
+			<url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+		</repository>
 	</repositories>
 
-	<build>
+	<!-- build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -62,7 +90,7 @@
 							<overWriteSnapshots>false</overWriteSnapshots>
 							<overWriteIfNewer>true</overWriteIfNewer>
 							<excludeTransitive>true</excludeTransitive>
-							<excludeArtifactIds>junit,commons-cli,commons-logging,hadoop,slf4j-api
+							<excludeArtifactIds>junit,commons-cli,commons-logging,hadoop-core,slf4j-api,slf4j-log4j12
 							</excludeArtifactIds>
 						</configuration>
 					</execution>

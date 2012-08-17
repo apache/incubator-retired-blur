@@ -65,13 +65,16 @@
 		List<String> con = client.controllerServerList();
 
 		for (String c : con) {
-			ret += row(c, "Yes");
+			String[] split = c.split(":");
+			int base = Integer.parseInt(System.getProperty("blur.base.controller.port"));
+			int offset = Integer.parseInt(split[1])-base;
+			int baseShardPort = Integer.parseInt(System.getProperty("baseGuiControllerPort"));
+			ret += row("<a href='http://" + split[0] + ":" + (baseShardPort + offset) + "'>" + c + "</a>","Yes");
 		}
 		
 		return ret;
 	}%>
 <%
-	//TODO: prop file the port
 	String hostName = request.getServerName() + ":" + System.getProperty("blur.gui.servicing.port");
 
 	Iface client = BlurClient.getClient(hostName);
@@ -80,13 +83,13 @@
 
 <html>
 <head>
-<title>Blur Controller '<%=hostName%>'
+<title>Blur <%=System.getProperty("blur.gui.mode") %> '<%=hostName%>'
 </title>
 <link href="style.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
 	<h1>
-		Blur Controller '<%=hostName%>'
+		Blur <%=System.getProperty("blur.gui.mode") %> '<%=hostName%>'
 	</h1>
 	<br />
 	<h2>Controllers</h2>
@@ -110,8 +113,7 @@
 		<%=getConf(client)%>
 	</table>
 	<hr />
-	<br />
-	<a href="logs">logs</a>
+<%@ include file="footer.jsp" %>
 </body>
 
 </html>

@@ -7,9 +7,9 @@
 	import="com.nearinfinity.blur.thrift.generated.Blur.*"%>
 <%@ include file="functions.jsp"%>
 <%!
-	public String shards(Iface client) throws Exception {
+	public String shards(Iface client, String clusterName) throws Exception {
 		String ret = "";
-		List<String> servers = client.shardServerList("default");
+		List<String> servers = client.shardServerList(clusterName);
 		
 		for(String s : servers) {
 			String[] split = s.split(":");
@@ -50,12 +50,11 @@
 		Blur Shard List for Cluster '<%=clusterName%>'
 	</h1>
 	<br />
-		<%=table(shards(client),"Shard") %>
+		<%=table(shards(client, clusterName),"Shard") %>
 
 	<%
 		}
 	%>
-	<br/>
-	<a href="index.html">home</a> | <a href="logs">logs</a>
+<%@ include file="footer.jsp" %>
 </body>
 </html>

@@ -199,11 +199,13 @@ public class ThriftBlurShardServer extends ThriftServer {
     
     int webServerPort = Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT)) + serverIndex;
 
+    //TODO: this got ugly, there has to be a better way to handle all these params 
+    //without reversing the mvn dependancy and making blur-gui on top. 
     final HttpJettyServer httpServer = new HttpJettyServer(bindPort, webServerPort,
-    		Integer.parseInt(configuration.get(BLUR_GUI_CONTROLLER_PORT)),
-    		Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT)),
     		configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1),
     		configuration.getInt(BLUR_SHARD_BIND_PORT, -1),
+    		configuration.getInt(BLUR_GUI_CONTROLLER_PORT,-1),
+    		configuration.getInt(BLUR_GUI_SHARD_PORT,-1),
     		"shard", blurMetrics);
 
     // This will shutdown the server when the correct path is set in zk

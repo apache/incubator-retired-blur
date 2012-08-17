@@ -7,7 +7,6 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.webapp.WebAppContext;
 
-import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.metrics.BlurMetrics;
@@ -46,10 +45,11 @@ public class HttpJettyServer {
         System.setProperty("blur.base.controller.port",baseControllerPort+"");
         System.setProperty("baseGuiShardPort",baseGuiShardPort+"");
         System.setProperty("baseGuiControllerPort",baseGuiControllerPort+"");
+        System.setProperty("blur.gui.mode", base);
         LOG.info("System props:" + System.getProperties().toString());
 
         WebAppContext context = new WebAppContext();
-        context.setWar(getJarFolder() + "../src/blur-gui/src/main/webapps/" + base);
+        context.setWar(getJarFolder() + "../src/blur-gui/src/main/webapps/controller");// + base);
         context.setContextPath("/");
         context.setParentLoaderPriority(true);
         //servlets

@@ -32,6 +32,38 @@ div {
 	<script>
 		//decimal formatter
 		var df = d3.format("4d");
+
+		//basic printout
+		d3.json("metrics", function(json) {
+			//alert(json);
+			arr = [];
+			arr[0] = json;
+			//select obj and bind data
+			d3.select("body").selectAll("ul")
+				.data(arr)
+				.enter().append("ul")
+				.text("Metrics")
+				.selectAll("li")
+				.data(function(d) {
+					var map = [];
+					var i = 0;
+					for(var x in d) {
+						var obj = {};
+						obj.name = x;
+						obj.value = d[x];
+						map[i++] = obj;
+					}
+					return map})
+					.enter()
+					.append("li")
+					.text(function(d) { return d.name + " " + d.value })
+					.style("background-color", function(d,i) { return i % 2 ? "#eee" : "#ddd"; });
+		});
+		
+		
+		
+		//realtime update stuffs
+		
 		//data holder
 		var dummy = [];
 		

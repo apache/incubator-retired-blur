@@ -16,6 +16,8 @@ $(document).ready(function(){
   var default_range = 60 * 24;
   // refresh speed for pulling new info (while live)
 	var refresh_time = 20000;
+  // timezone offset
+  var epoc_offset = new Date().getTimezoneOffset() * 60 * 1000
   // refresh timeout
   var refresh_timer;
   // Different tab actions
@@ -71,7 +73,10 @@ $(document).ready(function(){
    * @arg graph_data an object containing all the data related to a graph
    * @arg selector a jquery selector representing the desired location of the graph
    */
-  var draw_graph = function(graph_data, selector){
+  var draw_graph = function(graph_data, selector, min, max){
+    var now = new Date().getTime();
+    min = now + (min * 60 * 1000) - epoc_offset;
+    max = now + (max * 60 * 1000) - epoc_offset;
     // if the plot doesnt already exist draw a new one
     if (selector && !graph_data.plot){
       graph_data.plot = $.plot(selector, graph_data.metrics,
@@ -80,8 +85,8 @@ $(document).ready(function(){
 				xaxis: {
           mode: "time",
           timeformat: "%0m/%0d %H:%M %p",
-          max: graph_data.max,
-          min: graph_data.min
+          max: max,
+          min: min
         },
         // Set the yaxis to 2 separate scales
         yaxes:[
@@ -93,7 +98,7 @@ $(document).ready(function(){
         // Set the crosshair to only show in the y direction
         crosshair: { mode: "x" },
         // Set the grid to hoverable (for value grabbing)
-        grid: { hoverable: true },
+        grid: { hoverable: true, autoHighlight: false },
         // Do not show the lines (looks odd with non contiguous data)
         lines: { show: false },
         // Show the points
@@ -103,8 +108,8 @@ $(document).ready(function(){
 		} else {
       // change the graph scale
       var plot_options = graph_data.plot.getOptions();
-      plot_options.xaxis.max = graph_data.max;
-      plot_options.xaxis.min = graph_data.min;
+      plot_options.xaxis.max = max;
+      plot_options.xaxis.min = min;
       // Set the plot to the new data set
 			graph_data.plot.setData(graph_data.metrics);
       // recalculate the grid ranges
@@ -150,8 +155,8 @@ $(document).ready(function(){
 						var point = data[i];
 						var entry_date = new Date(point.created_at).getTime();
             // Convert the dates to epoc time
-            hdfs_data_1.data.push([entry_date - 4*60*60*1000, point[request_options.stat_1]]);
-						hdfs_data_2.data.push([entry_date - 4*60*60*1000, point[request_options.stat_2]]);
+            hdfs_data_1.data.push([entry_date - epoc_offset, point[request_options.stat_1]]);
+						hdfs_data_2.data.push([entry_date - epoc_offset, point[request_options.stat_2]]);
           }
 
           // if we are updating the current data set then add the new data
@@ -169,11 +174,11 @@ $(document).ready(function(){
 					}
 
           // Mark the largest id for update requests (only if it is the largest)
-					if (hdfs_data[id].largest_id <  point.id) hdfs_data[id].largest_id = point.id
+					if (point && hdfs_data[id].largest_id <  point.id) hdfs_data[id].largest_id = point.id
 
           // Only redraw the active graph
 					if (graph_container.hasClass('active')){
-            draw_graph(hdfs_data[id][action], graph_container.find('.graph'));
+            draw_graph(hdfs_data[id][action], graph_container.find('.graph'), hdfs_data[id].min, hdfs_data[id].max);
 					}
 				}
 			}
@@ -189,7 +194,7 @@ $(document).ready(function(){
       // Grab the id of the current graph
 			var hdfs_id = $(this).attr('id');
       // if an id is defined then we only want to update the graph with that id
-      if (!id || hdfs_id !== id) return;
+      if (id && hdfs_id !== id) return;
       
       // if the max is now
       if (hdfs_data[hdfs_id].max === 0){
@@ -202,6 +207,7 @@ $(document).ready(function(){
           // set the updating to true because the max is now
           hdfs_data[hdfs_id].updating = true;
         }
+        refresh_timer = setTimeout(update_live_graphs, refresh_time);
       // otherwise request the range
       } else {
         request_data(hdfs_id, {stat_min: -hdfs_data[hdfs_id].min, stat_max: -hdfs_data[hdfs_id].max});
@@ -220,13 +226,16 @@ $(document).ready(function(){
 
   /*
    * Sets the time fields to match the slider
+   * @arg hdfs_id target hdfs
+   * @arg min(optional) min value for date picker
+   * @arg max(optional) max value for date picker
    */
-  var sync_date_fields = function(hdfs_id) {
+  var sync_date_fields = function(hdfs_id, min, max) {
     // get the current time
     var now = new Date().getTime();
     // grab the min date and max dates
-    var min_date = now + hdfs_data[hdfs_id].min * 60 * 1000;
-    var max_date = now + hdfs_data[hdfs_id].max * 60 * 1000;
+    var min_date = now + (min || hdfs_data[hdfs_id].min) * 60 * 1000;
+    var max_date = now + (max || hdfs_data[hdfs_id].max) * 60 * 1000;
 
     // set the time pickers to the correct time
     var graph = $(".graph_instance#" + hdfs_id)
@@ -254,7 +263,7 @@ $(document).ready(function(){
 		var container = instance.find('.active > .graph');
 		var action = $(this).data('action');
     if (hdfs_data[hdfs_id]){
-      draw_graph(hdfs_data[hdfs_id][action], container);
+      draw_graph(hdfs_data[hdfs_id][action], container, hdfs_data[hdfs_id].min, hdfs_data[hdfs_id].max);
     };
 	});
 
@@ -295,7 +304,9 @@ $(document).ready(function(){
 
     // absolute distance from mouse to nearest point
     var current_delta = Math.abs(pos.x - series.data[index][0]);
-    var next_delta = Math.abs(pos.x - series.data[index + 1][0]);
+    if (index !== series.data.length - 1){
+      var next_delta = Math.abs(pos.x - series.data[index + 1][0]);
+    }
     // determine the closest point (last or next)
     if (current_delta > next_delta){
       delta_pixels = next_delta;
@@ -351,7 +362,7 @@ $(document).ready(function(){
       // grab the current hdfs_id
       var hdfs_id = $(this).closest('.graph_instance').attr('id');
       // Sync the date fields with the range selected
-      sync_date_fields(hdfs_id);
+      sync_date_fields(hdfs_id, ui.values[0], ui.values[1]);
     }
   });
 

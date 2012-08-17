@@ -12,13 +12,12 @@ class HdfsMetricsController < ApplicationController
   def hdfs_stat_select(properties)
     hdfs = Hdfs.find params[:id]
     properties = [:id, :created_at] + properties
-    minutes = params[:stat_mins].nil? ? 1 : params[:stat_mins].to_i
 
     if params[:stat_id]
       where_clause = "id > #{params[:stat_id]}"
     else
-      where_clause = "created_at >= '#{minutes.minute.ago}'"
-      where_clause += " and created_at < '#{params[:max_mins].to_i.minute.ago}'" if params[:max_mins]
+      where_clause = "created_at >= '#{params[:stat_min].to_i.minute.ago}'"
+      where_clause += " and created_at < '#{params[:stat_max].to_i.minute.ago}'" if params[:stat_max]
     end
 
     stat_number = hdfs.hdfs_stats.where(where_clause).select("count(*) as count")

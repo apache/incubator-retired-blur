@@ -6,20 +6,17 @@
 //= require_self
 
 $(document).ready(function(){
-
-  // Page constants //
-
+  // Datastore for the current data on the plot
   var hdfs_data = {};
+  // Starting length for the data range
 	var time_length = 60 * 24;
+  // refresh speed for pulling new info (while live)
 	var refresh_time = 20000;
-  var slider_max = {};
-  var noRequest = false;
+  // Different tab actions
 	var actions = ['disk', 'nodes', 'block'];
-
-	// Hash of labels and object lookup strings for the various actions //
-
+	// Hash of labels and object lookup strings for the various actions
   var hdfs_request_lookup =
-	{
+  {
 		disk:
 		{
 			label_1: "Hdfs Disk Capacity (GB) - Left axis <span class='axis-value'></span>",
@@ -43,51 +40,61 @@ $(document).ready(function(){
 		}
 	};
 
-	// Page Methods //
-
-  var draw_graph = function(selector, graph_data){
-    if (!graph_data.plot || selector.find(".base").length < 1)
+  /* Draw the graph
+   * @arg graph_data an object containing all the data related to a graph
+   * @arg selector a jquery selector representing the desired location of the graph
+   */
+  var draw_graph = function(graph_data, selector){
+    // if the plot doesnt already exist draw a new one
+    if (selector && !graph_data.plot)
     {
       graph_data.plot = $.plot(selector, graph_data.metrics,
 			{
-				xaxis:
-				{
-					mode: "time",
-					timeformat: "%0m/%0d %H:%M %p"
-				},
+        // Set the xaxis to a time plot
+				xaxis: { mode: "time", timeformat: "%0m/%0d %H:%M %p"	},
+        // Set the yaxis to 2 separate scales
         yaxes:[
-          { tickDecimals: 0 },
-          {
-            position: 'right',
-            tickDecimals: 0
-          }
+          { position: 'left', tickDecimals: 1 },
+          { position: 'right', tickDecimals: 1 }
         ],
-        legend:{ container: $(".graph-legend") },
+        // Set the legend container
+        legend: { container: $(".graph-legend") },
+        // Set the crosshair to only show in the y direction
         crosshair: { mode: "x" },
-        grid: { hoverable: true, autoHighlight: false },
+        // Set the grid to hoverable (for value grabbing)
+        grid: { hoverable: true },
+        // Do not show the lines (looks odd with non contiguous data)
         lines: { show: false },
-        points: { show: true }
+        // Show the points
+        points: { show: true, radius: 2 }
 			});
 		}
+    // Otherwise update the current plot
 		else
 		{
+      // Set the plot to the new data set
 			graph_data.plot.setData(graph_data.metrics);
+      // recalculate the grid ranges
 			graph_data.plot.setupGrid();
+      // Redraw the graph
       graph_data.plot.draw();
 		}
 	};
 
-	//request graph data
-	//id : hdfs id, action: (disk, nodes, block), req_data(optional):
-		//req_data.stat_id for dafta after a certain ID (update)
-		//req_data.stat_mins for specifying a different range (overwrite)
-      //for overwrite, also set redraw = true (optional)
-	var request_data = function(id, req_data, redraw){
+	/* Request new graph data
+	 * @arg id of the hdfs
+   * @arg req_data data object for the ajax request
+	 *   req_data.stat_id requests data after a certain ID (update)
+	 *   req_data.stat_min specifies a min for the range (update / overwrite)
+   *   req_data.stat_max specifies a min for the range (overwrite)
+   */
+	var request_data = function(id, req_data){
     $.ajax({
 			url: Routes.stats_hdfs_metric_path(id),
 			type: 'GET',
 			data: req_data,
 			success: function(data){
+        // If no data was returned then set all 3 graphs to the no data message
         if (data.length <= 0){
           if (!hdfs_data[id]) {
             $.each($('.graph_instance#' + id + ' .graph'), function(index, value) {
@@ -96,10 +103,7 @@ $(document).ready(function(){
           }
           return;
 				}
-				if (!hdfs_data[id] || redraw){
-          $(".graph_instance").find(".active > .graph").empty();
-					hdfs_data[id] = { disk: { metrics: [] }, nodes: { metrics: [] }, block: { metrics: [] } };
-				}
+
 				for(var action in hdfs_request_lookup){
           var request_options = hdfs_request_lookup[action];
 					var hdfs_data_1 = {label: request_options.label_1, data: []};
@@ -173,10 +177,7 @@ $(document).ready(function(){
     };
 	});
 
-	$('.graph_instance').each(function(){
-		var hdfs_id = $(this).attr('id');
-    request_data(hdfs_id, {stat_mins: time_length});
-	});
+
 
   $('.loading-spinner').on('ajaxStart', function(){
     $(this).removeClass('hidden');
@@ -321,5 +322,11 @@ $(document).ready(function(){
   $('.slider-redraw').on('click', function(e){
     noRequest = false;
     set_slider_vals_to_info($(this).parent()[0].id);
+  });
+
+  // Request the first set of data for every graph (starts the page)
+  $('.graph_instance').each(function(){
+    var hdfs_id = $(this).attr('id');
+    request_data(hdfs_id, {stat_mins: time_length});
   });
 });

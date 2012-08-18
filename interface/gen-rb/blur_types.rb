@@ -89,7 +89,6 @@ module Blur
       RECORDID = 1
       FAMILY = 2
       COLUMNS = 3
-      PRIMERECORD = 4
 
       FIELDS = {
         # Record id uniquely identifies a record within a single row.
@@ -97,9 +96,7 @@ module Blur
         # The family in which this record resides.
         FAMILY => {:type => ::Thrift::Types::STRING, :name => 'family'},
         # A list of columns, multiple columns with the same name are allowed.
-        COLUMNS => {:type => ::Thrift::Types::LIST, :name => 'columns', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::Column}},
-        # 
-        PRIMERECORD => {:type => ::Thrift::Types::BOOL, :name => 'primeRecord', :optional => true}
+        COLUMNS => {:type => ::Thrift::Types::LIST, :name => 'columns', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::Column}}
       }
 
       def struct_fields; FIELDS; end

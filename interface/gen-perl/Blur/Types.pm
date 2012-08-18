@@ -187,7 +187,7 @@ sub write {
 
 package Blur::Record;
 use base qw(Class::Accessor);
-Blur::Record->mk_accessors( qw( recordId family columns primeRecord ) );
+Blur::Record->mk_accessors( qw( recordId family columns ) );
 
 sub new {
   my $classname = shift;
@@ -196,7 +196,6 @@ sub new {
   $self->{recordId} = undef;
   $self->{family} = undef;
   $self->{columns} = undef;
-  $self->{primeRecord} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{recordId}) {
       $self->{recordId} = $vals->{recordId};
@@ -206,9 +205,6 @@ sub new {
     }
     if (defined $vals->{columns}) {
       $self->{columns} = $vals->{columns};
-    }
-    if (defined $vals->{primeRecord}) {
-      $self->{primeRecord} = $vals->{primeRecord};
     }
   }
   return bless ($self, $classname);
@@ -264,12 +260,6 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^4$/ && do{      if ($ftype == TType::BOOL) {
-        $xfer += $input->readBool(\$self->{primeRecord});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -304,11 +294,6 @@ sub write {
       }
       $xfer += $output->writeListEnd();
     }
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{primeRecord}) {
-    $xfer += $output->writeFieldBegin('primeRecord', TType::BOOL, 4);
-    $xfer += $output->writeBool($self->{primeRecord});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

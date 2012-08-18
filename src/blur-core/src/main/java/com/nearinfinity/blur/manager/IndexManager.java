@@ -17,7 +17,6 @@
 package com.nearinfinity.blur.manager;
 
 import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
-import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
 import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 import static com.nearinfinity.blur.utils.BlurUtil.findRecordMutation;

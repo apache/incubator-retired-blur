@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -189,10 +188,9 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
       }
     }
 
-    Collection<Document> docs = documentsToIndex(new ArrayList<Document>(_newDocs.values()));
-    for (Document document : docs) {
-      document.add(BlurConstants.PRIME_DOC_FIELD);
-      break;
+    List<Document> docs = documentsToIndex(new ArrayList<Document>(_newDocs.values()));
+    if (docs.size() >0) {
+      docs.get(0).add(BlurConstants.PRIME_DOC_FIELD);
     }
 
     switch (_blurTask.getIndexingType()) {
@@ -234,7 +232,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
     return true;
   }
 
-  protected Collection<Document> documentsToIndex(Collection<Document> list) {
+  protected List<Document> documentsToIndex(List<Document> list) {
     return list;
   }
 

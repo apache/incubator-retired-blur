@@ -62,11 +62,11 @@ import org.apache.thrift.protocol.TJSONProtocol;
 import org.apache.thrift.transport.TMemoryBuffer;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooDefs.Ids;
+import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
@@ -75,6 +75,7 @@ import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.metrics.BlurMetrics.MethodCall;
 import com.nearinfinity.blur.thrift.BException;
+import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
@@ -88,7 +89,6 @@ import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.RowMutationType;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.SimpleQuery;
-import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class BlurUtil {
 

@@ -1,5 +1,7 @@
 package com.nearinfinity.blur.manager.stats;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -10,44 +12,54 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 
 public class LoadFactor {
-  
+
   private static final Log LOG = LogFactory.getLog(LoadFactor.class);
 
-//  public static void main(String[] args) throws InterruptedException {
-//    LoadFactor loadFactor = new LoadFactor();
-//    loadFactor.init();
-//    loadFactor.add("heapUsed", new Sampler() {
-//      private MemoryMXBean bean = ManagementFactory.getMemoryMXBean();
-//
-//      @Override
-//      public long sample() {
-//        return bean.getHeapMemoryUsage().getUsed();
-//      }
-//    });
-//
-//    new Thread(new Runnable() {
-//      @Override
-//      public void run() {
-//        long total = 0;
-//        while (true) {
-//          total += doWork();
-//        }
-//      }
-//    }).start();
-//
-//    while (true) {
-//      System.out.println("one     = " + (long) loadFactor.getOneMinuteLoadFactor("heapUsed"));
-//      System.out.println("five    = " + (long) loadFactor.getFiveMinuteLoadFactor("heapUsed"));
-//      System.out.println("fifteen = " + (long) loadFactor.getFifteenMinuteLoadFactor("heapUsed"));
-//      Thread.sleep(5000);
-//    }
-//
-//  }
+  public static void main(String[] args) throws InterruptedException {
+    LoadFactor loadFactor = new LoadFactor();
+    loadFactor.init();
+    loadFactor.add("heapUsed", new Sampler() {
+      private MemoryMXBean bean = ManagementFactory.getMemoryMXBean();
+
+      @Override
+      public long sample() {
+        return bean.getHeapMemoryUsage().getUsed();
+      }
+    });
+
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+        long total = 0;
+        while (true) {
+          total += doWork();
+        }
+      }
+    }).start();
+
+    while (true) {
+      System.out.println("one     = " + (long) loadFactor.getOneMinuteLoadFactor("heapUsed"));
+      System.out.println("five    = " + (long) loadFactor.getFiveMinuteLoadFactor("heapUsed"));
+      System.out.println("fifteen = " + (long) loadFactor.getFifteenMinuteLoadFactor("heapUsed"));
+      Thread.sleep(5000);
+    }
+
+  }
 
   protected static int doWork() {
     StringBuilder builder = new StringBuilder();
+    int count = 0;
     for (int i = 0; i < 10000000; i++) {
+      if (count == 1000) {
+        try {
+          Thread.sleep(1);
+        } catch (InterruptedException e) {
+          return 0;
+        }
+        count = 0;
+      }
       builder.append('m');
+      count++;
     }
     return builder.toString().hashCode();
   }
@@ -62,11 +74,11 @@ public class LoadFactor {
     _timer.schedule(new TimerTask() {
       @Override
       public void run() {
-       try { 
-        sampleAll();
-      } catch (Throwable e) {
-        LOG.error("Unknown error",e);
-      }
+        try {
+          sampleAll();
+        } catch (Throwable e) {
+          LOG.error("Unknown error", e);
+        }
       }
     }, _delay, _period);
 

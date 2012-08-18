@@ -20,6 +20,11 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Field.Index;
+import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.index.Term;
+
 import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.manager.results.BlurResultComparator;
 import com.nearinfinity.blur.manager.results.BlurResultPeekableIteratorComparator;
@@ -27,7 +32,7 @@ import com.nearinfinity.blur.manager.results.PeekableIterator;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 
 public class BlurConstants {
-
+  
   public static final String CONTROLLER = "controller";
   public static final String SHARD = "shard";
   public static final String SHARD_PREFIX = "shard-";
@@ -93,6 +98,9 @@ public class BlurConstants {
   
   public static final long ZK_WAIT_TIME = TimeUnit.SECONDS.toMillis(5);
 
+  public static final Term PRIME_DOC_TERM = new Term(PRIME_DOC, BlurConstants.PRIME_DOC_VALUE);
+  public static final Field PRIME_DOC_FIELD = new Field(PRIME_DOC, PRIME_DOC_VALUE, Store.YES, Index.NOT_ANALYZED_NO_NORMS);
+  
   static {
     try {
       BlurConfiguration configuration = new BlurConfiguration();

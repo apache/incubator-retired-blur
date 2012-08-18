@@ -64,7 +64,6 @@ public class TransactionRecorder {
   }
 
   private static final Log LOG = LogFactory.getLog(TransactionRecorder.class);
-  private static final Field PRIME_DOC_FIELD = new Field(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO, Index.NOT_ANALYZED_NO_NORMS);
   private static final Term ROW_ID = new Term(BlurConstants.ROW_ID);
   private AtomicBoolean running = new AtomicBoolean(true);
   private Path walPath;
@@ -304,7 +303,7 @@ public class TransactionRecorder {
     for (int i = 0; i < size; i++) {
       Document document = convert(rowId, records.get(i), builder);
       if (i == 0) {
-        document.add(PRIME_DOC_FIELD);
+        document.add(BlurConstants.PRIME_DOC_FIELD);
       }
       docs.add(document);
     }

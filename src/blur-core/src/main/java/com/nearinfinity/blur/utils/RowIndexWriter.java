@@ -16,8 +16,6 @@
 
 package com.nearinfinity.blur.utils;
 
-import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
-import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
 import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.SEP;
@@ -42,7 +40,6 @@ import com.nearinfinity.blur.thrift.generated.Row;
 
 public class RowIndexWriter {
 
-  private static final Field PRIME_DOC_FIELD = new Field(PRIME_DOC, PRIME_DOC_VALUE, Store.NO, Index.NOT_ANALYZED_NO_NORMS);
   private BlurAnalyzer _analyzer;
   private IndexWriter _indexWriter;
   private boolean primeDocSet;
@@ -97,7 +94,7 @@ public class RowIndexWriter {
     document.add(new Field(RECORD_ID, recordId, Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     if (addColumns(document, _analyzer, builder, family, record.columns)) {
       if (!primeDocSet) {
-        document.add(PRIME_DOC_FIELD);
+        document.add(BlurConstants.PRIME_DOC_FIELD);
         primeDocSet = true;
       }
       documents.add(document);

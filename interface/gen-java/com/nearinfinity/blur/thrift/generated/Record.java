@@ -29,6 +29,7 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
   private static final org.apache.thrift.protocol.TField RECORD_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("recordId", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField FAMILY_FIELD_DESC = new org.apache.thrift.protocol.TField("family", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField COLUMNS_FIELD_DESC = new org.apache.thrift.protocol.TField("columns", org.apache.thrift.protocol.TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField PRIME_RECORD_FIELD_DESC = new org.apache.thrift.protocol.TField("primeRecord", org.apache.thrift.protocol.TType.BOOL, (short)4);
 
   /**
    * Record id uniquely identifies a record within a single row.
@@ -42,6 +43,10 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
    * A list of columns, multiple columns with the same name are allowed.
    */
   public List<Column> columns; // required
+  /**
+   * 
+   */
+  public boolean primeRecord; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -56,7 +61,11 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
     /**
      * A list of columns, multiple columns with the same name are allowed.
      */
-    COLUMNS((short)3, "columns");
+    COLUMNS((short)3, "columns"),
+    /**
+     * 
+     */
+    PRIME_RECORD((short)4, "primeRecord");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,6 +86,8 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
           return FAMILY;
         case 3: // COLUMNS
           return COLUMNS;
+        case 4: // PRIME_RECORD
+          return PRIME_RECORD;
         default:
           return null;
       }
@@ -117,6 +128,8 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
   }
 
   // isset id assignments
+  private static final int __PRIMERECORD_ISSET_ID = 0;
+  private BitSet __isset_bit_vector = new BitSet(1);
 
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -128,6 +141,8 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
     tmpMap.put(_Fields.COLUMNS, new org.apache.thrift.meta_data.FieldMetaData("columns", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Column.class))));
+    tmpMap.put(_Fields.PRIME_RECORD, new org.apache.thrift.meta_data.FieldMetaData("primeRecord", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Record.class, metaDataMap);
   }
@@ -150,6 +165,8 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
    * Performs a deep copy on <i>other</i>.
    */
   public Record(Record other) {
+    __isset_bit_vector.clear();
+    __isset_bit_vector.or(other.__isset_bit_vector);
     if (other.isSetRecordId()) {
       this.recordId = other.recordId;
     }
@@ -163,6 +180,7 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
       }
       this.columns = __this__columns;
     }
+    this.primeRecord = other.primeRecord;
   }
 
   public Record deepCopy() {
@@ -174,6 +192,8 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
     this.recordId = null;
     this.family = null;
     this.columns = null;
+    setPrimeRecordIsSet(false);
+    this.primeRecord = false;
   }
 
   /**
@@ -281,6 +301,35 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
     }
   }
 
+  /**
+   * 
+   */
+  public boolean isPrimeRecord() {
+    return this.primeRecord;
+  }
+
+  /**
+   * 
+   */
+  public Record setPrimeRecord(boolean primeRecord) {
+    this.primeRecord = primeRecord;
+    setPrimeRecordIsSet(true);
+    return this;
+  }
+
+  public void unsetPrimeRecord() {
+    __isset_bit_vector.clear(__PRIMERECORD_ISSET_ID);
+  }
+
+  /** Returns true if field primeRecord is set (has been assigned a value) and false otherwise */
+  public boolean isSetPrimeRecord() {
+    return __isset_bit_vector.get(__PRIMERECORD_ISSET_ID);
+  }
+
+  public void setPrimeRecordIsSet(boolean value) {
+    __isset_bit_vector.set(__PRIMERECORD_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case RECORD_ID:
@@ -307,6 +356,14 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
       }
       break;
 
+    case PRIME_RECORD:
+      if (value == null) {
+        unsetPrimeRecord();
+      } else {
+        setPrimeRecord((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -320,6 +377,9 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
 
     case COLUMNS:
       return getColumns();
+
+    case PRIME_RECORD:
+      return Boolean.valueOf(isPrimeRecord());
 
     }
     throw new IllegalStateException();
@@ -338,6 +398,8 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
       return isSetFamily();
     case COLUMNS:
       return isSetColumns();
+    case PRIME_RECORD:
+      return isSetPrimeRecord();
     }
     throw new IllegalStateException();
   }
@@ -379,6 +441,15 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
       if (!(this_present_columns && that_present_columns))
         return false;
       if (!this.columns.equals(that.columns))
+        return false;
+    }
+
+    boolean this_present_primeRecord = true && this.isSetPrimeRecord();
+    boolean that_present_primeRecord = true && that.isSetPrimeRecord();
+    if (this_present_primeRecord || that_present_primeRecord) {
+      if (!(this_present_primeRecord && that_present_primeRecord))
+        return false;
+      if (this.primeRecord != that.primeRecord)
         return false;
     }
 
@@ -424,6 +495,16 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
     }
     if (isSetColumns()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.columns, typedOther.columns);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetPrimeRecord()).compareTo(typedOther.isSetPrimeRecord());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPrimeRecord()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.primeRecord, typedOther.primeRecord);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -477,6 +558,14 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 4: // PRIME_RECORD
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
+            this.primeRecord = iprot.readBool();
+            setPrimeRecordIsSet(true);
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -514,6 +603,11 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
       }
       oprot.writeFieldEnd();
     }
+    if (isSetPrimeRecord()) {
+      oprot.writeFieldBegin(PRIME_RECORD_FIELD_DESC);
+      oprot.writeBool(this.primeRecord);
+      oprot.writeFieldEnd();
+    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -546,6 +640,12 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
       sb.append(this.columns);
     }
     first = false;
+    if (isSetPrimeRecord()) {
+      if (!first) sb.append(", ");
+      sb.append("primeRecord:");
+      sb.append(this.primeRecord);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -564,6 +664,8 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bit_vector = new BitSet(1);
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);

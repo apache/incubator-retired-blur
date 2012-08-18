@@ -103,7 +103,12 @@ struct Record {
   /**
    * A list of columns, multiple columns with the same name are allowed.
    */
-  3:list<Column> columns
+  3:list<Column> columns,
+
+  /**
+   *
+   */
+  4:optional bool primeRecord
 }
 
 /**

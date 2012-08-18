@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 
 import com.nearinfinity.blur.manager.IndexServer;
@@ -13,8 +12,6 @@ import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.utils.BlurConstants;
 
 public abstract class AbstractIndexServer implements IndexServer {
-  
-  private static final Term PRIME_DOC_TERM = new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE);
   
   private Map<String,IndexCounts> _recordsTableCounts = new ConcurrentHashMap<String, IndexCounts>();
   private Map<String,IndexCounts> _rowTableCounts = new ConcurrentHashMap<String, IndexCounts>();
@@ -111,7 +108,7 @@ public abstract class AbstractIndexServer implements IndexServer {
 
   private long getRowCount(IndexReader indexReader) throws IOException {
     long rowCount = 0;
-    TermDocs termDocs = indexReader.termDocs(PRIME_DOC_TERM);
+    TermDocs termDocs = indexReader.termDocs(BlurConstants.PRIME_DOC_TERM);
     while (termDocs.next()) {
       if (!indexReader.isDeleted(termDocs.doc())) {
         rowCount++;

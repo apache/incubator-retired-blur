@@ -17,8 +17,6 @@
 package com.nearinfinity.blur.mapreduce;
 
 import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
-import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
-import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
 import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 
@@ -106,7 +104,6 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
   };
 
   protected static final Log LOG = LogFactory.getLog(BlurReducer.class);
-  protected static final Field PRIME_FIELD = new Field(PRIME_DOC, PRIME_DOC_VALUE, Store.NO, Index.ANALYZED_NO_NORMS);
   protected static final long REPORT_PERIOD = TimeUnit.SECONDS.toMillis(10);
   protected static final double MB = 1024 * 1024;
   protected IndexWriter _writer;
@@ -194,7 +191,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
 
     Collection<Document> docs = documentsToIndex(new ArrayList<Document>(_newDocs.values()));
     for (Document document : docs) {
-      document.add(PRIME_FIELD);
+      document.add(BlurConstants.PRIME_DOC_FIELD);
       break;
     }
 

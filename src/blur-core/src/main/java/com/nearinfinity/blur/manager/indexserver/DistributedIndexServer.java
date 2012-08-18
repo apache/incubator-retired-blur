@@ -1,7 +1,5 @@
 package com.nearinfinity.blur.manager.indexserver;
 
-import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
-import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
 import static com.nearinfinity.blur.utils.BlurConstants.SHARD_PREFIX;
 
 import java.io.IOException;
@@ -35,7 +33,6 @@ import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReader.FieldOption;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermPositions;
 import org.apache.lucene.search.Similarity;
@@ -548,14 +545,13 @@ public class DistributedIndexServer extends AbstractIndexServer {
     int maxDoc = reader.maxDoc();
     int numDocs = reader.numDocs();
     Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
-    Term term = new Term(PRIME_DOC, PRIME_DOC_VALUE);
-    int primeDocCount = reader.docFreq(term);
+    int primeDocCount = reader.docFreq(BlurConstants.PRIME_DOC_TERM);
 
-    TermDocs termDocs = reader.termDocs(term);
+    TermDocs termDocs = reader.termDocs(BlurConstants.PRIME_DOC_TERM);
     termDocs.next();
     termDocs.close();
 
-    TermPositions termPositions = reader.termPositions(term);
+    TermPositions termPositions = reader.termPositions(BlurConstants.PRIME_DOC_TERM);
     if (termPositions.next()) {
       if (termPositions.freq() > 0) {
         termPositions.nextPosition();

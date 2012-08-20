@@ -26,37 +26,74 @@
 		//decimal formatter
 		var df = d3.format("4d");
 
+		
 		//basic printout
 		d3.json("metrics", function(json) {
+			
+			var topLevelMetrics = d3.entries(json);
+			
+		    var columns = ["stat", "value"];
+
+		    var table = d3.select("#leftTD").append("table"),
+		        thead = table.append("thead"),
+		        tbody = table.append("tbody");
+
+		    // append the header row
+		    thead.append("tr")
+		        .selectAll("th")
+		        .data(columns)
+		        .enter()
+		        .append("th")
+		            .text(function(column) { return column; })
+		            .style("text-align", function(d) { return "left"});
+		    
+		    // create a row for each object in the data
+		    var rows = tbody.selectAll("tr")
+		        .data(topLevelMetrics)
+		        .enter()
+		        .append("tr")
+		        .style("background-color", function(d,i) { return i % 2 ? "#eee" : "#ddd"; });
+
+		    // create a cell in each row for each column
+		    var cells = rows.selectAll("td")
+		        .data(function(row) {
+		        	return d3.entries(row);
+		        })
+		        .enter()
+		        .append("td")
+		            .text(function(d) { return d.value; });
+
+
+			
+			
 			//alert(json);
 			arr = [];
 			arr[0] = json;
 			//select obj and bind data
-			d3.select("div").selectAll("ul")
+			d3.select("#rightTD").selectAll("ul")
 				.data(arr)
 				.enter().append("ul")
 				.text("Metrics")
 				.selectAll("li")
 				.data(function(d) {
-					var map = [];
-					var i = 0;
-					for(var x in d) {
-						var obj = {};
-						obj.name = x;
-						obj.value = d[x];
-						map[i++] = obj;
-					}
-					return map})
+					return d3.entries(d);})
 					.enter()
 					.append("li")
-					.text(function(d) { return d.name + " " + d.value })
-					.style("background-color", function(d,i) { return i % 2 ? "#eee" : "#ddd"; });
+					.text(function(d) { return d.key + " " + d.value })
+					.style("background-color", function(d,i) { return i % 2 ? "#eee" : "#ddd"; })
+					.attr("id",function(d) { return d.key; });
 		});
 	</script>
 	<h1>
 		Blur <%=System.getProperty("blur.gui.mode") %> '<%=hostName%>'
 	</h1>
 	<br />
+	<table>
+	<tr>
+	<td width="400" id="leftTD"></td>
+	<td width="400" id="rightTD"></td>
+	</tr>
+	</table>
 <div>
 </div>
 <%@ include file="footer.jsp" %>

@@ -117,7 +117,7 @@ describe ZookeepersController do
 
     describe 'DELETE destroy_shard' do
       before :each do
-        @shard = FactoryGirl.create :shard
+        @shard = FactoryGirl.create :shard_with_cluster
         Zookeeper.stub_chain(:find, :shards, :find_by_id).and_return(@shard)
       end
 

@@ -74,49 +74,36 @@ $(document).ready(function(){
    * @arg selector a jquery selector representing the desired location of the graph
    */
   var draw_graph = function(graph_data, selector, min, max){
+    // get the min and max
     var now = new Date().getTime();
     min = now + (min * 60 * 1000) - epoc_offset;
     max = now + (max * 60 * 1000) - epoc_offset;
-    // if the plot doesnt already exist draw a new one
-    if (selector && !graph_data.plot){
-      graph_data.plot = $.plot(selector, graph_data.metrics,
-			{
-        // Set the xaxis to a time plot
-				xaxis: {
-          mode: "time",
-          timeformat: "%0m/%0d %H:%M %p",
-          max: max,
-          min: min
-        },
-        // Set the yaxis to 2 separate scales
-        yaxes:[
-          { position: 'left', tickDecimals: 1 },
-          { position: 'right', tickDecimals: 1 }
-        ],
-        // Set the legend container
-        legend: { container: $(".graph-legend") },
-        // Set the crosshair to only show in the y direction
-        crosshair: { mode: "x" },
-        // Set the grid to hoverable (for value grabbing)
-        grid: { hoverable: true, autoHighlight: false },
-        // Do not show the lines (looks odd with non contiguous data)
-        lines: { show: false },
-        // Show the points
-        points: { show: true, radius: 2 }
-			});
-    // Otherwise update the current plot
-		} else {
-      // change the graph scale
-      var plot_options = graph_data.plot.getOptions();
-      plot_options.xaxis.max = max;
-      plot_options.xaxis.min = min;
-      // Set the plot to the new data set
-			graph_data.plot.setData(graph_data.metrics);
-      // recalculate the grid ranges
-			graph_data.plot.setupGrid();
-      // Redraw the graph
-      graph_data.plot.draw();
-		}
+
+    graph_data.plot = $.plot(selector, graph_data.metrics,
+		{
+      // Set the xaxis to a time plot
+			xaxis: {
+        mode: "time",
+        timeformat: "%0m/%0d %H:%M %p",
+        max: max,
+        min: min
+      },
+      // Set the yaxis to 2 separate scales
+      yaxes:[
+        { position: 'left', tickDecimals: 1 },
+        { position: 'right', tickDecimals: 1 }
+      ],
+      // Set the legend container
+      legend: { container: $(".graph-legend") },
+      // Set the crosshair to only show in the y direction
+      crosshair: { mode: "x" },
+      // Set the grid to hoverable (for value grabbing)
+      grid: { hoverable: true, autoHighlight: false },
+      // Do not show the lines (looks odd with non contiguous data)
+      lines: { show: false },
+      // Show the points
+      points: { show: true, radius: 2 }
+		});
 	};
 
 	/* 
@@ -160,11 +147,20 @@ $(document).ready(function(){
           }
 
           // if we are updating the current data set then add the new data
-          // NOTE: the data is a fixed size queue therefore old data is dropped
+          // NOTE: the data is a fixed size queue (time) therefore data out of view is dropped
 					if (req_data && req_data.stat_id){
-							var length = data.length;
-							hdfs_data[id][action].metrics[0].data.splice(0, length);
-							hdfs_data[id][action].metrics[1].data.splice(0, length);
+            var length = hdfs_data[id][action].metrics[0].data.length;
+            var now = new Date();
+              for(var find = 0; find <= length; find++){
+                if (hdfs_data[id][action].metrics[0].data[find] < now + hdfs_data[id].min * 60 * 1000) break;
+              }
+              
+              // remove all data outside of the range
+              if(find > 0){
+                hdfs_data[id][action].metrics[0].data.splice(0, find);
+                hdfs_data[id][action].metrics[1].data.splice(0, find);
+              }
+
 							hdfs_data[id][action].metrics[0].data = hdfs_data[id][action].metrics[0].data.concat(hdfs_data_1.data);
 							hdfs_data[id][action].metrics[1].data = hdfs_data[id][action].metrics[1].data.concat(hdfs_data_2.data);
 					// otherwise we are loading a new dataset (clear and then add)
@@ -180,6 +176,10 @@ $(document).ready(function(){
 					if (graph_container.hasClass('active')){
             draw_graph(hdfs_data[id][action], graph_container.find('.graph'), hdfs_data[id].min, hdfs_data[id].max);
 					}
+
+          // Sync up the sliders / pickers to the newest date returned (may not change depending on ranges)
+          sync_slider(id);
+          sync_date_fields(id);
 				}
 			}
 		});
@@ -198,6 +198,8 @@ $(document).ready(function(){
       
       // if the max is now
       if (hdfs_data[hdfs_id].max === 0){
+        // Clear the timeout of the old refresh
+        clearTimeout(refresh_timer);
         // if we are grabbing an update to a current range
         if (hdfs_data[hdfs_id].updating){
           request_data(hdfs_id, {stat_id: hdfs_data[hdfs_id].largest_id});
@@ -221,7 +223,7 @@ $(document).ready(function(){
   var sync_slider = function(hdfs_id){
     // the range values are stored as slider offsets simply set the slider to those values
     var range_values = [hdfs_data[hdfs_id].min, hdfs_data[hdfs_id].max]
-    $('.graph_instance#' + hdfs_id + ' .slider').slider('option', 'values', range_values);
+    $('.graph_instance#' + hdfs_id + ' .slider').dragslider('option', 'values', range_values);
   };
 
   /*
@@ -233,14 +235,21 @@ $(document).ready(function(){
   var sync_date_fields = function(hdfs_id, min, max) {
     // get the current time
     var now = new Date().getTime();
-    // grab the min date and max dates
-    var min_date = now + (min || hdfs_data[hdfs_id].min) * 60 * 1000;
-    var max_date = now + (max || hdfs_data[hdfs_id].max) * 60 * 1000;
 
-    // set the time pickers to the correct time
+    // grab the min date and max dates
+    min = typeof min !== "undefined" ? min : hdfs_data[hdfs_id].min;
+    max = typeof max !== "undefined" ? max : hdfs_data[hdfs_id].max;
+    var min_date = now + min * 60 * 1000;
+    var max_date = now + max * 60 * 1000;
+
+    // set the time pickers to the correct time and max/min time
     var graph = $(".graph_instance#" + hdfs_id)
-    graph.find(".min-date").timepicker("setDate", new Date(min_date));
-    graph.find(".max-date").timepicker("setDate", new Date(max_date));
+    graph.find(".min-date")
+      .datetimepicker("option", "maxDate", new Date(max_date))
+      .datetimepicker("setDate", new Date(min_date));
+    graph.find(".max-date").datetimepicker("option", "maxDate", new Date())
+      .datetimepicker("option", "minDate", new Date(min_date))
+      .datetimepicker("setDate", new Date(max_date));
   };
 
 	//------------- Page Events -------------
@@ -252,9 +261,6 @@ $(document).ready(function(){
     hdfs_data[hdfs_id] = default_hdfs_data();
     update_live_graphs(hdfs_id);
   });
-
-  // Refresh data timer
-  refresh_timer = setTimeout(update_live_graphs, refresh_time);
 
   // Draws the new graph when a new tab is shown
   $('.graph_instance').on('shown', 'a[data-toggle="tab"]', function(e){
@@ -280,6 +286,7 @@ $(document).ready(function(){
     var graph_definition = $(event.target).closest('.active').attr('id');
     var pieces = graph_definition.split('_');
     var plot = hdfs_data[pieces[1]][pieces[0]].plot
+    var show_offset = 15; // (in minutes)
      
     // get the datasets for searching
     var axes = plot.getAxes();
@@ -299,24 +306,14 @@ $(document).ready(function(){
     // find the nearest points, x-wise
     // ToDo: Change this so that it only reads a val if it is within a certain distance
     for (index = 0; index < series.data.length - 1; ++index)
-      if (series.data[index][0] > pos.x)
+      if (series.data[index][0] + show_offset * 60 * 1000 > pos.x)
         break;
 
     // absolute distance from mouse to nearest point
     var current_delta = Math.abs(pos.x - series.data[index][0]);
-    if (index !== series.data.length - 1){
-      var next_delta = Math.abs(pos.x - series.data[index + 1][0]);
-    }
-    // determine the closest point (last or next)
-    if (current_delta > next_delta){
-      delta_pixels = next_delta;
-      index++;
-    } else {
-      delta_pixels = current_delta;
-    }
 
     // if the point is more than 5 min away draw nothing
-    if ((delta_pixels / (1000 * 60)) > 5){
+    if ((current_delta / (1000 * 60)) > show_offset){
       legends.text('');
       return;
     }
@@ -333,7 +330,7 @@ $(document).ready(function(){
   /* 
    * Creates the date slider
    */
-  $(".slider").slider({
+  $(".slider").dragslider({
     range: true,
     // allows for dragging of the range
     rangeDrag: true,
@@ -368,17 +365,17 @@ $(document).ready(function(){
 
   $(".min-date").datetimepicker({
     minDate: -1 * num_days_back,
-    maxDate: -1 * default_range / (60 * 24),
     defaultDate: -1,
     onSelect: function (selectedDateTime){
       // grab the current hdfs_id
       var hdfs_id = $(this).closest('.graph_instance').attr('id');
       // get the new date as minutes
-      var selected_date = $(this).datetimepicker('getDate').getTime();
-      var min_date = Math.round((new Date().getTime() - selected_date) / (-1 * 1000 * 60));
+      var min_date = Math.round((new Date().getTime() - new Date(selectedDateTime).getTime()) / (-1 * 1000 * 60))
       // set the new min range
       hdfs_data[hdfs_id].min = min_date;
-      $(".max-date").datetimepicker("option", "minDate", new Date(selected_date));
+      // set the updating to false because a range was selected
+      hdfs_data[hdfs_id].updating = false;
+      $(".max-date").datetimepicker("option", "minDate", new Date(selectedDateTime));
       // reload the data
       sync_slider(hdfs_id);
       update_live_graphs(hdfs_id);
@@ -389,17 +386,17 @@ $(document).ready(function(){
   $(".max-date").datetimepicker({
     // Earliest date available is the max of min-date
     minDate: -1 * default_range / (60 * 24),
-    maxDate: 0,
     defaultDate: 0,
     onSelect: function (selectedDateTime){
       // grab the current hdfs_id
       var hdfs_id = $(this).closest('.graph_instance').attr('id');
       // get the new date as minutes
-      var selected_date = $(this).datetimepicker('getDate').getTime();
-      var max_date = Math.round((new Date().getTime() - selected_date) / (-1 * 1000 * 60));
+      var max_date = Math.round((new Date().getTime() - new Date(selectedDateTime).getTime()) / (-1 * 1000 * 60));
       // set the new min range
       hdfs_data[hdfs_id].max = max_date;
-      $(".min-date").datetimepicker("option", "maxDate", new Date(selected_date));
+      // set the updating to false because a range was selected
+      hdfs_data[hdfs_id].updating = false;
+      $(".min-date").datetimepicker("option", "maxDate", new Date(selectedDateTime));
       // reload the data
       sync_slider(hdfs_id);
       update_live_graphs(hdfs_id);

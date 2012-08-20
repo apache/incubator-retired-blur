@@ -154,8 +154,13 @@ $(document).ready(function(){
               for(var find = 0; find <= length; find++){
                 if (hdfs_data[id][action].metrics[0].data[find] < now + hdfs_data[id].min * 60 * 1000) break;
               }
-              hdfs_data[id][action].metrics[0].data.splice(0, find);
-              hdfs_data[id][action].metrics[1].data.splice(0, find);
+              
+              // remove all data outside of the range
+              if(find > 0){
+                hdfs_data[id][action].metrics[0].data.splice(0, find);
+                hdfs_data[id][action].metrics[1].data.splice(0, find);
+              }
+
 							hdfs_data[id][action].metrics[0].data = hdfs_data[id][action].metrics[0].data.concat(hdfs_data_1.data);
 							hdfs_data[id][action].metrics[1].data = hdfs_data[id][action].metrics[1].data.concat(hdfs_data_2.data);
 					// otherwise we are loading a new dataset (clear and then add)

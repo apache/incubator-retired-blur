@@ -373,6 +373,7 @@ $(document).ready(function(){
       var min_date = Math.round((new Date().getTime() - new Date(selectedDateTime).getTime()) / (-1 * 1000 * 60))
       // set the new min range
       hdfs_data[hdfs_id].min = min_date;
+      // set the updating to false because a range was selected
       hdfs_data[hdfs_id].updating = false;
       $(".max-date").datetimepicker("option", "minDate", new Date(selectedDateTime));
       // reload the data
@@ -393,6 +394,7 @@ $(document).ready(function(){
       var max_date = Math.round((new Date().getTime() - new Date(selectedDateTime).getTime()) / (-1 * 1000 * 60));
       // set the new min range
       hdfs_data[hdfs_id].max = max_date;
+      // set the updating to false because a range was selected
       hdfs_data[hdfs_id].updating = false;
       $(".min-date").datetimepicker("option", "maxDate", new Date(selectedDateTime));
       // reload the data

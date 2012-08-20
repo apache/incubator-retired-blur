@@ -223,7 +223,7 @@ $(document).ready(function(){
   var sync_slider = function(hdfs_id){
     // the range values are stored as slider offsets simply set the slider to those values
     var range_values = [hdfs_data[hdfs_id].min, hdfs_data[hdfs_id].max]
-    $('.graph_instance#' + hdfs_id + ' .slider').slider('option', 'values', range_values);
+    $('.graph_instance#' + hdfs_id + ' .slider').dragslider('option', 'values', range_values);
   };
 
   /*
@@ -330,7 +330,7 @@ $(document).ready(function(){
   /* 
    * Creates the date slider
    */
-  $(".slider").slider({
+  $(".slider").dragslider({
     range: true,
     // allows for dragging of the range
     rangeDrag: true,
@@ -370,9 +370,10 @@ $(document).ready(function(){
       // grab the current hdfs_id
       var hdfs_id = $(this).closest('.graph_instance').attr('id');
       // get the new date as minutes
-      var min_date = Math.round((new Date().getTime() - selectedDateTime) / (-1 * 1000 * 60));
+      var min_date = Math.round((new Date().getTime() - new Date(selectedDateTime).getTime()) / (-1 * 1000 * 60))
       // set the new min range
       hdfs_data[hdfs_id].min = min_date;
+      hdfs_data[hdfs_id].updating = false;
       $(".max-date").datetimepicker("option", "minDate", new Date(selectedDateTime));
       // reload the data
       sync_slider(hdfs_id);
@@ -389,9 +390,10 @@ $(document).ready(function(){
       // grab the current hdfs_id
       var hdfs_id = $(this).closest('.graph_instance').attr('id');
       // get the new date as minutes
-      var max_date = Math.round((new Date().getTime() - selectedDateTime) / (-1 * 1000 * 60));
+      var max_date = Math.round((new Date().getTime() - new Date(selectedDateTime).getTime()) / (-1 * 1000 * 60));
       // set the new min range
       hdfs_data[hdfs_id].max = max_date;
+      hdfs_data[hdfs_id].updating = false;
       $(".min-date").datetimepicker("option", "maxDate", new Date(selectedDateTime));
       // reload the data
       sync_slider(hdfs_id);

@@ -3,7 +3,7 @@ module ControllerHelpers
   # Setup the universal variables and stubs
   def setup_variables_and_stubs
     # Create a user for the abilility filter
-    @user = FactoryGirl.create :user
+    @user = FactoryGirl.create :user_with_preferences
     @ability = Ability.new @user
 
     # Allow the user to perform all of the actions

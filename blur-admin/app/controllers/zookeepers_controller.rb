@@ -1,8 +1,8 @@
 class ZookeepersController < ApplicationController
+  before_filter :set_zookeeper_with_preference, :only => :index
+  before_filter :set_show_zookeeper, :only => :show
+  before_filter :current_zookeeper, :only => :show
 
-  before_filter :zookeepers, :only => :show
-  before_filter :set_zookeeper, :only => [:show]
-  before_filter :current_zookeeper, :only => [:show, :shards]
 
   QUERY = "
     select
@@ -32,13 +32,7 @@ class ZookeepersController < ApplicationController
   "
 
   def index
-    #Zookeeper preference behavior
-    zookeeper_pref = current_user.zookeeper_preference
-    if zookeeper_pref.name.to_i > 0
-      session[:current_zookeeper_id] = Zookeeper.find(zookeeper_pref.id).id
-    else
-      session[:current_zookeeper_id] = Zookeeper.first.id if Zookeeper.count == 1
-    end
+    set_zookeeper Zookeeper.first.id if Zookeeper.count == 1
   end
 
   def show

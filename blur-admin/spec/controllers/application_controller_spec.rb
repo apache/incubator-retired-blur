@@ -7,13 +7,17 @@ describe ApplicationController do
       setup_variables_and_stubs
       # Set the ability (leave current user unset for testing purposes)
       set_ability
+
+      activate_authlogic
+
+      @user_session = UserSession.new({:username => @user.username, :password => @user.password, :commit => "Log In"})
+      @user_session.stub!(:user).and_return @user
+      controller.stub!(:current_user_session).and_return @user_session
     end
 
     it "Current user should grab the current user session and set the current user" do
-      @session = mock(UserSession, :user => @user)
-      controller.stub!(:current_user_session).and_return @session
       controller.should_receive(:current_user_session)
-      get 'help', :tab => 'search'
+      controller.current_user
       assigns(:current_user).should == @user
     end
 

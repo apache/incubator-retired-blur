@@ -5,7 +5,6 @@ class ApplicationController < ActionController::Base
   require 'blur_thrift_client'
 
   before_filter :show_zookeeper_options
-  before_filter :current_user_session, :current_user
   helper_method :license, :current_user
 
   enable_authorization do |exception|
@@ -21,8 +20,7 @@ class ApplicationController < ActionController::Base
   end
 
   def current_user
-    session = current_user_session
-    @current_user ||= session && session.user
+    @current_user ||= current_user_session && current_user_session.user
   end
 
   def help
@@ -42,15 +40,25 @@ class ApplicationController < ActionController::Base
     if @current_zookeeper.nil?
       determine_error
     else
-      session[:current_zookeeper_id] = @current_zookeeper.id
+      set_zookeeper @current_zookeeper.id if params[:zookeeper_id]
     end
   end
 
-  def set_zookeeper
-    if Zookeeper.find_by_id(params[:id]).nil?
+  def set_zookeeper_with_preference
+    user_zk_pref = current_user.zookeeper_preference
+    set_zookeeper user_zk_pref.value if user_zk_pref.name.to_i > 0
+  end
+
+  def set_show_zookeeper
+    set_zookeeper params[:id]
+  end
+
+  def set_zookeeper(id)
+    id = id.to_i
+    if id.nil? || Zookeeper.find_by_id(id).nil?
       determine_error
     else
-      session[:current_zookeeper_id] = params[:id]
+      session[:current_zookeeper_id] = id
     end
   end
 

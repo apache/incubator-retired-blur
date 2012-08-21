@@ -6,8 +6,6 @@ describe UsersController do
       #Universal Setup
       setup_tests
 
-      # Add preferences to the current user
-      @user = FactoryGirl.create :user_with_preferences # user with all roles
       User.stub(:find).and_return @user
     end
 

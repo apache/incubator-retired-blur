@@ -5,7 +5,6 @@ describe ZookeepersController do
     before do
       # Universal setup
       setup_tests
-      @user = FactoryGirl.create :user_with_preferences
 
       # Set up association chain
       @zookeeper  = FactoryGirl.create :zookeeper
@@ -56,16 +55,17 @@ describe ZookeepersController do
         end
 
         it "with more than one zookeeper it should set the current_zookeeper to be the ZK with the session ID" do
-          Zookeeper.should_receive(:find_by_id).twice.with('1').and_return @zookeeper
-          get :show, :id => 1
+          Zookeeper.should_receive(:find_by_id).twice.with(@zookeeper.id).and_return @zookeeper
+          get :show, :id => @zookeeper.id
           assigns(:current_zookeeper).should == @zookeeper
           session[:current_zookeeper_id].should == @zookeeper.id
         end
 
         it "should not set the session ID if no ZK is found and should redirect to the root path" do
-          get :show, nil, nil
+          get :show, nil
           assigns(:current_zookeeper).should == nil
           session[:current_zookeeper_id].should == nil
+          flash[:error].should_not be_nil
           response.should redirect_to :root
         end
 

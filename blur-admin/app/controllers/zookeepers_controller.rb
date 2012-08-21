@@ -32,7 +32,13 @@ class ZookeepersController < ApplicationController
   "
 
   def index
-    session[:current_zookeeper_id] = Zookeeper.first.id if Zookeeper.count == 1
+    #Zookeeper preference behavior
+    zookeeper_pref = current_user.zookeeper_preference
+    if zookeeper_pref.name.to_i > 0
+      session[:current_zookeeper_id] = Zookeeper.find(zookeeper_pref.id).id
+    else
+      session[:current_zookeeper_id] = Zookeeper.first.id if Zookeeper.count == 1
+    end
   end
 
   def show
@@ -74,8 +80,8 @@ class ZookeepersController < ApplicationController
 
   def destroy_cluster
     cluster = Zookeeper.find(params[:id]).clusters.find_by_id(params[:cluster_id])
-    unless cluster.nil? 
-      cluster.destroy 
+    unless cluster.nil?
+      cluster.destroy
       Audit.log_event(current_user, "Cluster (#{cluster.name}) was forgotten", "cluster", "delete") if cluster.destroyed?
     end
     render :nothing => true

@@ -5,6 +5,7 @@ describe ZookeepersController do
     before do
       # Universal setup
       setup_tests
+      @user = FactoryGirl.create :user_with_preferences
 
       # Set up association chain
       @zookeeper  = FactoryGirl.create :zookeeper

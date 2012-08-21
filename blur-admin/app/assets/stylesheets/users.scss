@@ -83,6 +83,24 @@ ul{ margin: 5px; }
     min-width: 300px;
   }
 
+  #zookeeper-pref{
+    @include pref-box;
+    @include info(#F9F9F9);
+    display:inline-block;
+    padding:5px;
+    margin-left:10px;
+    width:300px;
+    #zookeeper_submit{
+      color: black;
+      width:75px;
+      background: #B3B7BA;
+      border: 1px solid #006;
+    }
+    #zookeeper_submit:hover{
+      background: #90C6E8;
+    } 
+  }
+
   #pref-col{ @include pref-box; }
   #pref-title{
     h3{ text-align: center; }

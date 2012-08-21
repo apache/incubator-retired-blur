@@ -12,17 +12,6 @@ describe UsersController do
     end
 
     describe "GET index" do
-      before(:each) do
-        @users = []
-        User.stub(:all).and_return(@users)
-      end
-
-      it "should get and assign users" do
-        User.should_receive(:all)
-        get :index
-        assigns(:users).should == @users
-      end
-
       it "should render index template" do
         get :index
         response.should render_template(:index)

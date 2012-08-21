@@ -1,11 +1,7 @@
 class UsersController < ApplicationController
   load_and_authorize_resource
 
-  before_filter :find_user, :only => [:show, :edit, :update, :destroy, :save]
-  skip_before_filter :current_zookeeper, :zookeepers
-
   def index
-    @users = User.all
   end
 
   def show
@@ -46,11 +42,5 @@ class UsersController < ApplicationController
     @user.destroy
     Audit.log_event(current_user, "User, #{@user.username}, was removed", "users", "delete")
     redirect_to users_path, :notice => "User Removed"
-  end
-
-  private
-
-  def find_user
-    @user = User.find params[:id]
   end
 end

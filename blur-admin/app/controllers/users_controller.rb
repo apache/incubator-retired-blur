@@ -10,10 +10,12 @@ class UsersController < ApplicationController
 
   def show
     @column_preference = @user.column_preference
+    @zookeeper_preference = @user.zookeeper_preference
     @choices = BlurTable.select('table_schema').collect {|table| schema = table.schema; schema.collect{|familes| familes['name']} if schema}.flatten.uniq
   end
 
   def new
+    user = User.new
     @user = User.new
   end
 

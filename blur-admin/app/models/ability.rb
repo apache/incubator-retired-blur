@@ -62,7 +62,7 @@ class Ability
         can :access, :searches
 
         # Can modify own column preferences
-        can :update, :preferences, {:user_id => user.id, :pref_type => 'column'}
+        can :update, :preferences, :user_id => user.id
       end
 
     else  # not logged in

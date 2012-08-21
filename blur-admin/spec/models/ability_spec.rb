@@ -141,6 +141,12 @@ describe Ability do
       @preference = FactoryGirl.create :preference, :user_id => @user.id, :pref_type => 'column'
       @ability.should_not be_able_to :update, @preference
     end
+
+    it "can not change own zookeeper preference" do
+      @preference = FactoryGirl.create :preference, :user_id => @user.id, :pref_type => 'zookeeper'
+      @ability.should_not be_able_to :update, @preference
+    end
+
   end
 
   describe "when an editor" do
@@ -219,10 +225,17 @@ describe Ability do
     it "can view and use the search page" do
       @ability.should be_able_to :access, :searches
     end
+
     it "can change own column preferences" do
       @preference = FactoryGirl.create :preference, :user_id => @user.id, :pref_type => 'column'
       @ability.should be_able_to :update, @preference
     end
+
+    it "can change own zookeeper preferences" do
+      @preference = FactoryGirl.create :preference, :user_id  => @user.id, :pref_type => 'zookeeper'
+      @ability.should be_able_to :update, @preference
+    end
+    
     it "can not change own filter preferences" do
       @preference = FactoryGirl.create :preference, :user_id => @user.id, :pref_type => 'filter'
       @ability.should_not be_able_to :update, @preference

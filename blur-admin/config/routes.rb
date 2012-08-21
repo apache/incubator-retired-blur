@@ -3,7 +3,7 @@ BlurAdmin::Application.routes.draw do
     match '/preferences/:pref_type' => 'preferences#update', :via => :put, :as => :preference
   end
 
-  resources :zookeepers, :only => [:index, :show, :destroy] do 
+  resources :zookeepers, :only => [:index, :show, :destroy] do
     #Zookeeper routes
     member do
       delete 'controller/:controller_id' => 'zookeepers#destroy_controller', :as => :destroy_controller
@@ -24,7 +24,7 @@ BlurAdmin::Application.routes.draw do
         delete 'delete/:blur_table', :action => :delete, :as => :delete
       end
 
-      collection do 
+      collection do
         post 'save'
         post ':blur_table', :action => :create, :as => :fetch_results
         get 'filters/:blur_table', :action => :filters, :as => :filters

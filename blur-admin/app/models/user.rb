@@ -5,7 +5,7 @@ class User < ActiveRecord::Base
   has_many :preferences
   has_many :audits
 
-  email_regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+/  
+  email_regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+/
 
   acts_as_authentic do |c|
     c.merge_validates_format_of_email_field_options({:with => email_regex} )
@@ -26,6 +26,13 @@ class User < ActiveRecord::Base
     Preference.find_or_create_by_user_id_and_pref_type(self.id, 'column') do |preference|
       preference.name = 'column'
       preference.value = []
+    end
+  end
+
+  def zookeeper_preference
+    Preference.find_or_create_by_user_id_and_pref_type(self.id, 'zookeeper') do |preference|
+      preference.name = '0'
+      preference.value = nil
     end
   end
 

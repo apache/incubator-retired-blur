@@ -30,8 +30,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -65,7 +63,6 @@ public class LocalIndexServer extends AbstractIndexServer {
   private BlurIndexCloser _closer;
   private int _blockSize = 65536;
   private CompressionCodec _compression = CompressedFieldDataDirectory.DEFAULT_COMPRESSION;
-  private ExecutorService _executorService = Executors.newCachedThreadPool();
   private Path _walPath;
   private Configuration _configuration = new Configuration();
 
@@ -150,7 +147,6 @@ public class LocalIndexServer extends AbstractIndexServer {
     BlurNRTIndex index = new BlurNRTIndex();
     index.setAnalyzer(getAnalyzer(table));
     index.setDirectory(DirectIODirectory.wrap(dir));
-    index.setExecutorService(_executorService);
     index.setShard(shard);
     index.setSimilarity(getSimilarity(table));
     index.setTable(table);

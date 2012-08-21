@@ -670,11 +670,14 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     long s = System.nanoTime();
     try {
       checkIfOpen();
-      if (tableDescriptor.compressionClass == null) {
-        tableDescriptor.compressionClass = DeflateCodec.class.getName();
+      if (tableDescriptor.getCompressionClass() == null) {
+        tableDescriptor.setCompressionClass(DeflateCodec.class.getName());
       }
-      if (tableDescriptor.similarityClass == null) {
-        tableDescriptor.similarityClass = FairSimilarity.class.getName();
+      if (tableDescriptor.getSimilarityClass() == null) {
+        tableDescriptor.setSimilarityClass(FairSimilarity.class.getName());
+      }
+      if (tableDescriptor.getAnalyzerDefinition() == null) {
+        tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
       }
       String table = BlurUtil.nullCheck(tableDescriptor.name, "tableDescriptor.name cannot be null.");
       String cluster = BlurUtil.nullCheck(tableDescriptor.cluster, "tableDescriptor.cluster cannot be null.");

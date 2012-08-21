@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -13,7 +14,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.LockObtainFailedException;
@@ -75,7 +75,13 @@ public class WarmUpByFieldBounds {
   private static final Log LOG = LogFactory.getLog(WarmUpByFieldBounds.class);
 
   public void warmUpByField(AtomicBoolean isClosed, Term term, IndexReader reader, WarmUpByFieldBoundsStatus status) throws IOException {
-    Collection<String> fieldNames = reader.getFieldNames(FieldOption.INDEXED);
+    FieldInfos fieldInfos = reader.getFieldInfos();
+    Collection<String> fieldNames = new HashSet<String>();
+    for (FieldInfo info : fieldInfos) {
+      if (info.isIndexed) {
+        fieldNames.add(info.name);
+      }
+    }
     List<String> fields = new ArrayList<String>(fieldNames);
     Collections.sort(fields);
     int index = fields.indexOf(term.field);

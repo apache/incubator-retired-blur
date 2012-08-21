@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.lucene.index.FieldInfo;
+import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.WarmUpByFieldBounds;
 import org.apache.lucene.index.WarmUpByFieldBoundsStatus;
+import org.apache.lucene.util.ReaderUtil;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
@@ -32,7 +34,13 @@ public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
       }
       if (preCacheCols == null) {
         LOG.info("No pre cache defined, precache all fields.");
-        preCacheCols = new ArrayList<String>(reader.getFieldNames(FieldOption.INDEXED));
+        FieldInfos fieldInfos = ReaderUtil.getMergedFieldInfos(reader);
+        preCacheCols = new ArrayList<String>();
+        for (FieldInfo fieldInfo : fieldInfos) {
+          if (fieldInfo.isIndexed) {
+            preCacheCols.add(fieldInfo.name);
+          }
+        }
         preCacheCols.remove(BlurConstants.ROW_ID);
         preCacheCols.remove(BlurConstants.RECORD_ID);
         preCacheCols.remove(BlurConstants.PRIME_DOC);

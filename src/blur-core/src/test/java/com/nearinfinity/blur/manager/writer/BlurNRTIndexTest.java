@@ -59,7 +59,6 @@ public class BlurNRTIndexTest {
     writer.setShard("testing-shard");
     
     service = Executors.newThreadPool("test", 10);
-    writer.setExecutorService(service);
     writer.setWalPath(new Path(new File(base,"wal").toURI()));
     
     writer.setConfiguration(configuration);
@@ -94,6 +93,8 @@ public class BlurNRTIndexTest {
     int total = 0;
     for (int i = 0; i < TEST_NUMBER_WAIT_VISIBLE; i++) {
       writer.replaceRow(true, true, genRow());
+      IndexReader reader = writer.getIndexReader();
+      assertEquals(i, reader.numDocs());
       total++;
     }
     long e = System.nanoTime();

@@ -30,12 +30,14 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.lucene.index.FieldInfo;
+import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermPositions;
 import org.apache.lucene.search.Similarity;
+import org.apache.lucene.util.ReaderUtil;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -502,7 +504,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
       BlurNRTIndex writer = new BlurNRTIndex();
       writer.setAnalyzer(getAnalyzer(table));
       writer.setDirectory(dir);
-      writer.setExecutorService(_openerService);
       writer.setShard(shard);
       writer.setTable(table);
       writer.setSimilarity(getSimilarity(table));
@@ -544,9 +545,14 @@ public class DistributedIndexServer extends AbstractIndexServer {
     }
     int maxDoc = reader.maxDoc();
     int numDocs = reader.numDocs();
-    Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
+    FieldInfos fieldInfos = ReaderUtil.getMergedFieldInfos(reader);
+    Collection<String> fieldNames = new ArrayList<String>();
+    for (FieldInfo fieldInfo : fieldInfos) {
+      if (fieldInfo.isIndexed) {
+        fieldNames.add(fieldInfo.name);
+      }
+    }
     int primeDocCount = reader.docFreq(BlurConstants.PRIME_DOC_TERM);
-
     TermDocs termDocs = reader.termDocs(BlurConstants.PRIME_DOC_TERM);
     termDocs.next();
     termDocs.close();

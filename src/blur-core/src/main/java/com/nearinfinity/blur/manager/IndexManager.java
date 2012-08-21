@@ -49,8 +49,9 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.FieldSelectorResult;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.FieldInfo;
+import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
@@ -63,6 +64,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.util.ReaderUtil;
 
 import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
@@ -596,8 +598,9 @@ public class IndexManager {
     for (BlurIndex blurIndex : blurIndexes.values()) {
       IndexReader reader = blurIndex.getIndexReader();
       try {
-        Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
-        for (String fieldName : fieldNames) {
+        FieldInfos mergedFieldInfos = ReaderUtil.getMergedFieldInfos(reader);
+        for (FieldInfo fieldInfo : mergedFieldInfos) {
+          String fieldName = fieldInfo.name;
           int index = fieldName.indexOf('.');
           if (index > 0) {
             String columnFamily = fieldName.substring(0, index);

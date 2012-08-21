@@ -4,7 +4,6 @@ import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -17,7 +16,10 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.SearcherWarmer;
+import org.apache.lucene.search.NRTManager;
+import org.apache.lucene.search.NRTManager.TrackingIndexWriter;
+import org.apache.lucene.search.NRTManagerReopenThread;
+import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
 
@@ -25,11 +27,8 @@ import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.index.IndexWriter;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.manager.writer.nrt.NRTManager;
-import com.nearinfinity.blur.manager.writer.nrt.SearcherManager;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
-import com.nearinfinity.blur.utils.PrimeDocCache;
 
 public class BlurNRTIndex extends BlurIndex {
 
@@ -37,7 +36,6 @@ public class BlurNRTIndex extends BlurIndex {
   private static final boolean APPLY_ALL_DELETES = true;
 
   private NRTManager _nrtManager;
-  private SearcherManager _manager;
   private AtomicBoolean _isClosed = new AtomicBoolean();
   private IndexWriter _writer;
   private Thread _committer;
@@ -45,11 +43,9 @@ public class BlurNRTIndex extends BlurIndex {
   // externally set
   private BlurAnalyzer _analyzer;
   private Directory _directory;
-  private ExecutorService _executorService;
   private String _table;
   private String _shard;
   private Similarity _similarity;
-  private volatile long _lastRefresh;
   private Thread _refresher;
   private TransactionRecorder _recorder;
   private Configuration _configuration;
@@ -59,27 +55,25 @@ public class BlurNRTIndex extends BlurIndex {
   private AtomicReference<IndexReader> _indexRef = new AtomicReference<IndexReader>();
   private long _timeBetweenCommits = TimeUnit.SECONDS.toMillis(60);
   private long _timeBetweenRefreshs = TimeUnit.MILLISECONDS.toMillis(500);
-  private long _timeBetweenRefreshsNano;
   private DirectoryReferenceFileGC _gc;
-  private SearcherWarmer _warmer = new SearcherWarmer() {
-    @Override
-    public void warm(IndexSearcher s) throws IOException {
-      IndexReader indexReader = s.getIndexReader();
-      IndexReader[] subReaders = indexReader.getSequentialSubReaders();
-      if (subReaders == null) {
-        PrimeDocCache.getPrimeDocBitSet(indexReader);
-      } else {
-        for (IndexReader reader : subReaders) {
-          PrimeDocCache.getPrimeDocBitSet(reader);
-        }
-      }
-    }
-  };
+  private TrackingIndexWriter _trackingWriter;
+  private SearcherFactory _searcherFactory = new SearcherFactory();
+//  private SearcherWarmer _warmer = new SearcherWarmer() {
+//    @Override
+//    public void warm(IndexSearcher s) throws IOException {
+//      IndexReader indexReader = s.getIndexReader();
+//      IndexReader[] subReaders = indexReader.getSequentialSubReaders();
+//      if (subReaders == null) {
+//        PrimeDocCache.getPrimeDocBitSet(indexReader);
+//      } else {
+//        for (IndexReader reader : subReaders) {
+//          PrimeDocCache.getPrimeDocBitSet(reader);
+//        }
+//      }
+//    }
+//  };
 
   public void init() throws IOException {
-
-    _timeBetweenRefreshsNano = TimeUnit.MILLISECONDS.toNanos(_timeBetweenRefreshs);
-
     Path walTablePath = new Path(_walPath, _table);
     Path walShardPath = new Path(walTablePath, _shard);
 
@@ -100,43 +94,22 @@ public class BlurNRTIndex extends BlurIndex {
     _recorder.setAnalyzer(_analyzer);
     _recorder.setConfiguration(_configuration);
     _recorder.setWalPath(walShardPath);
-
     _recorder.init();
     _recorder.replay(_writer);
-
-    _nrtManager = new NRTManager(_writer, _executorService, _warmer, APPLY_ALL_DELETES);
-    _manager = _nrtManager.getSearcherManager(APPLY_ALL_DELETES);
-    _lastRefresh = System.nanoTime();
-    IndexSearcher searcher = _manager.acquire();
+    
+    _trackingWriter = new TrackingIndexWriter(_writer);
+    _nrtManager = new NRTManager(_trackingWriter, _searcherFactory, APPLY_ALL_DELETES);
+    IndexSearcher searcher = _nrtManager.acquire();
     _indexRef.set(searcher.getIndexReader());
     startCommiter();
     startRefresher();
   }
 
-  private void startRefresher() {
-    _refresher = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        while (!_isClosed.get()) {
-          try {
-            LOG.debug("Refreshing of [{0}/{1}].", _table, _shard);
-            maybeReopen();
-          } catch (IOException e) {
-            LOG.error("Error during refresh of [{0}/{1}].", _table, _shard, e);
-          }
-          try {
-            Thread.sleep(_timeBetweenRefreshs);
-          } catch (InterruptedException e) {
-            if (_isClosed.get()) {
-              return;
-            }
-            LOG.error("Unknown error with refresher thread [{0}/{1}].", e, _table, _shard);
-          }
-        }
-      }
-    });
-    _refresher.setDaemon(true);
+  private void startRefresher() {    
+    double targetMinStaleSec = _timeBetweenRefreshs / 1000.0;
+    _refresher = new NRTManagerReopenThread(_nrtManager, targetMinStaleSec * 10, targetMinStaleSec);
     _refresher.setName("Refresh Thread [" + _table + "/" + _shard + "]");
+    _refresher.setDaemon(true);
     _refresher.start();
   }
 
@@ -176,13 +149,13 @@ public class BlurNRTIndex extends BlurIndex {
       deleteRow(waitToBeVisible, wal, row.id);
       return;
     }
-    long generation = _recorder.replaceRow(wal, row, _nrtManager);
+    long generation = _recorder.replaceRow(wal, row, _trackingWriter);
     waitToBeVisible(waitToBeVisible, generation);
   }
 
   @Override
   public void deleteRow(boolean waitToBeVisible, boolean wal, String rowId) throws IOException {
-    long generation = _recorder.deleteRow(wal, rowId, _nrtManager);
+    long generation = _recorder.deleteRow(wal, rowId, _trackingWriter);
     waitToBeVisible(waitToBeVisible, generation);
   }
 
@@ -205,7 +178,6 @@ public class BlurNRTIndex extends BlurIndex {
     try {
       _recorder.close();
       _writer.close();
-      _manager.close();
       _closer.close(_indexRef.get());
       _nrtManager.close();
     } finally {
@@ -215,7 +187,7 @@ public class BlurNRTIndex extends BlurIndex {
 
   @Override
   public void refresh() throws IOException {
-    _nrtManager.maybeReopen(APPLY_ALL_DELETES);
+    _nrtManager.maybeRefresh();
   }
 
   @Override
@@ -231,30 +203,16 @@ public class BlurNRTIndex extends BlurIndex {
   private void waitToBeVisible(boolean waitToBeVisible, long generation) throws IOException {
     if (waitToBeVisible) {
       // if visibility is required then reopen.
-      _nrtManager.maybeReopen(true);
-      _manager = _nrtManager.waitForGeneration(generation, APPLY_ALL_DELETES);
+      _nrtManager.waitForGeneration(generation);
       swap();
-    } else {
-      // if not, then check to see if reopened is needed.
-      maybeReopen();
     }
   }
 
   private void swap() {
-    IndexSearcher searcher = _manager.acquire();
+    IndexSearcher searcher = _nrtManager.acquire();
     IndexReader indexReader = searcher.getIndexReader();
     IndexReader oldIndexReader = _indexRef.getAndSet(indexReader);
-    _lastRefresh = System.nanoTime();
     _closer.close(oldIndexReader);
-  }
-
-  private void maybeReopen() throws IOException {
-    if (_lastRefresh + _timeBetweenRefreshsNano < System.nanoTime()) {
-      if (_nrtManager.maybeReopen(true)) {
-        swap();
-        LOG.debug("Refreshing index [{0}]", this);
-      }
-    }
   }
 
   public void setAnalyzer(BlurAnalyzer analyzer) {
@@ -263,10 +221,6 @@ public class BlurNRTIndex extends BlurIndex {
 
   public void setDirectory(Directory directory) {
     _directory = directory;
-  }
-
-  public void setExecutorService(ExecutorService executorService) {
-    _executorService = executorService;
   }
 
   public void setTable(String table) {

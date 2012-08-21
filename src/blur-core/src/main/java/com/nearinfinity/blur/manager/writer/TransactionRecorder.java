@@ -25,12 +25,12 @@ import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.NRTManager.TrackingIndexWriter;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.index.IndexWriter;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.manager.writer.nrt.NRTManager;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -246,7 +246,7 @@ public class TransactionRecorder {
     }
   }
 
-  public long replaceRow(boolean wal, Row row, NRTManager nrtManager) throws IOException {
+  public long replaceRow(boolean wal, Row row, TrackingIndexWriter writer) throws IOException {
     synchronized (running) {
       if (wal) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -256,11 +256,11 @@ public class TransactionRecorder {
         outputStream.close();
         sync(baos.toByteArray());
       }
-      return nrtManager.updateDocuments(ROW_ID.createTerm(row.id), getDocs(row));
+      return writer.updateDocuments(ROW_ID.createTerm(row.id), getDocs(row));
     }
   }
 
-  public long deleteRow(boolean wal, String rowId, NRTManager nrtManager) throws IOException {
+  public long deleteRow(boolean wal, String rowId, TrackingIndexWriter writer) throws IOException {
     synchronized (running) {
       if (wal) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -270,7 +270,7 @@ public class TransactionRecorder {
         outputStream.close();
         sync(baos.toByteArray());
       }
-      return nrtManager.deleteDocuments(ROW_ID.createTerm(rowId));
+      return writer.deleteDocuments(ROW_ID.createTerm(rowId));
     }
   }
 

@@ -107,12 +107,12 @@ public class SoftDeleteIndexReader extends FilterIndexReader {
     return new SoftDeleteTermPositions(in.termPositions(), deletes);
   }
 
-  public TermPositions termPositions(Term term) throws IOException {
-    ensureOpen();
-    TermPositions termPositions = termPositions();
-    termPositions.seek(term);
-    return termPositions;
-  }
+//  public TermPositions termPositions(Term term) throws IOException {
+//    ensureOpen();
+//    TermPositions termPositions = termPositions();
+//    termPositions.seek(term);
+//    return termPositions;
+//  }
 
   public static class SoftDeleteTermPositions extends FilterTermPositions {
 

@@ -115,7 +115,6 @@ class SearchesController < ApplicationController
   #save action that loads the state of a saved action and returns a json to be used to populate the form
   def load
     search = Search.find(params[:id])
-    puts search.to_json
     render :json => search.to_json(:methods => :column_object)
   end
 

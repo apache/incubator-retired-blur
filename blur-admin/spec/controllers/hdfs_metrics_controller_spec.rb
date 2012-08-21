@@ -21,19 +21,19 @@ describe HdfsMetricsController do
 
     describe "GET stats" do
       it "with only id should return all within last minute" do
-        get :stats, :id => @hdfs.id
+        get :stats, :id => @hdfs.id, :stat_min => 1
         assigns(:results).length.should == 1
         response.content_type.should == 'application/json'
       end
 
       it "with only return the correct properties" do
-        get :stats, :id => @hdfs.id
+        get :stats, :id => @hdfs.id, :stat_min => 1
         assigns(:results)[0].attribute_names.should == %w[id created_at present_capacity dfs_used_real live_nodes dead_nodes under_replicated corrupt_blocks missing_blocks]
         response.content_type.should == 'application/json'
       end
 
       it "with stat_mins = 2 should return all within last 2 minutes" do
-        get :stats, :id => @hdfs.id, :stat_mins => 2
+        get :stats, :id => @hdfs.id, :stat_min => 2
         assigns(:results).length.should == 2
         response.content_type.should == 'application/json'
       end

@@ -50,7 +50,7 @@ describe HdfsController do
         it "renders the the warning text" do
           @hdfs.stub_chain(:hdfs_stats, :last).and_return(nil)
           get :info, :id => @hdfs.id
-          response.body.should include("Stats for hdfs ##{@hdfs.id} not found")
+          response.body.should include("Stats for hdfs ##{@hdfs.id} were not found")
         end
       end
     end

@@ -3,8 +3,6 @@ package com.nearinfinity.agent.zookeeper.collectors;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.KeeperException;
 
 import com.nearinfinity.agent.zookeeper.InstanceManager;
@@ -13,7 +11,7 @@ public class TableCollector extends Collector {
 	private String clusterName;
 	private int clusterId;
 
-	private static final Log log = LogFactory.getLog(TableCollector.class);
+//	private static final Log log = LogFactory.getLog(TableCollector.class);
 
 	private TableCollector(InstanceManager manager, int clusterId, String clusterName) throws KeeperException,
 			InterruptedException {

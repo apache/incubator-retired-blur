@@ -51,6 +51,10 @@
 		@include border-radius-bottom(0);
   }
 
+	.hdfs-body {
+		min-height: 177px;
+	}
+
   .zookeeper-body, .hdfs-body {
     width: 430px;
     margin: 10px;

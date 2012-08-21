@@ -105,14 +105,14 @@ describe 'User Model' do
 
   describe 'zookeeper_preference' do
     it 'should return your zookeeper preference when a preference exists' do
-      user_with_preference = FactoryGirl.create :user_with_preferences
-      user_with_preferences.zookeeper_preference.should == user_with_preferences.last
+      user_with_preferences = FactoryGirl.create :user_with_preferences
+      user_with_preferences.zookeeper_preference.should == user_with_preferences.preferences.last
     end
 
     it 'should create a new zookeeper preference when a preference does not exist' do
       user_without_preference = FactoryGirl.create :user
       user_without_preference.zookeeper_preference.pref_type.should == 'zookeeper'
-      user_without_preference.zookeeper_preference.value.should == []
+      user_without_preference.zookeeper_preference.value.should == nil
     end
   end
 

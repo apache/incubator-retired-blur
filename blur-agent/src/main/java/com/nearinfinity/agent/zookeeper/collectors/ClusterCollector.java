@@ -3,8 +3,6 @@ package com.nearinfinity.agent.zookeeper.collectors;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
 
@@ -12,7 +10,7 @@ import com.nearinfinity.agent.zookeeper.InstanceManager;
 
 public class ClusterCollector extends Collector {
 
-	private static final Log log = LogFactory.getLog(ClusterCollector.class);
+//	private static final Log log = LogFactory.getLog(ClusterCollector.class);
 
 	private int zkId;
 

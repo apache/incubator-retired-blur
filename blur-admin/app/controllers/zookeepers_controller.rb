@@ -33,7 +33,7 @@ class ZookeepersController < ApplicationController
 
   def index
     #Zookeeper preference behavior
-    zookeeper_pref = @current_user.zookeeper_preference
+    zookeeper_pref = current_user.zookeeper_preference
     if zookeeper_pref.name.to_i > 0
       session[:current_zookeeper_id] = Zookeeper.find(zookeeper_pref.id).id
     else

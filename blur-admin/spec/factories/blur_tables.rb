@@ -9,6 +9,7 @@ FactoryGirl.define do
     sequence(:table_uri)  { |n| "blur_table#{n}.blur.example.com" }
     table_analyzer        'standard.table_analyzer'
     comments              'comment'
+    cluster               { FactoryGirl.create(:cluster) }
     table_schema          {[
                             {
                               "name" => 'ColumnFamily1',

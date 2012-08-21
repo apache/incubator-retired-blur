@@ -238,7 +238,7 @@ describe Ability do
     
     it "can not change own filter preferences" do
       @preference = FactoryGirl.create :preference, :user_id => @user.id, :pref_type => 'filter'
-      @ability.should_not be_able_to :update, @preference
+      @ability.should be_able_to :update, @preference
     end
   end
 end

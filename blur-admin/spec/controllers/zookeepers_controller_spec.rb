@@ -80,11 +80,6 @@ describe ZookeepersController do
     end
 
     describe 'GET dashboard' do
-      it "collects the long queries data" do
-        pending 'need to test that all the different aspects of the query are being returned'
-        get :dashboard
-      end
-
       it "renders a json object" do
         get :dashboard
         response.content_type.should == 'application/json'
@@ -93,12 +88,19 @@ describe ZookeepersController do
 
     describe 'GET long running queries' do
       before :each do
-        Zookeeper.stub!(:find).and_return(@zookeeper)
+        @zookeeper_with_queries = FactoryGirl.create :zookeeper_with_blur_queries
+        Zookeeper.stub!(:find).and_return(@zookeeper_with_queries)
+        query = @zookeeper_with_queries.blur_queries[rand @zookeeper_with_queries.blur_queries.count]
+        query.state = 0
+        query.created_at = 5.minutes.ago
+        query.save!
       end
 
       it "collects all long running queries" do
-        pending 'check long queries'
         get :long_running_queries
+        json = JSON.parse response.body
+        json.count.should == 1
+        json[0]["state"] == 0
       end
 
       it "renders a json object" do
@@ -118,7 +120,7 @@ describe ZookeepersController do
 
     describe 'DELETE destroy_shard' do
       before :each do
-        @shard = FactoryGirl.create :shard
+        @shard = FactoryGirl.create :shard_with_cluster
         Zookeeper.stub_chain(:find, :shards, :find_by_id).and_return(@shard)
       end
 

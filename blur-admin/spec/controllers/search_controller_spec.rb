@@ -31,7 +31,6 @@ describe SearchesController do
       end
       
       it "find and assign tables, and columns" do
-        pending "The blurtables variable is empty and I think is a stub chain issue"
         @zookeeper.stub_chain(:blur_tables, :where, :order, :includes, :all).and_return(@blur_tables)
         get :index
         assigns(:blur_tables).should == @blur_tables
@@ -148,11 +147,7 @@ describe SearchesController do
         get :create, :search_id  => @search.id
         assigns(:schema).keys.should == %w[ColumnFamily1 ColumnFamily2 ColumnFamily3]
       end
-      # it "assigns the @result_count and @result_time instance variables" do
-      #       get :create, :search_id  => @search.id
-      #       assigns(:result_count).should == @search.fetch
-      #       assigns(:result_time).should == 10
-      #     end
+
       it "correctly parses a result from blur" do
         pending "Is there a better way to do this?"
         get :create, :search_id  => @search.id

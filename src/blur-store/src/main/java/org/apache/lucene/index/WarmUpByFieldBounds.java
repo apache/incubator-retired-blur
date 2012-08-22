@@ -18,6 +18,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.ReaderUtil;
 import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.log.Log;
@@ -36,7 +37,7 @@ public class WarmUpByFieldBounds {
         // System.out.println(name + " " + start + " " + end + " " +
         // startPosition + " " + endPosition + " " + totalBytesRead + " " +
         // nanoTime + " " + isClosed);
-        
+
         double bytesPerNano = totalBytesRead / (double) nanoTime;
         double mBytesPerNano = bytesPerNano / 1024 / 1024;
         double mBytesPerSecond = mBytesPerNano * 1000000000.0;
@@ -75,7 +76,7 @@ public class WarmUpByFieldBounds {
   private static final Log LOG = LogFactory.getLog(WarmUpByFieldBounds.class);
 
   public void warmUpByField(AtomicBoolean isClosed, Term term, IndexReader reader, WarmUpByFieldBoundsStatus status) throws IOException {
-    FieldInfos fieldInfos = reader.getFieldInfos();
+    FieldInfos fieldInfos = ReaderUtil.getMergedFieldInfos(reader);
     Collection<String> fieldNames = new HashSet<String>();
     for (FieldInfo info : fieldInfos) {
       if (info.isIndexed) {

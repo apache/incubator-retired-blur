@@ -1,0 +1,20 @@
+<div id="zookeeper" class="<%= zookeeper.translated_class() %>">
+  <h2 class="zookeeper-name">
+    <%= zookeeper.header() %>
+    <div class="connection-url">
+      <%= zookeeper.get('url') %>
+    </div>
+    <i  class="icon-remove-sign confirm-action"
+        data-message="forget this zookeeper"
+        data-reload="true" data-url="<%= Routes.zookeeper_path(zookeeper.get('id')) %>"
+        data-original-title="Forget This Zookeeper"/>
+  </h2>
+</div>
+<div id="blur" class="row">
+  <div id="controllers" class="span6">
+    <div class="subHeaders"> Controllers </div>
+  </div>
+  <div id="clusters" class="span6">
+    <div class="subHeaders"> Clusters </div>
+  </div>
+</div>

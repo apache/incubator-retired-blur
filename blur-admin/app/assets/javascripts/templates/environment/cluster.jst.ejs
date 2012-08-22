@@ -1,0 +1,14 @@
+<td><%= cluster.get('name') %></td>
+<td><%= cluster.get('shard_blur_version') %></td>
+<td><%= cluster.safe_mode() %></td>
+<td>
+  <a class="more-shard-info">
+    View Shards
+  </a>
+</td>
+<td>
+  <i  class="icon-remove-sign confirm-action"
+      data-message="remove this cluster"
+      data-url="<%= Routes.destroy_cluster_zookeeper_path(cluster.get('zookeeper_id'), cluster.get('id')) %>"
+      data-original-title="Remove This Cluster" />
+</td>

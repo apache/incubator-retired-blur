@@ -8,7 +8,13 @@ class Cluster < ActiveRecord::Base
   def as_json(options={})
     serial_properties = super(options)
     serial_properties["can_update"] = self.can_update
+    serial_properties["shard_blur_version"] = self.shard_version
     serial_properties
+  end
+
+  def shard_version
+    versions = self.shards.select(:blur_version).group(:blur_version)
+    versions.length == 1 ? versions.first.blur_version : "Inconsistent Blur Versions"
   end
 
   def has_errors?

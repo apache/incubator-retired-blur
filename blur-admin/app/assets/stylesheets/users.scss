@@ -93,12 +93,15 @@ ul{ margin: 5px; }
     #zookeeper_submit{
       color: black;
       width:75px;
-      background: #B3B7BA;
+      background: #CCCCCC;
       border: 1px solid #006;
     }
     #zookeeper_submit:hover{
       background: #90C6E8;
     } 
+    #zookeeper_submit:disabled{
+      background: #EDEDED;
+    }
   }
 
   #pref-col{ @include pref-box; }

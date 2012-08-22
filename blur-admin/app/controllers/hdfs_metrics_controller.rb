@@ -23,7 +23,7 @@ class HdfsMetricsController < ApplicationController
     stat_number = hdfs.hdfs_stats.where(where_clause).select("count(*) as count")
     if stat_number.count >= 700
       remove_number = (stat_number.count / 700).floor
-      where_clause += "and hdfs_stats.id % #{remove_number} = 0"
+      where_clause += " and hdfs_stats.id % #{remove_number} = 0"
     end
 
     return hdfs.hdfs_stats.where(where_clause).select(properties)

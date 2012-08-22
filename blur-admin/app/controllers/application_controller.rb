@@ -46,7 +46,15 @@ class ApplicationController < ActionController::Base
 
   def set_zookeeper_with_preference
     user_zk_pref = current_user.zookeeper_preference
-    set_zookeeper user_zk_pref.value if user_zk_pref.name.to_i > 0
+    if user_zk_pref.name.to_i > 0
+      if Zookeeper.find_by_id(user_zk_pref.value).nil?
+        flash[:error] = "Your preferred Zookeeper no longer exists, your preference has been reset!"
+        user_zk_pref.name = 0
+        user_zk_pref.save
+      else
+        session[:current_zookeeper_id] = user_zk_pref.value
+      end
+    end
   end
 
   def set_show_zookeeper
@@ -66,7 +74,6 @@ class ApplicationController < ActionController::Base
     if request.xhr?
       render :status => :conflict, :text => "No Current Zookeeper"
     else
-      flash[:error] = "A Zookeeper with that particular id does not exist!"
       redirect_to root_path
     end
   end

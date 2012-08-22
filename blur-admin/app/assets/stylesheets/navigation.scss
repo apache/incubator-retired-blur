@@ -37,7 +37,7 @@ $nav-height: 40px;
   bottom: 0px;
   right: -600px;
   position: fixed;
-  z-index: 2;
+  z-index: 100;
   @include transition(right 3s);
   div{
     cursor: pointer;
@@ -69,7 +69,7 @@ $nav-height: 40px;
   border-top: 1px solid darken($footer-color, 10%);
   @include box-shadow(0 1px 0 lighten($footer-color, 10%) inset);
   text-align: right;
-  z-index: 999;
+  z-index: 99;
   &.expiring_license {
     background-color: $red-state-color;
     color: $grey-color;

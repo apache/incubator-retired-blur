@@ -69,12 +69,12 @@ public class SnapshotIndexReader extends FilterIndexReader {
     return new SnapshotTermPositions(in.termPositions(), maxDocs);
   }
 
-  public TermPositions termPositions(Term term) throws IOException {
-    ensureOpen();
-    TermPositions termPositions = termPositions();
-    termPositions.seek(term);
-    return termPositions;
-  }
+//  public TermPositions termPositions(Term term) throws IOException {
+//    ensureOpen();
+//    TermPositions termPositions = termPositions();
+//    termPositions.seek(term);
+//    return termPositions;
+//  }
 
   public static class SnapshotTermPositions extends FilterTermPositions {
 

@@ -43,7 +43,6 @@ import org.apache.lucene.store.RAMDirectory;
 import org.junit.Test;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
-import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.index.IndexWriter;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.thrift.generated.Column;
@@ -98,7 +97,7 @@ public class RandomSuperQueryTest {
     for (int i = 0; i < columnFamilies.length; i++) {
       columns.put(columnFamilies[i], genWords(random, MIN_NUM_COLS, MAX_NUM_COLS, "col"));
     }
-    IndexWriter writer = new IndexWriter(DirectIODirectory.wrap(directory), new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)));
+    IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)));
     RowIndexWriter indexWriter = new RowIndexWriter(writer, new BlurAnalyzer(new StandardAnalyzer(LUCENE_VERSION)));
     int numberOfDocs = random.nextInt(MAX_NUM_OF_DOCS) + 1;
     for (int i = 0; i < numberOfDocs; i++) {

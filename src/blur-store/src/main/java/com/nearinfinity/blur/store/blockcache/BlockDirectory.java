@@ -10,11 +10,10 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 
-import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.store.BufferStore;
 import com.nearinfinity.blur.store.CustomBufferedIndexInput;
 
-public class BlockDirectory extends DirectIODirectory {
+public class BlockDirectory extends Directory {
 
   public static final long BLOCK_SHIFT = 13; // 2^13 = 8,192 bytes per block
   public static final long BLOCK_MOD = 0x1FFF;
@@ -55,21 +54,21 @@ public class BlockDirectory extends DirectIODirectory {
     }
   };
 
-  private DirectIODirectory _directory;
+  private Directory _directory;
   private int _blockSize;
   private String _dirName;
   private Cache _cache;
   private Set<String> _blockCacheFileTypes;
 
-  public BlockDirectory(String dirName, DirectIODirectory directory) throws IOException {
+  public BlockDirectory(String dirName, Directory directory) throws IOException {
     this(dirName, directory, NO_CACHE);
   }
 
-  public BlockDirectory(String dirName, DirectIODirectory directory, Cache cache) throws IOException {
+  public BlockDirectory(String dirName, Directory directory, Cache cache) throws IOException {
     this(dirName, directory, cache, null);
   }
 
-  public BlockDirectory(String dirName, DirectIODirectory directory, Cache cache, Set<String> blockCacheFileTypes) throws IOException {
+  public BlockDirectory(String dirName, Directory directory, Cache cache, Set<String> blockCacheFileTypes) throws IOException {
     _dirName = dirName;
     _directory = directory;
     _blockSize = BLOCK_SIZE;
@@ -250,6 +249,7 @@ public class BlockDirectory extends DirectIODirectory {
     return _directory.fileLength(name);
   }
 
+  @SuppressWarnings("deprecation")
   public long fileModified(String name) throws IOException {
     return _directory.fileModified(name);
   }
@@ -261,16 +261,6 @@ public class BlockDirectory extends DirectIODirectory {
   @SuppressWarnings("deprecation")
   public void touchFile(String name) throws IOException {
     _directory.touchFile(name);
-  }
-
-  @Override
-  public IndexOutput createOutputDirectIO(String name) throws IOException {
-    return _directory.createOutputDirectIO(name);
-  }
-
-  @Override
-  public IndexInput openInputDirectIO(String name) throws IOException {
-    return _directory.openInputDirectIO(name);
   }
 
 }

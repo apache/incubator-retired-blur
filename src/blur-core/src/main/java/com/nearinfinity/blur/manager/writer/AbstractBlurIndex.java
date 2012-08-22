@@ -14,15 +14,15 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.search.Similarity;
+import org.apache.lucene.store.Directory;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
-import com.nearinfinity.blur.index.DirectIODirectory;
 
 public abstract class AbstractBlurIndex extends BlurIndex {
 
   private BlurAnalyzer _analyzer;
   private BlurIndexCloser _closer;
-  private DirectIODirectory _directory;
+  private Directory _directory;
   private IndexDeletionPolicy _indexDeletionPolicy = new KeepOnlyLastCommitDeletionPolicy();
   private AtomicReference<IndexReader> _indexReaderRef = new AtomicReference<IndexReader>();
   private AtomicBoolean _isClosed = new AtomicBoolean(false);
@@ -57,7 +57,7 @@ public abstract class AbstractBlurIndex extends BlurIndex {
     if (oldReader.isCurrent()) {
       return;
     }
-    IndexReader reader = IndexReader.openIfChanged(oldReader, true);
+    IndexReader reader = IndexReader.openIfChanged(oldReader);
     if (reader != null && oldReader != reader) {
       _indexReaderRef.set(reader);
       _closer.close(oldReader);
@@ -103,7 +103,7 @@ public abstract class AbstractBlurIndex extends BlurIndex {
     _closer = closer;
   }
 
-  public void setDirectory(DirectIODirectory directory) {
+  public void setDirectory(Directory directory) {
     _directory = directory;
   }
 
@@ -131,7 +131,7 @@ public abstract class AbstractBlurIndex extends BlurIndex {
     return _analyzer;
   }
 
-  protected DirectIODirectory getDirectory() {
+  protected Directory getDirectory() {
     return _directory;
   }
 

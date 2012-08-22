@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexReader.ReaderFinishedListener;
+import org.apache.lucene.index.IndexReader.ReaderClosedListener;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.util.OpenBitSet;
 
@@ -45,9 +45,9 @@ public class PrimeDocCache {
     Object key = reader.getCoreCacheKey();
     OpenBitSet bitSet = primeDocMap.get(key);
     if (bitSet == null) {
-      reader.addReaderFinishedListener(new ReaderFinishedListener() {
+      reader.addReaderClosedListener(new ReaderClosedListener() {
         @Override
-        public void finished(IndexReader reader) {
+        public void onClose(IndexReader reader) {
           Object key = reader.getCoreCacheKey();
           LOG.debug("Current size [" + primeDocMap.size() + "] Prime Doc BitSet removing for segment [" + reader + "]");
           primeDocMap.remove(key);

@@ -16,7 +16,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import com.nearinfinity.blur.index.DirectIODirectory;
 
 public class BlockDirectoryTest {
 
@@ -37,7 +36,7 @@ public class BlockDirectoryTest {
     rm(file);
     file.mkdirs();
     FSDirectory dir = FSDirectory.open(new File(file, "base"));
-    directory = new BlockDirectory("test", DirectIODirectory.wrap(dir), getBasicCache());
+    directory = new BlockDirectory("test", dir, getBasicCache());
     seed = new Random().nextLong();
     random = new Random(seed);
   }
@@ -70,7 +69,7 @@ public class BlockDirectoryTest {
 
       @Override
       public void delete(String name) {
-        
+
       }
 
       @Override

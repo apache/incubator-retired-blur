@@ -30,8 +30,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -47,7 +45,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
-import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
@@ -65,7 +62,6 @@ public class LocalIndexServer extends AbstractIndexServer {
   private BlurIndexCloser _closer;
   private int _blockSize = 65536;
   private CompressionCodec _compression = CompressedFieldDataDirectory.DEFAULT_COMPRESSION;
-  private ExecutorService _executorService = Executors.newCachedThreadPool();
   private Path _walPath;
   private Configuration _configuration = new Configuration();
 
@@ -149,8 +145,7 @@ public class LocalIndexServer extends AbstractIndexServer {
   private BlurIndex openIndex(String table, String shard, Directory dir) throws CorruptIndexException, IOException {
     BlurNRTIndex index = new BlurNRTIndex();
     index.setAnalyzer(getAnalyzer(table));
-    index.setDirectory(DirectIODirectory.wrap(dir));
-    index.setExecutorService(_executorService);
+    index.setDirectory(dir);
     index.setShard(shard);
     index.setSimilarity(getSimilarity(table));
     index.setTable(table);

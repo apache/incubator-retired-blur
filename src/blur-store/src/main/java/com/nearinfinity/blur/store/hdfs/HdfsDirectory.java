@@ -24,19 +24,19 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSClient.DFSDataInputStream;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 
-import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.store.CustomBufferedIndexInput;
 
-/** @author Aaron McCurry (amccurry@nearinfinity.com) */
-public class HdfsDirectory extends DirectIODirectory {
+public class HdfsDirectory extends Directory {
+  
+  public static final int BUFFER_SIZE = 8192;
 
   private static final String LF_EXT = ".lf";
   protected static final String SEGMENTS_GEN = "segments.gen";
@@ -320,66 +320,6 @@ public class HdfsDirectory extends DirectIODirectory {
     public void writeBytes(byte[] b, int offset, int length) throws IOException {
       _writer.writeBytes(b, offset, length);
     }
-  }
-
-  @Override
-  public IndexOutput createOutputDirectIO(String name) throws IOException {
-    FileSystem fileSystem = getFileSystem();
-    final FSDataOutputStream outputStream = fileSystem.create(new Path(_hdfsDirPath, name));
-    return new IndexOutput() {
-
-      @Override
-      public void close() throws IOException {
-        outputStream.close();
-      }
-
-      @Override
-      public void flush() throws IOException {
-        outputStream.sync();
-      }
-
-      @Override
-      public long getFilePointer() {
-        try {
-          return outputStream.getPos();
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      }
-
-      @Override
-      public long length() throws IOException {
-        return outputStream.getPos();
-      }
-
-      @Override
-      public void seek(long pos) throws IOException {
-        throw new IOException("Seeks not allowed");
-      }
-
-      @Override
-      public void writeByte(byte b) throws IOException {
-        outputStream.write(b & 0xFF);
-      }
-
-      @Override
-      public void writeBytes(byte[] b, int offset, int length) throws IOException {
-        outputStream.write(b, offset, length);
-      }
-    };
-  }
-
-  @Override
-  public IndexInput openInputDirectIO(String name) throws IOException {
-    Path path = new Path(_hdfsDirPath, name);
-    FSDataInputStream inputStream = getFileSystem().open(path);
-    return new DirectIOHdfsIndexInput(name, inputStream, realFileLength(path));
-  }
-
-  private long realFileLength(Path path) throws IOException {
-    FileSystem fileSystem = getFileSystem();
-    FileStatus fileStatus = fileSystem.getFileStatus(path);
-    return fileStatus.getLen();
   }
 
   static class DirectIOHdfsIndexInput extends CustomBufferedIndexInput {

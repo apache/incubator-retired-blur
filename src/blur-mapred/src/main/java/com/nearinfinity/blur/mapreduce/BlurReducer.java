@@ -61,7 +61,6 @@ import org.apache.lucene.util.IOUtils;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
-import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
@@ -137,7 +136,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
     setupDirectory(context);
     setupWriter(context);
     if (_blurTask.getIndexingType() == INDEXING_TYPE.UPDATE) {
-      _reader = IndexReader.open(_directory, true);
+      _reader = IndexReader.open(_directory);
     }
   }
 
@@ -189,7 +188,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
     }
 
     List<Document> docs = documentsToIndex(new ArrayList<Document>(_newDocs.values()));
-    if (docs.size() >0) {
+    if (docs.size() > 0) {
       docs.get(0).add(BlurConstants.PRIME_DOC_FIELD);
     }
 
@@ -432,8 +431,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
       // if (compressionBlockSize == 0) {
       compressionBlockSize = 32768;
       // }
-      CompressedFieldDataDirectory compressedFieldDataDirectory = new CompressedFieldDataDirectory(DirectIODirectory.wrap(localDirectory), getInstance(compressionClass),
-          compressionBlockSize);
+      CompressedFieldDataDirectory compressedFieldDataDirectory = new CompressedFieldDataDirectory(localDirectory, getInstance(compressionClass), compressionBlockSize);
       _directory = new ProgressableDirectory(compressedFieldDataDirectory, context);
       return;
     default:
@@ -500,8 +498,8 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
     double rate = totalBytesCopied / seconds;
     String time = estimateTimeToComplete(rate, totalBytesCopied, totalBytesToCopy);
 
-    String status = String.format("%.1f Complete - Time Remaining [%s s], Copy rate [%.1f MB/s], Total Copied [%.1f MB], Total To Copy [%.1f MB]", getPerComplete(totalBytesCopied,
-        totalBytesToCopy), time, getMb(rate), getMb(totalBytesCopied), getMb(totalBytesToCopy));
+    String status = String.format("%.1f Complete - Time Remaining [%s s], Copy rate [%.1f MB/s], Total Copied [%.1f MB], Total To Copy [%.1f MB]",
+        getPerComplete(totalBytesCopied, totalBytesToCopy), time, getMb(rate), getMb(totalBytesCopied), getMb(totalBytesToCopy));
     LOG.info(status);
     context.setStatus(status);
   }

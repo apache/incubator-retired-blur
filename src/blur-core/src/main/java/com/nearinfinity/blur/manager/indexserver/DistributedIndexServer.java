@@ -30,12 +30,15 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.lucene.index.FieldInfo;
+import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermPositions;
 import org.apache.lucene.search.Similarity;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.util.ReaderUtil;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -44,7 +47,6 @@ import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.concurrent.Executors;
-import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
@@ -460,7 +462,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
     BlurLockFactory lockFactory = new BlurLockFactory(_configuration, hdfsDirPath, _nodeName, BlurConstants.getPid());
 
-    DirectIODirectory directory = new HdfsDirectory(hdfsDirPath);
+    Directory directory = new HdfsDirectory(hdfsDirPath);
     directory.setLockFactory(lockFactory);
 
     TableDescriptor descriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
@@ -476,7 +478,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
       }
     }
 
-    DirectIODirectory dir;
+    Directory dir;
     boolean blockCacheEnabled = _clusterStatus.isBlockCacheEnabled(cluster, table);
     if (blockCacheEnabled) {
       Set<String> blockCacheFileTypes = _clusterStatus.getBlockCacheFileTypes(cluster, table);
@@ -502,7 +504,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
       BlurNRTIndex writer = new BlurNRTIndex();
       writer.setAnalyzer(getAnalyzer(table));
       writer.setDirectory(dir);
-      writer.setExecutorService(_openerService);
       writer.setShard(shard);
       writer.setTable(table);
       writer.setSimilarity(getSimilarity(table));
@@ -544,9 +545,14 @@ public class DistributedIndexServer extends AbstractIndexServer {
     }
     int maxDoc = reader.maxDoc();
     int numDocs = reader.numDocs();
-    Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
+    FieldInfos fieldInfos = ReaderUtil.getMergedFieldInfos(reader);
+    Collection<String> fieldNames = new ArrayList<String>();
+    for (FieldInfo fieldInfo : fieldInfos) {
+      if (fieldInfo.isIndexed) {
+        fieldNames.add(fieldInfo.name);
+      }
+    }
     int primeDocCount = reader.docFreq(BlurConstants.PRIME_DOC_TERM);
-
     TermDocs termDocs = reader.termDocs(BlurConstants.PRIME_DOC_TERM);
     termDocs.next();
     termDocs.close();

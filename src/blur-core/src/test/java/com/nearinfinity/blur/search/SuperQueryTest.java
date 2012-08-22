@@ -47,7 +47,6 @@ import org.apache.lucene.store.RAMDirectory;
 import org.junit.Test;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
-import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.index.IndexWriter;
 import com.nearinfinity.blur.lucene.search.FacetQuery;
 import com.nearinfinity.blur.lucene.search.SuperQuery;
@@ -158,10 +157,10 @@ public class SuperQueryTest {
     booleanQuery.add(wrapSuper(ADDRESS_STREET, STREET1, ScoreType.SUPER), Occur.MUST);
 
     BooleanQuery f1 = new BooleanQuery();
-    f1.add(new TermQuery(new Term(PERSON_NAME,NAME1)),Occur.MUST);
-    f1.add(new TermQuery(new Term(PERSON_NAME,NAME2)),Occur.MUST);
-    
-    Query[] facets = new Query[] {new SuperQuery(f1, ScoreType.CONSTANT)};
+    f1.add(new TermQuery(new Term(PERSON_NAME, NAME1)), Occur.MUST);
+    f1.add(new TermQuery(new Term(PERSON_NAME, NAME2)), Occur.MUST);
+
+    Query[] facets = new Query[] { new SuperQuery(f1, ScoreType.CONSTANT) };
     AtomicLongArray counts = new AtomicLongArray(facets.length);
     FacetQuery query = new FacetQuery(booleanQuery, facets, counts);
 
@@ -188,7 +187,7 @@ public class SuperQueryTest {
 
   public static Directory createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {
     Directory directory = new RAMDirectory();
-    IndexWriter writer = new IndexWriter(DirectIODirectory.wrap(directory), new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)));
+    IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)));
     BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(LUCENE_VERSION));
     RowIndexWriter indexWriter = new RowIndexWriter(writer, analyzer);
     indexWriter.replace(

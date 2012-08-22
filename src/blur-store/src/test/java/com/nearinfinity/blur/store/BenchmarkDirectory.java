@@ -28,21 +28,21 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.WildcardQuery;
 
-import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.blockcache.BlockCache;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
 import com.nearinfinity.blur.store.lock.BlurLockFactory;
+
 public class BenchmarkDirectory {
 
   public static void main(String[] args) throws IOException {
     int blockSize = BlockDirectory.BLOCK_SIZE;
     long totalMemory = BlockCache._128M * 2;
     int slabSize = (int) (totalMemory / 2);
-    
-    BlockCache blockCache = new BlockCache(new BlurMetrics(new Configuration()),true,totalMemory,slabSize,blockSize);
+
+    BlockCache blockCache = new BlockCache(new BlurMetrics(new Configuration()), true, totalMemory, slabSize, blockSize);
     BlurMetrics metrics = new BlurMetrics(new Configuration());
     BlockDirectoryCache cache = new BlockDirectoryCache(blockCache, metrics);
 
@@ -50,14 +50,13 @@ public class BenchmarkDirectory {
     Path p = new Path("hdfs://localhost:9000/bench");
     BlurLockFactory factory = new BlurLockFactory(configuration, p, "localhost", 0);
 
-    
     FileSystem fs = FileSystem.get(p.toUri(), configuration);
     fs.delete(p, true);
 
     final HdfsDirectory dir = new HdfsDirectory(p);
     dir.setLockFactory(factory);
-    
-    BlockDirectory directory = new BlockDirectory("test", DirectIODirectory.wrap(dir), cache);
+
+    BlockDirectory directory = new BlockDirectory("test", dir, cache);
 
     while (true) {
       long s, e;
@@ -80,8 +79,7 @@ public class BenchmarkDirectory {
       List<Term> sample = new ArrayList<Term>();
       int limit = 1000;
       Random random = new Random();
-      SAMPLE:
-      while (terms.next()) {
+      SAMPLE: while (terms.next()) {
         if (sample.size() < limit) {
           if (random.nextInt() % 7 == 0) {
             sample.add(terms.term());
@@ -104,7 +102,7 @@ public class BenchmarkDirectory {
         e = System.currentTimeMillis();
         time += (e - s);
       }
-      System.out.println("Searching " + time + " " + (time / (double) search));
+      System.out.println("Searching " + time + " " + (time / (double) search) + " " + total);
       for (int i = 0; i < 10; i++) {
         s = System.currentTimeMillis();
         TopDocs topDocs = searcher.search(new WildcardQuery(new Term("name", "fff*0*")), 10);

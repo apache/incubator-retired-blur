@@ -11,12 +11,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.store.DataInput;
 
-import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 
 public class HdfsFileReader extends DataInput {
-  
+
   private static final Log LOG = LogFactory.getLog(HdfsFileReader.class);
 
   private static final int VERSION = -1;
@@ -36,7 +35,7 @@ public class HdfsFileReader extends DataInput {
     }
     FileStatus fileStatus = fileSystem.getFileStatus(path);
     _hdfsLength = fileStatus.getLen();
-    _inputStream = fileSystem.open(path,bufferSize);
+    _inputStream = fileSystem.open(path, bufferSize);
 
     // read meta blocks
     _inputStream.seek(_hdfsLength - 16);
@@ -56,9 +55,9 @@ public class HdfsFileReader extends DataInput {
     }
     seek(0);
   }
-  
+
   public HdfsFileReader(FileSystem fileSystem, Path path) throws IOException {
-    this(fileSystem,path,DirectIODirectory.BUFFER_SIZE);
+    this(fileSystem, path, HdfsDirectory.BUFFER_SIZE);
   }
 
   public long getPosition() {

@@ -327,6 +327,7 @@ public class BlurClientManager {
     } else {
       socket = new Socket();
     }
+    socket.setTcpNoDelay(true);
     socket.connect(new InetSocketAddress(host, port));
     trans = new TSocket(socket);
 

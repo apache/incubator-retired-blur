@@ -26,20 +26,20 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.NoLockFactory;
 
-import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.blockcache.BlockCache;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
+
 public class BenchmarkDirectoryNrt {
 
   public static void main(String[] args) throws IOException, InterruptedException {
     int blockSize = BlockDirectory.BLOCK_SIZE;
     long totalMemory = BlockCache._128M * 2;
     int slabSize = (int) (totalMemory / 2);
-    
-    BlockCache blockCache = new BlockCache(new BlurMetrics(new Configuration()),true,totalMemory,slabSize,blockSize);
+
+    BlockCache blockCache = new BlockCache(new BlurMetrics(new Configuration()), true, totalMemory, slabSize, blockSize);
     BlurMetrics metrics = new BlurMetrics(new Configuration());
     BlockDirectoryCache cache = new BlockDirectoryCache(blockCache, metrics);
 
@@ -50,7 +50,7 @@ public class BenchmarkDirectoryNrt {
     final HdfsDirectory dir = new HdfsDirectory(p);
     dir.setLockFactory(NoLockFactory.getNoLockFactory());
 
-    BlockDirectory directory = new BlockDirectory("test", DirectIODirectory.wrap(dir), cache);
+    BlockDirectory directory = new BlockDirectory("test", dir, cache);
 
     while (true) {
       IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION));
@@ -62,16 +62,15 @@ public class BenchmarkDirectoryNrt {
       IndexWriter writer = new IndexWriter(directory, conf);
       long as = System.currentTimeMillis();
       BlockingQueue<Collection<Document>> queue = new ArrayBlockingQueue<Collection<Document>>(1024);
-      Indexer indexer = new Indexer(queue,writer);
+      Indexer indexer = new Indexer(queue, writer);
       new Thread(indexer).start();
       for (int i = 0; i < 1000000; i++) {
         if (count >= max) {
-          double aseconds = (System.currentTimeMillis()-as) / 1000.0;
+          double aseconds = (System.currentTimeMillis() - as) / 1000.0;
           double arate = i / aseconds;
-          double seconds = (System.currentTimeMillis()-s) / 1000.0;
+          double seconds = (System.currentTimeMillis() - s) / 1000.0;
           double rate = count / seconds;
-          System.out.println("Total [" + i + "] Rate [" + rate + "] AvgRate [" + arate +
-          		"] Doc count [" + indexer.getReader().numDocs() + "]");
+          System.out.println("Total [" + i + "] Rate [" + rate + "] AvgRate [" + arate + "] Doc count [" + indexer.getReader().numDocs() + "]");
           count = 0;
           s = System.currentTimeMillis();
         }
@@ -81,9 +80,9 @@ public class BenchmarkDirectoryNrt {
       writer.close();
     }
   }
-  
+
   private static class Indexer implements Runnable {
-    
+
     private BlockingQueue<Collection<Document>> _queue;
     private AtomicBoolean _running = new AtomicBoolean(true);
     private IndexWriter _writer;
@@ -94,7 +93,7 @@ public class BenchmarkDirectoryNrt {
       _writer = writer;
       _reader = IndexReader.open(_writer, true);
     }
-    
+
     public IndexReader getReader() {
       return _reader;
     }

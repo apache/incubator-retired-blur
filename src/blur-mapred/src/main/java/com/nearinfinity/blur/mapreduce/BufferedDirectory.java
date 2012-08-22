@@ -40,6 +40,7 @@ public class BufferedDirectory extends Directory {
     return _directory.fileLength(name);
   }
 
+  @SuppressWarnings("deprecation")
   public long fileModified(String name) throws IOException {
     return _directory.fileModified(name);
   }

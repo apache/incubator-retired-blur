@@ -239,6 +239,7 @@ public class DirectoryReferenceCounter extends Directory {
     return directory.fileExists(name);
   }
 
+  @SuppressWarnings("deprecation")
   public long fileModified(String name) throws IOException {
     return directory.fileModified(name);
   }

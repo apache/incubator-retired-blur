@@ -1,6 +1,6 @@
 package com.nearinfinity.blur;
 
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION;
+import static com.nearinfinity.blur.utils.BlurConstants.*;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_SLAB_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 
@@ -66,7 +66,6 @@ public abstract class MiniCluster {
   public static void main(String[] args) throws IOException, InterruptedException, KeeperException, BlurException, TException {
     startDfs("./tmp");
     startZooKeeper("./tmp");
-
     startControllers(1);
     startShards(1);
 
@@ -83,20 +82,33 @@ public abstract class MiniCluster {
         addRow("test", i, client);
       }
 
-      //This waits for all the data to become visible.
+      // This waits for all the data to become visible.
       Thread.sleep(2000);
 
       for (int i = 0; i < 1000; i++) {
         searchRow("test", i, client);
       }
-      
+
     } finally {
       stopShards();
       stopControllers();
-
       shutdownZooKeeper();
       shutdownDfs();
     }
+  }
+
+  public static void startBlurCluster(String path, int controllerCount, int shardCount) {
+    startDfs(path);
+    startZooKeeper(path);
+    startControllers(controllerCount);
+    startShards(shardCount);
+  }
+
+  public static void shutdownBlurCluster() {
+    stopShards();
+    stopControllers();
+    shutdownZooKeeper();
+    shutdownDfs();
   }
 
   private static void createTable(String test, Iface client) throws BlurException, TException, IOException {
@@ -162,6 +174,7 @@ public abstract class MiniCluster {
     configuration.set(BLUR_ZOOKEEPER_CONNECTION, getZkConnectionString());
     configuration.set(BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION, "false");
     configuration.set(BLUR_SHARD_BLOCKCACHE_SLAB_COUNT, "0");
+    configuration.setLong(BLUR_SHARD_SAFEMODEDELAY, 5000);
     return configuration;
   }
 

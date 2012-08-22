@@ -83,7 +83,7 @@ $(document).ready(function() {
     var from = Math.floor((now - $('.from-cal').datetimepicker('getDate')) / 3600 / 1000);
     var to = Math.floor((now - $('.to-cal').datetimepicker('getDate')) / 3600 / 1000);
     var params = '?from=' + from + '&to=' + to;
-    var full_url = 'http://' + window.location.host + window.location.pathname + params;
+    var full_url = window.location.protocol + '//' + window.location.host + window.location.pathname + params;
 
     if (!Modernizr.history) {
       window.location(full_url);

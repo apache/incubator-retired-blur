@@ -636,7 +636,7 @@ public class IndexManagerTest {
     String rec = "record-6";
     RecordMutation rm = newRecordMutation(REPLACE_ENTIRE_RECORD, FAMILY, rec, c1, c2, c3);
 
-    Record r = updateAndFetchRecord("row-6", rec, rm);
+    updateAndFetchRecord("row-6", rec, rm);
   }
 
   @Test
@@ -720,7 +720,7 @@ public class IndexManagerTest {
     String rec = "record-1B";
     RecordMutation rm = newRecordMutation(REPLACE_COLUMNS, FAMILY, rec, c1, c2);
 
-    Record r = updateAndFetchRecord("row-1", rec, rm);
+    updateAndFetchRecord("row-1", rec, rm);
   }
 
   @Test(expected = BlurException.class)
@@ -730,7 +730,7 @@ public class IndexManagerTest {
     String rec = "record-6";
     RecordMutation rm = newRecordMutation(REPLACE_COLUMNS, FAMILY, rec, c1, c2);
 
-    Record r = updateAndFetchRecord("row-6", rec, rm);
+    updateAndFetchRecord("row-6", rec, rm);
   }
 
   @Test
@@ -781,7 +781,7 @@ public class IndexManagerTest {
     String rec = "record-1B";
     RecordMutation rm = newRecordMutation(APPEND_COLUMN_VALUES, FAMILY, rec, c1, c2, c3);
 
-    Record r = updateAndFetchRecord("row-1", rec, rm);
+    updateAndFetchRecord("row-1", rec, rm);
   }
 
   @Test(expected = BlurException.class)
@@ -791,7 +791,7 @@ public class IndexManagerTest {
     String rec = "record-6";
     RecordMutation rm = newRecordMutation(APPEND_COLUMN_VALUES, FAMILY, rec, c1, c2);
 
-    Record r = updateAndFetchRecord("row-6", rec, rm);
+    updateAndFetchRecord("row-6", rec, rm);
   }
 
   private Record updateAndFetchRecord(String rowId, String recordId, RecordMutation... recordMutations) throws Exception {

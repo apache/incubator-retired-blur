@@ -18,7 +18,6 @@ import org.junit.Test;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.concurrent.Executors;
-import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Record;
@@ -42,7 +41,7 @@ public class BlurNRTIndexTest {
     base.mkdirs();
     closer = new BlurIndexCloser();
     closer.init();
-    
+
     Configuration configuration = new Configuration();
 
     BlurAnalyzer analyzer = new BlurAnalyzer(new KeywordAnalyzer());
@@ -51,18 +50,18 @@ public class BlurNRTIndexTest {
     refresher.init();
 
     writer = new BlurNRTIndex();
-    writer.setDirectory(DirectIODirectory.wrap(FSDirectory.open(new File(base,"index"))));
+    writer.setDirectory(FSDirectory.open(new File(base, "index")));
     writer.setCloser(closer);
     writer.setAnalyzer(analyzer);
     writer.setSimilarity(new FairSimilarity());
     writer.setTable("testing-table");
     writer.setShard("testing-shard");
-    
+
     service = Executors.newThreadPool("test", 10);
-    writer.setWalPath(new Path(new File(base,"wal").toURI()));
-    
+    writer.setWalPath(new Path(new File(base, "wal").toURI()));
+
     writer.setConfiguration(configuration);
-    writer.setTimeBetweenRefreshs(2000);
+    writer.setTimeBetweenRefreshs(25);
     writer.init();
   }
 
@@ -94,7 +93,7 @@ public class BlurNRTIndexTest {
     for (int i = 0; i < TEST_NUMBER_WAIT_VISIBLE; i++) {
       writer.replaceRow(true, true, genRow());
       IndexReader reader = writer.getIndexReader();
-      assertEquals(i, reader.numDocs());
+      assertEquals(i + 1, reader.numDocs());
       total++;
     }
     long e = System.nanoTime();
@@ -104,7 +103,7 @@ public class BlurNRTIndexTest {
     IndexReader reader = writer.getIndexReader();
     assertEquals(TEST_NUMBER_WAIT_VISIBLE, reader.numDocs());
   }
-  
+
   @Test
   public void testBlurIndexWriterFaster() throws IOException, InterruptedException {
     long s = System.nanoTime();
@@ -117,7 +116,7 @@ public class BlurNRTIndexTest {
     double seconds = (e - s) / 1000000000.0;
     double rate = total / seconds;
     System.out.println("Rate " + rate);
-    Thread.sleep(5000);
+    writer.refresh();
     IndexReader reader = writer.getIndexReader();
     assertEquals(TEST_NUMBER, reader.numDocs());
   }

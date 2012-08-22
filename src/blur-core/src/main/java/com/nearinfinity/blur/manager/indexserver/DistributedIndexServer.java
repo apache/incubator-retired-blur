@@ -37,6 +37,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermPositions;
 import org.apache.lucene.search.Similarity;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.ReaderUtil;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -46,7 +47,6 @@ import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.concurrent.Executors;
-import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
@@ -462,7 +462,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
     BlurLockFactory lockFactory = new BlurLockFactory(_configuration, hdfsDirPath, _nodeName, BlurConstants.getPid());
 
-    DirectIODirectory directory = new HdfsDirectory(hdfsDirPath);
+    Directory directory = new HdfsDirectory(hdfsDirPath);
     directory.setLockFactory(lockFactory);
 
     TableDescriptor descriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
@@ -478,7 +478,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
       }
     }
 
-    DirectIODirectory dir;
+    Directory dir;
     boolean blockCacheEnabled = _clusterStatus.isBlockCacheEnabled(cluster, table);
     if (blockCacheEnabled) {
       Set<String> blockCacheFileTypes = _clusterStatus.getBlockCacheFileTypes(cluster, table);

@@ -30,11 +30,10 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 
-import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 
-public class CompressedFieldDataDirectory extends DirectIODirectory {
+public class CompressedFieldDataDirectory extends Directory {
 
   private static final Log LOG = LogFactory.getLog(CompressedFieldDataDirectory.class);
 
@@ -48,22 +47,22 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
   public static CompressionCodec DEFAULT_COMPRESSION = new DefaultCodec();
 
   private CompressionCodec _compression = DEFAULT_COMPRESSION;
-  private DirectIODirectory _directory;
+  private Directory _directory;
   private int _writingBlockSize;
 
   public Directory getInnerDirectory() {
     return _directory;
   }
 
-  public CompressedFieldDataDirectory(DirectIODirectory dir) {
+  public CompressedFieldDataDirectory(Directory dir) {
     this(dir, DEFAULT_COMPRESSION);
   }
 
-  public CompressedFieldDataDirectory(DirectIODirectory dir, CompressionCodec compression) {
+  public CompressedFieldDataDirectory(Directory dir, CompressionCodec compression) {
     this(dir, compression, COMPRESSED_BUFFER_SIZE);
   }
 
-  public CompressedFieldDataDirectory(DirectIODirectory dir, CompressionCodec compression, int blockSize) {
+  public CompressedFieldDataDirectory(Directory dir, CompressionCodec compression, int blockSize) {
     _directory = dir;
     if (compression == null) {
       _compression = DEFAULT_COMPRESSION;
@@ -182,6 +181,7 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
     return _directory.fileLength(name);
   }
 
+  @SuppressWarnings("deprecation")
   public long fileModified(String name) throws IOException {
     if (compressedFileExists(name)) {
       return _directory.fileModified(getCompressedName(name));
@@ -811,15 +811,5 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
     public void seek(long pos) throws IOException {
       _pos = pos;
     }
-  }
-
-  @Override
-  public IndexOutput createOutputDirectIO(String name) throws IOException {
-    return _directory.createOutputDirectIO(name);
-  }
-
-  @Override
-  public IndexInput openInputDirectIO(String name) throws IOException {
-    return _directory.openInputDirectIO(name);
   }
 }

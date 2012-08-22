@@ -682,7 +682,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
       String shardName = MutationHelper.getShardName(table, mutation.rowId, numberOfShards, _blurPartitioner);
       String node = tableLayout.get(shardName);
-      List<RowMutation> list = batches.get(shardName);
+      List<RowMutation> list = batches.get(node);
       if (list == null) {
         list = new ArrayList<RowMutation>();
         batches.put(node, list);

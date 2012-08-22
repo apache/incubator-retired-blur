@@ -45,7 +45,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
-import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
@@ -146,7 +145,7 @@ public class LocalIndexServer extends AbstractIndexServer {
   private BlurIndex openIndex(String table, String shard, Directory dir) throws CorruptIndexException, IOException {
     BlurNRTIndex index = new BlurNRTIndex();
     index.setAnalyzer(getAnalyzer(table));
-    index.setDirectory(DirectIODirectory.wrap(dir));
+    index.setDirectory(dir);
     index.setShard(shard);
     index.setSimilarity(getSimilarity(table));
     index.setTable(table);

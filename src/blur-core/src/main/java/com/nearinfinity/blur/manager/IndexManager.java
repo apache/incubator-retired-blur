@@ -28,6 +28,7 @@ import static com.nearinfinity.blur.utils.RowDocumentUtil.getRow;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -640,6 +641,99 @@ public class IndexManager {
     } catch (ExecutionException e) {
       throw new BException("Unknown error during mutation", e.getCause());
     }
+  }
+
+  public void mutate(final List<RowMutation> mutations) throws BlurException, IOException {
+    Future<Void> future = _mutateExecutor.submit(new Callable<Void>() {
+      @Override
+      public Void call() throws Exception {
+        doMutates(mutations);
+        return null;
+      }
+    });
+    try {
+      future.get();
+    } catch (InterruptedException e) {
+      throw new BException("Unknown error during mutation", e);
+    } catch (ExecutionException e) {
+      throw new BException("Unknown error during mutation", e.getCause());
+    }
+  }
+
+  private void doMutates(List<RowMutation> mutations) throws BlurException, IOException {
+    Map<String, List<RowMutation>> map = getMutatesPerTable(mutations);
+    for (Entry<String, List<RowMutation>> entry : map.entrySet()) {
+      doMutates(entry.getKey(), entry.getValue());
+    }
+  }
+
+  private void doMutates(String table, List<RowMutation> mutations) throws IOException, BlurException {
+    Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
+
+    Map<String, List<RowMutation>> mutationsByShard = new HashMap<String, List<RowMutation>>();
+
+    for (int i = 0; i < mutations.size(); i++) {
+      RowMutation mutation = mutations.get(i);
+      String shard = MutationHelper.getShardName(table, mutation.rowId, getNumberOfShards(table), _blurPartitioner);
+      List<RowMutation> list = mutationsByShard.get(shard);
+      if (list == null) {
+        list = new ArrayList<RowMutation>();
+        mutationsByShard.put(shard, list);
+      }
+      list.add(mutation);
+    }
+
+    for (Entry<String, List<RowMutation>> entry : mutationsByShard.entrySet()) {
+      executeMutates(table, entry.getKey(), indexes, entry.getValue());
+    }
+  }
+
+  private void executeMutates(String table, String shard, Map<String, BlurIndex> indexes, List<RowMutation> mutations) throws BlurException, IOException {
+    boolean waitToBeVisible = false;
+    for (int i = 0; i < mutations.size(); i++) {
+      RowMutation mutation = mutations.get(i);
+      if (mutation.waitToBeVisible) {
+        waitToBeVisible = true;
+      }
+      BlurIndex blurIndex = indexes.get(shard);
+      if (blurIndex == null) {
+        throw new BlurException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.", null);
+      }
+
+      boolean waitVisiblity = false;
+      if (i + 1 == mutations.size()) {
+        waitVisiblity = waitToBeVisible;
+      }
+      RowMutationType type = mutation.rowMutationType;
+      switch (type) {
+      case REPLACE_ROW:
+        Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);
+        blurIndex.replaceRow(waitVisiblity, mutation.wal, row);
+        break;
+      case UPDATE_ROW:
+        doUpdateRowMutation(mutation, blurIndex);
+        break;
+      case DELETE_ROW:
+        blurIndex.deleteRow(waitVisiblity, mutation.wal, mutation.rowId);
+        break;
+      default:
+        throw new RuntimeException("Not supported [" + type + "]");
+      }
+    }
+  }
+
+  private Map<String, List<RowMutation>> getMutatesPerTable(List<RowMutation> mutations) {
+    Map<String, List<RowMutation>> map = new HashMap<String, List<RowMutation>>();
+    for (RowMutation mutation : mutations) {
+      String table = mutation.table;
+      List<RowMutation> list = map.get(table);
+      if (list == null) {
+        list = new ArrayList<RowMutation>();
+        map.put(table, list);
+      }
+      list.add(mutation);
+    }
+    return map;
   }
 
   private void doMutate(RowMutation mutation) throws BlurException, IOException {

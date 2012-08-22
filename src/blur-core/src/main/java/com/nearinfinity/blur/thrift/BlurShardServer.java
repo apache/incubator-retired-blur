@@ -236,10 +236,15 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public void mutateBatch(List<RowMutation> mutations) throws BlurException, TException {
     for (RowMutation mutation : mutations) {
+      checkTable(_cluster, mutation.table);
+      checkForUpdates(_cluster, mutation.table);
       MutationHelper.validateMutation(mutation);
     }
-    for (RowMutation mutation : mutations) {
-      mutate(mutation);
+    try {
+      _indexManager.mutate(mutations);
+    } catch (Exception e) {
+      LOG.error("Unknown error during processing of [mutations={0}]", e, mutations);
+      throw new BException(e.getMessage(), e);
     }
   }
 

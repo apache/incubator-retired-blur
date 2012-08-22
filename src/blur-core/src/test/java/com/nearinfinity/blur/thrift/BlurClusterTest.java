@@ -3,6 +3,7 @@ package com.nearinfinity.blur.thrift;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -56,15 +57,15 @@ public class BlurClusterTest {
   public void testLoadTable() throws BlurException, TException, InterruptedException {
     Iface client = getClient();
     int length = 100;
+    List<RowMutation> mutations = new ArrayList<RowMutation>();
     for (int i = 0; i < length; i++) {
       String rowId = UUID.randomUUID().toString();
       RecordMutation mutation = BlurUtil.newRecordMutation("test", rowId, BlurUtil.newColumn("test", "value"));
       RowMutation rowMutation = BlurUtil.newRowMutation("test", rowId, mutation);
-      if (i == length - 1) {
-        rowMutation.setWaitToBeVisible(true);
-      }
-      client.mutate(rowMutation);
+      rowMutation.setWaitToBeVisible(true);
+      mutations.add(rowMutation);
     }
+    client.mutateBatch(mutations);
     BlurQuery blurQuery = new BlurQuery();
     SimpleQuery simpleQuery = new SimpleQuery();
     simpleQuery.setQueryStr("test.test:value");

@@ -46,7 +46,7 @@ public class BlurNRTIndex extends BlurIndex {
   private String _table;
   private String _shard;
   private Similarity _similarity;
-  private Thread _refresher;
+  private NRTManagerReopenThread _refresher;
   private TransactionRecorder _recorder;
   private Configuration _configuration;
   private Path _walPath;
@@ -54,28 +54,33 @@ public class BlurNRTIndex extends BlurIndex {
   private BlurIndexCloser _closer;
   private AtomicReference<IndexReader> _indexRef = new AtomicReference<IndexReader>();
   private long _timeBetweenCommits = TimeUnit.SECONDS.toMillis(60);
-  private long _timeBetweenRefreshs = TimeUnit.MILLISECONDS.toMillis(500);
+  private long _timeBetweenRefreshs = TimeUnit.MILLISECONDS.toMillis(5000);
   private DirectoryReferenceFileGC _gc;
   private TrackingIndexWriter _trackingWriter;
   private SearcherFactory _searcherFactory = new SearcherFactory();
-//  private SearcherWarmer _warmer = new SearcherWarmer() {
-//    @Override
-//    public void warm(IndexSearcher s) throws IOException {
-//      IndexReader indexReader = s.getIndexReader();
-//      IndexReader[] subReaders = indexReader.getSequentialSubReaders();
-//      if (subReaders == null) {
-//        PrimeDocCache.getPrimeDocBitSet(indexReader);
-//      } else {
-//        for (IndexReader reader : subReaders) {
-//          PrimeDocCache.getPrimeDocBitSet(reader);
-//        }
-//      }
-//    }
-//  };
+  private long _lastRefresh;
+  private long _timeBetweenRefreshsNanos;
+
+  // private SearcherWarmer _warmer = new SearcherWarmer() {
+  // @Override
+  // public void warm(IndexSearcher s) throws IOException {
+  // IndexReader indexReader = s.getIndexReader();
+  // IndexReader[] subReaders = indexReader.getSequentialSubReaders();
+  // if (subReaders == null) {
+  // PrimeDocCache.getPrimeDocBitSet(indexReader);
+  // } else {
+  // for (IndexReader reader : subReaders) {
+  // PrimeDocCache.getPrimeDocBitSet(reader);
+  // }
+  // }
+  // }
+  // };
 
   public void init() throws IOException {
     Path walTablePath = new Path(_walPath, _table);
     Path walShardPath = new Path(walTablePath, _shard);
+
+    _timeBetweenRefreshsNanos = TimeUnit.MILLISECONDS.toNanos(_timeBetweenRefreshs);
 
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
@@ -84,11 +89,6 @@ public class BlurNRTIndex extends BlurIndex {
     TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     DirectoryReferenceCounter referenceCounter = new DirectoryReferenceCounter(_directory, _gc);
-    // NRTCachingDirectory cachingDirectory = new
-    // NRTCachingDirectory(referenceCounter, _nrtCachingMaxMergeSizeMB,
-    // _nrtCachingMaxCachedMB);
-    // conf.setMergeScheduler(cachingDirectory.getMergeScheduler());
-    // _writer = new IndexWriter(cachingDirectory, conf);
     _writer = new IndexWriter(referenceCounter, conf);
     _recorder = new TransactionRecorder();
     _recorder.setAnalyzer(_analyzer);
@@ -96,16 +96,17 @@ public class BlurNRTIndex extends BlurIndex {
     _recorder.setWalPath(walShardPath);
     _recorder.init();
     _recorder.replay(_writer);
-    
+
     _trackingWriter = new TrackingIndexWriter(_writer);
     _nrtManager = new NRTManager(_trackingWriter, _searcherFactory, APPLY_ALL_DELETES);
     IndexSearcher searcher = _nrtManager.acquire();
     _indexRef.set(searcher.getIndexReader());
+    _lastRefresh = System.nanoTime();
     startCommiter();
     startRefresher();
   }
 
-  private void startRefresher() {    
+  private void startRefresher() {
     double targetMinStaleSec = _timeBetweenRefreshs / 1000.0;
     _refresher = new NRTManagerReopenThread(_nrtManager, targetMinStaleSec * 10, targetMinStaleSec);
     _refresher.setName("Refresh Thread [" + _table + "/" + _shard + "]");
@@ -174,7 +175,7 @@ public class BlurNRTIndex extends BlurIndex {
     // @TODO make sure that locks are cleaned up.
     _isClosed.set(true);
     _committer.interrupt();
-    _refresher.interrupt();
+    _refresher.close();
     try {
       _recorder.close();
       _writer.close();
@@ -188,6 +189,7 @@ public class BlurNRTIndex extends BlurIndex {
   @Override
   public void refresh() throws IOException {
     _nrtManager.maybeRefresh();
+    swap();
   }
 
   @Override
@@ -201,10 +203,16 @@ public class BlurNRTIndex extends BlurIndex {
   }
 
   private void waitToBeVisible(boolean waitToBeVisible, long generation) throws IOException {
-    if (waitToBeVisible) {
+    if (waitToBeVisible && _nrtManager.getCurrentSearchingGen() < generation) {
       // if visibility is required then reopen.
       _nrtManager.waitForGeneration(generation);
       swap();
+    } else {
+      long now = System.nanoTime();
+      if (_lastRefresh + _timeBetweenRefreshsNanos < now) {
+        refresh();
+        _lastRefresh = now;
+      }
     }
   }
 

@@ -243,7 +243,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.info("trace getClusterList [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace getClusterList [" + (e - s) / 1000000.0 + " ms]");
     }
   }
 
@@ -266,7 +266,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.info("trace getControllerServerList [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace getControllerServerList [" + (e - s) / 1000000.0 + " ms]");
     }
   }
 
@@ -291,7 +291,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.info("trace getOnlineShardServers took [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace getOnlineShardServers took [" + (e - s) / 1000000.0 + " ms]");
     }
   }
 
@@ -320,7 +320,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.info("trace getShardServerList took [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace getShardServerList took [" + (e - s) / 1000000.0 + " ms]");
     }
   }
 
@@ -347,7 +347,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.info("trace exists took [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace exists took [" + (e - s) / 1000000.0 + " ms]");
     }
   }
 
@@ -372,7 +372,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.info("trace isEnabled took [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace isEnabled took [" + (e - s) / 1000000.0 + " ms]");
     }
     return true;
   }
@@ -412,7 +412,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.info("trace getTableDescriptor took [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace getTableDescriptor took [" + (e - s) / 1000000.0 + " ms]");
     }
     tableDescriptor.cluster = cluster;
     _tableDescriptorCache.put(table, tableDescriptor);
@@ -473,7 +473,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.info("trace getTableList took [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace getTableList took [" + (e - s) / 1000000.0 + " ms]");
     }
   }
 
@@ -530,7 +530,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         throw new RuntimeException(e);
       } finally {
         long e = System.nanoTime();
-        LOG.info("trace getCluster took [" + (e - s) / 1000000.0 + " ms]");
+        LOG.debug("trace getCluster took [" + (e - s) / 1000000.0 + " ms]");
       }
     }
     return null;
@@ -568,7 +568,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.info("trace isInSafeMode took [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace isInSafeMode took [" + (e - s) / 1000000.0 + " ms]");
     }
   }
 
@@ -589,7 +589,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.info("trace getShardCount took [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace getShardCount took [" + (e - s) / 1000000.0 + " ms]");
     }
   }
 
@@ -616,7 +616,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.info("trace getBlockCacheFileTypes took [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace getBlockCacheFileTypes took [" + (e - s) / 1000000.0 + " ms]");
     }
   }
 
@@ -634,7 +634,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.info("trace isBlockCacheEnabled took [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace isBlockCacheEnabled took [" + (e - s) / 1000000.0 + " ms]");
     }
     return true;
   }
@@ -661,7 +661,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.info("trace isReadOnly took [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace isReadOnly took [" + (e - s) / 1000000.0 + " ms]");
     }
   }
 
@@ -721,7 +721,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.info("trace createTable took [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace createTable took [" + (e - s) / 1000000.0 + " ms]");
     }
   }
 
@@ -746,7 +746,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.info("trace disableTable took [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace disableTable took [" + (e - s) / 1000000.0 + " ms]");
     }
   }
 
@@ -771,7 +771,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.info("trace enableTable took [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace enableTable took [" + (e - s) / 1000000.0 + " ms]");
     }
   }
 
@@ -801,7 +801,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.info("trace removeTable took [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace removeTable took [" + (e - s) / 1000000.0 + " ms]");
     }
   }
 

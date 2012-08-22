@@ -22,7 +22,6 @@ import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.junit.Test;
 
-import com.nearinfinity.blur.index.DirectIODirectory;
 public class CompressedFieldDataDirectoryTest {
 
   private static final CompressionCodec COMPRESSION_CODEC = CompressedFieldDataDirectory.DEFAULT_COMPRESSION;
@@ -30,7 +29,7 @@ public class CompressedFieldDataDirectoryTest {
   @Test
   public void testCompressedFieldDataDirectoryBasic() throws CorruptIndexException, IOException {
     RAMDirectory dir = new RAMDirectory();
-    CompressedFieldDataDirectory directory = new CompressedFieldDataDirectory(DirectIODirectory.wrap(dir), COMPRESSION_CODEC);
+    CompressedFieldDataDirectory directory = new CompressedFieldDataDirectory(dir, COMPRESSION_CODEC);
     IndexWriterConfig config = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
     TieredMergePolicy mergePolicy = (TieredMergePolicy) config.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
@@ -52,7 +51,7 @@ public class CompressedFieldDataDirectoryTest {
     addDocs(writer, 0, 5);
     writer.close();
 
-    CompressedFieldDataDirectory directory = new CompressedFieldDataDirectory(DirectIODirectory.wrap(dir), COMPRESSION_CODEC);
+    CompressedFieldDataDirectory directory = new CompressedFieldDataDirectory(dir, COMPRESSION_CODEC);
     config = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
     mergePolicy = (TieredMergePolicy) config.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
@@ -72,7 +71,7 @@ public class CompressedFieldDataDirectoryTest {
     addDocs(writer, 0, 5);
     writer.close();
 
-    CompressedFieldDataDirectory directory1 = new CompressedFieldDataDirectory(DirectIODirectory.wrap(dir), COMPRESSION_CODEC, 2);
+    CompressedFieldDataDirectory directory1 = new CompressedFieldDataDirectory(dir, COMPRESSION_CODEC, 2);
     config = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
     mergePolicy = (TieredMergePolicy) config.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
@@ -80,7 +79,7 @@ public class CompressedFieldDataDirectoryTest {
     addDocs(writer, 5, 2);
     writer.close();
 
-    CompressedFieldDataDirectory directory2 = new CompressedFieldDataDirectory(DirectIODirectory.wrap(dir), COMPRESSION_CODEC, 4);
+    CompressedFieldDataDirectory directory2 = new CompressedFieldDataDirectory(dir, COMPRESSION_CODEC, 4);
     config = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
     mergePolicy = (TieredMergePolicy) config.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
@@ -95,10 +94,10 @@ public class CompressedFieldDataDirectoryTest {
     String[] listAll = dir.listAll();
     for (String name : listAll) {
       IndexInput input = dir.openInput(name);
-      assertEquals(input.length(),dir.fileLength(name));
+      assertEquals(input.length(), dir.fileLength(name));
       input.close();
     }
-    
+
   }
 
   private void testFetches(Directory directory) throws CorruptIndexException, IOException {

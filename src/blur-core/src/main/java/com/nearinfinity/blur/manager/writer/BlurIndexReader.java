@@ -5,9 +5,9 @@ import java.io.IOException;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
 
-import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.index.IndexWriter;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
@@ -19,12 +19,12 @@ public class BlurIndexReader extends AbstractBlurIndex {
 
   public void init() throws IOException {
     initIndexWriterConfig();
-    DirectIODirectory directory = getDirectory();
+    Directory directory = getDirectory();
     if (!IndexReader.indexExists(directory)) {
       IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_35, new KeywordAnalyzer());
       new IndexWriter(directory, conf).close();
     }
-    initIndexReader(IndexReader.open(directory, true));
+    initIndexReader(IndexReader.open(directory));
   }
 
   @Override

@@ -69,7 +69,7 @@ $(document).ready(function(){
   var checkSelectionStatus = function(){
     if ($('#zookeeper_pref option:selected').val() != 1){
       $('#zookeeper_num').hide();
-  } else{
+    } else{
       $('#zookeeper_num').show();
     }
     $('#zookeeper_submit').removeAttr('disabled');

@@ -96,39 +96,6 @@ var Cluster = Backbone.Model.extend({
       });
     }, this));
   },
-  forget_tables: function(){
-    var selected_tables = this.get('tables').where({state: 'deleted', checked: true});
-    var table_ids = _.map(selected_tables, function(table){ return table.get('id'); });
-    this.send_action_request(selected_tables, _.bind(function(){
-      $().popup({
-        title: "Forget Tables",
-        titleClass: 'title',
-        body: "Are you sure you want to forget these tables?",
-        btns: {
-          "Forget": {
-            "class": "primary",
-            func: _.bind(function() {
-              $.ajax({
-                type: 'DELETE',
-                url: Routes.forget_zookeeper_blur_tables_path(CurrentZookeeper),
-                data: {tables: table_ids}
-              });
-              _.each(selected_tables, function(table){
-                table.collection.remove(table);
-              });
-              this.view.set_table_state();
-              $().closePopup();
-            }, this)
-          },
-          "Cancel": {
-            func: function() {
-              $().closePopup();
-            }
-          }
-        }
-      });
-    }, this));
-  },
   delete_tables: function(){
     var selected_tables = this.get('tables').where({state: 'disabled', checked: true});
     var table_ids = _.map(selected_tables, function(table){ return table.get('id'); });
@@ -143,7 +110,7 @@ var Cluster = Backbone.Model.extend({
           }
         });
         _.each(selected_tables, function(table){
-          table.set({status: 3});
+          table.set({status: 1});
         });
         this.view.set_table_state();
         $().closePopup();
@@ -232,10 +199,9 @@ var ClusterView = Backbone.View.extend({
     'click .check-all' : 'check_all_boxes',
     'click .btn[data-action=enable]' : 'enable_tables',
     'click .btn[data-action=disable]' : 'disable_tables',
-    'click .btn[data-action=forget]' : 'forget_tables',
     'click .btn[data-action=delete]' : 'delete_tables'
   },
-  colspan_lookup : {'active': 7, 'disabled': 3, 'deleted': 1}, //active changed from 5 to 6 for sparkline graph, 6 to 7 for comments
+  colspan_lookup : {'active': 7, 'disabled': 3}, //active changed from 5 to 6 for sparkline graph, 6 to 7 for comments
   render: function(){
     this.$el.html(this.template({cluster: this.model}));
     this.populate_tables();
@@ -302,9 +268,6 @@ var ClusterView = Backbone.View.extend({
   },
   disable_tables: function(event){
     this.model.disable_tables();
-  },
-  forget_tables: function(event){
-    this.model.forget_tables();
   },
   delete_tables: function(event){
     this.model.delete_tables();

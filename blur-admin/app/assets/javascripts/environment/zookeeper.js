@@ -1,22 +1,26 @@
 var ZookeeperModel = Backbone.Model.extend({
   initialize: function(){
     this.view = new ZookeeperView({model: this});
-    // Build/rebuild the one to many relationship on cluster change
-    this.on('change:clusters', function(){
-      var clusters = this.cluster_collection || new ClusterCollection();
-      clusters.update(this.get('clusters'));
-      this.cluster_collection = clusters;
-    });
-    // Build/rebuild the one to many relationship on controller change
-    this.on('change:controllers', function(){
-      var controllers = this.controller_collection || new ControllerCollection();
-      controllers.update(this.get('controllers'));
-      this.controller_collection = controllers;
-    });
     // Whenever a property changes re-render the view
     this.on('change', function(){
       this.view.render();
     });
+  },
+  parse: function(response){
+    // Build the collections and add them to the zookeeper
+    if(this.cluster_collection && this.controller_collection){
+      this.cluster_collection.update(response.clusters);
+      this.controller_collection.update(response.controllers);
+    } else {
+      this.cluster_collection = new ClusterCollection(response.clusters);
+      this.controller_collection = new ControllerCollection(response.controllers);
+    }
+
+    //remove the collections
+    delete response.clusters
+    delete response.controllers
+
+    this.set(response);
   },
   // Model streaming, fetches on every interval
   stream: function(interval){
@@ -61,8 +65,8 @@ var ZookeeperView = Backbone.View.extend({
   template: JST['templates/environment/zookeeper'],
   render: function(){
     this.$el.html(this.template({zookeeper: this.model}));
-    this.$el.find('#controllers').append(this.model.controller_collection.view.$el)
-    this.$el.find('#clusters').append(this.model.cluster_collection.view.$el)
+    this.$el.find('#controllers').append(this.model.controller_collection.view.render().$el)
+    this.$el.find('#clusters').append(this.model.cluster_collection.view.render().$el)
     $('#bd').html(this.$el);
     this.$el.find('i').tooltip();
     return this;

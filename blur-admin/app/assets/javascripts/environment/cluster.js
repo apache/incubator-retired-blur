@@ -1,6 +1,5 @@
 var ClusterModel = Backbone.Model.extend({
   initialize: function(){
-    this.urlRoot = "/zookeepers/" + CurrentZookeeper + "/cluster";
     this.view = new ClusterView({model: this});
     this.on('change', function(){
       this.view.render();
@@ -24,9 +23,10 @@ var ClusterModel = Backbone.Model.extend({
 });
 
 var ClusterCollection = Backbone.StreamCollection.extend({
+  url: "/zookeepers/" + CurrentZookeeper + "/cluster/",
   model: ClusterModel,
   initialize: function(models, options){
-    this.view = new ClusterCollectionView().render();
+    this.view = new ClusterCollectionView({collection: this}).render();
     this.on('add', function(cluster){
       var container = this.view.$el.find('tbody');
       container.append(cluster.view.render().$el);
@@ -43,6 +43,9 @@ var ClusterCollectionView = Backbone.View.extend({
   template: JST['templates/environment/cluster_collection'],
   render: function(){
     this.$el.html(this.template());
+    this.collection.each(_.bind(function(cluster){
+      this.$el.find('tbody').append(cluster.view.render().$el);
+    }, this));
     return this;
   }
 });

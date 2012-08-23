@@ -5,7 +5,7 @@ var ControllerModel = Backbone.Model.extend({
       this.view.render();
     });
   },
-  remove_controller: function(){
+  remove: function(){
     if(this.get('status') == 1){
       this.destroy({
         success: function(){
@@ -23,7 +23,7 @@ var ControllerCollection = Backbone.StreamCollection.extend({
   url: "/zookeepers/" + CurrentZookeeper + "/controller/",
   model: ControllerModel,
   initialize: function(models, options){
-    this.view = new ControllerCollectionView().render();
+    this.view = new ControllerCollectionView({collection: this}).render();
     this.on('add', function(controller){
       var container = this.view.$el.find('tbody');
       container.append(controller.view.render().$el);
@@ -40,6 +40,9 @@ var ControllerCollectionView = Backbone.View.extend({
   template: JST['templates/environment/controller_collection'],
   render: function(){
     this.$el.html(this.template());
+    this.collection.each(_.bind(function(controller){
+      this.$el.find('tbody').append(controller.view.render().$el);
+    }, this));
     return this;
   }
 });
@@ -62,7 +65,7 @@ var ControllerView = Backbone.View.extend({
   destroy_zookeeper: function(){
     Confirm_Delete({
       message: "forget this controller",
-      confirmed_action: _.bind(this.model.remove_controller, this.model)
+      confirmed_action: _.bind(this.model.remove, this.model)
     });
   }
 });

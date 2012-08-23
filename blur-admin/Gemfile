@@ -28,6 +28,7 @@ group :development, :test do
   gem 'rails-erd'
   gem 'factory_girl_rails'
   gem 'launchy'
+  gem 'thin'
 end
 
 group :test do

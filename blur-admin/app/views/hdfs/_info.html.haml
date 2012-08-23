@@ -9,8 +9,11 @@
           %td.more-info-label Present Capacity
           %td= number_to_human_size @hdfs.present_capacity
         %tr
-          %td.more-info-label Amount Used
-          %td= number_to_human_size @hdfs.dfs_used
+          %td.more-info-label Amount Used (With Replication)
+          %td= number_to_human_size @hdfs.dfs_used_real
+        %tr
+          %td.more-info-label Amount Used (Logical)
+          %td= number_to_human_size @hdfs.dfs_used_logical
         %tr
           %td.more-info-label Amount Remaining
           %td= number_to_human_size @hdfs.dfs_remaining

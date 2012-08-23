@@ -41,6 +41,10 @@ public class Column {
 	public void setFullText(boolean fullText) {
 		this.fullText = fullText;
 	}
+	
+	public boolean isSearchable() {
+		return (this.analyzer != null && this.analyzer != "");
+	}
 
 	@Override
 	public int hashCode() {

@@ -169,6 +169,7 @@ describe Ability do
     it "can view blur query string" do
       @ability.should be_able_to :index, :blur_queries, :query_string
       @ability.should be_able_to :more_info, :blur_queries, :query_string
+      @ability.should be_able_to :index, :audits
     end
   end
   

@@ -18,7 +18,8 @@ class Ability
         can :index, [:zookeepers, :blur_tables, :hdfs, :hdfs_metrics]
         can :show, [:zookeepers, :help]
         can [:dashboard, :long_running_queries], :zookeepers
-        can [:expand, :file_info, :info, :folder_info, :slow_folder_info, :file_tree, :stats], :hdfs
+        can [:expand, :file_info, :info, :folder_info, :slow_folder_info, :file_tree], :hdfs
+        can :stats, :hdfs_metrics
         can :help, :application
 
         # can view everything but query_string on blur_tables:
@@ -39,14 +40,15 @@ class Ability
       end
 
       if user.editor?
-        can [:update, :enable, :disable, :destroy, :forget], :blur_tables
+        can [:update, :enable, :disable, :destroy, :forget, :comment], :blur_tables
         can :update, :blur_queries
-        can [:destroy_shard, :destroy_controller, :destroy_cluster, :destroy_zookeeper, :shards], :zookeepers
+        can [:destroy_shard, :destroy_controller, :destroy_cluster, :destroy, :shards], :zookeepers
         can [:move_file, :delete_file, :mkdir,:upload_form,:upload], :hdfs
       end
 
       if user.auditor?
         can :index, :blur_queries, :query_string
+        can :index, :audits
         can :more_info, :blur_queries, :query_string
       end
 

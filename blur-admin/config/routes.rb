@@ -35,6 +35,7 @@ BlurAdmin::Application.routes.draw do
     resources :blur_tables, :only => :index do
       member do
         get 'terms'
+        put 'comment'
       end
 
       collection do
@@ -71,12 +72,19 @@ BlurAdmin::Application.routes.draw do
       get 'upload_form'
       post 'upload'
       get 'structure', :action => :file_tree
-      get 'stats'
+
     end
   end
 
   resources :user_sessions, :only => [:create]
-  resources :hdfs_metrics, :only => [:index]
+  resources :hdfs_metrics, :only => [:index] do
+    member do
+      get 'stats', :action => :stats
+    end
+  end
+
+  resources :audits, :only => [:index]
+
   match 'login' => 'user_sessions#new', :as => :login
   match 'logout' => 'user_sessions#destroy', :as => :logout
   match 'help/:tab' => 'application#help', :as => :help

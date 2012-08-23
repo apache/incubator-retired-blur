@@ -14,7 +14,7 @@ var Hdfs = Backbone.Model.extend({
   },
   usage_width: function(){
     var stats = this.get('most_recent_stats');
-    return Math.round((stats.dfs_used / stats.config_capacity) * 100);
+    return Math.round((stats.dfs_used_real / stats.config_capacity) * 100);
   },
   percent_used: function(){
     var usage_percent = this.usage_width();

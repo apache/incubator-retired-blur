@@ -4,7 +4,7 @@
 	<groupId>com.nearinfinity</groupId>
 	<artifactId>blur-agent</artifactId>
 	<packaging>jar</packaging>
-	<version>1.2</version>
+	<version>1.3.1</version>
 	<name>blur-agent</name>
 	<url>http://maven.apache.org</url>
 
@@ -45,20 +45,15 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.16</version>
 		</dependency>
-		<!-- dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-core</artifactId>
-			<version>0.20.2-cdh3u2</version>
-		</dependency -->
 		<dependency>
 			<groupId>com.nearinfinity.blur</groupId>
 			<artifactId>blur-thrift</artifactId>
-			<version>0.1.rc2</version>
+			<version>0.1.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.nearinfinity.blur</groupId>
 			<artifactId>blur-util</artifactId>
-			<version>0.1.rc2</version>
+			<version>0.1.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.thrift</groupId>
@@ -76,21 +71,6 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.6.1</version>
 		</dependency>
-		<!-- dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>zookeeper</artifactId>
-			<version>3.3.1</version>
-			<exclusions>
-				<exclusion>
-					<groupId>junit</groupId>
-					<artifactId>junit</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>log4j</groupId>
-					<artifactId>log4j</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency -->
 		<dependency>
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>

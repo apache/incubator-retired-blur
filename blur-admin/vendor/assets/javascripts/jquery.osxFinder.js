@@ -18,10 +18,18 @@
         e.preventDefault();
         var evtEl = $(this);
         if(!evtEl.hasClass('osxSelected')) {
-          evtEl.parents('div.innerWindow').nextAll('.innerWindow').remove();
+          // To eliminate bouncing we will save the next sibling
+          // and then delete all other siblings to the right
+          var nextSibling = evtEl.parents('div.innerWindow').next('.innerWindow');
+          if (nextSibling.length > 0){
+            nextSibling.nextAll('.innerWindow').remove();
+            nextSibling.html('<div> Loading...</div>');
+          } else {
+            nextSibling = null;
+          }
           evtEl.addClass('osxSelected').siblings().removeClass('osxSelected');
           var url = evtEl.children('a').attr('href');
-          self._requestNextFinderWindow(url);
+          self._requestNextFinderWindow(url, true, nextSibling);
           self._trigger("navigated", null, {'url':url.replace(/expand|file_info/, 'show')});
         }
       });
@@ -44,13 +52,13 @@
         this.element.animate({scrollLeft:innerWidth-pluginWidth}, 'slow');
       }
     },
-    _requestNextFinderWindow: function(url, async){
+    _requestNextFinderWindow: function(url, async, givenInnerWindow){
       var self = this;
-      var innerWindow = this._createInnerWindow();
+      var innerWindow = givenInnerWindow || this._createInnerWindow();
       $.ajax(url, {
         async: async,
         success:function(data) {
-          innerWindow.append(data);
+          innerWindow.html(data);
           self.element.append(innerWindow);
           self._ensureLastWindowVisible();
           self._trigger("added", null,{"innerWindow":innerWindow,"url":url + "/"});

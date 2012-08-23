@@ -3,13 +3,14 @@ require "spec_helper"
 describe HdfsController do
   describe "actions" do
     before(:each) do
+      # Universal setup
+      setup_tests
+
+      # Mock out the client connection to the hdfs
       @hdfs_client = mock(HdfsThriftClient::Client)
       HdfsThriftClient.stub!(:client).and_return(@hdfs_client)
 
-      @ability = Ability.new User.new
-      @ability.stub!(:can?).and_return(true)
-      controller.stub!(:current_ability).and_return(@ability)
-
+      # Create HDFS model
       @hdfs = FactoryGirl.create :hdfs_with_stats
       Hdfs.stub!(:find).and_return(@hdfs)
       @file_strings = ["hdfs://file-location"]
@@ -49,7 +50,7 @@ describe HdfsController do
         it "renders the the warning text" do
           @hdfs.stub_chain(:hdfs_stats, :last).and_return(nil)
           get :info, :id => @hdfs.id
-          response.body.should include("Stats for hdfs ##{@hdfs.id} not found")
+          response.body.should include("Stats for hdfs ##{@hdfs.id} were not found")
         end
       end
     end
@@ -113,7 +114,7 @@ describe HdfsController do
         get :expand, :id => @hdfs.id
         assigns(:hdfs_id).should == @hdfs.id.to_s
         assigns(:path).should == '/'
-        assigns(:children).should == [{'name' => '3', 'is_dir' => true}, {'name' => '4', 'is_dir' => false}]
+        assigns(:children).should == [{'name' => '4', 'is_dir' => false}, {'name' => '3', 'is_dir' => true}, ]
       end
 
       it "assigns the correct instance variables with a given path" do
@@ -121,7 +122,7 @@ describe HdfsController do
         get :expand, :id => @hdfs.id, :fs_path => '/path'
         assigns(:hdfs_id).should == @hdfs.id.to_s
         assigns(:path).should == '/path/'
-        assigns(:children).should == [{'name' => '3', 'is_dir' => true}, {'name' => '4', 'is_dir' => false}]
+        assigns(:children).should == [{'name' => '4', 'is_dir' => false}, {'name' => '3', 'is_dir' => true}]
       end
 
       it "renders the expand partial" do
@@ -145,6 +146,11 @@ describe HdfsController do
         HdfsThriftClient.should_receive(:client).with("#{@hdfs.host}:#{@hdfs.port}")
         get :mkdir, :id => @hdfs.id, :fs_path => '/', :folder => 'folder'
         response.body.should be_blank
+      end
+
+      it "logs an audit event" do
+        Audit.should_receive :log_event
+        get :mkdir, :id => @hdfs.id, :fs_path => '/', :folder => 'folder'
       end
     end
 
@@ -181,6 +187,11 @@ describe HdfsController do
         get :move_file, :id => @hdfs.id, :from => '/', :to => '/folder/'
         response.body.should be_blank
       end
+
+      it "logs an audit event" do
+        Audit.should_receive :log_event
+        get :move_file, :id => @hdfs.id, :from => '/', :to => '/folder/'
+      end
     end
 
     describe "GET delete_file" do
@@ -198,15 +209,20 @@ describe HdfsController do
         get :delete_file, :id => @hdfs.id, :path => '/path/'
         response.body.should be_blank
       end
+
+      it "logs an audit event" do
+        Audit.should_receive :log_event
+        get :delete_file, :id => @hdfs.id, :path => '/path/'
+      end
     end
 
     describe "GET upload_form" do
       it "renders the upload form template" do
         get :upload_form
         response.should render_template :partial => "_upload_form"
-      end  
+      end
     end
-    
+
     describe "POST upload" do
       before(:each) do
         @hdfs_client.stub(:put)
@@ -237,6 +253,12 @@ describe HdfsController do
           post :upload, :path => @path, :id => 1, :upload => @upload
           response.body.should render_template :partial => "_upload"
           assigns(:error).should_not be_blank
+        end
+
+        it "logs an audit event" do
+          @upload.tempfile.size = 50
+          Audit.should_receive :log_event
+          post :upload, :path => @path, :id => 1, :upload => @upload
         end
       end
 
@@ -269,32 +291,6 @@ describe HdfsController do
       it "renders json" do
         HdfsThriftClient.should_receive(:client).with("#{@hdfs.host}:#{@hdfs.port}")
         get :file_tree, :id => @hdfs.id, :fs_path => '/path/'
-        response.content_type.should == 'application/json'
-      end
-    end
-
-    describe "GET stats" do
-      it "with only id should return all within last minute" do
-        get :stats, :id => @hdfs.id
-        assigns(:results).length.should == 1
-        response.content_type.should == 'application/json'
-      end
-
-      it "with only return the correct properties" do
-        get :stats, :id => @hdfs.id
-        assigns(:results)[0].attribute_names.should == %w[id created_at present_capacity dfs_used live_nodes dead_nodes under_replicated corrupt_blocks missing_blocks]
-        response.content_type.should == 'application/json'
-      end
-
-      it "with stat_mins = 2 should return all within last 2 minutes" do
-        get :stats, :id => @hdfs.id, :stat_mins => 2
-        assigns(:results).length.should == 2
-        response.content_type.should == 'application/json'
-      end
-
-      it "with stat_id = @hdfs.hdfs_stats[1].id should return the last one" do
-        get :stats, :id => @hdfs.id, :stat_id => @hdfs.hdfs_stats[1].id
-        assigns(:results).length.should == 1
         response.content_type.should == 'application/json'
       end
     end

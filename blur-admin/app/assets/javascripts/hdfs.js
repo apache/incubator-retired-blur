@@ -5,13 +5,17 @@
 //= require_self
 
 $(document).ready(function() {
-  var delete_file, draw_radial_graph, finishUploading, make_dir, navigateUsingPath, paste_buffer,
+  //document varss
+  var delete_file, draw_radial_graph, finishUploading, make_dir, navigateUsingPath, paste_buffer, rightClicked,
     perform_action, reload_hdfs, show_dir_props, show_hdfs_props, upload, uploadFailed, in_file = [],
-    allSelected = [], columnSelected = [], lastClicked, ctrlHeld = false;
+    allSelected = [], columnSelected = [], lastClicked, ctrlHeld = false, shiftHeld = false, historyUndef = false;
 
+  //TODO: figure out why this doesn't work
   // Old browser support for history push state
   if (typeof history.pushState === 'undefined') {
-    history.pushState = function() {};
+    history.pushState = function() {
+      historyUndef = true;
+    };
   }
 
   // One time use page variable initialization
@@ -29,7 +33,9 @@ $(document).ready(function() {
     });
   })();
 
-  //Page Widget Setup Methods
+  /*
+   * Page Widget Setup Methods
+  */
 
   var setup_context_menus = function() {
     $('#hdfs_browser li.hdfs_instance').contextMenu(
@@ -53,7 +59,15 @@ $(document).ready(function() {
         return false;
       }
     );
-    $('#hdfs-dir-context-menu').disableContextMenuItems('#paste');
+    $('#hdfs_browser .innerWindow').contextMenu(
+      {menu: 'hdfs-whitespace-context-menu'},
+      function(action, el, pos) {
+        var prev = el.prev().find('.osxSelected');
+        perform_action(action, prev);
+        return false;
+      }
+    );
+    $('#hdfs-dir-context-menu, #hdfs-whitespace-context-menu').disableContextMenuItems('#paste');
     if ($('#hdfs_browser').attr('hdfs_editor') === 'false') {
       $('.contextMenu').disableContextMenuItems('#paste,#mkdir,#cut,#rename,#delete');
     }
@@ -79,6 +93,13 @@ $(document).ready(function() {
           "<li class='rename'><a href='#rename'>Rename</a></li>",
           "<li class='cut'><a href='#cut'>Cut</a></li>",
           "<li class='delete'><a href='#delete'>Delete</a></li>",
+          "<li class='props separator'><a href='#dirprops'>Properties</a></li>",
+        "</ul>",
+        "<ul id='hdfs-whitespace-context-menu' class='contextMenu'>",
+          "<li class='mkdir'><a href='#mkdir'>New Folder</a></li>",
+          "<li class='edit'><a href='#upload'>Upload File</a></li>",
+          "<li class='paste'><a href='#paste'>Paste</a></li>",
+          "<li class='props separator'><a href='#dirprops'>Properties</a></li>",
         "</ul>",
       "</div>"].join('\n'));
   };
@@ -143,10 +164,13 @@ $(document).ready(function() {
     });
   };
 
-  // HDFS Actions
-  var pre_cut_file = function(action, el){
-    if (paste_buffer.multiple){
-      $.each(paste_buffer.multiple, function(index, value){
+  /*
+   * HDFS Actions
+  */
+
+  var pre_cut_file = function(action, el) {
+    if (paste_buffer.multiple) {
+      $.each(paste_buffer.multiple, function(index, value) {
         $(value).removeClass('to-cut');
       });
     }
@@ -156,13 +180,15 @@ $(document).ready(function() {
     paste_buffer.location = el;
     paste_buffer.action = action;
     paste_buffer.multiple = columnSelected;
-    $('#hdfs-dir-context-menu').enableContextMenuItems('#paste');
-    if (paste_buffer.multiple.length > 0){
-      $.each(paste_buffer.multiple, function(index, value){
+    $('#hdfs-dir-context-menu, #hdfs-whitespace-context-menu').enableContextMenuItems('#paste');
+    if (paste_buffer.multiple.length > 0) {
+      $.each(paste_buffer.multiple, function(index, value) {
         $(value).addClass('to-cut');
       });
     }
-    else $(paste_buffer.location).addClass('to-cut');
+    else {
+      $(paste_buffer.location).addClass('to-cut');
+    }
   };
 
   var cut_file = function(file, location) {
@@ -175,8 +201,13 @@ $(document).ready(function() {
           'from': from_path,
           'to': to_path
         }, function() {
-          $('#hdfs-dir-context-menu').disableContextMenuItems('#paste');
-          reload_hdfs();
+          $('#hdfs-dir-context-menu, #hdfs-whitespace-context-menu').disableContextMenuItems('#paste');
+          if (!historyUndef) {
+            reload_hdfs();
+          }
+          else {
+            reload_hdfs_ff(to_path, to_id);
+          }
         }
       );
     }
@@ -185,12 +216,13 @@ $(document).ready(function() {
   var rename = function(el) {
     var id = el.attr('hdfs_id');
     var from_path = el.attr('hdfs_path');
-    $('<div id="newName"><input></input></div>').popup({
+    $('<div id="newName"><lable>New name for '+ from_path.split('/').pop() +'</label><br/><br/><input></input></div>').popup({
       title: 'New Name',
       titleClass: 'title',
       shown: function() {
         $('#newName input').focus();
       },
+      onEnter: true,
       btns: {
         "Create": {
           "class": "primary",
@@ -201,7 +233,11 @@ $(document).ready(function() {
             $.each(el.siblings(), function(index, value){
               if(newFullPath == $(value).attr('hdfs_path')) unique = false;
             });
-            if (!unique){
+            if (newName == '') {
+              $().closePopup();
+              errorPopup("Name was not entered.");
+            }
+            else if (!unique){
               $().closePopup();
               errorPopup("Name already in use.");
             }
@@ -246,28 +282,93 @@ $(document).ready(function() {
     $.post(Routes.delete_file_hdfs_path(id), {
       'path': path
     }, function() {
-      reload_hdfs();
+      if (!historyUndef) {
+        reload_hdfs();
+      }
+      else {
+        reload_hdfs_ff(path, id);
+      }
     });
   };
 
   var delete_additional_files = function(clicked_file) {
     $.each(columnSelected, function(index, value){
-      if(!(clicked_file[0] == value))
+      if(!(clicked_file[0] == value)) {
         delete_file($(value));
+      }
     });
   };
+
+  //Drag and Drop Functionality
+  //Event listener functions for drag and drop
+   function dragEnter (evt){
+    $(this).addClass('currentDrop');
+    evt.stopPropagation();
+    evt.preventDefault();
+  }
+  function dragOver (evt){
+    evt.stopPropagation();
+    evt.preventDefault();
+  }
+  function dragExit(evt){
+    $(this).removeClass('currentDrop');
+    evt.stopPropagation();
+    evt.preventDefault();
+  }
+  function drop(evt){
+    evt.stopPropagation();
+    evt.preventDefault();
+    var files = evt.originalEvent.dataTransfer.files; //FileList object
+    var count = files.length;
+    if (count > 0)
+      handleFiles(files);
+  }
+  //Compatability check
+if (window.File && window.FileReader && window.FileList && window.Blob){
+
+  $('#hdfs_browser').on('dragenter', '.innerWindow', dragEnter);
+  $('#hdfs_browser').on('dragexit', '.innerWindow', dragExit);
+  $('#hdfs_browser').on('dragover', '.innerWindow', dragOver);
+  $('#hdfs_browser').on('drop', '.innerWindow', drop);
+
+}
+//Deals with the form data
+var handleFiles = function(files) {
+  var id =$('#top_level .osxSelected').attr('hdfs_id');
+  var target_path = $('.currentDrop').prev().find('.osxSelected').attr('hdfs_path');
+  var file = files[0];
+  if (file.size > 26214400){
+    console.error("File was too large. Needs to be less than 25 MB");
+  }
+
+  var formData = new FormData();
+  formData.append("upload", file);
+  formData.append("path", target_path);
+  formData.append("id", id);
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', "/hdfs/"+id+"/upload", true);
+  xhr.onload = function(e){
+    if (this.status == 200)
+      console.log("Loaded " + file.name);
+  };
+  xhr.send(formData);
+  if (!historyUndef) {
+        reload_hdfs();
+      }
+      else {
+        reload_hdfs_ff(target_path, id);
+      }
+
+}
+//End of DnD Functionality
 
   var upload = function(el) {
     var id = el.attr('hdfs_id');
     var path = el.attr('hdfs_path');
     var modal_container = $('<div id="upload_form_modal_container"></div>');
-
     in_file = [];
     $('.osxSelectable[hdfs_path="' + path + '"][hdfs_id=' + id + ']').click();
-    if (path == '/')
-      var osxWindow = 1;
-    else
-      var osxWindow = path.split('/').length;
+    var osxWindow = ( path == '/' ? 1 : path.split('/').length );
 
     modal_container.load(Routes.upload_form_hdfs_path(id), function(data) {
       $().popup({
@@ -281,14 +382,29 @@ $(document).ready(function() {
             in_file.push($(value).attr('title'));
           });
           $('input[type=file]').change( function(event) {
-            if (in_file.indexOf($('#file-input').val().split('\\').pop()) < 0)
+            if (in_file.indexOf($('#file-input').val().split('\\').pop()) < 0) {
               $('#upload_file_warning').addClass('hidden');
-            else
+            }
+            else {
               $('#upload_file_warning').removeClass('hidden');
+            }
           });
         },
         hide: function() {
           !window.uploading;
+        },
+        btns: {
+          "Upload": {
+            "class": "primary",
+            func: function() {
+              $('#upload-form').submit();
+            }
+          },
+          "Cancel": {
+            func: function() {
+              $().closePopup();
+            }
+          }
         }
       });
     });
@@ -297,20 +413,17 @@ $(document).ready(function() {
   var make_dir = function(el) {
     var id = el.attr('hdfs_id');
     var path = el.attr('hdfs_path');
-
     in_file = [];
     $('.osxSelectable[hdfs_path="' + path + '"][hdfs_id=' + id + ']').click();
-    if (path == '/')
-      var osxWindow = 1;
-    else
-      var osxWindow = path.split('/').length;
+    var osxWindow = ( path == '/' ? 1 : path.split('/').length );
 
-    $('<div id="newFolder"><label>Folder Name:</label><input></input></div>').popup({
+    $('<div id="newFolder"><label>Folder Name:</label><input></input><br/><br/>Parent directory: '+ path +'</div>').popup({
       title: 'New Folder',
       titleClass: 'title',
       shown: function() {
         $('#newFolder input').focus();
       },
+      onEnter: true,
       btns: {
         "Create": {
           "class": 'primary',
@@ -318,19 +431,23 @@ $(document).ready(function() {
             var newName = $('#newFolder input').val();
             var unique = true;
 
-            $.each( $($('.innerWindow')[osxWindow]).find('a'), function (index, value){
+            $.each( $($('.innerWindow')[osxWindow]).find('a'), function (index, value) {
               in_file.push($(value).attr('title'));
             });
 
-            $.each(in_file, function(index, value){
+            $.each(in_file, function(index, value) {
               if(newName == value) unique = false;
             });
 
-            if (!unique){
+            if (newName == '') {
+              $().closePopup();
+              errorPopup("Name was not entered.");
+            }
+            else if (!unique) {
               $().closePopup();
               errorPopup("Folder or file with this name already in use.");
             }
-            else{
+            else {
               $.ajax(Routes.mkdir_hdfs_path(id), {
                 type: 'post',
                 data: {
@@ -424,12 +541,15 @@ $(document).ready(function() {
     switch (action) {
       case "delete":
         if (columnSelected.length > 0) {
-          if (confirm("Are you sure you wish to delete these files? This action can not be undone.")) {
+          confirmPopup("Are you sure you wish to delete these files? This action can not be undone.", function() {
             delete_additional_files(el);
+            delete_file(el);//need both - delete_file catches the clicked element when its not highlighted
+          });
+        }
+        else {
+          confirmPopup("Are you sure you wish to delete " + el.attr('hdfs_path') + "? This action can not be undone.", function() {
             delete_file(el);
-          }
-        } else if (confirm("Are you sure you wish to delete " + el.attr('hdfs_path') + "? This action can not be undone.")) {
-          delete_file(el);
+          });
         }
         break;
       case "cut":
@@ -442,7 +562,9 @@ $(document).ready(function() {
               cut_file($(value), el);
             });
           }
-          else cut_file(paste_buffer.location, el);
+          else {
+            cut_file(paste_buffer.location, el);
+          }
         }
         break;
       case "props":
@@ -463,17 +585,25 @@ $(document).ready(function() {
     }
   };
 
-  //Upload Methods
+  /*
+   * Upload Methods
+  */
+
   // Upload methods on the window so returned JS can call them
   window.finishUploading = function(path) {
     $("li[hdfs_path='" + path + "']").click();
     $().closePopup();
     window.uploading = false;
-    reload_hdfs();
+    if (!historyUndef) {
+      reload_hdfs();
+    }
+    else {
+      reload_hdfs_ff(path, $('.osxSelected').attr('hdfs_id'));
+    }
   };
 
   window.uploadFailed = function(error) {
-    $('#upload-file').html(error);
+    errorPopup(error);
     window.uploading = false;
   };
 
@@ -488,9 +618,15 @@ $(document).ready(function() {
     navigateUsingPath();
   };
 
+  reload_hdfs_ff = function(path, hdfsId) { //fix for FF 3.6
+    $('.osxSelected').removeClass('osxSelected');
+    navigateOsxWindow(path, hdfsId);
+  }
+
   /*
-    #Methods for HTML History manipulation
+    Methods for HTML History manipulation
   */
+
   navigateUsingPath = function() {
     var pathPieces = window.location.pathname.split('/').filter(function(member) {
       return member !== '';
@@ -498,14 +634,26 @@ $(document).ready(function() {
     var hdfsId = pathPieces.shift();
     var path = '/' + pathPieces.slice(1).join('/');
     $('#hdfs_browser').osxFinder('navigateToPath', path, hdfsId, true);
+    $('.innerWindow').first().disableContextMenu();
   };
   window.onpopstate = function(e) {
     navigateUsingPath();
   };
+  navigateOsxWindow = function(path, hdfsId) {
+    $('#hdfs_browser').osxFinder('navigateToPath', path, hdfsId, true);
+    $('.innerWindow').first().disableContextMenu();
+  };
+
+  /*
+   * Methods for modals
+  */
 
   errorPopup = function(message) {
     $('<div id="error">' + message +'</div>').popup({
       title: 'Error',
+      shown: function() {
+        $('.btn-primary').focus();
+      },
       btns: {
         "Ok": {
           "class": "primary",
@@ -517,9 +665,34 @@ $(document).ready(function() {
     });
   };
 
+  confirmPopup = function(message, confirmFnct) {
+    $('<div id="confirm">' + message +'</div>').popup({
+      title: 'Confirm',
+      shown: function() {
+        $('.btn-primary').focus();
+      },
+      btns: {
+        "Ok": {
+          "class": "primary",
+          func: function() {
+            $().closePopup();
+            confirmFnct();
+          }
+        },
+        "Cancel": {
+          func: function() {
+            $().closePopup();
+            return false;
+          }
+        }
+      }
+    });
+  };
+
   /*
-    # Methods to call on page load
+    Methods to call on page load
   */
+
   $(document.body).append(tree_context_menu());
   setup_context_menus();
   paste_buffer = {};
@@ -537,11 +710,17 @@ $(document).ready(function() {
       navigateUsingPath();
     },
     navigated: function(e, data) {
-      history.pushState({}, '', data.url);
+      if (history.pushState) {
+        history.pushState({}, '', data.url);
+      }
     }
   });
 
-  /* Multiple select */
+  /*
+   * Multiple select
+  */
+
+  //de-selects everything stored in columnSelected except for keep_selected
   var remove_selected = function(keep_selected){
     $.each(columnSelected, function(index, value){
       if (value != keep_selected){
@@ -550,62 +729,186 @@ $(document).ready(function() {
     });
   };
 
+  //selects everything in the group_selected, de-selects current if already selected
   var add_selected = function(group_selected, current){
     $.each(group_selected, function(index, value){
-      if (value == current && group_selected.length > 1)
+      if (value == current && group_selected.length > 1 && !shiftHeld)
         $(value).removeClass('osxSelected');
       else
         $(value).addClass('osxSelected');
     });
   };
 
+  //select the item that was originally selected in the clicked column
+  var add_last_selected = function(parent) {
+    $.each(allSelected, function(index, value) {
+      if ($(value).parent()[0] == parent[0]){
+        $(value).addClass('osxSelected');
+        lastClicked = value;
+      }
+    });
+  };
+
+  //disables or enables items in context menus
+  var checkContextMenus = function() {
+    if (columnSelected.length > 1) {
+      $('.contextMenu').disableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
+    }
+    else {
+      $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
+    }
+  };
+
+  //method for shift multiple select with Ctrl
+  var shiftCtrlSelect = function (parent, elems) {
+    if (columnSelected.length > 1 && elems[0] != lastClicked) {
+      var sibs = parent.children();
+      var inside = false;
+      $.each(sibs, function(index, value){
+        if ($(value).attr('hdfs_path') == elems.attr('hdfs_path')
+            || $(value).attr('hdfs_path') == $(lastClicked).attr('hdfs_path')) {
+          inside = (inside ? false : true);
+        }
+        else if (inside){
+          $(value).addClass('osxSelected');
+        }
+      });
+      columnSelected = $(parent).find('.osxSelected');
+    }
+  };
+
+  //method for shift multiple select without Ctrl
+  var shiftSelect = function (parent, elems) {
+    if (columnSelected.length == 1 && $(lastClicked).parent()[0] == parent[0]) {
+      $(lastClicked).addClass('osxSelected');
+      columnSelected = $(parent).find('.osxSelected');
+    }
+    if (columnSelected.length > 1) {
+      var inside = false;
+      var elemsPath = elems.attr('hdfs_path');
+      var colPath = $(columnSelected[0]).attr('hdfs_path');
+      var start = (elemsPath < colPath ? elemsPath : colPath);
+      var end = (start == elemsPath ? $(columnSelected[columnSelected.length-1]).attr('hdfs_path') : elemsPath);
+
+      $.each($(parent).children(), function(index, value){
+        if (!inside && $(value).attr('hdfs_path') == start) {
+          inside = true;
+          $(value).addClass('osxSelected');
+        }
+        else if (inside && $(value).attr('hdfs_path') == end) {
+          inside = false;
+          $(value).addClass('osxSelected');
+        }
+        else if (inside){
+          $(value).addClass('osxSelected');
+        }
+        else {
+          $(value).removeClass('osxSelected');
+        }
+      });
+      columnSelected = $(parent).find('.osxSelected');
+    }
+  };
+
   $(document).on('click', function(e){
-    if(e.which == 1){
+    if(e.which == 1){ //checks for left mouse button (needed in FF 3.6)
+      $(rightClicked).removeClass('rclicked');
       var elems = $(e.target).closest('li');
-      if (elems.length == 0 && !ctrlHeld) { //click outside of the lists
+
+      //click outside of the lists
+      if (elems.length == 0 && !ctrlHeld) {
         remove_selected(lastClicked);
         columnSelected = [];
+        lastClicked = elems[0];
         $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
       }
-      else { //click a list element
+
+      //click a list element
+      else {
         var parent = elems.parent();
-        if(ctrlHeld){ //CTRL held down
-          if (columnSelected.length == 0)
-            add_selected(allSelected, null);
-          else if ($(columnSelected[0]).parent()[0] == parent[0])
+
+        if(ctrlHeld) { //CTRL held down
+          if (columnSelected.length == 0) {
+            add_last_selected(parent);
+          }
+          else if ($(columnSelected[0]).parent()[0] == parent[0]) {
             add_selected(columnSelected, elems[0]);
-          else
+          }
+          else {
             remove_selected(lastClicked);
+          }
+
           columnSelected = $(parent).find('.osxSelected');
-          if (columnSelected.length > 1)
-            $('.contextMenu').disableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
-          else
-            $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprops');
-          if (columnSelected.length > 0)
-            lastClicked = elems[0];
-          else
-            lastClicked = null;
+          if (shiftHeld) {
+            shiftCtrlSelect(parent, elems);
+          }
+          lastClicked = ( columnSelected.length > 0 ? elems[0] : null);
         }
+
         else { //CTRL not held down
-          remove_selected(elems[0]);
-          if ($(columnSelected[0]).parent()[0] != parent[0])
-            $(lastClicked).addClass('osxSelected');
-          columnSelected = [];
-          $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprop');
-          lastClicked = null;
+          if (shiftHeld) {
+            if (columnSelected.length == 0) {
+              add_last_selected(parent);
+              columnSelected = $(parent).find('.osxSelected');
+              shiftSelect(parent, elems);
+            }
+            else if ($(columnSelected[0]).parent()[0] == parent[0]) {
+              shiftSelect(parent, elems);
+            }
+            else {
+              remove_selected(lastClicked);
+              columnSelected = $(parent).find('.osxSelected');
+            }
+            lastClicked = elems[0];
+          }
+
+          else {
+            remove_selected(elems[0]);
+            if ($(columnSelected[0]).parent()[0] != parent[0]) {
+              $(lastClicked).addClass('osxSelected');
+            }
+            columnSelected = [];
+            $('.contextMenu').enableContextMenuItems('#mkdir,#upload,#rename,#dirprop');
+            lastClicked = null;
+          }
         }
+        checkContextMenus();
+      }
+      if (columnSelected.length > 1) {
+        $('.innerWindow').disableContextMenu();
+      }
+      else {
+        $('.innerWindow').enableContextMenu();
+        $('.innerWindow').first().disableContextMenu();
+      }
+    }if(e.which == 3){ //to account for the right click
+      $(rightClicked).removeClass('rclicked');
+      rightClicked = $(e.target).closest('li');
+      $(rightClicked).addClass('rclicked');
+    }
+    else {
+      //NOTE: this only works for FF 3.6
+      //TODO: fix for Chrome (this listener is not picking up right click in Chrome)
+      lastWindow = $('.innerWindow').last();
+      if (lastWindow.find('#file_table').length > 0) {
+        lastWindow.disableContextMenu();
       }
     }
   });
 
+  // Method for holding down CTRL key
   $(document).on('keydown', function(e) {
-    if (!ctrlHeld && e.ctrlKey){
-      ctrlHeld = e.ctrlKey;
+    shiftHeld = e.shiftKey;
+    ctrlHeld = (e.ctrlKey || e.which == 224);
+    if (shiftHeld || ctrlHeld) {
       allSelected = $('#hdfs_browser').find('.osxSelected');
     }
   });
 
+  // Method when CTRL key is released
   $(document).on('keyup', function(e) {
-    ctrlHeld = e.ctrlKey;
+    ctrlHeld = (e.ctrlKey  || e.which == 224);
+    shiftHeld = e.shiftKey;
   });
+
 });

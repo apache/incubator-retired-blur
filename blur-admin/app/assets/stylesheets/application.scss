@@ -1,5 +1,6 @@
 //= require_self
 //= require ui.dynatree
+//= require jquery-ui
 
 // over ride any bootstrap variables
 $gridColumnWidth: 80px;
@@ -15,6 +16,7 @@ $gridColumnWidth: 80px;
 // JQuery ones to look at
 @import "jquery.contextMenu";
 @import "jquery.osxFinder";
+@import "jquery.timepicker";
 
 // Application specific pages
 @import "search";
@@ -25,4 +27,5 @@ $gridColumnWidth: 80px;
 @import "user_session";
 @import "users";
 @import "hdfs";
-@import "hdfs_metrics"
+@import "hdfs_metrics";
+@import "audits";

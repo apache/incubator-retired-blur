@@ -11,20 +11,29 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120618225024) do
+ActiveRecord::Schema.define(:version => 20120820073548) do
+
+  create_table "audits", :force => true do |t|
+    t.integer  "user_id"
+    t.string   "mutation"
+    t.string   "model_affected"
+    t.string   "action"
+    t.datetime "created_at",     :null => false
+    t.datetime "updated_at",     :null => false
+  end
 
   create_table "blur_queries", :force => true do |t|
-    t.text     "query_string",             :limit => 16777215
+    t.text     "query_string",             :limit => 2147483647
     t.integer  "complete_shards"
     t.integer  "uuid",                     :limit => 8
-    t.datetime "created_at",                                   :null => false
-    t.datetime "updated_at",                                   :null => false
+    t.datetime "created_at",                                     :null => false
+    t.datetime "updated_at",                                     :null => false
     t.boolean  "super_query_on"
     t.string   "facets"
     t.integer  "start"
     t.integer  "fetch_num"
-    t.text     "pre_filters",              :limit => 16777215
-    t.text     "post_filters",             :limit => 16777215
+    t.text     "pre_filters",              :limit => 2147483647
+    t.text     "post_filters",             :limit => 2147483647
     t.text     "selector_column_families"
     t.text     "selector_columns"
     t.string   "userid"
@@ -50,6 +59,7 @@ ActiveRecord::Schema.define(:version => 20120618225024) do
     t.text     "server"
     t.integer  "cluster_id"
     t.integer  "row_count",      :limit => 8
+    t.string   "comments"
   end
 
   add_index "blur_tables", ["cluster_id"], :name => "index_blur_tables_on_cluster_id"
@@ -81,7 +91,7 @@ ActiveRecord::Schema.define(:version => 20120618225024) do
     t.integer  "config_capacity",  :limit => 8
     t.integer  "present_capacity", :limit => 8
     t.integer  "dfs_remaining",    :limit => 8
-    t.integer  "dfs_used",         :limit => 8
+    t.integer  "dfs_used_real",    :limit => 8
     t.float    "dfs_used_percent"
     t.integer  "under_replicated", :limit => 8
     t.integer  "corrupt_blocks",   :limit => 8
@@ -93,6 +103,7 @@ ActiveRecord::Schema.define(:version => 20120618225024) do
     t.string   "port"
     t.integer  "hdfs_id"
     t.integer  "live_nodes"
+    t.integer  "dfs_used_logical", :limit => 8
   end
 
   add_index "hdfs_stats", ["hdfs_id"], :name => "index_hdfs_stats_on_hdfs_id"

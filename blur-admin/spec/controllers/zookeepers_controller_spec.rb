@@ -3,9 +3,8 @@ require 'spec_helper'
 describe ZookeepersController do
   describe "actions" do
     before do
-      @ability = Ability.new User.new
-      @ability.stub!(:can?).and_return(true)
-      controller.stub!(:current_ability).and_return(@ability)
+      # Universal setup
+      setup_tests
 
       # Set up association chain
       @zookeeper  = FactoryGirl.create :zookeeper
@@ -13,6 +12,7 @@ describe ZookeepersController do
       # ApplicationController.current_zookeeper
       Zookeeper.stub(:find_by_id).and_return(@zookeeper)
       Zookeeper.stub!(:first).and_return(@zookeeper)
+
       # ApplicationController.zookeepers
       Zookeeper.stub(:order).and_return [@zookeeper]
     end
@@ -79,29 +79,57 @@ describe ZookeepersController do
     end
 
     describe 'GET dashboard' do
-      it "collects the long queries data" do
-        pending 'need to test that all the different aspects of the query are being returned'
-        get :dashboard
-      end
-
       it "renders a json object" do
         get :dashboard
         response.content_type.should == 'application/json'
       end
     end
 
+    describe 'GET long running queries' do
+      before :each do
+        @zookeeper_with_queries = FactoryGirl.create :zookeeper_with_blur_queries
+        Zookeeper.stub!(:find).and_return(@zookeeper_with_queries)
+        query = @zookeeper_with_queries.blur_queries[rand @zookeeper_with_queries.blur_queries.count]
+        query.state = 0
+        query.created_at = 5.minutes.ago
+        query.save!
+      end
+
+      it "collects all long running queries" do
+        get :long_running_queries
+        json = JSON.parse response.body
+        json.count.should == 1
+        json[0]["state"] == 0
+      end
+
+      it "renders a json object" do
+        get :long_running_queries
+        response.content_type.should == 'application/json'
+      end
+    end
+
+    describe 'GET shard' do
+      it "renders a json object" do
+        @shard = FactoryGirl.create :shard
+        Zookeeper.stub_chain(:find, :clusters, :find_by_id, :shards).and_return([@shard])
+        get :shards
+        response.content_type.should == 'application/json'
+      end
+    end
+
     describe 'DELETE destroy_shard' do
       before :each do
-        @shard = FactoryGirl.create :shard
+        @shard = FactoryGirl.create :shard_with_cluster
+        Zookeeper.stub_chain(:find, :shards, :find_by_id).and_return(@shard)
       end
 
       it "calls destroy on the clusters model" do
-        Zookeeper.stub_chain(:find, :shards, :find_by_id).and_return(@shard)
         @shard.should_receive(:destroy)
         delete :destroy_shard, :shard_id => @shard.id, :id => @zookeeper.id
       end
 
       it "doesnt call destroy on nil clusters model" do
+        Zookeeper.stub_chain(:find, :shards, :find_by_id).and_return(nil)
         @shard.should_not_receive(:destroy)
         delete :destroy_shard, :shard_id => @shard.id, :id => @zookeeper.id
       end
@@ -110,20 +138,26 @@ describe ZookeepersController do
         delete :destroy_shard, :shard_id => @shard.id, :id => @zookeeper.id
         response.body.should == ' '
       end
+
+      it "logs an audit" do
+        Audit.should_receive :log_event
+        delete :destroy_shard, :shard_id => @shard.id, :id => @zookeeper.id
+      end
     end
 
     describe 'DELETE destroy_cluster' do
       before :each do
         @cluster = FactoryGirl.create :cluster
+        Zookeeper.stub_chain(:find, :clusters, :find_by_id).and_return(@cluster)
       end
 
       it "calls destroy on the clusters model" do
-        Zookeeper.stub_chain(:find, :clusters, :find_by_id).and_return(@cluster)
         @cluster.should_receive(:destroy)
         delete :destroy_cluster, :cluster_id => @cluster.id, :id => @zookeeper.id
       end
 
       it "doesnt call destroy on nil clusters model" do
+        Zookeeper.stub_chain(:find, :clusters, :find_by_id).and_return(nil)
         @cluster.should_not_receive(:destroy)
         delete :destroy_cluster, :cluster_id => @cluster.id, :id => @zookeeper.id
       end
@@ -132,27 +166,38 @@ describe ZookeepersController do
         delete :destroy_cluster, :cluster_id => @cluster.id, :id => @zookeeper.id
         response.body.should == ' '
       end
+
+      it "logs an audit" do
+        Audit.should_receive :log_event
+        delete :destroy_cluster, :cluster_id => @cluster.id, :id => @zookeeper.id
+      end
     end
 
     describe 'DELETE destroy_controller' do
       before(:each) do
         @created_controller = FactoryGirl.create :controller
+        Zookeeper.stub_chain(:find, :controllers, :find_by_id).and_return(@created_controller)
       end
 
       it "calls destroy on the Controller model" do
-        Zookeeper.stub_chain(:find, :controllers, :find_by_id).and_return(@created_controller)
         @created_controller.should_receive(:destroy)
         delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper
       end
 
       it "doesnt call destroy on nil controllers model" do
+        Zookeeper.stub_chain(:find, :controllers, :find_by_id).and_return(nil)
         @created_controller.should_not_receive(:destroy)
         delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper.id
       end
 
       it "renders nothing" do
-        delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper
+        delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper.id
         response.body.should == ' '
+      end
+
+      it "logs an audit" do
+        Audit.should_receive :log_event
+        delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper.id
       end
     end
 
@@ -171,6 +216,11 @@ describe ZookeepersController do
       it "renders nothing" do
         delete :destroy, :id => @zookeeper.id
         response.body.should == ' '
+      end
+
+      it "logs an audit" do
+        Audit.should_receive :log_event
+        delete :destroy, :id => @zookeeper.id
       end
     end
   end

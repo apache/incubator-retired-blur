@@ -3,13 +3,16 @@ require "spec_helper"
 describe BlurTablesController do
   describe "actions" do
     before(:each) do
+      # Uninversal Setup
+      setup_tests
+
+      # Models used for model chain
       @zookeeper  = FactoryGirl.create :zookeeper
       @client = mock(Blur::Blur::Client)
       @blur_table = FactoryGirl.create :blur_table
       @cluster = FactoryGirl.create_list :cluster, 3
-      @ability = Ability.new User.new
 
-      @ability.stub!(:can?).and_return(true)
+      # Setup the chain
       @zookeeper.stub_chain(:blur_tables, :order).and_return [@blur_table]
       @zookeeper.stub_chain(:clusters, :order).and_return @cluster
       controller.stub!(:thrift_client).and_return(@client)
@@ -61,6 +64,11 @@ describe BlurTablesController do
         @blur_table.should_receive(:enable).exactly(@tables.length).times
         put :enable, :tables => @tables
       end
+
+      it "should log an audit for every table enabled" do
+        Audit.should_receive(:log_event).exactly(@tables.length).times
+        put :enable, :tables => @tables
+      end
     end
 
     describe "PUT disable" do
@@ -79,10 +87,10 @@ describe BlurTablesController do
         put :disable, :tables => @tables
       end
 
-      #it "should render JSON" do
-      #  put :disable, :tables => @tables
-      #  response.content_type.should == 'application/json'
-      #end
+      it "should log an audit for every table disabled" do
+        Audit.should_receive(:log_event).exactly(@tables.length).times
+        put :disable, :tables => @tables
+      end
     end
 
     describe "DELETE destroy" do
@@ -110,6 +118,11 @@ describe BlurTablesController do
         @blur_table.should_receive(:blur_destroy).at_least(:once).with(false, kind_of(String))
         delete :destroy, :tables => @tables, :delete_index => 'not true'
       end
+
+      it "should log an audit for every table destroyed" do
+        Audit.should_receive(:log_event).exactly(@tables.length).times
+        put :destroy, :tables => @tables
+      end
     end
 
     describe "DELETE forget" do
@@ -121,6 +134,30 @@ describe BlurTablesController do
       it "should forget all the given tables" do
         BlurTable.should_receive(:destroy).with(['1', '2', '3'])
         delete :forget, :tables => @tables
+      end
+    end
+
+    describe "GET terms" do
+      before :each do
+        BlurTable.stub(:find).and_return @blur_table
+        @blur_table.stub(:terms)
+      end
+
+      it "should render a json" do
+        get :terms
+        response.content_type.should == 'application/json'
+      end
+    end
+
+    describe "PUT comment" do
+      before :each do
+        BlurTable.stub(:find).and_return @blur_table
+        @blur_table.stub(:save)
+      end
+
+      it "should change the comments in table" do
+        put :comment, :input => 'a comment'
+        @blur_table.comments.should == 'a comment'
       end
     end
   end

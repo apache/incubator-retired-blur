@@ -30,3 +30,4 @@ RSpec.configure do |config|
   config.formatter = :documentation
   config.use_transactional_fixtures = true
 end
+

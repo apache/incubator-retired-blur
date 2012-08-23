@@ -1,6 +1,7 @@
-$instance_height: 300px;
 $title_height: 35px;
-$graph_height: $instance_height - $title_height;
+$graph_height: 240px;
+$total_graph_height: $graph_height + 60px;
+$instance_height: $title_height + $total_graph_height;
 
 @mixin graph_component{
 	display: inline-block;
@@ -56,7 +57,7 @@ $graph_height: $instance_height - $title_height;
 		.graph_content{
 			@include graph_component;
 			width: 100%;
-			height: $graph_height;
+			height: $total_graph_height;
 			border: 1px solid #ccc;
 			position: absolute;
 			.graph_data{
@@ -68,6 +69,37 @@ $graph_height: $instance_height - $title_height;
 					height: $graph_height - 20;
 				}
 			}
+      .graph_info {
+				padding: 0 50px 0 205px;
+        bottom: 0;
+        .graph-info-table {
+          width: 100%;
+          margin: -5px 0 0 0;
+          .slider-info{
+            text-align: right;
+            .slider-time{
+              text-align: right;
+              width: 14px;
+            }
+            .min-date, .max-date {
+              text-align: right;
+              width: 100px;
+            }
+            .slider-redraw { margin: 0 5px 9px 0; }
+          }
+          .slider-box {
+            width: 350px;
+            .slider{
+              width: 300px;
+              margin-right: 15px;
+              float: right;
+            }
+          }
+          span.axis-value{
+            font-weight: bold;
+          }
+        }
+      }
 		}
 	}
   .loading-spinner {
@@ -76,4 +108,3 @@ $graph_height: $instance_height - $title_height;
     padding: 9px 0 0 9px;
   }
 }
-

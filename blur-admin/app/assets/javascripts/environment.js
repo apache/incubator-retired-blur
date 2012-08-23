@@ -7,12 +7,12 @@ $(document).ready(function(){
         func: function() {
           $.ajax({
             type: 'DELETE',
-            url: self.attr('href'),
+            url: self.attr('data-url'),
             success: function(data){
               if (self.attr('data-reload') === "true"){
                 window.location = window.location.origin;
               } else {
-                self.closest('li').remove();
+                self.closest('tr').remove();
                 $().closePopup();
               }
             }
@@ -125,8 +125,13 @@ $(document).ready(function(){
       type: 'DELETE',
       url: Routes.destroy_shard_zookeeper_path(CurrentZookeeper, id),
       success: function(data){
+        parent = self.closest('ul')
         self.closest('li').remove();
+        siblings = parent.find('li')
         $('.tooltip').remove();
+        if (siblings.length <=0 ){
+          window.location.reload(true);
+        }
       }
     });
   });

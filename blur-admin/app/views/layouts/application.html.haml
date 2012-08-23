@@ -14,6 +14,7 @@
 		%title
 			= yield(:title)
 			| Blur Console
+		%link{:rel => "icon", :type => "image/png", :href => "/assets/favicon.png"}
 	%body
 		#root
 			- if @current_user
@@ -44,9 +45,13 @@
 										= link_to 'HDFS File Browser', hdfs_index_path
 									%li{:class => controller == 'hdfs_metrics' && 'active'}
 										= link_to 'HDFS Metrics', hdfs_metrics_path
+							- if can? :index, :audits
+								%li{:class => controller == 'audits' && action == 'index' && 'active'}
+									= link_to 'Audits', audits_path
 							- if can? :index, :users
 								%li{:class => controller == 'users' && action == 'index' && 'active'}
 									= link_to 'Admin', users_path
+							
 						%ul.nav.pull-right
 							- if @zookeepers && @zookeepers.length > 1
 								%li
@@ -79,5 +84,5 @@
 				%a#page-help{:href => ''} Help
 				| Developed by 
 				%a{:href => "http://www.nearinfinity.com"} Near Infinity
-				| Version 1.2
+				| Version 1.3.1
 #help-menu{:style => 'display: none', "data-controller" => params[:controller], "data-action" => params[:action]}

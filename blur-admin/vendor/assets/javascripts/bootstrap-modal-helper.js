@@ -30,7 +30,8 @@ keyboard: boolean, closes the modal when the escape key is pressed.  defaults to
       footerClass:'',
       fade:true,
       backdrop:true,
-      keyboard:true
+      keyboard:true,
+      onEnter:false
       }, params)
     var title = params['title'];
     var body = params['body'];
@@ -45,26 +46,27 @@ keyboard: boolean, closes the modal when the escape key is pressed.  defaults to
     var fade = params['fade'];
     var backdrop = params['backdrop'];
     var keyboard = params['keyboard'];
-    
+    var onEnter = params['onEnter'];
+
     $('#modal').removeClass('fade').unbind('hide').unbind('hidden').modal('hide');
     $('#modal').remove();
-    
+
     var modal = $("<div id='modal' class='modal'></div>");
     $('body').append(modal);
     if(fade){
-      modal.addClass('fade'); 
+      modal.addClass('fade');
     }
-    
+
     modalHeader = $("<div class='modal-header'><h3>" + title + "</h3></div>");
     modalBody = $("<div class='modal-body'></div>");
     modalFooter = $("<div class='modal-footer'></div>");
-    
+
     modal.append(modalHeader);
     modal.append(modalBody);
     modalBody.addClass(bodyClass);
     modal.append(modalFooter);
     modalFooter.addClass(footerClass);
-        
+
     var clone = null;
     if($(this).length == 0){
       modalBody.html(body);
@@ -73,7 +75,7 @@ keyboard: boolean, closes the modal when the escape key is pressed.  defaults to
       $(this).first().replaceWith('<div id="modal-placeholder-div" style="display:none;"></div>');
       modalBody.html(clone);
     }
-    
+
     for(buttonName in btns){
       buttonProps = btns[buttonName]
       button = $("<button class='btn'>" + buttonName + "</button>")
@@ -87,7 +89,7 @@ keyboard: boolean, closes the modal when the escape key is pressed.  defaults to
       }
       modalFooter.prepend(button);
     }
-    
+
     if(typeof(preShow) =='function'){
       preShow(modal);
     }
@@ -109,6 +111,13 @@ keyboard: boolean, closes the modal when the escape key is pressed.  defaults to
     if(typeof(hidden) == 'function'){
       modal.bind('hidden',function(){
         hidden(modal)
+      });
+    }
+    if(onEnter) {
+      $('#modal').on('keyup', function(e){
+        if (e.which == 13){
+          $('.btn-primary').click();
+        }
       });
     }
     modal.bind('hidden',function(){

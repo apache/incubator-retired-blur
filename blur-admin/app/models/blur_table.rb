@@ -20,24 +20,24 @@ class BlurTable < ActiveRecord::Base
     serial_properties[:schema] = self.schema
     serial_properties[:sparkline] = table_query_info['sparkline']
     serial_properties[:average_queries] = table_query_info['average_queries']
+    serial_properties[:comments] = self.comments
     serial_properties
   end
 
   # Returns a map of host => [shards] of all hosts/shards associated with the table
   def hosts
-    JSON.parse read_attribute(:server)
+    read_attribute(:server).blank? ? {} : (JSON.parse read_attribute(:server))
   end
 
   def schema
-    if !self.table_schema.blank?
-      # sort columns, and then sort column families
-      if block_given?
-        (JSON.parse self.table_schema).each{|n| n['columns'].sort_by!{|k| k['name']}}.sort &Proc.new
-      else
-        (JSON.parse self.table_schema).each{|n| n['columns'].sort_by!{|k| k['name']}}.sort_by{|k| k['name']}
-      end
+    return nil if self.table_schema.blank?
+    # sort columns inline
+    sorted_schema = (JSON.parse self.table_schema).each{|n| n['columns'].sort_by!{|k| k['name']}}
+    if block_given?
+      sorted_schema.sort &Proc.new
     else
-      return nil
+      # sort column families
+      sorted_schema.sort_by{|k| k['name']}
     end
   end
 
@@ -92,35 +92,41 @@ class BlurTable < ActiveRecord::Base
   end
 
   def recent_queries
-    queries = self.blur_queries.select("minute(created_at) as minute, count(created_at) as cnt").where("created_at > '#{10.minutes.ago}'").group("minute(created_at)").order("created_at")
-    sparkline = [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0]] #default format for sparkline
+    queries = self.blur_queries
+      .select("minute(created_at) as minute, count(*) as cnt")
+      .where("created_at > '#{10.minutes.ago}'")
+      .group("minute")
+      .order("created_at")
+
+    #default format for sparkline
+    sparkline = [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0]] 
     time = 10.minutes.ago.min
     average_queries = 0.0
     queried_recently = false
 
     queries.each do |row|
       min = row.minute
-      cnt = row.cnt
+      count = row.cnt
 
-      if min >= time
-        min = min - time
-      else
-        min = 60 - time + min
-      end
+      # Get the diff between the minute and ten minutes ago
+      # also compensate for queries that straddle the hour
+      min = min >= time ? min - time : 60 - time + min
 
       if min > 9
-        sparkline[9][1] += cnt
+        sparkline[9][1] += count
       else
-        sparkline[min] = [min, cnt]
+        sparkline[min] = [min, count]
       end
 
-      average_queries += cnt
+      average_queries += count
+
       if !queried_recently && min >= 5
         queried_recently = true
       end
     end
-    average_queries = average_queries / 10.0
 
-    recent_queries = Hash['sparkline' => sparkline, 'average_queries' => average_queries, 'queried_recently' => queried_recently]
+    average_queries /= 10.0
+
+    recent_queries = {'sparkline' => sparkline, 'average_queries' => average_queries, 'queried_recently' => queried_recently}
   end
 end

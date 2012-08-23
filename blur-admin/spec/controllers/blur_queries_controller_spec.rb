@@ -3,14 +3,14 @@ require "spec_helper"
 describe BlurQueriesController do
   describe "actions" do
     before do
+      # Universal Setup
+      setup_tests
+
+      # Mock out the blur client
       @client = mock(Blur::Blur::Client)
       BlurThriftClient.stub!(:client).and_return(@client)
-      
-      @user = User.new
-      @ability = Ability.new @user
-      @ability.stub!(:can?).and_return(true)
-      controller.stub!(:current_ability).and_return(@ability)
 
+      # Blur Query model
       @blur_query = FactoryGirl.create :blur_query
       @user = User.new
       controller.stub!(:current_user).and_return(@user)
@@ -90,10 +90,15 @@ describe BlurQueriesController do
         @blur_query.should_receive(:cancel)
         put :update, :cancel => 'true', :id => '1'
       end
-      
+
       it "should render the blur_query partial" do
         put :update, :cancel => 'false', :id => '1'
         response.should render_template(:partial => '_blur_query')
+      end
+
+      it "should log an audit event when a query is canceled" do
+        Audit.should_receive :log_event
+        put :update, :cancel => 'true', :id => '1'
       end
     end
 

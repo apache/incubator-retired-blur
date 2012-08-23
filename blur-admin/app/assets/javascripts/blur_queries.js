@@ -27,6 +27,7 @@ $(document).ready(function() {
         "sZeroRecords": "No queries to display",
         "sInfoFiltered": "(filtered from _MAX_ total queries)"
       },
+
       sAjaxSource: Routes.refresh_zookeeper_blur_queries_path(CurrentZookeeper, 1),
       aoColumns: table_cols(),
       fnRowCallback: process_row
@@ -47,6 +48,7 @@ $(document).ready(function() {
       data_table.fnReloadAjax(Routes.refresh_zookeeper_blur_queries_path(CurrentZookeeper, range_time_limit));
     });
   };
+
   var table_cols = function() {
     if (visible_column_count === 8) {
       return [

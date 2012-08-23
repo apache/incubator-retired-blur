@@ -31,18 +31,22 @@ $nav-height: 40px;
 }
 
 #flash {
+  width: 600px;
   text-align: center;
   font-size: 1.2em;
   font-weight: bold;
   bottom: 0px;
-  right: -600px;
+  right: 0px;
   position: fixed;
   z-index: 100;
-  @include transition(right 3s);
   div{
+    position: absolute;
+    @include transition(right 3s);
+    right: -600px;
+    bottom: 0px;
     cursor: pointer;
     max-width: 600px;
-    min-width:300px;
+    min-width: 300px;
     $alert-height: 44px;
     height: $alert-height;
     line-height: $alert-height;
@@ -58,7 +62,6 @@ $nav-height: 40px;
 
 #ft {
   bottom: 0;
-  //padding-top: 15px;
   position: fixed;
   width: 100%;
   $footer-color: lighten($base-theme-color, 20%);

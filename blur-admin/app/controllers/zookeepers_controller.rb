@@ -67,7 +67,7 @@ class ZookeepersController < ApplicationController
       shard.destroy
       Audit.log_event(current_user, "Shard (#{shard.node_name}) was forgotten", "shard", "delete") if shard.destroyed?
     end
-    render :nothing => true
+    render :json => shard
   end
 
   def destroy_cluster
@@ -76,7 +76,7 @@ class ZookeepersController < ApplicationController
       cluster.destroy
       Audit.log_event(current_user, "Cluster (#{cluster.name}) was forgotten", "cluster", "delete") if cluster.destroyed?
     end
-    render :nothing => true
+    render :json => cluster
   end
 
   def destroy_controller
@@ -85,7 +85,7 @@ class ZookeepersController < ApplicationController
       controller.destroy
       Audit.log_event(current_user, "Controller (#{controller.node_name}) was forgotten", "controller", "delete") if controller.destroyed?
     end
-    render :nothing => true
+    render :json => controller
   end
 
   def destroy
@@ -94,6 +94,6 @@ class ZookeepersController < ApplicationController
       zookeeper.destroy
       Audit.log_event(current_user, "Zookeeper (#{zookeeper.name}) was forgotten", "zookeeper", "delete") if zookeeper.destroyed?
     end
-    render :nothing => true
+    render :json => zookeeper
   end
 end

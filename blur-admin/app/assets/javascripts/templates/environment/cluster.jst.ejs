@@ -7,8 +7,7 @@
   </a>
 </td>
 <td>
-  <i  class="icon-remove-sign confirm-action"
-      data-message="remove this cluster"
-      data-url="<%= Routes.destroy_cluster_zookeeper_path(cluster.get('zookeeper_id'), cluster.get('id')) %>"
-      data-original-title="Remove This Cluster" />
+  <% if(cluster.get('status') == 0){ %>
+    <i class="icon-remove-sign icon-white destroy-cluster confirm-action" title="Remove This Cluster" />
+  <% } %>
 </td>

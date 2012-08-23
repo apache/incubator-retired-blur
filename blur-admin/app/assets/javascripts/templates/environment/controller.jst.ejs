@@ -1,8 +1,7 @@
 <td><%= controller.get('node_name') %></td>
 <td><%= controller.get('blur_version') %></td>
 <td>
-  <i  class="icon-remove-sign confirm-action"
-      data-message="remove this controller"
-      data-url="/zookeepers/<%= controller.get('zookeeper_id') %>/controller/<%= controller.get('id') %>"
-      data-original-title="Remove This Controller" />
+  <% if(controller.get('status') == 0){ %>
+    <i class="icon-remove-sign icon-white destroy-controller confirm-action" title="Remove This Controller" />
+  <% } %>
 </td>

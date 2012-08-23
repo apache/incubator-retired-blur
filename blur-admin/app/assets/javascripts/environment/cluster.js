@@ -1,5 +1,6 @@
 var ClusterModel = Backbone.Model.extend({
   initialize: function(){
+    this.urlRoot = "/zookeepers/" + CurrentZookeeper + "/cluster";
     this.view = new ClusterView({model: this});
     this.on('change', function(){
       this.view.render();
@@ -7,6 +8,18 @@ var ClusterModel = Backbone.Model.extend({
   },
   safe_mode: function(){
     return this.get('safe_mode') ? 'Yes' : 'No';
+  },
+  remove_cluster: function(){
+    if(this.get('status') == 0){
+      this.destroy({
+        success: function(){
+          Notification("Successfully forgot the Cluster!", true);
+        }, 
+        error: function(){
+          Notification("Failed to forget the Cluster", false);
+        }
+      });
+    }
   }
 });
 
@@ -17,6 +30,9 @@ var ClusterCollection = Backbone.StreamCollection.extend({
     this.on('add', function(cluster){
       var container = this.view.$el.find('tbody');
       container.append(cluster.view.render().$el);
+    });
+    this.on('remove', function(cluster){
+      cluster.view.remove();
     });
   }
 });

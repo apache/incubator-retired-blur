@@ -4,10 +4,9 @@
     <div class="connection-url">
       <%= zookeeper.get('url') %>
     </div>
-    <i  class="icon-remove-sign confirm-action"
-        data-message="forget this zookeeper"
-        data-reload="true" data-url="<%= Routes.zookeeper_path(zookeeper.get('id')) %>"
-        data-original-title="Forget This Zookeeper"/>
+    <% if(zookeeper.get('status') == 0){ %>
+      <i class="icon-remove-sign destroy-zk icon-white" title="Forget this Zookeeper"/>
+    <% } %>
   </h2>
 </div>
 <div id="blur" class="row">

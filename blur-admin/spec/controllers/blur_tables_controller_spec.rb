@@ -98,6 +98,7 @@ describe BlurTablesController do
         @tables = [1, 2, 3]
         BlurTable.stub(:find).and_return @blur_table
         BlurTable.stub!(:blur_destroy)
+        BlurTable.stub!(:destroy)
         @blur_table.stub!(:save)
       end
 
@@ -123,17 +124,10 @@ describe BlurTablesController do
         Audit.should_receive(:log_event).exactly(@tables.length).times
         put :destroy, :tables => @tables
       end
-    end
-
-    describe "DELETE forget" do
-      before(:each) do
-        @tables = [1, 2, 3]
-        BlurTable.stub(:destroy)
-      end
 
       it "should forget all the given tables" do
-        BlurTable.should_receive(:destroy).with(['1', '2', '3'])
-        delete :forget, :tables => @tables
+        BlurTable.should_receive(:destroy).with(@blur_table)
+        delete :destroy, :tables => @tables
       end
     end
 

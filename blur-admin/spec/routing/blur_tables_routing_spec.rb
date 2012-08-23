@@ -18,10 +18,6 @@ describe BlurTablesController do
       put("/zookeepers/1/blur_tables/disable").should route_to(:controller => "blur_tables", :action => "disable", :zookeeper_id => '1')
     end
 
-    it "forget routes to #forget" do
-      delete("/zookeepers/1/blur_tables/forget").should route_to(:controller => "blur_tables", :action => "forget", :zookeeper_id => '1')
-    end
-
     it "destroy routes to #destroy" do
       delete("/zookeepers/1/blur_tables").should route_to(:controller => "blur_tables", :action => "destroy", :zookeeper_id => '1')
     end

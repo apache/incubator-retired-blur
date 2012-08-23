@@ -35,12 +35,8 @@ class BlurTablesController < ApplicationController
       table.blur_destroy destroy_index, @current_zookeeper.blur_urls
       message = "and underlying index" if destroy_index
       Audit.log_event(current_user, "Table, #{table.table_name}, #{message} was deleted", "blur_table", "update")
+      BlurTable.destroy table
     end
-  end
-
-  def forget
-    BlurTable.destroy params[:tables]
-    render :nothing => true
   end
 
   def terms

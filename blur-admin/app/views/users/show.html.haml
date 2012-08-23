@@ -53,7 +53,7 @@
             = option
       =select_tag :zookeeper_num,  options_from_collection_for_select(@zookeepers, "id", "name", @zookeeper_preference.value)
       %p
-      =submit_tag "Save", :confirm => "Are you sure?", :id => "zookeeper_submit"
+      =submit_tag "Save", :confirm => "Are you sure?", :id => "zookeeper_submit", :class => "btn btn-primary"
     #user-info.span4
       %p
         %strong Username:

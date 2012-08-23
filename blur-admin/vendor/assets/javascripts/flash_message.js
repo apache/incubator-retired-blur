@@ -21,9 +21,9 @@ $(document).ready(function(){
     // Add a flash message to the container
     add: function(message, success){
       var className = success ? 'alert-success' : 'alert-error';
-      var messageNode = $('<div class="notice alert ' + className + '">' + message + '</div>');
+      var messageNode = $('<div class="alert ' + className + '">' + message + '</div>');
       // adjust the height to comp
-      var siblings = flash_container.find('.notice').length * 45;
+      var siblings = flash_container.find('div').length * 45;
       messageNode.css('bottom', siblings + 'px');
       flash_container.append(messageNode);
       // show the message (delay is for timing issue)
@@ -43,7 +43,7 @@ $(document).ready(function(){
   window.Notification = flashMessageActions.add;
 
   // list of original messages
-  var initialNotices = flash_container.find('.notice');
+  var initialNotices = flash_container.find('div');
   // Timeout to auto hide the original messages
   var hideFlash = setTimeout(function(){
     initialNotices.each(function(){
@@ -52,7 +52,7 @@ $(document).ready(function(){
   }, wait_time);
   
   // Hide the notice when you click on it
-  flash_container.on('click', '.notice', function(){
+  flash_container.on('click', 'div', function(){
     flashMessageActions.hide($(this));
   })
 

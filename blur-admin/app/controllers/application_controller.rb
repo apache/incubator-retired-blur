@@ -74,6 +74,7 @@ class ApplicationController < ActionController::Base
     if request.xhr?
       render :status => :conflict, :text => "No Current Zookeeper"
     else
+      flash[:error] = "A Zookeeper with that id does not exist!"
       redirect_to root_path
     end
   end

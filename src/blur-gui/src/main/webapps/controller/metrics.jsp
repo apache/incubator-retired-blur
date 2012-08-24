@@ -24,7 +24,8 @@
 <body>
 	<script>
 		//decimal formatter
-		var df = d3.format("4d");
+		var df = d3.format(",");
+		var df1dp = d3.format("3,.1f");
 		var methodCalls;
 
 		
@@ -67,22 +68,38 @@
 		        .append("td")
 		            .text(function(d) { return d.value; });
 			
+		    var nsToS = 1000000000;
+		    
 			//alert(json);
 			arr = [];
 			arr[0] = json;
-			//select obj and bind data
-			d3.select("#rightTD").selectAll("ul")
-				.data(d3.keys(methodCalls))
-				.enter().append("ul")
-				.text(function(d) { return d;})
-				.selectAll("li")
-				.data(function(d) {
-					return d3.entries(methodCalls[d]);})
+			
+			var rTable = d3.select("#rightTD").append("table"),
+				rHead = rTable.append("thead"),
+				rBody = rTable.append("tbody");
+
+	        rHead.append("tr")
+		        .selectAll("th")
+		        .data(["MethodCall","rate (s)","invokes","times (ns)"])
+		        .enter()
+		        .append("th")
+		        .text(function(column) { return column; })
+		        .style("text-align", function(d) { return "left"});
+	        
+		    var rrows = rBody.selectAll("tr")
+		            .data(d3.keys(methodCalls))
+		            .enter()
+		            .append("tr")
+		            .style("background-color", function(d,i) { return i % 2 ? "#eee" : "#ddd"; });
+		    
+		    rrows.selectAll("td")
+					.data(function(d,i) { return [d, 
+					                            df1dp(methodCalls[d].invokes/(methodCalls[d].times/nsToS)),
+					                            df(methodCalls[d].invokes),
+					                            methodCalls[d].times] } )
 					.enter()
-					.append("li")
-					.text(function(d) { return d.key + " " + d.value })
-					.style("background-color", function(d,i) { return i % 2 ? "#eee" : "#ddd"; })
-					.attr("id",function(d) { return d.key; });
+					.append("td")
+					.text(function(d) { return d; });
 		});
 	</script>
 	<h1>

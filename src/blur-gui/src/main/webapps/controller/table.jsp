@@ -34,6 +34,12 @@
 		ret += row("Queries", ts.queries + "");
 		ret += row("Rows", ts.rowCount + "");
 		ret += row("Records", ts.recordCount + "");
+		TableDescriptor td = client.describe(tableName);
+		ret += row("Block Caching", td.blockCaching + "");
+		ret += row("Compression Block Size", td.compressionBlockSize + "");
+		ret += row("Compression Class", td.compressionClass);
+		ret += row("Read Only", td.readOnly + "");
+	
 		
 		return ret;
 	}

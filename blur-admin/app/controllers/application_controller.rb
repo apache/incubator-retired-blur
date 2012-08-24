@@ -8,6 +8,8 @@ class ApplicationController < ActionController::Base
   helper_method :license, :current_user
 
   enable_authorization do |exception|
+    puts '$' * 80
+    puts exception.backtrace
     if current_user
       if can? :index, :zookeepers
         redirect_to root_url, :alert => "Unauthorized"
@@ -89,5 +91,9 @@ class ApplicationController < ActionController::Base
 
   def current_user_session
     @current_user_session ||= UserSession.find
+  end
+
+  def render_404
+    raise ActionController::RoutingError.new('Not Found')
   end
 end

@@ -34,7 +34,7 @@ var Zookeeper = Backbone.Model.extend({
 
 var ZookeeperCollection = Backbone.StreamCollection.extend({
   model: Zookeeper,
-  url: Routes.dashboard_zookeepers_path({format: 'json'}),
+  url: Routes.zookeepers_path({format: 'json'}),
   initialize: function(models, options){
     this.on('add', function(zookeeper){
       $('#zookeepers').append(zookeeper.view.render().el);

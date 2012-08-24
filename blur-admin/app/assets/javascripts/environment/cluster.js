@@ -8,7 +8,7 @@ var ClusterModel = Backbone.Model.extend({
   safe_mode: function(){
     return this.get('safe_mode') ? 'Yes' : 'No';
   },
-  remove_cluster: function(){
+  remove: function(){
     if(this.get('status') == 0){
       this.destroy({
         success: function(){
@@ -54,7 +54,8 @@ var ClusterView = Backbone.View.extend({
   tagName: 'tr',
   template: JST['templates/environment/cluster'],
   events:{
-    "click .more-shard-info" : "show_shards"
+    "click .more-shard-info" : "show_shards",
+    "click .destroy-cluster" : "destroy_cluster"
   },
   render: function(){
     this.$el.attr('data-cluster-id', this.model.get('id')).html(this.template({cluster: this.model}));
@@ -62,5 +63,11 @@ var ClusterView = Backbone.View.extend({
   },
   show_shards: function(event){
     new ShardCollection(null, {cluster_id: this.model.get('id')});
+  },
+  destroy_cluster: function(){
+    Confirm_Delete({
+      message: "forget this cluster",
+      confirmed_action: _.bind(this.model.remove, this.model)
+    });
   }
 });

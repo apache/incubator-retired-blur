@@ -51,7 +51,7 @@ var ControllerView = Backbone.View.extend({
   tagName: 'tr',
   template: JST['templates/environment/controller'],
   events:{
-    "click .destroy-controller" : "destroy_zookeeper"
+    "click .destroy-controller" : "destroy_controller"
   },
   render: function(){
     this.$el.attr('data-controller-id', this.model.get('id')).html(this.template({controller: this.model}));
@@ -62,7 +62,7 @@ var ControllerView = Backbone.View.extend({
     }
     return this;
   },
-  destroy_zookeeper: function(){
+  destroy_controller: function(){
     Confirm_Delete({
       message: "forget this controller",
       confirmed_action: _.bind(this.model.remove, this.model)

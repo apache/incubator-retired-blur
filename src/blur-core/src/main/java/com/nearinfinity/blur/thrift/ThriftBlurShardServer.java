@@ -16,14 +16,11 @@
 
 package com.nearinfinity.blur.thrift;
 
-<<<<<<< HEAD
 import static com.nearinfinity.blur.utils.BlurConstants.*;
-=======
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_PORT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT;
->>>>>>> gui
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_MAX_CLAUSE_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;

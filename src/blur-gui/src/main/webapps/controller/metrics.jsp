@@ -72,12 +72,12 @@
 			arr[0] = json;
 			//select obj and bind data
 			d3.select("#rightTD").selectAll("ul")
-				.data(arr)
+				.data(d3.keys(methodCalls))
 				.enter().append("ul")
-				.text("Metrics")
+				.text(function(d) { return d;})
 				.selectAll("li")
 				.data(function(d) {
-					return d3.entries(d);})
+					return d3.entries(methodCalls[d]);})
 					.enter()
 					.append("li")
 					.text(function(d) { return d.key + " " + d.value })
@@ -91,8 +91,8 @@
 	<br />
 	<table>
 	<tr>
-	<td width="400" id="leftTD"></td>
-	<td width="400" id="rightTD"></td>
+	<td width="400" id="leftTD" valign="top"></td>
+	<td width="400" id="rightTD" valign="top"></td>
 	</tr>
 	</table>
 <div>

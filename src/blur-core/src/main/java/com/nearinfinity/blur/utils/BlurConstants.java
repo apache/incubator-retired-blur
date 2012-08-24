@@ -91,6 +91,9 @@ public class BlurConstants {
   public static final String BLUR_CONTROLLER_RETRY_MAX_MUTATE_DELAY = "blur.controller.retry.max.mutate.delay";
   public static final String BLUR_CONTROLLER_RETRY_MAX_DEFAULT_DELAY = "blur.controller.retry.max.default.delay";
   public static final String BLUR_CONTROLLER_RETRY_MAX_FETCH_RETRIES = "blur.controller.retry.max.fetch.retries";
+  
+  public static final String BLUR_GUI_CONTROLLER_PORT = "blur.gui.controller.port";
+  public static final String BLUR_GUI_SHARD_PORT = "blur.gui.shard.port";
 
   public static final String DEFAULT = "default";
   public static final String BLUR_CLUSTER_NAME = "blur.cluster.name";

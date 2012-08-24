@@ -14,7 +14,7 @@
 		<module>blur-store</module>
 		<module>blur-mapred</module>
 		<module>blur-util</module>
-		<module>blur-jdbc</module>
+		<module>blur-gui</module>
 	</modules>
 	
 	<dependencies>

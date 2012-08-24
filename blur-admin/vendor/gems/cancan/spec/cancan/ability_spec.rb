@@ -290,8 +290,19 @@ describe CanCan::Ability do
     @ability.should be_fully_authorized(:update, :ranges)
   end
 
-  it "should not match subjects return nil for methods that must match nested a nested conditions hash" do
-    mock(object_with_foo = Object.new).foo { :bar }
+  it "should accept a set as a condition value" do
+    object_with_foo_2 = Object.new
+    object_with_foo_2.should_receive(:foo) { 2 }
+    object_with_foo_3 = Object.new
+    object_with_foo_3.should_receive(:foo) { 3 }
+    @ability.can :read, :objects, :foo => [1, 2, 5].to_set
+    @ability.can?(:read, object_with_foo_2).should be_true
+    @ability.can?(:read, object_with_foo_3).should be_false
+  end
+
+  it "does not match subjects return nil for methods that must match nested a nested conditions hash" do
+    object_with_foo = Object.new
+    object_with_foo.should_receive(:foo) { :bar }
     @ability.can :read, :arrays, :first => { :foo => :bar }
     @ability.can?(:read, [object_with_foo]).should be_true
     @ability.can?(:read, []).should be_false
@@ -352,13 +363,21 @@ describe CanCan::Ability do
     @ability.can?(:update, :books, :author).should be_false
   end
 
-
   # Hash Association
 
   it "checks permission through association when hash is passed as subject" do
     @ability.can :read, :books, :range => {:begin => 3}
     @ability.can?(:read, (1..4) => :books).should be_false
     @ability.can?(:read, (3..5) => :books).should be_true
+    @ability.can?(:read, 123 => :books).should be_true
+  end
+
+  it "checks permissions on association hash with multiple rules" do
+    @ability.can :read, :books, :range => {:begin => 3}
+    @ability.can :read, :books, :range => {:end => 6}
+    @ability.can?(:read, (1..4) => :books).should be_false
+    @ability.can?(:read, (3..5) => :books).should be_true
+    @ability.can?(:read, (1..6) => :books).should be_true
     @ability.can?(:read, 123 => :books).should be_true
   end
 
@@ -394,14 +413,14 @@ describe CanCan::Ability do
     end
   end
 
-  it "should not raise access denied exception if ability is authorized to perform an action and return subject" do
+  it "does not raise access denied exception if ability is authorized to perform an action and return subject" do
     @ability.can :read, :foo
     lambda {
       @ability.authorize!(:read, :foo).should == :foo
     }.should_not raise_error
   end
 
-  it "should know when block is used in conditions" do
+  it "knows when block is used in conditions" do
     @ability.can :read, :foo
     @ability.should_not have_block(:read, :foo)
     @ability.can :read, :foo do |foo|
@@ -410,14 +429,14 @@ describe CanCan::Ability do
     @ability.should have_block(:read, :foo)
   end
 
-  it "should know when raw sql is used in conditions" do
+  it "knows when raw sql is used in conditions" do
     @ability.can :read, :foo
     @ability.should_not have_raw_sql(:read, :foo)
     @ability.can :read, :foo, 'false'
     @ability.should have_raw_sql(:read, :foo)
   end
 
-  it "should raise access denied exception with default message if not specified" do
+  it "raises access denied exception with default message if not specified" do
     begin
       @ability.authorize! :read, :books
     rescue CanCan::Unauthorized => e
@@ -457,8 +476,8 @@ describe CanCan::Ability do
   it "determines model adapter class by asking AbstractAdapter" do
     model_class = Object.new
     adapter_class = Object.new
-    stub(CanCan::ModelAdapters::AbstractAdapter).adapter_class(model_class) { adapter_class }
-    stub(adapter_class).new(model_class, []) { :adapter_instance }
+    CanCan::ModelAdapters::AbstractAdapter.stub(:adapter_class).with(model_class) { adapter_class }
+    adapter_class.stub(:new).with(model_class, []) { :adapter_instance }
     @ability.model_adapter(model_class, :read).should == :adapter_instance
   end
 
@@ -507,5 +526,16 @@ describe CanCan::Ability do
       @ability.unauthorized_message(:edit, 1..3).should == "edit ranges"
       # @ability.unauthorized_message(:update, ArgumentError).should == "update argument error"
     end
+  end
+
+  it "merges the rules from another ability" do
+    @ability.can :use, :tools
+    another_ability = Object.new
+    another_ability.extend(CanCan::Ability)
+    another_ability.can :use, :search
+
+    @ability.merge(another_ability)
+    @ability.can?(:use, :search).should be_true
+    @ability.send(:rules).size.should == 2
   end
 end

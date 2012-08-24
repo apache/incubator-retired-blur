@@ -3,18 +3,19 @@ BlurAdmin::Application.routes.draw do
     match '/preferences/:pref_type' => 'preferences#update', :via => :put, :as => :preference
   end
 
-  resources :zookeepers, :only => [:index, :show, :destroy] do
+  resources :zookeepers, :only => [:index, :show, :destroy], :shallow => true do
     #Zookeeper routes
-    member do
-      delete 'controller/:controller_id' => 'zookeepers#destroy_controller', :as => :destroy_controller
-      delete 'shard/:shard_id' => 'zookeepers#destroy_shard', :as => :destroy_shard
-      delete 'cluster/:cluster_id' => 'zookeepers#destroy_cluster', :as => :destroy_cluster
-      get 'long_running' => 'zookeepers#long_running_queries', :as => :long_running_queries
-      get 'shards/:cluster_id' => 'zookeepers#shards', :as => :shards
+    #Nested cluster Resource
+    resources :clusters, :only => [:destroy] do
+      resources :shards, :only => [:index, :destroy]
     end
 
-    collection do
-      get 'dashboard'
+    #Nested Controller Resource
+    resources :shards, :only => [:destroy]
+
+
+    member do
+      get 'long_running' => 'zookeepers#long_running_queries', :as => :long_running_queries
     end
 
     #Nested Search Resource

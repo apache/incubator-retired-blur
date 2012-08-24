@@ -16,7 +16,7 @@ class Ability
       if user.reader?
         # view pages
         can :index, [:zookeepers, :blur_tables, :hdfs, :hdfs_metrics]
-        can :show, [:zookeepers, :help]
+        can :show, [:zookeepers, :help, :clusters]
         can [:dashboard, :long_running_queries], :zookeepers
         can [:expand, :file_info, :info, :folder_info, :slow_folder_info, :file_tree], :hdfs
         can :stats, :hdfs_metrics
@@ -42,7 +42,8 @@ class Ability
       if user.editor?
         can [:update, :enable, :disable, :destroy, :forget, :comment], :blur_tables
         can :update, :blur_queries
-        can [:destroy_shard, :destroy_controller, :destroy_cluster, :destroy, :shards], :zookeepers
+        can :index, :shards
+        can [:destroy], [:zookeepers, :clusters, :shards, :controllers]
         can [:move_file, :delete_file, :mkdir,:upload_form,:upload], :hdfs
       end
 

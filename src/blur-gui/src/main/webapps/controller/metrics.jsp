@@ -25,10 +25,14 @@
 	<script>
 		//decimal formatter
 		var df = d3.format("4d");
+		var methodCalls;
 
 		
 		//basic printout
 		d3.json("metrics", function(json) {
+			
+			methodCalls = json["methodCalls"];
+			delete json["methodCalls"];
 			
 			var topLevelMetrics = d3.entries(json);
 			
@@ -62,9 +66,6 @@
 		        .enter()
 		        .append("td")
 		            .text(function(d) { return d.value; });
-
-
-			
 			
 			//alert(json);
 			arr = [];

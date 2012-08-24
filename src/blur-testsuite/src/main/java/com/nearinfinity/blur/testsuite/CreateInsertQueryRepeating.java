@@ -106,7 +106,7 @@ public class CreateInsertQueryRepeating {
 			createTable(client, "test1", cluster);
 
 		System.out.println("Starting load");
-		loadupTable(client, "test1", 1000);
+		loadupTable(client, "test1", 10);
 		System.out.println("Finshed load");
 
 		System.out.println("query time!");

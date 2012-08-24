@@ -20,7 +20,8 @@
 			List<String> tables = client.tableListByCluster(cluster);
 			for (String table : tables) {
 				try {
-					ret += row(cluster, tableLink(table,cluster), client.describe(table).isEnabled?"yes":"no");
+					TableDescriptor td = client.describe(table);
+					ret += row(cluster, tableLink(table,cluster), td.shardCount+"", td.isEnabled?"yes":"no");
 				} catch (BlurException e) {
 					ret += row(3, "<font color=FF0000>Error describing table: "
 							+ table + "</font>");
@@ -101,7 +102,7 @@
 	<hr />
 	<br />
 	<h2>Tables</h2>
-	<%=table(getTables(client),"Cluster Name","Table Name","Enabled")%>
+	<%=table(getTables(client),"Cluster Name","Table Name","Shards","Enabled")%>
 	<hr />
 	<br />
 	<h2>Configs</h2>

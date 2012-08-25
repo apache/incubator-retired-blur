@@ -16,7 +16,8 @@
 
 package com.nearinfinity.blur.thrift;
 
-import static com.nearinfinity.blur.utils.BlurConstants.*;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CLUSTER_NAME;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_MAX_CLAUSE_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
@@ -27,7 +28,6 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIM
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_DATA_FETCH_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WARMUP_CLASS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.index.IndexDeletionPolicy;
+import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooKeeper;
@@ -51,7 +52,6 @@ import com.nearinfinity.blur.concurrent.SimpleUncaughtExceptionHandler;
 import com.nearinfinity.blur.concurrent.ThreadWatcher;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.lucene.index.TimeBasedIndexDeletionPolicy;
 import com.nearinfinity.blur.manager.BlurFilterCache;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
 import com.nearinfinity.blur.manager.DefaultBlurFilterCache;
@@ -155,7 +155,7 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     BlurFilterCache filterCache = getFilterCache(configuration);
     BlurIndexWarmup indexWarmup = getIndexWarmup(configuration);
-    IndexDeletionPolicy indexDeletionPolicy = new TimeBasedIndexDeletionPolicy(configuration.getLong(BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE, 60000));
+    IndexDeletionPolicy indexDeletionPolicy = new KeepOnlyLastCommitDeletionPolicy();
 
     final DistributedIndexServer indexServer = new DistributedIndexServer();
     indexServer.setBlurMetrics(blurMetrics);

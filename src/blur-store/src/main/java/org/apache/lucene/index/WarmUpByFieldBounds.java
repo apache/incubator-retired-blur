@@ -23,6 +23,7 @@ import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.lucene.LuceneConstant;
 
 public class WarmUpByFieldBounds {
 
@@ -54,7 +55,7 @@ public class WarmUpByFieldBounds {
 
   private static Directory getDir() throws CorruptIndexException, LockObtainFailedException, IOException {
     RAMDirectory dir = new RAMDirectory();
-    IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_35, new KeywordAnalyzer());
+    IndexWriterConfig conf = new IndexWriterConfig(LuceneConstant.LUCENE_VERSION, new KeywordAnalyzer());
     TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     IndexWriter writer = new IndexWriter(dir, conf);

@@ -231,10 +231,6 @@ public class DirectoryReferenceCounter extends Directory {
     directory.copy(to, src, dest);
   }
 
-  public boolean equals(Object obj) {
-    return directory.equals(obj);
-  }
-
   public boolean fileExists(String name) throws IOException {
     return directory.fileExists(name);
   }
@@ -250,10 +246,6 @@ public class DirectoryReferenceCounter extends Directory {
 
   public LockFactory getLockFactory() {
     return directory.getLockFactory();
-  }
-
-  public int hashCode() {
-    return directory.hashCode();
   }
 
   public String[] listAll() throws IOException {

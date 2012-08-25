@@ -128,7 +128,8 @@ public class IndexManager {
 
   public void init() {
     _executor = Executors.newThreadPool("index-manager", _threadCount);
-    _mutateExecutor = Executors.newSingleThreadExecutor("index-manager-mutate");
+    //@TODO give the mutate it's own thread pool
+    _mutateExecutor = Executors.newThreadPool("index-manager-mutate", _threadCount);
     _statusManager.init();
     LOG.info("Init Complete");
   }
@@ -647,7 +648,10 @@ public class IndexManager {
     Future<Void> future = _mutateExecutor.submit(new Callable<Void>() {
       @Override
       public Void call() throws Exception {
+        long s = System.nanoTime();
         doMutates(mutations);
+        long e = System.nanoTime();
+        LOG.debug("doMutates took [" + (e - s) / 1000000.0 + " ms] to complete");
         return null;
       }
     });
@@ -667,8 +671,8 @@ public class IndexManager {
     }
   }
 
-  private void doMutates(String table, List<RowMutation> mutations) throws IOException, BlurException {
-    Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
+  private void doMutates(final String table, List<RowMutation> mutations) throws IOException, BlurException {
+    final Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
 
     Map<String, List<RowMutation>> mutationsByShard = new HashMap<String, List<RowMutation>>();
 
@@ -683,12 +687,33 @@ public class IndexManager {
       list.add(mutation);
     }
 
+    List<Future<Void>> futures = new ArrayList<Future<Void>>();
+
     for (Entry<String, List<RowMutation>> entry : mutationsByShard.entrySet()) {
-      executeMutates(table, entry.getKey(), indexes, entry.getValue());
+      final String shard = entry.getKey();
+      final List<RowMutation> value = entry.getValue();
+      futures.add(_mutateExecutor.submit(new Callable<Void>() {
+        @Override
+        public Void call() throws Exception {
+          executeMutates(table, shard, indexes, value);
+          return null;
+        }
+      }));
+    }
+
+    for (Future<Void> future : futures) {
+      try {
+        future.get();
+      } catch (InterruptedException e) {
+        throw new BException("Unknown error during mutation", e);
+      } catch (ExecutionException e) {
+        throw new BException("Unknown error during mutation", e.getCause());
+      }
     }
   }
 
   private void executeMutates(String table, String shard, Map<String, BlurIndex> indexes, List<RowMutation> mutations) throws BlurException, IOException {
+    long s = System.nanoTime();
     boolean waitToBeVisible = false;
     for (int i = 0; i < mutations.size(); i++) {
       RowMutation mutation = mutations.get(i);
@@ -720,6 +745,8 @@ public class IndexManager {
         throw new RuntimeException("Not supported [" + type + "]");
       }
     }
+    long e = System.nanoTime();
+    LOG.debug("executeMutates took [" + (e - s) / 1000000.0 + " ms] to complete");
   }
 
   private Map<String, List<RowMutation>> getMutatesPerTable(List<RowMutation> mutations) {

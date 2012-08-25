@@ -111,7 +111,7 @@ public class TransactionRecorder {
       switch (lookup) {
       case ROW:
         Row row = readRow(dataInputStream);
-        writer.updateDocuments(ROW_ID.createTerm(row.id), getDocs(row));
+        writer.updateDocuments(ROW_ID.createTerm(row.id), getDocs(row, analyzer));
         updateCount++;
         continue;
       case DELETE:
@@ -247,8 +247,8 @@ public class TransactionRecorder {
   }
 
   public long replaceRow(boolean wal, Row row, TrackingIndexWriter writer) throws IOException {
-    synchronized (running) {
-      if (wal) {
+    if (wal) {
+      synchronized (running) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream outputStream = new DataOutputStream(baos);
         outputStream.writeByte(TYPE.ROW.value());
@@ -256,13 +256,15 @@ public class TransactionRecorder {
         outputStream.close();
         sync(baos.toByteArray());
       }
-      return writer.updateDocuments(ROW_ID.createTerm(row.id), getDocs(row));
     }
+    Term term = ROW_ID.createTerm(row.id);
+    List<Document> docs = getDocs(row, analyzer);
+    return writer.updateDocuments(term, docs);
   }
 
   public long deleteRow(boolean wal, String rowId, TrackingIndexWriter writer) throws IOException {
-    synchronized (running) {
-      if (wal) {
+    if (wal) {
+      synchronized (running) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream outputStream = new DataOutputStream(baos);
         outputStream.writeByte(TYPE.DELETE.value());
@@ -270,8 +272,8 @@ public class TransactionRecorder {
         outputStream.close();
         sync(baos.toByteArray());
       }
-      return writer.deleteDocuments(ROW_ID.createTerm(rowId));
     }
+    return writer.deleteDocuments(ROW_ID.createTerm(rowId));
   }
 
   public void setWalPath(Path walPath) {
@@ -294,14 +296,14 @@ public class TransactionRecorder {
     }
   }
 
-  private List<Document> getDocs(Row row) {
+  public static List<Document> getDocs(Row row, BlurAnalyzer analyzer) {
     List<Record> records = row.records;
     int size = records.size();
     final String rowId = row.id;
     final StringBuilder builder = new StringBuilder();
     List<Document> docs = new ArrayList<Document>(size);
     for (int i = 0; i < size; i++) {
-      Document document = convert(rowId, records.get(i), builder);
+      Document document = convert(rowId, records.get(i), builder, analyzer);
       if (i == 0) {
         document.add(BlurConstants.PRIME_DOC_FIELD);
       }
@@ -310,7 +312,7 @@ public class TransactionRecorder {
     return docs;
   }
 
-  private Document convert(String rowId, Record record, StringBuilder builder) {
+  public static Document convert(String rowId, Record record, StringBuilder builder, BlurAnalyzer analyzer) {
     Document document = new Document();
     document.add(new Field(BlurConstants.ROW_ID, rowId, Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     document.add(new Field(BlurConstants.RECORD_ID, record.recordId, Store.YES, Index.NOT_ANALYZED_NO_NORMS));

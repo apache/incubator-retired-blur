@@ -1,14 +1,13 @@
 package com.nearinfinity.blur.manager.stats;
 
-import java.util.concurrent.atomic.AtomicLong;
 
 public class WeightedAvg {
 
-  private int _maxSize;
-  private long[] _values;
+  private final int _maxSize;
+  private final long[] _values;
   private int _numberOfAdds;
   private int _currentPosition;
-  private AtomicLong _totalValue = new AtomicLong(0);
+  private long _totalValue = 0;
 
   public WeightedAvg(int maxSize) {
     _maxSize = maxSize;
@@ -23,17 +22,38 @@ public class WeightedAvg {
     }
     long currentValue = _values[_currentPosition];
     _values[_currentPosition] = value;
-    _totalValue.addAndGet(value - currentValue);
+    _totalValue += value - currentValue;
     _numberOfAdds++;
     _currentPosition++;
   }
 
   public double getAvg() {
-    long v = _totalValue.get();
-    if (v == 0) {
+    if (_totalValue == 0) {
       return 0;
     }
-    return (double) v / (double) Math.min(_numberOfAdds, _maxSize);
+    return (double) _totalValue / (double) Math.min(_numberOfAdds, _maxSize);
   }
+
+  public int getMaxSize() {
+    return _maxSize;
+  }
+
+  public long[] getValues() {
+    return _values;
+  }
+
+  public int getNumberOfAdds() {
+    return _numberOfAdds;
+  }
+
+  public int getCurrentPosition() {
+    return _currentPosition;
+  }
+
+  public long getTotalValue() {
+    return _totalValue;
+  }
+  
+  
 
 }

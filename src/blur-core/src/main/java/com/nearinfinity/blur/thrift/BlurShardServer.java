@@ -235,6 +235,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public void mutateBatch(List<RowMutation> mutations) throws BlurException, TException {
+    long s = System.nanoTime();
     for (RowMutation mutation : mutations) {
       checkTable(_cluster, mutation.table);
       checkForUpdates(_cluster, mutation.table);
@@ -246,6 +247,8 @@ public class BlurShardServer extends TableAdmin implements Iface {
       LOG.error("Unknown error during processing of [mutations={0}]", e, mutations);
       throw new BException(e.getMessage(), e);
     }
+    long e = System.nanoTime();
+    LOG.debug("mutateBatch took [" + (e-s) / 1000000.0 + " ms] to complete");
   }
 
   public long getMaxTimeToLive() {

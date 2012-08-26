@@ -141,8 +141,6 @@ public class IndexManagerTest {
     BlurQuery blurQuery = new BlurQuery();
     blurQuery.simpleQuery = new SimpleQuery();
     blurQuery.simpleQuery.queryStr = "+(+test-family.testcol1:value1 nojoin) +(+test-family.testcol3:value234123)";
-//    blurQuery.simpleQuery.queryStr = "+(+test-family.testcol1:value1 nojoin)";
-//    blurQuery.simpleQuery.queryStr = "+(+test-family.testcol3:value234123)";
     blurQuery.simpleQuery.superQueryOn = true;
     blurQuery.simpleQuery.type = ScoreType.SUPER;
     blurQuery.fetch = 10;
@@ -544,14 +542,14 @@ public class IndexManagerTest {
 
   @Test
   public void testMutationUpdateRowDeleteLastRecord() throws Exception {
-    RecordMutation rm = newRecordMutation(DELETE_ENTIRE_RECORD, FAMILY, "record-2");
+    RecordMutation rm = newRecordMutation(DELETE_ENTIRE_RECORD, FAMILY, "record-3");
 
-    RowMutation rowMutation = newRowMutation(UPDATE_ROW, TABLE, "row-2", rm);
+    RowMutation rowMutation = newRowMutation(UPDATE_ROW, TABLE, "row-3", rm);
 
     rowMutation.waitToBeVisible = true;
     indexManager.mutate(rowMutation);
 
-    Selector selector = new Selector().setRowId("row-2");
+    Selector selector = new Selector().setRowId("row-3");
     FetchResult fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
     assertNull("row should not exist", fetchResult.rowResult);

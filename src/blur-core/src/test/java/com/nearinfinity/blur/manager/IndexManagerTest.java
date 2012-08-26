@@ -115,11 +115,13 @@ public class IndexManagerTest {
     RowMutation mutation1 = newRowMutation(TABLE, "row-1",
         newRecordMutation(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
     RowMutation mutation2 = newRowMutation(TABLE, "row-2",
-        newRecordMutation(FAMILY, "record-2", newColumn("testcol1", "value4"), newColumn("testcol2", "value5"), newColumn("testcol3", "value6")));
+        newRecordMutation(FAMILY, "record-2", newColumn("testcol1", "value4"), newColumn("testcol2", "value5"), newColumn("testcol3", "value6")),
+        newRecordMutation(FAMILY, "record-2B", newColumn("testcol2", "value234123"), newColumn("testcol3", "value234123")));
     RowMutation mutation3 = newRowMutation(TABLE, "row-3",
         newRecordMutation(FAMILY, "record-3", newColumn("testcol1", "value7"), newColumn("testcol2", "value8"), newColumn("testcol3", "value9")));
     RowMutation mutation4 = newRowMutation(TABLE, "row-4",
-        newRecordMutation(FAMILY, "record-4", newColumn("testcol1", "value1"), newColumn("testcol2", "value5"), newColumn("testcol3", "value9")));
+        newRecordMutation(FAMILY, "record-4", newColumn("testcol1", "value1"), newColumn("testcol2", "value5"), newColumn("testcol3", "value9")),
+        newRecordMutation(FAMILY, "record-4B", newColumn("testcol2", "value234123"), newColumn("testcol3", "value234123")));
     RowMutation mutation5 = newRowMutation(
         TABLE,
         "row-5",
@@ -133,7 +135,32 @@ public class IndexManagerTest {
     indexManager.mutate(mutation4);
     indexManager.mutate(mutation5);
   }
-  
+
+  @Test
+  public void testQueryWithJoin() throws Exception {
+    BlurQuery blurQuery = new BlurQuery();
+    blurQuery.simpleQuery = new SimpleQuery();
+    blurQuery.simpleQuery.queryStr = "+(+test-family.testcol1:value1 nojoin) +(+test-family.testcol3:value234123)";
+//    blurQuery.simpleQuery.queryStr = "+(+test-family.testcol1:value1 nojoin)";
+//    blurQuery.simpleQuery.queryStr = "+(+test-family.testcol3:value234123)";
+    blurQuery.simpleQuery.superQueryOn = true;
+    blurQuery.simpleQuery.type = ScoreType.SUPER;
+    blurQuery.fetch = 10;
+    blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
+    blurQuery.maxQueryTime = Long.MAX_VALUE;
+    blurQuery.uuid = 1;
+
+    BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
+    assertEquals(iterable.getTotalResults(), 1);
+    for (BlurResult result : iterable) {
+      Selector selector = new Selector().setLocationId(result.getLocationId());
+      FetchResult fetchResult = new FetchResult();
+      indexManager.fetchRow(TABLE, selector, fetchResult);
+      assertNotNull(fetchResult.rowResult);
+      assertNull(fetchResult.recordResult);
+    }
+  }
+
   @Test
   public void testQueryWithFacetsWithWildCard() throws Exception {
     BlurQuery blurQuery = new BlurQuery();
@@ -448,7 +475,6 @@ public class IndexManagerTest {
     assertTrue(indexManager.currentQueries(TABLE).isEmpty());
   }
 
-  
   @Test
   public void testTerms() throws Exception {
     List<String> terms = indexManager.terms(TABLE, FAMILY, "testcol1", "", (short) 100);

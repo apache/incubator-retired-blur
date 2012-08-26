@@ -4,10 +4,10 @@ import java.util.concurrent.TimeUnit;
 
 public class LoadFactorProcessor {
 
-  private Sampler _sampler;
-  private WeightedAvg _one;
-  private WeightedAvg _five;
-  private WeightedAvg _fifteen;
+  private final Sampler _sampler;
+  private final WeightedAvg _one;
+  private final WeightedAvg _five;
+  private final WeightedAvg _fifteen;
 
   public LoadFactorProcessor(Sampler sampler) {
     _sampler = sampler;
@@ -34,5 +34,23 @@ public class LoadFactorProcessor {
   public double fifteenMinuteLoadFactor() {
     return _fifteen.getAvg();
   }
+
+  public Sampler getSampler() {
+    return _sampler;
+  }
+
+  public WeightedAvg getOne() {
+    return _one;
+  }
+
+  public WeightedAvg getFive() {
+    return _five;
+  }
+
+  public WeightedAvg getFifteen() {
+    return _fifteen;
+  }
+  
+  
 
 }

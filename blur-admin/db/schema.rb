@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120820073548) do
+ActiveRecord::Schema.define(:version => 20120824174553) do
 
   create_table "audits", :force => true do |t|
     t.integer  "user_id"
@@ -21,6 +21,15 @@ ActiveRecord::Schema.define(:version => 20120820073548) do
     t.datetime "created_at",     :null => false
     t.datetime "updated_at",     :null => false
   end
+
+  create_table "blur_controllers", :force => true do |t|
+    t.integer "status"
+    t.string  "blur_version"
+    t.string  "node_name"
+    t.integer "zookeeper_id"
+  end
+
+  add_index "blur_controllers", ["zookeeper_id"], :name => "index_controllers_on_zookeeper_id"
 
   create_table "blur_queries", :force => true do |t|
     t.text     "query_string",             :limit => 2147483647
@@ -45,6 +54,15 @@ ActiveRecord::Schema.define(:version => 20120820073548) do
   end
 
   add_index "blur_queries", ["blur_table_id"], :name => "index_blur_queries_on_blur_table_id"
+
+  create_table "blur_shards", :force => true do |t|
+    t.integer "status"
+    t.string  "blur_version"
+    t.string  "node_name"
+    t.integer "cluster_id"
+  end
+
+  add_index "blur_shards", ["cluster_id"], :name => "index_shards_on_cluster_id"
 
   create_table "blur_tables", :force => true do |t|
     t.string   "table_name"
@@ -71,15 +89,6 @@ ActiveRecord::Schema.define(:version => 20120820073548) do
   end
 
   add_index "clusters", ["zookeeper_id"], :name => "index_clusters_on_zookeeper_id"
-
-  create_table "controllers", :force => true do |t|
-    t.integer "status"
-    t.string  "blur_version"
-    t.string  "node_name"
-    t.integer "zookeeper_id"
-  end
-
-  add_index "controllers", ["zookeeper_id"], :name => "index_controllers_on_zookeeper_id"
 
   create_table "hdfs", :force => true do |t|
     t.string "host"
@@ -144,15 +153,6 @@ ActiveRecord::Schema.define(:version => 20120820073548) do
 
   add_index "searches", ["blur_table_id"], :name => "index_searches_on_blur_table_id"
   add_index "searches", ["user_id"], :name => "index_searches_on_user_id"
-
-  create_table "shards", :force => true do |t|
-    t.integer "status"
-    t.string  "blur_version"
-    t.string  "node_name"
-    t.integer "cluster_id"
-  end
-
-  add_index "shards", ["cluster_id"], :name => "index_shards_on_cluster_id"
 
   create_table "system_metrics", :force => true do |t|
     t.string   "name",               :null => false

@@ -24,4 +24,4 @@
         = form_tag zookeeper_blur_query_path(@blur_query), :method => :put, :remote => true, :class => :cancel do
           = hidden_field_tag :cancel, true
           = tag :input, :type => :button, :value => 'Cancel', :class => "cancel_query_button btn"
-    = link_to "More Info", more_info_zookeeper_blur_query_path(@blur_query), :class => 'more_info', :remote => true, :style => 'margin-right: 3px'
+    = link_to "More Info", show_blur_query_path(@blur_query), :class => 'more_info', :remote => true, :style => 'margin-right: 3px'

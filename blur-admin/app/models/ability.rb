@@ -28,7 +28,7 @@ class Ability
         can :index, :blur_queries, attributes
 
         # view more info on queries with everything but query_string
-        can :more_info, :blur_queries, attributes
+        can :show, :blur_queries, attributes
         can :refresh, :blur_queries
 
         # view times on blur queries
@@ -41,16 +41,16 @@ class Ability
 
       if user.editor?
         can [:update, :enable, :disable, :destroy, :forget, :comment], :blur_tables
-        can :update, :blur_queries
-        can :index, :shards
-        can [:destroy], [:zookeepers, :clusters, :shards, :controllers]
+        can :cancel, :blur_queries
+        can :index, :blur_shards
+        can [:destroy], [:zookeepers, :clusters, :blur_shards, :blur_controllers]
         can [:move_file, :delete_file, :mkdir,:upload_form,:upload], :hdfs
       end
 
       if user.auditor?
         can :index, :blur_queries, :query_string
         can :index, :audits
-        can :more_info, :blur_queries, :query_string
+        can :show, :blur_queries, :query_string
       end
 
       if user.admin?

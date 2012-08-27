@@ -14,8 +14,7 @@ var LongRunningView = Backbone.View.extend({
     var id = $(event.target.parentElement).attr('data-id');
     $.ajax({
       type: 'PUT',
-      url: Routes.zookeeper_blur_query_path(CurrentZookeeper, id),
-      data: {cancel: true},
+      url: Routes.cancel_blur_query_path(id),
       success: function(){
         self.closest('li').remove();
       }

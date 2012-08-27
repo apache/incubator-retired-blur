@@ -54,7 +54,7 @@ var Table = Backbone.Model.extend({
   get_terms: function(request_data, success){
     $.ajax({
       type: 'GET',
-      url: Routes.terms_zookeeper_blur_table_path(CurrentZookeeper, this.get('id'), {format: 'json'}),
+      url: Routes.terms_blur_table_path(this.get('id'), {format: 'json'}),
       data: request_data,
       success: success,
       error:function (xhr, ajaxOptions, thrownError){
@@ -183,8 +183,8 @@ var TableView = Backbone.View.extend({
             var input_comment = document.getElementById("comments").value;
             $.ajax({
               type: 'PUT',
-              url: Routes.comment_zookeeper_blur_table_path(CurrentZookeeper, this.model.get('id')) ,
-              data: {input: input_comment},
+              url: Routes.comment_blur_table_path(this.model.get('id')) ,
+              data: {comment: input_comment},
               success: _.bind(function(){
                 this.model.set({comments: input_comment});
               }, this)

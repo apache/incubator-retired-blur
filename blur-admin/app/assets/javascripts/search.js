@@ -298,7 +298,7 @@ $(document).ready(function() {
         "class": 'primary',
         func: function() {
           $().closePopup();
-          $.ajax(Routes.delete_zookeeper_search_path(CurrentZookeeper, parent.attr("id"), $('#blur_table option:selected').val()), {
+          $.ajax(Routes.delete_search_path(parent.attr("id"), $('#blur_table option:selected').val()), {
             type: 'DELETE',
             success: function(data) {
               $('#saved .body .saved').html(data);
@@ -357,7 +357,7 @@ $(document).ready(function() {
       var form_data = $('#search_form').serializeArray();
       var tree = $('.column_family_filter').dynatree('getTree');
       form_data = form_data.concat(tree.serializeArray());
-      $.ajax(Routes.zookeeper_search_path(CurrentZookeeper, search_id), {
+      $.ajax(Routes.search_path(search_id), {
         type: 'PUT',
         data: form_data
       });

@@ -29,6 +29,7 @@ group :development, :test do
   gem 'factory_girl_rails'
   gem 'launchy'
   gem 'thin'
+  gem 'debugger'
 end
 
 group :test do

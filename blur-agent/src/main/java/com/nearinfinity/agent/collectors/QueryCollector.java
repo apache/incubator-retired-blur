@@ -26,6 +26,11 @@ public class QueryCollector {
 	private static final Log log = LogFactory.getLog(QueryCollector.class);
 	
 	public static void startCollecting(String connection, final String zookeeperName, final JdbcTemplate jdbc) {
+		if (StringUtils.isBlank(connection)) {
+			log.warn("No blur connection string for [" + zookeeperName + "].  Skipping query collection until a connection string shows up.");
+			return;
+		}
+		
 		log.debug("Collecting queries");
 		
 		try {

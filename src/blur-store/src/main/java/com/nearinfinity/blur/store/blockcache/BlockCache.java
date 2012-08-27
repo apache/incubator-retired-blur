@@ -13,11 +13,11 @@ public class BlockCache {
   public static final int _128M = 134217728;
   public static final int _32K = 32768;
   private final ConcurrentMap<BlockCacheKey, BlockCacheLocation> _cache;
-  private final ByteBuffer[] _banks;
+  private final ByteBuffer[] _slabs;
   private final BlockLocks[] _locks;
   private final AtomicInteger[] _lockCounters;
   private final int _blockSize;
-  private final int _numberOfBlocksPerBank;
+  private final int _numberOfBlocksPerSlab;
   private final int _maxEntries;
   private final BlurMetrics _metrics;
   
@@ -31,20 +31,20 @@ public class BlockCache {
   
   public BlockCache(BlurMetrics metrics, boolean directAllocation, long totalMemory, int slabSize, int blockSize) {
     _metrics = metrics;
-    _numberOfBlocksPerBank = slabSize / blockSize;
-    int numberOfBanks = (int) (totalMemory / slabSize);
+    _numberOfBlocksPerSlab = slabSize / blockSize;
+    int numberOfSlabs = (int) (totalMemory / slabSize);
     
-    _banks = new ByteBuffer[numberOfBanks];
-    _locks = new BlockLocks[numberOfBanks];
-    _lockCounters = new AtomicInteger[numberOfBanks];
-    _maxEntries = (_numberOfBlocksPerBank * numberOfBanks) - 1;
-    for (int i = 0; i < numberOfBanks; i++) {
+    _slabs = new ByteBuffer[numberOfSlabs];
+    _locks = new BlockLocks[numberOfSlabs];
+    _lockCounters = new AtomicInteger[numberOfSlabs];
+    _maxEntries = (_numberOfBlocksPerSlab * numberOfSlabs) - 1;
+    for (int i = 0; i < numberOfSlabs; i++) {
       if (directAllocation) {
-        _banks[i] = ByteBuffer.allocateDirect(_numberOfBlocksPerBank * blockSize);
+        _slabs[i] = ByteBuffer.allocateDirect(_numberOfBlocksPerSlab * blockSize);
       } else {
-        _banks[i] = ByteBuffer.allocate(_numberOfBlocksPerBank * blockSize);
+        _slabs[i] = ByteBuffer.allocate(_numberOfBlocksPerSlab * blockSize);
       }
-      _locks[i] = new BlockLocks(_numberOfBlocksPerBank);
+      _locks[i] = new BlockLocks(_numberOfBlocksPerSlab);
       _lockCounters[i] = new AtomicInteger();
     }
 
@@ -62,11 +62,11 @@ public class BlockCache {
     if (location == null) {
       return;
     }
-    int bankId = location.getBankId();
+    int slabId = location.getSlabId();
     int block = location.getBlock();
     location.setRemoved(true);
-    _locks[bankId].clear(block);
-    _lockCounters[bankId].decrementAndGet();
+    _locks[slabId].clear(block);
+    _lockCounters[slabId].decrementAndGet();
     _metrics.blockCacheEviction.incrementAndGet();
     _metrics.blockCacheSize.decrementAndGet();
   }
@@ -85,11 +85,11 @@ public class BlockCache {
     if (location.isRemoved()) {
       return false;
     }
-    int bankId = location.getBankId();
+    int slabId = location.getSlabId();
     int offset = location.getBlock() * _blockSize;
-    ByteBuffer bank = getBank(bankId);
-    bank.position(offset);
-    bank.put(data, 0, _blockSize);
+    ByteBuffer slab = getSlab(slabId);
+    slab.position(offset);
+    slab.put(data, 0, _blockSize);
     if (newLocation) {
       releaseLocation(_cache.put(blockCacheKey.clone(), location));
       _metrics.blockCacheSize.incrementAndGet();
@@ -105,12 +105,12 @@ public class BlockCache {
     if (location.isRemoved()) {
       return false;
     }
-    int bankId = location.getBankId();
+    int slabId = location.getSlabId();
     int offset = location.getBlock() * _blockSize;
     location.touch();
-    ByteBuffer bank = getBank(bankId);
-    bank.position(offset + blockOffset);
-    bank.get(buffer, off, length);
+    ByteBuffer slab = getSlab(slabId);
+    slab.position(offset + blockOffset);
+    slab.get(buffer, off, length);
     return true;
   }
 
@@ -123,18 +123,18 @@ public class BlockCache {
     // This is a tight loop that will try and find a location to
     // place the block before giving up
     for (int j = 0; j < 10; j++) {
-      OUTER: for (int bankId = 0; bankId < _banks.length; bankId++) {
-        AtomicInteger bitSetCounter = _lockCounters[bankId];
-        BlockLocks bitSet = _locks[bankId];
-        if (bitSetCounter.get() == _numberOfBlocksPerBank) {
+      OUTER: for (int slabId = 0; slabId < _slabs.length; slabId++) {
+        AtomicInteger bitSetCounter = _lockCounters[slabId];
+        BlockLocks bitSet = _locks[slabId];
+        if (bitSetCounter.get() == _numberOfBlocksPerSlab) {
           // if bitset is full
           continue OUTER;
         }
         // this check needs to spin, if a lock was attempted but not obtained
-        // the rest of the bank should not be skipped
+        // the rest of the slab should not be skipped
         int bit = bitSet.nextClearBit(0);
         INNER: while (bit != -1) {
-          if (bit >= _numberOfBlocksPerBank) {
+          if (bit >= _numberOfBlocksPerSlab) {
             // bit set is full
             continue OUTER;
           }
@@ -146,7 +146,7 @@ public class BlockCache {
             continue INNER;
           } else {
             // lock obtained
-            location.setBankId(bankId);
+            location.setSlabId(slabId);
             location.setBlock(bit);
             bitSetCounter.incrementAndGet();
             return true;
@@ -163,8 +163,8 @@ public class BlockCache {
     }
   }
 
-  private ByteBuffer getBank(int bankId) {
-    return _banks[bankId].duplicate();
+  private ByteBuffer getSlab(int slabId) {
+    return _slabs[slabId].duplicate();
   }
 
   public int getSize() {

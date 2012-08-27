@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class BlockCacheLocation {
 
     private int _block;
-    private int _bankId;
+    private int _slabId;
     private long _lastAccess = System.currentTimeMillis();
     private long _accesses;
     private AtomicBoolean _removed = new AtomicBoolean(false);
@@ -15,16 +15,16 @@ public class BlockCacheLocation {
         _block = block;
     }
 
-    public void setBankId(int bankId) {
-        _bankId = bankId;
+    public void setSlabId(int slabId) {
+        _slabId = slabId;
     }
 
     public int getBlock() {
         return _block;
     }
 
-    public int getBankId() {
-        return _bankId;
+    public int getSlabId() {
+        return _slabId;
     }
 
     public void touch() {

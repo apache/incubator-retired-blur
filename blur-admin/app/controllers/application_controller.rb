@@ -4,12 +4,9 @@ class ApplicationController < ActionController::Base
   require 'thrift/blur'
   require 'blur_thrift_client'
 
-  before_filter :show_zookeeper_options
   helper_method :license, :current_user
 
   enable_authorization do |exception|
-    puts '$' * 80
-    puts exception.backtrace
     if current_user
       if can? :index, :zookeepers
         redirect_to root_url, :alert => "Unauthorized"
@@ -28,7 +25,7 @@ class ApplicationController < ActionController::Base
   def help
     @tab = params['tab']
     respond_to do |format|
-      format.html {render :partial => 'layouts/help_menu', :locals => {:tab => @tab}}
+      format.any  { render :partial => 'layouts/help_menu' }
     end
   end
 
@@ -37,20 +34,26 @@ class ApplicationController < ActionController::Base
   end
 
   private
+  # Populates the @current_zookeeper instance variable
   def current_zookeeper
+    # Find the zookeeper with the given or the stored session id
     @current_zookeeper ||= Zookeeper.find_by_id(params[:zookeeper_id] || session[:current_zookeeper_id])
     if @current_zookeeper.nil?
-      determine_error
+      zookeeper_error
     else
-      set_zookeeper @current_zookeeper.id if params[:zookeeper_id]
+      # Set the zookeeper if the value did not come from the session
+      set_zookeeper @current_zookeeper.id if params[:zookeeper_id] 
     end
   end
 
+  # Populates the session id with your preference zookeeper id
   def set_zookeeper_with_preference
     user_zk_pref = current_user.zookeeper_preference
-    if user_zk_pref.name.to_i > 0
+    if user_zk_pref.name.to_i > 0 # If your preference is not the default
+      # If your preferred zookeeper doesnt exist
       if Zookeeper.find_by_id(user_zk_pref.value).nil?
         flash[:error] = "Your preferred Zookeeper no longer exists, your preference has been reset!"
+        # Reset their preference to the default
         user_zk_pref.name = 0
         user_zk_pref.save
       else
@@ -59,20 +62,31 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def set_show_zookeeper
+  # Pass through for setting a zookeeper in a before filter
+  def set_zookeeper_before_filter
     set_zookeeper params[:id]
   end
 
   def set_zookeeper(id)
-    id = id.to_i
+    id = id.to_i # Convert all inputs to an int
     if id.nil? || Zookeeper.find_by_id(id).nil?
-      determine_error
+      zookeeper_error
     else
       session[:current_zookeeper_id] = id
     end
   end
 
-  def determine_error
+  # Populates the @zookeepers instance variable for option select
+  def zookeepers
+    @zookeepers ||= Zookeeper.order 'name' if Zookeeper.count > 1
+  end
+
+  def current_user_session
+    @current_user_session ||= UserSession.find
+  end
+
+  # Error message for incorrect zookeeper find
+  def zookeeper_error
     if request.xhr?
       render :status => :conflict, :text => "No Current Zookeeper"
     else
@@ -81,18 +95,7 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def zookeepers
-    @zookeepers ||= Zookeeper.order 'name'
-  end
-
-  def show_zookeeper_options
-    zookeepers if @current_zookeeper.nil?
-  end
-
-  def current_user_session
-    @current_user_session ||= UserSession.find
-  end
-
+  # A 404 rendering helper method
   def render_404
     raise ActionController::RoutingError.new('Not Found')
   end

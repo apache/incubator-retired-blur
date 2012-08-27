@@ -1,6 +1,6 @@
 class ZookeepersController < ApplicationController
   before_filter :set_zookeeper_with_preference, :only => :index
-  before_filter :set_show_zookeeper, :only => :show
+  before_filter :set_zookeeper_before_filter, :only => :show
   before_filter :current_zookeeper, :only => :show
 
   def index
@@ -18,13 +18,6 @@ class ZookeepersController < ApplicationController
     end
   end
 
-  def long_running_queries
-    long_queries = Zookeeper.find(params[:id])
-      .blur_queries.where('created_at < ? and state = ?', 1.minute.ago, 0)
-      .collect{|query| query.summary(current_user)}
-    render :json => long_queries
-  end
-
   def destroy
     zookeeper = Zookeeper.find(params[:id])
     unless zookeeper.nil?
@@ -32,5 +25,12 @@ class ZookeepersController < ApplicationController
       Audit.log_event(current_user, "Zookeeper (#{zookeeper.name}) was forgotten", "zookeeper", "delete") if zookeeper.destroyed?
     end
     render :json => zookeeper
+  end
+
+  def long_running_queries
+    long_queries = Zookeeper.find(params[:id])
+      .blur_queries.where('created_at < ? and state = ?', 1.minute.ago, 0)
+      .collect{|query| query.summary(current_user)}
+    render :json => long_queries
   end
 end

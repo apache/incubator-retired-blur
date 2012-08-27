@@ -1,47 +1,55 @@
 class HdfsController < ApplicationController
   require 'hdfs_thrift_client'
+  load_and_authorize_resource :shallow => true
+
+  respond_to :html, :only => [:index, :info, :folder_info, :expand]
+  respond_to :json, :only => [:index, :json, :slow_folder_info]
 
   include ActionView::Helpers::NumberHelper
 
   def index
-    @instances = Hdfs.all
-    respond_to do |format|
-      format.html
-      format.json{render :json => @instances, :methods => [:most_recent_stats, :recent_stats]}
+    respond_with do |format|
+      format.json{render :json => @hdfs, :methods => [:most_recent_stats, :recent_stats]}
     end
   end
 
   def info
-    @hdfs = Hdfs.find(params[:id]).hdfs_stats.last
-    if @hdfs
-      respond_to do |format|
-        format.html{render :partial => 'info'}
+    respond_with(@hdfs_stat) do |format|
+      format.html do
+        if @hdfs_stat
+          render :partial => 'info'
+        else
+          render :text => "<div>Stats for hdfs ##{params[:id]} were not found, is the blur tools agent running?</div>"
+        end
       end
-    else
-      render :text => "<div>Stats for hdfs ##{params[:id]} were not found, is the blur tools agent running?</div>"
     end
   end
 
   def folder_info
     client = build_client_from_id
-    @path = params[:fs_path]
-    @stat = client.stat @path
-    respond_to do |format|
-      format.html{render :partial => 'folder_info'}
+    path = params[:fs_path]
+
+    @stat = client.stat path
+    respond_with(@stat) do |format|
+      format.html{ render :partial => 'folder_info' }
     end
   end
 
   def slow_folder_info
     client = build_client_from_id
-    @path = params[:fs_path]
+    path = params[:fs_path]
     file_stats = client.ls(@path, true)
-    @file_count = @folder_count = @file_size = 0
+    file_size = 0
+    stats_hash = {:file_size => 0, :file_count => 0, :folder_count => 0}
+
     file_stats.each do |stat|
-      @file_size += stat.length
-      @file_count += 1 unless stat.isdir
-      @folder_count += 1 if stat.isdir
+      file_size += stat.length
+      stats_hash[:file_count] += 1 unless stat.isdir
+      stats_hash[:folder_count] += 1 if stat.isdir
     end
-    render :json => {:file_size=>number_to_human_size(@file_size),:file_count=>@file_count,:folder_count=>@folder_count}
+    stats_hash[:file_size] = number_to_human_size file_size
+
+    respond_with(stats_hash)
   end
 
   def expand
@@ -56,7 +64,7 @@ class HdfsController < ApplicationController
       {:name=> file_ending, :is_dir=>stat.isdir}
     end
     @children.sort_by! {|c| [c[:is_dir] ? 1:0, c[:name].downcase]}
-    respond_to do |format|
+    respond_with do |format|
       format.html{render :partial => 'expand'}
     end
   end
@@ -128,8 +136,7 @@ class HdfsController < ApplicationController
 
   private
   def build_client_from_id
-    instance = Hdfs.find params[:id]
-    HdfsThriftClient.client("#{instance.host}:#{instance.port}")
+    HdfsThriftClient.client("#{@hdfs.host}:#{@hdfs.port}")
   end
 end
 

@@ -78,7 +78,7 @@ class ApplicationController < ActionController::Base
 
   # Populates the @zookeepers instance variable for option select
   def zookeepers
-    @zookeepers ||= Zookeeper.order 'name' if Zookeeper.count > 1
+    @zookeepers ||= Zookeeper.order 'name'
   end
 
   def current_user_session

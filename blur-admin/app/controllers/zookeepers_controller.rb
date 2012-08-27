@@ -14,7 +14,7 @@ class ZookeepersController < ApplicationController
   def show
     respond_to do |format|
       format.html
-      format.json { render :json => @current_zookeeper, :methods => [:clusters, :controllers] }
+      format.json { render :json => @current_zookeeper, :methods => [:clusters, :blur_controllers] }
     end
   end
 

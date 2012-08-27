@@ -10,10 +10,10 @@ var ZookeeperModel = Backbone.Model.extend({
     // Build the collections and add them to the zookeeper
     if(this.cluster_collection && this.controller_collection){
       this.cluster_collection.update(response.clusters);
-      this.controller_collection.update(response.controllers);
+      this.controller_collection.update(response.blur_controllers);
     } else {
       this.cluster_collection = new ClusterCollection(response.clusters);
-      this.controller_collection = new ControllerCollection(response.controllers);
+      this.controller_collection = new ControllerCollection(response.blur_controllers);
     }
 
     //remove the collections

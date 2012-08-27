@@ -1,4 +1,6 @@
 class UsersController < ApplicationController
+  before_filter :zookeepers, :only => :show
+
   load_and_authorize_resource
 
   def index

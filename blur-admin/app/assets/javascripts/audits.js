@@ -10,6 +10,7 @@ $.extend( $.fn.dataTableExt.oStdClasses, {
 });
 
 $(document).ready(function() {
+  //Sets max time to one hour after page load to fix button with Now button not going to current time
   var adjust_time = function(date){
     date.setHours(date.getHours()+1);
     return date;
@@ -47,7 +48,7 @@ $(document).ready(function() {
 
     $('.row > .span2').prepend('<label>Audit range:</label>', from_input, to_input ,'<button class="btn refresh-button">Refresh</button>');
   };
-
+  //Grabs the current time from the page elements (long number string in element id's) 
   var urlVars = function() {
     var vars = {};
     var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
@@ -80,7 +81,7 @@ $(document).ready(function() {
         sInfoFiltered: "(filtered from _MAX_ total audits)"
       }
   });
-
+  //On Page Load
   audit_data_table.fnSort([[5, 'desc']]);
 
   setup_datepickers();
@@ -104,8 +105,6 @@ $(document).ready(function() {
       }
     }
   });
-
-  //Overrides default Now button functionality
 });
 
 

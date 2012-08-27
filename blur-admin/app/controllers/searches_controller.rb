@@ -44,13 +44,13 @@ class SearchesController < ApplicationController
   #and either saves the data or performs a search
   def create
     params[:column_data].delete( "neighborhood") if params[:column_data]
-    search = Search.new(  :super_query    => params[:search] == '0',
-                                           :record_only     => params[:search] == '1' && params[:return] == '1',
-                                           :fetch                 => params[:result_count].to_i,
-                                           :offset                => params[:offset].to_i,
-                                           :user_id             => current_user.id,
-                                           :query                => params[:query_string],
-                                           :blur_table_id   => params[:blur_table])
+    search = Search.new(  :super_query      => params[:search] == '0',
+                          :record_only      => params[:search] == '1' && params[:return] == '1',
+                          :fetch            => params[:result_count].to_i,
+                          :offset           => params[:offset].to_i,
+                          :user_id          => current_user.id,
+                          :query            => params[:query_string],
+                          :blur_table_id    => params[:blur_table])
     search.column_object = params[:column_data]
 
     #use the model to begin building the blurquery
@@ -82,6 +82,7 @@ class SearchesController < ApplicationController
         records = [blur_result.record]
         id = blur_result.rowid
       end
+
       # continue to next result if there is no returned data
       next if records.empty?
 
@@ -129,14 +130,14 @@ class SearchesController < ApplicationController
   end
 
   def save
-    search = Search.new( :name                => params[:save_name],
-                                          :super_query    => params[:search] == '0',
-                                          :record_only     => params[:search] == '1' && params[:return] == '1',
-                                          :fetch                 => params[:result_count].to_i,
-                                          :offset                => params[:offset].to_i,
-                                          :user_id             => current_user.id,
-                                          :query                => params[:query_string],
-                                          :blur_table_id    => params[:blur_table])
+    search = Search.new(:name             => params[:save_name],
+                        :super_query      => params[:search] == '0',
+                        :record_only      => params[:search] == '1' && params[:return] == '1',
+                        :fetch            => params[:result_count].to_i,
+                        :offset           => params[:offset].to_i,
+                        :user_id          => current_user.id,
+                        :query            => params[:query_string],
+                        :blur_table_id    => params[:blur_table])
     search.column_object = params[:column_data]
     search.save
     @searches = current_user.searches.reverse
@@ -149,15 +150,15 @@ class SearchesController < ApplicationController
 
   def update
     Search.update(params[:id],
-                        :name                    => params[:save_name],
+                        :name               => params[:save_name],
                         :super_query        => params[:search] == '0',
-                        :record_only         => params[:search] == '1' && params[:return] == '1',
-                        :fetch                     => params[:result_count].to_i,
-                        :offset                    => params[:offset].to_i,
-                        :user_id                 => current_user.id,
-                        :query                    => params[:query_string],
-                        :column_object     => params[:column_data],
-                        :blur_table_id        => params[:blur_table])
+                        :record_only        => params[:search] == '1' && params[:return] == '1',
+                        :fetch              => params[:result_count].to_i,
+                        :offset             => params[:offset].to_i,
+                        :user_id            => current_user.id,
+                        :query              => params[:query_string],
+                        :column_object      => params[:column_data],
+                        :blur_table_id      => params[:blur_table])
     render :nothing => true
   end
   private

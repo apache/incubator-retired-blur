@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
@@ -31,6 +32,11 @@ public class TableCollector {
 	private static final Log log = LogFactory.getLog(TableCollector.class);
 	
 	public static void startCollecting(String connection, final String zookeeperName, final JdbcTemplate jdbc) {
+		if (StringUtils.isBlank(connection)) {
+			log.warn("No blur connection string for [" + zookeeperName + "].  Skipping table collection until a connection string shows up.");
+			return;
+		}
+		
 		log.debug("Collecting table info");
 		try {
 			List<Map<String, Object>> zookeepers = jdbc.queryForList("select id from zookeepers where name = ?", zookeeperName);

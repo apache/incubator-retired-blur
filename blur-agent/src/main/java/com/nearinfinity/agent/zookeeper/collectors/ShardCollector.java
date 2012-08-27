@@ -34,10 +34,10 @@ public class ShardCollector extends Collector {
 
 	private void markOfflineShards(List<String> shards) {
 		if (shards.isEmpty()) {
-			getJdbc().update("update shards set status = 0 where cluster_id = ?", clusterId);
+			getJdbc().update("update blur_shards set status = 0 where cluster_id = ?", clusterId);
 		} else {
 			getJdbc().update(
-					"update shards set status = 0 where node_name not in ('" + StringUtils.join(shards, "','")
+					"update blur_shards set status = 0 where node_name not in ('" + StringUtils.join(shards, "','")
 							+ "') and cluster_id=?", clusterId);
 		}
 	}
@@ -52,12 +52,12 @@ public class ShardCollector extends Collector {
 			}
 
 			int updatedCount = getJdbc().update(
-					"update shards set status=1, blur_version=? where node_name=? and cluster_id=?", blurVersion,
+					"update blur_shards set status=1, blur_version=? where node_name=? and cluster_id=?", blurVersion,
 					shard, clusterId);
 
 			if (updatedCount == 0) {
 				getJdbc().update(
-						"insert into shards (node_name, status, cluster_id, blur_version) values (?, 1, ?, ?)", shard,
+						"insert into blur_shards (node_name, status, cluster_id, blur_version) values (?, 1, ?, ?)", shard,
 						clusterId, blurVersion);
 			}
 		}

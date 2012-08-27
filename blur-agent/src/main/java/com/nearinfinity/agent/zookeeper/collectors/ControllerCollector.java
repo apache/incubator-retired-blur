@@ -26,10 +26,10 @@ public class ControllerCollector extends Collector {
 
 	private void markOfflineControllers(List<String> controllers) {
 		if (controllers.isEmpty()) {
-			getJdbc().update("update controllers set status = 0 where zookeeper_id = ?", zkId);
+			getJdbc().update("update blur_controllers set status = 0 where zookeeper_id = ?", zkId);
 		} else {
 			getJdbc().update(
-					"update controllers set status = 0 where node_name not in ('"
+					"update blur_controllers set status = 0 where node_name not in ('"
 							+ StringUtils.join(controllers, "','") + "') and zookeeper_id = ?", zkId);
 		}
 	}
@@ -44,12 +44,12 @@ public class ControllerCollector extends Collector {
 			}
 
 			int updatedCount = getJdbc().update(
-					"update controllers set status=1, blur_version=? where node_name=? and zookeeper_id =?",
+					"update blur_controllers set status=1, blur_version=? where node_name=? and zookeeper_id =?",
 					blurVersion, controller, zkId);
 
 			if (updatedCount == 0) {
 				getJdbc().update(
-						"insert into controllers (node_name, status, zookeeper_id, blur_version) values (?, 1, ?, ?)",
+						"insert into blur_controllers (node_name, status, zookeeper_id, blur_version) values (?, 1, ?, ?)",
 						controller, zkId, blurVersion);
 			}
 		}

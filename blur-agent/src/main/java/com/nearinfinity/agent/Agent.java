@@ -368,15 +368,53 @@ public class Agent {
 
 	private void setupBlur(Properties props, final JdbcTemplate jdbc, List<String> activeCollectors) {
 		Map<String, String> blurInstances = loadBlurInstances(props);
-		if (activeCollectors.contains("queries")) {
-			for (Map.Entry<String, String> entry : blurInstances.entrySet()) {
-				final String uri = entry.getValue();
-				final String zookeeper = entry.getKey();
+		if (activeCollectors.contains("tables")) {
+			for (Map.Entry<String, String> blurEntry : blurInstances.entrySet()) {
+				final String zookeeper = blurEntry.getKey();
+				final String connection = blurEntry.getValue();
+				
 				new Thread(new Runnable(){
 					@Override
 					public void run() {
+						while (true) {
+							if (StringUtils.isBlank(connection)) {
+								List<String> controller_uris = jdbc.queryForList("select distinct c.node_name from controllers c, zookeepers z where z.name = ? and c.zookeeper_id = z.id", new String[]{zookeeper}, String.class);
+								TableCollector.startCollecting(StringUtils.join(controller_uris, ','), zookeeper, jdbc);
+							} else {
+								TableCollector.startCollecting(connection, zookeeper, jdbc);
+							}
+							
+							try {
+								Thread.sleep(COLLECTOR_SLEEP_TIME);
+							} catch (InterruptedException e) {
+								break;
+							}
+						}
+					}
+				}, "Table Collector - " + zookeeper).start();
+			}
+		}
+		if (activeCollectors.contains("queries")) {
+			for (Map.Entry<String, String> blurEntry : blurInstances.entrySet()) {
+				final String zookeeper = blurEntry.getKey();
+				final String connection = blurEntry.getValue();
+				
+				new Thread(new Runnable(){
+					@Override
+					public void run() {
+						try {
+							Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+						} catch (InterruptedException e) {
+							return;
+						}
 						while(true) {
-							QueryCollector.startCollecting(uri, zookeeper, jdbc);
+							if (StringUtils.isBlank(connection)) {
+								List<String> controller_uris = jdbc.queryForList("select distinct c.node_name from controllers c, zookeepers z where z.name = ? and c.zookeeper_id = z.id", new String[]{zookeeper}, String.class);
+								QueryCollector.startCollecting(StringUtils.join(controller_uris, ','), zookeeper, jdbc);
+							} else {
+								QueryCollector.startCollecting(connection, zookeeper, jdbc);
+							}
+
 							try {
 								Thread.sleep(COLLECTOR_SLEEP_TIME);
 							} catch (InterruptedException e) {
@@ -398,25 +436,6 @@ public class Agent {
 						}
 					}
 				}, "Query Cleaner - " + zookeeper).start();
-			}
-		}
-		if (activeCollectors.contains("tables")) {
-			for (Map.Entry<String, String> entry : blurInstances.entrySet()) {
-				final String uri = entry.getValue();
-				final String zookeeper = entry.getKey();
-				new Thread(new Runnable(){
-					@Override
-					public void run() {
-						while (true) {
-							TableCollector.startCollecting(uri, zookeeper, jdbc);
-							try {
-								Thread.sleep(COLLECTOR_SLEEP_TIME);
-							} catch (InterruptedException e) {
-								break;
-							}
-						}
-					}
-				}, "Table Collector - " + zookeeper).start();
 			}
 		}
 

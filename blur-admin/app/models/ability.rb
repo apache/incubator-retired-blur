@@ -25,18 +25,13 @@ class Ability
         # can view everything but query_string on blur_tables:
         attributes = BlurQuery.new.attribute_names.collect{|att| att.to_sym}
         attributes.delete :query_string
-        can :index, :blur_queries, attributes
+        can [:index, :show], :blur_queries, attributes
 
-        # view more info on queries with everything but query_string
-        can :show, :blur_queries, attributes
-        can :refresh, :blur_queries
-
-        # view times on blur queries
-        can :times, :blur_queries
+        # View the refresh and times of blur_queries
+        can [:refresh, :times], :blur_queries
 
         # View hosts and schema on blur_tables
         can [:terms], :blur_tables
-
       end
 
       if user.editor?
@@ -48,9 +43,8 @@ class Ability
       end
 
       if user.auditor?
-        can :index, :blur_queries, :query_string
+        can [:index, :show], :blur_queries, :query_string
         can :index, :audits
-        can :show, :blur_queries, :query_string
       end
 
       if user.admin?

@@ -1,6 +1,8 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
 
+  before_filter :lock_down_api
+
   require 'thrift/blur'
   require 'blur_thrift_client'
 
@@ -83,6 +85,31 @@ class ApplicationController < ActionController::Base
 
   def current_user_session
     @current_user_session ||= UserSession.find
+  end
+
+  ### Application Wide Error Handling ###
+
+  #Locks the actions to their defined "formats"
+  def lock_down_api
+    action = params[:action]
+    # When the format is blank it is an http request
+    format = (params[:format] || :html).to_sym
+    # Respond to specific format and hash of actions
+    accepted_actions = mimes_for_respond_to[format]
+    error = true
+
+    # If the action doesnt respond to that format
+    if !accepted_actions.nil?
+      if accepted_actions[:except]
+        error = accepted_actions[:except].include?(action)
+      elsif accepted_actions[:only]
+        error = !accepted_actions[:only].include?(action)
+      else
+        error = false
+      end
+    end
+
+    raise "Unaccepted Format for this Action!" if error
   end
 
   # Error message for incorrect zookeeper find

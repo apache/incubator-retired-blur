@@ -2,8 +2,9 @@ class HdfsController < ApplicationController
   require 'hdfs_thrift_client'
   load_and_authorize_resource :shallow => true
 
-  respond_to :html, :only => [:index, :info, :folder_info, :expand]
-  respond_to :json, :only => [:index, :json, :slow_folder_info]
+  HTML_REPONSES = [:index, :info, :folder_info, :expand, :file_info, :upload_form, :upload]
+  respond_to :html, :only => HTML_REPONSES
+  respond_to :json, :except => HTML_REPONSES
 
   include ActionView::Helpers::NumberHelper
 
@@ -65,7 +66,7 @@ class HdfsController < ApplicationController
     end
     @children.sort_by! {|c| [c[:is_dir] ? 1:0, c[:name].downcase]}
     respond_with do |format|
-      format.html{render :partial => 'expand'}
+      format.html { render :partial => 'expand' }
     end
   end
 
@@ -75,14 +76,16 @@ class HdfsController < ApplicationController
     path.gsub!(/\/\//, "/")
     client.mkdirs(path)
     Audit.log_event(current_user, "A folder, #{params[:folder]}, was created", "hdfs", "create")
-    render :nothing => true
+    respond_with do |format|
+      format.json { render :nothing => true }
+    end
   end
 
   def file_info
     client = build_client_from_id
     @stat = client.stat params[:fs_path]
     respond_to do |format|
-      format.html{render :partial => 'file_info'}
+      format.html { render :partial => 'file_info' }
     end
   end
 
@@ -91,7 +94,9 @@ class HdfsController < ApplicationController
     client.rename(params[:from], params[:to])
     file_name = params[:from].strip.split("/").last
     Audit.log_event(current_user, "File/Folder, #{file_name}, was moved or renamed to #{params[:to]}", "hdfs", "update")
-    render :nothing => true
+    respond_with do |format|
+      format.json { render :nothing => true }
+    end
   end
 
   def delete_file
@@ -100,11 +105,15 @@ class HdfsController < ApplicationController
     client.delete path, true
     file_name = params[:path].strip.split("/").last
     Audit.log_event(current_user, "File/Folder, #{file_name}, was deleted", "hdfs", "delete")
-    render :nothing => true
+    respond_with do |format|
+      format.json { render :nothing => true }
+    end
   end
 
   def upload_form
-    render :partial => 'upload_form'
+    respond_to do |format|
+      format.html { render :partial => 'upload_form' }
+    end
   end
 
   def upload
@@ -125,13 +134,16 @@ class HdfsController < ApplicationController
     rescue Exception => e
       @error = e.to_s
     end
-    render :partial => 'upload'
+    respond_to do |format|
+      format.html { render :partial => 'upload' }
+    end
+    
   end
 
   def file_tree
     client = build_client_from_id
     file_structure = client.folder_tree params[:fs_path], 4
-    render :json => file_structure
+    respond_with(file_structure)
   end
 
   private

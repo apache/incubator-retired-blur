@@ -1,15 +1,19 @@
 class UsersController < ApplicationController
-  before_filter :zookeepers, :only => :show
-
   load_and_authorize_resource
 
+  before_filter :zookeepers, :only => :show
+
+  respond_to :html
+
   def index
+    respond_with(@users)
   end
 
   def show
     @column_preference = @user.column_preference
     @zookeeper_preference = @user.zookeeper_preference
     @choices = BlurTable.select('table_schema').collect {|table| schema = table.schema; schema.collect{|familes| familes['name']} if schema}.flatten.uniq
+    respond_with(@user)
   end
 
   def new
@@ -44,6 +48,7 @@ class UsersController < ApplicationController
   def destroy
     @user.destroy
     Audit.log_event(current_user, "User, #{@user.username}, was removed", "users", "delete")
-    redirect_to users_path, :notice => "User Removed"
+    flash[:notice] = "User Removed"
+    respond_with(@user)
   end
 end

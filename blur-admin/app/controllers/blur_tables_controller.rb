@@ -16,7 +16,7 @@ class BlurTablesController < ApplicationController
     table_update_action do |table|
       table.status = STATUS[:enabling]
       table.enable @current_zookeeper.blur_urls
-      Audit.log_event(current_user, "Table, #{table.table_name}, was enabled", "blur_table", "update")
+      Audit.log_event(current_user, "Table, #{table.table_name}, was enabled", "blur_table", "update", @current_zookeeper.name)
     end
   end
 
@@ -24,7 +24,7 @@ class BlurTablesController < ApplicationController
     table_update_action do |table|
       table.status = STATUS[:disabling]
       table.disable @current_zookeeper.blur_urls
-      Audit.log_event(current_user, "Table, #{table.table_name}, was disabled", "blur_table", "update")
+      Audit.log_event(current_user, "Table, #{table.table_name}, was disabled", "blur_table", "update", @current_zookeeper.name)
     end
   end
 
@@ -34,7 +34,7 @@ class BlurTablesController < ApplicationController
       destroy_index = params[:delete_index] == 'true'
       table.blur_destroy destroy_index, @current_zookeeper.blur_urls
       message = "and underlying index" if destroy_index
-      Audit.log_event(current_user, "Table, #{table.table_name}, #{message} was deleted", "blur_table", "update")
+      Audit.log_event(current_user, "Table, #{table.table_name}, #{message} was deleted", "blur_table", "update", @current_zookeeper.name)
       BlurTable.destroy table
     end
   end

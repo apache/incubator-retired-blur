@@ -58,8 +58,6 @@ class SearchesController < ApplicationController
 
     blur_results = search.fetch_results(blur_table.table_name, @current_zookeeper.blur_urls)
 
-    Audit.log_event(current_user, "A Query was submitted", "search", "create")
-
     # parse up the response object and reformat it to be @results.  @results holds the data
     # that will be passed to the view. @results is an array of results. Each result is a series
     # of nested hashes/arrays:

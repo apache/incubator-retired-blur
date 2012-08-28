@@ -6,12 +6,13 @@ class Audit < ActiveRecord::Base
     includes(:user)
   }
 
-	def self.log_event(user, message, model, mutation)
+	def self.log_event(user, message, model, mutation, zookeeper_affected)
     Audit.create(
       :user_id => user.id,
       :mutation => mutation.downcase,
       :model_affected => model.downcase,
-      :action => "#{message} by #{user.username}"
+      :action => "#{message}",
+      :zookeeper_affected => zookeeper_affected
     )
 	end
 
@@ -22,7 +23,8 @@ class Audit < ActiveRecord::Base
       :model => model_affected,
       :mutation => mutation,
       :username => user.username,
-      :user => user.name
+      :user => user.name,
+      :zookeeper_affected => zookeeper_affected
     }
   end
 end

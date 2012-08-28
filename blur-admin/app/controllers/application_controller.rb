@@ -3,6 +3,8 @@ class ApplicationController < ActionController::Base
 
   before_filter :lock_down_api
 
+  respond_to :html, :only => :help
+
   require 'thrift/blur'
   require 'blur_thrift_client'
 

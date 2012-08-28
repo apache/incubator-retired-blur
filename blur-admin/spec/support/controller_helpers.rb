@@ -6,6 +6,9 @@ module ControllerHelpers
     @user = FactoryGirl.create :user_with_preferences
     @ability = Ability.new @user
 
+    # Create a zookeeper for the current_zk calls
+    @zookeeper = FactoryGirl.create :zookeeper
+
     # Allow the user to perform all of the actions
     @ability.stub!(:can?).and_return(true)
 
@@ -23,11 +26,16 @@ module ControllerHelpers
     controller.stub!(:current_user).and_return(@user)
   end
 
+  def set_current_zookeeper
+    controller.stub!(:current_zookeeper).and_return(@zookeeper)
+  end
+
   # General setup (for most controllers)
   def setup_tests
     setup_variables_and_stubs
     set_ability
     set_current_user
+    set_current_zookeeper
   end
 end
 

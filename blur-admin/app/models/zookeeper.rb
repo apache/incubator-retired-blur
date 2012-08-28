@@ -42,4 +42,8 @@ class Zookeeper < ActiveRecord::Base
   def refresh_queries(lower_range)
     self.blur_queries.where("blur_queries.updated_at > ? and blur_tables.status = ?", lower_range, 4)
   end
+
+  def long_running_queries(current_user)
+    self.blur_queries.where('created_at < ? and state = ?', 1.minute.ago, 0).collect{|query| query.summary(current_user)}
+  end
 end

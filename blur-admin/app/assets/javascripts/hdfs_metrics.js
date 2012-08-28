@@ -5,6 +5,7 @@
 //= require flot/jquery.flot.crosshair.min
 //= require jquery.timepicker
 //= require jquery.rangeslider.js
+//= require underscore
 //= require_self
 
 $(document).ready(function(){
@@ -118,7 +119,7 @@ $(document).ready(function(){
     $.ajax({
 			url: Routes.stats_hdfs_metric_path(id),
 			type: 'GET',
-			data: req_data,
+			data: _.extend(req_data, {format: 'json'}),
 			success: function(data){
         // If no data was returned then set the no data message
         if (data.length <= 0 && !hdfs_data[id]){

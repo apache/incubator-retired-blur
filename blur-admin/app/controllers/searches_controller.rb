@@ -1,7 +1,6 @@
 class SearchesController < ApplicationController
   load_and_authorize_resource :only => [:load]
 
-  before_filter :current_zookeeper, :only => [:index, :create]
   before_filter :zookeepers, :only => :index
   before_filter :clean_column_data, :only => [:save, :update]
 
@@ -14,7 +13,7 @@ class SearchesController < ApplicationController
     # the .all call executes the SQL fetch, otherwise there are many more SQL fetches
     # required because of the lazy loading (in this case where a few more variables
     # depend on the result)
-    @blur_tables = @current_zookeeper.blur_tables.where('status = 4').order("table_name").includes(:cluster).all
+    @blur_tables = current_zookeeper.blur_tables.where('status = 4').order("table_name").includes(:cluster).all
     @blur_table = BlurTable.find_by_id(params[:table_id])
     if @blur_table.nil?
       @blur_table = @blur_tables[0]
@@ -63,7 +62,7 @@ class SearchesController < ApplicationController
     #use the model to begin building the blurquery
     blur_table = BlurTable.find params[:blur_table]
 
-    blur_results = search.fetch_results(blur_table.table_name, @current_zookeeper.blur_urls)
+    blur_results = search.fetch_results(blur_table.table_name, current_zookeeper.blur_urls)
 
     # parse up the response object and reformat it to be @results.  @results holds the data
     # that will be passed to the view. @results is an array of results. Each result is a series

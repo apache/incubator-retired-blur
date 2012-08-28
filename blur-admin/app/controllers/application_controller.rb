@@ -35,7 +35,6 @@ class ApplicationController < ActionController::Base
     @license ||= License.first
   end
 
-  private
   # Populates the @current_zookeeper instance variable
   def current_zookeeper
     # Find the zookeeper with the given or the stored session id
@@ -48,6 +47,8 @@ class ApplicationController < ActionController::Base
     end
     @current_zookeeper
   end
+
+  private
 
   # Populates the session id with your preference zookeeper id
   def set_zookeeper_with_preference

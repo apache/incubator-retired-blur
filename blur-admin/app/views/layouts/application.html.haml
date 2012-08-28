@@ -7,7 +7,7 @@
 		= javascript_include_tag 'application', 'routes'
 		= yield(:javascript)
 		= stylesheet_link_tag 'application', :media => "all" 
-		- if @current_zookeeper.blank? && @zookeepers
+		- if session[:current_zookeeper_id].blank? && @zookeepers
 			:javascript
 				var Zookeeper = {};
 				Zookeeper.instances = #{@zookeepers.collect{|z| {:id=>z.id, :name=>z.name}}.to_json}

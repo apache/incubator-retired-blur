@@ -3,7 +3,6 @@ class ZookeepersController < ApplicationController
 
   before_filter :set_zookeeper_with_preference, :only => :index
   before_filter :set_zookeeper_before_filter, :only => :show
-  before_filter :current_zookeeper, :only => :show
 
   respond_to :html, :only => [:index, :show]
   respond_to :json
@@ -16,8 +15,8 @@ class ZookeepersController < ApplicationController
   end
 
   def show
-    respond_with(@current_zookeeper) do |format|
-      format.json { render :json => @current_zookeeper, :methods => [:clusters, :blur_controllers] }
+    respond_with(current_zookeeper) do |format|
+      format.json { render :json => current_zookeeper, :methods => [:clusters, :blur_controllers] }
     end
   end
 

@@ -25,7 +25,7 @@ class BlurTablesController < ApplicationController
   def disable
     table_update_action do |table|
       table.status = STATUS[:disabling]
-      table.disable @current_zookeeper.blur_urls
+      table.disable current_zookeeper.blur_urls
       table.save
       Audit.log_event(current_user, "Table, #{table.table_name}, was disabled",
                       "blur_table", "update", current_zookeeper)
@@ -35,7 +35,7 @@ class BlurTablesController < ApplicationController
   def destroy
     destroy_index = params[:delete_index] == 'true' # Destroy underlying index boolean
     tables = params[:tables]                        # Tables being destroyed
-    blur_urls = @current_zookeeper.blur_urls        # Cached blur_urls
+    blur_urls = current_zookeeper.blur_urls        # Cached blur_urls
 
     BlurTable.find(tables).each do |table|
       table.blur_destroy destroy_index, blur_urls
@@ -52,7 +52,7 @@ class BlurTablesController < ApplicationController
 
   def terms
     table = BlurTable.find params[:id]
-    terms = table.terms @current_zookeeper.blur_urls, params[:family], params[:column], params[:startwith], params[:size].to_i
+    terms = table.terms current_zookeeper.blur_urls, params[:family], params[:column], params[:startwith], params[:size].to_i
 
     respond_with(terms)
   end

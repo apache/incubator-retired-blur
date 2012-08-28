@@ -59,6 +59,7 @@ $(document).ready(function() {
 
   var columnDefinitions = [
     {mData: 'action', bSortable : false},
+    {mData: 'zookeeper_affected'},
     {mData: 'username', bVisible : false, bSortable : false},
     {mData: 'user'},
     {mData: 'model'},
@@ -67,7 +68,7 @@ $(document).ready(function() {
   ];
 
   var audit_data_table = $('#audits_table > table').dataTable({
-      sDom: "<'row'<'span4'i><'span3'f><'span2'r>>t",
+      sDom: "<'row'<'span4'i><'span8'><'span3'f><'span2'r>>t",
       bPaginate: false,
       bProcessing: true,
       bAutoWidth: false,

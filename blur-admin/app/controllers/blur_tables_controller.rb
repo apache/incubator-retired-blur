@@ -1,12 +1,11 @@
 class BlurTablesController < ApplicationController
-  before_filter :current_zookeeper
   before_filter :zookeepers, :only => :index
 
   respond_to :html, :only => [:index]
   respond_to :json, :only => [:index, :terms, :comment]
 
   def index
-    @clusters = @current_zookeeper.clusters.order('name')
+    @clusters = current_zookeeper.clusters.order('name')
     @clusters.each{|cluster| cluster.can_update = can?(:update, :blur_tables)}
     respond_with(@clusters) do |format|
       format.json { render :json => @clusters, :methods => [:blur_tables] }
@@ -16,10 +15,10 @@ class BlurTablesController < ApplicationController
   def enable
     table_update_action do |table|
       table.status = STATUS[:enabling]
-      table.enable @current_zookeeper.blur_urls
+      table.enable current_zookeeper.blur_urls
       table.save
       Audit.log_event(current_user, "Table, #{table.table_name}, was enabled",
-                      "blur_table", "update")
+                      "blur_table", "update", current_zookeeper)
     end
   end
 
@@ -29,7 +28,7 @@ class BlurTablesController < ApplicationController
       table.disable @current_zookeeper.blur_urls
       table.save
       Audit.log_event(current_user, "Table, #{table.table_name}, was disabled",
-                      "blur_table", "update")
+                      "blur_table", "update", current_zookeeper)
     end
   end
 
@@ -42,7 +41,7 @@ class BlurTablesController < ApplicationController
       table.blur_destroy destroy_index, blur_urls
       index_message = "and underlying index " if destroy_index
       Audit.log_event(current_user, "Table, #{table.table_name}, #{index_message}was deleted",
-                      "blur_table", "update")
+                      "blur_table", "update", current_zookeeper)
     end
     BlurTable.destroy tables
 

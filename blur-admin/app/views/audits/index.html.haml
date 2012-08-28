@@ -8,7 +8,7 @@
     %table.table.table-bordered.table-striped
       %thead
         %tr
-        - headers = ['Action Taken', 'Username', 'User', 'Model Affected', 'Mutation Type', 'Date']
+        - headers = ['Action Taken', 'Username', 'User','Zookeeper/Root Path', 'Model Affected', 'Mutation Type', 'Date']
         - headers.each do |header|
           %th
             .header_content
@@ -20,6 +20,7 @@
             %td= audit.action
             %td= audit.user.username
             %td= audit.user.name
+            %td= audit.zookeeper_affected
             %td= audit.model_affected
             %td= audit.mutation
             %td= audit.created_at

@@ -46,6 +46,7 @@ class ApplicationController < ActionController::Base
       # Set the zookeeper if the value did not come from the session
       set_zookeeper @current_zookeeper.id if params[:zookeeper_id] 
     end
+    @current_zookeeper
   end
 
   # Populates the session id with your preference zookeeper id

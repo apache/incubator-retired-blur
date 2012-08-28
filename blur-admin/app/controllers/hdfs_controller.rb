@@ -65,6 +65,7 @@ class HdfsController < ApplicationController
       {:name=> file_ending, :is_dir=>stat.isdir}
     end
     @children.sort_by! {|c| [c[:is_dir] ? 1:0, c[:name].downcase]}
+
     respond_with do |format|
       format.html { render :partial => 'expand' }
     end
@@ -75,7 +76,9 @@ class HdfsController < ApplicationController
     path = "#{params[:fs_path]}/#{params[:folder]}/"
     path.gsub!(/\/\//, "/")
     client.mkdirs(path)
-    Audit.log_event(current_user, "A folder, #{params[:folder]}, was created", "hdfs", "create")
+    Audit.log_event(current_user, "A folder, #{params[:folder]}, was created",
+      "hdfs", "create", @hdfs)
+
     respond_with do |format|
       format.json { render :nothing => true }
     end
@@ -84,7 +87,7 @@ class HdfsController < ApplicationController
   def file_info
     client = build_client_from_id
     @stat = client.stat params[:fs_path]
-    respond_to do |format|
+    respond_with do |format|
       format.html { render :partial => 'file_info' }
     end
   end
@@ -93,7 +96,9 @@ class HdfsController < ApplicationController
     client = build_client_from_id
     client.rename(params[:from], params[:to])
     file_name = params[:from].strip.split("/").last
-    Audit.log_event(current_user, "File/Folder, #{file_name}, was moved or renamed to #{params[:to]}", "hdfs", "update")
+    Audit.log_event(current_user, "File/Folder, #{file_name}, was moved or renamed to #{params[:to]}",
+      "hdfs", "update", @hdfs)
+
     respond_with do |format|
       format.json { render :nothing => true }
     end
@@ -104,14 +109,16 @@ class HdfsController < ApplicationController
     path = params[:path]
     client.delete path, true
     file_name = params[:path].strip.split("/").last
-    Audit.log_event(current_user, "File/Folder, #{file_name}, was deleted", "hdfs", "delete")
+    Audit.log_event(current_user, "File/Folder, #{file_name}, was deleted",
+      "hdfs", "delete", @hdfs)
+
     respond_with do |format|
       format.json { render :nothing => true }
     end
   end
 
   def upload_form
-    respond_to do |format|
+    respond_with do |format|
       format.html { render :partial => 'upload_form' }
     end
   end
@@ -126,7 +133,8 @@ class HdfsController < ApplicationController
         else
           client = build_client_from_id
           client.put(f.tempfile.path,@path + '/' + f.original_filename)
-          Audit.log_event(current_user, "File, #{f.original_filename}, was uploaded", "hdfs", "create")
+          Audit.log_event(current_user, "File, #{f.original_filename}, was uploaded",
+            "hdfs", "create", @hdfs)
         end
       else
         @error = 'Problem with File Upload'
@@ -134,7 +142,7 @@ class HdfsController < ApplicationController
     rescue Exception => e
       @error = e.to_s
     end
-    respond_to do |format|
+    respond_with do |format|
       format.html { render :partial => 'upload' }
     end
     

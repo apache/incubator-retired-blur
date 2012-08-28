@@ -18,7 +18,8 @@ class BlurQueriesController < ApplicationController
     end
 
     respond_with(query_summaries) do |format|
-      format.json { render :json => { :aaData => query_summaries } } # Root node aaData is for the datatable library
+      # Root node aaData is for the datatable library
+      format.json { render :json => { :aaData => query_summaries } }
     end
   end
 
@@ -31,7 +32,7 @@ class BlurQueriesController < ApplicationController
   def cancel
     @blur_query.cancel
     Audit.log_event(current_user, "BlurQuery with UUID #{@blur_query.uuid}) was canceled",
-                    "blur_query", "update")
+                    "blur_query", "update", current_zookeeper)
 
     respond_with(@blur_query)
   end

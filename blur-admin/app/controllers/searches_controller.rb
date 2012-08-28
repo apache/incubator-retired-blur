@@ -1,7 +1,13 @@
 class SearchesController < ApplicationController
+  load_and_authorize_resource :only => [:load]
+
   before_filter :current_zookeeper, :only => [:index, :create]
   before_filter :zookeepers, :only => :index
   before_filter :clean_column_data, :only => [:save, :update]
+
+  JSON_RESPONSES = [:filters, :load, :update]
+  respond_to :html, :except => JSON_RESPONSES
+  respond_to :json, :only => JSON_RESPONSES
 
   #Show action that sets instance variables used to build the filter column
   def index
@@ -23,6 +29,7 @@ class SearchesController < ApplicationController
         @filter_table_collection[table.cluster.name] ||= []
         @filter_table_collection[table.cluster.name] << [table.table_name, table.id]
     end
+    respond_with
   end
 
   #Filter action to help build the tree for column families
@@ -37,7 +44,7 @@ class SearchesController < ApplicationController
       col_fam
     end
     filter_list = { :title => 'All Families', :key => "neighborhood", :addClass => 'check_filter', :select => true, :children => filter_children}
-    render :json => filter_list.to_json
+    respond_with(filter_list)
   end
 
   #Create action is a large action that handles all of the filter data
@@ -108,24 +115,24 @@ class SearchesController < ApplicationController
     end
     pref_sort = preference_sort(current_user.column_preference.value || [])
     @schema = Hash[search.schema(blur_table).sort &pref_sort]
-    respond_to do |format|
-      format.html {render 'create', :layout => false}
+    respond_with do |format|
+      format.html { render 'create', :layout => false }
     end
   end
 
   #save action that loads the state of a saved action and returns a json to be used to populate the form
   def load
-    search = Search.find(params[:id])
-    render :json => search.to_json(:methods => :column_object)
+    respond_with(@search) do |format|
+      format.json { render :json => @search, :methods => :column_object }
+    end
   end
 
   #Delete action used for deleting a saved search from a user's saved searches
   def delete
     Search.find(params[:id]).delete
     @searches = current_user.searches.reverse
-    @blur_table = BlurTable.find params[:blur_table]
-    respond_to do |format|
-      format.html {render :partial =>"saved", :locals => {:searches => @searches, :blur_table => @blur_table}}
+    respond_with(@searches) do |format|
+      format.html { render :partial => "saved" }
     end
   end
 
@@ -141,10 +148,9 @@ class SearchesController < ApplicationController
     search.column_object = params[:column_data]
     search.save
     @searches = current_user.searches.reverse
-    #@blur_table = BlurTable.find params[:blur_table]
 
-    respond_to do |format|
-      format.html {render :partial =>"saved", :locals => {:searches => @searches}} #, :blur_table => @blur_table}}
+    respond_with(@searches) do |format|
+      format.html { render :partial =>"saved" }
     end
   end
 
@@ -159,7 +165,9 @@ class SearchesController < ApplicationController
                         :query              => params[:query_string],
                         :column_object      => params[:column_data],
                         :blur_table_id      => params[:blur_table])
-    render :nothing => true
+    respond_with do |format|
+      format.json { render :nothing => true }
+    end
   end
   private
     def preference_sort(preferred_columns)

@@ -42,8 +42,8 @@ class ApplicationController < ActionController::Base
     if @current_zookeeper.nil?
       zookeeper_error
     else
-      # Set the zookeeper if the value did not come from the session
-      set_zookeeper @current_zookeeper.id if params[:zookeeper_id] 
+      # Set the zookeeper
+      set_zookeeper @current_zookeeper.id
     end
     @current_zookeeper
   end
@@ -61,23 +61,26 @@ class ApplicationController < ActionController::Base
         user_zk_pref.name = 0
         user_zk_pref.save
       else
-        session[:current_zookeeper_id] = user_zk_pref.value
+        set_zookeeper user_zk_pref.value
       end
     end
   end
 
   # Pass through for setting a zookeeper in a before filter
   def set_zookeeper_before_filter
-    set_zookeeper params[:id]
+    id = params[:id].to_i
+    if Zookeeper.find_by_id(id).nil?
+      zookeeper_error
+    else
+      set_zookeeper id
+    end
   end
 
   def set_zookeeper(id)
-    id = id.to_i # Convert all inputs to an int
-    if id.nil? || Zookeeper.find_by_id(id).nil?
-      zookeeper_error
-    else
-      session[:current_zookeeper_id] = id
-    end
+    # Convert all inputs to an int
+    id = id.to_i 
+    # Avoids a DB hit if the id is unchanged
+    session[:current_zookeeper_id] = id if session[:current_zookeeper_id] != id
   end
 
   # Populates the @zookeepers instance variable for option select

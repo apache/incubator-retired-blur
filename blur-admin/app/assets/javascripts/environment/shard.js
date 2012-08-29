@@ -13,7 +13,7 @@ var ShardModel = Backbone.Model.extend({
 var ShardCollection = Backbone.Collection.extend({
   model: ShardModel,
   initialize: function(models, options){
-    this.url = Routes.cluster_blur_shards_path(options.cluster_id);
+    this.url = Routes.cluster_blur_shards_path(options.cluster_id, {format: 'json'});
     this.view = new ShardCollectionView({collection: this});
     this.fetch({
       success: _.bind(function(){

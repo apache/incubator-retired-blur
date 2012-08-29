@@ -25,7 +25,7 @@ var ZookeeperModel = Backbone.Model.extend({
   // Model streaming, fetches on every interval
   stream: function(interval){
     var _update = _.bind(function() {
-      this.fetch({url: Routes.zookeeper_path(CurrentZookeeper)});
+      this.fetch({url: Routes.zookeeper_path(CurrentZookeeper, {format: 'json'})});
       window.setTimeout(_update, interval);
     }, this);
     _update();

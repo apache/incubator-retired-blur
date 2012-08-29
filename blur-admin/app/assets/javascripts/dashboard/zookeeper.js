@@ -69,7 +69,7 @@ var ZookeeperView = Backbone.View.extend({
   show_long_running: function(){
     $.ajax({
       type: 'GET',
-      url: Routes.long_running_queries_zookeeper_path(this.model.get('id')),
+      url: Routes.long_running_queries_zookeeper_path(this.model.get('id'), {format: 'json'}),
       success: function(data){
         $().popup({
           title: "Long Running Queries",

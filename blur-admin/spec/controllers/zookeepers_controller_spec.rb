@@ -8,220 +8,45 @@ describe ZookeepersController do
 
       # Set up association chain
       @zookeeper  = FactoryGirl.create :zookeeper
-
-      # ApplicationController.current_zookeeper
-      Zookeeper.stub(:find_by_id).and_return(@zookeeper)
-      Zookeeper.stub!(:first).and_return(@zookeeper)
-
-      # ApplicationController.zookeepers
-      Zookeeper.stub(:order).and_return [@zookeeper]
+      Zookeeper.stub!(:find).and_return @zookeeper
     end
 
     describe 'GET index' do
       it "renders the index template" do
-        get :index
+        get :index, :format => :html
         response.should render_template 'index'
+      end
+
+      it "should set the zookeeper when there is only one zookeeper" do
+        Zookeeper.stub!(:count).and_return 1
+        Zookeeper.stub!(:first).and_return @zookeeper
+        controller.stub!(:set_zookeeper_with_preference)
+        controller.should_receive(:set_zookeeper).with(@zookeeper.id)
+        get :index, :format => :html
       end
     end
 
     describe 'GET show' do
-      it "assigns the current zookeeper to @zookeeper" do
-        get :show, :id => @zookeeper.id
-        assigns(:current_zookeeper).should == @zookeeper
-      end
-
-      it "assigns the current zookeeper to @zookeeper" do
-        get :show, :id => @zookeeper.id
-        assigns(:current_zookeeper).should == @zookeeper
-        session[:current_zookeeper_id].should == @zookeeper.id
-      end
-
-      it "assigns the shards nodes and the controller nodes" do
-        @zookeeper.stub_chain(:shards, :count).and_return(1)
-        @zookeeper.stub_chain(:controllers, :count).and_return(1)
-        get :show, :id => @zookeeper.id
-        assigns(:shard_nodes).should == 1
-        assigns(:controller_nodes).should == 1
-      end
-
       it "renders the show_current view" do
-        get :show, :id => @zookeeper.id
+        get :show, :id => @zookeeper.id, :format => :html
         response.should render_template :show
       end
 
-      describe "testing ApplicationController current ZK logic" do
-        before :each do
-          Zookeeper.unstub!(:find_by_id)
-        end
-
-        it "with more than one zookeeper it should set the current_zookeeper to be the ZK with the session ID" do
-          Zookeeper.should_receive(:find_by_id).twice.with(@zookeeper.id).and_return @zookeeper
-          get :show, :id => @zookeeper.id
-          assigns(:current_zookeeper).should == @zookeeper
-          session[:current_zookeeper_id].should == @zookeeper.id
-        end
-
-        it "should not set the session ID if no ZK is found and should redirect to the root path" do
-          get :show, nil
-          assigns(:current_zookeeper).should == nil
-          session[:current_zookeeper_id].should == nil
-          flash[:error].should_not be_nil
-          response.should redirect_to :root
-        end
-
-        it "should not set the session ID if no ZK is found and should redirect to the root path for xhr requests" do
-          Zookeeper.stub!(:first).and_return nil
-          xhr :get, :show, :id => '23456'
-          assigns(:current_zookeeper).should == nil
-          session[:current_zookeeper_id].should == nil
-          response.response_code.should == 409
-        end
-      end
-    end
-
-    describe 'GET dashboard' do
-      it "renders a json object" do
-        get :dashboard
-        response.content_type.should == 'application/json'
+      it "renders json when the format is json" do
+        get :show, :id => @zookeeper.id, :format => :json
+        response.body.should == @zookeeper.to_json(:methods => [:clusters, :blur_controllers])
       end
     end
 
     describe 'GET long running queries' do
       before :each do
-        @zookeeper_with_queries = FactoryGirl.create :zookeeper_with_blur_queries
-        Zookeeper.stub!(:find).and_return(@zookeeper_with_queries)
-        query = @zookeeper_with_queries.blur_queries[rand @zookeeper_with_queries.blur_queries.count]
-        query.state = 0
-        query.created_at = 5.minutes.ago
-        query.save!
+        @zookeeper.stub!(:long_running_queries)
       end
 
-      it "collects all long running queries" do
-        get :long_running_queries
-        json = JSON.parse response.body
-        json.count.should == 1
-        json[0]["state"] == 0
-      end
-
-      it "renders a json object" do
-        get :long_running_queries
+      it "it grabs the long_running_queries and renders a json object" do
+        @zookeeper.should_receive :long_running_queries
+        get :long_running_queries, :id => @zookeeper.id, :format => :json
         response.content_type.should == 'application/json'
-      end
-    end
-
-    describe 'GET shard' do
-      it "renders a json object" do
-        @shard = FactoryGirl.create :shard
-        Zookeeper.stub_chain(:find, :clusters, :find_by_id, :shards).and_return([@shard])
-        get :shards
-        response.content_type.should == 'application/json'
-      end
-    end
-
-    describe 'DELETE destroy_shard' do
-      before :each do
-        @shard = FactoryGirl.create :shard_with_cluster
-        Zookeeper.stub_chain(:find, :shards, :find_by_id).and_return(@shard)
-      end
-
-      it "calls destroy on the clusters model" do
-        @shard.should_receive(:destroy)
-        delete :destroy_shard, :shard_id => @shard.id, :id => @zookeeper.id
-      end
-
-      it "doesnt call destroy on nil clusters model" do
-        Zookeeper.stub_chain(:find, :shards, :find_by_id).and_return(nil)
-        @shard.should_not_receive(:destroy)
-        delete :destroy_shard, :shard_id => @shard.id, :id => @zookeeper.id
-      end
-
-      it "renders nothing" do
-        delete :destroy_shard, :shard_id => @shard.id, :id => @zookeeper.id
-        response.body.should == ' '
-      end
-
-      it "logs an audit" do
-        Audit.should_receive :log_event
-        delete :destroy_shard, :shard_id => @shard.id, :id => @zookeeper.id
-      end
-    end
-
-    describe 'DELETE destroy_cluster' do
-      before :each do
-        @cluster = FactoryGirl.create :cluster
-        Zookeeper.stub_chain(:find, :clusters, :find_by_id).and_return(@cluster)
-      end
-
-      it "calls destroy on the clusters model" do
-        @cluster.should_receive(:destroy)
-        delete :destroy_cluster, :cluster_id => @cluster.id, :id => @zookeeper.id
-      end
-
-      it "doesnt call destroy on nil clusters model" do
-        Zookeeper.stub_chain(:find, :clusters, :find_by_id).and_return(nil)
-        @cluster.should_not_receive(:destroy)
-        delete :destroy_cluster, :cluster_id => @cluster.id, :id => @zookeeper.id
-      end
-
-      it "renders nothing" do
-        delete :destroy_cluster, :cluster_id => @cluster.id, :id => @zookeeper.id
-        response.body.should == ' '
-      end
-
-      it "logs an audit" do
-        Audit.should_receive :log_event
-        delete :destroy_cluster, :cluster_id => @cluster.id, :id => @zookeeper.id
-      end
-    end
-
-    describe 'DELETE destroy_controller' do
-      before(:each) do
-        @created_controller = FactoryGirl.create :controller
-        Zookeeper.stub_chain(:find, :controllers, :find_by_id).and_return(@created_controller)
-      end
-
-      it "calls destroy on the Controller model" do
-        @created_controller.should_receive(:destroy)
-        delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper
-      end
-
-      it "doesnt call destroy on nil controllers model" do
-        Zookeeper.stub_chain(:find, :controllers, :find_by_id).and_return(nil)
-        @created_controller.should_not_receive(:destroy)
-        delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper.id
-      end
-
-      it "renders nothing" do
-        delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper.id
-        response.body.should == ' '
-      end
-
-      it "logs an audit" do
-        Audit.should_receive :log_event
-        delete :destroy_controller, :controller_id => @created_controller.id, :id => @zookeeper.id
-      end
-    end
-
-    describe 'DELETE destroy_zookeeper' do
-      it "calls destroy on the Zookeeper model" do
-        Zookeeper.stub!(:find).and_return(@zookeeper)
-        @zookeeper.should_receive(:destroy)
-        delete :destroy, :id => @zookeeper.id
-      end
-
-      it "doesnt call destroy on the nil Zookeeper model" do
-        @zookeeper.should_not_receive(:destroy)
-        delete :destroy, :id => @zookeeper.id
-      end
-
-      it "renders nothing" do
-        delete :destroy, :id => @zookeeper.id
-        response.body.should == ' '
-      end
-
-      it "logs an audit" do
-        Audit.should_receive :log_event
-        delete :destroy, :id => @zookeeper.id
       end
     end
   end

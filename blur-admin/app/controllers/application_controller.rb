@@ -68,16 +68,6 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  # Pass through for setting a zookeeper in a before filter
-  def set_zookeeper_before_filter
-    id = params[:id].to_i
-    if Zookeeper.find_by_id(id).nil?
-      zookeeper_error
-    else
-      set_zookeeper id
-    end
-  end
-
   def set_zookeeper(id)
     # Convert all inputs to an int
     id = id.to_i 

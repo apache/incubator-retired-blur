@@ -34,6 +34,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
+import com.nearinfinity.blur.analysis.FieldConverterUtil;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -93,6 +94,7 @@ public class RowIndexWriter {
     document.add(new Field(ROW_ID, rowId, Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     document.add(new Field(RECORD_ID, recordId, Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     if (addColumns(document, _analyzer, builder, family, record.columns)) {
+      FieldConverterUtil.convert(document, _analyzer);
       if (!primeDocSet) {
         document.add(BlurConstants.PRIME_DOC_FIELD);
         primeDocSet = true;

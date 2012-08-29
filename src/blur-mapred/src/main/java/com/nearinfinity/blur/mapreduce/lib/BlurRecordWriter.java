@@ -22,6 +22,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.Version;
 
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.mapreduce.BlurColumn;
 import com.nearinfinity.blur.mapreduce.BlurRecord;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
@@ -29,6 +31,8 @@ import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurUtil;
 
 public class BlurRecordWriter extends RecordWriter<Text, BlurRecord> {
+
+  private static Log LOG = LogFactory.getLog(BlurRecordWriter.class);
 
   private Text prevKey = new Text();
   private List<Document> documents = new ArrayList<Document>();
@@ -40,17 +44,18 @@ public class BlurRecordWriter extends RecordWriter<Text, BlurRecord> {
     int id = context.getTaskAttemptID().getTaskID().getId();
     String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, id);
     Path basePath = new Path(outputPath);
-    Path indexPath = new Path(basePath,shardName);
-    
-    //@TODO
+    Path indexPath = new Path(basePath, shardName);
+
+    // @TODO
     Analyzer analyzer = new KeywordAnalyzer();
-    
+
     IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_35, analyzer);
-    
-    //@TODO setup compressed directory, read compression codec from config, setup progressable dir, setup lock factory
+
+    // @TODO setup compressed directory, read compression codec from config,
+    // setup progressable dir, setup lock factory
     Directory dir = new HdfsDirectory(indexPath);
     dir.setLockFactory(NoLockFactory.getNoLockFactory());
-    writer = new IndexWriter(dir,conf);
+    writer = new IndexWriter(dir, conf);
   }
 
   @Override
@@ -72,6 +77,7 @@ public class BlurRecordWriter extends RecordWriter<Text, BlurRecord> {
       document.add(convert(family, column));
     }
     documents.add(document);
+    LOG.error("Needs to use blur analyzer and field converter");
   }
 
   private Field convert(String family, BlurColumn column) {

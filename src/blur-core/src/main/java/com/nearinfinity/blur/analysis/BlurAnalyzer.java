@@ -73,6 +73,8 @@ public class BlurAnalyzer extends Analyzer {
   private PerFieldAnalyzerWrapper _wrapper;
   private Analyzer _fullTextAnalyzer = new StandardAnalyzer(LUCENE_VERSION);
 
+  private HashMap<String, Analyzer> _analyzers;
+
   public void addSubField(String name) {
     int lastIndexOf = name.lastIndexOf('.');
     String mainFieldName = name.substring(0, lastIndexOf);
@@ -106,13 +108,24 @@ public class BlurAnalyzer extends Analyzer {
     }
     Analyzer defaultAnalyzer = getAnalyzerByClassName(defaultDefinition.getAnalyzerClassName(), aliases);
     KeywordAnalyzer keywordAnalyzer = new KeywordAnalyzer();
-    Map<String,Analyzer> analyzers = new HashMap<String, Analyzer>();
-    analyzers.put(ROW_ID, keywordAnalyzer);
-    analyzers.put(RECORD_ID, keywordAnalyzer);
-    analyzers.put(PRIME_DOC, keywordAnalyzer);
-    analyzers.put(SUPER, _fullTextAnalyzer);
-    load(analyzers);
-    _wrapper = new PerFieldAnalyzerWrapper(defaultAnalyzer,analyzers);
+    _analyzers = new HashMap<String, Analyzer>();
+    _analyzers.put(ROW_ID, keywordAnalyzer);
+    _analyzers.put(RECORD_ID, keywordAnalyzer);
+    _analyzers.put(PRIME_DOC, keywordAnalyzer);
+    _analyzers.put(SUPER, _fullTextAnalyzer);
+    load(_analyzers);
+    _wrapper = new PerFieldAnalyzerWrapper(defaultAnalyzer,_analyzers);
+  }
+  
+  public FieldConverter getFieldConverter(String name) {
+    if (_analyzers == null) {
+      return null;
+    }
+    Analyzer analyzer = _analyzers.get(name);
+    if (analyzer != null && analyzer instanceof FieldConverter) {
+      return (FieldConverter) analyzer;
+    }
+    return null;
   }
 
   private void load(Map<String, Analyzer> analyzers) {
@@ -164,6 +177,9 @@ public class BlurAnalyzer extends Analyzer {
 
   @SuppressWarnings("unchecked")
   private static Analyzer getAnalyzerByClassName(String className, Map<String, Class<? extends Analyzer>> aliases) {
+    if (FieldConverterUtil.isType(className)) {
+      return FieldConverterUtil.getAnalyzer(className);
+    }
     try {
       Class<? extends Analyzer> clazz = aliases.get(className);
       if (clazz == null) {

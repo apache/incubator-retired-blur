@@ -513,14 +513,14 @@ var handleFiles = function(files) {
         titleClass: 'title',
         title: title,
         show: function() {
-          $.get(Routes.slow_folder_info_hdfs_path(id), {
+          $.get(Routes.slow_folder_info_hdfs_path(id, {format: 'json'}), {
             'fs_path': path
           }, function(data) {
             $('#file_count').html(data.file_count);
             $('#folder_count').html(data.folder_count);
             $('#file_size').html(data.file_size);
           });
-          $.get(Routes.structure_hdfs_path(id), {
+          $.get(Routes.structure_hdfs_path(id, {format: 'json'}), {
             'fs_path': path
           }, function(data) {
             draw_radial_graph(520, 400, data);

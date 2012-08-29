@@ -51,7 +51,8 @@ public class RandomSearchTableContinuously {
     int count = 0;
     long resultCount = 0;
     Iface client = BlurClient.getClient(connectionStr);
-    for (int i = 0; i < numberOfSearchesPerPass; i++) {
+    int i;
+    for (i = 0; i < numberOfSearchesPerPass; i++) {
       long now = System.currentTimeMillis();
       if (s + timeBetweenReporting < now) {
         double avgSeconds = (now - start) / 1000.0;
@@ -59,8 +60,7 @@ public class RandomSearchTableContinuously {
         double avgRate = i / avgSeconds;
         double rate = count / seconds;
         double responseTimeAvg = (responseTime / (double) count) / 1000000.0;
-        System.out.println("Searches [" + i + "] at avg response time of [" + responseTimeAvg + " ms] at rate [" + rate + "/s] with avg rate [" + avgRate + "/s] results [" + resultCount + "]");
-        System.out.println("Record Count [" + getCount(client,tableName) + "]");
+        System.out.println(System.currentTimeMillis() + "," + i + "," + responseTimeAvg + "," + rate + "," + avgRate + "," + resultCount + "," + getCount(client,tableName));
         s = now;
         responseTime = 0;
         count = 0;
@@ -82,7 +82,6 @@ public class RandomSearchTableContinuously {
       responseTime += (qe - qs);
       count++;
     }
-    
   }
 
   private static long getCount(Iface client, String tableName) throws BlurException, TException {

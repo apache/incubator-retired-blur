@@ -1,10 +1,10 @@
 class SearchesController < ApplicationController
-  load_and_authorize_resource :only => [:load]
+  load_and_authorize_resource :only => [:show, :destroy]
 
   before_filter :zookeepers, :only => :index
   before_filter :clean_column_data, :only => [:save, :update]
 
-  JSON_RESPONSES = [:filters, :load, :update]
+  JSON_RESPONSES = [:filters, :show, :update]
   respond_to :html, :except => JSON_RESPONSES
   respond_to :json, :only => JSON_RESPONSES
 
@@ -118,15 +118,15 @@ class SearchesController < ApplicationController
   end
 
   #save action that loads the state of a saved action and returns a json to be used to populate the form
-  def load
+  def show
     respond_with(@search) do |format|
       format.json { render :json => @search, :methods => :column_object }
     end
   end
 
   #Delete action used for deleting a saved search from a user's saved searches
-  def delete
-    Search.find(params[:id]).delete
+  def destroy
+    @search.destroy
     @searches = current_user.searches.reverse
     respond_with(@searches) do |format|
       format.html { render :partial => "saved" }

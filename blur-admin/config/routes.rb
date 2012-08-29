@@ -43,12 +43,7 @@ BlurAdmin::Application.routes.draw do
     resources :blur_controllers, :only => [:destroy]
 
     # Nested Search Resource
-    resources :searches, :only => [:index, :update] do
-      # Search routes
-      member do
-        post 'load'
-        delete 'delete/:blur_table', :action => :delete, :as => :delete
-      end
+    resources :searches, :only => [:index, :update, :show, :destroy] do
       collection do
         post 'save'
         post ':blur_table', :action => :create, :as => :fetch_results

@@ -1,8 +1,10 @@
 class BlurTablesController < ApplicationController
+  load_and_authorize_resource :shallow => true, :only => [:comment, :terms]
+
   before_filter :zookeepers, :only => :index
 
   respond_to :html, :only => [:index]
-  respond_to :json, :only => [:index, :terms, :comment]
+  respond_to :json
 
   def index
     @clusters = current_zookeeper.clusters.order('name')
@@ -35,7 +37,7 @@ class BlurTablesController < ApplicationController
   def destroy
     destroy_index = params[:delete_index] == 'true' # Destroy underlying index boolean
     tables = params[:tables]                        # Tables being destroyed
-    blur_urls = current_zookeeper.blur_urls        # Cached blur_urls
+    blur_urls = current_zookeeper.blur_urls         # Cached blur_urls
 
     BlurTable.find(tables).each do |table|
       table.blur_destroy destroy_index, blur_urls
@@ -51,19 +53,17 @@ class BlurTablesController < ApplicationController
   end
 
   def terms
-    table = BlurTable.find params[:id]
-    terms = table.terms current_zookeeper.blur_urls, params[:family], params[:column], params[:startwith], params[:size].to_i
+    terms = @blur_table.terms current_zookeeper.blur_urls, params[:family], params[:column], params[:startwith], params[:size].to_i
 
     respond_with(terms)
   end
 
   def comment
     raise "No comment provided!" if params[:comment].nil?
-    table = BlurTable.find params[:id]
-    table.comments = params[:comment]
-    table.save
+    @blur_table.comments = params[:comment]
+    @blur_table.save
 
-    respond_with(table)
+    respond_with(@table)
   end
 
   private

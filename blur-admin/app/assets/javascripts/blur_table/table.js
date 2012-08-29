@@ -183,7 +183,7 @@ var TableView = Backbone.View.extend({
             var input_comment = document.getElementById("comments").value;
             $.ajax({
               type: 'PUT',
-              url: Routes.comment_blur_table_path(this.model.get('id')) ,
+              url: Routes.comment_blur_table_path(this.model.get('id'), {format: 'json'}) ,
               data: {comment: input_comment},
               success: _.bind(function(){
                 this.model.set({comments: input_comment});

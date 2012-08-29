@@ -1,9 +1,11 @@
 class BlurQueriesController < ApplicationController
-  load_and_authorize_resource :through => :current_zookeeper, :shallow => true
+  load_and_authorize_resource :through => :current_zookeeper,
+                              :shallow => true, :except => :refresh
+
   before_filter :zookeepers, :only => :index
 
-  respond_to :html, :only => [:index, :show]
-  respond_to :json, :only => [:refresh, :show, :cancel]
+  respond_to :html, :only => [:index, :show, :cancel]
+  respond_to :json, :only => [:refresh, :show]
 
   def index
     respond_with(@blur_queries)
@@ -25,6 +27,7 @@ class BlurQueriesController < ApplicationController
 
   def show
     respond_with(@blur_query) do |format|
+      format.html { render :partial => 'show' }
       format.json { render :json => @blur_query.summary(current_user) }
     end
   end
@@ -34,6 +37,8 @@ class BlurQueriesController < ApplicationController
     Audit.log_event(current_user, "BlurQuery with UUID #{@blur_query.uuid}) was canceled",
                     "blur_query", "update", current_zookeeper)
 
-    respond_with(@blur_query)
+    respond_with(@blur_query) do |format|
+      format.html { render :partial => 'blur_query' }
+    end
   end
 end

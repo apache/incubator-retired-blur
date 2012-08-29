@@ -12,13 +12,14 @@ describe BlurQueriesController do
 
       # Blur Query model
       @blur_query = FactoryGirl.create :blur_query
-      @zookeeper.stub!(:blur_queries).and_return(@blur_query)
+      # Stub chain for load and auth loading a specific query
+      @zookeeper.stub_chain(:blur_queries, :find).and_return(@blur_query)
     end
 
     describe "GET index" do
       context "when an HTML request" do
         it "should render the index template" do
-          get :index
+          get :index, :format => :html
           response.should render_template :index
         end
       end
@@ -54,7 +55,12 @@ describe BlurQueriesController do
     describe "GET show" do
       it "should render the more_info partial when the request is html" do
         get :show, :id => @blur_query.id, :format => :html
-        response.should render_template(:partial => '_more_info')
+        response.should render_template(:partial => '_show')
+      end
+
+      it "should render the query summary as json when the request is json" do
+        @blur_query.stub!(:summary).and_return Hash.new
+        get :show, :id => @blur_query.id, :format => :json
       end
     end
 
@@ -64,30 +70,19 @@ describe BlurQueriesController do
         @blur_query.stub!(:cancel)
       end
 
-      it "should assign @blur_query to be the blur query specified by the id parameter" do
-        BlurQuery.should_receive(:find).with('1')
-        put :update, :id => @blur_query.id
-        assigns(:blur_query).should == @blur_query
-      end
-
-      it "should not cancel a running query if cancel param is false" do
-        @blur_query.should_not_receive(:cancel)
-        put :update, :cancel => 'false', :id => '1'
-      end
-
       it "should cancel a running query if cancel param is true" do
         @blur_query.should_receive(:cancel)
-        put :update, :cancel => 'true', :id => '1'
+        put :cancel, :id => @blur_query.id, :format => :html
       end
 
       it "should render the blur_query partial" do
-        put :update, :cancel => 'false', :id => '1'
+        put :cancel, :id => @blur_query.id, :format => :html
         response.should render_template(:partial => '_blur_query')
       end
 
       it "should log an audit event when a query is canceled" do
         Audit.should_receive :log_event
-        put :update, :cancel => 'true', :id => '1'
+        put :cancel, :id => @blur_query.id, :format => :html
       end
     end
   end

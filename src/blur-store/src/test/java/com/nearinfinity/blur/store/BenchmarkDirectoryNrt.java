@@ -1,7 +1,5 @@
 package com.nearinfinity.blur.store;
 
-import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
-
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.Arrays;
@@ -31,6 +29,8 @@ import com.nearinfinity.blur.store.blockcache.BlockCache;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
+
+import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
 
 public class BenchmarkDirectoryNrt {
 
@@ -131,10 +131,10 @@ public class BenchmarkDirectoryNrt {
     return document;
   }
 
-  public static int getNumberOfBanks(float heapPercentage, int numberOfBlocksPerBank, int blockSize) {
+  public static int getNumberOfSlabs(float heapPercentage, int numberOfBlocksPerSlab, int blockSize) {
     long max = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
     long targetBytes = (long) (max * heapPercentage);
-    int slabSize = numberOfBlocksPerBank * blockSize;
+    int slabSize = numberOfBlocksPerSlab * blockSize;
     int slabs = (int) (targetBytes / slabSize);
     if (slabs == 0) {
       throw new RuntimeException("Minimum heap size is 512m!");

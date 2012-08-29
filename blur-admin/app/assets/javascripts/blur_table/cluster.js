@@ -44,7 +44,7 @@ var Cluster = Backbone.Model.extend({
             func: _.bind(function() {
               $.ajax({
                 type: 'PUT',
-                url: Routes.enable_zookeeper_blur_tables_path(CurrentZookeeper),
+                url: Routes.enable_zookeeper_blur_tables_path(CurrentZookeeper, {format: 'json'}),
                 data: {tables: table_ids}
               });
               _.each(selected_tables, function(table){
@@ -77,7 +77,7 @@ var Cluster = Backbone.Model.extend({
             func: _.bind(function() {
               $.ajax({
                 type: 'PUT',
-                url: Routes.disable_zookeeper_blur_tables_path(CurrentZookeeper),
+                url: Routes.disable_zookeeper_blur_tables_path(CurrentZookeeper, {format: 'json'}),
                 data: {tables: table_ids}
               });
               _.each(selected_tables, function(table){

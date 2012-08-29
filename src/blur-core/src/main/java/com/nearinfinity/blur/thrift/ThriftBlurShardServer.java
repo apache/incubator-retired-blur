@@ -16,6 +16,31 @@
 
 package com.nearinfinity.blur.thrift;
 
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_PORT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CLUSTER_NAME;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_MAX_CLAUSE_COUNT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_SLAB_COUNT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIMETOLIVE;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_DATA_FETCH_THREAD_COUNT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WARMUP_CLASS;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_COMMITS;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_REFRESHS;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
+import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
+
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
@@ -28,6 +53,7 @@ import org.apache.zookeeper.ZooKeeper;
 import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.concurrent.SimpleUncaughtExceptionHandler;
 import com.nearinfinity.blur.concurrent.ThreadWatcher;
+import com.nearinfinity.blur.gui.HttpJettyServer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurFilterCache;
@@ -50,28 +76,6 @@ import com.nearinfinity.blur.store.blockcache.Cache;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
-
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CLUSTER_NAME;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_MAX_CLAUSE_COUNT;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_SLAB_COUNT;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIMETOLIVE;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_DATA_FETCH_THREAD_COUNT;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WARMUP_CLASS;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_COMMITS;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_REFRESHS;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
-import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
 public class ThriftBlurShardServer extends ThriftServer {
 
@@ -204,13 +208,24 @@ public class ThriftBlurShardServer extends ThriftServer {
     server.setThreadCount(threadCount);
     server.setIface(iface);
     server.setConfiguration(configuration);
+    
+    int webServerPort = Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT)) + serverIndex;
+
+    //TODO: this got ugly, there has to be a better way to handle all these params 
+    //without reversing the mvn dependancy and making blur-gui on top. 
+    final HttpJettyServer httpServer = new HttpJettyServer(bindPort, webServerPort,
+    		configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1),
+    		configuration.getInt(BLUR_SHARD_BIND_PORT, -1),
+    		configuration.getInt(BLUR_GUI_CONTROLLER_PORT,-1),
+    		configuration.getInt(BLUR_GUI_SHARD_PORT,-1),
+    		"shard", blurMetrics);
 
     // This will shutdown the server when the correct path is set in zk
     BlurShutdown shutdown = new BlurShutdown() {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(refresher, server, shardServer, indexManager, indexServer, threadWatcher, clusterStatus, zooKeeper);
+        quietClose(refresher, server, shardServer, indexManager, indexServer, threadWatcher, clusterStatus, zooKeeper, httpServer);
       }
     };
     server.setShutdown(shutdown);

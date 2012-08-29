@@ -35,6 +35,9 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_SERVER_R
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_SERVER_THRIFT_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
 import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
 import java.util.concurrent.TimeUnit;
@@ -45,6 +48,7 @@ import org.apache.zookeeper.ZooKeeper;
 import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.concurrent.SimpleUncaughtExceptionHandler;
 import com.nearinfinity.blur.concurrent.ThreadWatcher;
+import com.nearinfinity.blur.gui.HttpJettyServer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
@@ -127,13 +131,24 @@ public class ThriftBlurControllerServer extends ThriftServer {
     server.setBindPort(bindPort);
     server.setThreadCount(threadCount);
     server.setIface(iface);
+    
+    int webServerPort = Integer.parseInt(configuration.get(BLUR_GUI_CONTROLLER_PORT)) + serverIndex;
+    
+    //TODO: this got ugly, there has to be a better way to handle all these params 
+    //without reversing the mvn dependancy and making blur-gui on top. 
+    final HttpJettyServer httpServer = new HttpJettyServer(bindPort, webServerPort,
+    		configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1),
+    		configuration.getInt(BLUR_SHARD_BIND_PORT, -1),
+    		configuration.getInt(BLUR_GUI_CONTROLLER_PORT,-1),
+    		configuration.getInt(BLUR_GUI_SHARD_PORT,-1),
+    		"controller", blurMetrics);
 
     // This will shutdown the server when the correct path is set in zk
     BlurShutdown shutdown = new BlurShutdown() {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(server, controllerServer, clusterStatus, zooKeeper, threadWatcher);
+        quietClose(server, controllerServer, clusterStatus, zooKeeper, threadWatcher, httpServer);
       }
     };
     server.setShutdown(shutdown);

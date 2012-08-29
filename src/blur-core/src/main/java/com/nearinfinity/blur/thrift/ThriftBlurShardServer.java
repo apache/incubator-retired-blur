@@ -16,10 +16,10 @@
 
 package com.nearinfinity.blur.thrift;
 
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CLUSTER_NAME;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_PORT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CLUSTER_NAME;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_MAX_CLAUSE_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
@@ -149,8 +149,8 @@ public class ThriftBlurShardServer extends ThriftServer {
         System.exit(1);
       }
     }
-    
-    BlurUtil.setupZookeeper(zooKeeper,configuration.get(BLUR_CLUSTER_NAME));
+
+    BlurUtil.setupZookeeper(zooKeeper, configuration.get(BLUR_CLUSTER_NAME));
 
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper);
 
@@ -208,17 +208,20 @@ public class ThriftBlurShardServer extends ThriftServer {
     server.setThreadCount(threadCount);
     server.setIface(iface);
     server.setConfiguration(configuration);
-    
-    int webServerPort = Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT)) + serverIndex;
 
-    //TODO: this got ugly, there has to be a better way to handle all these params 
-    //without reversing the mvn dependancy and making blur-gui on top. 
-    final HttpJettyServer httpServer = new HttpJettyServer(bindPort, webServerPort,
-    		configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1),
-    		configuration.getInt(BLUR_SHARD_BIND_PORT, -1),
-    		configuration.getInt(BLUR_GUI_CONTROLLER_PORT,-1),
-    		configuration.getInt(BLUR_GUI_SHARD_PORT,-1),
-    		"shard", blurMetrics);
+    int baseGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT));
+    final HttpJettyServer httpServer;
+    if (baseGuiPort > 0) {
+      int webServerPort = baseGuiPort + serverIndex;
+
+      // TODO: this got ugly, there has to be a better way to handle all these
+      // params
+      // without reversing the mvn dependancy and making blur-gui on top.
+      httpServer = new HttpJettyServer(bindPort, webServerPort, configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1), configuration.getInt(BLUR_SHARD_BIND_PORT, -1),
+          configuration.getInt(BLUR_GUI_CONTROLLER_PORT, -1), configuration.getInt(BLUR_GUI_SHARD_PORT, -1), "shard", blurMetrics);
+    } else {
+      httpServer = null;
+    }
 
     // This will shutdown the server when the correct path is set in zk
     BlurShutdown shutdown = new BlurShutdown() {

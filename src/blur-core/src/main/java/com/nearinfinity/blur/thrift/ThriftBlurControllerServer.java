@@ -91,7 +91,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
     ZookeeperSystemTime.checkSystemTime(zooKeeper, configuration.getLong(BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE, 3000));
-    
+
     BlurUtil.setupZookeeper(zooKeeper);
 
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper);
@@ -131,17 +131,20 @@ public class ThriftBlurControllerServer extends ThriftServer {
     server.setBindPort(bindPort);
     server.setThreadCount(threadCount);
     server.setIface(iface);
-    
-    int webServerPort = Integer.parseInt(configuration.get(BLUR_GUI_CONTROLLER_PORT)) + serverIndex;
-    
-    //TODO: this got ugly, there has to be a better way to handle all these params 
-    //without reversing the mvn dependancy and making blur-gui on top. 
-    final HttpJettyServer httpServer = new HttpJettyServer(bindPort, webServerPort,
-    		configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1),
-    		configuration.getInt(BLUR_SHARD_BIND_PORT, -1),
-    		configuration.getInt(BLUR_GUI_CONTROLLER_PORT,-1),
-    		configuration.getInt(BLUR_GUI_SHARD_PORT,-1),
-    		"controller", blurMetrics);
+
+    int baseGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_CONTROLLER_PORT));
+    final HttpJettyServer httpServer;
+    if (baseGuiPort > 0) {
+      int webServerPort = baseGuiPort + serverIndex;
+
+      // TODO: this got ugly, there has to be a better way to handle all these
+      // params
+      // without reversing the mvn dependancy and making blur-gui on top.
+      httpServer = new HttpJettyServer(bindPort, webServerPort, configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1), configuration.getInt(BLUR_SHARD_BIND_PORT, -1),
+          configuration.getInt(BLUR_GUI_CONTROLLER_PORT, -1), configuration.getInt(BLUR_GUI_SHARD_PORT, -1), "controller", blurMetrics);
+    } else {
+      httpServer = null;
+    }
 
     // This will shutdown the server when the correct path is set in zk
     BlurShutdown shutdown = new BlurShutdown() {

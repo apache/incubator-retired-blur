@@ -175,6 +175,8 @@ public abstract class MiniCluster {
     configuration.set(BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION, "false");
     configuration.set(BLUR_SHARD_BLOCKCACHE_SLAB_COUNT, "0");
     configuration.setLong(BLUR_SHARD_SAFEMODEDELAY, 5000);
+    configuration.setInt(BLUR_GUI_CONTROLLER_PORT, -1);
+    configuration.setInt(BLUR_GUI_SHARD_PORT, -1);
     return configuration;
   }
 

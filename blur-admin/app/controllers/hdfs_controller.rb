@@ -2,19 +2,20 @@ class HdfsController < ApplicationController
   require 'hdfs_thrift_client'
   load_and_authorize_resource :shallow => true
 
-  HTML_REPONSES = [:index, :info, :folder_info, :expand, :file_info, :upload_form, :upload]
-  respond_to :html, :only => HTML_REPONSES
+  HTML_REPONSES = [:info, :folder_info, :expand, :file_info, :upload_form, :upload]
+  respond_to :html, :only => (HTML_REPONSES + [:index])
   respond_to :json, :except => HTML_REPONSES
 
   include ActionView::Helpers::NumberHelper
 
   def index
     respond_with do |format|
-      format.json{render :json => @hdfs, :methods => [:most_recent_stats, :recent_stats]}
+      format.json { render :json => @hdfs, :methods => [:most_recent_stats, :recent_stats] }
     end
   end
 
   def info
+    @hdfs_stat = @hdfs.hdfs_stats.last
     respond_with(@hdfs_stat) do |format|
       format.html do
         if @hdfs_stat
@@ -39,7 +40,7 @@ class HdfsController < ApplicationController
   def slow_folder_info
     client = build_client_from_id
     path = params[:fs_path]
-    file_stats = client.ls(@path, true)
+    file_stats = client.ls(path, true)
     file_size = 0
     stats_hash = {:file_size => 0, :file_count => 0, :folder_count => 0}
 

@@ -197,7 +197,7 @@ $(document).ready(function() {
     var to_id = location.attr('hdfs_id');
     var to_path = location.attr('hdfs_path');
     if (from_id === to_id) {
-      $.post(Routes.move_hdfs_path(to_id), {
+      $.post(Routes.move_hdfs_path(to_id, {format: 'json'}), {
           'from': from_path,
           'to': to_path
         }, function() {
@@ -242,7 +242,7 @@ $(document).ready(function() {
               errorPopup("Name already in use.");
             }
             else{
-              $.ajax(Routes.move_hdfs_path(id), {
+              $.ajax(Routes.move_hdfs_path(id, {format: 'json'}), {
                 type: 'post',
                 data: {
                   from: from_path,
@@ -279,7 +279,7 @@ $(document).ready(function() {
   var delete_file = function(file) {
     var id = file.attr('hdfs_id');
     var path = file.attr('hdfs_path');
-    $.post(Routes.delete_file_hdfs_path(id), {
+    $.post(Routes.delete_file_hdfs_path(id, {format: 'json'}), {
       'path': path
     }, function() {
       if (!historyUndef) {
@@ -448,7 +448,7 @@ var handleFiles = function(files) {
               errorPopup("Folder or file with this name already in use.");
             }
             else {
-              $.ajax(Routes.mkdir_hdfs_path(id), {
+              $.ajax(Routes.mkdir_hdfs_path(id, {format: 'json'}), {
                 type: 'post',
                 data: {
                   fs_path: path,
@@ -486,7 +486,7 @@ var handleFiles = function(files) {
         title: title,
         titleClass: 'title',
         show: function() {
-          $.get(Routes.structure_hdfs_path(id), {
+          $.get(Routes.structure_hdfs_path(id, {format: 'json'}), {
             'fs_path': '/'
           }, function(data) {
             draw_radial_graph(520, 400, data);

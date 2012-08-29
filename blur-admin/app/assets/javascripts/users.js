@@ -2,7 +2,7 @@ $(document).ready(function(){
   //Ajax request that serializes your columns and persists them to the DB
   var save_pref = function(){
     var user_id = $('#show_user_wrapper').attr('data-user-id');
-    $.ajax(Routes.user_preference_path(user_id, 'column'),
+    $.ajax(Routes.user_preference_path(user_id, 'column', {format: 'json'}),
     {
       type: 'PUT',
       data: $('#my-cols').sortable('serialize'),
@@ -87,7 +87,8 @@ $(document).ready(function(){
     if (selected_pref == 1 || 2){
       selected_zk = $('#zookeeper_num option:selected').val();
     }
-    $.ajax(Routes.user_preference_path($('#show_user_wrapper').attr('data-user-id'), 'zookeeper'), {
+    var user_id = $('#show_user_wrapper').attr('data-user-id');
+    $.ajax(Routes.user_preference_path(user_id, 'zookeeper', {format: 'json'}), {
       type: 'PUT',
       data: {
         name: selected_pref,

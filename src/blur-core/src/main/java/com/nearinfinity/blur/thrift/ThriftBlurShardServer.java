@@ -16,7 +16,6 @@
 
 package com.nearinfinity.blur.thrift;
 
-import static com.nearinfinity.blur.utils.BlurConstants.*;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_PORT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
@@ -95,26 +94,26 @@ public class ThriftBlurShardServer extends ThriftServer {
 
   public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration) throws Exception {
     // setup block cache
-    // 134,217,728 is the bank size, therefore there are 16,384 block
-    // in a bank when using a block of 8,192
-    int numberOfBlocksPerBank = 16384;
+    // 134,217,728 is the slab size, therefore there are 16,384 blocks
+    // in a slab when using a block size of 8,192
+    int numberOfBlocksPerSlab = 16384;
     int blockSize = BlockDirectory.BLOCK_SIZE;
-    int bankCount = configuration.getInt(BLUR_SHARD_BLOCKCACHE_SLAB_COUNT, 1);
+    int slabCount = configuration.getInt(BLUR_SHARD_BLOCKCACHE_SLAB_COUNT, 1);
     Cache cache;
     Configuration config = new Configuration();
     BlurMetrics blurMetrics = new BlurMetrics(config);
-    if (bankCount >= 1) {
+    if (slabCount >= 1) {
       BlockCache blockCache;
       boolean directAllocation = configuration.getBoolean(BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION, true);
 
-      int slabSize = numberOfBlocksPerBank * blockSize;
-      LOG.info("Number of slabs of block cache [{0}] with direct memory allocation set to [{1}]", bankCount, directAllocation);
-      LOG.info("Block cache target memory usage, slab size of [{0}] will allocate [{1}] slabs and use ~[{2}] bytes", slabSize, bankCount, ((long) bankCount * (long) slabSize));
+      int slabSize = numberOfBlocksPerSlab * blockSize;
+      LOG.info("Number of slabs of block cache [{0}] with direct memory allocation set to [{1}]", slabCount, directAllocation);
+      LOG.info("Block cache target memory usage, slab size of [{0}] will allocate [{1}] slabs and use ~[{2}] bytes", slabSize, slabCount, ((long) slabCount * (long) slabSize));
 
       BufferStore.init(configuration, blurMetrics);
 
       try {
-        long totalMemory = (long) bankCount * (long) numberOfBlocksPerBank * (long) blockSize;
+        long totalMemory = (long) slabCount * (long) numberOfBlocksPerSlab * (long) blockSize;
         blockCache = new BlockCache(blurMetrics, directAllocation, totalMemory, slabSize, blockSize);
       } catch (OutOfMemoryError e) {
         if ("Direct buffer memory".equals(e.getMessage())) {

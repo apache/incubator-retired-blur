@@ -25,11 +25,13 @@ import com.nearinfinity.blur.thrift.generated.RowMutationType;
 public class LoadDataContinuously {
 
   private static Random random = new Random();
-  private static List<String> words = new ArrayList<String>();
+  public static List<String> words = new ArrayList<String>();
 
   public static void main(String[] args) throws BlurException, TException, IOException {
     if (!(args.length == 8 || args.length == 9)) {
-      System.err.println(LoadDataContinuously.class.getName() + " <host1:port1,host2:port2> <table name> <WAL true|false> <# of columns per record> <# of records per row> <# of column families> <# of words per record> <time in seconds between reporting progress> <*optional path to word dictionary>");
+      System.err
+          .println(LoadDataContinuously.class.getName()
+              + " <host1:port1,host2:port2> <table name> <WAL true|false> <# of columns per record> <# of records per row> <# of column families> <# of words per record> <time in seconds between reporting progress> <*optional path to word dictionary>");
       System.exit(1);
     }
     if (args.length == 9) {
@@ -37,7 +39,7 @@ public class LoadDataContinuously {
     } else {
       loadWords(null);
     }
-    
+
     final Iface client = BlurClient.getClient(args[0]);
     final String table = args[1];
     final boolean wal = Boolean.parseBoolean(args[2]);
@@ -51,12 +53,14 @@ public class LoadDataContinuously {
     long s = start;
     long recordCountTotal = 0;
     long rowCount = 0;
-    
+
     int batchSize = 100;
-    
+
     List<RowMutation> batch = new ArrayList<RowMutation>();
-    
+
     long recordCount = 0;
+    long totalTime = 0;
+    long calls = 0;
     while (true) {
       long now = System.currentTimeMillis();
       if (s + timeBetweenReporting < now) {
@@ -64,9 +68,12 @@ public class LoadDataContinuously {
         double seconds = (now - s) / 1000.0;
         double avgRate = recordCountTotal / avgSeconds;
         double rate = recordCount / seconds;
-        System.out.println("Records indexed [" + recordCountTotal + "] Rows indexed [" + rowCount + "] at record rate [" + rate + "/s] with record avg rate [" + avgRate + "/s]");
+        double latency = (totalTime / 1000000.0) / calls;
+        System.out.println(System.currentTimeMillis() + "," + recordCountTotal + "," + rowCount + "," + latency + "," + rate + "," + avgRate);
         s = now;
         recordCount = 0;
+        totalTime = 0;
+        calls = 0;
       }
 
       RowMutation mutation = new RowMutation();
@@ -80,7 +87,11 @@ public class LoadDataContinuously {
       }
       batch.add(mutation);
       if (batch.size() >= batchSize) {
+        long sm = System.nanoTime();
         client.mutateBatch(batch);
+        long em = System.nanoTime();
+        calls++;
+        totalTime += (em - sm);
         batch.clear();
       }
       rowCount++;
@@ -89,7 +100,7 @@ public class LoadDataContinuously {
     }
   }
 
-  private static void loadWords(String path) throws IOException {
+  public static void loadWords(String path) throws IOException {
     InputStream inputStream;
     if (path == null) {
       inputStream = LoadDataContinuously.class.getResourceAsStream("words.txt");

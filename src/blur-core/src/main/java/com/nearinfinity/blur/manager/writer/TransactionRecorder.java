@@ -28,6 +28,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.NRTManager.TrackingIndexWriter;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
+import com.nearinfinity.blur.analysis.FieldConverterUtil;
 import com.nearinfinity.blur.index.IndexWriter;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
@@ -317,6 +318,7 @@ public class TransactionRecorder {
     document.add(new Field(BlurConstants.ROW_ID, rowId, Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     document.add(new Field(BlurConstants.RECORD_ID, record.recordId, Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     RowIndexWriter.addColumns(document, analyzer, builder, record.family, record.columns);
+    FieldConverterUtil.convert(document, analyzer);
     return document;
   }
 

@@ -418,7 +418,6 @@ public abstract class MiniCluster {
           }
         }
       }
-
     }
   }
 

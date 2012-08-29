@@ -16,12 +16,12 @@ describe UserSessionsController do
     describe "GET 'new'" do
       it "assigns a new user_session as @user_session" do
         UserSession.should_receive(:new).at_least(1).times.and_return(@user_session)
-        get :new
+        get :new, :format => :html
         assigns(:user_session).should == (@user_session)
       end
 
       it "should render new view" do
-        get :new
+        get :new, :format => :html
         response.should render_template :new
       end
     end
@@ -30,7 +30,7 @@ describe UserSessionsController do
       it "assigns a new session to @user_session and saves successfully" do
         UserSession.stub(:new).and_return @user_session
         @user_session.should_receive(:save).and_return true
-        post :create, :user_session => {:username => @user.username, :password => @user.password, :commit => "Log In"}
+        post :create, :user_session => {:username => @user.username, :password => @user.password, :commit => "Log In"}, :format => :html
         assigns(:user_session).should be(@user_session)
         response.should redirect_to(root_path)
       end
@@ -38,19 +38,19 @@ describe UserSessionsController do
       it "assigns a new session to @user_session and saves unsuccessfully" do
         UserSession.stub(:new).and_return @user_session
         @user_session.should_receive(:save).and_return false
-        post :create, :user_session => {:username => @user.username, :password => @user.password, :commit => "Log In"}
-        response.should render_template(:new)
+        post :create, :user_session => {:username => @user.username, :password => @user.password, :commit => "Log In"}, :format => :html
+        response.should redirect_to(login_path)
       end
     end
 
     describe "DELETE 'destroy'" do
       it "finds and destroys current user session" do
         @user_session.should_receive(:destroy)
-        delete :destroy
+        delete :destroy, :format => :html
       end
 
       it "redirects to root_url with notice" do
-        delete :destroy
+        delete :destroy, :format => :html
         response.should redirect_to(login_path)
         flash[:notice].should_not be_blank
       end

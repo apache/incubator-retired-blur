@@ -225,19 +225,18 @@ var ClusterView = Backbone.View.extend({
       table.find('.dataTables_empty').parent().remove();
       var table_children_count = table.children().length - table.children().find('.changing-state').length;
       this.$el.find('.' + table_prefixes[index] + '-counter').text(table_children_count);
-      /*if (this.model.get('tables').where({table: table_prefixes[index]}).length <= 0){
-        table.append(this.no_table(this.colspan_lookup[table_prefixes[index]]));
-      }*/
       this.$el.find("#" + table_prefixes[index] + "_tables").dataTable({
         "bFilter": false,
         "bLengthChange": false,
         "bDeferRender": true,
         "bRetrieve": true,
         "bPaginate": false,
+        "bInfo": false,
         "oLanguage": {
           "sZeroRecords": "No Tables for this Section",
         }
       });
+      //Had to do this to fix a problem where the dataTable was not reloading after a table had been moved from disabled to enabled.
       if (table_children_count == 0 && typeof table.find('.dataTables_empty') != undefined){
         $("#" + table_prefixes[index] + "_tables").append('<tr class="odd"><td valign="top" colspan="5" class="dataTables_empty">No Tables for this Section</td></tr>');
       }
@@ -273,9 +272,6 @@ var ClusterView = Backbone.View.extend({
     } else {
       this.$el.find('.tab-pane.active .bulk-action-checkbox:checked').click();
     }
-  },
-  no_table: function(colspan){
-    return $('<tr class="no-data"><td/><td colspan="' + colspan + '">No Tables for this Section</td></tr>')
   },
   enable_tables: function(event){
     this.model.enable_tables();

@@ -20,6 +20,7 @@ class ZookeepersController < ApplicationController
   end
 
   def destroy
+    raise "Cannot Remove A Zookeeper that is online!" if @zookeeper.status == 1
     @zookeeper.destroy
     Audit.log_event(current_user, "Zookeeper (#{@zookeeper.name}) was forgotten", "zookeeper", "delete") if @zookeeper.destroyed?
     respond_with(@zookeeper)

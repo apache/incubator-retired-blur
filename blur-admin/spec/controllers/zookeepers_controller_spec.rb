@@ -49,5 +49,8 @@ describe ZookeepersController do
         response.content_type.should == 'application/json'
       end
     end
+    describe 'DELETE zookeeper' do
+      pending 'Need to implement'
+    end
   end
 end

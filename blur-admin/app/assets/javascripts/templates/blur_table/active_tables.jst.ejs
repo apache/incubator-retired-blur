@@ -1,15 +1,15 @@
 <% if (cluster.get('can_update')) { %>
   <button class="btn btn-primary" disabled="disabled" data-action="disable">Disable Tables</button>
 <% } %>
-<table class="table table-striped table-bordered" blur_cluster_id='<%= cluster.get('id') %>'>
+<table class="table table-striped table-bordered" blur_cluster_id='<%= cluster.get('id') %>' id="active_tables">
   <thead>
     <tr>
       <th class="checkbox-td"><input class="check-all" type="checkbox" disabled="disabled"/></th>
       <th>Name</th>
       <th>Comments</th>
-      <th>Hosts | Shards</th>
-      <th>Row Count</th>
-      <th>Record Count</th>
+      <th class="host_shards">Hosts | Shards<i class="icon-chevron-up"></i> <i class="icon-chevron-down" ></i></th>
+      <th class="row_count">Row Count<i class="icon-chevron-up"></i> <i class="icon-chevron-down" ></i></th>
+      <th class="record_count">Record Count<i class="icon-chevron-up"></i> <i class="icon-chevron-down" ></i></th>
       <th>Info</th>
       <th>Queries / Minute</th>      
     </tr>

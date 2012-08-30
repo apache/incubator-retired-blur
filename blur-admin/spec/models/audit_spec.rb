@@ -5,7 +5,8 @@ describe Audit do
     it "should downcase the model and the mutation" do
       # This test is purely for string collision and readability
       user = FactoryGirl.create :user
-      created_audit = Audit.log_event user, "Message", "MoDeL", "MuTaTiOn"
+      zookeeper = FactoryGirl.create :zookeeper
+      created_audit = Audit.log_event user, "Message", "MoDeL", "MuTaTiOn", zookeeper
       created_audit.mutation.should == "mutation"
       created_audit.model_affected == "model"
     end

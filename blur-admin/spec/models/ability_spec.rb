@@ -129,11 +129,11 @@ describe Ability do
       @ability.should be_able_to :index, :blur_tables
       @ability.should be_able_to :index, :zookeepers
       @ability.should be_able_to :index, :blur_queries
-      @ability.should be_able_to :more_info, :blur_queries
+      @ability.should be_able_to :show, :blur_queries
     end
 
     it "can not view query strings" do
-      @ability.should_not be_able_to :more_info, :blur_queries, :query_string
+      @ability.should_not be_able_to :show, :blur_queries, :query_string
       @ability.should_not be_able_to :index, :blur_queries, :query_string
     end
 
@@ -162,7 +162,7 @@ describe Ability do
     end
 
     it "can cancel queries" do
-      @ability.should be_able_to :update, :blur_queries
+      @ability.should be_able_to :cancel, :blur_queries
     end
   end
 
@@ -174,7 +174,7 @@ describe Ability do
   
     it "can view blur query string" do
       @ability.should be_able_to :index, :blur_queries, :query_string
-      @ability.should be_able_to :more_info, :blur_queries, :query_string
+      @ability.should be_able_to :show, :blur_queries, :query_string
       @ability.should be_able_to :index, :audits
     end
   end

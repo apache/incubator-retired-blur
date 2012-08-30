@@ -14,7 +14,12 @@ class Cluster < ActiveRecord::Base
 
   def shard_version
     versions = self.blur_shards.select(:blur_version).group(:blur_version)
-    versions.length == 1 ? versions.first.blur_version : "Inconsistent Blur Versions"
+    puts versions.inspect
+    if versions.length < 1
+      "No shards in this Cluster!"
+    else
+      versions.length == 1 ? versions.first.blur_version : "Inconsistent Blur Versions"
+    end
   end
 
   def has_errors?

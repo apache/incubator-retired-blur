@@ -1,6 +1,7 @@
 //= require jquery.dynatree
 //= require bootstrap-tooltip
 //= require bootstrap-popover
+//= require jquery.dataTables
 //= require_tree .
 
 $(document).ready(function() {

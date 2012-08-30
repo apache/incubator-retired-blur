@@ -218,14 +218,28 @@ var ClusterView = Backbone.View.extend({
     this.set_table_values();
   },
   set_table_values: function(){
-    var table_prefixes = ['active', 'disabled', 'deleted'];
+    var table_prefixes = ['active', 'disabled'];
     for (var index = 0; index < table_prefixes.length; index++){
+
       var table = this.$el.find('.' + table_prefixes[index] + '-table');
-      table.find('.no-data').remove();
-      var table_children_count = table.children().length;
+      table.find('.dataTables_empty').parent().remove();
+      var table_children_count = table.children().length - table.children().find('.changing-state').length;
       this.$el.find('.' + table_prefixes[index] + '-counter').text(table_children_count);
-      if (this.model.get('tables').where({table: table_prefixes[index]}).length <= 0){
+      /*if (this.model.get('tables').where({table: table_prefixes[index]}).length <= 0){
         table.append(this.no_table(this.colspan_lookup[table_prefixes[index]]));
+      }*/
+      this.$el.find("#" + table_prefixes[index] + "_tables").dataTable({
+        "bFilter": false,
+        "bLengthChange": false,
+        "bDeferRender": true,
+        "bRetrieve": true,
+        "bPaginate": false,
+        "oLanguage": {
+          "sZeroRecords": "No Tables for this Section",
+        }
+      });
+      if (table_children_count == 0 && typeof table.find('.dataTables_empty') != undefined){
+        $("#" + table_prefixes[index] + "_tables").append('<tr class="odd"><td valign="top" colspan="5" class="dataTables_empty">No Tables for this Section</td></tr>');
       }
     }
   },
@@ -265,9 +279,11 @@ var ClusterView = Backbone.View.extend({
   },
   enable_tables: function(event){
     this.model.enable_tables();
+    this.model.change();
   },
   disable_tables: function(event){
     this.model.disable_tables();
+    this.model.change();
   },
   delete_tables: function(event){
     this.model.delete_tables();

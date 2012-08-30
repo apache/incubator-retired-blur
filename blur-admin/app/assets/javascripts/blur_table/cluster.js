@@ -201,7 +201,6 @@ var ClusterView = Backbone.View.extend({
     'click .btn[data-action=disable]' : 'disable_tables',
     'click .btn[data-action=delete]' : 'delete_tables'
   },
-  colspan_lookup : {'active': 7, 'disabled': 3}, //active changed from 5 to 6 for sparkline graph, 6 to 7 for comments
   render: function(){
     this.$el.html(this.template({cluster: this.model}));
     this.populate_tables();

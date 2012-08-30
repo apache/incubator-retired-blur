@@ -91,6 +91,9 @@ tr.highlighted-row td{ background:#FAD08A !important; }
 th{
   cursor: pointer;
 
+  &.sorting_disabled{
+    cursor:default;
+  }
   &.headerSortDown{
     .icon-chevron-up{ display: none; }
     .icon-chevron-down{ 
@@ -105,15 +108,17 @@ th{
     }
     .icon-chevron-down{ display: none; }
   }
-  .icon-chevron-up{
-    top: 5px;
-    right: 10px;
-    display:none;
-  }
-  .icon-chevron-down{
-    bottom: 5px;
-    right: 10px;
-    display:none;
+  i{
+    &.icon-chevron-up{
+      top: 5px;
+      right: 10px;
+      display:none;
+    }
+    &.icon-chevron-down{
+      bottom: 5px;
+      right: 10px;
+      display:none;
+    }
   }
 }
 .comment_row{

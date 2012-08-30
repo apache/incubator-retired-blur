@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Cluster do
   before(:each) do
-    @cluster = FactoryGirl.create :cluster_with_shards
+    @cluster = FactoryGirl.create :cluster_with_shard
   end
 
   describe 'as_json' do
@@ -19,7 +19,7 @@ describe Cluster do
     end
 
     it 'should return inconsistent when there are multiple blur versions' do
-      @incon_cluster = FactoryGirl.create :cluster_with_inconsistent_shards
+      @incon_cluster = FactoryGirl.create :cluster_with_shards
       @incon_cluster.shard_version.should == "Inconsistent Blur Versions"
     end
 

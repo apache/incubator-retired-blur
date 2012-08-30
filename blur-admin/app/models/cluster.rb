@@ -14,7 +14,6 @@ class Cluster < ActiveRecord::Base
 
   def shard_version
     versions = self.blur_shards.select(:blur_version).group(:blur_version)
-    puts versions.inspect
     if versions.length < 1
       "No shards in this Cluster!"
     else

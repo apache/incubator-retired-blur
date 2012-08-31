@@ -139,6 +139,7 @@ var TableView = Backbone.View.extend({
       titleClass: 'title',
       body: host_modal
     });
+    return false;
   },
   show_schema: function(){
     var schema_modal = $(JST['templates/blur_table/schema']({table: this.model}));
@@ -146,7 +147,7 @@ var TableView = Backbone.View.extend({
     $().popup({
       title: 'Additional Schema Info',
       titleClass: 'title',
-      body: schema_modal
+      body: schema_modal,
     });
     var table_model = this.model;
     schema_modal.on('click', '.terms', function(){
@@ -169,6 +170,7 @@ var TableView = Backbone.View.extend({
         .render();
       }, table_model));
     });
+    return false;
   },
   show_comments: function(){
     var comment_modal = $(JST['templates/blur_table/comments']({table: this.model}));
@@ -200,6 +202,7 @@ var TableView = Backbone.View.extend({
         }
       }
     });
+    return false;
   },
   setup_filter_tree: function(selector) {
     return selector.dynatree();

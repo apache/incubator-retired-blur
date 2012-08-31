@@ -295,7 +295,7 @@ $(document).ready(function(){
     var series = datasets[0];
 
     // legend holder
-    var legends = $('.graph-info-table').find('.axis-value');
+    var legends = $(this).closest('.graph_data').find('.axis-value');
 
     // break if we are hovering off the viewport
     if (pos.x < axes.xaxis.min || pos.x > axes.xaxis.max ||

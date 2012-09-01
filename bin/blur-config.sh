@@ -77,6 +77,10 @@ for f in $BLUR_HOME/lib/*.jar; do
   BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
 done
 
+for f in $BLUR_HOME/lib/*.war; do
+  BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
+done
+
 for f in $HADOOP_HOME/lib/jsp-2.1/*.jar; do
  BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
 done

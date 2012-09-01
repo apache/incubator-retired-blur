@@ -13,24 +13,23 @@ import org.codehaus.jackson.map.ObjectMapper;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 
 public class MetricsServlet extends HttpServlet {
-	
-	private static final long serialVersionUID = 1L;
 
-	private BlurMetrics bm = null;
+  private static final long serialVersionUID = 1L;
 
-	public MetricsServlet() {
-	}
+  private BlurMetrics bm = null;
 
-	
-	public MetricsServlet(BlurMetrics bm) {
-		this.bm = bm;
-	}
+  public MetricsServlet() {
+  }
 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.setContentType("application/json");
-		PrintWriter out = response.getWriter();
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.writeValue(out, bm);
-	}
+  public MetricsServlet(BlurMetrics bm) {
+    this.bm = bm;
+  }
+
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    response.setContentType("application/json");
+    PrintWriter out = response.getWriter();
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.writeValue(out, bm);
+  }
 
 }

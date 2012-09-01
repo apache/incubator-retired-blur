@@ -33,11 +33,11 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_RETRY_MA
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_RETRY_MUTATE_DELAY;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_SERVER_REMOTE_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_SERVER_THRIFT_THREAD_COUNT;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
 import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
 import java.util.concurrent.TimeUnit;
@@ -136,7 +136,6 @@ public class ThriftBlurControllerServer extends ThriftServer {
     final HttpJettyServer httpServer;
     if (baseGuiPort > 0) {
       int webServerPort = baseGuiPort + serverIndex;
-
       // TODO: this got ugly, there has to be a better way to handle all these
       // params
       // without reversing the mvn dependancy and making blur-gui on top.

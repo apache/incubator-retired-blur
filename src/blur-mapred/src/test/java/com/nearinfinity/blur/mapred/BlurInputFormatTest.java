@@ -1,5 +1,21 @@
 package com.nearinfinity.blur.mapred;
 
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -22,16 +38,16 @@ import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurUtil;
 
 public class BlurInputFormatTest {
-  
+
   private Path indexPath = new Path("./tmp/test-indexes/oldapi");
   private int numberOfShards = 13;
   private int rowsPerIndex = 10;
-  
+
   @Before
   public void setup() throws IOException {
-    com.nearinfinity.blur.mapreduce.lib.BlurInputFormatTest.buildTestIndexes(indexPath,numberOfShards,rowsPerIndex);
+    com.nearinfinity.blur.mapreduce.lib.BlurInputFormatTest.buildTestIndexes(indexPath, numberOfShards, rowsPerIndex);
   }
-  
+
   @Test
   public void testGetSplits() throws IOException {
     BlurInputFormat format = new BlurInputFormat();
@@ -40,12 +56,12 @@ public class BlurInputFormatTest {
     InputSplit[] splits = format.getSplits(job, -1);
     for (int i = 0; i < splits.length; i++) {
       BlurInputSplit split = (BlurInputSplit) splits[i];
-      Path path = new Path(indexPath,BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i));
+      Path path = new Path(indexPath, BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i));
       FileSystem fileSystem = path.getFileSystem(job);
       assertEquals(new BlurInputSplit(fileSystem.makeQualified(path), "_0", 0, Integer.MAX_VALUE), split);
     }
   }
-  
+
   @Test
   public void testGetRecordReader() throws IOException {
     BlurInputFormat format = new BlurInputFormat();

@@ -1,11 +1,14 @@
-/*
- * Copyright (C) 2011 Near Infinity Corporation
+package com.nearinfinity.blur.mapreduce;
+
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,9 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.nearinfinity.blur.mapreduce;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -50,15 +50,14 @@ import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurUtil;
 
 public class BlurTask implements Writable {
-  
+
   public enum INDEXING_TYPE {
-    REBUILD,
-    UPDATE
+    REBUILD, UPDATE
   }
 
   private static final String BLUR_BLURTASK = "blur.blurtask";
   private static final Log LOG = LogFactory.getLog(BlurTask.class);
-  
+
   public static String getCounterGroupName() {
     return "Blur";
   }
@@ -82,7 +81,7 @@ public class BlurTask implements Writable {
   public static String getRowFailureCounterName() {
     return "Row Failures";
   }
-  
+
   private int _ramBufferSizeMB = 256;
   private long _maxRecordCount = Long.MAX_VALUE;
   private TableDescriptor _tableDescriptor;
@@ -120,7 +119,7 @@ public class BlurTask implements Writable {
           }
         }
       }
-      
+
       if (shardCount == 0) {
         return num;
       }
@@ -132,7 +131,7 @@ public class BlurTask implements Writable {
       throw new RuntimeException("Unable to connect to filesystem", e);
     }
   }
-  
+
   public int getRamBufferSizeMB() {
     return _ramBufferSizeMB;
   }
@@ -167,7 +166,7 @@ public class BlurTask implements Writable {
     output.close();
     String blurTask = new String(Base64.encodeBase64(os.toByteArray()));
     configuration.set(BLUR_BLURTASK, blurTask);
-    
+
     Job job = new Job(configuration, "Blur Indexer");
     job.setReducerClass(BlurReducer.class);
     job.setOutputKeyClass(BytesWritable.class);
@@ -195,10 +194,10 @@ public class BlurTask implements Writable {
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
-    
+
   }
 
-  public static BlurTask read(Configuration configuration) throws IOException {  
+  public static BlurTask read(Configuration configuration) throws IOException {
     byte[] blurTaskBs = Base64.decodeBase64(configuration.get(BLUR_BLURTASK));
     BlurTask blurTask = new BlurTask();
     blurTask.readFields(new DataInputStream(new ByteArrayInputStream(blurTaskBs)));
@@ -266,7 +265,7 @@ public class BlurTask implements Writable {
   }
 
   public boolean getOptimize() {
-    return _optimize;    
+    return _optimize;
   }
 
   public void setOptimize(boolean optimize) {

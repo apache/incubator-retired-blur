@@ -1,5 +1,21 @@
 package com.nearinfinity.blur.mapred;
 
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import java.io.IOException;
 
 import org.apache.hadoop.fs.Path;
@@ -26,7 +42,7 @@ public class BlurRecordReader implements RecordReader<Text, BlurRecord> {
   private int startingDocId;
   private int endingDocId;
   private int position;
-  
+
   public BlurRecordReader(InputSplit split, JobConf job) throws IOException {
     BlurInputSplit blurSplit = (BlurInputSplit) split;
     Path path = blurSplit.getIndexPath();
@@ -34,9 +50,9 @@ public class BlurRecordReader implements RecordReader<Text, BlurRecord> {
     startingDocId = blurSplit.getStartingDocId();
     endingDocId = blurSplit.getEndingDocId();
     directory = new HdfsDirectory(path);
-    
+
     IndexCommit commit = Utils.findLatest(directory);
-    reader = Utils.openSegmentReader(directory, commit, segmentName,Utils.getTermInfosIndexDivisor(job));
+    reader = Utils.openSegmentReader(directory, commit, segmentName, Utils.getTermInfosIndexDivisor(job));
     int maxDoc = reader.maxDoc();
     if (endingDocId >= maxDoc) {
       endingDocId = maxDoc - 1;

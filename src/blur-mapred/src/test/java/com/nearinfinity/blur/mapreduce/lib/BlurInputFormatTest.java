@@ -1,5 +1,21 @@
 package com.nearinfinity.blur.mapreduce.lib;
 
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -39,23 +55,23 @@ import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.utils.RowIndexWriter;
 
 public class BlurInputFormatTest {
-  
+
   private Path indexPath = new Path("./tmp/test-indexes/newapi");
   private int numberOfShards = 13;
   private int rowsPerIndex = 10;
 
   @Before
   public void setup() throws IOException {
-    buildTestIndexes(indexPath,numberOfShards,rowsPerIndex);
+    buildTestIndexes(indexPath, numberOfShards, rowsPerIndex);
   }
-  
+
   public static void buildTestIndexes(Path indexPath, int numberOfShards, int rowsPerIndex) throws IOException {
     Configuration configuration = new Configuration();
     FileSystem fileSystem = indexPath.getFileSystem(configuration);
     fileSystem.delete(indexPath, true);
     for (int i = 0; i < numberOfShards; i++) {
       String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i);
-      buildIndex(fileSystem,configuration, new Path(indexPath,shardName),rowsPerIndex);
+      buildIndex(fileSystem, configuration, new Path(indexPath, shardName), rowsPerIndex);
     }
   }
 
@@ -85,7 +101,7 @@ public class BlurInputFormatTest {
     Record record = new Record();
     record.setRecordId(UUID.randomUUID().toString());
     record.setFamily("cf");
-    record.addToColumns(new Column("name",UUID.randomUUID().toString()));
+    record.addToColumns(new Column("name", UUID.randomUUID().toString()));
     return record;
   }
 
@@ -100,12 +116,12 @@ public class BlurInputFormatTest {
     List<InputSplit> list = format.getSplits(context);
     for (int i = 0; i < list.size(); i++) {
       BlurInputSplit split = (BlurInputSplit) list.get(i);
-      Path path = new Path(indexPath,BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i));
+      Path path = new Path(indexPath, BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i));
       FileSystem fileSystem = path.getFileSystem(conf);
       assertEquals(new BlurInputSplit(fileSystem.makeQualified(path), "_0", 0, Integer.MAX_VALUE), split);
     }
   }
-  
+
   @Test
   public void testCreateRecordReader() throws IOException, InterruptedException {
     BlurInputFormat format = new BlurInputFormat();

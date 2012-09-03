@@ -1,11 +1,14 @@
-/*
- * Copyright (C) 2011 Near Infinity Corporation
+package com.nearinfinity.blur.mapreduce.example;
+
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,9 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.nearinfinity.blur.mapreduce.example;
-
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -36,7 +36,7 @@ import com.nearinfinity.blur.thrift.generated.ColumnDefinition;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
 public class BlurExampleIndexerRebuild {
-  
+
   public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
     Configuration configuration = new Configuration();
     String[] otherArgs = new GenericOptionsParser(configuration, args).getRemainingArgs();
@@ -57,7 +57,7 @@ public class BlurExampleIndexerRebuild {
     descriptor.shardCount = 1;
     descriptor.cluster = "default";
     descriptor.tableUri = "./blur-testing";
-    
+
     BlurTask blurTask = new BlurTask();
     blurTask.setTableDescriptor(descriptor);
     blurTask.setIndexingType(INDEXING_TYPE.REBUILD);
@@ -67,13 +67,13 @@ public class BlurExampleIndexerRebuild {
     job.setMapperClass(BlurExampleMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
     job.setOutputFormatClass(TextOutputFormat.class);
-    
+
     FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
     FileOutputFormat.setOutputPath(job, new Path(otherArgs[1], "job-" + System.currentTimeMillis()));
     long s = System.currentTimeMillis();
     boolean waitForCompletion = job.waitForCompletion(true);
     long e = System.currentTimeMillis();
-    System.out.println("Completed in [" + (e-s) + " ms]");
+    System.out.println("Completed in [" + (e - s) + " ms]");
     System.exit(waitForCompletion ? 0 : 1);
   }
 }

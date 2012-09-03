@@ -1,5 +1,21 @@
 package com.nearinfinity.blur.mapreduce;
 
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,27 +53,27 @@ public class SpinLock {
       }
     };
     String zkConnectionStr = "localhost";
-    SpinLock lock = new SpinLock(progressable,zkConnectionStr,"test","/test-spin-lock");
+    SpinLock lock = new SpinLock(progressable, zkConnectionStr, "test", "/test-spin-lock");
     lock.copyLock(null);
   }
-  
+
   public SpinLock(Progressable progressable, String zkConnectionStr, String name, String path) throws IOException, KeeperException, InterruptedException {
     _path = path;
     _name = name;
     _progressable = progressable;
-    _zooKeeper = new ZooKeeper(zkConnectionStr,60000,new Watcher() {
+    _zooKeeper = new ZooKeeper(zkConnectionStr, 60000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
-        
+
       }
     });
     checkMaxCopies();
   }
-  
+
   private void checkMaxCopies() throws KeeperException, InterruptedException {
     Stat stat = _zooKeeper.exists(_path, false);
     if (stat == null) {
-      LOG.warn("Path [{0}] not set no limit on copies.",_path);
+      LOG.warn("Path [{0}] not set no limit on copies.", _path);
       _maxCopies = Integer.MAX_VALUE;
     } else {
       byte[] data = _zooKeeper.getData(_path, false, stat);
@@ -90,7 +106,7 @@ public class SpinLock {
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
-    
+
   }
 
 }

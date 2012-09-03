@@ -33,7 +33,7 @@ while [  $INSTANCE -lt $BLUR_NUMBER_OF_CONTROLLER_SERVER_INSTANCES_PER_MACHINE ]
   fi
 
   PROC_NAME=blur-controller-server-$HOSTNAME-$INSTANCE
-  nohup "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH -Dblur-controller-$INSTANCE $BLUR_CONTROLLER_JVM_OPTIONS -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=$PROC_NAME.log -cp $BLUR_CLASSPATH com.nearinfinity.blur.thrift.ThriftBlurControllerServer -s $INSTANCE > "$BLUR_LOGS/$PROC_NAME.out" 2>&1 < /dev/null &
+  nohup "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH -Dblur-controller-$INSTANCE $BLUR_CONTROLLER_JVM_OPTIONS -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=$PROC_NAME.log -cp $BLUR_CLASSPATH org.apache.blur.thrift.ThriftBlurControllerServer -s $INSTANCE > "$BLUR_LOGS/$PROC_NAME.out" 2>&1 < /dev/null &
   echo $! > $PID_FILE
   echo Controller [$INSTANCE] starting as process `cat $PID_FILE`.
 

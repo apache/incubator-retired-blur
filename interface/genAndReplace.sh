@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-rm ../src/blur-thrift/src/main/java/com/nearinfinity/blur/thrift/generated/*
+rm ../src/blur-thrift/src/main/java/org/apache/blur/thrift/generated/*
 rm -r gen-java/ gen-perl/ gen-rb/ gen-html/
 thrift --gen html --gen perl --gen java --gen rb Blur.thrift
 cp -r gen-java/* ../src/blur-thrift/src/main/java/

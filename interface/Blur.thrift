@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-namespace java com.nearinfinity.blur.thrift.generated
+namespace java org.apache.blur.thrift.generated
 namespace rb blur
 namespace perl Blur
 

@@ -1,5 +1,22 @@
 package com.nearinfinity.blur.utils;
 
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -27,49 +44,49 @@ import com.nearinfinity.blur.thrift.generated.RecordMutation;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
 
 public class BlurUtilsTest {
-  
+
   @Test
   public void testHumanizeTime1() {
     long time = TimeUnit.HOURS.toMillis(2) + TimeUnit.MINUTES.toMillis(42) + TimeUnit.SECONDS.toMillis(37) + TimeUnit.MILLISECONDS.toMillis(124);
     String humanizeTime = BlurUtil.humanizeTime(time, TimeUnit.MILLISECONDS);
     assertEquals("2 hours 42 minutes 37 seconds", humanizeTime);
   }
-  
+
   @Test
   public void testHumanizeTime2() {
     long time = TimeUnit.HOURS.toMillis(0) + TimeUnit.MINUTES.toMillis(42) + TimeUnit.SECONDS.toMillis(37) + TimeUnit.MILLISECONDS.toMillis(124);
     String humanizeTime = BlurUtil.humanizeTime(time, TimeUnit.MILLISECONDS);
     assertEquals("42 minutes 37 seconds", humanizeTime);
   }
-  
+
   @Test
   public void testHumanizeTime3() {
     long time = TimeUnit.HOURS.toMillis(2) + TimeUnit.MINUTES.toMillis(0) + TimeUnit.SECONDS.toMillis(37) + TimeUnit.MILLISECONDS.toMillis(124);
     String humanizeTime = BlurUtil.humanizeTime(time, TimeUnit.MILLISECONDS);
     assertEquals("2 hours 0 minutes 37 seconds", humanizeTime);
   }
-  
+
   @Test
   public void testHumanizeTime4() {
     long time = TimeUnit.HOURS.toMillis(2) + TimeUnit.MINUTES.toMillis(0) + TimeUnit.SECONDS.toMillis(0) + TimeUnit.MILLISECONDS.toMillis(124);
     String humanizeTime = BlurUtil.humanizeTime(time, TimeUnit.MILLISECONDS);
     assertEquals("2 hours 0 minutes 0 seconds", humanizeTime);
   }
-  
+
   @Test
   public void testHumanizeTime5() {
     long time = TimeUnit.HOURS.toMillis(0) + TimeUnit.MINUTES.toMillis(0) + TimeUnit.SECONDS.toMillis(37) + TimeUnit.MILLISECONDS.toMillis(124);
     String humanizeTime = BlurUtil.humanizeTime(time, TimeUnit.MILLISECONDS);
     assertEquals("37 seconds", humanizeTime);
   }
-  
+
   @Test
   public void testHumanizeTime6() {
     long time = TimeUnit.HOURS.toMillis(0) + TimeUnit.MINUTES.toMillis(0) + TimeUnit.SECONDS.toMillis(0) + TimeUnit.MILLISECONDS.toMillis(124);
     String humanizeTime = BlurUtil.humanizeTime(time, TimeUnit.MILLISECONDS);
     assertEquals("0 seconds", humanizeTime);
   }
-  
+
   @Test
   public void testMemoryUsage() throws CorruptIndexException, LockObtainFailedException, IOException {
     IndexReader reader = getReader();
@@ -91,12 +108,9 @@ public class BlurUtilsTest {
 
   @Test
   public void testRecordMutationMatch() {
-    RecordMutation rm1 = BlurUtil.newRecordMutation("test-family", "record-1",
-                                                    BlurUtil.newColumn("a", "b"));
-    RecordMutation rm2 = BlurUtil.newRecordMutation("test-family", "record-2",
-                                                    BlurUtil.newColumn("c", "d"));
-    RecordMutation rm3 = BlurUtil.newRecordMutation("test-family-2", "record-1",
-                                                    BlurUtil.newColumn("e", "f"));
+    RecordMutation rm1 = BlurUtil.newRecordMutation("test-family", "record-1", BlurUtil.newColumn("a", "b"));
+    RecordMutation rm2 = BlurUtil.newRecordMutation("test-family", "record-2", BlurUtil.newColumn("c", "d"));
+    RecordMutation rm3 = BlurUtil.newRecordMutation("test-family-2", "record-1", BlurUtil.newColumn("e", "f"));
     Record r = BlurUtil.newRecord("test-family", "record-1", BlurUtil.newColumn("g", "h"));
 
     assertTrue("should match with same family and record-id", BlurUtil.match(rm1, r));
@@ -106,12 +120,9 @@ public class BlurUtilsTest {
 
   @Test
   public void testFindRecordMutation() {
-    RecordMutation rm1 = BlurUtil.newRecordMutation("test-family", "record-1",
-                                                    BlurUtil.newColumn("a", "b"));
-    RecordMutation rm2 = BlurUtil.newRecordMutation("test-family", "record-2",
-                                                    BlurUtil.newColumn("c", "d"));
-    RecordMutation rm3 = BlurUtil.newRecordMutation("test-family-2", "record-1",
-                                                    BlurUtil.newColumn("e", "f"));
+    RecordMutation rm1 = BlurUtil.newRecordMutation("test-family", "record-1", BlurUtil.newColumn("a", "b"));
+    RecordMutation rm2 = BlurUtil.newRecordMutation("test-family", "record-2", BlurUtil.newColumn("c", "d"));
+    RecordMutation rm3 = BlurUtil.newRecordMutation("test-family-2", "record-1", BlurUtil.newColumn("e", "f"));
     RowMutation row = BlurUtil.newRowMutation("test-table", "row-123", rm1, rm2, rm3);
     Record r = BlurUtil.newRecord("test-family", "record-2", BlurUtil.newColumn("g", "h"));
     Record r2 = BlurUtil.newRecord("test-family", "record-99", BlurUtil.newColumn("g", "h"));
@@ -123,9 +134,9 @@ public class BlurUtilsTest {
   private IndexReader getReader() throws CorruptIndexException, LockObtainFailedException, IOException {
     RAMDirectory directory = new RAMDirectory();
     IndexWriterConfig conf = new IndexWriterConfig(LuceneConstant.LUCENE_VERSION, new KeywordAnalyzer());
-    IndexWriter writer = new IndexWriter(directory,conf);
+    IndexWriter writer = new IndexWriter(directory, conf);
     Document doc = new Document();
-    doc.add(new Field("a","b",Store.YES,Index.NOT_ANALYZED_NO_NORMS));
+    doc.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     writer.addDocument(doc);
     writer.close();
     return IndexReader.open(directory);

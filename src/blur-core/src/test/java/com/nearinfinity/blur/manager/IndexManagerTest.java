@@ -1,11 +1,14 @@
-/*
- * Copyright (C) 2011 Near Infinity Corporation
+package com.nearinfinity.blur.manager;
+
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,8 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.nearinfinity.blur.manager;
 
 import static com.nearinfinity.blur.thrift.generated.RecordMutationType.APPEND_COLUMN_VALUES;
 import static com.nearinfinity.blur.thrift.generated.RecordMutationType.DELETE_ENTIRE_RECORD;
@@ -123,15 +124,16 @@ public class IndexManagerTest {
     RowMutation mutation4 = newRowMutation(TABLE, "row-4",
         newRecordMutation(FAMILY, "record-4", newColumn("testcol1", "value1"), newColumn("testcol2", "value5"), newColumn("testcol3", "value9")),
         newRecordMutation(FAMILY, "record-4B", newColumn("testcol2", "value234123"), newColumn("testcol3", "value234123")));
-    RowMutation mutation5 = newRowMutation(TABLE,"row-5",
+    RowMutation mutation5 = newRowMutation(
+        TABLE,
+        "row-5",
         newRecordMutation(FAMILY, "record-5A", newColumn("testcol1", "value13"), newColumn("testcol2", "value14"), newColumn("testcol3", "value15")),
-        newRecordMutation(FAMILY, "record-5B", newColumn("testcol1", "value16"), newColumn("testcol2", "value17"), newColumn("testcol3", "value18"), newColumn("testcol3", "value19")));
-    RowMutation mutation6 = newRowMutation(TABLE, "row-6", 
-        newRecordMutation(FAMILY, "record-6A", newColumn("testcol12", "value110"), newColumn("testcol13", "value102")),
+        newRecordMutation(FAMILY, "record-5B", newColumn("testcol1", "value16"), newColumn("testcol2", "value17"), newColumn("testcol3", "value18"),
+            newColumn("testcol3", "value19")));
+    RowMutation mutation6 = newRowMutation(TABLE, "row-6", newRecordMutation(FAMILY, "record-6A", newColumn("testcol12", "value110"), newColumn("testcol13", "value102")),
         newRecordMutation(FAMILY, "record-6B", newColumn("testcol12", "value101"), newColumn("testcol13", "value104")),
         newRecordMutation(FAMILY2, "record-6C", newColumn("testcol18", "value501")));
-    RowMutation mutation7 = newRowMutation(TABLE, "row-7", 
-        newRecordMutation(FAMILY, "record-7A", newColumn("testcol12", "value101"), newColumn("testcol13", "value102")),
+    RowMutation mutation7 = newRowMutation(TABLE, "row-7", newRecordMutation(FAMILY, "record-7A", newColumn("testcol12", "value101"), newColumn("testcol13", "value102")),
         newRecordMutation(FAMILY2, "record-7B", newColumn("testcol18", "value501")));
     mutation7.waitToBeVisible = true;
     indexManager.mutate(mutation1);
@@ -165,7 +167,7 @@ public class IndexManagerTest {
       assertNull(fetchResult.recordResult);
     }
   }
-  
+
   @Test
   public void testQueryWithJoin() throws Exception {
     BlurQuery blurQuery = new BlurQuery();

@@ -1,5 +1,21 @@
 package com.nearinfinity.blur.store;
 
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -23,7 +39,7 @@ import org.junit.Test;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
 
 public class HdfsDirectoryTest {
-  
+
   private static final int MAX_NUMBER_OF_WRITES = 10000;
   private static final int MIN_FILE_SIZE = 100;
   private static final int MAX_FILE_SIZE = 100000;
@@ -39,17 +55,17 @@ public class HdfsDirectoryTest {
   public void setUp() throws IOException {
     file = new File("./tmp");
     rm(file);
-    URI uri = new File(file,"hdfs").toURI();
+    URI uri = new File(file, "hdfs").toURI();
     Path hdfsDirPath = new Path(uri.toString());
     directory = new HdfsDirectory(hdfsDirPath);
     seed = new Random().nextLong();
-//    seed = 7392202912208392081L;
+    // seed = 7392202912208392081L;
     random = new Random(seed);
   }
-  
+
   @Test
   public void testWritingAndReadingAFile() throws IOException {
-    
+
     IndexOutput output = directory.createOutput("testing.test");
     output.writeInt(12345);
     output.flush();
@@ -79,7 +95,7 @@ public class HdfsDirectoryTest {
     directory.deleteFile("testing.test");
     assertFalse(directory.fileExists("testing.test"));
   }
-  
+
   @Test
   public void testEOF() throws IOException {
     Directory fsDir = new RAMDirectory();
@@ -88,8 +104,8 @@ public class HdfsDirectoryTest {
     long fsLength = fsDir.fileLength(name);
     long hdfsLength = directory.fileLength(name);
     assertEquals(fsLength, hdfsLength);
-    testEof(name,fsDir,fsLength);
-    testEof(name,directory,hdfsLength);
+    testEof(name, fsDir, fsLength);
+    testEof(name, directory, hdfsLength);
   }
 
   private void testEof(String name, Directory directory, long length) throws IOException {
@@ -107,13 +123,13 @@ public class HdfsDirectoryTest {
     int i = 0;
     try {
       Set<String> names = new HashSet<String>();
-      for (; i< 10; i++) {
+      for (; i < 10; i++) {
         Directory fsDir = new RAMDirectory();
         String name = getName();
-        System.out.println("Working on pass [" + i  +"] seed [" + seed + "] contains [" + names.contains(name) + "]");
+        System.out.println("Working on pass [" + i + "] seed [" + seed + "] contains [" + names.contains(name) + "]");
         names.add(name);
-        createFile(name,fsDir,directory);
-        assertInputsEquals(name,fsDir,directory);
+        createFile(name, fsDir, directory);
+        assertInputsEquals(name, fsDir, directory);
         fsDir.close();
       }
     } catch (Exception e) {
@@ -125,12 +141,12 @@ public class HdfsDirectoryTest {
   private void assertInputsEquals(String name, Directory fsDir, HdfsDirectory hdfs) throws IOException {
     int reads = random.nextInt(MAX_NUMBER_OF_READS);
     int buffer = random.nextInt(MAX_BUFFER_SIZE - MIN_BUFFER_SIZE) + MIN_BUFFER_SIZE;
-    IndexInput fsInput = fsDir.openInput(name,buffer);
-    IndexInput hdfsInput = hdfs.openInput(name,buffer);
+    IndexInput fsInput = fsDir.openInput(name, buffer);
+    IndexInput hdfsInput = hdfs.openInput(name, buffer);
     assertEquals(fsInput.length(), hdfsInput.length());
     int fileLength = (int) fsInput.length();
     for (int i = 0; i < reads; i++) {
-      byte[] fsBuf = new byte[random.nextInt(Math.min(MAX_BUFFER_SIZE - MIN_BUFFER_SIZE,fileLength)) + MIN_BUFFER_SIZE];
+      byte[] fsBuf = new byte[random.nextInt(Math.min(MAX_BUFFER_SIZE - MIN_BUFFER_SIZE, fileLength)) + MIN_BUFFER_SIZE];
       byte[] hdfsBuf = new byte[fsBuf.length];
       int offset = random.nextInt(fsBuf.length);
       int length = random.nextInt(fsBuf.length - offset);
@@ -157,7 +173,7 @@ public class HdfsDirectoryTest {
     IndexOutput hdfsOutput = hdfs.createOutput(name);
     hdfsOutput.setLength(fileLength);
     for (int i = 0; i < writes; i++) {
-      byte[] buf = new byte[random.nextInt(Math.min(MAX_BUFFER_SIZE - MIN_BUFFER_SIZE,fileLength)) + MIN_BUFFER_SIZE];
+      byte[] buf = new byte[random.nextInt(Math.min(MAX_BUFFER_SIZE - MIN_BUFFER_SIZE, fileLength)) + MIN_BUFFER_SIZE];
       random.nextBytes(buf);
       int offset = random.nextInt(buf.length);
       int length = random.nextInt(buf.length - offset);

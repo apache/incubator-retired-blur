@@ -27,12 +27,12 @@ public abstract class CustomBufferedIndexInput extends IndexInput {
   public static final int BUFFER_SIZE = 1024;
 
   private int bufferSize = BUFFER_SIZE;
-  
+
   protected byte[] buffer;
-  
-  private long bufferStart = 0;			  // position in file of buffer
-  private int bufferLength = 0;			  // end of valid bytes
-  private int bufferPosition = 0;		  // next byte to read
+
+  private long bufferStart = 0; // position in file of buffer
+  private int bufferLength = 0; // end of valid bytes
+  private int bufferPosition = 0; // next byte to read
 
   @Override
   public byte readByte() throws IOException {
@@ -64,33 +64,33 @@ public abstract class CustomBufferedIndexInput extends IndexInput {
   @Override
   public void readBytes(byte[] b, int offset, int len, boolean useBuffer) throws IOException {
 
-    if(len <= (bufferLength-bufferPosition)){
+    if (len <= (bufferLength - bufferPosition)) {
       // the buffer contains enough data to satisfy this request
-      if(len>0) // to allow b to be null if len is 0...
+      if (len > 0) // to allow b to be null if len is 0...
         System.arraycopy(buffer, bufferPosition, b, offset, len);
-      bufferPosition+=len;
+      bufferPosition += len;
     } else {
       // the buffer does not have enough data. First serve all we've got.
       int available = bufferLength - bufferPosition;
-      if(available > 0){
+      if (available > 0) {
         System.arraycopy(buffer, bufferPosition, b, offset, available);
         offset += available;
         len -= available;
         bufferPosition += available;
       }
       // and now, read the remaining 'len' bytes:
-      if (useBuffer && len<bufferSize){
+      if (useBuffer && len < bufferSize) {
         // If the amount left to read is small enough, and
         // we are allowed to use our buffer, do it in the usual
         // buffered way: fill the buffer and copy from it:
         refill();
-        if(bufferLength<len){
+        if (bufferLength < len) {
           // Throw an exception when refill() could not read len bytes:
           System.arraycopy(buffer, 0, b, offset, bufferLength);
           throw new IOException("read past EOF");
         } else {
           System.arraycopy(buffer, 0, b, offset, len);
-          bufferPosition=len;
+          bufferPosition = len;
         }
       } else {
         // The amount left to read is larger than the buffer
@@ -100,35 +100,34 @@ public abstract class CustomBufferedIndexInput extends IndexInput {
         // this function, there is no need to do a seek
         // here, because there's no need to reread what we
         // had in the buffer.
-        long after = bufferStart+bufferPosition+len;
-        if(after > length())
+        long after = bufferStart + bufferPosition + len;
+        if (after > length())
           throw new IOException("read past EOF");
         readInternal(b, offset, len);
         bufferStart = after;
         bufferPosition = 0;
-        bufferLength = 0;                    // trigger refill() on read
+        bufferLength = 0; // trigger refill() on read
       }
     }
   }
-  
+
   @Override
   public int readInt() throws IOException {
-    if (4 <= (bufferLength-bufferPosition)) {
-      return ((buffer[bufferPosition++] & 0xFF) << 24) | ((buffer[bufferPosition++] & 0xFF) << 16)
-        | ((buffer[bufferPosition++] & 0xFF) <<  8) |  (buffer[bufferPosition++] & 0xFF);
+    if (4 <= (bufferLength - bufferPosition)) {
+      return ((buffer[bufferPosition++] & 0xFF) << 24) | ((buffer[bufferPosition++] & 0xFF) << 16) | ((buffer[bufferPosition++] & 0xFF) << 8) | (buffer[bufferPosition++] & 0xFF);
     } else {
       return super.readInt();
     }
   }
-  
+
   @Override
   public long readLong() throws IOException {
-    if (8 <= (bufferLength-bufferPosition)) {
-      final int i1 = ((buffer[bufferPosition++] & 0xff) << 24) | ((buffer[bufferPosition++] & 0xff) << 16) |
-        ((buffer[bufferPosition++] & 0xff) << 8) | (buffer[bufferPosition++] & 0xff);
-      final int i2 = ((buffer[bufferPosition++] & 0xff) << 24) | ((buffer[bufferPosition++] & 0xff) << 16) |
-        ((buffer[bufferPosition++] & 0xff) << 8) | (buffer[bufferPosition++] & 0xff);
-      return (((long)i1) << 32) | (i2 & 0xFFFFFFFFL);
+    if (8 <= (bufferLength - bufferPosition)) {
+      final int i1 = ((buffer[bufferPosition++] & 0xff) << 24) | ((buffer[bufferPosition++] & 0xff) << 16) | ((buffer[bufferPosition++] & 0xff) << 8)
+          | (buffer[bufferPosition++] & 0xff);
+      final int i2 = ((buffer[bufferPosition++] & 0xff) << 24) | ((buffer[bufferPosition++] & 0xff) << 16) | ((buffer[bufferPosition++] & 0xff) << 8)
+          | (buffer[bufferPosition++] & 0xff);
+      return (((long) i1) << 32) | (i2 & 0xFFFFFFFFL);
     } else {
       return super.readLong();
     }
@@ -136,7 +135,7 @@ public abstract class CustomBufferedIndexInput extends IndexInput {
 
   @Override
   public int readVInt() throws IOException {
-    if (5 <= (bufferLength-bufferPosition)) {
+    if (5 <= (bufferLength - bufferPosition)) {
       byte b = buffer[bufferPosition++];
       int i = b & 0x7F;
       for (int shift = 7; (b & 0x80) != 0; shift += 7) {
@@ -148,10 +147,10 @@ public abstract class CustomBufferedIndexInput extends IndexInput {
       return super.readVInt();
     }
   }
-  
+
   @Override
   public long readVLong() throws IOException {
-    if (9 <= bufferLength-bufferPosition) {
+    if (9 <= bufferLength - bufferPosition) {
       byte b = buffer[bufferPosition++];
       long i = b & 0x7F;
       for (int shift = 7; (b & 0x80) != 0; shift += 7) {
@@ -163,13 +162,13 @@ public abstract class CustomBufferedIndexInput extends IndexInput {
       return super.readVLong();
     }
   }
-  
+
   private void refill() throws IOException {
     long start = bufferStart + bufferPosition;
     long end = start + bufferSize;
-    if (end > length())				  // don't read past EOF
+    if (end > length()) // don't read past EOF
       end = length();
-    int newLength = (int)(end - start);
+    int newLength = (int) (end - start);
     if (newLength <= 0)
       throw new IOException("read past EOF");
 
@@ -182,49 +181,57 @@ public abstract class CustomBufferedIndexInput extends IndexInput {
     bufferStart = start;
     bufferPosition = 0;
   }
-  
+
   @Override
   public final void close() throws IOException {
     closeInternal();
     BufferStore.putBuffer(buffer);
     buffer = null;
   }
-  
+
   protected abstract void closeInternal() throws IOException;
 
-  /** Expert: implements buffer refill.  Reads bytes from the current position
-   * in the input.
-   * @param b the array to read bytes into
-   * @param offset the offset in the array to start storing bytes
-   * @param length the number of bytes to read
+  /**
+   * Expert: implements buffer refill. Reads bytes from the current position in
+   * the input.
+   * 
+   * @param b
+   *          the array to read bytes into
+   * @param offset
+   *          the offset in the array to start storing bytes
+   * @param length
+   *          the number of bytes to read
    */
-  protected abstract void readInternal(byte[] b, int offset, int length)
-          throws IOException;
+  protected abstract void readInternal(byte[] b, int offset, int length) throws IOException;
 
   @Override
-  public long getFilePointer() { return bufferStart + bufferPosition; }
+  public long getFilePointer() {
+    return bufferStart + bufferPosition;
+  }
 
   @Override
   public void seek(long pos) throws IOException {
     if (pos >= bufferStart && pos < (bufferStart + bufferLength))
-      bufferPosition = (int)(pos - bufferStart);  // seek within buffer
+      bufferPosition = (int) (pos - bufferStart); // seek within buffer
     else {
       bufferStart = pos;
       bufferPosition = 0;
-      bufferLength = 0;				  // trigger refill() on read()
+      bufferLength = 0; // trigger refill() on read()
       seekInternal(pos);
     }
   }
 
-  /** Expert: implements seek.  Sets current position in this file, where the
-   * next {@link #readInternal(byte[],int,int)} will occur.
+  /**
+   * Expert: implements seek. Sets current position in this file, where the next
+   * {@link #readInternal(byte[],int,int)} will occur.
+   * 
    * @see #readInternal(byte[],int,int)
    */
   protected abstract void seekInternal(long pos) throws IOException;
 
   @Override
   public Object clone() {
-    CustomBufferedIndexInput clone = (CustomBufferedIndexInput)super.clone();
+    CustomBufferedIndexInput clone = (CustomBufferedIndexInput) super.clone();
 
     clone.buffer = null;
     clone.bufferLength = 0;
@@ -254,10 +261,10 @@ public abstract class CustomBufferedIndexInput extends IndexInput {
     }
     return toCopy;
   }
-  
+
   @Override
   public void copyBytes(IndexOutput out, long numBytes) throws IOException {
-    assert numBytes >= 0: "numBytes=" + numBytes;
+    assert numBytes >= 0 : "numBytes=" + numBytes;
 
     while (numBytes > 0) {
       if (bufferLength == bufferPosition) {

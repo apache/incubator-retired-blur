@@ -1,11 +1,14 @@
-/*
- * Copyright (C) 2011 Near Infinity Corporation
+package com.nearinfinity.blur.store.compressed;
+
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,9 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.nearinfinity.blur.store.compressed;
-
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLongArray;
@@ -249,8 +249,7 @@ public class CompressedFieldDataDirectory extends Directory {
     private int _blockCount;
     private Compressor _compressor;
 
-    public CompressedIndexOutput_V1(String name, Directory directory, CompressionCodec codec, int blockSize)
-        throws IOException {
+    public CompressedIndexOutput_V1(String name, Directory directory, CompressionCodec codec, int blockSize) throws IOException {
       _compressor = codec.createCompressor();
       if (_compressor == null) {
         throw new RuntimeException("CompressionCodec [" + codec + "] does not support compressor on this platform.");
@@ -369,8 +368,7 @@ public class CompressedFieldDataDirectory extends Directory {
     private int _blockCount;
     private Compressor _compressor;
 
-    public CompressedIndexOutput_V0(String name, Directory directory, CompressionCodec codec, int blockSize)
-        throws IOException {
+    public CompressedIndexOutput_V0(String name, Directory directory, CompressionCodec codec, int blockSize) throws IOException {
       _compressor = codec.createCompressor();
       if (_compressor == null) {
         throw new RuntimeException("CompressionCodec [" + codec + "] does not support compressor on this platform.");

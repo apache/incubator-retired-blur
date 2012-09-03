@@ -1,5 +1,21 @@
 package com.nearinfinity.blur.metrics;
 
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,7 +29,7 @@ import org.apache.hadoop.metrics.Updater;
 import org.apache.hadoop.metrics.jvm.JvmMetrics;
 
 public class BlurMetrics implements Updater {
-  
+
   public static class MethodCall {
     public AtomicLong invokes = new AtomicLong();
     public AtomicLong times = new AtomicLong();
@@ -33,8 +49,8 @@ public class BlurMetrics implements Updater {
   public AtomicLong blurShardBuffercacheAllocate8192 = new AtomicLong(0);
   public AtomicLong blurShardBuffercacheAllocateOther = new AtomicLong(0);
   public AtomicLong blurShardBuffercacheLost = new AtomicLong(0);
-  public Map<String,MethodCall> methodCalls = new ConcurrentHashMap<String, MethodCall>();
-  
+  public Map<String, MethodCall> methodCalls = new ConcurrentHashMap<String, MethodCall>();
+
   public AtomicLong tableCount = new AtomicLong(0);
   public AtomicLong rowCount = new AtomicLong(0);
   public AtomicLong recordCount = new AtomicLong(0);
@@ -49,7 +65,7 @@ public class BlurMetrics implements Updater {
     Configuration conf = new Configuration();
     BlurMetrics blurMetrics = new BlurMetrics(conf);
     MethodCall methodCall = new MethodCall();
-    blurMetrics.methodCalls.put("test",methodCall);
+    blurMetrics.methodCalls.put("test", methodCall);
     for (int i = 0; i < 100; i++) {
       blurMetrics.blockCacheHit.incrementAndGet();
       blurMetrics.blockCacheMiss.incrementAndGet();
@@ -81,12 +97,12 @@ public class BlurMetrics implements Updater {
       _metricsRecord.setMetric("record.writes", getPerSecond(recordWrites.getAndSet(0), seconds));
       _metricsRecord.setMetric("query.external", getPerSecond(queriesExternal.getAndSet(0), seconds));
       _metricsRecord.setMetric("query.internal", getPerSecond(queriesInternal.getAndSet(0), seconds));
-      for (Entry<String,MethodCall> entry : methodCalls.entrySet()) {
+      for (Entry<String, MethodCall> entry : methodCalls.entrySet()) {
         String key = entry.getKey();
         MethodCall value = entry.getValue();
         long invokes = value.invokes.getAndSet(0);
         long times = value.times.getAndSet(0);
-        
+
         float avgTimes = (times / (float) invokes) / 1000000000.0f;
         _metricsRecord.setMetric("methodcalls." + key + ".count", getPerSecond(invokes, seconds));
         _metricsRecord.setMetric("methodcalls." + key + ".time", avgTimes);

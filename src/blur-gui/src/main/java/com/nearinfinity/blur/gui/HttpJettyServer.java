@@ -1,5 +1,21 @@
 package com.nearinfinity.blur.gui;
 
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
@@ -13,9 +29,7 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 
 /**
- * Starts up a Jetty server to run the utility gui
- * 
- * @author gman
+ * Starts up a Jetty server to run the utility gui.
  * 
  */
 public class HttpJettyServer {
@@ -103,7 +117,7 @@ public class HttpJettyServer {
     int indexOfJar = pathToClassResource.indexOf(".jar");
     if (indexOfJar < 0) {
       int index = pathToClassResource.indexOf(name);
-      String pathToClasses = pathToClassResource.substring(0,index);
+      String pathToClasses = pathToClassResource.substring(0, index);
       int indexOfProjectName = pathToClasses.indexOf("/blur-gui/");
       return pathToClasses.substring(0, indexOfProjectName) + "/blur-gui/src/main/webapp";
     }

@@ -1,5 +1,21 @@
 package com.nearinfinity.blur.manager.indexserver;
 
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,14 +28,14 @@ import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.utils.BlurConstants;
 
 public abstract class AbstractIndexServer implements IndexServer {
-  
-  private Map<String,IndexCounts> _recordsTableCounts = new ConcurrentHashMap<String, IndexCounts>();
-  private Map<String,IndexCounts> _rowTableCounts = new ConcurrentHashMap<String, IndexCounts>();
-  
+
+  private Map<String, IndexCounts> _recordsTableCounts = new ConcurrentHashMap<String, IndexCounts>();
+  private Map<String, IndexCounts> _rowTableCounts = new ConcurrentHashMap<String, IndexCounts>();
+
   private static class IndexCounts {
-    Map<String,IndexCount> counts = new ConcurrentHashMap<String, IndexCount>();
+    Map<String, IndexCount> counts = new ConcurrentHashMap<String, IndexCount>();
   }
-  
+
   private static class IndexCount {
     long version;
     long count = -1;
@@ -47,7 +63,7 @@ public abstract class AbstractIndexServer implements IndexServer {
             indexCounts.counts.put(shard, indexCount);
           }
           indexReader = index.getValue().getIndexReader();
-          if (!isValid(indexCount,indexReader)) {
+          if (!isValid(indexCount, indexReader)) {
             indexCount.count = indexReader.numDocs();
             indexCount.version = indexReader.getVersion();
           }
@@ -91,7 +107,7 @@ public abstract class AbstractIndexServer implements IndexServer {
             indexCounts.counts.put(shard, indexCount);
           }
           indexReader = index.getValue().getIndexReader();
-          if (!isValid(indexCount,indexReader)) {
+          if (!isValid(indexCount, indexReader)) {
             indexCount.count = getRowCount(indexReader);
             indexCount.version = indexReader.getVersion();
           }

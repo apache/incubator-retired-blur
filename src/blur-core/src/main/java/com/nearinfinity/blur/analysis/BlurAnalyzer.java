@@ -1,11 +1,14 @@
-/*
- * Copyright (C) 2011 Near Infinity Corporation
+package com.nearinfinity.blur.analysis;
+
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,9 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.nearinfinity.blur.analysis;
-
 import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
 import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
 import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
@@ -58,6 +58,7 @@ import com.nearinfinity.blur.thrift.generated.AlternateColumnDefinition;
 import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
 import com.nearinfinity.blur.thrift.generated.ColumnDefinition;
 import com.nearinfinity.blur.thrift.generated.ColumnFamilyDefinition;
+
 public class BlurAnalyzer extends Analyzer {
 
   private static final String STANDARD = "org.apache.lucene.analysis.standard.StandardAnalyzer";
@@ -114,9 +115,9 @@ public class BlurAnalyzer extends Analyzer {
     _analyzers.put(PRIME_DOC, keywordAnalyzer);
     _analyzers.put(SUPER, _fullTextAnalyzer);
     load(_analyzers);
-    _wrapper = new PerFieldAnalyzerWrapper(defaultAnalyzer,_analyzers);
+    _wrapper = new PerFieldAnalyzerWrapper(defaultAnalyzer, _analyzers);
   }
-  
+
   public FieldConverter getFieldConverter(String name) {
     if (_analyzers == null) {
       return null;
@@ -218,7 +219,7 @@ public class BlurAnalyzer extends Analyzer {
     }
     trans.close();
     byte[] array = trans.getArray();
-    return new String(array,0,trans.length());
+    return new String(array, 0, trans.length());
   }
 
   public boolean isFullTextField(String fieldName) {

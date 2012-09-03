@@ -1,11 +1,14 @@
-/*
- * Copyright (C) 2011 Near Infinity Corporation
+package com.nearinfinity.blur.utils;
+
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,9 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.nearinfinity.blur.utils;
-
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +32,7 @@ import com.nearinfinity.blur.manager.results.PeekableIterator;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 
 public class BlurConstants {
-  
+
   public static final String CONTROLLER = "controller";
   public static final String SHARD = "shard";
   public static final String SHARD_PREFIX = "shard-";
@@ -72,7 +72,7 @@ public class BlurConstants {
   public static final String BLUR_SHARD_OPENER_THREAD_COUNT = "blur.shard.opener.thread.count";
   public static final String BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE = "blur.shard.index.deletion.policy.maxage";
   public static final String BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE = "blur.zookeeper.system.time.tolerance";
-  
+
   public static final String BLUR_SHARD_TIME_BETWEEN_COMMITS = "blur.shard.time.between.commits";
   public static final String BLUR_SHARD_TIME_BETWEEN_REFRESHS = "blur.shard.time.between.refreshs";
 
@@ -81,7 +81,7 @@ public class BlurConstants {
   public static final String BLUR_CONTROLLER_CACHE_MAX_TIMETOLIVE = "blur.controller.cache.max.timetolive";
   public static final String BLUR_CONTROLLER_CACHE_MAX_QUERYCACHE_ELEMENTS = "blur.controller.cache.max.querycache.elements";
   public static final String BLUR_CONTROLLER_REMOTE_FETCH_COUNT = "blur.controller.remote.fetch.count";
-  
+
   public static final String BLUR_CONTROLLER_RETRY_MAX_MUTATE_RETRIES = "blur.controller.retry.max.mutate.retries";
   public static final String BLUR_CONTROLLER_RETRY_MAX_DEFAULT_RETRIES = "blur.controller.retry.max.default.retries";
   public static final String BLUR_CONTROLLER_RETRY_FETCH_DELAY = "blur.controller.retry.fetch.delay";
@@ -91,19 +91,19 @@ public class BlurConstants {
   public static final String BLUR_CONTROLLER_RETRY_MAX_MUTATE_DELAY = "blur.controller.retry.max.mutate.delay";
   public static final String BLUR_CONTROLLER_RETRY_MAX_DEFAULT_DELAY = "blur.controller.retry.max.default.delay";
   public static final String BLUR_CONTROLLER_RETRY_MAX_FETCH_RETRIES = "blur.controller.retry.max.fetch.retries";
-  
+
   public static final String BLUR_GUI_CONTROLLER_PORT = "blur.gui.controller.port";
   public static final String BLUR_GUI_SHARD_PORT = "blur.gui.shard.port";
 
   public static final String DEFAULT = "default";
   public static final String BLUR_CLUSTER_NAME = "blur.cluster.name";
   public static final String BLUR_CLUSTER;
-  
+
   public static final long ZK_WAIT_TIME = TimeUnit.SECONDS.toMillis(5);
 
   public static final Term PRIME_DOC_TERM = new Term(PRIME_DOC, BlurConstants.PRIME_DOC_VALUE);
   public static final Field PRIME_DOC_FIELD = new Field(PRIME_DOC, PRIME_DOC_VALUE, Store.YES, Index.NOT_ANALYZED_NO_NORMS);
-  
+
   static {
     try {
       BlurConfiguration configuration = new BlurConfiguration();

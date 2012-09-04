@@ -194,6 +194,7 @@
         }
         tr.first{
           @include border-top;
+          vertical-align: top;
         }
       }
     }

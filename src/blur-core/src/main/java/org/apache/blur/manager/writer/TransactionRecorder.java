@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.blur.analysis.BlurAnalyzer;
-import org.apache.blur.analysis.FieldConverterUtil;
 import org.apache.blur.index.IndexWriter;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -334,7 +333,6 @@ public class TransactionRecorder {
     document.add(new Field(BlurConstants.ROW_ID, rowId, Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     document.add(new Field(BlurConstants.RECORD_ID, record.recordId, Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     RowIndexWriter.addColumns(document, analyzer, builder, record.family, record.columns);
-    FieldConverterUtil.convert(document, analyzer);
     return document;
   }
 

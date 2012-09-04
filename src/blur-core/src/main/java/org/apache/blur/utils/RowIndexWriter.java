@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.blur.analysis.BlurAnalyzer;
-import org.apache.blur.analysis.FieldConverterUtil;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
@@ -94,7 +93,6 @@ public class RowIndexWriter {
     document.add(new Field(ROW_ID, rowId, Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     document.add(new Field(RECORD_ID, recordId, Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     if (addColumns(document, _analyzer, builder, family, record.columns)) {
-      FieldConverterUtil.convert(document, _analyzer);
       if (!primeDocSet) {
         document.add(BlurConstants.PRIME_DOC_FIELD);
         primeDocSet = true;

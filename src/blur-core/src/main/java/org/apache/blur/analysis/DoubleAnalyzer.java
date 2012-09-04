@@ -24,32 +24,17 @@ import org.apache.lucene.analysis.NumericTokenStream;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.util.NumericUtils;
 
-public class LongAnalyzer extends Analyzer {
+public class DoubleAnalyzer extends Analyzer {
 
   public static int PRECISION_STEP_DEFAULT = NumericUtils.PRECISION_STEP_DEFAULT;
-  public static int RADIX_DEFAULT = 10;
-  private int radix = 10;
   private int precisionStep;
 
-  public LongAnalyzer() {
-    this(PRECISION_STEP_DEFAULT, RADIX_DEFAULT);
+  public DoubleAnalyzer() {
+    this(PRECISION_STEP_DEFAULT);
   }
 
-  public LongAnalyzer(int precisionStep) {
-    this(precisionStep, RADIX_DEFAULT);
-  }
-
-  public LongAnalyzer(int precisionStep, int radix) {
+  public DoubleAnalyzer(int precisionStep) {
     this.precisionStep = precisionStep;
-    this.radix = radix;
-  }
-
-  public int getRadix() {
-    return radix;
-  }
-
-  public void setRadix(int radix) {
-    this.radix = radix;
   }
 
   public int getPrecisionStep() {
@@ -64,20 +49,20 @@ public class LongAnalyzer extends Analyzer {
   public TokenStream tokenStream(String fieldName, Reader reader) {
     NumericTokenStream numericTokenStream = new NumericTokenStream(precisionStep);
     try {
-      numericTokenStream.setLongValue(toLong(reader));
+      numericTokenStream.setDoubleValue(toDouble(reader));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
     return numericTokenStream;
   }
 
-  private long toLong(Reader reader) throws IOException {
+  private double toDouble(Reader reader) throws IOException {
     StringBuilder builder = new StringBuilder(20);
     int read;
     while ((read = reader.read()) != -1) {
       builder.append((char) read);
     }
-    return Long.parseLong(builder.toString(), radix);
+    return Double.parseDouble(builder.toString());
   }
 
 }

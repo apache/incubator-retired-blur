@@ -1,4 +1,5 @@
 package org.apache.blur.analysis;
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -23,55 +24,45 @@ import org.apache.lucene.analysis.NumericTokenStream;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.util.NumericUtils;
 
-public class LongAnalyzerReal extends Analyzer {
+public class FloatAnalyzer extends Analyzer {
 
-  private static final String TYPE = "long";
-  private int precisionStepDefault = NumericUtils.PRECISION_STEP_DEFAULT;
-  private int radix = 10;
+  public static int PRECISION_STEP_DEFAULT = NumericUtils.PRECISION_STEP_DEFAULT;
+  private int precisionStep;
 
-  public LongAnalyzerReal(String typeStr) {
-    if (typeStr.startsWith(TYPE)) {
-      int index = typeStr.indexOf(',');
-      if (index > 0) {
-        String[] s = typeStr.split(",");
-        if (s.length > 1) {
-          try {
-            precisionStepDefault = Integer.parseInt(s[1]);
-          } catch (NumberFormatException e) {
-            throw new RuntimeException("Can not parser [" + s[1] + "] into an integer for the precisionStepDefault.");
-          }
-        }
-        if (s.length > 2) {
-          try {
-            precisionStepDefault = Integer.parseInt(s[2]);
-          } catch (NumberFormatException e) {
-            throw new RuntimeException("Can not parser [" + s[2] + "] into an integer for the radix.");
-          }
-        }
-      }
-    } else {
-      throw new RuntimeException("Long type can not parser [" + typeStr + "]");
-    }
+  public FloatAnalyzer() {
+    this(PRECISION_STEP_DEFAULT);
+  }
+
+  public FloatAnalyzer(int precisionStep) {
+    this.precisionStep = precisionStep;
+  }
+
+  public int getPrecisionStep() {
+    return precisionStep;
+  }
+
+  public void setPrecisionStep(int precisionStep) {
+    this.precisionStep = precisionStep;
   }
 
   @Override
   public TokenStream tokenStream(String fieldName, Reader reader) {
-    NumericTokenStream numericTokenStream = new NumericTokenStream(precisionStepDefault);
+    NumericTokenStream numericTokenStream = new NumericTokenStream(precisionStep);
     try {
-      numericTokenStream.setLongValue(toLong(reader));
+      numericTokenStream.setFloatValue(toFloat(reader));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
     return numericTokenStream;
   }
 
-  private long toLong(Reader reader) throws IOException {
+  private float toFloat(Reader reader) throws IOException {
     StringBuilder builder = new StringBuilder(20);
     int read;
     while ((read = reader.read()) != -1) {
       builder.append((char) read);
     }
-    return Long.parseLong(builder.toString(), radix);
+    return Float.parseFloat(builder.toString());
   }
 
 }

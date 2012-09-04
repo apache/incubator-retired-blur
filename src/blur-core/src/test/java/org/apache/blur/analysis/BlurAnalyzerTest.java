@@ -35,30 +35,28 @@ import org.apache.blur.thrift.generated.ColumnFamilyDefinition;
 import org.apache.lucene.document.Field.Store;
 import org.junit.Test;
 
-
 public class BlurAnalyzerTest {
 
   private static final String STANDARD = "org.apache.lucene.analysis.standard.StandardAnalyzer";
-  private AnalyzerDefinition analyzerDefinition = getDef();
 
   @Test
-  public void testToAndFromJSON() throws IOException {
-    BlurAnalyzer analyzer = new BlurAnalyzer(analyzerDefinition);
+  public void testToAndFromJSONDef1() throws IOException {
+    BlurAnalyzer analyzer = new BlurAnalyzer(getDef1());
     String json = analyzer.toJSON();
     BlurAnalyzer analyzer2 = BlurAnalyzer.create(json);
     assertEquals(analyzer.getAnalyzerDefinition(), analyzer2.getAnalyzerDefinition());
   }
 
   @Test
-  public void testStoringOfField() throws IOException {
-    BlurAnalyzer analyzer = new BlurAnalyzer(analyzerDefinition);
+  public void testStoringOfFieldDef1() throws IOException {
+    BlurAnalyzer analyzer = new BlurAnalyzer(getDef1());
     assertEquals(Store.NO, analyzer.getStore("b.c.sub1"));
     assertEquals(Store.YES, analyzer.getStore("b.c"));
   }
 
   @Test
-  public void testGetSubFields() throws IOException {
-    BlurAnalyzer analyzer = new BlurAnalyzer(analyzerDefinition);
+  public void testGetSubFieldsDef1() throws IOException {
+    BlurAnalyzer analyzer = new BlurAnalyzer(getDef1());
     assertNull(analyzer.getSubIndexNames("b.d"));
     Set<String> subIndexNames = analyzer.getSubIndexNames("b.c");
     TreeSet<String> set = new TreeSet<String>();
@@ -68,13 +66,41 @@ public class BlurAnalyzerTest {
   }
 
   @Test
-  public void testFullTextFields() throws IOException {
-    BlurAnalyzer analyzer = new BlurAnalyzer(analyzerDefinition);
+  public void testFullTextFieldsDef1() throws IOException {
+    BlurAnalyzer analyzer = new BlurAnalyzer(getDef1());
     assertTrue(analyzer.isFullTextField("a.b"));
     assertFalse(analyzer.isFullTextField("a.d"));
   }
 
-  private AnalyzerDefinition getDef() {
+  @Test
+  public void testToAndFromJSONDef2() throws IOException {
+    BlurAnalyzer analyzer = new BlurAnalyzer(getDef2());
+    String json = analyzer.toJSON();
+    BlurAnalyzer analyzer2 = BlurAnalyzer.create(json);
+    assertEquals(analyzer.getAnalyzerDefinition(), analyzer2.getAnalyzerDefinition());
+  }
+
+  @Test
+  public void testStoringOfFieldDef2() throws IOException {
+    BlurAnalyzer analyzer = new BlurAnalyzer(getDef2());
+    assertEquals(Store.YES, analyzer.getStore("a.b"));
+    assertEquals(Store.YES, analyzer.getStore("b.c"));
+  }
+
+  @Test
+  public void testGetSubFieldsDef2() throws IOException {
+    BlurAnalyzer analyzer = new BlurAnalyzer(getDef2());
+    assertNull(analyzer.getSubIndexNames("b.d"));
+  }
+
+  @Test
+  public void testFullTextFieldsDef2() throws IOException {
+    BlurAnalyzer analyzer = new BlurAnalyzer(getDef2());
+    assertTrue(analyzer.isFullTextField("a.b"));
+    assertFalse(analyzer.isFullTextField("d.a"));
+  }
+
+  private AnalyzerDefinition getDef1() {
 
     AnalyzerDefinition analyzerDefinition = new AnalyzerDefinition().setDefaultDefinition(new ColumnDefinition(STANDARD, false, null)).setFullTextAnalyzerClassName(STANDARD);
     Map<String, ColumnFamilyDefinition> columnFamilyDefinitions = new HashMap<String, ColumnFamilyDefinition>();
@@ -99,4 +125,9 @@ public class BlurAnalyzerTest {
     return analyzerDefinition;
   }
 
+  private AnalyzerDefinition getDef2() {
+    AnalyzerDefinition analyzerDefinition = new AnalyzerDefinition().setDefaultDefinition(new ColumnDefinition(STANDARD, false, null)).setFullTextAnalyzerClassName(STANDARD);
+    analyzerDefinition.putToColumnFamilyDefinitions("a", new ColumnFamilyDefinition().setDefaultDefinition(new ColumnDefinition(STANDARD, true, null)));
+    return analyzerDefinition;
+  }
 }

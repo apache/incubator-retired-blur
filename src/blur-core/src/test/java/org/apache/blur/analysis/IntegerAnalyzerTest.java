@@ -45,13 +45,13 @@ import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 import org.junit.Test;
 
-public class LongAnalyzerTest {
+public class IntegerAnalyzerTest {
 
   @Test
   public void testLongAnalyzer() throws IOException {
     AnalyzerDefinition analyzerDefinition = new AnalyzerDefinition();
     Map<String, ColumnDefinition> columnDefinitions = new HashMap<String, ColumnDefinition>();
-    columnDefinitions.put("test", new ColumnDefinition("long", false, null));
+    columnDefinitions.put("test", new ColumnDefinition("integer", false, null));
     ColumnFamilyDefinition val = new ColumnFamilyDefinition(null, columnDefinitions);
     analyzerDefinition.putToColumnFamilyDefinitions("test", val);
     Analyzer analyzer = new BlurAnalyzer(analyzerDefinition);
@@ -60,10 +60,9 @@ public class LongAnalyzerTest {
 
   @Test
   public void testLongAnalyzerDifferentStep() throws IOException {
-
     AnalyzerDefinition analyzerDefinition = new AnalyzerDefinition();
     Map<String, ColumnDefinition> columnDefinitions = new HashMap<String, ColumnDefinition>();
-    columnDefinitions.put("test", new ColumnDefinition("long,4", false, null));
+    columnDefinitions.put("test", new ColumnDefinition("integer,4", false, null));
     ColumnFamilyDefinition val = new ColumnFamilyDefinition(null, columnDefinitions);
     analyzerDefinition.putToColumnFamilyDefinitions("test", val);
     Analyzer analyzer = new BlurAnalyzer(analyzerDefinition);
@@ -74,7 +73,7 @@ public class LongAnalyzerTest {
   public void testLongAnalyzerDifferentStepAndRadix() throws IOException {
     AnalyzerDefinition analyzerDefinition = new AnalyzerDefinition();
     Map<String, ColumnDefinition> columnDefinitions = new HashMap<String, ColumnDefinition>();
-    columnDefinitions.put("test", new ColumnDefinition("long,4,16", false, null));
+    columnDefinitions.put("test", new ColumnDefinition("integer,4,16", false, null));
     ColumnFamilyDefinition val = new ColumnFamilyDefinition(null, columnDefinitions);
     analyzerDefinition.putToColumnFamilyDefinitions("test", val);
     Analyzer analyzer = new BlurAnalyzer(analyzerDefinition);
@@ -87,21 +86,21 @@ public class LongAnalyzerTest {
     IndexWriter indexWriter = new IndexWriter(dir, conf);
     for (int i = 0; i < 1000; i++) {
       Document document = new Document();
-      String value = Long.toString(i, radix);
+      String value = Integer.toString(i, radix);
       document.add(new Field("test.test", value, Store.YES, Index.ANALYZED_NO_NORMS));
       indexWriter.addDocument(document);
     }
     indexWriter.close();
 
     IndexSearcher searcher = new IndexSearcher(IndexReader.open(dir));
-    NumericRangeQuery<Long> query = NumericRangeQuery.newLongRange("test.test", 0L, 2L, true, true);
+    NumericRangeQuery<Integer> query = NumericRangeQuery.newIntRange("test.test", 0, 2, true, true);
     Query rewrite = searcher.rewrite(query);
     TopDocs docs = searcher.search(rewrite, 100);
     ScoreDoc[] scoreDocs = docs.scoreDocs;
     assertEquals(3, docs.totalHits);
     for (int i = 0; i < docs.totalHits; i++) {
       Document document = searcher.doc(scoreDocs[i].doc);
-      assertTrue(Long.parseLong(document.get("test.test"), radix) < 3);
+      assertTrue(Integer.parseInt(document.get("test.test"), radix) < 3);
     }
   }
 }

@@ -11,8 +11,6 @@ import com.nearinfinity.agent.types.InstanceManager;
 
 public class ClusterCollector extends Collector {
 
-//	private static final Log log = LogFactory.getLog(ClusterCollector.class);
-
 	private int zkId;
 
 	private ClusterCollector(InstanceManager manager, int zkId) throws KeeperException, InterruptedException {

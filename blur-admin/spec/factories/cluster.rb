@@ -20,5 +20,11 @@ FactoryGirl.define do
         FactoryGirl.create_list(:blur_shard, 3, :cluster => cluster)
       end
     end
+
+    factory :cluster_with_shards_online do
+      after_create do |cluster|
+        FactoryGirl.create_list(:blur_shard, 3, :cluster => cluster, :status => 1)
+      end
+    end
   end
 end

@@ -73,8 +73,7 @@ var ClusterView = Backbone.View.extend({
     return this;
   },
   show_shards: function(event){
-    var s = new ShardCollection(null, {cluster_id: this.model.get('id')});
-    console.log(s);
+    new ShardCollection(null, {cluster_id: this.model.get('id')});
   },
   destroy_cluster: function(){
     Confirm_Delete({

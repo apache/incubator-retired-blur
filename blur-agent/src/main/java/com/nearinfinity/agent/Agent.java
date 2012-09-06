@@ -43,6 +43,36 @@ public class Agent {
   private static final long COLLECTOR_SLEEP_TIME = TimeUnit.SECONDS.toMillis(15);
   private static final long CLEAN_UP_SLEEP_TIME = TimeUnit.HOURS.toMillis(1);
 	
+  private Agent(Properties props) {
+    
+    //Setup database connection
+    JdbcTemplate jdbc = setupDBConnection(props);
+    
+    //Verify valid License
+    AgentLicense.verifyLicense(props, jdbc);
+    
+    //Initialize ZooKeeper watchers
+    initializeWatchers(props, jdbc);
+    
+    List<String> activeCollectors = props.containsKey("active.collectors") ? new ArrayList<String>(Arrays.asList(props.getProperty("active.collectors").split("\\|"))) : new ArrayList<String>();
+    
+    //Setup HDFS collectors
+    setupHdfs(props, jdbc, activeCollectors);
+    
+    //Setup Blur collectors
+    setupBlur(props, jdbc, activeCollectors);
+    
+    while (true) {
+      try {
+        Thread.sleep(COLLECTOR_SLEEP_TIME);
+      } catch (InterruptedException e) {
+        break;
+      }
+    }
+    
+    log.info("Exiting agent");
+  }
+  
 	public static void main(String[] args) {
 		writePidFile();		
 		Properties configProps = loadConfigParams(args);
@@ -101,38 +131,6 @@ public class Agent {
 		}
 	}
 	
-	public Agent(Properties props) {
-		
-		//Setup database connection
-		JdbcTemplate jdbc = setupDBConnection(props);
-		
-		//Verify valid License
-		AgentLicense.verifyLicense(props, jdbc);
-		
-		//Initialize ZooKeeper watchers
-		initializeWatchers(props, jdbc);
-		
-		List<String> activeCollectors = props.containsKey("active.collectors") ? new ArrayList<String>(Arrays.asList(props.getProperty("active.collectors").split("\\|"))) : new ArrayList<String>();
-		
-		//Setup HDFS collectors
-		setupHdfs(props, jdbc, activeCollectors);
-		
-		//Setup Blur collectors
-		setupBlur(props, jdbc, activeCollectors);
-		
-		while (true) {
-			try {
-				Thread.sleep(COLLECTOR_SLEEP_TIME);
-			} catch (InterruptedException e) {
-				break;
-			}
-		}
-		
-		log.info("Exiting agent");
-	}
-	
-	
-
 	private void setupBlur(Properties props, final JdbcTemplate jdbc, List<String> activeCollectors) {
 		Map<String, String> blurInstances = loadBlurInstances(props);
 		if (activeCollectors.contains("tables")) {

@@ -28,7 +28,7 @@ class User < ActiveRecord::Base
       preference.value = []
     end
   end
-
+  #returns the zookeeper preference set by the user
   def zookeeper_preference
     Preference.find_or_create_by_user_id_and_pref_type(self.id, 'zookeeper') do |preference|
       preference.name = '0'

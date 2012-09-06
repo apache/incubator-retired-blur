@@ -1,4 +1,4 @@
-class Cluster < ActiveRecord::Base
+  class Cluster < ActiveRecord::Base
   belongs_to :zookeeper
   has_many :blur_shards, :dependent => :destroy
   has_many :blur_tables, :dependent => :destroy, :order => 'table_name'
@@ -9,6 +9,7 @@ class Cluster < ActiveRecord::Base
     serial_properties = super(options)
     serial_properties["can_update"] = self.can_update
     serial_properties["shard_blur_version"] = self.shard_version
+    serial_properties["shard_status"] = self.shard_status
     serial_properties
   end
 
@@ -19,6 +20,15 @@ class Cluster < ActiveRecord::Base
     else
       versions.length == 1 ? versions.first.blur_version : "Inconsistent Blur Versions"
     end
+  end
+
+  def shard_status
+    shard_total = self.blur_shards.count
+    shards_online = 0
+    self.blur_shards.each do |s|
+      shards_online += 1 if s.status == 1
+    end
+    "#{shards_online} | #{shard_total}"
   end
 
   def has_errors?

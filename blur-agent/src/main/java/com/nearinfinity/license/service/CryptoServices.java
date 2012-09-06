@@ -1,4 +1,4 @@
-package com.nearinfinity.license;
+package com.nearinfinity.license.service;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -43,23 +43,6 @@ public class CryptoServices {
     public byte[] decodeBase64(String s) {
         return Base64.decodeBase64(s.getBytes());
     }
-
-//    private byte[] encrypt(byte[] data, Key key) throws CryptoServicesException {
-//        try {
-//            getCipher().init(Cipher.ENCRYPT_MODE, key);
-//            return cipher.doFinal(data);
-//        } catch (InvalidKeyException e) {
-//            throw new CryptoServicesException(e);
-//        } catch (BadPaddingException e) {
-//            throw new CryptoServicesException(e);
-//        } catch (IllegalBlockSizeException e) {
-//            throw new CryptoServicesException(e);
-//        } catch (NoSuchAlgorithmException e) {
-//            throw new CryptoServicesException(e);
-//        } catch (NoSuchPaddingException e) {
-//            throw new CryptoServicesException(e);
-//        }
-//    }
 
     public byte[] decrypt(byte[] data, Key key) throws CryptoServicesException {
         try {

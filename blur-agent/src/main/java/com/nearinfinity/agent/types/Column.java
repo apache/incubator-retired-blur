@@ -1,4 +1,4 @@
-package com.nearinfinity.agent.collectors.model;
+package com.nearinfinity.agent.types;
 
 public class Column {
 	String name;

@@ -1,4 +1,4 @@
-package com.nearinfinity.agent.zookeeper;
+package com.nearinfinity.agent.types;
 
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;

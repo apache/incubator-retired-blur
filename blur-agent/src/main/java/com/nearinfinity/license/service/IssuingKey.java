@@ -1,4 +1,4 @@
-package com.nearinfinity.license;
+package com.nearinfinity.license.service;
 
 public class IssuingKey {
 	private byte[] privateKey;

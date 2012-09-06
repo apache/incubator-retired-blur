@@ -1,4 +1,4 @@
-package com.nearinfinity.agent.collectors.model;
+package com.nearinfinity.agent.types;
 
 import java.util.ArrayList;
 import java.util.List;

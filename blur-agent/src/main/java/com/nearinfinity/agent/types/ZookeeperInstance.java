@@ -1,4 +1,4 @@
-package com.nearinfinity.agent.zookeeper;
+package com.nearinfinity.agent.types;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -16,8 +16,8 @@ import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.nearinfinity.agent.zookeeper.collectors.ClusterCollector;
-import com.nearinfinity.agent.zookeeper.collectors.ControllerCollector;
+import com.nearinfinity.agent.collectors.zookeeper.ClusterCollector;
+import com.nearinfinity.agent.collectors.zookeeper.ControllerCollector;
 
 public class ZookeeperInstance implements InstanceManager, Runnable {
 	private String name;

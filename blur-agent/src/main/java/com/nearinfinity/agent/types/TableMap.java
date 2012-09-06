@@ -1,4 +1,4 @@
-package com.nearinfinity.agent;
+package com.nearinfinity.agent.types;
 
 import java.util.HashMap;
 import java.util.Map;

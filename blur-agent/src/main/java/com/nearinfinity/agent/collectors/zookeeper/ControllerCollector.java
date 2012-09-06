@@ -1,11 +1,12 @@
-package com.nearinfinity.agent.zookeeper.collectors;
+package com.nearinfinity.agent.collectors.zookeeper;
 
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zookeeper.KeeperException;
 
-import com.nearinfinity.agent.zookeeper.InstanceManager;
+import com.nearinfinity.agent.collectors.Collector;
+import com.nearinfinity.agent.types.InstanceManager;
 
 public class ControllerCollector extends Collector {
 

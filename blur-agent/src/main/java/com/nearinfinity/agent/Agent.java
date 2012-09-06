@@ -29,13 +29,13 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.nearinfinity.agent.collectors.HDFSCollector;
-import com.nearinfinity.agent.collectors.QueryCollector;
-import com.nearinfinity.agent.collectors.TableCollector;
-import com.nearinfinity.agent.zookeeper.ZookeeperInstance;
-import com.nearinfinity.license.CryptoServices;
-import com.nearinfinity.license.CryptoServicesException;
-import com.nearinfinity.license.IssuingKey;
+import com.nearinfinity.agent.collectors.blur.QueryCollector;
+import com.nearinfinity.agent.collectors.blur.TableCollector;
+import com.nearinfinity.agent.collectors.hdfs.HDFSCollector;
+import com.nearinfinity.agent.types.ZookeeperInstance;
+import com.nearinfinity.license.service.CryptoServices;
+import com.nearinfinity.license.service.CryptoServicesException;
+import com.nearinfinity.license.service.IssuingKey;
 
 public class Agent {
 	private static final Log log = LogFactory.getLog(Agent.class);

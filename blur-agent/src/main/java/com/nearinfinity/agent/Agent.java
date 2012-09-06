@@ -3,27 +3,18 @@ package com.nearinfinity.agent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
@@ -34,9 +25,6 @@ import com.nearinfinity.agent.collectors.blur.TableCollector;
 import com.nearinfinity.agent.collectors.hdfs.HDFSCollector;
 import com.nearinfinity.agent.types.ZookeeperInstance;
 import com.nearinfinity.license.AgentLicense;
-import com.nearinfinity.license.service.CryptoServices;
-import com.nearinfinity.license.service.CryptoServicesException;
-import com.nearinfinity.license.service.IssuingKey;
 
 public class Agent {
 	private static final Log log = LogFactory.getLog(Agent.class);

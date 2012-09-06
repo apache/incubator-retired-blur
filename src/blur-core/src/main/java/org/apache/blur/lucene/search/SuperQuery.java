@@ -264,4 +264,8 @@ public class SuperQuery extends AbstractWrapperQuery {
       return doc == NO_MORE_DOCS ? true : false;
     }
   }
+
+  public Query getQuery() {
+    return _query;
+  }
 }

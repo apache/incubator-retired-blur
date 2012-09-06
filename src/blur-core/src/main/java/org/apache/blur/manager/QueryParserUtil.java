@@ -18,20 +18,19 @@ package org.apache.blur.manager;
  */
 import static org.apache.blur.lucene.LuceneConstant.LUCENE_VERSION;
 
+import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.lucene.search.SuperParser;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ScoreType;
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryWrapperFilter;
 
-
 public class QueryParserUtil {
 
-  public static Query parseQuery(String query, boolean superQueryOn, Analyzer analyzer, Filter postFilter, Filter preFilter, ScoreType scoreType) throws ParseException {
+  public static Query parseQuery(String query, boolean superQueryOn, BlurAnalyzer analyzer, Filter postFilter, Filter preFilter, ScoreType scoreType) throws ParseException {
     Query result = new SuperParser(LUCENE_VERSION, analyzer, superQueryOn, preFilter, scoreType).parse(query);
     if (postFilter == null) {
       return result;
@@ -39,7 +38,7 @@ public class QueryParserUtil {
     return new FilteredQuery(result, postFilter);
   }
 
-  public static Filter parseFilter(String table, String filterStr, boolean superQueryOn, Analyzer analyzer, BlurFilterCache filterCache) throws ParseException, BlurException {
+  public static Filter parseFilter(String table, String filterStr, boolean superQueryOn, BlurAnalyzer analyzer, BlurFilterCache filterCache) throws ParseException, BlurException {
     if (filterStr == null) {
       return null;
     }

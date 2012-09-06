@@ -44,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -77,13 +78,12 @@ import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurExecutorCompletionService;
-import org.apache.blur.utils.ForkJoin;
-import org.apache.blur.utils.TermDocIterable;
 import org.apache.blur.utils.BlurExecutorCompletionService.Cancel;
+import org.apache.blur.utils.ForkJoin;
 import org.apache.blur.utils.ForkJoin.Merger;
 import org.apache.blur.utils.ForkJoin.ParallelCall;
+import org.apache.blur.utils.TermDocIterable;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.FieldSelectorResult;
@@ -297,7 +297,7 @@ public class IndexManager {
         LOG.error("Unknown error while trying to fetch index readers.", e);
         throw new BException(e.getMessage(), e);
       }
-      Analyzer analyzer = _indexServer.getAnalyzer(table);
+      BlurAnalyzer analyzer = _indexServer.getAnalyzer(table);
       ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> call;
       if (isSimpleQuery(blurQuery)) {
         SimpleQuery simpleQuery = blurQuery.simpleQuery;
@@ -345,14 +345,14 @@ public class IndexManager {
     return false;
   }
 
-  private Query getFacetedQuery(BlurQuery blurQuery, Query userQuery, AtomicLongArray counts, Analyzer analyzer) throws ParseException {
+  private Query getFacetedQuery(BlurQuery blurQuery, Query userQuery, AtomicLongArray counts, BlurAnalyzer analyzer) throws ParseException {
     if (blurQuery.facets == null) {
       return userQuery;
     }
     return new FacetQuery(userQuery, getFacetQueries(blurQuery, analyzer), counts);
   }
 
-  private Query[] getFacetQueries(BlurQuery blurQuery, Analyzer analyzer) throws ParseException {
+  private Query[] getFacetQueries(BlurQuery blurQuery, BlurAnalyzer analyzer) throws ParseException {
     int size = blurQuery.facets.size();
     Query[] queries = new Query[size];
     for (int i = 0; i < size; i++) {

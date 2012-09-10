@@ -24,6 +24,7 @@ describe Ability do
     it "can create a user (register) with username, email, password" do
       @ability.should be_able_to :new,    :users
       @ability.should be_able_to :create, :users, :username
+      @ability.should be_able_to :create, :users, :name
       @ability.should be_able_to :create, :users, :email
       @ability.should be_able_to :create, :users, :password
       @ability.should be_able_to :create, :users, :password_confirmation
@@ -75,6 +76,7 @@ describe Ability do
 
     it "can update own username, email, and password" do
       @ability.should be_able_to :update, @user, :username
+      @ability.should be_able_to :update, @user, :name
       @ability.should be_able_to :update, @user, :email
       @ability.should be_able_to :update, @user, :password
       @ability.should be_able_to :update, @user, :password_confirmation
@@ -129,7 +131,23 @@ describe Ability do
       @ability.should be_able_to :index, :blur_tables
       @ability.should be_able_to :index, :zookeepers
       @ability.should be_able_to :index, :blur_queries
+      @ability.should be_able_to :index, :hdfs
+      @ability.should be_able_to :index, :hdfs_metrics
       @ability.should be_able_to :show, :blur_queries
+      @ability.should be_able_to :show, :clusters
+      @ability.should be_able_to :help, :application
+    end
+
+    it "can gather information" do
+      @ability.should be_able_to :long_running_queries, :zookeepers
+      @ability.should be_able_to :expand, :hdfs
+      @ability.should be_able_to :file_info, :hdfs
+      @ability.should be_able_to :folder_info, :hdfs
+      @ability.should be_able_to :slow_folder_info, :hdfs
+      @ability.should be_able_to :file_tree, :hdfs
+      @ability.should be_able_to :stats, :hdfs_metrics
+      @ability.should be_able_to :refresh, :blur_queries
+      @ability.should be_able_to :terms, :blur_tables
     end
 
     it "can not view query strings" do
@@ -155,14 +173,34 @@ describe Ability do
       @ability = Ability.new @user
     end
   
-    it "can enable, disable, and delete tables" do
+    it "can enable, disable, comment, and delete tables" do
       @ability.should be_able_to :enable, :blur_tables
       @ability.should be_able_to :disable, :blur_tables
       @ability.should be_able_to :destroy, :blur_tables
+      @ability.should be_able_to :comment, :blur_tables
     end
 
     it "can cancel queries" do
       @ability.should be_able_to :cancel, :blur_queries
+    end
+
+    it "can index shards" do
+      @ability.should be_able_to :index, :blur_shards
+    end
+
+    it "can destroy the zookeeper tree" do
+      @ability.should be_able_to :destroy, :zookeepers
+      @ability.should be_able_to :destroy, :clusters
+      @ability.should be_able_to :destroy, :blur_shards
+      @ability.should be_able_to :destroy, :blur_controllers
+    end
+
+    it "can perform destructive actions hdfs" do
+      @ability.should be_able_to :move_file, :hdfs
+      @ability.should be_able_to :delete_file, :hdfs
+      @ability.should be_able_to :mkdir, :hdfs
+      @ability.should be_able_to :upload_form, :hdfs
+      @ability.should be_able_to :upload, :hdfs
     end
   end
 
@@ -211,6 +249,7 @@ describe Ability do
     end
 
     it "can create users with roles" do
+      @ability.should be_able_to :new, :users
       @ability.should be_able_to :create, :users, :admin
       @ability.should be_able_to :create, :users, :editor
     end
@@ -236,7 +275,7 @@ describe Ability do
       @ability.should be_able_to :update, @preference
     end
     
-    it "can not change own filter preferences" do
+    it "can change own filter preferences" do
       @preference = FactoryGirl.create :preference, :user_id => @user.id, :pref_type => 'filter'
       @ability.should be_able_to :update, @preference
     end

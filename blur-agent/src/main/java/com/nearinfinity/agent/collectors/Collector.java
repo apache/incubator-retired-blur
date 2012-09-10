@@ -19,5 +19,4 @@ public abstract class Collector {
   protected JdbcTemplate getJdbc() {
     return manager.getJdbc();
   }
-
 }

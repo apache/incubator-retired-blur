@@ -112,7 +112,8 @@ public class QueryCollector {
 										}
 										
 										jdbc.update("insert into blur_queries (query_string, times, complete_shards, total_shards, state, uuid, created_at, updated_at, blur_table_id, super_query_on, facets, start, fetch_num, pre_filters, post_filters, selector_column_families, selector_columns, userid, record_only) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", 
-													new Object[]{query.getQueryStr(), 
+													new Object[]{
+										        query.getQueryStr(), 
 														times,
 														blurQueryStatus.getCompleteShards(),
 														blurQueryStatus.getTotalShards(),

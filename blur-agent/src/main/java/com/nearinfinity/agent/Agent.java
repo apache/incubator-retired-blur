@@ -23,7 +23,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import com.nearinfinity.agent.collectors.blur.QueryCollector;
 import com.nearinfinity.agent.collectors.blur.TableCollector;
 import com.nearinfinity.agent.collectors.hdfs.HDFSCollector;
-import com.nearinfinity.agent.types.ZookeeperInstance;
+import com.nearinfinity.agent.collectors.zookeeper.ZookeeperInstance;
 import com.nearinfinity.license.AgentLicense;
 
 public class Agent {

@@ -1,4 +1,4 @@
-package com.nearinfinity.agent.types;
+package com.nearinfinity.agent.collectors.zookeeper;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -16,64 +16,34 @@ import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.nearinfinity.agent.collectors.zookeeper.ClusterCollector;
-import com.nearinfinity.agent.collectors.zookeeper.ControllerCollector;
+import com.nearinfinity.agent.types.InstanceManager;
+import com.nearinfinity.agent.types.ZookeeperConnection;
 
-public class ZookeeperInstance implements InstanceManager, Runnable {
-	private String name;
-	private String url;
-	private int instanceId;
-	private JdbcTemplate jdbc;
-	private ZooKeeper zk;
-	private Properties props;
-
+public class ZookeeperInstance implements Runnable {
+  private ZookeeperConnection connection;
+  
 	private static final Log log = LogFactory.getLog(ZookeeperInstance.class);
 
 	public ZookeeperInstance(String name, String url, JdbcTemplate jdbc, Properties props) {
-		this.name = name;
-		this.url = url;
-		this.jdbc = jdbc;
-		this.props = props;
-
-		initializeZkInstanceModel();
-		resetConnection();
-	}
-
-	private void initializeZkInstanceModel() {
-		String blurConnection = props.getProperty("blur." + name + ".url");
-
-		int updatedCount = jdbc.update("update zookeepers set url=?, blur_urls=? where name=?", url, blurConnection,
-				name);
-
-		if (updatedCount == 0) {
-			jdbc.update("insert into zookeepers (name, url, blur_urls) values (?, ?, ?)", name, url, blurConnection);
-		}
-
-		instanceId = jdbc.queryForInt("select id from zookeepers where name = ?", new Object[] { name });
-	}
-
-	@Override
-	public void resetConnection() {
-		updateZookeeperStatus(false);
-		zk = null;
+	  this.connection = new ZookeeperConnection(name, url, jdbc, props);
 	}
 
 	@Override
 	public void run() {
 		CountDownLatch latch = new CountDownLatch(1);
 		while (true) {
-			if (zk == null) {
+			if (connection.zk == null) {
 				try {
 					latch = new CountDownLatch(1);
 					final CountDownLatch watcherLatch = latch;
-					zk = new ZooKeeper(url, 3000, new Watcher() {
+					zk = new ZooKeeper(connection.url, 3000, new Watcher() {
 
 						@Override
 						public void process(WatchedEvent event) {
 							KeeperState state = event.getState();
 							if (state == KeeperState.Disconnected || state == KeeperState.Expired) {
 								log.warn("zookeeper disconnected event");
-								closeZookeeper();
+								connection.closeZookeeper();
 							} else if (state == KeeperState.SyncConnected) {
 								watcherLatch.countDown();
 								log.info("zk session established");
@@ -81,13 +51,13 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 						}
 					});
 				} catch (IOException e) {
-					closeZookeeper();
+				  connection.closeZookeeper();
 				}
 			}
 
 			if (zk == null) {
 				log.info("Instance is not online.  Going to sleep for 30 seconds and try again.");
-				updateZookeeperStatus(false);
+				connection.updateZookeeperStatus(false);
 				try {
 					Thread.sleep(30000);
 				} catch (InterruptedException e) {
@@ -97,14 +67,14 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 			} else {
 				try {
 					if (latch.await(10, TimeUnit.SECONDS)) {
-						updateZookeeperStatus(true);
+					  connection.updateZookeeperStatus(true);
 					} else {
-						closeZookeeper();
-						updateZookeeperStatus(false);
+					  connection.closeZookeeper();
+						connection.updateZookeeperStatus(false);
 					}
 				} catch (InterruptedException e1) {
-					closeZookeeper();
-					updateZookeeperStatus(false);
+				  connection.closeZookeeper();
+				  connection.updateZookeeperStatus(false);
 				}
 				if(zk == null){
 					log.info("Instance is not online.  Going to sleep for 30 seconds and try again.");
@@ -133,46 +103,12 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 		}
 	}
 
-	private void closeZookeeper() {
-		if (zk != null) {
-			try {
-				zk.close();
-			} catch (InterruptedException e1) {
-			}
-		}
-		zk = null;
-	}
-
 	private void handleZkError(Exception e) {
-		closeZookeeper();
+		connection.closeZookeeper();
 		if (!(e instanceof SessionExpiredException || e instanceof SessionMovedException)) {
 			log.warn("error talking to zookeeper", e);
 		} else {
 			log.warn("zookeeper session expired");
 		}
 	}
-
-	private void updateZookeeperStatus(boolean online) {
-		jdbc.update("update zookeepers set status=? where id=?", (online ? 1 : 0), instanceId);
-	}
-
-	@Override
-	public ZooKeeper getInstance() {
-		return zk;
-	}
-
-	@Override
-	public int getInstanceId() {
-		return instanceId;
-	}
-
-	@Override
-	public JdbcTemplate getJdbc() {
-		return jdbc;
-	}
-
-	public String getName() {
-		return name;
-	}
-
 }

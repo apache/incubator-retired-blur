@@ -378,7 +378,7 @@ public class Agent {
 					public void run() {
 						while (true) {
 							if (StringUtils.isBlank(connection)) {
-								List<String> controller_uris = jdbc.queryForList("select distinct c.node_name from controllers c, zookeepers z where z.name = ? and c.zookeeper_id = z.id and c.status = 1", new String[]{zookeeper}, String.class);
+								List<String> controller_uris = jdbc.queryForList("select distinct c.node_name from blur_controllers c, zookeepers z where z.name = ? and c.zookeeper_id = z.id and c.status = 1", new String[]{zookeeper}, String.class);
 								TableCollector.startCollecting(StringUtils.join(controller_uris, ','), zookeeper, jdbc);
 							} else {
 								TableCollector.startCollecting(connection, zookeeper, jdbc);
@@ -409,7 +409,7 @@ public class Agent {
 						}
 						while(true) {
 							if (StringUtils.isBlank(connection)) {
-								List<String> controller_uris = jdbc.queryForList("select distinct c.node_name from controllers c, zookeepers z where z.name = ? and c.zookeeper_id = z.id and status = 1", new String[]{zookeeper}, String.class);
+								List<String> controller_uris = jdbc.queryForList("select distinct c.node_name from blur_controllers c, zookeepers z where z.name = ? and c.zookeeper_id = z.id and c.status = 1", new String[]{zookeeper}, String.class);
 								QueryCollector.startCollecting(StringUtils.join(controller_uris, ','), zookeeper, jdbc);
 							} else {
 								QueryCollector.startCollecting(connection, zookeeper, jdbc);

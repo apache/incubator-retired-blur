@@ -73,6 +73,7 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 							KeeperState state = event.getState();
 							if (state == KeeperState.Disconnected || state == KeeperState.Expired) {
 								log.warn("zookeeper disconnected event");
+								//Insert email for ZK Disconnected
 								closeZookeeper();
 							} else if (state == KeeperState.SyncConnected) {
 								watcherLatch.countDown();

@@ -11,10 +11,10 @@ public class ShardCollector extends Collector {
 	private int clusterId;
 	private String clusterName;
 
-//	private static final Log log = LogFactory.getLog(ShardCollector.class);
+	//	private static final Log log = LogFactory.getLog(ShardCollector.class);
 
 	private ShardCollector(InstanceManager manager, int clusterId, String clusterName) throws KeeperException,
-			InterruptedException {
+	InterruptedException {
 		super(manager);
 		this.clusterId = clusterId;
 		this.clusterName = clusterName;
@@ -38,7 +38,8 @@ public class ShardCollector extends Collector {
 		} else {
 			getJdbc().update(
 					"update blur_shards set status = 0 where node_name not in ('" + StringUtils.join(shards, "','")
-							+ "') and cluster_id=?", clusterId);
+					+ "') and cluster_id=?", clusterId);
+			//Put shard notification here
 		}
 	}
 
@@ -57,14 +58,14 @@ public class ShardCollector extends Collector {
 
 			if (updatedCount == 0) {
 				getJdbc().update(
-						"insert into blur_shards (node_name, status, cluster_id, blur_version) values (?, 1, ?, ?)", shard,
-						clusterId, blurVersion);
+					"insert into blur_shards (node_name, status, cluster_id, blur_version) values (?, 1, ?, ?)", shard,
+					clusterId, blurVersion);
 			}
 		}
 	}
 
 	public static void collect(InstanceManager manager, int clusterId, String clusterName) throws KeeperException,
-			InterruptedException {
+	InterruptedException {
 		new ShardCollector(manager, clusterId, clusterName);
 	}
 }

@@ -33,17 +33,17 @@ describe BlurShardsController do
         delete :destroy, :id => @blur_shard.id, :format => :json
       end
 
+      it "logs the event when the shard is deleted" do
+        @blur_shard.stub!(:destroyed?).and_return true
+        Audit.should_receive :log_event
+        delete :destroy, :id => @blur_shard.id, :format => :json
+      end
+
       it "errors when the shard is enabled" do
         lambda {
           @blur_shard.status = 1
           delete :destroy, :id => @blur_shard.id, :format => :json
         }.should raise_error
-      end
-
-      it "logs the event when the shard is deleted" do
-        @blur_shard.stub!(:destroyed?).and_return true
-        Audit.should_receive :log_event
-        delete :destroy, :id => @blur_shard.id, :format => :json
       end
     end
   end

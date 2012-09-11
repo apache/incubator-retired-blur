@@ -67,7 +67,15 @@ public class BlurClient {
 
   }
 
-  public static Iface getClient(String connectionStr) {
+ /**
+ * Returns a client interface to Blur based on the connectionStr.
+ * <pre>
+ *  Blur.Iface client = Blur.getClient("controller1:40010,controller2:40010");
+ * </pre>
+ * @param connectionStr - a comma-delimited list of host:port of Shard Controllers.
+ * @return
+ */
+public static Iface getClient(String connectionStr) {
     List<Connection> connections = BlurClientManager.getConnections(connectionStr);
     return getClient(connections);
   }

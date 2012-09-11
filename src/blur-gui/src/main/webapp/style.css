@@ -51,3 +51,24 @@ td {
 	font-family: Helvetica;
 	background-color: #DDDDDD;
 }
+
+.axis path {
+  fill:none;
+  stroke: black;
+}
+
+.tick {
+  fill:none;
+  stroke:black;
+} 
+
+.axis {
+  font-family: arial;
+  font-size:0.6em;
+}
+
+path {
+  fill:none;
+  stroke:black;
+  stroke-width:2px;
+}

@@ -17,32 +17,27 @@
  * limitations under the License.
  */
 %>
-<!DOCTYPE html>
-<meta charset="utf-8"></meta>
-<style>
-.axis path {
-  fill:none;
-  stroke: black;
-}
-
-.tick {
-  fill:none;
-  stroke:black;
-} 
-
-.axis {
-  font-family: arial;
-  font-size:0.6em;
-}
-
-path {
-  fill:none;
-  stroke:black;
-  stroke-width:2px;
-}
-</style>
-<body>
+<%@page import="java.text.DecimalFormat"%>
+<%@page import="java.text.NumberFormat"%>
+<%@ page contentType="text/html; charset=UTF-8" isThreadSafe="false"
+	import="javax.servlet.*" import="javax.servlet.http.*"
+	import="java.io.*" import="java.util.*" import="java.text.DateFormat"
+	import="java.lang.Math" import="java.net.URLEncoder"
+	import="org.apache.blur.thrift.*"
+	import="org.apache.blur.thrift.generated.*"
+	import="org.apache.blur.thrift.generated.Blur.*"%>
+<%@ include file="functions.jsp"%>
+<%
+	String hostName = request.getServerName() + ":" + System.getProperty("blur.gui.servicing.port");
+%>
+<html>
+<head>
+<title>Metrics</title>
+<link href="style.css" rel="stylesheet" type="text/css" />
+</head>
 <script src="d3.v2.js"></script>
+<body>
+
 <script>
 function draw(uri, id, data, margin, width, height, xLabel, yLabel, labels) {
   "use strict";
@@ -98,14 +93,20 @@ function drawGraphs(uri, margin, width, height) {
   }, 1000);	
 }
 
-var margin = 50, width = 600, height = 250;
+var margin = 50, width = 450, height = 220;
 
 drawGraphs("/livemetrics", margin, width, height)
 
 </script>
-
+<h1>
+	Blur <%=System.getProperty("blur.gui.mode") %> '<%=hostName%>'
+</h1>
+<h3>JVM Heap / Committed Heap</h3>
 <div id="jvm"></div>
+<h3>Blur Queries / Fetches / Mutates</h3>
 <div id="blur"></div>
+<h3>System Load</h3>
 <div id="system"></div>
-
+<%@ include file="footer.jsp" %>
 </body>
+</html>

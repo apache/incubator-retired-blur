@@ -81,23 +81,25 @@
 
 	public String getAD(Iface client, String tableName) throws Exception {
 		String ret = "";
-
 		TableDescriptor td = client.describe(tableName);
 		AnalyzerDefinition ad = td.analyzerDefinition;
 		Map<String, ColumnFamilyDefinition> cfds = ad.columnFamilyDefinitions;
-		for (String cf : cfds.keySet()) {
-			ColumnFamilyDefinition cfd = cfds.get(cf);
-			if (cfd.defaultDefinition != null)
-				ret += row(cf, "default",
-						cfd.defaultDefinition.analyzerClassName);
-			else
-				ret += row(cf, "default", "none set");
-			for (String col : cfd.columnDefinitions.keySet()) {
-				ret += row("", col,
-						cfd.columnDefinitions.get(col).analyzerClassName);
+		if (cfds != null) {
+			for (String cf : cfds.keySet()) {
+				ColumnFamilyDefinition cfd = cfds.get(cf);
+				if (cfd.defaultDefinition != null) {
+					ret += row(cf, "default", cfd.defaultDefinition.analyzerClassName);
+				}
+				else {
+					ret += row(cf, "default", "none set");
+				}
+				if (cfd.columnDefinitions != null) {
+					for (String col : cfd.columnDefinitions.keySet()) {
+						ret += row("", col, cfd.columnDefinitions.get(col).analyzerClassName);
+					}
+				}
 			}
 		}
-
 		return ret;
 	}%>
 <%

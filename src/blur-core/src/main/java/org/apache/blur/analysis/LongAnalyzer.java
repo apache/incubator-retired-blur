@@ -24,7 +24,7 @@ import org.apache.lucene.analysis.NumericTokenStream;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.util.NumericUtils;
 
-public class LongAnalyzer extends Analyzer {
+public final class LongAnalyzer extends Analyzer {
 
   public static int PRECISION_STEP_DEFAULT = NumericUtils.PRECISION_STEP_DEFAULT;
   public static int RADIX_DEFAULT = 10;

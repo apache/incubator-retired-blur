@@ -59,7 +59,7 @@ import org.apache.thrift.protocol.TJSONProtocol;
 import org.apache.thrift.transport.TMemoryBuffer;
 import org.apache.thrift.transport.TMemoryInputTransport;
 
-public class BlurAnalyzer extends Analyzer {
+public final class BlurAnalyzer extends Analyzer {
 
   public enum TYPE {
     LONG, DOUBLE, FLOAT, INTEGER, DEFAULT

@@ -24,7 +24,7 @@ import org.apache.lucene.analysis.NumericTokenStream;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.util.NumericUtils;
 
-public class DoubleAnalyzer extends Analyzer {
+public final class DoubleAnalyzer extends Analyzer {
 
   public static int PRECISION_STEP_DEFAULT = NumericUtils.PRECISION_STEP_DEFAULT;
   private int precisionStep;

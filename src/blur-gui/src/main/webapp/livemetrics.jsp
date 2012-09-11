@@ -101,14 +101,29 @@ drawGraphs("/livemetrics", margin, width, height)
 <h1>
 	Blur <%=System.getProperty("blur.gui.mode") %> '<%=hostName%>'
 </h1>
-<h3>JVM Heap / Committed Heap</h3>
-<div id="jvm"></div>
-<h3>Blur Queries / Fetches / Mutates Requests</h3>
-<div id="blur_calls"></div>
-<h3>Blur Fetches / Mutates Record Rates</h3>
-<div id="blur_recordRates"></div>
-<h3>System Load</h3>
-<div id="system"></div>
+<table>
+	<tr>
+		<td>
+			<h3>Blur Queries / Fetches / Mutates Requests</h3>
+			<div id="blur_calls"></div>
+		</td>
+		<td>
+			<h3>Blur Fetches / Mutates Record Rates</h3>
+			<div id="blur_recordRates"></div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<h3>JVM Heap / Committed Heap</h3>
+			<div id="jvm"></div>
+		</td>
+		<td>
+			<h3>System Load</h3>
+			<div id="system"></div>
+		</td>
+	</tr>
+</table>
+
 <%@ include file="footer.jsp" %>
 </body>
 </html>

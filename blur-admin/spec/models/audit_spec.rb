@@ -25,5 +25,16 @@ describe Audit do
   end
 
   describe "summary" do
+    it 'should return a hash with the correct data' do
+      audit = FactoryGirl.create :audit
+      summary = audit.summary
+      summary.should include(:action)
+      summary.should include(:date_audited)
+      summary.should include(:model)
+      summary.should include(:mutation)
+      summary.should include(:username)
+      summary.should include(:user)
+      summary.should include(:zookeeper_affected)
+    end
   end
 end

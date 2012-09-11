@@ -27,7 +27,6 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.webapp.WebAppContext;
 
-
 /**
  * Starts up a Jetty server to run the utility gui.
  * 
@@ -76,6 +75,7 @@ public class HttpJettyServer {
     context.setWar(warPath);
     context.setContextPath("/");
     context.setParentLoaderPriority(true);
+    context.addServlet(new ServletHolder(new LiveMetricsServlet()), "/livemetrics");
     context.addServlet(new ServletHolder(new MetricsServlet(bm)), "/metrics");
     context.addServlet(new ServletHolder(new LogServlet(blurLogFile)), "/logs");
 

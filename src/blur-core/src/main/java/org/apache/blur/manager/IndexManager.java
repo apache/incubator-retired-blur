@@ -57,6 +57,7 @@ import org.apache.blur.manager.status.QueryStatus;
 import org.apache.blur.manager.status.QueryStatusManager;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.metrics.BlurMetrics;
+import org.apache.blur.metrics.QueryMetrics;
 import org.apache.blur.thrift.BException;
 import org.apache.blur.thrift.MutationHelper;
 import org.apache.blur.thrift.generated.BlurException;
@@ -120,7 +121,9 @@ public class IndexManager {
   private BlurPartitioner<BytesWritable, Void> _blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
   private BlurFilterCache _filterCache = new DefaultBlurFilterCache();
   private BlurMetrics _blurMetrics;
+  private QueryMetrics _queryMetrics;
   private long _defaultParallelCallTimeout = TimeUnit.MINUTES.toMillis(1);
+  
 
   public void setMaxClauseCount(int maxClauseCount) {
     BooleanQuery.setMaxClauseCount(maxClauseCount);
@@ -131,6 +134,7 @@ public class IndexManager {
     // @TODO give the mutate it's own thread pool
     _mutateExecutor = Executors.newThreadPool("index-manager-mutate", _threadCount);
     _statusManager.init();
+    _queryMetrics = QueryMetrics.getInstance();
     LOG.info("Init Complete");
   }
 
@@ -179,7 +183,9 @@ public class IndexManager {
     IndexReader reader = null;
     try {
       reader = index.getIndexReader();
+      long s = System.nanoTime();
       fetchRow(reader, table, selector, fetchResult);
+      _queryMetrics.recordDataFetch(System.nanoTime() - s, getRecordCount(fetchResult));
       if (_blurMetrics != null) {
         if (fetchResult.rowResult != null) {
           if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
@@ -203,6 +209,17 @@ public class IndexManager {
         }
       }
     }
+  }
+
+  private long getRecordCount(FetchResult fetchResult) {
+    if (fetchResult.rowResult != null) {
+      if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
+        return fetchResult.rowResult.row.records.size();
+      }
+    } else if (fetchResult.recordResult != null) {
+      return 1;
+    }
+    return 0;
   }
 
   private void populateSelector(String table, Selector selector) throws IOException, BlurException {
@@ -286,6 +303,7 @@ public class IndexManager {
   }
 
   public BlurResultIterable query(final String table, final BlurQuery blurQuery, AtomicLongArray facetedCounts) throws Exception {
+    long s = System.nanoTime();
     final AtomicBoolean running = new AtomicBoolean(true);
     final QueryStatus status = _statusManager.newQueryStatus(table, blurQuery, _threadCount, running);
     _blurMetrics.queriesExternal.incrementAndGet();
@@ -327,6 +345,7 @@ public class IndexManager {
       }).merge(merger);
     } finally {
       _statusManager.removeStatus(status);
+      _queryMetrics.recordQuery(System.nanoTime() - s);
     }
   }
 
@@ -730,16 +749,19 @@ public class IndexManager {
         waitVisiblity = waitToBeVisible;
       }
       RowMutationType type = mutation.rowMutationType;
+      long start = System.nanoTime();
       switch (type) {
       case REPLACE_ROW:
         Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);
         blurIndex.replaceRow(waitVisiblity, mutation.wal, row);
+        _queryMetrics.recordDataMutate(System.nanoTime() - start, row.records.size());
         break;
       case UPDATE_ROW:
         doUpdateRowMutation(mutation, blurIndex);
         break;
       case DELETE_ROW:
         blurIndex.deleteRow(waitVisiblity, mutation.wal, mutation.rowId);
+        _queryMetrics.recordDataMutate(System.nanoTime() - start, 1);
         break;
       default:
         throw new RuntimeException("Not supported [" + type + "]");
@@ -842,8 +864,10 @@ public class IndexManager {
         }
       }
 
+      long s = System.nanoTime();
       // Finally, replace the existing row with the new row we have built.
       blurIndex.replaceRow(mutation.waitToBeVisible, mutation.wal, newRow);
+      _queryMetrics.recordDataMutate(System.nanoTime() - s, newRow.records.size());
     } else {
       throw new BException("Mutation cannot update row that does not exist.", mutation);
     }

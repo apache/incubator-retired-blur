@@ -23,9 +23,9 @@
 	import="javax.servlet.*" import="javax.servlet.http.*"
 	import="java.io.*" import="java.util.*" import="java.text.DateFormat"
 	import="java.lang.Math" import="java.net.URLEncoder"
-	import="com.nearinfinity.blur.thrift.*"
-	import="com.nearinfinity.blur.thrift.generated.*"
-	import="com.nearinfinity.blur.thrift.generated.Blur.*"%>
+	import="org.apache.blur.thrift.*"
+	import="org.apache.blur.thrift.generated.*"
+	import="org.apache.blur.thrift.generated.Blur.*"%>
 <%@ include file="functions.jsp"%>
 <%!public boolean tableInSafeMode(Iface client, String clusterName) throws Exception {
 		return client.isInSafeMode(clusterName);

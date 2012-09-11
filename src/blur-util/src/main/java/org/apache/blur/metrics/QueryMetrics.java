@@ -23,10 +23,12 @@ public class QueryMetrics extends TimerTask {
   private final double[] _queryRate = new double[sampleSize];
   private final double[] _queryResponse = new double[sampleSize];
   private final double[] _queryExceptionRate = new double[sampleSize];
-  private final double[] _fetchRecordRate = new double[sampleSize];
+  private final double[] _fetchRate = new double[sampleSize];
   private final double[] _fetchResponse = new double[sampleSize];
-  private final double[] _mutateRecordRate = new double[sampleSize];
+  private final double[] _fetchRecordRate = new double[sampleSize];
+  private final double[] _mutateRate = new double[sampleSize];
   private final double[] _mutateResponse = new double[sampleSize];
+  private final double[] _mutateRecordRate = new double[sampleSize];
   private final long[] timestamp = new long[sampleSize];
   private volatile static QueryMetrics instance;
   private volatile int position;
@@ -66,11 +68,13 @@ public class QueryMetrics extends TimerTask {
 
       _queryExceptionRate[position] = queryExceptionCount;
 
-      _fetchRecordRate[position] = dataFetchCount;
+      _fetchRate[position] = dataFetchCount;
       _fetchResponse[position] = TimeUnit.NANOSECONDS.toMillis(dataFetchTime) / (double) dataFetchCount;
+      _fetchRecordRate[position] = dataFetchRecordCount;
 
-      _mutateRecordRate[position] = dataMutateCount;
+      _mutateRate[position] = dataMutateCount;
       _mutateResponse[position] = TimeUnit.NANOSECONDS.toMillis(dataMutateTime) / (double) dataMutateCount;
+      _mutateRecordRate[position] = dataMutateRecordCount;
 
       timestamp[position] = System.currentTimeMillis();
       position++;
@@ -98,12 +102,12 @@ public class QueryMetrics extends TimerTask {
     _dataMutateRecordCount.addAndGet(records);
   }
 
-  public void writeJson(PrintWriter out) {
+  public void writeGraph1Json(PrintWriter out) {
     synchronized (this) {
       out.print("{\"labels\":[");
       out.print("{\"name\":\"query\",\"style\":{\"stroke\":\"RoyalBlue\"}},");
       out.print("{\"name\":\"fetch\",\"style\":{\"stroke\":\"Black\"}},");
-      out.print("{\"name\":\"mutate\",\"style\":{\"stroke\":\"Yellow\"}},");
+      out.print("{\"name\":\"mutate\",\"style\":{\"stroke\":\"Orange\"}},");
       out.print("{\"name\":\"except\",\"style\":{\"stroke\":\"Red\"}}");
       out.print("],\"data\":[");
       int p = position;
@@ -113,8 +117,8 @@ public class QueryMetrics extends TimerTask {
           p = 0;
         }
         double query = _queryRate[p];
-        double fetch = _fetchRecordRate[p];
-        double mutate = _mutateRecordRate[p];
+        double fetch = _fetchRate[p];
+        double mutate = _mutateRate[p];
         double except = _queryExceptionRate[p];
         long t = timestamp[p];
         if (t == 0) {
@@ -131,6 +135,40 @@ public class QueryMetrics extends TimerTask {
         out.print(mutate);
         out.print(",\"except\":");
         out.print(except);
+        out.print(",\"recordTime\":");
+        out.print(t);
+        out.print('}');
+        comma = true;
+      }
+      out.print("]}");
+    }
+  }
+  
+  public void writeGraph2Json(PrintWriter out) {
+    synchronized (this) {
+      out.print("{\"labels\":[");
+      out.print("{\"name\":\"fetchRecord\",\"style\":{\"stroke\":\"Black\"}},");
+      out.print("{\"name\":\"mutateRecord\",\"style\":{\"stroke\":\"Orange\"}}");
+      out.print("],\"data\":[");
+      int p = position;
+      boolean comma = false;
+      for (int i = 0; i < sampleSize; i++, p++) {
+        if (p >= sampleSize) {
+          p = 0;
+        }
+        double fetch = _fetchRecordRate[p];
+        double mutate = _mutateRecordRate[p];
+        long t = timestamp[p];
+        if (t == 0) {
+          continue;
+        }
+        if (comma) {
+          out.print(",");
+        }
+        out.print("{\"fetchRecord\":");
+        out.print(fetch);
+        out.print(",\"mutateRecord\":");
+        out.print(mutate);
         out.print(",\"recordTime\":");
         out.print(t);
         out.print('}');

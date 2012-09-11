@@ -49,8 +49,11 @@ public class LiveMetricsServlet extends HttpServlet {
     out.write("\"jvm\":{\"xLabel\":\"Time\",\"yLabel\":\"Heap (GB)\",\"lines\":");
     heapMetrics.writeJson(out);
     out.write("}");
-    out.write(",\"blur\":{\"xLabel\":\"Time\",\"yLabel\":\"Rates\",\"lines\":");
-    queryMetrics.writeJson(out);
+    out.write(",\"blur_calls\":{\"xLabel\":\"Time\",\"yLabel\":\"Rates\",\"lines\":");
+    queryMetrics.writeGraph1Json(out);
+    out.write("}");
+    out.write(",\"blur_recordRates\":{\"xLabel\":\"Time\",\"yLabel\":\"Rates\",\"lines\":");
+    queryMetrics.writeGraph2Json(out);
     out.write("}");
     out.write(",\"system\":{\"xLabel\":\"Time\",\"yLabel\":\"Load\",\"lines\":");
     systemLoadMetrics.writeJson(out);

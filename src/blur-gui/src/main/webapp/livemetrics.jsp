@@ -103,8 +103,10 @@ drawGraphs("/livemetrics", margin, width, height)
 </h1>
 <h3>JVM Heap / Committed Heap</h3>
 <div id="jvm"></div>
-<h3>Blur Queries / Fetches / Mutates</h3>
-<div id="blur"></div>
+<h3>Blur Queries / Fetches / Mutates Requests</h3>
+<div id="blur_calls"></div>
+<h3>Blur Fetches / Mutates Record Rates</h3>
+<div id="blur_recordRates"></div>
 <h3>System Load</h3>
 <div id="system"></div>
 <%@ include file="footer.jsp" %>

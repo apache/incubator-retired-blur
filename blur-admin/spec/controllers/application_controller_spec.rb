@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe ApplicationController do
   describe "actions" do
-    before(:each) do
+    before do
       # Set up the stubs and variables
       setup_variables_and_stubs
       # Set the ability (leave current user unset for testing purposes)
@@ -34,6 +34,47 @@ describe ApplicationController do
     end
   end
 
+  describe "Current Zookeeper" do 
+    before do 
+      @zookeeper = FactoryGirl.create :zookeeper
+      Zookeeper.stub!(:find_by_id).and_return @zookeeper
+
+      #controller.stub!(:zookeeper_error)
+    end
+
+    it "should set the zookeeper to the zookeeper id when it is given" do 
+      Zookeeper.should_receive(:find_by_id).with(@zookeeper.id)
+      controller.params[:zookeeper_id] = @zookeeper.id
+      controller.should_receive(:set_zookeeper).with @zookeeper.id
+      zookeeper = controller.current_zookeeper
+      assigns(:current_zookeeper).should == @zookeeper
+      zookeeper.should == @zookeeper
+    end
+
+    it "should set the zookeeper to the zookeeper id in the session when there isnt an id" do 
+      Zookeeper.should_receive(:find_by_id).with(@zookeeper.id)
+      controller.session[:current_zookeeper_id] = @zookeeper.id
+      zookeeper = controller.current_zookeeper
+      assigns(:current_zookeeper).should == @zookeeper
+      zookeeper.should == @zookeeper
+    end
+
+    it "should redirect to the root page when it doesnt find a zookeeper" do 
+      Zookeeper.stub!(:find_by_id).and_return nil
+      controller.stub! :redirect_to
+      controller.should_receive(:redirect_to).with '/'
+      controller.current_zookeeper
+    end
+
+    it "should render a conflict when the request is xhr and it doesnt find a zookeeper" do 
+      Zookeeper.stub!(:find_by_id).and_return nil
+      controller.request.stub!(:xhr?).and_return true
+      controller.stub! :render
+      controller.should_receive(:render).with({:status=>:conflict, :text=>"No Current Zookeeper"})
+      controller.current_zookeeper
+    end
+  end
+
   describe 'Enable Authorization: Visiting a page without authorization' do
     it "without a current_user" do
       get 'help', :tab => 'search'
@@ -53,6 +94,106 @@ describe ApplicationController do
       controller.stub!(:can?).and_return(true)
       get 'help', :tab => 'search'
       response.should redirect_to(root_url)
+    end
+  end
+
+  describe "private methods" do 
+    it "set_zookeeper should set the zookeeper if the id is new" do 
+      controller.session[:current_zookeeper_id] = 2
+      controller.session.should_receive :[]=
+      controller.send(:set_zookeeper, '1')
+    end
+
+    it "set_zookeeper should not set the zookeeper if the id is new" do 
+      controller.session[:current_zookeeper_id] = 1
+      controller.session.should_not_receive :[]=
+      controller.send(:set_zookeeper, '1')
+    end
+
+    it "render_404 should render a routing error" do 
+      expect {
+        controller.send(:render_404)
+      }.to raise_error ActionController::RoutingError
+    end
+  end
+
+  describe "lock down api" do 
+    describe "format" do
+      it "should be set to html if the format is blank" do 
+        respond = {:html => {}}
+        respond.should_receive(:[]).with(:html).and_return({})
+        controller.stub!(:mimes_for_respond_to).and_return(respond)
+        controller.send(:lock_down_api)
+      end
+
+      it "should be set to the given format when it is specified" do 
+        controller.params[:format] = 'json'
+        respond = {:json => {}}
+        respond.should_receive(:[]).with(:json).and_return({})
+        controller.stub!(:mimes_for_respond_to).and_return(respond)
+        controller.send(:lock_down_api)
+      end
+
+      it "should raise an error when there are no accepted actions" do 
+        respond = {:html => nil}
+        controller.stub!(:mimes_for_respond_to).and_return(respond)
+        expect {
+          controller.send(:lock_down_api)
+        }.to raise_error "Unaccepted Format for this Action!"
+      end
+    end
+
+    describe "only block" do
+      it "should not raise an error when the current action is present" do
+        controller.params[:action] = :index
+        respond = {:html => {}}
+        respond.stub!(:[]).and_return({:only => [:index]})
+        controller.stub!(:mimes_for_respond_to).and_return(respond)
+        expect {
+          controller.send(:lock_down_api)
+        }.to_not raise_error
+      end
+
+      it "should raise an error when the current action is in the not present" do
+        controller.params[:action] = :index
+        respond = {:html => {}}
+        respond.stub!(:[]).and_return({:only => [:show]})
+        controller.stub!(:mimes_for_respond_to).and_return(respond)
+        expect {
+          controller.send(:lock_down_api)
+        }.to raise_error "Unaccepted Format for this Action!"
+      end
+    end
+
+    describe "except block" do
+      it "should raise an error when the current action is present" do
+        controller.params[:action] = :index
+        respond = {:html => {}}
+        respond.stub!(:[]).and_return({:except => [:index]})
+        controller.stub!(:mimes_for_respond_to).and_return(respond)
+        expect {
+          controller.send(:lock_down_api)
+        }.to raise_error
+      end
+
+      it "should raise an error when the current action is in the not present" do
+        controller.params[:action] = :index
+        respond = {:html => {}}
+        respond.stub!(:[]).and_return({:except => [:show]})
+        controller.stub!(:mimes_for_respond_to).and_return(respond)
+        expect {
+          controller.send(:lock_down_api)
+        }.to_not raise_error "Unaccepted Format for this Action!"
+      end
+    end
+
+    it "should not error when the action is present" do
+      controller.params[:action] = :index
+        respond = {:html => {}}
+        controller.stub!(:mimes_for_respond_to).and_return(respond)
+        expect {
+          controller.send(:lock_down_api)
+        }.to_not raise_error "Unaccepted Format for this Action!"
     end
   end
 end

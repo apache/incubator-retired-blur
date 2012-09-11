@@ -16,19 +16,20 @@ describe BlurControllersController do
       end
 
       it "destroys the controller" do
-        @blur_controller.status = 0
+        @blur_controller.stub!(:status).and_return 0
         @blur_controller.should_receive(:destroy)
         delete :destroy, :id => @blur_controller.id, :format => :json
       end
 
       it "errors when the controller is enabled" do
-        lambda {
-          @blur_controller.status = 1
+        expect {
+          @blur_controller.stub!(:status).and_return 1
           delete :destroy, :id => @blur_controller.id, :format => :json
-        }.should raise_error
+        }.to raise_error
       end
 
       it "logs the event when the controller is deleted" do
+        @blur_controller.stub!(:status).and_return 0
         @blur_controller.stub!(:destroyed?).and_return true
         Audit.should_receive :log_event
         delete :destroy, :id => @blur_controller.id, :format => :json

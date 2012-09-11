@@ -20,7 +20,10 @@ BlurAdmin::Application.configure do
   # Generate digests for assets URLs
   config.assets.digest = true
   
-  config.assets.precompile += Dir.foreach('app/assets/javascripts/').reject{|file| (file =~ /.*\.coffee/).nil? && (file =~ /routes.js/).nil?}.collect{|file| file.gsub /.coffee/, ''}
+  config.assets.precompile += Dir.foreach('app/assets/javascripts/').reject{|file| (file =~ /routes.js/).nil? }
+  config.assets.precompile += ['blur_table/blur_tables.js', 'dashboard/dashboard.js', 'environment/environment.js']
+  
+  #.reject{|file| (file =~ /.*\.coffee/).nil? && (file =~ /routes.js/).nil?}.collect{|file| file.gsub /.coffee/, ''}
   
   config.action_dispatch.x_sendfile_header = "X-Sendfile"
   

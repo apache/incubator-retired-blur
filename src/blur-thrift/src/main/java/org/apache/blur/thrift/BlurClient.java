@@ -29,7 +29,6 @@ import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.thrift.TException;
 
-
 public class BlurClient {
 
   static class BlurClientInvocationHandler implements InvocationHandler {
@@ -67,15 +66,18 @@ public class BlurClient {
 
   }
 
- /**
- * Returns a client interface to Blur based on the connectionStr.
- * <pre>
- *  Blur.Iface client = Blur.getClient("controller1:40010,controller2:40010");
- * </pre>
- * @param connectionStr - a comma-delimited list of host:port of Shard Controllers.
- * @return
- */
-public static Iface getClient(String connectionStr) {
+  /**
+   * Returns a client interface to Blur based on the connectionStr.
+   * 
+   * <pre>
+   * Blur.Iface client = Blur.getClient(&quot;controller1:40010,controller2:40010&quot;);
+   * </pre>
+   * 
+   * @param connectionStr
+   *          - a comma-delimited list of host:port of Shard Controllers.
+   * @return
+   */
+  public static Iface getClient(String connectionStr) {
     List<Connection> connections = BlurClientManager.getConnections(connectionStr);
     return getClient(connections);
   }

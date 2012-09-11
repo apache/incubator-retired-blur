@@ -23,4 +23,7 @@ describe Audit do
       recent.should == returned
     end
   end
+
+  describe "summary" do
+  end
 end

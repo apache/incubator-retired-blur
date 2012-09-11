@@ -34,10 +34,10 @@ describe BlurShardsController do
       end
 
       it "errors when the shard is enabled" do
-        lambda {
+        expect {
           @blur_shard.stub!(:status).and_return 1
           delete :destroy, :id => @blur_shard.id, :format => :json
-        }.should raise_error
+        }.to raise_error
       end
 
       it "logs the event when the shard is deleted" do

@@ -30,8 +30,4 @@
     end
     "#{shards_online} | #{shard_total}"
   end
-
-  def has_errors?
-    return self.blur_shards.reject{|shard| shard.status == 1}.length > 0
-  end
 end

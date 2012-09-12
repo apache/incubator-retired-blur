@@ -9,6 +9,7 @@ if ENV["COVERAGE"]
     add_group "Controllers", "app/controllers"
     add_group "Helpers", "app/helpers"
   end
+  SimpleCov.command_name("Rspec:#{ENV["PORTION"]}")
 end
 
 ENV["RAILS_ENV"] ||= 'test'

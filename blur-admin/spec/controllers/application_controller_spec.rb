@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe ApplicationController do
-  describe "actions" do
+  describe "user actions" do
     before do
       # Set up the stubs and variables
       setup_variables_and_stubs
@@ -32,14 +32,42 @@ describe ApplicationController do
       controller.license
       assigns(:license).should == 'License'
     end
+
+    describe "zookeeper preference" do
+      it "should grab the current users preference" do
+        controller.should_receive(:current_user).and_return @user
+        controller.send(:set_zookeeper_with_preference)
+      end
+
+      it "should do nothing if the default pref is chosen" do
+        zookeeper_pref = FactoryGirl.create(:zookeeper_pref, :name => 0)
+        @user.stub!(:zookeeper_preference).and_return(zookeeper_pref)
+        Zookeeper.should_not_receive(:find_by_id)
+        controller.send(:set_zookeeper_with_preference)
+      end
+
+      it "should set the zookeeper if the pref isnt the default and it exists" do
+        controller.should_receive(:set_zookeeper).with @user.zookeeper_preference.value
+        Zookeeper.stub!(:find_by_id).and_return true
+        controller.send(:set_zookeeper_with_preference)
+      end
+
+      it "should error and reset your preference when the zookeeper no longer exists" do
+        zookeeper_pref = FactoryGirl.create(:zookeeper_pref)
+        @user.stub!(:zookeeper_preference).and_return(zookeeper_pref)
+        Zookeeper.stub!(:find_by_id).and_return nil
+        zookeeper_pref.should_receive(:name=)
+        zookeeper_pref.should_receive(:save)
+        controller.send(:set_zookeeper_with_preference)
+        controller.flash[:error].should_not be_empty
+      end
+    end
   end
 
   describe "Current Zookeeper" do 
     before do 
       @zookeeper = FactoryGirl.create :zookeeper
       Zookeeper.stub!(:find_by_id).and_return @zookeeper
-
-      #controller.stub!(:zookeeper_error)
     end
 
     it "should set the zookeeper to the zookeeper id when it is given" do 

@@ -8,7 +8,7 @@ class BlurTablesController < ApplicationController
 
   def index
     @clusters = current_zookeeper.clusters.order('name')
-    @clusters.each{|cluster| cluster.can_update = can?(:update, :blur_tables)}
+    @clusters.each{|cluster| cluster.can_update = current_user.editor? }
     respond_with(@clusters) do |format|
       format.json { render :json => @clusters, :methods => [:blur_tables] }
     end

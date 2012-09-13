@@ -32,7 +32,7 @@ class Ability
       end
 
       if user.editor?
-        can [:enable, :disable, :destroy, :comment, :update], :blur_tables
+        can [:enable, :disable, :destroy, :comment], :blur_tables
         can :cancel, :blur_queries
         can :index, :blur_shards
         can [:destroy], [:zookeepers, :clusters, :blur_shards, :blur_controllers]

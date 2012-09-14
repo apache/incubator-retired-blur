@@ -21,8 +21,6 @@ import java.io.IOException;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.blur.mapreduce.BlurTask;
 import org.apache.blur.mapreduce.BlurTask.INDEXING_TYPE;
-import org.apache.blur.thrift.generated.AnalyzerDefinition;
-import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -32,7 +30,6 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 
 public class BlurExampleIndexerUpdate {
@@ -44,9 +41,6 @@ public class BlurExampleIndexerUpdate {
       System.err.println("Usage: blurindexer <in> <out>");
       System.exit(2);
     }
-
-    AnalyzerDefinition ad = new AnalyzerDefinition();
-    ad.defaultDefinition = new ColumnDefinition(StandardAnalyzer.class.getName(), true, null);
 
     ZookeeperClusterStatus status = new ZookeeperClusterStatus("localhost");
     TableDescriptor descriptor = status.getTableDescriptor(false, "default", "test-table");

@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 public class HeapMetrics extends TimerTask {
 
+  private static final double ONE_GIG = 1024 * 1024 * 1024;
   private final int sampleSize = (int) TimeUnit.MINUTES.toSeconds(10);
   private final Timer timer;
   private final long period = TimeUnit.SECONDS.toMillis(1);
@@ -50,15 +51,19 @@ public class HeapMetrics extends TimerTask {
 
   public void writeJson(PrintWriter out) {
     synchronized (this) {
-      out.print("{\"labels\":[{\"name\":\"used\",\"style\":{\"stroke\":\"RoyalBlue\"}},{\"name\":\"committed\",\"style\":{\"stroke\":\"Red\"}}],\"data\":[");
+      out.print("{\"labels\":[");
+      out.print("{\"name\":\"used\",\"style\":{\"stroke\":\"RoyalBlue\"}},");
+      out.print("{\"name\":\"committed\",\"style\":{\"stroke\":\"Red\"}},");
+      out.print("],\"data\":[");
       int p = position;
       boolean comma = false;
       for (int i = 0; i < sampleSize; i++, p++) {
         if (p >= sampleSize) {
           p = 0;
         }
-        double used = ((double) heapMemoryUsageUsedHistory[p]) / 1000000000.0;
-        double committed = ((double) heapMemoryUsageCommittedHistory[p]) / 1000000000.0;
+        double used = ((double) heapMemoryUsageUsedHistory[p]) / ONE_GIG;
+        double committed = ((double) heapMemoryUsageCommittedHistory[p]) / ONE_GIG;
+
         long t = timestamp[p];
         if (t == 0) {
           continue;

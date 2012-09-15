@@ -106,7 +106,6 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.ReaderUtil;
 
-
 public class IndexManager {
 
   private static final String NOT_FOUND = "NOT_FOUND";
@@ -123,7 +122,6 @@ public class IndexManager {
   private BlurMetrics _blurMetrics;
   private QueryMetrics _queryMetrics;
   private long _defaultParallelCallTimeout = TimeUnit.MINUTES.toMillis(1);
-  
 
   public void setMaxClauseCount(int maxClauseCount) {
     BooleanQuery.setMaxClauseCount(maxClauseCount);
@@ -867,7 +865,9 @@ public class IndexManager {
       long s = System.nanoTime();
       // Finally, replace the existing row with the new row we have built.
       blurIndex.replaceRow(mutation.waitToBeVisible, mutation.wal, newRow);
-      _queryMetrics.recordDataMutate(System.nanoTime() - s, newRow.records.size());
+      if (newRow != null && newRow.records != null) {
+        _queryMetrics.recordDataMutate(System.nanoTime() - s, newRow.records.size());
+      }
     } else {
       throw new BException("Mutation cannot update row that does not exist.", mutation);
     }

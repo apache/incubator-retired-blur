@@ -73,7 +73,6 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.IOUtils;
-import org.apache.zookeeper.ZooKeeper;
 
 
 public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritable, BlurMutate> {
@@ -125,7 +124,6 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
   protected Map<String, Document> _newDocs = new HashMap<String, Document>();
   protected Set<String> _recordIdsToDelete = new HashSet<String>();
   protected Term _rowIdTerm = new Term(BlurConstants.ROW_ID);
-  protected ZooKeeper _zookeeper;
 
   @Override
   protected void setup(Context context) throws IOException, InterruptedException {

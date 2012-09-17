@@ -27,7 +27,6 @@ describe "Navigation Bar" do
     it "goes to the blur tables page" do
       click_on 'tables_link'
       current_path.should == zookeeper_blur_tables_path(@zookeeper.id)
-      #current_path.should == zookeeper_path(@zookeeper.id) + '/blur_tables'
     end
   end
   context "Click on Blur Queries" do

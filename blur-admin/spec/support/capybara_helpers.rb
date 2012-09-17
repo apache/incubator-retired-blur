@@ -48,7 +48,7 @@ RSpec.configure do |config|
 end
 
 #These are a set of hacks to make Capybara run cleanly with Rspec testing. Taken from http://www.emmanueloga.com/2011/07/26/taming-a-capybara.html
-
+Capybara.default_wait_time = 50
 Capybara.javascript_driver = :webkit
 RSpec.configure do |config|
   config.use_transactional_fixtures = true

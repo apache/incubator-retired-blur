@@ -21,8 +21,8 @@ import org.apache.log4j.PropertyConfigurator;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.nearinfinity.agent.collectors.blur.BlurThreadManager;
-import com.nearinfinity.agent.collectors.blur.QueryCollector;
-import com.nearinfinity.agent.collectors.blur.table.CollectorManager;
+import com.nearinfinity.agent.collectors.blur.query.QueryCollector;
+import com.nearinfinity.agent.collectors.blur.table.TableCollectorManager;
 import com.nearinfinity.agent.collectors.connections.JdbcConnection;
 import com.nearinfinity.agent.collectors.hdfs.HDFSCollector;
 import com.nearinfinity.agent.collectors.zookeeper.ZookeeperInstance;

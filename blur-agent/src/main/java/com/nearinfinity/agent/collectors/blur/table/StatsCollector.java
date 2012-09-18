@@ -19,7 +19,7 @@ public class StatsCollector implements Runnable {
 
   public StatsCollector(Iface connection, String tableName, Integer clusterId,
       TableDatabaseInterface database) {
-    this.log = LogFactory.getLog(ServerCollector.class);
+    this.log = LogFactory.getLog(StatsCollector.class);
     this.blurConnection = connection;
     this.tableName = tableName;
     this.clusterId = clusterId;

@@ -6,7 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.nearinfinity.BlurAgentBaseTestClass;
 import com.nearinfinity.MockDatasource;
-import com.nearinfinity.agent.collectors.blur.table.CollectorManager;
+import com.nearinfinity.agent.collectors.blur.table.TableCollectorManager;
 import com.nearinfinity.blur.MiniCluster;
 
 public class TableCollectorTest extends BlurAgentBaseTestClass {
@@ -19,7 +19,7 @@ public class TableCollectorTest extends BlurAgentBaseTestClass {
 	
 	@Test
 	public void testCollector() {
-		CollectorManager.startCollecting(MiniCluster.getControllerConnectionStr(), "test", jdbc);
+		TableCollectorManager.startCollecting(MiniCluster.getControllerConnectionStr(), "test", jdbc);
 	}
 	
 }

@@ -21,7 +21,7 @@
       %td{:class => "more-info-label"} Status
       %td
         -if @blur_query.state
-          = @blur_query.state
+          = @blur_query.state_str
         -else
           = empty_message
     %tr

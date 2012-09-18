@@ -16,8 +16,8 @@ class Ability
       if user.reader?
         # view pages
         can :index, [:zookeepers, :blur_tables, :hdfs, :hdfs_metrics]
-        can :show, [:zookeepers, :help, :clusters]
-        can [:dashboard, :long_running_queries], :zookeepers
+        can :show, [:zookeepers, :clusters]
+        can :long_running_queries, :zookeepers
         can [:expand, :file_info, :info, :folder_info, :slow_folder_info, :file_tree], :hdfs
         can :stats, :hdfs_metrics
         can :help, :application
@@ -27,19 +27,16 @@ class Ability
         attributes.delete :query_string
         can [:index, :show], :blur_queries, attributes
 
-        # View the refresh and times of blur_queries
-        can [:refresh, :times], :blur_queries
-
-        # View hosts and schema on blur_tables
-        can [:terms], :blur_tables
+        can :refresh, :blur_queries
+        can :terms, :blur_tables
       end
 
       if user.editor?
-        can [:update, :enable, :disable, :destroy, :forget, :comment], :blur_tables
+        can [:enable, :disable, :destroy, :comment], :blur_tables
         can :cancel, :blur_queries
         can :index, :blur_shards
         can [:destroy], [:zookeepers, :clusters, :blur_shards, :blur_controllers]
-        can [:move_file, :delete_file, :mkdir,:upload_form,:upload], :hdfs
+        can [:move_file, :delete_file, :mkdir, :upload_form, :upload], :hdfs
       end
 
       if user.auditor?

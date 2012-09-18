@@ -33,6 +33,7 @@ describe BlurTablesController do
         @cluster.each do |cluster|
           cluster.should_receive :can_update=
         end
+        @user.should_receive(:editor?).exactly(@cluster.length).times
         get :index, :format => :html
       end
 

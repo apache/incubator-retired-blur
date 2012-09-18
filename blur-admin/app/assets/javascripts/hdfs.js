@@ -565,6 +565,7 @@ var handleFiles = function(files) {
           else {
             cut_file(paste_buffer.location, el);
           }
+          reload_hdfs()
         }
         break;
       case "props":

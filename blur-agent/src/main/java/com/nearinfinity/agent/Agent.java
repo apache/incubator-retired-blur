@@ -20,14 +20,14 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.nearinfinity.agent.collectors.blur.BlurManagerThread;
+import com.nearinfinity.agent.collectors.blur.BlurThreadManager;
 import com.nearinfinity.agent.collectors.blur.QueryCollector;
-import com.nearinfinity.agent.collectors.blur.TableCollector;
-import com.nearinfinity.agent.collectors.blur.connections.TableDatabaseConnection;
+import com.nearinfinity.agent.collectors.blur.table.CollectorManager;
 import com.nearinfinity.agent.collectors.connections.JdbcConnection;
 import com.nearinfinity.agent.collectors.hdfs.HDFSCollector;
 import com.nearinfinity.agent.collectors.zookeeper.ZookeeperInstance;
 import com.nearinfinity.agent.connections.AgentDatabaseConnection;
+import com.nearinfinity.agent.connections.blur.TableDatabaseConnection;
 import com.nearinfinity.agent.connections.interfaces.AgentDatabaseInterface;
 import com.nearinfinity.blur.thrift.BlurClient;
 import com.nearinfinity.license.AgentLicense;
@@ -138,7 +138,7 @@ public class Agent {
       String zookeeperName = blurEntry.getKey();
       String connection = blurEntry.getValue();
       // Start a new BlurManagerThread per blur instance (manages query and table info from blur)
-      new Thread(new BlurManagerThread(zookeeperName, connection, this.databaseConnection, activeCollectors, jdbc)).start();
+      new Thread(new BlurThreadManager(zookeeperName, connection, this.databaseConnection, activeCollectors, jdbc)).start();
     }
   }
 

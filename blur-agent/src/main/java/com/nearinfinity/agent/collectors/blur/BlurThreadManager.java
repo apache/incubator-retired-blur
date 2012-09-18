@@ -7,25 +7,28 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.nearinfinity.agent.Agent;
-import com.nearinfinity.agent.collectors.blur.connections.TableDatabaseConnection;
+import com.nearinfinity.agent.collectors.blur.table.CollectorManager;
+import com.nearinfinity.agent.connections.blur.TableDatabaseConnection;
 import com.nearinfinity.agent.connections.interfaces.AgentDatabaseInterface;
 import com.nearinfinity.blur.thrift.BlurClient;
 
-public class BlurManagerThread implements Runnable {
+public class BlurThreadManager implements Runnable {
   private final String zookeeperName;
   private final AgentDatabaseInterface databaseConnection;
   private final JdbcTemplate jdbc;
-  private final List<String> activeCollectors;
+  private final boolean collectTables;
+  private final boolean collectQueries;
 
   private String connection;
 
-  public BlurManagerThread(String zookeeperName, String connection,
+  public BlurThreadManager(String zookeeperName, String connection,
       AgentDatabaseInterface databaseConnection, List<String> activeCollectors,
       JdbcTemplate jdbc) {
     this.zookeeperName = zookeeperName;
     this.connection = connection;
     this.databaseConnection = databaseConnection;
-    this.activeCollectors = activeCollectors;
+    this.collectTables = activeCollectors.contains("tables");
+    this.collectQueries = activeCollectors.contains("queries");
     this.jdbc = jdbc;
   }
 
@@ -39,13 +42,13 @@ public class BlurManagerThread implements Runnable {
         resolvedConnection = this.databaseConnection.getConnectionString(this.zookeeperName);
       }
 
-      if (this.activeCollectors.contains("tables")) {
-        new Thread(new TableCollector(BlurClient.getClient(resolvedConnection),
+      if (this.collectTables) {
+        new Thread(new CollectorManager(BlurClient.getClient(resolvedConnection),
             zookeeperName, new TableDatabaseConnection(this.jdbc)),
             "Table Collector - " + this.zookeeperName).start();
       }
 
-      if (this.activeCollectors.contains("queries")) {
+      if (this.collectQueries) {
         // The queries depend on the tables collected above so we will wait
         // a short amount of time for the collectors above to complete
         try {

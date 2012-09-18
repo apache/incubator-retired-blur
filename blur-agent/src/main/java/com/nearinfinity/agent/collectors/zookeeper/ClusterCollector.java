@@ -6,7 +6,7 @@ import java.util.Map;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
 
-import com.nearinfinity.agent.collectors.Collector;
+import com.nearinfinity.agent.collectors.connections.interfaces.Collector;
 import com.nearinfinity.agent.types.InstanceManager;
 
 public class ClusterCollector extends Collector {

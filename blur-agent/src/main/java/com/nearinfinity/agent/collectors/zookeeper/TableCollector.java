@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zookeeper.KeeperException;
 
-import com.nearinfinity.agent.collectors.Collector;
+import com.nearinfinity.agent.collectors.connections.interfaces.Collector;
 import com.nearinfinity.agent.types.InstanceManager;
 
 public class TableCollector extends Collector {

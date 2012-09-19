@@ -15,17 +15,17 @@ import com.nearinfinity.agent.types.TableMap;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
-public class TableCollectorManager implements Runnable {
-  private static final Log log = LogFactory.getLog(TableCollectorManager.class);
-
+public class TableCollector implements Runnable {
+  private final Log log;
   private final Iface connection;
   private final String zookeeper;
   private final TableDatabaseInterface database;
 
-  public TableCollectorManager(Iface connection, String zookeeperName, TableDatabaseInterface jdbc) {
+  public TableCollector(Iface connection, String zookeeperName, TableDatabaseInterface database) {
+    this.log = LogFactory.getLog(TableCollector.class);
     this.connection = connection;
     this.zookeeper = zookeeperName;
-    this.database = jdbc;
+    this.database = database;
   }
 
   @Override

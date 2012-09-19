@@ -8,7 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.nearinfinity.agent.Agent;
 import com.nearinfinity.agent.collectors.blur.query.QueryCollector;
-import com.nearinfinity.agent.collectors.blur.table.TableCollectorManager;
+import com.nearinfinity.agent.collectors.blur.table.TableCollector;
 import com.nearinfinity.agent.connections.blur.TableDatabaseConnection;
 import com.nearinfinity.agent.connections.interfaces.AgentDatabaseInterface;
 import com.nearinfinity.blur.thrift.BlurClient;
@@ -44,7 +44,7 @@ public class BlurThreadManager implements Runnable {
       }
 
       if (this.collectTables) {
-        new Thread(new TableCollectorManager(BlurClient.getClient(resolvedConnection),
+        new Thread(new TableCollector(BlurClient.getClient(resolvedConnection),
             zookeeperName, new TableDatabaseConnection(this.jdbc)),
             "Table Collector - " + this.zookeeperName).start();
       }

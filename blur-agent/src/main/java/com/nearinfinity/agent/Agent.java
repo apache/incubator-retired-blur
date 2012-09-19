@@ -13,23 +13,18 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.nearinfinity.agent.collectors.blur.BlurThreadManager;
-import com.nearinfinity.agent.collectors.blur.query.QueryCollector;
-import com.nearinfinity.agent.collectors.blur.table.TableCollector;
-import com.nearinfinity.agent.collectors.connections.JdbcConnection;
-import com.nearinfinity.agent.collectors.hdfs.HDFSCollector;
+import com.nearinfinity.agent.collectors.hdfs.HdfsThreadManager;
 import com.nearinfinity.agent.collectors.zookeeper.ZookeeperInstance;
 import com.nearinfinity.agent.connections.AgentDatabaseConnection;
-import com.nearinfinity.agent.connections.blur.TableDatabaseConnection;
+import com.nearinfinity.agent.connections.JdbcConnection;
 import com.nearinfinity.agent.connections.interfaces.AgentDatabaseInterface;
-import com.nearinfinity.blur.thrift.BlurClient;
+import com.nearinfinity.agent.exceptions.HdfsThreadException;
 import com.nearinfinity.license.AgentLicense;
 
 public class Agent {
@@ -136,8 +131,7 @@ public class Agent {
     for (Map.Entry<String, String> blurEntry : blurInstances.entrySet()) {
       String zookeeperName = blurEntry.getKey();
       String connection = blurEntry.getValue();
-      // Start a new BlurManagerThread per blur instance (manages query and
-      // table info from blur)
+      // manages query and table info from blur
       new Thread(new BlurThreadManager(zookeeperName, connection, this.databaseConnection,
           activeCollectors, jdbc)).start();
     }
@@ -147,44 +141,16 @@ public class Agent {
     Map<String, Map<String, String>> hdfsInstances = loadHdfsInstances(props);
     for (Map<String, String> instance : hdfsInstances.values()) {
       final String name = instance.get("name");
-      final String uri = instance.get("default");
+      final String thriftUri = instance.get("uri.thrift");
+      final String defaultUri = instance.get("uri.default");
       final String user = props.getProperty("hdfs." + name + ".login.user");
-      new Thread(new HdfsThreadManager(hdfsEntry.getKey(), uri, user, jdbc)).start();
-      
-      HDFSCollector.initializeHdfs(hdfsEntry.getKey(), hdfsEntry.getValue().get("thrift"), jdbc);
-    }
-
-    if (activeCollectors.contains("hdfs")) {
-      for (Map<String, String> instance : hdfsInstances.values()) {
-        final String uri = instance.get("default");
-        final String name = instance.get("name");
-        final String user = props.getProperty("hdfs." + name + ".login.user");
-        new Thread(new Runnable() {
-          @Override
-          public void run() {
-            while (true) {
-              HDFSCollector.startCollecting(uri, name, user, jdbc);
-              try {
-                Thread.sleep(COLLECTOR_SLEEP_TIME);
-              } catch (InterruptedException e) {
-                break;
-              }
-            }
-          }
-        }, "HDFS Collector - " + name).start();
-        new Thread(new Runnable() {
-          @Override
-          public void run() {
-            while (true) {
-              HDFSCollector.cleanStats(jdbc);
-              try {
-                Thread.sleep(CLEAN_UP_SLEEP_TIME);
-              } catch (InterruptedException e) {
-                break;
-              }
-            }
-          }
-        }, "HDFS Cleaner - " + name).start();
+      try {
+        // manages HDFS info
+        new Thread(new HdfsThreadManager(name, defaultUri, thriftUri, user,
+            this.databaseConnection, activeCollectors, jdbc)).start();
+      } catch (HdfsThreadException e) {
+        log.error("The collector for hdfs [" + name + "] will not execute.");
+        continue;
       }
     }
   }

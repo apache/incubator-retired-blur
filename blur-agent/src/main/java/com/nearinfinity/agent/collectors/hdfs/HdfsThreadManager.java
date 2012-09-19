@@ -16,63 +16,50 @@ import com.nearinfinity.agent.collectors.blur.query.QueryCollector;
 import com.nearinfinity.agent.collectors.blur.table.TableCollector;
 import com.nearinfinity.agent.connections.blur.TableDatabaseConnection;
 import com.nearinfinity.agent.connections.interfaces.AgentDatabaseInterface;
+import com.nearinfinity.agent.exceptions.HdfsThreadException;
 import com.nearinfinity.blur.thrift.BlurClient;
 
 public class HdfsThreadManager implements Runnable {
   private static final Log log = LogFactory.getLog(HDFSCollector.class);
-  
+
   private final String hdfsName;
   private final String user;
   private final String host;
   private final int port;
+  private final AgentDatabaseInterface databaseConnection;
   private final JdbcTemplate jdbc;
+  private final boolean collectHdfs;
 
-  private String connection;
-
-  public HdfsThreadManager(final String hdfsName, final String uriString, final String user,
-      final JdbcTemplate jdbc) {
+  public HdfsThreadManager(final String hdfsName, final String defaultUri, final String thriftUri,
+      final String user, AgentDatabaseInterface databaseConnection, List<String> activeCollectors,
+      final JdbcTemplate jdbc) throws HdfsThreadException {
     try {
-      URI uri = new URI(uriString);
+      initializeHdfs(hdfsName, thriftUri, jdbc);
+      URI uri = new URI(defaultUri);
+
+      this.hdfsName = hdfsName;
+      this.user = user;
       this.host = uri.getHost();
       this.port = uri.getPort();
-      this.hdfsName = hdfsName;
+      this.databaseConnection = databaseConnection;
+      this.jdbc = jdbc;
+      this.collectHdfs = activeCollectors.contains("hdfs");
+
     } catch (URISyntaxException e) {
       log.error(e.getMessage(), e);
+      throw new HdfsThreadException();
     } catch (Exception e) {
-      log.error(e.getMessage(), e);
+      log.error("An unkown error occured while creating the collector.", e);
+      throw new HdfsThreadException();
     }
   }
 
   @Override
   public void run() {
     while (true) {
-      // If the connection string is blank then we need to build it from the
-      // online controllers from the database
-      String resolvedConnection = this.connection;
-      if (StringUtils.isBlank(this.connection)) {
-        resolvedConnection = this.databaseConnection.getConnectionString(this.zookeeperName);
-      }
-
-      if (this.collectTables) {
-        new Thread(new TableCollector(BlurClient.getClient(resolvedConnection), zookeeperName,
-            new TableDatabaseConnection(this.jdbc)), "Table Collector - " + this.zookeeperName)
-            .start();
-      }
-
-      if (this.collectQueries) {
-        // The queries depend on the tables collected above so we will wait
-        // a short amount of time for the collectors above to complete
-        try {
-          Thread.sleep(TimeUnit.SECONDS.toMillis(5));
-        } catch (InterruptedException e) {
-          return;
-        }
-
-        new Thread(new QueryCollector(BlurClient.getClient(resolvedConnection), zookeeperName,
-            new QueryDatabaseConnection(this.jdbc)), "Query Collector - " + this.zookeeperName)
-            .start();
-        new Thread(new QueryCleaner(BlurClient.getClient(resolvedConnection), zookeeperName,
-            new QueryDatabaseConnection(this.jdbc)), "Query Cleaner - " + this.zookeeperName)
+      if (this.collectHdfs) {
+        new Thread(new HDFSCollector(BlurClient.getClient(resolvedConnection), zookeeperName,
+            new HdfsDatabaseConnection(this.jdbc)), "Table Collector - " + this.zookeeperName)
             .start();
       }
 
@@ -83,29 +70,22 @@ public class HdfsThreadManager implements Runnable {
       }
     }
   }
-  
-  private static void initializeHdfs(String name, String thriftUri, JdbcTemplate jdbc) {
+
+  private void initializeHdfs(String name, String thriftUri, JdbcTemplate jdbc)
+      throws URISyntaxException {
     List<Map<String, Object>> existingHdfs = jdbc.queryForList("select id from hdfs where name=?",
         name);
 
+    URI uri = new URI(thriftUri);
+    
+    this.databaseConnection.setHdfsInfo(name, thriftUri, port);
+
     if (existingHdfs.isEmpty()) {
-      URI uri;
-      try {
-        uri = new URI(uriString);
-        jdbc.update("insert into hdfs (name, host, port) values (?, ?, ?)", name, uri.getHost(),
-            uri.getPort());
-      } catch (URISyntaxException e) {
-        log.debug(e);
-      }
+      jdbc.update("insert into hdfs (name, host, port) values (?, ?, ?)", name, uri.getHost(),
+          uri.getPort());
     } else {
-      URI uri;
-      try {
-        uri = new URI(uriString);
-        jdbc.update("update hdfs set host=?, port=? where id=?", uri.getHost(), uri.getPort(),
-            existingHdfs.get(0).get("ID"));
-      } catch (URISyntaxException e) {
-        log.debug(e);
-      }
+      jdbc.update("update hdfs set host=?, port=? where id=?", uri.getHost(), uri.getPort(),
+          existingHdfs.get(0).get("ID"));
     }
   }
 }

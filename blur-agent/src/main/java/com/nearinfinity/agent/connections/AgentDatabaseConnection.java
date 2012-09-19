@@ -20,4 +20,9 @@ public class AgentDatabaseConnection implements AgentDatabaseInterface{
     List<String> controller_uris = jdbc.queryForList(queryString, new String[] { zookeeperName }, String.class);
     return StringUtils.join(controller_uris, ',');
   }
+
+  @Override
+  public void setHdfsInfo(String name, String host, int port) {
+        
+  }
 }

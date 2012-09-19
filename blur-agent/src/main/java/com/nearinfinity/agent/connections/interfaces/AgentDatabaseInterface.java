@@ -1,5 +1,6 @@
 package com.nearinfinity.agent.connections.interfaces;
 
 public interface AgentDatabaseInterface {
-  public String getConnectionString(String zookeeperName);
+  String getConnectionString(String zookeeperName);
+  void setHdfsInfo(String name, String host, int port);
 }

@@ -48,7 +48,7 @@ class BlurTablesController < ApplicationController
     BlurTable.destroy tables
 
     respond_to do |format|
-      format.json  { render :nothing => true }
+      format.json { render :json => {} }
     end
   end
 
@@ -77,7 +77,7 @@ class BlurTablesController < ApplicationController
     end
 
     respond_to do |format|
-      format.json  { render :nothing => true }
+      format.json { render :json => {} }
     end
   end
 end

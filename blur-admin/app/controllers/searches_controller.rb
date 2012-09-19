@@ -163,7 +163,7 @@ class SearchesController < ApplicationController
                         :column_object      => params[:column_data],
                         :blur_table_id      => params[:blur_table])
     respond_with do |format|
-      format.json { render :nothing => true }
+      format.json { render :json => {} }
     end
   end
   private

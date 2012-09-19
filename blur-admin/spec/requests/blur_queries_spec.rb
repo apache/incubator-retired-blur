@@ -3,6 +3,8 @@ require 'spec_helper'
 describe "Blur Queries" do
   before(:each) do
     setup_tests
+    #    wait_for_ajax
+    #wait_for_dom
   end
   context "Page is loaded" do
     it "should display the correct page elements" do
@@ -16,6 +18,7 @@ describe "Blur Queries" do
       page.should have_content('Status')
       page.should have_content('Actions/Info')
       page.should have_css('div', :class => 'range_select')
+      save_and_open_page
     end
   end
 end

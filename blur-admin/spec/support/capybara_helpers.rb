@@ -34,6 +34,23 @@ module RequestHelpers
     click_button 'Log In'
   end
 
+  def wait_for_ajax(timeout = Capybara.default_wait_time)
+    page.wait_until(timeout) do
+      page.evaluate_script('jQuery.active == 0')
+    end
+  end
+
+  def wait_for_dom(timeout = Capybara.default_wait_time)
+    uuid = SecureRandom.uuid
+    page.find("body")
+    page.evaluate_script <<-EOS
+      _.defer(function() {
+        $('body').append("<div id='#{uuid}'></div>");
+      });
+    EOS
+    page.find("##{uuid}")
+  end
+  
   def setup_tests
     setup_variables
     set_ability
@@ -42,6 +59,8 @@ module RequestHelpers
     login
   end
 end
+
+
 
 RSpec.configure do |config|
   config.include RequestHelpers, :type => :request

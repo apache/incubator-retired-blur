@@ -81,7 +81,7 @@ class HdfsController < ApplicationController
       "hdfs", "create", @hdfs)
 
     respond_with do |format|
-      format.json { render :nothing => true }
+      format.json { render :json => {} }
     end
   end
 
@@ -101,7 +101,7 @@ class HdfsController < ApplicationController
       "hdfs", "update", @hdfs)
 
     respond_with do |format|
-      format.json { render :nothing => true }
+      format.json { render :json => {} }
     end
   end
 
@@ -114,7 +114,7 @@ class HdfsController < ApplicationController
       "hdfs", "delete", @hdfs)
 
     respond_with do |format|
-      format.json { render :nothing => true }
+      format.json { render :json => {} }
     end
   end
 

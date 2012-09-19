@@ -16,13 +16,13 @@ import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
 public class TableCollector implements Runnable {
-  private final Log log;
+  private static final Log log = LogFactory.getLog(TableCollector.class);
+  
   private final Iface connection;
   private final String zookeeper;
   private final TableDatabaseInterface database;
 
   public TableCollector(Iface connection, String zookeeperName, TableDatabaseInterface database) {
-    this.log = LogFactory.getLog(TableCollector.class);
     this.connection = connection;
     this.zookeeper = zookeeperName;
     this.database = database;

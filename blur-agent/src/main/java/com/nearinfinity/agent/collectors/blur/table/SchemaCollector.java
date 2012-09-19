@@ -24,7 +24,8 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class SchemaCollector implements Runnable {
-  private final Log log;
+  private static final Log log = LogFactory.getLog(SchemaCollector.class);
+  
   private final Iface blurConnection;
   private final String tableName;
   private final Integer clusterId;
@@ -33,7 +34,6 @@ public class SchemaCollector implements Runnable {
 
   public SchemaCollector(Iface connection, String tableName, Integer clusterId,
       TableDescriptor descriptor, TableDatabaseInterface database) {
-    this.log = LogFactory.getLog(SchemaCollector.class);
     this.blurConnection = connection;
     this.tableName = tableName;
     this.clusterId = clusterId;

@@ -23,8 +23,7 @@ public class BlurThreadManager implements Runnable {
   private String connection;
 
   public BlurThreadManager(String zookeeperName, String connection,
-      AgentDatabaseInterface databaseConnection, List<String> activeCollectors,
-      JdbcTemplate jdbc) {
+      AgentDatabaseInterface databaseConnection, List<String> activeCollectors, JdbcTemplate jdbc) {
     this.zookeeperName = zookeeperName;
     this.connection = connection;
     this.databaseConnection = databaseConnection;
@@ -44,9 +43,9 @@ public class BlurThreadManager implements Runnable {
       }
 
       if (this.collectTables) {
-        new Thread(new TableCollector(BlurClient.getClient(resolvedConnection),
-            zookeeperName, new TableDatabaseConnection(this.jdbc)),
-            "Table Collector - " + this.zookeeperName).start();
+        new Thread(new TableCollector(BlurClient.getClient(resolvedConnection), zookeeperName,
+            new TableDatabaseConnection(this.jdbc)), "Table Collector - " + this.zookeeperName)
+            .start();
       }
 
       if (this.collectQueries) {
@@ -58,12 +57,12 @@ public class BlurThreadManager implements Runnable {
           return;
         }
 
-        new Thread(new QueryCollector(BlurClient.getClient(resolvedConnection),
-            zookeeperName, new QueryDatabaseConnection(this.jdbc)),
-            "Query Collector - " + this.zookeeperName).start();
-        new Thread(new QueryCleaner(BlurClient.getClient(resolvedConnection),
-            zookeeperName, new QueryDatabaseConnection(this.jdbc)),
-            "Query Cleaner - " + this.zookeeperName).start();
+        new Thread(new QueryCollector(BlurClient.getClient(resolvedConnection), zookeeperName,
+            new QueryDatabaseConnection(this.jdbc)), "Query Collector - " + this.zookeeperName)
+            .start();
+        new Thread(new QueryCleaner(BlurClient.getClient(resolvedConnection), zookeeperName,
+            new QueryDatabaseConnection(this.jdbc)), "Query Cleaner - " + this.zookeeperName)
+            .start();
       }
 
       try {

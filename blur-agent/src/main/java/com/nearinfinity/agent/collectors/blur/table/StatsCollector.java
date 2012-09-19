@@ -11,7 +11,8 @@ import com.nearinfinity.blur.thrift.generated.TableStats;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class StatsCollector implements Runnable {
-  private final Log log;
+  private static final Log log = LogFactory.getLog(StatsCollector.class);
+  
   private final Iface blurConnection;
   private final String tableName;
   private final Integer clusterId;
@@ -19,7 +20,6 @@ public class StatsCollector implements Runnable {
 
   public StatsCollector(Iface connection, String tableName, Integer clusterId,
       TableDatabaseInterface database) {
-    this.log = LogFactory.getLog(StatsCollector.class);
     this.blurConnection = connection;
     this.tableName = tableName;
     this.clusterId = clusterId;

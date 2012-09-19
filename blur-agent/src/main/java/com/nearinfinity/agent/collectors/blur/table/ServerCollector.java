@@ -17,7 +17,8 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class ServerCollector implements Runnable {
-  private final Log log;
+  private static final Log log = LogFactory.getLog(ServerCollector.class);
+  
   private final Iface blurConnection;
   private final String tableName;
   private final Integer clusterId;
@@ -25,7 +26,6 @@ public class ServerCollector implements Runnable {
 
   public ServerCollector(Iface connection, String tableName, Integer clusterId,
       TableDatabaseInterface database) {
-    this.log = LogFactory.getLog(ServerCollector.class);
     this.blurConnection = connection;
     this.tableName = tableName;
     this.clusterId = clusterId;

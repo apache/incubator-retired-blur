@@ -19,64 +19,61 @@ import org.apache.hadoop.hdfs.protocol.FSConstants.DatanodeReportType;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public class HDFSCollector implements Runnable {
-  private static final Log log = LogFactory.getLog(HDFSCollector.class);
+  private final Log log;
+  private ;
 
-  public static void startCollecting(final String uriString, final String name, final String user,
+  public HDFSCollector(final String hdfsName, final String uri, final String user,
       final JdbcTemplate jdbc) {
+    this.log = LogFactory.getLog(HDFSCollector.class);
+  }
+
+  @Override
+  public void run() {
     try {
-      new Thread(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            URI uri = new URI(uriString);
-            String host = uri.getHost();
-            String port = String.valueOf(uri.getPort());
+      URI uri = new URI(uriString);
+      String host = uri.getHost();
+      String port = String.valueOf(uri.getPort());
 
-            int hdfsId = jdbc.queryForInt("select id from hdfs where name = ?", name);
+      int hdfsId = jdbc.queryForInt("select id from hdfs where name = ?", name);
 
-            FileSystem fileSystem = (user != null) ? FileSystem.get(uri, new Configuration(), user)
-                : FileSystem.get(uri, new Configuration());
+      FileSystem fileSystem = (user != null) ? FileSystem.get(uri, new Configuration(), user)
+          : FileSystem.get(uri, new Configuration());
 
-            if (fileSystem instanceof DistributedFileSystem) {
-              DistributedFileSystem dfs = (DistributedFileSystem) fileSystem;
+      if (fileSystem instanceof DistributedFileSystem) {
+        DistributedFileSystem dfs = (DistributedFileSystem) fileSystem;
 
-              FsStatus ds = dfs.getStatus();
-              long capacity = ds.getCapacity();
-              long used = ds.getUsed();
-              long logical_used = used / dfs.getDefaultReplication();
-              long remaining = ds.getRemaining();
-              long presentCapacity = used + remaining;
+        FsStatus ds = dfs.getStatus();
+        long capacity = ds.getCapacity();
+        long used = ds.getUsed();
+        long logical_used = used / dfs.getDefaultReplication();
+        long remaining = ds.getRemaining();
+        long presentCapacity = used + remaining;
 
-              long liveNodes = -1;
-              long deadNodes = -1;
-              long totalNodes = -1;
+        long liveNodes = -1;
+        long deadNodes = -1;
+        long totalNodes = -1;
 
-              try {
-                DatanodeInfo[] live = dfs.getClient().datanodeReport(DatanodeReportType.LIVE);
-                DatanodeInfo[] dead = dfs.getClient().datanodeReport(DatanodeReportType.DEAD);
+        try {
+          DatanodeInfo[] live = dfs.getClient().datanodeReport(DatanodeReportType.LIVE);
+          DatanodeInfo[] dead = dfs.getClient().datanodeReport(DatanodeReportType.DEAD);
 
-                liveNodes = live.length;
-                deadNodes = dead.length;
-                totalNodes = liveNodes + deadNodes;
-              } catch (Exception e) {
-                log.warn("Access denied for user. Skipping node information.");
-              }
-
-              Calendar cal = Calendar.getInstance();
-              TimeZone z = cal.getTimeZone();
-              cal.add(Calendar.MILLISECOND, -(z.getOffset(cal.getTimeInMillis())));
-              jdbc.update(
-                  "insert into hdfs_stats (config_capacity, present_capacity, dfs_remaining, dfs_used_real, dfs_used_logical, dfs_used_percent, under_replicated, corrupt_blocks, missing_blocks, total_nodes, live_nodes, dead_nodes, created_at, host, port, hdfs_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                  capacity, presentCapacity, remaining, used, logical_used,
-                  (((1.0 * used) / presentCapacity) * 100), dfs.getUnderReplicatedBlocksCount(),
-                  dfs.getCorruptBlocksCount(), dfs.getMissingBlocksCount(), totalNodes, liveNodes,
-                  deadNodes, cal.getTime(), host, port, hdfsId);
-            }
-          } catch (Exception e) {
-            log.debug(e);
-          }
+          liveNodes = live.length;
+          deadNodes = dead.length;
+          totalNodes = liveNodes + deadNodes;
+        } catch (Exception e) {
+          log.warn("Access denied for user. Skipping node information.");
         }
-      }).start();
+
+        Calendar cal = Calendar.getInstance();
+        TimeZone z = cal.getTimeZone();
+        cal.add(Calendar.MILLISECOND, -(z.getOffset(cal.getTimeInMillis())));
+        jdbc.update(
+            "insert into hdfs_stats (config_capacity, present_capacity, dfs_remaining, dfs_used_real, dfs_used_logical, dfs_used_percent, under_replicated, corrupt_blocks, missing_blocks, total_nodes, live_nodes, dead_nodes, created_at, host, port, hdfs_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            capacity, presentCapacity, remaining, used, logical_used,
+            (((1.0 * used) / presentCapacity) * 100), dfs.getUnderReplicatedBlocksCount(),
+            dfs.getCorruptBlocksCount(), dfs.getMissingBlocksCount(), totalNodes, liveNodes,
+            deadNodes, cal.getTime(), host, port, hdfsId);
+      }
     } catch (Exception e) {
       log.debug(e);
     }

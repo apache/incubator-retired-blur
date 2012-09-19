@@ -81,8 +81,7 @@ public class Agent {
   }
 
   private static void setupLogger(Properties props) {
-    String log4jPropsFile = props.getProperty("log4j.properties",
-        "../conf/log4j.properties");
+    String log4jPropsFile = props.getProperty("log4j.properties", "../conf/log4j.properties");
 
     if (new File(log4jPropsFile).exists()) {
       PropertyConfigurator.configure(log4jPropsFile);
@@ -137,18 +136,22 @@ public class Agent {
     for (Map.Entry<String, String> blurEntry : blurInstances.entrySet()) {
       String zookeeperName = blurEntry.getKey();
       String connection = blurEntry.getValue();
-      // Start a new BlurManagerThread per blur instance (manages query and table info from blur)
-      new Thread(new BlurThreadManager(zookeeperName, connection, this.databaseConnection, activeCollectors, jdbc)).start();
+      // Start a new BlurManagerThread per blur instance (manages query and
+      // table info from blur)
+      new Thread(new BlurThreadManager(zookeeperName, connection, this.databaseConnection,
+          activeCollectors, jdbc)).start();
     }
   }
 
-  private void setupHdfs(Properties props, final JdbcTemplate jdbc,
-      List<String> activeCollectors) {
+  private void setupHdfs(Properties props, final JdbcTemplate jdbc, List<String> activeCollectors) {
     Map<String, Map<String, String>> hdfsInstances = loadHdfsInstances(props);
-    for (Map.Entry<String, Map<String, String>> hdfsEntry : hdfsInstances
-        .entrySet()) {
-      HDFSCollector.initializeHdfs(hdfsEntry.getKey(), hdfsEntry.getValue()
-          .get("thrift"), jdbc);
+    for (Map<String, String> instance : hdfsInstances.values()) {
+      final String name = instance.get("name");
+      final String uri = instance.get("default");
+      final String user = props.getProperty("hdfs." + name + ".login.user");
+      new Thread(new HdfsThreadManager(hdfsEntry.getKey(), uri, user, jdbc)).start();
+      
+      HDFSCollector.initializeHdfs(hdfsEntry.getKey(), hdfsEntry.getValue().get("thrift"), jdbc);
     }
 
     if (activeCollectors.contains("hdfs")) {
@@ -188,12 +191,12 @@ public class Agent {
 
   private void initializeWatchers(Properties props, JdbcTemplate jdbc) {
     if (props.containsKey("zk.instances")) {
-      List<String> zooKeeperInstances = new ArrayList<String>(
-          Arrays.asList(props.getProperty("zk.instances").split("\\|")));
+      List<String> zooKeeperInstances = new ArrayList<String>(Arrays.asList(props.getProperty(
+          "zk.instances").split("\\|")));
       for (String zkInstance : zooKeeperInstances) {
         String zkUrl = props.getProperty("zk." + zkInstance + ".url");
-        new Thread(new ZookeeperInstance(zkInstance, zkUrl, jdbc, props),
-            "Zookeeper-" + zkInstance).start();
+        new Thread(new ZookeeperInstance(zkInstance, zkUrl, jdbc, props), "Zookeeper-" + zkInstance)
+            .start();
       }
     }
   }
@@ -220,9 +223,8 @@ public class Agent {
 
       for (String hdfs : hdfsNames) {
         Map<String, String> instanceInfo = new HashMap<String, String>();
-        instanceInfo.put("thrift",
-            props.getProperty("hdfs." + hdfs + ".thrift.url"));
-        instanceInfo.put("default", props.getProperty("hdfs." + hdfs + ".url"));
+        instanceInfo.put("url.thrift", props.getProperty("hdfs." + hdfs + ".thrift.url"));
+        instanceInfo.put("url.default", props.getProperty("hdfs." + hdfs + ".url"));
         instanceInfo.put("name", hdfs);
         instances.put(hdfs, instanceInfo);
       }

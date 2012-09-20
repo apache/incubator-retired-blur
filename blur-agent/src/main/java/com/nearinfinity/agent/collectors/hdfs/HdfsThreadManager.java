@@ -2,6 +2,8 @@ package com.nearinfinity.agent.collectors.hdfs;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import com.nearinfinity.agent.Agent;
@@ -18,14 +20,14 @@ public class HdfsThreadManager implements Runnable {
   private final boolean collectHdfs;
 
   public HdfsThreadManager(final String hdfsName, final String defaultUri, final String thriftUri,
-      final String user, final boolean collectHdfs, final HdfsDatabaseInterface databaseConnection)
+      final String user, final List<String> activeCollectors, final HdfsDatabaseInterface databaseConnection)
       throws HdfsThreadException {
     try {
       this.defaultUri = new URI(defaultUri);
       this.hdfsName = hdfsName;
       this.user = user;
       this.databaseConnection = databaseConnection;
-      this.collectHdfs = collectHdfs;
+      this.collectHdfs = activeCollectors.contains("hdfs");
 
       initializeHdfs(hdfsName, thriftUri);
 
@@ -43,7 +45,7 @@ public class HdfsThreadManager implements Runnable {
     while (true) {
       if (this.collectHdfs) {
         new Thread(
-            new HDFSCollector(this.hdfsName, defaultUri, this.user, this.databaseConnection),
+            new HdfsStatsCollector(this.hdfsName, defaultUri, this.user, this.databaseConnection),
             "Hdfs Collector - " + this.hdfsName).start();
       }
 

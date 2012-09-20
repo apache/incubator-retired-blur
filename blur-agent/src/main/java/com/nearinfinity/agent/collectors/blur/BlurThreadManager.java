@@ -23,13 +23,13 @@ public class BlurThreadManager implements Runnable {
   private String connection;
 
   public BlurThreadManager(final String zookeeperName, final String connection,
-      final AgentDatabaseInterface databaseConnection, final boolean collectTables,
-      final boolean collectQueries, final JdbcTemplate jdbc) {
+      final List<String> activeCollectors, final AgentDatabaseInterface databaseConnection,
+      final JdbcTemplate jdbc) {
     this.zookeeperName = zookeeperName;
     this.connection = connection;
     this.databaseConnection = databaseConnection;
-    this.collectTables = collectTables;
-    this.collectQueries = collectQueries;
+    this.collectTables = activeCollectors.contains("tables");
+    this.collectQueries = activeCollectors.contains("queries");
     this.jdbc = jdbc;
   }
 
@@ -60,9 +60,6 @@ public class BlurThreadManager implements Runnable {
 
         new Thread(new QueryCollector(BlurClient.getClient(resolvedConnection), zookeeperName,
             new QueryDatabaseConnection(this.jdbc)), "Query Collector - " + this.zookeeperName)
-            .start();
-        new Thread(new QueryCleaner(BlurClient.getClient(resolvedConnection), zookeeperName,
-            new QueryDatabaseConnection(this.jdbc)), "Query Cleaner - " + this.zookeeperName)
             .start();
       }
 

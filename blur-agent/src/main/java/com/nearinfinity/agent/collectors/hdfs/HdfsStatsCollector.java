@@ -17,8 +17,8 @@ import org.springframework.dao.DataAccessException;
 import com.nearinfinity.agent.connections.interfaces.HdfsDatabaseInterface;
 import com.nearinfinity.agent.exceptions.NullReturnedException;
 
-public class HDFSCollector implements Runnable {
-  private final static Log log = LogFactory.getLog(HDFSCollector.class);
+public class HdfsStatsCollector implements Runnable {
+  private final static Log log = LogFactory.getLog(HdfsStatsCollector.class);
 
   private final String hdfsName;
   private final URI uri;
@@ -27,7 +27,7 @@ public class HDFSCollector implements Runnable {
   private final String user;
   private final HdfsDatabaseInterface database;
 
-  public HDFSCollector(final String hdfsName, final URI uri, final String user,
+  public HdfsStatsCollector(final String hdfsName, final URI uri, final String user,
       final HdfsDatabaseInterface database) {
     this.uri = uri;
     this.host = uri.getHost();

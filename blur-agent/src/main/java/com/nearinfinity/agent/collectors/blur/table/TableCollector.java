@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import com.nearinfinity.agent.connections.blur.interfaces.TableDatabaseInterface;
+
+import com.nearinfinity.agent.connections.interfaces.TableDatabaseInterface;
 import com.nearinfinity.agent.exceptions.NullReturnedException;
 import com.nearinfinity.agent.exceptions.TableCollisionException;
 import com.nearinfinity.agent.exceptions.TableMissingException;

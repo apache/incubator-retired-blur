@@ -1,11 +1,8 @@
 package com.nearinfinity.agent.collectors.hdfs;
 
+import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 import java.util.TimeZone;
 
 import org.apache.commons.logging.Log;
@@ -16,28 +13,40 @@ import org.apache.hadoop.fs.FsStatus;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.hdfs.protocol.FSConstants.DatanodeReportType;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.dao.DataAccessException;
+import com.nearinfinity.agent.connections.interfaces.HdfsDatabaseInterface;
+import com.nearinfinity.agent.exceptions.NullReturnedException;
 
 public class HDFSCollector implements Runnable {
-  private final Log log;
-  private ;
+  private final static Log log = LogFactory.getLog(HDFSCollector.class);
 
-  public HDFSCollector(final String hdfsName, final String uri, final String user,
-      final JdbcTemplate jdbc) {
-    this.log = LogFactory.getLog(HDFSCollector.class);
+  private final String hdfsName;
+  private final URI uri;
+  private final String host;
+  private final int port;
+  private final String user;
+  private final HdfsDatabaseInterface database;
+
+  public HDFSCollector(final String hdfsName, final URI uri, final String user,
+      final HdfsDatabaseInterface database) {
+    this.uri = uri;
+    this.host = uri.getHost();
+    this.port = uri.getPort();
+    this.hdfsName = hdfsName;
+    this.user = user;
+    this.database = database;
   }
 
   @Override
   public void run() {
     try {
-      URI uri = new URI(uriString);
-      String host = uri.getHost();
-      String port = String.valueOf(uri.getPort());
+      int hdfsId = this.database.getHdfsId(this.hdfsName);
 
-      int hdfsId = jdbc.queryForInt("select id from hdfs where name = ?", name);
-
-      FileSystem fileSystem = (user != null) ? FileSystem.get(uri, new Configuration(), user)
-          : FileSystem.get(uri, new Configuration());
+      // Creates a filesystem connection (if a user is given
+      // then the filesystem can get additional information)
+      FileSystem fileSystem = (this.user != null) ?
+          FileSystem.get(this.uri, new Configuration(), this.user)
+          : FileSystem.get(this.uri, new Configuration());
 
       if (fileSystem instanceof DistributedFileSystem) {
         DistributedFileSystem dfs = (DistributedFileSystem) fileSystem;
@@ -67,52 +76,21 @@ public class HDFSCollector implements Runnable {
         Calendar cal = Calendar.getInstance();
         TimeZone z = cal.getTimeZone();
         cal.add(Calendar.MILLISECOND, -(z.getOffset(cal.getTimeInMillis())));
-        jdbc.update(
-            "insert into hdfs_stats (config_capacity, present_capacity, dfs_remaining, dfs_used_real, dfs_used_logical, dfs_used_percent, under_replicated, corrupt_blocks, missing_blocks, total_nodes, live_nodes, dead_nodes, created_at, host, port, hdfs_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            capacity, presentCapacity, remaining, used, logical_used,
+        this.database.insertHdfsStats(capacity, presentCapacity, remaining, used, logical_used,
             (((1.0 * used) / presentCapacity) * 100), dfs.getUnderReplicatedBlocksCount(),
             dfs.getCorruptBlocksCount(), dfs.getMissingBlocksCount(), totalNodes, liveNodes,
             deadNodes, cal.getTime(), host, port, hdfsId);
+        
+        dfs.close();
       }
+    } catch(IOException e){
+      log.error("An IO error occurred while communicating with the DFS.", e);
+    } catch(DataAccessException e) {
+      log.error("An error occurred while writing the HDFSStats to the DB.", e);
+    } catch (NullReturnedException e) {
+      log.error(e.getMessage(), e);
     } catch (Exception e) {
-      log.debug(e);
+      log.error("An unknown error occurred in the CollectorManager.", e);
     }
-  }
-
-  public static void initializeHdfs(String name, String uriString, JdbcTemplate jdbc) {
-    List<Map<String, Object>> existingHdfs = jdbc.queryForList("select id from hdfs where name=?",
-        name);
-
-    if (existingHdfs.isEmpty()) {
-      URI uri;
-      try {
-        uri = new URI(uriString);
-        jdbc.update("insert into hdfs (name, host, port) values (?, ?, ?)", name, uri.getHost(),
-            uri.getPort());
-      } catch (URISyntaxException e) {
-        log.debug(e);
-      }
-    } else {
-      URI uri;
-      try {
-        uri = new URI(uriString);
-        jdbc.update("update hdfs set host=?, port=? where id=?", uri.getHost(), uri.getPort(),
-            existingHdfs.get(0).get("ID"));
-      } catch (URISyntaxException e) {
-        log.debug(e);
-      }
-    }
-  }
-
-  public static void cleanStats(JdbcTemplate jdbc) {
-    Calendar now = Calendar.getInstance();
-    TimeZone z = now.getTimeZone();
-    now.add(Calendar.MILLISECOND, -(z.getOffset(new Date().getTime())));
-
-    Calendar oneWeekAgo = Calendar.getInstance();
-    oneWeekAgo.setTimeInMillis(now.getTimeInMillis());
-    oneWeekAgo.add(Calendar.DATE, -7);
-
-    jdbc.update("delete from hdfs_stats where created_at < ?", oneWeekAgo.getTime());
   }
 }

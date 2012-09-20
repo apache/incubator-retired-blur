@@ -49,23 +49,13 @@ public class Agent {
     List<String> activeCollectors = props.containsKey("active.collectors") ? new ArrayList<String>(
         Arrays.asList(props.getProperty("active.collectors").split("\\|")))
         : new ArrayList<String>();
-        
+
     // Setup the collectors
     setupHdfs(props, jdbc, activeCollectors);
     setupBlur(props, jdbc, activeCollectors);
     setupZookeeper(props, jdbc);
     // Setup the cleaners
     setupCleaners(jdbc, activeCollectors);
-
-    while (true) {
-      try {
-        Thread.sleep(COLLECTOR_SLEEP_TIME);
-      } catch (InterruptedException e) {
-        break;
-      }
-    }
-
-    log.info("Exiting agent");
   }
 
   public static void main(String[] args) {
@@ -73,6 +63,14 @@ public class Agent {
     Properties configProps = loadConfigParams(args);
     setupLogger(configProps);
     new Agent(configProps);
+    
+    // Sleep the main thread while the background threads
+    // are working
+    try {
+      Thread.sleep(Long.MAX_VALUE);
+    } catch (InterruptedException e) {
+      log.info("Exiting agent");
+    }
   }
 
   private void setupCleaners(JdbcTemplate jdbc, List<String> activeCollectors) {

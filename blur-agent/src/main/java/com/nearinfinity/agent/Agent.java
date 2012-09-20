@@ -46,19 +46,15 @@ public class Agent {
     // Verify valid License
     AgentLicense.verifyLicense(props, jdbc);
 
-    // Initialize ZooKeeper watchers
-    initializeWatchers(props, jdbc);
-
     List<String> activeCollectors = props.containsKey("active.collectors") ? new ArrayList<String>(
         Arrays.asList(props.getProperty("active.collectors").split("\\|")))
         : new ArrayList<String>();
-
-    // Setup HDFS collectors
+        
+    // Setup the collectors
     setupHdfs(props, jdbc, activeCollectors);
-
-    // Setup Blur collectors
     setupBlur(props, jdbc, activeCollectors);
-
+    setupZookeeper(props, jdbc);
+    // Setup the cleaners
     setupCleaners(jdbc, activeCollectors);
 
     while (true) {
@@ -112,7 +108,7 @@ public class Agent {
     }
   }
 
-  private void initializeWatchers(Properties props, JdbcTemplate jdbc) {
+  private void setupZookeeper(Properties props, JdbcTemplate jdbc) {
     if (props.containsKey("zk.instances")) {
       List<String> zooKeeperInstances = new ArrayList<String>(Arrays.asList(props.getProperty(
           "zk.instances").split("\\|")));

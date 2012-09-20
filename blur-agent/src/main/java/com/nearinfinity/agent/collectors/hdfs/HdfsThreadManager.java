@@ -9,7 +9,7 @@ import com.nearinfinity.agent.connections.interfaces.HdfsDatabaseInterface;
 import com.nearinfinity.agent.exceptions.HdfsThreadException;
 
 public class HdfsThreadManager implements Runnable {
-  private static final Log log = LogFactory.getLog(HDFSCollector.class);
+  private static final Log log = LogFactory.getLog(HdfsThreadManager.class);
 
   private final URI defaultUri;
   private final String hdfsName;

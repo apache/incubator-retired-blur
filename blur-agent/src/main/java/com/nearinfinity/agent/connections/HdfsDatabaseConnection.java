@@ -49,4 +49,9 @@ public class HdfsDatabaseConnection implements HdfsDatabaseInterface {
         (((1.0 * used) / presentCapacity) * 100), underReplicatedBlocksCount, corruptBlocksCount,
         missingBlocksCount, totalNodes, liveNodes, deadNodes, time, host, port, hdfsId);
   }
+
+  @Override
+  public int deleteOldStats(Date threshold) {
+    return jdbc.update("delete from hdfs_stats where created_at < ?", threshold);
+  }
 }

@@ -7,9 +7,6 @@ import java.util.TimeZone;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-
-import com.nearinfinity.agent.collectors.hdfs.HdfsThreadManager;
 import com.nearinfinity.agent.connections.interfaces.QueryDatabaseInterface;
 
 public class QueriesCleaner implements Runnable {

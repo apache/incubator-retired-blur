@@ -1,14 +1,13 @@
 package com.nearinfinity.agent.collectors.blur;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.lang.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.nearinfinity.agent.Agent;
 import com.nearinfinity.agent.collectors.blur.query.QueryCollector;
 import com.nearinfinity.agent.collectors.blur.table.TableCollector;
+import com.nearinfinity.agent.connections.QueryDatabaseConnection;
 import com.nearinfinity.agent.connections.TableDatabaseConnection;
 import com.nearinfinity.agent.connections.interfaces.AgentDatabaseInterface;
 import com.nearinfinity.blur.thrift.BlurClient;
@@ -50,14 +49,6 @@ public class BlurThreadManager implements Runnable {
       }
 
       if (this.collectQueries) {
-        // The queries depend on the tables collected above so we will wait
-        // a short amount of time for the collectors above to complete
-        try {
-          Thread.sleep(TimeUnit.SECONDS.toMillis(5));
-        } catch (InterruptedException e) {
-          return;
-        }
-
         new Thread(new QueryCollector(BlurClient.getClient(resolvedConnection), zookeeperName,
             new QueryDatabaseConnection(this.jdbc)), "Query Collector - " + this.zookeeperName)
             .start();

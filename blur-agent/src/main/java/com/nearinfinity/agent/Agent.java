@@ -54,7 +54,6 @@ public class Agent {
     setupHdfs(props, jdbc, activeCollectors);
     setupBlur(props, jdbc, activeCollectors);
     setupZookeeper(props, jdbc);
-    // Setup the cleaners
     setupCleaners(jdbc, activeCollectors);
   }
 

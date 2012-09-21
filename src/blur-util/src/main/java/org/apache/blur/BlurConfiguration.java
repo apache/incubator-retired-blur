@@ -46,7 +46,7 @@ public class BlurConfiguration {
    * @throws IOException
    */
   public BlurConfiguration() throws IOException {
-    init();
+    this(true);
   }
   
   /**
@@ -55,7 +55,7 @@ public class BlurConfiguration {
    * 		false to load without default properties set. 	
    * @throws IOException
    */
-  public BlurConfiguration(Boolean loadDefaults) throws IOException {
+  public BlurConfiguration(boolean loadDefaults) throws IOException {
     if(loadDefaults == true) {
       init();
     }

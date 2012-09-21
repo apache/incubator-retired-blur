@@ -4,4 +4,6 @@ import java.util.Date;
 
 public interface QueryDatabaseInterface {
   int deleteOldQueries(Date threshold);
+
+  int expireOldQueries(Date threshold, Date now);
 }

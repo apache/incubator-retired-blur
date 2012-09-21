@@ -18,7 +18,6 @@ describe "Blur Queries" do
       page.should have_content('Status')
       page.should have_content('Actions/Info')
       page.should have_css('div', :class => 'range_select')
-      save_and_open_page
     end
   end
 end

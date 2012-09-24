@@ -109,6 +109,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private Cache _cache;
   private BlurMetrics _blurMetrics;
   private ZooKeeper _zookeeper;
+  private String _cluster;
 
   // set internally
   private Timer _timerCacheFlush;
@@ -120,7 +121,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private long _safeModeDelay;
   private BlurIndexWarmup _warmup = new DefaultBlurIndexWarmup();
   private IndexDeletionPolicy _indexDeletionPolicy;
-  private String cluster = BlurConstants.BLUR_CLUSTER;
   private DirectoryReferenceFileGC _gc;
   private long _timeBetweenCommits = TimeUnit.SECONDS.toMillis(60);
   private long _timeBetweenRefreshs = TimeUnit.MILLISECONDS.toMillis(500);
@@ -131,14 +131,14 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   public void init() throws KeeperException, InterruptedException, IOException {
-    BlurUtil.setupZookeeper(_zookeeper, cluster);
+    BlurUtil.setupZookeeper(_zookeeper, _cluster);
     _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
     _closer = new BlurIndexCloser();
     _closer.init();
     _gc = new DirectoryReferenceFileGC();
     _gc.init();
     setupFlushCacheTimer();
-    String lockPath = BlurUtil.lockForSafeMode(_zookeeper, getNodeName(), cluster);
+    String lockPath = BlurUtil.lockForSafeMode(_zookeeper, getNodeName(), _cluster);
     try {
       registerMyself();
       setupSafeMode();
@@ -152,8 +152,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   private void watchForShardServerChanges() {
-    ZookeeperPathConstants.getOnlineShardsPath(cluster);
-    _watchOnlineShards = new WatchChildren(_zookeeper, ZookeeperPathConstants.getOnlineShardsPath(cluster)).watch(new OnChange() {
+    ZookeeperPathConstants.getOnlineShardsPath(_cluster);
+    _watchOnlineShards = new WatchChildren(_zookeeper, ZookeeperPathConstants.getOnlineShardsPath(_cluster)).watch(new OnChange() {
       private List<String> _prevOnlineShards = new ArrayList<String>();
 
       @Override
@@ -181,7 +181,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   private void waitInSafeModeIfNeeded() throws KeeperException, InterruptedException {
-    String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
+    String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(_cluster);
     Stat stat = _zookeeper.exists(blurSafemodePath, false);
     if (stat == null) {
       throw new RuntimeException("Safemode path missing [" + blurSafemodePath + "]");
@@ -199,7 +199,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   private void setupSafeMode() throws KeeperException, InterruptedException {
-    String shardsPath = ZookeeperPathConstants.getOnlineShardsPath(cluster);
+    String shardsPath = ZookeeperPathConstants.getOnlineShardsPath(_cluster);
     List<String> children = _zookeeper.getChildren(shardsPath, false);
     if (children.size() == 0) {
       throw new RuntimeException("No shards registered!");
@@ -209,7 +209,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     }
     LOG.info("First node online, setting up safe mode.");
     long timestamp = System.currentTimeMillis() + _safeModeDelay;
-    String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
+    String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(_cluster);
     Stat stat = _zookeeper.exists(blurSafemodePath, false);
     if (stat == null) {
       _zookeeper.create(blurSafemodePath, Long.toString(timestamp).getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
@@ -220,11 +220,11 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   private void setupAnyMissingPaths() throws KeeperException, InterruptedException {
-    String tablesPath = ZookeeperPathConstants.getTablesPath(cluster);
+    String tablesPath = ZookeeperPathConstants.getTablesPath(_cluster);
     List<String> tables = _zookeeper.getChildren(tablesPath, false);
     for (String table : tables) {
-      BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getLockPath(cluster, table));
-      BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getTableFieldNamesPath(cluster, table));
+      BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getLockPath(_cluster, table));
+      BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getTableFieldNamesPath(_cluster, table));
     }
   }
 
@@ -246,7 +246,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
       private void warmup() {
         if (_running.get()) {
-          List<String> tableList = _clusterStatus.getTableList(false, cluster);
+          List<String> tableList = _clusterStatus.getTableList(false, _cluster);
           _blurMetrics.tableCount.set(tableList.size());
           long indexCount = 0;
           AtomicLong segmentCount = new AtomicLong();
@@ -287,8 +287,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   private void registerMyself() {
     String nodeName = getNodeName();
-    String registeredShardsPath = ZookeeperPathConstants.getRegisteredShardsPath(cluster) + "/" + nodeName;
-    String onlineShardsPath = ZookeeperPathConstants.getOnlineShardsPath(cluster) + "/" + nodeName;
+    String registeredShardsPath = ZookeeperPathConstants.getRegisteredShardsPath(_cluster) + "/" + nodeName;
+    String onlineShardsPath = ZookeeperPathConstants.getOnlineShardsPath(_cluster) + "/" + nodeName;
     try {
       if (_zookeeper.exists(registeredShardsPath, false) == null) {
         _zookeeper.create(registeredShardsPath, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
@@ -372,12 +372,12 @@ public class DistributedIndexServer extends AbstractIndexServer {
     List<String> tables = new ArrayList<String>(map.keySet());
     Map<String, T> removed = new HashMap<String, T>();
     for (String table : tables) {
-      if (!_clusterStatus.exists(true, cluster, table)) {
+      if (!_clusterStatus.exists(true, _cluster, table)) {
         removed.put(table, map.remove(table));
       }
     }
     for (String table : tables) {
-      if (!_clusterStatus.isEnabled(true, cluster, table)) {
+      if (!_clusterStatus.isEnabled(true, _cluster, table)) {
         removed.put(table, map.remove(table));
       }
     }
@@ -481,7 +481,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     Directory directory = new HdfsDirectory(hdfsDirPath);
     directory.setLockFactory(lockFactory);
 
-    TableDescriptor descriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
+    TableDescriptor descriptor = _clusterStatus.getTableDescriptor(true, _cluster, table);
     String compressionClass = descriptor.compressionClass;
     int compressionBlockSize = descriptor.compressionBlockSize;
     if (compressionClass != null) {
@@ -495,16 +495,16 @@ public class DistributedIndexServer extends AbstractIndexServer {
     }
 
     Directory dir;
-    boolean blockCacheEnabled = _clusterStatus.isBlockCacheEnabled(cluster, table);
+    boolean blockCacheEnabled = _clusterStatus.isBlockCacheEnabled(_cluster, table);
     if (blockCacheEnabled) {
-      Set<String> blockCacheFileTypes = _clusterStatus.getBlockCacheFileTypes(cluster, table);
+      Set<String> blockCacheFileTypes = _clusterStatus.getBlockCacheFileTypes(_cluster, table);
       dir = new BlockDirectory(table + "_" + shard, directory, _cache, blockCacheFileTypes);
     } else {
       dir = directory;
     }
 
     BlurIndex index;
-    if (_clusterStatus.isReadOnly(true, cluster, table)) {
+    if (_clusterStatus.isReadOnly(true, _cluster, table)) {
       BlurIndexReader reader = new BlurIndexReader();
       reader.setCloser(_closer);
       reader.setAnalyzer(getAnalyzer(table));
@@ -534,7 +534,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
       index = writer;
     }
     _filterCache.opening(table, shard, index);
-    TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
+    TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, _cluster, table);
     return warmUp(index, tableDescriptor, shard);
   }
 
@@ -712,7 +712,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     checkTable(table);
     Similarity similarity = _tableSimilarity.get(table);
     if (similarity == null) {
-      TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
+      TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, _cluster, table);
       String similarityClass = tableDescriptor.similarityClass;
       if (similarityClass == null) {
         similarity = new FairSimilarity();
@@ -736,7 +736,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   @Override
   public TABLE_STATUS getTableStatus(String table) {
     checkTable(table);
-    boolean enabled = _clusterStatus.isEnabled(true, cluster, table);
+    boolean enabled = _clusterStatus.isEnabled(true, _cluster, table);
     if (enabled) {
       return TABLE_STATUS.ENABLED;
     }
@@ -744,7 +744,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   private void checkTable(String table) {
-    if (_clusterStatus.exists(true, cluster, table)) {
+    if (_clusterStatus.exists(true, _cluster, table)) {
       return;
     }
     throw new RuntimeException("Table [" + table + "] does not exist.");
@@ -760,7 +760,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private TableDescriptor getTableDescriptor(String table) {
     TableDescriptor tableDescriptor = _tableDescriptors.get(table);
     if (tableDescriptor == null) {
-      tableDescriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
+      tableDescriptor = _clusterStatus.getTableDescriptor(true, _cluster, table);
       _tableDescriptors.put(table, tableDescriptor);
     }
     return tableDescriptor;
@@ -839,5 +839,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   public void setTimeBetweenRefreshs(long timeBetweenRefreshs) {
     _timeBetweenRefreshs = timeBetweenRefreshs;
+  }
+  
+  public void setClusterName(String cluster) {
+    _cluster = cluster;
   }
 }

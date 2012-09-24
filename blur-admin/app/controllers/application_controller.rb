@@ -50,6 +50,14 @@ class ApplicationController < ActionController::Base
     @current_zookeeper
   end
 
+  unless Rails.application.config.consider_all_requests_local
+    rescue_from Exception, :with => :error_500
+    rescue_from ActionController::RoutingError, :with => :error_404
+    rescue_from ActionController::UnknownController, :with => :error_40
+    rescue_from AbstractController::ActionNotFound, :with => :error_404
+    rescue_from ActiveRecord::RecordNotFound, :with => :error_404
+  end
+
   private
 
   # Populates the session id with your preference zookeeper id
@@ -85,7 +93,6 @@ class ApplicationController < ActionController::Base
   end
 
   ### Application Wide Error Handling ###
-
   #Locks the actions to their defined "formats"
   def lock_down_api
     action = params[:action]
@@ -119,8 +126,5 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  # A 404 rendering helper method
-  def render_404
-    raise ActionController::RoutingError.new('Not Found')
-  end
+
 end

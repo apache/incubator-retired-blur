@@ -2,6 +2,8 @@ class Ability
   include CanCan::Ability
 
   def initialize(user)
+    #Anybody
+    can [:error_404, :error_422, :error_500], :errors
 
     if user # logged in
       # view, edit, and destroy own account

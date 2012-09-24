@@ -84,6 +84,11 @@ BlurAdmin::Application.routes.draw do
 
   resources :audits, :only => [:index]
 
+  #Errors
+  match '/404' => 'errors#error_404'
+  match '/500' => 'errors#error_500'
+  match '/422' => 'errors#error_422'
+
   match 'login' => 'user_sessions#new', :as => :login
   match 'logout' => 'user_sessions#destroy', :as => :logout
   match 'help/:tab' => 'application#help', :as => :help

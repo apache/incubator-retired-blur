@@ -1,0 +1,8 @@
+%html
+  %title Blur Console - Error 500
+  %head
+  %body
+    There was an internal server error
+    - if (current_user && current_user.is?(:admin) && @error != nil)
+      - @error.message
+      - @error.backtrace.each { |line| puts line }

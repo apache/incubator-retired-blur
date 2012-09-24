@@ -16,23 +16,30 @@ package org.apache.blur.thrift;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 public class Connection {
 
-  private int _port;
-  private String _host;
-  private String _proxyHost;
-  private int _proxyPort;
+  private String _host = null;
+  private int _port = -1;
+  private String _proxyHost = null;
+  private int _proxyPort = -1;
   private boolean _proxy = false;
 
   public Connection(String connectionStr) {
     int index = connectionStr.indexOf(':');
     if (index >= 0) {
-      _host = connectionStr.substring(0, index);
-      _port = Integer.parseInt(connectionStr.substring(index + 1));
-      // @TODO make this connection parse proxy ports as well
+      int slashIndex = connectionStr.indexOf('/');
+      if (slashIndex > 0) {
+        _host = connectionStr.substring(0, index);
+        _port = Integer.parseInt(connectionStr.substring(index + 1, slashIndex));
+        int indexOfProxyPort = connectionStr.indexOf(':', slashIndex);
+        _proxyHost = connectionStr.substring(slashIndex + 1, indexOfProxyPort);
+        _proxyPort = Integer.parseInt(connectionStr.substring(indexOfProxyPort + 1));
+      } else {
+        _host = connectionStr.substring(0, index);
+        _port = Integer.parseInt(connectionStr.substring(index + 1));
+      }
     } else {
-      throw new RuntimeException("Connection string of [" + connectionStr + "] does not match 'host1:port,host2:port,...'");
+      throw new RuntimeException("Connection string of [" + connectionStr + "] does not match 'host1:port' or 'host1:port/proxyhost1:proxyport'");
     }
   }
 

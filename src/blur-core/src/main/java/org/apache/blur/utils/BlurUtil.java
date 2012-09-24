@@ -89,7 +89,6 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 
-
 public class BlurUtil {
 
   private static final Object[] EMPTY_OBJECT_ARRAY = new Object[] {};
@@ -641,10 +640,28 @@ public class BlurUtil {
   }
 
   public static void validateShardCount(int shardCount, FileSystem fileSystem, Path tablePath) throws IOException {
+    // Check that all the directories that should be are in fact there.
+    for (int i = 0; i < shardCount; i++) {
+      Path path = new Path(tablePath, BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i));
+      if (!fileSystem.exists(path)) {
+        LOG.error("Path [{0}] for shard [{1}] does not exist.", path, i);
+        throw new RuntimeException("Path [" + path + "] for shard [" + i + "] does not exist.");
+      }
+    }
+
     FileStatus[] listStatus = fileSystem.listStatus(tablePath);
-    if (listStatus.length != shardCount) {
-      LOG.error("Number of directories in table path [" + tablePath + "] does not match definition of [" + shardCount + "] shard count.");
-      throw new RuntimeException("Number of directories in table path [" + tablePath + "] does not match definition of [" + shardCount + "] shard count.");
+    for (FileStatus fs : listStatus) {
+      Path path = fs.getPath();
+      String name = path.getName();
+      if (name.startsWith(SHARD_PREFIX)) {
+        int index = name.indexOf('-');
+        String shardIndexStr = name.substring(index+1);
+        int shardIndex = Integer.parseInt(shardIndexStr);
+        if (shardIndex >= shardCount) {
+          LOG.error("Number of directories in table path [" + path + "] exceeds definition of [" + shardCount + "] shard count.");
+          throw new RuntimeException("Number of directories in table path [" + path + "] exceeds definition of [" + shardCount + "] shard count.");
+        }
+      }
     }
   }
 

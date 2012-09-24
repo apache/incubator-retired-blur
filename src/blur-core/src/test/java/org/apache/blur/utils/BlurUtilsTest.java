@@ -21,7 +21,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -29,7 +31,9 @@ import org.apache.blur.lucene.LuceneConstant;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RowMutation;
-import org.apache.blur.utils.BlurUtil;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -42,7 +46,6 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.junit.Test;
-
 
 public class BlurUtilsTest {
 
@@ -130,6 +133,87 @@ public class BlurUtilsTest {
 
     assertEquals("should find record-2", rm2, BlurUtil.findRecordMutation(row, r));
     assertNull("should not find record-99", BlurUtil.findRecordMutation(row, r2));
+  }
+
+  @Test
+  public void testValidateShardCount() throws IOException {
+    File file = new File("./tmp/ValidateShardCount-test");
+    rm(file);
+    Path path = new Path(file.toURI());
+    Configuration conf = new Configuration();
+    FileSystem fileSystem = path.getFileSystem(conf);
+    fileSystem.mkdirs(path);
+    int shardCount = 10;
+    createShardDirs(shardCount, fileSystem, path);
+    BlurUtil.validateShardCount(shardCount, fileSystem, path);
+  }
+
+  @Test
+  public void testValidateShardCountExtraDir() throws IOException {
+    File file = new File("./tmp/ValidateShardCount-test");
+    rm(file);
+    Path path = new Path(file.toURI());
+    Configuration conf = new Configuration();
+    FileSystem fileSystem = path.getFileSystem(conf);
+    fileSystem.mkdirs(path);
+    int shardCount = 10;
+    createShardDirs(shardCount, fileSystem, path);
+    fileSystem.mkdirs(new Path(path, "logs"));
+    BlurUtil.validateShardCount(shardCount, fileSystem, path);
+  }
+
+  @Test
+  public void testValidateShardCountTooFew() throws IOException {
+    File file = new File("./tmp/ValidateShardCount-test");
+    rm(file);
+    Path path = new Path(file.toURI());
+    Configuration conf = new Configuration();
+    FileSystem fileSystem = path.getFileSystem(conf);
+    fileSystem.mkdirs(path);
+    int shardCount = 10;
+    createShardDirs(shardCount - 1, fileSystem, path);
+    try {
+      BlurUtil.validateShardCount(shardCount, fileSystem, path);
+      fail();
+    } catch (Exception e) {
+      // Should throw exception
+    }
+  }
+  
+  @Test
+  public void testValidateShardCountTooMany() throws IOException {
+    File file = new File("./tmp/ValidateShardCount-test");
+    rm(file);
+    Path path = new Path(file.toURI());
+    Configuration conf = new Configuration();
+    FileSystem fileSystem = path.getFileSystem(conf);
+    fileSystem.mkdirs(path);
+    int shardCount = 10;
+    createShardDirs(shardCount + 1, fileSystem, path);
+    try {
+      BlurUtil.validateShardCount(shardCount, fileSystem, path);
+      fail();
+    } catch (Exception e) {
+      // Should throw exception
+    }
+  }
+
+  private void rm(File file) {
+    if (!file.exists()) {
+      return;
+    }
+    if (file.isDirectory()) {
+      for (File f : file.listFiles()) {
+        rm(f);
+      }
+    }
+    file.delete();
+  }
+
+  private void createShardDirs(int shardCount, FileSystem fileSystem, Path path) throws IOException {
+    for (int i = 0; i < shardCount; i++) {
+      fileSystem.mkdirs(new Path(path, BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i)));
+    }
   }
 
   private IndexReader getReader() throws CorruptIndexException, LockObtainFailedException, IOException {

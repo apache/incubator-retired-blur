@@ -53,9 +53,10 @@ class ApplicationController < ActionController::Base
   unless Rails.application.config.consider_all_requests_local
     rescue_from Exception, :with => :error_500
     rescue_from ActionController::RoutingError, :with => :error_404
-    rescue_from ActionController::UnknownController, :with => :error_40
+    rescue_from ActionController::UnknownController, :with => :error_404
     rescue_from AbstractController::ActionNotFound, :with => :error_404
     rescue_from ActiveRecord::RecordNotFound, :with => :error_404
+    rescue_from ActionController::InvalidAuthenticityToken, :with => :error_422
   end
 
   private

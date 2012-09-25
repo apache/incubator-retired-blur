@@ -73,6 +73,12 @@ public class BlurClient {
    * Blur.Iface client = Blur.getClient(&quot;controller1:40010,controller2:40010&quot;);
    * </pre>
    * 
+   * The connectionStr also supports passing a proxy host/port (e.g. a SOCKS proxy configuration):
+   * 
+   * <pre>
+   * Blur.Iface client = Blur.getClient("host1:port/proxyhost1:proxyport");
+   * </pre>
+   * 
    * @param connectionStr
    *          - a comma-delimited list of host:port of Shard Controllers.
    * @return

@@ -20,7 +20,6 @@ package org.apache.blur.lucene.search;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLongArray;
 
-import org.apache.blur.lucene.search.FacetQuery;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -36,7 +35,6 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
@@ -77,8 +75,9 @@ public class FacetQueryTest {
     FacetQuery facetQuery = new FacetQuery(bq, facets, counts);
 
     IndexSearcher indexSearcher = new IndexSearcher(reader);
-    TopDocs topDocs = indexSearcher.search(facetQuery, 10);
+    indexSearcher.search(facetQuery, 10);
 
+    //@TODO add actual assertion
     for (int i = 0; i < counts.length(); i++) {
       System.out.println(counts.get(i));
     }

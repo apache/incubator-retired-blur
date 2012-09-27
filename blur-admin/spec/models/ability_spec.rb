@@ -50,6 +50,7 @@ describe Ability do
       #filter out actions available to non logged in users
       @actions[:user_sessions] -= [:create, :new]
       @actions[:users]         -= [:new, :create]
+      @actions[:errors]        -= [:error_404, :error_422, :error_500]
 
       @actions.each do |controller, actions|
         actions.each {|action| @ability.should_not be_able_to action, controller}
@@ -112,6 +113,8 @@ describe Ability do
       #filter out actions available to non logged in users
       @actions[:users] -= [:show, :edit, :destroy, :update]
       @actions[:user_sessions] -= [:destroy]
+      @actions[:errors]        -= [:error_404, :error_422, :error_500]
+
 
       @actions.each do |controller, actions|
         actions.each {|action| @ability.should_not be_able_to action, controller}

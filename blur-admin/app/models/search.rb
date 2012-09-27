@@ -14,8 +14,8 @@ class Search < ActiveRecord::Base
                       :uuid         => Time.now.to_i*1000 + rand(1000),
                       :selector     => selector,
                       :userContext  => User.find(user_id).username)
-    b.simpleQuery.postSuperFilter = post_filter if !post_filter.empty?
-    b.simpleQuery.preSuperFilter = pre_filter if !pre_filter.empty?
+    b.simpleQuery.postSuperFilter = post_filter if !post_filter.blank?
+    b.simpleQuery.preSuperFilter = pre_filter if !pre_filter.blank?
     b
   end
 

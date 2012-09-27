@@ -70,16 +70,17 @@ public class BlurShardServer extends TableAdmin implements Iface {
   private String _cluster = BlurConstants.BLUR_CLUSTER;
   private int _dataFetchThreadCount = 32;
 
-  public void init() {
+  public void init() throws BlurException {
     _queryCache = new QueryCache("shard-cache", _maxQueryCacheElements, _maxTimeToLive);
     _dataFetch = Executors.newThreadPool("data-fetch-", _dataFetchThreadCount);
     
-    if(_configuration != null) {
+    if(_configuration == null) {
+      throw new BException("Configuration must be set before initialization.");
+    }
       _cluster = _configuration.get(BlurConstants.BLUR_CLUSTER_NAME, BlurConstants.BLUR_CLUSTER);
       _dataFetchThreadCount = _configuration.getInt(BLUR_SHARD_DATA_FETCH_THREAD_COUNT, 8);
       _maxQueryCacheElements = _configuration.getInt(BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS, 128);
       _maxTimeToLive = _configuration.getLong(BLUR_SHARD_CACHE_MAX_TIMETOLIVE, TimeUnit.MINUTES.toMillis(1));      
-    }
   }
 
   @Override

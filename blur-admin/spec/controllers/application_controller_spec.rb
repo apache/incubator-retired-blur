@@ -137,12 +137,6 @@ describe ApplicationController do
       controller.session.should_not_receive :[]=
       controller.send(:set_zookeeper, '1')
     end
-
-    it "render_404 should render a routing error" do 
-      expect {
-        controller.send(:error_404)
-      }.to raise_error ActionController::RoutingError
-    end
   end
 
   describe "lock down api" do 

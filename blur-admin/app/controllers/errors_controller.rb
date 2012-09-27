@@ -8,7 +8,7 @@ class ErrorsController < ApplicationController
     else
       @not_found_path = "The file"
     end
-    render :error_404, :layout => false, :status => 404
+    render :error_404, :layout => false, :status => :not_found
   end
 
   def error_500(exception = nil)

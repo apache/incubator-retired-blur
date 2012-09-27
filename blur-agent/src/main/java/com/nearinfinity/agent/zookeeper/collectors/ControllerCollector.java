@@ -31,6 +31,7 @@ public class ControllerCollector extends Collector {
 			getJdbc().update(
 					"update blur_controllers set status = 0 where node_name not in ('"
 							+ StringUtils.join(controllers, "','") + "') and zookeeper_id = ?", zkId);
+			//Mark notification for offline controllers
 		}
 	}
 

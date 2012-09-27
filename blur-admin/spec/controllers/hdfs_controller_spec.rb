@@ -129,10 +129,10 @@ describe HdfsController do
         get :mkdir, :id => @hdfs.id, :fs_path => '/', :folder => 'folder', :format => :json
       end
 
-      it "renders nothing" do
+      it "renders an empty json object" do
         HdfsThriftClient.should_receive(:client).with("#{@hdfs.host}:#{@hdfs.port}")
         get :mkdir, :id => @hdfs.id, :fs_path => '/', :folder => 'folder', :format => :json
-        response.body.should be_blank
+        response.body.should == {}.to_json
       end
 
       it "logs an audit event" do
@@ -169,10 +169,10 @@ describe HdfsController do
         get :move_file, :id => @hdfs.id, :from => '/', :to => '/folder/', :format => :json
       end
 
-      it "renders nothing" do
+      it "renders a blank json object" do
         HdfsThriftClient.should_receive(:client).with("#{@hdfs.host}:#{@hdfs.port}")
         get :move_file, :id => @hdfs.id, :from => '/', :to => '/folder/', :format => :json
-        response.body.should be_blank
+        response.body.should == {}.to_json
       end
 
       it "logs an audit event" do
@@ -191,10 +191,10 @@ describe HdfsController do
         get :delete_file, :id => @hdfs.id, :path => '/path/', :format => :json
       end
 
-      it "renders nothing" do
+      it "renders a blank json object" do
         HdfsThriftClient.should_receive(:client).with("#{@hdfs.host}:#{@hdfs.port}")
         get :delete_file, :id => @hdfs.id, :path => '/path/', :format => :json
-        response.body.should be_blank
+        response.body.should == {}.to_json
       end
 
       it "logs an audit event" do

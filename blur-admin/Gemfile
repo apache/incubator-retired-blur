@@ -24,6 +24,7 @@ end
 group :development, :test do
   gem 'rspec-rails'
   gem 'capybara'
+  gem 'capybara-webkit'
   gem 'ci_reporter'
   gem 'rails-erd'
   gem 'factory_girl_rails'

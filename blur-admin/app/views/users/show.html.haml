@@ -46,7 +46,7 @@
                   =option
     #zookeeper-pref.span6
       %h3 Zookeeper Preferences
-      - options = ["Default", "Choose Zookeeper", " Use Last Zookeper"]
+      - options = ["Default", "Choose Zookeeper", " Use Last Zookeeper"]
       %select#zookeeper_pref
         - options.each_with_index do |option, index|
           %option{ :value => index, :selected => (:selected if @zookeeper_preference.name == index.to_s) }

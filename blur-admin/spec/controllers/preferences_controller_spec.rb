@@ -33,10 +33,10 @@ describe PreferencesController do
                       :value => 'test', :name => 'test', :format => :json
       end
 
-      it "should render nothing" do
+      it "should render a blank json object" do
         @preference.stub!(:try)
         put :update, :user_id => @user.id, :pref_type => 'column', :format => :json
-        response.body.should be_blank
+        response.body.should == {}.to_json
       end
     end
   end

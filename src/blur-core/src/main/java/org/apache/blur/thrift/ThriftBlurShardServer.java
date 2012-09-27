@@ -17,6 +17,7 @@ package org.apache.blur.thrift;
  * limitations under the License.
  */
 import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER_NAME;
+import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
@@ -183,6 +184,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexServer.setBlurMetrics(blurMetrics);
     indexServer.setCache(cache);
     indexServer.setClusterStatus(clusterStatus);
+    indexServer.setClusterName(configuration.get(BLUR_CLUSTER_NAME, BLUR_CLUSTER));
     indexServer.setConfiguration(config);
     indexServer.setNodeName(nodeName);
     indexServer.setRefresher(refresher);
@@ -209,10 +211,8 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.setIndexManager(indexManager);
     shardServer.setZookeeper(zooKeeper);
     shardServer.setClusterStatus(clusterStatus);
-    shardServer.setDataFetchThreadCount(configuration.getInt(BLUR_SHARD_DATA_FETCH_THREAD_COUNT, 8));
-    shardServer.setMaxQueryCacheElements(configuration.getInt(BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS, 128));
-    shardServer.setMaxTimeToLive(configuration.getLong(BLUR_SHARD_CACHE_MAX_TIMETOLIVE, TimeUnit.MINUTES.toMillis(1)));
     shardServer.setQueryChecker(queryChecker);
+    shardServer.setConfiguration(configuration);
     shardServer.init();
 
     Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(blurMetrics, shardServer, Iface.class);

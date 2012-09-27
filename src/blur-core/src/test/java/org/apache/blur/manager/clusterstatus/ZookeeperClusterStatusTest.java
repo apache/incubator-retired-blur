@@ -183,9 +183,15 @@ public class ZookeeperClusterStatusTest {
   public void testIsEnabledEnabledTable() throws KeeperException, InterruptedException {
     createTable("enabledtable", true);
     assertTrue(clusterStatus.isEnabled(false, DEFAULT, "enabledtable"));
-    assertTrue(clusterStatus.isEnabled(true, DEFAULT, "enabledtable"));
+  
+    new WaitForAnswerToBeCorrect(20L) {
+      @Override
+      public Object run() {
+        return clusterStatus.isEnabled(true, DEFAULT, "enabledtable");
+      }
+    }.test(true);
   }
-
+  
   private void createTable(String name) throws KeeperException, InterruptedException {
     createTable(name, true);
   }

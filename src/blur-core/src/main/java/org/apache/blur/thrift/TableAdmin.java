@@ -308,6 +308,10 @@ public abstract class TableAdmin implements Iface {
   public void setZookeeper(ZooKeeper zookeeper) {
     _zookeeper = zookeeper;
   }
+  
+  public void setConfiguration(BlurConfiguration config) {
+    _configuration = config;
+  }
 
   @Override
   public Map<String, String> configuration() throws BlurException, TException {

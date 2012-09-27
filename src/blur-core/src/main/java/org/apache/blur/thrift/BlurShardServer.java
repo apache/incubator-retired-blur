@@ -16,6 +16,10 @@ package org.apache.blur.thrift;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIMETOLIVE;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_DATA_FETCH_THREAD_COUNT;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -65,9 +70,17 @@ public class BlurShardServer extends TableAdmin implements Iface {
   private String _cluster = BlurConstants.BLUR_CLUSTER;
   private int _dataFetchThreadCount = 32;
 
-  public void init() {
+  public void init() throws BlurException {
     _queryCache = new QueryCache("shard-cache", _maxQueryCacheElements, _maxTimeToLive);
     _dataFetch = Executors.newThreadPool("data-fetch-", _dataFetchThreadCount);
+    
+    if(_configuration == null) {
+      throw new BException("Configuration must be set before initialization.");
+    }
+      _cluster = _configuration.get(BlurConstants.BLUR_CLUSTER_NAME, BlurConstants.BLUR_CLUSTER);
+      _dataFetchThreadCount = _configuration.getInt(BLUR_SHARD_DATA_FETCH_THREAD_COUNT, 8);
+      _maxQueryCacheElements = _configuration.getInt(BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS, 128);
+      _maxTimeToLive = _configuration.getLong(BLUR_SHARD_CACHE_MAX_TIMETOLIVE, TimeUnit.MINUTES.toMillis(1));      
   }
 
   @Override
@@ -319,5 +332,9 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   public void setDataFetchThreadCount(int dataFetchThreadCount) {
     _dataFetchThreadCount = dataFetchThreadCount;
+  }
+  
+  public void setConfiguration(BlurConfiguration conf) {
+    _configuration = conf;
   }
 }

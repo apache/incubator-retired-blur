@@ -22,10 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.manager.IndexManager;
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.writer.BlurIndex;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.search.Similarity;
 import org.junit.After;
@@ -37,7 +39,7 @@ public class BlurShardServerTest {
   private BlurShardServer blurShardServer;
 
   @Before
-  public void setUp() {
+  public void setUp() throws BlurException, IOException {
     IndexServer indexServer = getIndexServer();
     IndexManager indexManager = getIndexManager();
     indexManager.setIndexServer(indexServer);
@@ -46,6 +48,7 @@ public class BlurShardServerTest {
     blurShardServer = new BlurShardServer();
     blurShardServer.setIndexManager(indexManager);
     blurShardServer.setIndexServer(indexServer);
+    blurShardServer.setConfiguration(new BlurConfiguration());
     blurShardServer.init();
   }
 

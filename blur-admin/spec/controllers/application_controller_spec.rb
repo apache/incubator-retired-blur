@@ -140,7 +140,7 @@ describe ApplicationController do
 
     it "render_404 should render a routing error" do 
       expect {
-        controller.send(:render_404)
+        controller.send(:error_404)
       }.to raise_error ActionController::RoutingError
     end
   end

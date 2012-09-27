@@ -207,7 +207,6 @@ $(document).ready(function() {
       tree.reload();
       tree.enableUpdate(prevMode);
     }
-
     if (data.super_query) {
       $('#search_row').prop('checked', true);
       $('#search_record').prop('checked', false);
@@ -235,6 +234,12 @@ $(document).ready(function() {
     }
     if (data.return_record) {
       $('#return_record').click();
+    }
+    if (data.pre_filter){
+      $('#pre_filter').val(data.pre_filter);
+    }
+    if (data.post_filter){
+      $('#post_filter').val(data.post_filter);
     }
     //check everything in the tree
     raw_columns = data.column_object;

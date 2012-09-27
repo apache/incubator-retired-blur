@@ -68,7 +68,17 @@
                 %tr.filter
                   %td Fetch:
                   %td 
-                    = number_field_tag :result_count, 10, :min => 0                                          
+                    = number_field_tag :result_count, 10, :min => 0
+                %tr
+                  %td Pre-filter String
+                %tr
+                  %td{:colspan => 2}
+                    %input#pre_filter{:class => :filter_text, :type => :text, :value => '', :name => :pre_filter} 
+                %tr
+                  %td Post-filter String
+                %tr
+                  %td{:colspan => 2}
+                    %input#post_filter{:class => :filter_text, :type => :text, :value => '', :name => :post_filter}                                        
         #saved
           .header
             Saved

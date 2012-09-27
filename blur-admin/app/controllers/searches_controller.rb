@@ -56,7 +56,10 @@ class SearchesController < ApplicationController
                           :offset           => params[:offset].to_i,
                           :user_id          => current_user.id,
                           :query            => params[:query_string],
-                          :blur_table_id    => params[:blur_table])
+                          :blur_table_id    => params[:blur_table],
+                          :pre_filter       => params[:pre_filter],
+                          :post_filter      => params[:post_filter]
+                         )
     search.column_object = params[:column_data]
 
     #use the model to begin building the blurquery

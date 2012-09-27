@@ -2,7 +2,9 @@
   %title Blur Console - Error 500
   %head
   %body
-    There was an internal server error
+    %h1 We're sorry, but there was an error with our server.
+    %img{:src => image_path('server_error.png')}
     - if (current_user && current_user.is?(:admin) && @error != nil)
+      #error_message
       - @error.message
       - @error.backtrace.each { |line| puts line }

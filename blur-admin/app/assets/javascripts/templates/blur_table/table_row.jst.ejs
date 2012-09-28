@@ -11,7 +11,7 @@
   </td>
   <td class='blur_table_name'>
     <%= table.get('table_name') %>
-    <i class="icon-exclamation-sign queries-running-icon" style="<% if (!table.get('queried_recently')) { %><%= 'display:none' %><% } %>"></i>
+    <i class="icon-exclamation-sign queries-running-icon" title="Has been queried within last 5 minutes" style="<% if (!table.get('queried_recently')) { %><%= 'display:none' %><% } %>"></i>
   </td>
   <td class='comment_row' title= "<%= table.get('comments')%>" >
     <%if (table.get('comments') != null) { %>

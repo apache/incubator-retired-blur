@@ -22,7 +22,7 @@
 			- User::ROLES.each do |role|
 				%li
 					- if role == "admin" && current_user == user
-						= check_box_tag "user[roles][]", role, user.is?(role), :id => 'user_role_' + role, :disabled => true
+						= check_box_tag "user[roles][]", role, user.is?(role), :id => 'user_role_' + role, :style => 'display:none'
 					- else
 						= check_box_tag "user[roles][]", role, user.is?(role), :id => 'user_role_' + role
 					%span

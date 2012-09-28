@@ -29,7 +29,7 @@ describe "Admin" do
   context "A user is being edited" do
     before(:each) do
       visit users_path
-      click_on 'Edit'
+      click_link 'Edit'
     end
     it "should render the edit user form" do
       current_path.should == edit_user_path(@user.id)
@@ -49,25 +49,25 @@ describe "Admin" do
     it "should allow a user's permissions to be changed" do
       uncheck('user_role_searcher')
       click_on('Save')
-      click_on('Edit')
+      click_link('Edit')
       page.should have_field('user_role_searcher', :checked => false)
     end
     it "should allow a user's username to be changed" do
       fill_in 'user_username', :with => "Test"
       click_on 'Save'
-      click_on 'Edit'
+      click_link 'Edit'
       find_field('user_username').value.should == "Test"
     end
     it "should allow a user's name to be changed" do
       fill_in 'user_name', :with =>'Test'
       click_on 'Save'
-      click_on 'Edit'
+      click_link 'Edit'
       find_field('user_name').value.should == 'Test'
     end
     it "should allow a user's email to be changed" do
       fill_in 'user_email', :with => "test@test.com"
       click_on 'Save'
-      click_on 'Edit'
+      click_link 'Edit'
       find_field('user_email').value.should == "test@test.com"
     end
     it "should allow a user's password to be changed" do
@@ -124,7 +124,6 @@ describe "Admin" do
       create_a_user
     end
     it "should delete a user", js: true do
-      #save_and_open_page
       click_on 'Delete'
       #Capybara does not support confirmation boxes through rails so just have to assume that the user clicks yes
       page.evaluate_script('window.confirm = function() { return true; }')

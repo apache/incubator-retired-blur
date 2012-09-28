@@ -21,7 +21,10 @@
 		= f.toggles 'Roles' do
 			- User::ROLES.each do |role|
 				%li
-					= check_box_tag "user[roles][]", role, user.is?(role), :id => 'user_role_' + role
+					- if role == "admin" && current_user == user
+						= check_box_tag "user[roles][]", role, user.is?(role), :id => 'user_role_' + role, :disabled => true
+					- else
+						= check_box_tag "user[roles][]", role, user.is?(role), :id => 'user_role_' + role
 					%span
 						= role.to_s.humanize
 	- if current_user

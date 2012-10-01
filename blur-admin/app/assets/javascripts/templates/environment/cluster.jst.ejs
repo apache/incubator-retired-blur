@@ -1,4 +1,6 @@
-<td><%= cluster.get('name') %></td>
+<td><%= cluster.get('name') %>
+ <i class="icon-exclamation-sign queries-running-icon" title="Has been queried within last 5 minutes" style="<% if (!cluster.get('cluster_queried')) { %><%= 'display:none' %><% } %>"></i>
+ </td>
 <td><%= cluster.get('shard_blur_version') %></td>
 <td><%= cluster.safe_mode() %></td>
 <td>

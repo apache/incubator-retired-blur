@@ -10,6 +10,11 @@
     serial_properties["can_update"] = self.can_update
     serial_properties["shard_blur_version"] = self.shard_version
     serial_properties["shard_status"] = self.shard_status
+    cluster_queried = false
+    self.blur_tables.each do |table| 
+      cluster_queried = true if table.as_json["queried_recently"] == true
+    end
+    serial_properties["cluster_queried"] = cluster_queried
     serial_properties
   end
 

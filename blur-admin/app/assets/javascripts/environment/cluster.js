@@ -13,7 +13,7 @@ var ClusterModel = Backbone.Model.extend({
       this.destroy({
         success: function(){
           Notification("Successfully forgot the Cluster!", true);
-        }, 
+        },
         error: function(){
           Notification("Failed to forget the Cluster", false);
         }
@@ -34,7 +34,7 @@ var ClusterCollection = Backbone.StreamCollection.extend({
     });
     this.on('remove', function(cluster){
       cluster.view.remove();
-      if (this.length == 0){
+      if (this.length === 0){
         this.view.no_children();
       }
     });

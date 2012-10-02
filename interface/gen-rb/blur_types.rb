@@ -736,7 +736,8 @@ module Blur
         BLOCKCACHING => {:type => ::Thrift::Types::BOOL, :name => 'blockCaching', :default => true},
         # 
         BLOCKCACHINGFILETYPES => {:type => ::Thrift::Types::SET, :name => 'blockCachingFileTypes', :element => {:type => ::Thrift::Types::STRING}},
-        # 
+        # If a table is set to be readonly, that means that mutates through Thrift are NOT allowed.  However
+        # updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.
         READONLY => {:type => ::Thrift::Types::BOOL, :name => 'readOnly', :default => false},
         # Sets what column families and columns to prefetch into block cache on shard open.
         COLUMNPRECACHE => {:type => ::Thrift::Types::STRUCT, :name => 'columnPreCache', :class => Blur::ColumnPreCache}

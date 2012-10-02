@@ -104,7 +104,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
    */
   public Set<String> blockCachingFileTypes; // required
   /**
-   * 
+   * If a table is set to be readonly, that means that mutates through Thrift are NOT allowed.  However
+   * updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.
    */
   public boolean readOnly; // required
   /**
@@ -159,7 +160,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
      */
     BLOCK_CACHING_FILE_TYPES((short)11, "blockCachingFileTypes"),
     /**
-     * 
+     * If a table is set to be readonly, that means that mutates through Thrift are NOT allowed.  However
+     * updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.
      */
     READ_ONLY((short)12, "readOnly"),
     /**
@@ -751,14 +753,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
   }
 
   /**
-   * 
+   * If a table is set to be readonly, that means that mutates through Thrift are NOT allowed.  However
+   * updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.
    */
   public boolean isReadOnly() {
     return this.readOnly;
   }
 
   /**
-   * 
+   * If a table is set to be readonly, that means that mutates through Thrift are NOT allowed.  However
+   * updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.
    */
   public TableDescriptor setReadOnly(boolean readOnly) {
     this.readOnly = readOnly;

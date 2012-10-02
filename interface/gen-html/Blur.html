@@ -395,7 +395,8 @@ through records of a row, this count will reflect the entire row.
 </td><td>default</td><td>1</td></tr>
 <tr><td>11</td><td>blockCachingFileTypes</td><td><code>set&lt;<code>string</code>&gt;</code></td><td>
 </td><td>default</td><td></td></tr>
-<tr><td>12</td><td>readOnly</td><td><code>bool</code></td><td>
+<tr><td>12</td><td>readOnly</td><td><code>bool</code></td><td>If a table is set to be readonly, that means that mutates through Thrift are NOT allowed.  However
+updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.
 </td><td>default</td><td>0</td></tr>
 <tr><td>13</td><td>columnPreCache</td><td><code><a href="Blur.html#Struct_ColumnPreCache">ColumnPreCache</a></code></td><td>Sets what column families and columns to prefetch into block cache on shard open.
 </td><td>default</td><td></td></tr>

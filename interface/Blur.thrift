@@ -625,7 +625,8 @@ struct TableDescriptor {
    */
   11:set<string> blockCachingFileTypes,
   /**
-   *
+   * If a table is set to be readonly, that means that mutates through Thrift are NOT allowed.  However 
+   * updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.
    */
   12:bool readOnly = 0,
   /**

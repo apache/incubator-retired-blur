@@ -49,7 +49,7 @@ class ApplicationController < ActionController::Base
     end
     @current_zookeeper
   end
-
+  #Catches application errors and redirects to the custom error pages
   unless Rails.application.config.consider_all_requests_local
     rescue_from Exception, :with => :error_500
     rescue_from ActionController::RoutingError, :with => :error_404

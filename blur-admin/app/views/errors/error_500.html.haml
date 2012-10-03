@@ -1,6 +1,7 @@
 %title Blur Console - Error 500
 #error_wrapper
-  %h1 We're sorry, but there was an error with our server.
+  %h2 We're sorry, but there was an error with our server.
+  %h3 Please go back or refresh the page.
   %img{:src => image_path('server_error.png')}
   - if (current_user && current_user.is?(:admin) && @error != nil)
     #error_message

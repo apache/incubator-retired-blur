@@ -327,7 +327,6 @@ $(document).ready(function() {
     evt.preventDefault();
     var files = evt.originalEvent.dataTransfer.files; //FileList object
     var count = files.length;
-    //console.log($('.currentDrop').prev().find('.osxSelected').attr('hdfs_path'));
     if (count > 0)
       handleFiles(files);
   }
@@ -341,7 +340,7 @@ if (window.File && window.FileReader && window.FileList && window.Blob){
   $('#hdfs_browser').on('drop', '.innerWindow', drop);
 
 }
-//Deals with the form data
+//Posts the form data to the controller
 var handleFiles = function(files) {
   var id =$('#top_level .osxSelected').attr('hdfs_id');
   var target_path = $('.currentDrop').prev().find('.osxSelected').attr('hdfs_path');

@@ -144,7 +144,9 @@ class SearchesController < ApplicationController
                         :offset           => params[:offset].to_i,
                         :user_id          => current_user.id,
                         :query            => params[:query_string],
-                        :blur_table_id    => params[:blur_table])
+                        :blur_table_id    => params[:blur_table],
+                        :pre_filter       => params[:pre_filter],
+                        :post_filter      => params[:post_filter])
     search.column_object = params[:column_data]
     search.save
     @searches = current_user.searches.reverse
@@ -164,7 +166,9 @@ class SearchesController < ApplicationController
                         :user_id            => current_user.id,
                         :query              => params[:query_string],
                         :column_object      => params[:column_data],
-                        :blur_table_id      => params[:blur_table])
+                        :blur_table_id      => params[:blur_table],
+                        :pre_filter       => params[:pre_filter],
+                        :post_filter      => params[:post_filter])
     respond_with do |format|
       format.json { render :json => {} }
     end

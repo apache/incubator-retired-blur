@@ -14,7 +14,7 @@
 	<parent>
 		<groupId>org.apache.blur</groupId>
 		<artifactId>blur</artifactId>
-		<version>0.1.3</version>
+		<version>0.1.4-final</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.apache.blur</groupId>
@@ -32,17 +32,17 @@
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-core</artifactId>
-			<version>0.1.3</version>
+			<version>0.1.4-final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-store</artifactId>
-			<version>0.1.3</version>
+			<version>0.1.4-final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-util</artifactId>
-			<version>0.1.3</version>
+			<version>0.1.4-final</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>

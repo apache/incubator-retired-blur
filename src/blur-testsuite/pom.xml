@@ -22,7 +22,7 @@ under the License.
 	<parent>
 		<groupId>org.apache.blur</groupId>
 		<artifactId>blur</artifactId>
-		<version>0.1.3</version>
+		<version>0.1.4-final</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.apache.blur</groupId>
@@ -34,17 +34,17 @@ under the License.
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-core</artifactId>
-			<version>0.1.3</version>
+			<version>0.1.4-final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-mapred</artifactId>
-			<version>0.1.3</version>
+			<version>0.1.4-final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-thrift</artifactId>
-			<version>0.1.3</version>
+			<version>0.1.4-final</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

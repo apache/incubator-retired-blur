@@ -23,7 +23,7 @@ under the License.
 	<groupId>org.apache.blur</groupId>
 	<artifactId>blur</artifactId>
 	<packaging>pom</packaging>
-	<version>0.1.3</version>
+	<version>0.1.4-final</version>
 	<name>Blur</name>
 	
 	<modules>
@@ -34,8 +34,7 @@ under the License.
 		<module>blur-mapred</module>
 		<module>blur-util</module>
 		<module>blur-gui</module>
-		<module>blur-jdbc</module>
-                <module>blur-testsuite</module>
+		<module>blur-testsuite</module>
 	</modules>
 	
 	<dependencies>

@@ -1,9 +1,5 @@
 package com.nearinfinity.agent.cleaners;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.DataAccessException;
@@ -11,11 +7,6 @@ import com.nearinfinity.agent.connections.interfaces.QueryDatabaseInterface;
 
 public class QueriesCleaner implements Runnable {
   private static final Log log = LogFactory.getLog(QueriesCleaner.class);
-
-  // Time in hours (removes TTL hour old queries)
-  private final int timeToLive = -2;
-  // Time in minutes
-  private final int runningTimeToLive = -2;
 
   private final QueryDatabaseInterface database;
 
@@ -26,20 +17,8 @@ public class QueriesCleaner implements Runnable {
   @Override
   public void run() {
     try {
-      Calendar now = Calendar.getInstance();
-      TimeZone z = now.getTimeZone();
-      now.add(Calendar.MILLISECOND, -(z.getOffset(new Date().getTime())));
-
-      Calendar ttlHoursAgo = Calendar.getInstance();
-      ttlHoursAgo.setTimeInMillis(now.getTimeInMillis());
-      ttlHoursAgo.add(Calendar.HOUR_OF_DAY, timeToLive);
-
-      Calendar ttlMinutesAgo = Calendar.getInstance();
-      ttlMinutesAgo.setTimeInMillis(now.getTimeInMillis());
-      ttlMinutesAgo.add(Calendar.MINUTE, runningTimeToLive);
-
-      int deletedQueries = this.database.deleteOldQueries(ttlHoursAgo.getTime());
-      int expiredQueries = this.database.expireOldQueries(ttlHoursAgo.getTime(), now.getTime());
+      int deletedQueries = this.database.deleteOldQueries();
+      int expiredQueries = this.database.expireOldQueries();
       log.info("Removed " + deletedQueries + " queries and " + "Expired " + expiredQueries
           + " queries, in this pass!");
     } catch (DataAccessException e) {

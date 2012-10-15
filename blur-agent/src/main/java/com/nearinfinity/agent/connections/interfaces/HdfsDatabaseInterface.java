@@ -14,5 +14,5 @@ public interface HdfsDatabaseInterface {
       long missingBlocksCount, long totalNodes, long liveNodes, long deadNodes, Date time,
       String host, int port, int hdfsId);
 
-  int deleteOldStats(Date threshold);
+  int deleteOldStats();
 }

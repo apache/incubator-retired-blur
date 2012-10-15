@@ -25,18 +25,18 @@ import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class SchemaCollector implements Runnable {
   private static final Log log = LogFactory.getLog(SchemaCollector.class);
-  
+
   private final Iface blurConnection;
   private final String tableName;
-  private final Integer clusterId;
+  private final int tableId;
   private final TableDescriptor descriptor;
   private final TableDatabaseInterface database;
 
-  public SchemaCollector(Iface connection, String tableName, Integer clusterId,
+  public SchemaCollector(Iface connection, String tableName, int tableId,
       TableDescriptor descriptor, TableDatabaseInterface database) {
     this.blurConnection = connection;
     this.tableName = tableName;
-    this.clusterId = clusterId;
+    this.tableId = tableId;
     this.descriptor = descriptor;
     this.database = database;
   }
@@ -115,7 +115,7 @@ public class SchemaCollector implements Runnable {
           }
         }
       }
-      this.database.updateTableSchema(this.tableName, this.clusterId, new ObjectMapper()
+      this.database.updateTableSchema(this.tableId, new ObjectMapper()
           .writeValueAsString(columnDefs), this.descriptor.getAnalyzerDefinition()
           .getFullTextAnalyzerClassName());
     } catch (BlurException e) {

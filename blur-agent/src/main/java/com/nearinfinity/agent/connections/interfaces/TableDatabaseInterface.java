@@ -1,11 +1,12 @@
 package com.nearinfinity.agent.connections.interfaces;
 
 public interface TableDatabaseInterface {
-  void updateTableSchema(final String tableName, final Integer clusterId, final String schema,
-      final String tableAnalyzer);
+  int getTableId(int clusterId, String tableName);
+  
+  void updateTableSchema(final int tableId, final String schema, final String tableAnalyzer);
 
-  void updateTableServer(final String tableName, final Integer clusterId, final String server);
+  void updateTableServer(final int tableId, final String server);
 
-  void updateTableStats(final String tableName, final Integer clusterId, final Long tableBytes,
-      final Long tableQueries, final Long tableRecordCount, final Long tableRowCount);
+  void updateTableStats(final int tableId, final Long tableBytes, final Long tableQueries,
+      final Long tableRecordCount, final Long tableRowCount);
 }

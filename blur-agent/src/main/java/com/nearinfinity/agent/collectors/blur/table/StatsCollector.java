@@ -12,33 +12,33 @@ import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class StatsCollector implements Runnable {
   private static final Log log = LogFactory.getLog(StatsCollector.class);
-  
+
   private final Iface blurConnection;
   private final String tableName;
-  private final Integer clusterId;
+  private final int tableId;
   private final TableDatabaseInterface database;
 
-  public StatsCollector(Iface connection, String tableName, Integer clusterId,
+  public StatsCollector(Iface connection, String tableName, int tableId,
       TableDatabaseInterface database) {
     this.blurConnection = connection;
     this.tableName = tableName;
-    this.clusterId = clusterId;
+    this.tableId = tableId;
     this.database = database;
   }
 
   @Override
   public void run() {
     try {
-      TableStats tableStats = blurConnection.getTableStats(tableName);
+      TableStats tableStats = blurConnection.getTableStats(this.tableName);
 
       if (tableStats == null) {
         throw new NullReturnedException("No table statistics were returned!");
       }
 
-      this.database.updateTableStats(tableName, clusterId, tableStats.getBytes(),
-          tableStats.getQueries(), tableStats.getRecordCount(), tableStats.getRowCount());
+      this.database.updateTableStats(tableId, tableStats.getBytes(), tableStats.getQueries(),
+          tableStats.getRecordCount(), tableStats.getRowCount());
     } catch (BlurException e) {
-      log.error("Unable to get table stats for table [" + tableName + "].", e);
+      log.error("Unable to get table stats for table [" + tableId + "].", e);
     } catch (DataAccessException e) {
       log.error("An error occurred while writing the server to the database.", e);
     } catch (NullReturnedException e) {

@@ -18,9 +18,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.nearinfinity.agent.cleaners.CleanersThreadManager;
-import com.nearinfinity.agent.collectors.blur.BlurThreadManager;
-import com.nearinfinity.agent.collectors.hdfs.HdfsThreadManager;
+import com.nearinfinity.agent.cleaners.AgentCleaners;
+import com.nearinfinity.agent.collectors.blur.BlurCollector;
+import com.nearinfinity.agent.collectors.hdfs.HdfsCollector;
 import com.nearinfinity.agent.collectors.zookeeper.ZookeeperInstance;
 import com.nearinfinity.agent.connections.AgentDatabaseConnection;
 import com.nearinfinity.agent.connections.HdfsDatabaseConnection;
@@ -73,7 +73,7 @@ public class Agent {
   }
 
   private void setupCleaners(JdbcTemplate jdbc, List<String> activeCollectors) {
-    new Thread(new CleanersThreadManager(activeCollectors, jdbc)).start();
+    new Thread(new AgentCleaners(activeCollectors, jdbc)).start();
   }
 
   private void setupBlur(Properties props, JdbcTemplate jdbc, List<String> activeCollectors) {
@@ -82,7 +82,7 @@ public class Agent {
       final String zookeeperName = blurEntry.getKey();
       final String connection = blurEntry.getValue();
       // manages query and table info from blur
-      new Thread(new BlurThreadManager(zookeeperName, connection, activeCollectors,
+      new Thread(new BlurCollector(zookeeperName, connection, activeCollectors,
           this.databaseConnection, jdbc)).start();
     }
   }
@@ -96,7 +96,7 @@ public class Agent {
       final String user = props.getProperty("hdfs." + name + ".login.user");
       try {
         // manages HDFS info
-        new Thread(new HdfsThreadManager(name, defaultUri, thriftUri, user, activeCollectors,
+        new Thread(new HdfsCollector(name, defaultUri, thriftUri, user, activeCollectors,
             new HdfsDatabaseConnection(jdbc))).start();
       } catch (HdfsThreadException e) {
         log.error("The collector for hdfs [" + name + "] will not execute.");

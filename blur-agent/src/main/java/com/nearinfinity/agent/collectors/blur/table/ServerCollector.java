@@ -18,17 +18,17 @@ import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class ServerCollector implements Runnable {
   private static final Log log = LogFactory.getLog(ServerCollector.class);
-  
+
   private final Iface blurConnection;
   private final String tableName;
-  private final Integer clusterId;
+  private final int tableId;
   private final TableDatabaseInterface database;
 
-  public ServerCollector(Iface connection, String tableName, Integer clusterId,
+  public ServerCollector(Iface connection, String tableName, int tableId,
       TableDatabaseInterface database) {
     this.blurConnection = connection;
     this.tableName = tableName;
-    this.clusterId = clusterId;
+    this.tableId = tableId;
     this.database = database;
   }
 
@@ -40,8 +40,7 @@ public class ServerCollector implements Runnable {
         throw new NullReturnedException("No server layout was returned!");
       }
       Map<String, ArrayList<String>> serverLayout = getServerLayout(shardServerLayout);
-      this.database.updateTableServer(tableName, clusterId,
-          new ObjectMapper().writeValueAsString(serverLayout));
+      this.database.updateTableServer(tableId, new ObjectMapper().writeValueAsString(serverLayout));
 
     } catch (BlurException e) {
       log.error("Unable to get shard server layout for table [" + tableName + "].", e);

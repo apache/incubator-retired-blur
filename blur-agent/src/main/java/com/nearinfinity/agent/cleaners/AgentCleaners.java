@@ -8,13 +8,13 @@ import com.nearinfinity.agent.Agent;
 import com.nearinfinity.agent.connections.HdfsDatabaseConnection;
 import com.nearinfinity.agent.connections.QueryDatabaseConnection;
 
-public class CleanersThreadManager implements Runnable {
+public class AgentCleaners implements Runnable {
 
   private final boolean cleanQueries;
   private final boolean cleanHdfsStats;
   private final JdbcTemplate jdbc;
 
-  public CleanersThreadManager(final List<String> activeCollectors, JdbcTemplate jdbc) {
+  public AgentCleaners(final List<String> activeCollectors, JdbcTemplate jdbc) {
     this.cleanQueries = activeCollectors.contains("queries");
     this.cleanHdfsStats = activeCollectors.contains("hdfs");
     this.jdbc = jdbc;

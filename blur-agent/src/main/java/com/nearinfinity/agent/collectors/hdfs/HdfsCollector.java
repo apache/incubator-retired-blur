@@ -10,8 +10,8 @@ import com.nearinfinity.agent.Agent;
 import com.nearinfinity.agent.connections.interfaces.HdfsDatabaseInterface;
 import com.nearinfinity.agent.exceptions.HdfsThreadException;
 
-public class HdfsThreadManager implements Runnable {
-  private static final Log log = LogFactory.getLog(HdfsThreadManager.class);
+public class HdfsCollector implements Runnable {
+  private static final Log log = LogFactory.getLog(HdfsCollector.class);
 
   private final URI defaultUri;
   private final String hdfsName;
@@ -19,7 +19,7 @@ public class HdfsThreadManager implements Runnable {
   private final HdfsDatabaseInterface databaseConnection;
   private final boolean collectHdfs;
 
-  public HdfsThreadManager(final String hdfsName, final String defaultUri, final String thriftUri,
+  public HdfsCollector(final String hdfsName, final String defaultUri, final String thriftUri,
       final String user, final List<String> activeCollectors, final HdfsDatabaseInterface databaseConnection)
       throws HdfsThreadException {
     try {

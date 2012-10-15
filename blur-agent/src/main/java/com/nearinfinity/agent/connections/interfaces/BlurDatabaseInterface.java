@@ -9,11 +9,14 @@ import com.nearinfinity.agent.exceptions.ZookeeperNameCollisionException;
 import com.nearinfinity.agent.exceptions.ZookeeperNameMissingException;
 
 public interface BlurDatabaseInterface {
+  String getConnectionString(String zookeeperName);
+
   String getZookeeperId(final String zookeeperName) throws ZookeeperNameMissingException,
       ZookeeperNameCollisionException;
 
-  List<Map<String, Object>> getClusters(final String zookeeperId);
+  List<Map<String, Object>> getClusters(final int zookeeperId);
 
   Map<String, Object> getExistingTable(final String table, final Integer clusterId)
       throws TableMissingException, TableCollisionException;
+
 }

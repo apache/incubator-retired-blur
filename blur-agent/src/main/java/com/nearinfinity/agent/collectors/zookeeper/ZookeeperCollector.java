@@ -16,23 +16,22 @@ import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.nearinfinity.agent.types.InstanceManager;
-import com.nearinfinity.agent.types.ZookeeperConnection;
+import com.nearinfinity.agent.connections.interfaces.ZookeeperDatabaseInterface;
 
-public class ZookeeperInstance implements Runnable {
-  private ZookeeperConnection connection;
-  
-	private static final Log log = LogFactory.getLog(ZookeeperInstance.class);
+public class ZookeeperCollector implements Runnable {
+	private static final Log log = LogFactory.getLog(ZookeeperCollector.class);
+	
+	private ZooKeeper zookeeper;
 
-	public ZookeeperInstance(String name, String url, JdbcTemplate jdbc, Properties props) {
-	  this.connection = new ZookeeperConnection(name, url, jdbc, props);
+	public ZookeeperCollector(String name, String url, ZookeeperDatabaseInterface jdbc, Properties props) {
+
 	}
 
 	@Override
 	public void run() {
 		CountDownLatch latch = new CountDownLatch(1);
 		while (true) {
-			if (connection.zk == null) {
+			if (zookeeper == null) {
 				try {
 					latch = new CountDownLatch(1);
 					final CountDownLatch watcherLatch = latch;

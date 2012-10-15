@@ -21,11 +21,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import com.nearinfinity.agent.cleaners.AgentCleaners;
 import com.nearinfinity.agent.collectors.blur.BlurCollector;
 import com.nearinfinity.agent.collectors.hdfs.HdfsCollector;
-import com.nearinfinity.agent.collectors.zookeeper.ZookeeperInstance;
-import com.nearinfinity.agent.connections.AgentDatabaseConnection;
+import com.nearinfinity.agent.collectors.zookeeper.ZookeeperCollector;
+import com.nearinfinity.agent.connections.BlurDatabaseConnection;
 import com.nearinfinity.agent.connections.HdfsDatabaseConnection;
 import com.nearinfinity.agent.connections.JdbcConnection;
-import com.nearinfinity.agent.connections.interfaces.AgentDatabaseInterface;
 import com.nearinfinity.agent.exceptions.HdfsThreadException;
 import com.nearinfinity.license.AgentLicense;
 
@@ -35,13 +34,10 @@ public class Agent {
 
   private static final Log log = LogFactory.getLog(Agent.class);
 
-  private final AgentDatabaseInterface databaseConnection;
-
   private Agent(Properties props) {
 
     // Setup database connection
     JdbcTemplate jdbc = JdbcConnection.createDBConnection(props);
-    this.databaseConnection = new AgentDatabaseConnection(jdbc);
 
     // Verify valid License
     AgentLicense.verifyLicense(props, jdbc);
@@ -62,7 +58,7 @@ public class Agent {
     Properties configProps = loadConfigParams(args);
     setupLogger(configProps);
     new Agent(configProps);
-    
+
     // Sleep the main thread while the background threads
     // are working
     try {
@@ -83,7 +79,7 @@ public class Agent {
       final String connection = blurEntry.getValue();
       // manages query and table info from blur
       new Thread(new BlurCollector(zookeeperName, connection, activeCollectors,
-          this.databaseConnection, jdbc)).start();
+          new BlurDatabaseConnection(jdbc), jdbc)).start();
     }
   }
 
@@ -111,8 +107,8 @@ public class Agent {
           "zk.instances").split("\\|")));
       for (String zkInstance : zooKeeperInstances) {
         String zkUrl = props.getProperty("zk." + zkInstance + ".url");
-        new Thread(new ZookeeperInstance(zkInstance, zkUrl, jdbc, props), "Zookeeper-" + zkInstance)
-            .start();
+        new Thread(new ZookeeperCollector(zkInstance, zkUrl, jdbc, props), "Zookeeper-"
+            + zkInstance).start();
       }
     }
   }

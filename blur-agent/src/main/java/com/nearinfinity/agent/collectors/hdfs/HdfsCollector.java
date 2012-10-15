@@ -20,8 +20,8 @@ public class HdfsCollector implements Runnable {
   private final boolean collectHdfs;
 
   public HdfsCollector(final String hdfsName, final String defaultUri, final String thriftUri,
-      final String user, final List<String> activeCollectors, final HdfsDatabaseInterface databaseConnection)
-      throws HdfsThreadException {
+      final String user, final List<String> activeCollectors,
+      final HdfsDatabaseInterface databaseConnection) throws HdfsThreadException {
     try {
       this.defaultUri = new URI(defaultUri);
       this.hdfsName = hdfsName;
@@ -44,9 +44,8 @@ public class HdfsCollector implements Runnable {
   public void run() {
     while (true) {
       if (this.collectHdfs) {
-        new Thread(
-            new HdfsStatsCollector(this.hdfsName, defaultUri, this.user, this.databaseConnection),
-            "Hdfs Collector - " + this.hdfsName).start();
+        new Thread(new HdfsStatsCollector(this.hdfsName, defaultUri, this.user,
+            this.databaseConnection), "Hdfs Collector - " + this.hdfsName).start();
       }
 
       try {

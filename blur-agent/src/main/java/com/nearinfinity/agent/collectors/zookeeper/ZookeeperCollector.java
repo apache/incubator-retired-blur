@@ -1,25 +1,16 @@
 package com.nearinfinity.agent.collectors.zookeeper;
 
 import java.io.IOException;
-import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.KeeperException.SessionExpiredException;
-import org.apache.zookeeper.KeeperException.SessionMovedException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooKeeper;
-import org.springframework.jdbc.core.JdbcTemplate;
-
 import com.nearinfinity.agent.Agent;
-import com.nearinfinity.agent.collectors.blur.BlurCollector;
-import com.nearinfinity.agent.connections.BlurDatabaseConnection;
-import com.nearinfinity.agent.connections.interfaces.TableDatabaseInterface;
 import com.nearinfinity.agent.connections.interfaces.ZookeeperDatabaseInterface;
 
 public class ZookeeperCollector implements Runnable {
@@ -62,8 +53,7 @@ public class ZookeeperCollector implements Runnable {
         } catch (IOException e) {
           log.error("A zookeeper [" + this.name + "] connection could not be created, waiting 30 seconds.");
           closeZookeeper();
-          // Sleep the thread for 30secs to give the Zookeeper a chance to
-          // become available.
+          // Sleep the thread for 30secs to give the Zookeeper a chance to become available.
           try {
             Thread.sleep(30000);
             continue;

@@ -1,8 +1,6 @@
 package com.nearinfinity.agent.collectors.zookeeper;
 
 import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.KeeperException;
@@ -26,18 +24,25 @@ public class ClusterCollector implements Runnable {
 
   @Override
   public void run() {
-    List<String> onlineClusters = zookeeper.getChildren("/blur/clusters", false);
+    List<String> onlineClusters;
+    try {
+      onlineClusters = zookeeper.getChildren("/blur/clusters", false);
+    } catch (Exception e) {
+      log.error("Error getting clusters from zookeeper in ClusterCollector.", e);
+      return;
+    }
+    
     for (String cluster : onlineClusters) {
       try {
         boolean safeMode = isClusterInSafeMode(cluster);
         int clusterId = this.database.insertOrUpdateCluster(safeMode, cluster, zookeeperId);
   
-        new Thread(new ShardCollector(this.id, this.zookeeper, this.database)).start();
-        new Thread(new TableCollector(this.id, this.zookeeper, this.database)).start();
+        new Thread(new ShardCollector(clusterId, cluster, this.zookeeper, this.database)).start();
+        new Thread(new TableCollector(clusterId, cluster, this.zookeeper, this.database)).start();
       } catch (KeeperException e) {
-        log.error("Error talking to zookeeper.", e);
+        log.error("Error talking to zookeeper in ClusterCollector.", e);
       } catch (InterruptedException e) {
-        log.error("Zookeeper session expired.", e);
+        log.error("Zookeeper session expired in ClusterCollector.", e);
       }
     }
     

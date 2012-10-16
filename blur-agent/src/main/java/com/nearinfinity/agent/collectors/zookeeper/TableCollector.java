@@ -2,68 +2,49 @@ package com.nearinfinity.agent.collectors.zookeeper;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.ZooKeeper;
 
-import com.nearinfinity.agent.collectors.connections.interfaces.Collector;
-import com.nearinfinity.agent.types.InstanceManager;
+import com.nearinfinity.agent.connections.interfaces.ZookeeperDatabaseInterface;
 
-public class TableCollector extends Collector {
-	private String clusterName;
-	private int clusterId;
+public class TableCollector implements Runnable {
+  private static final Log log = LogFactory.getLog(TableCollector.class);
 
-//	private static final Log log = LogFactory.getLog(TableCollector.class);
+  private final int clusterId;
+  private final String clusterName;
+  private final ZooKeeper zookeeper;
+  private final ZookeeperDatabaseInterface database;
 
-	private TableCollector(InstanceManager manager, int clusterId, String clusterName) throws KeeperException,
-			InterruptedException {
-		super(manager);
-		this.clusterId = clusterId;
-		this.clusterName = clusterName;
+  public TableCollector(int clusterId, String clusterName, ZooKeeper zookeeper, ZookeeperDatabaseInterface database) {
+    this.clusterId = clusterId;
+    this.clusterName = clusterName;
+    this.zookeeper = zookeeper;
+    this.database = database;
+  }
 
-		updateTables();
-	}
+  @Override
+  public void run() {
+    try {
+      List<String> tables = this.zookeeper.getChildren("/blur/clusters/" + clusterName + "/tables", false);
+      this.database.markOfflineTables(tables, this.clusterId);
+      updateOnlineTables(tables);
+    } catch (KeeperException e) {
+      log.error("Error talking to zookeeper in TableCollector.", e);
+    } catch (InterruptedException e) {
+      log.error("Zookeeper session expired in TableCollector.", e);
+    }
+  }
 
-	private void updateTables() throws KeeperException, InterruptedException {
-		List<String> tables = getTables();
-		markOfflineTables(tables);
-		updateOnlineTables(tables);
-	}
+  private void updateOnlineTables(List<String> tables) throws KeeperException, InterruptedException {
+    for (String table : tables) {
+      String tablePath = "/blur/clusters/" + clusterName + "/tables/" + table;
 
-	private List<String> getTables() throws KeeperException, InterruptedException {
-		return getZk().getChildren("/blur/clusters/" + clusterName + "/tables", false);
-	}
+      String uri = new String(this.zookeeper.getData(tablePath + "/uri", false, null));
+      boolean enabled = this.zookeeper.getChildren(tablePath, false).contains("enabled");
 
-	private void markOfflineTables(List<String> tables) {
-		if (tables.isEmpty()) {
-			getJdbc().update("update blur_tables set status = 0 where cluster_id=?", clusterId);
-		} else {
-			getJdbc().update(
-					"update blur_tables set status = 0 where cluster_id=? and table_name not in ('"
-							+ StringUtils.join(tables, "','") + "')", clusterId);
-		}
-	}
-
-	private void updateOnlineTables(List<String> tables) throws KeeperException, InterruptedException {
-		for (String table : tables) {
-			String tablePath = "/blur/clusters/" + clusterName + "/tables/" + table;
-
-			String uri = new String(getZk().getData(tablePath + "/uri", false, null));
-			boolean enabled = getZk().getChildren(tablePath, false).contains("enabled");
-
-			int updatedCount = getJdbc().update(
-					"update blur_tables set table_uri=?, status=? where table_name=? and cluster_id=?", uri,
-					(enabled ? 4 : 2), table, clusterId);
-
-			if (updatedCount == 0) {
-				getJdbc().update(
-						"insert into blur_tables (table_name, table_uri, status, cluster_id) values (?, ?, ?, ?)",
-						table, uri, (enabled ? 4 : 2), clusterId);
-			}
-		}
-	}
-
-	public static void collect(InstanceManager manager, int clusterId, String clusterName) throws KeeperException,
-			InterruptedException {
-		new TableCollector(manager, clusterId, clusterName);
-	}
+      this.database.updateOnlineTable(table, this.clusterId, uri, enabled);
+    }
+  }
 }

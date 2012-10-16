@@ -85,8 +85,8 @@ public class Agent {
     Map<String, Map<String, String>> hdfsInstances = loadHdfsInstances(props);
     for (Map<String, String> instance : hdfsInstances.values()) {
       final String name = instance.get("name");
-      final String thriftUri = instance.get("uri.thrift");
-      final String defaultUri = instance.get("uri.default");
+      final String thriftUri = instance.get("url.thrift");
+      final String defaultUri = instance.get("url.default");
       final String user = props.getProperty("hdfs." + name + ".login.user");
       try {
         new Thread(new HdfsCollector(name, defaultUri, thriftUri, user, activeCollectors, new HdfsDatabaseConnection(jdbc))).start();
@@ -102,7 +102,9 @@ public class Agent {
       List<String> zooKeeperInstances = new ArrayList<String>(Arrays.asList(props.getProperty("zk.instances").split("\\|")));
       for (String zkInstance : zooKeeperInstances) {
         String zkUrl = props.getProperty("zk." + zkInstance + ".url");
-        new Thread(new ZookeeperCollector(zkInstance, zkUrl, new ZookeeperDatabaseConnection(jdbc)), "Zookeeper-" + zkInstance).start();
+        String blurConnection = props.getProperty("blur." + zkInstance + ".url");
+        new Thread(new ZookeeperCollector(zkUrl, zkInstance, blurConnection, new ZookeeperDatabaseConnection(jdbc)), "Zookeeper-"
+            + zkInstance).start();
       }
     }
   }

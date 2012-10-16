@@ -4,11 +4,11 @@ import java.util.List;
 
 public interface ZookeeperDatabaseInterface {
 
-  int getZookeeperId(String name);
-
   void setZookeeperOnline(int id);
 
   void setZookeeperOffline(int id);
+  
+  int insertOrUpdateZookeeper(String name, String url, String blurConnection);
 
   int insertOrUpdateCluster(boolean safeMode, String cluster, int zookeeperId);
 

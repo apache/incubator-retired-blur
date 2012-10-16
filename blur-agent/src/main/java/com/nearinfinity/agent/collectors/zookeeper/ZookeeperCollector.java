@@ -24,11 +24,11 @@ public class ZookeeperCollector implements Runnable {
   private final int id;
   private final ZookeeperDatabaseInterface database;
 
-  public ZookeeperCollector(String url, String name, ZookeeperDatabaseInterface database) {
+  public ZookeeperCollector(String url, String name, String blurConnection, ZookeeperDatabaseInterface database) {
     this.url = url;
     this.name = name;
     this.database = database;
-    this.id = database.getZookeeperId(name);
+    this.id = database.insertOrUpdateZookeeper(name, url, blurConnection);
   }
 
   @Override
@@ -37,7 +37,7 @@ public class ZookeeperCollector implements Runnable {
       this.latch = new CountDownLatch(1);
       if (this.zookeeper == null) {
         try {
-          this.zookeeper = new ZooKeeper(url, 3000, new Watcher() {
+          this.zookeeper = new ZooKeeper(this.url, 3000, new Watcher() {
             @Override
             public void process(WatchedEvent event) {
               KeeperState state = event.getState();
@@ -93,7 +93,7 @@ public class ZookeeperCollector implements Runnable {
       log.error("An error occurred while trying to close the zookeeper [" + this.name + "] connection.");
     } finally {
       this.zookeeper = null;
-      this.database.setZookeeperOffline(id);
+      this.database.setZookeeperOffline(this.id);
     }
   }
 }

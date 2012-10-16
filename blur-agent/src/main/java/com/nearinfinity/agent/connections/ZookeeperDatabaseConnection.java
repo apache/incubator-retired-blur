@@ -16,11 +16,6 @@ public class ZookeeperDatabaseConnection implements ZookeeperDatabaseInterface {
   }
 
   @Override
-  public int getZookeeperId(String name) {
-    return this.jdbc.queryForInt("select id from zookeepers where name = ?", name);
-  }
-
-  @Override
   public void setZookeeperOnline(int zookeeperId) {
     this.jdbc.update("update zookeepers set status=? where id=?", 1, zookeeperId);
   }
@@ -28,6 +23,17 @@ public class ZookeeperDatabaseConnection implements ZookeeperDatabaseInterface {
   @Override
   public void setZookeeperOffline(int zookeeperId) {
     this.jdbc.update("update zookeepers set status=? where id=?", 0, zookeeperId);
+  }
+
+  @Override
+  public int insertOrUpdateZookeeper(String name, String url, String blurConnection) {
+    int updatedCount = jdbc.update("update zookeepers set url=?, blur_urls=? where name=?", url, blurConnection, name);
+
+    if (updatedCount == 0) {
+      jdbc.update("insert into zookeepers (name, url, blur_urls) values (?, ?, ?)", name, url, blurConnection);
+    }
+
+    return jdbc.queryForInt("select id from zookeepers where name = ?", name);
   }
 
   @Override

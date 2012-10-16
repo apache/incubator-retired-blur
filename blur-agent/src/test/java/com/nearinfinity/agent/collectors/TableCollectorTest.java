@@ -19,7 +19,7 @@ public class TableCollectorTest extends BlurAgentBaseTestClass {
 	
 	@Test
 	public void testCollector() {
-		TableCollector.startCollecting(MiniCluster.getControllerConnectionStr(), "test", jdbc);
+		// TableCollector.startCollecting(MiniCluster.getControllerConnectionStr(), "test", jdbc);
 	}
 	
 }

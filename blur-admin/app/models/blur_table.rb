@@ -15,12 +15,12 @@ class BlurTable < ActiveRecord::Base
     serial_properties = super(options)
     serial_properties.delete('server')
     serial_properties.delete('table_schema')
-    serial_properties[:queried_recently] = table_query_info['queried_recently']
-    serial_properties[:hosts] = self.hosts
-    serial_properties[:schema] = self.schema
-    serial_properties[:sparkline] = table_query_info['sparkline']
-    serial_properties[:average_queries] = table_query_info['average_queries']
-    serial_properties[:comments] = self.comments
+    serial_properties['queried_recently'] = table_query_info['queried_recently']
+    serial_properties['hosts'] = self.hosts
+    serial_properties['schema'] = self.schema
+    serial_properties['sparkline'] = table_query_info['sparkline']
+    serial_properties['average_queries'] = table_query_info['average_queries']
+    serial_properties['comments'] = self.comments
     serial_properties
   end
 

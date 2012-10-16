@@ -1,2 +1,8 @@
-EXPERIMENTAL BRANCH FOR LEARNING THE AGENT WORKFLOW AND HOW TO TEST THE AGENT
-(Remotely Tracked so Alex and Brandon Can Share Ideas)
+The following tools are included in this repository:
+
+Console:
+    rails application
+        - The admin rails application for administering a Blur instance
+
+    agent
+        - Java agent that collects various information for the admin console

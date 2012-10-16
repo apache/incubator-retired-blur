@@ -11,7 +11,7 @@ class PreferencesController < ApplicationController
     updated_attr[:name] = params['name'] if params[:pref_type] == 'zookeeper'
     @preference.try(:update_attributes, updated_attr)
     respond_with(@preference) do |format|
-      format.json { render :nothing => true }
+      format.json { render :json => {} }
     end
   end
 end

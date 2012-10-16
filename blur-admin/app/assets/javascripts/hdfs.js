@@ -7,7 +7,7 @@
 $(document).ready(function() {
   //document varss
   var delete_file, draw_radial_graph, finishUploading, make_dir, navigateUsingPath, paste_buffer, rightClicked,
-    perform_action, reload_hdfs, show_dir_props, show_hdfs_props, upload, uploadFailed, in_file = [],
+    perform_action, reload_hdfs, show_dir_props, show_hdfs_props, pre_cut_file, cut_file, upload, uploadFailed, in_file = [],
     allSelected = [], columnSelected = [], lastClicked, ctrlHeld = false, shiftHeld = false, historyUndef = false;
 
   //TODO: figure out why this doesn't work
@@ -197,10 +197,14 @@ $(document).ready(function() {
     var to_id = location.attr('hdfs_id');
     var to_path = location.attr('hdfs_path');
     if (from_id === to_id) {
-      $.post(Routes.move_hdfs_path(to_id, {format: 'json'}), {
-          'from': from_path,
-          'to': to_path
-        }, function() {
+      $.ajax({
+        url: Routes.move_hdfs_path(to_id, {format: 'json'}),
+        type: 'POST',
+        data: {
+          from: from_path,
+          to: to_path
+        },
+        success: function(){
           $('#hdfs-dir-context-menu, #hdfs-whitespace-context-menu').disableContextMenuItems('#paste');
           if (!historyUndef) {
             reload_hdfs();
@@ -208,8 +212,11 @@ $(document).ready(function() {
           else {
             reload_hdfs_ff(to_path, to_id);
           }
+        },
+        error: function(xhr, status, error){
+          console.log(status + "  " + error);
         }
-      );
+      });
     }
   };
 
@@ -320,14 +327,16 @@ $(document).ready(function() {
     evt.preventDefault();
     var files = evt.originalEvent.dataTransfer.files; //FileList object
     var count = files.length;
+    //console.log($('.currentDrop').prev().find('.osxSelected').attr('hdfs_path'));
     if (count > 0)
       handleFiles(files);
   }
+
   //Compatability check
 if (window.File && window.FileReader && window.FileList && window.Blob){
 
   $('#hdfs_browser').on('dragenter', '.innerWindow', dragEnter);
-  $('#hdfs_browser').on('dragexit', '.innerWindow', dragExit);
+  $('#hdfs_browser').on('dragleave', '.innerWindow', dragExit);
   $('#hdfs_browser').on('dragover', '.innerWindow', dragOver);
   $('#hdfs_browser').on('drop', '.innerWindow', drop);
 
@@ -346,20 +355,19 @@ var handleFiles = function(files) {
   formData.append("path", target_path);
   formData.append("id", id);
   var xhr = new XMLHttpRequest();
-  xhr.open('POST', "/hdfs/"+id+"/upload", true);
+  xhr.open('POST', Routes.upload_hdfs_path(id), true);
   xhr.onload = function(e){
-    if (this.status == 200)
+    if (this.status != 200)
       console.log("Loaded " + file.name);
   };
   xhr.send(formData);
   if (!historyUndef) {
-        reload_hdfs();
-      }
-      else {
-        reload_hdfs_ff(target_path, id);
-      }
-
-}
+    reload_hdfs();
+  }
+  else {
+    reload_hdfs_ff(target_path, id);
+  }
+};
 //End of DnD Functionality
 
   var upload = function(el) {

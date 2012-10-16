@@ -6,11 +6,11 @@
 				- user.errors.full_messages.each do |msg|
 					%li= msg
 	%label= "Account Information"
-	- fields = { 	:username					=> :text_field,
-			:name						=> :text_field,
-			:email						=> :email_field,
-			:password					=> :password_field,
-			:password_confirmation 			=> :password_field}
+	- fields = {:username					=> :text_field,
+			:name											=> :text_field,
+			:email										=> :email_field,
+			:password									=> :password_field,
+			:password_confirmation 		=> :password_field}
 	- fields.each_pair do |field_name, field_type|
 		- if (!user.new_record? and can? :update, user, field_name)	or ( user.new_record? and can? :create, user, field_name)
 			= f.send field_type, field_name, false, :placeholder => field_name.to_s.humanize
@@ -21,7 +21,7 @@
 		= f.toggles 'Roles' do
 			- User::ROLES.each do |role|
 				%li
-					= check_box_tag "user[roles][]", role, user.is?(role)
+					= check_box_tag "user[roles][]", role, user.is?(role), :id => 'user_role_' + role
 					%span
 						= role.to_s.humanize
 	- if current_user

@@ -3,7 +3,7 @@
 <td><%= cluster.safe_mode() %></td>
 <td>
   <a class="more-shard-info">
-    View Shards
+    <%= cluster.get('shard_status') %>
   </a>
 </td>
 <td>

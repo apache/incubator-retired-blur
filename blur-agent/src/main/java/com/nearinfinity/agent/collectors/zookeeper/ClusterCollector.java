@@ -1,69 +1,70 @@
 package com.nearinfinity.agent.collectors.zookeeper;
 
 import java.util.List;
-import java.util.Map;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
-import com.nearinfinity.agent.collectors.connections.interfaces.Collector;
-import com.nearinfinity.agent.types.InstanceManager;
+import com.nearinfinity.agent.connections.interfaces.ZookeeperDatabaseInterface;
 
-public class ClusterCollector extends Collector {
+public class ClusterCollector implements Runnable {
+  private static final Log log = LogFactory.getLog(ClusterCollector.class);
 
-	private int zkId;
+  private final int zookeeperId;
+  private final ZooKeeper zookeeper;
+  private final ZookeeperDatabaseInterface database;
 
-	private ClusterCollector(InstanceManager manager, int zkId) throws KeeperException, InterruptedException {
-		super(manager);
-		this.zkId = zkId;
-		collect();
-	}
+  public ClusterCollector(int zookeeperId, ZooKeeper zookeeper, ZookeeperDatabaseInterface database) {
+    this.zookeeperId = zookeeperId;
+    this.zookeeper = zookeeper;
+    this.database = database;
+  }
 
-	private void collect() throws KeeperException, InterruptedException {
-		List<String> onlineClusters = getClusters();
-		updateOnlineClusters(onlineClusters);
-	}
+  @Override
+  public void run() {
+    List<String> onlineClusters;
+    try {
+      onlineClusters = zookeeper.getChildren("/blur/clusters", false);
+    } catch (Exception e) {
+      log.error("Error getting clusters from zookeeper in ClusterCollector.", e);
+      return;
+    }
+    
+    for (String cluster : onlineClusters) {
+      try {
+        boolean safeMode = isClusterInSafeMode(cluster);
+        int clusterId = this.database.insertOrUpdateCluster(safeMode, cluster, zookeeperId);
+  
+        new Thread(new ShardCollector(clusterId, cluster, this.zookeeper, this.database)).start();
+        new Thread(new TableCollector(clusterId, cluster, this.zookeeper, this.database)).start();
+      } catch (KeeperException e) {
+        log.error("Error talking to zookeeper in ClusterCollector.", e);
+      } catch (InterruptedException e) {
+        log.error("Zookeeper session expired in ClusterCollector.", e);
+      }
+    }
+    
+  }
 
-	private void updateOnlineClusters(List<String> clusters) throws KeeperException, InterruptedException {
-		for (String cluster : clusters) {
-			boolean safeMode = isClusterInSafeMode(cluster);
-		
-			int updateCount = getJdbc().update("update clusters set safe_mode=? where name=? and zookeeper_id=?", safeMode, cluster, zkId);
-			if(updateCount == 0){
-				getJdbc().update("insert into clusters (name, zookeeper_id, safe_mode) values (?, ?, ?)", cluster, zkId, safeMode);
-			}
-			List<Map<String, Object>> instances = getJdbc().queryForList(
-					"select id from clusters where name = ? and zookeeper_id=?", cluster, zkId);
-			int clusterId = (Integer) instances.get(0).get("ID");
+  private boolean isClusterInSafeMode(String cluster) throws KeeperException, InterruptedException {
+    String blurSafemodePath = "/blur/clusters/" + cluster + "/safemode";
+    Stat stat = this.zookeeper.exists(blurSafemodePath, false);
+    if (stat == null) {
+      return false;
+    }
 
-			ShardCollector.collect(manager, clusterId, cluster);
-			TableCollector.collect(manager, clusterId, cluster);
-		}
-	}
-	
-	private boolean isClusterInSafeMode(String cluster) throws KeeperException, InterruptedException {
-		String blurSafemodePath = "/blur/clusters/" + cluster + "/safemode";
-	      Stat stat = getZk().exists(blurSafemodePath, false);
-	      if (stat == null) {
-	        return false;
-	      }
-	      byte[] data = getZk().getData(blurSafemodePath, false, stat);
-	      if (data == null) {
-	        return false;
-	      }
-	      long timestamp = Long.parseLong(new String(data));
-	      long waitTime = timestamp - System.currentTimeMillis();
-	      if (waitTime > 0) {
-	        return true;
-	      }
-	      return false;
-	}
+    byte[] data = this.zookeeper.getData(blurSafemodePath, false, stat);
+    if (data == null) {
+      return false;
+    }
 
-	private List<String> getClusters() throws KeeperException, InterruptedException {
-		return getZk().getChildren("/blur/clusters", false);
-	}
-
-	public static void collect(InstanceManager manager, int zkId) throws KeeperException, InterruptedException {
-		new ClusterCollector(manager, zkId);
-	}
+    long timestamp = Long.parseLong(new String(data));
+    long waitTime = timestamp - System.currentTimeMillis();
+    if (waitTime > 0) {
+      return true;
+    }
+    return false;
+  }
 }

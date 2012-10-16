@@ -1,4 +1,4 @@
-package com.nearinfinity.agent.collectors.connections;
+package com.nearinfinity.agent.connections;
 
 import java.util.Properties;
 

@@ -25,6 +25,7 @@ import com.nearinfinity.agent.collectors.zookeeper.ZookeeperCollector;
 import com.nearinfinity.agent.connections.BlurDatabaseConnection;
 import com.nearinfinity.agent.connections.HdfsDatabaseConnection;
 import com.nearinfinity.agent.connections.JdbcConnection;
+import com.nearinfinity.agent.connections.ZookeeperDatabaseConnection;
 import com.nearinfinity.agent.exceptions.HdfsThreadException;
 import com.nearinfinity.license.AgentLicense;
 
@@ -42,9 +43,8 @@ public class Agent {
     // Verify valid License
     AgentLicense.verifyLicense(props, jdbc);
 
-    List<String> activeCollectors = props.containsKey("active.collectors") ? new ArrayList<String>(
-        Arrays.asList(props.getProperty("active.collectors").split("\\|")))
-        : new ArrayList<String>();
+    List<String> activeCollectors = props.containsKey("active.collectors") ? new ArrayList<String>(Arrays.asList(props.getProperty(
+        "active.collectors").split("\\|"))) : new ArrayList<String>();
 
     // Setup the collectors
     setupHdfs(props, jdbc, activeCollectors);
@@ -77,9 +77,7 @@ public class Agent {
     for (Map.Entry<String, String> blurEntry : blurInstances.entrySet()) {
       final String zookeeperName = blurEntry.getKey();
       final String connection = blurEntry.getValue();
-      // manages query and table info from blur
-      new Thread(new BlurCollector(zookeeperName, connection, activeCollectors,
-          new BlurDatabaseConnection(jdbc), jdbc)).start();
+      new Thread(new BlurCollector(zookeeperName, connection, activeCollectors, new BlurDatabaseConnection(jdbc), jdbc)).start();
     }
   }
 
@@ -91,9 +89,7 @@ public class Agent {
       final String defaultUri = instance.get("uri.default");
       final String user = props.getProperty("hdfs." + name + ".login.user");
       try {
-        // manages HDFS info
-        new Thread(new HdfsCollector(name, defaultUri, thriftUri, user, activeCollectors,
-            new HdfsDatabaseConnection(jdbc))).start();
+        new Thread(new HdfsCollector(name, defaultUri, thriftUri, user, activeCollectors, new HdfsDatabaseConnection(jdbc))).start();
       } catch (HdfsThreadException e) {
         log.error("The collector for hdfs [" + name + "] will not execute.");
         continue;
@@ -103,12 +99,10 @@ public class Agent {
 
   private void setupZookeeper(Properties props, JdbcTemplate jdbc) {
     if (props.containsKey("zk.instances")) {
-      List<String> zooKeeperInstances = new ArrayList<String>(Arrays.asList(props.getProperty(
-          "zk.instances").split("\\|")));
+      List<String> zooKeeperInstances = new ArrayList<String>(Arrays.asList(props.getProperty("zk.instances").split("\\|")));
       for (String zkInstance : zooKeeperInstances) {
         String zkUrl = props.getProperty("zk." + zkInstance + ".url");
-        new Thread(new ZookeeperCollector(zkInstance, zkUrl, jdbc, props), "Zookeeper-"
-            + zkInstance).start();
+        new Thread(new ZookeeperCollector(zkInstance, zkUrl, new ZookeeperDatabaseConnection(jdbc)), "Zookeeper-" + zkInstance).start();
       }
     }
   }

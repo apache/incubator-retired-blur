@@ -68,16 +68,18 @@ public class BlurCollector implements Runnable {
         }
 
         for (final String tableName : tables) {
+          TableDatabaseConnection tableDatabase = new TableDatabaseConnection(this.jdbc);
+          int tableId = tableDatabase.getTableId(clusterId, tableName);
+
           if (this.collectTables) {
             new Thread(new TableCollector(BlurClient.getClient(resolvedConnection), tableName,
-                clusterId, new TableDatabaseConnection(this.jdbc)), "Table Collector - "
-                + this.zookeeperName).start();
+                tableId, tableDatabase), "Table Collector - " + this.zookeeperName).start();
           }
 
           if (this.collectQueries) {
             new Thread(new QueryCollector(BlurClient.getClient(resolvedConnection), tableName,
-                new QueryDatabaseConnection(this.jdbc)), "Query Collector - " + this.zookeeperName)
-                .start();
+                tableId, new QueryDatabaseConnection(this.jdbc)), "Query Collector - "
+                + this.zookeeperName).start();
           }
         }
       }

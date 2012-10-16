@@ -11,14 +11,15 @@ public class TableCollector implements Runnable {
 
   private final Iface blurConnection;
   private final String tableName;
-  private final int clusterId;
+  private final int tableId;
   private final TableDatabaseInterface database;
 
-  public TableCollector(Iface connection, String tableName, int clusterId, TableDatabaseInterface database) {
+  public TableCollector(Iface connection, String tableName, int tableId,
+      TableDatabaseInterface database) {
     this.blurConnection = connection;
     this.tableName = tableName;
     this.database = database;
-    this.clusterId = clusterId;
+    this.tableId = tableId;
   }
 
   @Override
@@ -32,18 +33,16 @@ public class TableCollector implements Runnable {
             + "], skipping table", e);
         return;
       }
-      
-      int tableId = this.database.getTableId(clusterId, tableName);
 
       /* spawn the different table info collectors */
       if (descriptor.isEnabled) {
-        new Thread(new SchemaCollector(this.blurConnection, tableName, tableId, descriptor,
-            this.database)).start();
+        new Thread(new SchemaCollector(this.blurConnection, this.tableName, this.tableId,
+            descriptor, this.database)).start();
       }
-      new Thread(new ServerCollector(this.blurConnection, tableName, tableId, this.database))
-          .start();
-      new Thread(new StatsCollector(this.blurConnection, tableName, tableId, this.database))
-          .start();
+      new Thread(new ServerCollector(this.blurConnection, this.tableName, this.tableId,
+          this.database)).start();
+      new Thread(new StatsCollector(this.blurConnection, this.tableName, this.tableId,
+          this.database)).start();
 
     } catch (Exception e) {
       log.error("An unknown error occurred.", e);

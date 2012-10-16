@@ -16,98 +16,94 @@ import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.nearinfinity.agent.Agent;
+import com.nearinfinity.agent.collectors.blur.BlurCollector;
+import com.nearinfinity.agent.connections.BlurDatabaseConnection;
+import com.nearinfinity.agent.connections.interfaces.TableDatabaseInterface;
 import com.nearinfinity.agent.connections.interfaces.ZookeeperDatabaseInterface;
 
 public class ZookeeperCollector implements Runnable {
-	private static final Log log = LogFactory.getLog(ZookeeperCollector.class);
-	
-	private ZooKeeper zookeeper;
+  private static final Log log = LogFactory.getLog(ZookeeperCollector.class);
 
-	public ZookeeperCollector(String name, String url, ZookeeperDatabaseInterface jdbc, Properties props) {
+  private ZooKeeper zookeeper;
+  private CountDownLatch latch;
 
-	}
+  private final String url;
+  private final String name;
+  private final int id;
+  private final ZookeeperDatabaseInterface database;
 
-	@Override
-	public void run() {
-		CountDownLatch latch = new CountDownLatch(1);
-		while (true) {
-			if (zookeeper == null) {
-				try {
-					latch = new CountDownLatch(1);
-					final CountDownLatch watcherLatch = latch;
-					zk = new ZooKeeper(connection.url, 3000, new Watcher() {
+  public ZookeeperCollector(String url, String name, ZookeeperDatabaseInterface database) {
+    this.url = url;
+    this.name = name;
+    this.database = database;
+    this.id = database.getZookeeperId(name);
+  }
 
-						@Override
-						public void process(WatchedEvent event) {
-							KeeperState state = event.getState();
-							if (state == KeeperState.Disconnected || state == KeeperState.Expired) {
-								log.warn("zookeeper disconnected event");
-								connection.closeZookeeper();
-							} else if (state == KeeperState.SyncConnected) {
-								watcherLatch.countDown();
-								log.info("zk session established");
-							}
-						}
-					});
-				} catch (IOException e) {
-				  connection.closeZookeeper();
-				}
-			}
+  @Override
+  public void run() {
+    while (true) {
+      this.latch = new CountDownLatch(1);
+      if (this.zookeeper == null) {
+        try {
+          this.zookeeper = new ZooKeeper(url, 3000, new Watcher() {
+            @Override
+            public void process(WatchedEvent event) {
+              KeeperState state = event.getState();
+              if (state == KeeperState.Disconnected || state == KeeperState.Expired) {
+                log.warn("Zookeeper [" + name + "] disconnected event.");
+                closeZookeeper();
+              } else if (state == KeeperState.SyncConnected) {
+                latch.countDown();
+                log.info("Zookeeper [" + name + "] session established.");
+              }
+            }
+          });
+        } catch (IOException e) {
+          log.error("A zookeeper [" + this.name + "] connection could not be created, waiting 30 seconds.");
+          closeZookeeper();
+          // Sleep the thread for 30secs to give the Zookeeper a chance to
+          // become available.
+          try {
+            Thread.sleep(30000);
+            continue;
+          } catch (InterruptedException ex) {
+            log.info("Exiting Zookeeper [" + this.name + "] instance");
+            return;
+          }
+        }
+      }
 
-			if (zk == null) {
-				log.info("Instance is not online.  Going to sleep for 30 seconds and try again.");
-				connection.updateZookeeperStatus(false);
-				try {
-					Thread.sleep(30000);
-				} catch (InterruptedException e) {
-					log.info("Exiting Zookeeper instance");
-					return;
-				}
-			} else {
-				try {
-					if (latch.await(10, TimeUnit.SECONDS)) {
-					  connection.updateZookeeperStatus(true);
-					} else {
-					  connection.closeZookeeper();
-						connection.updateZookeeperStatus(false);
-					}
-				} catch (InterruptedException e1) {
-				  connection.closeZookeeper();
-				  connection.updateZookeeperStatus(false);
-				}
-				if(zk == null){
-					log.info("Instance is not online.  Going to sleep for 30 seconds and try again.");
-					try {
-						Thread.sleep(30000);
-					} catch (InterruptedException e) {
-						// do nothing
-					}
-				} else {
-					try {
-						ControllerCollector.collect(this, instanceId);
-						ClusterCollector.collect(this, instanceId);
-					} catch (KeeperException e) {
-						handleZkError(e);
-					} catch (InterruptedException e) {
-						handleZkError(e);
-					}
-					try {
-						Thread.sleep(10000); // poll every 10 seconds
-					} catch (InterruptedException e) {
-						log.info("Exiting Zookeeper instance");
-						return;
-					}
-				}
-			}
-		}
-	}
+      try {
+        if (latch.await(10, TimeUnit.SECONDS)) {
+          this.database.setZookeeperOnline(this.id);
+          new Thread(new ControllerCollector(this.id, this.zookeeper, this.database)).start();
+          new Thread(new ClusterCollector(this.id, this.zookeeper, this.database)).start();
+        } else {
+          closeZookeeper();
+        }
+      } catch (InterruptedException e) {
+        closeZookeeper();
+      }
 
-	private void handleZkError(Exception e) {
-		connection.closeZookeeper();
-		if (!(e instanceof SessionExpiredException || e instanceof SessionMovedException)) {
-			log.warn("error talking to zookeeper", e);
-		} else {
-			log.warn("zookeeper session expired");
-		}
-	}
+      try {
+        Thread.sleep(Agent.COLLECTOR_SLEEP_TIME);
+      } catch (InterruptedException e) {
+        log.info("Exiting Zookeeper [" + this.name + "] instance");
+        return;
+      }
+    }
+  }
+
+  private void closeZookeeper() {
+    try {
+      this.zookeeper.close();
+      log.warn("Closing the zookeeper [" + this.name + "] connection.");
+    } catch (InterruptedException e) {
+      log.error("An error occurred while trying to close the zookeeper [" + this.name + "] connection.");
+    } finally {
+      this.zookeeper = null;
+      this.database.setZookeeperOffline(id);
+    }
+  }
 }

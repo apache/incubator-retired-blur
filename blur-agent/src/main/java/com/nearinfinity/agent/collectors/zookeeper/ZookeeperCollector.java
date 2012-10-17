@@ -53,7 +53,8 @@ public class ZookeeperCollector implements Runnable {
         } catch (IOException e) {
           log.error("A zookeeper [" + this.name + "] connection could not be created, waiting 30 seconds.");
           closeZookeeper();
-          // Sleep the thread for 30secs to give the Zookeeper a chance to become available.
+          // Sleep the thread for 30secs to give the Zookeeper a chance to
+          // become available.
           try {
             Thread.sleep(30000);
             continue;
@@ -87,8 +88,12 @@ public class ZookeeperCollector implements Runnable {
 
   private void closeZookeeper() {
     try {
-      this.zookeeper.close();
-      log.warn("Closing the zookeeper [" + this.name + "] connection.");
+      if (this.zookeeper != null) {
+        this.zookeeper.close();
+        log.warn("Closing the zookeeper [" + this.name + "] connection.");
+      } else {
+        log.warn("The zookeeper [" + this.name + "] is already closed.");
+      }
     } catch (InterruptedException e) {
       log.error("An error occurred while trying to close the zookeeper [" + this.name + "] connection.");
     } finally {

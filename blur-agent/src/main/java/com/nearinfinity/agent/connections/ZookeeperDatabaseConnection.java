@@ -79,7 +79,7 @@ public class ZookeeperDatabaseConnection implements ZookeeperDatabaseInterface {
   @Override
   public void updateOnlineController(String controller, int zookeeperId, String blurVersion) {
     int updatedCount = this.jdbc.update("update blur_controllers set status=1, blur_version=? where node_name=? and zookeeper_id =?",
-        controller, zookeeperId, blurVersion);
+        blurVersion, controller, zookeeperId);
 
     if (updatedCount == 0) {
       this.jdbc.update("insert into blur_controllers (node_name, status, zookeeper_id, blur_version) values (?, 1, ?, ?)", controller,

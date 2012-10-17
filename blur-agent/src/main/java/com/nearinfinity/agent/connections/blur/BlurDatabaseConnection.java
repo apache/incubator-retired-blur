@@ -1,10 +1,12 @@
 package com.nearinfinity.agent.connections.blur;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONValue;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.nearinfinity.agent.connections.blur.interfaces.BlurDatabaseInterface;
@@ -66,7 +68,11 @@ public class BlurDatabaseConnection implements BlurDatabaseInterface {
 
   @Override
   public int getTableId(int clusterId, String tableName) {
-    return jdbc.queryForInt("select id from blur_tables where cluster_id=? and table_name =?", clusterId, tableName);
+    try {
+      return jdbc.queryForInt("select id from blur_tables where cluster_id=? and table_name =?", clusterId, tableName);
+    } catch (IncorrectResultSizeDataAccessException e) {
+      return -1;
+    }
   }
 
   @Override
@@ -85,11 +91,16 @@ public class BlurDatabaseConnection implements BlurDatabaseInterface {
         tableQueries, tableRecordCount, tableRowCount, tableId });
   }
 
-  public Map<String, Object> getQuery(long UUID) {
-    return this.jdbc.queryForMap("select id, complete_shards, times, state from blur_queries where blur_table_id=? and uuid=?", UUID);
+  public Map<String, Object> getQuery(int tableId, long UUID) {
+    try {
+      return this.jdbc.queryForMap("select id, complete_shards, times, state from blur_queries where blur_table_id=? and uuid=?", tableId,
+          UUID);
+    } catch (IncorrectResultSizeDataAccessException e) {
+      return null;
+    }
   }
 
-  public void createQuery(BlurQueryStatus status, SimpleQuery query, String times, long startTime, int tableId) {
+  public void createQuery(BlurQueryStatus status, SimpleQuery query, String times, Date startTime, int tableId) {
     this.jdbc
         .update(
             "insert into blur_queries (query_string, times, complete_shards, total_shards, state, uuid, created_at, updated_at, blur_table_id, super_query_on, facets, start, fetch_num, pre_filters, post_filters, selector_column_families, selector_columns, userid, record_only) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",

@@ -65,6 +65,9 @@ public class BlurCollector implements Runnable {
 
         for (final String tableName : tables) {
           int tableId = this.database.getTableId(clusterId, tableName);
+          if (tableId == -1){
+            continue;
+          }
 
           if (this.collectTables) {
             new Thread(new TableCollector(BlurClient.getClient(resolvedConnection), tableName,

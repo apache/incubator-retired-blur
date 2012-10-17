@@ -3,6 +3,8 @@ package com.nearinfinity.agent.connections.hdfs;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.nearinfinity.agent.connections.hdfs.interfaces.HdfsDatabaseInterface;
@@ -30,11 +32,11 @@ public class HdfsDatabaseConnection implements HdfsDatabaseInterface {
 
   @Override
   public int getHdfsId(String name) throws NullReturnedException {
-    int id = jdbc.queryForInt("select id from hdfs where name = ?", name);
-    if (id == 0) {
-      throw new NullReturnedException();
+    try {
+      return jdbc.queryForInt("select id from hdfs where name = ?", name);
+    } catch (IncorrectResultSizeDataAccessException e) {
+      return -1;
     }
-    return id;
   }
 
   @Override

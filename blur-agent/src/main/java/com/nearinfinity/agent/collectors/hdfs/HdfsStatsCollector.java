@@ -2,9 +2,6 @@ package com.nearinfinity.agent.collectors.hdfs;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Calendar;
-import java.util.TimeZone;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -17,6 +14,7 @@ import org.springframework.dao.DataAccessException;
 
 import com.nearinfinity.agent.connections.hdfs.interfaces.HdfsDatabaseInterface;
 import com.nearinfinity.agent.exceptions.NullReturnedException;
+import com.nearinfinity.agent.types.TimeHelper;
 
 public class HdfsStatsCollector implements Runnable {
   private final static Log log = LogFactory.getLog(HdfsStatsCollector.class);
@@ -42,6 +40,10 @@ public class HdfsStatsCollector implements Runnable {
   public void run() {
     try {
       int hdfsId = this.database.getHdfsId(this.hdfsName);
+      if (hdfsId == -1){
+        log.error("The HDFS ["+ this.hdfsName +"] does not exist in the database");
+        return;
+      }
 
       // Creates a filesystem connection (if a user is given
       // then the filesystem can get additional information)
@@ -74,13 +76,10 @@ public class HdfsStatsCollector implements Runnable {
           log.warn("Access denied for user. Skipping node information.");
         }
 
-        Calendar cal = Calendar.getInstance();
-        TimeZone z = cal.getTimeZone();
-        cal.add(Calendar.MILLISECOND, -(z.getOffset(cal.getTimeInMillis())));
         this.database.insertHdfsStats(capacity, presentCapacity, remaining, used, logical_used,
             (((1.0 * used) / presentCapacity) * 100), dfs.getUnderReplicatedBlocksCount(),
             dfs.getCorruptBlocksCount(), dfs.getMissingBlocksCount(), totalNodes, liveNodes,
-            deadNodes, cal.getTime(), host, port, hdfsId);
+            deadNodes, TimeHelper.now().getTime(), host, port, hdfsId);
         
         dfs.close();
       }

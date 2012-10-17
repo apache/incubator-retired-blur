@@ -48,7 +48,7 @@ public class QueryCollector implements Runnable {
         continue;
       }
 
-      Map<String, Object> oldQuery = this.database.getQuery(queryUUID);
+      Map<String, Object> oldQuery = this.database.getQuery(this.tableId, queryUUID);
 
       String times;
       try {
@@ -67,7 +67,7 @@ public class QueryCollector implements Runnable {
             TimeHelper.getAdjustedTime(startTimeLong).getTime() :
             TimeHelper.now().getTime();
 
-        this.database.createQuery(status, query, times, startTime.getTime(), this.tableId);
+        this.database.createQuery(status, query, times, startTime, this.tableId);
       } else if (queryHasChanged(status, times, oldQuery)) {
         this.database.updateQuery(status, times, (Integer) oldQuery.get("ID"));
       }

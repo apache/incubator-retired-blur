@@ -37,8 +37,8 @@ public class ClusterCollector implements Runnable {
         boolean safeMode = isClusterInSafeMode(cluster);
         int clusterId = this.database.insertOrUpdateCluster(safeMode, cluster, zookeeperId);
   
-        new Thread(new ShardCollector(clusterId, cluster, this.zookeeper, this.database)).start();
-        new Thread(new TableCollector(clusterId, cluster, this.zookeeper, this.database)).start();
+        new Thread(new ShardCollector(clusterId, cluster, this.zookeeper, this.database), "Shard Collector - " + cluster).start();
+        new Thread(new TableCollector(clusterId, cluster, this.zookeeper, this.database), "Table Collector - " + cluster).start();
       } catch (KeeperException e) {
         log.error("Error talking to zookeeper in ClusterCollector.", e);
       } catch (InterruptedException e) {

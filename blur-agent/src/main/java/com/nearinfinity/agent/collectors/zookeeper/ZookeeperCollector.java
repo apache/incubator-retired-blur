@@ -29,47 +29,55 @@ public class ZookeeperCollector implements Runnable {
     this.name = name;
     this.database = database;
     this.id = database.insertOrUpdateZookeeper(name, url, blurConnection);
+
   }
 
   @Override
   public void run() {
     while (true) {
-      this.latch = new CountDownLatch(1);
-      if (this.zookeeper == null) {
-        try {
-          this.zookeeper = new ZooKeeper(this.url, 3000, new Watcher() {
-            @Override
-            public void process(WatchedEvent event) {
-              KeeperState state = event.getState();
-              if (state == KeeperState.Disconnected || state == KeeperState.Expired) {
-                log.warn("Zookeeper [" + name + "] disconnected event.");
-                closeZookeeper();
-              } else if (state == KeeperState.SyncConnected) {
-                latch.countDown();
-                log.info("Zookeeper [" + name + "] session established.");
-              }
-            }
-          });
-        } catch (IOException e) {
-          log.error("A zookeeper [" + this.name + "] connection could not be created, waiting 30 seconds.");
-          closeZookeeper();
-          // Sleep the thread for 30secs to give the Zookeeper a chance to
-          // become available.
+      try {
+        this.latch = new CountDownLatch(1);
+        if (this.zookeeper != null) {
           try {
-            Thread.sleep(30000);
-            continue;
-          } catch (InterruptedException ex) {
-            log.info("Exiting Zookeeper [" + this.name + "] instance");
-            return;
+            this.zookeeper.close();
+          } catch (InterruptedException e) {}
+        }
+        this.zookeeper = new ZooKeeper(this.url, 3000, new Watcher() {
+          @Override
+          public void process(WatchedEvent event) {
+            KeeperState state = event.getState();
+            if (state == KeeperState.Disconnected || state == KeeperState.Expired) {
+              log.warn("Zookeeper [" + name + "] disconnected event.");
+              closeZookeeper();
+            } else if (state == KeeperState.SyncConnected) {
+              latch.countDown();
+              log.info("Zookeeper [" + name + "] session established.");
+            }
           }
+        });
+      } catch (IOException e) {
+        log.error("A zookeeper [" + this.name + "] connection could not be created, waiting 30 seconds.");
+        closeZookeeper();
+        // Sleep the thread for 30secs to give the Zookeeper a chance to
+        // become available.
+        try {
+          Thread.sleep(30000);
+          continue;
+        } catch (InterruptedException ex) {
+          log.info("Exiting Zookeeper [" + this.name + "] instance");
+          return;
         }
       }
 
       try {
         if (latch.await(10, TimeUnit.SECONDS)) {
           this.database.setZookeeperOnline(this.id);
-          new Thread(new ControllerCollector(this.id, this.zookeeper, this.database)).start();
-          new Thread(new ClusterCollector(this.id, this.zookeeper, this.database)).start();
+          Thread controllerThread = new Thread(new ControllerCollector(this.id, this.zookeeper, this.database));
+          Thread clusterThread = new Thread(new ClusterCollector(this.id, this.zookeeper, this.database));
+          controllerThread.start();
+          clusterThread.start();
+          controllerThread.join();
+          clusterThread.join();
         } else {
           closeZookeeper();
         }

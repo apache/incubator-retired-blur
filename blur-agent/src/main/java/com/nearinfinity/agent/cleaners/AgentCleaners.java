@@ -22,12 +22,12 @@ public class AgentCleaners implements Runnable {
     while (true) {
       if (this.cleanQueries) {
         new Thread(new QueriesCleaner(this.database),
-            "Query Cleaner Started").start();
+            "Query Cleaner").start();
       }
 
       if (this.cleanHdfsStats) {
         new Thread(new HdfsStatsCleaner(this.database),
-            "Hdfs Stats Cleaner Started").start();
+            "Hdfs Stats Cleaner").start();
       }
 
       try {

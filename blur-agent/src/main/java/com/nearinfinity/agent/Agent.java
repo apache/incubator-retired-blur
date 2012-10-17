@@ -24,6 +24,7 @@ import com.nearinfinity.agent.collectors.hdfs.HdfsCollector;
 import com.nearinfinity.agent.collectors.zookeeper.ZookeeperCollector;
 import com.nearinfinity.agent.connections.JdbcConnection;
 import com.nearinfinity.agent.connections.blur.BlurDatabaseConnection;
+import com.nearinfinity.agent.connections.cleaners.CleanerDatabaseConnection;
 import com.nearinfinity.agent.connections.hdfs.HdfsDatabaseConnection;
 import com.nearinfinity.agent.connections.zookeeper.ZookeeperDatabaseConnection;
 import com.nearinfinity.agent.exceptions.HdfsThreadException;
@@ -69,7 +70,7 @@ public class Agent {
   }
 
   private void setupCleaners(JdbcTemplate jdbc, List<String> activeCollectors) {
-    new Thread(new AgentCleaners(activeCollectors, jdbc)).start();
+    new Thread(new AgentCleaners(activeCollectors, new CleanerDatabaseConnection(jdbc)), "Agent Cleaner Thread").start();
   }
 
   private void setupBlur(Properties props, JdbcTemplate jdbc, List<String> activeCollectors) {
@@ -77,7 +78,7 @@ public class Agent {
     for (Map.Entry<String, String> blurEntry : blurInstances.entrySet()) {
       final String zookeeperName = blurEntry.getKey();
       final String connection = blurEntry.getValue();
-      new Thread(new BlurCollector(zookeeperName, connection, activeCollectors, new BlurDatabaseConnection(jdbc), jdbc)).start();
+      new Thread(new BlurCollector(zookeeperName, connection, activeCollectors, new BlurDatabaseConnection(jdbc), jdbc), "Blur Collector thread - " + zookeeperName).start();
     }
   }
 
@@ -89,7 +90,7 @@ public class Agent {
       final String defaultUri = instance.get("url.default");
       final String user = props.getProperty("hdfs." + name + ".login.user");
       try {
-        new Thread(new HdfsCollector(name, defaultUri, thriftUri, user, activeCollectors, new HdfsDatabaseConnection(jdbc))).start();
+        new Thread(new HdfsCollector(name, defaultUri, thriftUri, user, activeCollectors, new HdfsDatabaseConnection(jdbc)), "Hdfs Collector - " + name).start();
       } catch (HdfsThreadException e) {
         log.error("The collector for hdfs [" + name + "] will not execute.");
         continue;

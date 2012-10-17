@@ -68,13 +68,13 @@ public class BlurCollector implements Runnable {
 
           if (this.collectTables) {
             new Thread(new TableCollector(BlurClient.getClient(resolvedConnection), tableName,
-                tableId, this.database), "Table Collector - " + this.zookeeperName).start();
+                tableId, this.database), "Table Collector - " + tableName).start();
           }
 
           if (this.collectQueries) {
             new Thread(new QueryCollector(BlurClient.getClient(resolvedConnection), tableName,
                 tableId, this.database), "Query Collector - "
-                + this.zookeeperName).start();
+                + tableName).start();
           }
         }
       }

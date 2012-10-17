@@ -38,12 +38,12 @@ public class TableCollector implements Runnable {
       /* spawn the different table info collectors */
       if (descriptor.isEnabled) {
         new Thread(new SchemaCollector(this.blurConnection, this.tableName, this.tableId,
-            descriptor, this.database)).start();
+            descriptor, this.database), "Table Schema Collector - " + this.tableName).start();
       }
       new Thread(new ServerCollector(this.blurConnection, this.tableName, this.tableId,
-          this.database)).start();
+          this.database), "Table Server Collector - " + this.tableName).start();
       new Thread(new StatsCollector(this.blurConnection, this.tableName, this.tableId,
-          this.database)).start();
+          this.database), "Table Stats Collector - " + this.tableName).start();
 
     } catch (Exception e) {
       log.error("An unknown error occurred.", e);

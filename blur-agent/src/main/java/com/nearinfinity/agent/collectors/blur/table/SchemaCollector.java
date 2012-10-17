@@ -46,7 +46,7 @@ public class SchemaCollector implements Runnable {
     try {
       Schema schema = null;
       schema = blurConnection.schema(tableName);
-      if (schema != null && descriptor != null) {
+      if (schema == null || descriptor == null) {
         throw new NullReturnedException("No Schema or Descriptor Defined!");
       }
 

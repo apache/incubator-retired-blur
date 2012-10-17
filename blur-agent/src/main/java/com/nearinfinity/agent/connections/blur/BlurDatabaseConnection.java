@@ -1,6 +1,5 @@
 package com.nearinfinity.agent.connections.blur;
 
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
@@ -20,9 +19,6 @@ import com.nearinfinity.blur.thrift.generated.SimpleQuery;
 public class BlurDatabaseConnection implements BlurDatabaseInterface {
 
   private final JdbcTemplate jdbc;
-
-  private final int expireThreshold = -2;
-  private final int deleteThreshold = -2;
 
   public BlurDatabaseConnection(JdbcTemplate jdbc) {
     this.jdbc = jdbc;
@@ -87,29 +83,6 @@ public class BlurDatabaseConnection implements BlurDatabaseInterface {
   public void updateTableStats(final int tableId, Long tableBytes, Long tableQueries, Long tableRecordCount, Long tableRowCount) {
     jdbc.update("update blur_tables set current_size=?, query_usage=?, record_count=?, row_count=? where id=?", new Object[] { tableBytes,
         tableQueries, tableRecordCount, tableRowCount, tableId });
-  }
-
-  @Override
-  public int deleteOldQueries() {
-    Calendar now = TimeHelper.now();
-
-    Calendar twoHoursAgo = Calendar.getInstance();
-    twoHoursAgo.setTimeInMillis(now.getTimeInMillis());
-    twoHoursAgo.add(Calendar.HOUR_OF_DAY, deleteThreshold);
-
-    return this.jdbc.update("delete from blur_queries where created_at < ?", twoHoursAgo.getTime());
-  }
-
-  @Override
-  public int expireOldQueries() {
-    Calendar now = TimeHelper.now();
-
-    Calendar twoMinutesAgo = Calendar.getInstance();
-    twoMinutesAgo.setTimeInMillis(now.getTimeInMillis());
-    twoMinutesAgo.add(Calendar.MINUTE, expireThreshold);
-
-    return this.jdbc.update("update blur_queries set state=1, updated_at=? where updated_at < ? and state = 0", now.getTime(),
-        twoMinutesAgo);
   }
 
   public Map<String, Object> getQuery(long UUID) {

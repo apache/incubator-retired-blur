@@ -4,14 +4,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.DataAccessException;
 
-import com.nearinfinity.agent.connections.blur.interfaces.QueryDatabaseInterface;
+import com.nearinfinity.agent.connections.cleaners.interfaces.QueryDatabaseCleanerInterface;
 
 public class QueriesCleaner implements Runnable {
   private static final Log log = LogFactory.getLog(QueriesCleaner.class);
 
-  private final QueryDatabaseInterface database;
+  private final QueryDatabaseCleanerInterface database;
 
-  public QueriesCleaner(final QueryDatabaseInterface database) {
+  public QueriesCleaner(final QueryDatabaseCleanerInterface database) {
     this.database = database;
   }
 

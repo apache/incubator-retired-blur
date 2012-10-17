@@ -1,11 +1,8 @@
 package com.nearinfinity.agent.connections.hdfs;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.nearinfinity.agent.connections.hdfs.interfaces.HdfsDatabaseInterface;
@@ -13,7 +10,6 @@ import com.nearinfinity.agent.exceptions.NullReturnedException;
 
 public class HdfsDatabaseConnection implements HdfsDatabaseInterface {
   private final JdbcTemplate jdbc;
-  private final int timeToLive = -14;
 
   public HdfsDatabaseConnection(JdbcTemplate jdbc) {
     this.jdbc = jdbc;
@@ -51,23 +47,5 @@ public class HdfsDatabaseConnection implements HdfsDatabaseInterface {
         capacity, presentCapacity, remaining, used, logical_used,
         (((1.0 * used) / presentCapacity) * 100), underReplicatedBlocksCount, corruptBlocksCount,
         missingBlocksCount, totalNodes, liveNodes, deadNodes, time, host, port, hdfsId);
-  }
-
-  @Override
-  public int deleteOldStats() {
-    Calendar now = getUTCCal(new Date().getTime());
-
-    Calendar ttlDaysAgo = Calendar.getInstance();
-    ttlDaysAgo.setTimeInMillis(now.getTimeInMillis());
-    ttlDaysAgo.add(Calendar.DATE, timeToLive);
-    
-    return jdbc.update("delete from hdfs_stats where created_at < ?", ttlDaysAgo);
-  }
-  
-  private static Calendar getUTCCal(long timeToStart) {
-    Calendar cal = Calendar.getInstance();
-    TimeZone z = cal.getTimeZone();
-    cal.add(Calendar.MILLISECOND, -(z.getOffset(timeToStart)));
-    return cal;
   }
 }

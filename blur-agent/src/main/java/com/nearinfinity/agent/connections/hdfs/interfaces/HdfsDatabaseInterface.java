@@ -13,6 +13,4 @@ public interface HdfsDatabaseInterface {
       long logical_used, double d, long underReplicatedBlocksCount, long corruptBlocksCount,
       long missingBlocksCount, long totalNodes, long liveNodes, long deadNodes, Date time,
       String host, int port, int hdfsId);
-
-  int deleteOldStats();
 }

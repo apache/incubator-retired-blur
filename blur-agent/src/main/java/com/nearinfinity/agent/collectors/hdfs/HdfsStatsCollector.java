@@ -14,7 +14,8 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.hdfs.protocol.FSConstants.DatanodeReportType;
 import org.springframework.dao.DataAccessException;
-import com.nearinfinity.agent.connections.interfaces.HdfsDatabaseInterface;
+
+import com.nearinfinity.agent.connections.hdfs.interfaces.HdfsDatabaseInterface;
 import com.nearinfinity.agent.exceptions.NullReturnedException;
 
 public class HdfsStatsCollector implements Runnable {

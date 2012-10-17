@@ -7,7 +7,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import com.nearinfinity.agent.Agent;
-import com.nearinfinity.agent.connections.interfaces.HdfsDatabaseInterface;
+import com.nearinfinity.agent.connections.hdfs.interfaces.HdfsDatabaseInterface;
 import com.nearinfinity.agent.exceptions.HdfsThreadException;
 
 public class HdfsCollector implements Runnable {

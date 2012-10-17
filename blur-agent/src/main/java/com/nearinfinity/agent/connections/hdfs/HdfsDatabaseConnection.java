@@ -1,4 +1,4 @@
-package com.nearinfinity.agent.connections;
+package com.nearinfinity.agent.connections.hdfs;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -8,7 +8,7 @@ import java.util.TimeZone;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.nearinfinity.agent.connections.interfaces.HdfsDatabaseInterface;
+import com.nearinfinity.agent.connections.hdfs.interfaces.HdfsDatabaseInterface;
 import com.nearinfinity.agent.exceptions.NullReturnedException;
 
 public class HdfsDatabaseConnection implements HdfsDatabaseInterface {

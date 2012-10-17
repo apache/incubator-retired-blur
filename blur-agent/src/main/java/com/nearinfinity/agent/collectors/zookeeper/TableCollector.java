@@ -7,7 +7,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 
-import com.nearinfinity.agent.connections.interfaces.ZookeeperDatabaseInterface;
+import com.nearinfinity.agent.connections.zookeeper.interfaces.TableDatabaseInterface;
 
 public class TableCollector implements Runnable {
   private static final Log log = LogFactory.getLog(TableCollector.class);
@@ -15,9 +15,9 @@ public class TableCollector implements Runnable {
   private final int clusterId;
   private final String clusterName;
   private final ZooKeeper zookeeper;
-  private final ZookeeperDatabaseInterface database;
+  private final TableDatabaseInterface database;
 
-  public TableCollector(int clusterId, String clusterName, ZooKeeper zookeeper, ZookeeperDatabaseInterface database) {
+  public TableCollector(int clusterId, String clusterName, ZooKeeper zookeeper, TableDatabaseInterface database) {
     this.clusterId = clusterId;
     this.clusterName = clusterName;
     this.zookeeper = zookeeper;

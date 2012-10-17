@@ -1,4 +1,4 @@
-package com.nearinfinity.agent.connections.interfaces;
+package com.nearinfinity.agent.connections.hdfs.interfaces;
 
 import java.util.Date;
 

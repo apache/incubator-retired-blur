@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.nearinfinity.agent.Agent;
-import com.nearinfinity.agent.connections.HdfsDatabaseConnection;
-import com.nearinfinity.agent.connections.QueryDatabaseConnection;
+import com.nearinfinity.agent.connections.blur.QueryDatabaseConnection;
+import com.nearinfinity.agent.connections.hdfs.HdfsDatabaseConnection;
 
 public class AgentCleaners implements Runnable {
 

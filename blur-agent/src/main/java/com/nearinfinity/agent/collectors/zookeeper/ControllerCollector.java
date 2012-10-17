@@ -7,16 +7,16 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 
-import com.nearinfinity.agent.connections.interfaces.ZookeeperDatabaseInterface;
+import com.nearinfinity.agent.connections.zookeeper.interfaces.ControllerDatabaseInterface;
 
 public class ControllerCollector implements Runnable {
   private static final Log log = LogFactory.getLog(ControllerCollector.class);
 
   private final int zookeeperId;
   private final ZooKeeper zookeeper;
-  private final ZookeeperDatabaseInterface database;
+  private final ControllerDatabaseInterface database;
 
-  public ControllerCollector(int zookeeperId, ZooKeeper zookeeper, ZookeeperDatabaseInterface database) {
+  public ControllerCollector(int zookeeperId, ZooKeeper zookeeper, ControllerDatabaseInterface database) {
     this.zookeeperId = zookeeperId;
     this.zookeeper = zookeeper;
     this.database = database;

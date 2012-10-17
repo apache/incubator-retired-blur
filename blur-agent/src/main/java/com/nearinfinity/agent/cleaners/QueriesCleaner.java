@@ -3,7 +3,8 @@ package com.nearinfinity.agent.cleaners;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.DataAccessException;
-import com.nearinfinity.agent.connections.interfaces.QueryDatabaseInterface;
+
+import com.nearinfinity.agent.connections.blur.interfaces.QueryDatabaseInterface;
 
 public class QueriesCleaner implements Runnable {
   private static final Log log = LogFactory.getLog(QueriesCleaner.class);

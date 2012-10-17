@@ -22,10 +22,10 @@ import com.nearinfinity.agent.cleaners.AgentCleaners;
 import com.nearinfinity.agent.collectors.blur.BlurCollector;
 import com.nearinfinity.agent.collectors.hdfs.HdfsCollector;
 import com.nearinfinity.agent.collectors.zookeeper.ZookeeperCollector;
-import com.nearinfinity.agent.connections.BlurDatabaseConnection;
-import com.nearinfinity.agent.connections.HdfsDatabaseConnection;
 import com.nearinfinity.agent.connections.JdbcConnection;
-import com.nearinfinity.agent.connections.ZookeeperDatabaseConnection;
+import com.nearinfinity.agent.connections.blur.BlurDatabaseConnection;
+import com.nearinfinity.agent.connections.hdfs.HdfsDatabaseConnection;
+import com.nearinfinity.agent.connections.zookeeper.ZookeeperDatabaseConnection;
 import com.nearinfinity.agent.exceptions.HdfsThreadException;
 import com.nearinfinity.license.AgentLicense;
 

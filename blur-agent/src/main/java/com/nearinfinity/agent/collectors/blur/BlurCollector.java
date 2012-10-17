@@ -11,9 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import com.nearinfinity.agent.Agent;
 import com.nearinfinity.agent.collectors.blur.query.QueryCollector;
 import com.nearinfinity.agent.collectors.blur.table.TableCollector;
-import com.nearinfinity.agent.connections.QueryDatabaseConnection;
-import com.nearinfinity.agent.connections.TableDatabaseConnection;
-import com.nearinfinity.agent.connections.interfaces.BlurDatabaseInterface;
+import com.nearinfinity.agent.connections.blur.interfaces.BlurDatabaseInterface;
 import com.nearinfinity.agent.exceptions.ZookeeperNameCollisionException;
 import com.nearinfinity.agent.exceptions.ZookeeperNameMissingException;
 import com.nearinfinity.blur.thrift.BlurClient;
@@ -24,7 +22,6 @@ public class BlurCollector implements Runnable {
 
   private final String zookeeperName;
   private final BlurDatabaseInterface database;
-  private final JdbcTemplate jdbc;
   private final boolean collectTables;
   private final boolean collectQueries;
 
@@ -38,7 +35,6 @@ public class BlurCollector implements Runnable {
     this.database = database;
     this.collectTables = activeCollectors.contains("tables");
     this.collectQueries = activeCollectors.contains("queries");
-    this.jdbc = jdbc;
   }
 
   @Override
@@ -68,17 +64,16 @@ public class BlurCollector implements Runnable {
         }
 
         for (final String tableName : tables) {
-          TableDatabaseConnection tableDatabase = new TableDatabaseConnection(this.jdbc);
-          int tableId = tableDatabase.getTableId(clusterId, tableName);
+          int tableId = this.database.getTableId(clusterId, tableName);
 
           if (this.collectTables) {
             new Thread(new TableCollector(BlurClient.getClient(resolvedConnection), tableName,
-                tableId, tableDatabase), "Table Collector - " + this.zookeeperName).start();
+                tableId, this.database), "Table Collector - " + this.zookeeperName).start();
           }
 
           if (this.collectQueries) {
             new Thread(new QueryCollector(BlurClient.getClient(resolvedConnection), tableName,
-                tableId, new QueryDatabaseConnection(this.jdbc)), "Query Collector - "
+                tableId, this.database), "Query Collector - "
                 + this.zookeeperName).start();
           }
         }

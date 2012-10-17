@@ -11,7 +11,7 @@ import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.dao.DataAccessException;
 
-import com.nearinfinity.agent.connections.interfaces.TableDatabaseInterface;
+import com.nearinfinity.agent.connections.blur.interfaces.TableDatabaseInterface;
 import com.nearinfinity.agent.exceptions.NullReturnedException;
 import com.nearinfinity.agent.types.Column;
 import com.nearinfinity.agent.types.Family;

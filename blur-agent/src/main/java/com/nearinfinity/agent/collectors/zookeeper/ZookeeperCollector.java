@@ -11,7 +11,7 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooKeeper;
 import com.nearinfinity.agent.Agent;
-import com.nearinfinity.agent.connections.interfaces.ZookeeperDatabaseInterface;
+import com.nearinfinity.agent.connections.zookeeper.interfaces.ZookeeperDatabaseInterface;
 
 public class ZookeeperCollector implements Runnable {
   private static final Log log = LogFactory.getLog(ZookeeperCollector.class);

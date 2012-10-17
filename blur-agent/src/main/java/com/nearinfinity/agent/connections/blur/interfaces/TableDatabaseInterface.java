@@ -1,4 +1,4 @@
-package com.nearinfinity.agent.connections.interfaces;
+package com.nearinfinity.agent.connections.blur.interfaces;
 
 public interface TableDatabaseInterface {
   int getTableId(int clusterId, String tableName);

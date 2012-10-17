@@ -1,14 +1,15 @@
-package com.nearinfinity.agent.connections.interfaces;
+package com.nearinfinity.agent.connections.blur.interfaces;
 
 import java.util.List;
 import java.util.Map;
 
+import com.nearinfinity.agent.connections.blur.interfaces.TableDatabaseInterface;
 import com.nearinfinity.agent.exceptions.TableCollisionException;
 import com.nearinfinity.agent.exceptions.TableMissingException;
 import com.nearinfinity.agent.exceptions.ZookeeperNameCollisionException;
 import com.nearinfinity.agent.exceptions.ZookeeperNameMissingException;
 
-public interface BlurDatabaseInterface {
+public interface BlurDatabaseInterface extends TableDatabaseInterface, QueryDatabaseInterface {
   String getConnectionString(String zookeeperName);
 
   String getZookeeperId(final String zookeeperName) throws ZookeeperNameMissingException,

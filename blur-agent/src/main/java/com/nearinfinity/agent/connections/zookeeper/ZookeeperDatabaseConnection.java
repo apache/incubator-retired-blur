@@ -1,13 +1,18 @@
-package com.nearinfinity.agent.connections;
+package com.nearinfinity.agent.connections.zookeeper;
 
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.nearinfinity.agent.connections.interfaces.ZookeeperDatabaseInterface;
+import com.nearinfinity.agent.connections.zookeeper.interfaces.ClusterDatabaseInterface;
+import com.nearinfinity.agent.connections.zookeeper.interfaces.ControllerDatabaseInterface;
+import com.nearinfinity.agent.connections.zookeeper.interfaces.ShardsDatabaseInterface;
+import com.nearinfinity.agent.connections.zookeeper.interfaces.TableDatabaseInterface;
+import com.nearinfinity.agent.connections.zookeeper.interfaces.ZookeeperDatabaseInterface;
 
-public class ZookeeperDatabaseConnection implements ZookeeperDatabaseInterface {
+public class ZookeeperDatabaseConnection implements ZookeeperDatabaseInterface, ControllerDatabaseInterface, TableDatabaseInterface,
+    ShardsDatabaseInterface, ClusterDatabaseInterface {
 
   private final JdbcTemplate jdbc;
 

@@ -7,16 +7,16 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
-import com.nearinfinity.agent.connections.interfaces.ZookeeperDatabaseInterface;
+import com.nearinfinity.agent.connections.zookeeper.interfaces.ClusterDatabaseInterface;
 
 public class ClusterCollector implements Runnable {
   private static final Log log = LogFactory.getLog(ClusterCollector.class);
 
   private final int zookeeperId;
   private final ZooKeeper zookeeper;
-  private final ZookeeperDatabaseInterface database;
+  private final ClusterDatabaseInterface database;
 
-  public ClusterCollector(int zookeeperId, ZooKeeper zookeeper, ZookeeperDatabaseInterface database) {
+  public ClusterCollector(int zookeeperId, ZooKeeper zookeeper, ClusterDatabaseInterface database) {
     this.zookeeperId = zookeeperId;
     this.zookeeper = zookeeper;
     this.database = database;

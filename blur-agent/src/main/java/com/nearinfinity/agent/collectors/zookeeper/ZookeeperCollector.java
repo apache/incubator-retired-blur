@@ -72,12 +72,8 @@ public class ZookeeperCollector implements Runnable {
       try {
         if (latch.await(10, TimeUnit.SECONDS)) {
           this.database.setZookeeperOnline(this.id);
-          Thread controllerThread = new Thread(new ControllerCollector(this.id, this.zookeeper, this.database));
-          Thread clusterThread = new Thread(new ClusterCollector(this.id, this.zookeeper, this.database));
-          controllerThread.start();
-          clusterThread.start();
-          controllerThread.join();
-          clusterThread.join();
+          new Thread(new ControllerCollector(this.id, this.zookeeper, this.database)).start();
+          new Thread(new ClusterCollector(this.id, this.zookeeper, this.database)).start();
         } else {
           closeZookeeper();
         }

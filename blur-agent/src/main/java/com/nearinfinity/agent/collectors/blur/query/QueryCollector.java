@@ -47,7 +47,7 @@ public class QueryCollector implements Runnable {
       try {
         status = blurConnection.queryStatusById(tableName, queryUUID);
       } catch (Exception e) {
-        log.error("Unable to get the shard schema for table [" + tableName + "].", e);
+        log.error("Unable to get query status for query [" + queryUUID + "].", e);
         continue;
       }
 

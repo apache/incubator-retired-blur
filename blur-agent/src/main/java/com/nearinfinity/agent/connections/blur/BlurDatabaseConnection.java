@@ -131,4 +131,9 @@ public class BlurDatabaseConnection implements BlurDatabaseInterface {
         status.getCompleteShards(), status.getTotalShards(), status.getState().getValue(), TimeHelper.now().getTime(), queryId);
   }
 
+  @Override
+  public List<Long> getRunningQueries() {
+    return this.jdbc.queryForList("select uuid from blur_queries where state = 0", Long.class);
+  }
+
 }

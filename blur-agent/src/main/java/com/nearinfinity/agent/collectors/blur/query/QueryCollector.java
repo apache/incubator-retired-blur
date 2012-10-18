@@ -1,8 +1,10 @@
 package com.nearinfinity.agent.collectors.blur.query;
 
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -31,9 +33,10 @@ public class QueryCollector implements Runnable {
 
   @Override
   public void run() {
-    List<Long> currentQueries;
+    Set<Long> currentQueries = new HashSet<Long>();
     try {
-      currentQueries = blurConnection.queryStatusIdList(tableName);
+      currentQueries.addAll(blurConnection.queryStatusIdList(tableName));
+      currentQueries.addAll(this.database.getRunningQueries());
     } catch (Exception e) {
       log.error("Unable to get the list of current queries [" + tableName + "].", e);
       return;

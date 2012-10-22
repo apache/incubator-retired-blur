@@ -27,11 +27,11 @@ public class BlurDatabaseConnection implements BlurDatabaseInterface {
   }
 
   @Override
-  public String resolveConnectionString(String zookeeperName) {
-    String queryString = "select distinct c.node_name from blur_controllers c, zookeepers z where z.name = ? and c.zookeeper_id = z.id and c.status = 1";
-    List<String> controller_uris = jdbc.queryForList(queryString, new String[] { zookeeperName }, String.class);
+  public String resolveConnectionString(int zookeeperId) {
+    String queryString = "select distinct node_name from blur_controllers where zookeeper_id = ? and status = 1";
+    List<String> controller_uris = jdbc.queryForList(queryString, new String[] { Integer.toString(zookeeperId) }, String.class);
     String connection = StringUtils.join(controller_uris, ',');
-    this.jdbc.update("update zookeepers set blur_urls=?", connection);
+    this.jdbc.update("update zookeepers set blur_urls=? where id = ?", connection, zookeeperId);
     return connection;
   }
 

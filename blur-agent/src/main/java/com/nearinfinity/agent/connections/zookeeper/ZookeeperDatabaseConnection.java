@@ -32,7 +32,7 @@ public class ZookeeperDatabaseConnection implements ZookeeperDatabaseInterface, 
 
   @Override
   public int insertOrUpdateZookeeper(String name, String url, String blurConnection) {
-    int updatedCount = jdbc.update("update zookeepers set url=?, blur_urls=? where name=?", url, blurConnection, name);
+    int updatedCount = jdbc.update("update zookeepers set url=? where name=?", url, name);
 
     if (updatedCount == 0) {
       jdbc.update("insert into zookeepers (name, url, blur_urls) values (?, ?, ?)", name, url, blurConnection);

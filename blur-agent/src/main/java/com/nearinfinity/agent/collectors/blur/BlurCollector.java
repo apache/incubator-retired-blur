@@ -45,7 +45,7 @@ public class BlurCollector implements Runnable {
       
       // If the connection string is blank then we need to build it from the
       // online controllers from the database
-      String resolvedConnection = getResolvedConnection();
+      String resolvedConnection = getResolvedConnection(zookeeperId);
       
       if (StringUtils.isBlank(resolvedConnection)){
         try {
@@ -99,11 +99,9 @@ public class BlurCollector implements Runnable {
     }
   }
 
-  private String getResolvedConnection() {
+  private String getResolvedConnection(int zookeeperId) {
     if (StringUtils.isBlank(this.connection)) {
-      return this.database.resolveConnectionString(this.zookeeperName);
-      // ToDo: Write the connection string to the Database on the Zookeeper
-      // object for the use of RoR
+      return this.database.resolveConnectionString(zookeeperId);
     } else {
       return this.connection;
     }

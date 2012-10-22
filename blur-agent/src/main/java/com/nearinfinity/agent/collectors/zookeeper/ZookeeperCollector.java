@@ -58,8 +58,7 @@ public class ZookeeperCollector implements Runnable {
       } catch (IOException e) {
         log.error("A zookeeper [" + this.name + "] connection could not be created, waiting 30 seconds.");
         closeZookeeper();
-        // Sleep the thread for 30secs to give the Zookeeper a chance to
-        // become available.
+        // Sleep the thread for 30secs to give the Zookeeper a chance to become available.
         try {
           Thread.sleep(30000);
           continue;

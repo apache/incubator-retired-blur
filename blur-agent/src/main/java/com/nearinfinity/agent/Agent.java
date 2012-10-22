@@ -32,7 +32,7 @@ import com.nearinfinity.license.AgentLicense;
 
 public class Agent {
   public static final long COLLECTOR_SLEEP_TIME = TimeUnit.SECONDS.toMillis(15);
-  public static final long CLEAN_UP_SLEEP_TIME = TimeUnit.HOURS.toMillis(1);
+  public static final long CLEAN_UP_SLEEP_TIME = TimeUnit.SECONDS.toMillis(30);
 
   private static final Log log = LogFactory.getLog(Agent.class);
 

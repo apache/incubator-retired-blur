@@ -40,14 +40,23 @@ public class BlurCollector implements Runnable {
   @Override
   public void run() {
     while (true) {
+      // Retrieve the zookeeper id
+      int zookeeperId = getZookeeperId();
+      
       // If the connection string is blank then we need to build it from the
       // online controllers from the database
       String resolvedConnection = getResolvedConnection();
+      
+      if (StringUtils.isBlank(resolvedConnection)){
+        try {
+          Thread.sleep(Agent.COLLECTOR_SLEEP_TIME);
+        } catch (InterruptedException e) {
+          break;
+        }
+        continue;
+      }
 
       Iface blurConnection = BlurClient.getClient(resolvedConnection);
-
-      /* Retrieve the zookeeper id */
-      int zookeeperId = getZookeeperId();
 
       /* Retrieve the clusters and their info */
       for (Map<String, Object> cluster : this.database.getClusters(zookeeperId)) {

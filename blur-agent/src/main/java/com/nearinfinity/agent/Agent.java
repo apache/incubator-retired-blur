@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import javax.mail.internet.AddressException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
@@ -28,6 +30,8 @@ import com.nearinfinity.agent.connections.cleaners.CleanerDatabaseConnection;
 import com.nearinfinity.agent.connections.hdfs.HdfsDatabaseConnection;
 import com.nearinfinity.agent.connections.zookeeper.ZookeeperDatabaseConnection;
 import com.nearinfinity.agent.exceptions.HdfsThreadException;
+import com.nearinfinity.agent.mailer.AgentMailer;
+import com.nearinfinity.agent.mailer.AgentMailerInterface;
 import com.nearinfinity.license.AgentLicense;
 
 public class Agent {
@@ -41,6 +45,12 @@ public class Agent {
     // Setup database connection
     JdbcTemplate jdbc = JdbcConnection.createDBConnection(props);
 
+    // Setup the mailer
+    AgentMailerInterface mailer = null;
+    if (props.containsKey("mail.enabled") && props.getProperty("mail.enabled").equals("true")) {
+      mailer = setupMailer(props);
+    }
+
     // Verify valid License
     AgentLicense.verifyLicense(props, jdbc);
 
@@ -50,7 +60,7 @@ public class Agent {
     // Setup the collectors
     setupHdfs(props, jdbc, activeCollectors);
     setupBlur(props, jdbc, activeCollectors);
-    setupZookeeper(props, jdbc);
+    setupZookeeper(props, jdbc, mailer);
     setupCleaners(jdbc, activeCollectors);
   }
 
@@ -69,6 +79,20 @@ public class Agent {
     }
   }
 
+  private AgentMailerInterface setupMailer(Properties props) {
+    String host = props.getProperty("mail.host");
+    String port = props.getProperty("mail.port");
+    String sender = props.getProperty("mail.sender.username");
+    String password = props.getProperty("mail.sender.password");
+    String recipients = props.getProperty("mail.recipients");
+    try {
+      return new AgentMailer(host, port, sender, password, recipients);
+    } catch (AddressException e) {
+      log.error("An error occurred while trying to make the mailer.");
+      return null;
+    }
+  }
+
   private void setupCleaners(JdbcTemplate jdbc, List<String> activeCollectors) {
     new Thread(new AgentCleaners(activeCollectors, new CleanerDatabaseConnection(jdbc)), "Agent Cleaner Thread").start();
   }
@@ -78,7 +102,8 @@ public class Agent {
     for (Map.Entry<String, String> blurEntry : blurInstances.entrySet()) {
       final String zookeeperName = blurEntry.getKey();
       final String connection = blurEntry.getValue();
-      new Thread(new BlurCollector(zookeeperName, connection, activeCollectors, new BlurDatabaseConnection(jdbc), jdbc), "Blur Collector thread - " + zookeeperName).start();
+      new Thread(new BlurCollector(zookeeperName, connection, activeCollectors, new BlurDatabaseConnection(jdbc), jdbc),
+          "Blur Collector thread - " + zookeeperName).start();
     }
   }
 
@@ -90,7 +115,8 @@ public class Agent {
       final String defaultUri = instance.get("url.default");
       final String user = props.getProperty("hdfs." + name + ".login.user");
       try {
-        new Thread(new HdfsCollector(name, defaultUri, thriftUri, user, activeCollectors, new HdfsDatabaseConnection(jdbc)), "Hdfs Collector - " + name).start();
+        new Thread(new HdfsCollector(name, defaultUri, thriftUri, user, activeCollectors, new HdfsDatabaseConnection(jdbc)),
+            "Hdfs Collector - " + name).start();
       } catch (HdfsThreadException e) {
         log.error("The collector for hdfs [" + name + "] will not execute.");
         continue;
@@ -98,13 +124,13 @@ public class Agent {
     }
   }
 
-  private void setupZookeeper(Properties props, JdbcTemplate jdbc) {
+  private void setupZookeeper(Properties props, JdbcTemplate jdbc, AgentMailerInterface mailer) {
     if (props.containsKey("zk.instances")) {
       List<String> zooKeeperInstances = new ArrayList<String>(Arrays.asList(props.getProperty("zk.instances").split("\\|")));
       for (String zkInstance : zooKeeperInstances) {
         String zkUrl = props.getProperty("zk." + zkInstance + ".url");
         String blurConnection = props.getProperty("blur." + zkInstance + ".url");
-        new Thread(new ZookeeperCollector(zkUrl, zkInstance, blurConnection, new ZookeeperDatabaseConnection(jdbc)), "Zookeeper-"
+        new Thread(new ZookeeperCollector(zkUrl, zkInstance, blurConnection, new ZookeeperDatabaseConnection(jdbc), mailer), "Zookeeper-"
             + zkInstance).start();
       }
     }

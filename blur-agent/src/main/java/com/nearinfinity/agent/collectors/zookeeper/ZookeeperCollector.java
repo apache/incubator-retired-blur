@@ -12,6 +12,7 @@ import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooKeeper;
 import com.nearinfinity.agent.Agent;
 import com.nearinfinity.agent.connections.zookeeper.interfaces.ZookeeperDatabaseInterface;
+import com.nearinfinity.agent.mailer.AgentMailerInterface;
 
 public class ZookeeperCollector implements Runnable {
   private static final Log log = LogFactory.getLog(ZookeeperCollector.class);
@@ -23,13 +24,14 @@ public class ZookeeperCollector implements Runnable {
   private final String name;
   private final int id;
   private final ZookeeperDatabaseInterface database;
+  private final AgentMailerInterface mailer;
 
-  public ZookeeperCollector(String url, String name, String blurConnection, ZookeeperDatabaseInterface database) {
+  public ZookeeperCollector(String url, String name, String blurConnection, ZookeeperDatabaseInterface database, AgentMailerInterface mailer) {
     this.url = url;
     this.name = name;
     this.database = database;
     this.id = database.insertOrUpdateZookeeper(name, url, blurConnection);
-
+    this.mailer = mailer;
   }
 
   @Override
@@ -40,7 +42,8 @@ public class ZookeeperCollector implements Runnable {
         if (this.zookeeper != null) {
           try {
             this.zookeeper.close();
-          } catch (InterruptedException e) {}
+          } catch (InterruptedException e) {
+          }
         }
         this.zookeeper = new ZooKeeper(this.url, 3000, new Watcher() {
           @Override
@@ -48,6 +51,7 @@ public class ZookeeperCollector implements Runnable {
             KeeperState state = event.getState();
             if (state == KeeperState.Disconnected || state == KeeperState.Expired) {
               log.warn("Zookeeper [" + name + "] disconnected event.");
+              mailer.notifyZookeeperOffline(name);
               closeZookeeper();
             } else if (state == KeeperState.SyncConnected) {
               latch.countDown();
@@ -58,7 +62,8 @@ public class ZookeeperCollector implements Runnable {
       } catch (IOException e) {
         log.error("A zookeeper [" + this.name + "] connection could not be created, waiting 30 seconds.");
         closeZookeeper();
-        // Sleep the thread for 30secs to give the Zookeeper a chance to become available.
+        // Sleep the thread for 30secs to give the Zookeeper a chance to become
+        // available.
         try {
           Thread.sleep(30000);
           continue;

@@ -10,7 +10,7 @@ import com.nearinfinity.agent.exceptions.ZookeeperNameCollisionException;
 import com.nearinfinity.agent.exceptions.ZookeeperNameMissingException;
 
 public interface BlurDatabaseInterface extends TableDatabaseInterface, QueryDatabaseInterface {
-  String getConnectionString(String zookeeperName);
+  String resolveConnectionString(String zookeeperName);
 
   String getZookeeperId(final String zookeeperName) throws ZookeeperNameMissingException,
       ZookeeperNameCollisionException;

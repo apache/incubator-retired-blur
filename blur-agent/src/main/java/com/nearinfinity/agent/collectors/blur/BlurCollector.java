@@ -92,7 +92,7 @@ public class BlurCollector implements Runnable {
 
   private String getResolvedConnection() {
     if (StringUtils.isBlank(this.connection)) {
-      return this.database.getConnectionString(this.zookeeperName);
+      return this.database.resolveConnectionString(this.zookeeperName);
       // ToDo: Write the connection string to the Database on the Zookeeper
       // object for the use of RoR
     } else {

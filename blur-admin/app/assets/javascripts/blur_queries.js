@@ -48,6 +48,16 @@ $(document).ready(function() {
       var range_time_limit = $(this).find('option:selected').val();
       data_table.fnReloadAjax(Routes.refresh_zookeeper_blur_queries_path(CurrentZookeeper, range_time_limit, {format: 'json'}));
     });
+    $('.filter_option').on('click', function(){
+      var container = $(this);
+      var index = visible_column_count - 2;
+      var filter_string = container.attr("data-filter");
+      if(container.is(':checked')){
+        $('#queries-table').dataTable().fnFilter(filter_string, index);
+      } else {
+        $('#queries-table').dataTable().fnFilter("", index);
+      }
+    })
   };
 
   var table_cols = function() {

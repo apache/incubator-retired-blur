@@ -27,9 +27,8 @@ public class BlurCollector implements Runnable {
 
   private String connection;
 
-  public BlurCollector(final String zookeeperName, final String connection,
-      final List<String> activeCollectors, final BlurDatabaseInterface database,
-      final JdbcTemplate jdbc) {
+  public BlurCollector(final String zookeeperName, final String connection, final List<String> activeCollectors,
+      final BlurDatabaseInterface database, final JdbcTemplate jdbc) {
     this.zookeeperName = zookeeperName;
     this.connection = connection;
     this.database = database;
@@ -42,12 +41,12 @@ public class BlurCollector implements Runnable {
     while (true) {
       // Retrieve the zookeeper id
       int zookeeperId = getZookeeperId();
-      
+
       // If the connection string is blank then we need to build it from the
       // online controllers from the database
       String resolvedConnection = getResolvedConnection(zookeeperId);
-      
-      if (StringUtils.isBlank(resolvedConnection)){
+
+      if (StringUtils.isBlank(resolvedConnection)) {
         try {
           Thread.sleep(Agent.COLLECTOR_SLEEP_TIME);
         } catch (InterruptedException e) {
@@ -67,26 +66,22 @@ public class BlurCollector implements Runnable {
         try {
           tables = blurConnection.tableListByCluster(clusterName);
         } catch (Exception e) {
-          log.error("An error occured while trying to retrieve the table list for cluster["
-              + clusterName + "], skipping cluster", e);
+          log.error("An error occured while trying to retrieve the table list for cluster[" + clusterName + "], skipping cluster", e);
           continue;
         }
 
         for (final String tableName : tables) {
           int tableId = this.database.getTableId(clusterId, tableName);
-          if (tableId == -1){
+          if (tableId == -1) {
             continue;
           }
 
           if (this.collectTables) {
-            new Thread(new TableCollector(BlurClient.getClient(resolvedConnection), tableName,
-                tableId, this.database), "Table Collector - " + tableName).start();
+            new Thread(new TableCollector(blurConnection, tableName, tableId, this.database), "Table Collector - " + tableName).start();
           }
 
           if (this.collectQueries) {
-            new Thread(new QueryCollector(BlurClient.getClient(resolvedConnection), tableName,
-                tableId, this.database), "Query Collector - "
-                + tableName).start();
+            new Thread(new QueryCollector(blurConnection, tableName, tableId, this.database), "Query Collector - " + tableName).start();
           }
         }
       }

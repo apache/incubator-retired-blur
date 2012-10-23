@@ -52,10 +52,10 @@ $(document).ready(function() {
       var container = $(this);
       var index = visible_column_count - 2;
       var filter_string = container.attr("data-filter");
+      container.siblings('.filter_option:checked').attr("checked", false);
+      $('#queries-table').dataTable().fnFilter("", index);
       if(container.is(':checked')){
         $('#queries-table').dataTable().fnFilter(filter_string, index);
-      } else {
-        $('#queries-table').dataTable().fnFilter("", index);
       }
     })
   };

@@ -40,7 +40,7 @@ public class ControllerCollector implements Runnable {
     for (String controller : controllers) {
       String blurVersion = "UNKNOWN";
 
-      byte[] b = this.zookeeper.getData("/blur/online-controller-nodes", false, null);
+      byte[] b = this.zookeeper.getData("/blur/online-controller-nodes/" + controller, false, null);
       if (b != null && b.length > 0) {
         blurVersion = new String(b);
       }

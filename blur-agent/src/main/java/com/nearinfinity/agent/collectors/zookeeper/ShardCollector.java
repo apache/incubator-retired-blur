@@ -41,7 +41,7 @@ public class ShardCollector implements Runnable {
     for (String shard : shards) {
       String blurVersion = "UNKNOWN";
 
-      byte[] b = this.zookeeper.getData("/blur/clusters/" + clusterName + "/online/shard-nodes", false, null);
+      byte[] b = this.zookeeper.getData("/blur/clusters/" + clusterName + "/online/shard-nodes/" + shard, false, null);
       if (b != null && b.length > 0) {
         blurVersion = new String(b);
       }

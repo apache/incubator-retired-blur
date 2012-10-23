@@ -83,7 +83,7 @@ $(document).ready(function() {
       }
   });
   //On Page Load
-  audit_data_table.fnSort([[5, 'desc']]);
+  audit_data_table.fnSort([[6, 'desc']]);
 
   setup_datepickers();
   //Page Listeners

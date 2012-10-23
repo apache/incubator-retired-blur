@@ -32,6 +32,7 @@ $(document).ready(function() {
       aoColumns: table_cols(),
       fnRowCallback: process_row
     });
+    data_table.fnSort([[4, 'desc']]);
     add_refresh_rates(data_table);
     $('#queries-table').ajaxComplete(function(e, xhr, settings) {
       if (settings.url.indexOf('/blur_queries/refresh') >= 0) {

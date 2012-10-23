@@ -38,7 +38,7 @@ public class QueryCollector implements Runnable {
       currentQueries.addAll(blurConnection.queryStatusIdList(tableName));
       currentQueries.addAll(this.database.getRunningQueries());
     } catch (Exception e) {
-      log.error("Unable to get the list of current queries [" + tableName + "].", e);
+      log.error("Unable to get the list of current queries [" + tableName + "].");
       return;
     }
 
@@ -47,7 +47,7 @@ public class QueryCollector implements Runnable {
       try {
         status = blurConnection.queryStatusById(tableName, queryUUID);
       } catch (Exception e) {
-        log.error("Unable to get query status for query [" + queryUUID + "].", e);
+        log.error("Unable to get query status for query [" + queryUUID + "].");
         continue;
       }
 

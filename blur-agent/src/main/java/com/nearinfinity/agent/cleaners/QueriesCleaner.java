@@ -20,8 +20,10 @@ public class QueriesCleaner implements Runnable {
     try {
       int deletedQueries = this.database.deleteOldQueries();
       int expiredQueries = this.database.expireOldQueries();
-      log.info("Removed " + deletedQueries + " queries and " + "Expired " + expiredQueries
-          + " queries, in this pass!");
+      if ((deletedQueries + expiredQueries) > 0){
+        log.info("Removed " + deletedQueries + " queries and " + "Expired " + expiredQueries
+            + " queries, in this pass!");
+      }
     } catch (DataAccessException e) {
       log.error("An error occured while deleting queries from the database!", e);
     } catch (Exception e) {

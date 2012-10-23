@@ -130,7 +130,7 @@ public class Agent {
       for (String zkInstance : zooKeeperInstances) {
         String zkUrl = props.getProperty("zk." + zkInstance + ".url");
         String blurConnection = props.getProperty("blur." + zkInstance + ".url");
-        new Thread(new ZookeeperCollector(zkUrl, zkInstance, blurConnection, new ZookeeperDatabaseConnection(jdbc), mailer), "Zookeeper-"
+        new Thread(new ZookeeperCollector(zkUrl, zkInstance, blurConnection, new ZookeeperDatabaseConnection(jdbc), mailer), "Zookeeper - "
             + zkInstance).start();
       }
     }

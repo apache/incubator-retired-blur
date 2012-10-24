@@ -217,14 +217,14 @@ var ClusterView = Backbone.View.extend({
     this.set_table_values();
   },
   set_table_values: function(){
-    var table_prefixes = ['active', 'disabled'];
-    for (var index = 0; index < table_prefixes.length; index++){
+    var table_prefixes = {active: 8, disabled: 5};
+    for (var index in table_prefixes){
 
-      var table = this.$el.find('.' + table_prefixes[index] + '-table');
+      var table = this.$el.find('.' + index + '-table');
       table.find('.dataTables_empty').parent().remove();
       var table_children_count = table.children().length - table.children().find('.changing-state').length;
-      this.$el.find('.' + table_prefixes[index] + '-counter').text(table_children_count);
-      this.$el.find("#" + table_prefixes[index] + "_tables").dataTable({
+      this.$el.find('.' + index + '-counter').text(table_children_count);
+      this.$el.find("#" + index + "_tables").dataTable({
         "bFilter": false,
         "bLengthChange": false,
         "bDeferRender": true,
@@ -237,7 +237,7 @@ var ClusterView = Backbone.View.extend({
       });
       //Had to do this to fix a problem where the dataTable was not reloading after a table had been moved from disabled to enabled.
       if (table_children_count == 0 && typeof table.find('.dataTables_empty') != undefined){
-        $("#" + table_prefixes[index] + "_tables").append('<tr class="odd"><td valign="top" colspan="5" class="dataTables_empty">No Tables for this Section</td></tr>');
+        $("#" + index + "_tables").append('<tr class="odd"><td valign="top" colspan="' + table_prefixes[index] + '" class="dataTables_empty">No Tables for this Section</td></tr>');
       }
     }
   },

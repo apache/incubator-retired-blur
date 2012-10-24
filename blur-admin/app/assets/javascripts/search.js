@@ -174,7 +174,7 @@ $(document).ready(function() {
   $('#search_submit, #update_button, #save_button').bind('ajaxStop', function() {
     toggle_submit();
   });
-  $('body').live('click', function() {
+  $('html').live('click', function() {
     hide_all_tabs();
   });
   $('.tab:visible, .header').live('click', function(e) {

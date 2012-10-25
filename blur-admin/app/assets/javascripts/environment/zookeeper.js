@@ -40,7 +40,15 @@ var ZookeeperModel = Backbone.Model.extend({
   },
   // Determines the class for the state of the zookeeper
   translated_class: function(){
-    return this.get('status') ? "btn-success" : "btn-danger";
+    switch(this.get('status'))
+    {
+      case 0:
+        return "btn-danger"
+      case 1:
+        return "btn-success"
+      case 2:
+        return "btn-warning"
+    }
   },
   // Destroys the zookeeper on the server side
   remove_zookeeper: function(){

@@ -26,6 +26,9 @@ $opacity-adjust: 0;
         bottom: 20px;
         font-size: 12px;
         opacity: .8;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
       }
       
       i {

@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -97,13 +98,14 @@ public class ZookeeperCollector implements Runnable {
     List<String> onlineZookeepers = new ArrayList<String>();
     for (String connection : connections) {
       try {
+        URI parsedConnection = new URI("my://" + connection);
         byte[] reqBytes = new byte[4];
         ByteBuffer req = ByteBuffer.wrap(reqBytes);
         req.putInt(ByteBuffer.wrap("ruok".getBytes()).getInt());
         socket = new Socket();
         socket.setSoLinger(false, 10);
         socket.setSoTimeout(20000);
-        socket.connect(new InetSocketAddress(connection, 2181));
+        socket.connect(new InetSocketAddress(parsedConnection.getHost(), parsedConnection.getPort()));
 
         InputStream response = socket.getInputStream();
         OutputStream question = socket.getOutputStream();
@@ -122,9 +124,9 @@ public class ZookeeperCollector implements Runnable {
       }
     }
     try {
-      if (connections.length > onlineZookeepers.size() * 2){
+      if (connections.length < onlineZookeepers.size() * 2){
         this.database.setZookeeperWarning(this.id);
-      } else {
+      } else if (connections.length > onlineZookeepers.size() * 2) {
         this.database.setZookeeperOffline(this.id);
       }
       this.database.setOnlineEnsembleNodes(new ObjectMapper().writeValueAsString(onlineZookeepers), this.id);

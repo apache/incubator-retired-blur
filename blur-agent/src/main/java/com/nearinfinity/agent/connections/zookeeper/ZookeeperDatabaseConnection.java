@@ -24,6 +24,11 @@ public class ZookeeperDatabaseConnection implements ZookeeperDatabaseInterface, 
   public void setZookeeperOnline(int zookeeperId) {
     this.jdbc.update("update zookeepers set status=? where id=?", 1, zookeeperId);
   }
+  
+  @Override
+  public void setZookeeperWarning(int zookeeperId) {
+    this.jdbc.update("update zookeepers set status=? where id=?", 2, zookeeperId);
+  }
 
   @Override
   public void setZookeeperOffline(int zookeeperId) {
@@ -112,5 +117,10 @@ public class ZookeeperDatabaseConnection implements ZookeeperDatabaseInterface, 
       this.jdbc.update("insert into blur_tables (table_name, table_uri, status, cluster_id) values (?, ?, ?, ?)", table, uri, (enabled ? 4
           : 2), clusterId);
     }
+  }
+
+  @Override
+  public void setOnlineEnsembleNodes(String ensembleArray, int zookeeperId) {
+    this.jdbc.update("update zookeepers set online_ensemble_nodes=? where id=?", ensembleArray, zookeeperId);
   }
 }

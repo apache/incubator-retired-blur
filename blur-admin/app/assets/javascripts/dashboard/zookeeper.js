@@ -49,7 +49,7 @@ var ZookeeperCollection = Backbone.StreamCollection.extend({
 var ZookeeperView = Backbone.View.extend({
   className: 'zookeeper_info',
   events: {
-    'click .zookeeper-body' : 'navigate_to_zookeeper',
+    'click' : 'navigate_to_zookeeper',
     'click .warning' : 'show_long_running'
   },
   template: JST['templates/dashboard/zookeeper'],

@@ -32,6 +32,13 @@ class Zookeeper < ActiveRecord::Base
       z.id
   "
 
+  def as_json(options={})
+    serial_properties = super(options)
+    serial_properties.delete('online_ensemble_nodes')
+    serial_properties['ensemble'] = JSON.parse self.online_ensemble_nodes
+    serial_properties
+  end
+
   def self.dashboard_stats
     zookeeper_results = []
     connection = ActiveRecord::Base.connection()

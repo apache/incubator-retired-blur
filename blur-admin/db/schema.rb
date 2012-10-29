@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120926202240) do
+ActiveRecord::Schema.define(:version => 20121025175857) do
 
   create_table "audits", :force => true do |t|
     t.integer  "user_id"
@@ -190,7 +190,8 @@ ActiveRecord::Schema.define(:version => 20120926202240) do
     t.string  "url"
     t.string  "name"
     t.integer "status"
-    t.string  "blur_urls", :limit => 4000
+    t.string  "blur_urls",             :limit => 4000
+    t.string  "online_ensemble_nodes"
   end
 
 end

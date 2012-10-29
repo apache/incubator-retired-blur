@@ -25,3 +25,13 @@ active.collectors=hdfs|queries|tables
 #blur.instances=some-blur
 
 #blur.some-blur.url=
+
+# Email Properties
+# mail.enabled=true
+# mail.host=smtp.DOMAIN.com
+# mail.port=1337
+
+# mail.sender.username=SENDER@gmail.com
+# mail.sender.password=PASSWORD
+
+# mail.recipients=ADMINS@gmail.com|OTHERADMINS@gmail.com

@@ -81,6 +81,11 @@
 			<artifactId>jackson-core-asl</artifactId>
 			<version>1.8.1</version>
 		</dependency>
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4</version>
+		</dependency>
 		
 		<!-- COMPILE DEPENDENCIES -->
 		<dependency>

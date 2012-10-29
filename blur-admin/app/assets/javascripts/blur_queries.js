@@ -32,6 +32,7 @@ $(document).ready(function() {
       aoColumns: table_cols(),
       fnRowCallback: process_row
     });
+    data_table.fnSort([[4, 'desc']]);
     add_refresh_rates(data_table);
     $('#queries-table').ajaxComplete(function(e, xhr, settings) {
       if (settings.url.indexOf('/blur_queries/refresh') >= 0) {
@@ -47,6 +48,12 @@ $(document).ready(function() {
       var range_time_limit = $(this).find('option:selected').val();
       data_table.fnReloadAjax(Routes.refresh_zookeeper_blur_queries_path(CurrentZookeeper, range_time_limit, {format: 'json'}));
     });
+    $('.filter_option').on('click', function(){
+      var container = $(this);
+      var index = visible_column_count - 2;
+      var filter_string = container.attr("data-filter");
+      $('#queries-table').dataTable().fnFilter(filter_string, index);
+    })
   };
 
   var table_cols = function() {
@@ -142,7 +149,7 @@ $(document).ready(function() {
     $('#queries-table_wrapper > .row:first-child').prepend(refresh_content);
     $('.dataTables_wrapper .row .span3:first-child .btn-group').append('<a id="refresh-queries" class="btn"><i class="icon-refresh"/></a>');
     $('#refresh-queries').click(function() {
-     // if ($(this).attr('disabled') !== 'disabled'){
+        clearTimeout(refresh_timeout);
         data_table.fnReloadAjax();
     });
     $('a.refresh_option').click(function() {

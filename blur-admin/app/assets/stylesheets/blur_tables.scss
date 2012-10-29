@@ -87,43 +87,11 @@ tr.highlighted-row td{ background:#FAD08A !important; }
   .spark_line, .average{ display: inline; }
   .average { vertical-align: top; }
 }
-
-th{
-  cursor: pointer;
-
-  &.sorting_disabled{
-    cursor:default;
-  }
-  &.headerSortDown{
-    .icon-chevron-up{ display: none; }
-    .icon-chevron-down{ 
-      display: inline-block;
-      float:right;
-    }
-  }
-  &.headerSortUp{
-    .icon-chevron-up{ 
-      display: inline-block;
-      float:right;
-    }
-    .icon-chevron-down{ display: none; }
-  }
-  i{
-    &.icon-chevron-up{
-      top: 5px;
-      right: 10px;
-      display:none;
-    }
-    &.icon-chevron-down{
-      bottom: 5px;
-      right: 10px;
-      display:none;
-    }
-  }
-}
 .comment_row{
   width: 250px;
 }
 .blur_table_row_count{
   width:150px;
 }
+
+th:not(.sorttable_nosort) { cursor: pointer; }

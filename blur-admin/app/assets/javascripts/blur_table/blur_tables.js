@@ -1,14 +1,9 @@
 //= require jquery.dynatree
 //= require bootstrap-tooltip
 //= require bootstrap-popover
-//= require jquery.dataTables
+//= require sorttable
 //= require_tree .
 
-$.extend( $.fn.dataTableExt.oStdClasses, {
-  "sSortAsc": "header headerSortDown",
-  "sSortDesc": "header headerSortUp",
-  "sSortable": "header"
-});
 $(document).ready(function() {
   // Dynatree Setup
   $.ui.dynatree.nodedatadefaults["icon"] = false;

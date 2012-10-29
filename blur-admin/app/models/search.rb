@@ -48,6 +48,7 @@ class Search < ActiveRecord::Base
                         :recordOnly            => record_only?
   end
   def fetch_results(table_name, blur_urls)
+    puts blur_query.to_yaml
     BlurThriftClient.client(blur_urls).query(table_name, blur_query)
   end
 

@@ -15,7 +15,6 @@ var Cluster = Backbone.Model.extend({
     });
   },
   build_child_tables: function(){
-    var self = this;
     this.set({tables: new TableCollection(this.get('blur_tables'), {cluster: this})}, {silent: true});
   },
   update_child_tables: function(){
@@ -201,6 +200,7 @@ var ClusterView = Backbone.View.extend({
     'click .btn[data-action=disable]' : 'disable_tables',
     'click .btn[data-action=delete]' : 'delete_tables'
   },
+  colspan_lookup : {'active': 7, 'disabled': 4},
   render: function(){
     this.$el.html(this.template({cluster: this.model}));
     this.populate_tables();
@@ -219,26 +219,14 @@ var ClusterView = Backbone.View.extend({
   set_table_values: function(){
     var table_prefixes = ['active', 'disabled'];
     for (var index = 0; index < table_prefixes.length; index++){
-
       var table = this.$el.find('.' + table_prefixes[index] + '-table');
-      table.find('.dataTables_empty').parent().remove();
-      var table_children_count = table.children().length - table.children().find('.changing-state').length;
+      table.find('.no-data').remove();
+      var table_children_count = table.children().length;
       this.$el.find('.' + table_prefixes[index] + '-counter').text(table_children_count);
-      this.$el.find("#" + table_prefixes[index] + "_tables").dataTable({
-        "bFilter": false,
-        "bLengthChange": false,
-        "bDeferRender": true,
-        "bRetrieve": true,
-        "bPaginate": false,
-        "bInfo": false,
-        "oLanguage": {
-          "sZeroRecords": "No Tables for this Section",
-        }
-      });
-      //Had to do this to fix a problem where the dataTable was not reloading after a table had been moved from disabled to enabled.
-      if (table_children_count == 0 && typeof table.find('.dataTables_empty') != undefined){
-        $("#" + table_prefixes[index] + "_tables").append('<tr class="odd"><td valign="top" colspan="5" class="dataTables_empty">No Tables for this Section</td></tr>');
+      if (this.model.get('tables').where({table: table_prefixes[index]}).length <= 0){
+        table.append(this.no_table(this.colspan_lookup[table_prefixes[index]]));
       }
+      sorttable.makeSortable(table.closest("table")[0]);
     }
   },
   set_table_state: function(){
@@ -271,6 +259,9 @@ var ClusterView = Backbone.View.extend({
     } else {
       this.$el.find('.tab-pane.active .bulk-action-checkbox:checked').click();
     }
+  },
+  no_table: function(colspan){
+    return $('<tr class="no-data"><td/><td colspan="' + colspan + '">No Tables for this Section</td></tr>')
   },
   enable_tables: function(event){
     this.model.enable_tables();

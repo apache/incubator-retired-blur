@@ -34,170 +34,170 @@ import com.nearinfinity.agent.monitor.ThreadController;
 import com.nearinfinity.license.AgentLicense;
 
 public class Agent {
-  public static final long COLLECTOR_SLEEP_TIME = TimeUnit.SECONDS.toMillis(15);
-  public static final long CLEAN_UP_SLEEP_TIME = TimeUnit.SECONDS.toMillis(30);
+	public static final long COLLECTOR_SLEEP_TIME = TimeUnit.SECONDS.toMillis(15);
+	public static final long CLEAN_UP_SLEEP_TIME = TimeUnit.SECONDS.toMillis(30);
 
-  private static final Log log = LogFactory.getLog(Agent.class);
+	private static final Log log = LogFactory.getLog(Agent.class);
 
-  private Agent(Properties props) {
+	private Agent(Properties props) {
 
-    // Setup database connection
-    JdbcTemplate jdbc = JdbcConnection.createDBConnection(props);
+		// Setup database connection
+		JdbcTemplate jdbc = JdbcConnection.createDBConnection(props);
 
-    // Setup the mailer
-    if (props.containsKey("mail.enabled") && props.getProperty("mail.enabled").equals("true")) {
-      AgentMailer.getMailer(props, true);
-    }
+		// Setup the mailer
+		if (props.containsKey("mail.enabled") && props.getProperty("mail.enabled").equals("true")) {
+			AgentMailer.getMailer(props, true);
+		}
 
-    // Verify valid License
-    try {
-    	AgentLicense.verifyLicense(props, jdbc);
-    } catch (InvalidLicenseException e) {
-    	log.fatal(e.getMessage() + " Exiting.");
-    	ThreadController.stopAllThreads();
-    	return;
-    }
+		// Verify valid License
+		try {
+			AgentLicense.verifyLicense(props, jdbc);
+		} catch (InvalidLicenseException e) {
+			log.fatal(e.getMessage() + " Exiting.");
+			ThreadController.stopAllThreads();
+			return;
+		}
 
-    List<String> activeCollectors = props.containsKey("active.collectors") ? new ArrayList<String>(Arrays.asList(props.getProperty(
-        "active.collectors").split("\\|"))) : new ArrayList<String>();
+		List<String> activeCollectors = props.containsKey("active.collectors") ? new ArrayList<String>(Arrays.asList(props.getProperty(
+				"active.collectors").split("\\|"))) : new ArrayList<String>();
 
-    // Setup the collectors
-    setupHdfs(props, jdbc, activeCollectors);
-    setupBlur(props, jdbc, activeCollectors);
-    setupZookeeper(props, jdbc);
-    setupCleaners(jdbc, activeCollectors);
-  }
+		// Setup the collectors
+		setupHdfs(props, jdbc, activeCollectors);
+		setupBlur(props, jdbc, activeCollectors);
+		setupZookeeper(props, jdbc);
+		setupCleaners(jdbc, activeCollectors);
+	}
 
-  public static void main(String[] args) {
-    writePidFile();
-    Properties configProps = loadConfigParams(args);
-    setupLogger(configProps);
-    new Agent(configProps);
-  }
+	public static void main(String[] args) {
+		writePidFile();
+		Properties configProps = loadConfigParams(args);
+		setupLogger(configProps);
+		new Agent(configProps);
+	}
 
-  private void setupCleaners(JdbcTemplate jdbc, List<String> activeCollectors) {
-    new Thread(new AgentCleaners(activeCollectors, new CleanerDatabaseConnection(jdbc)), "Agent Cleaner Thread").start();
-  }
+	private void setupCleaners(JdbcTemplate jdbc, List<String> activeCollectors) {
+		new Thread(new AgentCleaners(activeCollectors, new CleanerDatabaseConnection(jdbc)), "Agent Cleaner Thread").start();
+	}
 
-  private void setupBlur(Properties props, JdbcTemplate jdbc, List<String> activeCollectors) {
-    Map<String, String> blurInstances = loadBlurInstances(props);
-    for (Map.Entry<String, String> blurEntry : blurInstances.entrySet()) {
-      final String zookeeperName = blurEntry.getKey();
-      final String connection = blurEntry.getValue();
-      new Thread(new BlurCollector(zookeeperName, connection, activeCollectors, new BlurDatabaseConnection(jdbc), jdbc),
-          "Blur Collector thread - " + zookeeperName).start();
-    }
-  }
+	private void setupBlur(Properties props, JdbcTemplate jdbc, List<String> activeCollectors) {
+		Map<String, String> blurInstances = loadBlurInstances(props);
+		for (Map.Entry<String, String> blurEntry : blurInstances.entrySet()) {
+			final String zookeeperName = blurEntry.getKey();
+			final String connection = blurEntry.getValue();
+			new Thread(new BlurCollector(zookeeperName, connection, activeCollectors, new BlurDatabaseConnection(jdbc), jdbc),
+					"Blur Collector thread - " + zookeeperName).start();
+		}
+	}
 
-  private void setupHdfs(Properties props, final JdbcTemplate jdbc, List<String> activeCollectors) {
-    Map<String, Map<String, String>> hdfsInstances = loadHdfsInstances(props);
-    for (Map<String, String> instance : hdfsInstances.values()) {
-      final String name = instance.get("name");
-      final String thriftUri = instance.get("url.thrift");
-      final String defaultUri = instance.get("url.default");
-      final String user = props.getProperty("hdfs." + name + ".login.user");
-      try {
-        new Thread(new HdfsCollector(name, defaultUri, thriftUri, user, activeCollectors, new HdfsDatabaseConnection(jdbc)),
-            "Hdfs Collector - " + name).start();
-      } catch (HdfsThreadException e) {
-        log.error("The collector for hdfs [" + name + "] will not execute.");
-        continue;
-      }
-    }
-  }
+	private void setupHdfs(Properties props, final JdbcTemplate jdbc, List<String> activeCollectors) {
+		Map<String, Map<String, String>> hdfsInstances = loadHdfsInstances(props);
+		for (Map<String, String> instance : hdfsInstances.values()) {
+			final String name = instance.get("name");
+			final String thriftUri = instance.get("url.thrift");
+			final String defaultUri = instance.get("url.default");
+			final String user = props.getProperty("hdfs." + name + ".login.user");
+			try {
+				new Thread(new HdfsCollector(name, defaultUri, thriftUri, user, activeCollectors, new HdfsDatabaseConnection(jdbc)),
+						"Hdfs Collector - " + name).start();
+			} catch (HdfsThreadException e) {
+				log.error("The collector for hdfs [" + name + "] will not execute.");
+				continue;
+			}
+		}
+	}
 
-  private void setupZookeeper(Properties props, JdbcTemplate jdbc) {
-    if (props.containsKey("zk.instances")) {
-      List<String> zooKeeperInstances = new ArrayList<String>(Arrays.asList(props.getProperty("zk.instances").split("\\|")));
-      for (String zkInstance : zooKeeperInstances) {
-        String zkUrl = props.getProperty("zk." + zkInstance + ".url");
-        String blurConnection = props.getProperty("blur." + zkInstance + ".url");
-        new Thread(new ZookeeperCollector(zkUrl, zkInstance, blurConnection, new ZookeeperDatabaseConnection(jdbc)), "Zookeeper - "
-            + zkInstance).start();
-      }
-    }
-  }
+	private void setupZookeeper(Properties props, JdbcTemplate jdbc) {
+		if (props.containsKey("zk.instances")) {
+			List<String> zooKeeperInstances = new ArrayList<String>(Arrays.asList(props.getProperty("zk.instances").split("\\|")));
+			for (String zkInstance : zooKeeperInstances) {
+				String zkUrl = props.getProperty("zk." + zkInstance + ".url");
+				String blurConnection = props.getProperty("blur." + zkInstance + ".url");
+				new Thread(new ZookeeperCollector(zkUrl, zkInstance, blurConnection, new ZookeeperDatabaseConnection(jdbc)), "Zookeeper - "
+						+ zkInstance).start();
+			}
+		}
+	}
 
-  private static void setupLogger(Properties props) {
-    String log4jPropsFile = props.getProperty("log4j.properties", "../conf/log4j.properties");
+	private static void setupLogger(Properties props) {
+		String log4jPropsFile = props.getProperty("log4j.properties", "../conf/log4j.properties");
 
-    if (new File(log4jPropsFile).exists()) {
-      PropertyConfigurator.configure(log4jPropsFile);
-    } else {
-      log.warn("Unable to find log4j properties file.  Using default logging");
-    }
-  }
+		if (new File(log4jPropsFile).exists()) {
+			PropertyConfigurator.configure(log4jPropsFile);
+		} else {
+			log.warn("Unable to find log4j properties file.  Using default logging");
+		}
+	}
 
-  private static Properties loadConfigParams(String[] args) {
-    String configFileName;
-    if (args.length == 0) {
-      configFileName = "../conf/blur-agent.config";
-    } else {
-      configFileName = args[0];
-    }
-    File configFile = new File(configFileName);
+	private static Properties loadConfigParams(String[] args) {
+		String configFileName;
+		if (args.length == 0) {
+			configFileName = "../conf/blur-agent.config";
+		} else {
+			configFileName = args[0];
+		}
+		File configFile = new File(configFileName);
 
-    if (!configFile.exists() || !configFile.isFile()) {
-      log.fatal("Unable to find config file at " + configFile.getAbsolutePath());
-      System.exit(1);
-    }
+		if (!configFile.exists() || !configFile.isFile()) {
+			log.fatal("Unable to find config file at " + configFile.getAbsolutePath());
+			System.exit(1);
+		}
 
-    Properties configProps = new Properties();
-    try {
-      configProps.load(new FileInputStream(configFile));
-    } catch (Exception e) {
-      log.fatal("Config File is not a valid properties file: " + e.getMessage());
-      System.exit(1);
-    }
-    return configProps;
-  }
+		Properties configProps = new Properties();
+		try {
+			configProps.load(new FileInputStream(configFile));
+		} catch (Exception e) {
+			log.fatal("Config File is not a valid properties file: " + e.getMessage());
+			System.exit(1);
+		}
+		return configProps;
+	}
 
-  private static void writePidFile() {
-    try {
-      File pidFile = new File("../agent.pid");
-      PrintWriter pidOut = new PrintWriter(pidFile);
-      log.info("Wrote pid file to: " + pidFile.getAbsolutePath());
-      String nameOfRunningVM = ManagementFactory.getRuntimeMXBean().getName();
-      int p = nameOfRunningVM.indexOf('@');
-      String pid = nameOfRunningVM.substring(0, p);
-      pidOut.write(pid);
-      pidOut.write("\n");
-      pidOut.close();
-    } catch (FileNotFoundException e) {
-      log.fatal("Unable to find pid file. " + e.getMessage());
-      System.exit(1);
-    }
-  }
+	private static void writePidFile() {
+		try {
+			File pidFile = new File("../agent.pid");
+			PrintWriter pidOut = new PrintWriter(pidFile);
+			log.info("Wrote pid file to: " + pidFile.getAbsolutePath());
+			String nameOfRunningVM = ManagementFactory.getRuntimeMXBean().getName();
+			int p = nameOfRunningVM.indexOf('@');
+			String pid = nameOfRunningVM.substring(0, p);
+			pidOut.write(pid);
+			pidOut.write("\n");
+			pidOut.close();
+		} catch (FileNotFoundException e) {
+			log.fatal("Unable to find pid file. " + e.getMessage());
+			System.exit(1);
+		}
+	}
 
-  private Map<String, String> loadBlurInstances(Properties props) {
-    Map<String, String> instances = new HashMap<String, String>();
+	private Map<String, String> loadBlurInstances(Properties props) {
+		Map<String, String> instances = new HashMap<String, String>();
 
-    if (props.containsKey("blur.instances")) {
-      String[] blurNames = props.getProperty("blur.instances").split("\\|");
+		if (props.containsKey("blur.instances")) {
+			String[] blurNames = props.getProperty("blur.instances").split("\\|");
 
-      for (String blur : blurNames) {
-        instances.put(blur, props.getProperty("blur." + blur + ".url"));
-      }
-    }
+			for (String blur : blurNames) {
+				instances.put(blur, props.getProperty("blur." + blur + ".url"));
+			}
+		}
 
-    return instances;
-  }
+		return instances;
+	}
 
-  private Map<String, Map<String, String>> loadHdfsInstances(Properties props) {
-    Map<String, Map<String, String>> instances = new HashMap<String, Map<String, String>>();
+	private Map<String, Map<String, String>> loadHdfsInstances(Properties props) {
+		Map<String, Map<String, String>> instances = new HashMap<String, Map<String, String>>();
 
-    if (props.containsKey("hdfs.instances")) {
-      String[] hdfsNames = props.getProperty("hdfs.instances").split("\\|");
+		if (props.containsKey("hdfs.instances")) {
+			String[] hdfsNames = props.getProperty("hdfs.instances").split("\\|");
 
-      for (String hdfs : hdfsNames) {
-        Map<String, String> instanceInfo = new HashMap<String, String>();
-        instanceInfo.put("url.thrift", props.getProperty("hdfs." + hdfs + ".thrift.url"));
-        instanceInfo.put("url.default", props.getProperty("hdfs." + hdfs + ".url"));
-        instanceInfo.put("name", hdfs);
-        instances.put(hdfs, instanceInfo);
-      }
-    }
+			for (String hdfs : hdfsNames) {
+				Map<String, String> instanceInfo = new HashMap<String, String>();
+				instanceInfo.put("url.thrift", props.getProperty("hdfs." + hdfs + ".thrift.url"));
+				instanceInfo.put("url.default", props.getProperty("hdfs." + hdfs + ".url"));
+				instanceInfo.put("name", hdfs);
+				instances.put(hdfs, instanceInfo);
+			}
+		}
 
-    return instances;
-  }
+		return instances;
+	}
 }

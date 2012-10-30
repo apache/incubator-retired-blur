@@ -7,22 +7,22 @@ import org.springframework.dao.DataAccessException;
 import com.nearinfinity.agent.connections.cleaners.interfaces.HdfsDatabaseCleanerInterface;
 
 public class HdfsStatsCleaner implements Runnable {
-  private static final Log log = LogFactory.getLog(QueriesCleaner.class);
-  
-  private final HdfsDatabaseCleanerInterface database;
+	private static final Log log = LogFactory.getLog(QueriesCleaner.class);
 
-  public HdfsStatsCleaner(HdfsDatabaseCleanerInterface database) {
-    this.database = database;
-  }
+	private final HdfsDatabaseCleanerInterface database;
 
-  @Override
-  public void run() {
-    try {
-      this.database.deleteOldStats();
-    } catch (DataAccessException e) {
-      log.error("An error occured while deleting hdfs stats from the database!", e);
-    } catch (Exception e) {
-      log.error("An unkown error occured while cleaning up the hdfs stats!", e);
-    }
-  }
+	public HdfsStatsCleaner(HdfsDatabaseCleanerInterface database) {
+		this.database = database;
+	}
+
+	@Override
+	public void run() {
+		try {
+			this.database.deleteOldStats();
+		} catch (DataAccessException e) {
+			log.error("An error occured while deleting hdfs stats from the database!", e);
+		} catch (Exception e) {
+			log.error("An unkown error occured while cleaning up the hdfs stats!", e);
+		}
+	}
 }

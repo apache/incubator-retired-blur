@@ -4,10 +4,10 @@ import java.util.List;
 
 public interface ShardsDatabaseInterface {
 
-  int markOfflineShards(List<String> onlineShards, int clusterId);
+	int markOfflineShards(List<String> onlineShards, int clusterId);
 
-  void updateOnlineShard(String shard, int clusterId, String blurVersion);
-  
-  List<String> getRecentOfflineShardNames(int amount);
+	void updateOnlineShard(String shard, int clusterId, String blurVersion);
+
+	List<String> getRecentOfflineShardNames(int amount);
 
 }

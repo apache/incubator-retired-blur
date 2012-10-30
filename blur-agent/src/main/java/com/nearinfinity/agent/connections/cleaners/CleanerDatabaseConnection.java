@@ -7,51 +7,51 @@ import com.nearinfinity.agent.connections.cleaners.interfaces.CleanerDatabaseInt
 import com.nearinfinity.agent.types.TimeHelper;
 
 public class CleanerDatabaseConnection implements CleanerDatabaseInterface {
-  private final JdbcTemplate jdbc;
-  
-  // Query Expiration Times
-  private final int expireThreshold = -2;
-  private final int deleteThreshold = -2;
-  
-  // Hdfs Expiration Times
-  private final int timeToLive = -14;
+	private final JdbcTemplate jdbc;
 
-  public CleanerDatabaseConnection(JdbcTemplate jdbc) {
-    this.jdbc = jdbc;
-  }
-  
-  @Override
-  public int deleteOldQueries() {
-    Calendar now = TimeHelper.now();
+	// Query Expiration Times
+	private final int expireThreshold = -2;
+	private final int deleteThreshold = -2;
 
-    Calendar twoHoursAgo = Calendar.getInstance();
-    twoHoursAgo.setTimeInMillis(now.getTimeInMillis());
-    twoHoursAgo.add(Calendar.HOUR_OF_DAY, deleteThreshold);
+	// Hdfs Expiration Times
+	private final int timeToLive = -14;
 
-    return this.jdbc.update("delete from blur_queries where created_at < ?", twoHoursAgo.getTime());
-  }
+	public CleanerDatabaseConnection(JdbcTemplate jdbc) {
+		this.jdbc = jdbc;
+	}
 
-  @Override
-  public int expireOldQueries() {
-    Calendar now = TimeHelper.now();
+	@Override
+	public int deleteOldQueries() {
+		Calendar now = TimeHelper.now();
 
-    Calendar twoMinutesAgo = Calendar.getInstance();
-    twoMinutesAgo.setTimeInMillis(now.getTimeInMillis());
-    twoMinutesAgo.add(Calendar.MINUTE, expireThreshold);
+		Calendar twoHoursAgo = Calendar.getInstance();
+		twoHoursAgo.setTimeInMillis(now.getTimeInMillis());
+		twoHoursAgo.add(Calendar.HOUR_OF_DAY, deleteThreshold);
 
-    return this.jdbc.update("update blur_queries set state=1, updated_at=? where updated_at < ? and state = 0", now.getTime(),
-        twoMinutesAgo);
-  }
-  
-  @Override
-  public int deleteOldStats() {
-    Calendar now = TimeHelper.now();
+		return this.jdbc.update("delete from blur_queries where created_at < ?", twoHoursAgo.getTime());
+	}
 
-    Calendar ttlDaysAgo = Calendar.getInstance();
-    ttlDaysAgo.setTimeInMillis(now.getTimeInMillis());
-    ttlDaysAgo.add(Calendar.DATE, timeToLive);
-    
-    return jdbc.update("delete from hdfs_stats where created_at < ?", ttlDaysAgo);
-  }
+	@Override
+	public int expireOldQueries() {
+		Calendar now = TimeHelper.now();
+
+		Calendar twoMinutesAgo = Calendar.getInstance();
+		twoMinutesAgo.setTimeInMillis(now.getTimeInMillis());
+		twoMinutesAgo.add(Calendar.MINUTE, expireThreshold);
+
+		return this.jdbc.update("update blur_queries set state=1, updated_at=? where updated_at < ? and state = 0", now.getTime(),
+				twoMinutesAgo);
+	}
+
+	@Override
+	public int deleteOldStats() {
+		Calendar now = TimeHelper.now();
+
+		Calendar ttlDaysAgo = Calendar.getInstance();
+		ttlDaysAgo.setTimeInMillis(now.getTimeInMillis());
+		ttlDaysAgo.add(Calendar.DATE, timeToLive);
+
+		return jdbc.update("delete from hdfs_stats where created_at < ?", ttlDaysAgo);
+	}
 
 }

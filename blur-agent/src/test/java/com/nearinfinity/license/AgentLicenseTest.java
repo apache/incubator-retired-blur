@@ -20,7 +20,7 @@ public class AgentLicenseTest extends BlurAgentBaseTestClass {
 	public void setup() {
 		ThreadController.exitOnStop = false;
 	}
-	
+
 	@Test
 	public void testMissingLicenseLocation() {
 		try {
@@ -30,7 +30,7 @@ public class AgentLicenseTest extends BlurAgentBaseTestClass {
 			assertEquals("Missing license.file configuration property.", e.getMessage());
 		}
 	}
-	
+
 	@Test
 	public void testMissingLicenseFile() {
 		try {
@@ -42,7 +42,7 @@ public class AgentLicenseTest extends BlurAgentBaseTestClass {
 			assertEquals("Unable to find license file (" + new File("bad.lic").getAbsolutePath() + ").", e.getMessage());
 		}
 	}
-	
+
 	@Test
 	public void testBadLicenseType() {
 		try {
@@ -54,7 +54,7 @@ public class AgentLicenseTest extends BlurAgentBaseTestClass {
 			assertEquals("Invalid license type [UNKNOWN].", e.getMessage());
 		}
 	}
-	
+
 	@Test
 	public void testInvalidLicense() {
 		try {
@@ -66,16 +66,16 @@ public class AgentLicenseTest extends BlurAgentBaseTestClass {
 			assertEquals("Invalid license.", e.getMessage());
 		}
 	}
-	
+
 	@Test
 	public void testInvalidLicenseType() throws InvalidLicenseException {
 		Properties props = new Properties();
 		props.setProperty("license.file", "/Users/crohr/Projects/nic/blur-tools/license-maker/licenses/NIC-Testing/blur_tools_2011-12-31.lic");
-		
+
 		AgentLicense.verifyLicense(props, jdbc);
-		//AgentLicense.verifyLicense(null, null);
+		// AgentLicense.verifyLicense(null, null);
 	}
-	
+
 	private String getLicensePath(String license) {
 		String file = null;
 		try {

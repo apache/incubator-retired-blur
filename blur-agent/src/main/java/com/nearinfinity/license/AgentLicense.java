@@ -88,7 +88,8 @@ public class AgentLicense {
 		issuingKey.setPublicKey(CryptoServices.getCryptoServices().decodeBase64(PUBLIC_KEY));
 
 		try {
-			if (!cryptoServices.verify(licenseData.toString().getBytes(), cryptoServices.decodeBase64(signature), cryptoServices.getPublicKey(issuingKey.getPublicKey()))) {
+			if (!cryptoServices.verify(licenseData.toString().getBytes(), cryptoServices.decodeBase64(signature),
+					cryptoServices.getPublicKey(issuingKey.getPublicKey()))) {
 				throw new InvalidLicenseException("Invalid license.");
 			}
 		} catch (CryptoServicesException e) {
@@ -96,7 +97,8 @@ public class AgentLicense {
 		}
 	}
 
-	private static void verifyLicenseValidity(List<String> licenseFileLines, String licenseType, JdbcTemplate jdbc,	Properties props) throws InvalidLicenseException {
+	private static void verifyLicenseValidity(List<String> licenseFileLines, String licenseType, JdbcTemplate jdbc, Properties props)
+			throws InvalidLicenseException {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
 		Date expires = null;
@@ -180,12 +182,12 @@ public class AgentLicense {
 
 		if (totalClusters > allowedClusters) {
 			jdbc.update("update licenses set cluster_overage=?", totalClusters - allowedClusters);
-			throw new InvalidLicenseException(
-					"Too many clusters for license.  Request new license to continue collecting information.");
+			throw new InvalidLicenseException("Too many clusters for license.  Request new license to continue collecting information.");
 		}
 	}
 
-	private static void updateNodeOverageInfo(JdbcTemplate jdbc, List<String> licenseFileLines, Properties props) throws InvalidLicenseException {
+	private static void updateNodeOverageInfo(JdbcTemplate jdbc, List<String> licenseFileLines, Properties props)
+			throws InvalidLicenseException {
 		int totalNodes = jdbc
 				.queryForInt("select a.nodes + b.nodes from (select count(1) as nodes from controllers) a, (select count(1) as nodes from shards) b");
 		int allowedNodes = Integer.parseInt(licenseFileLines.get(7));
@@ -228,8 +230,7 @@ public class AgentLicense {
 		} catch (CryptoServicesException e) {
 			throw new InvalidLicenseException("Unable to sign grace file contents.", e);
 		}
-		String fileContent = StringUtils.join(dates, ',') + "\n"
-				+ WordUtils.wrap(cryptoServices.encodeBase64(sig), 50, null, true);
+		String fileContent = StringUtils.join(dates, ',') + "\n" + WordUtils.wrap(cryptoServices.encodeBase64(sig), 50, null, true);
 
 		try {
 			IOUtils.write(fileContent, new FileOutputStream(graceFile));
@@ -249,8 +250,7 @@ public class AgentLicense {
 		} catch (FileNotFoundException e) {
 			throw new InvalidLicenseException("Unable to find grace period file (" + graceFile.getAbsolutePath() + ").");
 		} catch (IOException e) {
-			throw new InvalidLicenseException("There was a problem reading the grace period file: " + e.getMessage()
-					+ ".");
+			throw new InvalidLicenseException("There was a problem reading the grace period file: " + e.getMessage() + ".");
 		}
 
 		if (graceFileLines.isEmpty()) {

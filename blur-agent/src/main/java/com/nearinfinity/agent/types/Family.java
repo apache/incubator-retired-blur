@@ -6,7 +6,7 @@ import java.util.List;
 public class Family {
 	String name;
 	List<Column> columns = new ArrayList<Column>();
-	
+
 	public Family(String name) {
 		this.name = name;
 	}

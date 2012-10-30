@@ -11,45 +11,45 @@ import com.nearinfinity.agent.connections.zookeeper.interfaces.ControllerDatabas
 import com.nearinfinity.agent.mailer.AgentMailer;
 
 public class ControllerCollector implements Runnable {
-  private static final Log log = LogFactory.getLog(ControllerCollector.class);
+	private static final Log log = LogFactory.getLog(ControllerCollector.class);
 
-  private final int zookeeperId;
-  private final ZooKeeper zookeeper;
-  private final ControllerDatabaseInterface database;
+	private final int zookeeperId;
+	private final ZooKeeper zookeeper;
+	private final ControllerDatabaseInterface database;
 
-  public ControllerCollector(int zookeeperId, ZooKeeper zookeeper, ControllerDatabaseInterface database) {
-    this.zookeeperId = zookeeperId;
-    this.zookeeper = zookeeper;
-    this.database = database;
-  }
+	public ControllerCollector(int zookeeperId, ZooKeeper zookeeper, ControllerDatabaseInterface database) {
+		this.zookeeperId = zookeeperId;
+		this.zookeeper = zookeeper;
+		this.database = database;
+	}
 
-  @Override
-  public void run() {
-    try {
-      List<String> onlineControllers = this.zookeeper.getChildren("/blur/online-controller-nodes", false);
-      int recentlyOffline = this.database.markOfflineControllers(onlineControllers, this.zookeeperId);
-      if (recentlyOffline > 0){
-        AgentMailer.getMailer().notifyControllerOffline(this.database.getRecentOfflineControllerNames(recentlyOffline));
-      }
-      updateOnlineControllers(onlineControllers);
-    } catch (KeeperException e) {
-      log.error("Error talking to zookeeper in ControllerCollector.", e);
-    } catch (InterruptedException e) {
-      log.error("Zookeeper session expired in ControllerCollector.", e);
-    }
+	@Override
+	public void run() {
+		try {
+			List<String> onlineControllers = this.zookeeper.getChildren("/blur/online-controller-nodes", false);
+			int recentlyOffline = this.database.markOfflineControllers(onlineControllers, this.zookeeperId);
+			if (recentlyOffline > 0) {
+				AgentMailer.getMailer().notifyControllerOffline(this.database.getRecentOfflineControllerNames(recentlyOffline));
+			}
+			updateOnlineControllers(onlineControllers);
+		} catch (KeeperException e) {
+			log.error("Error talking to zookeeper in ControllerCollector.", e);
+		} catch (InterruptedException e) {
+			log.error("Zookeeper session expired in ControllerCollector.", e);
+		}
 
-  }
+	}
 
-  private void updateOnlineControllers(List<String> controllers) throws KeeperException, InterruptedException {
-    for (String controller : controllers) {
-      String blurVersion = "UNKNOWN";
+	private void updateOnlineControllers(List<String> controllers) throws KeeperException, InterruptedException {
+		for (String controller : controllers) {
+			String blurVersion = "UNKNOWN";
 
-      byte[] b = this.zookeeper.getData("/blur/online-controller-nodes/" + controller, false, null);
-      if (b != null && b.length > 0) {
-        blurVersion = new String(b);
-      }
+			byte[] b = this.zookeeper.getData("/blur/online-controller-nodes/" + controller, false, null);
+			if (b != null && b.length > 0) {
+				blurVersion = new String(b);
+			}
 
-      this.database.updateOnlineController(controller, zookeeperId, blurVersion);
-    }
-  }
+			this.database.updateOnlineController(controller, zookeeperId, blurVersion);
+		}
+	}
 }

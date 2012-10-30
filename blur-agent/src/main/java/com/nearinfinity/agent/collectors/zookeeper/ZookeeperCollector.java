@@ -23,115 +23,115 @@ import com.nearinfinity.agent.connections.zookeeper.interfaces.ZookeeperDatabase
 import com.nearinfinity.agent.mailer.AgentMailer;
 
 public class ZookeeperCollector implements Runnable {
-  private static final Log log = LogFactory.getLog(ZookeeperCollector.class);
+	private static final Log log = LogFactory.getLog(ZookeeperCollector.class);
 
-  private ZooKeeper zookeeper;
-  private boolean connected;
+	private ZooKeeper zookeeper;
+	private boolean connected;
 
-  private final String url;
-  private final String name;
-  private final int id;
-  private final ZookeeperDatabaseInterface database;
+	private final String url;
+	private final String name;
+	private final int id;
+	private final ZookeeperDatabaseInterface database;
 
-  public ZookeeperCollector(String url, String name, String blurConnection, ZookeeperDatabaseInterface database) {
-    this.url = url;
-    this.name = name;
-    this.database = database;
-    this.id = database.insertOrUpdateZookeeper(name, url, blurConnection);
-  }
+	public ZookeeperCollector(String url, String name, String blurConnection, ZookeeperDatabaseInterface database) {
+		this.url = url;
+		this.name = name;
+		this.database = database;
+		this.id = database.insertOrUpdateZookeeper(name, url, blurConnection);
+	}
 
-  @Override
-  public void run() {
-    while (true) {
-      try {
-        if (!this.connected) {
-          this.zookeeper = new ZooKeeper(this.url, 3000, new Watcher() {
-            @Override
-            public void process(WatchedEvent event) {
-              KeeperState state = event.getState();
-              if (state == KeeperState.Disconnected || state == KeeperState.Expired) {
-                log.warn("Zookeeper [" + name + "] disconnected event.");
-                database.setZookeeperOffline(id);
-                AgentMailer.getMailer().notifyZookeeperOffline(name);
-                connected = false;
-              } else if (state == KeeperState.SyncConnected) {
-                log.info("Zookeeper [" + name + "] session established.");
-                database.setZookeeperOnline(id);
-                connected = true;
-              }
-            }
-          });
-        }
-      } catch (IOException e) {
-        log.error("A zookeeper [" + this.name + "] connection could not be created, waiting 30 seconds.");
-        // Sleep the thread for 30secs to give the Zookeeper a chance to become
-        // available.
-        try {
-          Thread.sleep(30000);
-          continue;
-        } catch (InterruptedException ex) {
-          log.info("Exiting Zookeeper [" + this.name + "] instance");
-          return;
-        }
-      }
+	@Override
+	public void run() {
+		while (true) {
+			try {
+				if (!this.connected) {
+					this.zookeeper = new ZooKeeper(this.url, 3000, new Watcher() {
+						@Override
+						public void process(WatchedEvent event) {
+							KeeperState state = event.getState();
+							if (state == KeeperState.Disconnected || state == KeeperState.Expired) {
+								log.warn("Zookeeper [" + name + "] disconnected event.");
+								database.setZookeeperOffline(id);
+								AgentMailer.getMailer().notifyZookeeperOffline(name);
+								connected = false;
+							} else if (state == KeeperState.SyncConnected) {
+								log.info("Zookeeper [" + name + "] session established.");
+								database.setZookeeperOnline(id);
+								connected = true;
+							}
+						}
+					});
+				}
+			} catch (IOException e) {
+				log.error("A zookeeper [" + this.name + "] connection could not be created, waiting 30 seconds.");
+				// Sleep the thread for 30secs to give the Zookeeper a chance to become
+				// available.
+				try {
+					Thread.sleep(30000);
+					continue;
+				} catch (InterruptedException ex) {
+					log.info("Exiting Zookeeper [" + this.name + "] instance");
+					return;
+				}
+			}
 
-      if (this.connected) {
-        new Thread(new ControllerCollector(this.id, this.zookeeper, this.database), "Controller Collector - " + this.name).start();
-        new Thread(new ClusterCollector(this.id, this.zookeeper, this.database), "Cluster Collector - " + this.name).start();
-      }
+			if (this.connected) {
+				new Thread(new ControllerCollector(this.id, this.zookeeper, this.database), "Controller Collector - " + this.name).start();
+				new Thread(new ClusterCollector(this.id, this.zookeeper, this.database), "Cluster Collector - " + this.name).start();
+			}
 
-      testEnsembleHealth();
+			testEnsembleHealth();
 
-      try {
-        Thread.sleep(Agent.COLLECTOR_SLEEP_TIME);
-      } catch (InterruptedException e) {
-        log.info("Exiting Zookeeper [" + this.name + "] instance");
-        return;
-      }
-    }
-  }
+			try {
+				Thread.sleep(Agent.COLLECTOR_SLEEP_TIME);
+			} catch (InterruptedException e) {
+				log.info("Exiting Zookeeper [" + this.name + "] instance");
+				return;
+			}
+		}
+	}
 
-  private void testEnsembleHealth() {
-    Socket socket = null;
-    String[] connections = this.url.split(",");
-    List<String> onlineZookeepers = new ArrayList<String>();
-    for (String connection : connections) {
-      try {
-        URI parsedConnection = new URI("my://" + connection);
-        byte[] reqBytes = new byte[4];
-        ByteBuffer req = ByteBuffer.wrap(reqBytes);
-        req.putInt(ByteBuffer.wrap("ruok".getBytes()).getInt());
-        socket = new Socket();
-        socket.setSoLinger(false, 10);
-        socket.setSoTimeout(20000);
-        socket.connect(new InetSocketAddress(parsedConnection.getHost(), parsedConnection.getPort()));
+	private void testEnsembleHealth() {
+		Socket socket = null;
+		String[] connections = this.url.split(",");
+		List<String> onlineZookeepers = new ArrayList<String>();
+		for (String connection : connections) {
+			try {
+				URI parsedConnection = new URI("my://" + connection);
+				byte[] reqBytes = new byte[4];
+				ByteBuffer req = ByteBuffer.wrap(reqBytes);
+				req.putInt(ByteBuffer.wrap("ruok".getBytes()).getInt());
+				socket = new Socket();
+				socket.setSoLinger(false, 10);
+				socket.setSoTimeout(20000);
+				socket.connect(new InetSocketAddress(parsedConnection.getHost(), parsedConnection.getPort()));
 
-        InputStream response = socket.getInputStream();
-        OutputStream question = socket.getOutputStream();
+				InputStream response = socket.getInputStream();
+				OutputStream question = socket.getOutputStream();
 
-        question.write(reqBytes);
+				question.write(reqBytes);
 
-        byte[] resBytes = new byte[4];
+				byte[] resBytes = new byte[4];
 
-        response.read(resBytes);
-        String status = new String(resBytes);
-        if (status.equals("imok")) {
-          onlineZookeepers.add(connection);
-        }
-      } catch (Exception e) {
-        log.error("A connection to " + connection + " could not be made.");
-      }
-    }
-    try {
-      if (connections.length < onlineZookeepers.size() * 2){
-        this.database.setZookeeperWarning(this.id);
-      } else if (connections.length > onlineZookeepers.size() * 2) {
-        this.database.setZookeeperOffline(this.id);
-      }
-      this.database.setOnlineEnsembleNodes(new ObjectMapper().writeValueAsString(onlineZookeepers), this.id);
-    } catch (Exception e) {
-      log.error("The online ensemble nodes array could not be created, writing that they are all offline!");
-      this.database.setOnlineEnsembleNodes("{}", this.id);
-    }
-  }
+				response.read(resBytes);
+				String status = new String(resBytes);
+				if (status.equals("imok")) {
+					onlineZookeepers.add(connection);
+				}
+			} catch (Exception e) {
+				log.error("A connection to " + connection + " could not be made.");
+			}
+		}
+		try {
+			if (connections.length < onlineZookeepers.size() * 2) {
+				this.database.setZookeeperWarning(this.id);
+			} else if (connections.length > onlineZookeepers.size() * 2) {
+				this.database.setZookeeperOffline(this.id);
+			}
+			this.database.setOnlineEnsembleNodes(new ObjectMapper().writeValueAsString(onlineZookeepers), this.id);
+		} catch (Exception e) {
+			log.error("The online ensemble nodes array could not be created, writing that they are all offline!");
+			this.database.setOnlineEnsembleNodes("{}", this.id);
+		}
+	}
 }

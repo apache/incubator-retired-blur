@@ -12,6 +12,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -44,7 +45,7 @@ public class AgentMailer {
 		props.put("mail.smtp.port", props.getProperty("mail.port", ""));
 		props.put("mail.smtp.auth", "true");
 		props.put("mail.smtp.starttls.enable", "true");
-		mailerProperties = props; 
+		mailerProperties = props;
 	}
 
 	public void notifyZookeeperOffline(String zookeeperName) {
@@ -55,13 +56,37 @@ public class AgentMailer {
 		notifyNodeOffline("Controller", controllerName);
 	}
 
+	public void notifyControllerOffline(List<String> controllerNames) {
+		if (controllerNames.size() == 1) {
+			notifyNodeOffline("Controllers", controllerNames.get(0));
+		} else {
+			notifyMultipleNodeOffline("Controllers", controllerNames);
+		}
+	}
+
 	public void notifyShardOffline(String shardName) {
 		notifyNodeOffline("Shard", shardName);
 	}
 
+	public void notifyShardOffline(List<String> shardNames) {
+		if (shardNames.size() == 1) {
+			notifyNodeOffline("Shards", shardNames.get(0));
+		} else {
+			notifyMultipleNodeOffline("Shards", shardNames);
+		}
+	}
+
 	private void notifyNodeOffline(String type, String name) {
 		String subject = "Blur Console: " + type + " [" + name + "] may have gone offline!";
-		String body = "Blur Console has received notice that " + type + " [" + name + "] has recently gone offline, if this was expected please ignore this email.";
+		String body = "Blur Console has received notice that " + type + " [" + name
+				+ "] has recently gone offline, if this was expected please ignore this email.";
+		sendMessage(subject, body);
+	}
+
+	private void notifyMultipleNodeOffline(String type, List<String> names) {
+		String subject = "Blur Console: Multiple " + type + " may have gone offline!";
+		String body = "Blur Console has received notice that " + type + " [" + StringUtils.join(names, "','")
+				+ "] have recently gone offline, if this was expected please ignore this email.";
 		sendMessage(subject, body);
 	}
 
@@ -70,12 +95,12 @@ public class AgentMailer {
 			log.warn("There were no recipients found to send mail to.  Skipping send mail.");
 			return;
 		}
-		
-		Session session = Session.getInstance(mailerProperties, authenticator);
+
+		Session session = Session.getInstance(this.mailerProperties, this.authenticator);
 		try {
 			MimeMessage message = new MimeMessage(session);
 			message.setFrom(new InternetAddress(this.automatedSender));
-			message.addRecipients(Message.RecipientType.TO,	recipients.toArray(new InternetAddress[recipients.size()]));
+			message.addRecipients(Message.RecipientType.TO, recipients.toArray(new InternetAddress[recipients.size()]));
 
 			message.setSubject(subject);
 			message.setContent(messageBody, "text/plain");
@@ -92,12 +117,12 @@ public class AgentMailer {
 		}
 		return mailer;
 	}
-	
+
 	public static AgentMailer getMailer() {
 		if (mailer != null) {
 			return mailer;
 		}
-		
+
 		log.warn("Mailer has not been configured yet.  No mail will be sent.");
 		return new AgentMailer(new Properties());
 	}

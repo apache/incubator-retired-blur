@@ -8,6 +8,7 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.agent.connections.zookeeper.interfaces.ControllerDatabaseInterface;
+import com.nearinfinity.agent.mailer.AgentMailer;
 
 public class ControllerCollector implements Runnable {
   private static final Log log = LogFactory.getLog(ControllerCollector.class);
@@ -26,7 +27,10 @@ public class ControllerCollector implements Runnable {
   public void run() {
     try {
       List<String> onlineControllers = this.zookeeper.getChildren("/blur/online-controller-nodes", false);
-      this.database.markOfflineControllers(onlineControllers, this.zookeeperId);
+      int recentlyOffline = this.database.markOfflineControllers(onlineControllers, this.zookeeperId);
+      if (recentlyOffline > 0){
+        AgentMailer.getMailer().notifyControllerOffline(this.database.getRecentOfflineControllerNames(recentlyOffline));
+      }
       updateOnlineControllers(onlineControllers);
     } catch (KeeperException e) {
       log.error("Error talking to zookeeper in ControllerCollector.", e);

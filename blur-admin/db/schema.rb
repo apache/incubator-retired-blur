@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20121025175857) do
+ActiveRecord::Schema.define(:version => 20121030184429) do
 
   create_table "audits", :force => true do |t|
     t.integer  "user_id"
@@ -24,10 +24,12 @@ ActiveRecord::Schema.define(:version => 20121025175857) do
   end
 
   create_table "blur_controllers", :force => true do |t|
-    t.integer "status"
-    t.string  "blur_version"
-    t.string  "node_name"
-    t.integer "zookeeper_id"
+    t.integer  "status"
+    t.string   "blur_version"
+    t.string   "node_name"
+    t.integer  "zookeeper_id"
+    t.datetime "created_at",   :null => false
+    t.datetime "updated_at",   :null => false
   end
 
   add_index "blur_controllers", ["zookeeper_id"], :name => "index_controllers_on_zookeeper_id"
@@ -57,10 +59,12 @@ ActiveRecord::Schema.define(:version => 20121025175857) do
   add_index "blur_queries", ["blur_table_id"], :name => "index_blur_queries_on_blur_table_id"
 
   create_table "blur_shards", :force => true do |t|
-    t.integer "status"
-    t.string  "blur_version"
-    t.string  "node_name"
-    t.integer "cluster_id"
+    t.integer  "status"
+    t.string   "blur_version"
+    t.string   "node_name"
+    t.integer  "cluster_id"
+    t.datetime "created_at",   :null => false
+    t.datetime "updated_at",   :null => false
   end
 
   add_index "blur_shards", ["cluster_id"], :name => "index_shards_on_cluster_id"

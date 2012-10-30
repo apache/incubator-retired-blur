@@ -4,7 +4,9 @@ import java.util.List;
 
 public interface ControllerDatabaseInterface {
   
-  void markOfflineControllers(List<String> onlineControllers, int zookeeperId);
+  int markOfflineControllers(List<String> onlineControllers, int zookeeperId);
 
   void updateOnlineController(String controller, int zookeeperId, String blurVersion);
+  
+  List<String> getRecentOfflineControllerNames(int amount);
 }

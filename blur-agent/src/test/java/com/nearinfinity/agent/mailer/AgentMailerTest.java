@@ -111,18 +111,6 @@ public class AgentMailerTest {
 
 		assertProperMessageSent("Zookeeper", "ZK1", server);
 	}
-
-	@Test
-	public void testSendControllerNotice() throws MessagingException, IOException {
-		Wiser server = new Wiser(2500);
-		server.start();
-
-		setupActiveMailer("crohr@nearinfinity.com").notifyControllerOffline("C1");
-
-		server.stop();
-
-		assertProperMessageSent("Controller", "C1", server);
-	}
 	
 	@Test
 	public void testSendControllersNoticeSingleNode() throws MessagingException, IOException {
@@ -153,18 +141,6 @@ public class AgentMailerTest {
 		server.stop();
 
 		assertProperMultiMessageSent("Controllers", names, server);
-	}
-
-	@Test
-	public void testSendShardNotice() throws MessagingException, IOException {
-		Wiser server = new Wiser(2500);
-		server.start();
-
-		setupActiveMailer("crohr@nearinfinity.com").notifyShardOffline("S1");
-
-		server.stop();
-
-		assertProperMessageSent("Shard", "S1", server);
 	}
 	
 	@Test
@@ -203,7 +179,9 @@ public class AgentMailerTest {
 		Wiser server = new Wiser(2500);
 		server.start();
 
-		setupActiveMailer("").notifyShardOffline("S1");
+		List<String> names = new ArrayList<String>();
+		names.add("S1");
+		setupActiveMailer("").notifyShardOffline(names);
 
 		server.stop();
 

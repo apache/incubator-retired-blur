@@ -52,20 +52,12 @@ public class AgentMailer {
 		notifyNodeOffline("Zookeeper", zookeeperName);
 	}
 
-	public void notifyControllerOffline(String controllerName) {
-		notifyNodeOffline("Controller", controllerName);
-	}
-
 	public void notifyControllerOffline(List<String> controllerNames) {
 		if (controllerNames.size() == 1) {
 			notifyNodeOffline("Controllers", controllerNames.get(0));
 		} else {
 			notifyMultipleNodeOffline("Controllers", controllerNames);
 		}
-	}
-
-	public void notifyShardOffline(String shardName) {
-		notifyNodeOffline("Shard", shardName);
 	}
 
 	public void notifyShardOffline(List<String> shardNames) {

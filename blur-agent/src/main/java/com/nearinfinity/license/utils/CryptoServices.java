@@ -1,4 +1,4 @@
-package com.nearinfinity.license.service;
+package com.nearinfinity.license.utils;
 
 import org.apache.commons.codec.binary.Base64;
 

@@ -13,8 +13,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import javax.mail.internet.AddressException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
@@ -30,8 +28,9 @@ import com.nearinfinity.agent.connections.cleaners.CleanerDatabaseConnection;
 import com.nearinfinity.agent.connections.hdfs.HdfsDatabaseConnection;
 import com.nearinfinity.agent.connections.zookeeper.ZookeeperDatabaseConnection;
 import com.nearinfinity.agent.exceptions.HdfsThreadException;
+import com.nearinfinity.agent.exceptions.InvalidLicenseException;
 import com.nearinfinity.agent.mailer.AgentMailer;
-import com.nearinfinity.agent.mailer.AgentMailerInterface;
+import com.nearinfinity.agent.monitor.ThreadController;
 import com.nearinfinity.license.AgentLicense;
 
 public class Agent {
@@ -46,13 +45,18 @@ public class Agent {
     JdbcTemplate jdbc = JdbcConnection.createDBConnection(props);
 
     // Setup the mailer
-    AgentMailerInterface mailer = null;
     if (props.containsKey("mail.enabled") && props.getProperty("mail.enabled").equals("true")) {
-      mailer = setupMailer(props);
+      AgentMailer.getMailer(props, true);
     }
 
     // Verify valid License
-    AgentLicense.verifyLicense(props, jdbc);
+    try {
+    	AgentLicense.verifyLicense(props, jdbc);
+    } catch (InvalidLicenseException e) {
+    	log.fatal(e.getMessage() + " Exiting.");
+    	ThreadController.stopAllThreads();
+    	return;
+    }
 
     List<String> activeCollectors = props.containsKey("active.collectors") ? new ArrayList<String>(Arrays.asList(props.getProperty(
         "active.collectors").split("\\|"))) : new ArrayList<String>();
@@ -60,7 +64,7 @@ public class Agent {
     // Setup the collectors
     setupHdfs(props, jdbc, activeCollectors);
     setupBlur(props, jdbc, activeCollectors);
-    setupZookeeper(props, jdbc, mailer);
+    setupZookeeper(props, jdbc);
     setupCleaners(jdbc, activeCollectors);
   }
 
@@ -69,28 +73,6 @@ public class Agent {
     Properties configProps = loadConfigParams(args);
     setupLogger(configProps);
     new Agent(configProps);
-
-    // Sleep the main thread while the background threads
-    // are working
-    try {
-      Thread.sleep(Long.MAX_VALUE);
-    } catch (InterruptedException e) {
-      log.info("Exiting agent");
-    }
-  }
-
-  private AgentMailerInterface setupMailer(Properties props) {
-    String host = props.getProperty("mail.host");
-    String port = props.getProperty("mail.port");
-    String sender = props.getProperty("mail.sender.username");
-    String password = props.getProperty("mail.sender.password");
-    String recipients = props.getProperty("mail.recipients");
-    try {
-      return new AgentMailer(host, port, sender, password, recipients);
-    } catch (AddressException e) {
-      log.error("An error occurred while trying to make the mailer.");
-      return null;
-    }
   }
 
   private void setupCleaners(JdbcTemplate jdbc, List<String> activeCollectors) {
@@ -124,13 +106,13 @@ public class Agent {
     }
   }
 
-  private void setupZookeeper(Properties props, JdbcTemplate jdbc, AgentMailerInterface mailer) {
+  private void setupZookeeper(Properties props, JdbcTemplate jdbc) {
     if (props.containsKey("zk.instances")) {
       List<String> zooKeeperInstances = new ArrayList<String>(Arrays.asList(props.getProperty("zk.instances").split("\\|")));
       for (String zkInstance : zooKeeperInstances) {
         String zkUrl = props.getProperty("zk." + zkInstance + ".url");
         String blurConnection = props.getProperty("blur." + zkInstance + ".url");
-        new Thread(new ZookeeperCollector(zkUrl, zkInstance, blurConnection, new ZookeeperDatabaseConnection(jdbc), mailer), "Zookeeper - "
+        new Thread(new ZookeeperCollector(zkUrl, zkInstance, blurConnection, new ZookeeperDatabaseConnection(jdbc)), "Zookeeper - "
             + zkInstance).start();
       }
     }

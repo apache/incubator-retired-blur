@@ -17,9 +17,10 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooKeeper;
 import org.codehaus.jackson.map.ObjectMapper;
+
 import com.nearinfinity.agent.Agent;
 import com.nearinfinity.agent.connections.zookeeper.interfaces.ZookeeperDatabaseInterface;
-import com.nearinfinity.agent.mailer.AgentMailerInterface;
+import com.nearinfinity.agent.mailer.AgentMailer;
 
 public class ZookeeperCollector implements Runnable {
   private static final Log log = LogFactory.getLog(ZookeeperCollector.class);
@@ -31,14 +32,12 @@ public class ZookeeperCollector implements Runnable {
   private final String name;
   private final int id;
   private final ZookeeperDatabaseInterface database;
-  private final AgentMailerInterface mailer;
 
-  public ZookeeperCollector(String url, String name, String blurConnection, ZookeeperDatabaseInterface database, AgentMailerInterface mailer) {
+  public ZookeeperCollector(String url, String name, String blurConnection, ZookeeperDatabaseInterface database) {
     this.url = url;
     this.name = name;
     this.database = database;
     this.id = database.insertOrUpdateZookeeper(name, url, blurConnection);
-    this.mailer = mailer;
   }
 
   @Override
@@ -53,7 +52,7 @@ public class ZookeeperCollector implements Runnable {
               if (state == KeeperState.Disconnected || state == KeeperState.Expired) {
                 log.warn("Zookeeper [" + name + "] disconnected event.");
                 database.setZookeeperOffline(id);
-                mailer.notifyZookeeperOffline(name);
+                AgentMailer.getMailer().notifyZookeeperOffline(name);
                 connected = false;
               } else if (state == KeeperState.SyncConnected) {
                 log.info("Zookeeper [" + name + "] session established.");

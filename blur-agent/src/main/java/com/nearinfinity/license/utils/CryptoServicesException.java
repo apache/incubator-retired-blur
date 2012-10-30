@@ -1,4 +1,4 @@
-package com.nearinfinity.license.service;
+package com.nearinfinity.license.utils;
 
 public class CryptoServicesException extends Exception {
   private static final long serialVersionUID = 5526634448227766102L;

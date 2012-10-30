@@ -5,8 +5,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import javax.mail.MessagingException;
@@ -121,6 +123,37 @@ public class AgentMailerTest {
 
 		assertProperMessageSent("Controller", "C1", server);
 	}
+	
+	@Test
+	public void testSendControllersNoticeSingleNode() throws MessagingException, IOException {
+		Wiser server = new Wiser(2500);
+		server.start();
+
+		List<String> names = new ArrayList<String>();
+		names.add("C1");
+		
+		setupActiveMailer("crohr@nearinfinity.com").notifyControllerOffline(names);
+
+		server.stop();
+
+		assertProperMessageSent("Controllers", "C1", server);
+	}
+	
+	@Test
+	public void testSendControllersNoticeMultiNode() throws MessagingException, IOException {
+		Wiser server = new Wiser(2500);
+		server.start();
+
+		List<String> names = new ArrayList<String>();
+		names.add("C1");
+		names.add("C2");
+		
+		setupActiveMailer("crohr@nearinfinity.com").notifyControllerOffline(names);
+
+		server.stop();
+
+		assertProperMultiMessageSent("Controllers", names, server);
+	}
 
 	@Test
 	public void testSendShardNotice() throws MessagingException, IOException {
@@ -132,6 +165,37 @@ public class AgentMailerTest {
 		server.stop();
 
 		assertProperMessageSent("Shard", "S1", server);
+	}
+	
+	@Test
+	public void testSendShardsNoticeSingleNode() throws MessagingException, IOException {
+		Wiser server = new Wiser(2500);
+		server.start();
+
+		List<String> names = new ArrayList<String>();
+		names.add("S1");
+		
+		setupActiveMailer("crohr@nearinfinity.com").notifyShardOffline(names);
+
+		server.stop();
+
+		assertProperMessageSent("Shards", "S1", server);
+	}
+	
+	@Test
+	public void testSendShardsNoticeMultiNode() throws MessagingException, IOException {
+		Wiser server = new Wiser(2500);
+		server.start();
+
+		List<String> names = new ArrayList<String>();
+		names.add("S1");
+		names.add("S2");
+		
+		setupActiveMailer("crohr@nearinfinity.com").notifyShardOffline(names);
+
+		server.stop();
+
+		assertProperMultiMessageSent("Shards", names, server);
 	}
 
 	@Test
@@ -163,6 +227,16 @@ public class AgentMailerTest {
 		assertTrue(email.getMimeMessage().getSubject().equals("Blur Console: " + type + " [" + name + "] may have gone offline!"));
 		assertEquals("Blur Console has received notice that " + type + " [" + name
 				+ "] has recently gone offline, if this was expected please ignore this email.",
+				StringUtils.trim((String) email.getMimeMessage().getContent()));
+	}
+	
+	private void assertProperMultiMessageSent(String type, List<String> names, Wiser server) throws MessagingException, IOException {
+		assertTrue(server.getMessages().size() == 1);
+		Iterator<WiserMessage> emailIter = server.getMessages().iterator();
+		WiserMessage email = (WiserMessage) emailIter.next();
+		assertTrue(email.getMimeMessage().getSubject().equals("Blur Console: Multiple " + type + " may have gone offline!"));
+		assertEquals("Blur Console has received notice that " + type + " [" + StringUtils.join(names, "','")
+				+ "] have recently gone offline, if this was expected please ignore this email.",
 				StringUtils.trim((String) email.getMimeMessage().getContent()));
 	}
 

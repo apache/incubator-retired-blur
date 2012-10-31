@@ -20,7 +20,7 @@ public class QueryCleanerTest extends AgentBaseTestClass {
 		Calendar timeOfQuery = TimeHelper.getTimeAgo(3 * 60 * 1000);
 		jdbc.update("insert into blur_queries (state, updated_at, created_at) values (?,?,?)", 0, timeOfQuery, timeOfQuery);
 
-		Thread testQueryCleaner = new Thread(new QueriesCleaner(database));
+		Thread testQueryCleaner = new Thread(new QueriesCleaner(database), "Query Test Thread");
 		testQueryCleaner.start();
 		try {
 			testQueryCleaner.join();
@@ -37,7 +37,7 @@ public class QueryCleanerTest extends AgentBaseTestClass {
 		Calendar timeOfQuery = TimeHelper.getTimeAgo(1 * 60 * 1000);
 		jdbc.update("insert into blur_queries (state, updated_at, created_at) values (?,?,?)", 0, timeOfQuery, timeOfQuery);
 
-		Thread testQueryCleaner = new Thread(new QueriesCleaner(database));
+		Thread testQueryCleaner = new Thread(new QueriesCleaner(database), "Query Test Thread");
 		testQueryCleaner.start();
 		try {
 			testQueryCleaner.join();
@@ -56,7 +56,7 @@ public class QueryCleanerTest extends AgentBaseTestClass {
 		Calendar timeOfUpdate = TimeHelper.getTimeAgo(1 * 30 * 1000);
 		jdbc.update("insert into blur_queries (state, updated_at, created_at) values (?,?,?)", 1, timeOfQuery, timeOfQuery);
 
-		Thread testQueryCleaner = new Thread(new QueriesCleaner(database));
+		Thread testQueryCleaner = new Thread(new QueriesCleaner(database), "Query Test Thread");
 		testQueryCleaner.start();
 		try {
 			testQueryCleaner.join();
@@ -73,7 +73,7 @@ public class QueryCleanerTest extends AgentBaseTestClass {
 		Calendar timeOfQuery = TimeHelper.getTimeAgo(3 * 60 * 60 * 1000);
 		jdbc.update("insert into blur_queries (state, updated_at, created_at) values (?,?,?)", 1, timeOfQuery, timeOfQuery);
 
-		Thread testQueryCleaner = new Thread(new QueriesCleaner(database));
+		Thread testQueryCleaner = new Thread(new QueriesCleaner(database), "Query Test Thread");
 		testQueryCleaner.start();
 		try {
 			testQueryCleaner.join();
@@ -90,7 +90,7 @@ public class QueryCleanerTest extends AgentBaseTestClass {
 		Calendar timeOfQuery = TimeHelper.getTimeAgo(1 * 60 * 60 * 1000);
 		jdbc.update("insert into blur_queries (state, updated_at, created_at) values (?,?,?)", 1, timeOfQuery, timeOfQuery);
 
-		Thread testQueryCleaner = new Thread(new QueriesCleaner(database));
+		Thread testQueryCleaner = new Thread(new QueriesCleaner(database), "Query Test Thread");
 		testQueryCleaner.start();
 		try {
 			testQueryCleaner.join();

@@ -20,7 +20,7 @@ public class HdfsStatsCleanerTest extends AgentBaseTestClass {
 		Calendar overTwoWeeksAgo = TimeHelper.getTimeAgo(16 * 24 * 60 * 60 * 1000);
 		jdbc.update("insert into hdfs_stats (created_at) values (?)", overTwoWeeksAgo);
 
-		Thread testStatsCleaner = new Thread(new HdfsStatsCleaner(database));
+		Thread testStatsCleaner = new Thread(new HdfsStatsCleaner(database), "Hdfs Test Thread");
 		testStatsCleaner.start();
 		try {
 			testStatsCleaner.join();
@@ -28,8 +28,8 @@ public class HdfsStatsCleanerTest extends AgentBaseTestClass {
 			fail("The test QueriesCleaner failed while waiting for it to finish!");
 		}
 
-		int state = jdbc.queryForInt("select count(id) from hdfs_stats");
-		assertEquals(0, state);
+		int updatedCount = jdbc.queryForInt("select count(id) from hdfs_stats");
+		assertEquals(0, updatedCount);
 	}
 	
 	@Test
@@ -37,7 +37,7 @@ public class HdfsStatsCleanerTest extends AgentBaseTestClass {
 		Calendar underTwoWeeksAgo = TimeHelper.getTimeAgo(8 * 24 * 60 * 60 * 1000);
 		jdbc.update("insert into hdfs_stats (created_at) values (?)", underTwoWeeksAgo);
 
-		Thread testStatsCleaner = new Thread(new HdfsStatsCleaner(database));
+		Thread testStatsCleaner = new Thread(new HdfsStatsCleaner(database), "Hdfs Test Thread");
 		testStatsCleaner.start();
 		try {
 			testStatsCleaner.join();
@@ -45,7 +45,7 @@ public class HdfsStatsCleanerTest extends AgentBaseTestClass {
 			fail("The test QueriesCleaner failed while waiting for it to finish!");
 		}
 
-		int state = jdbc.queryForInt("select count(id) from hdfs_stats");
-		assertEquals(1, state);
+		int updatedCount = jdbc.queryForInt("select count(id) from hdfs_stats");
+		assertEquals(1, updatedCount);
 	}
 }

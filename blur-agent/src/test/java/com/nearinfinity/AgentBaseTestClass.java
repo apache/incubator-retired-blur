@@ -32,4 +32,15 @@ public abstract class AgentBaseTestClass {
 			}
 		}
 	}
+	
+	protected void waitForThreadToSleep(Thread tiredThread, int catchupTime){
+		while(tiredThread.getState() != Thread.State.TIMED_WAITING){
+			// Wait until the thread goes to sleep
+		}
+		try {
+			Thread.sleep(catchupTime);
+			tiredThread.interrupt();
+		} catch (InterruptedException e) {}
+		return;
+	}
 }

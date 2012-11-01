@@ -25,7 +25,7 @@ public class HdfsStatCollectorTest extends BlurAgentBaseTestClass {
 
 	@Test
 	public void shouldNotInsertStatsWithoutParent() {
-		Thread testHdfsStatsCollector = new Thread(new HdfsStatsCollector("Test HDFS", hdfsUri, null, database), "Query Test Thread");
+		Thread testHdfsStatsCollector = new Thread(new HdfsStatsCollector("Test HDFS", hdfsUri, null, database), "HdfsStat Test Thread");
 		testHdfsStatsCollector.start();
 		try {
 			testHdfsStatsCollector.join();
@@ -40,7 +40,7 @@ public class HdfsStatCollectorTest extends BlurAgentBaseTestClass {
 	@Test
 	public void shouldInsertStats() {
 		jdbc.update("insert into hdfs (name) values (?)", "TestHdfs");
-		Thread testHdfsStatsCollector = new Thread(new HdfsStatsCollector("TestHDFS", hdfsUri, null, database), "Query Test Thread");
+		Thread testHdfsStatsCollector = new Thread(new HdfsStatsCollector("TestHDFS", hdfsUri, null, database), "HdfsStat Test Thread");
 		testHdfsStatsCollector.start();
 		try {
 			testHdfsStatsCollector.join();

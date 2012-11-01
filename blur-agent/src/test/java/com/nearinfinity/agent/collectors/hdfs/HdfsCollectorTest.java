@@ -29,7 +29,7 @@ public class HdfsCollectorTest extends BlurAgentBaseTestClass {
 		List<String> activeCollectors = new ArrayList<String>();
 
 		Thread testHdfsCollector = new Thread(new HdfsCollector("TestHDFS", hdfsUri.toString(), "hdfs://localhost:55314", null,
-				activeCollectors, database), "Query Test Thread");
+				activeCollectors, database), "Hdfs Test Thread");
 		testHdfsCollector.start();
 		waitForThreadToSleep(testHdfsCollector, 250);
 
@@ -43,7 +43,7 @@ public class HdfsCollectorTest extends BlurAgentBaseTestClass {
 		activeCollectors.add("hdfs");
 
 		Thread testHdfsCollector = new Thread(new HdfsCollector("TestHDFS", hdfsUri.toString(), "hdfs://localhost:55314", null,
-				activeCollectors, database), "Query Test Thread");
+				activeCollectors, database), "Hdfs Test Thread");
 		testHdfsCollector.start();
 		waitForThreadToSleep(testHdfsCollector, 250);
 
@@ -56,7 +56,7 @@ public class HdfsCollectorTest extends BlurAgentBaseTestClass {
 		List<String> activeCollectors = new ArrayList<String>();
 
 		Thread testHdfsCollector = new Thread(new HdfsCollector("TestHDFS", hdfsUri.toString(), "hdfs://localhost:55314", null,
-				activeCollectors, database), "Query Test Thread");
+				activeCollectors, database), "Hdfs Test Thread");
 		testHdfsCollector.start();
 		waitForThreadToSleep(testHdfsCollector, 250);
 

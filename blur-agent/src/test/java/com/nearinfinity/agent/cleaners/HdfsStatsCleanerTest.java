@@ -20,7 +20,7 @@ public class HdfsStatsCleanerTest extends AgentBaseTestClass {
 		Calendar overTwoWeeksAgo = TimeHelper.getTimeAgo(16 * 24 * 60 * 60 * 1000);
 		jdbc.update("insert into hdfs_stats (created_at) values (?)", overTwoWeeksAgo);
 
-		Thread testStatsCleaner = new Thread(new HdfsStatsCleaner(database), "Hdfs Test Thread");
+		Thread testStatsCleaner = new Thread(new HdfsStatsCleaner(database), "Hdfs Stats Cleaner Test Thread");
 		testStatsCleaner.start();
 		try {
 			testStatsCleaner.join();
@@ -37,7 +37,7 @@ public class HdfsStatsCleanerTest extends AgentBaseTestClass {
 		Calendar underTwoWeeksAgo = TimeHelper.getTimeAgo(8 * 24 * 60 * 60 * 1000);
 		jdbc.update("insert into hdfs_stats (created_at) values (?)", underTwoWeeksAgo);
 
-		Thread testStatsCleaner = new Thread(new HdfsStatsCleaner(database), "Hdfs Test Thread");
+		Thread testStatsCleaner = new Thread(new HdfsStatsCleaner(database), "Hdfs Stats Cleaner Test Thread");
 		testStatsCleaner.start();
 		try {
 			testStatsCleaner.join();

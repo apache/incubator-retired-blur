@@ -15,4 +15,11 @@ public class TimeHelper {
 		cal.add(Calendar.MILLISECOND, -(z.getOffset(time)));
 		return cal;
 	}
+	
+	public static Calendar getTimeAgo(int timeAgoInMS){
+		Calendar timeAgo = Calendar.getInstance();
+		timeAgo.setTimeInMillis(now().getTimeInMillis());
+		timeAgo.add(Calendar.MILLISECOND, -timeAgoInMS);
+		return timeAgo;
+	}
 }

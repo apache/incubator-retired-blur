@@ -11,11 +11,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 
-import com.nearinfinity.BlurAgentBaseTestClass;
+import com.nearinfinity.AgentBaseTestClass;
 import com.nearinfinity.agent.exceptions.InvalidLicenseException;
 import com.nearinfinity.agent.monitor.ThreadController;
 
-public class AgentLicenseTest extends BlurAgentBaseTestClass {
+public class AgentLicenseTest extends AgentBaseTestClass {
 	@Before
 	public void setup() {
 		ThreadController.exitOnStop = false;
@@ -75,6 +75,7 @@ public class AgentLicenseTest extends BlurAgentBaseTestClass {
 //		AgentLicense.verifyLicense(props, jdbc);
 //		// AgentLicense.verifyLicense(null, null);
 //	}
+
 
 	private String getLicensePath(String license) {
 		String file = null;

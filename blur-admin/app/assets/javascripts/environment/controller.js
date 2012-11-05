@@ -23,38 +23,30 @@ var ControllerCollection = Backbone.StreamCollection.extend({
   url: "/zookeepers/" + CurrentZookeeper + "/controller/",
   model: ControllerModel,
   initialize: function(models, options){
-    this.view = new ControllerCollectionView({collection: this}).render();
     this.on('add', function(controller){
-      var container = this.view.$el.find('tbody');
-      container.find('.no_children').remove();
-      container.append(controller.view.render().$el);
-    });
-    this.on('remove', function(controller){
-      controller.view.remove();
-      if (this.length == 0){
-        this.view.no_children();
+      if (this.length == 1){
+        var table = $('#controllers table');
+        $('.controller_table').delay(300).slideUp(500, function(){
+          $('#controllers .no_children').hide();
+          $('#controllers tbody').append(controller.view.render().$el);
+          $(this).slideDown(500);
+        });
+      } else {
+        $('#controllers tbody').append(controller.view.render().$el);
       }
     });
-  }
-});
-
-var ControllerCollectionView = Backbone.View.extend({
-  tagName: 'table',
-  className: 'table table-bordered',
-  template: JST['templates/environment/controller_collection'],
-  render: function(){
-    this.$el.html(this.template());
-    if (this.collection.length == 0){
-      this.no_children();
-    } else {
-      this.collection.each(_.bind(function(controller){
-        this.$el.find('tbody').append(controller.view.render().$el);
-      }, this));
-    }
-    return this;
-  },
-  no_children: function(){
-    this.$el.find('tbody').html('<tr class="no_children"><td colspan="3">No Controllers!</td></tr>');
+    this.on('remove', function(controller){
+      if (this.length == 1){
+        var table = $('#controllers table');
+        $('.controller_table').delay(300).slideUp(500, function(){
+          $('#controllers .no_children').show();
+          controller.view.destroy();
+          $(this).slideDown(500);
+        });
+      } else {
+        controller.view.destroy();
+      }
+    });
   }
 });
 

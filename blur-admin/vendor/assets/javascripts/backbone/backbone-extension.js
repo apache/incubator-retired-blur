@@ -63,3 +63,11 @@ Backbone.StreamCollection = Backbone.Collection.extend({
     return !_.isUndefined(this._intervalFetch);   
   }
 });
+
+Backbone.View.prototype.destroy = function(){
+  this.remove();
+  this.unbind();
+  if (this.onClose){
+    this.onClose();
+  }
+}

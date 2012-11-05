@@ -92,8 +92,8 @@ public class ZookeeperDatabaseConnection implements ZookeeperDatabaseInterface, 
 	@Override
 	public void updateOnlineController(String controller, int zookeeperId, String blurVersion) {
 		int updatedCount = this.jdbc.update(
-				"update blur_controllers set status=1, blur_version=?, updated_at=? where node_name=? and zookeeper_id =?", blurVersion,
-				controller, TimeHelper.now().getTime(), zookeeperId);
+				"update blur_controllers set status=1, blur_version=?, updated_at=? where node_name=? and zookeeper_id =?", blurVersion, TimeHelper
+						.now().getTime(), controller, zookeeperId);
 
 		if (updatedCount == 0) {
 			this.jdbc.update(

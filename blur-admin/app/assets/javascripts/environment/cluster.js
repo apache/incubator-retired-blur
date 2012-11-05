@@ -26,38 +26,30 @@ var ClusterCollection = Backbone.StreamCollection.extend({
   url: "/zookeepers/" + CurrentZookeeper + "/cluster/",
   model: ClusterModel,
   initialize: function(models, options){
-    this.view = new ClusterCollectionView({collection: this}).render();
-    this.on('add', function(cluster){
-      var container = this.view.$el.find('tbody');
-      container.find('.no_children').remove();
-      container.append(cluster.view.render().$el);
-    });
-    this.on('remove', function(cluster){
-      cluster.view.remove();
-      if (this.length === 0){
-        this.view.no_children();
+    this.on('add', function(clusters){
+      if (this.length == 1){
+        var table = $('#clusters table');
+        $('.clusters_table').delay(300).slideUp(500, function(){
+          $('#clusters .no_children').hide();
+          $('#clusters tbody').append(clusters.view.render().$el);
+          $(this).slideDown(500);
+        });
+      } else {
+        $('#clusters tbody').append(clusters.view.render().$el);
       }
     });
-  }
-});
-
-var ClusterCollectionView = Backbone.View.extend({
-  tagName: 'table',
-  className: 'table table-bordered',
-  template: JST['templates/environment/cluster_collection'],
-  render: function(){
-    this.$el.html(this.template());
-    if (this.collection.length == 0){
-      this.no_children();
-    } else {
-      this.collection.each(_.bind(function(cluster){
-        this.$el.find('tbody').append(cluster.view.render().$el);
-      }, this));
-    }
-    return this;
-  },
-  no_children: function(){
-    this.$el.find('tbody').html('<tr class="no_children"><td colspan="5">No Clusters!</td></tr>');
+    this.on('remove', function(clusters){
+      if (this.length == 1){
+        var table = $('#clusterss table');
+        $('.clusters_table').delay(300).slideUp(500, function(){
+          $('#clusters .no_children').show();
+          clusters.view.destroy();
+          $(this).slideDown(500);
+        });
+      } else {
+        clusters.view.destroy();
+      }
+    });
   }
 });
 

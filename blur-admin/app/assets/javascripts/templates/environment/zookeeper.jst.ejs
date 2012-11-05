@@ -1,19 +1,9 @@
-<div id="zookeeper" class="<%= zookeeper.translated_class() %>">
-  <h2 class="zookeeper-name">
-    <%= zookeeper.header() %>
-    <div class="connection-url">
-      <%= zookeeper.get('url') %>
-    </div>
-    <% if(zookeeper.get('status') == 0){ %>
-      <i class="icon-remove-sign destroy-zk icon-white" title="Forget this Zookeeper"/>
-    <% } %>
-  </h2>
-</div>
-<div id="blur" class="row">
-  <div id="controllers" class="span6">
-    <div class="subHeaders"> Controllers </div>
+<h2 class="zookeeper-name">
+  <%= zookeeper.header() %>
+  <div class="connection-url">
+    <%= zookeeper.get('url') %>
   </div>
-  <div id="clusters" class="span6">
-    <div class="subHeaders"> Clusters </div>
-  </div>
-</div>
+  <% if(zookeeper.get('status') == 0){ %>
+    <i class="icon-remove-sign destroy-zk icon-white" title="Forget this Zookeeper"/>
+  <% } %>
+</h2>

@@ -1,3 +1,33 @@
 - content_for :title, 'Environment Status'
 - content_for :javascript do
   = javascript_include_tag 'environment/environment'
+
+#zookeeper_wrapper
+  #zookeeper
+  #blur.row
+    #controllers.span6
+      .subHeaders
+        Controllers
+      .controller_table
+        %table.table.table-bordered
+          %thead
+            %th Name
+            %th Blur Version
+            %th
+          %tbody
+            %tr.no_children
+              %td{:colspan => 3} No Controllers!
+    #clusters.span6
+      .subHeaders
+        Clusters
+      .clusters_table
+        %table.table.table-bordered
+          %thead
+            %th Name
+            %th Blur Version
+            %th Safe Mode
+            %th Shards
+            %th
+          %tbody
+            %tr.no_children
+              %td{:colspan => 5} No Clusters!

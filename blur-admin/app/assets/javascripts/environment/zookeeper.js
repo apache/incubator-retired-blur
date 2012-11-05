@@ -40,17 +40,23 @@ var ZookeeperModel = Backbone.Model.extend({
       });
     }
   },
-   header: function(){
+  header: function(){
     return this.get('name') + " - Zookeeper - " + this.translated_status();
+  },
+  quarum_failed: function(){
+    var totalZookeeperNodes = this.get('url').split(',').length;
+    var totalOnlineNodes = this.get('ensemble').length;
+    if (totalOnlineNodes > 0 && totalOnlineNodes != totalZookeeperNodes){
+      return true;
+    }
+    return false;
   },
   // The translated status
   translated_status: function(){
     switch(this.get('status'))
     {
       case 0:
-        var totalZookeeperNodes = this.get('url').split(',').length;
-        var totalOnlineNodes = this.get('ensemble').length;
-        if (totalOnlineNodes > 0 && totalOnlineNodes != totalZookeeperNodes){
+        if (this.quarum_failed()){
           return "Quarum Failure"
         }
         return "Offline"

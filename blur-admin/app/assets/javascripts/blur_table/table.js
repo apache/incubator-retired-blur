@@ -75,7 +75,7 @@ var TableCollection = Backbone.StreamCollection.extend({
       table.collection.cluster.view.populate_tables();
     });
     this.on('remove', function(table){
-      table.view.remove();
+      table.view.destroy();
       table.collection.cluster.view.set_table_values();
     });
   }

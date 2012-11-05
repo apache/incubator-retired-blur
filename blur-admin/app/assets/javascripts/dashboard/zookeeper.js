@@ -40,8 +40,7 @@ var ZookeeperCollection = Backbone.StreamCollection.extend({
       $('#zookeepers').append(zookeeper.view.render().el);
     });
     this.on('remove', function(zookeeper){
-      zookeeper.view.remove();
-      zookeeper.destroy();
+      zookeeper.view.destroy();
     });
   }
 });

@@ -33,8 +33,7 @@ var HdfsCollection = Backbone.StreamCollection.extend({
       $('#hdfses').append(hdfs.view.render().el);
     });
     this.on('remove', function(hdfs){
-      hdfs.view.remove();
-      hdfs.destroy();
+      hdfs.view.destroy();
     });
   }
 });

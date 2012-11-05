@@ -8,7 +8,6 @@
 //= require templates
 //= require underscore
 //= require backbone/backbone
-//= require backbone/backbone-relational
 //= require backbone/backbone-extension
 //= require flash_message
 //= require_self

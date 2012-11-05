@@ -45,7 +45,20 @@ var ZookeeperModel = Backbone.Model.extend({
   },
   // The translated status
   translated_status: function(){
-    return this.get('status') ? "Online" : "Offline";
+    switch(this.get('status'))
+    {
+      case 0:
+        var totalZookeeperNodes = this.get('url').split(',').length;
+        var totalOnlineNodes = this.get('ensemble').length;
+        if (totalOnlineNodes > 0 && totalOnlineNodes != totalZookeeperNodes){
+          return "Quarum Failure"
+        }
+        return "Offline"
+      case 1:
+        return "Online"
+      case 2:
+        return "Ensemble Warning"
+    }
   },
   // Determines the class for the state of the zookeeper
   translated_class: function(){
@@ -68,7 +81,8 @@ var ZookeeperView = Backbone.View.extend({
   template: JST['templates/environment/zookeeper'],
   render: function(){
     this.$el.html(this.template({zookeeper: this.model}));
-    this.$el.addClass(this.model.translated_class())
+    this.$el.removeClass('btn-danger btn-success btn-warning');
+    this.$el.addClass(this.model.translated_class());
     this.$('i').tooltip();
     return this;
   },

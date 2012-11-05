@@ -63,26 +63,6 @@ $opacity-adjust: 0;
         }
       }
       
-      &.error{
-        &.error-failure {
-          td {
-            background-color: rgba(255, 25, 25, .8 - $opacity-adjust);
-            color: white;
-            border-color: #FF1919;            
-            color{
-              color: white;
-            }            
-          }
-        }
-        td {
-          background-color: rgba(237, 194, 64, .8 - $opacity-adjust);
-          color: white;
-          border-color: #EDC240;
-          color{
-            color: white;
-          }
-        }
-      }
       td:last-child { text-align: center; width: 34px; }
     }
     ul{ list-style-type: none; }

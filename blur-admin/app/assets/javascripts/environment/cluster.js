@@ -62,7 +62,11 @@ var ClusterView = Backbone.View.extend({
   },
   render: function(){
     this.$el.attr('data-cluster-id', this.model.get('id')).html(this.template({cluster: this.model}));
+    this.setRowStatus();
     return this;
+  },
+  setRowStatus: function(){
+    // TODO: Need to determine cluster status
   },
   show_shards: function(event){
     new ShardCollection(null, {cluster_id: this.model.get('id')});

@@ -58,12 +58,22 @@ var ControllerView = Backbone.View.extend({
   },
   render: function(){
     this.$el.attr('data-controller-id', this.model.get('id')).html(this.template({controller: this.model}));
-    if (this.model.get('status') == 0){
-      this.$el.attr('class', 'error error-failure');
-    } else {
-      this.$el.removeClass('error error-failure');
-    }
+    this.setRowStatus();
     return this;
+  },
+  setRowStatus: function(){
+    switch(this.model.get('status'))
+    {
+      case 0:
+        this.$el.attr('class', 'error');
+        return;
+      case 1:
+        this.$el.attr('class', '');
+        return;
+      case 2:
+        this.$el.attr('class', 'warning');
+        return;
+    }
   },
   destroy_controller: function(){
     Confirm_Delete({

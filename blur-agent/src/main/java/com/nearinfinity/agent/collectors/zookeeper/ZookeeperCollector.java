@@ -56,7 +56,6 @@ public class ZookeeperCollector implements Runnable {
 								connected = false;
 							} else if (state == KeeperState.SyncConnected) {
 								log.info("Zookeeper [" + name + "] session established.");
-								database.setZookeeperOnline(id);
 								connected = true;
 							}
 						}
@@ -123,9 +122,11 @@ public class ZookeeperCollector implements Runnable {
 			}
 		}
 		try {
-			if (connections.length < onlineZookeepers.size() * 2) {
+			if (connections.length == onlineZookeepers.size()){
+				this.database.setZookeeperOnline(id);
+			} else if (connections.length < onlineZookeepers.size() * 2) {
 				this.database.setZookeeperWarning(this.id);
-			} else if (connections.length > onlineZookeepers.size() * 2) {
+			} else {
 				this.database.setZookeeperOffline(this.id);
 			}
 			this.database.setOnlineEnsembleNodes(new ObjectMapper().writeValueAsString(onlineZookeepers), this.id);

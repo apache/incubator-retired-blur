@@ -91,26 +91,32 @@ public class ZookeeperDatabaseConnection implements ZookeeperDatabaseInterface, 
 
 	@Override
 	public void updateOnlineController(String controller, int zookeeperId, String blurVersion) {
+		int zookeeperStatus = this.jdbc.queryForInt("select status from zookeepers where id=?", zookeeperId);
+		int status = (zookeeperStatus == 0 || zookeeperStatus == 2) ? 2 : 1;
 		int updatedCount = this.jdbc.update(
-				"update blur_controllers set status=1, blur_version=?, updated_at=? where node_name=? and zookeeper_id =?", blurVersion,
-				controller, TimeHelper.now().getTime(), zookeeperId);
+				"update blur_controllers set status=?, blur_version=?, updated_at=? where node_name=? and zookeeper_id =?", status, blurVersion,
+				TimeHelper.now().getTime(), controller, zookeeperId);
 
 		if (updatedCount == 0) {
 			this.jdbc.update(
-					"insert into blur_controllers (node_name, status, zookeeper_id, blur_version, created_at, updated_at) values (?, 1, ?, ?, ?, ?)",
-					controller, zookeeperId, blurVersion, TimeHelper.now().getTime(), TimeHelper.now().getTime());
+					"insert into blur_controllers (node_name, status, zookeeper_id, blur_version, created_at, updated_at) values (?, ?, ?, ?, ?, ?)",
+					controller, status, zookeeperId, blurVersion, TimeHelper.now().getTime(), TimeHelper.now().getTime());
 		}
 	}
 
 	@Override
 	public void updateOnlineShard(String shard, int clusterId, String blurVersion) {
-		int updatedCount = this.jdbc.update("update blur_shards set status=1, blur_version=?, updated_at=? where node_name=? and cluster_id=?",
-				blurVersion, TimeHelper.now().getTime(), shard, clusterId);
+		int zookeeperStatus = this.jdbc.queryForInt(
+				"select zookeepers.status from zookeepers, clusters where clusters.zookeeper_id=? and clusters.zookeeper_id=zookeepers.id;",
+				clusterId);
+		int status = (zookeeperStatus == 0 || zookeeperStatus == 2) ? 2 : 1;
+		int updatedCount = this.jdbc.update("update blur_shards set status=?, blur_version=?, updated_at=? where node_name=? and cluster_id=?",
+				status, blurVersion, TimeHelper.now().getTime(), shard, clusterId);
 
 		if (updatedCount == 0) {
 			this.jdbc.update(
-					"insert into blur_shards (node_name, status, cluster_id, blur_version, created_at, updated_at) values (?, 1, ?, ?, ?, ?)", shard,
-					clusterId, blurVersion, TimeHelper.now().getTime(), TimeHelper.now().getTime());
+					"insert into blur_shards (node_name, status, cluster_id, blur_version, created_at, updated_at) values (?, ?, ?, ?, ?, ?)", shard,
+					status, clusterId, blurVersion, TimeHelper.now().getTime(), TimeHelper.now().getTime());
 		}
 	}
 

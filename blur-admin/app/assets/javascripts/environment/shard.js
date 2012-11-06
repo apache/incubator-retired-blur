@@ -5,8 +5,19 @@ var ShardModel = Backbone.Model.extend({
   status: function(){
     var statusString = "Shard: " + this.get('node_name');
     statusString += " | Blur Version: " + this.get('blur_version');
-    statusString += " | Status: " + (this.get('status') ? 'Online' : 'Offline');
+    statusString += " | Status: " + this.onlineStatus();
     return statusString;
+  },
+  onlineStatus: function(){
+    switch(this.get('status'))
+    {
+      case 0:
+        return "Online"
+      case 1:
+        return "Offline"
+      case 2:
+        return "Quaram Issue"
+    }
   }
 });
 
@@ -52,7 +63,7 @@ var ShardView = Backbone.View.extend({
     "click .icon" : "destroy_shard"
   },
   render: function(){
-    errorClass = this.model.get('status') ? 'no-error' : 'error';
+    errorClass = (this.model.get('status') == 1) ? 'no-error' : 'error';
     this.$el.attr('class', errorClass);
     this.$el.html(this.template({shard: this.model}));
     return this;

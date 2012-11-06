@@ -8,7 +8,7 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.agent.connections.zookeeper.interfaces.ShardsDatabaseInterface;
-import com.nearinfinity.agent.mailer.AgentMailer;
+import com.nearinfinity.agent.notifications.Notifier;
 
 public class ShardCollector implements Runnable {
 	private static final Log log = LogFactory.getLog(ShardCollector.class);
@@ -31,7 +31,7 @@ public class ShardCollector implements Runnable {
 			List<String> shards = this.zookeeper.getChildren("/blur/clusters/" + clusterName + "/online/shard-nodes", false);
 			int recentlyOffline = this.database.markOfflineShards(shards, this.clusterId);
 			if (recentlyOffline > 0) {
-				AgentMailer.getMailer().notifyShardOffline(this.database.getRecentOfflineShardNames(recentlyOffline));
+				Notifier.getNotifier().notifyShardOffline(this.database.getRecentOfflineShardNames(recentlyOffline));
 			}
 			updateOnlineShards(shards);
 		} catch (KeeperException e) {

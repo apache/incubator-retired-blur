@@ -26,10 +26,10 @@ var ControllerCollection = Backbone.StreamCollection.extend({
     this.on('add', function(controller){
       if (this.length == 1){
         var table = $('#controllers table');
-        $('.controller_table').delay(300).slideUp(500, function(){
+        $('.controller_table').delay(200).slideUp(400, function(){
           $('#controllers .no_children').hide();
           $('#controllers tbody').append(controller.view.render().$el);
-          $(this).slideDown(500);
+          $(this).slideDown(400);
         });
       } else {
         $('#controllers tbody').append(controller.view.render().$el);
@@ -38,10 +38,10 @@ var ControllerCollection = Backbone.StreamCollection.extend({
     this.on('remove', function(controller){
       if (this.length == 1){
         var table = $('#controllers table');
-        $('.controller_table').delay(300).slideUp(500, function(){
+        $('.controller_table').delay(200).slideUp(400, function(){
           $('#controllers .no_children').show();
           controller.view.destroy();
-          $(this).slideDown(500);
+          $(this).slideDown(400);
         });
       } else {
         controller.view.destroy();

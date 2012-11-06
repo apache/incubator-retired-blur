@@ -38,7 +38,7 @@ GEM
     authlogic (3.1.0)
       activerecord (>= 3.0.7)
       activerecord (>= 3.0.7)
-    bootstrap-sass (2.0.1)
+    bootstrap-sass (2.1.1.0)
     builder (3.0.0)
     capybara (1.1.2)
       mime-types (>= 1.16)

@@ -6,18 +6,27 @@ var ShardModel = Backbone.Model.extend({
     var statusString = "Shard: " + this.get('node_name');
     statusString += " | Blur Version: " + this.get('blur_version');
     statusString += " | Status: " + this.onlineStatus();
+    if (this.get('status') != 1) {
+      statusString += " at " + this.offlineDate();
+    }
     return statusString;
   },
   onlineStatus: function(){
     switch(this.get('status'))
     {
       case 0:
-        return "Online"
-      case 1:
         return "Offline"
+      case 1:
+        return "Online"
       case 2:
         return "Quaram Issue"
     }
+  },
+  offlineDate: function(){
+    var date = new Date(this.get('updated_at').toLocaleString())
+    var formattedDate = date.getMonth() + '/' + date.getDay() + '/' + date.getFullYear();
+    var formattedTime = date.getHours() + ':' + date.getMinutes();
+    return formattedDate + ' ' + formattedTime;
   }
 });
 

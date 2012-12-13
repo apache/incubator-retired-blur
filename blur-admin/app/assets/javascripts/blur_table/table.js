@@ -21,7 +21,6 @@ var Table = Backbone.Model.extend({
       }, {
         silent: true
       });
-      this.collection.cluster.view.populate_tables();
     });
     this.on('change:queried_recently', function(){
       this.collection.cluster.trigger('table_has_been_queried');
@@ -29,20 +28,6 @@ var Table = Backbone.Model.extend({
     this.on('change', function(){
       this.view.render();
     });
-  },
-  host_shard_string: function(){
-    var server = this.get('hosts');
-    if (server) {
-      var count = 0;
-      var hosts = 0;
-      for (var key in server) {
-        hosts++;
-        count += server[key].length;
-      }
-      return hosts + ' | ' + count;
-    } else {
-      return "Schema Information is Currently Unavailable";
-    }
   },
   parse_uri: function(piece){
     var parse_url = /^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/;
@@ -71,12 +56,8 @@ var TableCollection = Backbone.StreamCollection.extend({
   model: Table,
   initialize: function(models, options){
     this.cluster = options.cluster;
-    this.on('add', function(table){
-      table.collection.cluster.view.populate_tables();
-    });
     this.on('remove', function(table){
       table.view.destroy();
-      table.collection.cluster.view.set_table_values();
     });
   }
 });
@@ -132,43 +113,55 @@ var TableView = Backbone.View.extend({
     this.$el.toggleClass('highlighted-row');
   },
   show_hosts: function(){
-    var host_modal = $(JST['templates/blur_table/hosts']({table: this.model}));
-    this.setup_filter_tree(host_modal);
-    $().popup({
-      title: 'Additional Host/Shard Info',
-      titleClass: 'title',
-      body: host_modal
+    $.ajax({
+      type: 'GET',
+      url: Routes.hosts_blur_table_path(this.model.get('id'), {format: 'json'}) ,
+      success: _.bind(function(data){
+        var host_modal = $(JST['templates/blur_table/hosts']({table: this.model, hosts: data}));
+        this.setup_filter_tree(host_modal);
+        $().popup({
+          title: 'Additional Host/Shard Info',
+          titleClass: 'title',
+          body: host_modal
+        });
+      }, this)
     });
     return false;
   },
   show_schema: function(){
-    var schema_modal = $(JST['templates/blur_table/schema']({table: this.model}));
-    this.setup_filter_tree(schema_modal.find('.table_info_tree'));
-    $().popup({
-      title: 'Additional Schema Info',
-      titleClass: 'title',
-      body: schema_modal,
-    });
-    var table_model = this.model;
-    schema_modal.on('click', '.terms', function(){
-      var clicked_element = $(this);
-      var request_data = 
-      {
-        family: $(this).attr('data-family-name'),
-        column: $(this).attr('data-column-name'),
-        startwith: ' ',
-        size: 20
-      };
-      table_model.get_terms(request_data, _.bind(function(data) {
-        new TermsView({
-          clicked_element: clicked_element,
-          parent: this,
-          terms: data,
-          family: request_data.family,
-          column: request_data.column,
-          table_id: this.get('id')})
-        .render();
-      }, table_model));
+    $.ajax({
+      type: 'GET',
+      url: Routes.schema_blur_table_path(this.model.get('id'), {format: 'json'}) ,
+      success: _.bind(function(data){
+        var schema_modal = $(JST['templates/blur_table/schema']({table: this.model, schema: data}));
+        this.setup_filter_tree(schema_modal.find('.table_info_tree'));
+        $().popup({
+          title: 'Additional Schema Info',
+          titleClass: 'title',
+          body: schema_modal,
+        });
+        var table_model = this.model;
+        schema_modal.on('click', '.terms', function(){
+          var clicked_element = $(this);
+          var request_data =
+          {
+            family: $(this).attr('data-family-name'),
+            column: $(this).attr('data-column-name'),
+            startwith: ' ',
+            size: 20
+          };
+          table_model.get_terms(request_data, _.bind(function(data) {
+            new TermsView({
+              clicked_element: clicked_element,
+              parent: this,
+              terms: data,
+              family: request_data.family,
+              column: request_data.column,
+              table_id: this.get('id')})
+            .render();
+          }, table_model));
+        });
+      }, this)
     });
     return false;
   },
@@ -191,7 +184,7 @@ var TableView = Backbone.View.extend({
                 this.model.set({comments: input_comment});
               }, this)
             });
-            
+
             $().closePopup();
           }, this)
         },

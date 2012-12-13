@@ -6,6 +6,7 @@ var Cluster = Backbone.Model.extend({
     this.set_running_query_header_state();
     this.on('change:blur_tables', function(){
       this.update_child_tables();
+      this.collection.cluster.view.populate_tables();
     });
     this.on('change:safe_mode', function(){
       $('li#cluster_tab_' + this.get('id') + ' .safemode-icon').toggle();
@@ -46,11 +47,11 @@ var Cluster = Backbone.Model.extend({
                 url: Routes.enable_zookeeper_blur_tables_path(CurrentZookeeper, {format: 'json'}),
                 data: {tables: table_ids}
               });
+              $().closePopup();
               _.each(selected_tables, function(table){
                 table.set({status: 5});
               });
               this.view.set_table_state();
-              $().closePopup();
             }, this)
           },
           "Cancel": {
@@ -79,11 +80,11 @@ var Cluster = Backbone.Model.extend({
                 url: Routes.disable_zookeeper_blur_tables_path(CurrentZookeeper, {format: 'json'}),
                 data: {tables: table_ids}
               });
+              $().closePopup();
               _.each(selected_tables, function(table){
                 table.set({status: 3});
               });
               this.view.set_table_state();
-              $().closePopup();
             }, this)
           },
           "Cancel": {
@@ -108,11 +109,11 @@ var Cluster = Backbone.Model.extend({
             delete_index: delete_index
           }
         });
+        $().closePopup();
         _.each(selected_tables, function(table){
           table.set({status: 1});
         });
         this.view.set_table_state();
-        $().closePopup();
       };
       $().popup({
         title: "Delete Tables",

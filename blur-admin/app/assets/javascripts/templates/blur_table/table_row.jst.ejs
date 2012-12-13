@@ -28,7 +28,7 @@
   <% if (state === 'active'){ %>
     <td class='blur_table_hosts_shards'>
       <a class='hosts' href="#">
-        <%= table.host_shard_string() %>
+        <%= table.get('server_info') %>
       </a>
     </td>
   <% } %>

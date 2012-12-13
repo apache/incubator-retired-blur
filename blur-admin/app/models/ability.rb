@@ -30,7 +30,7 @@ class Ability
         can [:index, :show], :blur_queries, attributes
 
         can :refresh, :blur_queries
-        can :terms, :blur_tables
+        can [:terms, :hosts, :schema], :blur_tables
       end
 
       if user.editor?

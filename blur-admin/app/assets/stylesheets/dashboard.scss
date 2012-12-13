@@ -45,10 +45,13 @@
   }
 
   .zookeeper-title, .hdfs-title {
-    font-size: 125%;
+    font-size: 130%;
     padding: 5px 10px;
     text-align: left;
 		@include border-radius-bottom(0);
+    img {
+      height: 18px;
+    }
   }
 
 	.hdfs-body {

@@ -1,10 +1,8 @@
 <div class="zookeeper-title label">
-  <% if(zookeeper.get('status')) { %>
-    <img class="stoplight" src="/assets/green_light.png" title="Zookeeper is Online"/>
-  <% } else { %>
-    <img class="stoplight" src="/assets/red_light.png" title="Zookeeper is Offline"/>
-  <% } %>
-  <%= zookeeper.get('name') %>
+  <%= zookeeper.status_image() %>
+  <span>
+    <%= zookeeper.get('name') %>
+  </span>
 </div>
 <div class="zookeeper-body">
   <table>

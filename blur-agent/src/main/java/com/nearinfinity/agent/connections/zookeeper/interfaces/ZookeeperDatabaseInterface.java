@@ -8,6 +8,8 @@ public interface ZookeeperDatabaseInterface extends ControllerDatabaseInterface,
 
 	void setZookeeperOffline(int id);
 
+  void setZookeeperFailure(int id);
+
 	int insertOrUpdateZookeeper(String name, String url, String blurConnection);
 
 	void setOnlineEnsembleNodes(String ensembleArray, int zookeeperId);

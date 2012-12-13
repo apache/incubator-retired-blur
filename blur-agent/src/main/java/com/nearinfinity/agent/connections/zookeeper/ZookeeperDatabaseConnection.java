@@ -32,6 +32,11 @@ public class ZookeeperDatabaseConnection implements ZookeeperDatabaseInterface, 
 	}
 
 	@Override
+	public void setZookeeperFailure(int zookeeperId) {
+		this.jdbc.update("update zookeepers set status=? where id=?", 3, zookeeperId);
+	}
+
+	@Override
 	public void setZookeeperOffline(int zookeeperId) {
 		this.jdbc.update("update zookeepers set status=? where id=?", 0, zookeeperId);
 	}

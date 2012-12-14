@@ -126,6 +126,8 @@ public class ZookeeperCollector implements Runnable {
 				this.database.setZookeeperOnline(id);
 			} else if (connections.length < onlineZookeepers.size() * 2) {
 				this.database.setZookeeperWarning(this.id);
+			} else if (this.connected){
+				this.database.setZookeeperFailure(this.id);
 			} else {
 				this.database.setZookeeperOffline(this.id);
 			}

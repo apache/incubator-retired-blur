@@ -1,5 +1,5 @@
 class BlurTablesController < ApplicationController
-  load_and_authorize_resource :shallow => true, :only => [:comment, :terms]
+  load_and_authorize_resource :shallow => true, :only => [:comment, :terms, :hosts, :schema]
 
   before_filter :zookeepers, :only => :index
 
@@ -56,6 +56,18 @@ class BlurTablesController < ApplicationController
     terms = @blur_table.terms current_zookeeper.blur_urls, params[:family], params[:column], params[:startwith], params[:size].to_i
 
     respond_with(terms)
+  end
+
+  def hosts
+    respond_with(@blur_table) do |format|
+      format.json { render :json => @blur_table.hosts }
+    end
+  end
+
+  def schema
+    respond_with(@blur_table) do |format|
+      format.json { render :json => @blur_table.schema }
+    end
   end
 
   def comment

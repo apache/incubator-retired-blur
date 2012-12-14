@@ -1,8 +1,8 @@
-<% if (table.get('hosts')) { %>
+<% if (hosts) { %>
   <div class="hosts table_info_tree">
     <b>Hosts</b>
     <ul>
-      <% _.each(table.get('hosts'), function(shards, host){ %>
+      <% _.each(hosts, function(shards, host){ %>
         <li class="host" id="<%= host %>">
           <a href=""><%= host %></a>
           <ul>

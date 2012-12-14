@@ -25,6 +25,25 @@ var Zookeeper = Backbone.Model.extend({
   },
   shard_progress_width: function(){
     return Math.round((this.online_shard_nodes() / this.get('shard_total')) * 100)
+  },
+  status_image: function(){
+    var state;
+    switch(this.get('status'))
+    {
+      case 0:
+        state = "offline"
+        break
+      case 1:
+        state = "online"
+        break
+      case 2:
+        state = "warning"
+        break
+      case 3:
+        state = "failure"
+        break
+    }
+    return '<img src="/assets/' + state + '.png" title="Zookeeper is ' + state + '"/>'
   }
 });
 

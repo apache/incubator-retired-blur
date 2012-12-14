@@ -16,8 +16,12 @@ class BlurTable < ActiveRecord::Base
     serial_properties.delete('server')
     serial_properties.delete('table_schema')
     serial_properties['queried_recently'] = table_query_info['queried_recently']
-    serial_properties['hosts'] = self.hosts
-    serial_properties['schema'] = self.schema
+
+    host_count = self.hosts.keys.length
+    shard_count = 0
+    self.hosts.values.each{ |shards| shard_count += shards.length }
+
+    serial_properties['server_info'] = host_count.to_s + ' | ' + shard_count.to_s
     serial_properties['sparkline'] = table_query_info['sparkline']
     serial_properties['average_queries'] = table_query_info['average_queries']
     serial_properties['comments'] = self.comments

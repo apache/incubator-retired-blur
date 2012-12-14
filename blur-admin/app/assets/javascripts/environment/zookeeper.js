@@ -56,14 +56,13 @@ var ZookeeperModel = Backbone.Model.extend({
     switch(this.get('status'))
     {
       case 0:
-        if (this.quarum_failed()){
-          return "Quarum Failure"
-        }
         return "Offline"
       case 1:
         return "Online"
       case 2:
         return "Ensemble Warning"
+      case 3:
+        return "Quarum Failure"
     }
   },
   // Determines the class for the state of the zookeeper
@@ -76,6 +75,8 @@ var ZookeeperModel = Backbone.Model.extend({
         return "btn-success"
       case 2:
         return "btn-warning"
+      case 3:
+        return "btn-danger"
     }
   }
 });

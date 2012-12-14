@@ -18,6 +18,8 @@ BlurAdmin::Application.routes.draw do
       # BlurTable routes
       member do
         get 'terms'
+        get 'hosts'
+        get 'schema'
         put 'comment'
       end
       collection do

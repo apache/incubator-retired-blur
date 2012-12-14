@@ -23,7 +23,6 @@ public class QueryCollectorTest extends BlurAgentBaseTestClass {
 
 	@Test
 	public void shouldAddQueriesToDB() throws BlurException, TException, IOException {
-		System.out.println(MiniCluster.getControllerConnectionStr());
 		Iface blurConnection = BlurClient.getClient(MiniCluster.getControllerConnectionStr());
 
 

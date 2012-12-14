@@ -38,7 +38,6 @@ public class AgentLicense {
 		String licenseType = licenseFileLines.get(3);
 		verifyLicenseIntegrity(licenseFileLines, licenseType);
 		verifyLicenseValidity(licenseFileLines, licenseType, jdbc, props);
-		System.out.println(licenseType);
 		if ("NODE_YEARLY".equals(licenseType)) {
 			monitorNodeCount(licenseFileLines, props, jdbc);
 		} else if ("CLUSTER_YEARLY".equals(licenseType)) {

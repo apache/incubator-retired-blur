@@ -402,11 +402,3 @@ $(document).ready(function() {
     }
   });
 });
-
-
-setTimeout(function() {
-  var w = window.location;
-  if (w.search.length > 1) {
-    $('#search_submit').click();
-  }
-}, 1000);

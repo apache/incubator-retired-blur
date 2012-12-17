@@ -7,7 +7,7 @@ $opacity-adjust: 0;
   #zookeeper {
     @include border-radius();
     opacity: .9;
-    height: 60px;
+    height: 70px;
     width: 500px;
     margin-left:auto;
     margin-right:auto;   
@@ -21,7 +21,7 @@ $opacity-adjust: 0;
       position: relative;
       top: -10px;
       
-      .connection-url {
+      .online-zk, .offline-zk {
         position: relative;
         bottom: 20px;
         font-size: 12px;
@@ -30,6 +30,8 @@ $opacity-adjust: 0;
         white-space: nowrap;
         overflow: hidden;
       }
+
+      .offline-zk { bottom: 45px; }
       
       i {
         position: absolute;

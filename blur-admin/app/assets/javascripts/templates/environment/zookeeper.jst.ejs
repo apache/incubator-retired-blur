@@ -1,7 +1,16 @@
 <h2 class="zookeeper-name">
   <%= zookeeper.header() %>
-  <div class="connection-url">
-    <%= zookeeper.get('url') %>
+  <div class="online-zk">
+    <span>
+      Online (<%= zookeeper.get('ensemble').length %>):
+    </span>
+    <%= zookeeper.get('ensemble') %>
+  </div>
+  <div class="offline-zk">
+    <span>
+      Offine (<%= zookeeper.offline_nodes().length %>):
+    </span>
+    <%= zookeeper.offline_nodes() %>
   </div>
   <% if(zookeeper.get('status') == 0 && !zookeeper.quarum_failed()){ %>
     <i class="icon-remove-sign destroy-zk icon-white" title="Forget this Zookeeper"/>

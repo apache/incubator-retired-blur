@@ -44,12 +44,19 @@ var ZookeeperModel = Backbone.Model.extend({
     return this.get('name') + " - Zookeeper - " + this.translated_status();
   },
   quarum_failed: function(){
-    var totalZookeeperNodes = this.get('url').split(',').length;
-    var totalOnlineNodes = this.get('ensemble').length;
-    if (totalOnlineNodes > 0 && totalOnlineNodes != totalZookeeperNodes){
-      return true;
+    return this.get('status') == 3
+  },
+  offline_nodes: function(){
+    var allNodes = this.get('url').split(',')
+    var online = this.get('ensemble');
+    var offline = [];
+    for (var i = 0; i < allNodes.length; i++){
+      var node = allNodes[i];
+      if (online.indexOf(node) < 0){
+        offline.push(node)
+      }
     }
-    return false;
+    return offline;
   },
   // The translated status
   translated_status: function(){

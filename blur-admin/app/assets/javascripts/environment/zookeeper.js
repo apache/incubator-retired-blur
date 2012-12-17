@@ -98,6 +98,7 @@ var ZookeeperView = Backbone.View.extend({
     this.$el.removeClass('btn-danger btn-success btn-warning');
     this.$el.addClass(this.model.translated_class());
     this.$('i').tooltip();
+    this.$('span.states').tooltip({placement: 'bottom'});
     return this;
   },
   destroy_zookeeper: function(){

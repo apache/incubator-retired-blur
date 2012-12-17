@@ -24,6 +24,7 @@ describe Ability do
     it "can create a user (register) with username, email, password" do
       @ability.should be_able_to :new,    :users
       @ability.should be_able_to :create, :users, :username
+      @ability.should be_able_to :create, :users, :name
       @ability.should be_able_to :create, :users, :email
       @ability.should be_able_to :create, :users, :password
       @ability.should be_able_to :create, :users, :password_confirmation
@@ -49,6 +50,7 @@ describe Ability do
       #filter out actions available to non logged in users
       @actions[:user_sessions] -= [:create, :new]
       @actions[:users]         -= [:new, :create]
+      @actions[:errors]        -= [:error_404, :error_422, :error_500]
 
       @actions.each do |controller, actions|
         actions.each {|action| @ability.should_not be_able_to action, controller}
@@ -75,6 +77,7 @@ describe Ability do
 
     it "can update own username, email, and password" do
       @ability.should be_able_to :update, @user, :username
+      @ability.should be_able_to :update, @user, :name
       @ability.should be_able_to :update, @user, :email
       @ability.should be_able_to :update, @user, :password
       @ability.should be_able_to :update, @user, :password_confirmation
@@ -110,6 +113,8 @@ describe Ability do
       #filter out actions available to non logged in users
       @actions[:users] -= [:show, :edit, :destroy, :update]
       @actions[:user_sessions] -= [:destroy]
+      @actions[:errors]        -= [:error_404, :error_422, :error_500]
+
 
       @actions.each do |controller, actions|
         actions.each {|action| @ability.should_not be_able_to action, controller}
@@ -129,11 +134,27 @@ describe Ability do
       @ability.should be_able_to :index, :blur_tables
       @ability.should be_able_to :index, :zookeepers
       @ability.should be_able_to :index, :blur_queries
-      @ability.should be_able_to :more_info, :blur_queries
+      @ability.should be_able_to :index, :hdfs
+      @ability.should be_able_to :index, :hdfs_metrics
+      @ability.should be_able_to :show, :blur_queries
+      @ability.should be_able_to :show, :clusters
+      @ability.should be_able_to :help, :application
+    end
+
+    it "can gather information" do
+      @ability.should be_able_to :long_running_queries, :zookeepers
+      @ability.should be_able_to :expand, :hdfs
+      @ability.should be_able_to :file_info, :hdfs
+      @ability.should be_able_to :folder_info, :hdfs
+      @ability.should be_able_to :slow_folder_info, :hdfs
+      @ability.should be_able_to :file_tree, :hdfs
+      @ability.should be_able_to :stats, :hdfs_metrics
+      @ability.should be_able_to :refresh, :blur_queries
+      @ability.should be_able_to :terms, :blur_tables
     end
 
     it "can not view query strings" do
-      @ability.should_not be_able_to :more_info, :blur_queries, :query_string
+      @ability.should_not be_able_to :show, :blur_queries, :query_string
       @ability.should_not be_able_to :index, :blur_queries, :query_string
     end
 
@@ -141,6 +162,12 @@ describe Ability do
       @preference = FactoryGirl.create :preference, :user_id => @user.id, :pref_type => 'column'
       @ability.should_not be_able_to :update, @preference
     end
+
+    it "can not change own zookeeper preference" do
+      @preference = FactoryGirl.create :preference, :user_id => @user.id, :pref_type => 'zookeeper'
+      @ability.should_not be_able_to :update, @preference
+    end
+
   end
 
   describe "when an editor" do
@@ -149,14 +176,34 @@ describe Ability do
       @ability = Ability.new @user
     end
   
-    it "can enable, disable, and delete tables" do
+    it "can enable, disable, comment, and delete tables" do
       @ability.should be_able_to :enable, :blur_tables
       @ability.should be_able_to :disable, :blur_tables
       @ability.should be_able_to :destroy, :blur_tables
+      @ability.should be_able_to :comment, :blur_tables
     end
 
     it "can cancel queries" do
-      @ability.should be_able_to :update, :blur_queries
+      @ability.should be_able_to :cancel, :blur_queries
+    end
+
+    it "can index shards" do
+      @ability.should be_able_to :index, :blur_shards
+    end
+
+    it "can destroy the zookeeper tree" do
+      @ability.should be_able_to :destroy, :zookeepers
+      @ability.should be_able_to :destroy, :clusters
+      @ability.should be_able_to :destroy, :blur_shards
+      @ability.should be_able_to :destroy, :blur_controllers
+    end
+
+    it "can perform destructive actions hdfs" do
+      @ability.should be_able_to :move_file, :hdfs
+      @ability.should be_able_to :delete_file, :hdfs
+      @ability.should be_able_to :mkdir, :hdfs
+      @ability.should be_able_to :upload_form, :hdfs
+      @ability.should be_able_to :upload, :hdfs
     end
   end
 
@@ -168,7 +215,7 @@ describe Ability do
   
     it "can view blur query string" do
       @ability.should be_able_to :index, :blur_queries, :query_string
-      @ability.should be_able_to :more_info, :blur_queries, :query_string
+      @ability.should be_able_to :show, :blur_queries, :query_string
       @ability.should be_able_to :index, :audits
     end
   end
@@ -205,6 +252,7 @@ describe Ability do
     end
 
     it "can create users with roles" do
+      @ability.should be_able_to :new, :users
       @ability.should be_able_to :create, :users, :admin
       @ability.should be_able_to :create, :users, :editor
     end
@@ -219,13 +267,20 @@ describe Ability do
     it "can view and use the search page" do
       @ability.should be_able_to :access, :searches
     end
+
     it "can change own column preferences" do
       @preference = FactoryGirl.create :preference, :user_id => @user.id, :pref_type => 'column'
       @ability.should be_able_to :update, @preference
     end
-    it "can not change own filter preferences" do
+
+    it "can change own zookeeper preferences" do
+      @preference = FactoryGirl.create :preference, :user_id  => @user.id, :pref_type => 'zookeeper'
+      @ability.should be_able_to :update, @preference
+    end
+    
+    it "can change own filter preferences" do
       @preference = FactoryGirl.create :preference, :user_id => @user.id, :pref_type => 'filter'
-      @ability.should_not be_able_to :update, @preference
+      @ability.should be_able_to :update, @preference
     end
   end
 end

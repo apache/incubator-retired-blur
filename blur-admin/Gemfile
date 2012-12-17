@@ -24,14 +24,16 @@ end
 group :development, :test do
   gem 'rspec-rails'
   gem 'capybara'
+  gem 'capybara-webkit'
   gem 'ci_reporter'
   gem 'rails-erd'
   gem 'factory_girl_rails'
   gem 'launchy'
   gem 'thin'
+  gem 'debugger'
 end
 
 group :test do
-  gem 'simplecov'
+  gem 'simplecov', :require => false
 end
 

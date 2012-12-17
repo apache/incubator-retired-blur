@@ -26,22 +26,36 @@ var Zookeeper = Backbone.Model.extend({
   shard_progress_width: function(){
     return Math.round((this.online_shard_nodes() / this.get('shard_total')) * 100)
   },
-  status: function(){
-    if(this.get('status') === 0) return 'Offline';
-    return 'Online';
+  status_image: function(){
+    var state;
+    switch(this.get('status'))
+    {
+      case 0:
+        state = "offline"
+        break
+      case 1:
+        state = "online"
+        break
+      case 2:
+        state = "warning"
+        break
+      case 3:
+        state = "failure"
+        break
+    }
+    return '<img src="/assets/' + state + '.png" title="Zookeeper is ' + state + '"/>'
   }
 });
 
 var ZookeeperCollection = Backbone.StreamCollection.extend({
   model: Zookeeper,
-  url: Routes.dashboard_zookeepers_path({format: 'json'}),
+  url: Routes.zookeepers_path({format: 'json'}),
   initialize: function(models, options){
     this.on('add', function(zookeeper){
       $('#zookeepers').append(zookeeper.view.render().el);
     });
     this.on('remove', function(zookeeper){
-      zookeeper.view.remove();
-      zookeeper.destroy();
+      zookeeper.view.destroy();
     });
   }
 });
@@ -69,7 +83,7 @@ var ZookeeperView = Backbone.View.extend({
   show_long_running: function(){
     $.ajax({
       type: 'GET',
-      url: Routes.long_running_queries_zookeeper_path(this.model.get('id')),
+      url: Routes.long_running_queries_zookeeper_path(this.model.get('id'), {format: 'json'}),
       success: function(data){
         $().popup({
           title: "Long Running Queries",

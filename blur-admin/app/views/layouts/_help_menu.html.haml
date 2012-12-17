@@ -1,5 +1,5 @@
 = stylesheet_link_tag 'application'
-= javascript_include_tag 'application'
+= javascript_include_tag 'help'
 %title
   Help | Blur Console
 %html{:style => 'min-width: 0px;'}
@@ -27,7 +27,7 @@
 
       .help-section
         %h3.help-label Dashboard Help
-        .help-content{ :style =>  tab != 'dashboard' && 'display: none' }
+        .help-content{ :style =>  @tab != 'dashboard' && 'display: none' }
           .head
             The "Dashboard" page is a high level view of the overall health of your system.
             Each box in the Zookeeper section represents a different zookeeper and displays information on that zookeeper.
@@ -60,7 +60,7 @@
 
       .help-section
         %h3.help-label Environment Status Help
-        .help-content{ :style =>  tab != 'zookeepers' && 'display: none' }
+        .help-content{ :style =>  @tab != 'zookeepers' && 'display: none' }
           .head
             The "Environment Status" page is a zookeeper specific status page.
           .body
@@ -71,7 +71,7 @@
 
       .help-section
         %h3.help-label Blur Tables Help
-        .help-content{ :style =>  tab != 'blur_tables' && 'display: none' }
+        .help-content{ :style =>  @tab != 'blur_tables' && 'display: none' }
           .head
             The "Blur Tables" page is a list of all the Blur Tables associated with the current zookeeper. The tabs represent each cluster of shards. The tables are broken into Active, Disabled, Deleted statuses.  Each row contains information describing a Blur Table.
           .body
@@ -95,7 +95,7 @@
 
       .help-section
         %h3.help-label Blur Queries Help
-        .help-content{ :style =>  tab != 'blur_queries' && 'display: none' }
+        .help-content{ :style =>  @tab != 'blur_queries' && 'display: none' }
           .head
             The "Blur Queries" page is a list of recently executed Blur Queries.
           .body
@@ -123,7 +123,7 @@
 
       .help-section
         %h3.help-label Search Help
-        .help-content{ :style =>  tab != 'search' && 'display: none' }
+        .help-content{ :style =>  @tab != 'search' && 'display: none' }
           .help_list#search_help
             .head
               Use the "Search" box to begin building a query. Use the search button to the right to submit.
@@ -165,17 +165,17 @@
 
       .help-section
         %h3.help-label HDFS help
-        .help-content{ :style =>  tab != 'hdfs' && 'display: none' }
+        .help-content{ :style =>  @tab != 'hdfs' && 'display: none' }
           .head
             The HDFS page presents a simple file viewer of an HDFS file system.  Right clicking on the root node will expose properties about the file system as a whole.  Right clicking on any of the children nodes will allow for various editing actions (cut, paste, delete).
       .help-section
         %h3.help-label Admin help
-        .help-content{ :style =>  tab != 'admin' && 'display: none' }
+        .help-content{ :style =>  @tab != 'admin' && 'display: none' }
           .head
             The "Admin Page" contains a list of all the current users registered in the system. Users with the admin role may edit the roles and information for users on this page. It is only visible to users with the admin role.
       .help-section
         %h3.help-label Users help
-        .help-content{ :style =>  tab != 'users' && 'display: none' }
+        .help-content{ :style =>  @tab != 'users' && 'display: none' }
           .head
             The "Column Preferences" section allows the user to choose what column families they want to display first in the results table when they execute a search on the search page.
           .body

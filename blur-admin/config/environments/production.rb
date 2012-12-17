@@ -20,7 +20,10 @@ BlurAdmin::Application.configure do
   # Generate digests for assets URLs
   config.assets.digest = true
   
-  config.assets.precompile += Dir.foreach('app/assets/javascripts/').reject{|file| (file =~ /.*\.coffee/).nil? && (file =~ /routes.js/).nil?}.collect{|file| file.gsub /.coffee/, ''}
+  config.assets.precompile += Dir.foreach('app/assets/javascripts/').select{|file| (file =~ /.js/) }
+  config.assets.precompile += ['blur_table/blur_tables.js', 'dashboard/dashboard.js', 'environment/environment.js']
+  
+  #.reject{|file| (file =~ /.*\.coffee/).nil? && (file =~ /routes.js/).nil?}.collect{|file| file.gsub /.coffee/, ''}
   
   config.action_dispatch.x_sendfile_header = "X-Sendfile"
   
@@ -41,4 +44,6 @@ BlurAdmin::Application.configure do
   # Log the query plan for queries taking more than this (works
   # with SQLite, MySQL, and PostgreSQL)
   config.active_record.auto_explain_threshold_in_seconds = 2
+
+  config.action_dispatch.rack_cache = {:metastore => "rails:/", :entitystore => "rails:/", :verbose => false}
 end

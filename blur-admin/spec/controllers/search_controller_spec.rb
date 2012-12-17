@@ -9,30 +9,21 @@ describe SearchesController do
 
     describe "index" do
       before :each do
-        @blur_tables = [FactoryGirl.create(:blur_table), FactoryGirl.create(:blur_table)]
+        @blur_tables = FactoryGirl.create_list(:blur_table, 2)
         @blur_table = @blur_tables[0]
-        # Set up association chain
-        @zookeeper  = FactoryGirl.create :zookeeper
-
-        # ApplicationController.current_zookeeper
-        Zookeeper.stub(:find_by_id).and_return(@zookeeper)
-        Zookeeper.stub!(:first).and_return(@zookeeper)
-        # Zookeeper.stub_chain(:order, :first).and_return @zookeeper
-        # ApplicationController.zookeepers
-        Zookeeper.stub(:order).and_return [@zookeeper]
 
         @search = FactoryGirl.create :search
         @user.stub_chain(:searches, :order).and_return [@search]
       end
 
       it "renders the show template" do
-        get :index
+        get :index, :format => :html
         response.should render_template :index
       end
       
       it "find and assign tables, and columns" do
         @zookeeper.stub_chain(:blur_tables, :where, :order, :includes, :all).and_return(@blur_tables)
-        get :index
+        get :index, :format => :html
         assigns(:blur_tables).should == @blur_tables
         assigns(:blur_table).should == @blur_table
         assigns(:columns).should == @blur_table.schema
@@ -41,7 +32,7 @@ describe SearchesController do
       describe "when no tables are available" do
         it "find and assign tables and columns" do
           @zookeeper.stub_chain(:blur_tables, :where, :order, :includes, :all).and_return []
-          get :index
+          get :index, :format => :html
           assigns(:blur_tables).should == []
           assigns(:blur_table).should be nil
           assigns(:columns).should be nil
@@ -56,18 +47,18 @@ describe SearchesController do
       end
 
       it "renders the filters template" do
-        get :filters, :blur_table => @blur_table.id
+        get :filters, :blur_table => @blur_table.id, :format => :json
         response.content_type.should == 'application/json'
       end
 
       it "should find the new columns" do
         BlurTable.should_receive(:find).with(@blur_table.id.inspect)
-        get :filters, :blur_table => @blur_table.id
+        get :filters, :blur_table => @blur_table.id, :format => :json
       end
       
       it "should return an empty array to columns when no blur table is selected" do
         BlurTable.should_receive(:find).and_return(nil)
-        get :filters, :blur_table => @blur_table.id
+        get :filters, :blur_table => @blur_table.id, :format => :json
       end
     end
 
@@ -160,7 +151,7 @@ describe SearchesController do
       end
     end
 
-    describe "load" do
+    describe "show" do
       before(:each) do
         @search = FactoryGirl.create :search
         Search.stub(:new).and_return(@search)
@@ -168,30 +159,29 @@ describe SearchesController do
 
       it "renders the proper json for a search" do
         Search.stub(:find).and_return(@search)
-        get :load, :search_id => 1
+        get :show, :id => @search.id, :format => :json
         @return = @search.to_json(:methods => :column_object)
         response.body.should == @return
       end
     end
 
-    describe "delete" do
+    describe "destroy" do
       before(:each) do
         @search = FactoryGirl.create :search
         Search.stub(:new).and_return(@search)
         Search.stub(:find).and_return(@search)
-        Search.stub(:delete)
+        Search.stub(:destroy)
         BlurTable.stub(:find)
       end
 
       it "renders the saved partial" do
-        delete :delete, :search_id => 1, :blur_table => 1
+        delete :destroy, :id => @search.id
         response.should render_template 'saved'
       end
 
       it "finds the correct table and deletes it from the DB" do
-        Search.should_receive(:find).with("1")
-        @search.should_receive(:delete)
-        delete :delete, :id => 1, :blur_table => 1
+        @search.should_receive(:destroy)
+        delete :destroy, :id => @search.id
       end
     end
     

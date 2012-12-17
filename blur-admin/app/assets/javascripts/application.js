@@ -8,20 +8,16 @@
 //= require templates
 //= require underscore
 //= require backbone/backbone
-//= require backbone/backbone-stream
+//= require backbone/backbone-extension
+//= require flash_message
 //= require_self
 
 $(document).ready(function(){
+  // Global variable for the spinner (makes displaying the spinner simpler)
   window.Spinner = $('<img id="loading-spinner" alt="Loading..." src="/assets/loader.gif"/>')
-  //fade out flash messages for logging in and out
-  $("#flash").css('right', '0px');
-  var hideFlash = setTimeout(function(){$("#flash").css('right', '-600px')}, 8000);
-  $("#flash").click(function(){
-    clearTimeout(hideFlash);
-    $(this).css('right', '-600px');
-  })
+  // Global display message function
 
-  //Initialize Help
+  // Determines the help tab that needs to be opened
   $('#page-help').click(function(){
     var url = window.location.pathname;
     var tab;
@@ -42,12 +38,6 @@ $(document).ready(function(){
     window.open(Routes.help_path(tab), "Help Menu","menubar=0,resizable=0,width=500,height=600");
     return false;
   });
-
-  $('.help-section').live('click', function(){
-    $(this).children('.help-content').slideToggle('fast')
-  });
-
-  $('body:has(#help-window)').css('padding-bottom', '0');
 
   if (typeof Zookeeper !== 'undefined' && Zookeeper.instances){
     $('#env_link, #tables_link, #queries_link, #search_link').click( function(evt){

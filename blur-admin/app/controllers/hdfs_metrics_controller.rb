@@ -1,11 +1,17 @@
 class HdfsMetricsController < ApplicationController
+  respond_to :html, :only => [:index]
+  respond_to :json, :only => [:stats]
+
   def index
     @hdfs_index = Hdfs.all
+    respond_with(@hdfs_index)
   end
 
   def stats
     @results = hdfs_stat_select [:present_capacity, :dfs_used_real, :live_nodes, :dead_nodes, :under_replicated, :corrupt_blocks, :missing_blocks]
-    render :json => @results, :methods => [:capacity, :used], :except => [:present_capacity, :dfs_used]
+    respond_with(@results) do |format|
+      format.json { render :json => @results, :methods => [:capacity, :used], :except => [:present_capacity, :dfs_used] }
+    end
   end
 
   private

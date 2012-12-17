@@ -6,23 +6,10 @@ describe UsersController do
       #Universal Setup
       setup_tests
 
-      # Add preferences to the current user
-      @user = FactoryGirl.create :user_with_preferences # user with all roles
       User.stub(:find).and_return @user
     end
 
     describe "GET index" do
-      before(:each) do
-        @users = []
-        User.stub(:all).and_return(@users)
-      end
-
-      it "should get and assign users" do
-        User.should_receive(:all)
-        get :index
-        assigns(:users).should == @users
-      end
-
       it "should render index template" do
         get :index
         response.should render_template(:index)
@@ -44,8 +31,10 @@ describe UsersController do
 
       it "should find and assign preferences" do
         @user.should_receive(:column_preference).at_least(1).times
+        @user.should_receive(:zookeeper_preference).at_least(1).times
         get :show, :id => 'id'
         assigns(:column_preference).should == @user.column_preference
+        assigns(:zookeeper_preference).should == @user.zookeeper_preference
       end
 
       it "should find and create a list of all the table choices" do

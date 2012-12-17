@@ -5,7 +5,8 @@ describe Audit do
     it "should downcase the model and the mutation" do
       # This test is purely for string collision and readability
       user = FactoryGirl.create :user
-      created_audit = Audit.log_event user, "Message", "MoDeL", "MuTaTiOn"
+      zookeeper = FactoryGirl.create :zookeeper
+      created_audit = Audit.log_event user, "Message", "MoDeL", "MuTaTiOn", zookeeper
       created_audit.mutation.should == "mutation"
       created_audit.model_affected == "model"
     end
@@ -20,6 +21,20 @@ describe Audit do
       # Grab all the audits within the last 72 hours
       recent = Audit.recent 72, 0
       recent.should == returned
+    end
+  end
+
+  describe "summary" do
+    it 'should return a hash with the correct data' do
+      audit = FactoryGirl.create :audit
+      summary = audit.summary
+      summary.should include(:action)
+      summary.should include(:date_audited)
+      summary.should include(:model)
+      summary.should include(:mutation)
+      summary.should include(:username)
+      summary.should include(:user)
+      summary.should include(:zookeeper_affected)
     end
   end
 end

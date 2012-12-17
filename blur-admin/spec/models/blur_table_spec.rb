@@ -9,7 +9,17 @@ describe BlurTable do
   end
 
   describe "as_json" do
-    it 'return the expected values'
+    it 'return the expected values' do 
+      @table.should_receive(:recent_queries).and_return({:test => []})
+      test_json = @table.as_json
+      test_json.should_not include("server")
+      test_json.should_not include("table_schema")
+      test_json.should include("queried_recently")
+      test_json.should include("server_info")
+      test_json.should include("sparkline")
+      test_json.should include("average_queries")
+      test_json.should include("comments")
+    end
   end
 
   describe "boolean state methods" do

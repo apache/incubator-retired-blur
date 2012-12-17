@@ -1,60 +1,61 @@
 BlurAdmin::Application.routes.draw do
+  # User routes
   resources :users do
     match '/preferences/:pref_type' => 'preferences#update', :via => :put, :as => :preference
   end
 
-  resources :zookeepers, :only => [:index, :show, :destroy] do 
-    #Zookeeper routes
-    member do
-      delete 'controller/:controller_id' => 'zookeepers#destroy_controller', :as => :destroy_controller
-      delete 'shard/:shard_id' => 'zookeepers#destroy_shard', :as => :destroy_shard
-      delete 'cluster/:cluster_id' => 'zookeepers#destroy_cluster', :as => :destroy_cluster
-      get 'long_running' => 'zookeepers#long_running_queries', :as => :long_running_queries
-      get 'shards/:cluster_id' => 'zookeepers#shards', :as => :shards
+  # Zookeeper routes
+  resources :zookeepers, :only => [:index, :show, :destroy], :shallow => true do
+    # Nested cluster Resource
+    resources :clusters, :only => [:destroy] do
+      # Nested Shards Resource
+      resources :blur_shards, :only => [:index, :destroy]
     end
 
-    collection do
-      get 'dashboard'
-    end
+    # Nested BlurTables Resource
+    resources :blur_tables, :only => :index do
 
-    #Nested Search Resource
-    resources :searches, :only => [:index, :update] do
+      # BlurTable routes
       member do
-        post 'load'
-        delete 'delete/:blur_table', :action => :delete, :as => :delete
+        get 'terms'
+        get 'hosts'
+        get 'schema'
+        put 'comment'
       end
+      collection do
+        put 'enable'
+        put 'disable'
+        delete 'destroy'
+      end
+    end
 
-      collection do 
+    # Nested BlurQueries Resource
+    resources :blur_queries, :only => [:index, :show] do
+
+      #Blur Queries routes
+      member do
+        put 'cancel'
+      end
+      collection do
+        get 'refresh/:time_length', :action => :refresh, :as => :refresh
+      end
+    end
+
+    # Nested Controller Resource
+    resources :blur_controllers, :only => [:destroy]
+
+    # Nested Search Resource
+    resources :searches, :only => [:index, :update, :show, :destroy] do
+      collection do
         post 'save'
         post ':blur_table', :action => :create, :as => :fetch_results
         get 'filters/:blur_table', :action => :filters, :as => :filters
       end
     end
 
-    #Nested BlurTables Resource
-    resources :blur_tables, :only => :index do
-      member do
-        get 'terms'
-        put 'comment'
-      end
-
-      collection do
-        put 'enable'
-        put 'disable'
-        delete 'forget'
-        delete 'destroy'
-      end
-    end
-
-    #Nested BlurQueries Resource
-    resources :blur_queries, :only => [:index, :update] do
-      member do
-        get 'more_info'
-      end
-
-      collection do
-        get 'refresh/:time_length', :action => :refresh, :as => :refresh
-      end
+    # Zookeeper specific action
+    member do
+      get 'long_running' => 'zookeepers#long_running_queries', :as => :long_running_queries
     end
   end
 
@@ -84,6 +85,11 @@ BlurAdmin::Application.routes.draw do
   end
 
   resources :audits, :only => [:index]
+
+  #Errors
+  match '/404' => 'errors#error_404'
+  match '/500' => 'errors#error_500'
+  match '/422' => 'errors#error_422'
 
   match 'login' => 'user_sessions#new', :as => :login
   match 'logout' => 'user_sessions#destroy', :as => :logout

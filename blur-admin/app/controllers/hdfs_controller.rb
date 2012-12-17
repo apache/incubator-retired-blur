@@ -1,47 +1,57 @@
 class HdfsController < ApplicationController
   require 'hdfs_thrift_client'
+  load_and_authorize_resource :shallow => true
+
+  HTML_REPONSES = [:info, :folder_info, :expand, :file_info, :upload_form, :upload]
+  respond_to :html, :only => (HTML_REPONSES + [:index])
+  respond_to :json, :except => HTML_REPONSES
 
   include ActionView::Helpers::NumberHelper
 
   def index
-    @instances = Hdfs.all
-    respond_to do |format|
-      format.html
-      format.json{render :json => @instances, :methods => [:most_recent_stats, :recent_stats]}
+    respond_with do |format|
+      format.json { render :json => @hdfs, :methods => [:most_recent_stats, :recent_stats] }
     end
   end
 
   def info
-    @hdfs = Hdfs.find(params[:id]).hdfs_stats.last
-    if @hdfs
-      respond_to do |format|
-        format.html{render :partial => 'info'}
+    @hdfs_stat = @hdfs.hdfs_stats.last
+    respond_with(@hdfs_stat) do |format|
+      format.html do
+        if @hdfs_stat
+          render :partial => 'info'
+        else
+          render :text => "<div>Stats for hdfs ##{params[:id]} were not found, is the blur tools agent running?</div>"
+        end
       end
-    else
-      render :text => "<div>Stats for hdfs ##{params[:id]} were not found, is the blur tools agent running?</div>"
     end
   end
 
   def folder_info
     client = build_client_from_id
-    @path = params[:fs_path]
-    @stat = client.stat @path
-    respond_to do |format|
-      format.html{render :partial => 'folder_info'}
+    path = params[:fs_path]
+
+    @stat = client.stat path
+    respond_with(@stat) do |format|
+      format.html{ render :partial => 'folder_info' }
     end
   end
 
   def slow_folder_info
     client = build_client_from_id
-    @path = params[:fs_path]
-    file_stats = client.ls(@path, true)
-    @file_count = @folder_count = @file_size = 0
+    path = params[:fs_path]
+    file_stats = client.ls(path, true)
+    file_size = 0
+    stats_hash = {:file_size => 0, :file_count => 0, :folder_count => 0}
+
     file_stats.each do |stat|
-      @file_size += stat.length
-      @file_count += 1 unless stat.isdir
-      @folder_count += 1 if stat.isdir
+      file_size += stat.length
+      stats_hash[:file_count] += 1 unless stat.isdir
+      stats_hash[:folder_count] += 1 if stat.isdir
     end
-    render :json => {:file_size=>number_to_human_size(@file_size),:file_count=>@file_count,:folder_count=>@folder_count}
+    stats_hash[:file_size] = number_to_human_size file_size
+
+    respond_with(stats_hash)
   end
 
   def expand
@@ -56,8 +66,9 @@ class HdfsController < ApplicationController
       {:name=> file_ending, :is_dir=>stat.isdir}
     end
     @children.sort_by! {|c| [c[:is_dir] ? 1:0, c[:name].downcase]}
-    respond_to do |format|
-      format.html{render :partial => 'expand'}
+
+    respond_with do |format|
+      format.html { render :partial => 'expand' }
     end
   end
 
@@ -66,15 +77,19 @@ class HdfsController < ApplicationController
     path = "#{params[:fs_path]}/#{params[:folder]}/"
     path.gsub!(/\/\//, "/")
     client.mkdirs(path)
-    Audit.log_event(current_user, "A folder, #{params[:folder]}, was created", "hdfs", "create")
-    render :nothing => true
+    Audit.log_event(current_user, "A folder, #{params[:folder]}, was created",
+      "hdfs", "create", @hdfs)
+
+    respond_with do |format|
+      format.json { render :json => {} }
+    end
   end
 
   def file_info
     client = build_client_from_id
     @stat = client.stat params[:fs_path]
-    respond_to do |format|
-      format.html{render :partial => 'file_info'}
+    respond_with do |format|
+      format.html { render :partial => 'file_info' }
     end
   end
 
@@ -82,8 +97,12 @@ class HdfsController < ApplicationController
     client = build_client_from_id
     client.rename(params[:from], params[:to])
     file_name = params[:from].strip.split("/").last
-    Audit.log_event(current_user, "File/Folder, #{file_name}, was moved or renamed to #{params[:to]}", "hdfs", "update")
-    render :nothing => true
+    Audit.log_event(current_user, "File/Folder, #{file_name}, was moved or renamed to #{params[:to]}",
+      "hdfs", "update", @hdfs)
+
+    respond_with do |format|
+      format.json { render :json => {} }
+    end
   end
 
   def delete_file
@@ -91,12 +110,18 @@ class HdfsController < ApplicationController
     path = params[:path]
     client.delete path, true
     file_name = params[:path].strip.split("/").last
-    Audit.log_event(current_user, "File/Folder, #{file_name}, was deleted", "hdfs", "delete")
-    render :nothing => true
+    Audit.log_event(current_user, "File/Folder, #{file_name}, was deleted",
+      "hdfs", "delete", @hdfs)
+
+    respond_with do |format|
+      format.json { render :json => {} }
+    end
   end
 
   def upload_form
-    render :partial => 'upload_form'
+    respond_with do |format|
+      format.html { render :partial => 'upload_form' }
+    end
   end
 
   def upload
@@ -109,7 +134,8 @@ class HdfsController < ApplicationController
         else
           client = build_client_from_id
           client.put(f.tempfile.path,@path + '/' + f.original_filename)
-          Audit.log_event(current_user, "File, #{f.original_filename}, was uploaded", "hdfs", "create")
+          Audit.log_event(current_user, "File, #{f.original_filename}, was uploaded",
+            "hdfs", "create", @hdfs)
         end
       else
         @error = 'Problem with File Upload'
@@ -117,19 +143,21 @@ class HdfsController < ApplicationController
     rescue Exception => e
       @error = e.to_s
     end
-    render :partial => 'upload'
+    respond_with do |format|
+      format.html { render :partial => 'upload' }
+    end
+    
   end
 
   def file_tree
     client = build_client_from_id
     file_structure = client.folder_tree params[:fs_path], 4
-    render :json => file_structure
+    respond_with(file_structure)
   end
 
   private
   def build_client_from_id
-    instance = Hdfs.find params[:id]
-    HdfsThriftClient.client("#{instance.host}:#{instance.port}")
+    HdfsThriftClient.client("#{@hdfs.host}:#{@hdfs.port}")
   end
 end
 

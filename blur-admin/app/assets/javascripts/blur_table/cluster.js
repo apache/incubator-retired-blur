@@ -6,6 +6,7 @@ var Cluster = Backbone.Model.extend({
     this.set_running_query_header_state();
     this.on('change:blur_tables', function(){
       this.update_child_tables();
+      this.collection.cluster.view.populate_tables();
     });
     this.on('change:safe_mode', function(){
       $('li#cluster_tab_' + this.get('id') + ' .safemode-icon').toggle();
@@ -15,7 +16,6 @@ var Cluster = Backbone.Model.extend({
     });
   },
   build_child_tables: function(){
-    var self = this;
     this.set({tables: new TableCollection(this.get('blur_tables'), {cluster: this})}, {silent: true});
   },
   update_child_tables: function(){
@@ -44,14 +44,14 @@ var Cluster = Backbone.Model.extend({
             func: _.bind(function() {
               $.ajax({
                 type: 'PUT',
-                url: Routes.enable_zookeeper_blur_tables_path(CurrentZookeeper),
+                url: Routes.enable_zookeeper_blur_tables_path(CurrentZookeeper, {format: 'json'}),
                 data: {tables: table_ids}
               });
+              $().closePopup();
               _.each(selected_tables, function(table){
                 table.set({status: 5});
               });
               this.view.set_table_state();
-              $().closePopup();
             }, this)
           },
           "Cancel": {
@@ -77,47 +77,14 @@ var Cluster = Backbone.Model.extend({
             func: _.bind(function() {
               $.ajax({
                 type: 'PUT',
-                url: Routes.disable_zookeeper_blur_tables_path(CurrentZookeeper),
+                url: Routes.disable_zookeeper_blur_tables_path(CurrentZookeeper, {format: 'json'}),
                 data: {tables: table_ids}
               });
+              $().closePopup();
               _.each(selected_tables, function(table){
                 table.set({status: 3});
               });
               this.view.set_table_state();
-              $().closePopup();
-            }, this)
-          },
-          "Cancel": {
-            func: function() {
-              $().closePopup();
-            }
-          }
-        }
-      });
-    }, this));
-  },
-  forget_tables: function(){
-    var selected_tables = this.get('tables').where({state: 'deleted', checked: true});
-    var table_ids = _.map(selected_tables, function(table){ return table.get('id'); });
-    this.send_action_request(selected_tables, _.bind(function(){
-      $().popup({
-        title: "Forget Tables",
-        titleClass: 'title',
-        body: "Are you sure you want to forget these tables?",
-        btns: {
-          "Forget": {
-            "class": "primary",
-            func: _.bind(function() {
-              $.ajax({
-                type: 'DELETE',
-                url: Routes.forget_zookeeper_blur_tables_path(CurrentZookeeper),
-                data: {tables: table_ids}
-              });
-              _.each(selected_tables, function(table){
-                table.collection.remove(table);
-              });
-              this.view.set_table_state();
-              $().closePopup();
             }, this)
           },
           "Cancel": {
@@ -142,11 +109,11 @@ var Cluster = Backbone.Model.extend({
             delete_index: delete_index
           }
         });
+        $().closePopup();
         _.each(selected_tables, function(table){
-          table.set({status: 3});
+          table.set({status: 1});
         });
         this.view.set_table_state();
-        $().closePopup();
       };
       $().popup({
         title: "Delete Tables",
@@ -232,10 +199,9 @@ var ClusterView = Backbone.View.extend({
     'click .check-all' : 'check_all_boxes',
     'click .btn[data-action=enable]' : 'enable_tables',
     'click .btn[data-action=disable]' : 'disable_tables',
-    'click .btn[data-action=forget]' : 'forget_tables',
     'click .btn[data-action=delete]' : 'delete_tables'
   },
-  colspan_lookup : {'active': 7, 'disabled': 3, 'deleted': 1}, //active changed from 5 to 6 for sparkline graph, 6 to 7 for comments
+  colspan_lookup : {'active': 7, 'disabled': 4},
   render: function(){
     this.$el.html(this.template({cluster: this.model}));
     this.populate_tables();
@@ -252,7 +218,7 @@ var ClusterView = Backbone.View.extend({
     this.set_table_values();
   },
   set_table_values: function(){
-    var table_prefixes = ['active', 'disabled', 'deleted'];
+    var table_prefixes = ['active', 'disabled'];
     for (var index = 0; index < table_prefixes.length; index++){
       var table = this.$el.find('.' + table_prefixes[index] + '-table');
       table.find('.no-data').remove();
@@ -261,6 +227,7 @@ var ClusterView = Backbone.View.extend({
       if (this.model.get('tables').where({table: table_prefixes[index]}).length <= 0){
         table.append(this.no_table(this.colspan_lookup[table_prefixes[index]]));
       }
+      sorttable.makeSortable(table.closest("table")[0]);
     }
   },
   set_table_state: function(){
@@ -299,12 +266,11 @@ var ClusterView = Backbone.View.extend({
   },
   enable_tables: function(event){
     this.model.enable_tables();
+    this.model.change();
   },
   disable_tables: function(event){
     this.model.disable_tables();
-  },
-  forget_tables: function(event){
-    this.model.forget_tables();
+    this.model.change();
   },
   delete_tables: function(event){
     this.model.delete_tables();

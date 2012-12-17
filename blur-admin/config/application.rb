@@ -21,5 +21,7 @@ module BlurAdmin
     
     # Custom directories with classes and modules you want to be autoloadable.
     config.autoload_paths += %W(#{config.root}/lib/thrift)
+
+    config.exceptions_app = self.routes
   end
 end

@@ -1,0 +1,23 @@
+#error_wrapper{
+  h1 {
+    text-align:center;
+  }
+  h2 {
+    text-align:center;
+    color:black;
+  }
+  img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  h3 {
+    text-align:center;
+    color:black;
+  }
+}
+#error_message {
+  display: block;
+  margin-left:auto;
+  margin-right:auto;
+}

@@ -9,7 +9,8 @@ FactoryGirl.define do
 
     factory :user_with_preferences do
       after_create do |user|
-        FactoryGirl.create_list(:preference, 1, :user => user)
+        FactoryGirl.create(:preference, :user => user)
+        FactoryGirl.create(:zookeeper_pref, :user =>user)
       end
     end
   end

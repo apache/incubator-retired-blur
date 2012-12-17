@@ -1,14 +1,19 @@
 class SearchesController < ApplicationController
-  before_filter :current_zookeeper, :only => [:index, :create]
+  load_and_authorize_resource :only => [:show, :destroy]
+
   before_filter :zookeepers, :only => :index
   before_filter :clean_column_data, :only => [:save, :update]
+
+  JSON_RESPONSES = [:filters, :show, :update]
+  respond_to :html, :except => JSON_RESPONSES
+  respond_to :json, :only => JSON_RESPONSES
 
   #Show action that sets instance variables used to build the filter column
   def index
     # the .all call executes the SQL fetch, otherwise there are many more SQL fetches
     # required because of the lazy loading (in this case where a few more variables
     # depend on the result)
-    @blur_tables = @current_zookeeper.blur_tables.where('status = 4').order("table_name").includes(:cluster).all
+    @blur_tables = current_zookeeper.blur_tables.where('status = 4').order("table_name").includes(:cluster).all
     @blur_table = BlurTable.find_by_id(params[:table_id])
     if @blur_table.nil?
       @blur_table = @blur_tables[0]
@@ -23,6 +28,7 @@ class SearchesController < ApplicationController
         @filter_table_collection[table.cluster.name] ||= []
         @filter_table_collection[table.cluster.name] << [table.table_name, table.id]
     end
+    respond_with
   end
 
   #Filter action to help build the tree for column families
@@ -37,28 +43,29 @@ class SearchesController < ApplicationController
       col_fam
     end
     filter_list = { :title => 'All Families', :key => "neighborhood", :addClass => 'check_filter', :select => true, :children => filter_children}
-    render :json => filter_list.to_json
+    respond_with(filter_list)
   end
 
   #Create action is a large action that handles all of the filter data
   #and either saves the data or performs a search
   def create
     params[:column_data].delete( "neighborhood") if params[:column_data]
-    search = Search.new(  :super_query    => params[:search] == '0',
-                                           :record_only     => params[:search] == '1' && params[:return] == '1',
-                                           :fetch                 => params[:result_count].to_i,
-                                           :offset                => params[:offset].to_i,
-                                           :user_id             => current_user.id,
-                                           :query                => params[:query_string],
-                                           :blur_table_id   => params[:blur_table])
+    search = Search.new(  :super_query      => params[:search] == '0',
+                          :record_only      => params[:search] == '1' && params[:return] == '1',
+                          :fetch            => params[:result_count].to_i,
+                          :offset           => params[:offset].to_i,
+                          :user_id          => current_user.id,
+                          :query            => params[:query_string],
+                          :blur_table_id    => params[:blur_table],
+                          :pre_filter       => params[:pre_filter],
+                          :post_filter      => params[:post_filter]
+                         )
     search.column_object = params[:column_data]
 
     #use the model to begin building the blurquery
     blur_table = BlurTable.find params[:blur_table]
 
-    blur_results = search.fetch_results(blur_table.table_name, @current_zookeeper.blur_urls)
-
-    Audit.log_event(current_user, "A Query was submitted", "search", "create")
+    blur_results = search.fetch_results(blur_table.table_name, current_zookeeper.blur_urls)
 
     # parse up the response object and reformat it to be @results.  @results holds the data
     # that will be passed to the view. @results is an array of results. Each result is a series
@@ -82,6 +89,7 @@ class SearchesController < ApplicationController
         records = [blur_result.record]
         id = blur_result.rowid
       end
+
       # continue to next result if there is no returned data
       next if records.empty?
 
@@ -107,58 +115,63 @@ class SearchesController < ApplicationController
     end
     pref_sort = preference_sort(current_user.column_preference.value || [])
     @schema = Hash[search.schema(blur_table).sort &pref_sort]
-    respond_to do |format|
-      format.html {render 'create', :layout => false}
+    respond_with do |format|
+      format.html { render 'create', :layout => false }
     end
   end
 
   #save action that loads the state of a saved action and returns a json to be used to populate the form
-  def load
-    search = Search.find(params[:id])
-    render :json => search.to_json(:methods => :column_object)
+  def show
+    respond_with(@search) do |format|
+      format.json { render :json => @search, :methods => :column_object }
+    end
   end
 
   #Delete action used for deleting a saved search from a user's saved searches
-  def delete
-    Search.find(params[:id]).delete
+  def destroy
+    @search.destroy
     @searches = current_user.searches.reverse
-    @blur_table = BlurTable.find params[:blur_table]
-    respond_to do |format|
-      format.html {render :partial =>"saved", :locals => {:searches => @searches, :blur_table => @blur_table}}
+    respond_with(@searches) do |format|
+      format.html { render :partial => "saved" }
     end
   end
 
   def save
-    search = Search.new( :name                => params[:save_name],
-                                          :super_query    => params[:search] == '0',
-                                          :record_only     => params[:search] == '1' && params[:return] == '1',
-                                          :fetch                 => params[:result_count].to_i,
-                                          :offset                => params[:offset].to_i,
-                                          :user_id             => current_user.id,
-                                          :query                => params[:query_string],
-                                          :blur_table_id    => params[:blur_table])
+    search = Search.new(:name             => params[:save_name],
+                        :super_query      => params[:search] == '0',
+                        :record_only      => params[:search] == '1' && params[:return] == '1',
+                        :fetch            => params[:result_count].to_i,
+                        :offset           => params[:offset].to_i,
+                        :user_id          => current_user.id,
+                        :query            => params[:query_string],
+                        :blur_table_id    => params[:blur_table],
+                        :pre_filter       => params[:pre_filter],
+                        :post_filter      => params[:post_filter])
     search.column_object = params[:column_data]
     search.save
     @searches = current_user.searches.reverse
-    #@blur_table = BlurTable.find params[:blur_table]
 
-    respond_to do |format|
-      format.html {render :partial =>"saved", :locals => {:searches => @searches}} #, :blur_table => @blur_table}}
+    respond_with(@searches) do |format|
+      format.html { render :partial =>"saved" }
     end
   end
 
   def update
     Search.update(params[:id],
-                        :name                    => params[:save_name],
+                        :name               => params[:save_name],
                         :super_query        => params[:search] == '0',
-                        :record_only         => params[:search] == '1' && params[:return] == '1',
-                        :fetch                     => params[:result_count].to_i,
-                        :offset                    => params[:offset].to_i,
-                        :user_id                 => current_user.id,
-                        :query                    => params[:query_string],
-                        :column_object     => params[:column_data],
-                        :blur_table_id        => params[:blur_table])
-    render :nothing => true
+                        :record_only        => params[:search] == '1' && params[:return] == '1',
+                        :fetch              => params[:result_count].to_i,
+                        :offset             => params[:offset].to_i,
+                        :user_id            => current_user.id,
+                        :query              => params[:query_string],
+                        :column_object      => params[:column_data],
+                        :blur_table_id      => params[:blur_table],
+                        :pre_filter       => params[:pre_filter],
+                        :post_filter      => params[:post_filter])
+    respond_with do |format|
+      format.json { render :json => {} }
+    end
   end
   private
     def preference_sort(preferred_columns)

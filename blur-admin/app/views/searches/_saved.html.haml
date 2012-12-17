@@ -1,7 +1,6 @@
 #searches.partial-section
-	-if searches.length != 0
-		-searches.each do |search|
-			//-val = is_valid_search?(search)
+	-if @searches.length != 0
+		-@searches.each do |search|
 			.search_element{:id => search.id}
 				.search-name{:title => search.name}
 					=search.name

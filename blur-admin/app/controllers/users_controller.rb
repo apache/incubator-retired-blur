@@ -1,16 +1,19 @@
 class UsersController < ApplicationController
   load_and_authorize_resource
 
-  before_filter :find_user, :only => [:show, :edit, :update, :destroy, :save]
-  skip_before_filter :current_zookeeper, :zookeepers
+  before_filter :zookeepers, :only => :show
+
+  respond_to :html
 
   def index
-    @users = User.all
+    respond_with(@users)
   end
 
   def show
     @column_preference = @user.column_preference
+    @zookeeper_preference = @user.zookeeper_preference
     @choices = BlurTable.select('table_schema').collect {|table| schema = table.schema; schema.collect{|familes| familes['name']} if schema}.flatten.uniq
+    respond_with(@user)
   end
 
   def new
@@ -31,7 +34,8 @@ class UsersController < ApplicationController
 
   def update
     if @user.update_attributes(params[:user])
-      Audit.log_event(current_user, "User, #{@user.username}, had their roles updated", "users", "update")
+      Audit.log_event(current_user, "User, #{@user.username}, had their roles updated",
+        "users", "update", current_zookeeper)
       if can? :index, :users
         redirect_to users_path, :notice => "User Updated"
       else
@@ -44,13 +48,9 @@ class UsersController < ApplicationController
 
   def destroy
     @user.destroy
-    Audit.log_event(current_user, "User, #{@user.username}, was removed", "users", "delete")
-    redirect_to users_path, :notice => "User Removed"
-  end
-
-  private
-
-  def find_user
-    @user = User.find params[:id]
+    Audit.log_event(current_user, "User, #{@user.username}, was removed",
+      "users", "delete", current_zookeeper)
+    flash[:notice] = "User Removed"
+    respond_with(@user)
   end
 end

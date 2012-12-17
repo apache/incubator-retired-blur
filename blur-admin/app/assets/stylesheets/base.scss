@@ -140,10 +140,13 @@ ul.dynatree-container {
     div{
       border: solid 1px #CCC;
     }
+    .icon ~ .info{
+      @include border-radius-left(0px);
+    }
     .info{
       background-color: white;
       padding: 5px;
-      @include border-radius-right;
+      @include border-radius;
       overflow-x: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;

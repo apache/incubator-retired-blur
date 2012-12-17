@@ -27,7 +27,7 @@ var TermsView = Backbone.View.extend({
     this.popover.popover('hide');
     $('.popover').off('click');
     $('html').off('click');
-    this.remove();
+    this.destroy();
   },
   get_terms: function(request_data, success){
     this.options.parent.get_terms(request_data, success);

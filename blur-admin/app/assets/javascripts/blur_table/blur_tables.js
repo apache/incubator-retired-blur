@@ -1,6 +1,7 @@
 //= require jquery.dynatree
 //= require bootstrap-tooltip
 //= require bootstrap-popover
+//= require sorttable
 //= require_tree .
 
 $(document).ready(function() {
@@ -8,5 +9,5 @@ $(document).ready(function() {
   $.ui.dynatree.nodedatadefaults["icon"] = false;
 
   // Create the cluster collection and start the stream
-  new ClusterCollection().stream({interval: 5000, update: true});
+  new ClusterCollection().stream({interval: 10000, update: true});
 });

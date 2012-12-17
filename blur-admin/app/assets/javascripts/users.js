@@ -2,7 +2,7 @@ $(document).ready(function(){
   //Ajax request that serializes your columns and persists them to the DB
   var save_pref = function(){
     var user_id = $('#show_user_wrapper').attr('data-user-id');
-    $.ajax(Routes.user_preference_path(user_id, 'column'),
+    $.ajax(Routes.user_preference_path(user_id, 'column', {format: 'json'}),
     {
       type: 'PUT',
       data: $('#my-cols').sortable('serialize'),
@@ -28,7 +28,7 @@ $(document).ready(function(){
   });
 
   //Click event for selecting a column from all possible columns
-  $('.fam').live('click', function(){ 
+  $('.fam').live('click', function(){
     $(this).toggleClass('my-select');
     var clicked = $('#' + $(this).attr('id') + '.sel-fam');
 
@@ -46,7 +46,7 @@ $(document).ready(function(){
     //remove it from the list of selected columns
     else
     {
-      clicked.fadeOut('slow', function(){ 
+      clicked.fadeOut('slow', function(){
         clicked.remove();
         if ($('#my-cols').children().length == 1)
         {
@@ -63,5 +63,43 @@ $(document).ready(function(){
   $('#pref-title').on('ajaxStop', function(){
     $(this).addClass('hidden-spinner');
   });
+
+  //*******Zookeeper dropdown code********
+  //Helper functions
+  var checkSelectionStatus = function(){
+    if ($('#zookeeper_pref option:selected').val() != 1){
+      $('#zookeeper_num').hide();
+    } else{
+      $('#zookeeper_num').show();
+    }
+    $('#zookeeper_submit').removeAttr('disabled');
+  };
+  //Page Listeners
+  $('#zookeeper_pref').on('change', function(){
+   checkSelectionStatus();
+  });
+  $('#zookeeper_num').on('change', function(){
+    $('#zookeeper_submit').removeAttr('disabled');
+  });
+  $('#zookeeper_submit').on('click', function(){
+    var selected_pref = $('#zookeeper_pref option:selected').val();
+    var selected_zk = '';
+    if (selected_pref == 1 || 2){
+      selected_zk = $('#zookeeper_num option:selected').val();
+    }
+    var user_id = $('#show_user_wrapper').attr('data-user-id');
+    $.ajax(Routes.user_preference_path(user_id, 'zookeeper', {format: 'json'}), {
+      type: 'PUT',
+      data: {
+        name: selected_pref,
+        value: selected_zk
+      }
+    });
+    $('#zookeeper_submit').attr('disabled', 'disabled');
+  });
+  //Code for onLoad
+  checkSelectionStatus();
+  $('#zookeeper_submit').attr('disabled', 'disabled');
+
 });
 

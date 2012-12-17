@@ -66,7 +66,7 @@ $(document).ready(function() {
 
   var get_filter_ajax = function() {
     return {
-      url: Routes.filters_zookeeper_searches_path(CurrentZookeeper, $('#blur_table').val()),
+      url: Routes.filters_zookeeper_searches_path(CurrentZookeeper, $('#blur_table').val(), {format: 'json'}),
       type: 'get'
     };
   };
@@ -174,7 +174,7 @@ $(document).ready(function() {
   $('#search_submit, #update_button, #save_button').bind('ajaxStop', function() {
     toggle_submit();
   });
-  $('body').live('click', function() {
+  $('html').live('click', function() {
     hide_all_tabs();
   });
   $('.tab:visible, .header').live('click', function(e) {
@@ -207,7 +207,6 @@ $(document).ready(function() {
       tree.reload();
       tree.enableUpdate(prevMode);
     }
-
     if (data.super_query) {
       $('#search_row').prop('checked', true);
       $('#search_record').prop('checked', false);
@@ -236,6 +235,12 @@ $(document).ready(function() {
     if (data.return_record) {
       $('#return_record').click();
     }
+    if (data.pre_filter){
+      $('#pre_filter').val(data.pre_filter);
+    }
+    if (data.post_filter){
+      $('#post_filter').val(data.post_filter);
+    }
     //check everything in the tree
     raw_columns = data.column_object;
     for(index = 0; index < raw_columns.length; index++){
@@ -249,8 +254,8 @@ $(document).ready(function() {
   };
 
   var retrieve_search = function(id) {
-    $.ajax(Routes.load_zookeeper_search_path(CurrentZookeeper, id), {
-      type: 'POST',
+    $.ajax(Routes.search_path(id, {format: 'json'}), {
+      type: 'GET',
       success: function(data) {
         populate_form(data);
       }
@@ -298,7 +303,7 @@ $(document).ready(function() {
         "class": 'primary',
         func: function() {
           $().closePopup();
-          $.ajax(Routes.delete_zookeeper_search_path(CurrentZookeeper, parent.attr("id"), $('#blur_table option:selected').val()), {
+          $.ajax(Routes.search_path(parent.attr("id")), {
             type: 'DELETE',
             success: function(data) {
               $('#saved .body .saved').html(data);
@@ -357,7 +362,7 @@ $(document).ready(function() {
       var form_data = $('#search_form').serializeArray();
       var tree = $('.column_family_filter').dynatree('getTree');
       form_data = form_data.concat(tree.serializeArray());
-      $.ajax(Routes.zookeeper_search_path(CurrentZookeeper, search_id), {
+      $.ajax(Routes.search_path(search_id, {format: 'json'}), {
         type: 'PUT',
         data: form_data
       });

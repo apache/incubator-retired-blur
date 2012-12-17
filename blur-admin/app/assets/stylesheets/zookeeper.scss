@@ -26,6 +26,9 @@ $opacity-adjust: 0;
         bottom: 20px;
         font-size: 12px;
         opacity: .8;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
       }
       
       i {
@@ -42,15 +45,36 @@ $opacity-adjust: 0;
       background-color: whitesmoke;
     }
     table tbody tr{
+      &.error{
+        &:hover{
+          td{
+            background-color: #EBCCCC;
+          }
+        }
+        td{
+          background-color: #F2DEDE;
+        }
+      }
+
+      &.warning{
+        &:hover{
+          td{
+            background-color: #FAF2CC;
+          }
+        }
+        td{
+          background-color: #FCF8E3;
+        }
+      }  
       
       td{
 
         a {
-          text-decoration: underline;
+          text-decoration: none;
           cursor: pointer;
         }
         
-        noColor{
+        .noColor{
           background-color: transparent;
           color:black;
         }
@@ -60,26 +84,6 @@ $opacity-adjust: 0;
         }
       }
       
-      &.error{
-        &.error-failure {
-          td {
-            background-color: rgba(255, 25, 25, .8 - $opacity-adjust);
-            color: white;
-            border-color: #FF1919;            
-            color{
-              color: white;
-            }            
-          }
-        }
-        td {
-          background-color: rgba(237, 194, 64, .8 - $opacity-adjust);
-          color: white;
-          border-color: #EDC240;
-          color{
-            color: white;
-          }
-        }
-      }
       td:last-child { text-align: center; width: 34px; }
     }
     ul{ list-style-type: none; }
@@ -89,13 +93,14 @@ $opacity-adjust: 0;
 
   h3 { margin-top: 0.5em; border-bottom: $twitter-border;}
   
-  noController{
+  .noController{
     position: relative;
     top: 40px;
     font-size: 20px;
     color: #93A7AC;
   }
-  subHeaders{
+  .subHeaders{
+    display: inline-block;
     font-size: 24px;
     font-weight: bold;
     color: #93A7AC;

@@ -1,11 +1,11 @@
-<% if(table.get('schema')){ %>
+<% if(schema){ %>
   <div class="schema_wrap">
     <h4>Location</h4>
     <a href="<%= '/hdfs/' + table.get('cluster_id') + '/show/' + table.parse_uri('path') %>"><%= table.get('table_uri') %></a>
     <h4>Schema</h4>
     <div class="info table_info_tree">
       <ul>
-        <% _.each(table.get('schema'), function(family){ %>
+        <% _.each(schema, function(family){ %>
           <li>
             <a href="#"><%= family.name + ' (' + table.get('table_analyzer') + ')'%></a>
             <ul>

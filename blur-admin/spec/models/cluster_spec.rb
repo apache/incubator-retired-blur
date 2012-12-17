@@ -2,32 +2,38 @@ require 'spec_helper'
 
 describe Cluster do
   before(:each) do
-    @cluster = FactoryGirl.create :cluster
-    @options = {}
+    @cluster = FactoryGirl.create :cluster_with_shard
   end
 
   describe 'as_json' do
-    it 'takes in no options' do
-      @cluster.as_json(@options).should == {"id"=>@cluster.id, "name"=>@cluster.name, "safe_mode"=>false, "zookeeper_id"=>1, "can_update"=>false}
+    it "should have the can_update, blur_version and shard status in the json" do
+      test_json = @cluster.as_json
+      test_json.should include("can_update")
+      test_json.should include("shard_blur_version")
+      test_json.should include("shard_status")
+    end
+  end
+
+  describe 'shard_version' do
+    it 'should return the common blur version when there is a single version' do
+      @cluster.shard_version.should == @cluster.blur_shards.first.blur_version
     end
 
-    it 'takes in only options' do
-      @options = {:only => [:id, :name]}
-      @cluster.as_json(@options).should == {"id"=>@cluster.id, "name"=>@cluster.name, "can_update"=>false}
+    it 'should return inconsistent when there are multiple blur versions' do
+      @incon_cluster = FactoryGirl.create :cluster_with_shards
+      @incon_cluster.shard_version.should == "Inconsistent Blur Versions"
     end
 
-    it 'takes in except options' do
-      @options = {:except => [:safe_mode, :zookeeper_id]}
-      @cluster.as_json(@options).should == {"id"=>@cluster.id, "name"=>@cluster.name, "can_update"=>false}
+    it 'should return no shards message when there arent any versions' do
+      @empty_cluster = FactoryGirl.create :cluster
+      @empty_cluster.shard_version.should == "No shards in this Cluster!"
     end
+  end
 
-    it 'sets can_update to false' do
-      @cluster.as_json(@options).should == {"id"=>@cluster.id, "name"=>@cluster.name, "safe_mode"=>false, "zookeeper_id"=>1, "can_update"=>false}
-    end
-
-    it 'sets can_update to true' do
-      @cluster.can_update = true
-      @cluster.as_json(@options).should == {"id"=>@cluster.id, "name"=>@cluster.name, "safe_mode"=>false, "zookeeper_id"=>1, "can_update"=>true}
+  describe 'shard_status' do
+    it 'should return the correct ratio of online to offline shards' do
+      @test_cluster = FactoryGirl.create :cluster_with_shards_online
+      @test_cluster.shard_status.should == "3 | 3"
     end
   end
 end

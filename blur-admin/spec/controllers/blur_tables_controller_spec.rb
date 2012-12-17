@@ -7,7 +7,6 @@ describe BlurTablesController do
       setup_tests
 
       # Models used for model chain
-      @zookeeper  = FactoryGirl.create :zookeeper
       @client = mock(Blur::Blur::Client)
       @blur_table = FactoryGirl.create :blur_table
       @cluster = FactoryGirl.create_list :cluster, 3
@@ -16,124 +15,115 @@ describe BlurTablesController do
       @zookeeper.stub_chain(:blur_tables, :order).and_return [@blur_table]
       @zookeeper.stub_chain(:clusters, :order).and_return @cluster
       controller.stub!(:thrift_client).and_return(@client)
-      controller.stub!(:current_ability).and_return(@ability)
-      Zookeeper.stub!(:find_by_id).and_return(@zookeeper)
-      Zookeeper.stub!(:first).and_return(@zookeeper)
     end
 
     describe "GET index" do
-      before(:each) do
-        Zookeeper.stub!(:order).and_return [@zookeeper]
-      end
-
-      it "should assign @zookeepers to be the collection of all zookeepers" do
-        get :index
-        assigns(:zookeepers).should == [@zookeeper]
-      end
-
-      it "should assign @current_zookeeper" do
-        get :index
-        assigns(:current_zookeeper).should == @zookeeper
-      end
-
-      it "should render the index template" do
-        #need to test the new model setup
-        get :index
-        response.should render_template "index"
+      it "should call the before_filter on index" do
+        controller.should_receive :zookeepers
+        get :index, :format => :html
       end
 
       it "should assign @clusters to be the current zookeeper's clusters" do
         @zookeeper.should_receive(:clusters)
-        get :index
+        get :index, :format => :html
         assigns(:clusters).should == @cluster
+      end
+
+      it "should call can_update on each cluster" do
+        @cluster.each do |cluster|
+          cluster.should_receive :can_update=
+        end
+        @user.should_receive(:editor?).exactly(@cluster.length).times
+        get :index, :format => :html
+      end
+
+      it "should render the index template" do
+        get :index, :format => :html
+        response.should render_template "index"
+      end
+
+      it "should render the clusters as json" do
+        get :index, :format => :json
+        response.body.should == @cluster.to_json(:methods => [:blur_tables])
       end
     end
 
     describe "PUT enable" do
       before(:each) do
         @tables = [1, 2, 3]
-        BlurTable.stub(:find).and_return @blur_table
-        BlurTable.stub!(:enable)
+        BlurTable.stub(:find).and_return [@blur_table]
+        @blur_table.stub!(:enable)
         @blur_table.stub!(:save)
       end
 
-      it "should enable all the given tables" do
-        @tables.each do |id|
-          BlurTable.should_receive(:find).with(id.to_s)
-        end
-        @blur_table.should_receive(:enable).exactly(@tables.length).times
-        put :enable, :tables => @tables
+      it "should enable and update all the given tables" do
+        BlurTable.should_receive(:find).with @tables.collect{|id| id.to_s}
+        @blur_table.should_receive(:enable)
+        @blur_table.should_receive(:status=)
+        @blur_table.should_receive(:save)
+        put :enable, :tables => @tables, :format => :json
       end
 
       it "should log an audit for every table enabled" do
-        Audit.should_receive(:log_event).exactly(@tables.length).times
-        put :enable, :tables => @tables
+        Audit.should_receive(:log_event)
+        put :enable, :tables => @tables, :format => :json
       end
     end
 
     describe "PUT disable" do
       before(:each) do
         @tables = [1, 2, 3]
-        BlurTable.stub(:find).and_return @blur_table
+        BlurTable.stub(:find).and_return [@blur_table]
         BlurTable.stub!(:disable)
         @blur_table.stub!(:save)
       end
 
-      it "should disable all the given tables" do
-        @tables.each do |id|
-          BlurTable.should_receive(:find).with(id.to_s)
-        end
-        @blur_table.should_receive(:disable).exactly(@tables.length).times
-        put :disable, :tables => @tables
+      it "should disable and update all the given tables" do
+        BlurTable.should_receive(:find).with @tables.collect{|id| id.to_s}
+        @blur_table.should_receive(:disable)
+        @blur_table.should_receive(:status=)
+        @blur_table.should_receive(:save)
+        put :disable, :tables => @tables, :format => :json
       end
 
       it "should log an audit for every table disabled" do
-        Audit.should_receive(:log_event).exactly(@tables.length).times
-        put :disable, :tables => @tables
+        Audit.should_receive(:log_event)
+        put :disable, :tables => @tables, :format => :json
       end
     end
 
     describe "DELETE destroy" do
       before(:each) do
         @tables = [1, 2, 3]
-        BlurTable.stub(:find).and_return @blur_table
-        BlurTable.stub!(:blur_destroy)
+        BlurTable.stub(:find).and_return [@blur_table]
+        @blur_table.stub!(:blur_destroy)
+        BlurTable.stub!(:destroy)
         @blur_table.stub!(:save)
       end
 
       it "should destroy all the given tables" do
-        @tables.each do |id|
-          BlurTable.should_receive(:find).with(id.to_s)
-        end
-        @blur_table.should_receive(:blur_destroy).exactly(@tables.length).times
-        delete :destroy, :tables => @tables
+        @blur_table.should_receive(:blur_destroy)
+        delete :destroy, :tables => @tables, :format => :json
       end
 
       it "should set destroy index to true when the param is true" do
         @blur_table.should_receive(:blur_destroy).at_least(:once).with(true, kind_of(String))
-        delete :destroy, :tables => @tables, :delete_index => 'true'
+        delete :destroy, :tables => @tables, :delete_index => 'true', :format => :json
       end
 
       it "should set destroy index to false when the param is not true" do
         @blur_table.should_receive(:blur_destroy).at_least(:once).with(false, kind_of(String))
-        delete :destroy, :tables => @tables, :delete_index => 'not true'
+        delete :destroy, :tables => @tables, :delete_index => 'not true', :format => :json
       end
 
       it "should log an audit for every table destroyed" do
-        Audit.should_receive(:log_event).exactly(@tables.length).times
-        put :destroy, :tables => @tables
-      end
-    end
-
-    describe "DELETE forget" do
-      before(:each) do
-        @tables = [1, 2, 3]
-        BlurTable.stub(:destroy)
+        Audit.should_receive(:log_event)
+        put :destroy, :tables => @tables, :format => :json
       end
 
       it "should forget all the given tables" do
-        BlurTable.should_receive(:destroy).with(['1', '2', '3'])
-        delete :forget, :tables => @tables
+        BlurTable.should_receive(:destroy).with @tables.collect{|id| id.to_s}
+        delete :destroy, :tables => @tables, :format => :json
       end
     end
 
@@ -144,7 +134,7 @@ describe BlurTablesController do
       end
 
       it "should render a json" do
-        get :terms
+        get :terms, :format => :json, :id => @blur_table.id
         response.content_type.should == 'application/json'
       end
     end
@@ -156,7 +146,7 @@ describe BlurTablesController do
       end
 
       it "should change the comments in table" do
-        put :comment, :input => 'a comment'
+        put :comment, :id => @blur_table.id, :comment => 'a comment', :format => :json
         @blur_table.comments.should == 'a comment'
       end
     end

@@ -10,16 +10,24 @@ $.extend( $.fn.dataTableExt.oStdClasses, {
 });
 
 $(document).ready(function() {
+  //Sets max time to one hour after page load to fix button with Now button not going to current time
+  var adjust_time = function(date){
+    date.setHours(date.getHours()+1);
+    return date;
+  };
   var setup_datepickers = function(){
     var default_timepicker_options = {
       showMinute: false,
-      maxDate: new Date,
-      hourGrid: 6
+      maxDate: adjust_time(new Date),
+      hourGrid: 6,
+      ampm: true,
     };
 
     var from_now = new Date();
     var from_hours = urlVars['from']
     from_now.setMinutes(0);
+
+
 
     var to_now = new Date();
     var to_hours = urlVars['to']
@@ -29,28 +37,29 @@ $(document).ready(function() {
     var to_input = $('<input class="to-cal" placeholder="to"/>').datetimepicker(default_timepicker_options);
 
     if (from_hours){
-      from_now.setHours(from_now.getHours() - from_hours)
+      from_now.setHours(from_now.getHours() - from_hours);
       from_input.datepicker('setDate', from_now);
     }
 
     if (to_hours){
-      to_now.setHours(to_now.getHours() - to_hours)
+      to_now.setHours(to_now.getHours() - to_hours);
       to_input.datepicker('setDate', to_now);
     }
 
     $('.row > .span2').prepend('<label>Audit range:</label>', from_input, to_input ,'<button class="btn refresh-button">Refresh</button>');
   };
-
-    var urlVars = function() {
+  //Grabs the current time from the page elements (long number string in element id's) 
+  var urlVars = function() {
     var vars = {};
     var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
-        vars[key] = value;
+      vars[key] = value;
     });
     return vars;
   }();
 
   var columnDefinitions = [
     {mData: 'action', bSortable : false},
+    {mData: 'zookeeper_affected'},
     {mData: 'username', bVisible : false, bSortable : false},
     {mData: 'user'},
     {mData: 'model'},
@@ -59,7 +68,7 @@ $(document).ready(function() {
   ];
 
   var audit_data_table = $('#audits_table > table').dataTable({
-      sDom: "<'row'<'span4'i><'span3'f><'span2'r>>t",
+      sDom: "<'row'<'span4'i><'span8'><'span3'f><'span2'r>>t",
       bPaginate: false,
       bProcessing: true,
       bAutoWidth: false,
@@ -72,12 +81,12 @@ $(document).ready(function() {
         sZeroRecords: "No audits to display",
         sInfoFiltered: "(filtered from _MAX_ total audits)"
       }
-  })
-
-  audit_data_table.fnSort([[5, 'desc']]);
+  });
+  //On Page Load
+  audit_data_table.fnSort([[6, 'desc']]);
 
   setup_datepickers();
-
+  //Page Listeners
   $('.refresh-button').on('click', function(){
     var now = new Date();
     var from = Math.floor((now - $('.from-cal').datetimepicker('getDate')) / 3600 / 1000);

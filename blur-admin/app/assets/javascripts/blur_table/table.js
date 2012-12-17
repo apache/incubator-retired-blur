@@ -6,7 +6,7 @@ var Table = Backbone.Model.extend({
   },
   state_lookup : ['deleted', 'deleting', 'disabled', 'disabling', 'active', 'enabling'],
   table_lookup : ['deleted', 'disabled', 'disabled', 'active', 'active', 'disabled'],
-  colspan_lookup : {'active': 7, 'disabled': 3, 'deleted': 1}, //changed active from 5 to 6 for spark, changed from 6 to 7 for comments
+  colspan_lookup : {'active': 7, 'disabled': 5}, //changed active from 5 to 6 for spark, changed from 6 to 7 for comments
   initialize: function(){
     this.view = new TableView({model: this});
     this.set({
@@ -21,7 +21,6 @@ var Table = Backbone.Model.extend({
       }, {
         silent: true
       });
-      this.collection.cluster.view.populate_tables();
     });
     this.on('change:queried_recently', function(){
       this.collection.cluster.trigger('table_has_been_queried');
@@ -29,20 +28,6 @@ var Table = Backbone.Model.extend({
     this.on('change', function(){
       this.view.render();
     });
-  },
-  host_shard_string: function(){
-    var server = this.get('hosts');
-    if (server) {
-      var count = 0;
-      var hosts = 0;
-      for (var key in server) {
-        hosts++;
-        count += server[key].length;
-      }
-      return hosts + ' | ' + count;
-    } else {
-      return "Schema Information is Currently Unavailable";
-    }
   },
   parse_uri: function(piece){
     var parse_url = /^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/;
@@ -54,7 +39,7 @@ var Table = Backbone.Model.extend({
   get_terms: function(request_data, success){
     $.ajax({
       type: 'GET',
-      url: Routes.terms_zookeeper_blur_table_path(CurrentZookeeper, this.get('id'), {format: 'json'}),
+      url: Routes.terms_blur_table_path(this.get('id'), {format: 'json'}),
       data: request_data,
       success: success,
       error:function (xhr, ajaxOptions, thrownError){
@@ -71,12 +56,8 @@ var TableCollection = Backbone.StreamCollection.extend({
   model: Table,
   initialize: function(models, options){
     this.cluster = options.cluster;
-    this.on('add', function(table){
-      table.collection.cluster.view.populate_tables();
-    });
     this.on('remove', function(table){
-      table.view.remove();
-      table.collection.cluster.view.set_table_values();
+      table.view.destroy();
     });
   }
 });
@@ -132,43 +113,57 @@ var TableView = Backbone.View.extend({
     this.$el.toggleClass('highlighted-row');
   },
   show_hosts: function(){
-    var host_modal = $(JST['templates/blur_table/hosts']({table: this.model}));
-    this.setup_filter_tree(host_modal);
-    $().popup({
-      title: 'Additional Host/Shard Info',
-      titleClass: 'title',
-      body: host_modal
+    $.ajax({
+      type: 'GET',
+      url: Routes.hosts_blur_table_path(this.model.get('id'), {format: 'json'}) ,
+      success: _.bind(function(data){
+        var host_modal = $(JST['templates/blur_table/hosts']({table: this.model, hosts: data}));
+        this.setup_filter_tree(host_modal);
+        $().popup({
+          title: 'Additional Host/Shard Info',
+          titleClass: 'title',
+          body: host_modal
+        });
+      }, this)
     });
+    return false;
   },
   show_schema: function(){
-    var schema_modal = $(JST['templates/blur_table/schema']({table: this.model}));
-    this.setup_filter_tree(schema_modal.find('.table_info_tree'));
-    $().popup({
-      title: 'Additional Schema Info',
-      titleClass: 'title',
-      body: schema_modal
+    $.ajax({
+      type: 'GET',
+      url: Routes.schema_blur_table_path(this.model.get('id'), {format: 'json'}) ,
+      success: _.bind(function(data){
+        var schema_modal = $(JST['templates/blur_table/schema']({table: this.model, schema: data}));
+        this.setup_filter_tree(schema_modal.find('.table_info_tree'));
+        $().popup({
+          title: 'Additional Schema Info',
+          titleClass: 'title',
+          body: schema_modal,
+        });
+        var table_model = this.model;
+        schema_modal.on('click', '.terms', function(){
+          var clicked_element = $(this);
+          var request_data =
+          {
+            family: $(this).attr('data-family-name'),
+            column: $(this).attr('data-column-name'),
+            startwith: ' ',
+            size: 20
+          };
+          table_model.get_terms(request_data, _.bind(function(data) {
+            new TermsView({
+              clicked_element: clicked_element,
+              parent: this,
+              terms: data,
+              family: request_data.family,
+              column: request_data.column,
+              table_id: this.get('id')})
+            .render();
+          }, table_model));
+        });
+      }, this)
     });
-    var table_model = this.model;
-    schema_modal.on('click', '.terms', function(){
-      var clicked_element = $(this);
-      var request_data = 
-      {
-        family: $(this).attr('data-family-name'),
-        column: $(this).attr('data-column-name'),
-        startwith: ' ',
-        size: 20
-      };
-      table_model.get_terms(request_data, _.bind(function(data) {
-        new TermsView({
-          clicked_element: clicked_element,
-          parent: this,
-          terms: data,
-          family: request_data.family,
-          column: request_data.column,
-          table_id: this.get('id')})
-        .render();
-      }, table_model));
-    });
+    return false;
   },
   show_comments: function(){
     var comment_modal = $(JST['templates/blur_table/comments']({table: this.model}));
@@ -183,13 +178,13 @@ var TableView = Backbone.View.extend({
             var input_comment = document.getElementById("comments").value;
             $.ajax({
               type: 'PUT',
-              url: Routes.comment_zookeeper_blur_table_path(CurrentZookeeper, this.model.get('id')) ,
-              data: {input: input_comment},
+              url: Routes.comment_blur_table_path(this.model.get('id'), {format: 'json'}) ,
+              data: {comment: input_comment},
               success: _.bind(function(){
                 this.model.set({comments: input_comment});
               }, this)
             });
-            
+
             $().closePopup();
           }, this)
         },
@@ -200,6 +195,7 @@ var TableView = Backbone.View.extend({
         }
       }
     });
+    return false;
   },
   setup_filter_tree: function(selector) {
     return selector.dynatree();

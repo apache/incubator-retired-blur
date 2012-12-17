@@ -35,14 +35,17 @@ class SearchesController < ApplicationController
   def filters
     blur_table = BlurTable.find params[:blur_table]
     columns = blur_table ? (blur_table.schema &preference_sort(current_user.column_preference.value || [])) : []
+    first_selected = true
     filter_children = columns.collect do |family|
-      col_fam = {:title => family['name'], :key => "family_-sep-_#{family['name']}", :addClass => 'check_filter', :select => true}
+      col_fam = {:title => family['name'], :key => "family_-sep-_#{family['name']}", :addClass => 'check_filter', :select => false}
       col_fam[:children] = family['columns'].collect do |column|
-        {:title => column['name'], :key => "column_-sep-_#{family['name']}_-sep-_#{column['name']}", :addClass=>'check_filter', :select => true}
+        col = {:title => column['name'], :key => "column_-sep-_#{family['name']}_-sep-_#{column['name']}", :addClass=>'check_filter', :select => first_selected}
+        first_selected = false
+        col
       end
       col_fam
     end
-    filter_list = { :title => 'All Families', :key => "neighborhood", :addClass => 'check_filter', :select => true, :children => filter_children}
+    filter_list = { :title => 'All Families', :key => "neighborhood", :addClass => 'check_filter', :select => false, :children => filter_children}
     respond_with(filter_list)
   end
 

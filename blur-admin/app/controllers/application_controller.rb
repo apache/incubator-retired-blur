@@ -41,9 +41,6 @@ class ApplicationController < ActionController::Base
   def current_zookeeper
     # Find the zookeeper with the given or the stored session id
     @current_zookeeper ||= Zookeeper.find_by_id(params[:zookeeper_id] || session[:current_zookeeper_id])
-    puts '%' * 80
-    puts params.inspect
-    puts @current_zookeeper.inspect
     if @current_zookeeper.nil?
       zookeeper_error
     else

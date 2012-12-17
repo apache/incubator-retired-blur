@@ -19,7 +19,7 @@ var ShardModel = Backbone.Model.extend({
       case 1:
         return "Online"
       case 2:
-        return "Quaram Issue"
+        return "Quorum Issue"
     }
   },
   offlineDate: function(){

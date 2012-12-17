@@ -33,7 +33,7 @@ var ZookeeperModel = Backbone.Model.extend({
       this.destroy({
         success: function(){
           window.location = window.location.origin;
-        }, 
+        },
         error: function(){
           Notification("Failed to forget the Zookeeper", false);
         }
@@ -62,7 +62,7 @@ var ZookeeperModel = Backbone.Model.extend({
       case 2:
         return "Ensemble Warning"
       case 3:
-        return "Quarum Failure"
+        return "Quorum Failure"
     }
   },
   // Determines the class for the state of the zookeeper

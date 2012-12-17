@@ -41,6 +41,9 @@ class ApplicationController < ActionController::Base
   def current_zookeeper
     # Find the zookeeper with the given or the stored session id
     @current_zookeeper ||= Zookeeper.find_by_id(params[:zookeeper_id] || session[:current_zookeeper_id])
+    puts '%' * 80
+    puts params.inspect
+    puts @current_zookeeper.inspect
     if @current_zookeeper.nil?
       zookeeper_error
     else
@@ -59,11 +62,19 @@ class ApplicationController < ActionController::Base
     rescue_from ActionController::InvalidAuthenticityToken, :with => :error_422
   end
 
+  def set_zookeeper(id)
+    # Convert all inputs to an int
+    id = id.to_i
+    # Avoids a DB hit if the id is unchanged
+    session[:current_zookeeper_id] = id if session[:current_zookeeper_id] != id
+  end
+
   private
 
   # Populates the session id with your preference zookeeper id
   def set_zookeeper_with_preference
     user_zk_pref = current_user.zookeeper_preference
+
     if user_zk_pref.name.to_i > 0 # If your preference is not the default
       # If your preferred zookeeper doesnt exist
       if Zookeeper.find_by_id(user_zk_pref.value).nil?
@@ -75,13 +86,6 @@ class ApplicationController < ActionController::Base
         set_zookeeper user_zk_pref.value
       end
     end
-  end
-
-  def set_zookeeper(id)
-    # Convert all inputs to an int
-    id = id.to_i 
-    # Avoids a DB hit if the id is unchanged
-    session[:current_zookeeper_id] = id if session[:current_zookeeper_id] != id
   end
 
   # Populates the @zookeepers instance variable for option select

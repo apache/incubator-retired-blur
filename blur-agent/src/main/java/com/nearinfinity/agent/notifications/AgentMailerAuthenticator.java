@@ -1,4 +1,4 @@
-package com.nearinfinity.agent.mailer;
+package com.nearinfinity.agent.notifications;
 
 import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;

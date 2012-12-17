@@ -20,7 +20,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import com.nearinfinity.agent.Agent;
 import com.nearinfinity.agent.connections.zookeeper.interfaces.ZookeeperDatabaseInterface;
-import com.nearinfinity.agent.mailer.AgentMailer;
+import com.nearinfinity.agent.notifications.Notifier;
 
 public class ZookeeperCollector implements Runnable {
 	private static final Log log = LogFactory.getLog(ZookeeperCollector.class);
@@ -52,7 +52,7 @@ public class ZookeeperCollector implements Runnable {
 							if (state == KeeperState.Disconnected || state == KeeperState.Expired) {
 								log.warn("Zookeeper [" + name + "] disconnected event.");
 								database.setZookeeperOffline(id);
-								AgentMailer.getMailer().notifyZookeeperOffline(name);
+								Notifier.getNotifier().notifyZookeeperOffline(name);
 								connected = false;
 							} else if (state == KeeperState.SyncConnected) {
 								log.info("Zookeeper [" + name + "] session established.");

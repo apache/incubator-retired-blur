@@ -29,8 +29,8 @@ import com.nearinfinity.agent.connections.hdfs.HdfsDatabaseConnection;
 import com.nearinfinity.agent.connections.zookeeper.ZookeeperDatabaseConnection;
 import com.nearinfinity.agent.exceptions.HdfsThreadException;
 import com.nearinfinity.agent.exceptions.InvalidLicenseException;
-import com.nearinfinity.agent.mailer.AgentMailer;
 import com.nearinfinity.agent.monitor.ThreadController;
+import com.nearinfinity.agent.notifications.Notifier;
 import com.nearinfinity.license.AgentLicense;
 
 public class Agent {
@@ -44,10 +44,8 @@ public class Agent {
 		// Setup database connection
 		JdbcTemplate jdbc = JdbcConnection.createDBConnection(props);
 
-		// Setup the mailer
-		if (props.containsKey("mail.enabled") && props.getProperty("mail.enabled").equals("true")) {
-			AgentMailer.getMailer(props, true);
-		}
+		// Setup the notifier
+		Notifier.getNotifier(props, true);
 
 		// Verify valid License
 		try {

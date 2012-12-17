@@ -103,7 +103,7 @@ var Cluster = Backbone.Model.extend({
       var delete_tables_send = function(delete_index) {
         $.ajax({
           type: 'DELETE',
-          url: Routes.zookeeper_blur_tables_path(CurrentZookeeper),
+          url: Routes.zookeeper_blur_tables_path(CurrentZookeeper, {format: 'json'}),
           data: {
             tables: table_ids,
             delete_index: delete_index

@@ -2,15 +2,17 @@
   <%= zookeeper.header() %>
   <div class='nodes'>
     <% if (zookeeper.get('ensemble').length > 0 ) { %>
-        <span class='states' data-original-title="<%= zookeeper.get('ensemble') %>">
-          Online (<%= zookeeper.get('ensemble').length %>)
-        </span>
+      <span class='states' data-original-title="<%= zookeeper.get('ensemble') %>">
+        Online (<%= zookeeper.get('ensemble').length %>)
+      </span>
     <% } %>
-    |
+    <% if (zookeeper.get('ensemble').length > 0 || zookeeper.offline_nodes().length > 0) { %>
+      |
+    <% } %>
     <% if (zookeeper.offline_nodes().length > 0 ) { %>
-        <span class='states' data-original-title="<%= zookeeper.offline_nodes() %>">
-          Offine (<%= zookeeper.offline_nodes().length %>)
-        </span>
+      <span class='states' data-original-title="<%= zookeeper.offline_nodes() %>">
+        Offine (<%= zookeeper.offline_nodes().length %>)
+      </span>
     <% } %>
   </div>
   <% if(zookeeper.get('status') == 0 && !zookeeper.quarum_failed()){ %>

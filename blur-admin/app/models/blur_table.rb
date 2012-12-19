@@ -11,20 +11,17 @@ class BlurTable < ActiveRecord::Base
   scope :active, where("status=?", 4)
 
   def as_json(options={})
-    table_query_info = self.recent_queries
     serial_properties = super(options)
     serial_properties.delete('server')
     serial_properties.delete('table_schema')
     serial_properties.delete('updated_at')
-    serial_properties['queried_recently'] = table_query_info['queried_recently']
+    serial_properties['queried_recently'] = self.recent_queries
 
     host_count = self.hosts.keys.length
     shard_count = 0
     self.hosts.values.each{ |shards| shard_count += shards.length }
 
     serial_properties['server_info'] = host_count.to_s + ' | ' + shard_count.to_s
-    serial_properties['sparkline'] = table_query_info['sparkline']
-    serial_properties['average_queries'] = table_query_info['average_queries']
     serial_properties['comments'] = self.comments
     serial_properties
   end
@@ -96,41 +93,9 @@ class BlurTable < ActiveRecord::Base
   end
 
   def recent_queries
-    queries = self.blur_queries
+    self.blur_queries
       .select("minute(created_at) as minute, count(*) as cnt")
       .where("created_at > '#{10.minutes.ago}'")
-      .group("minute")
-      .order("created_at")
-
-    #default format for sparkline
-    sparkline = [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0]] 
-    time = 10.minutes.ago.min
-    average_queries = 0.0
-    queried_recently = false
-
-    queries.each do |row|
-      min = row.minute
-      count = row.cnt
-
-      # Get the diff between the minute and ten minutes ago
-      # also compensate for queries that straddle the hour
-      min = min >= time ? min - time : 60 - time + min
-
-      if min > 9
-        sparkline[9][1] += count
-      else
-        sparkline[min] = [min, count]
-      end
-
-      average_queries += count
-
-      if !queried_recently && min >= 5
-        queried_recently = true
-      end
-    end
-
-    average_queries /= 10.0
-
-    recent_queries = {'sparkline' => sparkline, 'average_queries' => average_queries, 'queried_recently' => queried_recently}
+      .count > 0
   end
 end

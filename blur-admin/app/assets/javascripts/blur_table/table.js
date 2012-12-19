@@ -6,7 +6,6 @@ var Table = Backbone.Model.extend({
   },
   state_lookup : ['deleted', 'deleting', 'disabled', 'disabling', 'active', 'enabling'],
   table_lookup : ['deleted', 'disabled', 'disabled', 'active', 'active', 'disabled'],
-  colspan_lookup : {'active': 7, 'disabled': 5}, //changed active from 5 to 6 for spark, changed from 6 to 7 for comments
   initialize: function(){
     this.view = new TableView({model: this});
     this.view.render();
@@ -87,35 +86,7 @@ var TableView = Backbone.View.extend({
     this.$el.attr('blur_table_id', this.model.get('id')).html(this.template({table: this.model})).removeClass('highlighted-row');
     if (this.model.get('checked')) this.$el.addClass('highlighted-row').find('.bulk-action-checkbox').prop('checked', 'checked');
     if (['disabling', 'enabling', 'deleting'].indexOf(this.model.get('state')) >= 0) this.$el.addClass('changing-state');
-    if (this.$el.find('.spark_line').length > 0) this.draw_query_spark_line(this.model.get('sparkline'), this.$el.find('.spark_line')[0]);
     return this;
-  },
-  draw_query_spark_line: function(data, target){
-    var options = {
-      xaxis: {
-        max: 10,
-        min: -1
-      },
-      grid: {
-        show: false
-      }
-    };
-    var series = [{
-      data: data,
-      color: '#000000',
-      shadowSize: 0
-      },{
-      data: [ data[ data.length -1 ] ],
-      points: {
-        show: true,
-        radius: 1,
-        fillColor: '#ff0000'
-      },
-      color: '#ff0000'
-    }];
-    target.style.width = '120px';
-    target.style.height = '20px';
-    $.plot(target, series, options);
   },
   toggle_row: function(){
     this.model.set({checked: !this.model.get('checked')}, {silent: true});

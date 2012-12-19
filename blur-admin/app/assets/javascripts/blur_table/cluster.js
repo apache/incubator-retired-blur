@@ -200,7 +200,7 @@ var ClusterView = Backbone.View.extend({
     'click .btn[data-action=disable]' : 'disable_tables',
     'click .btn[data-action=delete]' : 'delete_tables'
   },
-  colspan_lookup : {'active': 7, 'disabled': 4},
+  colspan_lookup : {'active': 6, 'disabled': 4},
   render: function(){
     this.$el.html(this.template({cluster: this.model}));
     this.populate_tables();

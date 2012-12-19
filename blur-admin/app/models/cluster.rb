@@ -2,6 +2,7 @@
   belongs_to :zookeeper
   has_many :blur_shards, :dependent => :destroy
   has_many :blur_tables, :dependent => :destroy, :order => 'table_name'
+  has_many :blur_queries, :through => :blur_tables, :dependent => :destroy
 
   attr_accessor :can_update
 
@@ -33,10 +34,6 @@
   end
 
   def query_status
-    query_status = false
-    self.blur_tables.each do |table| 
-      query_status = true if table.as_json["queried_recently"] == true
-    end
-    query_status
+    self.blur_queries.where("created_at > '#{10.minutes.ago}'").count > 0
   end
 end

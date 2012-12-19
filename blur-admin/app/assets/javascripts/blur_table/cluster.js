@@ -6,7 +6,6 @@ var Cluster = Backbone.Model.extend({
     this.set_running_query_header_state();
     this.on('change:blur_tables', function(){
       this.update_child_tables();
-      this.view.populate_tables();
     });
     this.on('change:safe_mode', function(){
       $('li#cluster_tab_' + this.get('id') + ' .safemode-icon').toggle();
@@ -227,7 +226,6 @@ var ClusterView = Backbone.View.extend({
       if (this.model.get('tables').where({table: table_prefixes[index]}).length <= 0){
         table.append(this.no_table(this.colspan_lookup[table_prefixes[index]]));
       }
-      sorttable.makeSortable(table.closest("table")[0]);
     }
   },
   set_table_state: function(){

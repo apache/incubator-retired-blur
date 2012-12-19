@@ -9,6 +9,7 @@ var Table = Backbone.Model.extend({
   colspan_lookup : {'active': 7, 'disabled': 5}, //changed active from 5 to 6 for spark, changed from 6 to 7 for comments
   initialize: function(){
     this.view = new TableView({model: this});
+    this.view.render;
     this.set({
       state: this.state_lookup[this.get('status')],
       table: this.table_lookup[this.get('status')]
@@ -21,6 +22,9 @@ var Table = Backbone.Model.extend({
       }, {
         silent: true
       });
+      var table_parent = this.collection.cluster.view.$el.find('.' + this.get('table') + '-table');
+      table_parent.append(this.view.el);
+      table_parent.siblings('thead').find('.check-all').removeAttr('disabled');
     });
     this.on('change:queried_recently', function(){
       this.collection.cluster.trigger('table_has_been_queried');
@@ -56,6 +60,11 @@ var TableCollection = Backbone.StreamCollection.extend({
   model: Table,
   initialize: function(models, options){
     this.cluster = options.cluster;
+    this.on('add', function(table){
+      var table_parent = table.collection.cluster.view.$el.find('.' + this.get('table') + '-table');
+      table_parent.append(table.view.el);
+      table_parent.siblings('thead').find('.check-all').removeAttr('disabled');
+    });
     this.on('remove', function(table){
       table.view.destroy();
     });

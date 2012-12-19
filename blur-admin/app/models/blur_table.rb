@@ -15,6 +15,7 @@ class BlurTable < ActiveRecord::Base
     serial_properties = super(options)
     serial_properties.delete('server')
     serial_properties.delete('table_schema')
+    serial_properties.delete('updated_at')
     serial_properties['queried_recently'] = table_query_info['queried_recently']
 
     host_count = self.hosts.keys.length

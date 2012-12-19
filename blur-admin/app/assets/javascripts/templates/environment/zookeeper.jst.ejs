@@ -6,7 +6,7 @@
         Online (<%= zookeeper.get('ensemble').length %>)
       </span>
     <% } %>
-    <% if (zookeeper.get('ensemble').length > 0 || zookeeper.offline_nodes().length > 0) { %>
+    <% if (zookeeper.get('ensemble').length > 0 && zookeeper.offline_nodes().length > 0) { %>
       |
     <% } %>
     <% if (zookeeper.offline_nodes().length > 0 ) { %>

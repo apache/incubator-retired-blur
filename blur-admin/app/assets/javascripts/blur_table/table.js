@@ -9,7 +9,7 @@ var Table = Backbone.Model.extend({
   colspan_lookup : {'active': 7, 'disabled': 5}, //changed active from 5 to 6 for spark, changed from 6 to 7 for comments
   initialize: function(){
     this.view = new TableView({model: this});
-    this.view.render;
+    this.view.render();
     this.set({
       state: this.state_lookup[this.get('status')],
       table: this.table_lookup[this.get('status')]

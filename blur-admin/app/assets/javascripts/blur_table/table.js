@@ -6,6 +6,7 @@ var Table = Backbone.Model.extend({
   },
   state_lookup : ['deleted', 'deleting', 'disabled', 'disabling', 'active', 'enabling'],
   table_lookup : ['deleted', 'disabled', 'disabled', 'active', 'active', 'disabled'],
+  colspan_lookup : {'active': 6, 'disabled': 5},
   initialize: function(){
     this.view = new TableView({model: this});
     this.view.render();
@@ -14,6 +15,7 @@ var Table = Backbone.Model.extend({
       table: this.table_lookup[this.get('status')]
     });
     this.on('change:status', function(){
+      var table = this.get('table')
       this.set({
         state: this.state_lookup[this.get('status')],
         table: this.table_lookup[this.get('status')],
@@ -21,9 +23,11 @@ var Table = Backbone.Model.extend({
       }, {
         silent: true
       });
-      var table_parent = this.collection.cluster.view.$el.find('.' + this.get('table') + '-table');
-      table_parent.append(this.view.el);
-      table_parent.siblings('thead').find('.check-all').removeAttr('disabled');
+      if (this.get('table') !== table){
+        var table_parent = this.collection.cluster.view.$el.find('.' + this.get('table') + '-table');
+        table_parent.append(this.view.el);
+        table_parent.siblings('thead').find('.check-all').removeAttr('disabled');
+      }
     });
     this.on('change:queried_recently', function(){
       this.collection.cluster.trigger('table_has_been_queried');

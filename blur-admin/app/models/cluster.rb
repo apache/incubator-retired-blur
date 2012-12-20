@@ -34,6 +34,6 @@
   end
 
   def query_status
-    self.blur_queries.where("created_at > '#{10.minutes.ago}'").count > 0
+    self.blur_queries.where("created_at > '#{10.minutes.ago}'").length > 0
   end
 end

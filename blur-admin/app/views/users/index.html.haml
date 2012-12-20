@@ -1,4 +1,6 @@
 - content_for :title, 'Users'
+- content_for :javascript do
+	=javascript_include_tag 'admin'
 
 #admin_wrapper
 	%h2 Users
@@ -21,3 +23,11 @@
 						- if current_user != user
 							= link_to raw('<i class="icon-trash icon-white"></i> Delete'), user, :confirm => 'Are you sure?', :method => :delete, :class => 'btn btn-danger'
 	%p= link_to raw('<i class="icon-user"></i> New User'), new_user_path, :class => 'btn'
+
+	%h2.filter-header Star Query Table Filter
+	%p.clarification (Whitelist Regex for allowing '*' queries)
+	= form_tag("/admin_settings/#{@search_filter.id}.html", :method => "put", :remote => true, :class => 'table-filter') do
+		= hidden_field_tag(:setting, 'regex_filter')
+		.control-group
+			= text_field_tag(:value, @search_filter.value)
+			= submit_tag("Save", :class => 'btn')

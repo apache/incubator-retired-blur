@@ -31,9 +31,6 @@ ul{ margin: 5px; }
       list-style-type:none;
       display:block;
     }
-
-
-
   }
   .info-contain{
     @include clearfix;
@@ -144,5 +141,16 @@ ul{ margin: 5px; }
         display: inline-block;
       }
     }
+  }
+  .table-filter{
+    input[type=submit]{
+      margin-bottom: 9px;
+    }
+  }
+  .clarification{
+    margin-bottom: 25px;
+  }
+  .filter-header{
+    margin-top: 45px;
   }
 }

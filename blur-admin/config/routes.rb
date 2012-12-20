@@ -4,6 +4,8 @@ BlurAdmin::Application.routes.draw do
     match '/preferences/:pref_type' => 'preferences#update', :via => :put, :as => :preference
   end
 
+  resources :admin_settings, :only => [:update]
+
   # Zookeeper routes
   resources :zookeepers, :only => [:index, :show, :destroy], :shallow => true do
     # Nested cluster Resource

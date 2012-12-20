@@ -6,6 +6,7 @@ class UsersController < ApplicationController
   respond_to :html
 
   def index
+    @search_filter = AdminSetting.find_or_create_by_setting('regex_filter')
     respond_with(@users)
   end
 

@@ -7,8 +7,18 @@ var ZookeeperModel = Backbone.Model.extend({
     this.on('change', function(){
       this.view.render();
     });
+    this.initial_load = true;
   },
   parse: function(response){
+    if (this.initial_load){
+      if (response.clusters.length <= 0){
+        this.clusters.view.$el.find('.no_children').show();
+      }
+      if (response.blur_controllers.length <= 0){
+        this.blur_controllers.view.$el.find('.no_children').show();
+      }
+      this.initial_load = false;
+    }
     this.clusters.update(response.clusters);
     this.controllers.update(response.blur_controllers);
 

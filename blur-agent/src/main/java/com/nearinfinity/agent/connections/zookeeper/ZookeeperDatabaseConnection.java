@@ -1,8 +1,8 @@
 package com.nearinfinity.agent.connections.zookeeper;
 
 import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.nearinfinity.agent.connections.zookeeper.interfaces.ClusterDatabaseInterface;
@@ -85,12 +85,12 @@ public class ZookeeperDatabaseConnection implements ZookeeperDatabaseInterface, 
 	}
 
 	@Override
-	public void markOfflineTables(List<String> onlineTables, int clusterId) {
+	public void markDeletedTables(List<String> onlineTables, int clusterId) {
 		if (onlineTables.isEmpty()) {
-			this.jdbc.update("update blur_tables set status=0 updated_at=? where cluster_id=?", TimeHelper.now().getTime(), clusterId);
+			this.jdbc.update("delete from blur_tables where cluster_id=?", clusterId);
 		} else {
-			this.jdbc.update("update blur_tables set status=0, updated_at=? where status!=0 and cluster_id=? and table_name not in ('"
-					+ StringUtils.join(onlineTables, "','") + "')", TimeHelper.now().getTime(), clusterId);
+			this.jdbc.update("delete from blur_tables where cluster_id=? and table_name not in ('"
+					+ StringUtils.join(onlineTables, "','") + "')", clusterId);
 		}
 	}
 
@@ -127,10 +127,18 @@ public class ZookeeperDatabaseConnection implements ZookeeperDatabaseInterface, 
 
 	@Override
 	public void updateOnlineTable(String table, int clusterId, String uri, boolean enabled) {
-		int updatedCount = this.jdbc.update("update blur_tables set table_uri=?, status=?, updated_at=? where table_name=? and cluster_id=?",
-				uri, (enabled ? 4 : 2), TimeHelper.now().getTime(), table, clusterId);
-
-		if (updatedCount == 0) {
+		try{
+			int currentStatus = this.jdbc.queryForInt("select status from blur_tables where table_name=? and cluster_id=?", table, clusterId);
+			if (enabled && currentStatus != 3){
+				this.jdbc.update("update blur_tables set table_uri=?, status=?, updated_at=? where table_name=? and cluster_id=?",
+						uri, 4, TimeHelper.now().getTime(), table, clusterId);
+				
+			}
+			if (!enabled && currentStatus != 5) {
+				this.jdbc.update("update blur_tables set table_uri=?, status=?, updated_at=? where table_name=? and cluster_id=?",
+						uri, 2, TimeHelper.now().getTime(), table, clusterId);
+			}
+		} catch(EmptyResultDataAccessException e){
 			this.jdbc.update("insert into blur_tables (table_name, table_uri, status, cluster_id, updated_at) values (?, ?, ?, ?, ?)", table,
 					uri, (enabled ? 4 : 2), clusterId, TimeHelper.now().getTime());
 		}

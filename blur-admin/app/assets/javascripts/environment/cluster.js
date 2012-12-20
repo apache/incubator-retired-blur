@@ -28,24 +28,16 @@ var ClusterCollection = Backbone.StreamCollection.extend({
   initialize: function(models, options){
     this.on('add', function(clusters){
       if (this.length == 1){
-        var table = $('#clusters table');
-        $('.clusters_table').delay(200).slideUp(400, function(){
-          $('#clusters .no_children').hide();
-          $('#clusters tbody').append(clusters.view.render().$el);
-          $(this).slideDown(400);
-        });
+        $('#clusters .no_children').hide();
+        $('#clusters tbody').append(clusters.view.render().$el);
       } else {
         $('#clusters tbody').append(clusters.view.render().$el);
       }
     });
     this.on('remove', function(clusters){
-      if (this.length == 1){
-        var table = $('#clusterss table');
-        $('.clusters_table').delay(200).slideUp(400, function(){
-          $('#clusters .no_children').show();
-          clusters.view.destroy();
-          $(this).slideDown(400);
-        });
+      if (this.length <= 1){
+        $('#clusters .no_children').show();
+        clusters.view.destroy();
       } else {
         clusters.view.destroy();
       }

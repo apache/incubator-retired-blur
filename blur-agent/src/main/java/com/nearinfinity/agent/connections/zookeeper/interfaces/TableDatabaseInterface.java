@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface TableDatabaseInterface {
 
-	void markOfflineTables(List<String> onlineTables, int clusterId);
+	void markDeletedTables(List<String> onlineTables, int clusterId);
 
 	void updateOnlineTable(String table, int clusterId, String uri, boolean enabled);
 

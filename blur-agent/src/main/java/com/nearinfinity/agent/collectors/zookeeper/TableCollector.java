@@ -28,7 +28,7 @@ public class TableCollector implements Runnable {
 	public void run() {
 		try {
 			List<String> tables = this.zookeeper.getChildren("/blur/clusters/" + clusterName + "/tables", false);
-			this.database.markOfflineTables(tables, this.clusterId);
+			this.database.markDeletedTables(tables, this.clusterId);
 			updateOnlineTables(tables);
 		} catch (KeeperException e) {
 			log.error("Error talking to zookeeper in TableCollector.", e);

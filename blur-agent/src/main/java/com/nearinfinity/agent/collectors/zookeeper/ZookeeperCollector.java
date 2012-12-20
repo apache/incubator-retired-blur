@@ -3,9 +3,6 @@ package com.nearinfinity.agent.collectors.zookeeper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
@@ -98,35 +95,17 @@ public class ZookeeperCollector implements Runnable {
 		List<String> onlineZookeepers = new ArrayList<String>();
 		for (String connection : connections) {
 			try {
-				String[] hostPort = connection.split(":");
-				String host = hostPort[0];
-				int port = 2181;
-				if(hostPort.length>1) {
-					port = Integer.parseInt(hostPort[1]);
-				}
-				Socket socket = new Socket();
-				socket.setSoLinger(false, 10);
-				socket.setSoTimeout(20000);
-				socket.connect(new InetSocketAddress(host, port));
-				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				out.print("ruok");
-				String status = in.readLine();
-				if ("imok".equals(status)) {
-					onlineZookeepers.add(connection);
-				}
-				in.close();
-				out.close();
-				socket.close();
-				/*
 				URI parsedConnection = new URI("my://" + connection);
+				String host = parsedConnection.getHost();
+				int port = parsedConnection.getPort() >= 0 ? parsedConnection.getPort() : 2181;
 				byte[] reqBytes = new byte[4];
 				ByteBuffer req = ByteBuffer.wrap(reqBytes);
 				req.putInt(ByteBuffer.wrap("ruok".getBytes()).getInt());
-				socket = new Socket();
+				Socket socket = new Socket();
 				socket.setSoLinger(false, 10);
 				socket.setSoTimeout(20000);
-				socket.connect(new InetSocketAddress(parsedConnection.getHost(), parsedConnection.getPort()));
+				parsedConnection.getPort();
+				socket.connect(new InetSocketAddress(host, port));
 
 				InputStream response = socket.getInputStream();
 				OutputStream question = socket.getOutputStream();
@@ -140,7 +119,9 @@ public class ZookeeperCollector implements Runnable {
 				if (status.equals("imok")) {
 					onlineZookeepers.add(connection);
 				}
-				*/
+				socket.close();
+				response.close();
+				question.close();
 			} catch (Exception e) {
 				log.error("A connection to " + connection + " could not be made.", e);
 			}

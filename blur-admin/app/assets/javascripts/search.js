@@ -25,7 +25,7 @@ $(document).ready(function() {
     };
 
     // Build the new stateful query search
-    var stateful_url = '?table_id=' + state.table_id + '&query=' + state.query;
+    var stateful_url = '?table_id=' + state.table_id + '&query=' + encodeURIComponent(state.query);
     var base_url = location.protocol + "//" + location.host + location.pathname;
     var full_url = base_url + stateful_url;
 

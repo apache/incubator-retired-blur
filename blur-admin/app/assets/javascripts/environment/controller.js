@@ -25,24 +25,16 @@ var ControllerCollection = Backbone.StreamCollection.extend({
   initialize: function(models, options){
     this.on('add', function(controller){
       if (this.length == 1){
-        var table = $('#controllers table');
-        $('.controller_table').delay(200).slideUp(400, function(){
-          $('#controllers .no_children').hide();
-          $('#controllers tbody').append(controller.view.render().$el);
-          $(this).slideDown(400);
-        });
+        $('#controllers .no_children').hide();
+        $('#controllers tbody').append(controller.view.render().$el);
       } else {
         $('#controllers tbody').append(controller.view.render().$el);
       }
     });
     this.on('remove', function(controller){
       if (this.length == 1){
-        var table = $('#controllers table');
-        $('.controller_table').delay(200).slideUp(400, function(){
-          $('#controllers .no_children').show();
-          controller.view.destroy();
-          $(this).slideDown(400);
-        });
+        $('#controllers .no_children').show();
+        controller.view.destroy();
       } else {
         controller.view.destroy();
       }

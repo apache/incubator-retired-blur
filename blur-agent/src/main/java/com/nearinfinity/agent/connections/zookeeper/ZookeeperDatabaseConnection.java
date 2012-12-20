@@ -87,9 +87,9 @@ public class ZookeeperDatabaseConnection implements ZookeeperDatabaseInterface, 
 	@Override
 	public void markOfflineTables(List<String> onlineTables, int clusterId) {
 		if (onlineTables.isEmpty()) {
-			this.jdbc.update("update blur_tables set status=0 updated_at=? where cluster_id=?", TimeHelper.now().getTime(), clusterId);
+			this.jdbc.update("update blur_tables set status=0 updated_at=? where status!=5 and cluster_id=?", TimeHelper.now().getTime(), clusterId);
 		} else {
-			this.jdbc.update("update blur_tables set status=0, updated_at=? where status!=0 and cluster_id=? and table_name not in ('"
+			this.jdbc.update("update blur_tables set status=0, updated_at=? where (status!=0 or status!=5) and cluster_id=? and table_name not in ('"
 					+ StringUtils.join(onlineTables, "','") + "')", TimeHelper.now().getTime(), clusterId);
 		}
 	}
@@ -127,7 +127,7 @@ public class ZookeeperDatabaseConnection implements ZookeeperDatabaseInterface, 
 
 	@Override
 	public void updateOnlineTable(String table, int clusterId, String uri, boolean enabled) {
-		int updatedCount = this.jdbc.update("update blur_tables set table_uri=?, status=?, updated_at=? where table_name=? and cluster_id=?",
+		int updatedCount = this.jdbc.update("update blur_tables set table_uri=?, status=?, updated_at=? where table_name=? and cluster_id=? and status!=3",
 				uri, (enabled ? 4 : 2), TimeHelper.now().getTime(), table, clusterId);
 
 		if (updatedCount == 0) {

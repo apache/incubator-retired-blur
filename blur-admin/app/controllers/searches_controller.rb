@@ -38,7 +38,7 @@ class SearchesController < ApplicationController
     preference = current_user.column_preference
     columns = blur_table ? (blur_table.schema &preference_sort(preference.value || [])) : []
     selected_count = 0
-    first_selected = true
+    first_selected = preference.value.nil?
     filter_children = columns.collect do |family|
       if preference.value && !preference.value.index(family['name']).nil?
         selected = true

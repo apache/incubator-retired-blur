@@ -61,7 +61,7 @@ class SearchesController < ApplicationController
   def create
     search_filter = AdminSetting.search_filter
     blur_table = BlurTable.find params[:blur_table]
-    if !blur_table.table_name.match(search_filter.value).nil? && params[:query_string].match(/:\*$|^\*$/)
+    if blur_table.table_name.match(search_filter.value).nil? && params[:query_string].match(/:\*$|^\*$/)
       raise "The table #{blur_table.table_name} is Star Protected, Contact your admin!"
     end
 

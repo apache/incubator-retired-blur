@@ -11,7 +11,14 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20121030184429) do
+ActiveRecord::Schema.define(:version => 20121220193623) do
+
+  create_table "admin_settings", :force => true do |t|
+    t.string   "setting",    :null => false
+    t.string   "value"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
 
   create_table "audits", :force => true do |t|
     t.integer  "user_id"
@@ -35,17 +42,17 @@ ActiveRecord::Schema.define(:version => 20121030184429) do
   add_index "blur_controllers", ["zookeeper_id"], :name => "index_controllers_on_zookeeper_id"
 
   create_table "blur_queries", :force => true do |t|
-    t.text     "query_string",             :limit => 16777215
+    t.text     "query_string",             :limit => 2147483647
     t.integer  "complete_shards"
     t.integer  "uuid",                     :limit => 8
-    t.datetime "created_at",                                   :null => false
-    t.datetime "updated_at",                                   :null => false
+    t.datetime "created_at",                                     :null => false
+    t.datetime "updated_at",                                     :null => false
     t.boolean  "super_query_on"
     t.string   "facets"
     t.integer  "start"
     t.integer  "fetch_num"
-    t.text     "pre_filters",              :limit => 16777215
-    t.text     "post_filters",             :limit => 16777215
+    t.text     "pre_filters",              :limit => 2147483647
+    t.text     "post_filters",             :limit => 2147483647
     t.text     "selector_column_families"
     t.text     "selector_columns"
     t.string   "userid"

@@ -49,6 +49,7 @@ class Ability
       if user.admin?
         can [:index, :edit, :destroy, :create, :new], :users
         can :update, :users, [:email, :roles]
+        can :update, :admin_settings
       end
 
       if user.searcher?

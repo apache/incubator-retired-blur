@@ -13,6 +13,7 @@ class SearchesController < ApplicationController
     # the .all call executes the SQL fetch, otherwise there are many more SQL fetches
     # required because of the lazy loading (in this case where a few more variables
     # depend on the result)
+    @search_filter = AdminSetting.search_filter
     @blur_tables = current_zookeeper.blur_tables.where('status = 4').order("table_name").includes(:cluster).all
     @blur_table = BlurTable.find_by_id(params[:table_id])
     if @blur_table.nil?
@@ -58,6 +59,12 @@ class SearchesController < ApplicationController
   #Create action is a large action that handles all of the filter data
   #and either saves the data or performs a search
   def create
+    search_filter = AdminSetting.search_filter
+    blur_table = BlurTable.find params[:blur_table]
+    if blur_table.table_name.match(search_filter.value).nil? && params[:query_string].match(/:\*$|^\*$/)
+      raise "The table #{blur_table.table_name} is Star Protected, Contact your admin!"
+    end
+
     params[:column_data].delete( "neighborhood") if params[:column_data]
     search = Search.new(  :super_query      => params[:search] == '0',
                           :record_only      => params[:search] == '1' && params[:return] == '1',
@@ -70,9 +77,6 @@ class SearchesController < ApplicationController
                           :post_filter      => params[:post_filter]
                          )
     search.column_object = params[:column_data]
-
-    #use the model to begin building the blurquery
-    blur_table = BlurTable.find params[:blur_table]
 
     blur_results = search.fetch_results(blur_table.table_name, current_zookeeper.blur_urls)
 

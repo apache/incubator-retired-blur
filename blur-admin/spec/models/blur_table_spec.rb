@@ -16,8 +16,6 @@ describe BlurTable do
       test_json.should_not include("table_schema")
       test_json.should include("queried_recently")
       test_json.should include("server_info")
-      test_json.should include("sparkline")
-      test_json.should include("average_queries")
       test_json.should include("comments")
     end
   end
@@ -212,13 +210,6 @@ describe BlurTable do
     it "returns nil when the server has not been populated" do
       blur_table = BlurTable.new
       blur_table.server.should be nil
-    end
-  end
-
-  describe "recent_queries" do
-    it "returns info in the expected format" do
-      #find way to test different cnt numbers
-      @table.recent_queries.should == {"sparkline"=>[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0]], "average_queries"=>0.0, "queried_recently"=>false}
     end
   end
 

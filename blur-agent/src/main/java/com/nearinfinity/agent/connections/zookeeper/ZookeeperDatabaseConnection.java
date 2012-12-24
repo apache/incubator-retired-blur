@@ -112,7 +112,7 @@ public class ZookeeperDatabaseConnection implements ZookeeperDatabaseInterface, 
 	@Override
 	public void updateOnlineShard(String shard, int clusterId, String blurVersion) {
 		int zookeeperStatus = this.jdbc.queryForInt(
-				"select zookeepers.status from zookeepers, clusters where clusters.zookeeper_id=? and clusters.zookeeper_id=zookeepers.id;",
+				"select zookeepers.status from zookeepers, clusters where clusters.id=? and clusters.zookeeper_id=zookeepers.id;",
 				clusterId);
 		int status = (zookeeperStatus == 0 || zookeeperStatus == 2) ? 2 : 1;
 		int updatedCount = this.jdbc.update("update blur_shards set status=?, blur_version=?, updated_at=? where node_name=? and cluster_id=?",

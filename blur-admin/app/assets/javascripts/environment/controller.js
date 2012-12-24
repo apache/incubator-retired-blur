@@ -5,16 +5,21 @@ var ControllerModel = Backbone.Model.extend({
       this.view.render();
     });
   },
+  url: function(){
+    return '/blur_controllers/' + this.get('id') + '.json';
+  },
   remove: function(){
-    if(this.get('status') == 1){
+    if(this.get('status') == 0){
       this.destroy({
         success: function(){
           Notification("Successfully forgot the Controller!", true);
-        }, 
+        },
         error: function(){
           Notification("Failed to forget the Controller", false);
         }
       });
+    } else {
+      Notification("Cannot forget a Controller that is online!", false);
     }
   }
 });

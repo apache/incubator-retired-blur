@@ -2,6 +2,9 @@ var ShardModel = Backbone.Model.extend({
   initialize: function(){
     this.view = new ShardView({model: this});
   },
+  url: function(){
+    return '/blur_shards/' + this.get('id') + '.json';
+  },
   status: function(){
     var statusString = "Shard: " + this.get('node_name');
     statusString += " | Blur Version: " + this.get('blur_version');
@@ -20,6 +23,20 @@ var ShardModel = Backbone.Model.extend({
         return "Online"
       case 2:
         return "Quorum Issue"
+    }
+  },
+  remove: function(){
+    if(this.get('status') == 0){
+      this.destroy({
+        success: function(){
+          Notification("Successfully forgot the Shard!", true);
+        },
+        error: function(){
+          Notification("Failed to forget the Shard", false);
+        }
+      });
+    } else {
+      Notification("Cannot forget a Shard that is online!", false);
     }
   },
   offlineDate: function(){
@@ -76,11 +93,11 @@ var ShardView = Backbone.View.extend({
     this.$el.attr('class', errorClass);
     this.$el.html(this.template({shard: this.model}));
     return this;
-  }, 
+  },
   destroy_shard: function(){
     Confirm_Delete({
       message: "forget this shard",
-      confirmed_action: _.bind(this.model.destroy, this.model)
+      confirmed_action: _.bind(this.model.remove, this.model)
     });
   }
 });

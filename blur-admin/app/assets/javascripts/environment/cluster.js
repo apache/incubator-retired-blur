@@ -5,20 +5,21 @@ var ClusterModel = Backbone.Model.extend({
       this.view.render();
     });
   },
+  url: function(){
+    return '/clusters/' + this.get('id') + '.json';
+  },
   safe_mode: function(){
     return this.get('safe_mode') ? 'Yes' : 'No';
   },
   remove: function(){
-    if(this.get('status') == 0){
-      this.destroy({
-        success: function(){
-          Notification("Successfully forgot the Cluster!", true);
-        },
-        error: function(){
-          Notification("Failed to forget the Cluster", false);
-        }
-      });
-    }
+    this.destroy({
+      success: function(){
+        Notification("Successfully forgot the Cluster!", true);
+      },
+      error: function(){
+        Notification("Failed to forget the Cluster", false);
+      }
+    });
   }
 });
 

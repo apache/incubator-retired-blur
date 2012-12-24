@@ -9,6 +9,9 @@ var ZookeeperModel = Backbone.Model.extend({
     });
     this.initial_load = true;
   },
+  url: function(){
+    return '/zookeepers/' + this.get('id') + '.json';
+  },
   parse: function(response){
     if (this.initial_load){
       if (response.clusters.length <= 0){
@@ -48,6 +51,8 @@ var ZookeeperModel = Backbone.Model.extend({
           Notification("Failed to forget the Zookeeper", false);
         }
       });
+    } else {
+      Notification("Cannot forget a Zookeeper that is online!", false);
     }
   },
   header: function(){
@@ -114,7 +119,7 @@ var ZookeeperView = Backbone.View.extend({
   destroy_zookeeper: function(){
     Confirm_Delete({
       message: "forget this zookeeper",
-      confirmed_action: this.model.remove
+      confirmed_action: _.bind(this.model.remove, this.model)
     });
   }
 });

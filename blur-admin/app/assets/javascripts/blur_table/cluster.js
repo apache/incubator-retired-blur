@@ -213,6 +213,7 @@ var ClusterView = Backbone.View.extend({
       var table_parent = el.find('.' + table.get('table') + '-table');
       table_parent.append(elementToAdd);
       table_parent.siblings('thead').find('.check-all').removeAttr('disabled');
+      sorttable.makeSortable(table_parent.parent()[0]);
     });
     this.set_table_values();
   },

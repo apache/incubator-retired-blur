@@ -27,6 +27,7 @@ var Table = Backbone.Model.extend({
         var table_parent = this.collection.cluster.view.$el.find('.' + this.get('table') + '-table');
         table_parent.append(this.view.el);
         table_parent.siblings('thead').find('.check-all').removeAttr('disabled');
+        sorttable.makeSortable(table_parent.parent()[0]);
       }
     });
     this.on('change:queried_recently', function(){
@@ -67,6 +68,7 @@ var TableCollection = Backbone.StreamCollection.extend({
       var table_parent = table.collection.cluster.view.$el.find('.' + this.get('table') + '-table');
       table_parent.append(table.view.el);
       table_parent.siblings('thead').find('.check-all').removeAttr('disabled');
+      sorttable.makeSortable(table_parent.parent()[0]);
     });
     this.on('remove', function(table){
       table.view.destroy();

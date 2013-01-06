@@ -16,7 +16,7 @@ class BlurTablesController < ApplicationController
 
   def enable
     table_update_action do |table|
-      table.status = STATUS[:enabling]
+      table.table_status = STATUS[:enabling]
       table.enable current_zookeeper.blur_urls
       table.save
       Audit.log_event(current_user, "Table, #{table.table_name}, was enabled",
@@ -26,7 +26,7 @@ class BlurTablesController < ApplicationController
 
   def disable
     table_update_action do |table|
-      table.status = STATUS[:disabling]
+      table.table_status = STATUS[:disabling]
       table.disable current_zookeeper.blur_urls
       table.save
       Audit.log_event(current_user, "Table, #{table.table_name}, was disabled",

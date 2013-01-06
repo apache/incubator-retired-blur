@@ -11,14 +11,14 @@ var Table = Backbone.Model.extend({
     this.view = new TableView({model: this});
     this.view.render();
     this.set({
-      state: this.state_lookup[this.get('status')],
-      table: this.table_lookup[this.get('status')]
+      state: this.state_lookup[this.get('table_status')],
+      table: this.table_lookup[this.get('table_status')]
     });
     this.on('change:status', function(){
       var table = this.get('table')
       this.set({
-        state: this.state_lookup[this.get('status')],
-        table: this.table_lookup[this.get('status')],
+        state: this.state_lookup[this.get('table_status')],
+        table: this.table_lookup[this.get('table_status')],
         checked: false
       }, {
         silent: true

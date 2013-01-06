@@ -15,7 +15,7 @@ var ShardModel = Backbone.Model.extend({
     return statusString;
   },
   onlineStatus: function(){
-    switch(this.get('status'))
+    switch(this.get('shard_status'))
     {
       case 0:
         return "Offline"
@@ -26,7 +26,7 @@ var ShardModel = Backbone.Model.extend({
     }
   },
   remove: function(){
-    if(this.get('status') == 0){
+    if(this.get('shard_status') == 0){
       this.destroy({
         success: function(){
           Notification("Successfully forgot the Shard!", true);
@@ -89,7 +89,7 @@ var ShardView = Backbone.View.extend({
     "click .icon" : "destroy_shard"
   },
   render: function(){
-    errorClass = (this.model.get('status') == 1) ? 'no-error' : 'error';
+    errorClass = (this.model.get('shard_status') == 1) ? 'no-error' : 'error';
     this.$el.attr('class', errorClass);
     this.$el.html(this.template({shard: this.model}));
     return this;

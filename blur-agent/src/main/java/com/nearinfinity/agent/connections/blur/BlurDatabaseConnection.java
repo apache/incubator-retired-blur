@@ -28,7 +28,7 @@ public class BlurDatabaseConnection implements BlurDatabaseInterface {
 
 	@Override
 	public String resolveConnectionString(int zookeeperId) {
-		String queryString = "select distinct node_name from blur_controllers where zookeeper_id = ? and status = 1";
+		String queryString = "select distinct node_name from blur_controllers where zookeeper_id = ? and controller_status = 1";
 		List<String> controller_uris = jdbc.queryForList(queryString, new String[] { Integer.toString(zookeeperId) }, String.class);
 		String connection = StringUtils.join(controller_uris, ',');
 		this.jdbc.update("update zookeepers set blur_urls=? where id = ?", connection, zookeeperId);

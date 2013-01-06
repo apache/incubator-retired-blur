@@ -23,21 +23,21 @@ describe BlurTable do
   describe "boolean state methods" do
     describe "is_enabled?" do
       it "should return true when the status is 4" do
-        enabled_table = FactoryGirl.create :blur_table, :status => 4
+        enabled_table = FactoryGirl.create :blur_table, :table_status => 4
         enabled_table.is_enabled?.should == true
       end
     end
 
     describe "is_disabled?" do
       it "should return true when the status is 2" do
-        enabled_table = FactoryGirl.create :blur_table, :status => 2
+        enabled_table = FactoryGirl.create :blur_table, :table_status => 2
         enabled_table.is_disabled?.should == true
       end
     end
 
     describe "is_deleted?" do
       it "should return true when the status is 0" do
-        enabled_table = FactoryGirl.create :blur_table, :status => 0
+        enabled_table = FactoryGirl.create :blur_table, :table_status => 0
         enabled_table.is_deleted?.should == true
       end
     end

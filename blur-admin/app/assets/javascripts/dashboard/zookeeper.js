@@ -28,7 +28,7 @@ var Zookeeper = Backbone.Model.extend({
   },
   status_image: function(){
     var state, img;
-    switch(this.get('status'))
+    switch(this.get('zookeeper_status'))
     {
       case 0:
         state = "offline.";

@@ -28,7 +28,7 @@
     shard_total = self.blur_shards.count
     shards_online = 0
     self.blur_shards.each do |s|
-      shards_online += 1 if s.status == 1
+      shards_online += 1 if s.shard_status == 1
     end
     "#{shards_online} | #{shard_total}"
   end

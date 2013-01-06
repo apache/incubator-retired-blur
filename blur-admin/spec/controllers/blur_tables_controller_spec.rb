@@ -59,7 +59,7 @@ describe BlurTablesController do
       it "should enable and update all the given tables" do
         BlurTable.should_receive(:find).with @tables.collect{|id| id.to_s}
         @blur_table.should_receive(:enable)
-        @blur_table.should_receive(:status=)
+        @blur_table.should_receive(:table_status=)
         @blur_table.should_receive(:save)
         put :enable, :tables => @tables, :format => :json
       end
@@ -81,7 +81,7 @@ describe BlurTablesController do
       it "should disable and update all the given tables" do
         BlurTable.should_receive(:find).with @tables.collect{|id| id.to_s}
         @blur_table.should_receive(:disable)
-        @blur_table.should_receive(:status=)
+        @blur_table.should_receive(:table_status=)
         @blur_table.should_receive(:save)
         put :disable, :tables => @tables, :format => :json
       end

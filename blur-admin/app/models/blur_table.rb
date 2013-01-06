@@ -6,9 +6,9 @@ class BlurTable < ActiveRecord::Base
   has_many :searches, :dependent => :destroy
   has_one :zookeeper, :through => :cluster
 
-  scope :deleted, where("status=?", 0)
-  scope :disabled, where("status=?", 2)
-  scope :active, where("status=?", 4)
+  scope :deleted, where("table_status=?", 0)
+  scope :disabled, where("table_status=?", 2)
+  scope :active, where("table_status=?", 4)
 
   def as_json(options={})
     serial_properties = super(options)
@@ -52,15 +52,15 @@ class BlurTable < ActiveRecord::Base
   end
 
   def is_enabled?
-    self.status == 4
+    self.table_status == 4
   end
 
   def is_disabled?
-    self.status == 2
+    self.table_status == 2
   end
 
   def is_deleted?
-    self.status == 0
+    self.table_status == 0
   end
 
   def terms(blur_urls,family,column,startWith,size)

@@ -4,7 +4,7 @@ class BlurControllersController < ApplicationController
   respond_to :json
 
   def destroy
-    raise "Cannot Remove A Controller that is online!" if @blur_controller.status == 1
+    raise "Cannot Remove A Controller that is online!" if @blur_controller.controller_status == 1
     @blur_controller.destroy
     Audit.log_event(current_user, "Controller (#{@blur_controller.node_name}) was forgotten",
                     "controller", "delete", @blur_controller.zookeeper) if @blur_controller.destroyed?

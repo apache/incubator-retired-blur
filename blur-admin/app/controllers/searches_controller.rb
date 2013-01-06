@@ -14,7 +14,7 @@ class SearchesController < ApplicationController
     # required because of the lazy loading (in this case where a few more variables
     # depend on the result)
     @search_filter = AdminSetting.search_filter
-    @blur_tables = current_zookeeper.blur_tables.where('status = 4').order("table_name").includes(:cluster).all
+    @blur_tables = current_zookeeper.blur_tables.where('table_status = 4').order("table_name").includes(:cluster).all
     @blur_table = BlurTable.find_by_id(params[:table_id])
     if @blur_table.nil?
       @blur_table = @blur_tables[0]

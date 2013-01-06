@@ -42,7 +42,7 @@ var ZookeeperModel = Backbone.Model.extend({
   },
   // Destroys the zookeeper on the server side
   remove: function(){
-    if(this.get('status') == 0){
+    if(this.get('zookeeper_status') == 0){
       this.destroy({
         success: function(){
           window.location = window.location.origin;
@@ -59,7 +59,7 @@ var ZookeeperModel = Backbone.Model.extend({
     return this.get('name') + " - Zookeeper - " + this.translated_status();
   },
   quarum_failed: function(){
-    return this.get('status') == 3
+    return this.get('zookeeper_status') == 3
   },
   offline_nodes: function(){
     var allNodes = this.get('url').split(',')
@@ -75,7 +75,7 @@ var ZookeeperModel = Backbone.Model.extend({
   },
   // The translated status
   translated_status: function(){
-    switch(this.get('status'))
+    switch(this.get('zookeeper_status'))
     {
       case 0:
         return "Offline"
@@ -89,7 +89,7 @@ var ZookeeperModel = Backbone.Model.extend({
   },
   // Determines the class for the state of the zookeeper
   translated_class: function(){
-    switch(this.get('status'))
+    switch(this.get('zookeeper_status'))
     {
       case 0:
         return "btn-danger"

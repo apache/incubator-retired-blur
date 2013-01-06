@@ -9,7 +9,7 @@ var ControllerModel = Backbone.Model.extend({
     return '/blur_controllers/' + this.get('id') + '.json';
   },
   remove: function(){
-    if(this.get('status') == 0){
+    if(this.get('controller_status') == 0){
       this.destroy({
         success: function(){
           Notification("Successfully forgot the Controller!", true);

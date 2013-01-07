@@ -6,3 +6,8 @@
   2. Click on an hdfs, this should take you to the hdfs page and open up the root of the selected hdfs instance.
   3. Change the state of a few of the shards and controllers, make sure that the zookeeper widgets update properly. This includes the icon states and the number of online and offline shards/controllers.
   4. Change the state of the hdfs, make sure that the hdfs widgets update properly.
+  5. Start a new session, and click on the Environment header link, this should prompt a popup asking for a Zookeeper to set as the current.
+  Last Completed: 1/7/2013
+
+* Environment Page
+  1. 

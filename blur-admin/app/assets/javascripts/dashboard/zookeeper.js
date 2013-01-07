@@ -33,19 +33,23 @@ var Zookeeper = Backbone.Model.extend({
       case 0:
         state = "offline.";
         img = 'offline';
-        break
+        break;
       case 1:
         state = "online.";
         img = "online";
-        break
+        break;
       case 2:
         state = "in a quorum warning state.";
         img = "warning";
-        break
+        break;
       case 3:
         state = "experiencing a quorum failure.";
         img = 'failure';
-        break
+        break;
+      default:
+        state = "offline.";
+        img = 'offline';
+        break;
     }
     return '<img src="/assets/' + img + '.png" title="Zookeeper is ' + state + '"/>'
   }

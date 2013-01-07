@@ -33,7 +33,12 @@
             Each box in the Zookeeper section represents a different zookeeper and displays information on that zookeeper.
           .body
             %ol
-              %li The header of each zookeeper box displays whether or not the system is online.
+              %li The header of each zookeeper box displays the current health of that particular zookeeper.
+                %ul
+                  %li A green check means that the system is healthy.
+                  %li A yellow exclamation means that some of the zookeeper nodes are offline but it is still in quorum.
+                  %li A red question mark means that quorom is not being met.
+                  %li A red 'X' means that the zookeeper instance cannot be reached or is completely offline.
               %li
                 The first row gives the user a warning about inconsistent blur versions.
                 %ul

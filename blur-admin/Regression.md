@@ -45,3 +45,11 @@
     * Test deleting a saved search
 
   Last Completed: 1/7/2013
+
+### Hdfs Page
+  1. Traverse the file system looking at top level hdfs instances, folders, and files.
+  2. Right click at each level to see the changes in the options.
+  3. Test each of the menu options at each level.
+  4. Test that the radial graph works and can be navigated.
+
+  Last Completed: 1/7/2013

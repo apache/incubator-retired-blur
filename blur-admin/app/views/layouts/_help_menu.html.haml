@@ -24,7 +24,6 @@
                 It has a link to your "User" page:
                 %ul
                   %li This is located in the top right, next to the "logout" button.
-
       .help-section
         %h3.help-label Dashboard Help
         .help-content{ :style =>  @tab != 'dashboard' && 'display: none' }
@@ -60,7 +59,6 @@
               %li The information on the left represents whether or not hdfs blocks are missing or under replicated.
               %li The node bar shows the relative populations of online and offline nodes. The green representing online and the red representing offline.
               %li The "dfs usage" bar represents the total amount of the hdfs space that is currently being used.
-
       .help-section
         %h3.help-label Environment Status Help
         .help-content{ :style =>  @tab != 'zookeepers' && 'display: none' }
@@ -80,8 +78,6 @@
               %li The "shards" column contains a link that, when clicked, displays a popup listing all the child shards and their status.
               %li The "clusters" table lists each shard with its name, blur version, and status. Click "view shards" for a list of the shards in that cluster and the status of each of them.
               %li Clicking on the 'x' icon on this page will delete the node from the database, 'forget', this is only displayed if the node is no longer online.
-
-
       .help-section
         %h3.help-label Blur Tables Help
         .help-content{ :style =>  @tab != 'blur_tables' && 'display: none' }
@@ -105,7 +101,6 @@
               %li Active tables will have the option to disable the table
               %li Disabled tables will have the option to activate the table or delete the table.
               %li Forget tables holds the information of any past deleted tables.
-
       .help-section
         %h3.help-label Blur Queries Help
         .help-content{ :style =>  @tab != 'blur_queries' && 'display: none' }
@@ -133,7 +128,6 @@
               %li The "Time Submitted" column shows the time that the query was submitted.
               %li The "Status" column shows the percent of shards that have completed the query and whether or not the query is still running or was interrupted.
               %li The "Actions/Info" column gives users the ability to cancel queries that are still in the running state (editor role only) and display details associated with the query (auditor role only).
-
       .help-section
         %h3.help-label Search Help
         .help-content{ :style =>  @tab != 'searches' && 'display: none' }
@@ -164,8 +158,8 @@
                 %li The "Return" option allows you to choose whether to return the results by row or a record.
                 %li The "Start" option allows you to choose the starting element to display.
                 %li The "Fetch" option allows you to limit the amount of rows that are returned.
-                %li The "Pre-Filter" field allows you to ?.
-                %li The "Post-Filter" field allows you to ?.
+                %li The "Pre-Filter" field allows you to remove records before the "join" operation.
+                %li The "Post-Filter" field allows you to filter rows out after the query.
 
           .help_list#saved_help
             .head
@@ -179,7 +173,6 @@
                   %ul
                     %li The "Name" field is used to name your saved searches.
                     %li You can update an existing saved search by using the same name in the name field and clicking update.
-
       .help-section
         %h3.help-label HDFS help
         .help-content{ :style =>  @tab != 'hdfs' && 'display: none' }

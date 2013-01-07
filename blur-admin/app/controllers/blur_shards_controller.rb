@@ -11,7 +11,7 @@ class BlurShardsController < ApplicationController
   end
 
   def destroy
-    raise "Cannot Remove A Shard that is online!" if @blur_shard.status == 1
+    raise "Cannot Remove A Shard that is online!" if @blur_shard.shard_status == 1
     @blur_shard.destroy
     Audit.log_event(current_user, "Shard (#{@blur_shard.node_name}) was forgotten",
                     "shard", "delete", @blur_shard.zookeeper) if @blur_shard.destroyed?

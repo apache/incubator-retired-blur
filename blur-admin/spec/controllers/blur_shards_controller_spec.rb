@@ -29,19 +29,19 @@ describe BlurShardsController do
 
       it "destroys the shard" do
         @blur_shard.should_receive(:destroy)
-        @blur_shard.stub!(:status).and_return 0
+        @blur_shard.stub!(:shard_status).and_return 0
         delete :destroy, :id => @blur_shard.id, :format => :json
       end
 
       it "errors when the shard is enabled" do
         expect {
-          @blur_shard.stub!(:status).and_return 1
+          @blur_shard.stub!(:shard_status).and_return 1
           delete :destroy, :id => @blur_shard.id, :format => :json
         }.to raise_error
       end
 
       it "logs the event when the shard is deleted" do
-        @blur_shard.stub!(:status).and_return 0
+        @blur_shard.stub!(:shard_status).and_return 0
         @blur_shard.stub!(:destroyed?).and_return true
         Audit.should_receive :log_event
         delete :destroy, :id => @blur_shard.id, :format => :json

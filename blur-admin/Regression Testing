@@ -10,4 +10,6 @@
   Last Completed: 1/7/2013
 
 * Environment Page
-  1. 
+  1. Assure that the values in the tables track the state of the nodes (similar to the Dashboard page). Change values and assure that the values in the tables update.
+  2. Change the zookeeper status and assure that the header changes color and text properly.
+  3. Set the zookeeper, controller's, and shard's status to offline. While offline they should have an 'x' icon that will 'forget' the nodes. Assure that this is true and that by clicking each one the item is removed.

@@ -67,9 +67,19 @@
             The "Environment Status" page is a zookeeper specific status page.
           .body
             %ol
-              %li The top section lists some of the details about the current zookeeper such as the name, the connection (URL), and its current status.
-              %li The "controllers" box lists each controller with its name, blur version, and status.
-              %li The "clusters" box lists each shard with its name, blur version, and status. Click "view shards" for a list of the shards in that cluster and the status of each of them.
+              %li
+                The widget at the top displays the zookeepers status.
+                %ul
+                  %li Hovering over "online(#)" and "offline(#)", only shown if there are any nodes offline or online respectively, will display a tooltip listing the respective nodes.
+                  %li A green background means that the system is healthy.
+                  %li A yellow background means that some of the zookeeper nodes are offline but it is still in quorum.
+                  %li A red background with the header "Quorom Failure" means that quorom is not being met.
+                  %li A red background with the header "Offline" means that the zookeeper instance cannot be reached or is completely offline.
+              %li The "controllers" table lists each controller with its name, blur version, and status.
+              %li The "shards" column contains a link that, when clicked, displays a popup listing all the child shards and their status.
+              %li The "clusters" table lists each shard with its name, blur version, and status. Click "view shards" for a list of the shards in that cluster and the status of each of them.
+              %li Clicking on the 'x' icon on this page will delete the node from the database, 'forget', this is only displayed if the node is no longer online.
+
 
       .help-section
         %h3.help-label Blur Tables Help

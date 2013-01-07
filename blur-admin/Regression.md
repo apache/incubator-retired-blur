@@ -1,5 +1,5 @@
 # Regression Testing
-## A documented set of steps needed to manually regression test BlurConsole:
+## Steps needed to manually regression test BlurConsole:
 
 ### Dashboard
   1. Click on a zookeeper, this should take you to that zookeepers environment page and set it as the current zookeeper.
@@ -51,5 +51,12 @@
   2. Right click at each level to see the changes in the options.
   3. Test each of the menu options at each level.
   4. Test that the radial graph works and can be navigated.
+
+  Last Completed: 1/7/2013
+
+### Hdfs Metrics Page
+  1. Hover over the data points and check that the labels are displaying the proper values.
+  2. Change the date range using the calendar popup and the sliders, assure that the range is changing properly.
+  3. Check that the above tests pass for all tabs.
 
   Last Completed: 1/7/2013

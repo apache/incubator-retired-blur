@@ -136,13 +136,14 @@
 
       .help-section
         %h3.help-label Search Help
-        .help-content{ :style =>  @tab != 'search' && 'display: none' }
+        .help-content{ :style =>  @tab != 'searches' && 'display: none' }
           .help_list#search_help
             .head
               Use the "Search" box to begin building a query. Use the search button to the right to submit.
             .body
               %ol
                 %li Basic field searches are in the format column_family.column:value
+                %li NOTE: Not all tables can be '*' queried, to learn more about the allowed tables consult your admin.
                 %li Fields can be grouped with parenthesis. Eg. (employee.name:bob employee.gender:male)
                 %li
                   Special characters:
@@ -159,10 +160,12 @@
             .body
               %ol
                 %li The "Column Families" selector tree allows users to limit the returned columns.
-                %li The "Super Query" option allows you to turn superQuery on/off.
-                %li The "Record Only" option displays results as records only.
+                %li The "Search On" option allows you to search across a row or record.
+                %li The "Return" option allows you to choose whether to return the results by row or a record.
                 %li The "Start" option allows you to choose the starting element to display.
                 %li The "Fetch" option allows you to limit the amount of rows that are returned.
+                %li The "Pre-Filter" field allows you to ?.
+                %li The "Post-Filter" field allows you to ?.
 
           .help_list#saved_help
             .head
@@ -175,6 +178,7 @@
                   Use the "Save Options" tab to save the current query.
                   %ul
                     %li The "Name" field is used to name your saved searches.
+                    %li You can update an existing saved search by using the same name in the name field and clicking update.
 
       .help-section
         %h3.help-label HDFS help

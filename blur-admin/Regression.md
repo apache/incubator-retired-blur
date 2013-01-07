@@ -1,5 +1,5 @@
 # Regression Testing
-## A documented set of steps needed to manually regression test a page:
+## A documented set of steps needed to manually regression test BlurConsole:
 
 ### Dashboard
   1. Click on a zookeeper, this should take you to that zookeepers environment page and set it as the current zookeeper.
@@ -27,5 +27,21 @@
   4. Set the "Auto Refresh" to the different values and assure that the server is being queried at the new interval.
   5. Test a few different filters in the "Filter Queries" box, be sure to test the hidden column state.
   6. Test that the columns sort properly when sorting by each header.
+
+  Last Completed: 1/7/2013
+
+### Search Page
+  1. Run a query and assure that it is returning results.
+  2. Change the table and test to see that it changes the filters in the advanced tab.
+  3. Advanced Tab
+    * Test that the column and column family filters work properly.
+    * Test that the search on and return functions limit each other and request / return the proper values.
+    * Test that start and fetch alter the returned results.
+    * Test the pre and post filters.
+  4. Saved Tab
+    * Test creating a new saved search
+    * Test loading a saved search
+    * Test updating a saved search
+    * Test deleting a saved search
 
   Last Completed: 1/7/2013

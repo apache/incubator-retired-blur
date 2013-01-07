@@ -40,13 +40,11 @@
                   %li A red question mark means that quorom is not being met.
                   %li A red 'X' means that the zookeeper instance cannot be reached or is completely offline.
               %li
-                The first row gives the user a warning about inconsistent blur versions.
+                Each circle represents the population of that particular piece of blur. The green portions are the healthy nodes and the red portions are the offline nodes.
                 %ul
-                  %li If the system detects that any of the controllers or shards are using inconsistent versions of Blur, then the status changes to "Inconsistent Blur Versions".
+                  %li The circle's values correlate to the offline and online rows in the center of the widget.
               %li
-                The next two rows of the box are an aggregation of all the different states of all the controllers and shards respectively.
-                %ul
-                  %li The "online" and "offline" bars display the number of shards/controllers that are currently online and offline.
+                The "version" row indicates whether or not all of the nodes (shards and controllers respectively) are running the same version of blur.
               %li Clicking on a Zookeeper box will take the user to the Environment page of that particular blur instance.
               %li
                 A warning will appear at the bottom of the box if there are any "long running" queries.
@@ -58,10 +56,9 @@
           .body
             %ol
               %li The header of each hdfs box displays whether or not the system is online.
-              %li
-                The information under Block Statistics displays whether or not hdfs blocks are missing, corrupt, or under replicated.
-              %li
-                The information under Usage Statistics displays the number of live nodes and the percentage of Dfs usage.
+              %li The information on the left represents whether or not hdfs blocks are missing or under replicated.
+              %li The node bar shows the relative populations of online and offline nodes. The green representing online and the red representing offline.
+              %li The "dfs usage" bar represents the total amount of the hdfs space that is currently being used.
 
       .help-section
         %h3.help-label Environment Status Help

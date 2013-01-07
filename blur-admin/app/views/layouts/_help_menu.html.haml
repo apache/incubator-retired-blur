@@ -33,7 +33,8 @@
             Each box in the Zookeeper section represents a different zookeeper and displays information on that zookeeper.
           .body
             %ol
-              %li The header of each zookeeper box displays the current health of that particular zookeeper.
+              %li
+                The header of each zookeeper box displays the current health of that particular zookeeper.
                 %ul
                   %li A green check means that the system is healthy.
                   %li A yellow exclamation means that some of the zookeeper nodes are offline but it is still in quorum.
@@ -114,14 +115,14 @@
             %ol
               %li The "Auto Refresh" selector allows the user to choose how often the table information is refreshed.
               %li The "Queries in the last" selector allows users to limit the queries by the time they were updated.
+              %li The "Quick Filter Status By" selector allows users to quickly show certain queries by their current status.
               %li When the table is refreshed, queries are automatically added, updated, and deleted.
               %li Each column in the table is sortable by clicking the header of each column.
-              %li The filter box allows users to search for specific values in the table.
+              %li The "Filter Queries" box allows users to search for specific values in the table.
           .head
             Underneath the filters section is the queries table.
           .body
             %ol
-              %li To the top right of the table is a list of current filters.
               %li The "User Id" column shows the ID of the user that submitted that query.
               %li
                 The "Query" column is the text of the executed query. This is only visible to users with the auditor role.

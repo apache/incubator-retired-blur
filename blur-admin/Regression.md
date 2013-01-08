@@ -11,27 +11,34 @@
   Last Completed: 1/7/2013
 
 ### Environment Page
-  1. Assure that the values in the tables track the state of the nodes (similar to the Dashboard page). Change values and assure that the values in the tables update.
-  2. Change the zookeeper status and assure that the header changes color and text properly.
-  3. Set the zookeeper, controller's, and shard's status to offline. While offline they should have an 'x' icon that will 'forget' the nodes. Assure that this is true and that by clicking each one the item is removed.
+  1. Ensure that the values in the tables track the state of the nodes (similar to the Dashboard page). Change values and ensure that the values in the tables update.
+  2. Change the zookeeper status and ensure that the header changes color and text properly.
+  3. Set the zookeeper, controller's, and shard's status to offline. While offline they should have an 'x' icon that will 'forget' the nodes. Ensure that this is true and that by clicking each one the item is removed.
 
   Last Completed: 1/7/2013
 
 ### Blur Tables Page
+  1. Enable, disable, and delete tables. Ensure that the tables move into their intermediary states and then eventually reach their end state.
+    * Try this with tables that have been queried recently
+    * Try this with the check all and multi-check functionality
+  2. View the hosts and shards, ensure that the values are accurate.
+  3. Click on the view column and ensure that the table metadata is consistent.
+    * Also while inside this popup test that the terms search ability still works.
+  4. Comment on a table and ensure that the comment is preserved during table state changes.
 
 
 ### Blur Queries Page
-  1. Run, or create, a few queries and assure that they appear in the queries table.
-  2. Set the "Queries in the last" option to the different values and assure that they are being hidden / shown properly.
-  3. Set the "Quick filter" to the different values and assure that the queries are being properly filtered.
-  4. Set the "Auto Refresh" to the different values and assure that the server is being queried at the new interval.
+  1. Run, or create, a few queries and ensure that they appear in the queries table.
+  2. Set the "Queries in the last" option to the different values and ensure that they are being hidden / shown properly.
+  3. Set the "Quick filter" to the different values and ensure that the queries are being properly filtered.
+  4. Set the "Auto Refresh" to the different values and ensure that the server is being queried at the new interval.
   5. Test a few different filters in the "Filter Queries" box, be sure to test the hidden column state.
   6. Test that the columns sort properly when sorting by each header.
 
   Last Completed: 1/7/2013
 
 ### Search Page
-  1. Run a query and assure that it is returning results.
+  1. Run a query and ensure that it is returning results.
   2. Change the table and test to see that it changes the filters in the advanced tab.
   3. Advanced Tab
     * Test that the column and column family filters work properly.
@@ -56,14 +63,14 @@
 
 ### Hdfs Metrics Page
   1. Hover over the data points and check that the labels are displaying the proper values.
-  2. Change the date range using the calendar popup and the sliders, assure that the range is changing properly.
+  2. Change the date range using the calendar popup and the sliders, ensure that the range is changing properly.
   3. Check that the above tests pass for all tabs.
 
   Last Completed: 1/7/2013
 
 ### Audits Page
   1. Perform a few actions that will cause an audit to be generated, then check that the audit is displayed in the audit table.
-  2. Change the date range and assure that the audits outside the range are removed from the list.
+  2. Change the date range and ensure that the audits outside the range are removed from the list.
   3. Enter a few different search terms into the "Filter Audits" box and test that it is properly filtering the audits.
 
   Last Completed: 1/7/2013
@@ -77,7 +84,7 @@
   Last Completed: 1/7/2013
 
 ### Account Page
-  1. Test that a user can choose column family preferences, also assure that these preferences are being enforced on the search page.
-  2. Test that a user can choose a zookeeper preference, also assure that this preference is being enforced on the initial navigation of the app.
+  1. Test that a user can choose column family preferences, also ensure that these preferences are being enforced on the search page.
+  2. Test that a user can choose a zookeeper preference, also ensure that this preference is being enforced on the initial navigation of the app.
   3. Test that a user can edit themselves, and not others.
 

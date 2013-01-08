@@ -165,19 +165,19 @@ describe HdfsController do
       end
 
       it "calls correct client method" do
-        @hdfs_client.should_receive(:rename).with('/', '/folder/')
-        get :move_file, :id => @hdfs.id, :from => '/', :to => '/folder/', :format => :json
+        @hdfs_client.should_receive(:rename).with('/test', '/folder/test')
+        get :move_file, :id => @hdfs.id, :from => '/test', :to => '/folder/', :format => :json
       end
 
       it "renders a blank json object" do
         HdfsThriftClient.should_receive(:client).with("#{@hdfs.host}:#{@hdfs.port}")
-        get :move_file, :id => @hdfs.id, :from => '/', :to => '/folder/', :format => :json
+        get :move_file, :id => @hdfs.id, :from => '/test', :to => '/folder/', :format => :json
         response.body.should == {}.to_json
       end
 
       it "logs an audit event" do
         Audit.should_receive :log_event
-        get :move_file, :id => @hdfs.id, :from => '/', :to => '/folder/', :format => :json
+        get :move_file, :id => @hdfs.id, :from => '/test', :to => '/folder/', :format => :json
       end
     end
 

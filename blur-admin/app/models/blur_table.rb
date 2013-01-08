@@ -95,6 +95,6 @@ class BlurTable < ActiveRecord::Base
   def recent_queries
     self.blur_queries
       .where("created_at > '#{5.minutes.ago}'")
-      .length > 0
+      .count > 0
   end
 end

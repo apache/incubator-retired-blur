@@ -60,7 +60,8 @@ $(document).ready(function() {
     $('.column_family_filter').dynatree({
       checkbox: true,
       selectMode: 3,
-      initAjax: get_filter_ajax()
+      initAjax: get_filter_ajax(),
+      onSelect: toggle_submit
     });
   };
 

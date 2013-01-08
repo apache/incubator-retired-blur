@@ -14,7 +14,7 @@ var Table = Backbone.Model.extend({
       state: this.state_lookup[this.get('table_status')],
       table: this.table_lookup[this.get('table_status')]
     });
-    this.on('change:status', function(){
+    this.on('change:table_status', function(){
       var table = this.get('table')
       this.set({
         state: this.state_lookup[this.get('table_status')],

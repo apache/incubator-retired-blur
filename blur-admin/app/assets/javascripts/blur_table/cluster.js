@@ -48,7 +48,7 @@ var Cluster = Backbone.Model.extend({
               });
               $().closePopup();
               _.each(selected_tables, function(table){
-                table.set({status: 5});
+                table.set({table_status: 5});
               });
               this.view.set_table_state();
             }, this)
@@ -81,7 +81,7 @@ var Cluster = Backbone.Model.extend({
               });
               $().closePopup();
               _.each(selected_tables, function(table){
-                table.set({status: 3});
+                table.set({table_status: 3});
               });
               this.view.set_table_state();
             }, this)
@@ -110,7 +110,7 @@ var Cluster = Backbone.Model.extend({
         });
         $().closePopup();
         _.each(selected_tables, function(table){
-          table.set({status: 1});
+          table.set({table_status: 1});
         });
         this.view.set_table_state();
       };
@@ -137,7 +137,9 @@ var Cluster = Backbone.Model.extend({
     }, this));
   },
   send_action_request: function(selected_tables, confirm_function){
-    if (_.find(selected_tables, function(table){ return table.get('queried_recently'); })){
+    if (_.find(selected_tables, function(table){
+        return table.get('queried_recently') && table.get('state') == 'active';
+    })){
       $().popup({
         title: 'Warning! You are attempting to change an active table!',
         titleClass: 'title',

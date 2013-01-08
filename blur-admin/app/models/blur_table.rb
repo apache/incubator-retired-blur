@@ -64,7 +64,7 @@ class BlurTable < ActiveRecord::Base
   end
 
   def terms(blur_urls,family,column,startWith,size)
-    return BlurThriftClient.client(blur_urls).terms(self.table_name, family, column, startWith, size)
+    BlurThriftClient.client(blur_urls).terms(self.table_name, family, column, startWith, size)
   end
 
   def enable(blur_urls)

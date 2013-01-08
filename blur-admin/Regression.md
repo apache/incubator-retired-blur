@@ -62,4 +62,22 @@
   Last Completed: 1/7/2013
 
 ### Audits Page
-  1. 
+  1. Perform a few actions that will cause an audit to be generated, then check that the audit is displayed in the audit table.
+  2. Change the date range and assure that the audits outside the range are removed from the list.
+  3. Enter a few different search terms into the "Filter Audits" box and test that it is properly filtering the audits.
+
+  Last Completed: 1/7/2013
+
+### Admin Page
+  1. Test that an admin can edit a user.
+  2. Test that an admin can create a user.
+  3. Test that an admin can delete a user.
+  3. Test that an admin can change Table Filter regex.
+
+  Last Completed: 1/7/2013
+
+### Account Page
+  1. Test that a user can choose column family preferences, also assure that these preferences are being enforced on the search page.
+  2. Test that a user can choose a zookeeper preference, also assure that this preference is being enforced on the initial navigation of the app.
+  3. Test that a user can edit themselves, and not others.
+

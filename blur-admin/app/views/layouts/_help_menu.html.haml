@@ -142,11 +142,11 @@
                 %li
                   Special characters:
                   %ul
-                    %li + - Indicates that the field or grouping must exist in the result set (+employee.name:bob)
-                    %li - - Indicates that the field or grouping can NOT exist in the result set (-employee.name:bob)
-                    %li ? - Wildcard for a single character (employee.birthdate:197001??)
-                    %li * - Wildcard for 0 to many characters (employee.name:b*b)
-                    %li ~ - Fuzzy criteria to be followed by a number between 0 and 1 (employee.name:bob~0.7)
+                    %li '+' - Indicates that the field or grouping must exist in the result set (+employee.name:bob)
+                    %li '-' - Indicates that the field or grouping can NOT exist in the result set (-employee.name:bob)
+                    %li '?' - Wildcard for a single character (employee.birthdate:197001??)
+                    %li '*' - Wildcard for 0 to many characters (employee.name:b*b)
+                    %li '~' - Fuzzy criteria to be followed by a number between 0 and 1 (employee.name:bob~0.7)
 
           .help_list#advanced_help
             .head
@@ -178,6 +178,11 @@
         .help-content{ :style =>  @tab != 'hdfs' && 'display: none' }
           .head
             The HDFS page presents a simple file viewer of an HDFS file system.  Right clicking on the root node will expose properties about the file system as a whole.  Right clicking on any of the children nodes will allow for various editing actions (cut, paste, delete).
+      .help-section
+        %h3.help-label HDFS Metrics help
+        .help-content{ :style =>  @tab != 'hdfs_metrics' && 'display: none' }
+          .head
+            The HDFS metrics page displays a series of statistics for each of your managed hdfs instances. It allows you to track the history of a few key "metrics". The history range can be controlled by the slider / datepicker combo in the bottom right of each HDFS widget. This allows the user to change the range of the metrics window between 2 weeks ago and real time.
       .help-section
         %h3.help-label Admin help
         .help-content{ :style =>  @tab != 'admin' && 'display: none' }

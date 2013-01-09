@@ -1,6 +1,6 @@
 class Zookeeper < ActiveRecord::Base
   has_many :blur_controllers, :dependent => :destroy
-  has_many :clusters, :dependent => :destroy
+  has_many :clusters, :dependent => :destroy, :order => 'name'
   has_many :blur_shards, :through => :clusters
   has_many :blur_tables, :through => :clusters
   has_many :blur_queries, :through => :blur_tables
@@ -52,5 +52,15 @@ class Zookeeper < ActiveRecord::Base
 
   def long_running_queries(current_user)
     self.blur_queries.where('created_at < ? and state = ?', 1.minute.ago, 0).collect{|query| query.summary(current_user)}
+  end
+
+  def clusters_with_query_status(current_user)
+    query_counts = BlurQuery.where("updated_at > '#{5.minutes.ago}'").group('blur_table_id').count
+    self.clusters.each do |cluster|
+      cluster.blur_tables.each do |table|
+        table.query_count = query_counts[table.id] || 0
+      end
+      cluster.can_update = current_user.editor?
+    end
   end
 end

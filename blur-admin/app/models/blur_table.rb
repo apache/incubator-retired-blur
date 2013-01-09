@@ -10,12 +10,14 @@ class BlurTable < ActiveRecord::Base
   scope :disabled, where("table_status=?", 2)
   scope :active, where("table_status=?", 4)
 
+  attr_accessor :query_count
+
   def as_json(options={})
     serial_properties = super(options)
     serial_properties.delete('server')
     serial_properties.delete('table_schema')
     serial_properties.delete('updated_at')
-    serial_properties['queried_recently'] = self.recent_queries
+    serial_properties['queried_recently'] = self.query_count > 0
 
     host_count = self.hosts.keys.length
     shard_count = 0
@@ -90,11 +92,5 @@ class BlurTable < ActiveRecord::Base
     rescue
       return false
     end
-  end
-
-  def recent_queries
-    self.blur_queries
-      .where("created_at > '#{5.minutes.ago}'")
-      .count > 0
   end
 end

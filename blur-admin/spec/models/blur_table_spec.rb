@@ -9,8 +9,7 @@ describe BlurTable do
   end
 
   describe "as_json" do
-    it 'return the expected values' do 
-      @table.should_receive(:recent_queries).and_return({:test => []})
+    it 'return the expected values' do
       test_json = @table.as_json
       test_json.should_not include("server")
       test_json.should_not include("table_schema")

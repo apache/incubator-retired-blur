@@ -9,11 +9,10 @@ describe BlurTablesController do
       # Models used for model chain
       @client = mock(Blur::Blur::Client)
       @blur_table = FactoryGirl.create :blur_table
-      @cluster = FactoryGirl.create_list :cluster, 3
+      @clusters = FactoryGirl.create_list :cluster, 3
 
       # Setup the chain
-      @zookeeper.stub_chain(:blur_tables, :order).and_return [@blur_table]
-      @zookeeper.stub_chain(:clusters, :order).and_return @cluster
+      @zookeeper.stub!(:clusters_with_query_status).and_return @clusters
       controller.stub!(:thrift_client).and_return(@client)
     end
 
@@ -24,16 +23,12 @@ describe BlurTablesController do
       end
 
       it "should assign @clusters to be the current zookeeper's clusters" do
-        @zookeeper.should_receive(:clusters)
         get :index, :format => :html
-        assigns(:clusters).should == @cluster
+        assigns(:clusters).should == @clusters
       end
 
       it "should call can_update on each cluster" do
-        @cluster.each do |cluster|
-          cluster.should_receive :can_update=
-        end
-        @user.should_receive(:editor?).exactly(@cluster.length).times
+        @zookeeper.should_receive(:clusters_with_query_status).with(@user)
         get :index, :format => :html
       end
 
@@ -44,7 +39,7 @@ describe BlurTablesController do
 
       it "should render the clusters as json" do
         get :index, :format => :json
-        response.body.should == @cluster.to_json(:methods => [:blur_tables])
+        response.body.should == @clusters.to_json(:methods => [:blur_tables], :blur_tables => true)
       end
     end
 

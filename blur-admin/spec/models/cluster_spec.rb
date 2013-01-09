@@ -6,9 +6,16 @@ describe Cluster do
   end
 
   describe 'as_json' do
-    it "should have the can_update, blur_version and shard status in the json" do
-      test_json = @cluster.as_json
+    it "should have the can_update and cluster_queried in the json when the blur table flag is true" do
+      test_json = @cluster.as_json({:blur_tables => true})
+      puts @cluster.can_update
       test_json.should include("can_update")
+      test_json.should include("cluster_queried")
+    end
+
+    it "should have the can_update and cluster_queried in the json when the blur table flag is true" do
+      test_json = @cluster.as_json({:blur_tables => false})
+      puts @cluster.can_update
       test_json.should include("shard_blur_version")
       test_json.should include("shard_status")
     end

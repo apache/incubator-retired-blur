@@ -134,6 +134,20 @@ describe BlurTablesController do
       end
     end
 
+    describe "GET hosts" do
+      it "should render the hosts as json" do
+        get :hosts, :format => :json, :id => @blur_table.id
+        response.body.should == @blur_table.hosts.to_json()
+      end
+    end
+
+    describe "GET schema" do
+      it "should render the schema as json" do
+        get :schema, :format => :json, :id => @blur_table.id
+        response.body.should == @blur_table.schema.to_json()
+      end
+    end
+
     describe "PUT comment" do
       before :each do
         BlurTable.stub(:find).and_return @blur_table

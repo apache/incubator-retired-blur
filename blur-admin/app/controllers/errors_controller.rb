@@ -3,11 +3,6 @@ class ErrorsController < ApplicationController
   respond_to :json, :html
 
   def error_404(exception = nil)
-    if exception
-      @not_found_path = exception.message 
-    else
-      @not_found_path = "The file"
-    end
     render :error_404, :status => :not_found
   end
 

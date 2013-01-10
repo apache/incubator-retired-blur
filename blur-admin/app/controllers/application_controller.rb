@@ -49,15 +49,6 @@ class ApplicationController < ActionController::Base
     end
     @current_zookeeper
   end
-  #Catches application errors and redirects to the custom error pages
-  unless Rails.application.config.consider_all_requests_local
-    rescue_from Exception, :with => :error_500
-    rescue_from ActionController::RoutingError, :with => :error_404
-    rescue_from ActionController::UnknownController, :with => :error_404
-    rescue_from AbstractController::ActionNotFound, :with => :error_404
-    rescue_from ActiveRecord::RecordNotFound, :with => :error_404
-    rescue_from ActionController::InvalidAuthenticityToken, :with => :error_422
-  end
 
   def set_zookeeper(id)
     # Convert all inputs to an int

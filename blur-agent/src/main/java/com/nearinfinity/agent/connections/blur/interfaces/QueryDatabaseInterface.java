@@ -1,5 +1,6 @@
 package com.nearinfinity.agent.connections.blur.interfaces;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -15,4 +16,6 @@ public interface QueryDatabaseInterface {
 	void createQuery(BlurQueryStatus status, SimpleQuery query, String times, Date startTime, int tableId);
 
 	void updateQuery(BlurQueryStatus status, String times, int queryId);
+	
+	void markOrphanedRunningQueriesComplete(Collection<Long> queries);
 }

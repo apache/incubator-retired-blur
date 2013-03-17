@@ -24,7 +24,6 @@ import java.sql.Statement;
 
 import org.apache.blur.jdbc.abstractimpl.AbstractBlurConnection;
 
-
 public class BlurConnection extends AbstractBlurConnection {
 
   private boolean closed;

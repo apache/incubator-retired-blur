@@ -43,18 +43,18 @@ import java.util.Map;
 
 import org.apache.blur.jdbc.util.NotImplemented;
 
-
 public abstract class AbstractBlurResultSet implements ResultSet {
 
   private ResultSet throwExceptionDelegate;
 
   public AbstractBlurResultSet() {
-    throwExceptionDelegate = (ResultSet) Proxy.newProxyInstance(ResultSet.class.getClassLoader(), new Class[] { ResultSet.class }, new InvocationHandler() {
-      @Override
-      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        throw new NotImplemented(method.getName());
-      }
-    });
+    throwExceptionDelegate = (ResultSet) Proxy.newProxyInstance(ResultSet.class.getClassLoader(),
+        new Class[] { ResultSet.class }, new InvocationHandler() {
+          @Override
+          public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            throw new NotImplemented(method.getName());
+          }
+        });
   }
 
   public boolean absolute(int row) throws SQLException {
@@ -817,4 +817,13 @@ public abstract class AbstractBlurResultSet implements ResultSet {
     return throwExceptionDelegate.wasNull();
   }
 
+  // java 7
+
+//  public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
+//    return throwExceptionDelegate.getObject(columnIndex, type);
+//  }
+//
+//  public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
+//    return throwExceptionDelegate.getObject(columnLabel, type);
+//  }
 }

@@ -36,21 +36,22 @@ import java.sql.Statement;
 import java.sql.Struct;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Executor;
 
 import org.apache.blur.jdbc.util.NotImplemented;
-
 
 public abstract class AbstractBlurConnection implements Connection {
 
   private Connection throwExceptionDelegate;
 
   public AbstractBlurConnection() {
-    throwExceptionDelegate = (Connection) Proxy.newProxyInstance(Connection.class.getClassLoader(), new Class[] { Connection.class }, new InvocationHandler() {
-      @Override
-      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        throw new NotImplemented(method.getName());
-      }
-    });
+    throwExceptionDelegate = (Connection) Proxy.newProxyInstance(Connection.class.getClassLoader(),
+        new Class[] { Connection.class }, new InvocationHandler() {
+          @Override
+          public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            throw new NotImplemented(method.getName());
+          }
+        });
   }
 
   public void clearWarnings() throws SQLException {
@@ -248,5 +249,27 @@ public abstract class AbstractBlurConnection implements Connection {
   public <T> T unwrap(Class<T> iface) throws SQLException {
     return throwExceptionDelegate.unwrap(iface);
   }
+
+  // java 7
+
+//  public void setSchema(String schema) throws SQLException {
+//    throwExceptionDelegate.setSchema(schema);
+//  }
+//
+//  public String getSchema() throws SQLException {
+//    return throwExceptionDelegate.getSchema();
+//  }
+//
+//  public void abort(Executor executor) throws SQLException {
+//    throwExceptionDelegate.abort(executor);
+//  }
+//
+//  public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+//    throwExceptionDelegate.setNetworkTimeout(executor, milliseconds);
+//  }
+//
+//  public int getNetworkTimeout() throws SQLException {
+//    return throwExceptionDelegate.getNetworkTimeout();
+//  }
 
 }

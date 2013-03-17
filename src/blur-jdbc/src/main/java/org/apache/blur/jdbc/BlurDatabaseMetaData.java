@@ -33,10 +33,10 @@ import org.apache.blur.jdbc.util.EmptyResultSet;
 import org.apache.blur.jdbc.util.SimpleStringResultSet;
 import org.apache.blur.thrift.BlurClientManager;
 import org.apache.blur.thrift.commands.BlurCommand;
+import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.TableDescriptor;
-import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.thrift.TException;
 
 
@@ -420,5 +420,7 @@ public class BlurDatabaseMetaData extends AbstractBlurDatabaseMetaData {
   public String getSystemFunctions() throws SQLException {
     return "";
   }
+
+
 
 }

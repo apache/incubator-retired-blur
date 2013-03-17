@@ -44,7 +44,6 @@ import java.util.Calendar;
 
 import org.apache.blur.jdbc.util.NotImplemented;
 
-
 public class AbstractBlurPreparedStatement implements PreparedStatement {
 
   private PreparedStatement throwExceptionDelegate;
@@ -438,12 +437,23 @@ public class AbstractBlurPreparedStatement implements PreparedStatement {
   }
 
   public AbstractBlurPreparedStatement() {
-    throwExceptionDelegate = (PreparedStatement) Proxy.newProxyInstance(PreparedStatement.class.getClassLoader(), new Class[] { PreparedStatement.class }, new InvocationHandler() {
-      @Override
-      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        throw new NotImplemented(method.getName());
-      }
-    });
+    throwExceptionDelegate = (PreparedStatement) Proxy.newProxyInstance(PreparedStatement.class.getClassLoader(),
+        new Class[] { PreparedStatement.class }, new InvocationHandler() {
+          @Override
+          public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            throw new NotImplemented(method.getName());
+          }
+        });
   }
+
+  // java 7
+
+//  public void closeOnCompletion() throws SQLException {
+//    throwExceptionDelegate.closeOnCompletion();
+//  }
+//
+//  public boolean isCloseOnCompletion() throws SQLException {
+//    return throwExceptionDelegate.isCloseOnCompletion();
+//  }
 
 }

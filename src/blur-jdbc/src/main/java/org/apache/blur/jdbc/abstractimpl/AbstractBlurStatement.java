@@ -27,18 +27,18 @@ import java.sql.Statement;
 
 import org.apache.blur.jdbc.util.NotImplemented;
 
-
 public class AbstractBlurStatement implements Statement {
 
   private Statement throwExceptionDelegate;
 
   public AbstractBlurStatement() {
-    throwExceptionDelegate = (Statement) Proxy.newProxyInstance(Statement.class.getClassLoader(), new Class[] { Statement.class }, new InvocationHandler() {
-      @Override
-      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        throw new NotImplemented(method.getName());
-      }
-    });
+    throwExceptionDelegate = (Statement) Proxy.newProxyInstance(Statement.class.getClassLoader(),
+        new Class[] { Statement.class }, new InvocationHandler() {
+          @Override
+          public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            throw new NotImplemented(method.getName());
+          }
+        });
   }
 
   public void addBatch(String sql) throws SQLException {
@@ -208,5 +208,15 @@ public class AbstractBlurStatement implements Statement {
   public <T> T unwrap(Class<T> iface) throws SQLException {
     return throwExceptionDelegate.unwrap(iface);
   }
+
+  // java 7
+
+//  public void closeOnCompletion() throws SQLException {
+//    throwExceptionDelegate.closeOnCompletion();
+//  }
+//
+//  public boolean isCloseOnCompletion() throws SQLException {
+//    return throwExceptionDelegate.isCloseOnCompletion();
+//  }
 
 }

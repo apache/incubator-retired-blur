@@ -24,18 +24,18 @@ import java.sql.SQLException;
 
 import org.apache.blur.jdbc.util.NotImplemented;
 
-
 public abstract class AbstractBlurResultSetMetaData implements ResultSetMetaData {
 
   private ResultSetMetaData throwExceptionDelegate;
 
   public AbstractBlurResultSetMetaData() {
-    throwExceptionDelegate = (ResultSetMetaData) Proxy.newProxyInstance(ResultSetMetaData.class.getClassLoader(), new Class[] { ResultSetMetaData.class }, new InvocationHandler() {
-      @Override
-      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        throw new NotImplemented(method.getName());
-      }
-    });
+    throwExceptionDelegate = (ResultSetMetaData) Proxy.newProxyInstance(ResultSetMetaData.class.getClassLoader(),
+        new Class[] { ResultSetMetaData.class }, new InvocationHandler() {
+          @Override
+          public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            throw new NotImplemented(method.getName());
+          }
+        });
   }
 
   public String getCatalogName(int column) throws SQLException {

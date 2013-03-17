@@ -27,22 +27,22 @@ import java.sql.SQLException;
 
 import org.apache.blur.jdbc.util.NotImplemented;
 
-
 public abstract class AbstractBlurDatabaseMetaData implements DatabaseMetaData {
 
   private DatabaseMetaData throwExceptionDelegate;
 
   public AbstractBlurDatabaseMetaData() {
-    throwExceptionDelegate = (DatabaseMetaData) Proxy.newProxyInstance(DatabaseMetaData.class.getClassLoader(), new Class[] { DatabaseMetaData.class }, new InvocationHandler() {
-      @Override
-      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Class<?> clazz = method.getReturnType();
-        if (clazz.equals(Boolean.class) || clazz.equals(Boolean.TYPE)) {
-          return false;
-        }
-        throw new NotImplemented(method.getName());
-      }
-    });
+    throwExceptionDelegate = (DatabaseMetaData) Proxy.newProxyInstance(DatabaseMetaData.class.getClassLoader(),
+        new Class[] { DatabaseMetaData.class }, new InvocationHandler() {
+          @Override
+          public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            Class<?> clazz = method.getReturnType();
+            if (clazz.equals(Boolean.class) || clazz.equals(Boolean.TYPE)) {
+              return false;
+            }
+            throw new NotImplemented(method.getName());
+          }
+        });
   }
 
   public boolean allProceduresAreCallable() throws SQLException {
@@ -73,11 +73,13 @@ public abstract class AbstractBlurDatabaseMetaData implements DatabaseMetaData {
     return throwExceptionDelegate.doesMaxRowSizeIncludeBlobs();
   }
 
-  public ResultSet getAttributes(String catalog, String schemaPattern, String typeNamePattern, String attributeNamePattern) throws SQLException {
+  public ResultSet getAttributes(String catalog, String schemaPattern, String typeNamePattern,
+      String attributeNamePattern) throws SQLException {
     return throwExceptionDelegate.getAttributes(catalog, schemaPattern, typeNamePattern, attributeNamePattern);
   }
 
-  public ResultSet getBestRowIdentifier(String catalog, String schema, String table, int scope, boolean nullable) throws SQLException {
+  public ResultSet getBestRowIdentifier(String catalog, String schema, String table, int scope, boolean nullable)
+      throws SQLException {
     return throwExceptionDelegate.getBestRowIdentifier(catalog, schema, table, scope, nullable);
   }
 
@@ -97,11 +99,13 @@ public abstract class AbstractBlurDatabaseMetaData implements DatabaseMetaData {
     return throwExceptionDelegate.getClientInfoProperties();
   }
 
-  public ResultSet getColumnPrivileges(String catalog, String schema, String table, String columnNamePattern) throws SQLException {
+  public ResultSet getColumnPrivileges(String catalog, String schema, String table, String columnNamePattern)
+      throws SQLException {
     return throwExceptionDelegate.getColumnPrivileges(catalog, schema, table, columnNamePattern);
   }
 
-  public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
+  public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern)
+      throws SQLException {
     return throwExceptionDelegate.getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
   }
 
@@ -109,9 +113,10 @@ public abstract class AbstractBlurDatabaseMetaData implements DatabaseMetaData {
     return throwExceptionDelegate.getConnection();
   }
 
-  public ResultSet getCrossReference(String parentCatalog, String parentSchema, String parentTable, String foreignCatalog, String foreignSchema, String foreignTable)
-      throws SQLException {
-    return throwExceptionDelegate.getCrossReference(parentCatalog, parentSchema, parentTable, foreignCatalog, foreignSchema, foreignTable);
+  public ResultSet getCrossReference(String parentCatalog, String parentSchema, String parentTable,
+      String foreignCatalog, String foreignSchema, String foreignTable) throws SQLException {
+    return throwExceptionDelegate.getCrossReference(parentCatalog, parentSchema, parentTable, foreignCatalog,
+        foreignSchema, foreignTable);
   }
 
   public int getDatabaseMajorVersion() throws SQLException {
@@ -158,7 +163,8 @@ public abstract class AbstractBlurDatabaseMetaData implements DatabaseMetaData {
     return throwExceptionDelegate.getExtraNameCharacters();
   }
 
-  public ResultSet getFunctionColumns(String catalog, String schemaPattern, String functionNamePattern, String columnNamePattern) throws SQLException {
+  public ResultSet getFunctionColumns(String catalog, String schemaPattern, String functionNamePattern,
+      String columnNamePattern) throws SQLException {
     return throwExceptionDelegate.getFunctionColumns(catalog, schemaPattern, functionNamePattern, columnNamePattern);
   }
 
@@ -174,7 +180,8 @@ public abstract class AbstractBlurDatabaseMetaData implements DatabaseMetaData {
     return throwExceptionDelegate.getImportedKeys(catalog, schema, table);
   }
 
-  public ResultSet getIndexInfo(String catalog, String schema, String table, boolean unique, boolean approximate) throws SQLException {
+  public ResultSet getIndexInfo(String catalog, String schema, String table, boolean unique, boolean approximate)
+      throws SQLException {
     return throwExceptionDelegate.getIndexInfo(catalog, schema, table, unique, approximate);
   }
 
@@ -274,7 +281,8 @@ public abstract class AbstractBlurDatabaseMetaData implements DatabaseMetaData {
     return throwExceptionDelegate.getPrimaryKeys(catalog, schema, table);
   }
 
-  public ResultSet getProcedureColumns(String catalog, String schemaPattern, String procedureNamePattern, String columnNamePattern) throws SQLException {
+  public ResultSet getProcedureColumns(String catalog, String schemaPattern, String procedureNamePattern,
+      String columnNamePattern) throws SQLException {
     return throwExceptionDelegate.getProcedureColumns(catalog, schemaPattern, procedureNamePattern, columnNamePattern);
   }
 
@@ -334,11 +342,13 @@ public abstract class AbstractBlurDatabaseMetaData implements DatabaseMetaData {
     return throwExceptionDelegate.getSystemFunctions();
   }
 
-  public ResultSet getTablePrivileges(String catalog, String schemaPattern, String tableNamePattern) throws SQLException {
+  public ResultSet getTablePrivileges(String catalog, String schemaPattern, String tableNamePattern)
+      throws SQLException {
     return throwExceptionDelegate.getTablePrivileges(catalog, schemaPattern, tableNamePattern);
   }
 
-  public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
+  public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types)
+      throws SQLException {
     return throwExceptionDelegate.getTables(catalog, schemaPattern, tableNamePattern, types);
   }
 
@@ -354,7 +364,8 @@ public abstract class AbstractBlurDatabaseMetaData implements DatabaseMetaData {
     return throwExceptionDelegate.getTypeInfo();
   }
 
-  public ResultSet getUDTs(String catalog, String schemaPattern, String typeNamePattern, int[] types) throws SQLException {
+  public ResultSet getUDTs(String catalog, String schemaPattern, String typeNamePattern, int[] types)
+      throws SQLException {
     return throwExceptionDelegate.getUDTs(catalog, schemaPattern, typeNamePattern, types);
   }
 
@@ -742,4 +753,14 @@ public abstract class AbstractBlurDatabaseMetaData implements DatabaseMetaData {
     return throwExceptionDelegate.usesLocalFiles();
   }
 
+  // java 7
+
+//  public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern,
+//      String columnNamePattern) throws SQLException {
+//    return throwExceptionDelegate.getPseudoColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
+//  }
+//
+//  public boolean generatedKeyAlwaysReturned() throws SQLException {
+//    return throwExceptionDelegate.generatedKeyAlwaysReturned();
+//  }
 }

@@ -16,18 +16,22 @@ package org.apache.blur.store.blockcache;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
 
-import org.apache.blur.store.BufferStore;
-import org.apache.blur.store.CustomBufferedIndexInput;
+import org.apache.blur.store.buffer.BufferStore;
+import org.apache.blur.store.buffer.ReusedBufferedIndexInput;
+import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
-
 
 public class BlockDirectory extends Directory {
 
@@ -50,8 +54,7 @@ public class BlockDirectory extends Directory {
   public static Cache NO_CACHE = new Cache() {
 
     @Override
-    public void update(String name, long blockId, byte[] buffer) {
-
+    public void update(String name, long blockId, int blockOffset, byte[] buffer, int offset, int length) {
     }
 
     @Override
@@ -67,6 +70,10 @@ public class BlockDirectory extends Directory {
     @Override
     public long size() {
       return 0;
+    }
+
+    @Override
+    public void renameCacheFile(String source, String dest) {
     }
   };
 
@@ -97,14 +104,6 @@ public class BlockDirectory extends Directory {
     setLockFactory(directory.getLockFactory());
   }
 
-  public IndexInput openInput(String name, int bufferSize) throws IOException {
-    final IndexInput source = _directory.openInput(name, _blockSize);
-    if (_blockCacheFileTypes == null || isCachableFile(name)) {
-      return new CachedIndexInput(source, _blockSize, name, getFileCacheName(name), _cache, bufferSize);
-    }
-    return source;
-  }
-
   private boolean isCachableFile(String name) {
     for (String ext : _blockCacheFileTypes) {
       if (name.endsWith(ext)) {
@@ -115,11 +114,15 @@ public class BlockDirectory extends Directory {
   }
 
   @Override
-  public IndexInput openInput(final String name) throws IOException {
-    return openInput(name, _blockSize);
+  public IndexInput openInput(final String name, IOContext context) throws IOException {
+    final IndexInput source = _directory.openInput(name, context);
+    if (_blockCacheFileTypes == null || isCachableFile(name)) {
+      return new CachedIndexInput(source, _blockSize, name, getFileCacheName(name), _cache, context);
+    }
+    return source;
   }
 
-  static class CachedIndexInput extends CustomBufferedIndexInput {
+  static class CachedIndexInput extends ReusedBufferedIndexInput {
 
     private IndexInput _source;
     private int _blockSize;
@@ -127,8 +130,8 @@ public class BlockDirectory extends Directory {
     private String _cacheName;
     private Cache _cache;
 
-    public CachedIndexInput(IndexInput source, int blockSize, String name, String cacheName, Cache cache, int bufferSize) {
-      super(name, bufferSize);
+    public CachedIndexInput(IndexInput source, int blockSize, String name, String cacheName, Cache cache, IOContext context) {
+      super(name, context);
       _source = source;
       _blockSize = blockSize;
       _fileLength = source.length();
@@ -137,7 +140,7 @@ public class BlockDirectory extends Directory {
     }
 
     @Override
-    public Object clone() {
+    public CachedIndexInput clone() {
       CachedIndexInput clone = (CachedIndexInput) super.clone();
       clone._source = (IndexInput) _source.clone();
       return clone;
@@ -184,7 +187,7 @@ public class BlockDirectory extends Directory {
       byte[] buf = BufferStore.takeBuffer(_blockSize);
       _source.readBytes(buf, 0, length);
       System.arraycopy(buf, blockOffset, b, off, lengthToReadInBlock);
-      _cache.update(_cacheName, blockId, buf);
+      _cache.update(_cacheName, blockId, 0, buf, 0, _blockSize);
       BufferStore.putBuffer(buf);
     }
 
@@ -207,76 +210,99 @@ public class BlockDirectory extends Directory {
     _directory.close();
   }
 
-  private String getFileCacheName(String name) throws IOException {
-    return _dirName + "/" + name + ":" + fileModified(name);
+  String getFileCacheLocation(String name) {
+    return _dirName + "/" + name;
+  }
+
+  String getFileCacheName(String name) throws IOException {
+    return getFileCacheLocation(name) + ":" + getFileModified(name);
+  }
+
+  private long getFileModified(String name) throws IOException {
+    if (_directory instanceof FSDirectory) {
+      File directory = ((FSDirectory) _directory).getDirectory();
+      File file = new File(directory,name);
+      if (!file.exists()) {
+        throw new FileNotFoundException("File [" + name + "] not found");
+      }
+      return file.lastModified();
+    } else if (_directory instanceof HdfsDirectory) {
+      return ((HdfsDirectory) _directory).getFileModified(name);
+    } else {
+      throw new RuntimeException("Not supported");
+    }
   }
 
   public void clearLock(String name) throws IOException {
     _directory.clearLock(name);
   }
 
-  public void copy(Directory to, String src, String dest) throws IOException {
-    _directory.copy(to, src, dest);
+  @Override
+  public void copy(Directory to, String src, String dest, IOContext context) throws IOException {
+    _directory.copy(to, src, dest, context);
   }
 
+  @Override
   public LockFactory getLockFactory() {
     return _directory.getLockFactory();
   }
 
+  @Override
   public String getLockID() {
     return _directory.getLockID();
   }
 
+  @Override
   public Lock makeLock(String name) {
     return _directory.makeLock(name);
   }
 
+  @Override
   public void setLockFactory(LockFactory lockFactory) throws IOException {
     _directory.setLockFactory(lockFactory);
   }
 
+  @Override
   public void sync(Collection<String> names) throws IOException {
     _directory.sync(names);
-  }
-
-  @SuppressWarnings("deprecation")
-  public void sync(String name) throws IOException {
-    _directory.sync(name);
   }
 
   public String toString() {
     return _directory.toString();
   }
 
-  public IndexOutput createOutput(String name) throws IOException {
-    return _directory.createOutput(name);
+  @Override
+  public IndexOutput createOutput(String name, IOContext context) throws IOException {
+    IndexOutput dest = _directory.createOutput(name, context);
+//    if (_blockCacheFileTypes == null || isCachableFile(name)) {
+//      return new CachedIndexOutput(this, dest, _blockSize, name, _cache, _blockSize);
+//    }
+    return dest;
   }
 
+  @Override
   public void deleteFile(String name) throws IOException {
     _cache.delete(getFileCacheName(name));
     _directory.deleteFile(name);
   }
 
+  @Override
   public boolean fileExists(String name) throws IOException {
     return _directory.fileExists(name);
   }
 
+  @Override
   public long fileLength(String name) throws IOException {
     return _directory.fileLength(name);
   }
 
-  @SuppressWarnings("deprecation")
-  public long fileModified(String name) throws IOException {
-    return _directory.fileModified(name);
-  }
-
+  @Override
   public String[] listAll() throws IOException {
     return _directory.listAll();
   }
 
-  @SuppressWarnings("deprecation")
-  public void touchFile(String name) throws IOException {
-    _directory.touchFile(name);
+  public Directory getDirectory() {
+    return _directory;
   }
 
 }

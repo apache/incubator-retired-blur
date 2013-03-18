@@ -16,22 +16,32 @@ package org.apache.blur.store.blockcache;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.metrics.MetricsConstants.CACHE;
+import static org.apache.blur.metrics.MetricsConstants.HIT;
+import static org.apache.blur.metrics.MetricsConstants.MISS;
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.blur.metrics.BlurMetrics;
-
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Meter;
+import com.yammer.metrics.core.MetricName;
 
 public class BlockDirectoryCache implements Cache {
+
   private BlockCache _blockCache;
   private AtomicInteger _counter = new AtomicInteger();
   private Map<String, Integer> _names = new ConcurrentHashMap<String, Integer>();
-  private BlurMetrics _blurMetrics;
+  private Meter hits;
+  private Meter misses;
 
-  public BlockDirectoryCache(BlockCache blockCache, BlurMetrics blurMetrics) {
+  public BlockDirectoryCache(BlockCache blockCache) {
     _blockCache = blockCache;
-    _blurMetrics = blurMetrics;
+    hits = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, HIT), HIT, TimeUnit.SECONDS);
+    misses = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, MISS), MISS, TimeUnit.SECONDS);
   }
 
   @Override
@@ -40,7 +50,7 @@ public class BlockDirectoryCache implements Cache {
   }
 
   @Override
-  public void update(String name, long blockId, byte[] buffer) {
+  public void update(String name, long blockId, int blockOffset, byte[] buffer, int offset, int length) {
     Integer file = _names.get(name);
     if (file == null) {
       file = _counter.incrementAndGet();
@@ -49,7 +59,7 @@ public class BlockDirectoryCache implements Cache {
     BlockCacheKey blockCacheKey = new BlockCacheKey();
     blockCacheKey.setBlock(blockId);
     blockCacheKey.setFile(file);
-    _blockCache.store(blockCacheKey, buffer);
+    _blockCache.store(blockCacheKey, blockOffset, buffer, offset, length);
   }
 
   @Override
@@ -63,9 +73,9 @@ public class BlockDirectoryCache implements Cache {
     blockCacheKey.setFile(file);
     boolean fetch = _blockCache.fetch(blockCacheKey, b, blockOffset, off, lengthToReadInBlock);
     if (fetch) {
-      _blurMetrics.blockCacheHit.incrementAndGet();
+      hits.mark();
     } else {
-      _blurMetrics.blockCacheMiss.incrementAndGet();
+      misses.mark();
     }
     return fetch;
   }
@@ -73,5 +83,13 @@ public class BlockDirectoryCache implements Cache {
   @Override
   public long size() {
     return _blockCache.getSize();
+  }
+
+  @Override
+  public void renameCacheFile(String source, String dest) {
+    Integer file = _names.remove(source);
+    if (file != null) {
+      _names.put(dest, file);
+    }
   }
 }

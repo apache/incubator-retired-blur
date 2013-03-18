@@ -60,4 +60,30 @@ public class IndexWriter extends org.apache.lucene.index.IndexWriter {
     }
   }
 
+  /**
+   * This seems a little iffy, but basically only the writer instance itself can
+   * equal itself.
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (super.equals(obj)) {
+      return true;
+    } else if (obj == null) {
+      return false;
+    } else if (obj == this) {
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return "IndexWriter with directory [" + getDirectory() + "]";
+  }
+
 }

@@ -22,25 +22,20 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.blur.metrics.BlurMetrics;
-import org.apache.blur.store.blockcache.BlockCache;
-import org.apache.blur.store.blockcache.BlockCacheKey;
-import org.apache.hadoop.conf.Configuration;
 import org.junit.Test;
-
 
 public class BlockCacheTest {
   @Test
   public void testBlockCache() {
     int blocksInTest = 2000000;
-    int blockSize = 1024;
-
-    int slabSize = blockSize * 4096;
+    int blockSize = BlockCache._8K;
+    int slabSize = blockSize * 1024;
     long totalMemory = 2 * slabSize;
 
-    BlockCache blockCache = new BlockCache(new BlurMetrics(new Configuration()), true, totalMemory, slabSize, blockSize);
-    byte[] buffer = new byte[1024];
+    BlockCache blockCache = new BlockCache(true, totalMemory, slabSize);
+    byte[] buffer = new byte[blockSize];
     Random random = new Random();
+
     byte[] newData = new byte[blockSize];
     AtomicLong hitsInCache = new AtomicLong();
     AtomicLong missesInCache = new AtomicLong();
@@ -64,7 +59,7 @@ public class BlockCacheTest {
 
       byte[] testData = testData(random, blockSize, newData);
       long t1 = System.nanoTime();
-      blockCache.store(blockCacheKey, testData);
+      blockCache.store(blockCacheKey, 0, testData, 0, blockSize);
       storeTime += (System.nanoTime() - t1);
 
       long t3 = System.nanoTime();
@@ -78,6 +73,32 @@ public class BlockCacheTest {
     System.out.println("Store         = " + (storeTime / (double) passes) / 1000000.0);
     System.out.println("Fetch         = " + (fetchTime / (double) passes) / 1000000.0);
     System.out.println("# of Elements = " + blockCache.getSize());
+  }
+
+  /**
+   * Verify checking of buffer size limits against the cached block size.
+   */
+  @Test
+  public void testLongBuffer() {
+    Random random = new Random();
+    int blockSize = BlockCache._8K;
+    int slabSize = blockSize * 1024;
+    long totalMemory = 2 * slabSize;
+
+    BlockCache blockCache = new BlockCache(true, totalMemory, slabSize);
+    BlockCacheKey blockCacheKey = new BlockCacheKey();
+    blockCacheKey.setBlock(0);
+    blockCacheKey.setFile(0);
+    byte[] newData = new byte[blockSize*3];
+    byte[] testData = testData(random, blockSize, newData);
+
+    assertTrue(blockCache.store(blockCacheKey, 0, testData, 0, blockSize));
+    assertTrue(blockCache.store(blockCacheKey, 0, testData, blockSize, blockSize));
+    assertTrue(blockCache.store(blockCacheKey, 0, testData, blockSize*2, blockSize));
+
+    assertTrue(blockCache.store(blockCacheKey, 1, testData, 0, blockSize - 1));
+    assertTrue(blockCache.store(blockCacheKey, 1, testData, blockSize, blockSize - 1));
+    assertTrue(blockCache.store(blockCacheKey, 1, testData, blockSize*2, blockSize - 1));
   }
 
   private static byte[] testData(Random random, int size, byte[] buf) {

@@ -1,0 +1,526 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<link href="style.css" rel="stylesheet" type="text/css"/>
+<title>Thrift module: Blur</title></head><body>
+<div class="container-fluid">
+<h1>Thrift module: Blur</h1>
+<table class="table-bordered table-striped table-condensed"><thead><th>Module</th><th>Services</th><th>Data types</th><th>Constants</th></thead>
+<tr>
+<td>Blur</td><td><a href="Blur.html#Svc_Blur">Blur</a><br/>
+<ul>
+<li><a href="Blur.html#Fn_Blur_cancelQuery">cancelQuery</a></li>
+<li><a href="Blur.html#Fn_Blur_configuration">configuration</a></li>
+<li><a href="Blur.html#Fn_Blur_controllerServerList">controllerServerList</a></li>
+<li><a href="Blur.html#Fn_Blur_createTable">createTable</a></li>
+<li><a href="Blur.html#Fn_Blur_currentQueries">currentQueries</a></li>
+<li><a href="Blur.html#Fn_Blur_describe">describe</a></li>
+<li><a href="Blur.html#Fn_Blur_disableTable">disableTable</a></li>
+<li><a href="Blur.html#Fn_Blur_enableTable">enableTable</a></li>
+<li><a href="Blur.html#Fn_Blur_fetchRow">fetchRow</a></li>
+<li><a href="Blur.html#Fn_Blur_getTableStats">getTableStats</a></li>
+<li><a href="Blur.html#Fn_Blur_isInSafeMode">isInSafeMode</a></li>
+<li><a href="Blur.html#Fn_Blur_mutate">mutate</a></li>
+<li><a href="Blur.html#Fn_Blur_mutateBatch">mutateBatch</a></li>
+<li><a href="Blur.html#Fn_Blur_optimize">optimize</a></li>
+<li><a href="Blur.html#Fn_Blur_query">query</a></li>
+<li><a href="Blur.html#Fn_Blur_queryStatusById">queryStatusById</a></li>
+<li><a href="Blur.html#Fn_Blur_queryStatusIdList">queryStatusIdList</a></li>
+<li><a href="Blur.html#Fn_Blur_recordFrequency">recordFrequency</a></li>
+<li><a href="Blur.html#Fn_Blur_removeTable">removeTable</a></li>
+<li><a href="Blur.html#Fn_Blur_schema">schema</a></li>
+<li><a href="Blur.html#Fn_Blur_shardClusterList">shardClusterList</a></li>
+<li><a href="Blur.html#Fn_Blur_shardServerLayout">shardServerLayout</a></li>
+<li><a href="Blur.html#Fn_Blur_shardServerList">shardServerList</a></li>
+<li><a href="Blur.html#Fn_Blur_tableList">tableList</a></li>
+<li><a href="Blur.html#Fn_Blur_tableListByCluster">tableListByCluster</a></li>
+<li><a href="Blur.html#Fn_Blur_tableStats">tableStats</a></li>
+<li><a href="Blur.html#Fn_Blur_terms">terms</a></li>
+</ul>
+</td>
+<td><a href="Blur.html#Struct_AlternateColumnDefinition">AlternateColumnDefinition</a><br/>
+<a href="Blur.html#Struct_AnalyzerDefinition">AnalyzerDefinition</a><br/>
+<a href="Blur.html#Struct_BlurException">BlurException</a><br/>
+<a href="Blur.html#Struct_BlurQuery">BlurQuery</a><br/>
+<a href="Blur.html#Struct_BlurQueryStatus">BlurQueryStatus</a><br/>
+<a href="Blur.html#Struct_BlurResult">BlurResult</a><br/>
+<a href="Blur.html#Struct_BlurResults">BlurResults</a><br/>
+<a href="Blur.html#Struct_Column">Column</a><br/>
+<a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a><br/>
+<a href="Blur.html#Struct_ColumnFamilyDefinition">ColumnFamilyDefinition</a><br/>
+<a href="Blur.html#Struct_ColumnPreCache">ColumnPreCache</a><br/>
+<a href="Blur.html#Struct_CpuTime">CpuTime</a><br/>
+<a href="Blur.html#Struct_ExpertQuery">ExpertQuery</a><br/>
+<a href="Blur.html#Struct_Facet">Facet</a><br/>
+<a href="Blur.html#Struct_FetchRecordResult">FetchRecordResult</a><br/>
+<a href="Blur.html#Struct_FetchResult">FetchResult</a><br/>
+<a href="Blur.html#Struct_FetchRowResult">FetchRowResult</a><br/>
+<a href="Blur.html#Enum_QueryState">QueryState</a><br/>
+<a href="Blur.html#Struct_Record">Record</a><br/>
+<a href="Blur.html#Struct_RecordMutation">RecordMutation</a><br/>
+<a href="Blur.html#Enum_RecordMutationType">RecordMutationType</a><br/>
+<a href="Blur.html#Struct_Row">Row</a><br/>
+<a href="Blur.html#Struct_RowMutation">RowMutation</a><br/>
+<a href="Blur.html#Enum_RowMutationType">RowMutationType</a><br/>
+<a href="Blur.html#Struct_Schema">Schema</a><br/>
+<a href="Blur.html#Enum_ScoreType">ScoreType</a><br/>
+<a href="Blur.html#Struct_Selector">Selector</a><br/>
+<a href="Blur.html#Struct_SimpleQuery">SimpleQuery</a><br/>
+<a href="Blur.html#Struct_TableDescriptor">TableDescriptor</a><br/>
+<a href="Blur.html#Struct_TableStats">TableStats</a><br/>
+</td>
+<td></code></td>
+</tr></table>
+<hr/><h2 id="Enumerations">Enumerations</h2>
+<div class="definition"><h3 id="Enum_ScoreType">Enumeration: ScoreType</h3>
+The scoring type used during a SuperQuery to score multi Record hits within a ColumnFamily.<br/><br/>
+SUPER - During a multi Record match, a calculation of the best match Record plus how often it occurs within the match Row produces the score that is used in the scoring of the SuperQuery.<br/><br/>
+AGGREGATE - During a multi Record match, the aggregate score of all the Records within a ColumnFamily is used in the scoring of the SuperQuery.<br/><br/>
+BEST - During a multi Record match, the best score of all the Records within a ColumnFamily is used in the scoring of the SuperQuery.<br/><br/>
+CONSTANT - A constant score of 1 is used in the scoring of the SuperQuery.<br/>
+<br/><br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>SUPER</code></td><td><code>0</code></td></tr>
+<tr><td><code>AGGREGATE</code></td><td><code>1</code></td></tr>
+<tr><td><code>BEST</code></td><td><code>2</code></td></tr>
+<tr><td><code>CONSTANT</code></td><td><code>3</code></td></tr>
+</table></div>
+<div class="definition"><h3 id="Enum_QueryState">Enumeration: QueryState</h3>
+The state of a query.<br/><br/>
+RUNNING - Query is running.<br/><br/>
+INTERRUPTED - Query has been interrupted.<br/><br/>
+COMPLETE - Query is complete.<br/>
+<br/><br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>RUNNING</code></td><td><code>0</code></td></tr>
+<tr><td><code>INTERRUPTED</code></td><td><code>1</code></td></tr>
+<tr><td><code>COMPLETE</code></td><td><code>2</code></td></tr>
+</table></div>
+<div class="definition"><h3 id="Enum_RowMutationType">Enumeration: RowMutationType</h3>
+Specifies the type of Row mutation that should occur during a mutation of a given Row.<br/><br/>
+DELETE_ROW - Indicates that the entire Row is to be deleted.  No changes are made if the specified row does not exist.<br/><br/>
+REPLACE_ROW - Indicates that the entire Row is to be deleted, and then a new Row with the same id is to be added.  If the specified row does not exist, the new row will still be created.<br/><br/>
+UPDATE_ROW - Indicates that mutations of the underlying Records will be processed individually.  Mutation will result in a BlurException if the specified row does not exist.<br/>
+<br/><br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>DELETE_ROW</code></td><td><code>0</code></td></tr>
+<tr><td><code>REPLACE_ROW</code></td><td><code>1</code></td></tr>
+<tr><td><code>UPDATE_ROW</code></td><td><code>2</code></td></tr>
+</table></div>
+<div class="definition"><h3 id="Enum_RecordMutationType">Enumeration: RecordMutationType</h3>
+Specifies the type of Record mutation that should occur during a mutation of a given Record.<br/><br/>
+DELETE_ENTIRE_RECORD -  Indicates the Record with the given recordId in the given Row is to be deleted.  If the target record does not exist, then no changes are made.<br/><br/>
+REPLACE_ENTIRE_RECORD - Indicates the Record with the given recordId in the given Row is to be deleted, and a new Record with the same id is to be added. If the specified record does not exist the new record is still added.<br/><br/>
+REPLACE_COLUMNS - Replace the columns that are specified in the Record mutation.  If the target record does not exist then this mutation will result in a BlurException.<br/><br/>
+APPEND_COLUMN_VALUES - Append the columns in the Record mutation to the Record that could already exist.  If the target record does not exist then this mutation will result in a BlurException.<br/>
+<br/><br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>DELETE_ENTIRE_RECORD</code></td><td><code>0</code></td></tr>
+<tr><td><code>REPLACE_ENTIRE_RECORD</code></td><td><code>1</code></td></tr>
+<tr><td><code>REPLACE_COLUMNS</code></td><td><code>2</code></td></tr>
+<tr><td><code>APPEND_COLUMN_VALUES</code></td><td><code>3</code></td></tr>
+</table></div>
+<hr/><h2 id="Structs">Data structures</h2>
+<div class="definition"><h3 id="Struct_BlurException">Exception: BlurException</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>message</td><td><code>string</code></td><td>The message in the exception.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>stackTraceStr</td><td><code>string</code></td><td>The original stack trace (if any).
+</td><td>default</td><td></td></tr>
+</table><br/>BlurException that carries a message plus the original stack
+trace (if any).
+<br/></div><div class="definition"><h3 id="Struct_Column">Struct: Column</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>name</td><td><code>string</code></td><td>The name of the column.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>value</td><td><code>string</code></td><td>The value to be indexed and stored.
+</td><td>default</td><td></td></tr>
+</table><br/>Column is the lowest storage element in Blur, it stores a single name and value pair.
+<br/></div><div class="definition"><h3 id="Struct_Record">Struct: Record</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>recordId</td><td><code>string</code></td><td>Record id uniquely identifies a record within a single row.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>family</td><td><code>string</code></td><td>The family in which this record resides.
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>columns</td><td><code>list&lt;<code><a href="Blur.html#Struct_Column">Column</a></code>&gt;</code></td><td>A list of columns, multiple columns with the same name are allowed.
+</td><td>default</td><td></td></tr>
+</table><br/>Records contain a list of columns, multiple columns with the same name are allowed.
+<br/></div><div class="definition"><h3 id="Struct_Row">Struct: Row</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>id</td><td><code>string</code></td><td>The row id.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>records</td><td><code>list&lt;<code><a href="Blur.html#Struct_Record">Record</a></code>&gt;</code></td><td>The list records within the row.  If paging is used this list will only
+reflect the paged records from the selector.
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>recordCount</td><td><code>i32</code></td><td>The total record count for the row.  If paging is used in a selector to page
+through records of a row, this count will reflect the entire row.
+</td><td>default</td><td></td></tr>
+</table><br/>Rows contain a list of records.
+<br/></div><div class="definition"><h3 id="Struct_Selector">Struct: Selector</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>recordOnly</td><td><code>bool</code></td><td>Fetch the Record only, not the entire Row.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>locationId</td><td><code>string</code></td><td>The location id of the Record or Row to be fetched.
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>rowId</td><td><code>string</code></td><td>The row id of the Row to be fetched, not to be used with location id.
+</td><td>default</td><td></td></tr>
+<tr><td>4</td><td>recordId</td><td><code>string</code></td><td>The record id of the Record to be fetched, not to be used with location id.  However the row id needs to be provided to locate the correct Row with the requested Record.
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>columnFamiliesToFetch</td><td><code>set&lt;<code>string</code>&gt;</code></td><td>The column families to fetch.  If null, fetch all.  If empty, fetch none.
+</td><td>default</td><td></td></tr>
+<tr><td>6</td><td>columnsToFetch</td><td><code>map&lt;<code>string</code>, <code>set&lt;<code>string</code>&gt;</code>&gt;</code></td><td>The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
+</td><td>default</td><td></td></tr>
+<tr><td>7</td><td>allowStaleData</td><td><code>bool</code></td><td>@deprecated This value is no longer used.  This allows the fetch to see the most current data that has been added to the table.
+</td><td>default</td><td></td></tr>
+</table><br/>Select carries the request for information to be retrieved from the stored columns.
+<br/></div><div class="definition"><h3 id="Struct_FetchRowResult">Struct: FetchRowResult</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>row</td><td><code><a href="Blur.html#Struct_Row">Row</a></code></td><td>The row fetched.
+</td><td>default</td><td></td></tr>
+</table><br/>FetchRowResult contains row result from a fetch.
+<br/></div><div class="definition"><h3 id="Struct_FetchRecordResult">Struct: FetchRecordResult</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>rowid</td><td><code>string</code></td><td>The row id of the record being fetched.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>record</td><td><code><a href="Blur.html#Struct_Record">Record</a></code></td><td>The record fetched.
+</td><td>default</td><td></td></tr>
+</table><br/>FetchRecordResult contains rowid of the record and the record result from a fetch.
+<br/></div><div class="definition"><h3 id="Struct_FetchResult">Struct: FetchResult</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>exists</td><td><code>bool</code></td><td>True if the result exists, false if it doesn't.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>deleted</td><td><code>bool</code></td><td>If the row was marked as deleted.
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>table</td><td><code>string</code></td><td>The table the fetch result came from.
+</td><td>default</td><td></td></tr>
+<tr><td>4</td><td>rowResult</td><td><code><a href="Blur.html#Struct_FetchRowResult">FetchRowResult</a></code></td><td>The row result if a row was selected form the Selector.
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>recordResult</td><td><code><a href="Blur.html#Struct_FetchRecordResult">FetchRecordResult</a></code></td><td>The record result if a record was selected form the Selector.
+</td><td>default</td><td></td></tr>
+</table><br/>FetchResult contains the row or record fetch result based if the Selector was going to fetch the entire row or a single record.
+<br/></div><div class="definition"><h3 id="Struct_SimpleQuery">Struct: SimpleQuery</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>queryStr</td><td><code>string</code></td><td>A Lucene syntax based query.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>superQueryOn</td><td><code>bool</code></td><td>If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
+</td><td>default</td><td>1</td></tr>
+<tr><td>3</td><td>type</td><td><code><a href="Blur.html#Enum_ScoreType">ScoreType</a></code></td><td>The scoring type, see the document on ScoreType for explanation of each score type.
+</td><td>default</td><td>UNKNOWN</td></tr>
+<tr><td>4</td><td>postSuperFilter</td><td><code>string</code></td><td>The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>preSuperFilter</td><td><code>string</code></td><td>The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
+</td><td>default</td><td></td></tr>
+</table><br/>The SimpleQuery object holds the query string (normal Lucene syntax), filters and type of scoring (used when super query is on).
+<br/></div><div class="definition"><h3 id="Struct_ExpertQuery">Struct: ExpertQuery</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>query</td><td><code>binary</code></td><td>The serialized query.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>filter</td><td><code>binary</code></td><td>The serialized filter.
+</td><td>default</td><td></td></tr>
+</table><br/>The expert query allows for submission of a serialized query and filter object to be executed against all the queries.
+<br/></div><div class="definition"><h3 id="Struct_Facet">Struct: Facet</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>queryStr</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>minimumNumberOfBlurResults</td><td><code>i64</code></td><td></td><td>default</td><td>9223372036854775807</td></tr>
+</table><br/>Blur facet.
+<br/></div><div class="definition"><h3 id="Struct_BlurQuery">Struct: BlurQuery</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>simpleQuery</td><td><code><a href="Blur.html#Struct_SimpleQuery">SimpleQuery</a></code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>expertQuery</td><td><code><a href="Blur.html#Struct_ExpertQuery">ExpertQuery</a></code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>facets</td><td><code>list&lt;<code><a href="Blur.html#Struct_Facet">Facet</a></code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>4</td><td>selector</td><td><code><a href="Blur.html#Struct_Selector">Selector</a></code></td><td>Selector is used to fetch data in the search results, if null only location ids will be fetched.
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>allowStaleData</td><td><code>bool</code></td><td>@deprecated This value is no longer used.  This allows the query to see the most current data that has been added to the table.
+</td><td>default</td><td>0</td></tr>
+<tr><td>6</td><td>useCacheIfPresent</td><td><code>bool</code></td><td>
+</td><td>default</td><td>1</td></tr>
+<tr><td>7</td><td>start</td><td><code>i64</code></td><td>
+</td><td>default</td><td>0</td></tr>
+<tr><td>8</td><td>fetch</td><td><code>i32</code></td><td>
+</td><td>default</td><td>10</td></tr>
+<tr><td>9</td><td>minimumNumberOfResults</td><td><code>i64</code></td><td>
+</td><td>default</td><td>9223372036854775807</td></tr>
+<tr><td>10</td><td>maxQueryTime</td><td><code>i64</code></td><td>
+</td><td>default</td><td>9223372036854775807</td></tr>
+<tr><td>11</td><td>uuid</td><td><code>i64</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>12</td><td>userContext</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>13</td><td>cacheResult</td><td><code>bool</code></td><td>
+</td><td>default</td><td>1</td></tr>
+<tr><td>14</td><td>startTime</td><td><code>i64</code></td><td>
+</td><td>default</td><td>0</td></tr>
+<tr><td>15</td><td>modifyFileCaches</td><td><code>bool</code></td><td>
+</td><td>default</td><td>1</td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_BlurResult">Struct: BlurResult</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>locationId</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>score</td><td><code>double</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>fetchResult</td><td><code><a href="Blur.html#Struct_FetchResult">FetchResult</a></code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_BlurResults">Struct: BlurResults</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>totalResults</td><td><code>i64</code></td><td>
+</td><td>default</td><td>0</td></tr>
+<tr><td>2</td><td>shardInfo</td><td><code>map&lt;<code>string</code>, <code>i64</code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>results</td><td><code>list&lt;<code><a href="Blur.html#Struct_BlurResult">BlurResult</a></code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>4</td><td>facetCounts</td><td><code>list&lt;<code>i64</code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>exceptions</td><td><code>list&lt;<code><a href="Blur.html#Struct_BlurException">BlurException</a></code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>6</td><td>query</td><td><code><a href="Blur.html#Struct_BlurQuery">BlurQuery</a></code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_RecordMutation">Struct: RecordMutation</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>recordMutationType</td><td><code><a href="Blur.html#Enum_RecordMutationType">RecordMutationType</a></code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>record</td><td><code><a href="Blur.html#Struct_Record">Record</a></code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_RowMutation">Struct: RowMutation</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>table</td><td><code>string</code></td><td>The that that the row mutation is to act upon.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>rowId</td><td><code>string</code></td><td>The row id that the row mutation is to act upon.
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>wal</td><td><code>bool</code></td><td>Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
+</td><td>default</td><td>1</td></tr>
+<tr><td>4</td><td>rowMutationType</td><td><code><a href="Blur.html#Enum_RowMutationType">RowMutationType</a></code></td><td></td><td>default</td><td></td></tr>
+<tr><td>5</td><td>recordMutations</td><td><code>list&lt;<code><a href="Blur.html#Struct_RecordMutation">RecordMutation</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>6</td><td>waitToBeVisible</td><td><code>bool</code></td><td>On mutate waits for the mutation to be visible to queries and fetch requests.
+</td><td>default</td><td>0</td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_CpuTime">Struct: CpuTime</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>cpuTime</td><td><code>i64</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>realTime</td><td><code>i64</code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_BlurQueryStatus">Struct: BlurQueryStatus</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>query</td><td><code><a href="Blur.html#Struct_BlurQuery">BlurQuery</a></code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>cpuTimes</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_CpuTime">CpuTime</a></code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>completeShards</td><td><code>i32</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>4</td><td>totalShards</td><td><code>i32</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>state</td><td><code><a href="Blur.html#Enum_QueryState">QueryState</a></code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>6</td><td>uuid</td><td><code>i64</code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_TableStats">Struct: TableStats</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>tableName</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>bytes</td><td><code>i64</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>recordCount</td><td><code>i64</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>4</td><td>rowCount</td><td><code>i64</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>queries</td><td><code>i64</code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_Schema">Struct: Schema</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>table</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>columnFamilies</td><td><code>map&lt;<code>string</code>, <code>set&lt;<code>string</code>&gt;</code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_AlternateColumnDefinition">Struct: AlternateColumnDefinition</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>analyzerClassName</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_ColumnDefinition">Struct: ColumnDefinition</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>analyzerClassName</td><td><code>string</code></td><td></td><td>default</td><td>"org.apache.lucene.analysis.standard.StandardAnalyzer"</td></tr>
+<tr><td>2</td><td>fullTextIndex</td><td><code>bool</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>alternateColumnDefinitions</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_AlternateColumnDefinition">AlternateColumnDefinition</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_ColumnFamilyDefinition">Struct: ColumnFamilyDefinition</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>defaultDefinition</td><td><code><a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a></code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>columnDefinitions</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a></code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_AnalyzerDefinition">Struct: AnalyzerDefinition</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>defaultDefinition</td><td><code><a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a></code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>fullTextAnalyzerClassName</td><td><code>string</code></td><td>
+</td><td>default</td><td>"org.apache.lucene.analysis.standard.StandardAnalyzer"</td></tr>
+<tr><td>3</td><td>columnFamilyDefinitions</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_ColumnFamilyDefinition">ColumnFamilyDefinition</a></code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_ColumnPreCache">Struct: ColumnPreCache</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>preCacheCols</td><td><code>list&lt;<code>string</code>&gt;</code></td><td>This map sets what column families and columns to prefetch into block cache on shard open.
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_TableDescriptor">Struct: TableDescriptor</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>isEnabled</td><td><code>bool</code></td><td>
+</td><td>default</td><td>1</td></tr>
+<tr><td>2</td><td>analyzerDefinition</td><td><code><a href="Blur.html#Struct_AnalyzerDefinition">AnalyzerDefinition</a></code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>shardCount</td><td><code>i32</code></td><td>
+</td><td>default</td><td>1</td></tr>
+<tr><td>4</td><td>tableUri</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>compressionClass</td><td><code>string</code></td><td>
+</td><td>default</td><td>"org.apache.hadoop.io.compress.DefaultCodec"</td></tr>
+<tr><td>6</td><td>compressionBlockSize</td><td><code>i32</code></td><td>
+</td><td>default</td><td>32768</td></tr>
+<tr><td>7</td><td>cluster</td><td><code>string</code></td><td>
+</td><td>default</td><td>"default"</td></tr>
+<tr><td>8</td><td>name</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>9</td><td>similarityClass</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>10</td><td>blockCaching</td><td><code>bool</code></td><td>
+</td><td>default</td><td>1</td></tr>
+<tr><td>11</td><td>blockCachingFileTypes</td><td><code>set&lt;<code>string</code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>12</td><td>readOnly</td><td><code>bool</code></td><td>If a table is set to be readonly, that means that mutates through Thrift are NOT allowed.  However
+updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.
+</td><td>default</td><td>0</td></tr>
+<tr><td>13</td><td>columnPreCache</td><td><code><a href="Blur.html#Struct_ColumnPreCache">ColumnPreCache</a></code></td><td>Sets what column families and columns to prefetch into block cache on shard open.
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><hr/><h2 id="Services">Services</h2>
+<h3 id="Svc_Blur">Service: Blur</h3>
+<p/>
+<br/><div class="definition"><h4 id="Fn_Blur_shardClusterList">Function: Blur.shardClusterList</h4>
+<pre><code>list&lt;<code>string</code>&gt;</code> shardClusterList()
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Returns a list of all the shard clusters.
+<br/></div><div class="definition"><h4 id="Fn_Blur_shardServerList">Function: Blur.shardServerList</h4>
+<pre><code>list&lt;<code>string</code>&gt;</code> shardServerList(<code>string</code> cluster)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Returns a list of all the shard servers for the given cluster.
+@param cluster the cluster name.
+<br/></div><div class="definition"><h4 id="Fn_Blur_controllerServerList">Function: Blur.controllerServerList</h4>
+<pre><code>list&lt;<code>string</code>&gt;</code> controllerServerList()
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Returns a list of all the controller servers.
+<br/></div><div class="definition"><h4 id="Fn_Blur_shardServerLayout">Function: Blur.shardServerLayout</h4>
+<pre><code>map&lt;<code>string</code>, <code>string</code>&gt;</code> shardServerLayout(<code>string</code> table)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Returns a map of the layout of the given table, where the key is the shard name and the value is the shard server.
+@param table the table name.
+<br/></div><div class="definition"><h4 id="Fn_Blur_tableList">Function: Blur.tableList</h4>
+<pre><code>list&lt;<code>string</code>&gt;</code> tableList()
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Returns a list of the table names across all shard clusters.
+<br/></div><div class="definition"><h4 id="Fn_Blur_tableListByCluster">Function: Blur.tableListByCluster</h4>
+<pre><code>list&lt;<code>string</code>&gt;</code> tableListByCluster(<code>string</code> cluster)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Returns a list of the table names for the given cluster.
+@param cluster the cluster name.
+<br/></div><div class="definition"><h4 id="Fn_Blur_describe">Function: Blur.describe</h4>
+<pre><code><a href="Blur.html#Struct_TableDescriptor">TableDescriptor</a></code> describe(<code>string</code> table)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Returns a table descriptor for the given table.
+@param table the table name.
+<br/></div><div class="definition"><h4 id="Fn_Blur_query">Function: Blur.query</h4>
+<pre><code><a href="Blur.html#Struct_BlurResults">BlurResults</a></code> query(<code>string</code> table,
+                  <code><a href="Blur.html#Struct_BlurQuery">BlurQuery</a></code> blurQuery)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Executes a query against a the given table and returns the results.  If this method is executed against a controller the results will contain the aggregated results from all the shards.  If this method is executed against a shard server the results will only contain aggregated results from the shards of the given table that are being served on the shard server, if any.
+@param table the table name.
+@param blurQuery the query to execute.
+<br/></div><div class="definition"><h4 id="Fn_Blur_cancelQuery">Function: Blur.cancelQuery</h4>
+<pre><code>void</code> cancelQuery(<code>string</code> table,
+                 <code>i64</code> uuid)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Cancels a query that is executing against the given table with the given uuid.  Note, the cancel call maybe take some time for the query actually stops executing.
+@param table the table name.
+@param uuid the uuid of the query.
+<br/></div><div class="definition"><h4 id="Fn_Blur_currentQueries">Function: Blur.currentQueries</h4>
+<pre><code>list&lt;<code><a href="Blur.html#Struct_BlurQueryStatus">BlurQueryStatus</a></code>&gt;</code> currentQueries(<code>string</code> table)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>@deprecated This method should avoided, @see #queryStatusIdList and #queryStatusById.
+@param table the table name.
+<br/></div><div class="definition"><h4 id="Fn_Blur_queryStatusIdList">Function: Blur.queryStatusIdList</h4>
+<pre><code>list&lt;<code>i64</code>&gt;</code> queryStatusIdList(<code>string</code> table)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Returns a list of the query ids of queries that have recently been executed for the given table.
+@param table the table name.
+<br/></div><div class="definition"><h4 id="Fn_Blur_queryStatusById">Function: Blur.queryStatusById</h4>
+<pre><code><a href="Blur.html#Struct_BlurQueryStatus">BlurQueryStatus</a></code> queryStatusById(<code>string</code> table,
+                                <code>i64</code> uuid)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Returns the query status for the given table and query uuid.
+@param table the table name.
+@param uuid the uuid of the query.
+<br/></div><div class="definition"><h4 id="Fn_Blur_schema">Function: Blur.schema</h4>
+<pre><code><a href="Blur.html#Struct_Schema">Schema</a></code> schema(<code>string</code> table)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_getTableStats">Function: Blur.getTableStats</h4>
+<pre><code><a href="Blur.html#Struct_TableStats">TableStats</a></code> getTableStats(<code>string</code> table)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_tableStats">Function: Blur.tableStats</h4>
+<pre><code><a href="Blur.html#Struct_TableStats">TableStats</a></code> tableStats(<code>string</code> table)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_terms">Function: Blur.terms</h4>
+<pre><code>list&lt;<code>string</code>&gt;</code> terms(<code>string</code> table,
+                   <code>string</code> columnFamily,
+                   <code>string</code> columnName,
+                   <code>string</code> startWith,
+                   <code>i16</code> size)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_recordFrequency">Function: Blur.recordFrequency</h4>
+<pre><code>i64</code> recordFrequency(<code>string</code> table,
+                    <code>string</code> columnFamily,
+                    <code>string</code> columnName,
+                    <code>string</code> value)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_fetchRow">Function: Blur.fetchRow</h4>
+<pre><code><a href="Blur.html#Struct_FetchResult">FetchResult</a></code> fetchRow(<code>string</code> table,
+                     <code><a href="Blur.html#Struct_Selector">Selector</a></code> selector)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_mutate">Function: Blur.mutate</h4>
+<pre><code>void</code> mutate(<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code> mutation)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_mutateBatch">Function: Blur.mutateBatch</h4>
+<pre><code>void</code> mutateBatch(<code>list&lt;<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code>&gt;</code> mutations)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_createTable">Function: Blur.createTable</h4>
+<pre><code>void</code> createTable(<code><a href="Blur.html#Struct_TableDescriptor">TableDescriptor</a></code> tableDescriptor)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_enableTable">Function: Blur.enableTable</h4>
+<pre><code>void</code> enableTable(<code>string</code> table)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_disableTable">Function: Blur.disableTable</h4>
+<pre><code>void</code> disableTable(<code>string</code> table)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_removeTable">Function: Blur.removeTable</h4>
+<pre><code>void</code> removeTable(<code>string</code> table,
+                 <code>bool</code> deleteIndexFiles)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_optimize">Function: Blur.optimize</h4>
+<pre><code>void</code> optimize(<code>string</code> table,
+              <code>i32</code> numberOfSegmentsPerShard)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_isInSafeMode">Function: Blur.isInSafeMode</h4>
+<pre><code>bool</code> isInSafeMode(<code>string</code> cluster)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_configuration">Function: Blur.configuration</h4>
+<pre><code>map&lt;<code>string</code>, <code>string</code>&gt;</code> configuration()
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div></div></body></html>

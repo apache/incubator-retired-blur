@@ -28,17 +28,20 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.store.hdfs.HdfsDirectory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.RAMDirectory;
 import org.junit.Before;
 import org.junit.Test;
 
-
 public class HdfsDirectoryTest {
+  private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "/tmp"));
 
   private static final int MAX_NUMBER_OF_WRITES = 10000;
   private static final int MIN_FILE_SIZE = 100;
@@ -53,25 +56,26 @@ public class HdfsDirectoryTest {
 
   @Before
   public void setUp() throws IOException {
-    file = new File("./tmp");
+    BufferStore.init(128, 128);
+    file = new File(TMPDIR, "hdfsdirectorytest");
     rm(file);
     URI uri = new File(file, "hdfs").toURI();
     Path hdfsDirPath = new Path(uri.toString());
-    directory = new HdfsDirectory(hdfsDirPath);
+    Configuration conf = new Configuration();
+    directory = new HdfsDirectory(conf, hdfsDirPath);
     seed = new Random().nextLong();
-    // seed = 7392202912208392081L;
     random = new Random(seed);
   }
 
   @Test
   public void testWritingAndReadingAFile() throws IOException {
 
-    IndexOutput output = directory.createOutput("testing.test");
+    IndexOutput output = directory.createOutput("testing.test", IOContext.DEFAULT);
     output.writeInt(12345);
     output.flush();
     output.close();
 
-    IndexInput input = directory.openInput("testing.test");
+    IndexInput input = directory.openInput("testing.test", IOContext.DEFAULT);
     assertEquals(12345, input.readInt());
     input.close();
 
@@ -81,7 +85,7 @@ public class HdfsDirectoryTest {
 
     assertEquals(4, directory.fileLength("testing.test"));
 
-    IndexInput input1 = directory.openInput("testing.test");
+    IndexInput input1 = directory.openInput("testing.test", IOContext.DEFAULT);
 
     IndexInput input2 = (IndexInput) input1.clone();
     assertEquals(12345, input2.readInt());
@@ -109,7 +113,7 @@ public class HdfsDirectoryTest {
   }
 
   private void testEof(String name, Directory directory, long length) throws IOException {
-    IndexInput input = directory.openInput(name);
+    IndexInput input = directory.openInput(name, IOContext.DEFAULT);
     input.seek(length);
     try {
       input.readByte();
@@ -119,7 +123,7 @@ public class HdfsDirectoryTest {
   }
 
   @Test
-  public void testRandomAccessWrites() throws IOException {
+  public void testWrites() throws IOException {
     int i = 0;
     try {
       Set<String> names = new HashSet<String>();
@@ -140,9 +144,8 @@ public class HdfsDirectoryTest {
 
   private void assertInputsEquals(String name, Directory fsDir, HdfsDirectory hdfs) throws IOException {
     int reads = random.nextInt(MAX_NUMBER_OF_READS);
-    int buffer = random.nextInt(MAX_BUFFER_SIZE - MIN_BUFFER_SIZE) + MIN_BUFFER_SIZE;
-    IndexInput fsInput = fsDir.openInput(name, buffer);
-    IndexInput hdfsInput = hdfs.openInput(name, buffer);
+    IndexInput fsInput = fsDir.openInput(name, IOContext.DEFAULT);
+    IndexInput hdfsInput = hdfs.openInput(name, IOContext.DEFAULT);
     assertEquals(fsInput.length(), hdfsInput.length());
     int fileLength = (int) fsInput.length();
     for (int i = 0; i < reads; i++) {
@@ -168,9 +171,9 @@ public class HdfsDirectoryTest {
   private void createFile(String name, Directory fsDir, HdfsDirectory hdfs) throws IOException {
     int writes = random.nextInt(MAX_NUMBER_OF_WRITES);
     int fileLength = random.nextInt(MAX_FILE_SIZE - MIN_FILE_SIZE) + MIN_FILE_SIZE;
-    IndexOutput fsOutput = fsDir.createOutput(name);
+    IndexOutput fsOutput = fsDir.createOutput(name, IOContext.DEFAULT);
     fsOutput.setLength(fileLength);
-    IndexOutput hdfsOutput = hdfs.createOutput(name);
+    IndexOutput hdfsOutput = hdfs.createOutput(name, IOContext.DEFAULT);
     hdfsOutput.setLength(fileLength);
     for (int i = 0; i < writes; i++) {
       byte[] buf = new byte[random.nextInt(Math.min(MAX_BUFFER_SIZE - MIN_BUFFER_SIZE, fileLength)) + MIN_BUFFER_SIZE];

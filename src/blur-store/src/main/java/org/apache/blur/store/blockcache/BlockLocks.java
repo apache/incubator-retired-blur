@@ -18,7 +18,6 @@ package org.apache.blur.store.blockcache;
  */
 import java.util.concurrent.atomic.AtomicLongArray;
 
-import org.apache.lucene.util.BitUtil;
 import org.apache.lucene.util.OpenBitSet;
 
 public class BlockLocks {
@@ -46,12 +45,12 @@ public class BlockLocks {
     long word = ~bits.get(i) >> subIndex; // skip all the bits to the right of
                                           // index
     if (word != 0) {
-      return (i << 6) + subIndex + BitUtil.ntz(word);
+      return (i << 6) + subIndex + Long.numberOfTrailingZeros(word);
     }
     while (++i < wlen) {
       word = ~bits.get(i);
       if (word != 0) {
-        return (i << 6) + BitUtil.ntz(word);
+        return (i << 6) + Long.numberOfTrailingZeros(word);
       }
     }
     return -1;

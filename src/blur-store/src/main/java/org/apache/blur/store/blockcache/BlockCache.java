@@ -16,39 +16,38 @@ package org.apache.blur.store.blockcache;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.metrics.MetricsConstants.*;
+
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.blur.metrics.BlurMetrics;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Meter;
+import com.yammer.metrics.core.MetricName;
 
 public class BlockCache {
 
   public static final int _128M = 134217728;
-  public static final int _32K = 32768;
+  public static final int _8K = 8192;
   private final ConcurrentMap<BlockCacheKey, BlockCacheLocation> _cache;
   private final ByteBuffer[] _slabs;
   private final BlockLocks[] _locks;
   private final AtomicInteger[] _lockCounters;
-  private final int _blockSize;
+  private final int _blockSize = _8K;
   private final int _numberOfBlocksPerSlab;
   private final int _maxEntries;
-  private final BlurMetrics _metrics;
+  private Meter evictions;
 
-  public BlockCache(BlurMetrics metrics, boolean directAllocation, long totalMemory) {
-    this(metrics, directAllocation, totalMemory, _128M);
+  public BlockCache(boolean directAllocation, long totalMemory) {
+    this(directAllocation, totalMemory, _128M);
   }
 
-  public BlockCache(BlurMetrics metrics, boolean directAllocation, long totalMemory, int slabSize) {
-    this(metrics, directAllocation, totalMemory, slabSize, _32K);
-  }
-
-  public BlockCache(BlurMetrics metrics, boolean directAllocation, long totalMemory, int slabSize, int blockSize) {
-    _metrics = metrics;
-    _numberOfBlocksPerSlab = slabSize / blockSize;
+  public BlockCache(boolean directAllocation, long totalMemory, int slabSize) {
+    _numberOfBlocksPerSlab = slabSize / _blockSize;
     int numberOfSlabs = (int) (totalMemory / slabSize);
 
     _slabs = new ByteBuffer[numberOfSlabs];
@@ -57,22 +56,24 @@ public class BlockCache {
     _maxEntries = (_numberOfBlocksPerSlab * numberOfSlabs) - 1;
     for (int i = 0; i < numberOfSlabs; i++) {
       if (directAllocation) {
-        _slabs[i] = ByteBuffer.allocateDirect(_numberOfBlocksPerSlab * blockSize);
+        _slabs[i] = ByteBuffer.allocateDirect(_numberOfBlocksPerSlab * _blockSize);
       } else {
-        _slabs[i] = ByteBuffer.allocate(_numberOfBlocksPerSlab * blockSize);
+        _slabs[i] = ByteBuffer.allocate(_numberOfBlocksPerSlab * _blockSize);
       }
       _locks[i] = new BlockLocks(_numberOfBlocksPerSlab);
       _lockCounters[i] = new AtomicInteger();
     }
+    
+    evictions = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, EVICTION), EVICTION, TimeUnit.SECONDS);
 
     EvictionListener<BlockCacheKey, BlockCacheLocation> listener = new EvictionListener<BlockCacheKey, BlockCacheLocation>() {
       @Override
       public void onEviction(BlockCacheKey key, BlockCacheLocation location) {
         releaseLocation(location);
+        evictions.mark();
       }
     };
     _cache = new ConcurrentLinkedHashMap.Builder<BlockCacheKey, BlockCacheLocation>().maximumWeightedCapacity(_maxEntries).listener(listener).build();
-    _blockSize = blockSize;
   }
 
   private void releaseLocation(BlockCacheLocation location) {
@@ -84,12 +85,13 @@ public class BlockCache {
     location.setRemoved(true);
     _locks[slabId].clear(block);
     _lockCounters[slabId].decrementAndGet();
-    _metrics.blockCacheEviction.incrementAndGet();
-    _metrics.blockCacheSize.decrementAndGet();
   }
 
-  public boolean store(BlockCacheKey blockCacheKey, byte[] data) {
-    checkLength(data);
+  public boolean store(BlockCacheKey blockCacheKey, int blockOffset, byte[] data, int offset, int length) {
+    if (length + blockOffset > _blockSize) {
+      throw new RuntimeException("Buffer size exceeded, expecting max ["
+          + _blockSize + "] got length [" + length + "] with blockOffset [" + blockOffset + "]" );
+    }
     BlockCacheLocation location = _cache.get(blockCacheKey);
     boolean newLocation = false;
     if (location == null) {
@@ -103,13 +105,12 @@ public class BlockCache {
       return false;
     }
     int slabId = location.getSlabId();
-    int offset = location.getBlock() * _blockSize;
+    int slabOffset = location.getBlock() * _blockSize;
     ByteBuffer slab = getSlab(slabId);
-    slab.position(offset);
-    slab.put(data, 0, _blockSize);
+    slab.position(slabOffset + blockOffset);
+    slab.put(data, offset, length);
     if (newLocation) {
       releaseLocation(_cache.put(blockCacheKey.clone(), location));
-      _metrics.blockCacheSize.incrementAndGet();
     }
     return true;
   }

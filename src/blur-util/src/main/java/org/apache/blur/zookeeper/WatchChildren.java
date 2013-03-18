@@ -32,7 +32,6 @@ import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
-
 public class WatchChildren implements Closeable {
 
   private final static Log LOG = LogFactory.getLog(WatchChildren.class);
@@ -69,7 +68,7 @@ public class WatchChildren implements Closeable {
     _watchThread = new Thread(new Runnable() {
       @Override
       public void run() {
-        startDoubleCheckThread();
+//        startDoubleCheckThread();
         while (_running.get()) {
           synchronized (_lock) {
             try {
@@ -81,7 +80,11 @@ public class WatchChildren implements Closeable {
                   }
                 }
               });
-              onChange.action(_children);
+              try {
+                onChange.action(_children);
+              } catch (Throwable t) {
+                LOG.error("Unknown error during onchange action [" + this + "].", t);
+              }
               _lock.wait();
             } catch (KeeperException e) {
               LOG.error("Error in instance [{0}]", e, instance);

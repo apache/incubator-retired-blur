@@ -26,9 +26,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Executors {
 
   public static ExecutorService newThreadPool(String prefix, int threadCount) {
+    return newThreadPool(prefix, threadCount, true);
+  }
+
+  public static ExecutorService newThreadPool(String prefix, int threadCount, boolean watch) {
     ThreadPoolExecutor executorService = new ThreadPoolExecutor(threadCount, threadCount, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new BlurThreadFactory(prefix));
     executorService.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-    return ThreadWatcher.instance().watch(executorService);
+    if (watch) {
+      return ThreadWatcher.instance().watch(executorService);
+    }
+    return executorService;
   }
 
   public static ExecutorService newSingleThreadExecutor(String prefix) {

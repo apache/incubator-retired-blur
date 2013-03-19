@@ -20,7 +20,6 @@ import static org.apache.blur.utils.BlurConstants.SHARD_PREFIX;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +43,7 @@ import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
+import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.manager.BlurFilterCache;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
@@ -52,13 +52,11 @@ import org.apache.blur.manager.writer.BlurIndexCloser;
 import org.apache.blur.manager.writer.BlurIndexReader;
 import org.apache.blur.manager.writer.BlurIndexRefresher;
 import org.apache.blur.manager.writer.BlurNRTIndex;
-import org.apache.blur.manager.writer.DirectoryReferenceFileGC;
 import org.apache.blur.metrics.BlurMetrics;
 import org.apache.blur.store.blockcache.BlockDirectory;
 import org.apache.blur.store.blockcache.Cache;
-import org.apache.blur.store.compressed.CompressedFieldDataDirectory;
+import org.apache.blur.store.hdfs.BlurLockFactory;
 import org.apache.blur.store.hdfs.HdfsDirectory;
-import org.apache.blur.store.lock.BlurLockFactory;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
@@ -71,15 +69,10 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.lucene.index.FieldInfo;
-import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.TermDocs;
-import org.apache.lucene.index.TermPositions;
-import org.apache.lucene.search.Similarity;
+import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.util.ReaderUtil;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -269,18 +262,19 @@ public class DistributedIndexServer extends AbstractIndexServer {
       }
 
       private void updateMetrics(BlurMetrics blurMetrics, Map<String, BlurIndex> indexes, AtomicLong segmentCount, AtomicLong indexMemoryUsage) throws IOException {
-        for (BlurIndex index : indexes.values()) {
-          IndexReader reader = index.getIndexReader();
-          try {
-            IndexReader[] readers = reader.getSequentialSubReaders();
-            if (readers != null) {
-              segmentCount.addAndGet(readers.length);
-            }
-            indexMemoryUsage.addAndGet(BlurUtil.getMemoryUsage(reader));
-          } finally {
-            reader.decRef();
-          }
-        }
+        // @TODO not sure how to do this yet
+//        for (BlurIndex index : indexes.values()) {
+//          IndexReader reader = index.getIndexReader();
+//          try {
+//            IndexReader[] readers = reader.getSequentialSubReaders();
+//            if (readers != null) {
+//              segmentCount.addAndGet(readers.length);
+//            }
+//            indexMemoryUsage.addAndGet(BlurUtil.getMemoryUsage(reader));
+//          } finally {
+//            reader.decRef();
+//          }
+//        }
       }
     }, _delay, _delay);
   }
@@ -478,20 +472,22 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
     BlurLockFactory lockFactory = new BlurLockFactory(_configuration, hdfsDirPath, _nodeName, BlurConstants.getPid());
 
-    Directory directory = new HdfsDirectory(hdfsDirPath);
+    Directory directory = new HdfsDirectory(_configuration, hdfsDirPath);
     directory.setLockFactory(lockFactory);
 
     TableDescriptor descriptor = _clusterStatus.getTableDescriptor(true, _cluster, table);
     String compressionClass = descriptor.compressionClass;
     int compressionBlockSize = descriptor.compressionBlockSize;
     if (compressionClass != null) {
-      CompressionCodec compressionCodec;
-      try {
-        compressionCodec = BlurUtil.getInstance(compressionClass, CompressionCodec.class);
-        directory = new CompressedFieldDataDirectory(directory, compressionCodec, compressionBlockSize);
-      } catch (Exception e) {
-        throw new IOException(e);
-      }
+//      throw new RuntimeException("Not supported yet");
+      LOG.error("Not supported yet");
+//      CompressionCodec compressionCodec;
+//      try {
+//        compressionCodec = BlurUtil.getInstance(compressionClass, CompressionCodec.class);
+//        directory = new CompressedFieldDataDirectory(directory, compressionCodec, compressionBlockSize);
+//      } catch (Exception e) {
+//        throw new IOException(e);
+//      }
     }
 
     Directory dir;
@@ -553,35 +549,38 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   private void warmUpAllSegments(IndexReader reader) throws IOException {
-    IndexReader[] indexReaders = reader.getSequentialSubReaders();
-    if (indexReaders != null) {
-      for (IndexReader r : indexReaders) {
-        warmUpAllSegments(r);
-      }
-    }
-    int maxDoc = reader.maxDoc();
-    int numDocs = reader.numDocs();
-    FieldInfos fieldInfos = ReaderUtil.getMergedFieldInfos(reader);
-    Collection<String> fieldNames = new ArrayList<String>();
-    for (FieldInfo fieldInfo : fieldInfos) {
-      if (fieldInfo.isIndexed) {
-        fieldNames.add(fieldInfo.name);
-      }
-    }
-    int primeDocCount = reader.docFreq(BlurConstants.PRIME_DOC_TERM);
-    TermDocs termDocs = reader.termDocs(BlurConstants.PRIME_DOC_TERM);
-    termDocs.next();
-    termDocs.close();
-
-    TermPositions termPositions = reader.termPositions(BlurConstants.PRIME_DOC_TERM);
-    if (termPositions.next()) {
-      if (termPositions.freq() > 0) {
-        termPositions.nextPosition();
-      }
-    }
-    termPositions.close();
-    LOG.info("Warmup of indexreader [" + reader + "] complete, maxDocs [" + maxDoc + "], numDocs [" + numDocs + "], primeDocumentCount [" + primeDocCount + "], fieldCount ["
-        + fieldNames.size() + "]");
+    LOG.warn("Warm up NOT supported yet.");
+    //Once the reader warm-up has been re-implemented, this code will change accordingly.
+    
+//    IndexReader[] indexReaders = reader.getSequentialSubReaders();
+//    if (indexReaders != null) {
+//      for (IndexReader r : indexReaders) {
+//        warmUpAllSegments(r);
+//      }
+//    }
+//    int maxDoc = reader.maxDoc();
+//    int numDocs = reader.numDocs();
+//    FieldInfos fieldInfos = ReaderUtil.getMergedFieldInfos(reader);
+//    Collection<String> fieldNames = new ArrayList<String>();
+//    for (FieldInfo fieldInfo : fieldInfos) {
+//      if (fieldInfo.isIndexed) {
+//        fieldNames.add(fieldInfo.name);
+//      }
+//    }
+//    int primeDocCount = reader.docFreq(BlurConstants.PRIME_DOC_TERM);
+//    TermDocs termDocs = reader.termDocs(BlurConstants.PRIME_DOC_TERM);
+//    termDocs.next();
+//    termDocs.close();
+//
+//    TermPositions termPositions = reader.termPositions(BlurConstants.PRIME_DOC_TERM);
+//    if (termPositions.next()) {
+//      if (termPositions.freq() > 0) {
+//        termPositions.nextPosition();
+//      }
+//    }
+//    termPositions.close();
+//    LOG.info("Warmup of indexreader [" + reader + "] complete, maxDocs [" + maxDoc + "], numDocs [" + numDocs + "], primeDocumentCount [" + primeDocCount + "], fieldCount ["
+//        + fieldNames.size() + "]");
   }
 
   private synchronized Map<String, BlurIndex> openMissingShards(final String table, Set<String> shardsToServe, final Map<String, BlurIndex> tableIndexes) {

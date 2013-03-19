@@ -48,10 +48,10 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.FieldType;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.NRTManager.TrackingIndexWriter;
-
 
 public class TransactionRecorder {
 
@@ -80,7 +80,17 @@ public class TransactionRecorder {
   }
 
   private static final Log LOG = LogFactory.getLog(TransactionRecorder.class);
-  private static final Term ROW_ID = new Term(BlurConstants.ROW_ID);
+  private static FieldType ID_TYPE;
+
+  static {
+    ID_TYPE = new FieldType();
+    ID_TYPE.setIndexed(true);
+    ID_TYPE.setTokenized(false);
+    ID_TYPE.setOmitNorms(true);
+    ID_TYPE.setStored(true);
+    ID_TYPE.freeze();
+  }
+
   private AtomicBoolean running = new AtomicBoolean(true);
   private Path walPath;
   private Configuration configuration;
@@ -127,12 +137,12 @@ public class TransactionRecorder {
       switch (lookup) {
       case ROW:
         Row row = readRow(dataInputStream);
-        writer.updateDocuments(ROW_ID.createTerm(row.id), getDocs(row, analyzer));
+        writer.updateDocuments(createRowId(row.id), getDocs(row, analyzer));
         updateCount++;
         continue;
       case DELETE:
         String deleteRowId = readString(dataInputStream);
-        writer.deleteDocuments(ROW_ID.createTerm(deleteRowId));
+        writer.deleteDocuments(createRowId(deleteRowId));
         deleteCount++;
         continue;
       default:
@@ -273,7 +283,7 @@ public class TransactionRecorder {
         sync(baos.toByteArray());
       }
     }
-    Term term = ROW_ID.createTerm(row.id);
+    Term term = createRowId(row.id);
     List<Document> docs = getDocs(row, analyzer);
     return writer.updateDocuments(term, docs);
   }
@@ -289,7 +299,7 @@ public class TransactionRecorder {
         sync(baos.toByteArray());
       }
     }
-    return writer.deleteDocuments(ROW_ID.createTerm(rowId));
+    return writer.deleteDocuments(createRowId(rowId));
   }
 
   public void setWalPath(Path walPath) {
@@ -321,7 +331,7 @@ public class TransactionRecorder {
     for (int i = 0; i < size; i++) {
       Document document = convert(rowId, records.get(i), builder, analyzer);
       if (i == 0) {
-        document.add(BlurConstants.PRIME_DOC_FIELD);
+        document.add(new Field(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO, Index.NOT_ANALYZED_NO_NORMS));
       }
       docs.add(document);
     }
@@ -330,8 +340,8 @@ public class TransactionRecorder {
 
   public static Document convert(String rowId, Record record, StringBuilder builder, BlurAnalyzer analyzer) {
     Document document = new Document();
-    document.add(new Field(BlurConstants.ROW_ID, rowId, Store.YES, Index.NOT_ANALYZED_NO_NORMS));
-    document.add(new Field(BlurConstants.RECORD_ID, record.recordId, Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+    document.add(new Field(BlurConstants.ROW_ID, rowId, ID_TYPE));
+    document.add(new Field(BlurConstants.RECORD_ID, record.recordId, ID_TYPE));
     RowIndexWriter.addColumns(document, analyzer, builder, record.family, record.columns);
     return document;
   }
@@ -339,4 +349,9 @@ public class TransactionRecorder {
   public void setAnalyzer(BlurAnalyzer analyzer) {
     this.analyzer = analyzer;
   }
+
+  private Term createRowId(String id) {
+    return new Term(BlurConstants.ROW_ID, id);
+  }
+
 }

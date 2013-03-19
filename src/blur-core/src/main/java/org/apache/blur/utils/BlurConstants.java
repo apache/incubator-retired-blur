@@ -25,9 +25,6 @@ import org.apache.blur.manager.results.BlurResultComparator;
 import org.apache.blur.manager.results.BlurResultPeekableIteratorComparator;
 import org.apache.blur.manager.results.PeekableIterator;
 import org.apache.blur.thrift.generated.BlurResult;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Index;
-import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.Term;
 
 
@@ -72,6 +69,7 @@ public class BlurConstants {
   public static final String BLUR_SHARD_OPENER_THREAD_COUNT = "blur.shard.opener.thread.count";
   public static final String BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE = "blur.shard.index.deletion.policy.maxage";
   public static final String BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE = "blur.zookeeper.system.time.tolerance";
+  public static final String BLUR_SAHRD_INDEX_SIMILARITY = "blur.sahrd.index.similarity";
 
   public static final String BLUR_SHARD_TIME_BETWEEN_COMMITS = "blur.shard.time.between.commits";
   public static final String BLUR_SHARD_TIME_BETWEEN_REFRESHS = "blur.shard.time.between.refreshs";
@@ -102,7 +100,6 @@ public class BlurConstants {
   public static final long ZK_WAIT_TIME = TimeUnit.SECONDS.toMillis(5);
 
   public static final Term PRIME_DOC_TERM = new Term(PRIME_DOC, BlurConstants.PRIME_DOC_VALUE);
-  public static final Field PRIME_DOC_FIELD = new Field(PRIME_DOC, PRIME_DOC_VALUE, Store.YES, Index.NOT_ANALYZED_NO_NORMS);
 
   static {
     try {

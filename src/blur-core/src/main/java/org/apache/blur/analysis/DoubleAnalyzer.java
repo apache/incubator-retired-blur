@@ -18,11 +18,11 @@ package org.apache.blur.analysis;
  */
 import java.io.IOException;
 import java.io.Reader;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.NumericTokenStream;
-import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.util.CharTokenizer;
 import org.apache.lucene.util.NumericUtils;
+import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 
 public final class DoubleAnalyzer extends Analyzer {
 
@@ -44,18 +44,33 @@ public final class DoubleAnalyzer extends Analyzer {
   public void setPrecisionStep(int precisionStep) {
     this.precisionStep = precisionStep;
   }
-
   @Override
-  public TokenStream tokenStream(String fieldName, Reader reader) {
-    NumericTokenStream numericTokenStream = new NumericTokenStream(precisionStep);
+  protected TokenStreamComponents createComponents(String fieldName,
+      Reader reader) {
+    final CharTokenizer source = new CharTokenizer(LUCENE_VERSION, reader) {
+      @Override
+      protected boolean isTokenChar(int arg0) {
+        return true;
+      }
+    };
+
+    final double value;
     try {
-      numericTokenStream.setDoubleValue(toDouble(reader));
+      value = toDouble(reader);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    return numericTokenStream;
-  }
+    final NumericTokenStream numericTokenStream = new NumericTokenStream(
+        precisionStep);
+    numericTokenStream.setDoubleValue(value);
 
+    return new TokenStreamComponents(source, numericTokenStream) {
+      public void setReader(Reader reader) throws IOException {
+        numericTokenStream.reset();
+        numericTokenStream.setDoubleValue(toDouble(reader));
+      }
+    };
+  }
   private double toDouble(Reader reader) throws IOException {
     StringBuilder builder = new StringBuilder(20);
     int read;

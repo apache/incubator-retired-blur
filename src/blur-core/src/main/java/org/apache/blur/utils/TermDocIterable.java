@@ -20,18 +20,27 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.FieldSelector;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.DocsEnum;
+import org.apache.lucene.index.MultiFields;
+import org.apache.lucene.search.DocIdSetIterator;
+import org.apache.lucene.util.Bits;
 
 public class TermDocIterable implements Iterable<Document> {
 
-  private TermDocs termDocs;
-  private IndexReader reader;
-  private FieldSelector fieldSelector;
+  private DocsEnum docsEnum;
+  private AtomicReader reader;
+  private ResetableDocumentStoredFieldVisitor fieldSelector;
 
-  public TermDocIterable(TermDocs termDocs, IndexReader reader, FieldSelector fieldSelector) {
-    this.termDocs = termDocs;
+  public TermDocIterable(DocsEnum docsEnum, AtomicReader reader) {
+    this(docsEnum, reader, new ResetableDocumentStoredFieldVisitor());
+  }
+
+  public TermDocIterable(DocsEnum docsEnum, AtomicReader reader, ResetableDocumentStoredFieldVisitor fieldSelector) {
+    if (docsEnum == null) {
+      throw new NullPointerException("docsEnum can not be null.");
+    }
+    this.docsEnum = docsEnum;
     this.reader = reader;
     this.fieldSelector = fieldSelector;
   }
@@ -66,23 +75,24 @@ public class TermDocIterable implements Iterable<Document> {
   }
 
   private Document getDoc() throws IOException {
-    return reader.document(termDocs.doc(), fieldSelector);
+    fieldSelector.reset();
+    reader.document(docsEnum.docID(), fieldSelector);
+    return fieldSelector.getDocument();
   }
 
   private boolean getNext() {
     try {
-      boolean next = termDocs.next();
-      if (!next) {
-        termDocs.close();
-        return next;
+      int next = docsEnum.nextDoc();
+      if (next == DocIdSetIterator.NO_MORE_DOCS) {
+        return false;
       }
-      while (reader.isDeleted(termDocs.doc())) {
-        next = termDocs.next();
+      Bits liveDocs = MultiFields.getLiveDocs(reader);
+      if (liveDocs != null) {
+        while (!liveDocs.get(docsEnum.docID())) {
+          next = docsEnum.nextDoc();
+        }
       }
-      if (!next) {
-        termDocs.close();
-      }
-      return next;
+      return next == DocIdSetIterator.NO_MORE_DOCS ? false : true;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

@@ -40,13 +40,13 @@ import org.apache.blur.thrift.generated.ColumnPreCache;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.WatchChildren;
+import org.apache.blur.zookeeper.WatchChildren.OnChange;
 import org.apache.blur.zookeeper.WatchNodeData;
 import org.apache.blur.zookeeper.WatchNodeExistance;
 import org.apache.blur.zookeeper.ZkUtils;
-import org.apache.blur.zookeeper.WatchChildren.OnChange;
 import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.hadoop.io.compress.DeflateCodec;
-import org.apache.lucene.search.Similarity;
+import org.apache.hadoop.io.compress.DefaultCodec;
+import org.apache.lucene.search.similarities.Similarity;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TJSONProtocol;
@@ -58,7 +58,6 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
-
 
 public class ZookeeperClusterStatus extends ClusterStatus {
 
@@ -671,7 +670,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     try {
       checkIfOpen();
       if (tableDescriptor.getCompressionClass() == null) {
-        tableDescriptor.setCompressionClass(DeflateCodec.class.getName());
+        tableDescriptor.setCompressionClass(DefaultCodec.class.getName());
       }
       if (tableDescriptor.getSimilarityClass() == null) {
         tableDescriptor.setSimilarityClass(FairSimilarity.class.getName());

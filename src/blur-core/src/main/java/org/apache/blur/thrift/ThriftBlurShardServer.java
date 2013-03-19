@@ -16,8 +16,8 @@ package org.apache.blur.thrift;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER_NAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER;
+import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER_NAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
@@ -27,9 +27,6 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_SLAB_COUNT;
-import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS;
-import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIMETOLIVE;
-import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_DATA_FETCH_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WARMUP_CLASS;
@@ -41,8 +38,6 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_REFRES
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
 import static org.apache.blur.utils.BlurUtil.quietClose;
-
-import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.concurrent.SimpleUncaughtExceptionHandler;
@@ -57,16 +52,16 @@ import org.apache.blur.manager.IndexManager;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.manager.indexserver.BlurServerShutDown;
+import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup;
 import org.apache.blur.manager.indexserver.DistributedIndexServer;
-import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.manager.writer.BlurIndexRefresher;
 import org.apache.blur.metrics.BlurMetrics;
-import org.apache.blur.store.BufferStore;
 import org.apache.blur.store.blockcache.BlockCache;
 import org.apache.blur.store.blockcache.BlockDirectory;
 import org.apache.blur.store.blockcache.BlockDirectoryCache;
 import org.apache.blur.store.blockcache.Cache;
+import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.ZkUtils;
@@ -132,11 +127,13 @@ public class ThriftBlurShardServer extends ThriftServer {
       LOG.info("Number of slabs of block cache [{0}] with direct memory allocation set to [{1}]", slabCount, directAllocation);
       LOG.info("Block cache target memory usage, slab size of [{0}] will allocate [{1}] slabs and use ~[{2}] bytes", slabSize, slabCount, ((long) slabCount * (long) slabSize));
 
-      BufferStore.init(configuration, blurMetrics);
-
+      int _1024Size = configuration.getInt("blur.shard.buffercache.1024", 8192);
+      int _8192Size = configuration.getInt("blur.shard.buffercache.8192", 8192);
+      BufferStore.init(_1024Size, _8192Size);
+      
       try {
         long totalMemory = (long) slabCount * (long) numberOfBlocksPerSlab * (long) blockSize;
-        blockCache = new BlockCache(blurMetrics, directAllocation, totalMemory, slabSize, blockSize);
+        blockCache = new BlockCache(directAllocation, totalMemory, slabSize);
       } catch (OutOfMemoryError e) {
         if ("Direct buffer memory".equals(e.getMessage())) {
           System.err
@@ -145,7 +142,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         }
         throw e;
       }
-      cache = new BlockDirectoryCache(blockCache, blurMetrics);
+      cache = new BlockDirectoryCache(blockCache);
     } else {
       cache = BlockDirectory.NO_CACHE;
     }

@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopScoreDocCollector;
 
 /**
  * The {@link IterablePaging} class allows for easy paging through lucene hits.
@@ -159,11 +160,11 @@ public class IterablePaging implements Iterable<ScoreDoc> {
   }
 
   class PagingIterator implements Iterator<ScoreDoc> {
-    private PagingCollector collector;
     private ScoreDoc[] scoreDocs;
     private int counter = 0;
     private int offset = 0;
     private int endPosition = gather == -1 ? Integer.MAX_VALUE : skipTo + gather;
+    private ScoreDoc lastScoreDoc;
 
     PagingIterator() {
       search();
@@ -172,20 +173,21 @@ public class IterablePaging implements Iterable<ScoreDoc> {
     void search() {
       long s = System.currentTimeMillis();
       progressRef.searchesPerformed.incrementAndGet();
-      if (collector == null) {
-        collector = new PagingCollector(numHitsToCollect);
-      } else {
-        collector = new PagingCollector(numHitsToCollect, scoreDocs[scoreDocs.length - 1]);
-      }
       try {
+        TopScoreDocCollector collector = TopScoreDocCollector.create(numHitsToCollect, lastScoreDoc, true);
         StopExecutionCollector stopExecutionCollector = new StopExecutionCollector(collector, running);
         searcher.search(query, stopExecutionCollector);
+        totalHitsRef.totalHits.set(collector.getTotalHits());
+        scoreDocs = collector.topDocs().scoreDocs;
       } catch (IOException e) {
+        e.printStackTrace();
         throw new RuntimeException(e);
       }
-
-      totalHitsRef.totalHits.set(collector.getTotalHits());
-      scoreDocs = collector.topDocs().scoreDocs;
+      if (scoreDocs.length > 0) {
+        lastScoreDoc = scoreDocs[scoreDocs.length - 1];
+      } else {
+        lastScoreDoc = null;
+      }
       long e = System.currentTimeMillis();
       progressRef.queryTime.addAndGet(e - s);
     }

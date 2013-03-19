@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.Scorer;
 
@@ -56,8 +56,8 @@ public class StopExecutionCollector extends Collector {
     _collector.collect(doc);
   }
 
-  public void setNextReader(IndexReader reader, int docBase) throws IOException {
-    _collector.setNextReader(reader, docBase);
+  public void setNextReader(AtomicReaderContext context) throws IOException {
+    _collector.setNextReader(context);
   }
 
   public void setScorer(Scorer scorer) throws IOException {

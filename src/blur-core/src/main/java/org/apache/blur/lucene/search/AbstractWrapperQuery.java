@@ -21,14 +21,12 @@ import java.util.Set;
 
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.Searcher;
-import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Weight;
+import org.apache.lucene.search.similarities.Similarity;
 
-@SuppressWarnings("deprecation")
 public abstract class AbstractWrapperQuery extends Query {
-  private static final long serialVersionUID = -4512813621542220044L;
   protected Query _query;
   protected boolean _rewritten;
 
@@ -41,13 +39,9 @@ public abstract class AbstractWrapperQuery extends Query {
     this._rewritten = rewritten;
   }
 
-  public abstract Object clone();
+  public abstract Query clone();
 
-  public Query combine(Query[] queries) {
-    return _query.combine(queries);
-  }
-
-  public abstract Weight createWeight(Searcher searcher) throws IOException;
+  public abstract Weight createWeight(IndexSearcher searcher) throws IOException;
 
   public boolean equals(Object obj) {
     return _query.equals(obj);
@@ -61,8 +55,8 @@ public abstract class AbstractWrapperQuery extends Query {
     return _query.getBoost();
   }
 
-  public Similarity getSimilarity(Searcher searcher) {
-    return _query.getSimilarity(searcher);
+  public Similarity getSimilarity(IndexSearcher searcher) {
+    return searcher.getSimilarity();
   }
 
   public int hashCode() {

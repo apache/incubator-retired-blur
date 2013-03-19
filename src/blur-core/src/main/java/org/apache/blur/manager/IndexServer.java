@@ -24,7 +24,7 @@ import java.util.SortedSet;
 import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.lucene.search.Similarity;
+import org.apache.lucene.search.similarities.Similarity;
 
 
 public interface IndexServer {

@@ -94,7 +94,7 @@ public class RowIndexWriter {
     document.add(new Field(RECORD_ID, recordId, Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     if (addColumns(document, _analyzer, builder, family, record.columns)) {
       if (!primeDocSet) {
-        document.add(BlurConstants.PRIME_DOC_FIELD);
+        document.add(new Field(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO, Index.NOT_ANALYZED_NO_NORMS));
         primeDocSet = true;
       }
       documents.add(document);

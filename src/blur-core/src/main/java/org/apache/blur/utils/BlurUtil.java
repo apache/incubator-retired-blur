@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -49,7 +48,7 @@ import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.metrics.BlurMetrics;
 import org.apache.blur.metrics.BlurMetrics.MethodCall;
-import org.apache.blur.thrift.BException;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
@@ -63,20 +62,20 @@ import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.SimpleQuery;
-import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.SegmentReader;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.util.PagedBytes.PagedBytesDataInput;
-import org.apache.lucene.util.packed.PackedInts;
-import org.apache.lucene.util.packed.PackedInts.Reader;
+import org.apache.lucene.index.SlowCompositeReaderWrapper;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.util.RamUsageEstimator;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TJSONProtocol;
@@ -95,6 +94,7 @@ public class BlurUtil {
   private static final Class<?>[] EMPTY_PARAMETER_TYPES = new Class[] {};
   private static final Log LOG = LogFactory.getLog(BlurUtil.class);
   private static final String UNKNOWN = "UNKNOWN";
+  private static final int ALL = Integer.MAX_VALUE;
 
   @SuppressWarnings("unchecked")
   public static <T extends Iface> T recordMethodCallsAndAverageTimes(final BlurMetrics metrics, final T t, Class<T> clazz) {
@@ -369,69 +369,6 @@ public class BlurUtil {
     return results;
   }
 
-  public static Query readQuery(byte[] bs) throws BException {
-    return readObject(bs);
-  }
-
-  public static byte[] writeQuery(Query query) throws BException {
-    return writeObject(query);
-  }
-
-  public static Sort readSort(byte[] bs) throws BException {
-    return readObject(bs);
-  }
-
-  public static byte[] writeSort(Sort sort) throws BException {
-    return writeObject(sort);
-  }
-
-  public static Filter readFilter(byte[] bs) throws BException {
-    return readObject(bs);
-  }
-
-  public static byte[] writeFilter(Filter filter) throws BException {
-    return writeObject(filter);
-  }
-
-  private static byte[] writeObject(Serializable o) throws BException {
-    if (o == null) {
-      return null;
-    }
-    try {
-      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-      ObjectOutputStream outputStream = new ObjectOutputStream(byteArrayOutputStream);
-      outputStream.writeObject(o);
-      outputStream.close();
-      return byteArrayOutputStream.toByteArray();
-    } catch (IOException e) {
-      throw new BException("Unknown error", e);
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  private static <T> T readObject(byte[] bs) throws BException {
-    if (bs == null) {
-      return null;
-    }
-    ObjectInputStream inputStream = null;
-    try {
-      inputStream = new ObjectInputStream(new ByteArrayInputStream(bs));
-      return (T) inputStream.readObject();
-    } catch (IOException e) {
-      throw new BException("Unknown error", e);
-    } catch (ClassNotFoundException e) {
-      throw new BException("Unknown error", e);
-    } finally {
-      if (inputStream != null) {
-        try {
-          inputStream.close();
-        } catch (IOException e) {
-          throw new BException("Unknown error", e);
-        }
-      }
-    }
-  }
-
   public static void setStartTime(BlurQuery query) {
     if (query.startTime == 0) {
       query.startTime = System.currentTimeMillis();
@@ -543,82 +480,9 @@ public class BlurUtil {
     return seconds / TimeUnit.HOURS.toSeconds(1);
   }
 
-  @SuppressWarnings("unchecked")
   public static long getMemoryUsage(IndexReader r) {
-    try {
-      if (r instanceof SegmentReader) {
-        long size = 0;
-        SegmentReader segmentReader = (SegmentReader) r;
-        Object segmentCoreReaders = getSegmentCoreReaders(segmentReader);
-        Object termInfosReader = getTermInfosReader(segmentCoreReaders);
-        Object termInfosReaderIndex = getTermInfosReaderIndex(termInfosReader);
-        PagedBytesDataInput dataInput = getDataInput(termInfosReaderIndex);
-        PackedInts.Reader indexToDataOffset = getIndexToDataOffset(termInfosReaderIndex);
-
-        Object pagedBytes = BlurUtil.getField("this$0", dataInput);
-        List<byte[]> blocks = (List<byte[]>) BlurUtil.getField("blocks", pagedBytes);
-        for (byte[] block : blocks) {
-          size += block.length;
-        }
-
-        try {
-          Class<? extends Reader> clazz = indexToDataOffset.getClass();
-          Method method = clazz.getMethod("ramBytesUsed", EMPTY_PARAMETER_TYPES);
-          method.setAccessible(true);
-          Long ramBytesUsed = (Long) method.invoke(indexToDataOffset, EMPTY_OBJECT_ARRAY);
-          size += ramBytesUsed;
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-        return size;
-      }
-      IndexReader[] readers = r.getSequentialSubReaders();
-      long total = 0;
-      if (readers != null) {
-        for (IndexReader reader : readers) {
-          total += getMemoryUsage(reader);
-        }
-      }
-      return total;
-    } catch (Exception e) {
-      LOG.error("Unknown error during getMemoryUsage call", e);
-      return 0;
-    }
-  }
-
-  private static PackedInts.Reader getIndexToDataOffset(Object termInfosReaderIndex) {
-    return (Reader) getField("indexToDataOffset", termInfosReaderIndex);
-  }
-
-  private static PagedBytesDataInput getDataInput(Object termInfosReaderIndex) {
-    return (PagedBytesDataInput) getField("dataInput", termInfosReaderIndex);
-  }
-
-  private static Object getTermInfosReaderIndex(Object termInfosReader) {
-    return getField("index", termInfosReader);
-  }
-
-  private static Object getTermInfosReader(Object segmentCoreReaders) {
-    return getField("tis", segmentCoreReaders);
-  }
-
-  private static Object getSegmentCoreReaders(SegmentReader segmentReader) {
-    return getField("core", segmentReader, SegmentReader.class);
-  }
-
-  private static Object getField(String name, Object o) {
-    Class<? extends Object> clazz = o.getClass();
-    return getField(name, o, clazz);
-  }
-
-  private static Object getField(String name, Object o, Class<? extends Object> clazz) {
-    try {
-      Field field = clazz.getDeclaredField(name);
-      field.setAccessible(true);
-      return field.get(o);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    long sizeOf = RamUsageEstimator.sizeOf(r);
+    return sizeOf;
   }
 
   public static void createPath(ZooKeeper zookeeper, String path, byte[] data) throws KeeperException, InterruptedException {
@@ -655,7 +519,7 @@ public class BlurUtil {
       String name = path.getName();
       if (name.startsWith(SHARD_PREFIX)) {
         int index = name.indexOf('-');
-        String shardIndexStr = name.substring(index+1);
+        String shardIndexStr = name.substring(index + 1);
         int shardIndex = Integer.parseInt(shardIndexStr);
         if (shardIndex >= shardCount) {
           LOG.error("Number of directories in table path [" + path + "] exceeds definition of [" + shardCount + "] shard count.");
@@ -776,4 +640,33 @@ public class BlurUtil {
     recordMutation.setRecordMutationType(RecordMutationType.REPLACE_ENTIRE_RECORD);
     return recordMutation;
   }
+
+  /**
+   * NOTE: This is a potentially dangerous call, it will return all the
+   * documents that match the term.
+   * 
+   * @throws IOException
+   */
+  public static List<Document> termSearch(IndexReader reader, Term term, ResetableDocumentStoredFieldVisitor fieldSelector) throws IOException {
+    IndexSearcher indexSearcher = new IndexSearcher(reader);
+    TopDocs topDocs = indexSearcher.search(new TermQuery(term), ALL);
+    List<Document> docs = new ArrayList<Document>();
+    for (int i = 0; i < topDocs.totalHits; i++) {
+      int doc = topDocs.scoreDocs[i].doc;
+      indexSearcher.doc(doc, fieldSelector);
+      docs.add(fieldSelector.getDocument());
+      fieldSelector.reset();
+    }
+    return docs;
+  }
+
+  public static AtomicReader getAtomicReader(IndexReader reader) throws IOException {
+    return SlowCompositeReaderWrapper.wrap(reader);
+  }
+
+  public static int getShardIndex(String shard) {
+    int index = shard.indexOf('-');
+    return Integer.parseInt(shard.substring(index + 1));
+  }
+
 }

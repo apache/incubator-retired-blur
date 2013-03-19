@@ -16,7 +16,7 @@ package org.apache.blur.manager.writer;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.apache.blur.lucene.LuceneConstant.LUCENE_VERSION;
+import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,10 +28,13 @@ import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.index.IndexWriter;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.lucene.store.refcounter.DirectoryReferenceCounter;
+import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.lucene.codecs.appending.AppendingCodec;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
@@ -42,9 +45,8 @@ import org.apache.lucene.search.NRTManager;
 import org.apache.lucene.search.NRTManager.TrackingIndexWriter;
 import org.apache.lucene.search.NRTManagerReopenThread;
 import org.apache.lucene.search.SearcherFactory;
-import org.apache.lucene.search.Similarity;
+import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
-
 
 public class BlurNRTIndex extends BlurIndex {
 
@@ -93,70 +95,34 @@ public class BlurNRTIndex extends BlurIndex {
   // };
 
   public void init() throws IOException {
-    Path walTablePath = new Path(_walPath, _table);
-    Path walShardPath = new Path(walTablePath, _shard);
+    tableContext = shardContext.getTableContext();
 
-    _timeBetweenRefreshsNanos = TimeUnit.MILLISECONDS.toNanos(_timeBetweenRefreshs);
-
-    IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
+    IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, tableContext.getAnalyzer());
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
-    conf.setSimilarity(_similarity);
-    conf.setIndexDeletionPolicy(_indexDeletionPolicy);
+    conf.setSimilarity(tableContext.getSimilarity());
+    conf.setIndexDeletionPolicy(tableContext.getIndexDeletionPolicy());
+    // conf.setCodec(new AppendingCodec());
     TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
-    DirectoryReferenceCounter referenceCounter = new DirectoryReferenceCounter(_directory, _gc);
+    conf.setMergeScheduler(mergeScheduler);
+    DirectoryReferenceCounter referenceCounter = new DirectoryReferenceCounter(_directory, _gc, _closer);
     _writer = new IndexWriter(referenceCounter, conf);
     _recorder = new TransactionRecorder();
-    _recorder.setAnalyzer(_analyzer);
-    _recorder.setConfiguration(_configuration);
-    _recorder.setWalPath(walShardPath);
+    _recorder.setContext(shardContext);
     _recorder.init();
     _recorder.replay(_writer);
 
+    _searcherFactory = new SearcherFactory() {
+      @Override
+      public IndexSearcher newSearcher(IndexReader reader) throws IOException {
+        return new IndexSearcherClosable(reader, searchExecutor, _nrtManagerRef);
+      }
+    };
+
     _trackingWriter = new TrackingIndexWriter(_writer);
-    _nrtManager = new NRTManager(_trackingWriter, _searcherFactory, APPLY_ALL_DELETES);
-    IndexSearcher searcher = _nrtManager.acquire();
-    _indexRef.set(searcher.getIndexReader());
-    _lastRefresh = System.nanoTime();
+    _nrtManagerRef.set(new NRTManager(_trackingWriter, _searcherFactory, APPLY_ALL_DELETES));
     startCommiter();
     startRefresher();
-  }
-
-  private void startRefresher() {
-    double targetMinStaleSec = _timeBetweenRefreshs / 1000.0;
-    _refresher = new NRTManagerReopenThread(_nrtManager, targetMinStaleSec * 10, targetMinStaleSec);
-    _refresher.setName("Refresh Thread [" + _table + "/" + _shard + "]");
-    _refresher.setDaemon(true);
-    _refresher.start();
-  }
-
-  private void startCommiter() {
-    _committer = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        while (!_isClosed.get()) {
-          try {
-            LOG.info("Committing of [{0}/{1}].", _table, _shard);
-            _recorder.commit(_writer);
-          } catch (CorruptIndexException e) {
-            LOG.error("Curruption Error during commit of [{0}/{1}].", e, _table, _shard);
-          } catch (IOException e) {
-            LOG.error("IO Error during commit of [{0}/{1}].", e, _table, _shard);
-          }
-          try {
-            Thread.sleep(_timeBetweenCommits);
-          } catch (InterruptedException e) {
-            if (_isClosed.get()) {
-              return;
-            }
-            LOG.error("Unknown error with committer thread [{0}/{1}].", e, _table, _shard);
-          }
-        }
-      }
-    });
-    _committer.setDaemon(true);
-    _committer.setName("Commit Thread [" + _table + "/" + _shard + "]");
-    _committer.start();
   }
 
   @Override
@@ -289,6 +255,43 @@ public class BlurNRTIndex extends BlurIndex {
 
   public void setGc(DirectoryReferenceFileGC gc) {
     _gc = gc;
+  }
+
+  private void startRefresher() {
+    double targetMinStaleSec = _timeBetweenRefreshs / 1000.0;
+    _refresher = new NRTManagerReopenThread(_nrtManager, targetMinStaleSec * 10, targetMinStaleSec);
+    _refresher.setName("Refresh Thread [" + _table + "/" + _shard + "]");
+    _refresher.setDaemon(true);
+    _refresher.start();
+  }
+
+  private void startCommiter() {
+    _committer = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        while (!_isClosed.get()) {
+          try {
+            LOG.info("Committing of [{0}/{1}].", _table, _shard);
+            _recorder.commit(_writer);
+          } catch (CorruptIndexException e) {
+            LOG.error("Curruption Error during commit of [{0}/{1}].", e, _table, _shard);
+          } catch (IOException e) {
+            LOG.error("IO Error during commit of [{0}/{1}].", e, _table, _shard);
+          }
+          try {
+            Thread.sleep(_timeBetweenCommits);
+          } catch (InterruptedException e) {
+            if (_isClosed.get()) {
+              return;
+            }
+            LOG.error("Unknown error with committer thread [{0}/{1}].", e, _table, _shard);
+          }
+        }
+      }
+    });
+    _committer.setDaemon(true);
+    _committer.setName("Commit Thread [" + _table + "/" + _shard + "]");
+    _committer.start();
   }
 
 }

@@ -16,7 +16,7 @@ package org.apache.blur.manager.indexserver;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.apache.blur.lucene.LuceneConstant.LUCENE_VERSION;
+import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,20 +38,20 @@ import org.apache.blur.lucene.search.FairSimilarity;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;
 import org.apache.blur.manager.writer.BlurNRTIndex;
-import org.apache.blur.store.compressed.CompressedFieldDataDirectory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.lucene.analysis.KeywordAnalyzer;
+import org.apache.hadoop.io.compress.DefaultCodec;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.util.CharArraySet;
 import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.search.Similarity;
+import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
-
 
 public class LocalIndexServer extends AbstractIndexServer {
 
@@ -61,7 +61,7 @@ public class LocalIndexServer extends AbstractIndexServer {
   private File _localDir;
   private BlurIndexCloser _closer;
   private int _blockSize = 65536;
-  private CompressionCodec _compression = CompressedFieldDataDirectory.DEFAULT_COMPRESSION;
+  private CompressionCodec _compression = new DefaultCodec();
   private Path _walPath;
   private Configuration _configuration = new Configuration();
 
@@ -75,7 +75,7 @@ public class LocalIndexServer extends AbstractIndexServer {
 
   @Override
   public BlurAnalyzer getAnalyzer(String table) {
-    return new BlurAnalyzer(new StandardAnalyzer(LUCENE_VERSION, new HashSet<String>()));
+    return new BlurAnalyzer(new StandardAnalyzer(LUCENE_VERSION, new CharArraySet(LUCENE_VERSION, new HashSet<String>(), false)));
   }
 
   @Override
@@ -130,7 +130,7 @@ public class LocalIndexServer extends AbstractIndexServer {
       for (File f : tableFile.listFiles()) {
         if (f.isDirectory()) {
           MMapDirectory directory = new MMapDirectory(f);
-          if (!IndexReader.indexExists(directory)) {
+          if (!DirectoryReader.indexExists(directory)) {
             new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer())).close();
           }
           String shardName = f.getName();

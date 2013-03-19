@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.lucene.index.IndexReader;
 
-
 public abstract class BlurIndex {
 
   public abstract void replaceRow(boolean waitToBeVisible, boolean wal, Row row) throws IOException;
@@ -38,5 +37,6 @@ public abstract class BlurIndex {
   public abstract AtomicBoolean isClosed();
 
   public abstract void optimize(int numberOfSegmentsPerShard) throws IOException;
+
 
 }

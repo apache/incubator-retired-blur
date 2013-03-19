@@ -17,11 +17,10 @@ package org.apache.blur.lucene.search;
  * limitations under the License.
  */
 import org.apache.lucene.index.FieldInvertState;
-import org.apache.lucene.search.Similarity;
+import org.apache.lucene.search.similarities.TFIDFSimilarity;
+import org.apache.lucene.util.BytesRef;
 
-public class FairSimilarity extends Similarity {
-
-  private static final long serialVersionUID = 8819964136561756067L;
+public class FairSimilarity extends TFIDFSimilarity {
 
   @Override
   public float coord(int overlap, int maxOverlap) {
@@ -29,7 +28,7 @@ public class FairSimilarity extends Similarity {
   }
 
   @Override
-  public float idf(int docFreq, int numDocs) {
+  public float idf(long docFreq, long numDocs) {
     return 1;
   }
 
@@ -49,8 +48,14 @@ public class FairSimilarity extends Similarity {
   }
 
   @Override
-  public float computeNorm(String field, FieldInvertState state) {
+  public float scorePayload(int doc, int start, int end, BytesRef payload) {
     return 1;
+  }
+
+  @Override
+  public float lengthNorm(FieldInvertState fieldInvertState) {
+    throw new RuntimeException("not sure");
+//    return 0;
   }
 
 }

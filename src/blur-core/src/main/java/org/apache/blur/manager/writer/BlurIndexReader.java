@@ -16,18 +16,18 @@ package org.apache.blur.manager.writer;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
+
 import java.io.IOException;
 
 import org.apache.blur.index.IndexWriter;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.Row;
-import org.apache.lucene.analysis.KeywordAnalyzer;
-import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.util.Version;
-
 
 public class BlurIndexReader extends AbstractBlurIndex {
 
@@ -36,11 +36,11 @@ public class BlurIndexReader extends AbstractBlurIndex {
   public void init() throws IOException {
     initIndexWriterConfig();
     Directory directory = getDirectory();
-    if (!IndexReader.indexExists(directory)) {
-      IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_35, new KeywordAnalyzer());
+    if (!DirectoryReader.indexExists(directory)) {
+      IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
       new IndexWriter(directory, conf).close();
     }
-    initIndexReader(IndexReader.open(directory));
+    initIndexReader(DirectoryReader.open(directory));
   }
 
   @Override
@@ -69,4 +69,5 @@ public class BlurIndexReader extends AbstractBlurIndex {
   public void optimize(int numberOfSegmentsPerShard) throws IOException {
     // Do nothing
   }
+
 }

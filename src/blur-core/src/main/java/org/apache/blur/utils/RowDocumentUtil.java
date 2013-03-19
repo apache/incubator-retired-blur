@@ -26,7 +26,7 @@ import org.apache.blur.thrift.generated.FetchRecordResult;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.index.IndexableField;
 
 
 public class RowDocumentUtil {
@@ -70,7 +70,7 @@ public class RowDocumentUtil {
   public static String readRecord(Document document, ReaderBlurRecord reader) {
     String rowId = null;
     String family = null;
-    for (Fieldable field : document.getFields()) {
+    for (IndexableField field : document.getFields()) {
       if (field.name().equals(ROW_ID)) {
         rowId = field.stringValue();
       } else if (field.name().equals(RECORD_ID)) {

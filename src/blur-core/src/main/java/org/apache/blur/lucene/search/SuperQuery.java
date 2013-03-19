@@ -20,21 +20,20 @@ import java.io.IOException;
 
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.utils.PrimeDocCache;
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Explanation;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
-import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Weight;
+import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.OpenBitSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-@SuppressWarnings("deprecation")
 public class SuperQuery extends AbstractWrapperQuery {
 
-  private static final long serialVersionUID = -5901574044714034398L;
   private ScoreType scoreType;
 
   public SuperQuery(Query query, ScoreType scoreType) {
@@ -47,11 +46,11 @@ public class SuperQuery extends AbstractWrapperQuery {
     this.scoreType = scoreType;
   }
 
-  public Object clone() {
+  public Query clone() {
     return new SuperQuery((Query) _query.clone(), scoreType, _rewritten);
   }
 
-  public Weight createWeight(Searcher searcher) throws IOException {
+  public Weight createWeight(IndexSearcher searcher) throws IOException {
     Weight weight = _query.createWeight(searcher);
     return new SuperWeight(weight, _query.toString(), this, scoreType);
   }
@@ -73,8 +72,6 @@ public class SuperQuery extends AbstractWrapperQuery {
 
   public static class SuperWeight extends Weight {
 
-    private static final long serialVersionUID = -4832849792097064960L;
-
     private Weight weight;
     private String originalQueryStr;
     private Query query;
@@ -88,39 +85,42 @@ public class SuperQuery extends AbstractWrapperQuery {
     }
 
     @Override
-    public Explanation explain(IndexReader reader, int doc) throws IOException {
-      throw new RuntimeException("not supported");
-    }
-
-    @Override
     public Query getQuery() {
       return query;
     }
 
     @Override
-    public float getValue() {
-      return weight.getValue();
+    public Explanation explain(AtomicReaderContext context, int doc) throws IOException {
+      throw new RuntimeException("not supported");
+    }
+
+    /*
+     * This method needs to implement in some other way Weight doesn't provide
+     * this method at all
+     * 
+     * @Override public float getValue() { return weight.getValue(); }
+     */
+
+    @Override
+    public void normalize(float norm, float topLevelBoost) {
+      weight.normalize(norm, topLevelBoost);
     }
 
     @Override
-    public void normalize(float norm) {
-      weight.normalize(norm);
-    }
-
-    @Override
-    public Scorer scorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException {
-      Scorer scorer = weight.scorer(reader, true, topScorer);
+    public Scorer scorer(AtomicReaderContext context, boolean scoreDocsInOrder, boolean topScorer, Bits acceptDocs) throws IOException {
+      Scorer scorer = weight.scorer(context, true, topScorer, acceptDocs);
       if (scorer == null) {
         return null;
       }
-      OpenBitSet primeDocBitSet = PrimeDocCache.getPrimeDocBitSet(reader);
+      OpenBitSet primeDocBitSet = PrimeDocCache.getPrimeDocBitSet(context.reader());
       return new SuperScorer(scorer, primeDocBitSet, originalQueryStr, scoreType);
     }
 
     @Override
-    public float sumOfSquaredWeights() throws IOException {
-      return weight.sumOfSquaredWeights();
+    public float getValueForNormalization() throws IOException {
+      return weight.getValueForNormalization();
     }
+
   }
 
   @SuppressWarnings("unused")
@@ -146,7 +146,7 @@ public class SuperQuery extends AbstractWrapperQuery {
     private int hitsInEntity;
 
     protected SuperScorer(Scorer scorer, OpenBitSet bitSet, String originalQueryStr, ScoreType scoreType) {
-      super(scorer.getSimilarity());
+      super(scorer.getWeight());
       this.scorer = scorer;
       this.bitSet = bitSet;
       this.originalQueryStr = originalQueryStr;
@@ -262,6 +262,11 @@ public class SuperQuery extends AbstractWrapperQuery {
 
     private boolean isScorerExhausted(int doc) {
       return doc == NO_MORE_DOCS ? true : false;
+    }
+
+    @Override
+    public int freq() throws IOException {
+      return scorer.freq();
     }
   }
 

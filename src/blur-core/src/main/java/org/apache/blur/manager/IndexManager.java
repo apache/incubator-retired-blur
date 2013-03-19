@@ -20,8 +20,6 @@ import static org.apache.blur.utils.BlurConstants.PRIME_DOC;
 import static org.apache.blur.utils.BlurConstants.RECORD_ID;
 import static org.apache.blur.utils.BlurConstants.ROW_ID;
 import static org.apache.blur.utils.BlurUtil.findRecordMutation;
-import static org.apache.blur.utils.BlurUtil.readFilter;
-import static org.apache.blur.utils.BlurUtil.readQuery;
 import static org.apache.blur.utils.RowDocumentUtil.getColumns;
 import static org.apache.blur.utils.RowDocumentUtil.getRow;
 
@@ -48,7 +46,6 @@ import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.lucene.EscapeRewrite;
 import org.apache.blur.lucene.search.FacetQuery;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.results.BlurResultIterableSearcher;
@@ -80,22 +77,24 @@ import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.BlurExecutorCompletionService.Cancel;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.ForkJoin;
 import org.apache.blur.utils.ForkJoin.Merger;
 import org.apache.blur.utils.ForkJoin.ParallelCall;
-import org.apache.blur.utils.TermDocIterable;
+import org.apache.blur.utils.ResetableDocumentStoredFieldVisitor;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.FieldSelector;
-import org.apache.lucene.document.FieldSelectorResult;
+import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.MultiFields;
+import org.apache.lucene.index.StoredFieldVisitor;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermDocs;
-import org.apache.lucene.index.TermEnum;
-import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Filter;
@@ -104,7 +103,8 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.util.ReaderUtil;
+import org.apache.lucene.util.Bits;
+import org.apache.lucene.util.BytesRef;
 
 public class IndexManager {
 
@@ -348,11 +348,11 @@ public class IndexManager {
   }
 
   private Filter getFilter(ExpertQuery expertQuery) throws BException {
-    return readFilter(expertQuery.getFilter());
+    throw new BException("Expert query not supported", new Throwable());
   }
 
   private Query getQuery(ExpertQuery expertQuery) throws BException {
-    return readQuery(expertQuery.getQuery());
+    throw new BException("Expert query not supported", new Throwable());
   }
 
   private boolean isSimpleQuery(BlurQuery blurQuery) {
@@ -409,21 +409,23 @@ public class IndexManager {
     if (docId >= reader.maxDoc()) {
       throw new RuntimeException("Location id [" + locationId + "] with docId [" + docId + "] is not valid.");
     }
+    Bits liveDocs = MultiFields.getLiveDocs(reader);
     if (selector.isRecordOnly()) {
       // select only the row for the given data or location id.
-      if (reader.isDeleted(docId)) {
+      if (liveDocs != null && !liveDocs.get(docId)) {
         fetchResult.exists = false;
         fetchResult.deleted = true;
         return;
       } else {
         fetchResult.exists = true;
         fetchResult.deleted = false;
-        Document document = reader.document(docId, getFieldSelector(selector));
+        reader.document(docId, getFieldSelector(selector));
+        Document document = reader.document(docId);
         fetchResult.recordResult = getColumns(document);
         return;
       }
     } else {
-      if (reader.isDeleted(docId)) {
+      if (liveDocs != null && !liveDocs.get(docId)) {
         fetchResult.exists = false;
         fetchResult.deleted = true;
         return;
@@ -431,26 +433,25 @@ public class IndexManager {
         fetchResult.exists = true;
         fetchResult.deleted = false;
         String rowId = getRowId(reader, docId);
-        TermDocs termDocs = reader.termDocs(new Term(ROW_ID, rowId));
-        fetchResult.rowResult = new FetchRowResult(getRow(new TermDocIterable(termDocs, reader, getFieldSelector(selector))));
+
+        List<Document> docs = BlurUtil.termSearch(reader, new Term(ROW_ID, rowId), getFieldSelector(selector));
+        fetchResult.rowResult = new FetchRowResult(getRow(docs));
         return;
       }
     }
   }
 
   private static String getRowId(IndexReader reader, int docId) throws CorruptIndexException, IOException {
-    Document document = reader.document(docId, new FieldSelector() {
-      private static final long serialVersionUID = 4912420100148752051L;
-
+    reader.document(docId, new StoredFieldVisitor() {
       @Override
-      public FieldSelectorResult accept(String fieldName) {
-        if (ROW_ID.equals(fieldName)) {
-          return FieldSelectorResult.LOAD_AND_BREAK;
+      public Status needsField(FieldInfo fieldInfo) throws IOException {
+        if (ROW_ID.equals(fieldInfo.name)) {
+          return StoredFieldVisitor.Status.STOP;
         }
-        return FieldSelectorResult.NO_LOAD;
+        return StoredFieldVisitor.Status.NO;
       }
     });
-    return document.get(ROW_ID);
+    return reader.document(docId).get(ROW_ID);
   }
 
   private static String getColumnName(String fieldName) {
@@ -461,39 +462,38 @@ public class IndexManager {
     return fieldName.substring(0, fieldName.lastIndexOf('.'));
   }
 
-  public static FieldSelector getFieldSelector(final Selector selector) {
-    return new FieldSelector() {
-      private static final long serialVersionUID = 4089164344758433000L;
-
+  public static ResetableDocumentStoredFieldVisitor getFieldSelector(final Selector selector) {
+    return new ResetableDocumentStoredFieldVisitor() {
       @Override
-      public FieldSelectorResult accept(String fieldName) {
-        if (ROW_ID.equals(fieldName)) {
-          return FieldSelectorResult.LOAD;
+      public Status needsField(FieldInfo fieldInfo) throws IOException {
+        if (ROW_ID.equals(fieldInfo.name)) {
+          return StoredFieldVisitor.Status.YES;
         }
-        if (RECORD_ID.equals(fieldName)) {
-          return FieldSelectorResult.LOAD;
+        if (RECORD_ID.equals(fieldInfo.name)) {
+          return StoredFieldVisitor.Status.YES;
         }
-        if (PRIME_DOC.equals(fieldName)) {
-          return FieldSelectorResult.NO_LOAD;
+        if (PRIME_DOC.equals(fieldInfo.name)) {
+          return StoredFieldVisitor.Status.NO;
         }
         if (selector.columnFamiliesToFetch == null && selector.columnsToFetch == null) {
-          return FieldSelectorResult.LOAD;
+          return StoredFieldVisitor.Status.YES;
         }
-        String columnFamily = getColumnFamily(fieldName);
+        String columnFamily = getColumnFamily(fieldInfo.name);
         if (selector.columnFamiliesToFetch != null) {
           if (selector.columnFamiliesToFetch.contains(columnFamily)) {
-            return FieldSelectorResult.LOAD;
+            return StoredFieldVisitor.Status.YES;
           }
         }
-        String columnName = getColumnName(fieldName);
+        String columnName = getColumnName(fieldInfo.name);
         if (selector.columnsToFetch != null) {
           Set<String> columns = selector.columnsToFetch.get(columnFamily);
           if (columns != null && columns.contains(columnName)) {
-            return FieldSelectorResult.LOAD;
+            return StoredFieldVisitor.Status.YES;
           }
         }
-        return FieldSelectorResult.NO_LOAD;
+        return StoredFieldVisitor.Status.NO;
       }
+
     };
   }
 
@@ -577,27 +577,18 @@ public class IndexManager {
 
   public static List<String> terms(IndexReader reader, String columnFamily, String columnName, String startWith, short size) throws IOException {
     Term term = getTerm(columnFamily, columnName, startWith);
-    String field = term.field();
     List<String> terms = new ArrayList<String>(size);
-    TermEnum termEnum = reader.terms(term);
-    try {
-      do {
-        Term currentTerm = termEnum.term();
-        if (currentTerm == null) {
-          return terms;
-        }
-        if (!currentTerm.field().equals(field)) {
-          break;
-        }
-        terms.add(currentTerm.text());
-        if (terms.size() >= size) {
-          return terms;
-        }
-      } while (termEnum.next());
-      return terms;
-    } finally {
-      termEnum.close();
+    AtomicReader areader = BlurUtil.getAtomicReader(reader);
+    Terms termsAll = areader.terms(term.field());
+    TermsEnum termEnum = termsAll.iterator(null);
+    BytesRef currentTermText;
+    while ((currentTermText = termEnum.next()) != null) {
+      terms.add(currentTermText.utf8ToString());
+      if (terms.size() >= size) {
+        return terms;
+      }
     }
+    return terms;
   }
 
   private static Term getTerm(String columnFamily, String columnName, String value) {
@@ -617,7 +608,7 @@ public class IndexManager {
     for (BlurIndex blurIndex : blurIndexes.values()) {
       IndexReader reader = blurIndex.getIndexReader();
       try {
-        FieldInfos mergedFieldInfos = ReaderUtil.getMergedFieldInfos(reader);
+        FieldInfos mergedFieldInfos = MultiFields.getMergedFieldInfos(reader);
         for (FieldInfo fieldInfo : mergedFieldInfos) {
           String fieldName = fieldInfo.name;
           int index = fieldName.indexOf('.');
@@ -949,8 +940,10 @@ public class IndexManager {
         BlurIndex index = entry.getValue();
         IndexReader reader = index.getIndexReader();
         String shard = entry.getKey();
-        IndexReader escapeReader = EscapeRewrite.wrap(reader, _running);
-        IndexSearcher searcher = new IndexSearcher(escapeReader);
+        // @TODO need to add escapable rewriter
+        // IndexReader escapeReader = EscapeRewrite.wrap(reader, _running);
+        // IndexSearcher searcher = new IndexSearcher(escapeReader);
+        IndexSearcher searcher = new IndexSearcher(reader);
         searcher.setSimilarity(_indexServer.getSimilarity(_table));
         Query rewrite = searcher.rewrite((Query) _query.clone());
         return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector, reader);
@@ -992,5 +985,4 @@ public class IndexManager {
       }
     }
   }
-
 }

@@ -16,7 +16,7 @@ package org.apache.blur.analysis;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.apache.blur.lucene.LuceneConstant.LUCENE_VERSION;
+import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.apache.blur.utils.BlurConstants.PRIME_DOC;
 import static org.apache.blur.utils.BlurConstants.RECORD_ID;
 import static org.apache.blur.utils.BlurConstants.ROW_ID;
@@ -28,7 +28,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,12 +44,11 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.KeywordAnalyzer;
-import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.AnalyzerWrapper;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
@@ -59,7 +57,7 @@ import org.apache.thrift.protocol.TJSONProtocol;
 import org.apache.thrift.transport.TMemoryBuffer;
 import org.apache.thrift.transport.TMemoryInputTransport;
 
-public final class BlurAnalyzer extends Analyzer {
+public final class BlurAnalyzer extends AnalyzerWrapper {
 
   public enum TYPE {
     LONG, DOUBLE, FLOAT, INTEGER, DEFAULT
@@ -136,7 +134,7 @@ public final class BlurAnalyzer extends Analyzer {
     return type;
   }
 
-  public Query getNewRangeQuery(String field, String part1, String part2, boolean inclusive) {
+  public Query getNewRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
     Analyzer analyzer = getAnalyzer(field);
     if (analyzer instanceof LongAnalyzer) {
       LongAnalyzer a = (LongAnalyzer) analyzer;
@@ -144,26 +142,26 @@ public final class BlurAnalyzer extends Analyzer {
       int radix = a.getRadix();
       long min = Long.parseLong(part1, radix);
       long max = Long.parseLong(part2, radix);
-      return NumericRangeQuery.newLongRange(field, precisionStep, min, max, inclusive, inclusive);
+      return NumericRangeQuery.newLongRange(field, precisionStep, min, max, startInclusive, endInclusive);
     } else if (analyzer instanceof DoubleAnalyzer) {
       DoubleAnalyzer a = (DoubleAnalyzer) analyzer;
       int precisionStep = a.getPrecisionStep();
       double min = Double.parseDouble(part1);
       double max = Double.parseDouble(part2);
-      return NumericRangeQuery.newDoubleRange(field, precisionStep, min, max, inclusive, inclusive);
+      return NumericRangeQuery.newDoubleRange(field, precisionStep, min, max, startInclusive, endInclusive);
     } else if (analyzer instanceof FloatAnalyzer) {
       FloatAnalyzer a = (FloatAnalyzer) analyzer;
       int precisionStep = a.getPrecisionStep();
       float min = Float.parseFloat(part1);
       float max = Float.parseFloat(part2);
-      return NumericRangeQuery.newFloatRange(field, precisionStep, min, max, inclusive, inclusive);
+      return NumericRangeQuery.newFloatRange(field, precisionStep, min, max, startInclusive, endInclusive);
     } else if (analyzer instanceof IntegerAnalyzer) {
       IntegerAnalyzer a = (IntegerAnalyzer) analyzer;
       int precisionStep = a.getPrecisionStep();
       int radix = a.getRadix();
       int min = Integer.parseInt(part1, radix);
       int max = Integer.parseInt(part2, radix);
-      return NumericRangeQuery.newIntRange(field, precisionStep, min, max, inclusive, inclusive);
+      return NumericRangeQuery.newIntRange(field, precisionStep, min, max, startInclusive, endInclusive);
     }
     return null;
   }
@@ -228,42 +226,16 @@ public final class BlurAnalyzer extends Analyzer {
   public void close() {
 
   }
-
+  
   @Override
-  public TokenStream tokenStream(String fieldName, Reader reader) {
+  protected Analyzer getWrappedAnalyzer(String fieldName) {
     Analyzer analyzer = getAnalyzer(fieldName);
-    if (analyzer == null) {
-      analyzer = _defaultAnalyzer;
-    }
-
-    return analyzer.tokenStream(fieldName, reader);
+    return (analyzer != null) ? analyzer : _defaultAnalyzer;
   }
 
   @Override
-  public TokenStream reusableTokenStream(String fieldName, Reader reader) throws IOException {
-    Analyzer analyzer = getAnalyzer(fieldName);
-    if (analyzer == null)
-      analyzer = _defaultAnalyzer;
-
-    return analyzer.reusableTokenStream(fieldName, reader);
-  }
-
-  /** Return the positionIncrementGap from the analyzer assigned to fieldName */
-  @Override
-  public int getPositionIncrementGap(String fieldName) {
-    Analyzer analyzer = getAnalyzer(fieldName);
-    if (analyzer == null)
-      analyzer = _defaultAnalyzer;
-    return analyzer.getPositionIncrementGap(fieldName);
-  }
-
-  /** Return the offsetGap from the analyzer assigned to field */
-  @Override
-  public int getOffsetGap(Fieldable field) {
-    Analyzer analyzer = getAnalyzer(field.name());
-    if (analyzer == null)
-      analyzer = _defaultAnalyzer;
-    return analyzer.getOffsetGap(field);
+  protected TokenStreamComponents wrapComponents(String fieldName, TokenStreamComponents components) {
+    return components;
   }
 
   public static BlurAnalyzer create(File file) throws IOException {
@@ -460,5 +432,6 @@ public final class BlurAnalyzer extends Analyzer {
     }
     set.add(name);
   }
+
 
 }

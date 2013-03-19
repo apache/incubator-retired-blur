@@ -22,9 +22,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReader.ReaderClosedListener;
-import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Scorer;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.OpenBitSet;
 
 
@@ -54,13 +58,31 @@ public class PrimeDocCache {
         }
       });
       LOG.debug("Prime Doc BitSet missing for segment [" + reader + "] current size [" + primeDocMap.size() + "]");
-      bitSet = new OpenBitSet(reader.maxDoc());
-      primeDocMap.put(key, bitSet);
-      TermDocs termDocs = reader.termDocs(BlurConstants.PRIME_DOC_TERM);
-      while (termDocs.next()) {
-        bitSet.set(termDocs.doc());
-      }
-      termDocs.close();
+      final OpenBitSet bs = new OpenBitSet(reader.maxDoc());
+      primeDocMap.put(key, bs);
+      IndexSearcher searcher = new IndexSearcher(reader);
+      searcher.search(new TermQuery(BlurConstants.PRIME_DOC_TERM), new Collector() {
+        
+        @Override
+        public void setScorer(Scorer scorer) throws IOException {
+          
+        }
+        
+        @Override
+        public void setNextReader(AtomicReaderContext atomicReaderContext) throws IOException {
+        }
+        
+        @Override
+        public void collect(int doc) throws IOException {
+          bs.set(doc);
+        }
+        
+        @Override
+        public boolean acceptsDocsOutOfOrder() {
+          return false;
+        }
+      });
+      return bs;
     }
     return bitSet;
   }

@@ -18,7 +18,7 @@ package org.apache.blur.lucene.search;
  */
 import java.io.IOException;
 
-import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TopDocs;
@@ -76,8 +76,8 @@ public class PagingCollector extends TopDocsCollector<ScoreDoc> {
   }
 
   @Override
-  public void setNextReader(IndexReader reader, int docBase) throws IOException {
-    this.docBase = docBase;
+  public void setNextReader(AtomicReaderContext context) throws IOException {
+    this.docBase = context.docBase;
   }
 
   @Override
@@ -98,8 +98,8 @@ public class PagingCollector extends TopDocsCollector<ScoreDoc> {
     private boolean prePopulate;
 
     HitQueue(int size, boolean prePopulate) {
+      super(size);
       this.prePopulate = prePopulate;
-      initialize(size);
     }
 
     @Override
@@ -116,4 +116,5 @@ public class PagingCollector extends TopDocsCollector<ScoreDoc> {
       }
     }
   }
+
 }

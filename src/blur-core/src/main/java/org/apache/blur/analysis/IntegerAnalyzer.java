@@ -21,8 +21,9 @@ import java.io.Reader;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.NumericTokenStream;
-import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.util.CharTokenizer;
 import org.apache.lucene.util.NumericUtils;
+import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 
 public final class IntegerAnalyzer extends Analyzer {
 
@@ -60,17 +61,6 @@ public final class IntegerAnalyzer extends Analyzer {
     this.precisionStep = precisionStep;
   }
 
-  @Override
-  public TokenStream tokenStream(String fieldName, Reader reader) {
-    NumericTokenStream numericTokenStream = new NumericTokenStream(precisionStep);
-    try {
-      numericTokenStream.setIntValue(toInteger(reader));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    return numericTokenStream;
-  }
-
   private int toInteger(Reader reader) throws IOException {
     StringBuilder builder = new StringBuilder(20);
     int read;
@@ -78,6 +68,34 @@ public final class IntegerAnalyzer extends Analyzer {
       builder.append((char) read);
     }
     return Integer.parseInt(builder.toString(), radix);
+  }
+  
+  @Override
+  protected TokenStreamComponents createComponents(String fieldName,
+      Reader reader) {
+    final CharTokenizer source = new CharTokenizer(LUCENE_VERSION, reader) {
+      @Override
+      protected boolean isTokenChar(int arg0) {
+        return true;
+      }
+    };
+
+    final int value;
+    try {
+      value = toInteger(reader);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    final NumericTokenStream numericTokenStream = new NumericTokenStream(
+        precisionStep);
+    numericTokenStream.setIntValue(value);
+
+    return new TokenStreamComponents(source, numericTokenStream) {
+      public void setReader(Reader reader) throws IOException {
+        numericTokenStream.reset();
+        numericTokenStream.setIntValue(toInteger(reader));
+      }
+    };
   }
 
 }

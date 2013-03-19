@@ -27,8 +27,8 @@ import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.analysis.BlurAnalyzer.TYPE;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Filter;
@@ -80,7 +80,6 @@ public class SuperParser extends QueryParser {
   @Override
   protected MultiPhraseQuery newMultiPhraseQuery() {
     return new MultiPhraseQuery() {
-      private static final long serialVersionUID = 2743009696906520410L;
 
       @Override
       public void add(Term[] terms, int position) {
@@ -95,7 +94,6 @@ public class SuperParser extends QueryParser {
   @Override
   protected PhraseQuery newPhraseQuery() {
     return new PhraseQuery() {
-      private static final long serialVersionUID = 1927750709523859808L;
 
       @Override
       public void add(Term term, int position) {
@@ -116,18 +114,18 @@ public class SuperParser extends QueryParser {
   }
 
   @Override
-  protected Query newRangeQuery(String field, String part1, String part2, boolean inclusive) {
-    Query q = blurAnalyzer.getNewRangeQuery(field, part1, part2, inclusive);
+  protected Query newRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
+    Query q = blurAnalyzer.getNewRangeQuery(field, part1, part2, startInclusive, endInclusive);
     if (q != null) {
       return addField(q, field);
     }
-    return addField(super.newRangeQuery(field, part1, part2, inclusive), field);
+    return addField(super.newRangeQuery(field, part1, part2, startInclusive, endInclusive), field);
   }
 
   @Override
   protected Query newTermQuery(Term term) {
     String field = term.field();
-    Query q = blurAnalyzer.getNewRangeQuery(field, term.text(), term.text(), true);
+    Query q = blurAnalyzer.getNewRangeQuery(field, term.text(), term.text(), true, true);
     if (q != null) {
       return addField(q, field);
     }
@@ -185,56 +183,56 @@ public class SuperParser extends QueryParser {
     return new FilteredQuery(query, queryFilter);
   }
 
-//  private boolean isSameGroupName(BooleanQuery booleanQuery) {
-//    String groupName = findFirstGroupName(booleanQuery);
-//    if (groupName == null) {
-//      return false;
-//    }
-//    return isSameGroupName(booleanQuery, groupName);
-//  }
-//
-//  private boolean isSameGroupName(Query query, String groupName) {
-//    if (query instanceof BooleanQuery) {
-//      BooleanQuery booleanQuery = (BooleanQuery) query;
-//      for (BooleanClause clause : booleanQuery.clauses()) {
-//        if (!isSameGroupName(clause.getQuery(), groupName)) {
-//          return false;
-//        }
-//      }
-//      return true;
-//    } else {
-//      String fieldName = fieldNames.get(query);
-//      String currentGroupName = getGroupName(fieldName);
-//      if (groupName.equals(currentGroupName)) {
-//        return true;
-//      }
-//      return false;
-//    }
-//  }
-//
-//  private String getGroupName(String fieldName) {
-//    if (fieldName == null) {
-//      return null;
-//    }
-//    int index = fieldName.indexOf(SEP);
-//    if (index < 0) {
-//      return null;
-//    }
-//    return fieldName.substring(0, index);
-//  }
-//
-//  private String findFirstGroupName(Query query) {
-//    if (query instanceof BooleanQuery) {
-//      BooleanQuery booleanQuery = (BooleanQuery) query;
-//      for (BooleanClause clause : booleanQuery.clauses()) {
-//        return findFirstGroupName(clause.getQuery());
-//      }
-//      return null;
-//    } else {
-//      String fieldName = fieldNames.get(query);
-//      return getGroupName(fieldName);
-//    }
-//  }
+  // private boolean isSameGroupName(BooleanQuery booleanQuery) {
+  // String groupName = findFirstGroupName(booleanQuery);
+  // if (groupName == null) {
+  // return false;
+  // }
+  // return isSameGroupName(booleanQuery, groupName);
+  // }
+  //
+  // private boolean isSameGroupName(Query query, String groupName) {
+  // if (query instanceof BooleanQuery) {
+  // BooleanQuery booleanQuery = (BooleanQuery) query;
+  // for (BooleanClause clause : booleanQuery.clauses()) {
+  // if (!isSameGroupName(clause.getQuery(), groupName)) {
+  // return false;
+  // }
+  // }
+  // return true;
+  // } else {
+  // String fieldName = fieldNames.get(query);
+  // String currentGroupName = getGroupName(fieldName);
+  // if (groupName.equals(currentGroupName)) {
+  // return true;
+  // }
+  // return false;
+  // }
+  // }
+  //
+  // private String getGroupName(String fieldName) {
+  // if (fieldName == null) {
+  // return null;
+  // }
+  // int index = fieldName.indexOf(SEP);
+  // if (index < 0) {
+  // return null;
+  // }
+  // return fieldName.substring(0, index);
+  // }
+  //
+  // private String findFirstGroupName(Query query) {
+  // if (query instanceof BooleanQuery) {
+  // BooleanQuery booleanQuery = (BooleanQuery) query;
+  // for (BooleanClause clause : booleanQuery.clauses()) {
+  // return findFirstGroupName(clause.getQuery());
+  // }
+  // return null;
+  // } else {
+  // String fieldName = fieldNames.get(query);
+  // return getGroupName(fieldName);
+  // }
+  // }
 
   private Query addField(Query q, String field) {
     fieldNames.put(q, field);

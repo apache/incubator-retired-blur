@@ -16,7 +16,7 @@ package org.apache.blur.manager.writer;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.apache.blur.lucene.LuceneConstant.LUCENE_VERSION;
+import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
@@ -25,12 +25,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.blur.analysis.BlurAnalyzer;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.lucene.index.TieredMergePolicy;
-import org.apache.lucene.search.Similarity;
+import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
 
 public abstract class AbstractBlurIndex extends BlurIndex {
@@ -39,7 +40,7 @@ public abstract class AbstractBlurIndex extends BlurIndex {
   private BlurIndexCloser _closer;
   private Directory _directory;
   private IndexDeletionPolicy _indexDeletionPolicy = new KeepOnlyLastCommitDeletionPolicy();
-  private AtomicReference<IndexReader> _indexReaderRef = new AtomicReference<IndexReader>();
+  private AtomicReference<DirectoryReader> _indexReaderRef = new AtomicReference<DirectoryReader>();
   private AtomicBoolean _isClosed = new AtomicBoolean(false);
   private AtomicBoolean _open = new AtomicBoolean();
   private BlurIndexRefresher _refresher;
@@ -58,7 +59,7 @@ public abstract class AbstractBlurIndex extends BlurIndex {
     return conf;
   }
 
-  protected void initIndexReader(IndexReader reader) throws IOException {
+  protected void initIndexReader(DirectoryReader reader) throws IOException {
     _indexReaderRef.set(reader);
     _refresher.register(this);
   }
@@ -68,12 +69,9 @@ public abstract class AbstractBlurIndex extends BlurIndex {
     if (!_open.get()) {
       return;
     }
-    IndexReader oldReader = _indexReaderRef.get();
-    if (oldReader.isCurrent()) {
-      return;
-    }
-    IndexReader reader = IndexReader.openIfChanged(oldReader);
-    if (reader != null && oldReader != reader) {
+    DirectoryReader oldReader = _indexReaderRef.get();
+    DirectoryReader reader = DirectoryReader.openIfChanged(oldReader);
+    if (reader != null) {
       _indexReaderRef.set(reader);
       _closer.close(oldReader);
     }

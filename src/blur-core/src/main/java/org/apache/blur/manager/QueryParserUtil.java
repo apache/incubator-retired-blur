@@ -16,13 +16,13 @@ package org.apache.blur.manager;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.apache.blur.lucene.LuceneConstant.LUCENE_VERSION;
+import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 
 import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.lucene.search.SuperParser;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ScoreType;
-import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.Query;
@@ -30,7 +30,7 @@ import org.apache.lucene.search.QueryWrapperFilter;
 
 public class QueryParserUtil {
 
-  public static Query parseQuery(String query, boolean superQueryOn, BlurAnalyzer analyzer, Filter postFilter, Filter preFilter, ScoreType scoreType) throws ParseException {
+  public static Query parseQuery(String query, boolean superQueryOn, BlurAnalyzer analyzer, Filter postFilter, Filter preFilter, ScoreType scoreType) throws ParseException   {
     Query result = new SuperParser(LUCENE_VERSION, analyzer, superQueryOn, preFilter, scoreType).parse(query);
     if (postFilter == null) {
       return result;

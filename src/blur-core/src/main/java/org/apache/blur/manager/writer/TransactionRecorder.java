@@ -24,7 +24,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -33,6 +32,8 @@ import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.index.IndexWriter;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.server.ShardContext;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
@@ -91,17 +92,23 @@ public class TransactionRecorder {
     ID_TYPE.freeze();
   }
 
-  private AtomicBoolean running = new AtomicBoolean(true);
-  private Path walPath;
-  private Configuration configuration;
-  private FileSystem fileSystem;
-  private AtomicReference<FSDataOutputStream> outputStream = new AtomicReference<FSDataOutputStream>();
-  private AtomicLong lastSync = new AtomicLong();
-  private long timeBetweenSyncs = TimeUnit.MILLISECONDS.toNanos(10);
-  private BlurAnalyzer analyzer;
+  private final AtomicBoolean running = new AtomicBoolean(true);
+  private final AtomicReference<FSDataOutputStream> outputStream = new AtomicReference<FSDataOutputStream>();
+  private final long timeBetweenSyncsNanos;
+  private final AtomicLong lastSync = new AtomicLong();
+  
+  private final Path walPath;
+  private final Configuration configuration;
+  private final BlurAnalyzer analyzer;
+  private final FileSystem fileSystem;
 
-  public void init() throws IOException {
+  public  TransactionRecorder(ShardContext shardContext) throws IOException {
+    TableContext tableContext = shardContext.getTableContext();
+    configuration = tableContext.getConfiguration();
+    analyzer = tableContext.getAnalyzer();
+    walPath = shardContext.getWalShardPath();
     fileSystem = walPath.getFileSystem(configuration);
+    timeBetweenSyncsNanos = tableContext.getTimeBetweenWALSyncsNanos();
   }
 
   public void open() throws IOException {
@@ -266,7 +273,7 @@ public class TransactionRecorder {
     os.writeInt(bs.length);
     os.write(bs);
     long now = System.nanoTime();
-    if (lastSync.get() + timeBetweenSyncs < now) {
+    if (lastSync.get() + timeBetweenSyncsNanos < now) {
       os.sync();
       lastSync.set(now);
     }
@@ -300,14 +307,6 @@ public class TransactionRecorder {
       }
     }
     return writer.deleteDocuments(createRowId(rowId));
-  }
-
-  public void setWalPath(Path walPath) {
-    this.walPath = walPath;
-  }
-
-  public void setConfiguration(Configuration configuration) {
-    this.configuration = configuration;
   }
 
   public void commit(IndexWriter writer) throws CorruptIndexException, IOException {
@@ -344,10 +343,6 @@ public class TransactionRecorder {
     document.add(new Field(BlurConstants.RECORD_ID, record.recordId, ID_TYPE));
     RowIndexWriter.addColumns(document, analyzer, builder, record.family, record.columns);
     return document;
-  }
-
-  public void setAnalyzer(BlurAnalyzer analyzer) {
-    this.analyzer = analyzer;
   }
 
   private Term createRowId(String id) {

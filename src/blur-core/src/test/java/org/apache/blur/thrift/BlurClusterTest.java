@@ -19,6 +19,7 @@ package org.apache.blur.thrift;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,8 +27,8 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.blur.MiniCluster;
-import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResults;
@@ -35,19 +36,43 @@ import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.TableDescriptor;
-import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.utils.BlurUtil;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocalFileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.thrift.TException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-
 public class BlurClusterTest {
 
+  private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "/tmp"));
+
   @BeforeClass
-  public static void startCluster() {
-    MiniCluster.startBlurCluster("./tmp/cluster", 2, 3);
+  public static void startCluster() throws IOException {
+    LocalFileSystem localFS = FileSystem.getLocal(new Configuration());
+    File testDirectory = new File(TMPDIR, "blur-cluster-test");
+    testDirectory.mkdirs();
+
+    Path directory = new Path(testDirectory.getPath());
+    FsPermission dirPermissions = localFS.getFileStatus(directory).getPermission();
+    FsAction userAction = dirPermissions.getUserAction();
+    FsAction groupAction = dirPermissions.getGroupAction();
+    FsAction otherAction = dirPermissions.getOtherAction();
+
+    StringBuilder builder = new StringBuilder();
+    builder.append(userAction.ordinal());
+    builder.append(groupAction.ordinal());
+    builder.append(otherAction.ordinal());
+    String dirPermissionNum = builder.toString();
+    System.setProperty("dfs.datanode.data.dir.perm", dirPermissionNum);
+    testDirectory.delete();
+
+    MiniCluster.startBlurCluster("cluster", 2, 3);
   }
 
   @AfterClass

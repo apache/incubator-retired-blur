@@ -13,7 +13,7 @@ import org.apache.blur.log.LogFactory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.util.IOUtils;
 
-public class IndexInputCloser implements Runnable {
+public class IndexInputCloser implements Runnable, Closeable {
 
   private static final Log LOG = LogFactory.getLog(IndexInputCloser.class);
 

@@ -16,6 +16,7 @@ package org.apache.blur.lucene.store.refcounter;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,7 +33,7 @@ import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Gauge;
 import com.yammer.metrics.core.MetricName;
 
-public class DirectoryReferenceFileGC extends TimerTask {
+public class DirectoryReferenceFileGC extends TimerTask implements Closeable {
 
   private static final String ORG_APACHE_BLUR = "org.apache.blur";
 

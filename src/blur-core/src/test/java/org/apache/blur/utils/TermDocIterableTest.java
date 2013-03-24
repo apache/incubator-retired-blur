@@ -17,53 +17,43 @@ package org.apache.blur.utils;
  * limitations under the License.
  */
 
-import static org.apache.blur.lucene.LuceneConstant.LUCENE_VERSION;
+import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.io.IOException;
 
-import org.apache.blur.utils.TermDocIterable;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldSelector;
-import org.apache.lucene.document.FieldSelectorResult;
-import org.apache.lucene.document.Field.Index;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.SlowCompositeReaderWrapper;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermDocs;
-import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.RAMDirectory;
 import org.junit.Before;
 import org.junit.Test;
-
 
 public class TermDocIterableTest {
 
   private static final int BLOCKS = 10;
   private static final int COUNT_PER_BLOCK = 100;
-  private IndexReader reader;
+  private AtomicReader reader;
 
   @Before
   public void setup() throws IOException {
     reader = createIndexReader();
   }
 
-  @SuppressWarnings("serial")
   @Test
   public void testTermDocIterable() throws IOException {
     for (int pass = 0; pass < 1; pass++) {
       for (int id = 0; id < BLOCKS; id++) {
-        TermDocs termDocs = reader.termDocs(new Term("id", Integer.toString(id)));
-        TermDocIterable iterable = new TermDocIterable(termDocs, reader, new FieldSelector() {
-          @Override
-          public FieldSelectorResult accept(String fieldName) {
-            return FieldSelectorResult.LOAD;
-          }
-        });
+        DocsEnum termDocs = reader.termDocsEnum(new Term("id", Integer.toString(id)));
+        TermDocIterable iterable = new TermDocIterable(termDocs, reader);
         int count = 0;
         int i = 0;
         long s = System.nanoTime();
@@ -79,36 +69,33 @@ public class TermDocIterableTest {
     }
   }
 
-  private IndexReader createIndexReader() throws IOException {
-    FSDirectory directory = FSDirectory.open(new File("./tmp/termdociterable"));
-    if (!IndexReader.indexExists(directory)) {
-      rm(new File("./tmp/termdociterable"));
-      IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)));
-      for (int i = 0; i < BLOCKS; i++) {
-        addDocumentBlock(i, COUNT_PER_BLOCK, writer);
-      }
-      writer.close();
+  private AtomicReader createIndexReader() throws IOException {
+    RAMDirectory directory = new RAMDirectory();
+    IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)));
+    for (int i = 0; i < BLOCKS; i++) {
+      addDocumentBlock(i, COUNT_PER_BLOCK, writer);
     }
-    return IndexReader.open(directory);
-  }
-
-  private File rm(File file) {
-    if (file.isDirectory()) {
-      for (File f : file.listFiles()) {
-        rm(f);
-      }
-    }
-    file.delete();
-    return file;
+    writer.close();
+    return SlowCompositeReaderWrapper.wrap(DirectoryReader.open(directory));
   }
 
   private void addDocumentBlock(int id, int count, IndexWriter writer) throws IOException {
+    FieldType fieldType = new FieldType();
+    fieldType.setIndexed(true);
+    fieldType.setOmitNorms(true);
+    fieldType.setTokenized(false);
+    fieldType.setStored(true);
+
+    FieldType fieldTypeNoIndex = new FieldType();
+    fieldTypeNoIndex.setStored(true);
+    fieldTypeNoIndex.setIndexed(false);
+
     for (int i = 0; i < count; i++) {
       Document document = new Document();
-      document.add(new Field("id", Integer.toString(id), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
-      document.add(new Field("field", Integer.toString(i), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+      document.add(new Field("id", Integer.toString(id), fieldType));
+      document.add(new Field("field", Integer.toString(i), fieldType));
       for (int j = 0; j < 100; j++) {
-        document.add(new Field("field" + j, "testing here testing here testing here testing here testing here testing here testing here", Store.YES, Index.NO));
+        document.add(new Field("field" + j, "testing here testing here testing here testing here testing here testing here testing here", fieldTypeNoIndex));
       }
       writer.addDocument(document);
     }

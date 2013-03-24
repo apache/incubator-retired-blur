@@ -5,8 +5,9 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <link href="style.css" rel="stylesheet" type="text/css"/>
 <title>Thrift module: Blur</title></head><body>
+<div class="container-fluid">
 <h1>Thrift module: Blur</h1>
-<table><tr><th>Module</th><th>Services</th><th>Data types</th><th>Constants</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Module</th><th>Services</th><th>Data types</th><th>Constants</th></thead>
 <tr>
 <td>Blur</td><td><a href="Blur.html#Svc_Blur">Blur</a><br/>
 <ul>
@@ -70,7 +71,7 @@
 <a href="Blur.html#Struct_TableDescriptor">TableDescriptor</a><br/>
 <a href="Blur.html#Struct_TableStats">TableStats</a><br/>
 </td>
-<td><code></code></td>
+<td></code></td>
 </tr></table>
 <hr/><h2 id="Enumerations">Enumerations</h2>
 <div class="definition"><h3 id="Enum_ScoreType">Enumeration: ScoreType</h3>
@@ -79,7 +80,7 @@ SUPER - During a multi Record match, a calculation of the best match Record plus
 AGGREGATE - During a multi Record match, the aggregate score of all the Records within a ColumnFamily is used in the scoring of the SuperQuery.<br/><br/>
 BEST - During a multi Record match, the best score of all the Records within a ColumnFamily is used in the scoring of the SuperQuery.<br/><br/>
 CONSTANT - A constant score of 1 is used in the scoring of the SuperQuery.<br/>
-<br/><br/><table>
+<br/><br/><table class="table-bordered table-striped table-condensed">
 <tr><td><code>SUPER</code></td><td><code>0</code></td></tr>
 <tr><td><code>AGGREGATE</code></td><td><code>1</code></td></tr>
 <tr><td><code>BEST</code></td><td><code>2</code></td></tr>
@@ -90,7 +91,7 @@ The state of a query.<br/><br/>
 RUNNING - Query is running.<br/><br/>
 INTERRUPTED - Query has been interrupted.<br/><br/>
 COMPLETE - Query is complete.<br/>
-<br/><br/><table>
+<br/><br/><table class="table-bordered table-striped table-condensed">
 <tr><td><code>RUNNING</code></td><td><code>0</code></td></tr>
 <tr><td><code>INTERRUPTED</code></td><td><code>1</code></td></tr>
 <tr><td><code>COMPLETE</code></td><td><code>2</code></td></tr>
@@ -100,7 +101,7 @@ Specifies the type of Row mutation that should occur during a mutation of a give
 DELETE_ROW - Indicates that the entire Row is to be deleted.  No changes are made if the specified row does not exist.<br/><br/>
 REPLACE_ROW - Indicates that the entire Row is to be deleted, and then a new Row with the same id is to be added.  If the specified row does not exist, the new row will still be created.<br/><br/>
 UPDATE_ROW - Indicates that mutations of the underlying Records will be processed individually.  Mutation will result in a BlurException if the specified row does not exist.<br/>
-<br/><br/><table>
+<br/><br/><table class="table-bordered table-striped table-condensed">
 <tr><td><code>DELETE_ROW</code></td><td><code>0</code></td></tr>
 <tr><td><code>REPLACE_ROW</code></td><td><code>1</code></td></tr>
 <tr><td><code>UPDATE_ROW</code></td><td><code>2</code></td></tr>
@@ -111,7 +112,7 @@ DELETE_ENTIRE_RECORD -  Indicates the Record with the given recordId in the give
 REPLACE_ENTIRE_RECORD - Indicates the Record with the given recordId in the given Row is to be deleted, and a new Record with the same id is to be added. If the specified record does not exist the new record is still added.<br/><br/>
 REPLACE_COLUMNS - Replace the columns that are specified in the Record mutation.  If the target record does not exist then this mutation will result in a BlurException.<br/><br/>
 APPEND_COLUMN_VALUES - Append the columns in the Record mutation to the Record that could already exist.  If the target record does not exist then this mutation will result in a BlurException.<br/>
-<br/><br/><table>
+<br/><br/><table class="table-bordered table-striped table-condensed">
 <tr><td><code>DELETE_ENTIRE_RECORD</code></td><td><code>0</code></td></tr>
 <tr><td><code>REPLACE_ENTIRE_RECORD</code></td><td><code>1</code></td></tr>
 <tr><td><code>REPLACE_COLUMNS</code></td><td><code>2</code></td></tr>
@@ -119,7 +120,7 @@ APPEND_COLUMN_VALUES - Append the columns in the Record mutation to the Record t
 </table></div>
 <hr/><h2 id="Structs">Data structures</h2>
 <div class="definition"><h3 id="Struct_BlurException">Exception: BlurException</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>message</td><td><code>string</code></td><td>The message in the exception.
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>stackTraceStr</td><td><code>string</code></td><td>The original stack trace (if any).
@@ -127,14 +128,14 @@ APPEND_COLUMN_VALUES - Append the columns in the Record mutation to the Record t
 </table><br/>BlurException that carries a message plus the original stack
 trace (if any).
 <br/></div><div class="definition"><h3 id="Struct_Column">Struct: Column</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>name</td><td><code>string</code></td><td>The name of the column.
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>value</td><td><code>string</code></td><td>The value to be indexed and stored.
 </td><td>default</td><td></td></tr>
 </table><br/>Column is the lowest storage element in Blur, it stores a single name and value pair.
 <br/></div><div class="definition"><h3 id="Struct_Record">Struct: Record</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>recordId</td><td><code>string</code></td><td>Record id uniquely identifies a record within a single row.
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>family</td><td><code>string</code></td><td>The family in which this record resides.
@@ -143,7 +144,7 @@ trace (if any).
 </td><td>default</td><td></td></tr>
 </table><br/>Records contain a list of columns, multiple columns with the same name are allowed.
 <br/></div><div class="definition"><h3 id="Struct_Row">Struct: Row</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>id</td><td><code>string</code></td><td>The row id.
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>records</td><td><code>list&lt;<code><a href="Blur.html#Struct_Record">Record</a></code>&gt;</code></td><td>The list records within the row.  If paging is used this list will only
@@ -154,7 +155,7 @@ through records of a row, this count will reflect the entire row.
 </td><td>default</td><td></td></tr>
 </table><br/>Rows contain a list of records.
 <br/></div><div class="definition"><h3 id="Struct_Selector">Struct: Selector</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>recordOnly</td><td><code>bool</code></td><td>Fetch the Record only, not the entire Row.
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>locationId</td><td><code>string</code></td><td>The location id of the Record or Row to be fetched.
@@ -171,19 +172,19 @@ through records of a row, this count will reflect the entire row.
 </td><td>default</td><td></td></tr>
 </table><br/>Select carries the request for information to be retrieved from the stored columns.
 <br/></div><div class="definition"><h3 id="Struct_FetchRowResult">Struct: FetchRowResult</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>row</td><td><code><a href="Blur.html#Struct_Row">Row</a></code></td><td>The row fetched.
 </td><td>default</td><td></td></tr>
 </table><br/>FetchRowResult contains row result from a fetch.
 <br/></div><div class="definition"><h3 id="Struct_FetchRecordResult">Struct: FetchRecordResult</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>rowid</td><td><code>string</code></td><td>The row id of the record being fetched.
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>record</td><td><code><a href="Blur.html#Struct_Record">Record</a></code></td><td>The record fetched.
 </td><td>default</td><td></td></tr>
 </table><br/>FetchRecordResult contains rowid of the record and the record result from a fetch.
 <br/></div><div class="definition"><h3 id="Struct_FetchResult">Struct: FetchResult</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>exists</td><td><code>bool</code></td><td>True if the result exists, false if it doesn't.
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>deleted</td><td><code>bool</code></td><td>If the row was marked as deleted.
@@ -196,7 +197,7 @@ through records of a row, this count will reflect the entire row.
 </td><td>default</td><td></td></tr>
 </table><br/>FetchResult contains the row or record fetch result based if the Selector was going to fetch the entire row or a single record.
 <br/></div><div class="definition"><h3 id="Struct_SimpleQuery">Struct: SimpleQuery</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>queryStr</td><td><code>string</code></td><td>A Lucene syntax based query.
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>superQueryOn</td><td><code>bool</code></td><td>If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
@@ -209,19 +210,19 @@ through records of a row, this count will reflect the entire row.
 </td><td>default</td><td></td></tr>
 </table><br/>The SimpleQuery object holds the query string (normal Lucene syntax), filters and type of scoring (used when super query is on).
 <br/></div><div class="definition"><h3 id="Struct_ExpertQuery">Struct: ExpertQuery</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>query</td><td><code>binary</code></td><td>The serialized query.
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>filter</td><td><code>binary</code></td><td>The serialized filter.
 </td><td>default</td><td></td></tr>
 </table><br/>The expert query allows for submission of a serialized query and filter object to be executed against all the queries.
 <br/></div><div class="definition"><h3 id="Struct_Facet">Struct: Facet</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>queryStr</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 <tr><td>2</td><td>minimumNumberOfBlurResults</td><td><code>i64</code></td><td></td><td>default</td><td>9223372036854775807</td></tr>
 </table><br/>Blur facet.
 <br/></div><div class="definition"><h3 id="Struct_BlurQuery">Struct: BlurQuery</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>simpleQuery</td><td><code><a href="Blur.html#Struct_SimpleQuery">SimpleQuery</a></code></td><td>
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>expertQuery</td><td><code><a href="Blur.html#Struct_ExpertQuery">ExpertQuery</a></code></td><td>
@@ -254,7 +255,7 @@ through records of a row, this count will reflect the entire row.
 </td><td>default</td><td>1</td></tr>
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_BlurResult">Struct: BlurResult</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>locationId</td><td><code>string</code></td><td>
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>score</td><td><code>double</code></td><td>
@@ -263,7 +264,7 @@ through records of a row, this count will reflect the entire row.
 </td><td>default</td><td></td></tr>
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_BlurResults">Struct: BlurResults</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>totalResults</td><td><code>i64</code></td><td>
 </td><td>default</td><td>0</td></tr>
 <tr><td>2</td><td>shardInfo</td><td><code>map&lt;<code>string</code>, <code>i64</code>&gt;</code></td><td>
@@ -278,14 +279,14 @@ through records of a row, this count will reflect the entire row.
 </td><td>default</td><td></td></tr>
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_RecordMutation">Struct: RecordMutation</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>recordMutationType</td><td><code><a href="Blur.html#Enum_RecordMutationType">RecordMutationType</a></code></td><td>
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>record</td><td><code><a href="Blur.html#Struct_Record">Record</a></code></td><td>
 </td><td>default</td><td></td></tr>
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_RowMutation">Struct: RowMutation</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>table</td><td><code>string</code></td><td>The that that the row mutation is to act upon.
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>rowId</td><td><code>string</code></td><td>The row id that the row mutation is to act upon.
@@ -298,14 +299,14 @@ through records of a row, this count will reflect the entire row.
 </td><td>default</td><td>0</td></tr>
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_CpuTime">Struct: CpuTime</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>cpuTime</td><td><code>i64</code></td><td>
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>realTime</td><td><code>i64</code></td><td>
 </td><td>default</td><td></td></tr>
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_BlurQueryStatus">Struct: BlurQueryStatus</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>query</td><td><code><a href="Blur.html#Struct_BlurQuery">BlurQuery</a></code></td><td>
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>cpuTimes</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_CpuTime">CpuTime</a></code>&gt;</code></td><td>
@@ -320,7 +321,7 @@ through records of a row, this count will reflect the entire row.
 </td><td>default</td><td></td></tr>
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_TableStats">Struct: TableStats</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>tableName</td><td><code>string</code></td><td>
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>bytes</td><td><code>i64</code></td><td>
@@ -333,32 +334,32 @@ through records of a row, this count will reflect the entire row.
 </td><td>default</td><td></td></tr>
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_Schema">Struct: Schema</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>table</td><td><code>string</code></td><td>
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>columnFamilies</td><td><code>map&lt;<code>string</code>, <code>set&lt;<code>string</code>&gt;</code>&gt;</code></td><td>
 </td><td>default</td><td></td></tr>
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_AlternateColumnDefinition">Struct: AlternateColumnDefinition</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>analyzerClassName</td><td><code>string</code></td><td>
 </td><td>default</td><td></td></tr>
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_ColumnDefinition">Struct: ColumnDefinition</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>analyzerClassName</td><td><code>string</code></td><td></td><td>default</td><td>"org.apache.lucene.analysis.standard.StandardAnalyzer"</td></tr>
 <tr><td>2</td><td>fullTextIndex</td><td><code>bool</code></td><td></td><td>default</td><td></td></tr>
 <tr><td>3</td><td>alternateColumnDefinitions</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_AlternateColumnDefinition">AlternateColumnDefinition</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_ColumnFamilyDefinition">Struct: ColumnFamilyDefinition</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>defaultDefinition</td><td><code><a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a></code></td><td>
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>columnDefinitions</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a></code>&gt;</code></td><td>
 </td><td>default</td><td></td></tr>
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_AnalyzerDefinition">Struct: AnalyzerDefinition</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>defaultDefinition</td><td><code><a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a></code></td><td>
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>fullTextAnalyzerClassName</td><td><code>string</code></td><td>
@@ -367,12 +368,12 @@ through records of a row, this count will reflect the entire row.
 </td><td>default</td><td></td></tr>
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_ColumnPreCache">Struct: ColumnPreCache</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>preCacheCols</td><td><code>list&lt;<code>string</code>&gt;</code></td><td>This map sets what column families and columns to prefetch into block cache on shard open.
 </td><td>default</td><td></td></tr>
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_TableDescriptor">Struct: TableDescriptor</h3>
-<table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>isEnabled</td><td><code>bool</code></td><td>
 </td><td>default</td><td>1</td></tr>
 <tr><td>2</td><td>analyzerDefinition</td><td><code><a href="Blur.html#Struct_AnalyzerDefinition">AnalyzerDefinition</a></code></td><td>
@@ -399,6 +400,8 @@ through records of a row, this count will reflect the entire row.
 updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.
 </td><td>default</td><td>0</td></tr>
 <tr><td>13</td><td>columnPreCache</td><td><code><a href="Blur.html#Struct_ColumnPreCache">ColumnPreCache</a></code></td><td>Sets what column families and columns to prefetch into block cache on shard open.
+</td><td>default</td><td></td></tr>
+<tr><td>14</td><td>tableProperties</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td>Properties, used to override default settings on a per table basis.
 </td><td>default</td><td></td></tr>
 </table><br/><p/>
 <br/></div><hr/><h2 id="Services">Services</h2>
@@ -522,4 +525,4 @@ updates through MapReduce are allowed and in fact they are only allowed if the t
 </pre></div><div class="definition"><h4 id="Fn_Blur_configuration">Function: Blur.configuration</h4>
 <pre><code>map&lt;<code>string</code>, <code>string</code>&gt;</code> configuration()
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div></body></html>
+</pre></div></div></body></html>

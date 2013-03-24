@@ -16,7 +16,7 @@ package org.apache.blur.mapreduce;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.apache.blur.lucene.LuceneConstant.LUCENE_VERSION;
+import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.apache.blur.utils.BlurConstants.RECORD_ID;
 import static org.apache.blur.utils.BlurConstants.ROW_ID;
 
@@ -39,7 +39,6 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
 import org.apache.blur.mapreduce.BlurMutate.MUTATE_TYPE;
 import org.apache.blur.mapreduce.BlurTask.INDEXING_TYPE;
-import org.apache.blur.store.compressed.CompressedFieldDataDirectory;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.TableDescriptor;
@@ -64,7 +63,6 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.BufferedIndexInput;
 import org.apache.lucene.store.Directory;

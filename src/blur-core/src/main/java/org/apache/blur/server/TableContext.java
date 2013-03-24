@@ -21,7 +21,10 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_DELETION_POLI
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_COMMITS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_REFRESHS;
 
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.log.Log;
@@ -75,12 +78,12 @@ public class TableContext {
     }
     LOG.info("Creating table context for table [{0}]", tableDescriptor.getName());
     Configuration configuration = new Configuration();
-//    Map<String, String> properties = tableDescriptor.getProperties();
-//    if (properties != null) {
-//      for (Entry<String, String> prop : properties.entrySet()) {
-//        configuration.set(prop.getKey(), prop.getValue());
-//      }
-//    }
+    Map<String, String> tableProperties = tableDescriptor.getTableProperties();
+    if (tableProperties != null) {
+      for (Entry<String, String> prop : tableProperties.entrySet()) {
+        configuration.set(prop.getKey(), prop.getValue());
+      }
+    }
 
     tableContext = new TableContext();
     tableContext.configuration = configuration;
@@ -161,5 +164,9 @@ public class TableContext {
 
   public ScoreType getDefaultScoreType() {
     return defaultScoreType;
+  }
+
+  public long getTimeBetweenWALSyncsNanos() {
+    return TimeUnit.MILLISECONDS.toNanos(10);
   }
 }

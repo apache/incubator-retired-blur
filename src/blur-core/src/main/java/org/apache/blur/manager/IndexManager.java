@@ -55,6 +55,7 @@ import org.apache.blur.manager.status.QueryStatusManager;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.metrics.BlurMetrics;
 import org.apache.blur.metrics.QueryMetrics;
+import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.thrift.BException;
 import org.apache.blur.thrift.MutationHelper;
 import org.apache.blur.thrift.generated.BlurException;
@@ -99,7 +100,6 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
@@ -178,11 +178,11 @@ public class IndexManager {
       LOG.error("Unknown error while trying to get the correct index reader for selector [{0}].", e, selector);
       throw new BException(e.getMessage(), e);
     }
-    IndexReader reader = null;
+    IndexSearcherClosable searcher = null;
     try {
-      reader = index.getIndexReader();
+      searcher = index.getIndexReader();
       long s = System.nanoTime();
-      fetchRow(reader, table, selector, fetchResult);
+      fetchRow(searcher.getIndexReader(), table, selector, fetchResult);
       _queryMetrics.recordDataFetch(System.nanoTime() - s, getRecordCount(fetchResult));
       if (_blurMetrics != null) {
         if (fetchResult.rowResult != null) {
@@ -198,12 +198,12 @@ public class IndexManager {
       LOG.error("Unknown error while trying to fetch row.", e);
       throw new BException(e.getMessage(), e);
     } finally {
-      if (reader != null) {
+      if (searcher != null) {
         // this will allow for closing of index
         try {
-          reader.decRef();
+          searcher.close();
         } catch (IOException e) {
-          LOG.error("Unknown error trying to call decRef on reader [{0}]", e, reader);
+          LOG.error("Unknown error trying to call close on searcher [{0}]", e, searcher);
         }
       }
     }
@@ -229,9 +229,8 @@ public class IndexManager {
     if (blurIndex == null) {
       throw new BlurException("Shard [" + shardName + "] is not being servered by this shardserver.", null);
     }
-    IndexReader reader = blurIndex.getIndexReader();
+    IndexSearcherClosable searcher = blurIndex.getIndexReader();
     try {
-      IndexSearcher searcher = new IndexSearcher(reader);
       BooleanQuery query = new BooleanQuery();
       if (selector.recordOnly) {
         query.add(new TermQuery(new Term(RECORD_ID, recordId)), Occur.MUST);
@@ -255,7 +254,7 @@ public class IndexManager {
       }
     } finally {
       // this will allow for closing of index
-      reader.decRef();
+      searcher.close();
     }
   }
 
@@ -517,12 +516,12 @@ public class IndexManager {
       @Override
       public Long call(Entry<String, BlurIndex> input) throws Exception {
         BlurIndex index = input.getValue();
-        IndexReader reader = index.getIndexReader();
+        IndexSearcherClosable searcher = index.getIndexReader();
         try {
-          return recordFrequency(reader, columnFamily, columnName, value);
+          return recordFrequency(searcher.getIndexReader(), columnFamily, columnName, value);
         } finally {
           // this will allow for closing of index
-          reader.decRef();
+          searcher.close();
         }
       }
     }).merge(new Merger<Long>() {
@@ -550,12 +549,12 @@ public class IndexManager {
       @Override
       public List<String> call(Entry<String, BlurIndex> input) throws Exception {
         BlurIndex index = input.getValue();
-        IndexReader reader = index.getIndexReader();
+        IndexSearcherClosable searcher = index.getIndexReader();
         try {
-          return terms(reader, columnFamily, columnName, startWith, size);
+          return terms(searcher.getIndexReader(), columnFamily, columnName, startWith, size);
         } finally {
           // this will allow for closing of index
-          reader.decRef();
+          searcher.close();
         }
       }
     }).merge(new Merger<List<String>>() {
@@ -606,9 +605,9 @@ public class IndexManager {
     schema.columnFamilies = new TreeMap<String, Set<String>>();
     Map<String, BlurIndex> blurIndexes = _indexServer.getIndexes(table);
     for (BlurIndex blurIndex : blurIndexes.values()) {
-      IndexReader reader = blurIndex.getIndexReader();
+      IndexSearcherClosable searcher = blurIndex.getIndexReader();
       try {
-        FieldInfos mergedFieldInfos = MultiFields.getMergedFieldInfos(reader);
+        FieldInfos mergedFieldInfos = MultiFields.getMergedFieldInfos(searcher.getIndexReader());
         for (FieldInfo fieldInfo : mergedFieldInfos) {
           String fieldName = fieldInfo.name;
           int index = fieldName.indexOf('.');
@@ -625,7 +624,7 @@ public class IndexManager {
         }
       } finally {
         // this will allow for closing of index
-        reader.decRef();
+        searcher.close();
       }
     }
     return schema;
@@ -938,15 +937,14 @@ public class IndexManager {
       _status.attachThread();
       try {
         BlurIndex index = entry.getValue();
-        IndexReader reader = index.getIndexReader();
+        IndexSearcherClosable searcher = index.getIndexReader();
         String shard = entry.getKey();
         // @TODO need to add escapable rewriter
         // IndexReader escapeReader = EscapeRewrite.wrap(reader, _running);
         // IndexSearcher searcher = new IndexSearcher(escapeReader);
-        IndexSearcher searcher = new IndexSearcher(reader);
         searcher.setSimilarity(_indexServer.getSimilarity(_table));
         Query rewrite = searcher.rewrite((Query) _query.clone());
-        return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector, reader);
+        return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector, searcher.getIndexReader());
       } finally {
         _blurMetrics.queriesInternal.incrementAndGet();
         _status.deattachThread();

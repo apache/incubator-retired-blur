@@ -18,9 +18,7 @@ package org.apache.blur.search;
  */
 
 import static junit.framework.Assert.assertEquals;
-import static org.apache.blur.lucene.LuceneConstant.LUCENE_VERSION;
-import static org.apache.blur.utils.BlurConstants.PRIME_DOC;
-import static org.apache.blur.utils.BlurConstants.PRIME_DOC_VALUE;
+import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.apache.blur.utils.BlurConstants.ROW_ID;
 import static org.apache.blur.utils.BlurUtil.newColumn;
 import static org.apache.blur.utils.BlurUtil.newRecord;
@@ -38,10 +36,10 @@ import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.utils.RowIndexWriter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
@@ -76,10 +74,8 @@ public class SuperQueryTest {
     booleanQuery.add(wrapSuper(new TermQuery(new Term(ADDRESS_STREET, STREET1))), Occur.MUST);
 
     Directory directory = createIndex();
-    IndexReader reader = IndexReader.open(directory);
-    printAll(new Term(PERSON_NAME, NAME1), reader);
-    printAll(new Term(ADDRESS_STREET, STREET1), reader);
-    printAll(new Term(PRIME_DOC, PRIME_DOC_VALUE), reader);
+    IndexReader reader = DirectoryReader.open(directory);
+
     IndexSearcher searcher = new IndexSearcher(reader);
     TopDocs topDocs = searcher.search(booleanQuery, 10);
     assertEquals(2, topDocs.totalHits);
@@ -173,16 +169,9 @@ public class SuperQueryTest {
     assertEquals(0.75, topDocs.scoreDocs[2].score, 0.01);
   }
 
-  private void printAll(Term term, IndexReader reader) throws IOException {
-    TermDocs termDocs = reader.termDocs(term);
-    while (termDocs.next()) {
-      System.out.println(term + "=>" + termDocs.doc());
-    }
-  }
-
   private static IndexSearcher createSearcher() throws Exception {
     Directory directory = createIndex();
-    IndexReader reader = IndexReader.open(directory);
+    IndexReader reader = DirectoryReader.open(directory);
     return new IndexSearcher(reader);
   }
 

@@ -45,10 +45,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLongArray;
 
-import org.apache.blur.manager.IndexManager;
 import org.apache.blur.manager.indexserver.LocalIndexServer;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.metrics.BlurMetrics;
+import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
@@ -64,16 +64,18 @@ import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.SimpleQuery;
+import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 
 public class IndexManagerTest {
+  
+  private static final File TMPDIR = new File("./target/tmp");
 
   private static final String SHARD_NAME = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, 0);
   private static final String TABLE = "table";
@@ -82,12 +84,23 @@ public class IndexManagerTest {
   private LocalIndexServer server;
   private IndexManager indexManager;
 
+  private File base;
+
   @Before
   public void setUp() throws BlurException, IOException, InterruptedException {
-    File file = new File("./tmp/indexer-manager-test");
-    rm(file);
-    new File(new File(file, TABLE), SHARD_NAME).mkdirs();
-    server = new LocalIndexServer(file, new Path("./tmp/indexer-manager-test"));
+    base = new File(TMPDIR, "blur-index-manager-test");
+    rm(base);
+    
+    File file = new File(base, TABLE);
+    file.mkdirs();
+
+    TableDescriptor tableDescriptor = new TableDescriptor();
+    tableDescriptor.setName(TABLE);
+    tableDescriptor.setTableUri(file.toURI().toString());
+    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
+    tableDescriptor.putToTableProperties("blur.shard.time.between.refreshs", Long.toString(100));
+    tableDescriptor.setShardCount(1);
+    server = new LocalIndexServer(tableDescriptor);
 
     indexManager = new IndexManager();
     indexManager.setStatusCleanupTimerDelay(1000);

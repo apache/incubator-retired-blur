@@ -49,7 +49,7 @@ public class BlurRecordReader implements RecordReader<Text, BlurRecord> {
     String segmentName = blurSplit.getSegmentName();
     startingDocId = blurSplit.getStartingDocId();
     endingDocId = blurSplit.getEndingDocId();
-    directory = new HdfsDirectory(path);
+    directory = new HdfsDirectory(job, path);
 
     IndexCommit commit = Utils.findLatest(directory);
     reader = Utils.openSegmentReader(directory, commit, segmentName, Utils.getTermInfosIndexDivisor(job));

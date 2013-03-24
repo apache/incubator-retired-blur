@@ -24,69 +24,78 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 
-import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.concurrent.Executors;
-import org.apache.blur.lucene.search.FairSimilarity;
+import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
+import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
+import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.server.ShardContext;
+import org.apache.blur.server.TableContext;
+import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
+import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
-import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.FSDirectory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-
 public class BlurNRTIndexTest {
 
   private static final int TEST_NUMBER_WAIT_VISIBLE = 500;
   private static final int TEST_NUMBER = 50000;
+
+  private static final File TMPDIR = new File("./target/tmp");
+
   private BlurNRTIndex writer;
-  private BlurIndexCloser closer;
   private Random random = new Random();
-  private BlurIndexRefresher refresher;
   private ExecutorService service;
   private File base;
+  private Configuration configuration;
+
+  private DirectoryReferenceFileGC gc;
+  private IndexInputCloser closer;
+  private SharedMergeScheduler mergeScheduler;
 
   @Before
   public void setup() throws IOException {
-    base = new File("./tmp/blur-index-writer-test");
+    base = new File(TMPDIR, "blur-index-writer-test");
     rm(base);
     base.mkdirs();
-    closer = new BlurIndexCloser();
+
+    mergeScheduler = new SharedMergeScheduler();
+    gc = new DirectoryReferenceFileGC();
+    gc.init();
+    closer = new IndexInputCloser();
     closer.init();
 
-    Configuration configuration = new Configuration();
-
-    BlurAnalyzer analyzer = new BlurAnalyzer(new KeywordAnalyzer());
-
-    refresher = new BlurIndexRefresher();
-    refresher.init();
-
-    writer = new BlurNRTIndex();
-    writer.setDirectory(FSDirectory.open(new File(base, "index")));
-    writer.setCloser(closer);
-    writer.setAnalyzer(analyzer);
-    writer.setSimilarity(new FairSimilarity());
-    writer.setTable("testing-table");
-    writer.setShard("testing-shard");
-
+    configuration = new Configuration();
     service = Executors.newThreadPool("test", 10);
-    writer.setWalPath(new Path(new File(base, "wal").toURI()));
+  }
 
-    writer.setConfiguration(configuration);
-    writer.setTimeBetweenRefreshs(25);
-    writer.init();
+  private void setupWriter(Configuration configuration, long refresh) throws IOException {
+    TableDescriptor tableDescriptor = new TableDescriptor();
+    tableDescriptor.setName("test-table");
+    tableDescriptor.setTableUri(new File(base, "table-store").toURI().toString());
+    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
+    tableDescriptor.putToTableProperties("blur.shard.time.between.refreshs", Long.toString(refresh));
+    
+    TableContext tableContext = TableContext.create(tableDescriptor);
+    FSDirectory directory = FSDirectory.open(new File(base, "index"));
+
+    ShardContext shardContext = ShardContext.create(tableContext, "test-shard");
+
+    writer = new BlurNRTIndex(shardContext, mergeScheduler, closer, directory, gc, service);
   }
 
   @After
   public void tearDown() throws IOException {
-    refresher.close();
     writer.close();
+    mergeScheduler.close();
     closer.close();
+    gc.close();
     service.shutdownNow();
     rm(base);
   }
@@ -105,37 +114,52 @@ public class BlurNRTIndexTest {
 
   @Test
   public void testBlurIndexWriter() throws IOException {
+    setupWriter(configuration, 5);
     long s = System.nanoTime();
     int total = 0;
     for (int i = 0; i < TEST_NUMBER_WAIT_VISIBLE; i++) {
       writer.replaceRow(true, true, genRow());
-      IndexReader reader = writer.getIndexReader();
+      IndexSearcherClosable searcher = writer.getIndexReader();
+      IndexReader reader = searcher.getIndexReader();
       assertEquals(i + 1, reader.numDocs());
+      searcher.close();
       total++;
     }
     long e = System.nanoTime();
     double seconds = (e - s) / 1000000000.0;
     double rate = total / seconds;
     System.out.println("Rate " + rate);
-    IndexReader reader = writer.getIndexReader();
+    IndexSearcherClosable searcher = writer.getIndexReader();
+    IndexReader reader = searcher.getIndexReader();
     assertEquals(TEST_NUMBER_WAIT_VISIBLE, reader.numDocs());
+    searcher.close();
   }
 
   @Test
   public void testBlurIndexWriterFaster() throws IOException, InterruptedException {
+    setupWriter(configuration, 100);
     long s = System.nanoTime();
     int total = 0;
     for (int i = 0; i < TEST_NUMBER; i++) {
-      writer.replaceRow(false, true, genRow());
+      if (i == TEST_NUMBER - 1) {
+        writer.replaceRow(true, true, genRow());
+      } else {
+        writer.replaceRow(false, true, genRow());
+      }
       total++;
     }
     long e = System.nanoTime();
     double seconds = (e - s) / 1000000000.0;
     double rate = total / seconds;
     System.out.println("Rate " + rate);
+    // //wait one second for the data to become visible the test is set to
+    // refresh once every 25 ms
+    // Thread.sleep(1000);
     writer.refresh();
-    IndexReader reader = writer.getIndexReader();
+    IndexSearcherClosable searcher = writer.getIndexReader();
+    IndexReader reader = searcher.getIndexReader();
     assertEquals(TEST_NUMBER, reader.numDocs());
+    searcher.close();
   }
 
   private Row genRow() {

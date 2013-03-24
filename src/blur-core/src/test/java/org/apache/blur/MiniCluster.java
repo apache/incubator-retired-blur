@@ -42,6 +42,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.BlurClientManager;
 import org.apache.blur.thrift.Connection;
@@ -130,8 +131,13 @@ public abstract class MiniCluster {
   public static void startBlurCluster(String path, int controllerCount, int shardCount) {
     startDfs(path);
     startZooKeeper(path);
+    setupBuffers();
     startControllers(controllerCount);
     startShards(shardCount);
+  }
+
+  private static void setupBuffers() {
+    BufferStore.init(16, 16);
   }
 
   public static void shutdownBlurCluster() {

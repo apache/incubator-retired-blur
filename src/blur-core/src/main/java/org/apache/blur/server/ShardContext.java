@@ -19,6 +19,7 @@ package org.apache.blur.server;
 import java.io.IOException;
 
 import org.apache.blur.store.hdfs.HdfsDirectory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.store.Directory;
 

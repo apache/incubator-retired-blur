@@ -17,6 +17,7 @@ package org.apache.blur.utils;
  * limitations under the License.
  */
 
+import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -27,14 +28,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.blur.lucene.LuceneConstant;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.lucene.analysis.KeywordAnalyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
@@ -48,6 +48,7 @@ import org.apache.lucene.store.RAMDirectory;
 import org.junit.Test;
 
 public class BlurUtilsTest {
+  private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "/tmp"));
 
   @Test
   public void testHumanizeTime1() {
@@ -137,7 +138,7 @@ public class BlurUtilsTest {
 
   @Test
   public void testValidateShardCount() throws IOException {
-    File file = new File("./tmp/ValidateShardCount-test");
+    File file = new File(TMPDIR, "ValidateShardCount-test");
     rm(file);
     Path path = new Path(file.toURI());
     Configuration conf = new Configuration();
@@ -150,7 +151,7 @@ public class BlurUtilsTest {
 
   @Test
   public void testValidateShardCountExtraDir() throws IOException {
-    File file = new File("./tmp/ValidateShardCount-test");
+    File file = new File(TMPDIR, "ValidateShardCount-test");
     rm(file);
     Path path = new Path(file.toURI());
     Configuration conf = new Configuration();
@@ -164,7 +165,7 @@ public class BlurUtilsTest {
 
   @Test
   public void testValidateShardCountTooFew() throws IOException {
-    File file = new File("./tmp/ValidateShardCount-test");
+    File file = new File(TMPDIR, "ValidateShardCount-test");
     rm(file);
     Path path = new Path(file.toURI());
     Configuration conf = new Configuration();
@@ -182,7 +183,7 @@ public class BlurUtilsTest {
   
   @Test
   public void testValidateShardCountTooMany() throws IOException {
-    File file = new File("./tmp/ValidateShardCount-test");
+    File file = new File(TMPDIR, "ValidateShardCount-test");
     rm(file);
     Path path = new Path(file.toURI());
     Configuration conf = new Configuration();
@@ -218,7 +219,7 @@ public class BlurUtilsTest {
 
   private IndexReader getReader() throws CorruptIndexException, LockObtainFailedException, IOException {
     RAMDirectory directory = new RAMDirectory();
-    IndexWriterConfig conf = new IndexWriterConfig(LuceneConstant.LUCENE_VERSION, new KeywordAnalyzer());
+    IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
     IndexWriter writer = new IndexWriter(directory, conf);
     Document doc = new Document();
     doc.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));

@@ -29,7 +29,7 @@ import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.lucene.search.Similarity;
+import org.apache.lucene.search.similarities.Similarity;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

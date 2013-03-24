@@ -19,8 +19,8 @@ package org.apache.blur.manager.writer;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.thrift.generated.Row;
-import org.apache.lucene.index.IndexReader;
 
 public abstract class BlurIndex {
 
@@ -28,7 +28,7 @@ public abstract class BlurIndex {
 
   public abstract void deleteRow(boolean waitToBeVisible, boolean wal, String rowId) throws IOException;
 
-  public abstract IndexReader getIndexReader() throws IOException;
+  public abstract IndexSearcherClosable getIndexReader() throws IOException;
 
   public abstract void close() throws IOException;
 

@@ -25,9 +25,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.blur.analysis.BlurAnalyzer;
+import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexDeletionPolicy;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.lucene.index.TieredMergePolicy;
@@ -78,10 +78,11 @@ public abstract class AbstractBlurIndex extends BlurIndex {
   }
 
   @Override
-  public IndexReader getIndexReader() throws IOException {
-    IndexReader indexReader = _indexReaderRef.get();
-    indexReader.incRef();
-    return indexReader;
+  public IndexSearcherClosable getIndexReader() throws IOException {
+    throw new RuntimeException("not impl");
+//    IndexReader indexReader = _indexReaderRef.get();
+//    indexReader.incRef();
+//    return indexReader;
   }
 
   @Override

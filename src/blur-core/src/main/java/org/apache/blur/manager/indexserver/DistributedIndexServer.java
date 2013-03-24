@@ -44,15 +44,18 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
+import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
 import org.apache.blur.manager.BlurFilterCache;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.writer.BlurIndex;
-import org.apache.blur.manager.writer.BlurIndexCloser;
-import org.apache.blur.manager.writer.BlurIndexReader;
 import org.apache.blur.manager.writer.BlurIndexRefresher;
 import org.apache.blur.manager.writer.BlurNRTIndex;
+import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.metrics.BlurMetrics;
+import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.server.ShardContext;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.store.blockcache.BlockDirectory;
 import org.apache.blur.store.blockcache.Cache;
 import org.apache.blur.store.hdfs.BlurLockFactory;
@@ -107,7 +110,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
   // set internally
   private Timer _timerCacheFlush;
   private ExecutorService _openerService;
-  private BlurIndexCloser _closer;
   private Timer _timerTableWarmer;
   private BlurFilterCache _filterCache;
   private AtomicBoolean _running = new AtomicBoolean();
@@ -115,9 +117,11 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private BlurIndexWarmup _warmup = new DefaultBlurIndexWarmup();
   private IndexDeletionPolicy _indexDeletionPolicy;
   private DirectoryReferenceFileGC _gc;
-  private long _timeBetweenCommits = TimeUnit.SECONDS.toMillis(60);
-  private long _timeBetweenRefreshs = TimeUnit.MILLISECONDS.toMillis(500);
   private WatchChildren _watchOnlineShards;
+  
+  private SharedMergeScheduler _mergeScheduler;
+  private IndexInputCloser _closer = null;
+  private ExecutorService _searchExecutor = null;
 
   public static interface ReleaseReader {
     void release() throws IOException;
@@ -126,10 +130,14 @@ public class DistributedIndexServer extends AbstractIndexServer {
   public void init() throws KeeperException, InterruptedException, IOException {
     BlurUtil.setupZookeeper(_zookeeper, _cluster);
     _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
-    _closer = new BlurIndexCloser();
-    _closer.init();
     _gc = new DirectoryReferenceFileGC();
     _gc.init();
+    
+    // @TODO allow for configuration of these
+    _mergeScheduler = new SharedMergeScheduler();
+    _searchExecutor = Executors.newThreadPool("internal-search", 16);
+    _closer = new IndexInputCloser();
+    _closer.init();
     setupFlushCacheTimer();
     String lockPath = BlurUtil.lockForSafeMode(_zookeeper, getNodeName(), _cluster);
     try {
@@ -489,6 +497,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
 //        throw new IOException(e);
 //      }
     }
+    
+    TableContext tableContext = TableContext.create(descriptor);
+    ShardContext shardContext = ShardContext.create(tableContext, shard);
 
     Directory dir;
     boolean blockCacheEnabled = _clusterStatus.isBlockCacheEnabled(_cluster, table);
@@ -501,32 +512,20 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
     BlurIndex index;
     if (_clusterStatus.isReadOnly(true, _cluster, table)) {
-      BlurIndexReader reader = new BlurIndexReader();
-      reader.setCloser(_closer);
-      reader.setAnalyzer(getAnalyzer(table));
-      reader.setDirectory(dir);
-      reader.setRefresher(_refresher);
-      reader.setShard(shard);
-      reader.setTable(table);
-      reader.setIndexDeletionPolicy(_indexDeletionPolicy);
-      reader.setSimilarity(getSimilarity(table));
-      reader.init();
-      index = reader;
+//      BlurIndexReader reader = new BlurIndexReader();
+//      reader.setCloser(_closer);
+//      reader.setAnalyzer(getAnalyzer(table));
+//      reader.setDirectory(dir);
+//      reader.setRefresher(_refresher);
+//      reader.setShard(shard);
+//      reader.setTable(table);
+//      reader.setIndexDeletionPolicy(_indexDeletionPolicy);
+//      reader.setSimilarity(getSimilarity(table));
+//      reader.init();
+//      index = reader;
+      throw new RuntimeException("not impl");
     } else {
-      BlurNRTIndex writer = new BlurNRTIndex();
-      writer.setAnalyzer(getAnalyzer(table));
-      writer.setDirectory(dir);
-      writer.setShard(shard);
-      writer.setTable(table);
-      writer.setSimilarity(getSimilarity(table));
-      writer.setTimeBetweenCommits(_timeBetweenCommits);
-      writer.setTimeBetweenRefreshs(_timeBetweenRefreshs);
-      writer.setWalPath(walTablePath);
-      writer.setConfiguration(_configuration);
-      writer.setIndexDeletionPolicy(_indexDeletionPolicy);
-      writer.setCloser(_closer);
-      writer.setGc(_gc);
-      writer.init();
+      BlurNRTIndex writer = new BlurNRTIndex(shardContext, _mergeScheduler, _closer, dir, _gc, _searchExecutor);
       index = writer;
     }
     _filterCache.opening(table, shard, index);
@@ -535,13 +534,14 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   private BlurIndex warmUp(BlurIndex index, TableDescriptor table, String shard) throws IOException {
-    final IndexReader reader = index.getIndexReader();
+    final IndexSearcherClosable searcher = index.getIndexReader();
+    IndexReader reader = searcher.getIndexReader();
     warmUpAllSegments(reader);
     _warmup.warmBlurIndex(table, shard, reader, index.isClosed(), new ReleaseReader() {
       @Override
       public void release() throws IOException {
         // this will allow for closing of index
-        reader.decRef();
+        searcher.close();
       }
     });
 
@@ -808,10 +808,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _blurMetrics = blurMetrics;
   }
 
-  public void setCloser(BlurIndexCloser closer) {
-    _closer = closer;
-  }
-
   public void setZookeeper(ZooKeeper zookeeper) {
     _zookeeper = zookeeper;
   }
@@ -830,14 +826,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   public void setIndexDeletionPolicy(IndexDeletionPolicy indexDeletionPolicy) {
     _indexDeletionPolicy = indexDeletionPolicy;
-  }
-
-  public void setTimeBetweenCommits(long timeBetweenCommits) {
-    _timeBetweenCommits = timeBetweenCommits;
-  }
-
-  public void setTimeBetweenRefreshs(long timeBetweenRefreshs) {
-    _timeBetweenRefreshs = timeBetweenRefreshs;
   }
   
   public void setClusterName(String cluster) {

@@ -35,7 +35,7 @@ public class BlurControllerServerTest {
   // @BeforeClass
   // public static void zkServerStartup() throws InterruptedException,
   // KeeperException, IOException, BlurException, TException {
-  // rm(new File("../zk-tmp"));
+  // rm(new File(TMPDIR, "../zk-tmp"));
   // daemonService = new Thread(new Runnable() {
   // @Override
   // public void run() {
@@ -66,7 +66,7 @@ public class BlurControllerServerTest {
   // server.setZookeeper(zookeeper);
   // server.init();
   //
-  // File file = new File("./tmp-data/test");
+  // File file = new File(TMPDIR, "./tmp-data/test");
   // rm(file);
   //
   // TableDescriptor tableDescriptor = new TableDescriptor();

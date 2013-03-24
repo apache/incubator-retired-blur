@@ -30,18 +30,25 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
+import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
+import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
 import org.apache.blur.manager.writer.BlurIndex;
-import org.apache.blur.manager.writer.BlurIndexCloser;
 import org.apache.blur.manager.writer.BlurNRTIndex;
-import org.apache.hadoop.conf.Configuration;
+import org.apache.blur.manager.writer.SharedMergeScheduler;
+import org.apache.blur.server.ShardContext;
+import org.apache.blur.server.TableContext;
+import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.util.CharArraySet;
@@ -53,29 +60,53 @@ import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
 
+import com.google.common.io.Closer;
+
 public class LocalIndexServer extends AbstractIndexServer {
 
   private final static Log LOG = LogFactory.getLog(LocalIndexServer.class);
 
-  private Map<String, Map<String, BlurIndex>> _readersMap = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
-  private File _localDir;
-  private BlurIndexCloser _closer;
-  private int _blockSize = 65536;
-  private CompressionCodec _compression = new DefaultCodec();
-  private Path _walPath;
-  private Configuration _configuration = new Configuration();
+  private final Map<String, Map<String, BlurIndex>> _readersMap = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
+  private final SharedMergeScheduler _mergeScheduler;
+  private final IndexInputCloser _indexInputCloser;
+  private final DirectoryReferenceFileGC _gc;
+  private final ExecutorService _searchExecutor;
+  private final TableContext _tableContext;
+  private final Closer _closer;
 
-  public LocalIndexServer(File file, Path walPath) {
-    _localDir = file;
-    _localDir.mkdirs();
-    _closer = new BlurIndexCloser();
-    _closer.init();
-    _walPath = walPath;
+  public LocalIndexServer(TableDescriptor tableDescriptor) throws IOException {
+    _closer = Closer.create();
+    _tableContext = TableContext.create(tableDescriptor);
+    _mergeScheduler = new SharedMergeScheduler();
+    _indexInputCloser = new IndexInputCloser();
+    _indexInputCloser.init();
+    _gc = new DirectoryReferenceFileGC();
+    _gc.init();
+    _searchExecutor = Executors.newCachedThreadPool();
+    _closer.register(_mergeScheduler);
+    _closer.register(_indexInputCloser);
+    _closer.register(_gc);
+    _closer.register(new CloseableExecutorService(_searchExecutor));
+
+    getIndexes(_tableContext.getTable());
+  }
+
+  @Override
+  public void close() {
+    try {
+      _closer.close();
+    } catch (IOException e) {
+      LOG.error("Unknown error", e);
+    }
+    for (String table : _readersMap.keySet()) {
+      close(_readersMap.get(table));
+    }
   }
 
   @Override
   public BlurAnalyzer getAnalyzer(String table) {
-    return new BlurAnalyzer(new StandardAnalyzer(LUCENE_VERSION, new CharArraySet(LUCENE_VERSION, new HashSet<String>(), false)));
+    return new BlurAnalyzer(new StandardAnalyzer(LUCENE_VERSION, new CharArraySet(LUCENE_VERSION,
+        new HashSet<String>(), false)));
   }
 
   @Override
@@ -94,7 +125,7 @@ public class LocalIndexServer extends AbstractIndexServer {
   public Map<String, BlurIndex> getIndexes(String table) throws IOException {
     Map<String, BlurIndex> tableMap = _readersMap.get(table);
     if (tableMap == null) {
-      tableMap = openFromDisk(table);
+      tableMap = openFromDisk();
       _readersMap.put(table, tableMap);
     }
     return tableMap;
@@ -103,14 +134,6 @@ public class LocalIndexServer extends AbstractIndexServer {
   @Override
   public Similarity getSimilarity(String table) {
     return new FairSimilarity();
-  }
-
-  @Override
-  public void close() {
-    _closer.close();
-    for (String table : _readersMap.keySet()) {
-      close(_readersMap.get(table));
-    }
   }
 
   private void close(Map<String, BlurIndex> map) {
@@ -123,19 +146,22 @@ public class LocalIndexServer extends AbstractIndexServer {
     }
   }
 
-  private Map<String, BlurIndex> openFromDisk(String table) throws IOException {
-    File tableFile = new File(_localDir, table);
+  private Map<String, BlurIndex> openFromDisk() throws IOException {
+    String table = _tableContext.getDescriptor().getName();
+    Path tablePath = _tableContext.getTablePath();
+    File tableFile = new File(tablePath.toUri());
     if (tableFile.isDirectory()) {
       Map<String, BlurIndex> shards = new ConcurrentHashMap<String, BlurIndex>();
-      for (File f : tableFile.listFiles()) {
-        if (f.isDirectory()) {
-          MMapDirectory directory = new MMapDirectory(f);
-          if (!DirectoryReader.indexExists(directory)) {
-            new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer())).close();
-          }
-          String shardName = f.getName();
-          shards.put(shardName, openIndex(table, shardName, directory));
+      int shardCount = _tableContext.getDescriptor().getShardCount();
+      for (int i = 0; i < shardCount; i++) {
+        String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i);
+        File file = new File(tableFile, shardName);
+        file.mkdirs();
+        MMapDirectory directory = new MMapDirectory(file);
+        if (!DirectoryReader.indexExists(directory)) {
+          new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer())).close();
         }
+        shards.put(shardName, openIndex(table, shardName, directory));
       }
       return shards;
     }
@@ -143,17 +169,8 @@ public class LocalIndexServer extends AbstractIndexServer {
   }
 
   private BlurIndex openIndex(String table, String shard, Directory dir) throws CorruptIndexException, IOException {
-    BlurNRTIndex index = new BlurNRTIndex();
-    index.setAnalyzer(getAnalyzer(table));
-    index.setDirectory(dir);
-    index.setShard(shard);
-    index.setSimilarity(getSimilarity(table));
-    index.setTable(table);
-    index.setWalPath(new Path(new Path(_walPath, table), shard));
-    index.setConfiguration(_configuration);
-    index.setCloser(_closer);
-    index.setTimeBetweenRefreshs(25);
-    index.init();
+    ShardContext shardContext = ShardContext.create(_tableContext, shard);
+    BlurNRTIndex index = new BlurNRTIndex(shardContext, _mergeScheduler, _indexInputCloser, dir, _gc, _searchExecutor);
     return index;
   }
 
@@ -166,7 +183,8 @@ public class LocalIndexServer extends AbstractIndexServer {
   public List<String> getShardList(String table) {
     try {
       List<String> result = new ArrayList<String>();
-      File tableFile = new File(_localDir, table);
+      Path tablePath = _tableContext.getTablePath();
+      File tableFile = new File(new File(tablePath.toUri()), table);
       if (tableFile.isDirectory()) {
         for (File f : tableFile.listFiles()) {
           if (f.isDirectory()) {
@@ -187,22 +205,12 @@ public class LocalIndexServer extends AbstractIndexServer {
 
   @Override
   public String getTableUri(String table) {
-    return new File(_localDir, table).toURI().toString();
+    return _tableContext.getTablePath().toUri().toString();
   }
 
   @Override
   public int getShardCount(String table) {
-    return getShardList(table).size();
-  }
-
-  @Override
-  public int getCompressionBlockSize(String table) {
-    return _blockSize;
-  }
-
-  @Override
-  public CompressionCodec getCompressionCodec(String table) {
-    return _compression;
+    return _tableContext.getDescriptor().getShardCount();
   }
 
   @Override
@@ -225,5 +233,15 @@ public class LocalIndexServer extends AbstractIndexServer {
       size += file.length();
     }
     return size;
+  }
+
+  @Override
+  public CompressionCodec getCompressionCodec(String table) {
+    throw new RuntimeException("Should not be used.");
+  }
+
+  @Override
+  public int getCompressionBlockSize(String table) {
+    throw new RuntimeException("Should not be used.");
   }
 }

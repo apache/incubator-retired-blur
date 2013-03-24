@@ -18,7 +18,7 @@ package org.apache.blur.search;
  */
 
 import static junit.framework.Assert.assertTrue;
-import static org.apache.blur.lucene.LuceneConstant.LUCENE_VERSION;
+import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -37,9 +37,10 @@ import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.utils.RowIndexWriter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
@@ -77,7 +78,7 @@ public class RandomSuperQueryTest {
     System.out.print("Creating index... ");
     System.out.flush();
     Directory directory = createIndex(random, sampler);
-    IndexReader reader = IndexReader.open(directory);
+    IndexReader reader = DirectoryReader.open(directory);
     System.out.print("Running searches [" + sampler.size() + "]... ");
     System.out.flush();
     assertTrue(!sampler.isEmpty());

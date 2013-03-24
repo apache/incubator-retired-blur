@@ -16,6 +16,7 @@ package org.apache.blur.mapreduce.lib;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -24,8 +25,6 @@ import java.util.UUID;
 
 import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.mapreduce.BlurRecord;
-import org.apache.blur.mapreduce.lib.BlurInputFormat;
-import org.apache.blur.mapreduce.lib.BlurInputSplit;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
@@ -49,10 +48,8 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.NoLockFactory;
-import org.apache.lucene.util.Version;
 import org.junit.Before;
 import org.junit.Test;
-
 
 public class BlurInputFormatTest {
 
@@ -76,10 +73,10 @@ public class BlurInputFormatTest {
   }
 
   public static void buildIndex(FileSystem fileSystem, Configuration configuration, Path path, int rowsPerIndex) throws IOException {
-    HdfsDirectory directory = new HdfsDirectory(path);
+    HdfsDirectory directory = new HdfsDirectory(configuration, path);
     directory.setLockFactory(NoLockFactory.getNoLockFactory());
-    BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_35));
-    IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_35, analyzer);
+    BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(LUCENE_VERSION));
+    IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, analyzer);
     IndexWriter indexWriter = new IndexWriter(directory, conf);
     RowIndexWriter writer = new RowIndexWriter(indexWriter, analyzer);
     for (int i = 0; i < rowsPerIndex; i++) {

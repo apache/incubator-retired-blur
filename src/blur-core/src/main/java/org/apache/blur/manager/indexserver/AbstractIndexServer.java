@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.writer.BlurIndex;
+import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
@@ -33,13 +34,13 @@ public abstract class AbstractIndexServer implements IndexServer {
     long recordCount = 0;
     Map<String, BlurIndex> indexes = getIndexes(table);
     for (Map.Entry<String, BlurIndex> index : indexes.entrySet()) {
-      IndexReader indexReader = null;
+      IndexSearcherClosable searcher = null;
       try {
-        indexReader = index.getValue().getIndexReader();
-        recordCount += indexReader.numDocs();
+        searcher = index.getValue().getIndexReader();
+        recordCount += searcher.getIndexReader().numDocs();
       } finally {
-        if (indexReader != null) {
-          indexReader.decRef();
+        if (searcher != null) {
+          searcher.close();
         }
       }
     }
@@ -50,13 +51,13 @@ public abstract class AbstractIndexServer implements IndexServer {
     long rowCount = 0;
     Map<String, BlurIndex> indexes = getIndexes(table);
     for (Map.Entry<String, BlurIndex> index : indexes.entrySet()) {
-      IndexReader indexReader = null;
+      IndexSearcherClosable searcher = null;
       try {
-        indexReader = index.getValue().getIndexReader();
-        rowCount += getRowCount(indexReader);
+        searcher = index.getValue().getIndexReader();
+        rowCount += getRowCount(searcher.getIndexReader());
       } finally {
-        if (indexReader != null) {
-          indexReader.decRef();
+        if (searcher != null) {
+          searcher.close();
         }
       }
     }

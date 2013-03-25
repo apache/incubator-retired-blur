@@ -46,6 +46,7 @@ import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.Converter;
 import org.apache.blur.utils.IterableConverter;
+import org.apache.blur.utils.ResetableDocumentStoredFieldVisitor;
 import org.apache.blur.utils.RowIndexWriter;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -59,6 +60,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -67,11 +69,11 @@ import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.BufferedIndexInput;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.IOUtils;
-
 
 public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritable, BlurMutate> {
 
@@ -163,7 +165,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
       BlurRecord record = mutate.getRecord();
       if (!rowIdSet) {
         String rowId = record.getRowId();
-        _rowIdTerm = _rowIdTerm.createTerm(rowId);
+        _rowIdTerm = new Term(BlurConstants.ROW_ID,rowId);
         rowIdSet = true;
       }
       if (mutate.getMutateType() == MUTATE_TYPE.DELETE) {
@@ -185,7 +187,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
 
     List<Document> docs = documentsToIndex(new ArrayList<Document>(_newDocs.values()));
     if (docs.size() > 0) {
-      docs.get(0).add(BlurConstants.PRIME_DOC_FIELD);
+      docs.get(0).add(new Field(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO, Index.NOT_ANALYZED_NO_NORMS));
     }
 
     switch (_blurTask.getIndexingType()) {
@@ -232,17 +234,12 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
   }
 
   protected void fetchOldRecords() throws IOException {
-    TermDocs termDocs = _reader.termDocs(_rowIdTerm);
-    // find all records for row that are not deleted.
-    while (termDocs.next()) {
-      int doc = termDocs.doc();
-      if (!_reader.isDeleted(doc)) {
-        Document document = _reader.document(doc);
-        String recordId = document.get(RECORD_ID);
-        // add them to the new records if the new records do not contain them.
-        if (!_newDocs.containsKey(recordId)) {
-          _newDocs.put(recordId, document);
-        }
+    List<Document> docs = BlurUtil.termSearch(_reader, _rowIdTerm, new ResetableDocumentStoredFieldVisitor());
+    for (Document document : docs) {
+      String recordId = document.get(RECORD_ID);
+      // add them to the new records if the new records do not contain them.
+      if (!_newDocs.containsKey(recordId)) {
+        _newDocs.put(recordId, document);
       }
     }
 
@@ -275,7 +272,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
     _writer.commit();
     _writer.close();
 
-    IndexReader reader = IndexReader.open(_directory);
+    IndexReader reader = DirectoryReader.open(_directory);
 
     TableDescriptor descriptor = _blurTask.getTableDescriptor();
 
@@ -284,7 +281,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
 
     NoLockFactory lockFactory = NoLockFactory.getNoLockFactory();
 
-    Directory destDirectory = getDestDirectory(descriptor, directoryPath);
+    Directory destDirectory = getDestDirectory(context.getConfiguration(), descriptor, directoryPath);
     destDirectory.setLockFactory(lockFactory);
 
     boolean optimize = _blurTask.getOptimize();
@@ -321,7 +318,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
     return new BufferedDirectory(destDirectory, 32768);
   }
 
-  protected Directory getDestDirectory(TableDescriptor descriptor, Path directoryPath) throws IOException {
+  protected Directory getDestDirectory(Configuration configuration, TableDescriptor descriptor, Path directoryPath) throws IOException {
     String compressionClass = descriptor.compressionClass;
     int compressionBlockSize = descriptor.getCompressionBlockSize();
     if (compressionClass == null) {
@@ -330,8 +327,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
     // if (compressionBlockSize == 0) {
     compressionBlockSize = 32768;
     // }
-    HdfsDirectory dir = new HdfsDirectory(directoryPath);
-    return new CompressedFieldDataDirectory(dir, getInstance(compressionClass), compressionBlockSize);
+    return new HdfsDirectory(configuration, directoryPath);
   }
 
   protected CompressionCodec getInstance(String compressionClass) throws IOException {
@@ -361,8 +357,8 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
   }
 
   protected long copy(Directory from, Directory to, String src, String dest, Context context, long totalBytesCopied, long totalBytesToCopy, long startTime) throws IOException {
-    IndexOutput os = to.createOutput(dest);
-    IndexInput is = from.openInput(src);
+    IndexOutput os = to.createOutput(dest, new IOContext());
+    IndexInput is = from.openInput(src, new IOContext());
     IOException priorException = null;
     try {
       return copyBytes(is, os, is.length(), context, totalBytesCopied, totalBytesToCopy, startTime, src);
@@ -407,7 +403,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
     switch (_blurTask.getIndexingType()) {
     case UPDATE:
       Path directoryPath = _blurTask.getDirectoryPath(context);
-      _directory = getDestDirectory(descriptor, directoryPath);
+      _directory = getDestDirectory(context.getConfiguration(), descriptor, directoryPath);
 
       NoLockFactory lockFactory = NoLockFactory.getNoLockFactory();
       _directory.setLockFactory(lockFactory);
@@ -427,8 +423,8 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
       // if (compressionBlockSize == 0) {
       compressionBlockSize = 32768;
       // }
-      CompressedFieldDataDirectory compressedFieldDataDirectory = new CompressedFieldDataDirectory(localDirectory, getInstance(compressionClass), compressionBlockSize);
-      _directory = new ProgressableDirectory(compressedFieldDataDirectory, context);
+//      CompressedFieldDataDirectory compressedFieldDataDirectory = new CompressedFieldDataDirectory(localDirectory, getInstance(compressionClass), compressionBlockSize);
+      _directory = new ProgressableDirectory(localDirectory, context);
       return;
     default:
       break;

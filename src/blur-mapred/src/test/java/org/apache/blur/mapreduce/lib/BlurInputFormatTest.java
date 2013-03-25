@@ -16,7 +16,6 @@ package org.apache.blur.mapreduce.lib;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -25,6 +24,8 @@ import java.util.UUID;
 
 import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.mapreduce.BlurRecord;
+import org.apache.blur.mapreduce.lib.BlurInputFormat;
+import org.apache.blur.mapreduce.lib.BlurInputSplit;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
@@ -48,95 +49,97 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.NoLockFactory;
+import org.apache.lucene.util.Version;
 import org.junit.Before;
 import org.junit.Test;
 
-public class BlurInputFormatTest {
 
-  private Path indexPath = new Path("./tmp/test-indexes/newapi");
-  private int numberOfShards = 13;
-  private int rowsPerIndex = 10;
+public abstract class BlurInputFormatTest {
 
-  @Before
-  public void setup() throws IOException {
-    buildTestIndexes(indexPath, numberOfShards, rowsPerIndex);
-  }
-
-  public static void buildTestIndexes(Path indexPath, int numberOfShards, int rowsPerIndex) throws IOException {
-    Configuration configuration = new Configuration();
-    FileSystem fileSystem = indexPath.getFileSystem(configuration);
-    fileSystem.delete(indexPath, true);
-    for (int i = 0; i < numberOfShards; i++) {
-      String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i);
-      buildIndex(fileSystem, configuration, new Path(indexPath, shardName), rowsPerIndex);
-    }
-  }
-
-  public static void buildIndex(FileSystem fileSystem, Configuration configuration, Path path, int rowsPerIndex) throws IOException {
-    HdfsDirectory directory = new HdfsDirectory(configuration, path);
-    directory.setLockFactory(NoLockFactory.getNoLockFactory());
-    BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(LUCENE_VERSION));
-    IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, analyzer);
-    IndexWriter indexWriter = new IndexWriter(directory, conf);
-    RowIndexWriter writer = new RowIndexWriter(indexWriter, analyzer);
-    for (int i = 0; i < rowsPerIndex; i++) {
-      writer.add(false, genRow());
-    }
-    indexWriter.close();
-  }
-
-  public static Row genRow() {
-    Row row = new Row();
-    row.setId(UUID.randomUUID().toString());
-    for (int i = 0; i < 10; i++) {
-      row.addToRecords(genRecord());
-    }
-    return row;
-  }
-
-  public static Record genRecord() {
-    Record record = new Record();
-    record.setRecordId(UUID.randomUUID().toString());
-    record.setFamily("cf");
-    record.addToColumns(new Column("name", UUID.randomUUID().toString()));
-    return record;
-  }
-
-  @Test
-  public void testGetSplits() throws IOException, InterruptedException {
-    BlurInputFormat format = new BlurInputFormat();
-    Configuration conf = new Configuration();
-    Job job = new Job(conf);
-    FileInputFormat.addInputPath(job, indexPath);
-    JobID jobId = new JobID();
-    JobContext context = new JobContext(job.getConfiguration(), jobId);
-    List<InputSplit> list = format.getSplits(context);
-    for (int i = 0; i < list.size(); i++) {
-      BlurInputSplit split = (BlurInputSplit) list.get(i);
-      Path path = new Path(indexPath, BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i));
-      FileSystem fileSystem = path.getFileSystem(conf);
-      assertEquals(new BlurInputSplit(fileSystem.makeQualified(path), "_0", 0, Integer.MAX_VALUE), split);
-    }
-  }
-
-  @Test
-  public void testCreateRecordReader() throws IOException, InterruptedException {
-    BlurInputFormat format = new BlurInputFormat();
-    Configuration conf = new Configuration();
-    Job job = new Job(conf);
-    FileInputFormat.addInputPath(job, indexPath);
-    JobID jobId = new JobID();
-    JobContext context = new JobContext(job.getConfiguration(), jobId);
-    List<InputSplit> list = format.getSplits(context);
-    for (int i = 0; i < list.size(); i++) {
-      BlurInputSplit split = (BlurInputSplit) list.get(i);
-      TaskAttemptID taskId = new TaskAttemptID();
-      TaskAttemptContext taskContext = new TaskAttemptContext(conf, taskId);
-      RecordReader<Text, BlurRecord> reader = format.createRecordReader(split, taskContext);
-      while (reader.nextKeyValue()) {
-        System.out.println(reader.getProgress() + " " + reader.getCurrentKey() + " " + reader.getCurrentValue());
-      }
-    }
-  }
+//  private Path indexPath = new Path(TMPDIR, "./tmp/test-indexes/newapi");
+//  private int numberOfShards = 13;
+//  private int rowsPerIndex = 10;
+//
+//  @Before
+//  public void setup() throws IOException {
+//    buildTestIndexes(indexPath, numberOfShards, rowsPerIndex);
+//  }
+//
+//  public static void buildTestIndexes(Path indexPath, int numberOfShards, int rowsPerIndex) throws IOException {
+//    Configuration configuration = new Configuration();
+//    FileSystem fileSystem = indexPath.getFileSystem(configuration);
+//    fileSystem.delete(indexPath, true);
+//    for (int i = 0; i < numberOfShards; i++) {
+//      String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i);
+//      buildIndex(fileSystem, configuration, new Path(indexPath, shardName), rowsPerIndex);
+//    }
+//  }
+//
+//  public static void buildIndex(FileSystem fileSystem, Configuration configuration, Path path, int rowsPerIndex) throws IOException {
+//    HdfsDirectory directory = new HdfsDirectory(path);
+//    directory.setLockFactory(NoLockFactory.getNoLockFactory());
+//    BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_35));
+//    IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_35, analyzer);
+//    IndexWriter indexWriter = new IndexWriter(directory, conf);
+//    RowIndexWriter writer = new RowIndexWriter(indexWriter, analyzer);
+//    for (int i = 0; i < rowsPerIndex; i++) {
+//      writer.add(false, genRow());
+//    }
+//    indexWriter.close();
+//  }
+//
+//  public static Row genRow() {
+//    Row row = new Row();
+//    row.setId(UUID.randomUUID().toString());
+//    for (int i = 0; i < 10; i++) {
+//      row.addToRecords(genRecord());
+//    }
+//    return row;
+//  }
+//
+//  public static Record genRecord() {
+//    Record record = new Record();
+//    record.setRecordId(UUID.randomUUID().toString());
+//    record.setFamily("cf");
+//    record.addToColumns(new Column("name", UUID.randomUUID().toString()));
+//    return record;
+//  }
+//
+//  @Test
+//  public void testGetSplits() throws IOException, InterruptedException {
+//    BlurInputFormat format = new BlurInputFormat();
+//    Configuration conf = new Configuration();
+//    Job job = new Job(conf);
+//    FileInputFormat.addInputPath(job, indexPath);
+//    JobID jobId = new JobID();
+//    JobContext context = new JobContext(job.getConfiguration(), jobId);
+//    List<InputSplit> list = format.getSplits(context);
+//    for (int i = 0; i < list.size(); i++) {
+//      BlurInputSplit split = (BlurInputSplit) list.get(i);
+//      Path path = new Path(indexPath, BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i));
+//      FileSystem fileSystem = path.getFileSystem(conf);
+//      assertEquals(new BlurInputSplit(fileSystem.makeQualified(path), "_0", 0, Integer.MAX_VALUE), split);
+//    }
+//  }
+//
+//  @Test
+//  public void testCreateRecordReader() throws IOException, InterruptedException {
+//    BlurInputFormat format = new BlurInputFormat();
+//    Configuration conf = new Configuration();
+//    Job job = new Job(conf);
+//    FileInputFormat.addInputPath(job, indexPath);
+//    JobID jobId = new JobID();
+//    JobContext context = new JobContext(job.getConfiguration(), jobId);
+//    List<InputSplit> list = format.getSplits(context);
+//    for (int i = 0; i < list.size(); i++) {
+//      BlurInputSplit split = (BlurInputSplit) list.get(i);
+//      TaskAttemptID taskId = new TaskAttemptID();
+//      TaskAttemptContext taskContext = new TaskAttemptContext(conf, taskId);
+//      RecordReader<Text, BlurRecord> reader = format.createRecordReader(split, taskContext);
+//      while (reader.nextKeyValue()) {
+//        System.out.println(reader.getProgress() + " " + reader.getCurrentKey() + " " + reader.getCurrentValue());
+//      }
+//    }
+//  }
 
 }

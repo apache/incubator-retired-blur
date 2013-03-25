@@ -33,7 +33,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.KeywordAnalyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
@@ -44,7 +44,6 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.Version;
-
 
 public class BlurRecordWriter extends RecordWriter<Text, BlurRecord> {
 
@@ -69,7 +68,7 @@ public class BlurRecordWriter extends RecordWriter<Text, BlurRecord> {
 
     // @TODO setup compressed directory, read compression codec from config,
     // setup progressable dir, setup lock factory
-    Directory dir = new HdfsDirectory(indexPath);
+    Directory dir = new HdfsDirectory(configuration, indexPath);
     dir.setLockFactory(NoLockFactory.getNoLockFactory());
     writer = new IndexWriter(dir, conf);
   }

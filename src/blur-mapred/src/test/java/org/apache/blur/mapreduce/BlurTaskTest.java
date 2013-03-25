@@ -27,13 +27,14 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class BlurTaskTest {
+  private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "/tmp"));
 
   @Test
   public void testGetNumReducersBadPath() {
     BlurTask task = new BlurTask();
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setShardCount(5);
-    tableDescriptor.setTableUri("file:///tmp/blur34746545");
+    tableDescriptor.setTableUri(new File(TMPDIR, "blur34746545").toURI().toString());
     tableDescriptor.setName("blur34746545");
     task.setTableDescriptor(tableDescriptor);
     assertEquals(5, task.getNumReducers(new Configuration()));
@@ -41,22 +42,22 @@ public class BlurTaskTest {
 
   @Test
   public void testGetNumReducersValidPath() {
-    new File("/tmp/blurTestShards/shard-1/").mkdirs();
-    new File("/tmp/blurTestShards/shard-2/").mkdirs();
-    new File("/tmp/blurTestShards/shard-3/").mkdirs();
+    new File(TMPDIR, "blurTestShards/shard-1/").mkdirs();
+    new File(TMPDIR, "blurTestShards/shard-2/").mkdirs();
+    new File(TMPDIR, "blurTestShards/shard-3/").mkdirs();
     try {
       BlurTask task = new BlurTask();
       TableDescriptor tableDescriptor = new TableDescriptor();
       tableDescriptor.setShardCount(5);
-      tableDescriptor.setTableUri("file:///tmp/blurTestShards");
+      tableDescriptor.setTableUri(new File(TMPDIR, "blurTestShards").toURI().toString());
       tableDescriptor.setName("blurTestShards");
       task.setTableDescriptor(tableDescriptor);
       assertEquals(3, task.getNumReducers(new Configuration()));
     } finally {
-      new File("/tmp/blurTestShards/shard-1/").delete();
-      new File("/tmp/blurTestShards/shard-2/").delete();
-      new File("/tmp/blurTestShards/shard-3/").delete();
-      new File("/tmp/blurTestShards/").delete();
+      new File(TMPDIR, "blurTestShards/shard-1/").delete();
+      new File(TMPDIR, "blurTestShards/shard-2/").delete();
+      new File(TMPDIR, "blurTestShards/shard-3/").delete();
+      new File(TMPDIR, "blurTestShards/").delete();
     }
   }
 }

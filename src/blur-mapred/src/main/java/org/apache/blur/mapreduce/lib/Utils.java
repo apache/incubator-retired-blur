@@ -23,9 +23,11 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.SegmentInfo;
+import org.apache.lucene.index.SegmentInfoPerCommit;
 import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.index.SegmentReader;
 import org.apache.lucene.store.Directory;
@@ -37,7 +39,7 @@ public class Utils {
   }
 
   public static IndexCommit findLatest(Directory dir) throws IOException {
-    Collection<IndexCommit> listCommits = IndexReader.listCommits(dir);
+    Collection<IndexCommit> listCommits = DirectoryReader.listCommits(dir);
     if (listCommits.size() == 1) {
       return listCommits.iterator().next();
     }
@@ -48,25 +50,25 @@ public class Utils {
     SegmentInfos infos = new SegmentInfos();
     infos.read(dir, commit.getSegmentsFileName());
     List<String> result = new ArrayList<String>();
-    for (SegmentInfo info : infos) {
-      result.add(info.name);
+    for (SegmentInfoPerCommit info : infos) {
+      result.add(info.info.name);
     }
     return result;
   }
 
-  public static IndexReader openSegmentReader(Directory directory, IndexCommit commit, String segmentName, int termInfosIndexDivisor) throws CorruptIndexException, IOException {
-    SegmentInfos infos = new SegmentInfos();
-    infos.read(directory, commit.getSegmentsFileName());
-    SegmentInfo segmentInfo = null;
-    for (SegmentInfo info : infos) {
-      if (segmentName.equals(info.name)) {
-        segmentInfo = info;
-        break;
-      }
-    }
-    if (segmentInfo == null) {
-      throw new RuntimeException("SegmentInfo for [" + segmentName + "] not found in directory [" + directory + "] for commit [" + commit + "]");
-    }
-    return SegmentReader.get(true, segmentInfo, termInfosIndexDivisor);
-  }
+//  public static IndexReader openSegmentReader(Directory directory, IndexCommit commit, String segmentName, int termInfosIndexDivisor) throws CorruptIndexException, IOException {
+//    SegmentInfos infos = new SegmentInfos();
+//    infos.read(directory, commit.getSegmentsFileName());
+//    SegmentInfo segmentInfo = null;
+//    for (SegmentInfoPerCommit info : infos) {
+//      if (segmentName.equals(info.info.name)) {
+//        segmentInfo = info.info;
+//        break;
+//      }
+//    }
+//    if (segmentInfo == null) {
+//      throw new RuntimeException("SegmentInfo for [" + segmentName + "] not found in directory [" + directory + "] for commit [" + commit + "]");
+//    }
+//    return SegmentReader.get(true, segmentInfo, termInfosIndexDivisor);
+//  }
 }

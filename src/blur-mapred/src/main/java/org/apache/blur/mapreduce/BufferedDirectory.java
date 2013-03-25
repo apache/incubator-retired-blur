@@ -21,6 +21,7 @@ import java.util.Collection;
 
 import org.apache.lucene.store.BufferedIndexInput;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
@@ -36,46 +37,39 @@ public class BufferedDirectory extends Directory {
     _buffer = buffer;
   }
 
+  @Override
   public void close() throws IOException {
     _directory.close();
   }
 
-  public IndexOutput createOutput(String name) throws IOException {
-    return _directory.createOutput(name);
+  @Override
+  public IndexOutput createOutput(String name, IOContext context) throws IOException {
+    return _directory.createOutput(name, context);
   }
 
+  @Override
   public void deleteFile(String name) throws IOException {
     _directory.deleteFile(name);
   }
 
+  @Override
   public boolean fileExists(String name) throws IOException {
     return _directory.fileExists(name);
   }
 
+  @Override
   public long fileLength(String name) throws IOException {
     return _directory.fileLength(name);
   }
 
-  @SuppressWarnings("deprecation")
-  public long fileModified(String name) throws IOException {
-    return _directory.fileModified(name);
-  }
-
+  @Override
   public String[] listAll() throws IOException {
     return _directory.listAll();
   }
 
-  public IndexInput openInput(String name, int bufferSize) throws IOException {
-    return openInput(name);
-  }
-
-  public IndexInput openInput(String name) throws IOException {
-    return new BigBufferIndexInput(name, _directory.openInput(name), _buffer);
-  }
-
-  @SuppressWarnings("deprecation")
-  public void touchFile(String name) throws IOException {
-    _directory.touchFile(name);
+  @Override
+  public IndexInput openInput(String name, IOContext context) throws IOException {
+    return new BigBufferIndexInput(name, _directory.openInput(name, context), _buffer);
   }
 
   public static class BigBufferIndexInput extends BufferedIndexInput {
@@ -111,40 +105,41 @@ public class BufferedDirectory extends Directory {
     }
 
     @Override
-    public Object clone() {
+    public BigBufferIndexInput clone() {
       BigBufferIndexInput clone = (BigBufferIndexInput) super.clone();
       clone._input = (IndexInput) _input.clone();
       return clone;
     }
   }
 
+  @Override
   public void clearLock(String name) throws IOException {
     _directory.clearLock(name);
   }
 
+  @Override
   public LockFactory getLockFactory() {
     return _directory.getLockFactory();
   }
 
+  @Override
   public String getLockID() {
     return _directory.getLockID();
   }
 
+  @Override
   public Lock makeLock(String name) {
     return _directory.makeLock(name);
   }
 
+  @Override
   public void setLockFactory(LockFactory lockFactory) throws IOException {
     _directory.setLockFactory(lockFactory);
   }
 
+  @Override
   public void sync(Collection<String> names) throws IOException {
     _directory.sync(names);
-  }
-
-  @SuppressWarnings("deprecation")
-  public void sync(String name) throws IOException {
-    _directory.sync(name);
   }
 
 }

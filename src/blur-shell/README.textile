@@ -1,0 +1,16 @@
+h1. Blur shell
+
+A jline based shell which can attach to a Blur server.
+
+h2. Usage
+
+Currently the easiest way to run is 
+
+mvn exec:java -Dexec.mainClass="org.apache.blur.shell.Main" -Dexec.args="host:port"
+
+# create a table that spans three shards
+createtable hdfs://blurhost:9000/blur/tables/table1 table1 3
+
+# index an accesslog
+indexaccesslog /tmp/access_log 100 table1 \\[(.*)\\]\\s+(\\d+)\\s+([\\d\\.]+)\\s+([^\\s]+)\\s+([\\d\\.]+)\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)\\s* date bytes1 sourceip status bytes2 operation url type
+

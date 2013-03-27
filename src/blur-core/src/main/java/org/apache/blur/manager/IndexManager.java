@@ -16,6 +16,8 @@ package org.apache.blur.manager;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.metrics.MetricsConstants.BLUR;
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 import static org.apache.blur.utils.BlurConstants.PRIME_DOC;
 import static org.apache.blur.utils.BlurConstants.RECORD_ID;
 import static org.apache.blur.utils.BlurConstants.ROW_ID;
@@ -53,7 +55,6 @@ import org.apache.blur.manager.results.MergerBlurResultIterable;
 import org.apache.blur.manager.status.QueryStatus;
 import org.apache.blur.manager.status.QueryStatusManager;
 import org.apache.blur.manager.writer.BlurIndex;
-import org.apache.blur.metrics.BlurMetrics;
 import org.apache.blur.metrics.QueryMetrics;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.thrift.BException;
@@ -106,6 +107,10 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Meter;
+import com.yammer.metrics.core.MetricName;
+
 public class IndexManager {
 
   private static final String NOT_FOUND = "NOT_FOUND";
@@ -119,21 +124,32 @@ public class IndexManager {
   private boolean _closed;
   private BlurPartitioner<BytesWritable, Void> _blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
   private BlurFilterCache _filterCache = new DefaultBlurFilterCache();
-  private BlurMetrics _blurMetrics;
   private QueryMetrics _queryMetrics;
   private long _defaultParallelCallTimeout = TimeUnit.MINUTES.toMillis(1);
+  private Meter _recordsMeter;
+  private Meter _rowMeter;
+  private Meter _queriesExternalMeter;
+  private Meter _queriesInternalMeter;
 
   public void setMaxClauseCount(int maxClauseCount) {
     BooleanQuery.setMaxClauseCount(maxClauseCount);
   }
 
   public void init() {
+    _recordsMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Records/s"), "Records/s", TimeUnit.SECONDS);
+    _rowMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Row/s"), "Row/s", TimeUnit.SECONDS);
+    _queriesExternalMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "External Queries/s"),
+        "External Queries/s", TimeUnit.SECONDS);
+    _queriesInternalMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Internal Queries/s"),
+        "Internal Queries/s", TimeUnit.SECONDS);
+
     _executor = Executors.newThreadPool("index-manager", _threadCount);
     // @TODO give the mutate it's own thread pool
     _mutateExecutor = Executors.newThreadPool("index-manager-mutate", _threadCount);
     _statusManager.init();
     _queryMetrics = QueryMetrics.getInstance();
     LOG.info("Init Complete");
+
   }
 
   public synchronized void close() {
@@ -184,15 +200,13 @@ public class IndexManager {
       long s = System.nanoTime();
       fetchRow(searcher.getIndexReader(), table, selector, fetchResult);
       _queryMetrics.recordDataFetch(System.nanoTime() - s, getRecordCount(fetchResult));
-      if (_blurMetrics != null) {
-        if (fetchResult.rowResult != null) {
-          if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
-            _blurMetrics.recordReads.addAndGet(fetchResult.rowResult.row.records.size());
-          }
-          _blurMetrics.rowReads.incrementAndGet();
-        } else if (fetchResult.recordResult != null) {
-          _blurMetrics.recordReads.incrementAndGet();
+      if (fetchResult.rowResult != null) {
+        if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
+          _recordsMeter.mark(fetchResult.rowResult.row.records.size());
         }
+        _rowMeter.mark();
+      } else if (fetchResult.recordResult != null) {
+        _recordsMeter.mark();
       }
     } catch (Exception e) {
       LOG.error("Unknown error while trying to fetch row.", e);
@@ -242,7 +256,8 @@ public class IndexManager {
       TopDocs topDocs = searcher.search(query, 1);
       if (topDocs.totalHits > 1) {
         if (selector.recordOnly) {
-          LOG.warn("Rowid [" + rowId + "], recordId [" + recordId + "] has more than one prime doc that is not deleted.");
+          LOG.warn("Rowid [" + rowId + "], recordId [" + recordId
+              + "] has more than one prime doc that is not deleted.");
         } else {
           LOG.warn("Rowid [" + rowId + "] has more than one prime doc that is not deleted.");
         }
@@ -266,21 +281,25 @@ public class IndexManager {
 
     if (locationId != null) {
       if (recordId != null && rowId != null) {
-        throw new BlurException("Invalid selector locationId [" + locationId + "] and recordId [" + recordId + "] and rowId [" + rowId
-            + "] are set, if using locationId, then rowId and recordId are not needed.", null);
+        throw new BlurException("Invalid selector locationId [" + locationId + "] and recordId [" + recordId
+            + "] and rowId [" + rowId + "] are set, if using locationId, then rowId and recordId are not needed.", null);
       } else if (recordId != null) {
-        throw new BlurException("Invalid selector locationId [" + locationId + "] and recordId [" + recordId + "] sre set, if using locationId recordId is not needed.", null);
+        throw new BlurException("Invalid selector locationId [" + locationId + "] and recordId [" + recordId
+            + "] sre set, if using locationId recordId is not needed.", null);
       } else if (rowId != null) {
-        throw new BlurException("Invalid selector locationId [" + locationId + "] and rowId [" + rowId + "] are set, if using locationId rowId is not needed.", null);
+        throw new BlurException("Invalid selector locationId [" + locationId + "] and rowId [" + rowId
+            + "] are set, if using locationId rowId is not needed.", null);
       }
     } else {
       if (rowId != null && recordId != null) {
         if (!recordOnly) {
-          throw new BlurException("Invalid both rowid [" + rowId + "] and recordId [" + recordId + "] are set, and recordOnly is set to [false].  "
+          throw new BlurException("Invalid both rowid [" + rowId + "] and recordId [" + recordId
+              + "] are set, and recordOnly is set to [false].  "
               + "If you want entire row, then remove recordId, if you want record only set recordOnly to [true].", null);
         }
       } else if (recordId != null) {
-        throw new BlurException("Invalid recordId [" + recordId + "] is set but rowId is not set.  If rowId is not known then a query will be required.", null);
+        throw new BlurException("Invalid recordId [" + recordId
+            + "] is set but rowId is not set.  If rowId is not known then a query will be required.", null);
       }
     }
   }
@@ -299,11 +318,12 @@ public class IndexManager {
     return split[0];
   }
 
-  public BlurResultIterable query(final String table, final BlurQuery blurQuery, AtomicLongArray facetedCounts) throws Exception {
+  public BlurResultIterable query(final String table, final BlurQuery blurQuery, AtomicLongArray facetedCounts)
+      throws Exception {
     long s = System.nanoTime();
     final AtomicBoolean running = new AtomicBoolean(true);
     final QueryStatus status = _statusManager.newQueryStatus(table, blurQuery, _threadCount, running);
-    _blurMetrics.queriesExternal.incrementAndGet();
+    _queriesExternalMeter.mark();
     try {
       Map<String, BlurIndex> blurIndexes;
       try {
@@ -316,11 +336,15 @@ public class IndexManager {
       ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> call;
       if (isSimpleQuery(blurQuery)) {
         SimpleQuery simpleQuery = blurQuery.simpleQuery;
-        Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.preSuperFilter, false, analyzer, _filterCache);
-        Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, analyzer, _filterCache);
-        Query userQuery = QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, analyzer, postFilter, preFilter, getScoreType(simpleQuery.type));
+        Filter preFilter = QueryParserUtil
+            .parseFilter(table, simpleQuery.preSuperFilter, false, analyzer, _filterCache);
+        Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, analyzer,
+            _filterCache);
+        Query userQuery = QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, analyzer,
+            postFilter, preFilter, getScoreType(simpleQuery.type));
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer);
-        call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector, _blurMetrics);
+        call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
+            _queriesInternalMeter);
       } else {
         Query query = getQuery(blurQuery.expertQuery);
         Filter filter = getFilter(blurQuery.expertQuery);
@@ -331,7 +355,8 @@ public class IndexManager {
           userQuery = query;
         }
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer);
-        call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector, _blurMetrics);
+        call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
+            _queriesInternalMeter);
       }
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
       return ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
@@ -361,7 +386,8 @@ public class IndexManager {
     return false;
   }
 
-  private Query getFacetedQuery(BlurQuery blurQuery, Query userQuery, AtomicLongArray counts, BlurAnalyzer analyzer) throws ParseException {
+  private Query getFacetedQuery(BlurQuery blurQuery, Query userQuery, AtomicLongArray counts, BlurAnalyzer analyzer)
+      throws ParseException {
     if (blurQuery.facets == null) {
       return userQuery;
     }
@@ -372,7 +398,8 @@ public class IndexManager {
     int size = blurQuery.facets.size();
     Query[] queries = new Query[size];
     for (int i = 0; i < size; i++) {
-      queries[i] = QueryParserUtil.parseQuery(blurQuery.facets.get(i).queryStr, blurQuery.simpleQuery.superQueryOn, analyzer, null, null, ScoreType.CONSTANT);
+      queries[i] = QueryParserUtil.parseQuery(blurQuery.facets.get(i).queryStr, blurQuery.simpleQuery.superQueryOn,
+          analyzer, null, null, ScoreType.CONSTANT);
     }
     return queries;
   }
@@ -400,7 +427,8 @@ public class IndexManager {
     return _statusManager.queryStatusIdList(table);
   }
 
-  public static void fetchRow(IndexReader reader, String table, Selector selector, FetchResult fetchResult) throws CorruptIndexException, IOException {
+  public static void fetchRow(IndexReader reader, String table, Selector selector, FetchResult fetchResult)
+      throws CorruptIndexException, IOException {
     fetchResult.table = table;
     String locationId = selector.locationId;
     int lastSlash = locationId.lastIndexOf('/');
@@ -504,7 +532,8 @@ public class IndexManager {
     this._indexServer = indexServer;
   }
 
-  public long recordFrequency(final String table, final String columnFamily, final String columnName, final String value) throws Exception {
+  public long recordFrequency(final String table, final String columnFamily, final String columnName, final String value)
+      throws Exception {
     Map<String, BlurIndex> blurIndexes;
     try {
       blurIndexes = _indexServer.getIndexes(table);
@@ -529,7 +558,8 @@ public class IndexManager {
       public Long merge(BlurExecutorCompletionService<Long> service) throws BlurException {
         long total = 0;
         while (service.getRemainingCount() > 0) {
-          Future<Long> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true, table, columnFamily, columnName, value);
+          Future<Long> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true, table,
+              columnFamily, columnName, value);
           total += service.getResultThrowException(future, table, columnFamily, columnName, value);
         }
         return total;
@@ -537,7 +567,8 @@ public class IndexManager {
     });
   }
 
-  public List<String> terms(final String table, final String columnFamily, final String columnName, final String startWith, final short size) throws Exception {
+  public List<String> terms(final String table, final String columnFamily, final String columnName,
+      final String startWith, final short size) throws Exception {
     Map<String, BlurIndex> blurIndexes;
     try {
       blurIndexes = _indexServer.getIndexes(table);
@@ -545,24 +576,26 @@ public class IndexManager {
       LOG.error("Unknown error while trying to fetch index readers.", e);
       throw new BException(e.getMessage(), e);
     }
-    return ForkJoin.execute(_executor, blurIndexes.entrySet(), new ParallelCall<Entry<String, BlurIndex>, List<String>>() {
-      @Override
-      public List<String> call(Entry<String, BlurIndex> input) throws Exception {
-        BlurIndex index = input.getValue();
-        IndexSearcherClosable searcher = index.getIndexReader();
-        try {
-          return terms(searcher.getIndexReader(), columnFamily, columnName, startWith, size);
-        } finally {
-          // this will allow for closing of index
-          searcher.close();
-        }
-      }
-    }).merge(new Merger<List<String>>() {
+    return ForkJoin.execute(_executor, blurIndexes.entrySet(),
+        new ParallelCall<Entry<String, BlurIndex>, List<String>>() {
+          @Override
+          public List<String> call(Entry<String, BlurIndex> input) throws Exception {
+            BlurIndex index = input.getValue();
+            IndexSearcherClosable searcher = index.getIndexReader();
+            try {
+              return terms(searcher.getIndexReader(), columnFamily, columnName, startWith, size);
+            } finally {
+              // this will allow for closing of index
+              searcher.close();
+            }
+          }
+        }).merge(new Merger<List<String>>() {
       @Override
       public List<String> merge(BlurExecutorCompletionService<List<String>> service) throws BlurException {
         TreeSet<String> terms = new TreeSet<String>();
         while (service.getRemainingCount() > 0) {
-          Future<List<String>> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true, table, columnFamily, columnName, startWith, size);
+          Future<List<String>> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true, table,
+              columnFamily, columnName, startWith, size);
           terms.addAll(service.getResultThrowException(future, table, columnFamily, columnName, startWith, size));
         }
         return new ArrayList<String>(terms).subList(0, Math.min(size, terms.size()));
@@ -570,11 +603,13 @@ public class IndexManager {
     });
   }
 
-  public static long recordFrequency(IndexReader reader, String columnFamily, String columnName, String value) throws IOException {
+  public static long recordFrequency(IndexReader reader, String columnFamily, String columnName, String value)
+      throws IOException {
     return reader.docFreq(getTerm(columnFamily, columnName, value));
   }
 
-  public static List<String> terms(IndexReader reader, String columnFamily, String columnName, String startWith, short size) throws IOException {
+  public static List<String> terms(IndexReader reader, String columnFamily, String columnName, String startWith,
+      short size) throws IOException {
     Term term = getTerm(columnFamily, columnName, startWith);
     List<String> terms = new ArrayList<String>(size);
     AtomicReader areader = BlurUtil.getAtomicReader(reader);
@@ -719,7 +754,8 @@ public class IndexManager {
     }
   }
 
-  private void executeMutates(String table, String shard, Map<String, BlurIndex> indexes, List<RowMutation> mutations) throws BlurException, IOException {
+  private void executeMutates(String table, String shard, Map<String, BlurIndex> indexes, List<RowMutation> mutations)
+      throws BlurException, IOException {
     long s = System.nanoTime();
     boolean waitToBeVisible = false;
     for (int i = 0; i < mutations.size(); i++) {
@@ -729,7 +765,8 @@ public class IndexManager {
       }
       BlurIndex blurIndex = indexes.get(shard);
       if (blurIndex == null) {
-        throw new BlurException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.", null);
+        throw new BlurException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.",
+            null);
       }
 
       boolean waitVisiblity = false;
@@ -780,7 +817,8 @@ public class IndexManager {
     String shard = MutationHelper.getShardName(table, mutation.rowId, getNumberOfShards(table), _blurPartitioner);
     BlurIndex blurIndex = indexes.get(shard);
     if (blurIndex == null) {
-      throw new BlurException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.", null);
+      throw new BlurException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.",
+          null);
     }
 
     RowMutationType type = mutation.rowMutationType;
@@ -919,17 +957,18 @@ public class IndexManager {
     private IndexServer _indexServer;
     private Query _query;
     private Selector _selector;
-    private BlurMetrics _blurMetrics;
     private AtomicBoolean _running;
+    private Meter _queriesInternalMeter;
 
-    public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector, BlurMetrics blurMetrics) {
+    public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, IndexServer indexServer,
+        Query query, Selector selector, Meter queriesInternalMeter) {
       _running = running;
       _table = table;
       _status = status;
       _indexServer = indexServer;
       _query = query;
       _selector = selector;
-      _blurMetrics = blurMetrics;
+      _queriesInternalMeter = queriesInternalMeter;
     }
 
     @Override
@@ -944,9 +983,10 @@ public class IndexManager {
         // IndexSearcher searcher = new IndexSearcher(escapeReader);
         searcher.setSimilarity(_indexServer.getSimilarity(_table));
         Query rewrite = searcher.rewrite((Query) _query.clone());
-        return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector, searcher.getIndexReader());
+        return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector,
+            searcher.getIndexReader());
       } finally {
-        _blurMetrics.queriesInternal.incrementAndGet();
+        _queriesInternalMeter.mark();
         _status.deattachThread();
       }
     }
@@ -954,10 +994,6 @@ public class IndexManager {
 
   public void setThreadCount(int threadCount) {
     this._threadCount = threadCount;
-  }
-
-  public void setBlurMetrics(BlurMetrics blurMetrics) {
-    _blurMetrics = blurMetrics;
   }
 
   public void setFilterCache(BlurFilterCache filterCache) {

@@ -47,7 +47,6 @@ import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.manager.indexserver.LocalIndexServer;
 import org.apache.blur.manager.results.BlurResultIterable;
-import org.apache.blur.metrics.BlurMetrics;
 import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -67,7 +66,6 @@ import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
-import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -106,7 +104,6 @@ public class IndexManagerTest {
     indexManager.setStatusCleanupTimerDelay(1000);
     indexManager.setIndexServer(server);
     indexManager.setThreadCount(1);
-    indexManager.setBlurMetrics(new BlurMetrics(new Configuration()));
     indexManager.init();
     setupData();
   }

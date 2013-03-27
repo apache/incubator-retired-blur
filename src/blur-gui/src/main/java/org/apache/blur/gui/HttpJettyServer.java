@@ -22,10 +22,11 @@ import java.util.Properties;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.metrics.BlurMetrics;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.webapp.WebAppContext;
+
+import com.yammer.metrics.reporting.MetricsServlet;
 
 /**
  * Starts up a Jetty server to run the utility gui.
@@ -55,7 +56,7 @@ public class HttpJettyServer {
    *          metrics object for using.
    * @throws IOException
    */
-  public HttpJettyServer(int bindPort, int port, int baseControllerPort, int baseShardPort, int baseGuiControllerPort, int baseGuiShardPort, String base, BlurMetrics bm)
+  public HttpJettyServer(int bindPort, int port, int baseControllerPort, int baseShardPort, int baseGuiControllerPort, int baseGuiShardPort, String base)
       throws IOException {
     server = new Server(port);
 
@@ -76,7 +77,7 @@ public class HttpJettyServer {
     context.setContextPath("/");
     context.setParentLoaderPriority(true);
     context.addServlet(new ServletHolder(new LiveMetricsServlet()), "/livemetrics");
-    context.addServlet(new ServletHolder(new MetricsServlet(bm)), "/metrics");
+    context.addServlet(new ServletHolder(new MetricsServlet()), "/metrics");
     context.addServlet(new ServletHolder(new LogServlet(blurLogFile)), "/logs");
 
     LOG.info("WEB GUI coming up for resource: " + base);

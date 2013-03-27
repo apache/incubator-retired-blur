@@ -58,7 +58,6 @@ import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurNRTIndex;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.metrics.AtomicLongGauge;
-import org.apache.blur.metrics.BlurMetrics;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
@@ -109,7 +108,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private String _nodeName;
   private int _shardOpenerThreadCount;
   private Cache _cache;
-  private BlurMetrics _blurMetrics;
   private ZooKeeper _zookeeper;
   private String _cluster;
 
@@ -140,10 +138,10 @@ public class DistributedIndexServer extends AbstractIndexServer {
   public void init() throws KeeperException, InterruptedException, IOException {
     // evictions = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE,
     // EVICTION), EVICTION, TimeUnit.SECONDS);
-    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, TABLE_COUNT), new AtomicLongGauge(_tableCount));
-    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_COUNT), new AtomicLongGauge(_indexCount));
-    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, SEGMENT_COUNT), new AtomicLongGauge(_segmentCount));
-    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_MEMORY_USAGE), new AtomicLongGauge(_indexMemoryUsage));
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, TABLE_COUNT, _cluster), new AtomicLongGauge(_tableCount));
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_COUNT, _cluster), new AtomicLongGauge(_indexCount));
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, SEGMENT_COUNT, _cluster), new AtomicLongGauge(_segmentCount));
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_MEMORY_USAGE, _cluster), new AtomicLongGauge(_indexMemoryUsage));
 
     BlurUtil.setupZookeeper(_zookeeper, _cluster);
     _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
@@ -276,7 +274,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
               Map<String, BlurIndex> indexes = getIndexes(table);
               int count = indexes.size();
               indexCount += count;
-              updateMetrics(_blurMetrics, indexes, segmentCount, indexMemoryUsage);
+              updateMetrics(indexes, segmentCount, indexMemoryUsage);
               LOG.debug("Table [{0}] has [{1}] number of shards online in this node.", table, count);
             } catch (IOException e) {
               LOG.error("Unknown error trying to warm table [{0}]", e, table);
@@ -288,7 +286,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
         }
       }
 
-      private void updateMetrics(BlurMetrics blurMetrics, Map<String, BlurIndex> indexes, AtomicLong segmentCount,
+      private void updateMetrics(Map<String, BlurIndex> indexes, AtomicLong segmentCount,
           AtomicLong indexMemoryUsage) throws IOException {
         // @TODO not sure how to do this yet
         // for (BlurIndex index : indexes.values()) {
@@ -825,10 +823,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   public void setCache(Cache cache) {
     _cache = cache;
-  }
-
-  public void setBlurMetrics(BlurMetrics blurMetrics) {
-    _blurMetrics = blurMetrics;
   }
 
   public void setZookeeper(ZooKeeper zookeeper) {

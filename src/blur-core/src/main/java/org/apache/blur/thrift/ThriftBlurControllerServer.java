@@ -52,11 +52,9 @@ import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
-import org.apache.blur.metrics.BlurMetrics;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.ZkUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.zookeeper.ZooKeeper;
 
 
@@ -79,9 +77,6 @@ public class ThriftBlurControllerServer extends ThriftServer {
     bindPort += serverIndex;
 
     LOG.info("Shard Server using index [{0}] bind address [{1}]", serverIndex, bindAddress + ":" + bindPort);
-
-    Configuration config = new Configuration();
-    BlurMetrics blurMetrics = new BlurMetrics(config);
 
     String nodeName = ThriftBlurShardServer.getNodeName(configuration, BLUR_CONTROLLER_HOSTNAME);
     nodeName = nodeName + ":" + bindPort;
@@ -120,7 +115,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     controllerServer.init();
 
-    Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(blurMetrics, controllerServer, Iface.class);
+    Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(controllerServer, Iface.class);
 
     int threadCount = configuration.getInt(BLUR_CONTROLLER_SERVER_THRIFT_THREAD_COUNT, 32);
 
@@ -140,7 +135,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
       // params
       // without reversing the mvn dependancy and making blur-gui on top.
       httpServer = new HttpJettyServer(bindPort, webServerPort, configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1), configuration.getInt(BLUR_SHARD_BIND_PORT, -1),
-          configuration.getInt(BLUR_GUI_CONTROLLER_PORT, -1), configuration.getInt(BLUR_GUI_SHARD_PORT, -1), "controller", blurMetrics);
+          configuration.getInt(BLUR_GUI_CONTROLLER_PORT, -1), configuration.getInt(BLUR_GUI_SHARD_PORT, -1), "controller");
     } else {
       httpServer = null;
     }

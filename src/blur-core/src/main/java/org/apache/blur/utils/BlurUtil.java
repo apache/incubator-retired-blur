@@ -34,8 +34,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -46,8 +48,6 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.results.BlurResultIterable;
-import org.apache.blur.metrics.BlurMetrics;
-import org.apache.blur.metrics.BlurMetrics.MethodCall;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
@@ -88,6 +88,11 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Histogram;
+import com.yammer.metrics.core.MetricName;
+import static org.apache.blur.metrics.MetricsConstants.*;
+
 public class BlurUtil {
 
   private static final Object[] EMPTY_OBJECT_ARRAY = new Object[] {};
@@ -97,7 +102,13 @@ public class BlurUtil {
   private static final int ALL = Integer.MAX_VALUE;
 
   @SuppressWarnings("unchecked")
-  public static <T extends Iface> T recordMethodCallsAndAverageTimes(final BlurMetrics metrics, final T t, Class<T> clazz) {
+  public static <T extends Iface> T recordMethodCallsAndAverageTimes(final T t, Class<T> clazz) {
+    final Map<String, Histogram> histogramMap = new ConcurrentHashMap<String, Histogram>();
+    Method[] declaredMethods = Iface.class.getDeclaredMethods();
+    for (Method m : declaredMethods) {
+      String name = m.getName();
+      histogramMap.put(name, Metrics.newHistogram(new MetricName(ORG_APACHE_BLUR, BLUR, name, THRIFT_CALLS)));
+    }
     InvocationHandler handler = new InvocationHandler() {
       @Override
       public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -108,13 +119,9 @@ public class BlurUtil {
           throw e.getTargetException();
         } finally {
           long end = System.nanoTime();
-          MethodCall methodCall = metrics.methodCalls.get(method.getName());
-          if (methodCall == null) {
-            methodCall = new MethodCall();
-            metrics.methodCalls.put(method.getName(), methodCall);
-          }
-          methodCall.invokes.incrementAndGet();
-          methodCall.times.addAndGet(end - start);
+          String name = method.getName();
+          Histogram histogram = histogramMap.get(name);
+          histogram.update((end - start) / 1000);
         }
       }
     };
@@ -125,7 +132,8 @@ public class BlurUtil {
     setupZookeeper(zookeeper, null);
   }
 
-  public synchronized static void setupZookeeper(ZooKeeper zookeeper, String cluster) throws KeeperException, InterruptedException {
+  public synchronized static void setupZookeeper(ZooKeeper zookeeper, String cluster) throws KeeperException,
+      InterruptedException {
     BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getBasePath());
     BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getOnlineControllersPath());
     BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getClustersPath());
@@ -210,7 +218,8 @@ public class BlurUtil {
     return newRecordMutation(RecordMutationType.REPLACE_ENTIRE_RECORD, family, recordId, columns);
   }
 
-  public static RecordMutation newRecordMutation(RecordMutationType type, String family, String recordId, Column... columns) {
+  public static RecordMutation newRecordMutation(RecordMutationType type, String family, String recordId,
+      Column... columns) {
     Record record = new Record();
     record.setRecordId(recordId);
     record.setFamily(family);
@@ -245,7 +254,8 @@ public class BlurUtil {
     return newRowMutation(RowMutationType.REPLACE_ROW, table, rowId, mutations);
   }
 
-  public static RowMutation newRowMutation(RowMutationType type, String table, String rowId, RecordMutation... mutations) {
+  public static RowMutation newRowMutation(RowMutationType type, String table, String rowId,
+      RecordMutation... mutations) {
     RowMutation mutation = new RowMutation();
     mutation.setRowId(rowId);
     mutation.setTable(table);
@@ -325,8 +335,9 @@ public class BlurUtil {
     return new AtomicLongArray(list.size());
   }
 
-  public static BlurResults convertToHits(BlurResultIterable hitsIterable, BlurQuery query, AtomicLongArray facetCounts, ExecutorService executor, Selector selector,
-      final Iface iface, final String table) throws InterruptedException, ExecutionException {
+  public static BlurResults convertToHits(BlurResultIterable hitsIterable, BlurQuery query,
+      AtomicLongArray facetCounts, ExecutorService executor, Selector selector, final Iface iface, final String table)
+      throws InterruptedException, ExecutionException {
     BlurResults results = new BlurResults();
     results.setTotalResults(hitsIterable.getTotalResults());
     results.setShardInfo(hitsIterable.getShardInfo());
@@ -395,16 +406,19 @@ public class BlurUtil {
     return verison.toString();
   }
 
-  public static void unlockForSafeMode(ZooKeeper zookeeper, String lockPath) throws InterruptedException, KeeperException {
+  public static void unlockForSafeMode(ZooKeeper zookeeper, String lockPath) throws InterruptedException,
+      KeeperException {
     zookeeper.delete(lockPath, -1);
     LOG.info("Lock released.");
   }
 
-  public static String lockForSafeMode(ZooKeeper zookeeper, String nodeName, String cluster) throws KeeperException, InterruptedException {
+  public static String lockForSafeMode(ZooKeeper zookeeper, String nodeName, String cluster) throws KeeperException,
+      InterruptedException {
     LOG.info("Getting safe mode lock.");
     final Object lock = new Object();
     String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
-    String newPath = zookeeper.create(blurSafemodePath + "/safemode-", nodeName.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
+    String newPath = zookeeper.create(blurSafemodePath + "/safemode-", nodeName.getBytes(), Ids.OPEN_ACL_UNSAFE,
+        CreateMode.EPHEMERAL_SEQUENTIAL);
     Watcher watcher = new Watcher() {
       @Override
       public void process(WatchedEvent event) {
@@ -485,7 +499,8 @@ public class BlurUtil {
     return sizeOf;
   }
 
-  public static void createPath(ZooKeeper zookeeper, String path, byte[] data) throws KeeperException, InterruptedException {
+  public static void createPath(ZooKeeper zookeeper, String path, byte[] data) throws KeeperException,
+      InterruptedException {
     zookeeper.create(path, data, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
   }
 
@@ -522,8 +537,10 @@ public class BlurUtil {
         String shardIndexStr = name.substring(index + 1);
         int shardIndex = Integer.parseInt(shardIndexStr);
         if (shardIndex >= shardCount) {
-          LOG.error("Number of directories in table path [" + path + "] exceeds definition of [" + shardCount + "] shard count.");
-          throw new RuntimeException("Number of directories in table path [" + path + "] exceeds definition of [" + shardCount + "] shard count.");
+          LOG.error("Number of directories in table path [" + path + "] exceeds definition of [" + shardCount
+              + "] shard count.");
+          throw new RuntimeException("Number of directories in table path [" + path + "] exceeds definition of ["
+              + shardCount + "] shard count.");
         }
       }
     }
@@ -647,7 +664,8 @@ public class BlurUtil {
    * 
    * @throws IOException
    */
-  public static List<Document> termSearch(IndexReader reader, Term term, ResetableDocumentStoredFieldVisitor fieldSelector) throws IOException {
+  public static List<Document> termSearch(IndexReader reader, Term term,
+      ResetableDocumentStoredFieldVisitor fieldSelector) throws IOException {
     IndexSearcher indexSearcher = new IndexSearcher(reader);
     TopDocs topDocs = indexSearcher.search(new TermQuery(term), ALL);
     List<Document> docs = new ArrayList<Document>();

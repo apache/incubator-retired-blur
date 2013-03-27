@@ -54,7 +54,6 @@ import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup;
 import org.apache.blur.manager.indexserver.DistributedIndexServer;
 import org.apache.blur.manager.writer.BlurIndexRefresher;
-import org.apache.blur.metrics.BlurMetrics;
 import org.apache.blur.store.blockcache.BlockCache;
 import org.apache.blur.store.blockcache.BlockDirectory;
 import org.apache.blur.store.blockcache.BlockDirectoryCache;
@@ -98,7 +97,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     int bindPort = configuration.getInt(BLUR_SHARD_BIND_PORT, -1);
     bindPort += serverIndex;
     
-    BlurMetrics blurMetrics = new BlurMetrics(config);
+//    BlurMetrics blurMetrics = new BlurMetrics(config);
     
     int baseGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT));
     final HttpJettyServer httpServer;
@@ -109,7 +108,7 @@ public class ThriftBlurShardServer extends ThriftServer {
       // params
       // without reversing the mvn dependancy and making blur-gui on top.
       httpServer = new HttpJettyServer(bindPort, webServerPort, configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1), configuration.getInt(BLUR_SHARD_BIND_PORT, -1),
-          configuration.getInt(BLUR_GUI_CONTROLLER_PORT, -1), configuration.getInt(BLUR_GUI_SHARD_PORT, -1), "shard", blurMetrics);
+          configuration.getInt(BLUR_GUI_CONTROLLER_PORT, -1), configuration.getInt(BLUR_GUI_SHARD_PORT, -1), "shard");
     } else {
       httpServer = null;
     }
@@ -173,7 +172,6 @@ public class ThriftBlurShardServer extends ThriftServer {
     BlurIndexWarmup indexWarmup = getIndexWarmup(configuration);
 
     final DistributedIndexServer indexServer = new DistributedIndexServer();
-    indexServer.setBlurMetrics(blurMetrics);
     indexServer.setCache(cache);
     indexServer.setClusterStatus(clusterStatus);
     indexServer.setClusterName(configuration.get(BLUR_CLUSTER_NAME, BLUR_CLUSTER));
@@ -190,7 +188,6 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexManager.setIndexServer(indexServer);
     indexManager.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
     indexManager.setThreadCount(configuration.getInt(BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT, 32));
-    indexManager.setBlurMetrics(blurMetrics);
     indexManager.setFilterCache(filterCache);
     indexManager.init();
 
@@ -203,7 +200,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.setConfiguration(configuration);
     shardServer.init();
 
-    Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(blurMetrics, shardServer, Iface.class);
+    Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(shardServer, Iface.class);
 
     int threadCount = configuration.getInt(BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT, 32);
 

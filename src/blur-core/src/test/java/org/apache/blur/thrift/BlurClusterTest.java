@@ -72,7 +72,7 @@ public class BlurClusterTest {
     System.setProperty("dfs.datanode.data.dir.perm", dirPermissionNum);
     testDirectory.delete();
 
-    MiniCluster.startBlurCluster("cluster", 2, 3);
+    MiniCluster.startBlurCluster("target/cluster", 2, 3);
   }
 
   @AfterClass
@@ -108,7 +108,10 @@ public class BlurClusterTest {
       rowMutation.setWaitToBeVisible(true);
       mutations.add(rowMutation);
     }
+    long s = System.nanoTime();
     client.mutateBatch(mutations);
+    long e = System.nanoTime();
+    System.out.println("mutateBatch took [" + (e - s) / 1000000.0 + "]");
     BlurQuery blurQuery = new BlurQuery();
     SimpleQuery simpleQuery = new SimpleQuery();
     simpleQuery.setQueryStr("test.test:value");

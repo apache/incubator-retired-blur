@@ -16,6 +16,12 @@ package org.apache.blur.manager.indexserver;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.metrics.MetricsConstants.BLUR;
+import static org.apache.blur.metrics.MetricsConstants.INDEX_COUNT;
+import static org.apache.blur.metrics.MetricsConstants.INDEX_MEMORY_USAGE;
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
+import static org.apache.blur.metrics.MetricsConstants.SEGMENT_COUNT;
+import static org.apache.blur.metrics.MetricsConstants.TABLE_COUNT;
 import static org.apache.blur.utils.BlurConstants.SHARD_PREFIX;
 
 import java.io.IOException;
@@ -49,9 +55,9 @@ import org.apache.blur.manager.BlurFilterCache;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.writer.BlurIndex;
-import org.apache.blur.manager.writer.BlurIndexRefresher;
 import org.apache.blur.manager.writer.BlurNRTIndex;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
+import org.apache.blur.metrics.AtomicLongGauge;
 import org.apache.blur.metrics.BlurMetrics;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
@@ -72,7 +78,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
@@ -82,6 +87,8 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.MetricName;
 
 public class DistributedIndexServer extends AbstractIndexServer {
 
@@ -101,7 +108,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private Configuration _configuration;
   private String _nodeName;
   private int _shardOpenerThreadCount;
-  private BlurIndexRefresher _refresher;
   private Cache _cache;
   private BlurMetrics _blurMetrics;
   private ZooKeeper _zookeeper;
@@ -115,24 +121,35 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private AtomicBoolean _running = new AtomicBoolean();
   private long _safeModeDelay;
   private BlurIndexWarmup _warmup = new DefaultBlurIndexWarmup();
-  private IndexDeletionPolicy _indexDeletionPolicy;
   private DirectoryReferenceFileGC _gc;
   private WatchChildren _watchOnlineShards;
-  
+
   private SharedMergeScheduler _mergeScheduler;
   private IndexInputCloser _closer = null;
   private ExecutorService _searchExecutor = null;
-
+  
+  private AtomicLong _tableCount = new AtomicLong();
+  private AtomicLong _indexCount = new AtomicLong();
+  private AtomicLong _segmentCount = new AtomicLong();
+  private AtomicLong _indexMemoryUsage = new AtomicLong();
+  
   public static interface ReleaseReader {
     void release() throws IOException;
   }
 
   public void init() throws KeeperException, InterruptedException, IOException {
+    // evictions = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE,
+    // EVICTION), EVICTION, TimeUnit.SECONDS);
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, TABLE_COUNT), new AtomicLongGauge(_tableCount));
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_COUNT), new AtomicLongGauge(_indexCount));
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, SEGMENT_COUNT), new AtomicLongGauge(_segmentCount));
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_MEMORY_USAGE), new AtomicLongGauge(_indexMemoryUsage));
+
     BlurUtil.setupZookeeper(_zookeeper, _cluster);
     _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
     _gc = new DirectoryReferenceFileGC();
     _gc.init();
-    
+
     // @TODO allow for configuration of these
     _mergeScheduler = new SharedMergeScheduler();
     _searchExecutor = Executors.newThreadPool("internal-search", 16);
@@ -154,31 +171,32 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   private void watchForShardServerChanges() {
     ZookeeperPathConstants.getOnlineShardsPath(_cluster);
-    _watchOnlineShards = new WatchChildren(_zookeeper, ZookeeperPathConstants.getOnlineShardsPath(_cluster)).watch(new OnChange() {
-      private List<String> _prevOnlineShards = new ArrayList<String>();
+    _watchOnlineShards = new WatchChildren(_zookeeper, ZookeeperPathConstants.getOnlineShardsPath(_cluster))
+        .watch(new OnChange() {
+          private List<String> _prevOnlineShards = new ArrayList<String>();
 
-      @Override
-      public void action(List<String> onlineShards) {
-        List<String> oldOnlineShards = _prevOnlineShards;
-        _prevOnlineShards = onlineShards;
-        _layoutManagers.clear();
-        _layoutCache.clear();
-        LOG.info("Online shard servers changed, clearing layout managers and cache.");
-        if (oldOnlineShards == null) {
-          oldOnlineShards = new ArrayList<String>();
-        }
-        for (String oldOnlineShard : oldOnlineShards) {
-          if (!onlineShards.contains(oldOnlineShard)) {
-            LOG.info("Node went offline [{0}]", oldOnlineShard);
+          @Override
+          public void action(List<String> onlineShards) {
+            List<String> oldOnlineShards = _prevOnlineShards;
+            _prevOnlineShards = onlineShards;
+            _layoutManagers.clear();
+            _layoutCache.clear();
+            LOG.info("Online shard servers changed, clearing layout managers and cache.");
+            if (oldOnlineShards == null) {
+              oldOnlineShards = new ArrayList<String>();
+            }
+            for (String oldOnlineShard : oldOnlineShards) {
+              if (!onlineShards.contains(oldOnlineShard)) {
+                LOG.info("Node went offline [{0}]", oldOnlineShard);
+              }
+            }
+            for (String onlineShard : onlineShards) {
+              if (!oldOnlineShards.contains(onlineShard)) {
+                LOG.info("Node came online [{0}]", onlineShard);
+              }
+            }
           }
-        }
-        for (String onlineShard : onlineShards) {
-          if (!oldOnlineShards.contains(onlineShard)) {
-            LOG.info("Node came online [{0}]", onlineShard);
-          }
-        }
-      }
-    });
+        });
   }
 
   private void waitInSafeModeIfNeeded() throws KeeperException, InterruptedException {
@@ -213,7 +231,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
     String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(_cluster);
     Stat stat = _zookeeper.exists(blurSafemodePath, false);
     if (stat == null) {
-      _zookeeper.create(blurSafemodePath, Long.toString(timestamp).getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+      _zookeeper.create(blurSafemodePath, Long.toString(timestamp).getBytes(), Ids.OPEN_ACL_UNSAFE,
+          CreateMode.PERSISTENT);
     } else {
       _zookeeper.setData(blurSafemodePath, Long.toString(timestamp).getBytes(), -1);
     }
@@ -248,7 +267,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
       private void warmup() {
         if (_running.get()) {
           List<String> tableList = _clusterStatus.getTableList(false, _cluster);
-          _blurMetrics.tableCount.set(tableList.size());
+          _tableCount.set(tableList.size());
           long indexCount = 0;
           AtomicLong segmentCount = new AtomicLong();
           AtomicLong indexMemoryUsage = new AtomicLong();
@@ -263,26 +282,27 @@ public class DistributedIndexServer extends AbstractIndexServer {
               LOG.error("Unknown error trying to warm table [{0}]", e, table);
             }
           }
-          _blurMetrics.indexCount.set(indexCount);
-          _blurMetrics.segmentCount.set(segmentCount.get());
-          _blurMetrics.indexMemoryUsage.set(indexMemoryUsage.get());
+          _indexCount.set(indexCount);
+          _segmentCount.set(segmentCount.get());
+          _indexMemoryUsage.set(indexMemoryUsage.get());
         }
       }
 
-      private void updateMetrics(BlurMetrics blurMetrics, Map<String, BlurIndex> indexes, AtomicLong segmentCount, AtomicLong indexMemoryUsage) throws IOException {
+      private void updateMetrics(BlurMetrics blurMetrics, Map<String, BlurIndex> indexes, AtomicLong segmentCount,
+          AtomicLong indexMemoryUsage) throws IOException {
         // @TODO not sure how to do this yet
-//        for (BlurIndex index : indexes.values()) {
-//          IndexReader reader = index.getIndexReader();
-//          try {
-//            IndexReader[] readers = reader.getSequentialSubReaders();
-//            if (readers != null) {
-//              segmentCount.addAndGet(readers.length);
-//            }
-//            indexMemoryUsage.addAndGet(BlurUtil.getMemoryUsage(reader));
-//          } finally {
-//            reader.decRef();
-//          }
-//        }
+        // for (BlurIndex index : indexes.values()) {
+        // IndexReader reader = index.getIndexReader();
+        // try {
+        // IndexReader[] readers = reader.getSequentialSubReaders();
+        // if (readers != null) {
+        // segmentCount.addAndGet(readers.length);
+        // }
+        // indexMemoryUsage.addAndGet(BlurUtil.getMemoryUsage(reader));
+        // } finally {
+        // reader.decRef();
+        // }
+        // }
       }
     }, _delay, _delay);
   }
@@ -487,17 +507,19 @@ public class DistributedIndexServer extends AbstractIndexServer {
     String compressionClass = descriptor.compressionClass;
     int compressionBlockSize = descriptor.compressionBlockSize;
     if (compressionClass != null) {
-//      throw new RuntimeException("Not supported yet");
+      // throw new RuntimeException("Not supported yet");
       LOG.error("Not supported yet");
-//      CompressionCodec compressionCodec;
-//      try {
-//        compressionCodec = BlurUtil.getInstance(compressionClass, CompressionCodec.class);
-//        directory = new CompressedFieldDataDirectory(directory, compressionCodec, compressionBlockSize);
-//      } catch (Exception e) {
-//        throw new IOException(e);
-//      }
+      // CompressionCodec compressionCodec;
+      // try {
+      // compressionCodec = BlurUtil.getInstance(compressionClass,
+      // CompressionCodec.class);
+      // directory = new CompressedFieldDataDirectory(directory,
+      // compressionCodec, compressionBlockSize);
+      // } catch (Exception e) {
+      // throw new IOException(e);
+      // }
     }
-    
+
     TableContext tableContext = TableContext.create(descriptor);
     ShardContext shardContext = ShardContext.create(tableContext, shard);
 
@@ -512,17 +534,17 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
     BlurIndex index;
     if (_clusterStatus.isReadOnly(true, _cluster, table)) {
-//      BlurIndexReader reader = new BlurIndexReader();
-//      reader.setCloser(_closer);
-//      reader.setAnalyzer(getAnalyzer(table));
-//      reader.setDirectory(dir);
-//      reader.setRefresher(_refresher);
-//      reader.setShard(shard);
-//      reader.setTable(table);
-//      reader.setIndexDeletionPolicy(_indexDeletionPolicy);
-//      reader.setSimilarity(getSimilarity(table));
-//      reader.init();
-//      index = reader;
+      // BlurIndexReader reader = new BlurIndexReader();
+      // reader.setCloser(_closer);
+      // reader.setAnalyzer(getAnalyzer(table));
+      // reader.setDirectory(dir);
+      // reader.setRefresher(_refresher);
+      // reader.setShard(shard);
+      // reader.setTable(table);
+      // reader.setIndexDeletionPolicy(_indexDeletionPolicy);
+      // reader.setSimilarity(getSimilarity(table));
+      // reader.init();
+      // index = reader;
       throw new RuntimeException("not impl");
     } else {
       BlurNRTIndex writer = new BlurNRTIndex(shardContext, _mergeScheduler, _closer, dir, _gc, _searchExecutor);
@@ -550,40 +572,45 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   private void warmUpAllSegments(IndexReader reader) throws IOException {
     LOG.warn("Warm up NOT supported yet.");
-    //Once the reader warm-up has been re-implemented, this code will change accordingly.
-    
-//    IndexReader[] indexReaders = reader.getSequentialSubReaders();
-//    if (indexReaders != null) {
-//      for (IndexReader r : indexReaders) {
-//        warmUpAllSegments(r);
-//      }
-//    }
-//    int maxDoc = reader.maxDoc();
-//    int numDocs = reader.numDocs();
-//    FieldInfos fieldInfos = ReaderUtil.getMergedFieldInfos(reader);
-//    Collection<String> fieldNames = new ArrayList<String>();
-//    for (FieldInfo fieldInfo : fieldInfos) {
-//      if (fieldInfo.isIndexed) {
-//        fieldNames.add(fieldInfo.name);
-//      }
-//    }
-//    int primeDocCount = reader.docFreq(BlurConstants.PRIME_DOC_TERM);
-//    TermDocs termDocs = reader.termDocs(BlurConstants.PRIME_DOC_TERM);
-//    termDocs.next();
-//    termDocs.close();
-//
-//    TermPositions termPositions = reader.termPositions(BlurConstants.PRIME_DOC_TERM);
-//    if (termPositions.next()) {
-//      if (termPositions.freq() > 0) {
-//        termPositions.nextPosition();
-//      }
-//    }
-//    termPositions.close();
-//    LOG.info("Warmup of indexreader [" + reader + "] complete, maxDocs [" + maxDoc + "], numDocs [" + numDocs + "], primeDocumentCount [" + primeDocCount + "], fieldCount ["
-//        + fieldNames.size() + "]");
+    // Once the reader warm-up has been re-implemented, this code will change
+    // accordingly.
+
+    // IndexReader[] indexReaders = reader.getSequentialSubReaders();
+    // if (indexReaders != null) {
+    // for (IndexReader r : indexReaders) {
+    // warmUpAllSegments(r);
+    // }
+    // }
+    // int maxDoc = reader.maxDoc();
+    // int numDocs = reader.numDocs();
+    // FieldInfos fieldInfos = ReaderUtil.getMergedFieldInfos(reader);
+    // Collection<String> fieldNames = new ArrayList<String>();
+    // for (FieldInfo fieldInfo : fieldInfos) {
+    // if (fieldInfo.isIndexed) {
+    // fieldNames.add(fieldInfo.name);
+    // }
+    // }
+    // int primeDocCount = reader.docFreq(BlurConstants.PRIME_DOC_TERM);
+    // TermDocs termDocs = reader.termDocs(BlurConstants.PRIME_DOC_TERM);
+    // termDocs.next();
+    // termDocs.close();
+    //
+    // TermPositions termPositions =
+    // reader.termPositions(BlurConstants.PRIME_DOC_TERM);
+    // if (termPositions.next()) {
+    // if (termPositions.freq() > 0) {
+    // termPositions.nextPosition();
+    // }
+    // }
+    // termPositions.close();
+    // LOG.info("Warmup of indexreader [" + reader + "] complete, maxDocs [" +
+    // maxDoc + "], numDocs [" + numDocs + "], primeDocumentCount [" +
+    // primeDocCount + "], fieldCount ["
+    // + fieldNames.size() + "]");
   }
 
-  private synchronized Map<String, BlurIndex> openMissingShards(final String table, Set<String> shardsToServe, final Map<String, BlurIndex> tableIndexes) {
+  private synchronized Map<String, BlurIndex> openMissingShards(final String table, Set<String> shardsToServe,
+      final Map<String, BlurIndex> tableIndexes) {
     Map<String, Future<BlurIndex>> opening = new HashMap<String, Future<BlurIndex>>();
     for (String s : shardsToServe) {
       final String shard = s;
@@ -796,10 +823,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _shardOpenerThreadCount = shardOpenerThreadCount;
   }
 
-  public void setRefresher(BlurIndexRefresher refresher) {
-    _refresher = refresher;
-  }
-
   public void setCache(Cache cache) {
     _cache = cache;
   }
@@ -824,10 +847,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _warmup = warmup;
   }
 
-  public void setIndexDeletionPolicy(IndexDeletionPolicy indexDeletionPolicy) {
-    _indexDeletionPolicy = indexDeletionPolicy;
-  }
-  
   public void setClusterName(String cluster) {
     _cluster = cluster;
   }

@@ -32,10 +32,10 @@ import org.apache.lucene.store.Directory;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Gauge;
 import com.yammer.metrics.core.MetricName;
+import static org.apache.blur.metrics.MetricsConstants.*;
 
 public class DirectoryReferenceFileGC extends TimerTask implements Closeable {
 
-  private static final String ORG_APACHE_BLUR = "org.apache.blur";
 
   private static final Log LOG = LogFactory.getLog(DirectoryReferenceFileGC.class);
 
@@ -73,7 +73,7 @@ public class DirectoryReferenceFileGC extends TimerTask implements Closeable {
     _timer = new Timer("Blur-File-GC", true);
     _timer.scheduleAtFixedRate(this, _delay, _delay);
     _queue = new LinkedBlockingQueue<Value>();
-    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, "Lucene", "Files in Queue to be Deleted"), new Gauge<Integer>() {
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, LUCENE, FILES_IN_QUEUE_TO_BE_DELETED), new Gauge<Integer>() {
       @Override
       public Integer value() {
         return numberOfFilesToBeDeleted;

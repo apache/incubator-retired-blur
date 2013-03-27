@@ -22,4 +22,9 @@ public class MetricsConstants {
   public static final String MISS = "Miss";
   public static final String CACHE = "Cache";
   public static final String EVICTION = "Eviction";
+  public static final String TABLE_COUNT = "Table Count";
+  public static final String FILES_IN_QUEUE_TO_BE_DELETED = "Files in Queue to be Deleted";
+  public static final String INDEX_MEMORY_USAGE = "Index Memory Usage";
+  public static final String SEGMENT_COUNT = "Segment Count";
+  public static final String INDEX_COUNT = "Index Count";
 }

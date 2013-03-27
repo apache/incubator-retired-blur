@@ -33,8 +33,6 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WARMUP_CLASS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT;
-import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_COMMITS;
-import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_REFRESHS;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
 import static org.apache.blur.utils.BlurUtil.quietClose;
@@ -66,8 +64,6 @@ import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.lucene.index.IndexDeletionPolicy;
-import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooKeeper;
@@ -175,7 +171,6 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     BlurFilterCache filterCache = getFilterCache(configuration);
     BlurIndexWarmup indexWarmup = getIndexWarmup(configuration);
-    IndexDeletionPolicy indexDeletionPolicy = new KeepOnlyLastCommitDeletionPolicy();
 
     final DistributedIndexServer indexServer = new DistributedIndexServer();
     indexServer.setBlurMetrics(blurMetrics);
@@ -184,13 +179,11 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexServer.setClusterName(configuration.get(BLUR_CLUSTER_NAME, BLUR_CLUSTER));
     indexServer.setConfiguration(config);
     indexServer.setNodeName(nodeName);
-    indexServer.setRefresher(refresher);
     indexServer.setShardOpenerThreadCount(configuration.getInt(BLUR_SHARD_OPENER_THREAD_COUNT, 16));
     indexServer.setZookeeper(zooKeeper);
     indexServer.setFilterCache(filterCache);
     indexServer.setSafeModeDelay(configuration.getLong(BLUR_SHARD_SAFEMODEDELAY, 60000));
     indexServer.setWarmup(indexWarmup);
-    indexServer.setIndexDeletionPolicy(indexDeletionPolicy);
     indexServer.init();
 
     final IndexManager indexManager = new IndexManager();

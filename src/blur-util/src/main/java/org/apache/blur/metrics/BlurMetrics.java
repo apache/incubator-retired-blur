@@ -51,12 +51,12 @@ public class BlurMetrics implements Updater {
   public AtomicLong blurShardBuffercacheLost = new AtomicLong(0);
   public Map<String, MethodCall> methodCalls = new ConcurrentHashMap<String, MethodCall>();
 
-  public AtomicLong tableCount = new AtomicLong(0);
-  public AtomicLong rowCount = new AtomicLong(0);
-  public AtomicLong recordCount = new AtomicLong(0);
-  public AtomicLong indexCount = new AtomicLong(0);
-  public AtomicLong indexMemoryUsage = new AtomicLong(0);
-  public AtomicLong segmentCount = new AtomicLong(0);
+//  public AtomicLong tableCount = new AtomicLong(0);
+//  public AtomicLong rowCount = new AtomicLong(0);
+//  public AtomicLong recordCount = new AtomicLong(0);
+//  public AtomicLong indexCount = new AtomicLong(0);
+//  public AtomicLong indexMemoryUsage = new AtomicLong(0);
+//  public AtomicLong segmentCount = new AtomicLong(0);
 
   private MetricsRecord _metricsRecord;
   private long _previous = System.nanoTime();

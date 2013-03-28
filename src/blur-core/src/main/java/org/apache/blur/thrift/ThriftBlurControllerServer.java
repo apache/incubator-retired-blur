@@ -66,6 +66,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     int serverIndex = getServerIndex(args);
     LOG.info("Setting up Controller Server");
     BlurConfiguration configuration = new BlurConfiguration();
+    printUlimits();
     ThriftServer server = createServer(serverIndex, configuration);
     server.start();
   }

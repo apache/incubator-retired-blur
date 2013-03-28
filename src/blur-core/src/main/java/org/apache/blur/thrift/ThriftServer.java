@@ -16,6 +16,10 @@ package org.apache.blur.thrift;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -35,7 +39,6 @@ import org.apache.thrift.server.TServer;
 import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TTransportException;
 
-
 public class ThriftServer {
 
   private static final Log LOG = LogFactory.getLog(ThriftServer.class);
@@ -52,6 +55,25 @@ public class ThriftServer {
   private ExecutorService _executorService;
   private ExecutorService _queryExexutorService;
   private ExecutorService _mutateExecutorService;
+
+  public static void printUlimits() throws IOException {
+    ProcessBuilder processBuilder = new ProcessBuilder("ulimit", "-a");
+    Process process;
+    try {
+      process = processBuilder.start();
+    } catch (Exception e) {
+      LOG.warn("Could not run ulimit command to retrieve limits.", e);
+      return;
+    }
+
+    InputStream inputStream = process.getInputStream();
+    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+    String line;
+    while ((line = reader.readLine()) != null) {
+      LOG.info("ulimit: " + line);
+    }
+    reader.close();
+  }
 
   public synchronized void close() {
     if (!_closed) {
@@ -126,14 +148,26 @@ public class ThriftServer {
     this._configuration = configuration;
   }
 
-  public static String getNodeName(BlurConfiguration configuration, String hostNameProperty) throws UnknownHostException {
+  public static String getNodeName(BlurConfiguration configuration, String hostNameProperty)
+      throws UnknownHostException {
     String hostName = configuration.get(hostNameProperty);
     if (hostName == null) {
       hostName = "";
     }
     hostName = hostName.trim();
     if (hostName.isEmpty()) {
-      return InetAddress.getLocalHost().getHostName();
+      try {
+        return InetAddress.getLocalHost().getHostName();
+      } catch (UnknownHostException e) {
+        String message = e.getMessage();
+        int index = message.indexOf(':');
+        if (index < 0) {
+          throw new RuntimeException("Nodename cannot be determined.");
+        }
+        String nodeName = message.substring(0, index);
+        LOG.warn("Hack to get nodename from exception [" + nodeName + "]");
+        return nodeName;
+      }
     }
     return hostName;
   }

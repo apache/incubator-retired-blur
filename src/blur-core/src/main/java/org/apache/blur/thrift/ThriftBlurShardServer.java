@@ -75,10 +75,9 @@ public class ThriftBlurShardServer extends ThriftServer {
   public static void main(String[] args) throws Exception {
     int serverIndex = getServerIndex(args);
     LOG.info("Setting up Shard Server");
-
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
     BlurConfiguration configuration = new BlurConfiguration();
-
+    printUlimits();
     ThriftServer server = createServer(serverIndex, configuration);
     server.start();
   }

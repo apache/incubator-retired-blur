@@ -28,13 +28,13 @@
 #-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:CMSIncrementalDutyCycleMin=10 -XX:CMSIncrementalDutyCycle=50 \
 #-XX:ParallelGCThreads=8 -XX:+UseParNewGC -XX:MaxGCPauseMillis=200 -XX:GCTimeRatio=10 -XX:+DisableExplicitGC \
 #-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$BLUR_HOME/logs/gc-blur-shard-server_`date +%Y%m%d_%H%M%S`.log
-export BLUR_SHARD_JVM_OPTIONS="-Xmx1024m"
+export BLUR_SHARD_JVM_OPTIONS="-Xmx1024m -Djava.net.preferIPv4Stack=true"
 
 # JAVA JVM OPTIONS for the shard servers, jvm tuning parameters are placed here.
-export BLUR_CONTROLLER_JVM_OPTIONS="-Xmx1024m"
+export BLUR_CONTROLLER_JVM_OPTIONS="-Xmx1024m -Djava.net.preferIPv4Stack=true"
 
 # JAVA JVM OPTIONS for the shard servers, jvm tuning parameters are placed here.
-export BLUR_COMMAND="-Xmx1024m"
+export BLUR_COMMAND="-Xmx1024m -Djava.net.preferIPv4Stack=true"
 
 # Any SSH Options to be used during startup or shutdown commands.
 export BLUR_SSH_OPTS=

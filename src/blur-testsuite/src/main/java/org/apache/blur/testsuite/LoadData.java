@@ -52,7 +52,7 @@ public class LoadData {
     int count = 0;
     int max = 100;
     long start = System.currentTimeMillis();
-    final String table = "test_table";
+    final String table = args[1];
     for (int i = 0; i < numberRows; i++) {
       if (count >= max) {
         double seconds = (System.currentTimeMillis() - start) / 1000.0;

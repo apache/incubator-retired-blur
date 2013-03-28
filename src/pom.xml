@@ -51,6 +51,7 @@ under the License.
 		<jline.version>2.7</jline.version>
 		<guava.version>14.0</guava.version>
 		<metrics-core.version>2.2.0</metrics-core.version>
+		<json.version>20090211</json.version>
 	</properties>
 
 	<modules>

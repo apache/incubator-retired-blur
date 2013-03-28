@@ -37,6 +37,9 @@ import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
 import static org.apache.blur.utils.BlurUtil.quietClose;
 
+import java.lang.management.ManagementFactory;
+import java.util.List;
+
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.concurrent.SimpleUncaughtExceptionHandler;
 import org.apache.blur.concurrent.ThreadWatcher;
@@ -88,7 +91,8 @@ public class ThriftBlurShardServer extends ThriftServer {
     // in a slab when using a block size of 8,192
     int numberOfBlocksPerSlab = 16384;
     int blockSize = BlockDirectory.BLOCK_SIZE;
-    int slabCount = configuration.getInt(BLUR_SHARD_BLOCKCACHE_SLAB_COUNT, 1);
+    int slabCount = configuration.getInt(BLUR_SHARD_BLOCKCACHE_SLAB_COUNT, -1);
+    slabCount = getSlabCount(slabCount, numberOfBlocksPerSlab, blockSize);
     Cache cache;
     Configuration config = new Configuration();
     
@@ -223,6 +227,36 @@ public class ThriftBlurShardServer extends ThriftServer {
     server.setShutdown(shutdown);
     new BlurServerShutDown().register(shutdown, zooKeeper);
     return server;
+  }
+  
+  private static int getSlabCount(int slabCount, int numberOfBlocksPerSlab, int blockSize) {
+    if (slabCount < 0) {
+      long slabSize = numberOfBlocksPerSlab * blockSize;
+      List<String> inputArguments = ManagementFactory.getRuntimeMXBean().getInputArguments();
+      for (String arg : inputArguments) {
+        if (arg.startsWith("-XX:MaxDirectMemorySize")) {
+          long maxDirectMemorySize = getMaxDirectMemorySize(arg);
+          maxDirectMemorySize -= 64 * 1024 * 1024;
+          return (int) (maxDirectMemorySize / slabSize);
+        }
+      }
+      throw new RuntimeException("Auto slab setup cannot happen, JVM option -XX:MaxDirectMemorySize not set.");
+    }
+    return slabCount;
+  }
+  
+  private static long getMaxDirectMemorySize(String arg) {
+    int index = arg.lastIndexOf('=');
+    return parseNumber(arg.substring(index + 1).toLowerCase().replace(" ", ""));
+  }
+
+  private static long parseNumber(String number) {
+    if (number.endsWith("m")) {
+      return Long.parseLong(number.substring(0, number.length() - 1)) * 1024 * 1024;
+    } else if (number.endsWith("g")) {
+      return Long.parseLong(number.substring(0, number.length() - 1)) * 1024 * 1024 * 1024;
+    }
+    throw new RuntimeException("Cannot parse [" + number + "]");
   }
 
   private static BlurFilterCache getFilterCache(BlurConfiguration configuration) {

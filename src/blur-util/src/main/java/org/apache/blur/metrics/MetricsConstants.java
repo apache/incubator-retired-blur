@@ -27,4 +27,8 @@ public class MetricsConstants {
   public static final String INDEX_MEMORY_USAGE = "Index Memory Usage";
   public static final String SEGMENT_COUNT = "Segment Count";
   public static final String INDEX_COUNT = "Index Count";
+  public static final String INTERNAL_SEARCH = "internal search";
+  public static final String SEARCH_TIMER = "search-timer";
+  public static final String ENTRIES = "Entries";
+  public static final String SIZE = "Size";
 }

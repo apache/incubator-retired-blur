@@ -55,7 +55,6 @@ import org.apache.blur.manager.results.MergerBlurResultIterable;
 import org.apache.blur.manager.status.QueryStatus;
 import org.apache.blur.manager.status.QueryStatusManager;
 import org.apache.blur.manager.writer.BlurIndex;
-import org.apache.blur.metrics.QueryMetrics;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.thrift.BException;
 import org.apache.blur.thrift.MutationHelper;
@@ -110,6 +109,8 @@ import org.apache.lucene.util.BytesRef;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
+import com.yammer.metrics.core.Timer;
+import com.yammer.metrics.core.TimerContext;
 
 public class IndexManager {
 
@@ -124,30 +125,32 @@ public class IndexManager {
   private boolean _closed;
   private BlurPartitioner<BytesWritable, Void> _blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
   private BlurFilterCache _filterCache = new DefaultBlurFilterCache();
-  private QueryMetrics _queryMetrics;
   private long _defaultParallelCallTimeout = TimeUnit.MINUTES.toMillis(1);
   private Meter _recordsMeter;
   private Meter _rowMeter;
   private Meter _queriesExternalMeter;
   private Meter _queriesInternalMeter;
+  private Timer _fetchTimer;
 
   public void setMaxClauseCount(int maxClauseCount) {
     BooleanQuery.setMaxClauseCount(maxClauseCount);
   }
 
   public void init() {
-    _recordsMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Records/s"), "Records/s", TimeUnit.SECONDS);
-    _rowMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Row/s"), "Row/s", TimeUnit.SECONDS);
+    _recordsMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Read Records/s"), "Records/s",
+        TimeUnit.SECONDS);
+    _rowMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Read Row/s"), "Row/s", TimeUnit.SECONDS);
     _queriesExternalMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "External Queries/s"),
         "External Queries/s", TimeUnit.SECONDS);
     _queriesInternalMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Internal Queries/s"),
         "Internal Queries/s", TimeUnit.SECONDS);
+    _fetchTimer = Metrics.newTimer(new MetricName(ORG_APACHE_BLUR, BLUR, "Fetch Timer"), TimeUnit.MICROSECONDS,
+        TimeUnit.SECONDS);
 
     _executor = Executors.newThreadPool("index-manager", _threadCount);
     // @TODO give the mutate it's own thread pool
     _mutateExecutor = Executors.newThreadPool("index-manager-mutate", _threadCount);
     _statusManager.init();
-    _queryMetrics = QueryMetrics.getInstance();
     LOG.info("Init Complete");
 
   }
@@ -195,11 +198,10 @@ public class IndexManager {
       throw new BException(e.getMessage(), e);
     }
     IndexSearcherClosable searcher = null;
+    TimerContext timerContext = _fetchTimer.time();
     try {
       searcher = index.getIndexReader();
-      long s = System.nanoTime();
       fetchRow(searcher.getIndexReader(), table, selector, fetchResult);
-      _queryMetrics.recordDataFetch(System.nanoTime() - s, getRecordCount(fetchResult));
       if (fetchResult.rowResult != null) {
         if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
           _recordsMeter.mark(fetchResult.rowResult.row.records.size());
@@ -212,6 +214,7 @@ public class IndexManager {
       LOG.error("Unknown error while trying to fetch row.", e);
       throw new BException(e.getMessage(), e);
     } finally {
+      timerContext.stop();
       if (searcher != null) {
         // this will allow for closing of index
         try {
@@ -320,7 +323,6 @@ public class IndexManager {
 
   public BlurResultIterable query(final String table, final BlurQuery blurQuery, AtomicLongArray facetedCounts)
       throws Exception {
-    long s = System.nanoTime();
     final AtomicBoolean running = new AtomicBoolean(true);
     final QueryStatus status = _statusManager.newQueryStatus(table, blurQuery, _threadCount, running);
     _queriesExternalMeter.mark();
@@ -367,7 +369,6 @@ public class IndexManager {
       }).merge(merger);
     } finally {
       _statusManager.removeStatus(status);
-      _queryMetrics.recordQuery(System.nanoTime() - s);
     }
   }
 
@@ -460,7 +461,6 @@ public class IndexManager {
         fetchResult.exists = true;
         fetchResult.deleted = false;
         String rowId = getRowId(reader, docId);
-
         List<Document> docs = BlurUtil.termSearch(reader, new Term(ROW_ID, rowId), getFieldSelector(selector));
         fetchResult.rowResult = new FetchRowResult(getRow(docs));
         return;
@@ -774,19 +774,16 @@ public class IndexManager {
         waitVisiblity = waitToBeVisible;
       }
       RowMutationType type = mutation.rowMutationType;
-      long start = System.nanoTime();
       switch (type) {
       case REPLACE_ROW:
         Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);
         blurIndex.replaceRow(waitVisiblity, mutation.wal, row);
-        _queryMetrics.recordDataMutate(System.nanoTime() - start, row.records.size());
         break;
       case UPDATE_ROW:
         doUpdateRowMutation(mutation, blurIndex);
         break;
       case DELETE_ROW:
         blurIndex.deleteRow(waitVisiblity, mutation.wal, mutation.rowId);
-        _queryMetrics.recordDataMutate(System.nanoTime() - start, 1);
         break;
       default:
         throw new RuntimeException("Not supported [" + type + "]");
@@ -893,9 +890,6 @@ public class IndexManager {
       long s = System.nanoTime();
       // Finally, replace the existing row with the new row we have built.
       blurIndex.replaceRow(mutation.waitToBeVisible, mutation.wal, newRow);
-      if (newRow != null && newRow.records != null) {
-        _queryMetrics.recordDataMutate(System.nanoTime() - s, newRow.records.size());
-      }
     } else {
       throw new BException("Mutation cannot update row that does not exist.", mutation);
     }

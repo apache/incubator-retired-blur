@@ -968,17 +968,18 @@ public class IndexManager {
     @Override
     public BlurResultIterable call(Entry<String, BlurIndex> entry) throws Exception {
       _status.attachThread();
+      BlurIndex index = entry.getValue();
+      IndexSearcherClosable searcher = index.getIndexReader();
       try {
-        BlurIndex index = entry.getValue();
-        IndexSearcherClosable searcher = index.getIndexReader();
         String shard = entry.getKey();
         // @TODO need to add escapable rewriter
         // IndexReader escapeReader = EscapeRewrite.wrap(reader, _running);
         // IndexSearcher searcher = new IndexSearcher(escapeReader);
         searcher.setSimilarity(_indexServer.getSimilarity(_table));
         Query rewrite = searcher.rewrite((Query) _query.clone());
-        return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector,
-            searcher.getIndexReader());
+        
+        //BlurResultIterableSearcher will close searcher.
+        return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector);
       } finally {
         _queriesInternalMeter.mark();
         _status.deattachThread();

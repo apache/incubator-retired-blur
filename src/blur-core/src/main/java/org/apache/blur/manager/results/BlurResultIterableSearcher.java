@@ -22,27 +22,22 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.blur.log.Log;
-import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.IterablePaging;
 import org.apache.blur.lucene.search.IterablePaging.ProgressRef;
 import org.apache.blur.lucene.search.IterablePaging.TotalHitsRef;
 import org.apache.blur.manager.IndexManager;
+import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.utils.Converter;
 import org.apache.blur.utils.IteratorConverter;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 
 
 public class BlurResultIterableSearcher implements BlurResultIterable {
-
-  private static final Log LOG = LogFactory.getLog(BlurResultIterableSearcher.class);
 
   private Map<String, Long> _shardInfo = new TreeMap<String, Long>();
   private String _shard;
@@ -53,13 +48,12 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
   private IteratorConverter<ScoreDoc, BlurResult> _iterator;
   private Selector _selector;
   private Query _query;
-  private IndexSearcher _searcher;
+  private IndexSearcherClosable _searcher;
   private TotalHitsRef _totalHitsRef = new TotalHitsRef();
   private ProgressRef _progressRef = new ProgressRef();
   private AtomicBoolean _running;
-  private IndexReader _reader;
 
-  public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard, IndexSearcher searcher, Selector selector, IndexReader reader)
+  public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard, IndexSearcherClosable searcher, Selector selector)
       throws IOException {
     _running = running;
     _table = table;
@@ -67,7 +61,6 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
     _shard = shard;
     _searcher = searcher;
     _selector = selector;
-    _reader = reader;
     performSearch();
   }
 
@@ -125,11 +118,9 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
 
   @Override
   public void close() throws IOException {
-    if (_reader != null) {
-      int refCount = _reader.getRefCount();
-      _reader.decRef();
-      LOG.debug("Decrementing reader old ref [{0}] new ref count [{1}]", refCount, _reader.getRefCount());
-      _reader = null;
+    if (_searcher != null) {
+      _searcher.close();
+      _searcher = null;
     }
   }
 }

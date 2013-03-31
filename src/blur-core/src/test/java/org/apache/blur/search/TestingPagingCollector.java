@@ -39,7 +39,6 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.RAMDirectory;
 import org.junit.Test;
 
-
 /**
  * Testing the paging collector.
  * 
@@ -60,12 +59,13 @@ public class TestingPagingCollector {
     ProgressRef progressRef = new ProgressRef();
 
     TermQuery query = new TermQuery(new Term("f1", "value"));
-    IterablePaging paging = new IterablePaging(new AtomicBoolean(true), searcher, query, 100);
+    IterablePaging paging = new IterablePaging(new AtomicBoolean(true), searcher, query, 100, null, null);
 
     for (ScoreDoc sd : paging.skipTo(90).gather(20).totalHits(totalHitsRef).progress(progressRef)) {
 
-      System.out.println("time [" + progressRef.queryTime() + "] " + "total hits [" + totalHitsRef.totalHits() + "] " + "searches [" + progressRef.searchesPerformed() + "] "
-          + "position [" + progressRef.currentHitPosition() + "] " + "doc id [" + sd.doc + "] " + "score [" + sd.score + "]");
+      System.out.println("time [" + progressRef.queryTime() + "] " + "total hits [" + totalHitsRef.totalHits() + "] "
+          + "searches [" + progressRef.searchesPerformed() + "] " + "position [" + progressRef.currentHitPosition()
+          + "] " + "doc id [" + sd.doc + "] " + "score [" + sd.score + "]");
     }
   }
 

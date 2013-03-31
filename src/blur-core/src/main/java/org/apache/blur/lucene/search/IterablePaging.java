@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopScoreDocCollector;
 
 /**
@@ -32,31 +33,25 @@ import org.apache.lucene.search.TopScoreDocCollector;
  */
 public class IterablePaging implements Iterable<ScoreDoc> {
 
-  private static int DEFAULT_NUMBER_OF_HITS_TO_COLLECT = 1000;
-  private IndexSearcher searcher;
-  private Query query;
-  private TotalHitsRef totalHitsRef = new TotalHitsRef();
-  private ProgressRef progressRef = new ProgressRef();
+  private final IndexSearcher searcher;
+  private final Query query;
+  private final AtomicBoolean running;
+  private final int numHitsToCollect;
+
+  private TotalHitsRef totalHitsRef;
+  private ProgressRef progressRef;
   private int skipTo;
-  private int numHitsToCollect = DEFAULT_NUMBER_OF_HITS_TO_COLLECT;
   private int gather = -1;
-  private AtomicBoolean running;
 
-  public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query) throws IOException {
-    this(running, searcher, query, DEFAULT_NUMBER_OF_HITS_TO_COLLECT, null, null);
-  }
-
-  public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query, int numHitsToCollect) throws IOException {
-    this(running, searcher, query, numHitsToCollect, null, null);
-  }
-
-  public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query, int numHitsToCollect, TotalHitsRef totalHitsRef, ProgressRef progressRef) throws IOException {
+  public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query,
+      int numHitsToCollect, TotalHitsRef totalHitsRef, ProgressRef progressRef) throws IOException {
     this.running = running;
     this.query = searcher.rewrite(query);
     this.searcher = searcher;
     this.numHitsToCollect = numHitsToCollect;
-    this.totalHitsRef = totalHitsRef == null ? this.totalHitsRef : totalHitsRef;
-    this.progressRef = progressRef == null ? this.progressRef : progressRef;
+    this.totalHitsRef = totalHitsRef == null ? new TotalHitsRef() : totalHitsRef;
+    this.progressRef = progressRef == null ? new ProgressRef() : progressRef;
+
   }
 
   public static class TotalHitsRef {
@@ -178,7 +173,8 @@ public class IterablePaging implements Iterable<ScoreDoc> {
         StopExecutionCollector stopExecutionCollector = new StopExecutionCollector(collector, running);
         searcher.search(query, stopExecutionCollector);
         totalHitsRef.totalHits.set(collector.getTotalHits());
-        scoreDocs = collector.topDocs().scoreDocs;
+        TopDocs topDocs = collector.topDocs();
+        scoreDocs = topDocs.scoreDocs;
       } catch (IOException e) {
         e.printStackTrace();
         throw new RuntimeException(e);
@@ -228,7 +224,4 @@ public class IterablePaging implements Iterable<ScoreDoc> {
     return iterator;
   }
 
-  public static void setDefaultNumberOfHitsToCollect(int num) {
-    DEFAULT_NUMBER_OF_HITS_TO_COLLECT = num;
-  }
 }

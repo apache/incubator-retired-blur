@@ -23,20 +23,19 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.blur.BlurConfiguration;
-import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
-import org.apache.blur.thrift.ExecutorServicePerMethodCallThriftServer.Args;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TServer;
-import org.apache.thrift.transport.TNonblockingServerSocket;
+import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
 
 public class ThriftServer {
@@ -99,29 +98,29 @@ public class ThriftServer {
 
   public void start() throws TTransportException {
     Blur.Processor<Blur.Iface> processor = new Blur.Processor<Blur.Iface>(_iface);
-    // TServerSocket serverTransport = new
-    // TServerSocket(getBindInetSocketAddress(_configuration));
-    //
-    // TThreadPoolServer.Args args = new
-    // TThreadPoolServer.Args(serverTransport);
-    // args.processor(processor);
-    // args.transportFactory(new TFramedTransport.Factory());
-    // args.protocolFactory(new TBinaryProtocol.Factory(true, true));
-    // _server = new TThreadPoolServer(args);
-    TNonblockingServerSocket serverTransport = new TNonblockingServerSocket(getBindInetSocketAddress(_configuration));
+     TServerSocket serverTransport = new
+     TServerSocket(getBindInetSocketAddress(_configuration));
+    
+     TThreadPoolServer.Args args = new
+     TThreadPoolServer.Args(serverTransport);
+     args.processor(processor);
+     args.transportFactory(new TFramedTransport.Factory());
+     args.protocolFactory(new TBinaryProtocol.Factory(true, true));
+     _server = new TThreadPoolServer(args);
+//    TNonblockingServerSocket serverTransport = new TNonblockingServerSocket(getBindInetSocketAddress(_configuration));
 
-    Args args = new Args(serverTransport);
-    args.processor(processor);
-    _executorService = Executors.newThreadPool("thrift-processors", _threadCount);
-    args.executorService(_executorService);
-    Map<String, ExecutorService> methodCallsToExecutorService = new HashMap<String, ExecutorService>();
-    _mutateExecutorService = Executors.newThreadPool("thrift-processors-mutate", _threadCount);
-    methodCallsToExecutorService.put("mutate", _mutateExecutorService);
-    methodCallsToExecutorService.put("mutateBatch", _mutateExecutorService);
-    _queryExexutorService = Executors.newThreadPool("thrift-processors-query", _threadCount);
-    methodCallsToExecutorService.put("query", _queryExexutorService);
-    args.setMethodCallsToExecutorService(methodCallsToExecutorService);
-    _server = new ExecutorServicePerMethodCallThriftServer(args);
+//    Args args = new Args(serverTransport);
+//    args.processor(processor);
+//    _executorService = Executors.newThreadPool("thrift-processors", _threadCount);
+//    args.executorService(_executorService);
+//    Map<String, ExecutorService> methodCallsToExecutorService = new HashMap<String, ExecutorService>();
+//    _mutateExecutorService = Executors.newThreadPool("thrift-processors-mutate", _threadCount);
+//    methodCallsToExecutorService.put("mutate", _mutateExecutorService);
+//    methodCallsToExecutorService.put("mutateBatch", _mutateExecutorService);
+//    _queryExexutorService = Executors.newThreadPool("thrift-processors-query", _threadCount);
+//    methodCallsToExecutorService.put("query", _queryExexutorService);
+//    args.setMethodCallsToExecutorService(methodCallsToExecutorService);
+//    _server = new ExecutorServicePerMethodCallThriftServer(args);
     LOG.info("Starting server [{0}]", _nodeName);
     _server.serve();
   }

@@ -47,9 +47,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.record.Utils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.NRTManager.TrackingIndexWriter;
@@ -330,7 +330,7 @@ public class TransactionRecorder {
     for (int i = 0; i < size; i++) {
       Document document = convert(rowId, records.get(i), builder, analyzer);
       if (i == 0) {
-        document.add(new Field(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO, Index.NOT_ANALYZED_NO_NORMS));
+        document.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
       }
       docs.add(document);
     }

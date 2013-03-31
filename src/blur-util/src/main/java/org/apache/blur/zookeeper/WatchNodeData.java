@@ -31,7 +31,6 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.data.Stat;
 
-
 public class WatchNodeData implements Closeable {
 
   private final static Log LOG = LogFactory.getLog(WatchNodeData.class);
@@ -107,7 +106,9 @@ public class WatchNodeData implements Closeable {
       public void run() {
         while (_running.get()) {
           try {
-            Thread.sleep(_delay);
+            synchronized (_running) {
+              _running.wait(_delay);
+            }
             if (!_running.get()) {
               return;
             }

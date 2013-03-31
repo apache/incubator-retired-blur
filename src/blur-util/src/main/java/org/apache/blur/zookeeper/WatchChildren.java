@@ -68,7 +68,7 @@ public class WatchChildren implements Closeable {
     _watchThread = new Thread(new Runnable() {
       @Override
       public void run() {
-//        startDoubleCheckThread();
+        startDoubleCheckThread();
         while (_running.get()) {
           synchronized (_lock) {
             try {
@@ -127,7 +127,9 @@ public class WatchChildren implements Closeable {
       public void run() {
         while (_running.get()) {
           try {
-            Thread.sleep(_delay);
+            synchronized (_running) {
+              _running.wait(_delay);
+            }
             if (!_running.get()) {
               return;
             }

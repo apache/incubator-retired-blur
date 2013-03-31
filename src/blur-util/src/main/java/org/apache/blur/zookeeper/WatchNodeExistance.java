@@ -98,7 +98,9 @@ public class WatchNodeExistance implements Closeable {
       public void run() {
         while (_running.get()) {
           try {
-            Thread.sleep(_delay);
+            synchronized (_running) {
+              _running.wait(_delay);
+            }
             if (!_running.get()) {
               return;
             }

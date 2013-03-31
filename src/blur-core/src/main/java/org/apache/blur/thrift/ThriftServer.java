@@ -99,6 +99,15 @@ public class ThriftServer {
 
   public void start() throws TTransportException {
     Blur.Processor<Blur.Iface> processor = new Blur.Processor<Blur.Iface>(_iface);
+    // TServerSocket serverTransport = new
+    // TServerSocket(getBindInetSocketAddress(_configuration));
+    //
+    // TThreadPoolServer.Args args = new
+    // TThreadPoolServer.Args(serverTransport);
+    // args.processor(processor);
+    // args.transportFactory(new TFramedTransport.Factory());
+    // args.protocolFactory(new TBinaryProtocol.Factory(true, true));
+    // _server = new TThreadPoolServer(args);
     TNonblockingServerSocket serverTransport = new TNonblockingServerSocket(getBindInetSocketAddress(_configuration));
 
     Args args = new Args(serverTransport);

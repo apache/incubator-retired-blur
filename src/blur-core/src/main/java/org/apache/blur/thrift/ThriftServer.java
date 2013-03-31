@@ -79,9 +79,15 @@ public class ThriftServer {
       _closed = true;
       _shutdown.shutdown();
       _server.stop();
-      _executorService.shutdownNow();
-      _queryExexutorService.shutdownNow();
-      _mutateExecutorService.shutdownNow();
+      if (_executorService != null) {
+        _executorService.shutdownNow();
+      }
+      if (_queryExexutorService != null) {
+        _queryExexutorService.shutdownNow();
+      }
+      if (_mutateExecutorService != null) {
+        _mutateExecutorService.shutdownNow();
+      }
     }
   }
 

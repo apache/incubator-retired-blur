@@ -24,9 +24,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.blur.metrics.HeapMetrics;
-import org.apache.blur.metrics.QueryMetrics;
-import org.apache.blur.metrics.SystemLoadMetrics;
 
 public class LiveMetricsServlet extends HttpServlet {
 

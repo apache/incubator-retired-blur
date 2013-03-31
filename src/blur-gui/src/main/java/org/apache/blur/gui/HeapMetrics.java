@@ -1,4 +1,4 @@
-package org.apache.blur.metrics;
+package org.apache.blur.gui;
 
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;

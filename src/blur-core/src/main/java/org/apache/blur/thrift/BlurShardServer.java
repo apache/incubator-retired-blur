@@ -55,7 +55,6 @@ import org.apache.blur.utils.QueryCacheEntry;
 import org.apache.blur.utils.QueryCacheKey;
 import org.apache.thrift.TException;
 
-
 public class BlurShardServer extends TableAdmin implements Iface {
 
   private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
@@ -73,14 +72,14 @@ public class BlurShardServer extends TableAdmin implements Iface {
   public void init() throws BlurException {
     _queryCache = new QueryCache("shard-cache", _maxQueryCacheElements, _maxTimeToLive);
     _dataFetch = Executors.newThreadPool("data-fetch-", _dataFetchThreadCount);
-    
-    if(_configuration == null) {
+
+    if (_configuration == null) {
       throw new BException("Configuration must be set before initialization.");
     }
-      _cluster = _configuration.get(BlurConstants.BLUR_CLUSTER_NAME, BlurConstants.BLUR_CLUSTER);
-      _dataFetchThreadCount = _configuration.getInt(BLUR_SHARD_DATA_FETCH_THREAD_COUNT, 8);
-      _maxQueryCacheElements = _configuration.getInt(BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS, 128);
-      _maxTimeToLive = _configuration.getLong(BLUR_SHARD_CACHE_MAX_TIMETOLIVE, TimeUnit.MINUTES.toMillis(1));      
+    _cluster = _configuration.get(BlurConstants.BLUR_CLUSTER_NAME, BlurConstants.BLUR_CLUSTER);
+    _dataFetchThreadCount = _configuration.getInt(BLUR_SHARD_DATA_FETCH_THREAD_COUNT, 8);
+    _maxQueryCacheElements = _configuration.getInt(BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS, 128);
+    _maxTimeToLive = _configuration.getLong(BLUR_SHARD_CACHE_MAX_TIMETOLIVE, TimeUnit.MINUTES.toMillis(1));
   }
 
   @Override
@@ -105,7 +104,8 @@ public class BlurShardServer extends TableAdmin implements Iface {
       try {
         AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
         hitsIterable = _indexManager.query(table, blurQuery, facetCounts);
-        return _queryCache.cache(table, original, BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _dataFetch, blurQuery.selector, this, table));
+        return _queryCache.cache(table, original,
+            BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _dataFetch, blurQuery.selector, this, table));
       } catch (Exception e) {
         LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
         throw new BException(e.getMessage(), e);
@@ -201,12 +201,15 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public long recordFrequency(String table, String columnFamily, String columnName, String value) throws BlurException, TException {
+  public long recordFrequency(String table, String columnFamily, String columnName, String value) throws BlurException,
+      TException {
     checkTable(_cluster, table);
     try {
       return _indexManager.recordFrequency(table, columnFamily, columnName, value);
     } catch (Exception e) {
-      LOG.error("Unknown error while trying to get record frequency for [table={0},columnFamily={1},columnName={2},value={3}]", e, table, columnFamily, columnName, value);
+      LOG.error(
+          "Unknown error while trying to get record frequency for [table={0},columnFamily={1},columnName={2},value={3}]",
+          e, table, columnFamily, columnName, value);
       throw new BException(e.getMessage(), e);
     }
   }
@@ -223,13 +226,15 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public List<String> terms(String table, String columnFamily, String columnName, String startWith, short size) throws BlurException, TException {
+  public List<String> terms(String table, String columnFamily, String columnName, String startWith, short size)
+      throws BlurException, TException {
     checkTable(_cluster, table);
     try {
       return _indexManager.terms(table, columnFamily, columnName, startWith, size);
     } catch (Exception e) {
-      LOG.error("Unknown error while trying to get terms list for [table={0},columnFamily={1},columnName={2},startWith={3},size={4}]", e, table, columnFamily, columnName,
-          startWith, size);
+      LOG.error(
+          "Unknown error while trying to get terms list for [table={0},columnFamily={1},columnName={2},startWith={3},size={4}]",
+          e, table, columnFamily, columnName, startWith, size);
       throw new BException(e.getMessage(), e);
     }
   }
@@ -321,7 +326,8 @@ public class BlurShardServer extends TableAdmin implements Iface {
     try {
       _indexManager.optimize(table, numberOfSegmentsPerShard);
     } catch (Exception e) {
-      LOG.error("Unknown error while trying to optimize [table={0},numberOfSegmentsPerShard={1}]", e, table, numberOfSegmentsPerShard);
+      LOG.error("Unknown error while trying to optimize [table={0},numberOfSegmentsPerShard={1}]", e, table,
+          numberOfSegmentsPerShard);
       throw new BException(e.getMessage(), e);
     }
   }
@@ -333,7 +339,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   public void setDataFetchThreadCount(int dataFetchThreadCount) {
     _dataFetchThreadCount = dataFetchThreadCount;
   }
-  
+
   public void setConfiguration(BlurConfiguration conf) {
     _configuration = conf;
   }

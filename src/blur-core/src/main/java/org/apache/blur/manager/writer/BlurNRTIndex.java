@@ -90,7 +90,7 @@ public class BlurNRTIndex extends BlurIndex {
     _searcherFactory = new SearcherFactory() {
       @Override
       public IndexSearcher newSearcher(IndexReader reader) throws IOException {
-        return new IndexSearcherClosable(reader, searchExecutor, _nrtManagerRef);
+        return new IndexSearcherClosable(reader, searchExecutor, _nrtManagerRef, _directory);
       }
     };
 

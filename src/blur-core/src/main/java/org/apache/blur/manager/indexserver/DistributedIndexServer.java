@@ -80,6 +80,8 @@ import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.IOContext;
+import org.apache.lucene.store.IndexInput;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -125,12 +127,12 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private SharedMergeScheduler _mergeScheduler;
   private IndexInputCloser _closer = null;
   private ExecutorService _searchExecutor = null;
-  
+
   private AtomicLong _tableCount = new AtomicLong();
   private AtomicLong _indexCount = new AtomicLong();
   private AtomicLong _segmentCount = new AtomicLong();
   private AtomicLong _indexMemoryUsage = new AtomicLong();
-  
+
   public static interface ReleaseReader {
     void release() throws IOException;
   }
@@ -140,8 +142,10 @@ public class DistributedIndexServer extends AbstractIndexServer {
     // EVICTION), EVICTION, TimeUnit.SECONDS);
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, TABLE_COUNT, _cluster), new AtomicLongGauge(_tableCount));
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_COUNT, _cluster), new AtomicLongGauge(_indexCount));
-    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, SEGMENT_COUNT, _cluster), new AtomicLongGauge(_segmentCount));
-    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_MEMORY_USAGE, _cluster), new AtomicLongGauge(_indexMemoryUsage));
+    Metrics
+        .newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, SEGMENT_COUNT, _cluster), new AtomicLongGauge(_segmentCount));
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_MEMORY_USAGE, _cluster), new AtomicLongGauge(
+        _indexMemoryUsage));
 
     BlurUtil.setupZookeeper(_zookeeper, _cluster);
     _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
@@ -286,8 +290,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
         }
       }
 
-      private void updateMetrics(Map<String, BlurIndex> indexes, AtomicLong segmentCount,
-          AtomicLong indexMemoryUsage) throws IOException {
+      private void updateMetrics(Map<String, BlurIndex> indexes, AtomicLong segmentCount, AtomicLong indexMemoryUsage)
+          throws IOException {
         // @TODO not sure how to do this yet
         // for (BlurIndex index : indexes.values()) {
         // IndexReader reader = index.getIndexReader();
@@ -556,7 +560,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private BlurIndex warmUp(BlurIndex index, TableDescriptor table, String shard) throws IOException {
     final IndexSearcherClosable searcher = index.getIndexReader();
     IndexReader reader = searcher.getIndexReader();
-    warmUpAllSegments(reader);
+    warmUpAllSegments(searcher);
     _warmup.warmBlurIndex(table, shard, reader, index.isClosed(), new ReleaseReader() {
       @Override
       public void release() throws IOException {
@@ -568,43 +572,21 @@ public class DistributedIndexServer extends AbstractIndexServer {
     return index;
   }
 
-  private void warmUpAllSegments(IndexReader reader) throws IOException {
-    LOG.warn("Warm up NOT supported yet.");
-    // Once the reader warm-up has been re-implemented, this code will change
-    // accordingly.
-
-    // IndexReader[] indexReaders = reader.getSequentialSubReaders();
-    // if (indexReaders != null) {
-    // for (IndexReader r : indexReaders) {
-    // warmUpAllSegments(r);
-    // }
-    // }
-    // int maxDoc = reader.maxDoc();
-    // int numDocs = reader.numDocs();
-    // FieldInfos fieldInfos = ReaderUtil.getMergedFieldInfos(reader);
-    // Collection<String> fieldNames = new ArrayList<String>();
-    // for (FieldInfo fieldInfo : fieldInfos) {
-    // if (fieldInfo.isIndexed) {
-    // fieldNames.add(fieldInfo.name);
-    // }
-    // }
-    // int primeDocCount = reader.docFreq(BlurConstants.PRIME_DOC_TERM);
-    // TermDocs termDocs = reader.termDocs(BlurConstants.PRIME_DOC_TERM);
-    // termDocs.next();
-    // termDocs.close();
-    //
-    // TermPositions termPositions =
-    // reader.termPositions(BlurConstants.PRIME_DOC_TERM);
-    // if (termPositions.next()) {
-    // if (termPositions.freq() > 0) {
-    // termPositions.nextPosition();
-    // }
-    // }
-    // termPositions.close();
-    // LOG.info("Warmup of indexreader [" + reader + "] complete, maxDocs [" +
-    // maxDoc + "], numDocs [" + numDocs + "], primeDocumentCount [" +
-    // primeDocCount + "], fieldCount ["
-    // + fieldNames.size() + "]");
+  private void warmUpAllSegments(IndexSearcherClosable searcher) throws IOException {
+    LOG.warn("Warm up, stupid impl");
+    Directory directory = searcher.getDirectory();
+    String[] listAll = directory.listAll();
+    byte[] buf = new byte[8192];
+    for (String file : listAll) {
+      LOG.info("Warning up [{0}]", file);
+      IndexInput input = directory.openInput(file, IOContext.READ);
+      long length = input.length();
+      for (long i = 0; i < length; i += buf.length) {
+        int len = (int) Math.min(buf.length, length - i);
+        input.readBytes(buf, 0, len);
+      }
+      input.close();
+    }
   }
 
   private synchronized Map<String, BlurIndex> openMissingShards(final String table, Set<String> shardsToServe,

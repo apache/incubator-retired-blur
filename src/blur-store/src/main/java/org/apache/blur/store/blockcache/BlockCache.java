@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Gauge;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
 
@@ -33,6 +34,7 @@ public class BlockCache {
 
   public static final int _128M = 134217728;
   public static final int _8K = 8192;
+
   private final ConcurrentMap<BlockCacheKey, BlockCacheLocation> _cache;
   private final ByteBuffer[] _slabs;
   private final BlockLocks[] _locks;
@@ -63,8 +65,20 @@ public class BlockCache {
       _locks[i] = new BlockLocks(_numberOfBlocksPerSlab);
       _lockCounters[i] = new AtomicInteger();
     }
-    
+
     evictions = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, EVICTION), EVICTION, TimeUnit.SECONDS);
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, CACHE, ENTRIES), new Gauge<Long>() {
+      @Override
+      public Long value() {
+        return (long) getSize();
+      }
+    });
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, CACHE, SIZE), new Gauge<Long>() {
+      @Override
+      public Long value() {
+        return ((long) getSize()) * (long) _8K;
+      }
+    });
 
     EvictionListener<BlockCacheKey, BlockCacheLocation> listener = new EvictionListener<BlockCacheKey, BlockCacheLocation>() {
       @Override
@@ -73,7 +87,8 @@ public class BlockCache {
         evictions.mark();
       }
     };
-    _cache = new ConcurrentLinkedHashMap.Builder<BlockCacheKey, BlockCacheLocation>().maximumWeightedCapacity(_maxEntries).listener(listener).build();
+    _cache = new ConcurrentLinkedHashMap.Builder<BlockCacheKey, BlockCacheLocation>()
+        .maximumWeightedCapacity(_maxEntries).listener(listener).build();
   }
 
   private void releaseLocation(BlockCacheLocation location) {
@@ -89,8 +104,8 @@ public class BlockCache {
 
   public boolean store(BlockCacheKey blockCacheKey, int blockOffset, byte[] data, int offset, int length) {
     if (length + blockOffset > _blockSize) {
-      throw new RuntimeException("Buffer size exceeded, expecting max ["
-          + _blockSize + "] got length [" + length + "] with blockOffset [" + blockOffset + "]" );
+      throw new RuntimeException("Buffer size exceeded, expecting max [" + _blockSize + "] got length [" + length
+          + "] with blockOffset [" + blockOffset + "]");
     }
     BlockCacheLocation location = _cache.get(blockCacheKey);
     boolean newLocation = false;

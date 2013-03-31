@@ -16,6 +16,9 @@ package org.apache.blur.utils;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.metrics.MetricsConstants.BLUR;
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
+import static org.apache.blur.metrics.MetricsConstants.THRIFT_CALLS;
 import static org.apache.blur.utils.BlurConstants.SHARD_PREFIX;
 
 import java.io.ByteArrayInputStream;
@@ -91,7 +94,6 @@ import org.apache.zookeeper.ZooKeeper;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Histogram;
 import com.yammer.metrics.core.MetricName;
-import static org.apache.blur.metrics.MetricsConstants.*;
 
 public class BlurUtil {
 
@@ -99,7 +101,6 @@ public class BlurUtil {
   private static final Class<?>[] EMPTY_PARAMETER_TYPES = new Class[] {};
   private static final Log LOG = LogFactory.getLog(BlurUtil.class);
   private static final String UNKNOWN = "UNKNOWN";
-  private static final int ALL = Integer.MAX_VALUE;
 
   @SuppressWarnings("unchecked")
   public static <T extends Iface> T recordMethodCallsAndAverageTimes(final T t, Class<T> clazz) {
@@ -667,7 +668,8 @@ public class BlurUtil {
   public static List<Document> termSearch(IndexReader reader, Term term,
       ResetableDocumentStoredFieldVisitor fieldSelector) throws IOException {
     IndexSearcher indexSearcher = new IndexSearcher(reader);
-    TopDocs topDocs = indexSearcher.search(new TermQuery(term), ALL);
+    int docFreq = reader.docFreq(term);
+    TopDocs topDocs = indexSearcher.search(new TermQuery(term), docFreq);
     List<Document> docs = new ArrayList<Document>();
     for (int i = 0; i < topDocs.totalHits; i++) {
       int doc = topDocs.scoreDocs[i].doc;

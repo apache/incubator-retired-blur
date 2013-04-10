@@ -23,6 +23,7 @@ import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.BException;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.TableDescriptor;
@@ -57,6 +58,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void createTable(TableDescriptor tableDescriptor) throws BlurException, TException {
     try {
+      TableContext.clear();
       // @todo Remove this once issue #27 is resolved
       if (tableDescriptor.compressionBlockSize > 32768) {
         tableDescriptor.compressionBlockSize = 32768;
@@ -76,6 +78,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void disableTable(String table) throws BlurException, TException {
     try {
+      TableContext.clear();
       String cluster = _clusterStatus.getCluster(false, table);
       if (cluster == null) {
         throw new BlurException("Table [" + table + "] not found.", null);
@@ -111,6 +114,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void enableTable(String table) throws BlurException, TException {
     try {
+      TableContext.clear();
       String cluster = _clusterStatus.getCluster(false, table);
       if (cluster == null) {
         throw new BlurException("Table [" + table + "] not found.", null);
@@ -167,6 +171,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
     try {
+      TableContext.clear();
       String cluster = _clusterStatus.getCluster(false, table);
       if (cluster == null) {
         throw new BlurException("Table [" + table + "] not found.", null);

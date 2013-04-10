@@ -28,6 +28,7 @@ import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.OpenBitSet;
+import org.apache.blur.thrift.generated.ScoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -17,10 +17,10 @@ package org.apache.blur.analysis;
  * limitations under the License.
  */
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
-import static org.apache.blur.utils.BlurConstants.PRIME_DOC;
-import static org.apache.blur.utils.BlurConstants.RECORD_ID;
-import static org.apache.blur.utils.BlurConstants.ROW_ID;
-import static org.apache.blur.utils.BlurConstants.SUPER;
+import static org.apache.blur.util.BlurConstants.PRIME_DOC;
+import static org.apache.blur.util.BlurConstants.RECORD_ID;
+import static org.apache.blur.util.BlurConstants.ROW_ID;
+import static org.apache.blur.util.BlurConstants.SUPER;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

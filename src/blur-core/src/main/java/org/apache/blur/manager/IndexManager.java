@@ -342,8 +342,8 @@ public class IndexManager {
       TableContext context = getTableContext(table);
       if (isSimpleQuery(blurQuery)) {
         SimpleQuery simpleQuery = blurQuery.simpleQuery;
-        Filter preFilter = QueryParserUtil
-            .parseFilter(table, simpleQuery.preSuperFilter, false, analyzer, _filterCache, context);
+        Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.preSuperFilter, false, analyzer,
+            _filterCache, context);
         Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, analyzer,
             _filterCache, context);
         Query userQuery = QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, analyzer,
@@ -395,15 +395,16 @@ public class IndexManager {
     return false;
   }
 
-  private Query getFacetedQuery(BlurQuery blurQuery, Query userQuery, AtomicLongArray counts, BlurAnalyzer analyzer, TableContext context)
-      throws ParseException {
+  private Query getFacetedQuery(BlurQuery blurQuery, Query userQuery, AtomicLongArray counts, BlurAnalyzer analyzer,
+      TableContext context) throws ParseException {
     if (blurQuery.facets == null) {
       return userQuery;
     }
     return new FacetQuery(userQuery, getFacetQueries(blurQuery, analyzer, context), counts);
   }
 
-  private Query[] getFacetQueries(BlurQuery blurQuery, BlurAnalyzer analyzer, TableContext context) throws ParseException {
+  private Query[] getFacetQueries(BlurQuery blurQuery, BlurAnalyzer analyzer, TableContext context)
+      throws ParseException {
     int size = blurQuery.facets.size();
     Query[] queries = new Query[size];
     for (int i = 0; i < size; i++) {
@@ -985,8 +986,8 @@ public class IndexManager {
         // IndexSearcher searcher = new IndexSearcher(escapeReader);
         searcher.setSimilarity(_indexServer.getSimilarity(_table));
         Query rewrite = searcher.rewrite((Query) _query.clone());
-        
-        //BlurResultIterableSearcher will close searcher.
+
+        // BlurResultIterableSearcher will close searcher.
         return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector);
       } finally {
         _queriesInternalMeter.mark();
@@ -1022,4 +1023,9 @@ public class IndexManager {
       }
     }
   }
+
+  public void setClusterStatus(ClusterStatus clusterStatus) {
+    _clusterStatus = clusterStatus;
+  }
+
 }

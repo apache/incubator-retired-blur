@@ -45,6 +45,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.indexserver.LocalIndexServer;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.thrift.generated.AnalyzerDefinition;
@@ -92,7 +93,7 @@ public class IndexManagerTest {
     File file = new File(base, TABLE);
     file.mkdirs();
 
-    TableDescriptor tableDescriptor = new TableDescriptor();
+    final TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName(TABLE);
     tableDescriptor.setTableUri(file.toURI().toString());
     tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
@@ -104,6 +105,103 @@ public class IndexManagerTest {
     indexManager.setStatusCleanupTimerDelay(1000);
     indexManager.setIndexServer(server);
     indexManager.setThreadCount(1);
+    indexManager.setClusterStatus(new ClusterStatus() {
+      
+      @Override
+      public void removeTable(String cluster, String table, boolean deleteIndexFiles) {
+        throw new RuntimeException("Not impl");
+      }
+      
+      @Override
+      public boolean isReadOnly(boolean useCache, String cluster, String table) {
+        throw new RuntimeException("Not impl");
+      }
+      
+      @Override
+      public boolean isOpen() {
+        throw new RuntimeException("Not impl");
+      }
+      
+      @Override
+      public boolean isInSafeMode(boolean useCache, String cluster) {
+        throw new RuntimeException("Not impl");
+      }
+      
+      @Override
+      public boolean isEnabled(boolean useCache, String cluster, String table) {
+        throw new RuntimeException("Not impl");
+      }
+      
+      @Override
+      public boolean isBlockCacheEnabled(String cluster, String table) {
+        throw new RuntimeException("Not impl");
+      }
+      
+      @Override
+      public List<String> getTableList(boolean useCache, String cluster) {
+        throw new RuntimeException("Not impl");
+      }
+      
+      @Override
+      public TableDescriptor getTableDescriptor(boolean useCache, String cluster, String table) {
+        return tableDescriptor;
+      }
+      
+      @Override
+      public List<String> getShardServerList(String cluster) {
+        throw new RuntimeException("Not impl");
+      }
+      
+      @Override
+      public int getShardCount(boolean useCache, String cluster, String table) {
+        throw new RuntimeException("Not impl");
+      }
+      
+      @Override
+      public List<String> getOnlineShardServers(boolean useCache, String cluster) {
+        throw new RuntimeException("Not impl");
+      }
+      
+      @Override
+      public List<String> getControllerServerList() {
+        throw new RuntimeException("Not impl");
+      }
+      
+      @Override
+      public List<String> getClusterList(boolean useCache) {
+        throw new RuntimeException("Not impl");
+      }
+      
+      @Override
+      public String getCluster(boolean useCache, String table) {
+        return BlurConstants.BLUR_CLUSTER;
+      }
+      
+      @Override
+      public Set<String> getBlockCacheFileTypes(String cluster, String table) {
+        throw new RuntimeException("Not impl");
+      }
+      
+      @Override
+      public boolean exists(boolean useCache, String cluster, String table) {
+        throw new RuntimeException("Not impl");
+      }
+      
+      @Override
+      public void enableTable(String cluster, String table) {
+        throw new RuntimeException("Not impl");
+      }
+      
+      @Override
+      public void disableTable(String cluster, String table) {
+        throw new RuntimeException("Not impl");
+      }
+      
+      @Override
+      public void createTable(TableDescriptor tableDescriptor) {
+        throw new RuntimeException("Not impl");
+      }
+    });
     indexManager.init();
     setupData();
   }
@@ -161,6 +259,8 @@ public class IndexManagerTest {
     BlurQuery blurQuery = new BlurQuery();
     blurQuery.simpleQuery = new SimpleQuery();
     blurQuery.simpleQuery.queryStr = "+test-family.testcol12:value101 +test-family.testcol13:value102 +test-family2.testcol18:value501";
+//    blurQuery.simpleQuery.queryStr = "+super:<+test-family.testcol12:value101 +test-family.testcol13:value102> +test-family2.testcol18:value501";
+    
     blurQuery.simpleQuery.superQueryOn = true;
     blurQuery.simpleQuery.type = ScoreType.SUPER;
     blurQuery.fetch = 10;

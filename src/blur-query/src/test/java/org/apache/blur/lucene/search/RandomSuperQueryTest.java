@@ -1,4 +1,4 @@
-package org.apache.blur.search;
+package org.apache.blur.lucene.search;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more

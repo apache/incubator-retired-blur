@@ -26,6 +26,7 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
@@ -103,13 +104,16 @@ public class ThriftServer {
   }
 
   public void start() throws TTransportException {
+    _executorService = Executors.newThreadPool("thrift-processors", _threadCount);
     Blur.Processor<Blur.Iface> processor = new Blur.Processor<Blur.Iface>(_iface);
      TServerSocket serverTransport = new
      TServerSocket(getBindInetSocketAddress(_configuration));
     
      TThreadPoolServer.Args args = new
      TThreadPoolServer.Args(serverTransport);
+     
      args.processor(processor);
+     args.executorService(_executorService);
      args.transportFactory(new TFramedTransport.Factory());
      args.protocolFactory(new TBinaryProtocol.Factory(true, true));
      _server = new TThreadPoolServer(args);

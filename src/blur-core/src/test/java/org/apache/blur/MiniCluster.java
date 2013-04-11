@@ -75,7 +75,6 @@ import org.apache.zookeeper.server.ZooKeeperServerMain;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
 
-
 public abstract class MiniCluster {
 
   private static Log LOG = LogFactory.getLog(MiniCluster.class);
@@ -87,19 +86,20 @@ public abstract class MiniCluster {
   private static List<ThriftServer> shards = new ArrayList<ThriftServer>();
   private static String controllerConnectionStr;
 
-  public static void main(String[] args) throws IOException, InterruptedException, KeeperException, BlurException, TException {
+  public static void main(String[] args) throws IOException, InterruptedException, KeeperException, BlurException,
+      TException {
     startDfs("./tmp");
     startZooKeeper("./tmp");
     startControllers(1);
     startShards(1);
-    
-    //Run the controllers/shards on custom ports.  
-    //BlurConfiguration conf = new BlurConfiguration(false);
-    //conf.setInt(BLUR_CONTROLLER_BIND_PORT, 40001);
-    //conf.setInt(BLUR_SHARD_BIND_PORT, 40002);
-    //startControllers(conf, 1);
-    //startShards(conf, 1);
-    
+
+    // Run the controllers/shards on custom ports.
+    // BlurConfiguration conf = new BlurConfiguration(false);
+    // conf.setInt(BLUR_CONTROLLER_BIND_PORT, 40001);
+    // conf.setInt(BLUR_SHARD_BIND_PORT, 40002);
+    // startControllers(conf, 1);
+    // startShards(conf, 1);
+
     try {
       Iface client = BlurClient.getClient(getControllerConnectionStr());
       createTable("test", client);
@@ -201,13 +201,13 @@ public abstract class MiniCluster {
 
   private static BlurConfiguration getBlurConfiguration(BlurConfiguration overrides) {
     BlurConfiguration conf = getBlurConfiguration();
-	
-    for(Map.Entry<String, String> over: overrides.getProperties().entrySet()) {
+
+    for (Map.Entry<String, String> over : overrides.getProperties().entrySet()) {
       conf.set(over.getKey().toString(), over.getValue().toString());
     }
     return conf;
   }
-  
+
   private static BlurConfiguration getBlurConfiguration() {
     BlurConfiguration configuration;
     try {
@@ -457,7 +457,8 @@ public abstract class MiniCluster {
       for (int i = 0; i < enumerate; i++) {
         Thread thread = threads[i];
         if (thread.getName().startsWith("pool")) {
-          while (thread.isAlive()) {
+          if (thread.isAlive()) {
+            thread.interrupt();
             LOG.info("Stopping ThreadPoolExecutor [" + thread.getName() + "]");
             Object target = getField(thread, "target");
             if (target != null) {
@@ -465,6 +466,12 @@ public abstract class MiniCluster {
               if (e != null) {
                 e.shutdownNow();
               }
+            }
+            try {
+              LOG.info("Waiting for thread pool to exit [" + thread.getName() + "]");
+              thread.join();
+            } catch (InterruptedException e) {
+              throw new RuntimeException(e);
             }
           }
         }

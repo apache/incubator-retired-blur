@@ -100,8 +100,6 @@ public class ThriftBlurShardServer extends ThriftServer {
     int bindPort = configuration.getInt(BLUR_SHARD_BIND_PORT, -1);
     bindPort += serverIndex;
     
-//    BlurMetrics blurMetrics = new BlurMetrics(config);
-    
     int baseGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT));
     final HttpJettyServer httpServer;
     if (baseGuiPort > 0) {
@@ -192,6 +190,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexManager.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
     indexManager.setThreadCount(configuration.getInt(BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT, 32));
     indexManager.setFilterCache(filterCache);
+    indexManager.setClusterStatus(clusterStatus);
     indexManager.init();
 
     final BlurShardServer shardServer = new BlurShardServer();

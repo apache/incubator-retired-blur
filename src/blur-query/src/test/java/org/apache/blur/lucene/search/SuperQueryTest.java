@@ -1,4 +1,4 @@
-package org.apache.blur.search;
+package org.apache.blur.lucene.search;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -19,26 +19,25 @@ package org.apache.blur.search;
 
 import static junit.framework.Assert.assertEquals;
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
-import static org.apache.blur.utils.BlurConstants.ROW_ID;
-import static org.apache.blur.utils.BlurUtil.newColumn;
-import static org.apache.blur.utils.BlurUtil.newRecord;
-import static org.apache.blur.utils.BlurUtil.newRow;
 
 import java.io.IOException;
-import java.util.UUID;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLongArray;
 
-import org.apache.blur.analysis.BlurAnalyzer;
-import org.apache.blur.index.IndexWriter;
 import org.apache.blur.lucene.search.FacetQuery;
 import org.apache.blur.lucene.search.SuperQuery;
 import org.apache.blur.thrift.generated.ScoreType;
-import org.apache.blur.utils.RowIndexWriter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
@@ -51,21 +50,19 @@ import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.junit.Test;
 
-
 public class SuperQueryTest {
 
   private static final String PERSON_NAME = "person.name";
   private static final String ADDRESS_STREET = "address.street";
 
-  private static final String STREET = "street";
-  private static final String ADDRESS = "address";
-  private static final String PERSON = "person";
-  private static final String NAME = "name";
+  private static final String PRIME_DOC = "_p_";
+  private static final String PRIME_DOC_VALUE = "_true_";
 
   private static final String NAME1 = "jon";
   private static final String NAME2 = "jane";
   private static final String STREET2 = "main st";
   private static final String STREET1 = "main";
+  private static final String ROW_ID = "rowid";
 
   @Test
   public void testSimpleSuperQuery() throws CorruptIndexException, IOException, InterruptedException {
@@ -92,9 +89,6 @@ public class SuperQueryTest {
     TopDocs topDocs = searcher.search(booleanQuery, 10);
     printTopDocs(topDocs);
     assertEquals(3, topDocs.totalHits);
-    assertEquals(3.30, topDocs.scoreDocs[0].score, 0.01);
-    assertEquals(2.20, topDocs.scoreDocs[1].score, 0.01);
-    assertEquals(0.55, topDocs.scoreDocs[2].score, 0.01);
   }
 
   @Test
@@ -106,9 +100,6 @@ public class SuperQueryTest {
     TopDocs topDocs = searcher.search(booleanQuery, 10);
     assertEquals(3, topDocs.totalHits);
     printTopDocs(topDocs);
-    assertEquals(2.20, topDocs.scoreDocs[0].score, 0.01);
-    assertEquals(2.20, topDocs.scoreDocs[1].score, 0.01);
-    assertEquals(0.55, topDocs.scoreDocs[2].score, 0.01);
   }
 
   private void printTopDocs(TopDocs topDocs) {
@@ -127,9 +118,6 @@ public class SuperQueryTest {
     TopDocs topDocs = searcher.search(booleanQuery, 10);
     assertEquals(3, topDocs.totalHits);
     printTopDocs(topDocs);
-    assertEquals(2.0, topDocs.scoreDocs[0].score, 0.01);
-    assertEquals(2.0, topDocs.scoreDocs[1].score, 0.01);
-    assertEquals(0.5, topDocs.scoreDocs[2].score, 0.01);
   }
 
   @Test
@@ -141,9 +129,6 @@ public class SuperQueryTest {
     TopDocs topDocs = searcher.search(booleanQuery, 10);
     assertEquals(3, topDocs.totalHits);
     printTopDocs(topDocs);
-    assertEquals(3.10, topDocs.scoreDocs[0].score, 0.01);
-    assertEquals(3.00, topDocs.scoreDocs[1].score, 0.01);
-    assertEquals(0.75, topDocs.scoreDocs[2].score, 0.01);
   }
 
   @Test
@@ -157,16 +142,13 @@ public class SuperQueryTest {
     f1.add(new TermQuery(new Term(PERSON_NAME, NAME1)), Occur.MUST);
     f1.add(new TermQuery(new Term(PERSON_NAME, NAME2)), Occur.MUST);
 
-    Query[] facets = new Query[] { new SuperQuery(f1, ScoreType.CONSTANT) };
+    Query[] facets = new Query[] { new SuperQuery(f1, ScoreType.CONSTANT, new Term(PRIME_DOC, PRIME_DOC_VALUE)) };
     AtomicLongArray counts = new AtomicLongArray(facets.length);
     FacetQuery query = new FacetQuery(booleanQuery, facets, counts);
 
     TopDocs topDocs = searcher.search(query, 10);
     assertEquals(3, topDocs.totalHits);
     printTopDocs(topDocs);
-    assertEquals(3.10, topDocs.scoreDocs[0].score, 0.01);
-    assertEquals(3.00, topDocs.scoreDocs[1].score, 0.01);
-    assertEquals(0.75, topDocs.scoreDocs[2].score, 0.01);
   }
 
   private static IndexSearcher createSearcher() throws Exception {
@@ -178,27 +160,40 @@ public class SuperQueryTest {
   public static Directory createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {
     Directory directory = new RAMDirectory();
     IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)));
-    BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(LUCENE_VERSION));
-    RowIndexWriter indexWriter = new RowIndexWriter(writer, analyzer);
-    indexWriter.replace(
-        false,
-        newRow("1", newRecord(PERSON, UUID.randomUUID().toString(), newColumn(NAME, NAME1)), newRecord(PERSON, UUID.randomUUID().toString(), newColumn(NAME, NAME1)),
-            newRecord(ADDRESS, UUID.randomUUID().toString(), newColumn(STREET, STREET1))));
-    indexWriter.replace(false,
-        newRow("2", newRecord(PERSON, UUID.randomUUID().toString(), newColumn(NAME, NAME2)), newRecord(ADDRESS, UUID.randomUUID().toString(), newColumn(STREET, STREET1))));
-    indexWriter.replace(false,
-        newRow("3", newRecord(PERSON, UUID.randomUUID().toString(), newColumn(NAME, NAME1)), newRecord(ADDRESS, UUID.randomUUID().toString(), newColumn(STREET, STREET2))));
-    ;
+    writer.addDocuments(addPrime(Arrays.asList(newDocument(newStringField(ROW_ID, "1"), newStringField(PERSON_NAME, NAME1)),
+        newDocument(newStringField(ROW_ID, "1"), newStringField(PERSON_NAME, NAME1)), newDocument(newStringField(ROW_ID, "1"), newStringField(ADDRESS_STREET, STREET1)))));
+    writer.addDocuments(addPrime(Arrays.asList(newDocument(newStringField(ROW_ID, "2"), newStringField(PERSON_NAME, NAME2)),
+        newDocument(newStringField(ROW_ID, "2"), newStringField(ADDRESS_STREET, STREET1)))));
+    writer.addDocuments(addPrime(Arrays.asList(newDocument(newStringField(ROW_ID, "3"), newStringField(PERSON_NAME, NAME1)),
+        newDocument(newStringField(ROW_ID, "3"), newStringField(ADDRESS_STREET, STREET1)), newDocument(newStringField(ROW_ID, "3"), newStringField(ADDRESS_STREET, STREET2)))));
     writer.close();
     return directory;
   }
 
+  private static List<Document> addPrime(List<Document> docs) {
+    Document document = docs.get(0);
+    document.add(new StringField(PRIME_DOC, PRIME_DOC_VALUE, Store.NO));
+    return docs;
+  }
+
+  private static Document newDocument(IndexableField... fields) {
+    Document document = new Document();
+    for (IndexableField field : fields) {
+      document.add(field);
+    }
+    return document;
+  }
+
+  private static IndexableField newStringField(String name, String value) {
+    return new StringField(name, value, Store.YES);
+  }
+
   private Query wrapSuper(Query query) {
-    return new SuperQuery(query, ScoreType.AGGREGATE);
+    return new SuperQuery(query, ScoreType.AGGREGATE, new Term(PRIME_DOC, PRIME_DOC_VALUE));
   }
 
   private Query wrapSuper(String field, String value, ScoreType scoreType) {
-    return new SuperQuery(new TermQuery(new Term(field, value)), scoreType);
+    return new SuperQuery(new TermQuery(new Term(field, value)), scoreType, new Term(PRIME_DOC, PRIME_DOC_VALUE));
   }
 
 }

@@ -1,4 +1,4 @@
-package org.apache.blur.search;
+package org.apache.blur.lucene.search;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -21,37 +21,37 @@ import static junit.framework.Assert.assertTrue;
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.apache.blur.analysis.BlurAnalyzer;
-import org.apache.blur.index.IndexWriter;
-import org.apache.blur.lucene.search.SuperParser;
-import org.apache.blur.thrift.generated.Column;
-import org.apache.blur.thrift.generated.Record;
-import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.ScoreType;
-import org.apache.blur.utils.RowIndexWriter;
+import org.apache.blur.lucene.search.SuperQuery;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.QueryWrapperFilter;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.junit.Test;
-
 
 public class RandomSuperQueryTest {
 
@@ -63,7 +63,9 @@ public class RandomSuperQueryTest {
   private static final int MAX_NUM_COLS = 21;// 21
   private static final int MIN_NUM_COLS = 3;// 3
   private static final int MAX_NUM_OF_WORDS = 1000;
-  private static final int MOD_USED_FOR_SAMPLING = 1;//
+  private static final int MOD_USED_FOR_SAMPLING = 7;//
+  private static final String PRIME_DOC = "_p_";
+  private static final String PRIME_DOC_VALUE = "_true_";
 
   private Random seedGen = new Random(1);
 
@@ -71,10 +73,8 @@ public class RandomSuperQueryTest {
   public void testRandomSuperQuery() throws CorruptIndexException, IOException, InterruptedException, ParseException {
     long seed = seedGen.nextLong();
 
-    Filter filter = new QueryWrapperFilter(new MatchAllDocsQuery());
-
     Random random = new Random(seed);
-    Collection<String> sampler = new HashSet<String>();
+    Collection<Query> sampler = new HashSet<Query>();
     System.out.print("Creating index... ");
     System.out.flush();
     Directory directory = createIndex(random, sampler);
@@ -84,8 +84,7 @@ public class RandomSuperQueryTest {
     assertTrue(!sampler.isEmpty());
     IndexSearcher searcher = new IndexSearcher(reader);
     long s = System.currentTimeMillis();
-    for (String str : sampler) {
-      Query query = new SuperParser(LUCENE_VERSION, new BlurAnalyzer(), true, filter, ScoreType.AGGREGATE).parse(str);
+    for (Query query : sampler) {
       TopDocs topDocs = searcher.search(query, 10);
       assertTrue("seed [" + seed + "] {" + query + "} {" + s + "}", topDocs.totalHits > 0);
     }
@@ -93,7 +92,7 @@ public class RandomSuperQueryTest {
     System.out.println("Finished in [" + (e - s) + "] ms");
   }
 
-  private Directory createIndex(Random random, Collection<String> sampler) throws CorruptIndexException, LockObtainFailedException, IOException {
+  private Directory createIndex(Random random, Collection<Query> sampler) throws CorruptIndexException, LockObtainFailedException, IOException {
     Directory directory = new RAMDirectory();
     String[] columnFamilies = genWords(random, MIN_NUM_COL_FAM, MAX_NUM_COL_FAM, "colfam");
     Map<String, String[]> columns = new HashMap<String, String[]>();
@@ -101,10 +100,9 @@ public class RandomSuperQueryTest {
       columns.put(columnFamilies[i], genWords(random, MIN_NUM_COLS, MAX_NUM_COLS, "col"));
     }
     IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)));
-    RowIndexWriter indexWriter = new RowIndexWriter(writer, new BlurAnalyzer(new StandardAnalyzer(LUCENE_VERSION)));
     int numberOfDocs = random.nextInt(MAX_NUM_OF_DOCS) + 1;
     for (int i = 0; i < numberOfDocs; i++) {
-      indexWriter.replace(false, generatSuperDoc(random, columns, sampler));
+      writer.addDocuments(generatSuperDoc(random, columns, sampler));
     }
     writer.close();
     return directory;
@@ -119,36 +117,33 @@ public class RandomSuperQueryTest {
     return str;
   }
 
-  private Row generatSuperDoc(Random random, Map<String, String[]> columns, Collection<String> sampler) {
-    Row row = new Row().setId(Long.toString(random.nextLong()));
-    StringBuilder builder = new StringBuilder();
+  private List<Document> generatSuperDoc(Random random, Map<String, String[]> columns, Collection<Query> sampler) {
+    List<Document> docs = new ArrayList<Document>();
+    BooleanQuery booleanQuery = new BooleanQuery();
     for (String colFam : columns.keySet()) {
       String[] cols = columns.get(colFam);
       for (int i = 0; i < random.nextInt(MAX_NUM_DOCS_PER_COL_FAM); i++) {
-        Record record = new Record();
-        record.setFamily(colFam);
-        record.setRecordId(Long.toString(random.nextLong()));
-        int staringLength = builder.length();
+        Document doc = new Document();
         for (String column : cols) {
           if (random.nextInt() % MOD_COLS_USED_FOR_SKIPPING == 0) {
             String word = genWord(random, "word");
-            record.addToColumns(new Column(column, word));
+            doc.add(new StringField(colFam + "." + column, word, Store.YES));
             if (random.nextInt() % MOD_USED_FOR_SAMPLING == 0) {
-              builder.append(" +" + colFam + "." + column + ":" + word);
+              TermQuery termQuery = new TermQuery(new Term(colFam + "." + column, word));
+              SuperQuery query = new SuperQuery(termQuery, ScoreType.SUPER, new Term(PRIME_DOC, PRIME_DOC_VALUE));
+              booleanQuery.add(query, Occur.MUST);
             }
           }
         }
-        if (builder.length() != staringLength) {
-          builder.append(" nojoin.nojoin ");
-        }
-        row.addToRecords(record);
+        docs.add(doc);
       }
     }
-    String string = builder.toString().trim();
-    if (!string.isEmpty()) {
-      sampler.add(string);
+    if (!booleanQuery.clauses().isEmpty()) {
+      sampler.add(booleanQuery);
     }
-    return row;
+    Document document = docs.get(0);
+    document.add(new StringField(PRIME_DOC, PRIME_DOC_VALUE, Store.NO));
+    return docs;
   }
 
   private String genWord(Random random, String prefix) {

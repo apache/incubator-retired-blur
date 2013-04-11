@@ -20,6 +20,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SAHRD_INDEX_SIMILARITY;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_COMMITS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_REFRESHS;
+import static org.apache.blur.utils.BlurConstants.SUPER;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.lucene.search.ScoreType;
+import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -90,7 +91,7 @@ public class TableContext {
     tableContext.tablePath = new Path(tableDescriptor.getTableUri());
     tableContext.walTablePath = new Path(tableContext.tablePath, LOGS);
     tableContext.analyzer = new BlurAnalyzer(tableDescriptor.getAnalyzerDefinition());
-//    tableContext.defaultFieldName = tableDescriptor.getDefaultFieldName();
+    tableContext.defaultFieldName = SUPER;
     tableContext.table = tableDescriptor.getName();
     tableContext.descriptor = tableDescriptor;
     tableContext.timeBetweenCommits = configuration.getLong(BLUR_SHARD_TIME_BETWEEN_COMMITS, 60000);

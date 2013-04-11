@@ -20,25 +20,28 @@ import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 
 import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.lucene.search.SuperParser;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ScoreType;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryWrapperFilter;
+import org.apache.lucene.util.Version;
 
 public class QueryParserUtil {
 
-  public static Query parseQuery(String query, boolean superQueryOn, BlurAnalyzer analyzer, Filter postFilter, Filter preFilter, ScoreType scoreType) throws ParseException   {
-    Query result = new SuperParser(LUCENE_VERSION, analyzer, superQueryOn, preFilter, scoreType).parse(query);
+  public static Query parseQuery(String query, boolean superQueryOn, BlurAnalyzer analyzer, Filter postFilter, Filter preFilter, ScoreType scoreType, TableContext tableContext) throws ParseException   {
+    Query result = new SuperParser(LUCENE_VERSION, analyzer,superQueryOn, preFilter,  scoreType, tableContext.getDefaultPrimeDocTerm()).parse(query);
     if (postFilter == null) {
       return result;
     }
     return new FilteredQuery(result, postFilter);
   }
 
-  public static Filter parseFilter(String table, String filterStr, boolean superQueryOn, BlurAnalyzer analyzer, BlurFilterCache filterCache) throws ParseException, BlurException {
+  public static Filter parseFilter(String table, String filterStr, boolean superQueryOn, BlurAnalyzer analyzer, BlurFilterCache filterCache, TableContext tableContext) throws ParseException, BlurException {
     if (filterStr == null) {
       return null;
     }
@@ -52,7 +55,7 @@ public class QueryParserUtil {
       if (filter != null) {
         return filter;
       }
-      filter = new QueryWrapperFilter(new SuperParser(LUCENE_VERSION, analyzer, superQueryOn, null, ScoreType.CONSTANT).parse(filterStr));
+      filter = new QueryWrapperFilter(new SuperParser(LUCENE_VERSION, analyzer, superQueryOn, null,  ScoreType.CONSTANT, tableContext.getDefaultPrimeDocTerm()).parse(filterStr));
       if (superQueryOn) {
         filter = filterCache.storePostFilter(table, filterStr, filter);
       } else {

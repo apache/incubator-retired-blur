@@ -51,6 +51,9 @@ under the License.
 		<jline.version>2.7</jline.version>
 		<guava.version>14.0</guava.version>
 		<metrics.version>2.2.0</metrics.version>
+		<metrics-ganglia.version>2.2.0</metrics-ganglia.version>
+		<metrics-graphite.version>2.2.0</metrics-graphite.version>
+		<mockito.version>1.9.0</mockito.version>
 		<json.version>20090211</json.version>
 	</properties>
 

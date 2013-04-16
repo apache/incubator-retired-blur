@@ -167,6 +167,7 @@ public class HDFSReporter extends AbstractPollingReporter implements MetricProce
   @Override
   public void run() {
     try {
+      System.out.println("running");
       context.open(clock.time());
       for (Entry<String, SortedMap<MetricName, Metric>> entry : getMetricsRegistry().groupedMetrics().entrySet()) {
         for (Entry<MetricName, Metric> subEntry : entry.getValue().entrySet()) {

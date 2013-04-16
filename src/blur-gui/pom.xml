@@ -46,7 +46,7 @@
 		<dependency>
 			<groupId>com.yammer.metrics</groupId>
 			<artifactId>metrics-servlet</artifactId>
-			<version>${metrics-core.version}</version>
+			<version>${metrics.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>

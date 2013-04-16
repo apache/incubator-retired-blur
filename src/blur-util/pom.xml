@@ -103,7 +103,12 @@
 		<dependency>
 			<groupId>com.yammer.metrics</groupId>
 			<artifactId>metrics-core</artifactId>
-			<version>${metrics-core.version}</version>
+			<version>${metrics.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.yammer.metrics</groupId>
+			<artifactId>metrics-servlet</artifactId>
+			<version>${metrics.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>

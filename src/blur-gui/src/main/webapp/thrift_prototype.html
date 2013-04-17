@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Blur</title>
+<meta charset="utf-8">
+<link href="css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<script src="js/jquery-1.9.1.min.js"></script>
+<script src="js/thrift.js"></script>
+<script src="js/Blur.js"></script>
+<script src="js/Blur_types.js"></script>
+<body>
+
+<table>
+<thead>
+<tr>
+<th>Table Name</th>
+<th>ReadOnly</th>
+<th>Cluster</th>
+<th>Enabled</th>
+<th>Shard Count</th>
+<th>Table Uri</th>
+</tr>
+</thead>
+<tbody id="blurtables_tbody">
+	
+</tbody>
+</table>
+</body>
+<script>
+function go() {
+    var transport = new Thrift.Transport("/blur");
+    var protocol  = new Thrift.Protocol(transport);
+    var client    = new BlurClient(protocol);
+        
+    try {
+      var result = client.tableList();
+      for (var i = 0; i < result.length; i++) {
+	    var tableName = result[i];
+	    var tableDescriptor = client.describe(tableName)
+        $("#blurtables_tbody").append(
+	     "<tr>"+
+	      "<td>"+tableDescriptor.name+"</td>"+
+	      "<td>"+tableDescriptor.readOnly+"</td>"+
+	      "<td>"+tableDescriptor.cluster+"</td>"+
+	      "<td>"+tableDescriptor.isEnabled+"</td>"+
+	      "<td>"+tableDescriptor.shardCount+"</td>"+
+	      "<td>"+tableDescriptor.tableUri+"</td>"+
+	     "</tr>");
+      }
+    } catch(ouch){
+alert (ouch);
+    }
+}
+
+go();
+</script>
+</html>

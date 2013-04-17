@@ -62,14 +62,18 @@ import org.apache.blur.store.blockcache.BlockDirectory;
 import org.apache.blur.store.blockcache.BlockDirectoryCache;
 import org.apache.blur.store.blockcache.Cache;
 import org.apache.blur.store.buffer.BufferStore;
+import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.thrift.protocol.TJSONProtocol;
+import org.apache.thrift.server.TServlet;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooKeeper;
-
+import org.mortbay.jetty.servlet.ServletHolder;
+import org.mortbay.jetty.webapp.WebAppContext;
 
 public class ThriftBlurShardServer extends ThriftServer {
 
@@ -95,11 +99,11 @@ public class ThriftBlurShardServer extends ThriftServer {
     slabCount = getSlabCount(slabCount, numberOfBlocksPerSlab, blockSize);
     Cache cache;
     Configuration config = new Configuration();
-    
+
     String bindAddress = configuration.get(BLUR_SHARD_BIND_ADDRESS);
     int bindPort = configuration.getInt(BLUR_SHARD_BIND_PORT, -1);
     bindPort += serverIndex;
-    
+
     int baseGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT));
     final HttpJettyServer httpServer;
     if (baseGuiPort > 0) {
@@ -108,25 +112,27 @@ public class ThriftBlurShardServer extends ThriftServer {
       // TODO: this got ugly, there has to be a better way to handle all these
       // params
       // without reversing the mvn dependancy and making blur-gui on top.
-      httpServer = new HttpJettyServer(bindPort, webServerPort, configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1), configuration.getInt(BLUR_SHARD_BIND_PORT, -1),
-          configuration.getInt(BLUR_GUI_CONTROLLER_PORT, -1), configuration.getInt(BLUR_GUI_SHARD_PORT, -1), "shard");
+      httpServer = new HttpJettyServer(bindPort, webServerPort, configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1),
+          configuration.getInt(BLUR_SHARD_BIND_PORT, -1), configuration.getInt(BLUR_GUI_CONTROLLER_PORT, -1),
+          configuration.getInt(BLUR_GUI_SHARD_PORT, -1), "shard");
     } else {
       httpServer = null;
     }
-    
-    
+
     if (slabCount >= 1) {
       BlockCache blockCache;
       boolean directAllocation = configuration.getBoolean(BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION, true);
 
       int slabSize = numberOfBlocksPerSlab * blockSize;
-      LOG.info("Number of slabs of block cache [{0}] with direct memory allocation set to [{1}]", slabCount, directAllocation);
-      LOG.info("Block cache target memory usage, slab size of [{0}] will allocate [{1}] slabs and use ~[{2}] bytes", slabSize, slabCount, ((long) slabCount * (long) slabSize));
+      LOG.info("Number of slabs of block cache [{0}] with direct memory allocation set to [{1}]", slabCount,
+          directAllocation);
+      LOG.info("Block cache target memory usage, slab size of [{0}] will allocate [{1}] slabs and use ~[{2}] bytes",
+          slabSize, slabCount, ((long) slabCount * (long) slabSize));
 
       int _1024Size = configuration.getInt("blur.shard.buffercache.1024", 8192);
       int _8192Size = configuration.getInt("blur.shard.buffercache.8192", 8192);
       BufferStore.init(_1024Size, _8192Size);
-      
+
       try {
         long totalMemory = (long) slabCount * (long) numberOfBlocksPerSlab * (long) blockSize;
         blockCache = new BlockCache(directAllocation, totalMemory, slabSize);
@@ -142,7 +148,6 @@ public class ThriftBlurShardServer extends ThriftServer {
     } else {
       cache = BlockDirectory.NO_CACHE;
     }
-
 
     LOG.info("Shard Server using index [{0}] bind address [{1}]", serverIndex, bindAddress + ":" + bindPort);
 
@@ -203,6 +208,8 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.init();
 
     Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(shardServer, Iface.class);
+    WebAppContext context = httpServer.getContext();
+    context.addServlet(new ServletHolder(new TServlet(new Blur.Processor<Blur.Iface>(iface), new TJSONProtocol.Factory())), "/blur");
 
     int threadCount = configuration.getInt(BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT, 32);
 
@@ -214,20 +221,20 @@ public class ThriftBlurShardServer extends ThriftServer {
     server.setIface(iface);
     server.setConfiguration(configuration);
 
-
     // This will shutdown the server when the correct path is set in zk
     BlurShutdown shutdown = new BlurShutdown() {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(refresher, server, shardServer, indexManager, indexServer, threadWatcher, clusterStatus, zooKeeper, httpServer);
+        quietClose(refresher, server, shardServer, indexManager, indexServer, threadWatcher, clusterStatus, zooKeeper,
+            httpServer);
       }
     };
     server.setShutdown(shutdown);
     new BlurServerShutDown().register(shutdown, zooKeeper);
     return server;
   }
-  
+
   private static int getSlabCount(int slabCount, int numberOfBlocksPerSlab, int blockSize) {
     if (slabCount < 0) {
       long slabSize = numberOfBlocksPerSlab * blockSize;
@@ -243,7 +250,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     }
     return slabCount;
   }
-  
+
   private static long getMaxDirectMemorySize(String arg) {
     int index = arg.lastIndexOf('=');
     return parseNumber(arg.substring(index + 1).toLowerCase().replace(" ", ""));

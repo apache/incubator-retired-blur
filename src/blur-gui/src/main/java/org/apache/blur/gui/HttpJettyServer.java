@@ -38,6 +38,8 @@ public class HttpJettyServer {
 
   private Server server = null;
 
+  private WebAppContext context;
+
   /**
    * @param bindPort
    *          port of the process that the gui is wrapping
@@ -56,8 +58,8 @@ public class HttpJettyServer {
    *          metrics object for using.
    * @throws IOException
    */
-  public HttpJettyServer(int bindPort, int port, int baseControllerPort, int baseShardPort, int baseGuiControllerPort, int baseGuiShardPort, String base)
-      throws IOException {
+  public HttpJettyServer(int bindPort, int port, int baseControllerPort, int baseShardPort, int baseGuiControllerPort,
+      int baseGuiShardPort, String base) throws IOException {
     server = new Server(port);
 
     String logDir = System.getProperty("blur.logs.dir");
@@ -71,7 +73,7 @@ public class HttpJettyServer {
     System.setProperty("blur.gui.mode", base);
     LOG.info("System props:" + System.getProperties().toString());
 
-    WebAppContext context = new WebAppContext();
+    context = new WebAppContext();
     String warPath = getWarFolder();
     context.setWar(warPath);
     context.setContextPath("/");
@@ -92,6 +94,10 @@ public class HttpJettyServer {
       throw new IOException("cannot start Http server for " + base, e);
     }
     LOG.info("WEB GUI up on port: " + port);
+  }
+  
+  public WebAppContext getContext() {
+    return context;
   }
 
   private static String findBlurGuiInClassPath() {

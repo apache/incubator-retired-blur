@@ -19,7 +19,7 @@
 
 rm ../../../../../../src/blur-thrift/src/main/java/org/apache/blur/thrift/generated/*
 rm -r gen-java/ gen-perl/ gen-rb/ gen-html/
-thrift --gen html --gen perl --gen java --gen rb Blur.thrift
+thrift --gen html --gen perl --gen java --gen rb --gen js Blur.thrift
 for f in gen-java/org/apache/blur/thrift/generated/*.java; do
   awk -v f="apache.header" 'BEGIN {while (getline < f) txt=txt $0 "\n"} /package org\.apache\.blur\.thrift\.generated;/ {sub("package org.apache.blur.thrift.generated;", txt)} 1' $f > $f.new
   rm $f

@@ -117,20 +117,6 @@ public class ThriftServer {
      args.transportFactory(new TFramedTransport.Factory());
      args.protocolFactory(new TBinaryProtocol.Factory(true, true));
      _server = new TThreadPoolServer(args);
-//    TNonblockingServerSocket serverTransport = new TNonblockingServerSocket(getBindInetSocketAddress(_configuration));
-
-//    Args args = new Args(serverTransport);
-//    args.processor(processor);
-//    _executorService = Executors.newThreadPool("thrift-processors", _threadCount);
-//    args.executorService(_executorService);
-//    Map<String, ExecutorService> methodCallsToExecutorService = new HashMap<String, ExecutorService>();
-//    _mutateExecutorService = Executors.newThreadPool("thrift-processors-mutate", _threadCount);
-//    methodCallsToExecutorService.put("mutate", _mutateExecutorService);
-//    methodCallsToExecutorService.put("mutateBatch", _mutateExecutorService);
-//    _queryExexutorService = Executors.newThreadPool("thrift-processors-query", _threadCount);
-//    methodCallsToExecutorService.put("query", _queryExexutorService);
-//    args.setMethodCallsToExecutorService(methodCallsToExecutorService);
-//    _server = new ExecutorServicePerMethodCallThriftServer(args);
     LOG.info("Starting server [{0}]", _nodeName);
     _server.serve();
   }

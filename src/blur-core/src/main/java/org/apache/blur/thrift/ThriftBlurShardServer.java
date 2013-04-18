@@ -39,6 +39,7 @@ import static org.apache.blur.utils.BlurUtil.quietClose;
 
 import java.lang.management.ManagementFactory;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.concurrent.SimpleUncaughtExceptionHandler;
@@ -57,6 +58,8 @@ import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup;
 import org.apache.blur.manager.indexserver.DistributedIndexServer;
 import org.apache.blur.manager.writer.BlurIndexRefresher;
+import org.apache.blur.metrics.JSONReporter;
+import org.apache.blur.metrics.JSONReporterServlet;
 import org.apache.blur.store.blockcache.BlockCache;
 import org.apache.blur.store.blockcache.BlockDirectory;
 import org.apache.blur.store.blockcache.BlockDirectoryCache;
@@ -210,6 +213,8 @@ public class ThriftBlurShardServer extends ThriftServer {
     Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(shardServer, Iface.class);
     WebAppContext context = httpServer.getContext();
     context.addServlet(new ServletHolder(new TServlet(new Blur.Processor<Blur.Iface>(iface), new TJSONProtocol.Factory())), "/blur");
+    context.addServlet(new ServletHolder(new JSONReporterServlet()), "/livemetrics");
+    JSONReporter.enable("json-reporter", 1, TimeUnit.SECONDS, 60);
 
     int threadCount = configuration.getInt(BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT, 32);
 

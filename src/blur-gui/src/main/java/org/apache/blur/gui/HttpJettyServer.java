@@ -78,7 +78,7 @@ public class HttpJettyServer {
     context.setWar(warPath);
     context.setContextPath("/");
     context.setParentLoaderPriority(true);
-    context.addServlet(new ServletHolder(new LiveMetricsServlet()), "/livemetrics");
+//    context.addServlet(new ServletHolder(new LiveMetricsServlet()), "/livemetrics");
     context.addServlet(new ServletHolder(new MetricsServlet()), "/metrics");
     context.addServlet(new ServletHolder(new LogServlet(blurLogFile)), "/logs");
 

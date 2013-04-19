@@ -3048,7 +3048,7 @@ sub write {
 
 package Blur::TableDescriptor;
 use base qw(Class::Accessor);
-Blur::TableDescriptor->mk_accessors( qw( isEnabled analyzerDefinition shardCount tableUri compressionClass compressionBlockSize cluster name similarityClass blockCaching blockCachingFileTypes readOnly columnPreCache ) );
+Blur::TableDescriptor->mk_accessors( qw( isEnabled analyzerDefinition shardCount tableUri compressionClass compressionBlockSize cluster name similarityClass blockCaching blockCachingFileTypes readOnly columnPreCache tableProperties ) );
 
 sub new {
   my $classname = shift;
@@ -3067,6 +3067,7 @@ sub new {
   $self->{blockCachingFileTypes} = undef;
   $self->{readOnly} = 0;
   $self->{columnPreCache} = undef;
+  $self->{tableProperties} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{isEnabled}) {
       $self->{isEnabled} = $vals->{isEnabled};
@@ -3106,6 +3107,9 @@ sub new {
     }
     if (defined $vals->{columnPreCache}) {
       $self->{columnPreCache} = $vals->{columnPreCache};
+    }
+    if (defined $vals->{tableProperties}) {
+      $self->{tableProperties} = $vals->{tableProperties};
     }
   }
   return bless ($self, $classname);
@@ -3222,6 +3226,27 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^14$/ && do{      if ($ftype == TType::MAP) {
+        {
+          my $_size146 = 0;
+          $self->{tableProperties} = {};
+          my $_ktype147 = 0;
+          my $_vtype148 = 0;
+          $xfer += $input->readMapBegin(\$_ktype147, \$_vtype148, \$_size146);
+          for (my $_i150 = 0; $_i150 < $_size146; ++$_i150)
+          {
+            my $key151 = '';
+            my $val152 = '';
+            $xfer += $input->readString(\$key151);
+            $xfer += $input->readString(\$val152);
+            $self->{tableProperties}->{$key151} = $val152;
+          }
+          $xfer += $input->readMapEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -3289,9 +3314,9 @@ sub write {
     {
       $xfer += $output->writeSetBegin(TType::STRING, scalar(@{$self->{blockCachingFileTypes}}));
       {
-        foreach my $iter146 (@{$self->{blockCachingFileTypes}})
+        foreach my $iter153 (@{$self->{blockCachingFileTypes}})
         {
-          $xfer += $output->writeString($iter146);
+          $xfer += $output->writeString($iter153);
         }
       }
       $xfer += $output->writeSetEnd();
@@ -3306,6 +3331,21 @@ sub write {
   if (defined $self->{columnPreCache}) {
     $xfer += $output->writeFieldBegin('columnPreCache', TType::STRUCT, 13);
     $xfer += $self->{columnPreCache}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{tableProperties}) {
+    $xfer += $output->writeFieldBegin('tableProperties', TType::MAP, 14);
+    {
+      $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{tableProperties}}));
+      {
+        while( my ($kiter154,$viter155) = each %{$self->{tableProperties}}) 
+        {
+          $xfer += $output->writeString($kiter154);
+          $xfer += $output->writeString($viter155);
+        }
+      }
+      $xfer += $output->writeMapEnd();
+    }
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

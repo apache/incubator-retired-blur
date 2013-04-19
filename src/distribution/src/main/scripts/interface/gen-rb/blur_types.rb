@@ -713,6 +713,7 @@ module Blur
     BLOCKCACHINGFILETYPES = 11
     READONLY = 12
     COLUMNPRECACHE = 13
+    TABLEPROPERTIES = 14
 
     FIELDS = {
       # 
@@ -741,7 +742,8 @@ module Blur
 # updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.
       READONLY => {:type => ::Thrift::Types::BOOL, :name => 'readOnly', :default => false},
       # Sets what column families and columns to prefetch into block cache on shard open.
-      COLUMNPRECACHE => {:type => ::Thrift::Types::STRUCT, :name => 'columnPreCache', :class => ::Blur::ColumnPreCache}
+      COLUMNPRECACHE => {:type => ::Thrift::Types::STRUCT, :name => 'columnPreCache', :class => ::Blur::ColumnPreCache},
+      TABLEPROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'tableProperties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
     }
 
     def struct_fields; FIELDS; end

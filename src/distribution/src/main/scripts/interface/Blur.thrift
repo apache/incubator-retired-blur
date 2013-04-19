@@ -632,7 +632,8 @@ struct TableDescriptor {
   /**
    * Sets what column families and columns to prefetch into block cache on shard open.
    */
-  13:ColumnPreCache columnPreCache
+  13:ColumnPreCache columnPreCache,
+  14:map<string,string> tableProperties
 }
 
 /**

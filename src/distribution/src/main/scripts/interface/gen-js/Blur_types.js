@@ -2845,6 +2845,7 @@ TableDescriptor = function(args) {
   this.blockCachingFileTypes = null;
   this.readOnly = false;
   this.columnPreCache = null;
+  this.tableProperties = null;
   if (args) {
     if (args.isEnabled !== undefined) {
       this.isEnabled = args.isEnabled;
@@ -2884,6 +2885,9 @@ TableDescriptor = function(args) {
     }
     if (args.columnPreCache !== undefined) {
       this.columnPreCache = args.columnPreCache;
+    }
+    if (args.tableProperties !== undefined) {
+      this.tableProperties = args.tableProperties;
     }
   }
 };
@@ -3007,6 +3011,35 @@ TableDescriptor.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 14:
+      if (ftype == Thrift.Type.MAP) {
+        var _size165 = 0;
+        var _rtmp3169;
+        this.tableProperties = {};
+        var _ktype166 = 0;
+        var _vtype167 = 0;
+        _rtmp3169 = input.readMapBegin();
+        _ktype166 = _rtmp3169.ktype;
+        _vtype167 = _rtmp3169.vtype;
+        _size165 = _rtmp3169.size;
+        for (var _i170 = 0; _i170 < _size165; ++_i170)
+        {
+          if (_i170 > 0 ) {
+            if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
+              input.rstack.pop();
+            }
+          }
+          var key171 = null;
+          var val172 = null;
+          key171 = input.readString().value;
+          val172 = input.readString().value;
+          this.tableProperties[key171] = val172;
+        }
+        input.readMapEnd();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -3071,12 +3104,12 @@ TableDescriptor.prototype.write = function(output) {
   if (this.blockCachingFileTypes !== null && this.blockCachingFileTypes !== undefined) {
     output.writeFieldBegin('blockCachingFileTypes', Thrift.Type.SET, 11);
     output.writeSetBegin(Thrift.Type.STRING, this.blockCachingFileTypes.length);
-    for (var iter165 in this.blockCachingFileTypes)
+    for (var iter173 in this.blockCachingFileTypes)
     {
-      if (this.blockCachingFileTypes.hasOwnProperty(iter165))
+      if (this.blockCachingFileTypes.hasOwnProperty(iter173))
       {
-        iter165 = this.blockCachingFileTypes[iter165];
-        output.writeString(iter165);
+        iter173 = this.blockCachingFileTypes[iter173];
+        output.writeString(iter173);
       }
     }
     output.writeSetEnd();
@@ -3090,6 +3123,21 @@ TableDescriptor.prototype.write = function(output) {
   if (this.columnPreCache !== null && this.columnPreCache !== undefined) {
     output.writeFieldBegin('columnPreCache', Thrift.Type.STRUCT, 13);
     this.columnPreCache.write(output);
+    output.writeFieldEnd();
+  }
+  if (this.tableProperties !== null && this.tableProperties !== undefined) {
+    output.writeFieldBegin('tableProperties', Thrift.Type.MAP, 14);
+    output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRING, Thrift.objectLength(this.tableProperties));
+    for (var kiter174 in this.tableProperties)
+    {
+      if (this.tableProperties.hasOwnProperty(kiter174))
+      {
+        var viter175 = this.tableProperties[kiter174];
+        output.writeString(kiter174);
+        output.writeString(viter175);
+      }
+    }
+    output.writeMapEnd();
     output.writeFieldEnd();
   }
   output.writeFieldStop();

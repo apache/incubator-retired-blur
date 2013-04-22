@@ -23,6 +23,7 @@ import java.util.SortedSet;
 
 import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.manager.writer.BlurIndex;
+import org.apache.blur.thrift.generated.ShardState;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.search.similarities.Similarity;
 
@@ -173,5 +174,7 @@ public interface IndexServer {
    * Closes the index server.
    */
   void close();
+
+  Map<String, ShardState> getShardState(String table);
 
 }

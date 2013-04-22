@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
@@ -29,9 +30,9 @@ import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
+import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
-import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.thrift.TException;
 
 
@@ -169,6 +170,11 @@ public class DoNothingServer implements Iface {
 
   @Override
   public Map<String, String> configuration() throws BlurException, TException {
+    return null;
+  }
+
+  @Override
+  public Map<String, Map<String, ShardState>> shardServerLayoutState(String table) throws BlurException, TException {
     return null;
   }
 }

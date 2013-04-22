@@ -21,8 +21,10 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIMETOLIV
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_DATA_FETCH_THREAD_COUNT;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +39,7 @@ import org.apache.blur.manager.IndexManager;
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.writer.BlurIndex;
-import org.apache.blur.thrift.BException;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
@@ -46,8 +48,8 @@ import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
+import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableStats;
-import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.QueryCache;
@@ -201,6 +203,31 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
+  public Map<String, Map<String, ShardState>> shardServerLayoutState(String table) throws BlurException, TException {
+    try {
+      Map<String, Map<String, ShardState>> result = new TreeMap<String, Map<String, ShardState>>();
+      String nodeName = _indexServer.getNodeName();
+      Map<String, ShardState> stateMap = _indexServer.getShardState(table);
+      for (Entry<String, ShardState> entry : stateMap.entrySet()) {
+        result.put(entry.getKey(), newMap(nodeName, entry.getValue()));
+      }
+      return result;
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to getting shardServerLayoutState for table [" + table + "]", e);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  private Map<String, ShardState> newMap(String nodeName, ShardState state) {
+    Map<String, ShardState> map = new HashMap<String, ShardState>();
+    map.put(nodeName, state);
+    return map;
+  }
+
+  @Override
   public long recordFrequency(String table, String columnFamily, String columnName, String value) throws BlurException,
       TException {
     checkTable(_cluster, table);
@@ -343,4 +370,5 @@ public class BlurShardServer extends TableAdmin implements Iface {
   public void setConfiguration(BlurConfiguration conf) {
     _configuration = conf;
   }
+
 }

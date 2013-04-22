@@ -18,6 +18,7 @@ package org.apache.blur.thrift;
  */
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.io.File;
 import java.io.IOException;
@@ -79,6 +80,10 @@ public class BlurClusterTest {
   public static void shutdownCluster() {
     MiniCluster.shutdownBlurCluster();
   }
+  
+  private Iface getClient() {
+    return BlurClient.getClient(MiniCluster.getControllerConnectionStr());
+  }
 
   @Test
   public void testCreateTable() throws BlurException, TException, IOException {
@@ -90,10 +95,6 @@ public class BlurClusterTest {
     client.createTable(tableDescriptor);
     List<String> tableList = client.tableList();
     assertEquals(Arrays.asList("test"), tableList);
-  }
-
-  private Iface getClient() {
-    return BlurClient.getClient(MiniCluster.getControllerConnectionStr());
   }
 
   @Test
@@ -118,5 +119,24 @@ public class BlurClusterTest {
     blurQuery.setSimpleQuery(simpleQuery);
     BlurResults results = client.query("test", blurQuery);
     assertEquals(length, results.getTotalResults());
+  }
+
+  @Test
+  public void testCreateDisableAndRemoveTable() throws IOException, BlurException, TException {
+    Iface client = getClient();
+    String tableName = UUID.randomUUID().toString();
+    TableDescriptor tableDescriptor = new TableDescriptor();
+    tableDescriptor.setName(tableName);
+    tableDescriptor.setShardCount(5);
+    tableDescriptor.setTableUri(MiniCluster.getFileSystemUri().toString() + "/blur/" + tableName);
+
+    for (int i = 0; i < 3; i++) {
+      client.createTable(tableDescriptor);
+      client.disableTable(tableName);
+      client.removeTable(tableName, true);
+    }
+
+    assertFalse(client.tableList().contains(tableName));
+
   }
 }

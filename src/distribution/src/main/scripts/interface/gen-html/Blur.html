@@ -33,6 +33,7 @@
 <li><a href="Blur.html#Fn_Blur_schema">schema</a></li>
 <li><a href="Blur.html#Fn_Blur_shardClusterList">shardClusterList</a></li>
 <li><a href="Blur.html#Fn_Blur_shardServerLayout">shardServerLayout</a></li>
+<li><a href="Blur.html#Fn_Blur_shardServerLayoutState">shardServerLayoutState</a></li>
 <li><a href="Blur.html#Fn_Blur_shardServerList">shardServerList</a></li>
 <li><a href="Blur.html#Fn_Blur_tableList">tableList</a></li>
 <li><a href="Blur.html#Fn_Blur_tableListByCluster">tableListByCluster</a></li>
@@ -67,6 +68,7 @@
 <a href="Blur.html#Struct_Schema">Schema</a><br/>
 <a href="Blur.html#Enum_ScoreType">ScoreType</a><br/>
 <a href="Blur.html#Struct_Selector">Selector</a><br/>
+<a href="Blur.html#Enum_ShardState">ShardState</a><br/>
 <a href="Blur.html#Struct_SimpleQuery">SimpleQuery</a><br/>
 <a href="Blur.html#Struct_TableDescriptor">TableDescriptor</a><br/>
 <a href="Blur.html#Struct_TableStats">TableStats</a><br/>
@@ -117,6 +119,16 @@ APPEND_COLUMN_VALUES - Append the columns in the Record mutation to the Record t
 <tr><td><code>REPLACE_ENTIRE_RECORD</code></td><td><code>1</code></td></tr>
 <tr><td><code>REPLACE_COLUMNS</code></td><td><code>2</code></td></tr>
 <tr><td><code>APPEND_COLUMN_VALUES</code></td><td><code>3</code></td></tr>
+</table></div>
+<div class="definition"><h3 id="Enum_ShardState">Enumeration: ShardState</h3>
+See shardServerLayoutOptions method in the Blur service for details.
+<br/><br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>OPENING</code></td><td><code>0</code></td></tr>
+<tr><td><code>OPEN</code></td><td><code>1</code></td></tr>
+<tr><td><code>OPENING_ERROR</code></td><td><code>2</code></td></tr>
+<tr><td><code>CLOSING</code></td><td><code>3</code></td></tr>
+<tr><td><code>CLOSED</code></td><td><code>4</code></td></tr>
+<tr><td><code>CLOSING_ERROR</code></td><td><code>5</code></td></tr>
 </table></div>
 <hr/><h2 id="Structs">Data structures</h2>
 <div class="definition"><h3 id="Struct_BlurException">Exception: BlurException</h3>
@@ -422,8 +434,30 @@ updates through MapReduce are allowed and in fact they are only allowed if the t
 <br/></div><div class="definition"><h4 id="Fn_Blur_shardServerLayout">Function: Blur.shardServerLayout</h4>
 <pre><code>map&lt;<code>string</code>, <code>string</code>&gt;</code> shardServerLayout(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre>Returns a map of the layout of the given table, where the key is the shard name and the value is the shard server.
+</pre>Returns a map of the layout of the given table, where the key is the shard name
+and the value is the shard server.<br><br>
+This method will return the "correct" layout for the given shard, or the
+"correct" layout of cluster if called on a controller.<br><br>
+The meaning of correct:<br>Given the current state of the shard cluster with failures taken
+into account, the correct layout is what the layout should be given the current state.  In
+other words, what the shard server should be serving.  The act of calling the shard
+server layout method with the NORMAL option will block until the layout shard server
+matches the correct layout.  Meaning it will block until indexes that should be open are
+open and ready for queries.  However indexes are lazily closed, so if a table is being
+disabled then the call will return immediately with an empty map, but the indexes may
+not be close yet.<br><br>
 @param table the table name.
+<br/></div><div class="definition"><h4 id="Fn_Blur_shardServerLayoutState">Function: Blur.shardServerLayoutState</h4>
+<pre><code>map&lt;<code>string</code>, <code>map&lt;<code>string</code>, <code><a href="Blur.html#Enum_ShardState">ShardState</a></code>&gt;</code>&gt;</code> shardServerLayoutState(<code>string</code> table)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Returns a map of the layout of the given table, where the key is the shard name and the
+value is the shard server.<br><br>
+This method will return immediately with what shards are currently
+open in the shard server.  So if a shard is being moved to another server and is being
+closed by this server it WILL be returned in the map.  The shardServerLayout method would not return
+the shard given the same situation.
+@param table the table name.
+@param layoutOptions the layout options.
 <br/></div><div class="definition"><h4 id="Fn_Blur_tableList">Function: Blur.tableList</h4>
 <pre><code>list&lt;<code>string</code>&gt;</code> tableList()
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>

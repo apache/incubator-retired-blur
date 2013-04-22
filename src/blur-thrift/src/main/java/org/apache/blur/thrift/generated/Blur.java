@@ -75,12 +75,37 @@ public class Blur {
     public List<String> controllerServerList() throws BlurException, org.apache.thrift.TException;
 
     /**
-     * Returns a map of the layout of the given table, where the key is the shard name and the value is the shard server.
+     * Returns a map of the layout of the given table, where the key is the shard name
+     * and the value is the shard server.<br><br>
+     * This method will return the "correct" layout for the given shard, or the
+     * "correct" layout of cluster if called on a controller.<br><br>
+     * The meaning of correct:<br>Given the current state of the shard cluster with failures taken
+     * into account, the correct layout is what the layout should be given the current state.  In
+     * other words, what the shard server should be serving.  The act of calling the shard
+     * server layout method with the NORMAL option will block until the layout shard server
+     * matches the correct layout.  Meaning it will block until indexes that should be open are
+     * open and ready for queries.  However indexes are lazily closed, so if a table is being
+     * disabled then the call will return immediately with an empty map, but the indexes may
+     * not be close yet.<br><br>
      * @param table the table name.
      * 
      * @param table
      */
     public Map<String,String> shardServerLayout(String table) throws BlurException, org.apache.thrift.TException;
+
+    /**
+     * Returns a map of the layout of the given table, where the key is the shard name and the
+     * value is the shard server.<br><br>
+     * This method will return immediately with what shards are currently
+     * open in the shard server.  So if a shard is being moved to another server and is being
+     * closed by this server it WILL be returned in the map.  The shardServerLayout method would not return
+     * the shard given the same situation.
+     * @param table the table name.
+     * @param layoutOptions the layout options.
+     * 
+     * @param table
+     */
+    public Map<String,Map<String,ShardState>> shardServerLayoutState(String table) throws BlurException, org.apache.thrift.TException;
 
     /**
      * Returns a list of the table names across all shard clusters.
@@ -190,6 +215,8 @@ public class Blur {
     public void controllerServerList(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.controllerServerList_call> resultHandler) throws org.apache.thrift.TException;
 
     public void shardServerLayout(String table, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.shardServerLayout_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void shardServerLayoutState(String table, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.shardServerLayoutState_call> resultHandler) throws org.apache.thrift.TException;
 
     public void tableList(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.tableList_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -359,6 +386,32 @@ public class Blur {
         throw result.ex;
       }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "shardServerLayout failed: unknown result");
+    }
+
+    public Map<String,Map<String,ShardState>> shardServerLayoutState(String table) throws BlurException, org.apache.thrift.TException
+    {
+      send_shardServerLayoutState(table);
+      return recv_shardServerLayoutState();
+    }
+
+    public void send_shardServerLayoutState(String table) throws org.apache.thrift.TException
+    {
+      shardServerLayoutState_args args = new shardServerLayoutState_args();
+      args.setTable(table);
+      sendBase("shardServerLayoutState", args);
+    }
+
+    public Map<String,Map<String,ShardState>> recv_shardServerLayoutState() throws BlurException, org.apache.thrift.TException
+    {
+      shardServerLayoutState_result result = new shardServerLayoutState_result();
+      receiveBase(result, "shardServerLayoutState");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.ex != null) {
+        throw result.ex;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "shardServerLayoutState failed: unknown result");
     }
 
     public List<String> tableList() throws BlurException, org.apache.thrift.TException
@@ -1083,6 +1136,38 @@ public class Blur {
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
         return (new Client(prot)).recv_shardServerLayout();
+      }
+    }
+
+    public void shardServerLayoutState(String table, org.apache.thrift.async.AsyncMethodCallback<shardServerLayoutState_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      shardServerLayoutState_call method_call = new shardServerLayoutState_call(table, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class shardServerLayoutState_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String table;
+      public shardServerLayoutState_call(String table, org.apache.thrift.async.AsyncMethodCallback<shardServerLayoutState_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("shardServerLayoutState", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        shardServerLayoutState_args args = new shardServerLayoutState_args();
+        args.setTable(table);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public Map<String,Map<String,ShardState>> getResult() throws BlurException, org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_shardServerLayoutState();
       }
     }
 
@@ -1872,6 +1957,7 @@ public class Blur {
       processMap.put("shardServerList", new shardServerList());
       processMap.put("controllerServerList", new controllerServerList());
       processMap.put("shardServerLayout", new shardServerLayout());
+      processMap.put("shardServerLayoutState", new shardServerLayoutState());
       processMap.put("tableList", new tableList());
       processMap.put("tableListByCluster", new tableListByCluster());
       processMap.put("describe", new describe());
@@ -1987,6 +2073,30 @@ public class Blur {
         shardServerLayout_result result = new shardServerLayout_result();
         try {
           result.success = iface.shardServerLayout(args.table);
+        } catch (BlurException ex) {
+          result.ex = ex;
+        }
+        return result;
+      }
+    }
+
+    public static class shardServerLayoutState<I extends Iface> extends org.apache.thrift.ProcessFunction<I, shardServerLayoutState_args> {
+      public shardServerLayoutState() {
+        super("shardServerLayoutState");
+      }
+
+      public shardServerLayoutState_args getEmptyArgsInstance() {
+        return new shardServerLayoutState_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public shardServerLayoutState_result getResult(I iface, shardServerLayoutState_args args) throws org.apache.thrift.TException {
+        shardServerLayoutState_result result = new shardServerLayoutState_result();
+        try {
+          result.success = iface.shardServerLayoutState(args.table);
         } catch (BlurException ex) {
           result.ex = ex;
         }
@@ -5793,6 +5903,930 @@ public class Blur {
 
   }
 
+  public static class shardServerLayoutState_args implements org.apache.thrift.TBase<shardServerLayoutState_args, shardServerLayoutState_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("shardServerLayoutState_args");
+
+    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new shardServerLayoutState_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new shardServerLayoutState_argsTupleSchemeFactory());
+    }
+
+    public String table; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      TABLE((short)1, "table");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TABLE
+            return TABLE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(shardServerLayoutState_args.class, metaDataMap);
+    }
+
+    public shardServerLayoutState_args() {
+    }
+
+    public shardServerLayoutState_args(
+      String table)
+    {
+      this();
+      this.table = table;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public shardServerLayoutState_args(shardServerLayoutState_args other) {
+      if (other.isSetTable()) {
+        this.table = other.table;
+      }
+    }
+
+    public shardServerLayoutState_args deepCopy() {
+      return new shardServerLayoutState_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.table = null;
+    }
+
+    public String getTable() {
+      return this.table;
+    }
+
+    public shardServerLayoutState_args setTable(String table) {
+      this.table = table;
+      return this;
+    }
+
+    public void unsetTable() {
+      this.table = null;
+    }
+
+    /** Returns true if field table is set (has been assigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
+    }
+
+    public void setTableIsSet(boolean value) {
+      if (!value) {
+        this.table = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TABLE:
+        if (value == null) {
+          unsetTable();
+        } else {
+          setTable((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return getTable();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case TABLE:
+        return isSetTable();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof shardServerLayoutState_args)
+        return this.equals((shardServerLayoutState_args)that);
+      return false;
+    }
+
+    public boolean equals(shardServerLayoutState_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
+          return false;
+        if (!this.table.equals(that.table))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(shardServerLayoutState_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      shardServerLayoutState_args typedOther = (shardServerLayoutState_args)other;
+
+      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTable()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("shardServerLayoutState_args(");
+      boolean first = true;
+
+      sb.append("table:");
+      if (this.table == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class shardServerLayoutState_argsStandardSchemeFactory implements SchemeFactory {
+      public shardServerLayoutState_argsStandardScheme getScheme() {
+        return new shardServerLayoutState_argsStandardScheme();
+      }
+    }
+
+    private static class shardServerLayoutState_argsStandardScheme extends StandardScheme<shardServerLayoutState_args> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, shardServerLayoutState_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // TABLE
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.table = iprot.readString();
+                struct.setTableIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, shardServerLayoutState_args struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.table != null) {
+          oprot.writeFieldBegin(TABLE_FIELD_DESC);
+          oprot.writeString(struct.table);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class shardServerLayoutState_argsTupleSchemeFactory implements SchemeFactory {
+      public shardServerLayoutState_argsTupleScheme getScheme() {
+        return new shardServerLayoutState_argsTupleScheme();
+      }
+    }
+
+    private static class shardServerLayoutState_argsTupleScheme extends TupleScheme<shardServerLayoutState_args> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, shardServerLayoutState_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetTable()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetTable()) {
+          oprot.writeString(struct.table);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, shardServerLayoutState_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.table = iprot.readString();
+          struct.setTableIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class shardServerLayoutState_result implements org.apache.thrift.TBase<shardServerLayoutState_result, shardServerLayoutState_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("shardServerLayoutState_result");
+
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.MAP, (short)0);
+    private static final org.apache.thrift.protocol.TField EX_FIELD_DESC = new org.apache.thrift.protocol.TField("ex", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new shardServerLayoutState_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new shardServerLayoutState_resultTupleSchemeFactory());
+    }
+
+    public Map<String,Map<String,ShardState>> success; // required
+    public BlurException ex; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      EX((short)1, "ex");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // EX
+            return EX;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+              new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+                  new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+                  new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, ShardState.class)))));
+      tmpMap.put(_Fields.EX, new org.apache.thrift.meta_data.FieldMetaData("ex", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(shardServerLayoutState_result.class, metaDataMap);
+    }
+
+    public shardServerLayoutState_result() {
+    }
+
+    public shardServerLayoutState_result(
+      Map<String,Map<String,ShardState>> success,
+      BlurException ex)
+    {
+      this();
+      this.success = success;
+      this.ex = ex;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public shardServerLayoutState_result(shardServerLayoutState_result other) {
+      if (other.isSetSuccess()) {
+        Map<String,Map<String,ShardState>> __this__success = new HashMap<String,Map<String,ShardState>>();
+        for (Map.Entry<String, Map<String,ShardState>> other_element : other.success.entrySet()) {
+
+          String other_element_key = other_element.getKey();
+          Map<String,ShardState> other_element_value = other_element.getValue();
+
+          String __this__success_copy_key = other_element_key;
+
+          Map<String,ShardState> __this__success_copy_value = new HashMap<String,ShardState>();
+          for (Map.Entry<String, ShardState> other_element_value_element : other_element_value.entrySet()) {
+
+            String other_element_value_element_key = other_element_value_element.getKey();
+            ShardState other_element_value_element_value = other_element_value_element.getValue();
+
+            String __this__success_copy_value_copy_key = other_element_value_element_key;
+
+            ShardState __this__success_copy_value_copy_value = other_element_value_element_value;
+
+            __this__success_copy_value.put(__this__success_copy_value_copy_key, __this__success_copy_value_copy_value);
+          }
+
+          __this__success.put(__this__success_copy_key, __this__success_copy_value);
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetEx()) {
+        this.ex = new BlurException(other.ex);
+      }
+    }
+
+    public shardServerLayoutState_result deepCopy() {
+      return new shardServerLayoutState_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.ex = null;
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public void putToSuccess(String key, Map<String,ShardState> val) {
+      if (this.success == null) {
+        this.success = new HashMap<String,Map<String,ShardState>>();
+      }
+      this.success.put(key, val);
+    }
+
+    public Map<String,Map<String,ShardState>> getSuccess() {
+      return this.success;
+    }
+
+    public shardServerLayoutState_result setSuccess(Map<String,Map<String,ShardState>> success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public BlurException getEx() {
+      return this.ex;
+    }
+
+    public shardServerLayoutState_result setEx(BlurException ex) {
+      this.ex = ex;
+      return this;
+    }
+
+    public void unsetEx() {
+      this.ex = null;
+    }
+
+    /** Returns true if field ex is set (has been assigned a value) and false otherwise */
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setExIsSet(boolean value) {
+      if (!value) {
+        this.ex = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Map<String,Map<String,ShardState>>)value);
+        }
+        break;
+
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((BlurException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case EX:
+        return getEx();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case EX:
+        return isSetEx();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof shardServerLayoutState_result)
+        return this.equals((shardServerLayoutState_result)that);
+      return false;
+    }
+
+    public boolean equals(shardServerLayoutState_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
+      if (this_present_ex || that_present_ex) {
+        if (!(this_present_ex && that_present_ex))
+          return false;
+        if (!this.ex.equals(that.ex))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(shardServerLayoutState_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      shardServerLayoutState_result typedOther = (shardServerLayoutState_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEx()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ex, typedOther.ex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("shardServerLayoutState_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class shardServerLayoutState_resultStandardSchemeFactory implements SchemeFactory {
+      public shardServerLayoutState_resultStandardScheme getScheme() {
+        return new shardServerLayoutState_resultStandardScheme();
+      }
+    }
+
+    private static class shardServerLayoutState_resultStandardScheme extends StandardScheme<shardServerLayoutState_result> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, shardServerLayoutState_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 0: // SUCCESS
+              if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
+                {
+                  org.apache.thrift.protocol.TMap _map210 = iprot.readMapBegin();
+                  struct.success = new HashMap<String,Map<String,ShardState>>(2*_map210.size);
+                  for (int _i211 = 0; _i211 < _map210.size; ++_i211)
+                  {
+                    String _key212; // required
+                    Map<String,ShardState> _val213; // optional
+                    _key212 = iprot.readString();
+                    {
+                      org.apache.thrift.protocol.TMap _map214 = iprot.readMapBegin();
+                      _val213 = new HashMap<String,ShardState>(2*_map214.size);
+                      for (int _i215 = 0; _i215 < _map214.size; ++_i215)
+                      {
+                        String _key216; // required
+                        ShardState _val217; // optional
+                        _key216 = iprot.readString();
+                        _val217 = ShardState.findByValue(iprot.readI32());
+                        _val213.put(_key216, _val217);
+                      }
+                      iprot.readMapEnd();
+                    }
+                    struct.success.put(_key212, _val213);
+                  }
+                  iprot.readMapEnd();
+                }
+                struct.setSuccessIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 1: // EX
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.ex = new BlurException();
+                struct.ex.read(iprot);
+                struct.setExIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, shardServerLayoutState_result struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.success != null) {
+          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+          {
+            oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.MAP, struct.success.size()));
+            for (Map.Entry<String, Map<String,ShardState>> _iter218 : struct.success.entrySet())
+            {
+              oprot.writeString(_iter218.getKey());
+              {
+                oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.I32, _iter218.getValue().size()));
+                for (Map.Entry<String, ShardState> _iter219 : _iter218.getValue().entrySet())
+                {
+                  oprot.writeString(_iter219.getKey());
+                  oprot.writeI32(_iter219.getValue().getValue());
+                }
+                oprot.writeMapEnd();
+              }
+            }
+            oprot.writeMapEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+        if (struct.ex != null) {
+          oprot.writeFieldBegin(EX_FIELD_DESC);
+          struct.ex.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class shardServerLayoutState_resultTupleSchemeFactory implements SchemeFactory {
+      public shardServerLayoutState_resultTupleScheme getScheme() {
+        return new shardServerLayoutState_resultTupleScheme();
+      }
+    }
+
+    private static class shardServerLayoutState_resultTupleScheme extends TupleScheme<shardServerLayoutState_result> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, shardServerLayoutState_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetSuccess()) {
+          optionals.set(0);
+        }
+        if (struct.isSetEx()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetSuccess()) {
+          {
+            oprot.writeI32(struct.success.size());
+            for (Map.Entry<String, Map<String,ShardState>> _iter220 : struct.success.entrySet())
+            {
+              oprot.writeString(_iter220.getKey());
+              {
+                oprot.writeI32(_iter220.getValue().size());
+                for (Map.Entry<String, ShardState> _iter221 : _iter220.getValue().entrySet())
+                {
+                  oprot.writeString(_iter221.getKey());
+                  oprot.writeI32(_iter221.getValue().getValue());
+                }
+              }
+            }
+          }
+        }
+        if (struct.isSetEx()) {
+          struct.ex.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, shardServerLayoutState_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          {
+            org.apache.thrift.protocol.TMap _map222 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.MAP, iprot.readI32());
+            struct.success = new HashMap<String,Map<String,ShardState>>(2*_map222.size);
+            for (int _i223 = 0; _i223 < _map222.size; ++_i223)
+            {
+              String _key224; // required
+              Map<String,ShardState> _val225; // optional
+              _key224 = iprot.readString();
+              {
+                org.apache.thrift.protocol.TMap _map226 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.I32, iprot.readI32());
+                _val225 = new HashMap<String,ShardState>(2*_map226.size);
+                for (int _i227 = 0; _i227 < _map226.size; ++_i227)
+                {
+                  String _key228; // required
+                  ShardState _val229; // optional
+                  _key228 = iprot.readString();
+                  _val229 = ShardState.findByValue(iprot.readI32());
+                  _val225.put(_key228, _val229);
+                }
+              }
+              struct.success.put(_key224, _val225);
+            }
+          }
+          struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.ex = new BlurException();
+          struct.ex.read(iprot);
+          struct.setExIsSet(true);
+        }
+      }
+    }
+
+  }
+
   public static class tableList_args implements org.apache.thrift.TBase<tableList_args, tableList_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("tableList_args");
 
@@ -6425,13 +7459,13 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list210 = iprot.readListBegin();
-                  struct.success = new ArrayList<String>(_list210.size);
-                  for (int _i211 = 0; _i211 < _list210.size; ++_i211)
+                  org.apache.thrift.protocol.TList _list230 = iprot.readListBegin();
+                  struct.success = new ArrayList<String>(_list230.size);
+                  for (int _i231 = 0; _i231 < _list230.size; ++_i231)
                   {
-                    String _elem212; // required
-                    _elem212 = iprot.readString();
-                    struct.success.add(_elem212);
+                    String _elem232; // required
+                    _elem232 = iprot.readString();
+                    struct.success.add(_elem232);
                   }
                   iprot.readListEnd();
                 }
@@ -6468,9 +7502,9 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.success.size()));
-            for (String _iter213 : struct.success)
+            for (String _iter233 : struct.success)
             {
-              oprot.writeString(_iter213);
+              oprot.writeString(_iter233);
             }
             oprot.writeListEnd();
           }
@@ -6509,9 +7543,9 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (String _iter214 : struct.success)
+            for (String _iter234 : struct.success)
             {
-              oprot.writeString(_iter214);
+              oprot.writeString(_iter234);
             }
           }
         }
@@ -6526,13 +7560,13 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list215 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.success = new ArrayList<String>(_list215.size);
-            for (int _i216 = 0; _i216 < _list215.size; ++_i216)
+            org.apache.thrift.protocol.TList _list235 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.success = new ArrayList<String>(_list235.size);
+            for (int _i236 = 0; _i236 < _list235.size; ++_i236)
             {
-              String _elem217; // required
-              _elem217 = iprot.readString();
-              struct.success.add(_elem217);
+              String _elem237; // required
+              _elem237 = iprot.readString();
+              struct.success.add(_elem237);
             }
           }
           struct.setSuccessIsSet(true);
@@ -7287,13 +8321,13 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list218 = iprot.readListBegin();
-                  struct.success = new ArrayList<String>(_list218.size);
-                  for (int _i219 = 0; _i219 < _list218.size; ++_i219)
+                  org.apache.thrift.protocol.TList _list238 = iprot.readListBegin();
+                  struct.success = new ArrayList<String>(_list238.size);
+                  for (int _i239 = 0; _i239 < _list238.size; ++_i239)
                   {
-                    String _elem220; // required
-                    _elem220 = iprot.readString();
-                    struct.success.add(_elem220);
+                    String _elem240; // required
+                    _elem240 = iprot.readString();
+                    struct.success.add(_elem240);
                   }
                   iprot.readListEnd();
                 }
@@ -7330,9 +8364,9 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.success.size()));
-            for (String _iter221 : struct.success)
+            for (String _iter241 : struct.success)
             {
-              oprot.writeString(_iter221);
+              oprot.writeString(_iter241);
             }
             oprot.writeListEnd();
           }
@@ -7371,9 +8405,9 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (String _iter222 : struct.success)
+            for (String _iter242 : struct.success)
             {
-              oprot.writeString(_iter222);
+              oprot.writeString(_iter242);
             }
           }
         }
@@ -7388,13 +8422,13 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list223 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.success = new ArrayList<String>(_list223.size);
-            for (int _i224 = 0; _i224 < _list223.size; ++_i224)
+            org.apache.thrift.protocol.TList _list243 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.success = new ArrayList<String>(_list243.size);
+            for (int _i244 = 0; _i244 < _list243.size; ++_i244)
             {
-              String _elem225; // required
-              _elem225 = iprot.readString();
-              struct.success.add(_elem225);
+              String _elem245; // required
+              _elem245 = iprot.readString();
+              struct.success.add(_elem245);
             }
           }
           struct.setSuccessIsSet(true);
@@ -10692,14 +11726,14 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list226 = iprot.readListBegin();
-                  struct.success = new ArrayList<BlurQueryStatus>(_list226.size);
-                  for (int _i227 = 0; _i227 < _list226.size; ++_i227)
+                  org.apache.thrift.protocol.TList _list246 = iprot.readListBegin();
+                  struct.success = new ArrayList<BlurQueryStatus>(_list246.size);
+                  for (int _i247 = 0; _i247 < _list246.size; ++_i247)
                   {
-                    BlurQueryStatus _elem228; // required
-                    _elem228 = new BlurQueryStatus();
-                    _elem228.read(iprot);
-                    struct.success.add(_elem228);
+                    BlurQueryStatus _elem248; // required
+                    _elem248 = new BlurQueryStatus();
+                    _elem248.read(iprot);
+                    struct.success.add(_elem248);
                   }
                   iprot.readListEnd();
                 }
@@ -10736,9 +11770,9 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (BlurQueryStatus _iter229 : struct.success)
+            for (BlurQueryStatus _iter249 : struct.success)
             {
-              _iter229.write(oprot);
+              _iter249.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -10777,9 +11811,9 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (BlurQueryStatus _iter230 : struct.success)
+            for (BlurQueryStatus _iter250 : struct.success)
             {
-              _iter230.write(oprot);
+              _iter250.write(oprot);
             }
           }
         }
@@ -10794,14 +11828,14 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list231 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.success = new ArrayList<BlurQueryStatus>(_list231.size);
-            for (int _i232 = 0; _i232 < _list231.size; ++_i232)
+            org.apache.thrift.protocol.TList _list251 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.success = new ArrayList<BlurQueryStatus>(_list251.size);
+            for (int _i252 = 0; _i252 < _list251.size; ++_i252)
             {
-              BlurQueryStatus _elem233; // required
-              _elem233 = new BlurQueryStatus();
-              _elem233.read(iprot);
-              struct.success.add(_elem233);
+              BlurQueryStatus _elem253; // required
+              _elem253 = new BlurQueryStatus();
+              _elem253.read(iprot);
+              struct.success.add(_elem253);
             }
           }
           struct.setSuccessIsSet(true);
@@ -11556,13 +12590,13 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list234 = iprot.readListBegin();
-                  struct.success = new ArrayList<Long>(_list234.size);
-                  for (int _i235 = 0; _i235 < _list234.size; ++_i235)
+                  org.apache.thrift.protocol.TList _list254 = iprot.readListBegin();
+                  struct.success = new ArrayList<Long>(_list254.size);
+                  for (int _i255 = 0; _i255 < _list254.size; ++_i255)
                   {
-                    long _elem236; // required
-                    _elem236 = iprot.readI64();
-                    struct.success.add(_elem236);
+                    long _elem256; // required
+                    _elem256 = iprot.readI64();
+                    struct.success.add(_elem256);
                   }
                   iprot.readListEnd();
                 }
@@ -11599,9 +12633,9 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.success.size()));
-            for (long _iter237 : struct.success)
+            for (long _iter257 : struct.success)
             {
-              oprot.writeI64(_iter237);
+              oprot.writeI64(_iter257);
             }
             oprot.writeListEnd();
           }
@@ -11640,9 +12674,9 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (long _iter238 : struct.success)
+            for (long _iter258 : struct.success)
             {
-              oprot.writeI64(_iter238);
+              oprot.writeI64(_iter258);
             }
           }
         }
@@ -11657,13 +12691,13 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list239 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-            struct.success = new ArrayList<Long>(_list239.size);
-            for (int _i240 = 0; _i240 < _list239.size; ++_i240)
+            org.apache.thrift.protocol.TList _list259 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+            struct.success = new ArrayList<Long>(_list259.size);
+            for (int _i260 = 0; _i260 < _list259.size; ++_i260)
             {
-              long _elem241; // required
-              _elem241 = iprot.readI64();
-              struct.success.add(_elem241);
+              long _elem261; // required
+              _elem261 = iprot.readI64();
+              struct.success.add(_elem261);
             }
           }
           struct.setSuccessIsSet(true);
@@ -16174,13 +17208,13 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list242 = iprot.readListBegin();
-                  struct.success = new ArrayList<String>(_list242.size);
-                  for (int _i243 = 0; _i243 < _list242.size; ++_i243)
+                  org.apache.thrift.protocol.TList _list262 = iprot.readListBegin();
+                  struct.success = new ArrayList<String>(_list262.size);
+                  for (int _i263 = 0; _i263 < _list262.size; ++_i263)
                   {
-                    String _elem244; // required
-                    _elem244 = iprot.readString();
-                    struct.success.add(_elem244);
+                    String _elem264; // required
+                    _elem264 = iprot.readString();
+                    struct.success.add(_elem264);
                   }
                   iprot.readListEnd();
                 }
@@ -16217,9 +17251,9 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.success.size()));
-            for (String _iter245 : struct.success)
+            for (String _iter265 : struct.success)
             {
-              oprot.writeString(_iter245);
+              oprot.writeString(_iter265);
             }
             oprot.writeListEnd();
           }
@@ -16258,9 +17292,9 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (String _iter246 : struct.success)
+            for (String _iter266 : struct.success)
             {
-              oprot.writeString(_iter246);
+              oprot.writeString(_iter266);
             }
           }
         }
@@ -16275,13 +17309,13 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list247 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.success = new ArrayList<String>(_list247.size);
-            for (int _i248 = 0; _i248 < _list247.size; ++_i248)
+            org.apache.thrift.protocol.TList _list267 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.success = new ArrayList<String>(_list267.size);
+            for (int _i268 = 0; _i268 < _list267.size; ++_i268)
             {
-              String _elem249; // required
-              _elem249 = iprot.readString();
-              struct.success.add(_elem249);
+              String _elem269; // required
+              _elem269 = iprot.readString();
+              struct.success.add(_elem269);
             }
           }
           struct.setSuccessIsSet(true);
@@ -19350,14 +20384,14 @@ public class Blur {
             case 1: // MUTATIONS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list250 = iprot.readListBegin();
-                  struct.mutations = new ArrayList<RowMutation>(_list250.size);
-                  for (int _i251 = 0; _i251 < _list250.size; ++_i251)
+                  org.apache.thrift.protocol.TList _list270 = iprot.readListBegin();
+                  struct.mutations = new ArrayList<RowMutation>(_list270.size);
+                  for (int _i271 = 0; _i271 < _list270.size; ++_i271)
                   {
-                    RowMutation _elem252; // required
-                    _elem252 = new RowMutation();
-                    _elem252.read(iprot);
-                    struct.mutations.add(_elem252);
+                    RowMutation _elem272; // required
+                    _elem272 = new RowMutation();
+                    _elem272.read(iprot);
+                    struct.mutations.add(_elem272);
                   }
                   iprot.readListEnd();
                 }
@@ -19385,9 +20419,9 @@ public class Blur {
           oprot.writeFieldBegin(MUTATIONS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.mutations.size()));
-            for (RowMutation _iter253 : struct.mutations)
+            for (RowMutation _iter273 : struct.mutations)
             {
-              _iter253.write(oprot);
+              _iter273.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -19418,9 +20452,9 @@ public class Blur {
         if (struct.isSetMutations()) {
           {
             oprot.writeI32(struct.mutations.size());
-            for (RowMutation _iter254 : struct.mutations)
+            for (RowMutation _iter274 : struct.mutations)
             {
-              _iter254.write(oprot);
+              _iter274.write(oprot);
             }
           }
         }
@@ -19432,14 +20466,14 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list255 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.mutations = new ArrayList<RowMutation>(_list255.size);
-            for (int _i256 = 0; _i256 < _list255.size; ++_i256)
+            org.apache.thrift.protocol.TList _list275 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.mutations = new ArrayList<RowMutation>(_list275.size);
+            for (int _i276 = 0; _i276 < _list275.size; ++_i276)
             {
-              RowMutation _elem257; // required
-              _elem257 = new RowMutation();
-              _elem257.read(iprot);
-              struct.mutations.add(_elem257);
+              RowMutation _elem277; // required
+              _elem277 = new RowMutation();
+              _elem277.read(iprot);
+              struct.mutations.add(_elem277);
             }
           }
           struct.setMutationsIsSet(true);
@@ -25003,15 +26037,15 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
                 {
-                  org.apache.thrift.protocol.TMap _map258 = iprot.readMapBegin();
-                  struct.success = new HashMap<String,String>(2*_map258.size);
-                  for (int _i259 = 0; _i259 < _map258.size; ++_i259)
+                  org.apache.thrift.protocol.TMap _map278 = iprot.readMapBegin();
+                  struct.success = new HashMap<String,String>(2*_map278.size);
+                  for (int _i279 = 0; _i279 < _map278.size; ++_i279)
                   {
-                    String _key260; // required
-                    String _val261; // optional
-                    _key260 = iprot.readString();
-                    _val261 = iprot.readString();
-                    struct.success.put(_key260, _val261);
+                    String _key280; // required
+                    String _val281; // optional
+                    _key280 = iprot.readString();
+                    _val281 = iprot.readString();
+                    struct.success.put(_key280, _val281);
                   }
                   iprot.readMapEnd();
                 }
@@ -25048,10 +26082,10 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.success.size()));
-            for (Map.Entry<String, String> _iter262 : struct.success.entrySet())
+            for (Map.Entry<String, String> _iter282 : struct.success.entrySet())
             {
-              oprot.writeString(_iter262.getKey());
-              oprot.writeString(_iter262.getValue());
+              oprot.writeString(_iter282.getKey());
+              oprot.writeString(_iter282.getValue());
             }
             oprot.writeMapEnd();
           }
@@ -25090,10 +26124,10 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (Map.Entry<String, String> _iter263 : struct.success.entrySet())
+            for (Map.Entry<String, String> _iter283 : struct.success.entrySet())
             {
-              oprot.writeString(_iter263.getKey());
-              oprot.writeString(_iter263.getValue());
+              oprot.writeString(_iter283.getKey());
+              oprot.writeString(_iter283.getValue());
             }
           }
         }
@@ -25108,15 +26142,15 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TMap _map264 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.success = new HashMap<String,String>(2*_map264.size);
-            for (int _i265 = 0; _i265 < _map264.size; ++_i265)
+            org.apache.thrift.protocol.TMap _map284 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.success = new HashMap<String,String>(2*_map284.size);
+            for (int _i285 = 0; _i285 < _map284.size; ++_i285)
             {
-              String _key266; // required
-              String _val267; // optional
-              _key266 = iprot.readString();
-              _val267 = iprot.readString();
-              struct.success.put(_key266, _val267);
+              String _key286; // required
+              String _val287; // optional
+              _key286 = iprot.readString();
+              _val287 = iprot.readString();
+              struct.success.put(_key286, _val287);
             }
           }
           struct.setSuccessIsSet(true);

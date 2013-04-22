@@ -41,6 +41,17 @@ module Blur
     VALID_VALUES = Set.new([DELETE_ENTIRE_RECORD, REPLACE_ENTIRE_RECORD, REPLACE_COLUMNS, APPEND_COLUMN_VALUES]).freeze
   end
 
+  module ShardState
+    OPENING = 0
+    OPEN = 1
+    OPENING_ERROR = 2
+    CLOSING = 3
+    CLOSED = 4
+    CLOSING_ERROR = 5
+    VALUE_MAP = {0 => "OPENING", 1 => "OPEN", 2 => "OPENING_ERROR", 3 => "CLOSING", 4 => "CLOSED", 5 => "CLOSING_ERROR"}
+    VALID_VALUES = Set.new([OPENING, OPEN, OPENING_ERROR, CLOSING, CLOSED, CLOSING_ERROR]).freeze
+  end
+
   # BlurException that carries a message plus the original stack
 # trace (if any).
   class BlurException < ::Thrift::Exception

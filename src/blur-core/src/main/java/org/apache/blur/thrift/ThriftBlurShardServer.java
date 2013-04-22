@@ -211,10 +211,13 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.init();
 
     Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(shardServer, Iface.class);
-    WebAppContext context = httpServer.getContext();
-    context.addServlet(new ServletHolder(new TServlet(new Blur.Processor<Blur.Iface>(iface), new TJSONProtocol.Factory())), "/blur");
-    context.addServlet(new ServletHolder(new JSONReporterServlet()), "/livemetrics");
-    JSONReporter.enable("json-reporter", 1, TimeUnit.SECONDS, 60);
+    if (httpServer != null) {
+      WebAppContext context = httpServer.getContext();
+      context.addServlet(new ServletHolder(new TServlet(new Blur.Processor<Blur.Iface>(iface),
+          new TJSONProtocol.Factory())), "/blur");
+      context.addServlet(new ServletHolder(new JSONReporterServlet()), "/livemetrics");
+      JSONReporter.enable("json-reporter", 1, TimeUnit.SECONDS, 60);
+    }
 
     int threadCount = configuration.getInt(BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT, 32);
 

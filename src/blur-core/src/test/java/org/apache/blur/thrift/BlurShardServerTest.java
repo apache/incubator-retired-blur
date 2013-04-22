@@ -28,6 +28,7 @@ import org.apache.blur.manager.IndexManager;
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.ShardState;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.search.similarities.Similarity;
 import org.junit.After;
@@ -138,6 +139,11 @@ public class BlurShardServerTest {
       @Override
       public SortedSet<String> getShardListCurrentServerOnly(String table) throws IOException {
         throw new RuntimeException("no impl");
+      }
+
+      @Override
+      public Map<String, ShardState> getShardState(String table) {
+        throw new RuntimeException("not impl");
       }
     };
   }

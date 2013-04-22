@@ -26,6 +26,14 @@ RecordMutationType = {
 'REPLACE_COLUMNS' : 2,
 'APPEND_COLUMN_VALUES' : 3
 };
+ShardState = {
+'OPENING' : 0,
+'OPEN' : 1,
+'OPENING_ERROR' : 2,
+'CLOSING' : 3,
+'CLOSED' : 4,
+'CLOSING_ERROR' : 5
+};
 BlurException = function(args) {
   this.message = null;
   this.stackTraceStr = null;

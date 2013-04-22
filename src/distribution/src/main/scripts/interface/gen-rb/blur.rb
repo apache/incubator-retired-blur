@@ -76,6 +76,22 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'shardServerLayout failed: unknown result')
       end
 
+      def shardServerLayoutState(table)
+        send_shardServerLayoutState(table)
+        return recv_shardServerLayoutState()
+      end
+
+      def send_shardServerLayoutState(table)
+        send_message('shardServerLayoutState', ShardServerLayoutState_args, :table => table)
+      end
+
+      def recv_shardServerLayoutState()
+        result = receive_message(ShardServerLayoutState_result)
+        return result.success unless result.success.nil?
+        raise result.ex unless result.ex.nil?
+        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'shardServerLayoutState failed: unknown result')
+      end
+
       def tableList()
         send_tableList()
         return recv_tableList()
@@ -485,6 +501,17 @@ module Blur
         write_result(result, oprot, 'shardServerLayout', seqid)
       end
 
+      def process_shardServerLayoutState(seqid, iprot, oprot)
+        args = read_args(iprot, ShardServerLayoutState_args)
+        result = ShardServerLayoutState_result.new()
+        begin
+          result.success = @handler.shardServerLayoutState(args.table)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'shardServerLayoutState', seqid)
+      end
+
       def process_tableList(seqid, iprot, oprot)
         args = read_args(iprot, TableList_args)
         result = TableList_result.new()
@@ -865,6 +892,40 @@ module Blur
 
       FIELDS = {
         SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ShardServerLayoutState_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+
+      FIELDS = {
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ShardServerLayoutState_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SUCCESS = 0
+      EX = 1
+
+      FIELDS = {
+        SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::MAP, :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::I32, :enum_class => ::Blur::ShardState}}},
         EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
       }
 

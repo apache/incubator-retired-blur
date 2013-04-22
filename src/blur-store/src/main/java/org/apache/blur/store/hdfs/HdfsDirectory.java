@@ -287,7 +287,7 @@ public class HdfsDirectory extends Directory {
 
   @Override
   public void close() throws IOException {
-    fileSystem.close();
+
   }
 
   private Path getPath(String name) {

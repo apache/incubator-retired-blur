@@ -87,6 +87,17 @@ enum RecordMutationType {
   APPEND_COLUMN_VALUES
 }
 
+/**
+ * See shardServerLayoutOptions method in the Blur service for details.
+ */
+enum ShardState {
+  OPENING,
+  OPEN,
+  OPENING_ERROR,
+  CLOSING,
+  CLOSED,
+  CLOSING_ERROR
+}
 
 /**
  * Column is the lowest storage element in Blur, it stores a single name and value pair.
@@ -636,6 +647,8 @@ struct TableDescriptor {
   14:map<string,string> tableProperties
 }
 
+
+
 /**
  *
  */
@@ -655,11 +668,33 @@ service Blur {
    */
   list<string> controllerServerList() throws (1:BlurException ex)
   /**
-   * Returns a map of the layout of the given table, where the key is the shard name and the value is the shard server.
+   * Returns a map of the layout of the given table, where the key is the shard name 
+   * and the value is the shard server.<br><br>
+   * This method will return the "correct" layout for the given shard, or the 
+   * "correct" layout of cluster if called on a controller.<br><br>
+   * The meaning of correct:<br>Given the current state of the shard cluster with failures taken 
+   * into account, the correct layout is what the layout should be given the current state.  In
+   * other words, what the shard server should be serving.  The act of calling the shard 
+   * server layout method with the NORMAL option will block until the layout shard server 
+   * matches the correct layout.  Meaning it will block until indexes that should be open are 
+   * open and ready for queries.  However indexes are lazily closed, so if a table is being 
+   * disabled then the call will return immediately with an empty map, but the indexes may
+   * not be close yet.<br><br>
    * @param table the table name.
    */
   map<string,string> shardServerLayout(1:string table) throws (1:BlurException ex)
 
+  /**
+   * Returns a map of the layout of the given table, where the key is the shard name and the 
+   * value is the shard server.<br><br>
+   * This method will return immediately with what shards are currently 
+   * open in the shard server.  So if a shard is being moved to another server and is being 
+   * closed by this server it WILL be returned in the map.  The shardServerLayout method would not return 
+   * the shard given the same situation.
+   * @param table the table name.
+   * @param layoutOptions the layout options.
+   */
+  map<string,map<string,ShardState>> shardServerLayoutState(1:string table) throws (1:BlurException ex)
   /**
    * Returns a list of the table names across all shard clusters.
    */

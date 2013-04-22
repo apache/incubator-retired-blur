@@ -63,7 +63,7 @@ public class BlurNRTIndex extends BlurIndex {
   private final ShardContext _shardContext;
   private final TransactionRecorder _recorder;
   private final TrackingIndexWriter _trackingWriter;
-  
+
   private long _lastRefresh = 0;
 
   public BlurNRTIndex(ShardContext shardContext, SharedMergeScheduler mergeScheduler, IndexInputCloser closer,
@@ -144,15 +144,17 @@ public class BlurNRTIndex extends BlurIndex {
   @Override
   public void close() throws IOException {
     // @TODO make sure that locks are cleaned up.
-    _isClosed.set(true);
-    _committer.interrupt();
-    _refresher.close();
-    try {
-      _recorder.close();
-      _writer.close();
-      getNRTManager().close();
-    } finally {
-      _directory.close();
+    if (!_isClosed.get()) {
+      _isClosed.set(true);
+      _committer.interrupt();
+      _refresher.close();
+      try {
+        _recorder.close();
+        _writer.close();
+        getNRTManager().close();
+      } finally {
+        _directory.close();
+      }
     }
   }
 

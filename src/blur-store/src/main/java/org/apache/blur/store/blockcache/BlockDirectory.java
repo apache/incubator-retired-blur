@@ -82,6 +82,7 @@ public class BlockDirectory extends Directory {
   private String _dirName;
   private Cache _cache;
   private Set<String> _blockCacheFileTypes;
+  private boolean closed = false;
 
   public BlockDirectory(String dirName, Directory directory) throws IOException {
     this(dirName, directory, NO_CACHE);
@@ -91,7 +92,8 @@ public class BlockDirectory extends Directory {
     this(dirName, directory, cache, null);
   }
 
-  public BlockDirectory(String dirName, Directory directory, Cache cache, Set<String> blockCacheFileTypes) throws IOException {
+  public BlockDirectory(String dirName, Directory directory, Cache cache, Set<String> blockCacheFileTypes)
+      throws IOException {
     _dirName = dirName;
     _directory = directory;
     _blockSize = BLOCK_SIZE;
@@ -130,7 +132,8 @@ public class BlockDirectory extends Directory {
     private String _cacheName;
     private Cache _cache;
 
-    public CachedIndexInput(IndexInput source, int blockSize, String name, String cacheName, Cache cache, IOContext context) {
+    public CachedIndexInput(IndexInput source, int blockSize, String name, String cacheName, Cache cache,
+        IOContext context) {
       super(name, context);
       _source = source;
       _blockSize = blockSize;
@@ -179,7 +182,8 @@ public class BlockDirectory extends Directory {
       return lengthToReadInBlock;
     }
 
-    private void readIntoCacheAndResult(long blockId, int blockOffset, byte[] b, int off, int lengthToReadInBlock) throws IOException {
+    private void readIntoCacheAndResult(long blockId, int blockOffset, byte[] b, int off, int lengthToReadInBlock)
+        throws IOException {
       long position = getRealPosition(blockId, 0);
       int length = (int) Math.min(_blockSize, _fileLength - position);
       _source.seek(position);
@@ -203,11 +207,14 @@ public class BlockDirectory extends Directory {
 
   @Override
   public void close() throws IOException {
-    String[] files = listAll();
-    for (String file : files) {
-      _cache.delete(getFileCacheName(file));
+    if (!closed) {
+      String[] files = listAll();
+      for (String file : files) {
+        _cache.delete(getFileCacheName(file));
+      }
+      _directory.close();
+      closed = true;
     }
-    _directory.close();
   }
 
   String getFileCacheLocation(String name) {
@@ -221,7 +228,7 @@ public class BlockDirectory extends Directory {
   private long getFileModified(String name) throws IOException {
     if (_directory instanceof FSDirectory) {
       File directory = ((FSDirectory) _directory).getDirectory();
-      File file = new File(directory,name);
+      File file = new File(directory, name);
       if (!file.exists()) {
         throw new FileNotFoundException("File [" + name + "] not found");
       }
@@ -274,9 +281,10 @@ public class BlockDirectory extends Directory {
   @Override
   public IndexOutput createOutput(String name, IOContext context) throws IOException {
     IndexOutput dest = _directory.createOutput(name, context);
-//    if (_blockCacheFileTypes == null || isCachableFile(name)) {
-//      return new CachedIndexOutput(this, dest, _blockSize, name, _cache, _blockSize);
-//    }
+    // if (_blockCacheFileTypes == null || isCachableFile(name)) {
+    // return new CachedIndexOutput(this, dest, _blockSize, name, _cache,
+    // _blockSize);
+    // }
     return dest;
   }
 

@@ -65,6 +65,7 @@ import org.apache.blur.store.blockcache.BlockDirectory;
 import org.apache.blur.store.blockcache.Cache;
 import org.apache.blur.store.hdfs.BlurLockFactory;
 import org.apache.blur.store.hdfs.HdfsDirectory;
+import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
@@ -103,6 +104,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private Map<String, DistributedLayoutManager> _layoutManagers = new ConcurrentHashMap<String, DistributedLayoutManager>();
   private Map<String, Set<String>> _layoutCache = new ConcurrentHashMap<String, Set<String>>();
   private ConcurrentHashMap<String, Map<String, BlurIndex>> _indexes = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
+  private final ShardStateManager _shardStateManager = new ShardStateManager();
 
   // set externally
   private ClusterStatus _clusterStatus;
@@ -330,6 +332,11 @@ public class DistributedIndexServer extends AbstractIndexServer {
     }
   }
 
+  @Override
+  public Map<String, ShardState> getShardState(String table) {
+    return _shardStateManager.getShardState(table);
+  }
+
   private void setupFlushCacheTimer() {
     _timerCacheFlush = new Timer("Flush-IndexServer-Caches", true);
     _timerCacheFlush.schedule(new TimerTask() {
@@ -386,9 +393,12 @@ public class DistributedIndexServer extends AbstractIndexServer {
     LOG.info("Closing index [{0}] from table [{1}] shard [{2}]", index, table, shard);
     try {
       _filterCache.closing(table, shard, index);
+      _shardStateManager.closing(table, shard);
       index.close();
+      _shardStateManager.closed(table, shard);
     } catch (Throwable e) {
       LOG.error("Error while closing index [{0}] from table [{1}] shard [{2}]", e, index, table, shard);
+      _shardStateManager.closingError(table, shard);
     }
   }
 
@@ -411,6 +421,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   @Override
   public void close() {
     if (_running.get()) {
+      _shardStateManager.close();
       _running.set(false);
       closeAllIndexes();
       _watchOnlineShards.close();
@@ -497,7 +508,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private BlurIndex openShard(String table, String shard) throws IOException {
     LOG.info("Opening shard [{0}] for table [{1}]", shard, table);
     Path tablePath = new Path(getTableDescriptor(table).tableUri);
-    Path walTablePath = new Path(tablePath, LOGS);
     Path hdfsDirPath = new Path(tablePath, shard);
 
     BlurLockFactory lockFactory = new BlurLockFactory(_configuration, hdfsDirPath, _nodeName, BlurConstants.getPid());
@@ -506,22 +516,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
     directory.setLockFactory(lockFactory);
 
     TableDescriptor descriptor = _clusterStatus.getTableDescriptor(true, _cluster, table);
-    String compressionClass = descriptor.compressionClass;
-    int compressionBlockSize = descriptor.compressionBlockSize;
-    if (compressionClass != null) {
-      // throw new RuntimeException("Not supported yet");
-      LOG.error("Not supported yet");
-      // CompressionCodec compressionCodec;
-      // try {
-      // compressionCodec = BlurUtil.getInstance(compressionClass,
-      // CompressionCodec.class);
-      // directory = new CompressedFieldDataDirectory(directory,
-      // compressionCodec, compressionBlockSize);
-      // } catch (Exception e) {
-      // throw new IOException(e);
-      // }
-    }
-
     TableContext tableContext = TableContext.create(descriptor);
     ShardContext shardContext = ShardContext.create(tableContext, shard);
 
@@ -547,7 +541,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
       // reader.setSimilarity(getSimilarity(table));
       // reader.init();
       // index = reader;
-      throw new RuntimeException("not impl");
+      throw new RuntimeException("not implemented yet");
     } else {
       BlurNRTIndex writer = new BlurNRTIndex(shardContext, _mergeScheduler, _closer, dir, _gc, _searchExecutor);
       index = writer;
@@ -600,7 +594,18 @@ public class DistributedIndexServer extends AbstractIndexServer {
         Future<BlurIndex> submit = _openerService.submit(new Callable<BlurIndex>() {
           @Override
           public BlurIndex call() throws Exception {
-            return openShard(table, shard);
+            _shardStateManager.opening(table, shard);
+            try {
+              BlurIndex openShard = openShard(table, shard);
+              _shardStateManager.open(table, shard);
+              return openShard;
+            } catch (Exception e) {
+              _shardStateManager.openingError(table, shard);
+              throw e;
+            } catch (Throwable t) {
+              _shardStateManager.openingError(table, shard);
+              throw new RuntimeException(t);
+            }
           }
         });
         opening.put(shard, submit);

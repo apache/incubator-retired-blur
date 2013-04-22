@@ -44,6 +44,7 @@ import org.apache.blur.manager.writer.BlurNRTIndex;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
@@ -243,5 +244,10 @@ public class LocalIndexServer extends AbstractIndexServer {
   @Override
   public int getCompressionBlockSize(String table) {
     throw new RuntimeException("Should not be used.");
+  }
+
+  @Override
+  public Map<String, ShardState> getShardState(String table) {
+    throw new RuntimeException("Not supported yet.");
   }
 }

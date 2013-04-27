@@ -76,6 +76,7 @@ public class BlurNRTIndex extends BlurIndex {
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
     conf.setSimilarity(_tableContext.getSimilarity());
     conf.setIndexDeletionPolicy(_tableContext.getIndexDeletionPolicy());
+    conf.setMergedSegmentWarmer(new FieldBasedWarmer(shardContext));
 
     TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);

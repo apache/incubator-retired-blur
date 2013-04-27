@@ -81,8 +81,6 @@ import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.IOContext;
-import org.apache.lucene.store.IndexInput;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -94,7 +92,6 @@ import com.yammer.metrics.core.MetricName;
 
 public class DistributedIndexServer extends AbstractIndexServer {
 
-  private static final String LOGS = "logs";
   private static final Log LOG = LogFactory.getLog(DistributedIndexServer.class);
   private static final long _delay = TimeUnit.SECONDS.toMillis(5);
 
@@ -185,6 +182,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
             _prevOnlineShards = onlineShards;
             _layoutManagers.clear();
             _layoutCache.clear();
+            LOG.info("--------------------CALL--------------------");
             LOG.info("Online shard servers changed, clearing layout managers and cache.");
             if (oldOnlineShards == null) {
               oldOnlineShards = new ArrayList<String>();
@@ -554,7 +552,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private BlurIndex warmUp(BlurIndex index, TableDescriptor table, String shard) throws IOException {
     final IndexSearcherClosable searcher = index.getIndexReader();
     IndexReader reader = searcher.getIndexReader();
-    warmUpAllSegments(searcher);
     _warmup.warmBlurIndex(table, shard, reader, index.isClosed(), new ReleaseReader() {
       @Override
       public void release() throws IOException {
@@ -562,25 +559,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
         searcher.close();
       }
     });
-
     return index;
-  }
-
-  private void warmUpAllSegments(IndexSearcherClosable searcher) throws IOException {
-    LOG.warn("Warm up, stupid impl");
-    Directory directory = searcher.getDirectory();
-    String[] listAll = directory.listAll();
-    byte[] buf = new byte[8192];
-    for (String file : listAll) {
-      LOG.info("Warning up [{0}]", file);
-      IndexInput input = directory.openInput(file, IOContext.READ);
-      long length = input.length();
-      for (long i = 0; i < length; i += buf.length) {
-        int len = (int) Math.min(buf.length, length - i);
-        input.readBytes(buf, 0, len);
-      }
-      input.close();
-    }
   }
 
   private synchronized Map<String, BlurIndex> openMissingShards(final String table, Set<String> shardsToServe,

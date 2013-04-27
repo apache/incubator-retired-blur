@@ -22,65 +22,31 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.indexserver.DistributedIndexServer.ReleaseReader;
+import org.apache.blur.manager.writer.FieldBasedWarmer;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexReaderContext;
 
 public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
 
   private static final Log LOG = LogFactory.getLog(DefaultBlurIndexWarmup.class);
 
   @Override
-  public void warmBlurIndex(final TableDescriptor table, final String shard, IndexReader reader, AtomicBoolean isClosed, ReleaseReader releaseReader) throws IOException {
-    LOG.warn("Warm up NOT supported yet.");
-    // Once the reader warm-up has been re-implemented, this code will change
-    // accordingly.
-
-    // try {
-    // ColumnPreCache columnPreCache = table.columnPreCache;
-    // List<String> preCacheCols = null;
-    // if (columnPreCache != null) {
-    // preCacheCols = columnPreCache.preCacheCols;
-    // }
-    // if (preCacheCols == null) {
-    // LOG.info("No pre cache defined, precache all fields.");
-    // FieldInfos fieldInfos = ReaderUtil.getMergedFieldInfos(reader);
-    // preCacheCols = new ArrayList<String>();
-    // for (FieldInfo fieldInfo : fieldInfos) {
-    // if (fieldInfo.isIndexed) {
-    // preCacheCols.add(fieldInfo.name);
-    // }
-    // }
-    // preCacheCols.remove(BlurConstants.ROW_ID);
-    // preCacheCols.remove(BlurConstants.RECORD_ID);
-    // preCacheCols.remove(BlurConstants.PRIME_DOC);
-    // preCacheCols.remove(BlurConstants.SUPER);
-    // }
-    //
-    // WarmUpByFieldBounds warmUpByFieldBounds = new WarmUpByFieldBounds();
-    // WarmUpByFieldBoundsStatus status = new WarmUpByFieldBoundsStatus() {
-    // @Override
-    // public void complete(String name, Term start, Term end, long
-    // startPosition, long endPosition, long totalBytesRead, long nanoTime,
-    // AtomicBoolean isClosed) {
-    // double bytesPerNano = totalBytesRead / (double) nanoTime;
-    // double mBytesPerNano = bytesPerNano / 1024 / 1024;
-    // double mBytesPerSecond = mBytesPerNano * 1000000000.0;
-    // if (totalBytesRead > 0) {
-    // LOG.info("Precached field [{0}] in table [{1}] shard [{2}] file [{3}], [{4}] bytes cached at [{5} MB/s]",
-    // start.field(), table.name, shard, name, totalBytesRead,
-    // mBytesPerSecond);
-    // }
-    // }
-    // };
-    // if (preCacheCols != null) {
-    // for (String field : preCacheCols) {
-    // warmUpByFieldBounds.warmUpByField(isClosed, new Term(field), reader,
-    // status);
-    // }
-    // }
-    // } finally {
-    // releaseReader.release();
-    // }
+  public void warmBlurIndex(final TableDescriptor table, final String shard, IndexReader reader,
+      AtomicBoolean isClosed, ReleaseReader releaseReader) throws IOException {
+    LOG.info("Runngin warmup for reader [{0}]", reader);
+    try {
+      FieldBasedWarmer warmer = new FieldBasedWarmer(table);
+      for (IndexReaderContext context : reader.getContext().leaves()) {
+        AtomicReaderContext atomicReaderContext = (AtomicReaderContext) context;
+        AtomicReader atomicReader = atomicReaderContext.reader();
+        warmer.warm(atomicReader);
+      }
+    } finally {
+      releaseReader.release();
+    }
   }
 
 }

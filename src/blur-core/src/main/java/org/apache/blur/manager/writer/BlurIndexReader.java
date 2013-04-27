@@ -19,55 +19,117 @@ package org.apache.blur.manager.writer;
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.blur.index.IndexWriter;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.server.ShardContext;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.Row;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.TieredMergePolicy;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
 
-public class BlurIndexReader extends AbstractBlurIndex {
+public class BlurIndexReader extends BlurIndex {
 
-  private static final Log LOG = LogFactory.getLog(BlurIndexReader.class);
+	private static final Log LOG = LogFactory.getLog(BlurIndexReader.class);
 
-  public void init() throws IOException {
-    initIndexWriterConfig();
-    Directory directory = getDirectory();
-    if (!DirectoryReader.indexExists(directory)) {
-      IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
-      new IndexWriter(directory, conf).close();
-    }
-    initIndexReader(DirectoryReader.open(directory));
-  }
+	private BlurIndexCloser _closer;
+	private Directory _directory;
+	private AtomicReference<DirectoryReader> _indexReaderRef = new AtomicReference<DirectoryReader>();
+	private AtomicBoolean _isClosed = new AtomicBoolean(false);
+	private AtomicBoolean _open = new AtomicBoolean();
+	private BlurIndexRefresher _refresher;
+	private final TableContext _tableContext;
+	private final ShardContext _shardContext;
 
-  @Override
-  public synchronized void refresh() throws IOException {
-    // Override so that we can call within synchronized method
-    super.refresh();
-  }
+	public BlurIndexReader(ShardContext shardContext,
+			SharedMergeScheduler mergeScheduler, Directory directory,
+			BlurIndexRefresher refresher, BlurIndexCloser closer)
+			throws IOException {
+		_tableContext = shardContext.getTableContext();
+		_directory = directory;
+		_shardContext = shardContext;
+		_refresher = refresher;
+		_closer = closer;
+		IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION,
+				_tableContext.getAnalyzer());
+		conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
+		conf.setIndexDeletionPolicy(_tableContext.getIndexDeletionPolicy());
+		conf.setSimilarity(_tableContext.getSimilarity());
+		TieredMergePolicy mergePolicy = (TieredMergePolicy) conf
+				.getMergePolicy();
+		mergePolicy.setUseCompoundFile(false);
 
-  @Override
-  public void close() throws IOException {
-    super.close();
-    LOG.info("Reader for table [{0}] shard [{1}] closed.", getTable(), getShard());
-  }
+		_open.set(true);
 
-  @Override
-  public void replaceRow(boolean waitToBeVisible, boolean wal, Row row) throws IOException {
-    throw new RuntimeException("Read-only shard");
-  }
+		if (!DirectoryReader.indexExists(directory)) {
+			new IndexWriter(directory, conf).close();
+		}
+		_indexReaderRef.set(DirectoryReader.open(directory));
+		_refresher.register(this);
+	}
 
-  @Override
-  public void deleteRow(boolean waitToBeVisible, boolean wal, String rowId) throws IOException {
-    throw new RuntimeException("Read-only shard");
-  }
+	@Override
+	public void refresh() throws IOException {
+		if (!_open.get()) {
+			return;
+		}
+		DirectoryReader oldReader = _indexReaderRef.get();
+		DirectoryReader reader = DirectoryReader.openIfChanged(oldReader);
+		if (reader != null) {
+			_indexReaderRef.set(reader);
+			_closer.close(oldReader);
+		}
+	}
 
-  @Override
-  public void optimize(int numberOfSegmentsPerShard) throws IOException {
-    // Do nothing
-  }
+	@Override
+	public void close() throws IOException {
+		_open.set(false);
+	    _refresher.unregister(this);
+	    _directory.close();
+	    _isClosed.set(true);
+		LOG.info("Reader for table [{0}] shard [{1}] closed.", _tableContext.getTable(),_shardContext.getShard());
+	}
+
+	@Override
+	public void replaceRow(boolean waitToBeVisible, boolean wal, Row row)
+			throws IOException {
+		throw new RuntimeException("Read-only shard");
+	}
+
+	@Override
+	public void deleteRow(boolean waitToBeVisible, boolean wal, String rowId)
+			throws IOException {
+		throw new RuntimeException("Read-only shard");
+	}
+
+	@Override
+	public void optimize(int numberOfSegmentsPerShard) throws IOException {
+		// Do nothing
+	}
+
+	@Override
+	public IndexSearcherClosable getIndexReader() throws IOException {
+		throw new RuntimeException("not implemented");
+	}
+
+	@Override
+	public AtomicBoolean isClosed() {
+		 return _isClosed;
+	}
+	
+	public IndexSearcher getSearcher(){
+		IndexReader indexReader = _indexReaderRef.get();
+		indexReader.incRef();
+		return new IndexSearcher(indexReader);
+	}
 
 }

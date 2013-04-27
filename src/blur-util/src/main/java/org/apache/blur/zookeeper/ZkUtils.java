@@ -18,6 +18,7 @@ package org.apache.blur.zookeeper;
  */
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -62,12 +63,22 @@ public class ZkUtils {
 
   }
 
+  public static void pause(Object o) {
+    synchronized (o) {
+      try {
+        o.wait(TimeUnit.SECONDS.toMillis(1));
+      } catch (InterruptedException e) {
+        return;
+      }
+    }
+  }
+  
   public static ZooKeeper newZooKeeper(String zkConnectionString) throws IOException {
     int sessionTimeout = DEFAULT_ZK_SESSION_TIMEOUT;
     ConnectionWatcher watcher = new ConnectionWatcher();
     watcher.setSessionTimeout(sessionTimeout);
     watcher.setZkConnectionString(zkConnectionString);
-    return new ZooKeeper(zkConnectionString, sessionTimeout, watcher);
+    return new ZooKeeperClient(zkConnectionString, sessionTimeout, watcher);
   }
 
   public static void mkNodesStr(ZooKeeper zk, String path) {

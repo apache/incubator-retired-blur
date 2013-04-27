@@ -68,18 +68,19 @@ public class WatchChildren implements Closeable {
     _watchThread = new Thread(new Runnable() {
       @Override
       public void run() {
+        Watcher watcher = new Watcher() {
+          @Override
+          public void process(WatchedEvent event) {
+            synchronized (_lock) {
+              _lock.notify();
+            }
+          }
+        };
         startDoubleCheckThread();
         while (_running.get()) {
           synchronized (_lock) {
             try {
-              _children = _zooKeeper.getChildren(_path, new Watcher() {
-                @Override
-                public void process(WatchedEvent event) {
-                  synchronized (_lock) {
-                    _lock.notify();
-                  }
-                }
-              });
+              _children = _zooKeeper.getChildren(_path, watcher);
               try {
                 onChange.action(_children);
               } catch (Throwable t) {

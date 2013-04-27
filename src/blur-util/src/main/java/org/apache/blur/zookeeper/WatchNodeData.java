@@ -59,6 +59,14 @@ public class WatchNodeData implements Closeable {
 
       @Override
       public void run() {
+        Watcher watcher = new Watcher() {
+          @Override
+          public void process(WatchedEvent event) {
+            synchronized (_lock) {
+              _lock.notify();
+            }
+          }
+        };
         startDoubleCheckThread();
         while (_running.get()) {
           synchronized (_lock) {
@@ -68,14 +76,6 @@ public class WatchNodeData implements Closeable {
                 LOG.debug("Path [{0}] not found.", _path);
                 return;
               }
-              Watcher watcher = new Watcher() {
-                @Override
-                public void process(WatchedEvent event) {
-                  synchronized (_lock) {
-                    _lock.notify();
-                  }
-                }
-              };
               _data = _zooKeeper.getData(_path, watcher, stat);
               onChange.action(_data);
               _lock.wait();

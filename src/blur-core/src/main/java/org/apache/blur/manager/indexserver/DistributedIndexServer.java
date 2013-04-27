@@ -182,7 +182,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
             _prevOnlineShards = onlineShards;
             _layoutManagers.clear();
             _layoutCache.clear();
-            LOG.info("--------------------CALL--------------------");
             LOG.info("Online shard servers changed, clearing layout managers and cache.");
             if (oldOnlineShards == null) {
               oldOnlineShards = new ArrayList<String>();

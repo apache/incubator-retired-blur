@@ -57,18 +57,18 @@ public class WatchNodeExistance implements Closeable {
     _watchThread = new Thread(new Runnable() {
       @Override
       public void run() {
+        Watcher watcher = new Watcher() {
+          @Override
+          public void process(WatchedEvent event) {
+            synchronized (_lock) {
+              _lock.notify();
+            }
+          }
+        };
         startDoubleCheckThread();
         while (_running.get()) {
           synchronized (_lock) {
             try {
-              Watcher watcher = new Watcher() {
-                @Override
-                public void process(WatchedEvent event) {
-                  synchronized (_lock) {
-                    _lock.notify();
-                  }
-                }
-              };
               _stat = _zooKeeper.exists(_path, watcher);
               onChange.action(_stat);
               _lock.wait();

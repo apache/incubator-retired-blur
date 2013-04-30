@@ -157,14 +157,13 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _closer = new IndexInputCloser();
     _closer.init();
     setupFlushCacheTimer();
-    String lockPath = BlurUtil.lockForSafeMode(_zookeeper, getNodeName(), _cluster);
-    try {
-      registerMyself();
-      setupSafeMode();
-    } finally {
-      BlurUtil.unlockForSafeMode(_zookeeper, lockPath);
-    }
-    waitInSafeModeIfNeeded();
+    
+    registerMyselfAsMemberOfCluster();
+    String onlineShardsPath = ZookeeperPathConstants.getOnlineShardsPath(_cluster);
+    String safemodePath = ZookeeperPathConstants.getSafemodePath(_cluster);
+    SafeMode safeMode = new SafeMode(_zookeeper, safemodePath, onlineShardsPath, TimeUnit.SECONDS, 5, TimeUnit.SECONDS, 60);
+    safeMode.registerNode(getNodeName(), BlurUtil.getVersion().getBytes());
+
     _running.set(true);
     setupTableWarmer();
     watchForShardServerChanges();
@@ -308,20 +307,13 @@ public class DistributedIndexServer extends AbstractIndexServer {
     }, _delay, _delay);
   }
 
-  private void registerMyself() {
+  private void registerMyselfAsMemberOfCluster() {
     String nodeName = getNodeName();
     String registeredShardsPath = ZookeeperPathConstants.getRegisteredShardsPath(_cluster) + "/" + nodeName;
-    String onlineShardsPath = ZookeeperPathConstants.getOnlineShardsPath(_cluster) + "/" + nodeName;
     try {
       if (_zookeeper.exists(registeredShardsPath, false) == null) {
         _zookeeper.create(registeredShardsPath, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
       }
-      while (_zookeeper.exists(onlineShardsPath, false) != null) {
-        LOG.info("Node [{0}] already registered, waiting for path [{1}] to be released", nodeName, onlineShardsPath);
-        Thread.sleep(3000);
-      }
-      String version = BlurUtil.getVersion();
-      _zookeeper.create(onlineShardsPath, version.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {

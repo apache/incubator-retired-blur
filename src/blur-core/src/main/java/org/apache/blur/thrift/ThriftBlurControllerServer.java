@@ -37,7 +37,6 @@ import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
-import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
 import static org.apache.blur.utils.BlurUtil.quietClose;
 
 import java.util.concurrent.TimeUnit;
@@ -86,7 +85,6 @@ public class ThriftBlurControllerServer extends ThriftServer {
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
 
     final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
-    ZookeeperSystemTime.checkSystemTime(zooKeeper, configuration.getLong(BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE, 3000));
 
     BlurUtil.setupZookeeper(zooKeeper);
 

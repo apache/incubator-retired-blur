@@ -34,7 +34,6 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
-import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
 import static org.apache.blur.utils.BlurUtil.quietClose;
 
 import java.lang.management.ManagementFactory;
@@ -72,8 +71,6 @@ import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.thrift.protocol.TJSONProtocol;
 import org.apache.thrift.server.TServlet;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooKeeper;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.webapp.WebAppContext;
@@ -161,14 +158,6 @@ public class ThriftBlurShardServer extends ThriftServer {
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
 
     final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
-    try {
-      ZookeeperSystemTime.checkSystemTime(zooKeeper, configuration.getLong(BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE, 3000));
-    } catch (KeeperException e) {
-      if (e.code() == Code.CONNECTIONLOSS) {
-        System.err.println("Cannot connect zookeeper to [" + zkConnectionStr + "]");
-        System.exit(1);
-      }
-    }
 
     BlurUtil.setupZookeeper(zooKeeper, configuration.get(BLUR_CLUSTER_NAME));
 

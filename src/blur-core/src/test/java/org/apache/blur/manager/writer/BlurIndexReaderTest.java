@@ -91,7 +91,7 @@ public class BlurIndexReaderTest {
     BlurIndexCloser indexCloser = new BlurIndexCloser();
     refresher.init();
     indexCloser.init();
-    reader = new BlurIndexReader(shardContext, mergeScheduler, directory, refresher, indexCloser);
+    reader = new BlurIndexReader(shardContext, directory, refresher, indexCloser);
   }
 
   @After

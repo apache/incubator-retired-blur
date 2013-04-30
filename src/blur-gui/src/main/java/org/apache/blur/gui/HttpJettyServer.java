@@ -78,7 +78,8 @@ public class HttpJettyServer {
     context.setWar(warPath);
     context.setContextPath("/");
     context.setParentLoaderPriority(true);
-//    context.addServlet(new ServletHolder(new LiveMetricsServlet()), "/livemetrics");
+    // context.addServlet(new ServletHolder(new LiveMetricsServlet()),
+    // "/livemetrics");
     context.addServlet(new ServletHolder(new MetricsServlet()), "/metrics");
     context.addServlet(new ServletHolder(new LogServlet(blurLogFile)), "/logs");
 
@@ -91,11 +92,16 @@ public class HttpJettyServer {
     try {
       server.start();
     } catch (Exception e) {
+      try {
+        server.stop();
+      } catch (Exception ex) {
+        LOG.error("Unknown error while trying to stop server during error on startup.", ex);
+      }
       throw new IOException("cannot start Http server for " + base, e);
     }
     LOG.info("WEB GUI up on port: " + port);
   }
-  
+
   public WebAppContext getContext() {
     return context;
   }

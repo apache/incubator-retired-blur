@@ -55,6 +55,9 @@ import org.apache.blur.manager.BlurFilterCache;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.writer.BlurIndex;
+import org.apache.blur.manager.writer.BlurIndexCloser;
+import org.apache.blur.manager.writer.BlurIndexReader;
+import org.apache.blur.manager.writer.BlurIndexRefresher;
 import org.apache.blur.manager.writer.BlurNRTIndex;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.metrics.AtomicLongGauge;
@@ -85,7 +88,6 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.data.Stat;
 
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.MetricName;
@@ -131,6 +133,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private AtomicLong _indexCount = new AtomicLong();
   private AtomicLong _segmentCount = new AtomicLong();
   private AtomicLong _indexMemoryUsage = new AtomicLong();
+  private BlurIndexRefresher _refresher;
+  private BlurIndexCloser _indexCloser;
 
   public static interface ReleaseReader {
     void release() throws IOException;
@@ -156,12 +160,16 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _searchExecutor = Executors.newThreadPool("internal-search", 16);
     _closer = new IndexInputCloser();
     _closer.init();
+    _refresher = new BlurIndexRefresher();
+    _refresher.init();
+    _indexCloser = new BlurIndexCloser();
+    _indexCloser.init();
     setupFlushCacheTimer();
     
     registerMyselfAsMemberOfCluster();
     String onlineShardsPath = ZookeeperPathConstants.getOnlineShardsPath(_cluster);
     String safemodePath = ZookeeperPathConstants.getSafemodePath(_cluster);
-    SafeMode safeMode = new SafeMode(_zookeeper, safemodePath, onlineShardsPath, TimeUnit.SECONDS, 5, TimeUnit.SECONDS, 60);
+    SafeMode safeMode = new SafeMode(_zookeeper, safemodePath, onlineShardsPath, TimeUnit.SECONDS, _safeModeDelay, TimeUnit.SECONDS, 60);
     safeMode.registerNode(getNodeName(), BlurUtil.getVersion().getBytes());
 
     _running.set(true);
@@ -197,55 +205,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
             }
           }
         });
-  }
-
-  private void waitInSafeModeIfNeeded() throws KeeperException, InterruptedException {
-    String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(_cluster);
-    Stat stat = _zookeeper.exists(blurSafemodePath, false);
-    if (stat == null) {
-      throw new RuntimeException("Safemode path missing [" + blurSafemodePath + "]");
-    }
-    byte[] data = _zookeeper.getData(blurSafemodePath, false, stat);
-    if (data == null) {
-      throw new RuntimeException("Safemode data missing [" + blurSafemodePath + "]");
-    }
-    long timestamp = Long.parseLong(new String(data));
-    long waitTime = timestamp - System.currentTimeMillis();
-    if (waitTime > 0) {
-      LOG.info("Waiting in safe mode for [{0}] seconds", waitTime / 1000.0);
-      Thread.sleep(waitTime);
-    }
-  }
-
-  private void setupSafeMode() throws KeeperException, InterruptedException {
-    String shardsPath = ZookeeperPathConstants.getOnlineShardsPath(_cluster);
-    List<String> children = _zookeeper.getChildren(shardsPath, false);
-    if (children.size() == 0) {
-      throw new RuntimeException("No shards registered!");
-    }
-    if (children.size() != 1) {
-      return;
-    }
-    LOG.info("First node online, setting up safe mode.");
-    long timestamp = System.currentTimeMillis() + _safeModeDelay;
-    String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(_cluster);
-    Stat stat = _zookeeper.exists(blurSafemodePath, false);
-    if (stat == null) {
-      _zookeeper.create(blurSafemodePath, Long.toString(timestamp).getBytes(), Ids.OPEN_ACL_UNSAFE,
-          CreateMode.PERSISTENT);
-    } else {
-      _zookeeper.setData(blurSafemodePath, Long.toString(timestamp).getBytes(), -1);
-    }
-    setupAnyMissingPaths();
-  }
-
-  private void setupAnyMissingPaths() throws KeeperException, InterruptedException {
-    String tablesPath = ZookeeperPathConstants.getTablesPath(_cluster);
-    List<String> tables = _zookeeper.getChildren(tablesPath, false);
-    for (String table : tables) {
-      BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getLockPath(_cluster, table));
-      BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getTableFieldNamesPath(_cluster, table));
-    }
   }
 
   private void setupTableWarmer() {
@@ -410,9 +369,12 @@ public class DistributedIndexServer extends AbstractIndexServer {
   @Override
   public void close() {
     if (_running.get()) {
+      
       _shardStateManager.close();
       _running.set(false);
       closeAllIndexes();
+      _refresher.close();
+      _indexCloser.close();
       _watchOnlineShards.close();
       _timerCacheFlush.purge();
       _timerCacheFlush.cancel();
@@ -519,18 +481,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
     BlurIndex index;
     if (_clusterStatus.isReadOnly(true, _cluster, table)) {
-      // BlurIndexReader reader = new BlurIndexReader();
-      // reader.setCloser(_closer);
-      // reader.setAnalyzer(getAnalyzer(table));
-      // reader.setDirectory(dir);
-      // reader.setRefresher(_refresher);
-      // reader.setShard(shard);
-      // reader.setTable(table);
-      // reader.setIndexDeletionPolicy(_indexDeletionPolicy);
-      // reader.setSimilarity(getSimilarity(table));
-      // reader.init();
-      // index = reader;
-      throw new RuntimeException("not implemented yet");
+      BlurIndexReader reader = new BlurIndexReader(shardContext, directory, _refresher, _indexCloser);
+      index = reader;
     } else {
       BlurNRTIndex writer = new BlurNRTIndex(shardContext, _mergeScheduler, _closer, dir, _gc, _searchExecutor);
       index = writer;

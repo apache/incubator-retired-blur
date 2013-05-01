@@ -76,7 +76,7 @@ public class BlockCacheTest {
     AtomicLong missesInCache = new AtomicLong();
     long storeTime = 0;
     long fetchTime = 0;
-    int passes = 1000000;
+    int passes = 10000;
 
     BlockCacheKey blockCacheKey = new BlockCacheKey();
 

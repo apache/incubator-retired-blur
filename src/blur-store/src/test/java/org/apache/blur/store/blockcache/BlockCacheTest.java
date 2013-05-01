@@ -17,22 +17,57 @@ package org.apache.blur.store.blockcache;
  * limitations under the License.
  */
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Test;
 
 public class BlockCacheTest {
   @Test
-  public void testBlockCache() {
-    int blocksInTest = 2000000;
-    int blockSize = BlockCache._8K;
-    int slabSize = blockSize * 1024;
-    long totalMemory = 2 * slabSize;
+  public void testBlockCache() throws IOException, InterruptedException, ExecutionException {
+    int blocksPerSlab = 1024;
+    int slabs = 4;
+    // Test block are larger than cache size.
+    final int blocksInTest = (blocksPerSlab * slabs) * 2;
+    final int blockSize = BlockCache._8K;
+    int slabSize = blockSize * blocksPerSlab;
+    long totalMemory = slabs * (long) slabSize;
 
-    BlockCache blockCache = new BlockCache(true, totalMemory, slabSize);
+    final BlockCache blockCache = new BlockCache(true, totalMemory, slabSize);
+    final int threads = 4;
+    ExecutorService pool = Executors.newFixedThreadPool(threads);
+    List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
+    final int testSpace = blocksInTest / threads;
+    for (int g = 0; g < threads; g++) {
+      final int file = g;
+      futures.add(pool.submit(new Callable<Boolean>() {
+        @Override
+        public Boolean call() throws Exception {
+          return runTest(blockSize, file, testSpace, blockCache);
+        }
+      }));
+    }
+
+    for (Future<Boolean> future : futures) {
+      if (!future.get()) {
+        fail();
+      }
+    }
+    blockCache.close();
+  }
+
+  private boolean runTest(int blockSize, int file, int blocksInTest, BlockCache blockCache) {
     byte[] buffer = new byte[blockSize];
     Random random = new Random();
 
@@ -41,13 +76,12 @@ public class BlockCacheTest {
     AtomicLong missesInCache = new AtomicLong();
     long storeTime = 0;
     long fetchTime = 0;
-    int passes = 10000;
+    int passes = 1000000;
 
     BlockCacheKey blockCacheKey = new BlockCacheKey();
 
     for (int j = 0; j < passes; j++) {
       long block = random.nextInt(blocksInTest);
-      int file = 0;
       blockCacheKey.setBlock(block);
       blockCacheKey.setFile(file);
 
@@ -59,20 +93,25 @@ public class BlockCacheTest {
 
       byte[] testData = testData(random, blockSize, newData);
       long t1 = System.nanoTime();
-      blockCache.store(blockCacheKey, 0, testData, 0, blockSize);
+      boolean store = blockCache.store(blockCacheKey, 0, testData, 0, blockSize);
       storeTime += (System.nanoTime() - t1);
 
-      long t3 = System.nanoTime();
-      if (blockCache.fetch(blockCacheKey, buffer)) {
-        fetchTime += (System.nanoTime() - t3);
-        assertTrue(Arrays.equals(testData, buffer));
+      if (store) {
+        long t3 = System.nanoTime();
+        if (blockCache.fetch(blockCacheKey, buffer)) {
+          fetchTime += (System.nanoTime() - t3);
+          if (!Arrays.equals(testData, buffer)) {
+            return false;
+          }
+        }
       }
     }
     System.out.println("Cache Hits    = " + hitsInCache.get());
     System.out.println("Cache Misses  = " + missesInCache.get());
-    System.out.println("Store         = " + (storeTime / (double) passes) / 1000000.0);
-    System.out.println("Fetch         = " + (fetchTime / (double) passes) / 1000000.0);
+    System.out.println("Store         = avg " + (storeTime / (double) passes) / 1000000.0 + " ms");
+    System.out.println("Fetch         = avg " + (fetchTime / (double) passes) / 1000000.0 + " ms");
     System.out.println("# of Elements = " + blockCache.getSize());
+    return true;
   }
 
   /**
@@ -89,16 +128,16 @@ public class BlockCacheTest {
     BlockCacheKey blockCacheKey = new BlockCacheKey();
     blockCacheKey.setBlock(0);
     blockCacheKey.setFile(0);
-    byte[] newData = new byte[blockSize*3];
+    byte[] newData = new byte[blockSize * 3];
     byte[] testData = testData(random, blockSize, newData);
 
     assertTrue(blockCache.store(blockCacheKey, 0, testData, 0, blockSize));
     assertTrue(blockCache.store(blockCacheKey, 0, testData, blockSize, blockSize));
-    assertTrue(blockCache.store(blockCacheKey, 0, testData, blockSize*2, blockSize));
+    assertTrue(blockCache.store(blockCacheKey, 0, testData, blockSize * 2, blockSize));
 
     assertTrue(blockCache.store(blockCacheKey, 1, testData, 0, blockSize - 1));
     assertTrue(blockCache.store(blockCacheKey, 1, testData, blockSize, blockSize - 1));
-    assertTrue(blockCache.store(blockCacheKey, 1, testData, blockSize*2, blockSize - 1));
+    assertTrue(blockCache.store(blockCacheKey, 1, testData, blockSize * 2, blockSize - 1));
   }
 
   private static byte[] testData(Random random, int size, byte[] buf) {

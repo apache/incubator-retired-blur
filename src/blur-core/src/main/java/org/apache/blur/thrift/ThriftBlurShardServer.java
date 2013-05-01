@@ -78,6 +78,7 @@ import org.mortbay.jetty.webapp.WebAppContext;
 public class ThriftBlurShardServer extends ThriftServer {
 
   private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
+  private static final boolean enableJsonReporter = false;
 
   public static void main(String[] args) throws Exception {
     int serverIndex = getServerIndex(args);
@@ -205,7 +206,9 @@ public class ThriftBlurShardServer extends ThriftServer {
       context.addServlet(new ServletHolder(new TServlet(new Blur.Processor<Blur.Iface>(iface),
           new TJSONProtocol.Factory())), "/blur");
       context.addServlet(new ServletHolder(new JSONReporterServlet()), "/livemetrics");
-      JSONReporter.enable("json-reporter", 1, TimeUnit.SECONDS, 60);
+      if (enableJsonReporter) {
+        JSONReporter.enable("json-reporter", 1, TimeUnit.SECONDS, 60);
+      }
     }
 
     int threadCount = configuration.getInt(BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT, 32);

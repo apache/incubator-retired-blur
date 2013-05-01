@@ -157,8 +157,8 @@ public class TransactionRecorder {
         throw new IOException("Unknown type [" + lookup + "]");
       }
     }
-    LOG.info("Rows reclaimed form the WAL [{0}]", updateCount);
-    LOG.info("Deletes reclaimed form the WAL [{0}]", deleteCount);
+    LOG.info("Rows reclaimed from the WAL [{0}]", updateCount);
+    LOG.info("Deletes reclaimed from the WAL [{0}]", deleteCount);
   }
 
   private byte[] readBuffer(DataInputStream inputStream) {

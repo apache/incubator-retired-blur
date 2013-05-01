@@ -44,7 +44,7 @@ public class SafeModeTest {
   public static void startZooKeeper() throws IOException {
     new File(path).mkdirs();
     MiniCluster.startZooKeeper(path);
-    zk = new ZooKeeper("localhost", 20000, new Watcher() {
+    zk = new ZooKeeper(MiniCluster.getZkConnectionString(), 20000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 
@@ -96,7 +96,7 @@ public class SafeModeTest {
 
   @Test
   public void testExtraNodeStartup() throws IOException, InterruptedException, KeeperException {
-    ZooKeeper zk = new ZooKeeper("localhost", 20000, new Watcher() {
+    ZooKeeper zk = new ZooKeeper(MiniCluster.getZkConnectionString(), 20000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 
@@ -115,7 +115,7 @@ public class SafeModeTest {
 
   @Test
   public void testSecondNodeStartup() throws IOException, InterruptedException, KeeperException {
-    ZooKeeper zk = new ZooKeeper("localhost", 20000, new Watcher() {
+    ZooKeeper zk = new ZooKeeper(MiniCluster.getZkConnectionString(), 20000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 

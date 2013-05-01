@@ -23,13 +23,11 @@ import org.apache.blur.lucene.search.SuperParser;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ScoreType;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryWrapperFilter;
-import org.apache.lucene.util.Version;
 
 public class QueryParserUtil {
 

@@ -224,25 +224,24 @@ public class IndexManagerTest {
 
   private void setupData() throws BlurException, IOException {
     RowMutation mutation1 = newRowMutation(TABLE, "row-1",
-        newRecordMutation(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
+        newRecordMutation(FAMILY, "record-1",   newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
     RowMutation mutation2 = newRowMutation(TABLE, "row-2",
-        newRecordMutation(FAMILY, "record-2", newColumn("testcol1", "value4"), newColumn("testcol2", "value5"), newColumn("testcol3", "value6")),
-        newRecordMutation(FAMILY, "record-2B", newColumn("testcol2", "value234123"), newColumn("testcol3", "value234123")));
+        newRecordMutation(FAMILY, "record-2",   newColumn("testcol1", "value4"), newColumn("testcol2", "value5"), newColumn("testcol3", "value6")),
+        newRecordMutation(FAMILY, "record-2B",  newColumn("testcol2", "value234123"), newColumn("testcol3", "value234123")));
     RowMutation mutation3 = newRowMutation(TABLE, "row-3",
-        newRecordMutation(FAMILY, "record-3", newColumn("testcol1", "value7"), newColumn("testcol2", "value8"), newColumn("testcol3", "value9")));
+        newRecordMutation(FAMILY, "record-3",   newColumn("testcol1", "value7"), newColumn("testcol2", "value8"), newColumn("testcol3", "value9")));
     RowMutation mutation4 = newRowMutation(TABLE, "row-4",
-        newRecordMutation(FAMILY, "record-4", newColumn("testcol1", "value1"), newColumn("testcol2", "value5"), newColumn("testcol3", "value9")),
-        newRecordMutation(FAMILY, "record-4B", newColumn("testcol2", "value234123"), newColumn("testcol3", "value234123")));
-    RowMutation mutation5 = newRowMutation(
-        TABLE,
-        "row-5",
-        newRecordMutation(FAMILY, "record-5A", newColumn("testcol1", "value13"), newColumn("testcol2", "value14"), newColumn("testcol3", "value15")),
-        newRecordMutation(FAMILY, "record-5B", newColumn("testcol1", "value16"), newColumn("testcol2", "value17"), newColumn("testcol3", "value18"),
-            newColumn("testcol3", "value19")));
-    RowMutation mutation6 = newRowMutation(TABLE, "row-6", newRecordMutation(FAMILY, "record-6A", newColumn("testcol12", "value110"), newColumn("testcol13", "value102")),
-        newRecordMutation(FAMILY, "record-6B", newColumn("testcol12", "value101"), newColumn("testcol13", "value104")),
+        newRecordMutation(FAMILY, "record-4",   newColumn("testcol1", "value1"), newColumn("testcol2", "value5"), newColumn("testcol3", "value9")),
+        newRecordMutation(FAMILY, "record-4B",  newColumn("testcol2", "value234123"), newColumn("testcol3", "value234123")));
+    RowMutation mutation5 = newRowMutation(TABLE,"row-5",
+        newRecordMutation(FAMILY, "record-5A",  newColumn("testcol1", "value13"), newColumn("testcol2", "value14"), newColumn("testcol3", "value15")),
+        newRecordMutation(FAMILY, "record-5B",  newColumn("testcol1", "value16"), newColumn("testcol2", "value17"), newColumn("testcol3", "value18"), newColumn("testcol3", "value19")));
+    RowMutation mutation6 = newRowMutation(TABLE, "row-6", 
+        newRecordMutation(FAMILY, "record-6A",  newColumn("testcol12", "value110"), newColumn("testcol13", "value102")),
+        newRecordMutation(FAMILY, "record-6B",  newColumn("testcol12", "value101"), newColumn("testcol13", "value104")),
         newRecordMutation(FAMILY2, "record-6C", newColumn("testcol18", "value501")));
-    RowMutation mutation7 = newRowMutation(TABLE, "row-7", newRecordMutation(FAMILY, "record-7A", newColumn("testcol12", "value101"), newColumn("testcol13", "value102")),
+    RowMutation mutation7 = newRowMutation(TABLE, "row-7", 
+        newRecordMutation(FAMILY, "record-7A",  newColumn("testcol12", "value101"), newColumn("testcol13", "value102")),
         newRecordMutation(FAMILY2, "record-7B", newColumn("testcol18", "value501")));
     mutation7.waitToBeVisible = true;
     indexManager.mutate(mutation1);
@@ -258,8 +257,7 @@ public class IndexManagerTest {
   public void testQueryWithJoinAll() throws Exception {
     BlurQuery blurQuery = new BlurQuery();
     blurQuery.simpleQuery = new SimpleQuery();
-    blurQuery.simpleQuery.queryStr = "+test-family.testcol12:value101 +test-family.testcol13:value102 +test-family2.testcol18:value501";
-//    blurQuery.simpleQuery.queryStr = "+super:<+test-family.testcol12:value101 +test-family.testcol13:value102> +test-family2.testcol18:value501";
+    blurQuery.simpleQuery.queryStr = "+super:<+test-family.testcol12:value101 +test-family.testcol13:value102> +super:<test-family2.testcol18:value501>";
     
     blurQuery.simpleQuery.superQueryOn = true;
     blurQuery.simpleQuery.type = ScoreType.SUPER;
@@ -269,7 +267,7 @@ public class IndexManagerTest {
     blurQuery.uuid = 1;
 
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
-    assertEquals(iterable.getTotalResults(), 2);
+    assertEquals(iterable.getTotalResults(), 1);
     for (BlurResult result : iterable) {
       Selector selector = new Selector().setLocationId(result.getLocationId());
       FetchResult fetchResult = new FetchResult();
@@ -283,7 +281,7 @@ public class IndexManagerTest {
   public void testQueryWithJoin() throws Exception {
     BlurQuery blurQuery = new BlurQuery();
     blurQuery.simpleQuery = new SimpleQuery();
-    blurQuery.simpleQuery.queryStr = "+(+test-family.testcol12:value101 +test-family.testcol13:value102) +test-family2.testcol18:value501";
+    blurQuery.simpleQuery.queryStr = "+super:<+test-family.testcol12:value101 +test-family.testcol13:value102> +super:<test-family2.testcol18:value501>";
     blurQuery.simpleQuery.superQueryOn = true;
     blurQuery.simpleQuery.type = ScoreType.SUPER;
     blurQuery.fetch = 10;
@@ -306,7 +304,7 @@ public class IndexManagerTest {
   public void testQueryWithJoinForcingSuperQuery() throws Exception {
     BlurQuery blurQuery = new BlurQuery();
     blurQuery.simpleQuery = new SimpleQuery();
-    blurQuery.simpleQuery.queryStr = "+(+test-family.testcol1:value1 nojoin) +(+test-family.testcol3:value234123)";
+    blurQuery.simpleQuery.queryStr = "+super:<test-family.testcol1:value1> +super:<test-family.testcol3:value234123>";
     blurQuery.simpleQuery.superQueryOn = true;
     blurQuery.simpleQuery.type = ScoreType.SUPER;
     blurQuery.fetch = 10;

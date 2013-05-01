@@ -96,7 +96,7 @@ public class TableContext {
     tableContext.descriptor = tableDescriptor;
     tableContext.timeBetweenCommits = configuration.getLong(BLUR_SHARD_TIME_BETWEEN_COMMITS, 60000);
     tableContext.timeBetweenRefreshs = configuration.getLong(BLUR_SHARD_TIME_BETWEEN_REFRESHS, 5000);
-    tableContext.defaultPrimeDocTerm = new Term("_primedoc_", "true");
+    tableContext.defaultPrimeDocTerm = new Term("_prime_", "true");
     tableContext.defaultScoreType = ScoreType.SUPER;
 
     Class<?> c1 = configuration.getClass(BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE, KeepOnlyLastCommitDeletionPolicy.class);

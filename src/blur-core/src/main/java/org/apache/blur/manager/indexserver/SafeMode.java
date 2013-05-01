@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -71,6 +72,8 @@ public class SafeMode {
     this.waitTime = waitTimeUnit.toMillis(waitTime);
     this.duplicateNodeTimeout = duplicateNodeTimeoutTimeUnit.toNanos(duplicateNodeTimeout);
     this.nodePath = nodePath;
+    ZkUtils.mkNodesStr(zooKeeper, nodePath);
+    ZkUtils.mkNodesStr(zooKeeper, lockPath);
   }
 
   public void registerNode(String node, byte[] data) throws KeeperException, InterruptedException {

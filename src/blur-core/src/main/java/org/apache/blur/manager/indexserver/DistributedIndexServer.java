@@ -169,7 +169,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     registerMyselfAsMemberOfCluster();
     String onlineShardsPath = ZookeeperPathConstants.getOnlineShardsPath(_cluster);
     String safemodePath = ZookeeperPathConstants.getSafemodePath(_cluster);
-    SafeMode safeMode = new SafeMode(_zookeeper, safemodePath, onlineShardsPath, TimeUnit.SECONDS, _safeModeDelay, TimeUnit.SECONDS, 60);
+    SafeMode safeMode = new SafeMode(_zookeeper, safemodePath, onlineShardsPath, TimeUnit.MILLISECONDS, _safeModeDelay, TimeUnit.SECONDS, 60);
     safeMode.registerNode(getNodeName(), BlurUtil.getVersion().getBytes());
 
     _running.set(true);

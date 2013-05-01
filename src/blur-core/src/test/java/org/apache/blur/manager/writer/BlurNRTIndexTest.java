@@ -79,15 +79,16 @@ public class BlurNRTIndexTest {
   private void setupWriter(Configuration configuration, long refresh) throws IOException {
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName("test-table");
-    tableDescriptor.setTableUri(new File(base, "table-store-" + UUID.randomUUID().toString()).toURI().toString());
+    String uuid = UUID.randomUUID().toString();
+    tableDescriptor.setTableUri(new File(base, "table-store-" + uuid).toURI().toString());
     tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.putToTableProperties("blur.shard.time.between.refreshs", Long.toString(refresh));
 
     TableContext tableContext = TableContext.create(tableDescriptor);
-    FSDirectory directory = FSDirectory.open(new File(base, "index_" + UUID.randomUUID().toString()));
-
-    ShardContext shardContext = ShardContext.create(tableContext, "test-shard");
-
+    File path = new File(base, "index_" + uuid);
+    path.mkdirs();
+    FSDirectory directory = FSDirectory.open(path);
+    ShardContext shardContext = ShardContext.create(tableContext, "test-shard-" + uuid);
     writer = new BlurNRTIndex(shardContext, mergeScheduler, closer, directory, gc, service);
   }
 
@@ -136,7 +137,7 @@ public class BlurNRTIndexTest {
     searcher.close();
   }
 
-//  @Test
+  @Test
   public void testBlurIndexWriterFaster() throws IOException, InterruptedException {
     setupWriter(configuration, 100);
     IndexSearcherClosable searcher1 = writer.getIndexReader();

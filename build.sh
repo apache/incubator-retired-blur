@@ -25,53 +25,46 @@ bundle exec rake RAILS_ENV=production assets:clean
 bundle exec rake RAILS_ENV=production assets:precompile
 
 cd ../build
-mkdir rails
+GUI_DIR=gui
+mkdir $GUI_DIR
 
 echo "Copying Rails files"
-cp ../blur-admin/Rakefile ../blur-admin/config.ru rails
+cp ../blur-admin/Rakefile ../blur-admin/config.ru $GUI_DIR
 
 echo "Copying app"
-cp -r ../blur-admin/app rails
+cp -r ../blur-admin/app $GUI_DIR
 
 echo "Copying config"
-cp -r ../blur-admin/config rails
-rm rails/config/environments/development.rb
-rm rails/config/environments/test.rb
+cp -r ../blur-admin/config $GUI_DIR
+rm $GUI_DIR/config/environments/development.rb
+rm $GUI_DIR/config/environments/test.rb
 
 echo "Copying db"
-cp -r ../blur-admin/db rails
+cp -r ../blur-admin/db $GUI_DIR
 
 echo "Copying lib"
-cp -r ../blur-admin/lib rails
-rm -r rails/lib/pounder
-rm -r rails/lib/tasks/*.rake
+cp -r ../blur-admin/lib $GUI_DIR
+rm -r $GUI_DIR/lib/pounder
+rm -r $GUI_DIR/lib/tasks/*.rake
 
 echo "Copying public"
-cp -r ../blur-admin/public rails
+cp -r ../blur-admin/public $GUI_DIR
 
 echo "Copying script"
-cp -r ../blur-admin/script rails
+cp -r ../blur-admin/script $GUI_DIR
 
-mkdir rails/tmp
-touch rails/tmp/placeholder.txt
+mkdir $GUI_DIR/tmp
+touch $GUI_DIR/tmp/placeholder.txt
 
 echo "Copying vendor"
-cp -r ../blur-admin/vendor rails
+cp -r ../blur-admin/vendor $GUI_DIR
 
 echo "Copy production files"
-cp ../etc/default/Gemfile rails/
-cp ../etc/default/database.yml rails/config/
-
-if [ -n "$2" ] && [ $2 = "--certs" ]; then
-  echo "Overlaying Cert Auth"
-  cp -r ../etc/cert-auth/proof-0.1.0 rails/vendor/gems/
-  cp ../etc/cert-auth/certificate-authentication.rb rails/config/initializers/
-  cp ../etc/cert-auth/Gemfile rails/
-  cp ../etc/cert-auth/production.rb rails/config/environments/
-fi
+cp ../etc/default/Gemfile $GUI_DIR/
+cp ../etc/default/database.yml $GUI_DIR/config/
 
 echo "Vendor gems"
-cd rails
+cd $GUI_DIR
 bundle install
 bundle package
 
@@ -79,8 +72,8 @@ find . -name .DS_Store | xargs rm
 
 echo "Compressing and zipping rails dir"
 cd ..
-mv rails "rails-$version"
-tar -cvzf "blur-console-$version.tar.gz" "rails-$version"
+mv $GUI_DIR "$GUI_DIR-$version"
+tar -cvzf "$GUI_DIR-$version.tar.gz" "$GUI_DIR-$version"
 
 #################################
 # Prep Agent                    #
@@ -136,6 +129,6 @@ tar -cvzf "agent-$version.tar.gz" "agent-$version"
 cp ../etc/INSTALL .
 cp ../etc/install.sh .
 cp ../etc/VERSION .
-tar -cvzf "blur-tools-$version.tar.gz" "blur-console-$version.tar.gz" "agent-$version.tar.gz" INSTALL install.sh VERSION
+tar -cvzf "blur-tools-$version.tar.gz" "$GUI_DIR-$version.tar.gz" "agent-$version.tar.gz" INSTALL VERSION
 
 echo "Build complete"

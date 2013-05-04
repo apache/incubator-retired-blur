@@ -6,7 +6,7 @@
 #store.user=
 #store.password=
 
-# ZooKeeper Instances
+# ZooKeeper Instances (instances separated by | )
 #zk.instances=some-zk
 
 #zk.some-zk.url=
@@ -14,14 +14,14 @@
 # Active Collectors
 active.collectors=hdfs|queries|tables
 
-# HDFS Collector properties
+# HDFS Collector properties (instances separated by | )
 #hdfs.instances=some-hdfs
 
 #hdfs.some-hdfs.thrift.url=
 #hdfs.some-hdfs.url=
 #hdfs.some-hdfs.login.user=SOMEUSER (optional)
 
-# Blur properties
+# Blur properties (instances separated by | )
 #blur.instances=some-blur
 
 #blur.some-blur.url=

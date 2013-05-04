@@ -5,5 +5,7 @@
   %img{:src => image_path('server_error.png')}
   - if (current_user && current_user.is?(:admin) && @error != nil)
     #error_message
-    - @error.message
-    - @error.backtrace.each { |line| puts line }
+      = @error.message
+    - @error.backtrace.each do |line|
+      = line
+      %br

@@ -4,6 +4,8 @@ BlurAdmin::Application.routes.draw do
     match '/preferences/:pref_type' => 'preferences#update', :via => :put, :as => :preference
   end
 
+  resources :admin_settings, :only => [:update]
+
   # Zookeeper routes
   resources :zookeepers, :only => [:index, :show, :destroy], :shallow => true do
     # Nested cluster Resource
@@ -86,13 +88,13 @@ BlurAdmin::Application.routes.draw do
 
   resources :audits, :only => [:index]
 
-  #Errors
-  match '/404' => 'errors#error_404'
-  match '/500' => 'errors#error_500'
-  match '/422' => 'errors#error_422'
-
   match 'login' => 'user_sessions#new', :as => :login
   match 'logout' => 'user_sessions#destroy', :as => :logout
   match 'help/:tab' => 'application#help', :as => :help
   root :to => 'zookeepers#index'
+
+    #Errors
+  match '/404' => 'errors#error_404'
+  match '/500' => 'errors#error_500'
+  match '/422' => 'errors#error_422'
 end

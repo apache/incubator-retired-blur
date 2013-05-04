@@ -1,5 +1,5 @@
 class ZookeepersController < ApplicationController
-  load_and_authorize_resource :only => [:destroy, :long_running_queries, :show], :shallow => true
+  load_and_authorize_resource :only => [:index, :destroy, :long_running_queries, :show], :shallow => true
 
   before_filter :set_zookeeper_with_preference, :only => :index
 
@@ -14,15 +14,17 @@ class ZookeepersController < ApplicationController
   end
 
   def show
+    @zookeepers = Zookeeper.all
+    set_zookeeper params[:id]
     respond_with(@zookeeper) do |format|
       format.json { render :json => @zookeeper, :methods => [:clusters, :blur_controllers] }
     end
   end
 
   def destroy
-    raise "Cannot Remove A Zookeeper that is online!" if @zookeeper.status == 1
+    raise "Cannot Remove A Zookeeper that is online!" if @zookeeper.zookeeper_status == 1
     @zookeeper.destroy
-    Audit.log_event(current_user, "Zookeeper (#{@zookeeper.name}) was forgotten", "zookeeper", "delete") if @zookeeper.destroyed?
+    Audit.log_event(current_user, "Zookeeper (#{@zookeeper.name}) was forgotten", "zookeeper", "delete", @zookeeper) if @zookeeper.destroyed?
     respond_with(@zookeeper)
   end
 

@@ -8,7 +8,11 @@ class PreferencesController < ApplicationController
     updated_attr = {:value => params['value']}
     
     # Zookeeper pref uses the name as a data store
-    updated_attr[:name] = params['name'] if params[:pref_type] == 'zookeeper'
+    if params[:pref_type] == 'zookeeper'
+      updated_attr[:name] = params['name']
+      puts params['value']
+      set_zookeeper params['value']
+    end
     @preference.try(:update_attributes, updated_attr)
     respond_with(@preference) do |format|
       format.json { render :json => {} }

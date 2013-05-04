@@ -3,7 +3,7 @@ class Pounder
     # Setup object heirarchy
     zk = Zookeeper.create!(:name => "Pounder-zk")
     cluster = Cluster.create!(:name => "Pounder-cluster", :zookeeper => zk)
-    table = BlurTable.create!(:table_name => "Pounder-table", :status=> 0, :cluster => cluster)
+    table = BlurTable.create!(:table_name => "Pounder-table", :table_status=> 0, :cluster => cluster)
     
     # Loop and add queries
     threads = []

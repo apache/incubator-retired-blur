@@ -1,6 +1,6 @@
 FactoryGirl.define do
   factory :cluster do
-    sequence (:name) { |n| "Test Cluster ##{n}" }
+    sequence(:name)  { |n| "Test Cluster ##{n}" }
     safe_mode        false
     zookeeper_id     1
     can_update       false
@@ -23,7 +23,7 @@ FactoryGirl.define do
 
     factory :cluster_with_shards_online do
       after_create do |cluster|
-        FactoryGirl.create_list(:blur_shard, 3, :cluster => cluster, :status => 1)
+        FactoryGirl.create_list(:blur_shard, 3, :cluster => cluster, :shard_status => 1)
       end
     end
   end

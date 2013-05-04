@@ -5,16 +5,21 @@ var ControllerModel = Backbone.Model.extend({
       this.view.render();
     });
   },
+  url: function(){
+    return '/blur_controllers/' + this.get('id') + '.json';
+  },
   remove: function(){
-    if(this.get('status') == 1){
+    if(this.get('controller_status') == 0){
       this.destroy({
         success: function(){
           Notification("Successfully forgot the Controller!", true);
-        }, 
+        },
         error: function(){
           Notification("Failed to forget the Controller", false);
         }
       });
+    } else {
+      Notification("Cannot forget a Controller that is online!", false);
     }
   }
 });
@@ -25,24 +30,16 @@ var ControllerCollection = Backbone.StreamCollection.extend({
   initialize: function(models, options){
     this.on('add', function(controller){
       if (this.length == 1){
-        var table = $('#controllers table');
-        $('.controller_table').delay(200).slideUp(400, function(){
-          $('#controllers .no_children').hide();
-          $('#controllers tbody').append(controller.view.render().$el);
-          $(this).slideDown(400);
-        });
+        $('#controllers .no_children').hide();
+        $('#controllers tbody').append(controller.view.render().$el);
       } else {
         $('#controllers tbody').append(controller.view.render().$el);
       }
     });
     this.on('remove', function(controller){
       if (this.length == 1){
-        var table = $('#controllers table');
-        $('.controller_table').delay(200).slideUp(400, function(){
-          $('#controllers .no_children').show();
-          controller.view.destroy();
-          $(this).slideDown(400);
-        });
+        $('#controllers .no_children').show();
+        controller.view.destroy();
       } else {
         controller.view.destroy();
       }

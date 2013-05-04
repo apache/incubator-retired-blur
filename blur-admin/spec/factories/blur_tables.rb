@@ -3,9 +3,10 @@ FactoryGirl.define do
     sequence(:table_name) { |n| "Test Blur Table ##{n}" }
     current_size          { 10**12 + rand(999 * 10 ** 12) } #Between a terrabyte and a petabyte
     query_usage           { rand 500 }                      #Queries per second
+    query_count           { rand 10 }
     record_count          { 10**6 + rand(999 * 10 ** 6) }   #Between a million and a billion 
     row_count             { 10**6 + rand(999 * 10 ** 6) }   #Between a million and a billion 
-    status                { 1 + rand(2) }
+    table_status                { 1 + rand(2) }
     sequence(:table_uri)  { |n| "blur_table#{n}.blur.example.com" }
     table_analyzer        'standard.table_analyzer'
     comments              'comment'

@@ -2,6 +2,9 @@
 -content_for :javascript do
   =javascript_include_tag 'search'
 
+%script
+  var searchValidator = {table: "#{@search_filter.value}", query: /:\*$|^\*$/};
+
 #search_page_wrapper
   #filter_section
     = form_tag zookeeper_searches_path, :method => 'post', :id=>'search_form', :remote => true do

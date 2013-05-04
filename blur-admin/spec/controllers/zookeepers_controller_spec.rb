@@ -56,19 +56,19 @@ describe ZookeepersController do
 
       it "destroys the zookeeper" do
         @zookeeper.should_receive(:destroy)
-        @zookeeper.stub!(:status).and_return 0
+        @zookeeper.stub!(:zookeeper_status).and_return 0
         delete :destroy, :id => @zookeeper.id, :format => :json
       end
 
       it "errors when the zookeeper is enabled" do
         expect {
-          @zookeeper.stub!(:status).and_return 1
+          @zookeeper.stub!(:zookeeper_status).and_return 1
           delete :destroy, :id => @zookeeper.id, :format => :json
         }.to raise_error
       end
 
       it "logs the event when the zookeeper is deleted" do
-        @zookeeper.stub!(:status).and_return 0
+        @zookeeper.stub!(:zookeeper_status).and_return 0
         @zookeeper.stub!(:destroyed?).and_return true
         Audit.should_receive :log_event
         delete :destroy, :id => @zookeeper.id, :format => :json

@@ -91,19 +91,21 @@ public class ZookeeperCollector implements Runnable {
 	}
 
 	private void testEnsembleHealth() {
-		Socket socket = null;
 		String[] connections = this.url.split(",");
 		List<String> onlineZookeepers = new ArrayList<String>();
 		for (String connection : connections) {
 			try {
 				URI parsedConnection = new URI("my://" + connection);
+				String host = parsedConnection.getHost();
+				int port = parsedConnection.getPort() >= 0 ? parsedConnection.getPort() : 2181;
 				byte[] reqBytes = new byte[4];
 				ByteBuffer req = ByteBuffer.wrap(reqBytes);
 				req.putInt(ByteBuffer.wrap("ruok".getBytes()).getInt());
-				socket = new Socket();
+				Socket socket = new Socket();
 				socket.setSoLinger(false, 10);
 				socket.setSoTimeout(20000);
-				socket.connect(new InetSocketAddress(parsedConnection.getHost(), parsedConnection.getPort()));
+				parsedConnection.getPort();
+				socket.connect(new InetSocketAddress(host, port));
 
 				InputStream response = socket.getInputStream();
 				OutputStream question = socket.getOutputStream();
@@ -117,8 +119,11 @@ public class ZookeeperCollector implements Runnable {
 				if (status.equals("imok")) {
 					onlineZookeepers.add(connection);
 				}
+				socket.close();
+				response.close();
+				question.close();
 			} catch (Exception e) {
-				log.error("A connection to " + connection + " could not be made.");
+				log.error("A connection to " + connection + " could not be made.", e);
 			}
 		}
 		try {

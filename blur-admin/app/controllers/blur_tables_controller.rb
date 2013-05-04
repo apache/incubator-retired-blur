@@ -7,16 +7,15 @@ class BlurTablesController < ApplicationController
   respond_to :json
 
   def index
-    @clusters = current_zookeeper.clusters.order('name')
-    @clusters.each{|cluster| cluster.can_update = current_user.editor? }
+    @clusters = current_zookeeper.clusters_with_query_status(current_user)
     respond_with(@clusters) do |format|
-      format.json { render :json => @clusters, :methods => [:blur_tables] }
+      format.json { render :json => @clusters, :methods => [:blur_tables], :blur_tables => true }
     end
   end
 
   def enable
     table_update_action do |table|
-      table.status = STATUS[:enabling]
+      table.table_status = STATUS[:enabling]
       table.enable current_zookeeper.blur_urls
       table.save
       Audit.log_event(current_user, "Table, #{table.table_name}, was enabled",
@@ -26,7 +25,7 @@ class BlurTablesController < ApplicationController
 
   def disable
     table_update_action do |table|
-      table.status = STATUS[:disabling]
+      table.table_status = STATUS[:disabling]
       table.disable current_zookeeper.blur_urls
       table.save
       Audit.log_event(current_user, "Table, #{table.table_name}, was disabled",

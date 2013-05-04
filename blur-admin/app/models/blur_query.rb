@@ -22,6 +22,7 @@ class BlurQuery < ActiveRecord::Base
       when 0 then "Running"
       when 1 then "Interrupted"
       when 2 then "Complete"
+      when 3 then "Marked Complete by Agent"
       else nil
     end
   end
@@ -59,6 +60,8 @@ class BlurQuery < ActiveRecord::Base
       formattedNumber + '%'
     elsif state == 1
       "(Interrupted) - #{number_to_percentage(100 * complete, :precision => 0)}"
+    elsif state == 3
+      "Marked Complete by Agent"
     else
       "Complete"
     end

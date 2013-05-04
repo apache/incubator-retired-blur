@@ -13,7 +13,8 @@ class SearchesController < ApplicationController
     # the .all call executes the SQL fetch, otherwise there are many more SQL fetches
     # required because of the lazy loading (in this case where a few more variables
     # depend on the result)
-    @blur_tables = current_zookeeper.blur_tables.where('status = 4').order("table_name").includes(:cluster).all
+    @search_filter = AdminSetting.search_filter
+    @blur_tables = current_zookeeper.blur_tables.where('table_status = 4').order("table_name").includes(:cluster).all
     @blur_table = BlurTable.find_by_id(params[:table_id])
     if @blur_table.nil?
       @blur_table = @blur_tables[0]
@@ -34,21 +35,36 @@ class SearchesController < ApplicationController
   #Filter action to help build the tree for column families
   def filters
     blur_table = BlurTable.find params[:blur_table]
-    columns = blur_table ? (blur_table.schema &preference_sort(current_user.column_preference.value || [])) : []
+    preference = current_user.column_preference
+    columns = blur_table ? (blur_table.schema &preference_sort(preference.value || [])) : []
+    selected_count = 0
+    first_selected = preference.value.nil?
     filter_children = columns.collect do |family|
-      col_fam = {:title => family['name'], :key => "family_-sep-_#{family['name']}", :addClass => 'check_filter', :select => true}
-      col_fam[:children] = family['columns'].collect do |column|
-        {:title => column['name'], :key => "column_-sep-_#{family['name']}_-sep-_#{column['name']}", :addClass=>'check_filter', :select => true}
+      if preference.value && !preference.value.index(family['name']).nil?
+        selected = true
+        selected_count += 1
       end
+      col_fam = {:title => family['name'], :key => "family_-sep-_#{family['name']}", :addClass => 'check_filter', :select => (first_selected || selected)}
+      col_fam[:children] = family['columns'].collect do |column|
+        {:title => column['name'], :key => "column_-sep-_#{family['name']}_-sep-_#{column['name']}", :addClass=>'check_filter', :select => (first_selected || selected)}
+      end
+      first_selected = false
       col_fam
     end
-    filter_list = { :title => 'All Families', :key => "neighborhood", :addClass => 'check_filter', :select => true, :children => filter_children}
+    all_selected = selected_count == filter_children.length
+    filter_list = { :title => 'All Families', :key => "neighborhood", :addClass => 'check_filter', :select => all_selected, :children => filter_children}
     respond_with(filter_list)
   end
 
   #Create action is a large action that handles all of the filter data
   #and either saves the data or performs a search
   def create
+    search_filter = AdminSetting.search_filter
+    blur_table = BlurTable.find params[:blur_table]
+    if blur_table.table_name.match(search_filter.value).nil? && params[:query_string].match(/:\*$|^\*$/)
+      raise "The table #{blur_table.table_name} is Star Protected, Contact your admin!"
+    end
+
     params[:column_data].delete( "neighborhood") if params[:column_data]
     search = Search.new(  :super_query      => params[:search] == '0',
                           :record_only      => params[:search] == '1' && params[:return] == '1',
@@ -61,9 +77,6 @@ class SearchesController < ApplicationController
                           :post_filter      => params[:post_filter]
                          )
     search.column_object = params[:column_data]
-
-    #use the model to begin building the blurquery
-    blur_table = BlurTable.find params[:blur_table]
 
     blur_results = search.fetch_results(blur_table.table_name, current_zookeeper.blur_urls)
 

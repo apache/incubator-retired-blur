@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -30,23 +31,28 @@ public class QueryCollector implements Runnable {
 		this.database = database;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
 		Set<Long> currentQueries = new HashSet<Long>();
 		try {
 			currentQueries.addAll(blurConnection.queryStatusIdList(tableName));
-			currentQueries.addAll(this.database.getRunningQueries());
+			//currentQueries.addAll(this.database.getRunningQueries());
 		} catch (Exception e) {
-			log.error("Unable to get the list of current queries [" + tableName + "].");
+			log.error("Unable to get the list of current queries [" + tableName + "]." + e.getMessage());
 			return;
 		}
+		
+		// Mark running queries that can't be found as complete - unknown
+		this.database.markOrphanedRunningQueriesComplete(CollectionUtils.subtract(this.database.getRunningQueries(), currentQueries));
+		
 
 		for (Long queryUUID : currentQueries) {
 			BlurQueryStatus status;
 			try {
 				status = blurConnection.queryStatusById(tableName, queryUUID);
 			} catch (Exception e) {
-				log.error("Unable to get query status for query [" + queryUUID + "].");
+				log.error("Unable to get query status for query [" + queryUUID + "]." + e.getMessage());
 				continue;
 			}
 

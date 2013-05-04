@@ -94,9 +94,9 @@ class HdfsController < ApplicationController
   end
 
   def move_file
-    client = build_client_from_id
-    client.rename(params[:from], params[:to])
     file_name = params[:from].strip.split("/").last
+    client = build_client_from_id
+    client.rename(params[:from], params[:to].gsub(/(\/$)/, '') + '/' + file_name)
     Audit.log_event(current_user, "File/Folder, #{file_name}, was moved or renamed to #{params[:to]}",
       "hdfs", "update", @hdfs)
 
@@ -128,12 +128,12 @@ class HdfsController < ApplicationController
     begin
       if !(params[:upload].nil? or params[:path].nil? or params[:id].nil?)
         f = params[:upload]
-        @path = params[:path]
+        @path = params[:path].gsub(/(\/$)/, '')
         if f.tempfile.size > 26214400
           @error = 'Upload is Too Large.  Files must be less than 25Mb.'
         else
           client = build_client_from_id
-          client.put(f.tempfile.path,@path + '/' + f.original_filename)
+          client.put(f.tempfile.path, @path + '/' + f.original_filename)
           Audit.log_event(current_user, "File, #{f.original_filename}, was uploaded",
             "hdfs", "create", @hdfs)
         end
@@ -146,7 +146,6 @@ class HdfsController < ApplicationController
     respond_with do |format|
       format.html { render :partial => 'upload' }
     end
-    
   end
 
   def file_tree

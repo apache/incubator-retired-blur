@@ -9,15 +9,12 @@ describe BlurTable do
   end
 
   describe "as_json" do
-    it 'return the expected values' do 
-      @table.should_receive(:recent_queries).and_return({:test => []})
+    it 'return the expected values' do
       test_json = @table.as_json
       test_json.should_not include("server")
       test_json.should_not include("table_schema")
       test_json.should include("queried_recently")
       test_json.should include("server_info")
-      test_json.should include("sparkline")
-      test_json.should include("average_queries")
       test_json.should include("comments")
     end
   end
@@ -25,21 +22,21 @@ describe BlurTable do
   describe "boolean state methods" do
     describe "is_enabled?" do
       it "should return true when the status is 4" do
-        enabled_table = FactoryGirl.create :blur_table, :status => 4
+        enabled_table = FactoryGirl.create :blur_table, :table_status => 4
         enabled_table.is_enabled?.should == true
       end
     end
 
     describe "is_disabled?" do
       it "should return true when the status is 2" do
-        enabled_table = FactoryGirl.create :blur_table, :status => 2
+        enabled_table = FactoryGirl.create :blur_table, :table_status => 2
         enabled_table.is_disabled?.should == true
       end
     end
 
     describe "is_deleted?" do
       it "should return true when the status is 0" do
-        enabled_table = FactoryGirl.create :blur_table, :status => 0
+        enabled_table = FactoryGirl.create :blur_table, :table_status => 0
         enabled_table.is_deleted?.should == true
       end
     end
@@ -212,13 +209,6 @@ describe BlurTable do
     it "returns nil when the server has not been populated" do
       blur_table = BlurTable.new
       blur_table.server.should be nil
-    end
-  end
-
-  describe "recent_queries" do
-    it "returns info in the expected format" do
-      #find way to test different cnt numbers
-      @table.recent_queries.should == {"sparkline"=>[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0]], "average_queries"=>0.0, "queried_recently"=>false}
     end
   end
 

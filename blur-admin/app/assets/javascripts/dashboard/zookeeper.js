@@ -27,23 +27,31 @@ var Zookeeper = Backbone.Model.extend({
     return Math.round((this.online_shard_nodes() / this.get('shard_total')) * 100)
   },
   status_image: function(){
-    var state;
-    switch(this.get('status'))
+    var state, img;
+    switch(this.get('zookeeper_status'))
     {
       case 0:
-        state = "offline"
-        break
+        state = "offline.";
+        img = 'offline';
+        break;
       case 1:
-        state = "online"
-        break
+        state = "online.";
+        img = "online";
+        break;
       case 2:
-        state = "warning"
-        break
+        state = "in a quorum warning state.";
+        img = "warning";
+        break;
       case 3:
-        state = "failure"
-        break
+        state = "experiencing a quorum failure.";
+        img = 'failure';
+        break;
+      default:
+        state = "offline.";
+        img = 'offline';
+        break;
     }
-    return '<img src="/assets/' + state + '.png" title="Zookeeper is ' + state + '"/>'
+    return '<img src="/assets/' + img + '.png" title="Zookeeper is ' + state + '"/>'
   }
 });
 
@@ -63,7 +71,7 @@ var ZookeeperCollection = Backbone.StreamCollection.extend({
 var ZookeeperView = Backbone.View.extend({
   className: 'zookeeper_info',
   events: {
-    'click .zookeeper-body' : 'navigate_to_zookeeper',
+    'click' : 'navigate_to_zookeeper',
     'click .warning' : 'show_long_running'
   },
   template: JST['templates/dashboard/zookeeper'],

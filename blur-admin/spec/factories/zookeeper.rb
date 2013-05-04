@@ -4,7 +4,7 @@ FactoryGirl.define do
     sequence (:url)       { |n| "zookeeper#{n}.blur.example.com" }
     sequence (:blur_urls) { |n| "host#{n}:40010"}
     online_ensemble_nodes { "[\"nic-blurtop.nearinfinity.com\"]" }
-    status                { rand 2 }
+    zookeeper_status                { rand 2 }
 
     ignore do
       recursive_factor 3

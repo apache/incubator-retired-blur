@@ -35,4 +35,33 @@ describe Zookeeper do
       @zookeeper.refresh_queries 14
     end
   end
+
+  describe 'as json' do
+    it "should remove the online_ensemble_nodes key and add ensembles" do
+      @zookeeper = FactoryGirl.create :zookeeper
+      result = @zookeeper.as_json
+      result.should_not include("online_ensemble_nodes")
+      result.should include("ensemble")
+    end
+  end
+
+  describe 'dashboard stats' do
+    it "should call query with the large sql string" do
+      FactoryGirl.create :zookeeper
+      result = Zookeeper.dashboard_stats
+      result.first.keys.should include("name", "zookeeper_status", "id", "controller_version", "controller_offline_node", "controller_total", "shard_version", "shard_offline_node", "shard_total", "long_running_queries")
+    end
+  end
+
+  describe 'clusters with query status' do
+    it "should return the clusters with tables and their query counts" do
+      @zookeeper = FactoryGirl.create :zookeeper_with_blur_queries
+      result = @zookeeper.clusters_with_query_status(@user)
+      result.each do |cluster|
+        cluster.blur_tables.each do |table|
+          table.query_count.should_not be_nil
+        end
+      end
+    end
+  end
 end

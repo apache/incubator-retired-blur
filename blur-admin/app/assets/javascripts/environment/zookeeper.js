@@ -7,8 +7,21 @@ var ZookeeperModel = Backbone.Model.extend({
     this.on('change', function(){
       this.view.render();
     });
+    this.initial_load = true;
+  },
+  url: function(){
+    return '/zookeepers/' + this.get('id') + '.json';
   },
   parse: function(response){
+    if (this.initial_load){
+      if (response.clusters.length <= 0){
+        this.clusters.view.$el.find('.no_children').show();
+      }
+      if (response.blur_controllers.length <= 0){
+        this.blur_controllers.view.$el.find('.no_children').show();
+      }
+      this.initial_load = false;
+    }
     this.clusters.update(response.clusters);
     this.controllers.update(response.blur_controllers);
 
@@ -29,31 +42,40 @@ var ZookeeperModel = Backbone.Model.extend({
   },
   // Destroys the zookeeper on the server side
   remove: function(){
-    if(this.get('status') == 0){
+    if(this.get('zookeeper_status') == 0){
       this.destroy({
         success: function(){
           window.location = window.location.origin;
-        }, 
+        },
         error: function(){
           Notification("Failed to forget the Zookeeper", false);
         }
       });
+    } else {
+      Notification("Cannot forget a Zookeeper that is online!", false);
     }
   },
   header: function(){
     return this.get('name') + " - Zookeeper - " + this.translated_status();
   },
   quarum_failed: function(){
-    var totalZookeeperNodes = this.get('url').split(',').length;
-    var totalOnlineNodes = this.get('ensemble').length;
-    if (totalOnlineNodes > 0 && totalOnlineNodes != totalZookeeperNodes){
-      return true;
+    return this.get('zookeeper_status') == 3
+  },
+  offline_nodes: function(){
+    var allNodes = this.get('url').split(',')
+    var online = this.get('ensemble');
+    var offline = [];
+    for (var i = 0; i < allNodes.length; i++){
+      var node = allNodes[i];
+      if (online.indexOf(node) < 0){
+        offline.push(node)
+      }
     }
-    return false;
+    return offline;
   },
   // The translated status
   translated_status: function(){
-    switch(this.get('status'))
+    switch(this.get('zookeeper_status'))
     {
       case 0:
         return "Offline"
@@ -62,12 +84,12 @@ var ZookeeperModel = Backbone.Model.extend({
       case 2:
         return "Ensemble Warning"
       case 3:
-        return "Quarum Failure"
+        return "Quorum Failure"
     }
   },
   // Determines the class for the state of the zookeeper
   translated_class: function(){
-    switch(this.get('status'))
+    switch(this.get('zookeeper_status'))
     {
       case 0:
         return "btn-danger"
@@ -91,12 +113,13 @@ var ZookeeperView = Backbone.View.extend({
     this.$el.removeClass('btn-danger btn-success btn-warning');
     this.$el.addClass(this.model.translated_class());
     this.$('i').tooltip();
+    this.$('span.states').tooltip({placement: 'bottom'});
     return this;
   },
   destroy_zookeeper: function(){
     Confirm_Delete({
       message: "forget this zookeeper",
-      confirmed_action: this.model.remove
+      confirmed_action: _.bind(this.model.remove, this.model)
     });
   }
 });

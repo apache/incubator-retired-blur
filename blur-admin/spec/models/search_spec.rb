@@ -62,6 +62,15 @@ describe Search do
   end
 
   describe 'schema' do
-    pending 'Need to tie a blurtable (factory) to a search for this to be tested'
+    it "should use the columns hash, column families, and the table schema to build a complete schema for the search" do
+      @blur_table = FactoryGirl.create :blur_table
+      result = @search.schema @blur_table
+      result.each do |family|
+        definition = family.last
+        keys = definition.keys
+        keys.should == ["name", "columns"]
+        definition['columns'].first['name'].should == 'recordId'
+      end
+    end
   end
 end

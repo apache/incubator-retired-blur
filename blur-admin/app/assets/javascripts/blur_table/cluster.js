@@ -6,7 +6,6 @@ var Cluster = Backbone.Model.extend({
     this.set_running_query_header_state();
     this.on('change:blur_tables', function(){
       this.update_child_tables();
-      this.collection.cluster.view.populate_tables();
     });
     this.on('change:safe_mode', function(){
       $('li#cluster_tab_' + this.get('id') + ' .safemode-icon').toggle();
@@ -49,7 +48,7 @@ var Cluster = Backbone.Model.extend({
               });
               $().closePopup();
               _.each(selected_tables, function(table){
-                table.set({status: 5});
+                table.set({table_status: 5});
               });
               this.view.set_table_state();
             }, this)
@@ -82,7 +81,7 @@ var Cluster = Backbone.Model.extend({
               });
               $().closePopup();
               _.each(selected_tables, function(table){
-                table.set({status: 3});
+                table.set({table_status: 3});
               });
               this.view.set_table_state();
             }, this)
@@ -103,7 +102,7 @@ var Cluster = Backbone.Model.extend({
       var delete_tables_send = function(delete_index) {
         $.ajax({
           type: 'DELETE',
-          url: Routes.zookeeper_blur_tables_path(CurrentZookeeper),
+          url: Routes.zookeeper_blur_tables_path(CurrentZookeeper, {format: 'json'}),
           data: {
             tables: table_ids,
             delete_index: delete_index
@@ -111,7 +110,7 @@ var Cluster = Backbone.Model.extend({
         });
         $().closePopup();
         _.each(selected_tables, function(table){
-          table.set({status: 1});
+          table.set({table_status: 1});
         });
         this.view.set_table_state();
       };
@@ -138,7 +137,9 @@ var Cluster = Backbone.Model.extend({
     }, this));
   },
   send_action_request: function(selected_tables, confirm_function){
-    if (_.find(selected_tables, function(table){ return table.get('queried_recently'); })){
+    if (_.find(selected_tables, function(table){
+        return table.get('queried_recently') && table.get('state') == 'active';
+    })){
       $().popup({
         title: 'Warning! You are attempting to change an active table!',
         titleClass: 'title',
@@ -201,7 +202,7 @@ var ClusterView = Backbone.View.extend({
     'click .btn[data-action=disable]' : 'disable_tables',
     'click .btn[data-action=delete]' : 'delete_tables'
   },
-  colspan_lookup : {'active': 7, 'disabled': 4},
+  colspan_lookup : {'active': 6, 'disabled': 4},
   render: function(){
     this.$el.html(this.template({cluster: this.model}));
     this.populate_tables();
@@ -214,6 +215,7 @@ var ClusterView = Backbone.View.extend({
       var table_parent = el.find('.' + table.get('table') + '-table');
       table_parent.append(elementToAdd);
       table_parent.siblings('thead').find('.check-all').removeAttr('disabled');
+      sorttable.makeSortable(table_parent.parent()[0]);
     });
     this.set_table_values();
   },
@@ -227,7 +229,6 @@ var ClusterView = Backbone.View.extend({
       if (this.model.get('tables').where({table: table_prefixes[index]}).length <= 0){
         table.append(this.no_table(this.colspan_lookup[table_prefixes[index]]));
       }
-      sorttable.makeSortable(table.closest("table")[0]);
     }
   },
   set_table_state: function(){

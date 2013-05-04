@@ -5,20 +5,21 @@ var ClusterModel = Backbone.Model.extend({
       this.view.render();
     });
   },
+  url: function(){
+    return '/clusters/' + this.get('id') + '.json';
+  },
   safe_mode: function(){
     return this.get('safe_mode') ? 'Yes' : 'No';
   },
   remove: function(){
-    if(this.get('status') == 0){
-      this.destroy({
-        success: function(){
-          Notification("Successfully forgot the Cluster!", true);
-        },
-        error: function(){
-          Notification("Failed to forget the Cluster", false);
-        }
-      });
-    }
+    this.destroy({
+      success: function(){
+        Notification("Successfully forgot the Cluster!", true);
+      },
+      error: function(){
+        Notification("Failed to forget the Cluster", false);
+      }
+    });
   }
 });
 
@@ -28,24 +29,16 @@ var ClusterCollection = Backbone.StreamCollection.extend({
   initialize: function(models, options){
     this.on('add', function(clusters){
       if (this.length == 1){
-        var table = $('#clusters table');
-        $('.clusters_table').delay(200).slideUp(400, function(){
-          $('#clusters .no_children').hide();
-          $('#clusters tbody').append(clusters.view.render().$el);
-          $(this).slideDown(400);
-        });
+        $('#clusters .no_children').hide();
+        $('#clusters tbody').append(clusters.view.render().$el);
       } else {
         $('#clusters tbody').append(clusters.view.render().$el);
       }
     });
     this.on('remove', function(clusters){
-      if (this.length == 1){
-        var table = $('#clusterss table');
-        $('.clusters_table').delay(200).slideUp(400, function(){
-          $('#clusters .no_children').show();
-          clusters.view.destroy();
-          $(this).slideDown(400);
-        });
+      if (this.length <= 1){
+        $('#clusters .no_children').show();
+        clusters.view.destroy();
       } else {
         clusters.view.destroy();
       }

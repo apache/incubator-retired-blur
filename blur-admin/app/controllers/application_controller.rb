@@ -49,14 +49,12 @@ class ApplicationController < ActionController::Base
     end
     @current_zookeeper
   end
-  #Catches application errors and redirects to the custom error pages
-  unless Rails.application.config.consider_all_requests_local
-    rescue_from Exception, :with => :error_500
-    rescue_from ActionController::RoutingError, :with => :error_404
-    rescue_from ActionController::UnknownController, :with => :error_404
-    rescue_from AbstractController::ActionNotFound, :with => :error_404
-    rescue_from ActiveRecord::RecordNotFound, :with => :error_404
-    rescue_from ActionController::InvalidAuthenticityToken, :with => :error_422
+
+  def set_zookeeper(id)
+    # Convert all inputs to an int
+    id = id.to_i
+    # Avoids a DB hit if the id is unchanged
+    session[:current_zookeeper_id] = id if session[:current_zookeeper_id] != id
   end
 
   private
@@ -64,6 +62,7 @@ class ApplicationController < ActionController::Base
   # Populates the session id with your preference zookeeper id
   def set_zookeeper_with_preference
     user_zk_pref = current_user.zookeeper_preference
+
     if user_zk_pref.name.to_i > 0 # If your preference is not the default
       # If your preferred zookeeper doesnt exist
       if Zookeeper.find_by_id(user_zk_pref.value).nil?
@@ -75,13 +74,6 @@ class ApplicationController < ActionController::Base
         set_zookeeper user_zk_pref.value
       end
     end
-  end
-
-  def set_zookeeper(id)
-    # Convert all inputs to an int
-    id = id.to_i 
-    # Avoids a DB hit if the id is unchanged
-    session[:current_zookeeper_id] = id if session[:current_zookeeper_id] != id
   end
 
   # Populates the @zookeepers instance variable for option select
@@ -126,6 +118,4 @@ class ApplicationController < ActionController::Base
       redirect_to root_path
     end
   end
-
-
 end

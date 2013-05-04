@@ -2,41 +2,40 @@
   belongs_to :zookeeper
   has_many :blur_shards, :dependent => :destroy
   has_many :blur_tables, :dependent => :destroy, :order => 'table_name'
+  has_many :blur_queries, :through => :blur_tables, :dependent => :destroy
 
   attr_accessor :can_update
 
   def as_json(options={})
     serial_properties = super(options)
-    serial_properties["can_update"] = self.can_update
-    serial_properties["shard_blur_version"] = self.shard_version
-    serial_properties["shard_status"] = self.shard_status
-    serial_properties["cluster_queried"] = self.query_status
+
+    if options[:blur_tables]
+      serial_properties["cluster_queried"] = self.query_status
+      serial_properties["can_update"] = self.can_update
+    else
+      serial_properties["shard_blur_version"] = self.shard_version
+      serial_properties["shard_status"] = self.shard_status
+    end
+
     serial_properties
   end
 
   def shard_version
-    versions = self.blur_shards.select(:blur_version).group(:blur_version)
+    versions = self.blur_shards.collect{ |shard| shard.blur_version }.uniq
     if versions.length < 1
       "No shards in this Cluster!"
     else
-      versions.length == 1 ? versions.first.blur_version : "Inconsistent Blur Versions"
+      versions.length == 1 ? versions.first : "Inconsistent Blur Versions"
     end
   end
 
   def shard_status
-    shard_total = self.blur_shards.count
-    shards_online = 0
-    self.blur_shards.each do |s|
-      shards_online += 1 if s.status == 1
-    end
+    shard_total = self.blur_shards.length
+    shards_online = self.blur_shards.select{ |shard| shard.shard_status == 1 }.length
     "#{shards_online} | #{shard_total}"
   end
 
   def query_status
-    query_status = false
-    self.blur_tables.each do |table| 
-      query_status = true if table.as_json["queried_recently"] == true
-    end
-    query_status
+    self.blur_tables.select{ |table| table.query_count > 0 }.length > 0
   end
 end

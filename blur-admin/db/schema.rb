@@ -11,7 +11,14 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20121030184429) do
+ActiveRecord::Schema.define(:version => 20130106191159) do
+
+  create_table "admin_settings", :force => true do |t|
+    t.string   "setting",    :null => false
+    t.string   "value"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
 
   create_table "audits", :force => true do |t|
     t.integer  "user_id"
@@ -24,12 +31,12 @@ ActiveRecord::Schema.define(:version => 20121030184429) do
   end
 
   create_table "blur_controllers", :force => true do |t|
-    t.integer  "status"
+    t.integer  "controller_status"
     t.string   "blur_version"
     t.string   "node_name"
     t.integer  "zookeeper_id"
-    t.datetime "created_at",   :null => false
-    t.datetime "updated_at",   :null => false
+    t.datetime "created_at",        :null => false
+    t.datetime "updated_at",        :null => false
   end
 
   add_index "blur_controllers", ["zookeeper_id"], :name => "index_controllers_on_zookeeper_id"
@@ -59,7 +66,7 @@ ActiveRecord::Schema.define(:version => 20121030184429) do
   add_index "blur_queries", ["blur_table_id"], :name => "index_blur_queries_on_blur_table_id"
 
   create_table "blur_shards", :force => true do |t|
-    t.integer  "status"
+    t.integer  "shard_status"
     t.string   "blur_version"
     t.string   "node_name"
     t.integer  "cluster_id"
@@ -75,7 +82,7 @@ ActiveRecord::Schema.define(:version => 20121030184429) do
     t.integer  "query_usage"
     t.datetime "updated_at"
     t.integer  "record_count",   :limit => 8
-    t.integer  "status"
+    t.integer  "table_status"
     t.string   "table_uri"
     t.text     "table_analyzer"
     t.text     "table_schema"
@@ -193,7 +200,7 @@ ActiveRecord::Schema.define(:version => 20121030184429) do
   create_table "zookeepers", :force => true do |t|
     t.string  "url"
     t.string  "name"
-    t.integer "status"
+    t.integer "zookeeper_status"
     t.string  "blur_urls",             :limit => 4000
     t.string  "online_ensemble_nodes"
   end

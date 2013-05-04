@@ -1,5 +1,6 @@
 package com.nearinfinity.agent.connections.blur;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,7 @@ public class BlurDatabaseConnection implements BlurDatabaseInterface {
 
 	@Override
 	public String resolveConnectionString(int zookeeperId) {
-		String queryString = "select distinct node_name from blur_controllers where zookeeper_id = ? and status = 1";
+		String queryString = "select distinct node_name from blur_controllers where zookeeper_id = ? and controller_status = 1";
 		List<String> controller_uris = jdbc.queryForList(queryString, new String[] { Integer.toString(zookeeperId) }, String.class);
 		String connection = StringUtils.join(controller_uris, ',');
 		this.jdbc.update("update zookeepers set blur_urls=? where id = ?", connection, zookeeperId);
@@ -136,6 +137,13 @@ public class BlurDatabaseConnection implements BlurDatabaseInterface {
 	@Override
 	public List<Long> getRunningQueries() {
 		return this.jdbc.queryForList("select uuid from blur_queries where state = 0", Long.class);
+	}
+
+	@Override
+	public void markOrphanedRunningQueriesComplete(Collection<Long> queries) {
+		if (!queries.isEmpty()) {
+			this.jdbc.update("update blur_queries set state=3 where uuid in (" + StringUtils.join(queries, ", ") + ")");
+		}
 	}
 
 }

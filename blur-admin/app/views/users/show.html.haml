@@ -53,7 +53,10 @@
             = option
       =select_tag :zookeeper_num,  options_from_collection_for_select(@zookeepers, "id", "name", @zookeeper_preference.value)
       %p
+        This preference will only be used when the current user does not have a zookeeper in the current session.
+      %p
       =submit_tag "Save", :confirm => "Are you sure?", :id => "zookeeper_submit", :class => "btn btn-primary"
+
     #user-info.span4
       %p
         %strong Username:

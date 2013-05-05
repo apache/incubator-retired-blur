@@ -73,19 +73,7 @@ $nav-height: 40px;
   @include box-shadow(0 1px 0 lighten($footer-color, 10%) inset);
   text-align: right;
   z-index: 99;
-  &.expiring_license {
-    background-color: $red-state-color;
-    color: $grey-color;
-    p, p a {
-      color: $grey-color;
-    }
-  }
   
-  #license {
-    float: left;
-    margin-top: 15px;
-    margin-left: 50px;
-  }
   #company-info {
     float: right;
     margin-top: 15px;

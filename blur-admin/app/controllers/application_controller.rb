@@ -8,7 +8,7 @@ class ApplicationController < ActionController::Base
   require 'thrift/blur'
   require 'blur_thrift_client'
 
-  helper_method :license, :current_user
+  helper_method :current_user
 
   enable_authorization do |exception|
     if current_user
@@ -31,10 +31,6 @@ class ApplicationController < ActionController::Base
     respond_to do |format|
       format.any  { render :partial => 'layouts/help_menu' }
     end
-  end
-
-  def license
-    @license ||= License.first
   end
 
   # Populates the @current_zookeeper instance variable

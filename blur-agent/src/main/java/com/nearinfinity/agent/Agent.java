@@ -28,10 +28,7 @@ import com.nearinfinity.agent.connections.cleaners.CleanerDatabaseConnection;
 import com.nearinfinity.agent.connections.hdfs.HdfsDatabaseConnection;
 import com.nearinfinity.agent.connections.zookeeper.ZookeeperDatabaseConnection;
 import com.nearinfinity.agent.exceptions.HdfsThreadException;
-import com.nearinfinity.agent.exceptions.InvalidLicenseException;
-import com.nearinfinity.agent.monitor.ThreadController;
 import com.nearinfinity.agent.notifications.Notifier;
-import com.nearinfinity.license.AgentLicense;
 
 public class Agent {
 	public static final long COLLECTOR_SLEEP_TIME = TimeUnit.SECONDS.toMillis(15);
@@ -46,15 +43,6 @@ public class Agent {
 
 		// Setup the notifier
 		Notifier.getNotifier(props, true);
-
-		// Verify valid License
-		try {
-			AgentLicense.verifyLicense(props, jdbc);
-		} catch (InvalidLicenseException e) {
-			log.fatal(e.getMessage() + " Exiting.");
-			ThreadController.stopAllThreads();
-			return;
-		}
 
 		List<String> activeCollectors = props.containsKey("active.collectors") ? new ArrayList<String>(Arrays.asList(props.getProperty(
 				"active.collectors").split("\\|"))) : new ArrayList<String>();

@@ -75,15 +75,10 @@
 					.alert.alert-error{:class=>type}= message
 				-else
 					.alert.alert-info{:class=>type}= message
-	#ft{:class => footer_class(license)}
-		#license
-			%p
-				= license_text(license)
+	#ft
 		#company-info
 			%p
 				- if !@current_user.nil?
-					%a#page-help{:href => ''} Help	|
-				Developed by 
-				%a{:href => "http://www.nearinfinity.com"} Near Infinity
+					%a#page-help{:href => ''} Help
 				| Version 1.4.2
 #help-menu{:style => 'display: none', "data-controller" => params[:controller], "data-action" => params[:action]}

@@ -32,11 +32,11 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.server.TThreadedSelectorServer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TServer;
-import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TFramedTransport;
-import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TTransportException;
 
 public class ThriftServer {
@@ -106,17 +106,14 @@ public class ThriftServer {
   public void start() throws TTransportException {
     _executorService = Executors.newThreadPool("thrift-processors", _threadCount);
     Blur.Processor<Blur.Iface> processor = new Blur.Processor<Blur.Iface>(_iface);
-     TServerSocket serverTransport = new
-     TServerSocket(getBindInetSocketAddress(_configuration));
-    
-     TThreadPoolServer.Args args = new
-     TThreadPoolServer.Args(serverTransport);
-     
-     args.processor(processor);
-     args.executorService(_executorService);
-     args.transportFactory(new TFramedTransport.Factory());
-     args.protocolFactory(new TBinaryProtocol.Factory(true, true));
-     _server = new TThreadPoolServer(args);
+
+    TNonblockingServerSocket serverTransport = new TNonblockingServerSocket(getBindInetSocketAddress(_configuration));
+    TThreadedSelectorServer.Args args = new TThreadedSelectorServer.Args(serverTransport);
+    args.processor(processor);
+    args.executorService(_executorService);
+    args.transportFactory(new TFramedTransport.Factory());
+    args.protocolFactory(new TBinaryProtocol.Factory(true, true));
+    _server = new TThreadedSelectorServer(args);
     LOG.info("Starting server [{0}]", _nodeName);
     _server.serve();
   }

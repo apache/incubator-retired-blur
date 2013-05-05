@@ -30,8 +30,7 @@ import org.apache.thrift.TException;
 
 public class GetRowCommand extends Command {
   @Override
-  public void doit(PrintWriter out, Client client, String[] args)
-      throws CommandException, TException, BlurException {
+  public void doit(PrintWriter out, Client client, String[] args) throws CommandException, TException, BlurException {
     if (args.length != 3) {
       throw new CommandException("Invalid args: " + help());
     }
@@ -42,8 +41,15 @@ public class GetRowCommand extends Command {
     selector.setRowId(rowId);
     FetchResult fetchRow = client.fetchRow(tablename, selector);
     FetchRowResult rowResult = fetchRow.getRowResult();
+    if (rowResult == null) {
+      out.println("Row [" + rowId + "] not found.");
+      return;
+    }
     Row row = rowResult.getRow();
-
+    if (row == null) {
+      out.println("Row [" + rowId + "] not found.");
+      return;
+    }
     out.println(row);
   }
 

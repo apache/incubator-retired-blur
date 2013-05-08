@@ -51,9 +51,8 @@ import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Histogram;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
-public class HdfsDirectory extends Directory {
 
-  
+public class HdfsDirectory extends Directory {
 
   private static final Log LOG = LogFactory.getLog(HdfsDirectory.class);
 
@@ -65,29 +64,33 @@ public class HdfsDirectory extends Directory {
   private static AtomicLong createCounter = new AtomicLong();
   private static AtomicLong isFileCounter = new AtomicLong();
 
+  private static final boolean debug = false;
+
   static {
-    Thread thread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        while (true) {
-          LOG.debug("Delete Counter [" + deleteCounter + "]");
-          LOG.debug("Exists Counter [" + existsCounter + "]");
-          LOG.debug("File Status Counter [" + fileStatusCounter + "]");
-          LOG.debug("Rename Counter [" + renameCounter + "]");
-          LOG.debug("List Counter [" + listCounter + "]");
-          LOG.debug("Create Counter [" + createCounter + "]");
-          LOG.debug("IsFile Counter [" + isFileCounter + "]");
-          try {
-            Thread.sleep(5000);
-          } catch (InterruptedException e) {
-            return;
+    if (debug) {
+      Thread thread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+          while (true) {
+            LOG.debug("Delete Counter [" + deleteCounter + "]");
+            LOG.debug("Exists Counter [" + existsCounter + "]");
+            LOG.debug("File Status Counter [" + fileStatusCounter + "]");
+            LOG.debug("Rename Counter [" + renameCounter + "]");
+            LOG.debug("List Counter [" + listCounter + "]");
+            LOG.debug("Create Counter [" + createCounter + "]");
+            LOG.debug("IsFile Counter [" + isFileCounter + "]");
+            try {
+              Thread.sleep(5000);
+            } catch (InterruptedException e) {
+              return;
+            }
           }
         }
-      }
-    });
-    thread.setName("HDFS dir counter logger");
-    thread.setDaemon(true);
-    thread.start();
+      });
+      thread.setName("HDFS dir counter logger");
+      thread.setDaemon(true);
+      thread.start();
+    }
   }
 
   private final Path path;
@@ -107,7 +110,7 @@ public class HdfsDirectory extends Directory {
       this.writeThroughput = writeThroughput;
     }
   }
-  
+
   /**
    * We keep the metrics separate per filesystem.
    */
@@ -122,11 +125,15 @@ public class HdfsDirectory extends Directory {
       MetricsGroup metricsGroup = metricsGroupMap.get(uri);
       if (metricsGroup == null) {
         String scope = uri.toString();
-        
-        Histogram readAccess = Metrics.newHistogram(new MetricName(ORG_APACHE_BLUR, HDFS, "Read Latency in \u00B5s", scope));
-        Histogram writeAccess = Metrics.newHistogram(new MetricName(ORG_APACHE_BLUR, HDFS, "Write Latency in \u00B5s", scope));
-        Meter readThroughput = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, HDFS, "Read Throughput", scope), "Read Bytes", TimeUnit.SECONDS);
-        Meter writeThroughput = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, HDFS, "Write Throughput", scope), "Write Bytes", TimeUnit.SECONDS);
+
+        Histogram readAccess = Metrics.newHistogram(new MetricName(ORG_APACHE_BLUR, HDFS, "Read Latency in \u00B5s",
+            scope));
+        Histogram writeAccess = Metrics.newHistogram(new MetricName(ORG_APACHE_BLUR, HDFS, "Write Latency in \u00B5s",
+            scope));
+        Meter readThroughput = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, HDFS, "Read Throughput", scope),
+            "Read Bytes", TimeUnit.SECONDS);
+        Meter writeThroughput = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, HDFS, "Write Throughput", scope),
+            "Write Bytes", TimeUnit.SECONDS);
         metricsGroup = new MetricsGroup(readAccess, writeAccess, readThroughput, writeThroughput);
         metricsGroupMap.put(uri, metricsGroup);
       }

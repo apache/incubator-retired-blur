@@ -81,7 +81,7 @@ public class TransactionRecorder {
   }
 
   private static final Log LOG = LogFactory.getLog(TransactionRecorder.class);
-  private static FieldType ID_TYPE;
+  public static FieldType ID_TYPE;
 
   static {
     ID_TYPE = new FieldType();

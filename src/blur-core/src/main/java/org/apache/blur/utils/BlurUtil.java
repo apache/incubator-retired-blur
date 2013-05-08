@@ -442,6 +442,10 @@ public class BlurUtil {
     }
   }
 
+  public static String getShardName(int id) {
+    return getShardName(BlurConstants.SHARD_PREFIX, id);
+  }
+
   public static String getShardName(String prefix, int id) {
     return prefix + buffer(id, 8);
   }

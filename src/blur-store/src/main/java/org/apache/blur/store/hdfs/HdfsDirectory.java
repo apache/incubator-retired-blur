@@ -328,7 +328,7 @@ public class HdfsDirectory extends Directory {
 
   private boolean quickMove(Directory to, String src, String dest, IOContext context) throws IOException {
     HdfsDirectory simpleTo = (HdfsDirectory) to;
-    if (ifSameCluster(to, this)) {
+    if (ifSameCluster(simpleTo, this)) {
       Path newDest = simpleTo.getPath(dest);
       Path oldSrc = getPath(src);
       renameCounter.incrementAndGet();
@@ -337,7 +337,7 @@ public class HdfsDirectory extends Directory {
     return false;
   }
 
-  private boolean ifSameCluster(Directory to, HdfsDirectory simpleHDFSDirectory) {
+  private boolean ifSameCluster(HdfsDirectory dest, HdfsDirectory src) {
     // @TODO
     return true;
   }

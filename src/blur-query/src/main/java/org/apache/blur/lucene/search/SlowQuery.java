@@ -128,6 +128,11 @@ public class SlowQuery extends Query {
       return scorer.freq();
     }
 
+    @Override
+    public long cost() {
+      return scorer.cost();
+    }
+
   }
 
   public static void highCpuWait(long ms) {

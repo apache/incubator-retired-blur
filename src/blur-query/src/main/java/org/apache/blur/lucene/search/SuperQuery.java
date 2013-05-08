@@ -48,7 +48,6 @@ public class SuperQuery extends AbstractWrapperQuery {
     this.scoreType = scoreType;
     this.primeDocTerm = primeDocTerm;
   }
-  
 
   public ScoreType getScoreType() {
     return scoreType;
@@ -81,7 +80,7 @@ public class SuperQuery extends AbstractWrapperQuery {
   public String toString(String field) {
     return "super:<" + _query.toString(field) + ">";
   }
-  
+
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -149,7 +148,8 @@ public class SuperQuery extends AbstractWrapperQuery {
     }
 
     @Override
-    public Scorer scorer(AtomicReaderContext context, boolean scoreDocsInOrder, boolean topScorer, Bits acceptDocs) throws IOException {
+    public Scorer scorer(AtomicReaderContext context, boolean scoreDocsInOrder, boolean topScorer, Bits acceptDocs)
+        throws IOException {
       Scorer scorer = weight.scorer(context, true, topScorer, acceptDocs);
       if (scorer == null) {
         return null;
@@ -308,6 +308,13 @@ public class SuperQuery extends AbstractWrapperQuery {
     @Override
     public int freq() throws IOException {
       return scorer.freq();
+    }
+
+    @Override
+    public long cost() {
+      // @TODO may be better to return the cardinality of the prime doc bitset,
+      // if not too costly to calculate.
+      return scorer.cost();
     }
   }
 

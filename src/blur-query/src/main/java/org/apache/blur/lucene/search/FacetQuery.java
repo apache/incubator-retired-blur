@@ -196,5 +196,10 @@ public class FacetQuery extends AbstractWrapperQuery {
     public int freq() throws IOException {
       return baseScorer.freq();
     }
+
+    @Override
+    public long cost() {
+      return baseScorer.cost();
+    }
   }
 }

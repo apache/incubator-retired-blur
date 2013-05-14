@@ -18,14 +18,14 @@ package org.apache.blur.mapreduce;
  */
 import java.io.IOException;
 
-import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Mapper;
 
-public abstract class BlurMapper<KEY, VALUE> extends Mapper<KEY, VALUE, BytesWritable, BlurMutate> {
+public abstract class BlurMapper<KEY, VALUE> extends Mapper<KEY, VALUE, Text, BlurMutate> {
 
   protected BlurMutate _mutate;
-  protected BytesWritable _key;
+  protected Text _key;
   protected BlurTask _blurTask;
   protected Counter _recordCounter;
   protected Counter _fieldCounter;
@@ -33,7 +33,7 @@ public abstract class BlurMapper<KEY, VALUE> extends Mapper<KEY, VALUE, BytesWri
   @Override
   public void run(Context context) throws IOException, InterruptedException {
     setup(context);
-    long maxRecordCount = _blurTask.getMaxRecordCount();
+    long maxRecordCount = _blurTask == null ? Long.MAX_VALUE : _blurTask.getMaxRecordCount();
     if (maxRecordCount == -1) {
       maxRecordCount = Long.MAX_VALUE;
     }
@@ -47,7 +47,8 @@ public abstract class BlurMapper<KEY, VALUE> extends Mapper<KEY, VALUE, BytesWri
   protected void setup(Context context) throws IOException, InterruptedException {
     _blurTask = BlurTask.read(context.getConfiguration());
     _mutate = new BlurMutate();
-    _key = new BytesWritable();
+    _mutate.setRecord(new BlurRecord());
+    _key = new Text();
     _recordCounter = context.getCounter(BlurTask.getCounterGroupName(), BlurTask.getRecordCounterName());
     _fieldCounter = context.getCounter(BlurTask.getCounterGroupName(), BlurTask.getFieldCounterName());
   }

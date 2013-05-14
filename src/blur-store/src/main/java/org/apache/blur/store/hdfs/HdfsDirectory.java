@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.store.blockcache.BlockDirectory;
 import org.apache.blur.store.buffer.ReusedBufferedIndexInput;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -296,6 +295,10 @@ public class HdfsDirectory extends Directory {
   public void close() throws IOException {
 
   }
+  
+  public Path getPath() {
+    return path;
+  }
 
   private Path getPath(String name) {
     return new Path(path, name);
@@ -312,18 +315,15 @@ public class HdfsDirectory extends Directory {
 
   @Override
   public void copy(Directory to, String src, String dest, IOContext context) throws IOException {
-    if (to instanceof HdfsDirectory) {
+    if (to instanceof DirectoryDecorator) {
+      copy(((DirectoryDecorator) to).getOriginalDirectory(), src, dest, context);
+    } else if (to instanceof HdfsDirectory) {
       if (quickMove(to, src, dest, context)) {
         return;
       }
-    } else if (to instanceof BlockDirectory) {
-      BlockDirectory bd = (BlockDirectory) to;
-      Directory inner = bd.getDirectory();
-      if (quickMove(inner, src, dest, context)) {
-        return;
-      }
+    } else {
+      super.copy(to, src, dest, context);
     }
-    super.copy(to, src, dest, context);
   }
 
   private boolean quickMove(Directory to, String src, String dest, IOContext context) throws IOException {

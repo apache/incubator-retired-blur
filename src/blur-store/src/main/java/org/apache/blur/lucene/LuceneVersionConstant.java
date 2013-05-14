@@ -23,6 +23,6 @@ public class LuceneVersionConstant {
   /**
    * All Lucene Version references should refer to this constant.
    */
-  public static final Version LUCENE_VERSION = Version.LUCENE_41;
+  public static final Version LUCENE_VERSION = Version.LUCENE_43;
 
 }

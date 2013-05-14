@@ -48,7 +48,6 @@ import org.apache.thrift.transport.TIOStreamTransport;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 
-
 public class BlurTask implements Writable {
 
   public enum INDEXING_TYPE {
@@ -124,7 +123,8 @@ public class BlurTask implements Writable {
         return num;
       }
       if (shardCount != num) {
-        LOG.warn("Asked for " + num + " reducers, but existing table " + _tableDescriptor.name + " has " + shardCount + " shards. Using " + shardCount + " reducers");
+        LOG.warn("Asked for " + num + " reducers, but existing table " + _tableDescriptor.name + " has " + shardCount
+            + " shards. Using " + shardCount + " reducers");
       }
       return shardCount;
     } catch (IOException e) {
@@ -187,7 +187,8 @@ public class BlurTask implements Writable {
     try {
       List<String> children = _zooKeeper.getChildren(ZookeeperPathConstants.getLockPath(cluster, table), false);
       if (!children.isEmpty()) {
-        throw new RuntimeException("Table [" + table + "] in cluster [" + cluster + "] has write locks enabled, cannot perform update.");
+        throw new RuntimeException("Table [" + table + "] in cluster [" + cluster
+            + "] has write locks enabled, cannot perform update.");
       }
     } catch (KeeperException e) {
       throw new RuntimeException(e);
@@ -198,7 +199,11 @@ public class BlurTask implements Writable {
   }
 
   public static BlurTask read(Configuration configuration) throws IOException {
-    byte[] blurTaskBs = Base64.decodeBase64(configuration.get(BLUR_BLURTASK));
+    String base64String = configuration.get(BLUR_BLURTASK);
+    if (base64String == null) {
+      return null;
+    }
+    byte[] blurTaskBs = Base64.decodeBase64(base64String);
     BlurTask blurTask = new BlurTask();
     blurTask.readFields(new DataInputStream(new ByteArrayInputStream(blurTaskBs)));
     return blurTask;

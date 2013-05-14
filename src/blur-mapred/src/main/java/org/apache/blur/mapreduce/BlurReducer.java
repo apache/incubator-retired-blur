@@ -52,7 +52,7 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -75,7 +75,7 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.IOUtils;
 
-public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritable, BlurMutate> {
+public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
 
   static class LuceneFileComparator implements Comparator<String> {
 
@@ -149,14 +149,14 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
   }
 
   @Override
-  protected void reduce(BytesWritable key, Iterable<BlurMutate> values, Context context) throws IOException,
+  protected void reduce(Text key, Iterable<BlurMutate> values, Context context) throws IOException,
       InterruptedException {
     if (!index(key, values, context)) {
       _rowFailures.increment(1);
     }
   }
 
-  protected boolean index(BytesWritable key, Iterable<BlurMutate> values, Context context) throws IOException {
+  protected boolean index(Text key, Iterable<BlurMutate> values, Context context) throws IOException {
     int recordCount = 0;
     _newDocs.clear();
     _recordIdsToDelete.clear();

@@ -25,7 +25,6 @@ import java.util.List;
 import org.apache.blur.utils.ReaderBlurRecord;
 import org.apache.hadoop.io.Writable;
 
-
 public class BlurRecord implements Writable, ReaderBlurRecord {
 
   private String _rowId;
@@ -131,6 +130,49 @@ public class BlurRecord implements Writable, ReaderBlurRecord {
   @Override
   public String toString() {
     return "{rowId=" + _rowId + ", recordId=" + _recordId + ", family=" + _family + ", columns=" + _columns + "}";
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((_columns == null) ? 0 : _columns.hashCode());
+    result = prime * result + ((_family == null) ? 0 : _family.hashCode());
+    result = prime * result + ((_recordId == null) ? 0 : _recordId.hashCode());
+    result = prime * result + ((_rowId == null) ? 0 : _rowId.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    BlurRecord other = (BlurRecord) obj;
+    if (_columns == null) {
+      if (other._columns != null)
+        return false;
+    } else if (!_columns.equals(other._columns))
+      return false;
+    if (_family == null) {
+      if (other._family != null)
+        return false;
+    } else if (!_family.equals(other._family))
+      return false;
+    if (_recordId == null) {
+      if (other._recordId != null)
+        return false;
+    } else if (!_recordId.equals(other._recordId))
+      return false;
+    if (_rowId == null) {
+      if (other._rowId != null)
+        return false;
+    } else if (!_rowId.equals(other._rowId))
+      return false;
+    return true;
   }
 
 }

@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.store.buffer.ReusedBufferedIndexInput;
+import org.apache.blur.store.hdfs.DirectoryDecorator;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -33,7 +34,7 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 
-public class BlockDirectory extends Directory {
+public class BlockDirectory extends Directory implements DirectoryDecorator {
 
   public static final long BLOCK_SHIFT = 13; // 2^13 = 8,192 bytes per block
   public static final long BLOCK_MOD = 0x1FFF;
@@ -310,6 +311,11 @@ public class BlockDirectory extends Directory {
   }
 
   public Directory getDirectory() {
+    return _directory;
+  }
+
+  @Override
+  public Directory getOriginalDirectory() {
     return _directory;
   }
 

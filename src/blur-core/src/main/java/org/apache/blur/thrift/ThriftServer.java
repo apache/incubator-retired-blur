@@ -35,6 +35,7 @@ import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.server.TThreadedSelectorServer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TServer;
+import org.apache.thrift.server.TServerEventHandler;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TTransportException;
@@ -55,6 +56,7 @@ public class ThriftServer {
   private ExecutorService _executorService;
   private ExecutorService _queryExexutorService;
   private ExecutorService _mutateExecutorService;
+  private TServerEventHandler _eventHandler;
 
   public static void printUlimits() throws IOException {
     ProcessBuilder processBuilder = new ProcessBuilder("ulimit", "-a");
@@ -114,6 +116,7 @@ public class ThriftServer {
     args.transportFactory(new TFramedTransport.Factory());
     args.protocolFactory(new TBinaryProtocol.Factory(true, true));
     _server = new TThreadedSelectorServer(args);
+    _server.setServerEventHandler(_eventHandler);
     LOG.info("Starting server [{0}]", _nodeName);
     _server.serve();
   }
@@ -192,4 +195,13 @@ public class ThriftServer {
   public void setShutdown(BlurShutdown shutdown) {
     this._shutdown = shutdown;
   }
+
+  public TServerEventHandler getEventHandler() {
+    return _eventHandler;
+  }
+
+  public void setEventHandler(TServerEventHandler eventHandler) {
+    _eventHandler = eventHandler;
+  }
+
 }

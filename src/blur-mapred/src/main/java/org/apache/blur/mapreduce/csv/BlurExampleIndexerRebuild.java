@@ -1,4 +1,4 @@
-package org.apache.blur.mapreduce.example;
+package org.apache.blur.mapreduce.csv;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -64,7 +64,7 @@ public class BlurExampleIndexerRebuild {
     blurTask.setOptimize(false);
     Job job = blurTask.configureJob(configuration);
     job.setJarByClass(BlurExampleIndexerRebuild.class);
-    job.setMapperClass(BlurExampleMapper.class);
+    job.setMapperClass(CsvBlurMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
     job.setOutputFormatClass(TextOutputFormat.class);
 

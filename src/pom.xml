@@ -55,6 +55,7 @@ under the License.
 		<metrics-graphite.version>2.2.0</metrics-graphite.version>
 		<mockito.version>1.9.0</mockito.version>
 		<json.version>20090211</json.version>
+		<mrunit.version>0.8.0-incubating</mrunit.version>
 	</properties>
 
 	<modules>

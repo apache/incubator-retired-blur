@@ -36,7 +36,7 @@ public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
   @Override
   public void warmBlurIndex(final TableDescriptor table, final String shard, IndexReader reader,
       AtomicBoolean isClosed, ReleaseReader releaseReader) throws IOException {
-    LOG.info("Runngin warmup for reader [{0}]", reader);
+    LOG.info("Running warmup for reader [{0}]", reader);
     try {
       FieldBasedWarmer warmer = new FieldBasedWarmer(table);
       for (IndexReaderContext context : reader.getContext().leaves()) {

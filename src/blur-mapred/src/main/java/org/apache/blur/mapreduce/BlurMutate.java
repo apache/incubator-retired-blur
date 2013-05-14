@@ -25,7 +25,7 @@ import org.apache.hadoop.io.Writable;
 public class BlurMutate implements Writable {
 
   public enum MUTATE_TYPE {
-    ADD(0), UPDATE(1), DELETE(2);
+    /*ADD(0), UPDATE(1),*/ DELETE(2), REPLACE(3);
     private int _value;
 
     private MUTATE_TYPE(int value) {
@@ -38,20 +38,54 @@ public class BlurMutate implements Writable {
 
     public MUTATE_TYPE find(int value) {
       switch (value) {
-      case 0:
-        return ADD;
-      case 1:
-        return UPDATE;
+   // @TODO Updates through MR is going to be disabled
+//      case 0:
+//        return ADD;
+//      case 1:
+//        return UPDATE;
       case 2:
         return DELETE;
+      case 3:
+        return REPLACE;
       default:
         throw new RuntimeException("Value [" + value + "] not found.");
       }
     }
   }
 
-  private MUTATE_TYPE _mutateType = MUTATE_TYPE.UPDATE;
+  private MUTATE_TYPE _mutateType = MUTATE_TYPE.REPLACE;
   private BlurRecord _record = new BlurRecord();
+
+  public BlurMutate() {
+
+  }
+
+  public BlurMutate(MUTATE_TYPE type, BlurRecord record) {
+    _mutateType = type;
+    _record = record;
+  }
+
+  public BlurMutate(MUTATE_TYPE type, String rowId, String recordId) {
+    _mutateType = type;
+    _record.setRowId(rowId);
+    _record.setRecordId(recordId);
+  }
+
+  public BlurMutate(MUTATE_TYPE type, String rowId, String recordId, String family) {
+    _mutateType = type;
+    _record.setRowId(rowId);
+    _record.setRecordId(recordId);
+    _record.setFamily(family);
+  }
+
+  public BlurMutate addColumn(BlurColumn column) {
+    _record.addColumn(column);
+    return this;
+  }
+
+  public BlurMutate addColumn(String name, String value) {
+    return addColumn(new BlurColumn(name, value));
+  }
 
   public BlurRecord getRecord() {
     return _record;
@@ -77,8 +111,47 @@ public class BlurMutate implements Writable {
     return _mutateType;
   }
 
-  public void setMutateType(MUTATE_TYPE mutateType) {
+  public BlurMutate setMutateType(MUTATE_TYPE mutateType) {
     _mutateType = mutateType;
+    return this;
+  }
+
+  @Override
+  public String toString() {
+    return "BlurMutate [mutateType=" + _mutateType + ", record=" + _record + "]";
+  }
+
+  public BlurMutate setFamily(String family) {
+    _record.setFamily(family);
+    return this;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((_mutateType == null) ? 0 : _mutateType.hashCode());
+    result = prime * result + ((_record == null) ? 0 : _record.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    BlurMutate other = (BlurMutate) obj;
+    if (_mutateType != other._mutateType)
+      return false;
+    if (_record == null) {
+      if (other._record != null)
+        return false;
+    } else if (!_record.equals(other._record))
+      return false;
+    return true;
   }
 
 }

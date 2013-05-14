@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.store.hdfs.DirectoryDecorator;
 import org.apache.lucene.index.IndexFileNames;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
@@ -32,7 +33,7 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 
-public class DirectoryReferenceCounter extends Directory {
+public class DirectoryReferenceCounter extends Directory implements DirectoryDecorator {
 
   private final static Log LOG = LogFactory.getLog(DirectoryReferenceCounter.class);
   private Directory directory;
@@ -277,6 +278,11 @@ public class DirectoryReferenceCounter extends Directory {
       LOG.debug("Add file [{0}] to be GCed once refs are closed.", name);
       gc.add(directory, name, refCounters);
     }
+  }
+
+  @Override
+  public Directory getOriginalDirectory() {
+    return directory;
   }
 
 }

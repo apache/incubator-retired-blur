@@ -88,8 +88,8 @@ public abstract class MiniCluster {
 
   public static void main(String[] args) throws IOException, InterruptedException, KeeperException, BlurException,
       TException {
-    startDfs("./tmp");
-    startZooKeeper("./tmp");
+    startDfs("./tmp/hdfs");
+    startZooKeeper("./tmp/zk");
     startControllers(1);
     startShards(1);
 
@@ -129,8 +129,8 @@ public abstract class MiniCluster {
   }
 
   public static void startBlurCluster(String path, int controllerCount, int shardCount) {
-    startDfs(path);
-    startZooKeeper(path);
+    startDfs(path + "/hdfs");
+    startZooKeeper(path + "/zk");
     setupBuffers();
     startControllers(controllerCount);
     startShards(shardCount);

@@ -18,39 +18,58 @@ package org.apache.blur.mapreduce.lib;
  */
 import java.io.IOException;
 
-import org.apache.hadoop.mapreduce.JobContext;
-import org.apache.hadoop.mapreduce.OutputCommitter;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.blur.mapred.AbstractOutputCommitter;
+import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.utils.BlurUtil;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.TaskAttemptContext;
+import org.apache.hadoop.mapred.TaskAttemptID;
 
-public class BlurOutputCommitter extends OutputCommitter {
+public class BlurOutputCommitter extends AbstractOutputCommitter {
 
-  public BlurOutputCommitter(TaskAttemptContext context) {
+  private Path _newIndex;
+  private Configuration _configuration;
+  private TaskAttemptID _taskAttemptID;
+  private Path _indexPath;
 
+  @Override
+  public boolean needsTaskCommit(TaskAttemptContext context) throws IOException {
+    return true;
   }
 
   @Override
-  public void setupJob(JobContext jobContext) throws IOException {
-
+  public void setupTask(TaskAttemptContext context) throws IOException {
+    
   }
 
   @Override
-  public void setupTask(TaskAttemptContext taskContext) throws IOException {
-
+  public void commitTask(TaskAttemptContext context) throws IOException {
+    setup(context);
+    FileSystem fileSystem = _newIndex.getFileSystem(_configuration);
+    if (fileSystem.exists(_newIndex) && !fileSystem.isFile(_newIndex)) {
+      fileSystem.rename(_newIndex, new Path(_indexPath, _taskAttemptID.toString() + ".task_complete"));
+    } else {
+      throw new IOException("Path [" + _newIndex + "] does not exist, can not commit.");
+    }
   }
 
   @Override
-  public boolean needsTaskCommit(TaskAttemptContext taskContext) throws IOException {
-    return false;
+  public void abortTask(TaskAttemptContext context) throws IOException {
+    setup(context);
+    FileSystem fileSystem = _newIndex.getFileSystem(_configuration);
+    fileSystem.delete(_indexPath, true);
   }
-
-  @Override
-  public void commitTask(TaskAttemptContext taskContext) throws IOException {
-
-  }
-
-  @Override
-  public void abortTask(TaskAttemptContext taskContext) throws IOException {
-
+  
+  private void setup(TaskAttemptContext context) {
+    _configuration = context.getConfiguration();
+    int shardId = context.getTaskAttemptID().getTaskID().getId();
+    _taskAttemptID = context.getTaskAttemptID();
+    Path tableOutput = BlurOutputFormat.getOutputPath(_configuration);
+    String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, shardId);
+    _indexPath = new Path(tableOutput, shardName);
+    _newIndex = new Path(_indexPath, _taskAttemptID.toString() + ".tmp");
   }
 
 }

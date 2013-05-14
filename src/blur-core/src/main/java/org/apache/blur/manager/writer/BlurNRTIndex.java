@@ -24,6 +24,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.blur.index.IndexWriter;
 import org.apache.blur.log.Log;
@@ -63,8 +65,11 @@ public class BlurNRTIndex extends BlurIndex {
   private final ShardContext _shardContext;
   private final TransactionRecorder _recorder;
   private final TrackingIndexWriter _trackingWriter;
-
+  // This lock is used during a import of data from the file system. For example
+  // after a mapreduce program.
+  private final ReadWriteLock _lock = new ReentrantReadWriteLock();
   private long _lastRefresh = 0;
+  private IndexImporter _indexImporter;
 
   public BlurNRTIndex(ShardContext shardContext, SharedMergeScheduler mergeScheduler, IndexInputCloser closer,
       Directory directory, DirectoryReferenceFileGC gc, final ExecutorService searchExecutor) throws IOException {
@@ -96,6 +101,7 @@ public class BlurNRTIndex extends BlurIndex {
     };
 
     _trackingWriter = new TrackingIndexWriter(_writer);
+    _indexImporter = new IndexImporter(_trackingWriter, _lock, _shardContext, TimeUnit.SECONDS, 10);
     _nrtManagerRef.set(new NRTManager(_trackingWriter, _searcherFactory, APPLY_ALL_DELETES));
     // start commiter
 
@@ -114,19 +120,29 @@ public class BlurNRTIndex extends BlurIndex {
 
   @Override
   public void replaceRow(boolean waitToBeVisible, boolean wal, Row row) throws IOException {
-    List<Record> records = row.records;
-    if (records == null || records.isEmpty()) {
-      deleteRow(waitToBeVisible, wal, row.id);
-      return;
+    _lock.readLock().lock();
+    try {
+      List<Record> records = row.records;
+      if (records == null || records.isEmpty()) {
+        deleteRow(waitToBeVisible, wal, row.id);
+        return;
+      }
+      long generation = _recorder.replaceRow(wal, row, _trackingWriter);
+      waitToBeVisible(waitToBeVisible, generation);
+    } finally {
+      _lock.readLock().unlock();
     }
-    long generation = _recorder.replaceRow(wal, row, _trackingWriter);
-    waitToBeVisible(waitToBeVisible, generation);
   }
 
   @Override
   public void deleteRow(boolean waitToBeVisible, boolean wal, String rowId) throws IOException {
-    long generation = _recorder.deleteRow(wal, rowId, _trackingWriter);
-    waitToBeVisible(waitToBeVisible, generation);
+    _lock.readLock().lock();
+    try {
+      long generation = _recorder.deleteRow(wal, rowId, _trackingWriter);
+      waitToBeVisible(waitToBeVisible, generation);
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   /**
@@ -147,6 +163,7 @@ public class BlurNRTIndex extends BlurIndex {
     // @TODO make sure that locks are cleaned up.
     if (!_isClosed.get()) {
       _isClosed.set(true);
+      _indexImporter.close();
       _committer.interrupt();
       _refresher.close();
       try {

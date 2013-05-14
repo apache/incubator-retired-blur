@@ -59,6 +59,7 @@ import org.apache.blur.manager.indexserver.DistributedIndexServer;
 import org.apache.blur.manager.writer.BlurIndexRefresher;
 import org.apache.blur.metrics.JSONReporter;
 import org.apache.blur.metrics.JSONReporterServlet;
+import org.apache.blur.server.ShardServerEventHandler;
 import org.apache.blur.store.blockcache.BlockCache;
 import org.apache.blur.store.blockcache.BlockDirectory;
 import org.apache.blur.store.blockcache.BlockDirectoryCache;
@@ -70,6 +71,7 @@ import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.thrift.protocol.TJSONProtocol;
+import org.apache.thrift.server.TServerEventHandler;
 import org.apache.thrift.server.TServlet;
 import org.apache.zookeeper.ZooKeeper;
 import org.mortbay.jetty.servlet.ServletHolder;
@@ -213,6 +215,8 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     int threadCount = configuration.getInt(BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT, 32);
 
+    ShardServerEventHandler eventHandler = new ShardServerEventHandler();
+    
     final ThriftBlurShardServer server = new ThriftBlurShardServer();
     server.setNodeName(nodeName);
     server.setBindAddress(bindAddress);
@@ -220,6 +224,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     server.setThreadCount(threadCount);
     server.setIface(iface);
     server.setConfiguration(configuration);
+    server.setEventHandler(eventHandler);
 
     // This will shutdown the server when the correct path is set in zk
     BlurShutdown shutdown = new BlurShutdown() {

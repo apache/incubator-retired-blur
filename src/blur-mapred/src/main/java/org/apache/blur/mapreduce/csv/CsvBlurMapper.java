@@ -35,8 +35,12 @@ import org.apache.hadoop.mapreduce.Job;
 
 import com.google.common.base.Splitter;
 
+/**
+ * 
+ */
 public class CsvBlurMapper extends BlurMapper<LongWritable, Text> {
 
+  public static final String BLUR_CSV_SEPARATOR = "blur.csv.separator";
   public static final String BLUR_CSV_FAMILY_COLUMN_PREFIX = "blur.csv.family.";
   public static final String BLUR_CSV_FAMILIES = "blur.csv.families";
 
@@ -44,11 +48,59 @@ public class CsvBlurMapper extends BlurMapper<LongWritable, Text> {
   private String separator = ",";
   private Splitter splitter;
 
+  /**
+   * Adds the column layout for the given family.
+   * 
+   * @param job
+   *          the job to apply the layout.
+   * @param family
+   *          the family name.
+   * @param columns
+   *          the column names.
+   */
+  public static void addColumns(Job job, String family, String... columns) {
+    addColumns(job.getConfiguration(), family, columns);
+  }
+
+  /**
+   * Adds the column layout for the given family.
+   * 
+   * @param configuration
+   *          the configuration to apply the layout.
+   * @param family
+   *          the family name.
+   * @param columns
+   *          the column names.
+   */
   public static void addColumns(Configuration configuration, String family, String... columns) {
     Collection<String> families = new TreeSet<String>(configuration.getStringCollection(BLUR_CSV_FAMILIES));
     families.add(family);
     configuration.setStrings(BLUR_CSV_FAMILIES, families.toArray(new String[] {}));
     configuration.setStrings(BLUR_CSV_FAMILY_COLUMN_PREFIX + family, columns);
+  }
+
+  /**
+   * Sets the separator of the file, by default it is ",".
+   * 
+   * @param job
+   *          the job to apply the separator change.
+   * @param separator
+   *          the separator.
+   */
+  public static void setSeparator(Job job, String separator) {
+    setSeparator(job.getConfiguration(), separator);
+  }
+
+  /**
+   * Sets the separator of the file, by default it is ",".
+   * 
+   * @param configuration
+   *          the configuration to apply the separator change.
+   * @param separator
+   *          the separator.
+   */
+  public static void setSeparator(Configuration configuration, String separator) {
+    configuration.set(BLUR_CSV_SEPARATOR, separator);
   }
 
   @Override
@@ -62,6 +114,7 @@ public class CsvBlurMapper extends BlurMapper<LongWritable, Text> {
       columnNameMap.put(family, Arrays.asList(columnsNames));
     }
     splitter = Splitter.on(separator);
+    separator = configuration.get(BLUR_CSV_SEPARATOR, separator);
   }
 
   @Override
@@ -118,7 +171,4 @@ public class CsvBlurMapper extends BlurMapper<LongWritable, Text> {
     return lst;
   }
 
-  public static void addColumns(Job job, String family, String columns) {
-    addColumns(job.getConfiguration(), family, columns);
-  }
 }

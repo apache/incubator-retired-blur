@@ -39,6 +39,8 @@ import org.apache.blur.lucene.search.FairSimilarity;
 import org.apache.blur.manager.writer.TransactionRecorder;
 import org.apache.blur.mapreduce.BlurMutate.MUTATE_TYPE;
 import org.apache.blur.mapreduce.BlurTask.INDEXING_TYPE;
+import org.apache.blur.mapreduce.lib.BlurOutputFormat;
+import org.apache.blur.mapreduce.lib.DefaultBlurReducer;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.TableDescriptor;
@@ -75,6 +77,11 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.IOUtils;
 
+/**
+ * This class is depreciated please use {@link BlurOutputFormat} in combination
+ * with {@link DefaultBlurReducer}.
+ */
+@Deprecated
 public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
 
   static class LuceneFileComparator implements Comparator<String> {

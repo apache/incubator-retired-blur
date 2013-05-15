@@ -1,4 +1,4 @@
-package org.apache.blur.mapreduce;
+package org.apache.blur.mapreduce.lib;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -30,6 +30,11 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 
+/**
+ * The {@link ProgressableDirectory} allows for progress to be recorded while
+ * Lucene is blocked and merging. This prevents the Task from being killed after
+ * not reporting progress because of the blocked merge.
+ */
 public class ProgressableDirectory extends Directory {
 
   private Directory _directory;
@@ -127,6 +132,7 @@ public class ProgressableDirectory extends Directory {
     return _directory.toString();
   }
 
+  @SuppressWarnings("deprecation")
   static class ProgressableIndexOutput extends IndexOutput {
 
     private Progressable _progressable;

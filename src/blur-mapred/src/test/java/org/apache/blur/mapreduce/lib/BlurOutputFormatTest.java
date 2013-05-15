@@ -24,8 +24,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import org.apache.blur.mapreduce.BlurMutate;
-import org.apache.blur.mapreduce.csv.CsvBlurMapper;
 import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.conf.Configuration;

@@ -1,4 +1,4 @@
-package org.apache.blur.mapreduce;
+package org.apache.blur.mapreduce.lib;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -18,42 +18,29 @@ package org.apache.blur.mapreduce;
  */
 import java.io.IOException;
 
-import org.apache.blur.mapreduce.lib.BlurMutate;
-import org.apache.blur.mapreduce.lib.BlurRecord;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Mapper;
 
-@Deprecated
-public abstract class BlurMapper<KEY, VALUE> extends Mapper<KEY, VALUE, Text, BlurMutate> {
-
+/**
+ * Base mapper class for Blur map reduce classes.
+ * 
+ * @param <KEY>
+ * @param <VALUE>
+ */
+public abstract class BaseBlurMapper<KEY, VALUE> extends Mapper<KEY, VALUE, Text, BlurMutate> {
   protected BlurMutate _mutate;
   protected Text _key;
-  protected BlurTask _blurTask;
   protected Counter _recordCounter;
   protected Counter _fieldCounter;
 
   @Override
-  public void run(Context context) throws IOException, InterruptedException {
-    setup(context);
-    long maxRecordCount = _blurTask == null ? Long.MAX_VALUE : _blurTask.getMaxRecordCount();
-    if (maxRecordCount == -1) {
-      maxRecordCount = Long.MAX_VALUE;
-    }
-    for (long l = 0; l < maxRecordCount && context.nextKeyValue(); l++) {
-      map(context.getCurrentKey(), context.getCurrentValue(), context);
-    }
-    cleanup(context);
-  }
-
-  @Override
   protected void setup(Context context) throws IOException, InterruptedException {
-    _blurTask = BlurTask.read(context.getConfiguration());
     _mutate = new BlurMutate();
     _mutate.setRecord(new BlurRecord());
     _key = new Text();
-    _recordCounter = context.getCounter(BlurTask.getCounterGroupName(), BlurTask.getRecordCounterName());
-    _fieldCounter = context.getCounter(BlurTask.getCounterGroupName(), BlurTask.getFieldCounterName());
+    _recordCounter = context.getCounter(BlurCounters.RECORD_COUNT);
+    _fieldCounter = context.getCounter(BlurCounters.FIELD_COUNT);
   }
 
   @Override

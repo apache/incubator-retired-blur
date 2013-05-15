@@ -1,4 +1,4 @@
-package org.apache.blur.mapreduce.csv;
+package org.apache.blur.mapreduce.lib;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -25,9 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-import org.apache.blur.mapreduce.BlurMapper;
-import org.apache.blur.mapreduce.BlurMutate.MUTATE_TYPE;
-import org.apache.blur.mapreduce.BlurRecord;
+import org.apache.blur.mapreduce.lib.BlurMutate.MUTATE_TYPE;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -36,9 +34,10 @@ import org.apache.hadoop.mapreduce.Job;
 import com.google.common.base.Splitter;
 
 /**
- * 
+ * This will parse a standard csv file into a {@link BlurMutate} object. Use the
+ * static addColumns, and setSeparator methods to configure the class.
  */
-public class CsvBlurMapper extends BlurMapper<LongWritable, Text> {
+public class CsvBlurMapper extends BaseBlurMapper<LongWritable, Text> {
 
   public static final String BLUR_CSV_SEPARATOR = "blur.csv.separator";
   public static final String BLUR_CSV_FAMILY_COLUMN_PREFIX = "blur.csv.family.";
@@ -47,6 +46,63 @@ public class CsvBlurMapper extends BlurMapper<LongWritable, Text> {
   private Map<String, List<String>> columnNameMap;
   private String separator = ",";
   private Splitter splitter;
+
+  /**
+   * Sets all the family and column definitions.
+   * 
+   * @param job
+   *          the job to setup.
+   * @param strDefinition
+   *          the string definition. <br/>
+   * <br/>
+   *          Example:<br/>
+   *          "cf1:col1,col2,col3|cf2:col1,col2,col3"<br/>
+   *          Where "cf1" is a family name that contains columns "col1", "col2"
+   *          and "col3" and a second family of "cf2" with columns "col1",
+   *          "col2", and "col3".
+   */
+  public static void setColumns(Job job, String strDefinition) {
+    setColumns(job.getConfiguration(), strDefinition);
+  }
+
+  /**
+   * Sets all the family and column definitions.
+   * 
+   * @param configuration
+   *          the configuration to setup.
+   * @param strDefinition
+   *          the string definition. <br/>
+   * <br/>
+   *          Example:<br/>
+   *          "cf1:col1,col2,col3|cf2:col1,col2,col3"<br/>
+   *          Where "cf1" is a family name that contains columns "col1", "col2"
+   *          and "col3" and a second family of "cf2" with columns "col1",
+   *          "col2", and "col3".
+   */
+  public static void setColumns(Configuration configuration, String strDefinition) {
+    Iterable<String> familyDefs = Splitter.on('|').split(strDefinition);
+    for (String familyDef : familyDefs) {
+      int indexOf = familyDef.indexOf(':');
+      if (indexOf < 0) {
+        throwMalformedDefinition(strDefinition);
+      }
+      String family = familyDef.substring(0, indexOf);
+      Iterable<String> cols = Splitter.on(',').split(familyDef.substring(indexOf + 1));
+      List<String> colnames = new ArrayList<String>();
+      for (String columnName : cols) {
+        colnames.add(columnName);
+      }
+      if (family.trim().isEmpty() || colnames.isEmpty()) {
+        throwMalformedDefinition(strDefinition);
+      }
+      addColumns(configuration, family, colnames.toArray(new String[colnames.size()]));
+    }
+  }
+
+  private static void throwMalformedDefinition(String strDefinition) {
+    throw new RuntimeException("Family and column definition string not valid [" + strDefinition
+        + "] should look like \"family1:colname1,colname2|family2:colname1,colname2,colname3\"");
+  }
 
   /**
    * Adds the column layout for the given family.

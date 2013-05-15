@@ -1,4 +1,4 @@
-package org.apache.blur.mapreduce.csv;
+package org.apache.blur.mapreduce.lib;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -18,44 +18,48 @@ package org.apache.blur.mapreduce.csv;
  */
 import java.io.IOException;
 
-import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
-import org.apache.blur.mapreduce.BlurTask;
-import org.apache.blur.mapreduce.BlurTask.INDEXING_TYPE;
+import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
+import org.apache.thrift.TException;
 
 
-public class BlurExampleIndexerUpdate {
+public class CsvBlurDriver {
 
-  public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
+  public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException,
+      BlurException, TException {
     Configuration configuration = new Configuration();
     String[] otherArgs = new GenericOptionsParser(configuration, args).getRemainingArgs();
-    if (otherArgs.length != 2) {
-      System.err.println("Usage: blurindexer <in> <out>");
+    if (otherArgs.length != 4) {
+      System.err
+          .println("Usage: csvindexer <thrift controller connection str> <tablename> <in> <column family definitions>");
       System.exit(2);
     }
 
-    ZookeeperClusterStatus status = new ZookeeperClusterStatus("localhost");
-    TableDescriptor descriptor = status.getTableDescriptor(false, "default", "test-table");
+    final String controllerConnectionStr = otherArgs[0];
+    final String tableName = otherArgs[1];
+    final String input = otherArgs[2];
+    final String columnDefs = otherArgs[3];
 
-    BlurTask blurTask = new BlurTask();
-    blurTask.setTableDescriptor(descriptor);
-    blurTask.setIndexingType(INDEXING_TYPE.UPDATE);
-    Job job = blurTask.configureJob(configuration);
-    job.setJarByClass(BlurExampleIndexerUpdate.class);
+    final Iface client = BlurClient.getClient(controllerConnectionStr);
+    TableDescriptor tableDescriptor = client.describe(tableName);
+
+    Job job = new Job(configuration, "Blur indexer [" + tableName + "] [" + input + "]");
+    job.setJarByClass(CsvBlurDriver.class);
     job.setMapperClass(CsvBlurMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
-    job.setOutputFormatClass(TextOutputFormat.class);
 
-    FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
-    FileOutputFormat.setOutputPath(job, new Path(otherArgs[1], "job-" + System.currentTimeMillis()));
+    FileInputFormat.addInputPath(job, new Path(input));
+    CsvBlurMapper.setColumns(job, columnDefs);
+    BlurOutputFormat.setupJob(job, tableDescriptor);
+
     boolean waitForCompletion = job.waitForCompletion(true);
     System.exit(waitForCompletion ? 0 : 1);
   }

@@ -27,9 +27,6 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.LuceneVersionConstant;
 import org.apache.blur.manager.writer.TransactionRecorder;
-import org.apache.blur.mapreduce.BlurColumn;
-import org.apache.blur.mapreduce.BlurMutate;
-import org.apache.blur.mapreduce.BlurRecord;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
@@ -182,7 +179,6 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     return new Path(configuration.get(BLUR_OUTPUT_PATH));
   }
 
-  
   static class BlurRecordWriter extends RecordWriter<Text, BlurMutate> {
 
     private static Log LOG = LogFactory.getLog(BlurRecordWriter.class);
@@ -193,12 +189,13 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     private final BlurAnalyzer _analyzer;
     private final StringBuilder _builder = new StringBuilder();
 
-    public BlurRecordWriter(Configuration configuration, BlurAnalyzer blurAnalyzer, int shardId, String tmpDirName) throws IOException {
+    public BlurRecordWriter(Configuration configuration, BlurAnalyzer blurAnalyzer, int shardId, String tmpDirName)
+        throws IOException {
       Path tableOutput = BlurOutputFormat.getOutputPath(configuration);
       String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, shardId);
       Path indexPath = new Path(tableOutput, shardName);
-      Path newIndex = new Path(indexPath,tmpDirName);
-      
+      Path newIndex = new Path(indexPath, tmpDirName);
+
       TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
       _analyzer = new BlurAnalyzer(tableDescriptor.getAnalyzerDefinition());
       IndexWriterConfig conf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, _analyzer);
@@ -250,5 +247,24 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       flush();
       _writer.close();
     }
+  }
+
+  /**
+   * Sets up the output postion of the map reduce job. This does effect the map
+   * side of the job.
+   * 
+   * @param job
+   *          the job to setup.
+   * @param tableDescriptor
+   *          the table descriptor to write the output of the indexing job.
+   * @throws IOException
+   */
+  public static void setupJob(Job job, TableDescriptor tableDescriptor) throws IOException {
+    job.setReducerClass(DefaultBlurReducer.class);
+    job.setNumReduceTasks(tableDescriptor.getShardCount());
+    job.setOutputKeyClass(Text.class);
+    job.setOutputValueClass(BlurMutate.class);
+    job.setOutputFormatClass(BlurOutputFormat.class);
+    setTableDescriptor(job, tableDescriptor);
   }
 }

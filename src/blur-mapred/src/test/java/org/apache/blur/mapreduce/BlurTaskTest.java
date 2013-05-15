@@ -16,21 +16,21 @@ package org.apache.blur.mapreduce;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 
-import org.apache.blur.mapreduce.BlurTask;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.Test;
 
-
-import static org.junit.Assert.*;
-
+@SuppressWarnings("deprecation")
 public class BlurTaskTest {
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "/tmp"));
 
   @Test
   public void testGetNumReducersBadPath() {
+
     BlurTask task = new BlurTask();
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setShardCount(5);

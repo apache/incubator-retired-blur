@@ -18,7 +18,6 @@ package org.apache.blur.mapreduce.lib;
  */
 import java.io.IOException;
 
-import org.apache.blur.mapreduce.BlurMutate;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 

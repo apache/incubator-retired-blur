@@ -29,6 +29,7 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
+import org.apache.blur.mapreduce.lib.BlurMutate;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
@@ -48,6 +49,7 @@ import org.apache.thrift.transport.TIOStreamTransport;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 
+@Deprecated
 public class BlurTask implements Writable {
 
   public enum INDEXING_TYPE {

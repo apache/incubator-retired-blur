@@ -16,7 +16,6 @@ package org.apache.blur.mapreduce.lib;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import org.apache.blur.mapreduce.BlurRecord;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.RecordReader;
 

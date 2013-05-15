@@ -1,4 +1,4 @@
-package org.apache.blur.mapreduce;
+package org.apache.blur.mapreduce.lib;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more

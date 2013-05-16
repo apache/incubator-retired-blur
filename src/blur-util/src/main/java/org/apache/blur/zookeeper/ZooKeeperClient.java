@@ -34,24 +34,29 @@ import org.apache.zookeeper.data.Stat;
 public class ZooKeeperClient extends ZooKeeper {
 
   private static final Log LOG = LogFactory.getLog(ZooKeeperClient.class);
+  private final int internalSessionTimeout;
 
   public ZooKeeperClient(String connectString, int sessionTimeout, Watcher watcher) throws IOException {
     super(connectString, sessionTimeout, watcher);
+    internalSessionTimeout = sessionTimeout;
   }
 
   public ZooKeeperClient(String connectString, int sessionTimeout, Watcher watcher, boolean canBeReadOnly)
       throws IOException {
     super(connectString, sessionTimeout, watcher, canBeReadOnly);
+    internalSessionTimeout = sessionTimeout;
   }
 
   public ZooKeeperClient(String connectString, int sessionTimeout, Watcher watcher, long sessionId,
       byte[] sessionPasswd, boolean canBeReadOnly) throws IOException {
     super(connectString, sessionTimeout, watcher, sessionId, sessionPasswd, canBeReadOnly);
+    internalSessionTimeout = sessionTimeout;
   }
 
   public ZooKeeperClient(String connectString, int sessionTimeout, Watcher watcher, long sessionId, byte[] sessionPasswd)
       throws IOException {
     super(connectString, sessionTimeout, watcher, sessionId, sessionPasswd);
+    internalSessionTimeout = sessionTimeout;
   }
 
   static abstract class ZKExecutor<T> {
@@ -61,6 +66,9 @@ public class ZooKeeperClient extends ZooKeeper {
   public <T> T execute(ZKExecutor<T> executor) throws KeeperException, InterruptedException {
     final long timestmap = System.currentTimeMillis();
     int sessionTimeout = getSessionTimeout();
+    if (sessionTimeout == 0) {
+      sessionTimeout = internalSessionTimeout;
+    }
     while (true) {
       try {
         return executor.execute();

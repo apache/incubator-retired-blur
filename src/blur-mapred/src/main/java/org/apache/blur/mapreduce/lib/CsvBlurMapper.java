@@ -27,9 +27,11 @@ import java.util.TreeSet;
 
 import org.apache.blur.mapreduce.lib.BlurMutate.MUTATE_TYPE;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
 import com.google.common.base.Splitter;
 
@@ -39,6 +41,9 @@ import com.google.common.base.Splitter;
  */
 public class CsvBlurMapper extends BaseBlurMapper<LongWritable, Text> {
 
+  public static final String BLUR_CSV_FAMILYISNOTINFILE = "blur.csv.familyisnotinfile";
+  public static final String BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILIES = "blur.csv.family.path.mappings.families";
+  public static final String BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILY_PREFIX = "blur.csv.family.path.mappings.family.";
   public static final String BLUR_CSV_SEPARATOR = "blur.csv.separator";
   public static final String BLUR_CSV_FAMILY_COLUMN_PREFIX = "blur.csv.family.";
   public static final String BLUR_CSV_FAMILIES = "blur.csv.families";
@@ -46,6 +51,86 @@ public class CsvBlurMapper extends BaseBlurMapper<LongWritable, Text> {
   private Map<String, List<String>> columnNameMap;
   private String separator = ",";
   private Splitter splitter;
+  private boolean familyNotInFile;
+  private String familyFromPath;
+
+  /**
+   * Add a mapping for a family to a path. This is to be used when an entire
+   * path is to be processed as a single family and the data itself does not
+   * contain the family.<br/>
+   * <br/>
+   * 
+   * NOTE: the familyNotInFile property must be set before this method can be
+   * called.
+   * 
+   * @param job
+   *          the job to setup.
+   * @param family
+   *          the family.
+   * @param path
+   *          the path.
+   */
+  public static void addFamilyPath(Job job, String family, Path path) {
+    addFamilyPath(job.getConfiguration(), family, path);
+  }
+
+  /**
+   * Sets the property familyIsNotInFile so that the parser know that the family
+   * is not to be parsed. Is to be used in conjunction with the addFamilyPath
+   * method.
+   * 
+   * @param job
+   *          the job to setup.
+   * @param familyIsNotInFile
+   *          boolean.
+   */
+  public static void setFamilyNotInFile(Job job, boolean familyIsNotInFile) {
+    setFamilyNotInFile(job.getConfiguration(), familyIsNotInFile);
+  }
+
+  /**
+   * Add a mapping for a family to a path. This is to be used when an entire
+   * path is to be processed as a single family and the data itself does not
+   * contain the family.<br/>
+   * <br/>
+   * 
+   * NOTE: the familyNotInFile property must be set before this method can be
+   * called.
+   * 
+   * @param configuration
+   *          the configuration to setup.
+   * @param family
+   *          the family.
+   * @param path
+   *          the path.
+   */
+  public static void addFamilyPath(Configuration configuration, String family, Path path) {
+    Collection<String> mappings = configuration.getStringCollection(BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILIES);
+    if (mappings == null) {
+      mappings = new TreeSet<String>();
+    }
+    mappings.add(family);
+    configuration.setStrings(BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILIES, mappings.toArray(new String[mappings.size()]));
+    configuration.set(BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILY_PREFIX + family, path.toString());
+  }
+
+  /**
+   * Sets the property familyIsNotInFile so that the parser know that the family
+   * is not to be parsed. Is to be used in conjunction with the addFamilyPath
+   * method.
+   * 
+   * @param configuration
+   *          the configuration to setup.
+   * @param familyIsNotInFile
+   *          boolean.
+   */
+  public static void setFamilyNotInFile(Configuration configuration, boolean familyIsNotInFile) {
+    configuration.setBoolean(BLUR_CSV_FAMILYISNOTINFILE, familyIsNotInFile);
+  }
+
+  public static boolean isFamilyNotInFile(Configuration configuration) {
+    return configuration.getBoolean(BLUR_CSV_FAMILYISNOTINFILE, false);
+  }
 
   /**
    * Sets all the family and column definitions.
@@ -171,6 +256,36 @@ public class CsvBlurMapper extends BaseBlurMapper<LongWritable, Text> {
     }
     splitter = Splitter.on(separator);
     separator = configuration.get(BLUR_CSV_SEPARATOR, separator);
+    familyNotInFile = isFamilyNotInFile(configuration);
+    if (familyNotInFile) {
+      Path fileCurrentlyProcessing = getCurrentFile(context);
+      Collection<String> families = configuration.getStringCollection(BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILIES);
+      for (String family : families) {
+        String pathStr = configuration.get(BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILY_PREFIX + family);
+        Path path = new Path(pathStr);
+        path = path.makeQualified(path.getFileSystem(configuration));
+        if (isParent(path, fileCurrentlyProcessing)) {
+          familyFromPath = family;
+          break;
+        }
+      }
+    }
+  }
+
+  private boolean isParent(Path possibleParent, Path child) {
+    if (child == null) {
+      return false;
+    }
+    if (possibleParent.equals(child.getParent())) {
+      return true;
+    }
+    return isParent(possibleParent, child.getParent());
+  }
+
+  private Path getCurrentFile(Context context) throws IOException {
+    FileSplit inputSplit = (FileSplit) context.getInputSplit();
+    Path path = inputSplit.getPath();
+    return path.makeQualified(path.getFileSystem(context.getConfiguration()));
   }
 
   @Override
@@ -185,23 +300,31 @@ public class CsvBlurMapper extends BaseBlurMapper<LongWritable, Text> {
     if (list.size() < 3) {
       throw new IOException("Record [" + str + "] too short.");
     }
-
-    record.setRowId(list.get(0));
-    record.setRecordId(list.get(1));
-    String family = list.get(2);
+    int column = 0;
+    record.setRowId(list.get(column++));
+    record.setRecordId(list.get(column++));
+    String family;
+    int offset;
+    if (familyNotInFile) {
+      family = familyFromPath;
+      offset = 2;
+    } else {
+      family = list.get(column++);
+      offset = 3;
+    }
     record.setFamily(family);
 
     List<String> columnNames = columnNameMap.get(family);
     if (columnNames == null) {
       throw new IOException("Family [" + family + "] is missing in the definition.");
     }
-    if (list.size() - 3 != columnNames.size()) {
+    if (list.size() - offset != columnNames.size()) {
       throw new IOException("Record [" + str + "] too short, does not match defined record [rowid,recordid,family"
           + getColumnNames(columnNames) + "].");
     }
 
     for (int i = 0; i < columnNames.size(); i++) {
-      record.addColumn(columnNames.get(i), list.get(i + 3));
+      record.addColumn(columnNames.get(i), list.get(i + offset));
       _fieldCounter.increment(1);
     }
     _key.set(record.getRowId());

@@ -30,33 +30,41 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.thrift.TException;
 
-public class CsvBlurDriver {
+public class CsvBlurDriverFamilyPerInput {
 
   public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException,
       BlurException, TException {
     Configuration configuration = new Configuration();
     String[] otherArgs = new GenericOptionsParser(configuration, args).getRemainingArgs();
-    if (otherArgs.length != 4) {
+    if (otherArgs.length < 4) {
       System.err
-          .println("Usage: csvindexer <thrift controller connection str> <tablename> <column family definitions> <in>");
+          .println("Usage: csvindexer <thrift controller connection str> <tablename> <column family definitions> <family=input path> ...");
       System.exit(2);
     }
     int c = 0;
     final String controllerConnectionStr = otherArgs[c++];
     final String tableName = otherArgs[c++];
     final String columnDefs = otherArgs[c++];
-    final String input = otherArgs[c++];
 
     final Iface client = BlurClient.getClient(controllerConnectionStr);
     TableDescriptor tableDescriptor = client.describe(tableName);
 
-    Job job = new Job(configuration, "Blur indexer [" + tableName + "] [" + input + "]");
-    job.setJarByClass(CsvBlurDriver.class);
+    Job job = new Job(configuration, "Blur indexer [" + tableName + "] Mulitple Inputs");
+    job.setJarByClass(CsvBlurDriverFamilyPerInput.class);
     job.setMapperClass(CsvBlurMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
 
-    FileInputFormat.addInputPath(job, new Path(input));
     CsvBlurMapper.setColumns(job, columnDefs);
+    CsvBlurMapper.setFamilyNotInFile(job, true);
+
+    for (int i = c; i < otherArgs.length; i++) {
+      final String input = otherArgs[c++];
+      int indexOf = input.indexOf('=');
+      String family = input.substring(0, indexOf);
+      String pathStr = input.substring(indexOf + 1);
+      FileInputFormat.addInputPath(job, new Path(pathStr));
+      CsvBlurMapper.addFamilyPath(job, family, new Path(pathStr));
+    }
     BlurOutputFormat.setupJob(job, tableDescriptor);
 
     boolean waitForCompletion = job.waitForCompletion(true);

@@ -120,48 +120,6 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     return new BlurOutputCommitter();
   }
 
-  private OutputCommitter getDoNothing() {
-    return new OutputCommitter() {
-
-      @Override
-      public void commitJob(JobContext jobContext) throws IOException {
-      }
-
-      @Override
-      public void cleanupJob(JobContext context) throws IOException {
-      }
-
-      @Override
-      public void abortJob(JobContext jobContext, State state) throws IOException {
-      }
-
-      @Override
-      public void setupTask(TaskAttemptContext taskContext) throws IOException {
-
-      }
-
-      @Override
-      public void setupJob(JobContext jobContext) throws IOException {
-
-      }
-
-      @Override
-      public boolean needsTaskCommit(TaskAttemptContext taskContext) throws IOException {
-        return false;
-      }
-
-      @Override
-      public void commitTask(TaskAttemptContext taskContext) throws IOException {
-
-      }
-
-      @Override
-      public void abortTask(TaskAttemptContext taskContext) throws IOException {
-
-      }
-    };
-  }
-
   public static TableDescriptor getTableDescriptor(Configuration configuration) throws IOException {
     String tableDesStr = configuration.get(BLUR_TABLE_DESCRIPTOR);
     if (tableDesStr == null) {
@@ -221,6 +179,9 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     private Counter _recordCount;
     private Counter _rowCount;
     private boolean _countersSetup = false;
+    private RateCounter _recordRateCounter;
+    private RateCounter _rowRateCounter;
+    private RateCounter _copyRateCounter;
 
     public BlurRecordWriter(Configuration configuration, BlurAnalyzer blurAnalyzer, int shardId, String tmpDirName)
         throws IOException {
@@ -240,7 +201,6 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       _localPath = new File(localDirPath, UUID.randomUUID().toString() + ".tmp");
       _localDir = new ProgressableDirectory(FSDirectory.open(_localPath), BlurOutputFormat.getProgressable());
       _writer = new IndexWriter(_localDir, conf);
-
     }
 
     @Override
@@ -261,6 +221,9 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       _fieldCount = getCounter.getCounter(BlurCounters.FIELD_COUNT);
       _recordCount = getCounter.getCounter(BlurCounters.RECORD_COUNT);
       _rowCount = getCounter.getCounter(BlurCounters.ROW_COUNT);
+      _recordRateCounter = new RateCounter(getCounter.getCounter(BlurCounters.RECORD_RATE));
+      _rowRateCounter = new RateCounter(getCounter.getCounter(BlurCounters.ROW_RATE));
+      _copyRateCounter = new RateCounter(getCounter.getCounter(BlurCounters.COPY_RATE));
     }
 
     private void add(BlurMutate value) {
@@ -271,7 +234,8 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
         document.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
       }
       _documents.add(document);
-      LOG.error("Needs to use blur analyzer and field converter");
+      _fieldCount.increment(document.getFields().size());
+      _recordCount.increment(1);
     }
 
     private Record getRecord(BlurRecord value) {
@@ -289,6 +253,9 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
         return;
       }
       _writer.addDocuments(_documents);
+      _rowCount.increment(1);
+      _recordRateCounter.mark(_documents.size());
+      _rowRateCounter.mark();
       _documents.clear();
     }
 
@@ -296,14 +263,18 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     public void close(TaskAttemptContext context) throws IOException, InterruptedException {
       flush();
       _writer.close();
+      _recordRateCounter.close();
+      _rowRateCounter.close();
       copyDir();
+      _copyRateCounter.close();
     }
 
     private void copyDir() throws IOException {
+      CopyRateDirectory copyRateDirectory = new CopyRateDirectory(_finalDir, _copyRateCounter);
       String[] fileNames = _localDir.listAll();
       for (String fileName : fileNames) {
         LOG.info("Copying [{0}]", fileName);
-        _localDir.copy(_finalDir, fileName, fileName, IOContext.DEFAULT);
+        _localDir.copy(copyRateDirectory, fileName, fileName, IOContext.DEFAULT);
       }
       rm(_localPath);
     }
@@ -339,4 +310,47 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     job.setOutputFormatClass(BlurOutputFormat.class);
     setTableDescriptor(job, tableDescriptor);
   }
+
+  private OutputCommitter getDoNothing() {
+    return new OutputCommitter() {
+
+      @Override
+      public void commitJob(JobContext jobContext) throws IOException {
+      }
+
+      @Override
+      public void cleanupJob(JobContext context) throws IOException {
+      }
+
+      @Override
+      public void abortJob(JobContext jobContext, State state) throws IOException {
+      }
+
+      @Override
+      public void setupTask(TaskAttemptContext taskContext) throws IOException {
+
+      }
+
+      @Override
+      public void setupJob(JobContext jobContext) throws IOException {
+
+      }
+
+      @Override
+      public boolean needsTaskCommit(TaskAttemptContext taskContext) throws IOException {
+        return false;
+      }
+
+      @Override
+      public void commitTask(TaskAttemptContext taskContext) throws IOException {
+
+      }
+
+      @Override
+      public void abortTask(TaskAttemptContext taskContext) throws IOException {
+
+      }
+    };
+  }
+
 }

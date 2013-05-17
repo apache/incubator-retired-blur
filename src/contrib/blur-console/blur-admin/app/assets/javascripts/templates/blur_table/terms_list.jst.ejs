@@ -1,0 +1,14 @@
+<% if(terms.length > 0){ %>
+  <%_.each(terms, function(term){ %>
+    <li class="input-prepend term-li">
+      <span class="add-on search-term-link" term="<%= term %>">
+        <i class="icon-search"></i>
+      </span>
+      <span class="input uneditable-input term-input">
+        <span><%= term %></span>
+      </span>
+    </li>
+    <% }); %>
+<% } else { %>
+  <li class="no-items"> No terms matched your search conditions </li>
+<% } %>

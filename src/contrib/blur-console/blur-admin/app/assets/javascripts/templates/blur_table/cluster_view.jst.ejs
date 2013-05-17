@@ -1,0 +1,20 @@
+<ul class="cluster-tabs nav-tabs nav" id="<%= 'inner-tabs-cluster_' + cluster.get('id') %>">
+  <li class="active">
+    <a href="<%= '#cluster_' + cluster.get('id') + '_active' %>" data-toggle="tab">
+      Active Tables ( <span class="active-counter"><%= cluster.get('tables').where({table: 'active'}).length %></span> )
+    </a>
+  </li>
+  <li>
+    <a href="<%= '#cluster_' + cluster.get('id') + '_disabled' %>" data-toggle="tab">
+      Disabled Tables ( <span class="disabled-counter"><%= cluster.get('tables').where({table: 'disabled'}).length %></span> )
+    </a>
+  </li>
+</ul>
+<div class="tab-content">
+  <div class="tab-pane active" id="<%= 'cluster_' + cluster.get('id') + '_active' %>" data-state="active">
+    <%= JST['templates/blur_table/active_tables']({cluster: cluster}) %>
+  </div>
+  <div class="tab-pane" id="<%= 'cluster_' + cluster.get('id') + '_disabled' %>" data-state="disabled">
+    <%= JST['templates/blur_table/disabled_tables']({cluster: cluster}) %>
+  </div>
+</div>

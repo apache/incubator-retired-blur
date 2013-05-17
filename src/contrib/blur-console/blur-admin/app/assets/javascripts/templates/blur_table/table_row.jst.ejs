@@ -1,0 +1,50 @@
+<% var state = table.get('state'); %>
+<% if (['disabling', 'enabling', 'deleting'].indexOf(state) >= 0){ %>
+  <% var colspan = table.colspan_lookup[table.get('table')]; %>
+  <td class='table-updating checkbox-td'>
+    <img id="loading-spinner" alt="Loading..." src="/assets/loader.gif"/>
+  </td>
+  <td colspan="<%= colspan %>"><%= table.capitalize_first(state) + ' ' + table.get('table_name') + '...' %></td>
+<% } else { %>
+  <td class='checkbox-td'>
+    <input class='bulk-action-checkbox' type='checkbox'/>
+  </td>
+  <td class='blur_table_name'>
+    <%= table.get('table_name') %>
+    <i class="icon-exclamation-sign queries-running-icon" title="Has been queried within last 5 minutes" style="<% if (!table.get('queried_recently')) { %><%= 'display:none' %><% } %>"></i>
+  </td>
+  <td class='comment_row' title= "<%= table.get('comments')%>" >
+    <%if (table.get('comments') != null) { %>
+      <% if (table.get('comments').length > 30) { %>
+        <%= table.get('comments').substring(0, 30) + "..." %>
+      <% }else { %>
+        <%= table.get('comments')%>
+      <% } %>
+    <% } %>
+    <a class='comments' href="#" style="float: right">
+      <button class="btn" type="submit" style="padding: 2px 5px"> <i class="icon-pencil"></i> </button>
+    </a>
+  </td>
+  <% if (state === 'active'){ %>
+    <td class='blur_table_hosts_shards'>
+      <a class='hosts' href="#">
+        <%= table.get('server_info') %>
+      </a>
+    </td>
+  <% } %>
+  <% if (state !== 'deleted'){ %>
+    <td class='blur_table_row_count'>
+      <%= table.get('row_count') %>
+    </td>
+    <td class='blur_table_record_count'>
+      <%= table.get('record_count') %>
+    </td>
+  <% } %>
+  <% if (state === 'active'){ %>
+    <td class='blur_table_info'>
+      <a class='info' href="#">
+        View
+      </a>
+    </td>
+  <% } %>
+<% } %>

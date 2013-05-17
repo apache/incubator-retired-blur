@@ -1,0 +1,60 @@
+// Fonts
+@mixin standard-font {
+  font-weight: bold;
+  color: $font-color;
+}
+
+// Borders
+@mixin border        { border:        $border_width $border_style $border_color; }
+@mixin border-top    { border-top:    $border_width $border_style $border_color; }
+
+@mixin border-radius-bottom($radius:5px) {
+	-webkit-border-bottom-left-radius: $radius;
+	-webkit-border-bottom-right-radius: $radius;
+	-moz-border-radius-bottomleft: $radius;
+	-moz-border-radius-bottomright: $radius;
+}
+
+@mixin border-radius-top($radius:5px) {
+  -webkit-border-top-left-radius: $radius;
+  -webkit-border-top-right-radius: $radius;
+  -moz-border-radius-topleft: $radius;
+  -moz-border-radius-topright: $radius;
+}
+
+@mixin border-radius-right($radius:5px) {
+	-webkit-border-top-right-radius: $radius;
+	-webkit-border-bottom-right-radius: $radius;
+	-moz-border-radius-topright: $radius;
+	-moz-border-radius-bottomright: $radius;
+}
+
+@mixin border-radius-left($radius:5px) {
+	-webkit-border-top-left-radius: $radius;
+	-webkit-border-bottom-left-radius: $radius;
+	-moz-border-radius-topleft: $radius;
+	-moz-border-radius-bottomleft: $radius;
+}
+
+@mixin danger-progress-background{
+  background-image: -moz-linear-gradient(top, #EE5F5B, #C43C35);
+  background-image: -ms-linear-gradient(top, #EE5F5B, #C43C35);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#EE5F5B), to(#C43C35));
+  background-image: -webkit-linear-gradient(top, #EE5F5B, #C43C35);
+  background-image: -o-linear-gradient(top, #EE5F5B, #C43C35);
+  background-image: linear-gradient(top, #EE5F5B, #C43C35);
+}
+
+@mixin neutral-progress-background{
+  background-image: -moz-linear-gradient(top, #08C, #04C);
+  background-image: -ms-linear-gradient(top, #08C, #04C);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#08C), to(#04C));
+  background-image: -webkit-linear-gradient(top, #08C, #04C);
+  background-image: -o-linear-gradient(top, #08C, #04C);
+  background-image: linear-gradient(top, #08C, #04C);
+}
+
+@mixin standard-border {
+  @include border-radius;
+  @include border;
+}

@@ -1,0 +1,125 @@
+#queries-table_wrapper > .row:first-child > div:last-child {
+  float: right;
+}
+
+#blur_queries_wrapper {
+  padding-top: 2em;
+  padding-bottom: 2em;
+  @include standard-font;
+  @include clearfix;
+  .dataTables_filter{
+    width: 100%;
+    float: right;
+    input{
+      width: 96%;
+    }
+  }
+
+  .span2{
+    position: relative;
+    right:200px;
+    top:35px;
+  }
+  .span4{
+    position: relative;
+    left: 100px;
+    .dataTables_info{
+      text-align: center;
+    }
+  }
+  .dataTables_info {
+    padding-top: 8px;
+  }
+  .row > *:first-child {
+    vertical-align: top;
+    padding-top: 15px;
+  }
+  .range_select{
+    select{
+      width: 100px;
+    }
+  }
+  .dataTables_processing {
+    padding-top: 8px;
+  }
+  #queries-table{
+    table-layout:relative;
+    font-weight: normal;
+    td{
+      vertical-align: middle;
+      word-wrap: break-word
+    }
+    .cancel_query_button{
+      margin: 0;
+    }
+
+    form.cancel {
+      display: inline-block;
+      @include ie7-inline-block;
+      margin-right: 3px;
+      margin-bottom: 0;
+    }
+    tbody tr:not(.oldRunning){
+      & + .oldRunning, .oldRunning:first-child{
+        td{
+          border-top: 1px solid #FF0000;
+        }
+      }
+      height: 45px;
+    }
+    .oldRunning{
+      td{
+        background: rgba(247, 225, 225, 0.8);
+        border-bottom: 1px solid #FF0000;
+      }
+    }
+    th{
+      cursor: pointer;
+      margin-right: 10px;
+      .header_content {
+        position: relative;
+        div {
+          display: inline-block;
+          margin-right: 10px;
+        }
+      }
+
+      &.headerSortDown{
+        .icon-chevron-up{
+          display: none;
+        }
+        .icon-chevron-down{
+          display: block;
+        }
+      }
+
+      &.headerSortUp{
+        .icon-chevron-up{
+          display: block;
+        }
+        .icon-chevron-down{
+          display: none;
+        }
+      }
+
+      i{
+        position:absolute;
+        display: none;
+        &.icon-chevron-up{
+          top: 5px;
+          right: 10px;
+        }
+
+        &.icon-chevron-down{
+          bottom: 5px;
+          right: 10px;
+        }
+      }
+    }
+  }
+}
+
+#more-info-table {
+  td { color: #555; }
+  .more-info-label { white-space: nowrap; font-weight: bold;}
+}

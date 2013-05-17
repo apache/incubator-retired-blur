@@ -1,0 +1,52 @@
+This document is intended to aid in the installation of the Blur Console
+application pieces.  Please contact support@nearinfinity.com if you have
+any problems installing the tool.
+
+System Requirements
+========================================================================
+Required:
+	* Ruby 1.9.3+ (with bundler gem)
+	* Java 6+
+	* Mysql 5.5+
+	* mysql jdbc connector (http://www.mysql.com/products/connector/)
+
+Recommended:
+	* Apache webserver
+	* Phusion Passenger
+	
+Installing the Rails application
+========================================================================
+1. Extract the blur-console-version.tar.gz
+2. Copy the rails directory into the appropriate folder for your webserver
+3. Change your directory to the rails directory
+		cd rails
+4. Create a tmp and log directory
+5. Install the dependent libraries
+		bundle install --local
+6. Update configuration files for your environment
+		a. Setup your mysql connection information in config/database.yml
+7. If this is a new install create the database
+		bundle exec rake RAILS_ENV=production db:create
+8. Update the database with any changes
+		bundle exec rake RAILS_ENV=production db:migrate
+9. Load any initial data
+		bundle exec rake RAILS_ENV=production db:seed
+10. Configure your webserver to point to the rails directory according to 
+   the server documentation
+11. Open your browser to the url you specified in your server configuration
+	 (i.e. https://mydomain.com/)
+
+Note: Currently the initial data that is loaded is a default admin user.  The
+username is admin and the password is password.  This should be changed immediately.
+
+Installing the Agent application
+===============================================================================
+1. Extract the agent-version.tar.gz
+2. Copy the agent directory to the location you want it to reside.
+3. Place the mysql jdbc connector jar into the agent/lib folder.
+4. Create log directory
+5. Update configuration files for your environment
+		a. Copy agent/conf/agent.config.sample to agent/conf/blur-agent.config
+		b. Update agent/conf/blur-agent.config to specify the information about your install and cluster(s).
+6. Start the agent by running agent/bin/start-agent.sh
+		To stop the agent run agent/bin/stop-agent.sh

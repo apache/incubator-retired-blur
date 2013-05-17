@@ -1,0 +1,156 @@
+@mixin info($color) {
+  @include border;
+  @include border-radius;
+  background-color: $color;
+}
+
+@mixin pref-box{
+  @include info(white);
+  margin:0px 0px 0px 0px;
+}
+
+ul{ margin: 5px; }
+
+#admin_wrapper, #new_user_wrapper, #edit_user_wrapper, #show_user_wrapper{
+  @include standard-font;
+
+  $select-color: #FAD08A;
+
+  text-align: center;
+  margin-top: 1em;
+  label {
+      font-size:20px;
+      margin: 5px 0px 5px 0px;
+      color:$blue-dashboard-color;
+  }
+  span{
+      font-weight:normal;
+  }
+  #roles_wrapper{
+    li{
+      list-style-type:none;
+      display:block;
+    }
+  }
+  .info-contain{
+    @include clearfix;
+    min-width: 580px;
+  }
+
+  //user info box
+  #user-info{
+    @include info(#F9F9F9);
+    min-width: 175px;
+    margin-top:2px;
+    p{
+      margin: 5px;
+    }
+  }
+
+  #pref-bin{
+    @include clearfix;
+  }
+
+  #pref-trash, #pref-key{
+    @include pref-box;
+    margin-top:5px;
+  }
+
+  #pref-key {
+    padding: 5px;
+    text-align: center;
+    #orange_color, #blue_color {
+      height: 10px;
+      width: 10px;
+      display: inline-block;
+    }
+    #orange_color { @include info($select-color); }
+    #blue_color { @include info($table-hd-color); }
+  }
+
+  #actual-trash{
+    div:not(#trash){
+      display:none;
+    }
+  }
+
+  #pref-col-info{
+    padding:5px;
+    @include info(#F9F9F9);
+    min-width: 300px;
+  }
+
+  #zookeeper-pref{
+    @include pref-box;
+    @include info(#F9F9F9);
+    display:inline-block;
+    padding:5px;
+    margin-left:10px;
+    width:300px;
+    #zookeeper_submit{
+      width:75px;
+    }
+  }
+
+  #pref-col{ @include pref-box; }
+  #pref-title{
+    h3{ text-align: center; }
+    .loading-spinner { margin-left: 20px; float: left; }
+  }
+  .hidden-spinner {
+    .loading-spinner { display: none !important; }
+    h3 { margin-left: 36px; } }
+
+  #opt-col{
+    @include info(white);
+    @include pref-box;
+    float: right;
+  }
+
+  .fam{
+    padding:5px;
+    margin:5px;
+    cursor:pointer;
+    padding: 2px;
+    margin:2px;
+    @include info($table-hd-color);
+  }
+
+  .section-label{ text-align:center; }
+  .my-select{ background-color:$select-color; }
+  #no-saved, #trash{
+    text-align:center;
+    font-weight:200;
+  }
+
+  .sel-fam{
+    cursor:grab;
+    cursor:grab;
+    cursor:-moz-grab;
+    cursor:-webkit-grab;
+
+    @include info($select-color);
+    padding:2px;
+    margin:2px;
+  }
+  .inputs-list{
+    list-style-type: none;
+    li{
+      padding: 5px 0 5px 0;
+      input[type=checkbox]{
+        display: inline-block;
+      }
+    }
+  }
+  .table-filter{
+    input[type=submit]{
+      margin-bottom: 9px;
+    }
+  }
+  .clarification{
+    margin-bottom: 25px;
+  }
+  .filter-header{
+    margin-top: 45px;
+  }
+}

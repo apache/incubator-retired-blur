@@ -1,0 +1,110 @@
+$title_height: 35px;
+$graph_height: 240px;
+$total_graph_height: $graph_height + 60px;
+$instance_height: $title_height + $total_graph_height;
+
+@mixin graph_component{
+	display: inline-block;
+	@include box-sizing(border-box);
+}
+
+@mixin clickable_title{
+	height: $title_height;
+	h3{ line-height: $title_height; }
+	text-align: center;
+	border: 1px solid #ccc;
+	@include gradient-vertical(#fff, #F4F4F4);
+}
+
+@mixin clickable{
+	cursor: pointer;
+	&:hover{
+		opacity: .6;
+	}
+}
+
+#metrics_page_wrapper {
+	.create_graph_prompt{
+		margin-top: 10px;
+		@include clickable_title;
+		@include clickable;
+	}
+	.joined_instance{
+		.graph_title{
+			position: relative;
+			i{
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				@include clickable;
+			}
+		}
+	}
+
+	.graph_instance, .joined_instance {
+		margin: 10px 0 10px 0;
+		position: relative;
+		height: $instance_height;
+		&:not(:last-child){
+			.graph_content{
+				border-bottom: none;
+			}
+		}
+		.graph_title{
+			@include clickable_title;
+			border-bottom: none;
+		}
+		.graph_content{
+			@include graph_component;
+			width: 100%;
+			height: $total_graph_height;
+			border: 1px solid #ccc;
+			position: absolute;
+			.graph_data{
+				@include box-sizing(border-box);
+				width: 100%;
+				padding: 10px 10px 0 10px;
+				.graph{
+          margin: 5px 5px 5px 5px;
+					height: $graph_height - 20;
+				}
+			}
+      .graph_info {
+				padding: 0 50px 0 205px;
+        bottom: 0;
+        .graph-info-table {
+          width: 100%;
+          margin: -5px 0 0 0;
+          .slider-info{
+            text-align: right;
+            .slider-time{
+              text-align: right;
+              width: 14px;
+            }
+            .min-date, .max-date {
+              text-align: right;
+              width: 100px;
+            }
+            .slider-redraw { margin: 0 5px 9px 0; }
+          }
+          .slider-box {
+            width: 350px;
+            .slider{
+              width: 300px;
+              margin-right: 15px;
+              float: right;
+            }
+          }
+          span.axis-value{
+            font-weight: bold;
+          }
+        }
+      }
+		}
+	}
+  .loading-spinner {
+    float: left;
+    position: absolute;
+    padding: 9px 0 0 9px;
+  }
+}

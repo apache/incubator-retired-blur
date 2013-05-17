@@ -1,0 +1,13 @@
+<td><%= cluster.get('name') %>
+ <i class="icon-exclamation-sign queries-running-icon" title="Has been queried within last 5 minutes" style="<% if (!cluster.get('cluster_queried')) { %><%= 'display:none' %><% } %>"></i>
+ </td>
+<td><%= cluster.get('shard_blur_version') %></td>
+<td><%= cluster.safe_mode() %></td>
+<td>
+  <a class="more-shard-info">
+    <%= cluster.get('shard_status') %>
+  </a>
+</td>
+<td>
+  <i class="icon-remove-sign destroy-cluster confirm-action" title="Remove This Cluster" />
+</td>

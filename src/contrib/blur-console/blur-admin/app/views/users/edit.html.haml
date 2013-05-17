@@ -1,0 +1,5 @@
+- content_for :title, 'Edit User'
+
+#edit_user_wrapper
+  %h2 Edit User
+  = render 'form', :user => @user, :cancel_path => users_path

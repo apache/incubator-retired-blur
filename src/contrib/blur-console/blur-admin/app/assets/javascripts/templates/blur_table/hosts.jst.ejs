@@ -1,0 +1,19 @@
+<% if (hosts) { %>
+  <div class="hosts table_info_tree">
+    <b>Hosts</b>
+    <ul>
+      <% _.each(hosts, function(shards, host){ %>
+        <li class="host" id="<%= host %>">
+          <a href=""><%= host %></a>
+          <ul>
+            <% _.each(shards, function(shard){ %>
+              <li class="shard"><%= shard %></li>
+            <% }); %>
+          </ul>
+        </li>
+      <% }); %>
+    </ul>
+  </div>
+<% } else { %>
+  <div>Not Available</div>
+<% } %>

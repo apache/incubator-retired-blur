@@ -1,0 +1,15 @@
+- content_for :title, 'Blur Status'
+- content_for :javascript do
+  = javascript_include_tag 'dashboard/dashboard'
+
+.dashboard_wrapper
+  #zookeepers_wrapper
+    %h2 Blur Instances
+    #zookeepers
+    .clearfix
+
+  #hdfs_dash_wrapper
+    %h2 HDFS
+    #hdfses 
+    .clearfix
+

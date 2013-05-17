@@ -1,0 +1,111 @@
+-content_for :title, 'Search'
+-content_for :javascript do
+  =javascript_include_tag 'search'
+
+%script
+  var searchValidator = {table: "#{@search_filter.value}", query: /:\*$|^\*$/};
+
+#search_page_wrapper
+  #filter_section
+    = form_tag zookeeper_searches_path, :method => 'post', :id=>'search_form', :remote => true do
+      #filters_wrap
+        #standard
+          .search_field
+            = search_field_tag :query_string, params[:query_string], :placeholder => "Enter a Query String", :value => @query
+          = submit_tag "Search", :id => "search_submit", :class => "btn btn-primary"
+          %img.hidden{:id => "loading-spinner",
+              :src => image_path("loader.gif"),
+              :alt => "Loading..."}
+        #blur-table
+          = select_tag :blur_table, grouped_options_for_select(@filter_table_collection, @blur_table ? @blur_table.id : nil)
+        #advanced
+          .header
+            Advanced
+            %img{:class => "arrow_down arrow",
+                :src => image_path("arrow_down.png"),
+                :alt => "Expand For More Options"}
+            %img{:class => "arrow_up arrow",
+                :src => image_path("arrow_up.png"),
+                :alt => "Expand For More Options"}
+          .body.tab
+            .filter.section
+              .filtered-title Column Families
+              #filter_columns
+                .column_family_filter{:name=>"column_data[]"}
+            .section
+              %table
+                %tr.filter
+                  #radio_headers
+                    %td Search On:
+                %tr
+                  %td
+                    #radio_buttons
+                      %table
+                        %tr
+                          %td Row 
+                          %td 
+                            %input#search_row{:class => :radioButton, :name => :search, :type => :radio, :value => '0', :checked => 'checked'}
+                        %tr
+                          %td Record
+                          %td
+                            %input#search_record{:class => :radioButton, :name => :search, :type => :radio, :value => '1'}   
+                %tr.filter
+                  #radio_headers  
+                    %td Return:
+                %tr
+                  %td
+                    #radio_buttons
+                      %table
+                        %tr
+                          %td Row 
+                          %td 
+                            %input#return_row{:class => :radioButton, :name => :return, :type => :radio, :value => '0', :checked => 'checked'}
+                        %tr
+                          %td Record
+                          %td
+                            %input#return_record{:class => :radioButton, :name => :return, :type => :radio, :value => '1', :disabled => true}                     
+                %tr.filter
+                  %th Start:
+                  %td
+                    = number_field_tag :offset, 0, :min => 0
+                %tr.filter
+                  %td Fetch:
+                  %td 
+                    = number_field_tag :result_count, 10, :min => 0
+                %tr
+                  %td Pre-filter String
+                %tr
+                  %td{:colspan => 2}
+                    %input#pre_filter{:class => :filter_text, :type => :text, :value => '', :name => :pre_filter} 
+                %tr
+                  %td Post-filter String
+                %tr
+                  %td{:colspan => 2}
+                    %input#post_filter{:class => :filter_text, :type => :text, :value => '', :name => :post_filter}                                        
+        #saved
+          .header
+            Saved
+            %img{:class => "arrow_down arrow",
+                :src => image_path("arrow_down.png"),
+                :alt => "Expand For More Options"}
+            %img{:class => "arrow_up arrow",
+                :src => image_path("arrow_up.png"),
+                :alt => "Expand For More Options"}
+          .body.tab
+            .saved.section
+              .saved-title
+                Saved Searches
+              = render "saved", :searches => @searches, :blur_table => @blur_table
+            .save_actions.section
+              .saved-title.saved-input
+                Save Current Search
+              .filter#save_name_wrap
+                #save_label= label_tag :save_name, 'Name:'
+                = text_field_tag 'save_name'
+              .filter#buttons
+                %button.btn.primary{:name => "save", :type => "button", :id => 'save_button'}
+                  Save New
+                %button.btn{:name => "update", :type => "button", :id => 'update_button'}
+                  Update
+  #results_wrapper.hidden
+    #results_container

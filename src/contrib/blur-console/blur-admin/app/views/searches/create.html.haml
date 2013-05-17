@@ -1,0 +1,39 @@
+- if @results and not @results.empty?
+  #results_info
+    = "#{@result_count} results found"
+  #results_section
+    %table#result_table.result_table
+      %thead
+        %tr.familysets
+          %th.rowId
+          - @schema.each do |familyName,family|
+            %th{:colspan => family['columns'].count, :children => family['columns'].count, :class => "family_-sep-_#{family['name']}", :id => family['name'] }= family['name']
+        %tr.columnsets
+          %th.rowId rowId
+          - @schema.each do |familyName,family|
+            - family['columns'].each do |column|
+              %th{:class => "column_-sep-_#{family['name']}_-sep-_#{column['name']} family_-sep-_#{family['name']}"}
+                = column['name'].gsub(/([A-Z])/, '&shy;\1').html_safe
+
+      %tbody
+        -current_row_id = ""
+        - @results.each do |result|
+          - max_record_count = result[:max_record_count]
+          - max_record_count.times do |i|
+            %tr.table-bordered{:class => (current_row_id != result[:id]) ? "first" : ""}
+
+              - @schema.each_with_index do |(familyName,column_family), j|
+                - if i == 0 and j == 0
+                  %td{:rowspan => max_record_count, :class => "first", :title => "rowId"}= result[:id]
+                  -current_row_id = result[:id]
+                - record = result[column_family['name']][i] if result[column_family['name']]
+
+                - if record # then insert the record
+                  - column_family['columns'].each do |column|
+                    %td{:class => "#{((j % 2) == 1 ? 'even' : 'odd' )} column_-sep-_#{column_family['name']}_-sep-_#{column['name']} family_-sep-_#{column_family['name']}",
+                        :title => column['name']}
+                      = record[column['name']]
+
+                - else # fill in the remaining space with a big cell
+                  %td{:class => "#{((j % 2) == 1 ? 'even' : 'odd' )} family_-sep-_#{column_family['name']} family_-sep-_#{column_family['name']}_-sep-_empty",
+                      :colspan => column_family['columns'].length}

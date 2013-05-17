@@ -1,0 +1,79 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<!-- parent>
+		<groupId>com.nearinfinity.blur</groupId>
+		<artifactId>blur</artifactId>
+		<version>0.1.3</version>
+	</parent -->
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.nearinfinity.blur</groupId>
+	<artifactId>blur-core</artifactId>
+	<packaging>jar</packaging>
+	<name>Blur Core</name>
+	<version>0.1.3</version>
+
+	<properties>
+		<enableAssertions>false</enableAssertions>
+	</properties>
+
+	<dependencies>
+		
+	</dependencies>
+
+	<!-- repositories>
+		<repository>
+			<id>libdir</id>
+			<url>file://${basedir}/../lib</url>
+		</repository>
+		<repository>
+			<id>cloudera</id>
+			<url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+		</repository>
+	</repositories>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/../../../lib
+							</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+							<excludeTransitive>true</excludeTransitive>
+							<excludeArtifactIds>junit,commons-cli,commons-logging,hadoop-core,slf4j-api,hadoop-test</excludeArtifactIds>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build -->
+</project>

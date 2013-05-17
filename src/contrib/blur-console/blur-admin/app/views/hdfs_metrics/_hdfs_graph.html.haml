@@ -1,0 +1,41 @@
+.graph_instance{:id => hdfs_instance.id}
+  .graph_title
+    %img.hidden{:class => "loading-spinner",
+      :src => image_path("loader.gif"),
+      :alt => "Loading..."}
+    %h3
+      = "#{hdfs_instance.name} (#{hdfs_instance.host})"
+  .graph_content
+    .graph_data.tabbable.tabs-left
+      %ul.nav.nav-tabs
+        %li.active
+          %a{:href => "#disk_#{hdfs_instance.id}", 'data-toggle' => 'tab', 'data-action' => 'disk'}
+            Capacity/Usage
+        %li
+          %a{:href => "#nodes_#{hdfs_instance.id}", 'data-toggle' => 'tab', 'data-action' => 'nodes'}
+            Live/Dead Nodes
+        %li
+          %a{:href => "#block_#{hdfs_instance.id}", 'data-toggle' => 'tab', 'data-action' => 'block'}
+            Block Status
+      .tab-content
+        %div.tab-pane.active{:id => "disk_#{hdfs_instance.id}"}
+          .graph
+            Loading Graph...
+        %div.tab-pane{:id => "nodes_#{hdfs_instance.id}"}
+          .graph
+            Loading Graph...
+        %div.tab-pane{:id => "block_#{hdfs_instance.id}"}
+          .graph
+            Loading Graph...
+      .graph_info
+        %table.graph-info-table
+          %tbody
+            %tr
+              %td.graph-legend
+              %td
+                .slider-info{:id => hdfs_instance.id}
+                  %input{:class=>"min-date", :type=>"text", :placeholder => 'from'}
+                  to
+                  %input{:class=>"max-date", :type=>"text", :placeholder => 'to'}
+              %td.slider-box
+                .slider{:id => hdfs_instance.id}

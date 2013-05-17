@@ -1,0 +1,31 @@
+.info-modal
+  .search-info-section
+    #file_table
+      %table.table-condensed.table.table-striped
+        %tr
+          %td Directory
+          %td= @stat.isdir
+        %tr
+          %td Files Count
+          %td#file_count Calculating...
+        %tr
+          %td Folders Count
+          %td#folder_count Calculating...
+        %tr
+          %td Files Size
+          %td#file_size Calculating...
+        %tr
+          %td Last Modified
+          %td= Time.at(@stat.modification_time/1000.0).strftime("%D %r")
+        %tr
+          %td Owner
+          %td= @stat.owner
+        %tr
+          %td Group
+          %td= @stat.group
+        %tr
+          %td Permission
+          %td= @stat.permission
+  .search-info-section
+    .radial-graph
+      Loading...

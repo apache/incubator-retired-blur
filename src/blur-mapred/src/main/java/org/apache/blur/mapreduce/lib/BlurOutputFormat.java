@@ -20,8 +20,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 
 import org.apache.blur.analysis.BlurAnalyzer;
@@ -52,8 +52,10 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IOContext;
@@ -64,6 +66,7 @@ import org.apache.thrift.transport.TIOStreamTransport;
 
 public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
 
+  public static final String BLUR_OUTPUT_MAX_DOCUMENT_BUFFER_SIZE = "blur.output.max.document.buffer.size";
   public static final String BLUR_TABLE_DESCRIPTOR = "blur.table.descriptor";
   public static final String BLUR_OUTPUT_PATH = "blur.output.path";
 
@@ -153,6 +156,18 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     setOutputPath(job, new Path(tableDescriptor.getTableUri()));
   }
 
+  public static void setMaxDocumentBufferSize(Job job, int maxDocumentBufferSize) {
+    setMaxDocumentBufferSize(job.getConfiguration(), maxDocumentBufferSize);
+  }
+
+  public static void setMaxDocumentBufferSize(Configuration configuration, int maxDocumentBufferSize) {
+    configuration.setInt(BLUR_OUTPUT_MAX_DOCUMENT_BUFFER_SIZE, maxDocumentBufferSize);
+  }
+
+  public static int getMaxDocumentBufferSize(Configuration configuration) {
+    return configuration.getInt(BLUR_OUTPUT_MAX_DOCUMENT_BUFFER_SIZE, 1000);
+  }
+
   public static void setOutputPath(Job job, Path path) {
     Configuration configuration = job.getConfiguration();
     configuration.set(BLUR_OUTPUT_PATH, path.toString());
@@ -168,23 +183,35 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     private static final Log LOG = LogFactory.getLog(BlurRecordWriter.class);
 
     private final Text _prevKey = new Text();
-    private final List<Document> _documents = new ArrayList<Document>();
+    private final Map<String, Document> _documents = new TreeMap<String, Document>();
     private final IndexWriter _writer;
     private final BlurAnalyzer _analyzer;
     private final StringBuilder _builder = new StringBuilder();
     private final Directory _finalDir;
     private final Directory _localDir;
     private final File _localPath;
+    private final int _maxDocumentBufferSize;
+    private final IndexWriterConfig _conf;
     private Counter _fieldCount;
     private Counter _recordCount;
     private Counter _rowCount;
+    private Counter _recordDuplicateCount;
     private boolean _countersSetup = false;
     private RateCounter _recordRateCounter;
     private RateCounter _rowRateCounter;
     private RateCounter _copyRateCounter;
+    private IndexWriter _localTmpWriter;
+    private boolean _usingLocalTmpindex;
+
+    private File _localTmpPath;
+
+    private ProgressableDirectory _localTmpDir;
+
+    private Counter _rowOverFlowCount;
 
     public BlurRecordWriter(Configuration configuration, BlurAnalyzer blurAnalyzer, int shardId, String tmpDirName)
         throws IOException {
+      _maxDocumentBufferSize = BlurOutputFormat.getMaxDocumentBufferSize(configuration);
       Path tableOutput = BlurOutputFormat.getOutputPath(configuration);
       String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, shardId);
       Path indexPath = new Path(tableOutput, shardName);
@@ -195,12 +222,14 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
 
       TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
       _analyzer = new BlurAnalyzer(tableDescriptor.getAnalyzerDefinition());
-      IndexWriterConfig conf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, _analyzer);
+      _conf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, _analyzer);
+      TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();
+      mergePolicy.setUseCompoundFile(false);
 
       String localDirPath = System.getProperty(JAVA_IO_TMPDIR);
       _localPath = new File(localDirPath, UUID.randomUUID().toString() + ".tmp");
       _localDir = new ProgressableDirectory(FSDirectory.open(_localPath), BlurOutputFormat.getProgressable());
-      _writer = new IndexWriter(_localDir, conf);
+      _writer = new IndexWriter(_localDir, _conf.clone());
     }
 
     @Override
@@ -220,22 +249,59 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       GetCounter getCounter = BlurOutputFormat.getGetCounter();
       _fieldCount = getCounter.getCounter(BlurCounters.FIELD_COUNT);
       _recordCount = getCounter.getCounter(BlurCounters.RECORD_COUNT);
+      _recordDuplicateCount = getCounter.getCounter(BlurCounters.RECORD_DUPLICATE_COUNT);
       _rowCount = getCounter.getCounter(BlurCounters.ROW_COUNT);
+      _rowOverFlowCount = getCounter.getCounter(BlurCounters.ROW_OVERFLOW_COUNT);
       _recordRateCounter = new RateCounter(getCounter.getCounter(BlurCounters.RECORD_RATE));
       _rowRateCounter = new RateCounter(getCounter.getCounter(BlurCounters.ROW_RATE));
       _copyRateCounter = new RateCounter(getCounter.getCounter(BlurCounters.COPY_RATE));
     }
 
-    private void add(BlurMutate value) {
+    private void add(BlurMutate value) throws IOException {
       BlurRecord blurRecord = value.getRecord();
       Record record = getRecord(blurRecord);
+      String recordId = record.getRecordId();
       Document document = TransactionRecorder.convert(blurRecord.getRowId(), record, _builder, _analyzer);
       if (_documents.size() == 0) {
         document.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
       }
-      _documents.add(document);
-      _fieldCount.increment(document.getFields().size());
-      _recordCount.increment(1);
+      Document dup = _documents.put(recordId, document);
+      if (dup != null) {
+        _recordDuplicateCount.increment(1);
+      } else {
+        _fieldCount.increment(document.getFields().size());
+        _recordCount.increment(1);
+      }
+      flushToTmpIndexIfNeeded();
+    }
+
+    private void flushToTmpIndexIfNeeded() throws IOException {
+      if (_documents.size() > _maxDocumentBufferSize) {
+        flushToTmpIndex();
+      }
+    }
+
+    private void flushToTmpIndex() throws IOException {
+      if (_documents.isEmpty()) {
+        return;
+      }
+      _usingLocalTmpindex = true;
+      if (_localTmpWriter == null) {
+        String localDirPath = System.getProperty(JAVA_IO_TMPDIR);
+        _localTmpPath = new File(localDirPath, UUID.randomUUID().toString() + ".tmp");
+        _localTmpDir = new ProgressableDirectory(FSDirectory.open(_localTmpPath), BlurOutputFormat.getProgressable());
+        _localTmpWriter = new IndexWriter(_localTmpDir, _conf.clone());
+      }
+      _localTmpWriter.addDocuments(_documents.values());
+      _documents.clear();
+    }
+
+    private void resetLocalTmp() {
+      _usingLocalTmpindex = false;
+      _localTmpWriter = null;
+      _localTmpDir = null;
+      rm(_localTmpPath);
+      _localTmpPath = null;
     }
 
     private Record getRecord(BlurRecord value) {
@@ -249,14 +315,25 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     }
 
     private void flush() throws CorruptIndexException, IOException {
-      if (_documents.isEmpty()) {
-        return;
+      if (_usingLocalTmpindex) {
+        flushToTmpIndex();
+        _localTmpWriter.close(false);
+        DirectoryReader reader = DirectoryReader.open(_localTmpDir);
+        _recordRateCounter.mark(reader.numDocs());
+        _writer.addIndexes(reader);
+        reader.close();
+        resetLocalTmp();
+        _rowOverFlowCount.increment(1);
+      } else {
+        if (_documents.isEmpty()) {
+          return;
+        }
+        _writer.addDocuments(_documents.values());
+        _recordRateCounter.mark(_documents.size());
+        _documents.clear();
       }
-      _writer.addDocuments(_documents);
-      _rowCount.increment(1);
-      _recordRateCounter.mark(_documents.size());
       _rowRateCounter.mark();
-      _documents.clear();
+      _rowCount.increment(1);
     }
 
     @Override

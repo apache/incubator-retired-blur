@@ -30,6 +30,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
@@ -283,9 +284,13 @@ public class CsvBlurMapper extends BaseBlurMapper<LongWritable, Text> {
   }
 
   private Path getCurrentFile(Context context) throws IOException {
-    FileSplit inputSplit = (FileSplit) context.getInputSplit();
-    Path path = inputSplit.getPath();
-    return path.makeQualified(path.getFileSystem(context.getConfiguration()));
+    InputSplit split = context.getInputSplit();
+    if (split != null) {
+      FileSplit inputSplit = (FileSplit) split;
+      Path path = inputSplit.getPath();
+      return path.makeQualified(path.getFileSystem(context.getConfiguration()));
+    }
+    return null;
   }
 
   @Override
@@ -332,6 +337,10 @@ public class CsvBlurMapper extends BaseBlurMapper<LongWritable, Text> {
     context.write(_key, _mutate);
     _recordCounter.increment(1);
     context.progress();
+  }
+
+  public void setFamilyFromPath(String familyFromPath) {
+    this.familyFromPath = familyFromPath;
   }
 
   private String getColumnNames(List<String> columnNames) {

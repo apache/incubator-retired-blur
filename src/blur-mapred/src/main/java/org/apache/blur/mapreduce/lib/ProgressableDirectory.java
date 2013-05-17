@@ -42,7 +42,12 @@ public class ProgressableDirectory extends Directory {
 
   public ProgressableDirectory(Directory directory, Progressable progressable) {
     _directory = directory;
-    _progressable = progressable;
+    _progressable = progressable == null ? new Progressable() {
+      @Override
+      public void progress() {
+
+      }
+    } : progressable;
   }
 
   @Override

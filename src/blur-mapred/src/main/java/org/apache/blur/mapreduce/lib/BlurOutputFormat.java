@@ -18,9 +18,11 @@ package org.apache.blur.mapreduce.lib;
  */
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.log.Log;
@@ -36,6 +38,7 @@ import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.JobStatus.State;
@@ -44,13 +47,16 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TJSONProtocol;
@@ -59,8 +65,28 @@ import org.apache.thrift.transport.TIOStreamTransport;
 public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
 
   public static final String BLUR_TABLE_DESCRIPTOR = "blur.table.descriptor";
-  private static final String MAPRED_OUTPUT_COMMITTER_CLASS = "mapred.output.committer.class";
   public static final String BLUR_OUTPUT_PATH = "blur.output.path";
+
+  private static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
+  private static final String MAPRED_OUTPUT_COMMITTER_CLASS = "mapred.output.committer.class";
+  private static ThreadLocal<Progressable> _progressable = new ThreadLocal<Progressable>();
+  private static ThreadLocal<GetCounter> _getCounter = new ThreadLocal<GetCounter>();
+
+  static void setProgressable(Progressable progressable) {
+    _progressable.set(progressable);
+  }
+
+  static Progressable getProgressable() {
+    return _progressable.get();
+  }
+
+  static void setGetCounter(GetCounter getCounter) {
+    _getCounter.set(getCounter);
+  }
+
+  static GetCounter getGetCounter() {
+    return _getCounter.get();
+  }
 
   @Override
   public void checkOutputSpecs(JobContext context) throws IOException, InterruptedException {
@@ -181,13 +207,20 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
 
   static class BlurRecordWriter extends RecordWriter<Text, BlurMutate> {
 
-    private static Log LOG = LogFactory.getLog(BlurRecordWriter.class);
+    private static final Log LOG = LogFactory.getLog(BlurRecordWriter.class);
 
     private final Text _prevKey = new Text();
     private final List<Document> _documents = new ArrayList<Document>();
     private final IndexWriter _writer;
     private final BlurAnalyzer _analyzer;
     private final StringBuilder _builder = new StringBuilder();
+    private final Directory _finalDir;
+    private final Directory _localDir;
+    private final File _localPath;
+    private Counter _fieldCount;
+    private Counter _recordCount;
+    private Counter _rowCount;
+    private boolean _countersSetup = false;
 
     public BlurRecordWriter(Configuration configuration, BlurAnalyzer blurAnalyzer, int shardId, String tmpDirName)
         throws IOException {
@@ -195,22 +228,39 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, shardId);
       Path indexPath = new Path(tableOutput, shardName);
       Path newIndex = new Path(indexPath, tmpDirName);
+      _finalDir = new ProgressableDirectory(new HdfsDirectory(configuration, newIndex),
+          BlurOutputFormat.getProgressable());
+      _finalDir.setLockFactory(NoLockFactory.getNoLockFactory());
 
       TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
       _analyzer = new BlurAnalyzer(tableDescriptor.getAnalyzerDefinition());
       IndexWriterConfig conf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, _analyzer);
-      Directory dir = new HdfsDirectory(configuration, newIndex);
-      dir.setLockFactory(NoLockFactory.getNoLockFactory());
-      _writer = new IndexWriter(dir, conf);
+
+      String localDirPath = System.getProperty(JAVA_IO_TMPDIR);
+      _localPath = new File(localDirPath, UUID.randomUUID().toString() + ".tmp");
+      _localDir = new ProgressableDirectory(FSDirectory.open(_localPath), BlurOutputFormat.getProgressable());
+      _writer = new IndexWriter(_localDir, conf);
+
     }
 
     @Override
     public void write(Text key, BlurMutate value) throws IOException, InterruptedException {
+      if (!_countersSetup) {
+        setupCounter();
+        _countersSetup = true;
+      }
       if (!_prevKey.equals(key)) {
         flush();
         _prevKey.set(key);
       }
       add(value);
+    }
+
+    private void setupCounter() {
+      GetCounter getCounter = BlurOutputFormat.getGetCounter();
+      _fieldCount = getCounter.getCounter(BlurCounters.FIELD_COUNT);
+      _recordCount = getCounter.getCounter(BlurCounters.RECORD_COUNT);
+      _rowCount = getCounter.getCounter(BlurCounters.ROW_COUNT);
     }
 
     private void add(BlurMutate value) {
@@ -246,6 +296,28 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     public void close(TaskAttemptContext context) throws IOException, InterruptedException {
       flush();
       _writer.close();
+      copyDir();
+    }
+
+    private void copyDir() throws IOException {
+      String[] fileNames = _localDir.listAll();
+      for (String fileName : fileNames) {
+        LOG.info("Copying [{0}]", fileName);
+        _localDir.copy(_finalDir, fileName, fileName, IOContext.DEFAULT);
+      }
+      rm(_localPath);
+    }
+
+    private void rm(File file) {
+      if (!file.exists()) {
+        return;
+      }
+      if (file.isDirectory()) {
+        for (File f : file.listFiles()) {
+          rm(f);
+        }
+      }
+      file.delete();
     }
   }
 

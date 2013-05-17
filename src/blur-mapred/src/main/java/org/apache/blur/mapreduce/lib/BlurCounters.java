@@ -21,6 +21,6 @@ package org.apache.blur.mapreduce.lib;
  * The enum class used for all the internal counters during map reduce jobs.
  */
 public enum BlurCounters {
-  RECORD_COUNT, FIELD_COUNT
+  RECORD_COUNT, FIELD_COUNT, ROW_COUNT
 
 }

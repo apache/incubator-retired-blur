@@ -19,6 +19,7 @@ package org.apache.blur.mapreduce.lib;
 import java.io.IOException;
 
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Reducer;
 
 /**
@@ -56,6 +57,17 @@ import org.apache.hadoop.mapreduce.Reducer;
  * 
  */
 public class DefaultBlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
+
+  @Override
+  protected void setup(final Context context) throws IOException, InterruptedException {
+    BlurOutputFormat.setProgressable(context);
+    BlurOutputFormat.setGetCounter(new GetCounter() {
+      @Override
+      public Counter getCounter(Enum<?> counterName) {
+        return context.getCounter(counterName);
+      }
+    });
+  }
 
   @Override
   protected void reduce(Text key, Iterable<BlurMutate> values, Context context) throws IOException,

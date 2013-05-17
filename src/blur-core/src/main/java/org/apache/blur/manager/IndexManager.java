@@ -229,17 +229,6 @@ public class IndexManager {
     }
   }
 
-  private long getRecordCount(FetchResult fetchResult) {
-    if (fetchResult.rowResult != null) {
-      if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
-        return fetchResult.rowResult.row.records.size();
-      }
-    } else if (fetchResult.recordResult != null) {
-      return 1;
-    }
-    return 0;
-  }
-
   private void populateSelector(String table, Selector selector) throws IOException, BlurException {
     String rowId = selector.rowId;
     String recordId = selector.recordId;
@@ -896,7 +885,6 @@ public class IndexManager {
         }
       }
 
-      long s = System.nanoTime();
       // Finally, replace the existing row with the new row we have built.
       blurIndex.replaceRow(mutation.waitToBeVisible, mutation.wal, newRow);
     } else {

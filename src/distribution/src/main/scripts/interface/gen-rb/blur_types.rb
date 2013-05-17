@@ -155,6 +155,8 @@ module Blur
     COLUMNFAMILIESTOFETCH = 5
     COLUMNSTOFETCH = 6
     ALLOWSTALEDATA = 7
+    STARTRECORD = 8
+    MAXRECORDSTOFETCH = 9
 
     FIELDS = {
       # Fetch the Record only, not the entire Row.
@@ -170,7 +172,17 @@ module Blur
       # The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
       COLUMNSTOFETCH => {:type => ::Thrift::Types::MAP, :name => 'columnsToFetch', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::SET, :element => {:type => ::Thrift::Types::STRING}}},
       # @deprecated This value is no longer used.  This allows the fetch to see the most current data that has been added to the table.
-      ALLOWSTALEDATA => {:type => ::Thrift::Types::BOOL, :name => 'allowStaleData'}
+      ALLOWSTALEDATA => {:type => ::Thrift::Types::BOOL, :name => 'allowStaleData'},
+      # Only valid for Row fetches, the record in the row to start fetching.  If the row contains 1000
+# records and you want the first 100, then this value is 0.  If you want records 300-400 then this
+# value would be 300.  If startRecord is beyond the end of the row, the row will be null in the
+# FetchResult.  Used in conjunction with maxRecordsToFetch.
+      STARTRECORD => {:type => ::Thrift::Types::I32, :name => 'startRecord', :default => 0},
+      # Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
+# and you want the first 100, then this value is 100.  If you want records 300-400 then this value
+# would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the
+# records in the row, be careful.
+      MAXRECORDSTOFETCH => {:type => ::Thrift::Types::I32, :name => 'maxRecordsToFetch', :default => 2147483647}
     }
 
     def struct_fields; FIELDS; end

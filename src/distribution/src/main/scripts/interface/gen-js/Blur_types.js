@@ -385,6 +385,8 @@ Selector = function(args) {
   this.columnFamiliesToFetch = null;
   this.columnsToFetch = null;
   this.allowStaleData = null;
+  this.startRecord = 0;
+  this.maxRecordsToFetch = 2147483647;
   if (args) {
     if (args.recordOnly !== undefined) {
       this.recordOnly = args.recordOnly;
@@ -406,6 +408,12 @@ Selector = function(args) {
     }
     if (args.allowStaleData !== undefined) {
       this.allowStaleData = args.allowStaleData;
+    }
+    if (args.startRecord !== undefined) {
+      this.startRecord = args.startRecord;
+    }
+    if (args.maxRecordsToFetch !== undefined) {
+      this.maxRecordsToFetch = args.maxRecordsToFetch;
     }
   }
 };
@@ -520,6 +528,20 @@ Selector.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 8:
+      if (ftype == Thrift.Type.I32) {
+        this.startRecord = input.readI32().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 9:
+      if (ftype == Thrift.Type.I32) {
+        this.maxRecordsToFetch = input.readI32().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -592,6 +614,16 @@ Selector.prototype.write = function(output) {
   if (this.allowStaleData !== null && this.allowStaleData !== undefined) {
     output.writeFieldBegin('allowStaleData', Thrift.Type.BOOL, 7);
     output.writeBool(this.allowStaleData);
+    output.writeFieldEnd();
+  }
+  if (this.startRecord !== null && this.startRecord !== undefined) {
+    output.writeFieldBegin('startRecord', Thrift.Type.I32, 8);
+    output.writeI32(this.startRecord);
+    output.writeFieldEnd();
+  }
+  if (this.maxRecordsToFetch !== null && this.maxRecordsToFetch !== undefined) {
+    output.writeFieldBegin('maxRecordsToFetch', Thrift.Type.I32, 9);
+    output.writeI32(this.maxRecordsToFetch);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

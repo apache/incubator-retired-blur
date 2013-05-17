@@ -667,15 +667,25 @@ public class BlurUtil {
    * NOTE: This is a potentially dangerous call, it will return all the
    * documents that match the term.
    * 
+   * @param selector
+   * 
    * @throws IOException
    */
-  public static List<Document> termSearch(IndexReader reader, Term term,
-      ResetableDocumentStoredFieldVisitor fieldSelector) throws IOException {
+  public static List<Document> fetchDocuments(IndexReader reader, Term term,
+      ResetableDocumentStoredFieldVisitor fieldSelector, Selector selector) throws IOException {
     IndexSearcher indexSearcher = new IndexSearcher(reader);
     int docFreq = reader.docFreq(term);
     TopDocs topDocs = indexSearcher.search(new TermQuery(term), docFreq);
+    int totalHits = topDocs.totalHits;
     List<Document> docs = new ArrayList<Document>();
-    for (int i = 0; i < topDocs.totalHits; i++) {
+
+    int start = selector.getStartRecord();
+    int end = selector.getMaxRecordsToFetch() + start;
+
+    for (int i = start; i < end; i++) {
+      if (i >= totalHits) {
+        break;
+      }
       int doc = topDocs.scoreDocs[i].doc;
       indexSearcher.doc(doc, fieldSelector);
       docs.add(fieldSelector.getDocument());

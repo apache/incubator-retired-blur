@@ -62,6 +62,8 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
   private static final org.apache.thrift.protocol.TField COLUMN_FAMILIES_TO_FETCH_FIELD_DESC = new org.apache.thrift.protocol.TField("columnFamiliesToFetch", org.apache.thrift.protocol.TType.SET, (short)5);
   private static final org.apache.thrift.protocol.TField COLUMNS_TO_FETCH_FIELD_DESC = new org.apache.thrift.protocol.TField("columnsToFetch", org.apache.thrift.protocol.TType.MAP, (short)6);
   private static final org.apache.thrift.protocol.TField ALLOW_STALE_DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("allowStaleData", org.apache.thrift.protocol.TType.BOOL, (short)7);
+  private static final org.apache.thrift.protocol.TField START_RECORD_FIELD_DESC = new org.apache.thrift.protocol.TField("startRecord", org.apache.thrift.protocol.TType.I32, (short)8);
+  private static final org.apache.thrift.protocol.TField MAX_RECORDS_TO_FETCH_FIELD_DESC = new org.apache.thrift.protocol.TField("maxRecordsToFetch", org.apache.thrift.protocol.TType.I32, (short)9);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -97,6 +99,20 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
    * @deprecated This value is no longer used.  This allows the fetch to see the most current data that has been added to the table.
    */
   public boolean allowStaleData; // required
+  /**
+   * Only valid for Row fetches, the record in the row to start fetching.  If the row contains 1000
+   * records and you want the first 100, then this value is 0.  If you want records 300-400 then this
+   * value would be 300.  If startRecord is beyond the end of the row, the row will be null in the
+   * FetchResult.  Used in conjunction with maxRecordsToFetch.
+   */
+  public int startRecord; // required
+  /**
+   * Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
+   * and you want the first 100, then this value is 100.  If you want records 300-400 then this value
+   * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the
+   * records in the row, be careful.
+   */
+  public int maxRecordsToFetch; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -127,7 +143,21 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     /**
      * @deprecated This value is no longer used.  This allows the fetch to see the most current data that has been added to the table.
      */
-    ALLOW_STALE_DATA((short)7, "allowStaleData");
+    ALLOW_STALE_DATA((short)7, "allowStaleData"),
+    /**
+     * Only valid for Row fetches, the record in the row to start fetching.  If the row contains 1000
+     * records and you want the first 100, then this value is 0.  If you want records 300-400 then this
+     * value would be 300.  If startRecord is beyond the end of the row, the row will be null in the
+     * FetchResult.  Used in conjunction with maxRecordsToFetch.
+     */
+    START_RECORD((short)8, "startRecord"),
+    /**
+     * Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
+     * and you want the first 100, then this value is 100.  If you want records 300-400 then this value
+     * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the
+     * records in the row, be careful.
+     */
+    MAX_RECORDS_TO_FETCH((short)9, "maxRecordsToFetch");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -156,6 +186,10 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
           return COLUMNS_TO_FETCH;
         case 7: // ALLOW_STALE_DATA
           return ALLOW_STALE_DATA;
+        case 8: // START_RECORD
+          return START_RECORD;
+        case 9: // MAX_RECORDS_TO_FETCH
+          return MAX_RECORDS_TO_FETCH;
         default:
           return null;
       }
@@ -198,6 +232,8 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
   // isset id assignments
   private static final int __RECORDONLY_ISSET_ID = 0;
   private static final int __ALLOWSTALEDATA_ISSET_ID = 1;
+  private static final int __STARTRECORD_ISSET_ID = 2;
+  private static final int __MAXRECORDSTOFETCH_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -220,11 +256,19 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
                 new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)))));
     tmpMap.put(_Fields.ALLOW_STALE_DATA, new org.apache.thrift.meta_data.FieldMetaData("allowStaleData", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.START_RECORD, new org.apache.thrift.meta_data.FieldMetaData("startRecord", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.MAX_RECORDS_TO_FETCH, new org.apache.thrift.meta_data.FieldMetaData("maxRecordsToFetch", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Selector.class, metaDataMap);
   }
 
   public Selector() {
+    this.startRecord = 0;
+
+    this.maxRecordsToFetch = 2147483647;
+
   }
 
   public Selector(
@@ -234,7 +278,9 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     String recordId,
     Set<String> columnFamiliesToFetch,
     Map<String,Set<String>> columnsToFetch,
-    boolean allowStaleData)
+    boolean allowStaleData,
+    int startRecord,
+    int maxRecordsToFetch)
   {
     this();
     this.recordOnly = recordOnly;
@@ -246,6 +292,10 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     this.columnsToFetch = columnsToFetch;
     this.allowStaleData = allowStaleData;
     setAllowStaleDataIsSet(true);
+    this.startRecord = startRecord;
+    setStartRecordIsSet(true);
+    this.maxRecordsToFetch = maxRecordsToFetch;
+    setMaxRecordsToFetchIsSet(true);
   }
 
   /**
@@ -289,6 +339,8 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       this.columnsToFetch = __this__columnsToFetch;
     }
     this.allowStaleData = other.allowStaleData;
+    this.startRecord = other.startRecord;
+    this.maxRecordsToFetch = other.maxRecordsToFetch;
   }
 
   public Selector deepCopy() {
@@ -306,6 +358,10 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     this.columnsToFetch = null;
     setAllowStaleDataIsSet(false);
     this.allowStaleData = false;
+    this.startRecord = 0;
+
+    this.maxRecordsToFetch = 2147483647;
+
   }
 
   /**
@@ -542,6 +598,76 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ALLOWSTALEDATA_ISSET_ID, value);
   }
 
+  /**
+   * Only valid for Row fetches, the record in the row to start fetching.  If the row contains 1000
+   * records and you want the first 100, then this value is 0.  If you want records 300-400 then this
+   * value would be 300.  If startRecord is beyond the end of the row, the row will be null in the
+   * FetchResult.  Used in conjunction with maxRecordsToFetch.
+   */
+  public int getStartRecord() {
+    return this.startRecord;
+  }
+
+  /**
+   * Only valid for Row fetches, the record in the row to start fetching.  If the row contains 1000
+   * records and you want the first 100, then this value is 0.  If you want records 300-400 then this
+   * value would be 300.  If startRecord is beyond the end of the row, the row will be null in the
+   * FetchResult.  Used in conjunction with maxRecordsToFetch.
+   */
+  public Selector setStartRecord(int startRecord) {
+    this.startRecord = startRecord;
+    setStartRecordIsSet(true);
+    return this;
+  }
+
+  public void unsetStartRecord() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __STARTRECORD_ISSET_ID);
+  }
+
+  /** Returns true if field startRecord is set (has been assigned a value) and false otherwise */
+  public boolean isSetStartRecord() {
+    return EncodingUtils.testBit(__isset_bitfield, __STARTRECORD_ISSET_ID);
+  }
+
+  public void setStartRecordIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __STARTRECORD_ISSET_ID, value);
+  }
+
+  /**
+   * Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
+   * and you want the first 100, then this value is 100.  If you want records 300-400 then this value
+   * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the
+   * records in the row, be careful.
+   */
+  public int getMaxRecordsToFetch() {
+    return this.maxRecordsToFetch;
+  }
+
+  /**
+   * Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
+   * and you want the first 100, then this value is 100.  If you want records 300-400 then this value
+   * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the
+   * records in the row, be careful.
+   */
+  public Selector setMaxRecordsToFetch(int maxRecordsToFetch) {
+    this.maxRecordsToFetch = maxRecordsToFetch;
+    setMaxRecordsToFetchIsSet(true);
+    return this;
+  }
+
+  public void unsetMaxRecordsToFetch() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __MAXRECORDSTOFETCH_ISSET_ID);
+  }
+
+  /** Returns true if field maxRecordsToFetch is set (has been assigned a value) and false otherwise */
+  public boolean isSetMaxRecordsToFetch() {
+    return EncodingUtils.testBit(__isset_bitfield, __MAXRECORDSTOFETCH_ISSET_ID);
+  }
+
+  public void setMaxRecordsToFetchIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __MAXRECORDSTOFETCH_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case RECORD_ONLY:
@@ -600,6 +726,22 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       }
       break;
 
+    case START_RECORD:
+      if (value == null) {
+        unsetStartRecord();
+      } else {
+        setStartRecord((Integer)value);
+      }
+      break;
+
+    case MAX_RECORDS_TO_FETCH:
+      if (value == null) {
+        unsetMaxRecordsToFetch();
+      } else {
+        setMaxRecordsToFetch((Integer)value);
+      }
+      break;
+
     }
   }
 
@@ -626,6 +768,12 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     case ALLOW_STALE_DATA:
       return Boolean.valueOf(isAllowStaleData());
 
+    case START_RECORD:
+      return Integer.valueOf(getStartRecord());
+
+    case MAX_RECORDS_TO_FETCH:
+      return Integer.valueOf(getMaxRecordsToFetch());
+
     }
     throw new IllegalStateException();
   }
@@ -651,6 +799,10 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       return isSetColumnsToFetch();
     case ALLOW_STALE_DATA:
       return isSetAllowStaleData();
+    case START_RECORD:
+      return isSetStartRecord();
+    case MAX_RECORDS_TO_FETCH:
+      return isSetMaxRecordsToFetch();
     }
     throw new IllegalStateException();
   }
@@ -728,6 +880,24 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       if (!(this_present_allowStaleData && that_present_allowStaleData))
         return false;
       if (this.allowStaleData != that.allowStaleData)
+        return false;
+    }
+
+    boolean this_present_startRecord = true;
+    boolean that_present_startRecord = true;
+    if (this_present_startRecord || that_present_startRecord) {
+      if (!(this_present_startRecord && that_present_startRecord))
+        return false;
+      if (this.startRecord != that.startRecord)
+        return false;
+    }
+
+    boolean this_present_maxRecordsToFetch = true;
+    boolean that_present_maxRecordsToFetch = true;
+    if (this_present_maxRecordsToFetch || that_present_maxRecordsToFetch) {
+      if (!(this_present_maxRecordsToFetch && that_present_maxRecordsToFetch))
+        return false;
+      if (this.maxRecordsToFetch != that.maxRecordsToFetch)
         return false;
     }
 
@@ -817,6 +987,26 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetStartRecord()).compareTo(typedOther.isSetStartRecord());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetStartRecord()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.startRecord, typedOther.startRecord);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetMaxRecordsToFetch()).compareTo(typedOther.isSetMaxRecordsToFetch());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetMaxRecordsToFetch()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.maxRecordsToFetch, typedOther.maxRecordsToFetch);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -883,6 +1073,14 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     if (!first) sb.append(", ");
     sb.append("allowStaleData:");
     sb.append(this.allowStaleData);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("startRecord:");
+    sb.append(this.startRecord);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("maxRecordsToFetch:");
+    sb.append(this.maxRecordsToFetch);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -1017,6 +1215,22 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 8: // START_RECORD
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.startRecord = iprot.readI32();
+              struct.setStartRecordIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 9: // MAX_RECORDS_TO_FETCH
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.maxRecordsToFetch = iprot.readI32();
+              struct.setMaxRecordsToFetchIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1085,6 +1299,12 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       oprot.writeFieldBegin(ALLOW_STALE_DATA_FIELD_DESC);
       oprot.writeBool(struct.allowStaleData);
       oprot.writeFieldEnd();
+      oprot.writeFieldBegin(START_RECORD_FIELD_DESC);
+      oprot.writeI32(struct.startRecord);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(MAX_RECORDS_TO_FETCH_FIELD_DESC);
+      oprot.writeI32(struct.maxRecordsToFetch);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1124,7 +1344,13 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       if (struct.isSetAllowStaleData()) {
         optionals.set(6);
       }
-      oprot.writeBitSet(optionals, 7);
+      if (struct.isSetStartRecord()) {
+        optionals.set(7);
+      }
+      if (struct.isSetMaxRecordsToFetch()) {
+        optionals.set(8);
+      }
+      oprot.writeBitSet(optionals, 9);
       if (struct.isSetRecordOnly()) {
         oprot.writeBool(struct.recordOnly);
       }
@@ -1165,12 +1391,18 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       if (struct.isSetAllowStaleData()) {
         oprot.writeBool(struct.allowStaleData);
       }
+      if (struct.isSetStartRecord()) {
+        oprot.writeI32(struct.startRecord);
+      }
+      if (struct.isSetMaxRecordsToFetch()) {
+        oprot.writeI32(struct.maxRecordsToFetch);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Selector struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(7);
+      BitSet incoming = iprot.readBitSet(9);
       if (incoming.get(0)) {
         struct.recordOnly = iprot.readBool();
         struct.setRecordOnlyIsSet(true);
@@ -1227,6 +1459,14 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       if (incoming.get(6)) {
         struct.allowStaleData = iprot.readBool();
         struct.setAllowStaleDataIsSet(true);
+      }
+      if (incoming.get(7)) {
+        struct.startRecord = iprot.readI32();
+        struct.setStartRecordIsSet(true);
+      }
+      if (incoming.get(8)) {
+        struct.maxRecordsToFetch = iprot.readI32();
+        struct.setMaxRecordsToFetchIsSet(true);
       }
     }
   }

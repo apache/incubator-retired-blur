@@ -189,7 +189,21 @@ struct Selector {
   /**
    * @deprecated This value is no longer used.  This allows the fetch to see the most current data that has been added to the table.
    */
-  7:bool allowStaleData
+  7:bool allowStaleData,
+  /**
+   * Only valid for Row fetches, the record in the row to start fetching.  If the row contains 1000 
+   * records and you want the first 100, then this value is 0.  If you want records 300-400 then this 
+   * value would be 300.  If startRecord is beyond the end of the row, the row will be null in the 
+   * FetchResult.  Used in conjunction with maxRecordsToFetch.
+   */
+  8:i32 startRecord = 0,
+  /**
+   * Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records 
+   * and you want the first 100, then this value is 100.  If you want records 300-400 then this value 
+   * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the 
+   * records in the row, be careful.
+   */
+  9:i32 maxRecordsToFetch = 2147483647
 }
 
 /**

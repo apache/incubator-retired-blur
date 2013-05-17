@@ -426,7 +426,7 @@ sub write {
 
 package Blur::Selector;
 use base qw(Class::Accessor);
-Blur::Selector->mk_accessors( qw( recordOnly locationId rowId recordId columnFamiliesToFetch columnsToFetch allowStaleData ) );
+Blur::Selector->mk_accessors( qw( recordOnly locationId rowId recordId columnFamiliesToFetch columnsToFetch allowStaleData startRecord maxRecordsToFetch ) );
 
 sub new {
   my $classname = shift;
@@ -439,6 +439,8 @@ sub new {
   $self->{columnFamiliesToFetch} = undef;
   $self->{columnsToFetch} = undef;
   $self->{allowStaleData} = undef;
+  $self->{startRecord} = 0;
+  $self->{maxRecordsToFetch} = 2147483647;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{recordOnly}) {
       $self->{recordOnly} = $vals->{recordOnly};
@@ -460,6 +462,12 @@ sub new {
     }
     if (defined $vals->{allowStaleData}) {
       $self->{allowStaleData} = $vals->{allowStaleData};
+    }
+    if (defined $vals->{startRecord}) {
+      $self->{startRecord} = $vals->{startRecord};
+    }
+    if (defined $vals->{maxRecordsToFetch}) {
+      $self->{maxRecordsToFetch} = $vals->{maxRecordsToFetch};
     }
   }
   return bless ($self, $classname);
@@ -565,6 +573,18 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^8$/ && do{      if ($ftype == TType::I32) {
+        $xfer += $input->readI32(\$self->{startRecord});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^9$/ && do{      if ($ftype == TType::I32) {
+        $xfer += $input->readI32(\$self->{maxRecordsToFetch});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -638,6 +658,16 @@ sub write {
   if (defined $self->{allowStaleData}) {
     $xfer += $output->writeFieldBegin('allowStaleData', TType::BOOL, 7);
     $xfer += $output->writeBool($self->{allowStaleData});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{startRecord}) {
+    $xfer += $output->writeFieldBegin('startRecord', TType::I32, 8);
+    $xfer += $output->writeI32($self->{startRecord});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{maxRecordsToFetch}) {
+    $xfer += $output->writeFieldBegin('maxRecordsToFetch', TType::I32, 9);
+    $xfer += $output->writeI32($self->{maxRecordsToFetch});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

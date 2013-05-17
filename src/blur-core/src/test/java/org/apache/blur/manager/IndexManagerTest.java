@@ -403,6 +403,45 @@ public class IndexManagerTest {
     row.recordCount = 1;
     assertEquals(row, fetchResult.rowResult.row);
   }
+  
+  @Test
+  public void testFetchRowByRowIdPaging() throws Exception {
+    Selector selector = new Selector().setRowId("row-6").setStartRecord(0).setMaxRecordsToFetch(1);
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNotNull(fetchResult.rowResult.row);
+    RowMutation mutation6 = newRowMutation(TABLE, "row-6", 
+        newRecordMutation(FAMILY, "record-6A",  newColumn("testcol12", "value110"), newColumn("testcol13", "value102")),
+        newRecordMutation(FAMILY, "record-6B",  newColumn("testcol12", "value101"), newColumn("testcol13", "value104")),
+        newRecordMutation(FAMILY2, "record-6C", newColumn("testcol18", "value501")));
+    
+    Row row1 = newRow("row-6", newRecord(FAMILY, "record-6A", newColumn("testcol12", "value110"), newColumn("testcol13", "value102")));
+    row1.recordCount = 1;
+    assertEquals(row1, fetchResult.rowResult.row);
+    
+    selector = new Selector().setRowId("row-6").setStartRecord(1).setMaxRecordsToFetch(1);
+    fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNotNull(fetchResult.rowResult.row);
+    
+    Row row2 = newRow("row-6", newRecord(FAMILY, "record-6B", newColumn("testcol12", "value101"), newColumn("testcol13", "value104")));
+    row2.recordCount = 1;
+    assertEquals(row2, fetchResult.rowResult.row);
+    
+    selector = new Selector().setRowId("row-6").setStartRecord(2).setMaxRecordsToFetch(1);
+    fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNotNull(fetchResult.rowResult.row);
+    
+    Row row3 = newRow("row-6", newRecord(FAMILY2, "record-6C", newColumn("testcol18", "value501")));
+    row3.recordCount = 1;
+    assertEquals(row3, fetchResult.rowResult.row);
+    
+    selector = new Selector().setRowId("row-6").setStartRecord(3).setMaxRecordsToFetch(1);
+    fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNull(fetchResult.rowResult.row);
+  }
 
   @Test
   public void testFetchRowByRecordIdOnly() throws Exception {

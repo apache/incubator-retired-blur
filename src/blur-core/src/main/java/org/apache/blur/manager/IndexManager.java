@@ -459,7 +459,8 @@ public class IndexManager {
         fetchResult.exists = true;
         fetchResult.deleted = false;
         String rowId = getRowId(reader, docId);
-        List<Document> docs = BlurUtil.termSearch(reader, new Term(ROW_ID, rowId), getFieldSelector(selector));
+        List<Document> docs = BlurUtil.fetchDocuments(reader, new Term(ROW_ID, rowId), getFieldSelector(selector),
+            selector);
         fetchResult.rowResult = new FetchRowResult(getRow(docs));
         return;
       }

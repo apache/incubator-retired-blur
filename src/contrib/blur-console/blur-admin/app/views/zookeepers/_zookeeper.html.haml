@@ -1,0 +1,48 @@
+.zookeeper_info
+  %table.zookeeper_table{:id => "#{zookeeper.id}"}
+    %thead
+      %tr
+        %th.zookeeper-title{ :colspan => 3 }
+          .zookeeper-name
+            = zookeeper.name
+          .zookeeper-status
+            = case zookeeper.zookeeper_status; when 0 then "Offline"; when 1 then "Online"; else "Not Available"; end
+
+    %tbody
+      %tr
+        %td.index
+        %th.cont
+          Controllers
+        %th.shard
+          Shards
+      %tr
+        %th.index
+          Blur Version
+        %td.cont
+          .bv-cont
+            .controllers-bv.label.status
+              No Controllers Available
+        %td.shard
+          .bv-shard
+            .shards-bv.label.status
+              No Shards Available
+      %tr
+        %th.index
+          Status
+        %td.cont
+          .progress.progress-up-down.stat-cont
+            .bar.up.controllers-online{:style=>'width:100%'}
+              %span.number 0
+              Online/Offline
+            .down.controllers-offline
+              %span.number
+        %td.shard
+          .progress.progress-up-down.stat-shard
+            .bar.up.shards-online{:style=>'width:100%'}
+              %span.number 0
+              Online/Offline
+            .down.shards-offline
+              %span.number
+      %tr
+        %td{ :colspan => 3 }
+          .warning

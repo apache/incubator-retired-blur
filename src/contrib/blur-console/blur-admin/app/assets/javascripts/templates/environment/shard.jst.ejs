@@ -1,0 +1,8 @@
+<% if (shard.get('status') == 0){%>
+  <div class="icon" title="Remove This Shard" data-id="<%= shard.get('id') %>">
+    <i class="icon-remove-sign"/>
+  </div>
+<% } %>
+<div class="info">
+  <%= shard.status() %>
+</div>

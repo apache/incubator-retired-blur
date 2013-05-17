@@ -1,0 +1,30 @@
+- content_for :title, 'Blur Queries'
+
+- content_for :javascript do
+  = javascript_include_tag 'blur_queries'
+
+#blur_queries_wrapper
+  .range_select
+    Queries in the last:
+    %select.time_range
+      =options_for_select({ "1 min" => 1, "5 min" => 5, "10 min" => 10, "30 min" => 30 }, 1)
+    %form.filters
+      Quick Filter Status by:
+      %input.filter_option{:type => "radio", :name => "filter", "data-filter" => "Running"}
+      Running
+      %input.filter_option{:type => "radio", :name => "filter", "data-filter" => "Complete"}
+      Complete
+      %input.filter_option{:type => "radio", :name => "filter", "data-filter" => "", :checked => true}
+      None
+  %table#queries-table.table.table-striped.table-bordered
+    %thead
+      %tr
+        - headers = ['User ID']
+        - headers << 'Query' if can? :index, :blur_queries, :query_string
+        - headers.push 'Table Name', 'Starting Record', 'Time Submitted', 'Status', 'State', 'Actions/Info'
+        - headers.each do |header|
+          %th
+            .header_content
+              %div=header
+              =render :partial => 'shared/icons'
+    %tbody

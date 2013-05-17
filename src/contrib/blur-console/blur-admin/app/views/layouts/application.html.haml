@@ -1,0 +1,84 @@
+!!!5
+%html
+	%head
+		= csrf_meta_tag
+		:javascript
+			var CurrentZookeeper = #{session[:current_zookeeper_id] || 'null'};
+		= javascript_include_tag 'application', 'routes'
+		= yield(:javascript)
+		= stylesheet_link_tag 'application', :media => "all" 
+		- if session[:current_zookeeper_id].blank? && @zookeepers
+			:javascript
+				var Zookeeper = {};
+				Zookeeper.instances = #{@zookeepers.collect{|z| {:id=>z.id, :name=>z.name}}.to_json}
+		%title
+			= yield(:title)
+			| Blur Console
+		%link{:rel => "icon", :type => "image/png", :href => "/assets/favicon.png"}
+	%body
+		#root
+			- if @current_user
+				.navbar
+					%a.brand{:href => '/'}
+						= image_tag('blur_logo.png')
+					.navbar-inner
+						%ul.nav.pull-left
+							- controller = params[:controller]
+							- action = params[:action]
+							%li{:class => controller == 'zookeepers' && action == 'index' && 'active'}
+								= link_to 'Dashboard', root_path
+							%li{:class => controller == 'zookeepers' && action == 'show' && 'active'}
+								= link_to 'Environment Status', stateful_nav_url('environment'), :id => 'env_link'
+							%li{:class => controller == 'blur_tables' && 'active'}
+								= link_to 'Blur Tables', stateful_nav_url('blur_table'), :id => 'tables_link', 'data-url-extension' => '/blur_tables'
+							%li{:class => controller == 'blur_queries' && 'active'}
+								= link_to 'Blur Queries', stateful_nav_url('blur_query'), :id => 'queries_link', 'data-url-extension' => '/blur_queries'
+							- if can? :show, :searches
+								%li{:class => controller == 'searches' && 'active'}
+									= link_to 'Search', stateful_nav_url('search'), :id => 'search_link', 'data-url-extension' => '/searches'
+							%li.dropdown{:class => (controller == 'hdfs' || controller == 'hdfs_metrics') && 'active'}
+								%a.dropdown-toggle{:href=>'#', :data=>{:toggle=>'dropdown'}}
+									HDFS
+									%b.caret
+								%ul.dropdown-menu
+									%li{:class => controller == 'hdfs' && 'active'}
+										= link_to 'HDFS File Browser', hdfs_index_path
+									%li{:class => controller == 'hdfs_metrics' && 'active'}
+										= link_to 'HDFS Metrics', hdfs_metrics_path
+							- if can? :index, :audits
+								%li{:class => controller == 'audits' && action == 'index' && 'active'}
+									= link_to 'Audits', audits_path
+							- if can? :index, :users
+								%li{:class => controller == 'users' && action == 'index' && 'active'}
+									= link_to 'Admin', users_path
+							
+						%ul.nav.pull-right
+							- if @zookeepers && @zookeepers.length > 1
+								%li
+									#zookeeper_select
+										-blank = @current_zookeeper.nil? && session[:current_zookeeper_id].nil?
+										= select('zookeeper', 'id', @zookeepers.collect{|zk| [zk.name, zk.id]}, {:id => 'zookeeper_id', :include_blank => blank, :selected => session[:current_zookeeper_id]})
+								%li.divider-vertical
+							%li{:class => controller == 'users' && action == 'show' && 'active'}
+								= link_to "Account", @current_user
+							- if session[:proof].blank?
+								%li= link_to "Log Out", logout_path
+			#bd.container-fluid
+				= yield
+
+	- if flash
+		#flash
+			- flash.each do |type, message|
+				-if type == :notice
+					.alert.alert-success{:class=>type}= message
+				-elsif type == :error
+					.alert.alert-error{:class=>type}= message
+				-else
+					.alert.alert-info{:class=>type}= message
+	#ft
+		#company-info
+			%p
+				- if !@current_user.nil?
+					%a#page-help{:href => ''} Help
+				| Version 1.4.2
+#help-menu{:style => 'display: none', "data-controller" => params[:controller], "data-action" => params[:action]}

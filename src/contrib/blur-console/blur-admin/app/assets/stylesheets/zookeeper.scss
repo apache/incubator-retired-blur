@@ -1,0 +1,126 @@
+$opacity-adjust: 0;
+#zookeeper_wrapper {
+  i { cursor: pointer; }
+  $header-padding: 20px;
+  margin-top: 2em;
+  #blur, #zookeeper{ margin-bottom: 2em;}
+  #zookeeper {
+    @include border-radius();
+    opacity: .9;
+    height: 60px;
+    width: 500px;
+    margin-left:auto;
+    margin-right:auto;   
+    h2 {
+      font-size: 20px;
+      padding: 10px 10px 0px;
+      color: white;
+      line-height: 40px;
+      @include box-sizing(border-box);
+      height: 100%;
+      position: relative;
+      top: -10px;
+      
+      .nodes {
+        position: relative;
+        bottom: 20px;
+        font-size: 12px;
+        opacity: .8;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+
+        span{
+          cursor: pointer;
+        }
+      }
+      
+      i {
+        position: absolute;
+        top: 15px;
+        right: 5px;
+      }
+    }
+
+  }
+  #blur {
+    #controllers, #clusters{ padding: 5px; @include box-sizing(border-box); min-width: 550; border-top: 1px solid #CCCCCC;}
+    thead{
+      background-color: whitesmoke;
+    }
+
+    table tbody tr{
+      &.no_children{
+        display: none;
+      }
+      &.error{
+        &:hover{
+          td{
+            background-color: #EBCCCC;
+          }
+        }
+        td{
+          background-color: #F2DEDE;
+        }
+      }
+
+      &.warning{
+        &:hover{
+          td{
+            background-color: #FAF2CC;
+          }
+        }
+        td{
+          background-color: #FCF8E3;
+        }
+      }  
+      
+      td{
+
+        a {
+          text-decoration: none;
+          cursor: pointer;
+        }
+        
+        .noColor{
+          background-color: transparent;
+          color:black;
+        }
+        color{
+          //color: rgba(125, 199, 125, 1);
+          font-weight: bold;
+        }
+      }
+      
+      td:last-child { text-align: center; width: 34px; }
+    }
+    ul{ list-style-type: none; }
+    .blur_container{ margin-bottom: 2em }
+  }
+  .status{ width:75px; @include zoo-status;}
+
+  h3 { margin-top: 0.5em; border-bottom: $twitter-border;}
+  
+  .noController{
+    position: relative;
+    top: 40px;
+    font-size: 20px;
+    color: #93A7AC;
+  }
+  .subHeaders{
+    display: inline-block;
+    font-size: 24px;
+    font-weight: bold;
+    color: #93A7AC;
+    background: none repeat scroll 0 0 #FFFFFF;
+    position: relative;
+    top: -16px;
+    left: 10px;    
+  }
+  
+  .row{
+    margin-left:auto;
+    margin-right:auto;
+    width: 1200px;
+  }
+}

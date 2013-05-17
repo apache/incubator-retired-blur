@@ -1,0 +1,8 @@
+The following tools are included in this repository:
+
+Console:
+    rails application
+        - The admin rails application for administering a Blur instance
+
+    agent
+        - Java agent that collects various information for the admin console

@@ -1,0 +1,202 @@
+= stylesheet_link_tag 'application'
+= javascript_include_tag 'help'
+%title
+  Help | Blur Console
+%html{:style => 'min-width: 0px;'}
+  %body
+    #help-window
+      .help-section
+        %h3.help-label Navigation Help
+        .help-content{:style => 'display: none'}
+          .head
+            The navigation bar has three major functionalities:
+          .body
+            %ol
+              %li It is a means to traverse the application
+              %li
+                It gives the user the ability to change the "zookeeper" context of the application:
+                %ul
+                  %li The context can be switched by using the "Current Zookeeper Instance" selector located at the center of the navigation bar.
+                  %li This selector is a list of all zookeepers that your application is currently tracking.
+                  %li This selector is present on every page that displays zookeeper relevant information.
+                  %li Selecting a new zookeeper will refresh the content of the current page using the new zookeeper.
+              %li
+                It has a link to your "User" page:
+                %ul
+                  %li This is located in the top right, next to the "logout" button.
+      .help-section
+        %h3.help-label Dashboard Help
+        .help-content{ :style =>  @tab != 'dashboard' && 'display: none' }
+          .head
+            The "Dashboard" page is a high level view of the overall health of your system.
+            Each box in the Zookeeper section represents a different zookeeper and displays information on that zookeeper.
+          .body
+            %ol
+              %li
+                The header of each zookeeper box displays the current health of that particular zookeeper.
+                %ul
+                  %li A green check means that the system is healthy.
+                  %li A yellow exclamation means that some of the zookeeper nodes are offline but it is still in quorum.
+                  %li A red question mark means that quorom is not being met.
+                  %li A red 'X' means that the zookeeper instance cannot be reached or is completely offline.
+              %li
+                Each circle represents the population of that particular piece of blur. The green portions are the healthy nodes and the red portions are the offline nodes.
+                %ul
+                  %li The circle's values correlate to the offline and online rows in the center of the widget.
+              %li
+                The "version" row indicates whether or not all of the nodes (shards and controllers respectively) are running the same version of blur.
+              %li Clicking on a Zookeeper box will take the user to the Environment page of that particular blur instance.
+              %li
+                A warning will appear at the bottom of the box if there are any "long running" queries.
+                %ul
+                  %li This warning is a count of the number queries that have been running for more than a minute. Clicking the number will bring up a dialog with the list of long running queries.
+
+          .head
+            Each box in the Hdfs section represents a different hdfs instance and displays information about it.
+          .body
+            %ol
+              %li The header of each hdfs box displays whether or not the system is online.
+              %li The information on the left represents whether or not hdfs blocks are missing or under replicated.
+              %li The node bar shows the relative populations of online and offline nodes. The green representing online and the red representing offline.
+              %li The "dfs usage" bar represents the total amount of the hdfs space that is currently being used.
+      .help-section
+        %h3.help-label Environment Status Help
+        .help-content{ :style =>  @tab != 'zookeepers' && 'display: none' }
+          .head
+            The "Environment Status" page is a zookeeper specific status page.
+          .body
+            %ol
+              %li
+                The widget at the top displays the zookeepers status.
+                %ul
+                  %li Hovering over "online(#)" and "offline(#)", only shown if there are any nodes offline or online respectively, will display a tooltip listing the respective nodes.
+                  %li A green background means that the system is healthy.
+                  %li A yellow background means that some of the zookeeper nodes are offline but it is still in quorum.
+                  %li A red background with the header "Quorom Failure" means that quorom is not being met.
+                  %li A red background with the header "Offline" means that the zookeeper instance cannot be reached or is completely offline.
+              %li The "controllers" table lists each controller with its name, blur version, and status.
+              %li The "shards" column contains a link that, when clicked, displays a popup listing all the child shards and their status.
+              %li The "clusters" table lists each shard with its name, blur version, and status. Click "view shards" for a list of the shards in that cluster and the status of each of them.
+              %li Clicking on the 'x' icon on this page will delete the node from the database, 'forget', this is only displayed if the node is no longer online.
+      .help-section
+        %h3.help-label Blur Tables Help
+        .help-content{ :style =>  @tab != 'blur_tables' && 'display: none' }
+          .head
+            The "Blur Tables" page is a list of all the Blur Tables associated with the current zookeeper. The tabs represent each cluster of shards. The tables are broken into Active, Disabled, Deleted statuses.  Each row contains information describing a Blur Table.
+          .body
+            %ol
+              %li The "Hosts/Shards" column is a link that displays a dialog with a list of all the hosts and shards for that BlurTable when clicked.
+              %li "Row Count" is the number of rows in that particular table.
+              %li "Record Count" is the number of records in that particular table.
+              %li
+                "Info" is a link that displays a list of Column families and their columns.s
+                %ul
+                  %li The location of the table in the HDFS.
+                  %li Each entry also shows the name of its analyzer.
+              %li "Queries/Minute" is a sparkline graph and an average number of queries on the corresponding table over the past 10 minutes.
+          .head
+            Depending on access, various actions will be available per status.
+          .body
+            %ul
+              %li Active tables will have the option to disable the table
+              %li Disabled tables will have the option to activate the table or delete the table.
+      .help-section
+        %h3.help-label Blur Queries Help
+        .help-content{ :style =>  @tab != 'blur_queries' && 'display: none' }
+          .head
+            The "Blur Queries" page is a list of recently executed Blur Queries.
+          .body
+            %ol
+              %li The "Auto Refresh" selector allows the user to choose how often the table information is refreshed.
+              %li The "Queries in the last" selector allows users to limit the queries by the time they were updated.
+              %li The "Quick Filter Status By" selector allows users to quickly show certain queries by their current status.
+              %li When the table is refreshed, queries are automatically added, updated, and deleted.
+              %li Each column in the table is sortable by clicking the header of each column.
+              %li The "Filter Queries" box allows users to search for specific values in the table.
+          .head
+            Underneath the filters section is the queries table.
+          .body
+            %ol
+              %li The "User Id" column shows the ID of the user that submitted that query.
+              %li
+                The "Query" column is the text of the executed query. This is only visible to users with the auditor role.
+                %ul
+                  %li Only the first 50 characters of the query text are displayed on the table. The full text can be seen by hovering your mouse over the query column.
+              %li The "Table Name" column shows the table that the query was executed against.
+              %li The "Starting Record" column shows the starting offset for the executed query.
+              %li The "Time Submitted" column shows the time that the query was submitted.
+              %li The "Status" column shows the percent of shards that have completed the query and whether or not the query is still running or was interrupted.
+              %li The "Actions/Info" column gives users the ability to cancel queries that are still in the running state (editor role only) and display details associated with the query (auditor role only).
+      .help-section
+        %h3.help-label Search Help
+        .help-content{ :style =>  @tab != 'searches' && 'display: none' }
+          .help_list#search_help
+            .head
+              Use the "Search" box to begin building a query. Use the search button to the right to submit.
+            .body
+              %ol
+                %li Basic field searches are in the format column_family.column:value
+                %li NOTE: Not all tables can be '*' queried, to learn more about the allowed tables consult your admin.
+                %li Fields can be grouped with parenthesis. Eg. (employee.name:bob employee.gender:male)
+                %li
+                  Special characters:
+                  %ul
+                    %li '+' - Indicates that the field or grouping must exist in the result set (+employee.name:bob)
+                    %li '-' - Indicates that the field or grouping can NOT exist in the result set (-employee.name:bob)
+                    %li '?' - Wildcard for a single character (employee.birthdate:197001??)
+                    %li '*' - Wildcard for 0 to many characters (employee.name:b*b)
+                    %li '~' - Fuzzy criteria to be followed by a number between 0 and 1 (employee.name:bob~0.7)
+
+          .help_list#advanced_help
+            .head
+              Use the "Advanced" menu to further modify a query.
+            .body
+              %ol
+                %li The "Column Families" selector tree allows users to limit the returned columns.
+                %li The "Search On" option allows you to search across a row or record.
+                %li The "Return" option allows you to choose whether to return the results by row or a record.
+                %li The "Start" option allows you to choose the starting element to display.
+                %li The "Fetch" option allows you to limit the amount of rows that are returned.
+                %li The "Pre-Filter" field allows you to remove records before the "join" operation.
+                %li The "Post-Filter" field allows you to filter rows out after the query.
+
+          .help_list#saved_help
+            .head
+              Use the "Saved" menu to load a previously saved query.
+            .body
+              %ol
+                %li The pencil will load the save into the form.
+                %li The red "x" will delete the saved query.
+                %li 
+                  Use the "Save Options" tab to save the current query.
+                  %ul
+                    %li The "Name" field is used to name your saved searches.
+                    %li You can update an existing saved search by using the same name in the name field and clicking update.
+      .help-section
+        %h3.help-label HDFS help
+        .help-content{ :style =>  @tab != 'hdfs' && 'display: none' }
+          .head
+            The HDFS page presents a simple file viewer of an HDFS file system.  Right clicking on the root node will expose properties about the file system as a whole.  Right clicking on any of the children nodes will allow for various editing actions (cut, paste, delete).
+      .help-section
+        %h3.help-label HDFS Metrics help
+        .help-content{ :style =>  @tab != 'hdfs_metrics' && 'display: none' }
+          .head
+            The HDFS metrics page displays a series of statistics for each of your managed hdfs instances. It allows you to track the history of a few key "metrics". The history range can be controlled by the slider / datepicker combo in the bottom right of each HDFS widget. This allows the user to change the range of the metrics window between 2 weeks ago and real time.
+      .help-section
+        %h3.help-label Admin help
+        .help-content{ :style =>  @tab != 'admin' && 'display: none' }
+          .head
+            The "Admin Page" contains a list of all the current users registered in the system. Users with the admin role may edit the roles and information for users on this page. It is only visible to users with the admin role.
+      .help-section
+        %h3.help-label Users help
+        .help-content{ :style =>  @tab != 'users' && 'display: none' }
+          .head
+            The "Column Preferences" section allows the user to choose what column families they want to display first in the results table when they execute a search on the search page.
+          .body
+            %ol
+              %li
+                "My Saved Column Families" is a list of the user's chosen preferred column families, this list is in sorted order from top to bottom.
+                %ul
+                  %li This list is sortable. To change the order of the column families, simply drag a column family to the desired spot in the list.
+                  %li To add columns to your preferred list, click on a blue column from the list on the right and it will be added to your preferred list.
+                  %li To remove a column from your preferred list,** a user can either drag the column into the trash can from their preferred list or click on the corresponding column on the right.

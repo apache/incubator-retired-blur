@@ -1,0 +1,11 @@
+- content_for :title, 'HDFS'
+- content_for :javascript do
+  =javascript_include_tag 'hdfs'
+
+#hdfs_wrapper
+  #hdfs_browser{:hdfs_editor =>current_user.editor.to_s}
+    %ul#top_level
+      - @hdfs.each do |hdfs|
+        %li.osxSelectable.hdfs_instance{:hdfs_id=>hdfs.id, :hdfs_name=>hdfs.name, :hdfs_path=>'/'}
+          =link_to(hdfs.name, expand_hdfs_path(hdfs.id), :title=>hdfs.name)
+

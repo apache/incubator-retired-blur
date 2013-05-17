@@ -19,3 +19,16 @@ src/blur-store/src/main/java/com/quicklz/
 lib/*
 src/blur-core/local-testing-tmp*
 .DS_Store
+*.swp
+nbproject/
+build
+log
+.metadata
+*.iml
+*.idea
+coverage
+coverage.data
+extra/nohup.out
+/blur-admin/public/javascripts
+/blur-admin/public/stylesheets
+conf

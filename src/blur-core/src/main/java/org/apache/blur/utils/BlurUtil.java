@@ -388,7 +388,7 @@ public class BlurUtil {
   }
 
   public static String getVersion() {
-    String path = "/META-INF/maven/com.nearinfinity.blur/blur-core/pom.properties";
+    String path = "/META-INF/maven/org.apache.blur/blur-core/pom.properties";
     InputStream inputStream = BlurUtil.class.getResourceAsStream(path);
     if (inputStream == null) {
       return UNKNOWN;

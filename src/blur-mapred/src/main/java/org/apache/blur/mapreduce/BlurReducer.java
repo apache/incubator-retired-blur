@@ -47,6 +47,7 @@ import org.apache.blur.mapreduce.lib.ProgressableDirectory;
 import org.apache.blur.mapreduce.lib.BlurMutate.MUTATE_TYPE;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.Column;
+import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
@@ -247,7 +248,8 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
   }
 
   protected void fetchOldRecords() throws IOException {
-    List<Document> docs = BlurUtil.termSearch(_reader, _rowIdTerm, new ResetableDocumentStoredFieldVisitor());
+    List<Document> docs = BlurUtil.fetchDocuments(_reader, _rowIdTerm, new ResetableDocumentStoredFieldVisitor(),
+        new Selector());
     for (Document document : docs) {
       String recordId = document.get(RECORD_ID);
       // add them to the new records if the new records do not contain them.

@@ -45,6 +45,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.thrift.TException;
+import org.apache.zookeeper.KeeperException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -119,6 +120,26 @@ public class BlurClusterTest {
     blurQuery.setSimpleQuery(simpleQuery);
     BlurResults results = client.query("test", blurQuery);
     assertEquals(length, results.getTotalResults());
+  }
+  
+  @Test
+  public void testTestShardFailover() throws BlurException, TException, InterruptedException, IOException, KeeperException {
+    Iface client = getClient();
+    int length = 100;
+    BlurQuery blurQuery = new BlurQuery();
+    blurQuery.setUseCacheIfPresent(false);
+    SimpleQuery simpleQuery = new SimpleQuery();
+    simpleQuery.setQueryStr("test.test:value");
+    blurQuery.setSimpleQuery(simpleQuery);
+    BlurResults results1 = client.query("test", blurQuery);
+    assertEquals(length, results1.getTotalResults());
+    
+    MiniCluster.killShardServer(1);
+    
+    client.shardServerLayout("test");
+    
+    assertEquals(length, client.query("test", blurQuery).getTotalResults());
+    
   }
 
   @Test

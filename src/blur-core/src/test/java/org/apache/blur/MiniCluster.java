@@ -23,6 +23,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_SLAB_COUNT;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 
@@ -42,6 +43,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.BlurClientManager;
@@ -61,6 +63,7 @@ import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.zookeeper.ZooKeeperClient;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
@@ -278,6 +281,29 @@ public abstract class MiniCluster {
         throw new RuntimeException(e);
       }
     }
+  }
+
+  public static void killShardServer(int shardServer) throws IOException, InterruptedException, KeeperException {
+    killShardServer(getBlurConfiguration(), shardServer);
+  }
+
+  public static void killShardServer(final BlurConfiguration configuration, int shardServer) throws IOException,
+      InterruptedException, KeeperException {
+    final BlurConfiguration localConf = getBlurConfiguration(configuration);
+    int shardPort = localConf.getInt(BLUR_SHARD_BIND_PORT, 40020);
+    String nodeNameHostname = ThriftServer.getNodeName(configuration, BLUR_SHARD_HOSTNAME);
+    String nodeName = nodeNameHostname + ":" + (shardPort + shardServer);
+    ZooKeeper zk = new ZooKeeperClient(getZkConnectionString(), 30000, new Watcher() {
+      @Override
+      public void process(WatchedEvent event) {
+
+      }
+    });
+    String onlineShardsPath = ZookeeperPathConstants
+        .getOnlineShardsPath(org.apache.blur.utils.BlurConstants.BLUR_CLUSTER);
+    String path = onlineShardsPath + "/" + nodeName;
+    zk.delete(path, -1);
+    zk.close();
   }
 
   private static void startServer(final ThriftServer server, Connection connection) {

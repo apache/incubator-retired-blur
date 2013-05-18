@@ -283,7 +283,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     long s = System.nanoTime();
     try {
       checkIfOpen();
-      return _zk.getChildren(ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/online/shard-nodes", false);
+      String onlineShardsPath = ZookeeperPathConstants.getOnlineShardsPath(cluster);
+      return _zk.getChildren(onlineShardsPath, false);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
@@ -312,7 +313,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     long s = System.nanoTime();
     try {
       checkIfOpen();
-      return _zk.getChildren(ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/shard-nodes", false);
+      String registeredShardsPath = ZookeeperPathConstants.getRegisteredShardsPath(cluster);
+      return _zk.getChildren(registeredShardsPath, false);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {

@@ -47,12 +47,8 @@ public class ZookeeperPathConstants {
     return getTablePath(cluster, table) + "/shard-count";
   }
 
-  public static String getOnlinePath(String cluster) {
-    return getClusterPath(cluster) + "/online";
-  }
-
   public static String getOnlineShardsPath(String cluster) {
-    return getOnlinePath(cluster) + "/shard-nodes";
+    return getClusterPath(cluster) + "/online-nodes";
   }
 
   public static String getTablesPath(String cluster) {
@@ -68,7 +64,7 @@ public class ZookeeperPathConstants {
   }
 
   public static String getRegisteredShardsPath(String cluster) {
-    return getClusterPath(cluster) + "/shard-nodes";
+    return getClusterPath(cluster) + "/registered-nodes";
   }
 
   public static String getTableCompressionCodecPath(String cluster, String table) {

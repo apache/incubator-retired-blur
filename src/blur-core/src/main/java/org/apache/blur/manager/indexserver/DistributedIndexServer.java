@@ -141,14 +141,15 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   public void init() throws KeeperException, InterruptedException, IOException {
-    // evictions = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE,
-    // EVICTION), EVICTION, TimeUnit.SECONDS);
-    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, TABLE_COUNT, _cluster), new AtomicLongGauge(_tableCount));
-    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_COUNT, _cluster), new AtomicLongGauge(_indexCount));
-    Metrics
-        .newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, SEGMENT_COUNT, _cluster), new AtomicLongGauge(_segmentCount));
-    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_MEMORY_USAGE, _cluster), new AtomicLongGauge(
-        _indexMemoryUsage));
+    MetricName tableCount = new MetricName(ORG_APACHE_BLUR, BLUR, TABLE_COUNT, _cluster);
+    MetricName indexCount = new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_COUNT, _cluster);
+    MetricName segmentCount = new MetricName(ORG_APACHE_BLUR, BLUR, SEGMENT_COUNT, _cluster);
+    MetricName indexMemoryUsage = new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_MEMORY_USAGE, _cluster);
+    
+    Metrics.newGauge(tableCount, new AtomicLongGauge(_tableCount));
+    Metrics.newGauge(indexCount, new AtomicLongGauge(_indexCount));
+    Metrics.newGauge(segmentCount, new AtomicLongGauge(_segmentCount));
+    Metrics.newGauge(indexMemoryUsage, new AtomicLongGauge(_indexMemoryUsage));
 
     BlurUtil.setupZookeeper(_zookeeper, _cluster);
     _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);

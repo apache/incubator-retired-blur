@@ -410,11 +410,7 @@ public class IndexManagerTest {
     FetchResult fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
     assertNotNull(fetchResult.rowResult.row);
-    RowMutation mutation6 = newRowMutation(TABLE, "row-6", 
-        newRecordMutation(FAMILY, "record-6A",  newColumn("testcol12", "value110"), newColumn("testcol13", "value102")),
-        newRecordMutation(FAMILY, "record-6B",  newColumn("testcol12", "value101"), newColumn("testcol13", "value104")),
-        newRecordMutation(FAMILY2, "record-6C", newColumn("testcol18", "value501")));
-    
+
     Row row1 = newRow("row-6", newRecord(FAMILY, "record-6A", newColumn("testcol12", "value110"), newColumn("testcol13", "value102")));
     row1.recordCount = 1;
     assertEquals(row1, fetchResult.rowResult.row);

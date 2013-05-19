@@ -41,7 +41,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
-import org.apache.hadoop.mapreduce.JobStatus.State;
 import org.apache.hadoop.mapreduce.OutputCommitter;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.RecordWriter;
@@ -106,21 +105,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
 
   @Override
   public OutputCommitter getOutputCommitter(TaskAttemptContext context) throws IOException, InterruptedException {
-    int numReduceTasks = context.getNumReduceTasks();
-    if (numReduceTasks != 0) {
-      try {
-        Class<? extends OutputFormat<?, ?>> outputFormatClass = context.getOutputFormatClass();
-        if (outputFormatClass.equals(BlurOutputFormat.class)) {
-          // Then only reducer needs committer.
-          if (context.getTaskAttemptID().isMap()) {
-            return getDoNothing();
-          }
-        }
-      } catch (ClassNotFoundException e) {
-        throw new IOException(e);
-      }
-    }
-    return new BlurOutputCommitter();
+    return new BlurOutputCommitter(context.getTaskAttemptID().isMap(),context.getNumReduceTasks());
   }
 
   public static TableDescriptor getTableDescriptor(Configuration configuration) throws IOException {
@@ -139,6 +124,14 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     }
     transport.close();
     return descriptor;
+  }
+
+  public static void setReducerMultiplier(Job job, int multiple) throws IOException {
+    TableDescriptor tableDescriptor = getTableDescriptor(job.getConfiguration());
+    if (tableDescriptor == null) {
+      throw new IOException("setTableDescriptor needs to be called first.");
+    }
+    job.setNumReduceTasks(tableDescriptor.getShardCount() * multiple);
   }
 
   public static void setTableDescriptor(Job job, TableDescriptor tableDescriptor) throws IOException {
@@ -202,15 +195,17 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     private RateCounter _copyRateCounter;
     private IndexWriter _localTmpWriter;
     private boolean _usingLocalTmpindex;
-
     private File _localTmpPath;
-
     private ProgressableDirectory _localTmpDir;
-
     private Counter _rowOverFlowCount;
 
-    public BlurRecordWriter(Configuration configuration, BlurAnalyzer blurAnalyzer, int shardId, String tmpDirName)
+    public BlurRecordWriter(Configuration configuration, BlurAnalyzer blurAnalyzer, int attemptId, String tmpDirName)
         throws IOException {
+      
+      TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
+      int shardCount = tableDescriptor.getShardCount();
+      int shardId = attemptId % shardCount;
+      
       _maxDocumentBufferSize = BlurOutputFormat.getMaxDocumentBufferSize(configuration);
       Path tableOutput = BlurOutputFormat.getOutputPath(configuration);
       String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, shardId);
@@ -219,8 +214,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       _finalDir = new ProgressableDirectory(new HdfsDirectory(configuration, newIndex),
           BlurOutputFormat.getProgressable());
       _finalDir.setLockFactory(NoLockFactory.getNoLockFactory());
-
-      TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
+      
       _analyzer = new BlurAnalyzer(tableDescriptor.getAnalyzerDefinition());
       _conf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, _analyzer);
       TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();
@@ -387,47 +381,4 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     job.setOutputFormatClass(BlurOutputFormat.class);
     setTableDescriptor(job, tableDescriptor);
   }
-
-  private OutputCommitter getDoNothing() {
-    return new OutputCommitter() {
-
-      @Override
-      public void commitJob(JobContext jobContext) throws IOException {
-      }
-
-      @Override
-      public void cleanupJob(JobContext context) throws IOException {
-      }
-
-      @Override
-      public void abortJob(JobContext jobContext, State state) throws IOException {
-      }
-
-      @Override
-      public void setupTask(TaskAttemptContext taskContext) throws IOException {
-
-      }
-
-      @Override
-      public void setupJob(JobContext jobContext) throws IOException {
-
-      }
-
-      @Override
-      public boolean needsTaskCommit(TaskAttemptContext taskContext) throws IOException {
-        return false;
-      }
-
-      @Override
-      public void commitTask(TaskAttemptContext taskContext) throws IOException {
-
-      }
-
-      @Override
-      public void abortTask(TaskAttemptContext taskContext) throws IOException {
-
-      }
-    };
-  }
-
 }

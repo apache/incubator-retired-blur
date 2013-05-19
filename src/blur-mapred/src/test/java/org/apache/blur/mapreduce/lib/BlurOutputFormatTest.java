@@ -25,6 +25,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.TreeSet;
 
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.store.hdfs.HdfsDirectory;
@@ -32,9 +34,10 @@ import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
@@ -51,6 +54,7 @@ public class BlurOutputFormatTest {
   private static FileSystem localFs;
   private static MiniMRCluster mr;
   private static Path TEST_ROOT_DIR;
+  private static JobConf jobConf;
 
   @BeforeClass
   public static void setup() throws Exception {
@@ -63,6 +67,7 @@ public class BlurOutputFormatTest {
       throw new RuntimeException("problem getting local fs", io);
     }
     mr = new MiniMRCluster(2, "file:///", 3);
+    jobConf = mr.createJobConf();
     BufferStore.init(128, 128);
   }
 
@@ -80,15 +85,10 @@ public class BlurOutputFormatTest {
     writeRecordsFile("in/part1", 1, 1, 1, 1, "cf1");
     writeRecordsFile("in/part2", 1, 1, 2, 1, "cf1");
 
-    Job job = new Job(conf, "blur index");
+    Job job = new Job(jobConf, "blur index");
     job.setJarByClass(BlurOutputFormatTest.class);
     job.setMapperClass(CsvBlurMapper.class);
-    job.setReducerClass(DefaultBlurReducer.class);
-    job.setNumReduceTasks(1);
     job.setInputFormatClass(TrackingTextInputFormat.class);
-    job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(BlurMutate.class);
-    job.setOutputFormatClass(BlurOutputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
     String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();
@@ -98,16 +98,32 @@ public class BlurOutputFormatTest {
     tableDescriptor.setShardCount(1);
     tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.setTableUri(tableUri);
-    BlurOutputFormat.setTableDescriptor(job, tableDescriptor);
+
+    BlurOutputFormat.setupJob(job, tableDescriptor);
 
     assertTrue(job.waitForCompletion(true));
     Counters ctrs = job.getCounters();
     System.out.println("Counters: " + ctrs);
 
-    DirectoryReader reader = DirectoryReader.open(new HdfsDirectory(conf, new Path(new Path(tableUri, BlurUtil
-        .getShardName(0)), "attempt_local_0001_r_000000_0.commit")));
+    Path path = new Path(tableUri, BlurUtil.getShardName(0));
+    Collection<Path> commitedTasks = getCommitedTasks(path);
+    assertEquals(1, commitedTasks.size());
+    DirectoryReader reader = DirectoryReader.open(new HdfsDirectory(conf, commitedTasks.iterator().next()));
     assertEquals(2, reader.numDocs());
     reader.close();
+  }
+
+  private Collection<Path> getCommitedTasks(Path path) throws IOException {
+    Collection<Path> result = new TreeSet<Path>();
+    FileSystem fileSystem = path.getFileSystem(jobConf);
+    FileStatus[] listStatus = fileSystem.listStatus(path);
+    for (FileStatus fileStatus : listStatus) {
+      Path p = fileStatus.getPath();
+      if (fileStatus.isDir() && p.getName().endsWith(".commit")) {
+        result.add(p);
+      }
+    }
+    return result;
   }
 
   @Test
@@ -118,15 +134,10 @@ public class BlurOutputFormatTest {
     writeRecordsFile("in/part1", 1, 50, 1, 1500, "cf1"); // 1500 * 50 = 75,000
     writeRecordsFile("in/part2", 1, 50, 2000, 100, "cf1"); // 100 * 50 = 5,000
 
-    Job job = new Job(conf, "blur index");
+    Job job = new Job(jobConf, "blur index");
     job.setJarByClass(BlurOutputFormatTest.class);
     job.setMapperClass(CsvBlurMapper.class);
-    job.setReducerClass(DefaultBlurReducer.class);
-    job.setNumReduceTasks(1);
     job.setInputFormatClass(TrackingTextInputFormat.class);
-    job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(BlurMutate.class);
-    job.setOutputFormatClass(BlurOutputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
     String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();
@@ -136,16 +147,109 @@ public class BlurOutputFormatTest {
     tableDescriptor.setShardCount(1);
     tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.setTableUri(tableUri);
-    BlurOutputFormat.setTableDescriptor(job, tableDescriptor);
+
+    BlurOutputFormat.setupJob(job, tableDescriptor);
 
     assertTrue(job.waitForCompletion(true));
     Counters ctrs = job.getCounters();
     System.out.println("Counters: " + ctrs);
 
-    DirectoryReader reader = DirectoryReader.open(new HdfsDirectory(conf, new Path(new Path(tableUri, BlurUtil
-        .getShardName(0)), "attempt_local_0002_r_000000_0.commit")));
+    Path path = new Path(tableUri, BlurUtil.getShardName(0));
+    Collection<Path> commitedTasks = getCommitedTasks(path);
+    assertEquals(1, commitedTasks.size());
+
+    DirectoryReader reader = DirectoryReader.open(new HdfsDirectory(conf, commitedTasks.iterator().next()));
     assertEquals(80000, reader.numDocs());
     reader.close();
+  }
+
+  @Test
+  public void testBlurOutputFormatOverFlowMultipleReducersTest() throws IOException, InterruptedException,
+      ClassNotFoundException {
+    localFs.delete(new Path(TEST_ROOT_DIR + "/in"), true);
+    localFs.delete(new Path(TEST_ROOT_DIR + "/out"), true);
+
+    writeRecordsFile("in/part1", 1, 50, 1, 1500, "cf1"); // 1500 * 50 = 75,000
+    writeRecordsFile("in/part2", 1, 50, 2000, 100, "cf1"); // 100 * 50 = 5,000
+
+    Job job = new Job(jobConf, "blur index");
+    job.setJarByClass(BlurOutputFormatTest.class);
+    job.setMapperClass(CsvBlurMapper.class);
+    job.setInputFormatClass(TrackingTextInputFormat.class);
+
+    FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
+    String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();
+    CsvBlurMapper.addColumns(job, "cf1", "col");
+
+    TableDescriptor tableDescriptor = new TableDescriptor();
+    tableDescriptor.setShardCount(2);
+    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
+    tableDescriptor.setTableUri(tableUri);
+
+    BlurOutputFormat.setupJob(job, tableDescriptor);
+
+    assertTrue(job.waitForCompletion(true));
+    Counters ctrs = job.getCounters();
+    System.out.println("Counters: " + ctrs);
+
+    long total = 0;
+    for (int i = 0; i < tableDescriptor.getShardCount(); i++) {
+      Path path = new Path(tableUri, BlurUtil.getShardName(i));
+      Collection<Path> commitedTasks = getCommitedTasks(path);
+      assertEquals(1, commitedTasks.size());
+
+      DirectoryReader reader = DirectoryReader.open(new HdfsDirectory(conf, commitedTasks.iterator().next()));
+      total += reader.numDocs();
+      reader.close();
+    }
+    assertEquals(80000, total);
+
+  }
+
+  @Test
+  public void testBlurOutputFormatOverFlowMultipleReducersWithReduceMultiplierTest() throws IOException,
+      InterruptedException, ClassNotFoundException {
+    localFs.delete(new Path(TEST_ROOT_DIR + "/in"), true);
+    localFs.delete(new Path(TEST_ROOT_DIR + "/out"), true);
+
+    writeRecordsFile("in/part1", 1, 50, 1, 1500, "cf1"); // 1500 * 50 = 75,000
+    writeRecordsFile("in/part2", 1, 50, 2000, 100, "cf1"); // 100 * 50 = 5,000
+
+    Job job = new Job(jobConf, "blur index");
+    job.setJarByClass(BlurOutputFormatTest.class);
+    job.setMapperClass(CsvBlurMapper.class);
+    job.setInputFormatClass(TrackingTextInputFormat.class);
+
+    FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
+    String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();
+    CsvBlurMapper.addColumns(job, "cf1", "col");
+
+    TableDescriptor tableDescriptor = new TableDescriptor();
+    tableDescriptor.setShardCount(2);
+    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
+    tableDescriptor.setTableUri(tableUri);
+
+    BlurOutputFormat.setupJob(job, tableDescriptor);
+    int multiple = 2;
+    BlurOutputFormat.setReducerMultiplier(job, multiple);
+
+    assertTrue(job.waitForCompletion(true));
+    Counters ctrs = job.getCounters();
+    System.out.println("Counters: " + ctrs);
+
+    long total = 0;
+    for (int i = 0; i < tableDescriptor.getShardCount(); i++) {
+      Path path = new Path(tableUri, BlurUtil.getShardName(i));
+      Collection<Path> commitedTasks = getCommitedTasks(path);
+      assertEquals(multiple, commitedTasks.size());
+      for (Path p : commitedTasks) {
+        DirectoryReader reader = DirectoryReader.open(new HdfsDirectory(conf, p));
+        total += reader.numDocs();
+        reader.close();
+      }
+    }
+    assertEquals(80000, total);
+
   }
 
   public static String readFile(String name) throws IOException {

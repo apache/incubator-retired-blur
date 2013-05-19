@@ -19,6 +19,7 @@ package org.apache.blur.mapreduce.lib;
 import java.io.IOException;
 
 import org.apache.blur.mapred.AbstractOutputCommitter;
+import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.conf.Configuration;
@@ -33,10 +34,19 @@ public class BlurOutputCommitter extends AbstractOutputCommitter {
   private Configuration _configuration;
   private TaskAttemptID _taskAttemptID;
   private Path _indexPath;
+  private final boolean _runTaskCommit;
+  
+  public BlurOutputCommitter() {
+    _runTaskCommit = true;
+  }
+
+  public BlurOutputCommitter(boolean isMap, int numberOfReducers) {
+    _runTaskCommit = isMap && numberOfReducers != 0 ? false : true;
+  }
 
   @Override
   public boolean needsTaskCommit(TaskAttemptContext context) throws IOException {
-    return true;
+    return _runTaskCommit;
   }
 
   @Override
@@ -62,9 +72,12 @@ public class BlurOutputCommitter extends AbstractOutputCommitter {
     fileSystem.delete(_indexPath, true);
   }
   
-  private void setup(TaskAttemptContext context) {
+  private void setup(TaskAttemptContext context) throws IOException {
     _configuration = context.getConfiguration();
-    int shardId = context.getTaskAttemptID().getTaskID().getId();
+    TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(_configuration);
+    int shardCount = tableDescriptor.getShardCount();
+    int attemptId = context.getTaskAttemptID().getTaskID().getId();
+    int shardId = attemptId % shardCount;
     _taskAttemptID = context.getTaskAttemptID();
     Path tableOutput = BlurOutputFormat.getOutputPath(_configuration);
     String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, shardId);

@@ -105,7 +105,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
 
   @Override
   public OutputCommitter getOutputCommitter(TaskAttemptContext context) throws IOException, InterruptedException {
-    return new BlurOutputCommitter(context.getTaskAttemptID().isMap(),context.getNumReduceTasks());
+    return new BlurOutputCommitter(context.getTaskAttemptID().isMap(), context.getNumReduceTasks());
   }
 
   public static TableDescriptor getTableDescriptor(Configuration configuration) throws IOException {
@@ -198,23 +198,24 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     private File _localTmpPath;
     private ProgressableDirectory _localTmpDir;
     private Counter _rowOverFlowCount;
+    private final Path _newIndex;
 
     public BlurRecordWriter(Configuration configuration, BlurAnalyzer blurAnalyzer, int attemptId, String tmpDirName)
         throws IOException {
-      
+
       TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
       int shardCount = tableDescriptor.getShardCount();
       int shardId = attemptId % shardCount;
-      
+
       _maxDocumentBufferSize = BlurOutputFormat.getMaxDocumentBufferSize(configuration);
       Path tableOutput = BlurOutputFormat.getOutputPath(configuration);
       String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, shardId);
       Path indexPath = new Path(tableOutput, shardName);
-      Path newIndex = new Path(indexPath, tmpDirName);
-      _finalDir = new ProgressableDirectory(new HdfsDirectory(configuration, newIndex),
+      _newIndex = new Path(indexPath, tmpDirName);
+      _finalDir = new ProgressableDirectory(new HdfsDirectory(configuration, _newIndex),
           BlurOutputFormat.getProgressable());
       _finalDir.setLockFactory(NoLockFactory.getNoLockFactory());
-      
+
       _analyzer = new BlurAnalyzer(tableDescriptor.getAnalyzerDefinition());
       _conf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, _analyzer);
       TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();
@@ -344,7 +345,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       CopyRateDirectory copyRateDirectory = new CopyRateDirectory(_finalDir, _copyRateCounter);
       String[] fileNames = _localDir.listAll();
       for (String fileName : fileNames) {
-        LOG.info("Copying [{0}]", fileName);
+        LOG.info("Copying [{0}] to [{1}]", fileName, _newIndex);
         _localDir.copy(copyRateDirectory, fileName, fileName, IOContext.DEFAULT);
       }
       rm(_localPath);

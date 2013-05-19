@@ -225,7 +225,7 @@ public class BlurOutputFormatTest {
     CsvBlurMapper.addColumns(job, "cf1", "col");
 
     TableDescriptor tableDescriptor = new TableDescriptor();
-    tableDescriptor.setShardCount(2);
+    tableDescriptor.setShardCount(7);
     tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.setTableUri(tableUri);
 
@@ -241,7 +241,7 @@ public class BlurOutputFormatTest {
     for (int i = 0; i < tableDescriptor.getShardCount(); i++) {
       Path path = new Path(tableUri, BlurUtil.getShardName(i));
       Collection<Path> commitedTasks = getCommitedTasks(path);
-      assertEquals(multiple, commitedTasks.size());
+      assertTrue(multiple >= commitedTasks.size());
       for (Path p : commitedTasks) {
         DirectoryReader reader = DirectoryReader.open(new HdfsDirectory(conf, p));
         total += reader.numDocs();

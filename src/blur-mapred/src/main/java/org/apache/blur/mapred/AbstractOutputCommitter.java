@@ -5,7 +5,9 @@ import java.io.IOException;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.mapreduce.lib.BlurOutputFormat;
+import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -28,9 +30,10 @@ public abstract class AbstractOutputCommitter extends OutputCommitter {
     // look through all the shards for attempts that need to be cleaned up.
     // also find all the attempts that are finished
     // then rename all the attempts jobs to commits
-    LOG.info("Commiting Job [{0}]",jobContext.getJobID());
+    LOG.info("Commiting Job [{0}]", jobContext.getJobID());
     Configuration configuration = jobContext.getConfiguration();
     Path tableOutput = BlurOutputFormat.getOutputPath(configuration);
+    makeSureNoEmptyShards(configuration, tableOutput);
     FileSystem fileSystem = tableOutput.getFileSystem(configuration);
     for (FileStatus fileStatus : fileSystem.listStatus(tableOutput)) {
       if (isShard(fileStatus)) {
@@ -38,6 +41,16 @@ public abstract class AbstractOutputCommitter extends OutputCommitter {
       }
     }
 
+  }
+
+  private void makeSureNoEmptyShards(Configuration configuration, Path tableOutput) throws IOException {
+    FileSystem fileSystem = tableOutput.getFileSystem(configuration);
+    TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
+    int shardCount = tableDescriptor.getShardCount();
+    for (int i = 0; i < shardCount; i++) {
+      String shardName = BlurUtil.getShardName(i);
+      fileSystem.mkdirs(new Path(tableOutput, shardName));
+    }
   }
 
   private void commitJob(JobContext jobContext, Path shardPath) throws IOException {

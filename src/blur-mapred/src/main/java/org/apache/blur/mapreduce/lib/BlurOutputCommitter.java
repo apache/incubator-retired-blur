@@ -18,6 +18,8 @@ package org.apache.blur.mapreduce.lib;
  */
 import java.io.IOException;
 
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.blur.mapred.AbstractOutputCommitter;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
@@ -30,12 +32,15 @@ import org.apache.hadoop.mapred.TaskAttemptID;
 
 public class BlurOutputCommitter extends AbstractOutputCommitter {
 
+  private static final Log LOG = LogFactory.getLog(BlurOutputCommitter.class);
+
   private Path _newIndex;
   private Configuration _configuration;
   private TaskAttemptID _taskAttemptID;
   private Path _indexPath;
   private final boolean _runTaskCommit;
-  
+  private TableDescriptor _tableDescriptor;
+
   public BlurOutputCommitter() {
     _runTaskCommit = true;
   }
@@ -51,7 +56,7 @@ public class BlurOutputCommitter extends AbstractOutputCommitter {
 
   @Override
   public void setupTask(TaskAttemptContext context) throws IOException {
-    
+
   }
 
   @Override
@@ -59,7 +64,9 @@ public class BlurOutputCommitter extends AbstractOutputCommitter {
     setup(context);
     FileSystem fileSystem = _newIndex.getFileSystem(_configuration);
     if (fileSystem.exists(_newIndex) && !fileSystem.isFile(_newIndex)) {
-      fileSystem.rename(_newIndex, new Path(_indexPath, _taskAttemptID.toString() + ".task_complete"));
+      Path dst = new Path(_indexPath, _taskAttemptID.toString() + ".task_complete");
+      LOG.info("Committing [{0}] to [{1}]", _newIndex, dst);
+      fileSystem.rename(_newIndex, dst);
     } else {
       throw new IOException("Path [" + _newIndex + "] does not exist, can not commit.");
     }
@@ -69,13 +76,14 @@ public class BlurOutputCommitter extends AbstractOutputCommitter {
   public void abortTask(TaskAttemptContext context) throws IOException {
     setup(context);
     FileSystem fileSystem = _newIndex.getFileSystem(_configuration);
-    fileSystem.delete(_indexPath, true);
+    LOG.info("abortTask - Deleting [{0}]", _newIndex);
+    fileSystem.delete(_newIndex, true);
   }
-  
+
   private void setup(TaskAttemptContext context) throws IOException {
     _configuration = context.getConfiguration();
-    TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(_configuration);
-    int shardCount = tableDescriptor.getShardCount();
+    _tableDescriptor = BlurOutputFormat.getTableDescriptor(_configuration);
+    int shardCount = _tableDescriptor.getShardCount();
     int attemptId = context.getTaskAttemptID().getTaskID().getId();
     int shardId = attemptId % shardCount;
     _taskAttemptID = context.getTaskAttemptID();

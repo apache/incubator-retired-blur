@@ -60,6 +60,8 @@ import org.slf4j.LoggerFactory;
 public class TThreadedSelectorServer extends AbstractNonblockingServer {
   private static final Logger LOGGER = LoggerFactory.getLogger(TThreadedSelectorServer.class.getName());
 
+  private static int selectorThreadCount;
+
   public static class Args extends AbstractNonblockingServerArgs<Args> {
 
     /** The number of threads for selecting on already-accepted connections */
@@ -220,7 +222,7 @@ public class TThreadedSelectorServer extends AbstractNonblockingServer {
         selectorThreads.add(new SelectorThread(args.acceptQueueSizePerThread));
       }
       acceptThread = new AcceptThread((TNonblockingServerTransport) serverTransport_,
-        createSelectorThreadLoadBalancer(selectorThreads));
+          createSelectorThreadLoadBalancer(selectorThreads));
       for (SelectorThread thread : selectorThreads) {
         thread.start();
       }
@@ -356,8 +358,8 @@ public class TThreadedSelectorServer extends AbstractNonblockingServer {
      * 
      * @throws IOException
      */
-    public AcceptThread(TNonblockingServerTransport serverTransport,
-        SelectorThreadLoadBalancer threadChooser) throws IOException {
+    public AcceptThread(TNonblockingServerTransport serverTransport, SelectorThreadLoadBalancer threadChooser)
+        throws IOException {
       this.serverTransport = serverTransport;
       this.threadChooser = threadChooser;
       this.acceptSelector = SelectorProvider.provider().openSelector();
@@ -536,6 +538,10 @@ public class TThreadedSelectorServer extends AbstractNonblockingServer {
      */
     public void run() {
       try {
+        Thread thread = Thread.currentThread();
+        if (thread.getName().startsWith("Thread-")) {
+          thread.setName("TThreadedSelectorServer-SelectorThread-" + selectorThreadCount++);
+        }
         while (!stopped_) {
           select();
           processAcceptedConnections();

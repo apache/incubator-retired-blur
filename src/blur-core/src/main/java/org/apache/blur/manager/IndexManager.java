@@ -57,6 +57,7 @@ import org.apache.blur.manager.status.QueryStatus;
 import org.apache.blur.manager.status.QueryStatusManager;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.BException;
 import org.apache.blur.thrift.MutationHelper;
@@ -171,8 +172,11 @@ public class IndexManager {
   public void fetchRow(String table, Selector selector, FetchResult fetchResult) throws BlurException {
     validSelector(selector);
     BlurIndex index;
+    String shard;
     try {
       if (selector.getLocationId() == null) {
+        //Not looking up by location id so we should resetSearchers.
+        ShardServerContext.resetSearchers();
         populateSelector(table, selector);
       }
       String locationId = selector.getLocationId();
@@ -181,7 +185,7 @@ public class IndexManager {
         fetchResult.setExists(false);
         return;
       }
-      String shard = getShard(locationId);
+      shard = getShard(locationId);
       Map<String, BlurIndex> blurIndexes = _indexServer.getIndexes(table);
       if (blurIndexes == null) {
         LOG.error("Table [{0}] not found", table);
@@ -189,10 +193,8 @@ public class IndexManager {
       }
       index = blurIndexes.get(shard);
       if (index == null) {
-        if (index == null) {
-          LOG.error("Shard [{0}] not found in table [{1}]", shard, table);
-          throw new BlurException("Shard [" + shard + "] not found in table [" + table + "]", null);
-        }
+        LOG.error("Shard [{0}] not found in table [{1}]", shard, table);
+        throw new BlurException("Shard [" + shard + "] not found in table [" + table + "]", null);
       }
     } catch (BlurException e) {
       throw e;
@@ -202,8 +204,17 @@ public class IndexManager {
     }
     IndexSearcherClosable searcher = null;
     TimerContext timerContext = _fetchTimer.time();
+    boolean usedCache = true;
     try {
-      searcher = index.getIndexReader();
+      ShardServerContext shardServerContext = ShardServerContext.getShardServerContext();
+      if (shardServerContext != null) {
+        searcher = shardServerContext.getIndexSearcherClosable(table, shard);
+      }
+      if (searcher == null) {
+        searcher = index.getIndexReader();
+        usedCache = false;
+      }
+
       fetchRow(searcher.getIndexReader(), table, selector, fetchResult);
       if (fetchResult.rowResult != null) {
         if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
@@ -218,7 +229,8 @@ public class IndexManager {
       throw new BException(e.getMessage(), e);
     } finally {
       timerContext.stop();
-      if (searcher != null) {
+      if (!usedCache && searcher != null) {
+        // if the cached search was not used, close the searcher.
         // this will allow for closing of index
         try {
           searcher.close();
@@ -326,6 +338,7 @@ public class IndexManager {
         LOG.error("Unknown error while trying to fetch index readers.", e);
         throw new BException(e.getMessage(), e);
       }
+      ShardServerContext shardServerContext = ShardServerContext.getShardServerContext();
       BlurAnalyzer analyzer = _indexServer.getAnalyzer(table);
       ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> call;
       TableContext context = getTableContext(table);
@@ -339,7 +352,7 @@ public class IndexManager {
             postFilter, preFilter, getScoreType(simpleQuery.type), context);
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer, context);
         call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
-            _queriesInternalMeter);
+            _queriesInternalMeter, shardServerContext);
       } else {
         Query query = getQuery(blurQuery.expertQuery);
         Filter filter = getFilter(blurQuery.expertQuery);
@@ -351,7 +364,7 @@ public class IndexManager {
         }
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer, context);
         call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
-            _queriesInternalMeter);
+            _queriesInternalMeter, shardServerContext);
       }
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
       return ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
@@ -944,16 +957,17 @@ public class IndexManager {
 
   public static class SimpleQueryParallelCall implements ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> {
 
-    private String _table;
-    private QueryStatus _status;
-    private IndexServer _indexServer;
-    private Query _query;
-    private Selector _selector;
-    private AtomicBoolean _running;
-    private Meter _queriesInternalMeter;
+    private final String _table;
+    private final QueryStatus _status;
+    private final IndexServer _indexServer;
+    private final Query _query;
+    private final Selector _selector;
+    private final AtomicBoolean _running;
+    private final Meter _queriesInternalMeter;
+    private final ShardServerContext _shardServerContext;
 
     public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, IndexServer indexServer,
-        Query query, Selector selector, Meter queriesInternalMeter) {
+        Query query, Selector selector, Meter queriesInternalMeter, ShardServerContext shardServerContext) {
       _running = running;
       _table = table;
       _status = status;
@@ -961,6 +975,7 @@ public class IndexManager {
       _query = query;
       _selector = selector;
       _queriesInternalMeter = queriesInternalMeter;
+      _shardServerContext = shardServerContext;
     }
 
     @Override
@@ -973,11 +988,14 @@ public class IndexManager {
         // @TODO need to add escapable rewriter
         // IndexReader escapeReader = EscapeRewrite.wrap(reader, _running);
         // IndexSearcher searcher = new IndexSearcher(escapeReader);
+        if (_shardServerContext != null) {
+          _shardServerContext.setIndexSearcherClosable(_table, shard, searcher);
+        }
         searcher.setSimilarity(_indexServer.getSimilarity(_table));
         Query rewrite = searcher.rewrite((Query) _query.clone());
 
-        // BlurResultIterableSearcher will close searcher.
-        return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector);
+        // BlurResultIterableSearcher will close searcher, if shard server context is null.
+        return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector, _shardServerContext == null);
       } finally {
         _queriesInternalMeter.mark();
         _status.deattachThread();

@@ -46,14 +46,15 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
   private int _fetchCount = 1000;
 
   private IteratorConverter<ScoreDoc, BlurResult> _iterator;
-  private Selector _selector;
-  private Query _query;
+  private final Selector _selector;
+  private final Query _query;
   private IndexSearcherClosable _searcher;
-  private TotalHitsRef _totalHitsRef = new TotalHitsRef();
-  private ProgressRef _progressRef = new ProgressRef();
-  private AtomicBoolean _running;
+  private final TotalHitsRef _totalHitsRef = new TotalHitsRef();
+  private final ProgressRef _progressRef = new ProgressRef();
+  private final AtomicBoolean _running;
+  private final boolean _closeSearcher;
 
-  public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard, IndexSearcherClosable searcher, Selector selector)
+  public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard, IndexSearcherClosable searcher, Selector selector, boolean closeSearcher)
       throws IOException {
     _running = running;
     _table = table;
@@ -61,6 +62,7 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
     _shard = shard;
     _searcher = searcher;
     _selector = selector;
+    _closeSearcher = closeSearcher;
     performSearch();
   }
 
@@ -118,7 +120,7 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
 
   @Override
   public void close() throws IOException {
-    if (_searcher != null) {
+    if (_searcher != null && _closeSearcher) {
       _searcher.close();
       _searcher = null;
     }

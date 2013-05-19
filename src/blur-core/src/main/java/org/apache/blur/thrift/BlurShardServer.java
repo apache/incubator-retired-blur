@@ -39,6 +39,7 @@ import org.apache.blur.manager.IndexManager;
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.writer.BlurIndex;
+import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -87,6 +88,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, TException {
     checkTable(_cluster, table);
+    resetSearchers();
     _queryChecker.checkQuery(blurQuery);
     try {
       BlurQuery original = new BlurQuery(blurQuery);
@@ -138,6 +140,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public void cancelQuery(String table, long uuid) throws BlurException, TException {
     checkTable(_cluster, table);
+    resetSearchers();
     try {
       _indexManager.cancelQuery(table, uuid);
     } catch (Exception e) {
@@ -146,9 +149,14 @@ public class BlurShardServer extends TableAdmin implements Iface {
     }
   }
 
+  private void resetSearchers() {
+    ShardServerContext.resetSearchers();
+  }
+
   @Override
   public List<BlurQueryStatus> currentQueries(String table) throws BlurException, TException {
     checkTable(_cluster, table);
+    resetSearchers();
     try {
       return _indexManager.currentQueries(table);
     } catch (Exception e) {
@@ -160,6 +168,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public TableStats tableStats(String table) throws BlurException, TException {
     checkTable(_cluster, table);
+    resetSearchers();
     try {
       TableStats tableStats = new TableStats();
       tableStats.tableName = table;
@@ -185,6 +194,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
     checkTable(_cluster, table);
+    resetSearchers();
     try {
       Map<String, BlurIndex> blurIndexes = _indexServer.getIndexes(table);
       Map<String, String> result = new TreeMap<String, String>();
@@ -204,6 +214,8 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public Map<String, Map<String, ShardState>> shardServerLayoutState(String table) throws BlurException, TException {
+    checkTable(_cluster, table);
+    resetSearchers();
     try {
       Map<String, Map<String, ShardState>> result = new TreeMap<String, Map<String, ShardState>>();
       String nodeName = _indexServer.getNodeName();
@@ -231,6 +243,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   public long recordFrequency(String table, String columnFamily, String columnName, String value) throws BlurException,
       TException {
     checkTable(_cluster, table);
+    resetSearchers();
     try {
       return _indexManager.recordFrequency(table, columnFamily, columnName, value);
     } catch (Exception e) {
@@ -244,6 +257,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public Schema schema(String table) throws BlurException, TException {
     checkTable(_cluster, table);
+    resetSearchers();
     try {
       return _indexManager.schema(table);
     } catch (Exception e) {
@@ -256,6 +270,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   public List<String> terms(String table, String columnFamily, String columnName, String startWith, short size)
       throws BlurException, TException {
     checkTable(_cluster, table);
+    resetSearchers();
     try {
       return _indexManager.terms(table, columnFamily, columnName, startWith, size);
     } catch (Exception e) {
@@ -270,6 +285,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   public void mutate(RowMutation mutation) throws BlurException, TException {
     checkTable(_cluster, mutation.table);
     checkForUpdates(_cluster, mutation.table);
+    resetSearchers();
     MutationHelper.validateMutation(mutation);
     try {
       _indexManager.mutate(mutation);
@@ -281,6 +297,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public void mutateBatch(List<RowMutation> mutations) throws BlurException, TException {
+    resetSearchers();
     long s = System.nanoTime();
     for (RowMutation mutation : mutations) {
       checkTable(_cluster, mutation.table);
@@ -328,6 +345,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public BlurQueryStatus queryStatusById(String table, long uuid) throws BlurException, TException {
     checkTable(_cluster, table);
+    resetSearchers();
     try {
       return _indexManager.queryStatus(table, uuid);
     } catch (Exception e) {
@@ -339,6 +357,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public List<Long> queryStatusIdList(String table) throws BlurException, TException {
     checkTable(_cluster, table);
+    resetSearchers();
     try {
       return _indexManager.queryStatusIdList(table);
     } catch (Exception e) {
@@ -350,6 +369,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public void optimize(String table, int numberOfSegmentsPerShard) throws BlurException, TException {
     checkTable(_cluster, table);
+    resetSearchers();
     try {
       _indexManager.optimize(table, numberOfSegmentsPerShard);
     } catch (Exception e) {

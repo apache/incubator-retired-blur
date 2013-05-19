@@ -22,7 +22,10 @@ import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
+import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
+import org.apache.blur.thrift.generated.FetchResult;
+import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.thrift.TException;
 
@@ -41,5 +44,12 @@ public class SimpleQueryExample {
     simpleQuery.setQueryStr(query);
     BlurResults results = client.query(tableName, blurQuery);
     System.out.println("Total Results: " + results.totalResults);
+    
+    for (BlurResult result : results.getResults()) {
+      String locationId = result.getLocationId();
+      System.out.println(locationId);
+      FetchResult fetchRow = client.fetchRow(tableName, new Selector().setLocationId(locationId));
+      System.out.println(fetchRow);
+    }
   }
 }

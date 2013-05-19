@@ -24,6 +24,9 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -54,7 +57,7 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.NRTManager.TrackingIndexWriter;
 
-public class TransactionRecorder {
+public class TransactionRecorder extends TimerTask {
 
   enum TYPE {
     DELETE((byte) 0), ROW((byte) 1);
@@ -92,40 +95,44 @@ public class TransactionRecorder {
     ID_TYPE.freeze();
   }
 
-  private final AtomicBoolean running = new AtomicBoolean(true);
-  private final AtomicReference<FSDataOutputStream> outputStream = new AtomicReference<FSDataOutputStream>();
-  private final long timeBetweenSyncsNanos;
-  private final AtomicLong lastSync = new AtomicLong();
-  
-  private final Path walPath;
-  private final Configuration configuration;
-  private final BlurAnalyzer analyzer;
-  private final FileSystem fileSystem;
+  private final AtomicBoolean _running = new AtomicBoolean(true);
+  private final AtomicReference<FSDataOutputStream> _outputStream = new AtomicReference<FSDataOutputStream>();
+  private final long _timeBetweenSyncsNanos;
+  private final AtomicLong _lastSync = new AtomicLong();
 
-  public  TransactionRecorder(ShardContext shardContext) throws IOException {
+  private final Path _walPath;
+  private final Configuration _configuration;
+  private final BlurAnalyzer _analyzer;
+  private final FileSystem _fileSystem;
+  private final Timer _timer;
+
+  public TransactionRecorder(ShardContext shardContext) throws IOException {
     TableContext tableContext = shardContext.getTableContext();
-    configuration = tableContext.getConfiguration();
-    analyzer = tableContext.getAnalyzer();
-    walPath = shardContext.getWalShardPath();
-    fileSystem = walPath.getFileSystem(configuration);
-    timeBetweenSyncsNanos = tableContext.getTimeBetweenWALSyncsNanos();
+    _configuration = tableContext.getConfiguration();
+    _analyzer = tableContext.getAnalyzer();
+    _walPath = shardContext.getWalShardPath();
+    _fileSystem = _walPath.getFileSystem(_configuration);
+    _timeBetweenSyncsNanos = tableContext.getTimeBetweenWALSyncsNanos();
+    _timer = new Timer("wal-sync-[" + tableContext.getTable() + "/" + shardContext.getShard() + "]", true);
+    _timer.schedule(this, TimeUnit.NANOSECONDS.toMillis(_timeBetweenSyncsNanos),
+        TimeUnit.NANOSECONDS.toMillis(_timeBetweenSyncsNanos));
   }
 
   public void open() throws IOException {
-    if (fileSystem.exists(walPath)) {
-      throw new IOException("WAL path [" + walPath + "] still exists, replay must have not worked.");
+    if (_fileSystem.exists(_walPath)) {
+      throw new IOException("WAL path [" + _walPath + "] still exists, replay must have not worked.");
     } else {
-      outputStream.set(fileSystem.create(walPath));
+      _outputStream.set(_fileSystem.create(_walPath));
     }
-    if (outputStream == null) {
+    if (_outputStream == null) {
       throw new RuntimeException();
     }
-    lastSync.set(System.nanoTime());
+    _lastSync.set(System.nanoTime());
   }
 
   public void replay(IndexWriter writer) throws IOException {
-    if (fileSystem.exists(walPath)) {
-      FSDataInputStream inputStream = fileSystem.open(walPath);
+    if (_fileSystem.exists(_walPath)) {
+      FSDataInputStream inputStream = _fileSystem.open(_walPath);
       replay(writer, inputStream);
       inputStream.close();
       commit(writer);
@@ -144,7 +151,7 @@ public class TransactionRecorder {
       switch (lookup) {
       case ROW:
         Row row = readRow(dataInputStream);
-        writer.updateDocuments(createRowId(row.id), getDocs(row, analyzer));
+        writer.updateDocuments(createRowId(row.id), getDocs(row, _analyzer));
         updateCount++;
         continue;
       case DELETE:
@@ -177,20 +184,22 @@ public class TransactionRecorder {
   }
 
   private void rollLog() throws IOException {
-    LOG.info("Rolling WAL path [" + walPath + "]");
-    FSDataOutputStream os = outputStream.get();
+    LOG.info("Rolling WAL path [" + _walPath + "]");
+    FSDataOutputStream os = _outputStream.get();
     if (os != null) {
       os.close();
     }
-    fileSystem.delete(walPath, false);
+    _fileSystem.delete(_walPath, false);
     open();
   }
 
   public void close() throws IOException {
-    synchronized (running) {
-      running.set(false);
+    _timer.purge();
+    _timer.cancel();
+    synchronized (_running) {
+      _running.set(false);
     }
-    outputStream.get().close();
+    _outputStream.get().close();
   }
 
   private static void writeRow(DataOutputStream outputStream, Row row) throws IOException {
@@ -266,22 +275,37 @@ public class TransactionRecorder {
   }
 
   private void sync(byte[] bs) throws IOException {
-    if (bs == null || outputStream == null) {
-      throw new RuntimeException("bs [" + bs + "] outputStream [" + outputStream + "]");
+    if (bs == null || _outputStream == null) {
+      throw new RuntimeException("bs [" + bs + "] outputStream [" + _outputStream + "]");
     }
-    FSDataOutputStream os = outputStream.get();
-    os.writeInt(bs.length);
-    os.write(bs);
+    synchronized (_outputStream) {
+      FSDataOutputStream os = _outputStream.get();
+      os.writeInt(bs.length);
+      os.write(bs);
+      tryToSync(os);
+    }
+  }
+
+  private void tryToSync() throws IOException {
+    synchronized (_outputStream) {
+      tryToSync(_outputStream.get());
+    }
+  }
+
+  private void tryToSync(FSDataOutputStream os) throws IOException {
+    if (os == null) {
+      return;
+    }
     long now = System.nanoTime();
-    if (lastSync.get() + timeBetweenSyncsNanos < now) {
+    if (_lastSync.get() + _timeBetweenSyncsNanos < now) {
       os.sync();
-      lastSync.set(now);
+      _lastSync.set(now);
     }
   }
 
   public long replaceRow(boolean wal, Row row, TrackingIndexWriter writer) throws IOException {
     if (wal) {
-      synchronized (running) {
+      synchronized (_running) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream outputStream = new DataOutputStream(baos);
         outputStream.writeByte(TYPE.ROW.value());
@@ -291,13 +315,13 @@ public class TransactionRecorder {
       }
     }
     Term term = createRowId(row.id);
-    List<Document> docs = getDocs(row, analyzer);
+    List<Document> docs = getDocs(row, _analyzer);
     return writer.updateDocuments(term, docs);
   }
 
   public long deleteRow(boolean wal, String rowId, TrackingIndexWriter writer) throws IOException {
     if (wal) {
-      synchronized (running) {
+      synchronized (_running) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream outputStream = new DataOutputStream(baos);
         outputStream.writeByte(TYPE.DELETE.value());
@@ -310,7 +334,7 @@ public class TransactionRecorder {
   }
 
   public void commit(IndexWriter writer) throws CorruptIndexException, IOException {
-    synchronized (running) {
+    synchronized (_running) {
       long s = System.nanoTime();
       writer.commit();
       long m = System.nanoTime();
@@ -347,6 +371,19 @@ public class TransactionRecorder {
 
   private Term createRowId(String id) {
     return new Term(BlurConstants.ROW_ID, id);
+  }
+
+  @Override
+  public void run() {
+    try {
+      if (_running.get()) {
+        tryToSync();
+      }
+    } catch (IOException e) {
+      if (_running.get()) {
+        LOG.error("Known error while trying to sync.", e);
+      }
+    }
   }
 
 }

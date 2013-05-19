@@ -29,18 +29,16 @@ public class LiveMetricsServlet extends HttpServlet {
 
   private static final long serialVersionUID = 1L;
 
-  private HeapMetrics heapMetrics;
-  private SystemLoadMetrics systemLoadMetrics;
-  private QueryMetrics queryMetrics;
-
-  public LiveMetricsServlet() {
-    heapMetrics = HeapMetrics.getInstance();
-    systemLoadMetrics = SystemLoadMetrics.getInstance();
-    queryMetrics = QueryMetrics.getInstance();
-  }
+  
+  public LiveMetricsServlet() {}
 
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    response.setContentType("application/json");
+    /*
+     * The live metrics page is currently not being used
+     */
+     
+	/* 
+	response.setContentType("application/json");
     PrintWriter out = response.getWriter();
     out.write("{");
     out.write("\"jvm\":{\"xLabel\":\"Time\",\"yLabel\":\"Heap (GB)\",\"lines\":");
@@ -56,6 +54,7 @@ public class LiveMetricsServlet extends HttpServlet {
     systemLoadMetrics.writeJson(out);
     out.write("}");
     out.write("}");
+    */
   }
 
 }

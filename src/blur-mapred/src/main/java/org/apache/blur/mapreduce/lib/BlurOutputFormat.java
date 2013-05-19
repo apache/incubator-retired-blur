@@ -126,6 +126,18 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     return descriptor;
   }
 
+  /**
+   * This will multiple the number of reducers for this job. For example if the
+   * table has 256 shards the normal number of reducers is 256. However if the
+   * reducer multiplier is set to 4 then the number of reducers will be 1024 and
+   * each shard will get 4 new segments instead of the normal 1.
+   * 
+   * @param job
+   *          the job to setup.
+   * @param multiple
+   *          the multiple to use.
+   * @throws IOException
+   */
   public static void setReducerMultiplier(Job job, int multiple) throws IOException {
     TableDescriptor tableDescriptor = getTableDescriptor(job.getConfiguration());
     if (tableDescriptor == null) {
@@ -134,6 +146,15 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     job.setNumReduceTasks(tableDescriptor.getShardCount() * multiple);
   }
 
+  /**
+   * Sets the {@link TableDescriptor} for this job.
+   * 
+   * @param job
+   *          the job to setup.
+   * @param tableDescriptor
+   *          the {@link TableDescriptor}.
+   * @throws IOException
+   */
   public static void setTableDescriptor(Job job, TableDescriptor tableDescriptor) throws IOException {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     TIOStreamTransport transport = new TIOStreamTransport(outputStream);
@@ -149,10 +170,30 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     setOutputPath(job, new Path(tableDescriptor.getTableUri()));
   }
 
+  /**
+   * Sets the maximum number of documents that the buffer will hold in memory
+   * before overflowing to disk. By default this is 1000 which will probably be
+   * very low for most systems.
+   * 
+   * @param job
+   *          the job to setup.
+   * @param maxDocumentBufferSize
+   *          the maxDocumentBufferSize.
+   */
   public static void setMaxDocumentBufferSize(Job job, int maxDocumentBufferSize) {
     setMaxDocumentBufferSize(job.getConfiguration(), maxDocumentBufferSize);
   }
 
+  /**
+   * Sets the maximum number of documents that the buffer will hold in memory
+   * before overflowing to disk. By default this is 1000 which will probably be
+   * very low for most systems.
+   * 
+   * @param configuration
+   *          the configuration to setup.
+   * @param maxDocumentBufferSize
+   *          the maxDocumentBufferSize.
+   */
   public static void setMaxDocumentBufferSize(Configuration configuration, int maxDocumentBufferSize) {
     configuration.setInt(BLUR_OUTPUT_MAX_DOCUMENT_BUFFER_SIZE, maxDocumentBufferSize);
   }
@@ -365,8 +406,8 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
   }
 
   /**
-   * Sets up the output postion of the map reduce job. This does effect the map
-   * side of the job.
+   * Sets up the output portion of the map reduce job. This does effect the map
+   * side of the job, of a map and reduce job.
    * 
    * @param job
    *          the job to setup.

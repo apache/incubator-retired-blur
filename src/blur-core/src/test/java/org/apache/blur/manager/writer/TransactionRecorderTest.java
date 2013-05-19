@@ -21,75 +21,81 @@ import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.blur.analysis.BlurAnalyzer;
+import org.apache.blur.MiniCluster;
 import org.apache.blur.index.IndexWriter;
+import org.apache.blur.server.ShardContext;
+import org.apache.blur.server.TableContext;
+import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
+import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.RAMDirectory;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TransactionRecorderTest {
-  private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "/tmp"));
+  
+  @BeforeClass
+  public static void setup() {
+    MiniCluster.startDfs("target/transaction-recorder-test");
+  }
+  
+  @AfterClass
+  public static void teardown() {
+    MiniCluster.shutdownDfs();
+  }
 
-//  @Test
-//  public void testReplay() throws IOException {
-//    File tmpWalFile = new File(TMPDIR, "transaction-recorder/wal");
-//    rm(tmpWalFile);
-//
-//    KeywordAnalyzer analyzer = new KeywordAnalyzer();
-//    Configuration configuration = new Configuration();
-//    BlurAnalyzer blurAnalyzer = new BlurAnalyzer(analyzer);
-//
-//    TransactionRecorder transactionRecorder = new TransactionRecorder();
-//    transactionRecorder.setAnalyzer(blurAnalyzer);
-//    transactionRecorder.setConfiguration(configuration);
-//
-//    transactionRecorder.setWalPath(new Path(tmpWalFile.getAbsolutePath()));
-//    transactionRecorder.init();
-//    transactionRecorder.open();
-//    try {
-//      transactionRecorder.replaceRow(true, genRow(), null);
-//      fail("Should NPE");
-//    } catch (NullPointerException e) {
-//    }
-//    transactionRecorder.close(); // this is done so that the rawfs will flush
-//                                 // the file to disk for reading
-//
-//    RAMDirectory directory = new RAMDirectory();
-//    IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, analyzer);
-//    IndexWriter writer = new IndexWriter(directory, conf);
-//
-//    TransactionRecorder replayTransactionRecorder = new TransactionRecorder();
-//    replayTransactionRecorder.setAnalyzer(blurAnalyzer);
-//    replayTransactionRecorder.setConfiguration(configuration);
-//    replayTransactionRecorder.setWalPath(new Path(tmpWalFile.getAbsolutePath()));
-//    replayTransactionRecorder.init();
-//
-//    replayTransactionRecorder.replay(writer);
-//    IndexReader reader = DirectoryReader.open(directory);
-//    assertEquals(1, reader.numDocs());
-//  }
+  @Test
+  public void testReplaySimpleTest() throws IOException, InterruptedException {
+    Configuration configuration = new Configuration();
+    URI fileSystemUri = MiniCluster.getFileSystemUri();
+    Path path = new Path(fileSystemUri.toString() + "/transaction-recorder-test");
+    FileSystem fileSystem = path.getFileSystem(configuration);
+    fileSystem.delete(path, true);
 
-  private void rm(File file) {
-    if (!file.exists()) {
-      return;
+    KeywordAnalyzer analyzer = new KeywordAnalyzer();
+
+    TableDescriptor tableDescriptor = new TableDescriptor();
+    tableDescriptor.setName("table");
+    tableDescriptor.setTableUri(new Path(path, "tableuri").toUri().toString());
+    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
+
+    TableContext tableContext = TableContext.create(tableDescriptor);
+    ShardContext shardContext = ShardContext.create(tableContext, "shard-1");
+    TransactionRecorder transactionRecorder = new TransactionRecorder(shardContext);
+    transactionRecorder.open();
+    try {
+      transactionRecorder.replaceRow(true, genRow(), null);
+      fail("Should NPE");
+    } catch (NullPointerException e) {
     }
-    if (file.isDirectory()) {
-      for (File f : file.listFiles()) {
-        rm(f);
-      }
-    }
-    file.delete();
+    
+    Thread.sleep(TimeUnit.NANOSECONDS.toMillis(tableContext.getTimeBetweenWALSyncsNanos()) * 2);
+
+    RAMDirectory directory = new RAMDirectory();
+    IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, analyzer);
+    IndexWriter writer = new IndexWriter(directory, conf);
+
+    TransactionRecorder replayTransactionRecorder = new TransactionRecorder(shardContext);
+    replayTransactionRecorder.replay(writer);
+    IndexReader reader = DirectoryReader.open(directory);
+    assertEquals(1, reader.numDocs());
+    
+    // cleanup recorder
+    transactionRecorder.close();
   }
 
   private Row genRow() {

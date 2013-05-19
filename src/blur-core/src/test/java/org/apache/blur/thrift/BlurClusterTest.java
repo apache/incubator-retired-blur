@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.MiniCluster;
 import org.apache.blur.thrift.generated.Blur;
@@ -135,6 +136,9 @@ public class BlurClusterTest {
     assertEquals(length, results1.getTotalResults());
     
     MiniCluster.killShardServer(1);
+    
+    //make sure the WAL syncs
+    Thread.sleep(TimeUnit.SECONDS.toMillis(1));
     
     //This should block until shards have failed over
     client.shardServerLayout("test");

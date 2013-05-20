@@ -105,6 +105,8 @@ public class TransactionRecorder extends TimerTask {
   private final BlurAnalyzer _analyzer;
   private final FileSystem _fileSystem;
   private final Timer _timer;
+  private final String _table;
+  private final String _shard;
 
   public TransactionRecorder(ShardContext shardContext) throws IOException {
     TableContext tableContext = shardContext.getTableContext();
@@ -116,6 +118,8 @@ public class TransactionRecorder extends TimerTask {
     _timer = new Timer("wal-sync-[" + tableContext.getTable() + "/" + shardContext.getShard() + "]", true);
     _timer.schedule(this, TimeUnit.NANOSECONDS.toMillis(_timeBetweenSyncsNanos),
         TimeUnit.NANOSECONDS.toMillis(_timeBetweenSyncsNanos));
+    _table = tableContext.getTable();
+    _shard = shardContext.getShard();
   }
 
   public void open() throws IOException {
@@ -194,11 +198,11 @@ public class TransactionRecorder extends TimerTask {
   }
 
   public void close() throws IOException {
-    _timer.purge();
-    _timer.cancel();
     synchronized (_running) {
       _running.set(false);
     }
+    _timer.purge();
+    _timer.cancel();
     _outputStream.get().close();
   }
 
@@ -278,7 +282,7 @@ public class TransactionRecorder extends TimerTask {
     if (bs == null || _outputStream == null) {
       throw new RuntimeException("bs [" + bs + "] outputStream [" + _outputStream + "]");
     }
-    synchronized (_outputStream) {
+    synchronized (_running) {
       FSDataOutputStream os = _outputStream.get();
       os.writeInt(bs.length);
       os.write(bs);
@@ -287,7 +291,7 @@ public class TransactionRecorder extends TimerTask {
   }
 
   private void tryToSync() throws IOException {
-    synchronized (_outputStream) {
+    synchronized (_running) {
       tryToSync(_outputStream.get());
     }
   }
@@ -338,10 +342,10 @@ public class TransactionRecorder extends TimerTask {
       long s = System.nanoTime();
       writer.commit();
       long m = System.nanoTime();
-      LOG.info("Commit took [{0}] for [{1}]", (m - s) / 1000000.0, writer);
+      LOG.info("Commit took [{0} ms] for [{1}/{2}]", (m - s) / 1000000.0, _table, _shard);
       rollLog();
       long e = System.nanoTime();
-      LOG.info("Log roller took [{0}] for [{1}]", (e - m) / 1000000.0, writer);
+      LOG.info("Log roller took [{0} ms] for [{1}/{2}]", (e - m) / 1000000.0, _table, _shard);
     }
   }
 

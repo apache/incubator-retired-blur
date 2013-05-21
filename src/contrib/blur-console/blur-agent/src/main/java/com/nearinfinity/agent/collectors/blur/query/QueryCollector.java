@@ -5,6 +5,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurQueryStatus;
+import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -12,9 +15,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import com.nearinfinity.agent.connections.blur.interfaces.QueryDatabaseInterface;
 import com.nearinfinity.agent.types.TimeHelper;
-import com.nearinfinity.blur.thrift.generated.Blur.Iface;
-import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
-import com.nearinfinity.blur.thrift.generated.SimpleQuery;
 
 public class QueryCollector implements Runnable {
 	private static final Log log = LogFactory.getLog(QueryCollector.class);

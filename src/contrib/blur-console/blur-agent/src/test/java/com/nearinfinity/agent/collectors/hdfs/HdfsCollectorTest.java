@@ -1,11 +1,13 @@
 package com.nearinfinity.agent.collectors.hdfs;
 
 import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.blur.MiniCluster;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,7 +15,6 @@ import com.nearinfinity.BlurAgentBaseTestClass;
 import com.nearinfinity.agent.connections.hdfs.HdfsDatabaseConnection;
 import com.nearinfinity.agent.connections.hdfs.interfaces.HdfsDatabaseInterface;
 import com.nearinfinity.agent.exceptions.HdfsThreadException;
-import com.nearinfinity.blur.MiniCluster;
 
 public class HdfsCollectorTest extends BlurAgentBaseTestClass {
 	private static HdfsDatabaseInterface database = new HdfsDatabaseConnection(jdbc);

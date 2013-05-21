@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.JsonProcessingException;
@@ -13,8 +15,6 @@ import org.springframework.dao.DataAccessException;
 
 import com.nearinfinity.agent.connections.blur.interfaces.TableDatabaseInterface;
 import com.nearinfinity.agent.exceptions.NullReturnedException;
-import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class ServerCollector implements Runnable {
 	private static final Log log = LogFactory.getLog(ServerCollector.class);

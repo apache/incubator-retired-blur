@@ -3,6 +3,8 @@ package com.nearinfinity.agent.collectors.blur;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,8 +16,6 @@ import com.nearinfinity.agent.collectors.blur.table.TableCollector;
 import com.nearinfinity.agent.connections.blur.interfaces.BlurDatabaseInterface;
 import com.nearinfinity.agent.exceptions.ZookeeperNameCollisionException;
 import com.nearinfinity.agent.exceptions.ZookeeperNameMissingException;
-import com.nearinfinity.blur.thrift.BlurClient;
-import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class BlurCollector implements Runnable {
 	private static final Log log = LogFactory.getLog(BlurCollector.class);

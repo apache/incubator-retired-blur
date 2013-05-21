@@ -5,6 +5,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.blur.thrift.generated.AnalyzerDefinition;
+import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.ColumnDefinition;
+import org.apache.blur.thrift.generated.ColumnFamilyDefinition;
+import org.apache.blur.thrift.generated.Schema;
+import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.JsonProcessingException;
@@ -15,13 +22,6 @@ import com.nearinfinity.agent.connections.blur.interfaces.TableDatabaseInterface
 import com.nearinfinity.agent.exceptions.NullReturnedException;
 import com.nearinfinity.agent.types.Column;
 import com.nearinfinity.agent.types.Family;
-import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
-import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.ColumnDefinition;
-import com.nearinfinity.blur.thrift.generated.ColumnFamilyDefinition;
-import com.nearinfinity.blur.thrift.generated.Schema;
-import com.nearinfinity.blur.thrift.generated.TableDescriptor;
-import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class SchemaCollector implements Runnable {
 	private static final Log log = LogFactory.getLog(SchemaCollector.class);

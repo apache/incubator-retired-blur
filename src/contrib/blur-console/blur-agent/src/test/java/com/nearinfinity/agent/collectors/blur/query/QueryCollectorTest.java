@@ -5,18 +5,18 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
+import org.apache.blur.MiniCluster;
+import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.generated.AnalyzerDefinition;
+import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.BlurQuery;
+import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.thrift.TException;
 import org.junit.Test;
 
 import com.nearinfinity.BlurAgentBaseTestClass;
 import com.nearinfinity.agent.connections.blur.BlurDatabaseConnection;
-import com.nearinfinity.blur.MiniCluster;
-import com.nearinfinity.blur.thrift.BlurClient;
-import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
-import com.nearinfinity.blur.thrift.generated.Blur.Iface;
-import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.BlurQuery;
-import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
 public class QueryCollectorTest extends BlurAgentBaseTestClass {
 	private static BlurDatabaseConnection database = new BlurDatabaseConnection(jdbc);

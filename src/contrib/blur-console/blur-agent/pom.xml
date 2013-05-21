@@ -64,7 +64,7 @@
 		<dependency>
 			<groupId>org.apache.thrift</groupId>
 			<artifactId>libthrift</artifactId>
-			<version>0.7.0</version>
+			<version>0.9.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -131,6 +131,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-test</artifactId>
+			<version>1.0.4</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-store</artifactId>
 			<version>0.1.5</version>
@@ -148,6 +154,12 @@
 			<version>0.7</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+        	<groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-core</artifactId>
+            <version>1.14</version>
+            <scope>test</scope>
+       	</dependency>
 		            
 	</dependencies>
 

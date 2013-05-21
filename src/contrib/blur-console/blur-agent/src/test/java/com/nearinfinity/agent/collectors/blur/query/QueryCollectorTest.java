@@ -11,6 +11,8 @@ import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
+import org.apache.blur.thrift.generated.ScoreType;
+import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.thrift.TException;
 import org.junit.Test;
@@ -33,7 +35,9 @@ public class QueryCollectorTest extends BlurAgentBaseTestClass {
 
 		blurConnection.createTable(td);
 		
-		blurConnection.query("test.col:*", new BlurQuery());
+		BlurQuery query = new BlurQuery();
+		query.setSimpleQuery(new SimpleQuery("test.col:*", true, ScoreType.SUPER, null, null));
+		blurConnection.query("test", query);
 		
 		Thread testQueryCollector = new Thread(new QueryCollector(BlurClient.getClient(MiniCluster.getControllerConnectionStr()), "test",
 				1, database), "Query Test Thread");

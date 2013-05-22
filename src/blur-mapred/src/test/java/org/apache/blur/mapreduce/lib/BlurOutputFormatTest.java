@@ -149,6 +149,8 @@ public class BlurOutputFormatTest {
     tableDescriptor.setTableUri(tableUri);
 
     BlurOutputFormat.setupJob(job, tableDescriptor);
+    BlurOutputFormat.setIndexLocally(job, true);
+    BlurOutputFormat.setOptimizeInFlight(job, false);
 
     assertTrue(job.waitForCompletion(true));
     Counters ctrs = job.getCounters();
@@ -187,6 +189,7 @@ public class BlurOutputFormatTest {
     tableDescriptor.setTableUri(tableUri);
 
     BlurOutputFormat.setupJob(job, tableDescriptor);
+    BlurOutputFormat.setIndexLocally(job, false);
 
     assertTrue(job.waitForCompletion(true));
     Counters ctrs = job.getCounters();

@@ -236,6 +236,8 @@ public class BlockDirectory extends Directory implements DirectoryDecorator {
       return file.lastModified();
     } else if (_directory instanceof HdfsDirectory) {
       return ((HdfsDirectory) _directory).getFileModified(name);
+    } else if (_directory instanceof LastModified) {
+      return ((LastModified) _directory).getFileModified(name);
     } else {
       throw new RuntimeException("Not supported");
     }

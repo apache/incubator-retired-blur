@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.blur.thrift.generated.BlurQueryStatus;
+import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONValue;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -16,8 +18,6 @@ import com.nearinfinity.agent.exceptions.TableMissingException;
 import com.nearinfinity.agent.exceptions.ZookeeperNameCollisionException;
 import com.nearinfinity.agent.exceptions.ZookeeperNameMissingException;
 import com.nearinfinity.agent.types.TimeHelper;
-import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
-import com.nearinfinity.blur.thrift.generated.SimpleQuery;
 
 public class BlurDatabaseConnection implements BlurDatabaseInterface {
 

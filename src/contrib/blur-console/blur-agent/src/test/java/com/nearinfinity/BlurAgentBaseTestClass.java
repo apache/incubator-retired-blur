@@ -1,8 +1,8 @@
 package com.nearinfinity;
 
+import org.apache.blur.MiniCluster;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import com.nearinfinity.blur.MiniCluster;
 
 public abstract class BlurAgentBaseTestClass extends AgentBaseTestClass {
 	@BeforeClass

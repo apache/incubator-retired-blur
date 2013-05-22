@@ -1,11 +1,11 @@
 package com.nearinfinity.agent.collectors.blur.table;
 
+import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.nearinfinity.agent.connections.blur.interfaces.TableDatabaseInterface;
-import com.nearinfinity.blur.thrift.generated.Blur.Iface;
-import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
 public class TableCollector implements Runnable {
 	private static final Log log = LogFactory.getLog(TableCollector.class);

@@ -6,13 +6,13 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.net.URI;
 
+import org.apache.blur.MiniCluster;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.nearinfinity.BlurAgentBaseTestClass;
 import com.nearinfinity.agent.connections.hdfs.HdfsDatabaseConnection;
 import com.nearinfinity.agent.connections.hdfs.interfaces.HdfsDatabaseInterface;
-import com.nearinfinity.blur.MiniCluster;
 
 public class HdfsStatCollectorTest extends BlurAgentBaseTestClass {
 	private static HdfsDatabaseInterface database = new HdfsDatabaseConnection(jdbc);

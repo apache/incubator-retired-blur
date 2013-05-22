@@ -1,14 +1,14 @@
 package com.nearinfinity.agent.collectors.blur.table;
 
+import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.TableStats;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.DataAccessException;
 
 import com.nearinfinity.agent.connections.blur.interfaces.TableDatabaseInterface;
 import com.nearinfinity.agent.exceptions.NullReturnedException;
-import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.TableStats;
-import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class StatsCollector implements Runnable {
 	private static final Log log = LogFactory.getLog(StatsCollector.class);

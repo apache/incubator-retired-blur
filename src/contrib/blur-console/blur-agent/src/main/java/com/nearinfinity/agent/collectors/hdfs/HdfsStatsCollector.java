@@ -2,11 +2,11 @@ package com.nearinfinity.agent.collectors.hdfs;
 
 import java.io.IOException;
 import java.net.URI;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FsStatus;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.hdfs.protocol.FSConstants.DatanodeReportType;
@@ -52,11 +52,12 @@ public class HdfsStatsCollector implements Runnable {
 			if (fileSystem instanceof DistributedFileSystem) {
 				DistributedFileSystem dfs = (DistributedFileSystem) fileSystem;
 
-				FsStatus ds = dfs.getStatus();
-				long capacity = ds.getCapacity();
-				long used = ds.getUsed();
+				// TODO: Need to figure out how to do hadoop version check for this information.
+				//FsStatus ds = dfs.getStatus();
+				long capacity = -1;//ds.getCapacity();
+				long used = -1;//ds.getUsed();
 				long logical_used = used / dfs.getDefaultReplication();
-				long remaining = ds.getRemaining();
+				long remaining = -1; //ds.getRemaining();
 				long presentCapacity = used + remaining;
 
 				long liveNodes = -1;

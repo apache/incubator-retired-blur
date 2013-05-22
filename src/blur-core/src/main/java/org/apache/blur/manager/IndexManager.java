@@ -431,7 +431,7 @@ public class IndexManager {
     return _statusManager.currentQueries(table);
   }
 
-  public BlurQueryStatus queryStatus(String table, long uuid) throws BlurException {
+  public BlurQueryStatus queryStatus(String table, long uuid) {
     return _statusManager.queryStatus(table, uuid);
   }
 

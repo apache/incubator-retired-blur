@@ -29,10 +29,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
-
 
 public class QueryStatusManager {
 
@@ -110,19 +108,21 @@ public class QueryStatusManager {
     return result;
   }
 
-  public BlurQueryStatus queryStatus(String table, long uuid) throws BlurException {
+  public BlurQueryStatus queryStatus(String table, long uuid) {
     for (QueryStatus status : currentQueryStatusCollection.keySet()) {
       if (status.getUserUuid() == uuid && status.getTable().equals(table)) {
         return status.getQueryStatus();
       }
     }
-    throw new BlurException("Query status for table [" + table + "] and uuid [" + uuid + "] not found", null);
+    return null;
   }
 
   public List<Long> queryStatusIdList(String table) {
     Set<Long> ids = new HashSet<Long>();
     for (QueryStatus status : currentQueryStatusCollection.keySet()) {
-      ids.add(status.getUserUuid());
+      if (status.getTable().equals(table)) {
+        ids.add(status.getUserUuid());
+      }
     }
     return new ArrayList<Long>(ids);
   }

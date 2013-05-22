@@ -345,12 +345,17 @@ public class BlurShardServer extends TableAdmin implements Iface {
   public BlurQueryStatus queryStatusById(String table, long uuid) throws BlurException, TException {
     checkTable(_cluster, table);
     resetSearchers();
+    BlurQueryStatus blurQueryStatus;
     try {
-      return _indexManager.queryStatus(table, uuid);
+      blurQueryStatus = _indexManager.queryStatus(table, uuid);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get current query status [table={0},uuid={1}]", e, table, uuid);
       throw new BException(e.getMessage(), e);
     }
+    if (blurQueryStatus == null) {
+      throw new BlurException("Query status for table [" + table + "] and uuid [" + uuid + "] not found", null);
+    }
+    return blurQueryStatus;
   }
 
   @Override

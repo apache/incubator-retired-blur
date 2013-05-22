@@ -167,6 +167,7 @@ struct Selector {
    */
   1:bool recordOnly,
   /**
+   * WARNING: This is an internal only attribute and is not intended for use by clients.
    * The location id of the Record or Row to be fetched.
    */
   2:string locationId,
@@ -375,7 +376,7 @@ struct BlurQuery {
  */
 struct BlurResult {
   /**
-   *
+   * WARNING: This is an internal only attribute and is not intended for use by clients.
    */
   1:string locationId,
   /**

@@ -161,7 +161,8 @@ module Blur
     FIELDS = {
       # Fetch the Record only, not the entire Row.
       RECORDONLY => {:type => ::Thrift::Types::BOOL, :name => 'recordOnly'},
-      # The location id of the Record or Row to be fetched.
+      # WARNING: This is an internal only attribute and is not intended for use by clients.
+# The location id of the Record or Row to be fetched.
       LOCATIONID => {:type => ::Thrift::Types::STRING, :name => 'locationId'},
       # The row id of the Row to be fetched, not to be used with location id.
       ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowId'},
@@ -403,7 +404,7 @@ module Blur
     FETCHRESULT = 3
 
     FIELDS = {
-      # 
+      # WARNING: This is an internal only attribute and is not intended for use by clients.
       LOCATIONID => {:type => ::Thrift::Types::STRING, :name => 'locationId'},
       # 
       SCORE => {:type => ::Thrift::Types::DOUBLE, :name => 'score'},

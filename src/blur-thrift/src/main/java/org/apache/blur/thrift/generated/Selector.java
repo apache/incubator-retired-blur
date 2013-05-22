@@ -76,6 +76,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
    */
   public boolean recordOnly; // required
   /**
+   * WARNING: This is an internal only attribute and is not intended for use by clients.
    * The location id of the Record or Row to be fetched.
    */
   public String locationId; // required
@@ -121,6 +122,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
      */
     RECORD_ONLY((short)1, "recordOnly"),
     /**
+     * WARNING: This is an internal only attribute and is not intended for use by clients.
      * The location id of the Record or Row to be fetched.
      */
     LOCATION_ID((short)2, "locationId"),
@@ -394,6 +396,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
   }
 
   /**
+   * WARNING: This is an internal only attribute and is not intended for use by clients.
    * The location id of the Record or Row to be fetched.
    */
   public String getLocationId() {
@@ -401,6 +404,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
   }
 
   /**
+   * WARNING: This is an internal only attribute and is not intended for use by clients.
    * The location id of the Record or Row to be fetched.
    */
   public Selector setLocationId(String locationId) {

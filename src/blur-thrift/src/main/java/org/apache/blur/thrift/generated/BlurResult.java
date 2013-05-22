@@ -66,7 +66,7 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
   }
 
   /**
-   * 
+   * WARNING: This is an internal only attribute and is not intended for use by clients.
    */
   public String locationId; // required
   /**
@@ -81,7 +81,7 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
-     * 
+     * WARNING: This is an internal only attribute and is not intended for use by clients.
      */
     LOCATION_ID((short)1, "locationId"),
     /**
@@ -209,14 +209,14 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
   }
 
   /**
-   * 
+   * WARNING: This is an internal only attribute and is not intended for use by clients.
    */
   public String getLocationId() {
     return this.locationId;
   }
 
   /**
-   * 
+   * WARNING: This is an internal only attribute and is not intended for use by clients.
    */
   public BlurResult setLocationId(String locationId) {
     this.locationId = locationId;

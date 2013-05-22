@@ -44,7 +44,7 @@ public class QueryCollector implements Runnable {
 		}
 		
 		// Mark running queries that can't be found as complete - unknown
-		this.database.markOrphanedRunningQueriesComplete(CollectionUtils.subtract(this.database.getRunningQueries(), currentQueries));
+		this.database.markOrphanedRunningQueriesComplete(CollectionUtils.subtract(this.database.getRunningQueries((long)tableId), currentQueries));
 		
 
 		for (Long queryUUID : currentQueries) {

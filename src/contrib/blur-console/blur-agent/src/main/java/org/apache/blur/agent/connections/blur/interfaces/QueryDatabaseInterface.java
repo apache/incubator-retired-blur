@@ -11,7 +11,7 @@ import org.apache.blur.thrift.generated.SimpleQuery;
 public interface QueryDatabaseInterface {
 	Map<String, Object> getQuery(int tableId, long UUID);
 
-	List<Long> getRunningQueries();
+	List<Long> getRunningQueries(Long tableId);
 
 	void createQuery(BlurQueryStatus status, SimpleQuery query, String times, Date startTime, int tableId);
 

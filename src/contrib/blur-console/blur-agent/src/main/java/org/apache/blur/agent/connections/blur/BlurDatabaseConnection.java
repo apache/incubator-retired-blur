@@ -135,8 +135,8 @@ public class BlurDatabaseConnection implements BlurDatabaseInterface {
 	}
 
 	@Override
-	public List<Long> getRunningQueries() {
-		return this.jdbc.queryForList("select uuid from blur_queries where state = 0", Long.class);
+	public List<Long> getRunningQueries(Long tableId) {
+		return this.jdbc.queryForList("select uuid from blur_queries where state = 0 and blur_table_id = ?", new Object[]{tableId}, Long.class);
 	}
 
 	@Override

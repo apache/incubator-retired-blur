@@ -72,3 +72,18 @@ path {
   stroke:black;
   stroke-width:2px;
 }
+
+.container {
+    width:1300px;
+    margin:20px 0;
+    padding: 20px;
+}
+
+.content {
+    float:left;
+    width:600px;
+}
+
+#footer {
+    clear:both;
+}

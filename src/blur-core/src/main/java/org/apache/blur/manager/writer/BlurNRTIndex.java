@@ -28,6 +28,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.blur.index.IndexWriter;
+import org.apache.blur.index.IndexWriter.LockOwnerException;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceCounter;
@@ -219,6 +220,16 @@ public class BlurNRTIndex extends BlurIndex {
           } catch (CorruptIndexException e) {
             LOG.error("Curruption Error during commit of [{0}/{1}].", e, _tableContext.getTable(),
                 _shardContext.getShard());
+          } catch (LockOwnerException e) {
+            LOG.info("This shard server no longer owns the lock on [{0}/{1}], closing.", _tableContext.getTable(),
+                _shardContext.getShard());
+            try {
+              close();
+            } catch (IOException ex) {
+              LOG.error("Unknown error while trying to close [{0}/{1}]", _tableContext.getTable(),
+                  _shardContext.getShard());
+            }
+            return;
           } catch (IOException e) {
             LOG.error("IO Error during commit of [{0}/{1}].", e, _tableContext.getTable(), _shardContext.getShard());
           }

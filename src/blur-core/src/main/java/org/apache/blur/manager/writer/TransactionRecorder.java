@@ -18,6 +18,7 @@ package org.apache.blur.manager.writer;
  */
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -57,7 +58,7 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.NRTManager.TrackingIndexWriter;
 
-public class TransactionRecorder extends TimerTask {
+public class TransactionRecorder extends TimerTask implements Closeable {
 
   enum TYPE {
     DELETE((byte) 0), ROW((byte) 1);
@@ -385,7 +386,16 @@ public class TransactionRecorder extends TimerTask {
       }
     } catch (IOException e) {
       if (_running.get()) {
-        LOG.error("Known error while trying to sync.", e);
+        if (e.getMessage().equals("DFSOutputStream is closed")) {
+          LOG.warn("Trying to sync the outputstrema and the stream has been closed.  This is probably a test and the filesystem has been closed.");
+          try {
+            Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+          } catch (InterruptedException ex) {
+            return;
+          }
+        } else {
+          LOG.error("Known error while trying to sync.", e);
+        }
       }
     }
   }

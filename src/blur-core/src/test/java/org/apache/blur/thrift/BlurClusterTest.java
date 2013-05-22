@@ -143,11 +143,6 @@ public class BlurClusterTest {
     //This should block until shards have failed over
     client.shardServerLayout("test");
     
-    for (int i = 0; i < 40; i++) {
-      System.out.println(client.query("test", blurQuery).getTotalResults());
-      Thread.sleep(1000);
-    }
-    
     assertEquals(length, client.query("test", blurQuery).getTotalResults());
     
   }

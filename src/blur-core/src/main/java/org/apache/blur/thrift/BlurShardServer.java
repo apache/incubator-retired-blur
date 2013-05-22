@@ -214,7 +214,6 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public Map<String, Map<String, ShardState>> shardServerLayoutState(String table) throws BlurException, TException {
-    checkTable(_cluster, table);
     resetSearchers();
     try {
       Map<String, Map<String, ShardState>> result = new TreeMap<String, Map<String, ShardState>>();

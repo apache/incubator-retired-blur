@@ -70,9 +70,6 @@ import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.ForkJoin;
 import org.apache.blur.utils.ForkJoin.Merger;
 import org.apache.blur.utils.ForkJoin.ParallelCall;
-import org.apache.blur.utils.QueryCache;
-import org.apache.blur.utils.QueryCacheEntry;
-import org.apache.blur.utils.QueryCacheKey;
 import org.apache.blur.zookeeper.WatchChildren;
 import org.apache.blur.zookeeper.WatchChildren.OnChange;
 import org.apache.blur.zookeeper.WatchNodeExistance;
@@ -113,7 +110,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private int _remoteFetchCount = 100;
   private long _maxTimeToLive = TimeUnit.MINUTES.toMillis(1);
   private int _maxQueryCacheElements = 128;
-  private QueryCache _queryCache;
   private BlurQueryChecker _queryChecker;
   private AtomicBoolean _running = new AtomicBoolean();
 
@@ -137,7 +133,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   public void init() throws KeeperException, InterruptedException {
     setupZookeeper();
     registerMyself();
-    _queryCache = new QueryCache("controller-cache", _maxQueryCacheElements, _maxTimeToLive);
     _executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL, _threadCount);
     _running.set(true);
     watchForClusterChanges();
@@ -309,18 +304,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
 
         BlurQuery original = new BlurQuery(blurQuery);
-        if (blurQuery.useCacheIfPresent) {
-          LOG.debug("Using cache for query [{0}] on table [{1}].", blurQuery, table);
-          QueryCacheKey key = QueryCache.getNormalizedBlurQueryKey(table, blurQuery);
-          QueryCacheEntry queryCacheEntry = _queryCache.get(key);
-          if (_queryCache.isValid(queryCacheEntry)) {
-            LOG.debug("Cache hit for query [{0}] on table [{1}].", blurQuery, table);
-            return queryCacheEntry.getBlurResults(blurQuery);
-          } else {
-            _queryCache.remove(key);
-          }
-        }
-
+        
         BlurUtil.setStartTime(original);
 
         Selector selector = blurQuery.getSelector();
@@ -338,7 +322,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           BlurClientManager.sleep(_defaultDelay, _maxDefaultDelay, retries, _maxDefaultRetries);
           continue OUTER;
         }
-        return _queryCache.cache(table, original, results);
+        return results;
       } catch (Exception e) {
         LOG.error("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
         throw new BException("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);

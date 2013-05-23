@@ -37,9 +37,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.thrift.transport.TNonblockingServerTransport;
-import org.apache.thrift.transport.TNonblockingTransport;
-import org.apache.thrift.transport.TTransportException;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingServerTransport;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -28,7 +28,8 @@ package org.apache.blur.thrift.generated;
 
 import java.util.Map;
 import java.util.HashMap;
-import org.apache.thrift.TEnum;
+
+import org.apache.blur.thirdparty.thrift_0_9_0.TEnum;
 
 /**
  * Specifies the type of Row mutation that should occur during a mutation of a given Row.<br/><br/>
@@ -36,7 +37,7 @@ import org.apache.thrift.TEnum;
  * REPLACE_ROW - Indicates that the entire Row is to be deleted, and then a new Row with the same id is to be added.  If the specified row does not exist, the new row will still be created.<br/><br/>
  * UPDATE_ROW - Indicates that mutations of the underlying Records will be processed individually.  Mutation will result in a BlurException if the specified row does not exist.<br/>
  */
-public enum RowMutationType implements org.apache.thrift.TEnum {
+public enum RowMutationType implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
   DELETE_ROW(0),
   REPLACE_ROW(1),
   UPDATE_ROW(2);

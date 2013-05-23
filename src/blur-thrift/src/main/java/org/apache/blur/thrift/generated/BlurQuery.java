@@ -25,15 +25,15 @@ package org.apache.blur.thrift.generated;
 
 
 
-import org.apache.thrift.scheme.IScheme;
-import org.apache.thrift.scheme.SchemeFactory;
-import org.apache.thrift.scheme.StandardScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.EncodingUtils;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolException;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TTupleProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.IScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.SchemeFactory;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.StandardScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.TupleScheme;
 
-import org.apache.thrift.scheme.TupleScheme;
-import org.apache.thrift.protocol.TTupleProtocol;
-import org.apache.thrift.protocol.TProtocolException;
-import org.apache.thrift.EncodingUtils;
-import org.apache.thrift.TException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -52,24 +52,24 @@ import org.slf4j.LoggerFactory;
 /**
  * 
  */
-public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("BlurQuery");
+public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<BlurQuery, BlurQuery._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("BlurQuery");
 
-  private static final org.apache.thrift.protocol.TField SIMPLE_QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("simpleQuery", org.apache.thrift.protocol.TType.STRUCT, (short)1);
-  private static final org.apache.thrift.protocol.TField EXPERT_QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("expertQuery", org.apache.thrift.protocol.TType.STRUCT, (short)2);
-  private static final org.apache.thrift.protocol.TField FACETS_FIELD_DESC = new org.apache.thrift.protocol.TField("facets", org.apache.thrift.protocol.TType.LIST, (short)3);
-  private static final org.apache.thrift.protocol.TField SELECTOR_FIELD_DESC = new org.apache.thrift.protocol.TField("selector", org.apache.thrift.protocol.TType.STRUCT, (short)4);
-  private static final org.apache.thrift.protocol.TField ALLOW_STALE_DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("allowStaleData", org.apache.thrift.protocol.TType.BOOL, (short)5);
-  private static final org.apache.thrift.protocol.TField USE_CACHE_IF_PRESENT_FIELD_DESC = new org.apache.thrift.protocol.TField("useCacheIfPresent", org.apache.thrift.protocol.TType.BOOL, (short)6);
-  private static final org.apache.thrift.protocol.TField START_FIELD_DESC = new org.apache.thrift.protocol.TField("start", org.apache.thrift.protocol.TType.I64, (short)7);
-  private static final org.apache.thrift.protocol.TField FETCH_FIELD_DESC = new org.apache.thrift.protocol.TField("fetch", org.apache.thrift.protocol.TType.I32, (short)8);
-  private static final org.apache.thrift.protocol.TField MINIMUM_NUMBER_OF_RESULTS_FIELD_DESC = new org.apache.thrift.protocol.TField("minimumNumberOfResults", org.apache.thrift.protocol.TType.I64, (short)9);
-  private static final org.apache.thrift.protocol.TField MAX_QUERY_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("maxQueryTime", org.apache.thrift.protocol.TType.I64, (short)10);
-  private static final org.apache.thrift.protocol.TField UUID_FIELD_DESC = new org.apache.thrift.protocol.TField("uuid", org.apache.thrift.protocol.TType.I64, (short)11);
-  private static final org.apache.thrift.protocol.TField USER_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("userContext", org.apache.thrift.protocol.TType.STRING, (short)12);
-  private static final org.apache.thrift.protocol.TField CACHE_RESULT_FIELD_DESC = new org.apache.thrift.protocol.TField("cacheResult", org.apache.thrift.protocol.TType.BOOL, (short)13);
-  private static final org.apache.thrift.protocol.TField START_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("startTime", org.apache.thrift.protocol.TType.I64, (short)14);
-  private static final org.apache.thrift.protocol.TField MODIFY_FILE_CACHES_FIELD_DESC = new org.apache.thrift.protocol.TField("modifyFileCaches", org.apache.thrift.protocol.TType.BOOL, (short)15);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SIMPLE_QUERY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("simpleQuery", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField EXPERT_QUERY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("expertQuery", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FACETS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("facets", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)3);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SELECTOR_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("selector", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)4);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ALLOW_STALE_DATA_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("allowStaleData", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)5);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField USE_CACHE_IF_PRESENT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("useCacheIfPresent", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)6);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField START_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("start", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)7);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FETCH_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("fetch", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)8);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField MINIMUM_NUMBER_OF_RESULTS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("minimumNumberOfResults", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)9);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField MAX_QUERY_TIME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("maxQueryTime", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)10);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField UUID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("uuid", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)11);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField USER_CONTEXT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("userContext", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)12);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField CACHE_RESULT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("cacheResult", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)13);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField START_TIME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("startTime", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)14);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField MODIFY_FILE_CACHES_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("modifyFileCaches", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)15);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -139,7 +139,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   public boolean modifyFileCaches; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+  public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
      * 
      */
@@ -295,42 +295,42 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   private static final int __STARTTIME_ISSET_ID = 8;
   private static final int __MODIFYFILECACHES_ISSET_ID = 9;
   private short __isset_bitfield = 0;
-  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.SIMPLE_QUERY, new org.apache.thrift.meta_data.FieldMetaData("simpleQuery", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SimpleQuery.class)));
-    tmpMap.put(_Fields.EXPERT_QUERY, new org.apache.thrift.meta_data.FieldMetaData("expertQuery", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ExpertQuery.class)));
-    tmpMap.put(_Fields.FACETS, new org.apache.thrift.meta_data.FieldMetaData("facets", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Facet.class))));
-    tmpMap.put(_Fields.SELECTOR, new org.apache.thrift.meta_data.FieldMetaData("selector", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Selector.class)));
-    tmpMap.put(_Fields.ALLOW_STALE_DATA, new org.apache.thrift.meta_data.FieldMetaData("allowStaleData", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.USE_CACHE_IF_PRESENT, new org.apache.thrift.meta_data.FieldMetaData("useCacheIfPresent", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.START, new org.apache.thrift.meta_data.FieldMetaData("start", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.FETCH, new org.apache.thrift.meta_data.FieldMetaData("fetch", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.MINIMUM_NUMBER_OF_RESULTS, new org.apache.thrift.meta_data.FieldMetaData("minimumNumberOfResults", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.MAX_QUERY_TIME, new org.apache.thrift.meta_data.FieldMetaData("maxQueryTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.UUID, new org.apache.thrift.meta_data.FieldMetaData("uuid", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.USER_CONTEXT, new org.apache.thrift.meta_data.FieldMetaData("userContext", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.CACHE_RESULT, new org.apache.thrift.meta_data.FieldMetaData("cacheResult", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.START_TIME, new org.apache.thrift.meta_data.FieldMetaData("startTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.MODIFY_FILE_CACHES, new org.apache.thrift.meta_data.FieldMetaData("modifyFileCaches", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.SIMPLE_QUERY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("simpleQuery", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, SimpleQuery.class)));
+    tmpMap.put(_Fields.EXPERT_QUERY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("expertQuery", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, ExpertQuery.class)));
+    tmpMap.put(_Fields.FACETS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("facets", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Facet.class))));
+    tmpMap.put(_Fields.SELECTOR, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("selector", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Selector.class)));
+    tmpMap.put(_Fields.ALLOW_STALE_DATA, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("allowStaleData", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.USE_CACHE_IF_PRESENT, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("useCacheIfPresent", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.START, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("start", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
+    tmpMap.put(_Fields.FETCH, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("fetch", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32)));
+    tmpMap.put(_Fields.MINIMUM_NUMBER_OF_RESULTS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("minimumNumberOfResults", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
+    tmpMap.put(_Fields.MAX_QUERY_TIME, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("maxQueryTime", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
+    tmpMap.put(_Fields.UUID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("uuid", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
+    tmpMap.put(_Fields.USER_CONTEXT, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("userContext", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.CACHE_RESULT, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("cacheResult", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.START_TIME, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("startTime", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
+    tmpMap.put(_Fields.MODIFY_FILE_CACHES, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("modifyFileCaches", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BlurQuery.class, metaDataMap);
+    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(BlurQuery.class, metaDataMap);
   }
 
   public BlurQuery() {
@@ -1309,7 +1309,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return lastComparison;
     }
     if (isSetSimpleQuery()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.simpleQuery, typedOther.simpleQuery);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.simpleQuery, typedOther.simpleQuery);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1319,7 +1319,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return lastComparison;
     }
     if (isSetExpertQuery()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.expertQuery, typedOther.expertQuery);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.expertQuery, typedOther.expertQuery);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1329,7 +1329,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return lastComparison;
     }
     if (isSetFacets()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.facets, typedOther.facets);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.facets, typedOther.facets);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1339,7 +1339,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return lastComparison;
     }
     if (isSetSelector()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.selector, typedOther.selector);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.selector, typedOther.selector);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1349,7 +1349,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return lastComparison;
     }
     if (isSetAllowStaleData()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.allowStaleData, typedOther.allowStaleData);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.allowStaleData, typedOther.allowStaleData);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1359,7 +1359,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return lastComparison;
     }
     if (isSetUseCacheIfPresent()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.useCacheIfPresent, typedOther.useCacheIfPresent);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.useCacheIfPresent, typedOther.useCacheIfPresent);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1369,7 +1369,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return lastComparison;
     }
     if (isSetStart()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.start, typedOther.start);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.start, typedOther.start);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1379,7 +1379,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return lastComparison;
     }
     if (isSetFetch()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.fetch, typedOther.fetch);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.fetch, typedOther.fetch);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1389,7 +1389,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return lastComparison;
     }
     if (isSetMinimumNumberOfResults()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.minimumNumberOfResults, typedOther.minimumNumberOfResults);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.minimumNumberOfResults, typedOther.minimumNumberOfResults);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1399,7 +1399,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return lastComparison;
     }
     if (isSetMaxQueryTime()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.maxQueryTime, typedOther.maxQueryTime);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.maxQueryTime, typedOther.maxQueryTime);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1409,7 +1409,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return lastComparison;
     }
     if (isSetUuid()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.uuid, typedOther.uuid);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.uuid, typedOther.uuid);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1419,7 +1419,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return lastComparison;
     }
     if (isSetUserContext()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.userContext, typedOther.userContext);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.userContext, typedOther.userContext);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1429,7 +1429,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return lastComparison;
     }
     if (isSetCacheResult()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.cacheResult, typedOther.cacheResult);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.cacheResult, typedOther.cacheResult);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1439,7 +1439,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return lastComparison;
     }
     if (isSetStartTime()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.startTime, typedOther.startTime);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.startTime, typedOther.startTime);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1449,7 +1449,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return lastComparison;
     }
     if (isSetModifyFileCaches()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.modifyFileCaches, typedOther.modifyFileCaches);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.modifyFileCaches, typedOther.modifyFileCaches);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1461,11 +1461,11 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+  public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
   }
 
-  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+  public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
   }
 
@@ -1557,7 +1557,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     return sb.toString();
   }
 
-  public void validate() throws org.apache.thrift.TException {
+  public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     // check for required fields
     // check for sub-struct validity
     if (simpleQuery != null) {
@@ -1573,8 +1573,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
     try {
-      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-    } catch (org.apache.thrift.TException te) {
+      write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -1583,8 +1583,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     try {
       // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
       __isset_bitfield = 0;
-      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-    } catch (org.apache.thrift.TException te) {
+      read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -1597,38 +1597,38 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
 
   private static class BlurQueryStandardScheme extends StandardScheme<BlurQuery> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, BlurQuery struct) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField schemeField;
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, BlurQuery struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+        if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
           break;
         }
         switch (schemeField.id) {
           case 1: // SIMPLE_QUERY
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
               struct.simpleQuery = new SimpleQuery();
               struct.simpleQuery.read(iprot);
               struct.setSimpleQueryIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 2: // EXPERT_QUERY
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
               struct.expertQuery = new ExpertQuery();
               struct.expertQuery.read(iprot);
               struct.setExpertQueryIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 3: // FACETS
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list42 = iprot.readListBegin();
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list42 = iprot.readListBegin();
                 struct.facets = new ArrayList<Facet>(_list42.size);
                 for (int _i43 = 0; _i43 < _list42.size; ++_i43)
                 {
@@ -1641,108 +1641,108 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
               }
               struct.setFacetsIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 4: // SELECTOR
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
               struct.selector = new Selector();
               struct.selector.read(iprot);
               struct.setSelectorIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 5: // ALLOW_STALE_DATA
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
               struct.allowStaleData = iprot.readBool();
               struct.setAllowStaleDataIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 6: // USE_CACHE_IF_PRESENT
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
               struct.useCacheIfPresent = iprot.readBool();
               struct.setUseCacheIfPresentIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 7: // START
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64) {
               struct.start = iprot.readI64();
               struct.setStartIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 8: // FETCH
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
               struct.fetch = iprot.readI32();
               struct.setFetchIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 9: // MINIMUM_NUMBER_OF_RESULTS
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64) {
               struct.minimumNumberOfResults = iprot.readI64();
               struct.setMinimumNumberOfResultsIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 10: // MAX_QUERY_TIME
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64) {
               struct.maxQueryTime = iprot.readI64();
               struct.setMaxQueryTimeIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 11: // UUID
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64) {
               struct.uuid = iprot.readI64();
               struct.setUuidIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 12: // USER_CONTEXT
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
               struct.userContext = iprot.readString();
               struct.setUserContextIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 13: // CACHE_RESULT
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
               struct.cacheResult = iprot.readBool();
               struct.setCacheResultIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 14: // START_TIME
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64) {
               struct.startTime = iprot.readI64();
               struct.setStartTimeIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 15: // MODIFY_FILE_CACHES
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
               struct.modifyFileCaches = iprot.readBool();
               struct.setModifyFileCachesIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
         iprot.readFieldEnd();
       }
@@ -1752,7 +1752,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, BlurQuery struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, BlurQuery struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -1769,7 +1769,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       if (struct.facets != null) {
         oprot.writeFieldBegin(FACETS_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.facets.size()));
+          oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.facets.size()));
           for (Facet _iter45 : struct.facets)
           {
             _iter45.write(oprot);
@@ -1833,7 +1833,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   private static class BlurQueryTupleScheme extends TupleScheme<BlurQuery> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, BlurQuery struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, BlurQuery struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
       if (struct.isSetSimpleQuery()) {
@@ -1936,7 +1936,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, BlurQuery struct) throws org.apache.thrift.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, BlurQuery struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(15);
       if (incoming.get(0)) {
@@ -1951,7 +1951,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list47 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list47 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
           struct.facets = new ArrayList<Facet>(_list47.size);
           for (int _i48 = 0; _i48 < _list47.size; ++_i48)
           {

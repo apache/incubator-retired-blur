@@ -18,10 +18,10 @@ package org.apache.blur.server;
  */
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.server.ServerContext;
-import org.apache.thrift.server.TServerEventHandler;
-import org.apache.thrift.transport.TTransport;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.server.ServerContext;
+import org.apache.blur.thirdparty.thrift_0_9_0.server.TServerEventHandler;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransport;
 
 /**
  * {@link ShardServerContext} is the session manager for the shard servers. It

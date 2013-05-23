@@ -25,15 +25,15 @@ package org.apache.blur.thrift.generated;
 
 
 
-import org.apache.thrift.scheme.IScheme;
-import org.apache.thrift.scheme.SchemeFactory;
-import org.apache.thrift.scheme.StandardScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.EncodingUtils;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolException;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TTupleProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.IScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.SchemeFactory;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.StandardScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.TupleScheme;
 
-import org.apache.thrift.scheme.TupleScheme;
-import org.apache.thrift.protocol.TTupleProtocol;
-import org.apache.thrift.protocol.TProtocolException;
-import org.apache.thrift.EncodingUtils;
-import org.apache.thrift.TException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -52,11 +52,11 @@ import org.slf4j.LoggerFactory;
 /**
  * 
  */
-public class CpuTime implements org.apache.thrift.TBase<CpuTime, CpuTime._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("CpuTime");
+public class CpuTime implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<CpuTime, CpuTime._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("CpuTime");
 
-  private static final org.apache.thrift.protocol.TField CPU_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("cpuTime", org.apache.thrift.protocol.TType.I64, (short)1);
-  private static final org.apache.thrift.protocol.TField REAL_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("realTime", org.apache.thrift.protocol.TType.I64, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField CPU_TIME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("cpuTime", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField REAL_TIME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("realTime", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -74,7 +74,7 @@ public class CpuTime implements org.apache.thrift.TBase<CpuTime, CpuTime._Fields
   public long realTime; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+  public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
      * 
      */
@@ -144,15 +144,15 @@ public class CpuTime implements org.apache.thrift.TBase<CpuTime, CpuTime._Fields
   private static final int __CPUTIME_ISSET_ID = 0;
   private static final int __REALTIME_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.CPU_TIME, new org.apache.thrift.meta_data.FieldMetaData("cpuTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.REAL_TIME, new org.apache.thrift.meta_data.FieldMetaData("realTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.CPU_TIME, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("cpuTime", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
+    tmpMap.put(_Fields.REAL_TIME, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("realTime", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CpuTime.class, metaDataMap);
+    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(CpuTime.class, metaDataMap);
   }
 
   public CpuTime() {
@@ -348,7 +348,7 @@ public class CpuTime implements org.apache.thrift.TBase<CpuTime, CpuTime._Fields
       return lastComparison;
     }
     if (isSetCpuTime()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.cpuTime, typedOther.cpuTime);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.cpuTime, typedOther.cpuTime);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -358,7 +358,7 @@ public class CpuTime implements org.apache.thrift.TBase<CpuTime, CpuTime._Fields
       return lastComparison;
     }
     if (isSetRealTime()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.realTime, typedOther.realTime);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.realTime, typedOther.realTime);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -370,11 +370,11 @@ public class CpuTime implements org.apache.thrift.TBase<CpuTime, CpuTime._Fields
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+  public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
   }
 
-  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+  public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
   }
 
@@ -394,15 +394,15 @@ public class CpuTime implements org.apache.thrift.TBase<CpuTime, CpuTime._Fields
     return sb.toString();
   }
 
-  public void validate() throws org.apache.thrift.TException {
+  public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     // check for required fields
     // check for sub-struct validity
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
     try {
-      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-    } catch (org.apache.thrift.TException te) {
+      write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -411,8 +411,8 @@ public class CpuTime implements org.apache.thrift.TBase<CpuTime, CpuTime._Fields
     try {
       // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
       __isset_bitfield = 0;
-      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-    } catch (org.apache.thrift.TException te) {
+      read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -425,34 +425,34 @@ public class CpuTime implements org.apache.thrift.TBase<CpuTime, CpuTime._Fields
 
   private static class CpuTimeStandardScheme extends StandardScheme<CpuTime> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, CpuTime struct) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField schemeField;
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, CpuTime struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+        if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
           break;
         }
         switch (schemeField.id) {
           case 1: // CPU_TIME
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64) {
               struct.cpuTime = iprot.readI64();
               struct.setCpuTimeIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 2: // REAL_TIME
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64) {
               struct.realTime = iprot.readI64();
               struct.setRealTimeIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
         iprot.readFieldEnd();
       }
@@ -462,7 +462,7 @@ public class CpuTime implements org.apache.thrift.TBase<CpuTime, CpuTime._Fields
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, CpuTime struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, CpuTime struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -487,7 +487,7 @@ public class CpuTime implements org.apache.thrift.TBase<CpuTime, CpuTime._Fields
   private static class CpuTimeTupleScheme extends TupleScheme<CpuTime> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, CpuTime struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, CpuTime struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
       if (struct.isSetCpuTime()) {
@@ -506,7 +506,7 @@ public class CpuTime implements org.apache.thrift.TBase<CpuTime, CpuTime._Fields
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, CpuTime struct) throws org.apache.thrift.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, CpuTime struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {

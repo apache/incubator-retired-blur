@@ -22,6 +22,7 @@ import static org.apache.blur.utils.BlurUtil.newRecordMutation;
 import java.util.Random;
 import java.util.UUID;
 
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.BlurException;
@@ -29,7 +30,6 @@ import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.Blur.Iface;
-import org.apache.thrift.TException;
 
 
 public class RapidlyCreateAndDeleteTables {

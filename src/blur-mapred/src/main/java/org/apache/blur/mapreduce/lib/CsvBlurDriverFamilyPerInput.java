@@ -18,6 +18,7 @@ package org.apache.blur.mapreduce.lib;
  */
 import java.io.IOException;
 
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
@@ -28,7 +29,6 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
-import org.apache.thrift.TException;
 
 public class CsvBlurDriverFamilyPerInput {
 

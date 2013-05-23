@@ -25,15 +25,15 @@ package org.apache.blur.thrift.generated;
 
 
 
-import org.apache.thrift.scheme.IScheme;
-import org.apache.thrift.scheme.SchemeFactory;
-import org.apache.thrift.scheme.StandardScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.EncodingUtils;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolException;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TTupleProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.IScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.SchemeFactory;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.StandardScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.TupleScheme;
 
-import org.apache.thrift.scheme.TupleScheme;
-import org.apache.thrift.protocol.TTupleProtocol;
-import org.apache.thrift.protocol.TProtocolException;
-import org.apache.thrift.EncodingUtils;
-import org.apache.thrift.TException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -52,15 +52,15 @@ import org.slf4j.LoggerFactory;
 /**
  * 
  */
-public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMutation._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("RowMutation");
+public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<RowMutation, RowMutation._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("RowMutation");
 
-  private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField ROW_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("rowId", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField WAL_FIELD_DESC = new org.apache.thrift.protocol.TField("wal", org.apache.thrift.protocol.TType.BOOL, (short)3);
-  private static final org.apache.thrift.protocol.TField ROW_MUTATION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("rowMutationType", org.apache.thrift.protocol.TType.I32, (short)4);
-  private static final org.apache.thrift.protocol.TField RECORD_MUTATIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("recordMutations", org.apache.thrift.protocol.TType.LIST, (short)5);
-  private static final org.apache.thrift.protocol.TField WAIT_TO_BE_VISIBLE_FIELD_DESC = new org.apache.thrift.protocol.TField("waitToBeVisible", org.apache.thrift.protocol.TType.BOOL, (short)6);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("table", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ROW_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("rowId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField WAL_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("wal", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)3);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ROW_MUTATION_TYPE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("rowMutationType", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)4);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RECORD_MUTATIONS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("recordMutations", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)5);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField WAIT_TO_BE_VISIBLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("waitToBeVisible", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -92,7 +92,7 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
   public boolean waitToBeVisible; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+  public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
      * The that that the row mutation is to act upon.
      */
@@ -184,24 +184,24 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
   private static final int __WAL_ISSET_ID = 0;
   private static final int __WAITTOBEVISIBLE_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.ROW_ID, new org.apache.thrift.meta_data.FieldMetaData("rowId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.WAL, new org.apache.thrift.meta_data.FieldMetaData("wal", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.ROW_MUTATION_TYPE, new org.apache.thrift.meta_data.FieldMetaData("rowMutationType", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, RowMutationType.class)));
-    tmpMap.put(_Fields.RECORD_MUTATIONS, new org.apache.thrift.meta_data.FieldMetaData("recordMutations", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, RecordMutation.class))));
-    tmpMap.put(_Fields.WAIT_TO_BE_VISIBLE, new org.apache.thrift.meta_data.FieldMetaData("waitToBeVisible", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.TABLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("table", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.ROW_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("rowId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.WAL, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("wal", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.ROW_MUTATION_TYPE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("rowMutationType", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.EnumMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.ENUM, RowMutationType.class)));
+    tmpMap.put(_Fields.RECORD_MUTATIONS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("recordMutations", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, RecordMutation.class))));
+    tmpMap.put(_Fields.WAIT_TO_BE_VISIBLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("waitToBeVisible", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(RowMutation.class, metaDataMap);
+    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(RowMutation.class, metaDataMap);
   }
 
   public RowMutation() {
@@ -648,7 +648,7 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       return lastComparison;
     }
     if (isSetTable()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.table, typedOther.table);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -658,7 +658,7 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       return lastComparison;
     }
     if (isSetRowId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.rowId, typedOther.rowId);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.rowId, typedOther.rowId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -668,7 +668,7 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       return lastComparison;
     }
     if (isSetWal()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.wal, typedOther.wal);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.wal, typedOther.wal);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -678,7 +678,7 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       return lastComparison;
     }
     if (isSetRowMutationType()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.rowMutationType, typedOther.rowMutationType);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.rowMutationType, typedOther.rowMutationType);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -688,7 +688,7 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       return lastComparison;
     }
     if (isSetRecordMutations()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.recordMutations, typedOther.recordMutations);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.recordMutations, typedOther.recordMutations);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -698,7 +698,7 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       return lastComparison;
     }
     if (isSetWaitToBeVisible()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.waitToBeVisible, typedOther.waitToBeVisible);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.waitToBeVisible, typedOther.waitToBeVisible);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -710,11 +710,11 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+  public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
   }
 
-  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+  public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
   }
 
@@ -766,15 +766,15 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
     return sb.toString();
   }
 
-  public void validate() throws org.apache.thrift.TException {
+  public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     // check for required fields
     // check for sub-struct validity
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
     try {
-      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-    } catch (org.apache.thrift.TException te) {
+      write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -783,8 +783,8 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
     try {
       // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
       __isset_bitfield = 0;
-      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-    } catch (org.apache.thrift.TException te) {
+      read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -797,52 +797,52 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
 
   private static class RowMutationStandardScheme extends StandardScheme<RowMutation> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, RowMutation struct) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField schemeField;
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, RowMutation struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+        if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
           break;
         }
         switch (schemeField.id) {
           case 1: // TABLE
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
               struct.table = iprot.readString();
               struct.setTableIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 2: // ROW_ID
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
               struct.rowId = iprot.readString();
               struct.setRowIdIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 3: // WAL
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
               struct.wal = iprot.readBool();
               struct.setWalIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 4: // ROW_MUTATION_TYPE
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
               struct.rowMutationType = RowMutationType.findByValue(iprot.readI32());
               struct.setRowMutationTypeIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 5: // RECORD_MUTATIONS
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list84 = iprot.readListBegin();
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list84 = iprot.readListBegin();
                 struct.recordMutations = new ArrayList<RecordMutation>(_list84.size);
                 for (int _i85 = 0; _i85 < _list84.size; ++_i85)
                 {
@@ -855,19 +855,19 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
               }
               struct.setRecordMutationsIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 6: // WAIT_TO_BE_VISIBLE
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
               struct.waitToBeVisible = iprot.readBool();
               struct.setWaitToBeVisibleIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
         iprot.readFieldEnd();
       }
@@ -877,7 +877,7 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, RowMutation struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, RowMutation struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -902,7 +902,7 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       if (struct.recordMutations != null) {
         oprot.writeFieldBegin(RECORD_MUTATIONS_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.recordMutations.size()));
+          oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.recordMutations.size()));
           for (RecordMutation _iter87 : struct.recordMutations)
           {
             _iter87.write(oprot);
@@ -929,7 +929,7 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
   private static class RowMutationTupleScheme extends TupleScheme<RowMutation> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, RowMutation struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, RowMutation struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
       if (struct.isSetTable()) {
@@ -978,7 +978,7 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, RowMutation struct) throws org.apache.thrift.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, RowMutation struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
@@ -999,7 +999,7 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       }
       if (incoming.get(4)) {
         {
-          org.apache.thrift.protocol.TList _list89 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list89 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
           struct.recordMutations = new ArrayList<RecordMutation>(_list89.size);
           for (int _i90 = 0; _i90 < _list89.size; ++_i90)
           {

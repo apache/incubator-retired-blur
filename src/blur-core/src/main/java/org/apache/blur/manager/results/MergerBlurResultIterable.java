@@ -26,7 +26,6 @@ import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.ForkJoin.Merger;
 
-
 public class MergerBlurResultIterable implements Merger<BlurResultIterable> {
 
   private static Log LOG = LogFactory.getLog(MergerBlurResultIterable.class);
@@ -50,13 +49,14 @@ public class MergerBlurResultIterable implements Merger<BlurResultIterable> {
         BlurResultIterable blurResultIterable = service.getResultThrowException(future, _blurQuery);
         iterable.addBlurResultIterable(blurResultIterable);
         if (iterable.getTotalResults() >= _minimumNumberOfResults) {
-          service.cancelAll();// Called to stop execution of any other running
-                              // queries.
+          // Called to stop execution of any other running queries.
+          service.cancelAll();
           return iterable;
         }
       } else {
         LOG.info("Query timeout with max query time of [{2}] for query [{1}].", _maxQueryTime, _blurQuery);
-        throw new BlurException("Query timeout with max query time of [" + _maxQueryTime + "] for query [" + _blurQuery + "].", null);
+        throw new BlurException("Query timeout with max query time of [" + _maxQueryTime + "] for query [" + _blurQuery
+            + "].", null);
       }
     }
     return iterable;

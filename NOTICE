@@ -1,0 +1,26 @@
+Apache Blur
+Copyright 2012-2013 The Apache Software Foundation
+
+This product includes software developed by The Apache Software
+Foundation (http://www.apache.org/).
+
+Includes software from other Apache Software Foundation projects,
+including, but not limited to:
+- Lucene under Apache License, Version 2.0
+- Hadoop under Apache License, Version 2.0
+- ZooKeeper under Apache License, Version 2.0
+- Thrift under Apache License, Version 2.0
+- Apache Log4j under The Apache Software License, Version 2.0
+- Commons CLI under The Apache Software License, Version 2.0
+- Apache MRUnit under The Apache Software License, Version 2.0
+
+This project also includes:
+- JLine under BSD
+- Guava under The Apache Software License, Version 2.0
+- SLF4J API Module under MIT License
+- SLF4J LOG4J-12 Binding under MIT License
+- concurrentlinkedhashmap (http://code.google.com/p/concurrentlinkedhashmap/)
+   under The Apache Software License, Version 2.0
+- Metrics by Coda Hale, Yammer.com under The Apache Software License, Version 2.0
+
+

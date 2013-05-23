@@ -20,11 +20,11 @@ package org.apache.blur.shell;
 
 import java.io.PrintWriter;
 
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.TableDescriptor;
-import org.apache.thrift.TException;
 
 public class CreateTableCommand extends Command {
   @Override

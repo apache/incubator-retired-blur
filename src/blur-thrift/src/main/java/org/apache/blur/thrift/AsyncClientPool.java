@@ -33,15 +33,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback;
+import org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient;
+import org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClientManager;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TBinaryProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingSocket;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.thrift.async.AsyncMethodCallback;
-import org.apache.thrift.async.TAsyncClient;
-import org.apache.thrift.async.TAsyncClientManager;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocolFactory;
-import org.apache.thrift.transport.TNonblockingSocket;
-import org.apache.thrift.transport.TNonblockingTransport;
 
 public class AsyncClientPool {
 

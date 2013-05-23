@@ -40,6 +40,7 @@ import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.ShardServerContext;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -56,7 +57,6 @@ import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.QueryCache;
 import org.apache.blur.utils.QueryCacheEntry;
 import org.apache.blur.utils.QueryCacheKey;
-import org.apache.thrift.TException;
 
 public class BlurShardServer extends TableAdmin implements Iface {
 

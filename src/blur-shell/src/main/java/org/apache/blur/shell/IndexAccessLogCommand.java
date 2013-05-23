@@ -29,6 +29,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Column;
@@ -37,7 +38,6 @@ import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RecordMutationType;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
-import org.apache.thrift.TException;
 
 import com.google.common.collect.Lists;
 

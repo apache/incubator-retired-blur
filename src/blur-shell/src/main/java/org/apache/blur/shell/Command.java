@@ -20,8 +20,8 @@ package org.apache.blur.shell;
 
 import java.io.PrintWriter;
 
-import org.apache.thrift.TException;
 
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Blur.Client;
 

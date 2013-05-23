@@ -24,8 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.thirdparty.thrift_0_9_0.server.ServerContext;
 import org.apache.hadoop.io.IOUtils;
-import org.apache.thrift.server.ServerContext;
 
 /**
  * The thrift session that will hold index reader references to maintain across

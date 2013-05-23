@@ -35,6 +35,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryBuffer;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport;
 import org.apache.blur.thrift.generated.AlternateColumnDefinition;
 import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.ColumnDefinition;
@@ -52,10 +56,6 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
-import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TJSONProtocol;
-import org.apache.thrift.transport.TMemoryBuffer;
-import org.apache.thrift.transport.TMemoryInputTransport;
 
 public final class BlurAnalyzer extends AnalyzerWrapper {
 

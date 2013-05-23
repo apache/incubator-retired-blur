@@ -25,6 +25,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -33,7 +34,6 @@ import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.Blur.Iface;
-import org.apache.thrift.TException;
 
 
 public class RandomSearchTableContinuously {

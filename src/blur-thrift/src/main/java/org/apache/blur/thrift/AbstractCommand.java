@@ -16,8 +16,8 @@ package org.apache.blur.thrift;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.BlurException;
-import org.apache.thrift.TException;
 
 
 public abstract class AbstractCommand<CLIENT, T> implements Cloneable {

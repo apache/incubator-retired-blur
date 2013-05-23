@@ -30,6 +30,9 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.LuceneVersionConstant;
 import org.apache.blur.manager.writer.TransactionRecorder;
 import org.apache.blur.store.hdfs.HdfsDirectory;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.Column;
@@ -61,9 +64,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.NoLockFactory;
-import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TJSONProtocol;
-import org.apache.thrift.transport.TIOStreamTransport;
 
 /**
  * {@link BlurOutputFormat} is used to index data and delivery the indexes to

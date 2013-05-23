@@ -20,11 +20,11 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.ShardState;
-import org.apache.thrift.TException;
 
 public class ShardServerLayoutStateTables {
 

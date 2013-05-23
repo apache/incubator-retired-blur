@@ -25,15 +25,15 @@ package org.apache.blur.thrift.generated;
 
 
 
-import org.apache.thrift.scheme.IScheme;
-import org.apache.thrift.scheme.SchemeFactory;
-import org.apache.thrift.scheme.StandardScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.EncodingUtils;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolException;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TTupleProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.IScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.SchemeFactory;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.StandardScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.TupleScheme;
 
-import org.apache.thrift.scheme.TupleScheme;
-import org.apache.thrift.protocol.TTupleProtocol;
-import org.apache.thrift.protocol.TProtocolException;
-import org.apache.thrift.EncodingUtils;
-import org.apache.thrift.TException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -52,15 +52,15 @@ import org.slf4j.LoggerFactory;
 /**
  * 
  */
-public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurResults._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("BlurResults");
+public class BlurResults implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<BlurResults, BlurResults._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("BlurResults");
 
-  private static final org.apache.thrift.protocol.TField TOTAL_RESULTS_FIELD_DESC = new org.apache.thrift.protocol.TField("totalResults", org.apache.thrift.protocol.TType.I64, (short)1);
-  private static final org.apache.thrift.protocol.TField SHARD_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("shardInfo", org.apache.thrift.protocol.TType.MAP, (short)2);
-  private static final org.apache.thrift.protocol.TField RESULTS_FIELD_DESC = new org.apache.thrift.protocol.TField("results", org.apache.thrift.protocol.TType.LIST, (short)3);
-  private static final org.apache.thrift.protocol.TField FACET_COUNTS_FIELD_DESC = new org.apache.thrift.protocol.TField("facetCounts", org.apache.thrift.protocol.TType.LIST, (short)4);
-  private static final org.apache.thrift.protocol.TField EXCEPTIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("exceptions", org.apache.thrift.protocol.TType.LIST, (short)5);
-  private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRUCT, (short)6);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TOTAL_RESULTS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("totalResults", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SHARD_INFO_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("shardInfo", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RESULTS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("results", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)3);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FACET_COUNTS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("facetCounts", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)4);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField EXCEPTIONS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("exceptions", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)5);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField QUERY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("query", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -94,7 +94,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
   public BlurQuery query; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+  public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
      * 
      */
@@ -187,28 +187,28 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
   // isset id assignments
   private static final int __TOTALRESULTS_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.TOTAL_RESULTS, new org.apache.thrift.meta_data.FieldMetaData("totalResults", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.SHARD_INFO, new org.apache.thrift.meta_data.FieldMetaData("shardInfo", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
-    tmpMap.put(_Fields.RESULTS, new org.apache.thrift.meta_data.FieldMetaData("results", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, BlurResult.class))));
-    tmpMap.put(_Fields.FACET_COUNTS, new org.apache.thrift.meta_data.FieldMetaData("facetCounts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
-    tmpMap.put(_Fields.EXCEPTIONS, new org.apache.thrift.meta_data.FieldMetaData("exceptions", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT))));
-    tmpMap.put(_Fields.QUERY, new org.apache.thrift.meta_data.FieldMetaData("query", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, BlurQuery.class)));
+    Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.TOTAL_RESULTS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("totalResults", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
+    tmpMap.put(_Fields.SHARD_INFO, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("shardInfo", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.MapMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING), 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64))));
+    tmpMap.put(_Fields.RESULTS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("results", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, BlurResult.class))));
+    tmpMap.put(_Fields.FACET_COUNTS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("facetCounts", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64))));
+    tmpMap.put(_Fields.EXCEPTIONS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("exceptions", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT))));
+    tmpMap.put(_Fields.QUERY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("query", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, BlurQuery.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BlurResults.class, metaDataMap);
+    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(BlurResults.class, metaDataMap);
   }
 
   public BlurResults() {
@@ -719,7 +719,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       return lastComparison;
     }
     if (isSetTotalResults()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.totalResults, typedOther.totalResults);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.totalResults, typedOther.totalResults);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -729,7 +729,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       return lastComparison;
     }
     if (isSetShardInfo()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.shardInfo, typedOther.shardInfo);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.shardInfo, typedOther.shardInfo);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -739,7 +739,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       return lastComparison;
     }
     if (isSetResults()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.results, typedOther.results);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.results, typedOther.results);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -749,7 +749,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       return lastComparison;
     }
     if (isSetFacetCounts()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.facetCounts, typedOther.facetCounts);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.facetCounts, typedOther.facetCounts);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -759,7 +759,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       return lastComparison;
     }
     if (isSetExceptions()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.exceptions, typedOther.exceptions);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.exceptions, typedOther.exceptions);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -769,7 +769,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       return lastComparison;
     }
     if (isSetQuery()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.query, typedOther.query);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.query, typedOther.query);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -781,11 +781,11 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+  public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
   }
 
-  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+  public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
   }
 
@@ -841,7 +841,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     return sb.toString();
   }
 
-  public void validate() throws org.apache.thrift.TException {
+  public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     // check for required fields
     // check for sub-struct validity
     if (query != null) {
@@ -851,8 +851,8 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
     try {
-      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-    } catch (org.apache.thrift.TException te) {
+      write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -861,8 +861,8 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     try {
       // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
       __isset_bitfield = 0;
-      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-    } catch (org.apache.thrift.TException te) {
+      read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -875,28 +875,28 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
 
   private static class BlurResultsStandardScheme extends StandardScheme<BlurResults> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, BlurResults struct) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField schemeField;
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, BlurResults struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+        if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
           break;
         }
         switch (schemeField.id) {
           case 1: // TOTAL_RESULTS
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64) {
               struct.totalResults = iprot.readI64();
               struct.setTotalResultsIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 2: // SHARD_INFO
-            if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map50 = iprot.readMapBegin();
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map50 = iprot.readMapBegin();
                 struct.shardInfo = new HashMap<String,Long>(2*_map50.size);
                 for (int _i51 = 0; _i51 < _map50.size; ++_i51)
                 {
@@ -910,13 +910,13 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
               }
               struct.setShardInfoIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 3: // RESULTS
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list54 = iprot.readListBegin();
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list54 = iprot.readListBegin();
                 struct.results = new ArrayList<BlurResult>(_list54.size);
                 for (int _i55 = 0; _i55 < _list54.size; ++_i55)
                 {
@@ -929,13 +929,13 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
               }
               struct.setResultsIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 4: // FACET_COUNTS
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list57 = iprot.readListBegin();
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list57 = iprot.readListBegin();
                 struct.facetCounts = new ArrayList<Long>(_list57.size);
                 for (int _i58 = 0; _i58 < _list57.size; ++_i58)
                 {
@@ -947,13 +947,13 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
               }
               struct.setFacetCountsIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 5: // EXCEPTIONS
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list60 = iprot.readListBegin();
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list60 = iprot.readListBegin();
                 struct.exceptions = new ArrayList<BlurException>(_list60.size);
                 for (int _i61 = 0; _i61 < _list60.size; ++_i61)
                 {
@@ -966,20 +966,20 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
               }
               struct.setExceptionsIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 6: // QUERY
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
               struct.query = new BlurQuery();
               struct.query.read(iprot);
               struct.setQueryIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
         iprot.readFieldEnd();
       }
@@ -989,7 +989,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, BlurResults struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, BlurResults struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -999,7 +999,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       if (struct.shardInfo != null) {
         oprot.writeFieldBegin(SHARD_INFO_FIELD_DESC);
         {
-          oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.I64, struct.shardInfo.size()));
+          oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, struct.shardInfo.size()));
           for (Map.Entry<String, Long> _iter63 : struct.shardInfo.entrySet())
           {
             oprot.writeString(_iter63.getKey());
@@ -1012,7 +1012,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       if (struct.results != null) {
         oprot.writeFieldBegin(RESULTS_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.results.size()));
+          oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.results.size()));
           for (BlurResult _iter64 : struct.results)
           {
             _iter64.write(oprot);
@@ -1024,7 +1024,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       if (struct.facetCounts != null) {
         oprot.writeFieldBegin(FACET_COUNTS_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.facetCounts.size()));
+          oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, struct.facetCounts.size()));
           for (long _iter65 : struct.facetCounts)
           {
             oprot.writeI64(_iter65);
@@ -1036,7 +1036,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       if (struct.exceptions != null) {
         oprot.writeFieldBegin(EXCEPTIONS_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.exceptions.size()));
+          oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.exceptions.size()));
           for (BlurException _iter66 : struct.exceptions)
           {
             _iter66.write(oprot);
@@ -1065,7 +1065,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
   private static class BlurResultsTupleScheme extends TupleScheme<BlurResults> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, BlurResults struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, BlurResults struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
       if (struct.isSetTotalResults()) {
@@ -1133,7 +1133,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, BlurResults struct) throws org.apache.thrift.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, BlurResults struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
@@ -1142,7 +1142,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TMap _map71 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.I64, iprot.readI32());
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map71 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, iprot.readI32());
           struct.shardInfo = new HashMap<String,Long>(2*_map71.size);
           for (int _i72 = 0; _i72 < _map71.size; ++_i72)
           {
@@ -1157,7 +1157,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list75 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list75 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
           struct.results = new ArrayList<BlurResult>(_list75.size);
           for (int _i76 = 0; _i76 < _list75.size; ++_i76)
           {
@@ -1171,7 +1171,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       }
       if (incoming.get(3)) {
         {
-          org.apache.thrift.protocol.TList _list78 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list78 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, iprot.readI32());
           struct.facetCounts = new ArrayList<Long>(_list78.size);
           for (int _i79 = 0; _i79 < _list78.size; ++_i79)
           {
@@ -1184,7 +1184,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       }
       if (incoming.get(4)) {
         {
-          org.apache.thrift.protocol.TList _list81 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list81 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
           struct.exceptions = new ArrayList<BlurException>(_list81.size);
           for (int _i82 = 0; _i82 < _list81.size; ++_i82)
           {

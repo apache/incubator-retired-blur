@@ -18,6 +18,7 @@ package org.apache.blur.testsuite;
  */
 import java.io.IOException;
 
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
@@ -25,7 +26,6 @@ import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.SimpleQuery;
-import org.apache.thrift.TException;
 
 public class SimpleQueryExample {
 

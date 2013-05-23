@@ -22,6 +22,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Column;
@@ -30,7 +31,6 @@ import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RecordMutationType;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
-import org.apache.thrift.TException;
 
 public class MutateRowCommand extends Command {
   @Override

@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback;
 import org.apache.blur.thrift.AsyncClientPool;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
@@ -35,8 +37,6 @@ import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.Blur.AsyncIface;
 import org.apache.blur.thrift.generated.Blur.AsyncClient.mutate_call;
-import org.apache.thrift.TException;
-import org.apache.thrift.async.AsyncMethodCallback;
 
 
 public class LoadDataAsyncContinuously {

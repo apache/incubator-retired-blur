@@ -25,15 +25,15 @@ package org.apache.blur.thrift.generated;
 
 
 
-import org.apache.thrift.scheme.IScheme;
-import org.apache.thrift.scheme.SchemeFactory;
-import org.apache.thrift.scheme.StandardScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.EncodingUtils;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolException;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TTupleProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.IScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.SchemeFactory;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.StandardScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.TupleScheme;
 
-import org.apache.thrift.scheme.TupleScheme;
-import org.apache.thrift.protocol.TTupleProtocol;
-import org.apache.thrift.protocol.TProtocolException;
-import org.apache.thrift.EncodingUtils;
-import org.apache.thrift.TException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -52,14 +52,14 @@ import org.slf4j.LoggerFactory;
 /**
  * The SimpleQuery object holds the query string (normal Lucene syntax), filters and type of scoring (used when super query is on).
  */
-public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQuery._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SimpleQuery");
+public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<SimpleQuery, SimpleQuery._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("SimpleQuery");
 
-  private static final org.apache.thrift.protocol.TField QUERY_STR_FIELD_DESC = new org.apache.thrift.protocol.TField("queryStr", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField SUPER_QUERY_ON_FIELD_DESC = new org.apache.thrift.protocol.TField("superQueryOn", org.apache.thrift.protocol.TType.BOOL, (short)2);
-  private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.I32, (short)3);
-  private static final org.apache.thrift.protocol.TField POST_SUPER_FILTER_FIELD_DESC = new org.apache.thrift.protocol.TField("postSuperFilter", org.apache.thrift.protocol.TType.STRING, (short)4);
-  private static final org.apache.thrift.protocol.TField PRE_SUPER_FILTER_FIELD_DESC = new org.apache.thrift.protocol.TField("preSuperFilter", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField QUERY_STR_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("queryStr", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SUPER_QUERY_ON_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("superQueryOn", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TYPE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("type", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)3);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField POST_SUPER_FILTER_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("postSuperFilter", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)4);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField PRE_SUPER_FILTER_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("preSuperFilter", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -91,7 +91,7 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
   public String preSuperFilter; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+  public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
      * A Lucene syntax based query.
      */
@@ -180,21 +180,21 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
   // isset id assignments
   private static final int __SUPERQUERYON_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.QUERY_STR, new org.apache.thrift.meta_data.FieldMetaData("queryStr", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.SUPER_QUERY_ON, new org.apache.thrift.meta_data.FieldMetaData("superQueryOn", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, ScoreType.class)));
-    tmpMap.put(_Fields.POST_SUPER_FILTER, new org.apache.thrift.meta_data.FieldMetaData("postSuperFilter", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.PRE_SUPER_FILTER, new org.apache.thrift.meta_data.FieldMetaData("preSuperFilter", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.QUERY_STR, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("queryStr", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.SUPER_QUERY_ON, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("superQueryOn", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.TYPE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("type", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.EnumMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.ENUM, ScoreType.class)));
+    tmpMap.put(_Fields.POST_SUPER_FILTER, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("postSuperFilter", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.PRE_SUPER_FILTER, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("preSuperFilter", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SimpleQuery.class, metaDataMap);
+    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(SimpleQuery.class, metaDataMap);
   }
 
   public SimpleQuery() {
@@ -574,7 +574,7 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
       return lastComparison;
     }
     if (isSetQueryStr()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.queryStr, typedOther.queryStr);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.queryStr, typedOther.queryStr);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -584,7 +584,7 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
       return lastComparison;
     }
     if (isSetSuperQueryOn()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.superQueryOn, typedOther.superQueryOn);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.superQueryOn, typedOther.superQueryOn);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -594,7 +594,7 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
       return lastComparison;
     }
     if (isSetType()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.type, typedOther.type);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.type, typedOther.type);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -604,7 +604,7 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
       return lastComparison;
     }
     if (isSetPostSuperFilter()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.postSuperFilter, typedOther.postSuperFilter);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.postSuperFilter, typedOther.postSuperFilter);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -614,7 +614,7 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
       return lastComparison;
     }
     if (isSetPreSuperFilter()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.preSuperFilter, typedOther.preSuperFilter);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.preSuperFilter, typedOther.preSuperFilter);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -626,11 +626,11 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+  public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
   }
 
-  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+  public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
   }
 
@@ -678,15 +678,15 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
     return sb.toString();
   }
 
-  public void validate() throws org.apache.thrift.TException {
+  public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     // check for required fields
     // check for sub-struct validity
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
     try {
-      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-    } catch (org.apache.thrift.TException te) {
+      write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -695,8 +695,8 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
     try {
       // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
       __isset_bitfield = 0;
-      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-    } catch (org.apache.thrift.TException te) {
+      read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -709,58 +709,58 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
 
   private static class SimpleQueryStandardScheme extends StandardScheme<SimpleQuery> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, SimpleQuery struct) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField schemeField;
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, SimpleQuery struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+        if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
           break;
         }
         switch (schemeField.id) {
           case 1: // QUERY_STR
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
               struct.queryStr = iprot.readString();
               struct.setQueryStrIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 2: // SUPER_QUERY_ON
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
               struct.superQueryOn = iprot.readBool();
               struct.setSuperQueryOnIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 3: // TYPE
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
               struct.type = ScoreType.findByValue(iprot.readI32());
               struct.setTypeIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 4: // POST_SUPER_FILTER
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
               struct.postSuperFilter = iprot.readString();
               struct.setPostSuperFilterIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 5: // PRE_SUPER_FILTER
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
               struct.preSuperFilter = iprot.readString();
               struct.setPreSuperFilterIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
         iprot.readFieldEnd();
       }
@@ -770,7 +770,7 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, SimpleQuery struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, SimpleQuery struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -812,7 +812,7 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
   private static class SimpleQueryTupleScheme extends TupleScheme<SimpleQuery> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, SimpleQuery struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, SimpleQuery struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
       if (struct.isSetQueryStr()) {
@@ -849,7 +849,7 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, SimpleQuery struct) throws org.apache.thrift.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, SimpleQuery struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {

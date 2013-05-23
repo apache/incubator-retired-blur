@@ -25,15 +25,15 @@ package org.apache.blur.thrift.generated;
 
 
 
-import org.apache.thrift.scheme.IScheme;
-import org.apache.thrift.scheme.SchemeFactory;
-import org.apache.thrift.scheme.StandardScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.EncodingUtils;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolException;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TTupleProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.IScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.SchemeFactory;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.StandardScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.TupleScheme;
 
-import org.apache.thrift.scheme.TupleScheme;
-import org.apache.thrift.protocol.TTupleProtocol;
-import org.apache.thrift.protocol.TProtocolException;
-import org.apache.thrift.EncodingUtils;
-import org.apache.thrift.TException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -52,11 +52,11 @@ import org.slf4j.LoggerFactory;
 /**
  * 
  */
-public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, RecordMutation._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("RecordMutation");
+public class RecordMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<RecordMutation, RecordMutation._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("RecordMutation");
 
-  private static final org.apache.thrift.protocol.TField RECORD_MUTATION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("recordMutationType", org.apache.thrift.protocol.TType.I32, (short)1);
-  private static final org.apache.thrift.protocol.TField RECORD_FIELD_DESC = new org.apache.thrift.protocol.TField("record", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RECORD_MUTATION_TYPE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("recordMutationType", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RECORD_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("record", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -76,7 +76,7 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
   public Record record; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+  public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
      * 
      * 
@@ -145,15 +145,15 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
   }
 
   // isset id assignments
-  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.RECORD_MUTATION_TYPE, new org.apache.thrift.meta_data.FieldMetaData("recordMutationType", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, RecordMutationType.class)));
-    tmpMap.put(_Fields.RECORD, new org.apache.thrift.meta_data.FieldMetaData("record", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Record.class)));
+    Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.RECORD_MUTATION_TYPE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("recordMutationType", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.EnumMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.ENUM, RecordMutationType.class)));
+    tmpMap.put(_Fields.RECORD, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("record", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Record.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(RecordMutation.class, metaDataMap);
+    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(RecordMutation.class, metaDataMap);
   }
 
   public RecordMutation() {
@@ -354,7 +354,7 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
       return lastComparison;
     }
     if (isSetRecordMutationType()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.recordMutationType, typedOther.recordMutationType);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.recordMutationType, typedOther.recordMutationType);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -364,7 +364,7 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
       return lastComparison;
     }
     if (isSetRecord()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.record, typedOther.record);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.record, typedOther.record);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -376,11 +376,11 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+  public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
   }
 
-  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+  public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
   }
 
@@ -408,7 +408,7 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
     return sb.toString();
   }
 
-  public void validate() throws org.apache.thrift.TException {
+  public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     // check for required fields
     // check for sub-struct validity
     if (record != null) {
@@ -418,16 +418,16 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
     try {
-      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-    } catch (org.apache.thrift.TException te) {
+      write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
-      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-    } catch (org.apache.thrift.TException te) {
+      read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -440,35 +440,35 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
 
   private static class RecordMutationStandardScheme extends StandardScheme<RecordMutation> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, RecordMutation struct) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField schemeField;
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, RecordMutation struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+        if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
           break;
         }
         switch (schemeField.id) {
           case 1: // RECORD_MUTATION_TYPE
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
               struct.recordMutationType = RecordMutationType.findByValue(iprot.readI32());
               struct.setRecordMutationTypeIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 2: // RECORD
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
               struct.record = new Record();
               struct.record.read(iprot);
               struct.setRecordIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
         iprot.readFieldEnd();
       }
@@ -478,7 +478,7 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, RecordMutation struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, RecordMutation struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -507,7 +507,7 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
   private static class RecordMutationTupleScheme extends TupleScheme<RecordMutation> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, RecordMutation struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, RecordMutation struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
       if (struct.isSetRecordMutationType()) {
@@ -526,7 +526,7 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, RecordMutation struct) throws org.apache.thrift.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, RecordMutation struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {

@@ -28,7 +28,8 @@ package org.apache.blur.thrift.generated;
 
 import java.util.Map;
 import java.util.HashMap;
-import org.apache.thrift.TEnum;
+
+import org.apache.blur.thirdparty.thrift_0_9_0.TEnum;
 
 /**
  * Specifies the type of Record mutation that should occur during a mutation of a given Record.<br/><br/>
@@ -37,7 +38,7 @@ import org.apache.thrift.TEnum;
  * REPLACE_COLUMNS - Replace the columns that are specified in the Record mutation.  If the target record does not exist then this mutation will result in a BlurException.<br/><br/>
  * APPEND_COLUMN_VALUES - Append the columns in the Record mutation to the Record that could already exist.  If the target record does not exist then this mutation will result in a BlurException.<br/>
  */
-public enum RecordMutationType implements org.apache.thrift.TEnum {
+public enum RecordMutationType implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
   DELETE_ENTIRE_RECORD(0),
   REPLACE_ENTIRE_RECORD(1),
   REPLACE_COLUMNS(2),

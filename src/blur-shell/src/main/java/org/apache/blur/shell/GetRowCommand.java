@@ -20,13 +20,13 @@ package org.apache.blur.shell;
 
 import java.io.PrintWriter;
 
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.FetchRowResult;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.Selector;
-import org.apache.thrift.TException;
 
 public class GetRowCommand extends Command {
   @Override

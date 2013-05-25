@@ -93,6 +93,7 @@ import org.apache.lucene.store.NoLockFactory;
  */
 public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
 
+  public static final String BLUR_OUTPUT_REDUCER_MULTIPLIER = "blur.output.reducer.multiplier";
   public static final String BLUR_OUTPUT_OPTIMIZEINFLIGHT = "blur.output.optimizeinflight";
   public static final String BLUR_OUTPUT_INDEXLOCALLY = "blur.output.indexlocally";
   public static final String BLUR_OUTPUT_MAX_DOCUMENT_BUFFER_SIZE = "blur.output.max.document.buffer.size";
@@ -174,6 +175,12 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       throw new IOException("setTableDescriptor needs to be called first.");
     }
     job.setNumReduceTasks(tableDescriptor.getShardCount() * multiple);
+    Configuration configuration = job.getConfiguration();
+    configuration.setInt(BLUR_OUTPUT_REDUCER_MULTIPLIER, multiple);
+  }
+  
+  public static int getReducerMultiplier(Configuration configuration) {
+    return configuration.getInt(BLUR_OUTPUT_REDUCER_MULTIPLIER, 1);
   }
 
   /**

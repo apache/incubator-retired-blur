@@ -86,7 +86,6 @@ import org.apache.blur.utils.ForkJoin;
 import org.apache.blur.utils.ForkJoin.Merger;
 import org.apache.blur.utils.ForkJoin.ParallelCall;
 import org.apache.blur.utils.ResetableDocumentStoredFieldVisitor;
-import org.apache.hadoop.io.BytesWritable;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.CorruptIndexException;
@@ -127,7 +126,7 @@ public class IndexManager {
   private int _threadCount;
   private QueryStatusManager _statusManager = new QueryStatusManager();
   private boolean _closed;
-  private BlurPartitioner<BytesWritable, Void> _blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
+  private BlurPartitioner _blurPartitioner = new BlurPartitioner();
   private BlurFilterCache _filterCache = new DefaultBlurFilterCache();
   private long _defaultParallelCallTimeout = TimeUnit.MINUTES.toMillis(1);
   private Meter _recordsMeter;

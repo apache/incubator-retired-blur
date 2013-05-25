@@ -74,7 +74,6 @@ import org.apache.blur.utils.ForkJoin.ParallelCall;
 import org.apache.blur.zookeeper.WatchChildren;
 import org.apache.blur.zookeeper.WatchChildren.OnChange;
 import org.apache.blur.zookeeper.WatchNodeExistance;
-import org.apache.hadoop.io.BytesWritable;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -105,7 +104,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private int _threadCount = 64;
   private AtomicBoolean _closed = new AtomicBoolean();
   private Map<String, Integer> _tableShardCountMap = new ConcurrentHashMap<String, Integer>();
-  private BlurPartitioner<BytesWritable, Void> _blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
+  private BlurPartitioner _blurPartitioner = new BlurPartitioner();
   private String _nodeName;
   private int _remoteFetchCount = 100;
   private long _maxTimeToLive = TimeUnit.MINUTES.toMillis(1);

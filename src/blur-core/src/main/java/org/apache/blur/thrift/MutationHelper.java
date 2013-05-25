@@ -25,14 +25,11 @@ import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
-import org.apache.hadoop.io.BytesWritable;
-
 
 public class MutationHelper {
 
-  public static String getShardName(String table, String rowId, int numberOfShards, BlurPartitioner<BytesWritable, ?> blurPartitioner) {
-    BytesWritable key = getKey(rowId);
-    int partition = blurPartitioner.getPartition(key, null, numberOfShards);
+  public static String getShardName(String table, String rowId, int numberOfShards, BlurPartitioner blurPartitioner) {
+    int partition = blurPartitioner.getShard(rowId, numberOfShards);
     return BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, partition);
   }
 
@@ -46,10 +43,6 @@ public class MutationHelper {
     if (mutation.table == null) {
       throw new NullPointerException("Table can not be null in mutation.");
     }
-  }
-
-  public static BytesWritable getKey(String rowId) {
-    return new BytesWritable(rowId.getBytes());
   }
 
   public static Row getRowFromMutations(String id, List<RecordMutation> recordMutations) {

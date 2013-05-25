@@ -21,12 +21,17 @@ import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.MiniCluster;
 import org.apache.blur.index.IndexWriter;
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.AnalyzerDefinition;
@@ -37,30 +42,43 @@ import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.RAMDirectory;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TransactionRecorderTest {
-  
+
+  private static final Log LOG = LogFactory.getLog(TransactionRecorderTest.class);
+
   @BeforeClass
   public static void setup() {
     MiniCluster.startDfs("target/transaction-recorder-test");
   }
-  
+
   @AfterClass
-  public static void teardown() {
+  public static void teardown() throws IOException {
     MiniCluster.shutdownDfs();
+  }
+
+  private Collection<Closeable> closeThis = new HashSet<Closeable>();
+
+  @After
+  public void after() {
+    for (Closeable closeable : closeThis) {
+      IOUtils.cleanup(LOG, closeable);
+    }
   }
 
   @Test
   public void testReplaySimpleTest() throws IOException, InterruptedException {
-    Configuration configuration = new Configuration();
+    Configuration configuration = new Configuration(false);
     URI fileSystemUri = MiniCluster.getFileSystemUri();
     Path path = new Path(fileSystemUri.toString() + "/transaction-recorder-test");
     FileSystem fileSystem = path.getFileSystem(configuration);
@@ -70,19 +88,23 @@ public class TransactionRecorderTest {
 
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName("table");
-    tableDescriptor.setTableUri(new Path(path, "tableuri").toUri().toString());
+    String tableUri = new Path(path, "tableuri").toUri().toString();
+
+    System.out.println("tableUri=" + tableUri);
+    tableDescriptor.setTableUri(tableUri);
     tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
 
     TableContext tableContext = TableContext.create(tableDescriptor);
     ShardContext shardContext = ShardContext.create(tableContext, "shard-1");
     TransactionRecorder transactionRecorder = new TransactionRecorder(shardContext);
+    closeThis.add(transactionRecorder);
     transactionRecorder.open();
     try {
       transactionRecorder.replaceRow(true, genRow(), null);
       fail("Should NPE");
     } catch (NullPointerException e) {
     }
-    
+
     Thread.sleep(TimeUnit.NANOSECONDS.toMillis(tableContext.getTimeBetweenWALSyncsNanos()) * 2);
 
     RAMDirectory directory = new RAMDirectory();
@@ -90,12 +112,10 @@ public class TransactionRecorderTest {
     IndexWriter writer = new IndexWriter(directory, conf);
 
     TransactionRecorder replayTransactionRecorder = new TransactionRecorder(shardContext);
+    closeThis.add(replayTransactionRecorder);
     replayTransactionRecorder.replay(writer);
     IndexReader reader = DirectoryReader.open(directory);
     assertEquals(1, reader.numDocs());
-    
-    // cleanup recorder
-    transactionRecorder.close();
   }
 
   private Row genRow() {

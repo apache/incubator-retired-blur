@@ -31,11 +31,10 @@ import java.util.concurrent.TimeUnit;
 import org.apache.blur.MiniCluster;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
-import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.zookeeper.ZooKeeperClient;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -80,7 +79,7 @@ public class ZookeeperClusterStatusTest {
 
   @Before
   public void setup() throws KeeperException, InterruptedException, IOException {
-    zooKeeper = new ZooKeeper(MiniCluster.getZkConnectionString(), 30000, new Watcher() {
+    zooKeeper = new ZooKeeperClient(MiniCluster.getZkConnectionString(), 30000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 

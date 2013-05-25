@@ -99,6 +99,13 @@ under the License.
 
 		<pluginManagement>
 			<plugins>
+				<plugin>
+				  <groupId>org.apache.maven.plugins</groupId>
+				  <artifactId>maven-surefire-plugin</artifactId>
+				  <configuration>
+				    <reuseForks>false</reuseForks>
+				  </configuration>
+				</plugin>
 				<!-- Ignore/Execute plugin execution -->
 		        <plugin>
 		          <artifactId>maven-assembly-plugin</artifactId>

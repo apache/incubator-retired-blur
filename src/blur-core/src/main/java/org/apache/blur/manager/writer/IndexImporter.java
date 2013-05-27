@@ -95,14 +95,16 @@ public class IndexImporter extends TimerTask implements Closeable {
         for (HdfsDirectory directory : indexesToImport) {
           LOG.info("Starting import [{0}], commiting on [{1}/{2}]", directory, shard, table);
           indexWriter.commit();
-          boolean isSuccess = false;
+          boolean isSuccess = true;
           boolean isRollbackDueToException = false;
-          try {
-            isSuccess = applyDeletes(directory, indexWriter, shard);
-          }catch(IOException e){
-            LOG.error("Some issue with deleting the old index", e);
-            isSuccess = false;
-            isRollbackDueToException = true;
+          if (indexWriter.numDocs() != 0) {
+            try {
+              isSuccess = applyDeletes(directory, indexWriter, shard);
+            } catch (IOException e) {
+              LOG.error("Some issue with deleting the old index", e);
+              isSuccess = false;
+              isRollbackDueToException = true;
+            }
           }
           if (isSuccess) {
             LOG.info("Add index [{0}] [{1}/{2}]", directory, shard, table);

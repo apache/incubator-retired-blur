@@ -106,12 +106,12 @@ public class IndexImporter extends TimerTask implements Closeable {
               isRollbackDueToException = true;
             }
           }
+          Path dirPath = directory.getPath();
           if (isSuccess) {
             LOG.info("Add index [{0}] [{1}/{2}]", directory, shard, table);
             indexWriter.addIndexes(directory);
             LOG.info("Finishing import [{0}], commiting on [{1}/{2}]", directory, shard, table);
             indexWriter.commit();
-            Path dirPath = directory.getPath();
             LOG.info("Cleaning up old directory [{0}] for [{1}/{2}]", dirPath, shard, table);
             fileSystem.delete(dirPath, true);
             LOG.info("Import complete on [{0}/{1}]", shard, table);
@@ -122,9 +122,10 @@ public class IndexImporter extends TimerTask implements Closeable {
             LOG.info("Starting rollback on [{0}/{1}]", shard, table);
             indexWriter.rollback();
             LOG.info("Finished rollback on [{0}/{1}]", shard, table);
-            Path oldDirPath = directory.getPath();
-            String newDirectoryName = oldDirPath.getName().split("\\.")[0] + ".bad_rowids";
-            fileSystem.rename(oldDirPath, new Path(oldDirPath.getParent(), newDirectoryName));
+            String name = dirPath.getName();
+            int lastIndexOf = name.lastIndexOf('.');
+            String badRowIdsName = name.substring(0, lastIndexOf) + ".bad_rowids";
+            fileSystem.rename(dirPath, new Path(dirPath.getParent(), badRowIdsName));
           }
         }
       } finally {

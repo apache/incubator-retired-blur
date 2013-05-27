@@ -33,6 +33,8 @@ import java.util.Set;
 
 import org.apache.blur.jdbc.abstractimpl.AbstractBlurResultSet;
 import org.apache.blur.jdbc.parser.Parser;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
@@ -43,8 +45,6 @@ import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.SimpleQuery;
-import org.apache.blur.thrift.generated.Blur.Iface;
-import org.apache.thrift.TException;
 
 
 public class BlurResultSetRecords extends AbstractBlurResultSet {

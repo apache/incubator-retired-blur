@@ -448,12 +448,12 @@ public class AbstractBlurPreparedStatement implements PreparedStatement {
 
   // java 7
 
-//  public void closeOnCompletion() throws SQLException {
-//    throwExceptionDelegate.closeOnCompletion();
-//  }
-//
-//  public boolean isCloseOnCompletion() throws SQLException {
-//    return throwExceptionDelegate.isCloseOnCompletion();
-//  }
+  public void closeOnCompletion() throws SQLException {
+    throw new SQLException("No supported");
+  }
+
+  public boolean isCloseOnCompletion() throws SQLException {
+    throw new SQLException("No supported");
+  }
 
 }

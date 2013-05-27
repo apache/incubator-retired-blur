@@ -819,11 +819,11 @@ public abstract class AbstractBlurResultSet implements ResultSet {
 
   // java 7
 
-//  public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
-//    return throwExceptionDelegate.getObject(columnIndex, type);
-//  }
-//
-//  public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
-//    return throwExceptionDelegate.getObject(columnLabel, type);
-//  }
+  public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
+    throw new SQLException("No supported");
+  }
+
+  public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
+    throw new SQLException("No supported");
+  }
 }

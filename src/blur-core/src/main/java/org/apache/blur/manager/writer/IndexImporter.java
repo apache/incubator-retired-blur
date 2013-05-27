@@ -101,7 +101,7 @@ public class IndexImporter extends TimerTask implements Closeable {
             try {
               isSuccess = applyDeletes(directory, indexWriter, shard);
             } catch (IOException e) {
-              LOG.error("Some issue with deleting the old index", e);
+              LOG.error("Some issue with deleting the old index on [{0}/{1}]", e, shard, table);
               isSuccess = false;
               isRollbackDueToException = true;
             }

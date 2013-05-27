@@ -1,4 +1,4 @@
-package org.apache.blur.testsuite;
+package org.apache.blur.thrift.util;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more

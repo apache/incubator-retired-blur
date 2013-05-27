@@ -1,4 +1,4 @@
-package org.apache.blur.testsuite;
+package org.apache.blur.thrift.util;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
@@ -30,44 +31,84 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.Schema;
+import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.Blur.Iface;
 
 
-public class RandomSearchTable {
+public class RandomSearchTableContinuously {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
-    String connectionStr = args[0];
+    if (args.length != 6) {
+      System.err
+          .println(RandomSearchTableContinuously.class.getName()
+              + " <host1:port1,host2:port2> <table name> <# of terms to load into memory per pass> <# of searches per pass> <# of terms per query> <time in seconds between reporting progress>");
+      System.exit(1);
+    }
+    final String connectionStr = args[0];
     final String tableName = args[1];
-    int numberOfTerms = Integer.parseInt(args[2]);
-    int numberOfSearchesPerPass = Integer.parseInt(args[3]);
-    int numberOfTermsPerQuery = Integer.parseInt(args[4]);
+    final int numberOfTerms = Integer.parseInt(args[2]);
+    final int numberOfSearchesPerPass = Integer.parseInt(args[3]);
+    final int numberOfTermsPerQuery = Integer.parseInt(args[4]);
+    final long timeBetweenReporting = TimeUnit.SECONDS.toMillis(Integer.parseInt(args[5]));
     List<String> sampleOfTerms = getSampleOfTerms(connectionStr, tableName, numberOfTerms);
-    // for (String term : sampleOfTerms) {
-    // System.out.println(term);
-    // }
-    runSearches(connectionStr, tableName, sampleOfTerms, numberOfSearchesPerPass, numberOfTermsPerQuery);
+    while (true) {
+      runSearches(connectionStr, tableName, sampleOfTerms, numberOfSearchesPerPass, numberOfTermsPerQuery, timeBetweenReporting);
+    }
   }
 
-  private static void runSearches(String connectionStr, final String tableName, List<String> sampleOfTerms, int numberOfSearchesPerPass, int numberOfTermsPerQuery)
-      throws BlurException, TException, IOException {
+  private static void runSearches(String connectionStr, final String tableName, List<String> sampleOfTerms, int numberOfSearchesPerPass, int numberOfTermsPerQuery,
+      long timeBetweenReporting) throws BlurException, TException, IOException {
     Random random = new Random();
     StringBuilder builder = new StringBuilder();
-    for (int i = 0; i < numberOfSearchesPerPass; i++) {
+    final long start = System.currentTimeMillis();
+    long s = start;
+    long responseTime = 0;
+    int count = 0;
+    long resultCount = 0;
+    Iface client = BlurClient.getClient(connectionStr);
+    int i;
+    for (i = 0; i < numberOfSearchesPerPass; i++) {
+      long now = System.currentTimeMillis();
+      if (s + timeBetweenReporting < now) {
+        double avgSeconds = (now - start) / 1000.0;
+        double seconds = (now - s) / 1000.0;
+        double avgRate = i / avgSeconds;
+        double rate = count / seconds;
+        double responseTimeAvg = (responseTime / (double) count) / 1000000.0;
+        System.out.println(System.currentTimeMillis() + "," + i + "," + responseTimeAvg + "," + rate + "," + avgRate + "," + resultCount + "," + getCount(client, tableName));
+        s = now;
+        responseTime = 0;
+        count = 0;
+        resultCount = 0;
+      }
 
       builder.setLength(0);
       String query = generateQuery(builder, random, sampleOfTerms, numberOfTermsPerQuery);
-      System.out.println(query);
       final BlurQuery blurQuery = new BlurQuery();
       blurQuery.simpleQuery = new SimpleQuery();
       blurQuery.simpleQuery.queryStr = query;
-      long start = System.nanoTime();
+      blurQuery.cacheResult = false;
+      blurQuery.selector = new Selector();
+      long qs = System.nanoTime();
 
-      Iface client = BlurClient.getClient(connectionStr);
       BlurResults results = client.query(tableName, blurQuery);
-      long end = System.nanoTime();
-      System.out.println((end - start) / 1000000.0 + " ms " + results.totalResults);
+      long qe = System.nanoTime();
+      resultCount += results.totalResults;
+      responseTime += (qe - qs);
+      count++;
     }
+  }
+
+  private static long getCount(Iface client, String tableName) throws BlurException, TException {
+    BlurQuery bq = new BlurQuery();
+    bq.simpleQuery = new SimpleQuery();
+    bq.simpleQuery.queryStr = "*";
+    bq.simpleQuery.superQueryOn = false;
+    bq.cacheResult = false;
+    bq.useCacheIfPresent = false;
+    BlurResults results = client.query(tableName, bq);
+    return results.totalResults;
   }
 
   private static String generateQuery(StringBuilder builder, Random random, List<String> sampleOfTerms, int numberOfTermsPerQuery) {

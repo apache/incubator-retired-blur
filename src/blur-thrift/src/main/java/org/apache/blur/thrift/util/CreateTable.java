@@ -1,4 +1,4 @@
-package org.apache.blur.testsuite;
+package org.apache.blur.thrift.util;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -20,16 +20,31 @@ import java.io.IOException;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.Blur.Iface;
 
 
-public class OptimizeTable {
+public class CreateTable {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
-    final String tableName = args[1];
-    final int segmentCount = Integer.parseInt(args[2]);
-    Iface client = BlurClient.getClient(args[0]);
-    client.optimize(tableName, segmentCount);
+    String connectionStr = args[0];
+    final String cluster = args[1];
+    final String tableName = args[2];
+    int shardCount = Integer.parseInt(args[3]);
+    String uri = args[4];
+
+    final TableDescriptor tableDescriptor = new TableDescriptor();
+    tableDescriptor.analyzerDefinition = new AnalyzerDefinition();
+    tableDescriptor.cluster = cluster;
+    tableDescriptor.name = tableName;
+    tableDescriptor.readOnly = false;
+
+    tableDescriptor.shardCount = shardCount;
+    tableDescriptor.tableUri = uri;
+
+    Iface client = BlurClient.getClient(connectionStr);
+    client.createTable(tableDescriptor);
   }
 }

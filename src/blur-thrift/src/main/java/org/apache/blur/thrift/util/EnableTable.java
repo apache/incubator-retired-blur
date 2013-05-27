@@ -1,4 +1,4 @@
-package org.apache.blur.testsuite;
+package org.apache.blur.thrift.util;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -24,13 +24,13 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Blur.Iface;
 
 
-public class DisableTable {
+public class EnableTable {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
     String connectionStr = args[0];
     final String tableName = args[1];
 
     Iface client = BlurClient.getClient(connectionStr);
-    client.disableTable(tableName);
+    client.enableTable(tableName);
   }
 }

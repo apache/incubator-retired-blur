@@ -1,4 +1,4 @@
-package org.apache.blur.testsuite;
+package org.apache.blur.thrift.util;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -22,17 +22,14 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Blur.Iface;
-import org.apache.blur.thrift.generated.TableStats;
 
 
-public class StatsTable {
+public class OptimizeTable {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
-    String connectionStr = args[0];
     final String tableName = args[1];
-
-    Iface client = BlurClient.getClient(connectionStr);
-    TableStats tableStats = client.getTableStats(tableName);
-    System.out.println(tableStats);
+    final int segmentCount = Integer.parseInt(args[2]);
+    Iface client = BlurClient.getClient(args[0]);
+    client.optimize(tableName, segmentCount);
   }
 }

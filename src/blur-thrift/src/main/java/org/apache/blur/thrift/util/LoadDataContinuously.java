@@ -1,4 +1,4 @@
-package org.apache.blur.testsuite;
+package org.apache.blur.thrift.util;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -17,12 +17,14 @@ package org.apache.blur.testsuite;
  * limitations under the License.
  */
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
@@ -36,32 +38,60 @@ import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.Blur.Iface;
 
 
-public class LoadData {
+public class LoadDataContinuously {
 
   private static Random random = new Random();
-  private static List<String> words = new ArrayList<String>();
+  public static List<String> words = new ArrayList<String>();
 
   public static void main(String[] args) throws BlurException, TException, IOException {
-    loadWords();
-    final boolean wal = true;
-    final int numberOfColumns = 3;
-    int numberRows = 100000;
-    final int numberRecordsPerRow = 3;
-    final int numberOfFamilies = 3;
-    final int numberOfWords = 30;
-    int count = 0;
-    int max = 100;
-    long start = System.currentTimeMillis();
+    if (!(args.length == 8 || args.length == 9)) {
+      System.err
+          .println(LoadDataContinuously.class.getName()
+              + " <host1:port1,host2:port2> <table name> <WAL true|false> <# of columns per record> <# of records per row> <# of column families> <# of words per record> <time in seconds between reporting progress> <*optional path to word dictionary>");
+      System.exit(1);
+    }
+    if (args.length == 9) {
+      loadWords(args[8]);
+    } else {
+      loadWords(null);
+    }
+
+    final Iface client = BlurClient.getClient(args[0]);
     final String table = args[1];
-    for (int i = 0; i < numberRows; i++) {
-      if (count >= max) {
-        double seconds = (System.currentTimeMillis() - start) / 1000.0;
-        double rate = i / seconds;
-        System.out.println("Rows indexed [" + i + "] at [" + rate + "/s]");
-        count = 0;
+    final boolean wal = Boolean.parseBoolean(args[2]);
+    final int numberOfColumns = Integer.parseInt(args[3]);
+    final int numberRecordsPerRow = Integer.parseInt(args[4]);
+    final int numberOfFamilies = Integer.parseInt(args[5]);
+    final int numberOfWords = Integer.parseInt(args[6]);
+    final long timeBetweenReporting = TimeUnit.SECONDS.toMillis(Integer.parseInt(args[7]));
+    final long start = System.currentTimeMillis();
+
+    long s = start;
+    long recordCountTotal = 0;
+    long rowCount = 0;
+
+    int batchSize = 100;
+
+    List<RowMutation> batch = new ArrayList<RowMutation>();
+
+    long recordCount = 0;
+    long totalTime = 0;
+    long calls = 0;
+    while (true) {
+      long now = System.currentTimeMillis();
+      if (s + timeBetweenReporting < now) {
+        double avgSeconds = (now - start) / 1000.0;
+        double seconds = (now - s) / 1000.0;
+        double avgRate = recordCountTotal / avgSeconds;
+        double rate = recordCount / seconds;
+        double latency = (totalTime / 1000000.0) / calls;
+        System.out.println(System.currentTimeMillis() + "," + recordCountTotal + "," + rowCount + "," + latency + "," + rate + "," + avgRate);
+        s = now;
+        recordCount = 0;
+        totalTime = 0;
+        calls = 0;
       }
 
-      Iface client = BlurClient.getClient(args[0]);
       RowMutation mutation = new RowMutation();
       mutation.setTable(table);
       String rowId = getRowId();
@@ -71,13 +101,28 @@ public class LoadData {
       for (int j = 0; j < numberRecordsPerRow; j++) {
         mutation.addToRecordMutations(getRecordMutation(numberOfColumns, numberOfFamilies, numberOfWords));
       }
-      client.mutate(mutation);
-      count++;
+      batch.add(mutation);
+      if (batch.size() >= batchSize) {
+        long sm = System.nanoTime();
+        client.mutateBatch(batch);
+        long em = System.nanoTime();
+        calls++;
+        totalTime += (em - sm);
+        batch.clear();
+      }
+      rowCount++;
+      recordCount += numberRecordsPerRow;
+      recordCountTotal += numberRecordsPerRow;
     }
   }
 
-  private static void loadWords() throws IOException {
-    InputStream inputStream = LoadData.class.getResourceAsStream("words.txt");
+  public static void loadWords(String path) throws IOException {
+    InputStream inputStream;
+    if (path == null) {
+      inputStream = LoadDataContinuously.class.getResourceAsStream("words.txt");
+    } else {
+      inputStream = new FileInputStream(path);
+    }
     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
     String word;
     while ((word = reader.readLine()) != null) {

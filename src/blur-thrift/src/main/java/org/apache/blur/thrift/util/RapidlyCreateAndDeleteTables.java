@@ -1,4 +1,4 @@
-package org.apache.blur.testsuite;
+package org.apache.blur.thrift.util;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -16,8 +16,8 @@ package org.apache.blur.testsuite;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.apache.blur.utils.BlurUtil.newColumn;
-import static org.apache.blur.utils.BlurUtil.newRecordMutation;
+import static org.apache.blur.thrift.util.BlurThriftHelper.newColumn;
+import static org.apache.blur.thrift.util.BlurThriftHelper.newRecordMutation;
 
 import java.util.Random;
 import java.util.UUID;
@@ -25,13 +25,11 @@ import java.util.UUID;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.AnalyzerDefinition;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.TableDescriptor;
-import org.apache.blur.thrift.generated.Blur.Iface;
-
-
 public class RapidlyCreateAndDeleteTables {
 
   public static void main(String[] args) throws BlurException, TException {

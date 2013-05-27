@@ -66,7 +66,6 @@ under the License.
 		<module>blur-mapred</module>
 		<module>blur-util</module>
 		<module>blur-gui</module>
-		<module>blur-testsuite</module>
 		<module>blur-shell</module>
 		<module>distribution</module>
 	</modules>

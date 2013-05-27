@@ -39,7 +39,7 @@ import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.TableDescriptor;
-import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.thrift.util.BlurThriftHelper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -106,8 +106,8 @@ public class BlurClusterTest {
     List<RowMutation> mutations = new ArrayList<RowMutation>();
     for (int i = 0; i < length; i++) {
       String rowId = UUID.randomUUID().toString();
-      RecordMutation mutation = BlurUtil.newRecordMutation("test", rowId, BlurUtil.newColumn("test", "value"));
-      RowMutation rowMutation = BlurUtil.newRowMutation("test", rowId, mutation);
+      RecordMutation mutation = BlurThriftHelper.newRecordMutation("test", rowId, BlurThriftHelper.newColumn("test", "value"));
+      RowMutation rowMutation = BlurThriftHelper.newRowMutation("test", rowId, mutation);
       rowMutation.setWaitToBeVisible(true);
       mutations.add(rowMutation);
     }

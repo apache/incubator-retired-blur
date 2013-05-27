@@ -1,4 +1,4 @@
-package org.apache.blur.testsuite;
+package org.apache.blur.thrift.util;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -20,17 +20,31 @@ import java.io.IOException;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.BlurQuery;
+import org.apache.blur.thrift.generated.BlurResult;
+import org.apache.blur.thrift.generated.BlurResults;
+import org.apache.blur.thrift.generated.SimpleQuery;
 
-
-public class RemoveTable {
+public class SimpleQueryExample {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
     String connectionStr = args[0];
-    final String tableName = args[1];
+    String tableName = args[1];
+    String query = args[2];
 
     Iface client = BlurClient.getClient(connectionStr);
-    client.removeTable(tableName, true);
+
+    final BlurQuery blurQuery = new BlurQuery();
+    SimpleQuery simpleQuery = new SimpleQuery();
+    blurQuery.setSimpleQuery(simpleQuery);
+    simpleQuery.setQueryStr(query);
+    BlurResults results = client.query(tableName, blurQuery);
+    System.out.println("Total Results: " + results.totalResults);
+
+    for (BlurResult result : results.getResults()) {
+      System.out.println(result);
+    }
   }
 }

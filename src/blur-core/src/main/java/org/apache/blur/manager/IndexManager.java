@@ -18,10 +18,10 @@ package org.apache.blur.manager;
  */
 import static org.apache.blur.metrics.MetricsConstants.BLUR;
 import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
+import static org.apache.blur.thrift.util.BlurThriftHelper.findRecordMutation;
 import static org.apache.blur.utils.BlurConstants.PRIME_DOC;
 import static org.apache.blur.utils.BlurConstants.RECORD_ID;
 import static org.apache.blur.utils.BlurConstants.ROW_ID;
-import static org.apache.blur.utils.BlurUtil.findRecordMutation;
 import static org.apache.blur.utils.RowDocumentUtil.getColumns;
 import static org.apache.blur.utils.RowDocumentUtil.getRow;
 

@@ -1,4 +1,4 @@
-package org.apache.blur.testsuite;
+package org.apache.blur.thrift.util;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -36,7 +36,7 @@ import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.Blur.Iface;
 
 
-import static org.apache.blur.utils.BlurUtil.*;
+import static org.apache.blur.thrift.util.BlurThriftHelper.*;
 
 /**
  * Tests a lot of things, mainly connecting to a blur cluster and slamming a

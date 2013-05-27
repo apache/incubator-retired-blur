@@ -64,6 +64,7 @@ import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.thrift.util.BlurThriftHelper;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.ZooKeeperClient;
 import org.apache.hadoop.conf.Configuration;
@@ -177,7 +178,7 @@ public abstract class MiniCluster {
   }
 
   private static void searchRow(String table, int i, Iface client) throws BlurException, TException {
-    BlurQuery blurQuery = BlurUtil.newSimpleQuery("test.test:" + i);
+    BlurQuery blurQuery = BlurThriftHelper.newSimpleQuery("test.test:" + i);
     System.out.println("Running [" + blurQuery + "]");
     BlurResults results = client.query(table, blurQuery);
     if (results.getTotalResults() != 1L) {

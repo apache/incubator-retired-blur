@@ -41,6 +41,7 @@ import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Counter;
@@ -122,8 +123,28 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
   }
 
   @Override
-  public void checkOutputSpecs(JobContext context) throws IOException, InterruptedException {
+  public void checkOutputSpecs(JobContext context) throws IOException,
+      InterruptedException {
+    Configuration config = context.getConfiguration();
+    TableDescriptor tableDescriptor = getTableDescriptor(config);
+    if (tableDescriptor == null) {
+      throw new IOException("setTableDescriptor needs to be called first.");
+    }
+    int shardCount = tableDescriptor.getShardCount();
+    FileSystem fileSystem = getOutputPath(config).getFileSystem(config);
+    Path tablePath = new Path(tableDescriptor.getTableUri());
+    if(fileSystem.exists(tablePath)) {
+      BlurUtil.validateShardCount(shardCount, fileSystem, tablePath);
+    }else{
+      throw new IOException("Table path [ "+ tablePath + " ] doesn't exist for table [ " + tableDescriptor.getName() + " ].");
+    }
 
+    int reducers = context.getNumReduceTasks();
+    int reducerMultiplier = getReducerMultiplier(config);
+    int validNumberOfReducers = reducerMultiplier * shardCount;
+    if (reducers > 0 && reducers != validNumberOfReducers) {
+      throw new IllegalArgumentException("Invalid number of reducers [ " + reducers +" ]." + " Number of Reducers should be [ " + validNumberOfReducers + " ].");
+    }
   }
 
   @Override

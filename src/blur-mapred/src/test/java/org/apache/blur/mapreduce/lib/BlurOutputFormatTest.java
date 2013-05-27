@@ -55,6 +55,8 @@ public class BlurOutputFormatTest {
   private static MiniMRCluster mr;
   private static Path TEST_ROOT_DIR;
   private static JobConf jobConf;
+  private Path outDir = new Path(TEST_ROOT_DIR + "/out");
+  private Path inDir = new Path(TEST_ROOT_DIR + "/in");
 
   @BeforeClass
   public static void setup() throws Exception {
@@ -80,8 +82,8 @@ public class BlurOutputFormatTest {
 
   @Test
   public void testBlurOutputFormat() throws IOException, InterruptedException, ClassNotFoundException {
-    localFs.delete(new Path(TEST_ROOT_DIR + "/in"), true);
-    localFs.delete(new Path(TEST_ROOT_DIR + "/out"), true);
+    localFs.delete(inDir, true);
+    localFs.delete(outDir, true);
     writeRecordsFile("in/part1", 1, 1, 1, 1, "cf1");
     writeRecordsFile("in/part2", 1, 1, 2, 1, "cf1");
 
@@ -98,7 +100,9 @@ public class BlurOutputFormatTest {
     tableDescriptor.setShardCount(1);
     tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.setTableUri(tableUri);
-
+    
+    createShardDirectories(outDir,1);
+    
     BlurOutputFormat.setupJob(job, tableDescriptor);
 
     assertTrue(job.waitForCompletion(true));
@@ -148,6 +152,8 @@ public class BlurOutputFormatTest {
     tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.setTableUri(tableUri);
 
+    createShardDirectories(outDir,1);
+    
     BlurOutputFormat.setupJob(job, tableDescriptor);
     BlurOutputFormat.setIndexLocally(job, true);
     BlurOutputFormat.setOptimizeInFlight(job, false);
@@ -182,12 +188,14 @@ public class BlurOutputFormatTest {
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
     String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();
     CsvBlurMapper.addColumns(job, "cf1", "col");
-
+      
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setShardCount(2);
     tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.setTableUri(tableUri);
-
+    
+    createShardDirectories(outDir,2);
+    
     BlurOutputFormat.setupJob(job, tableDescriptor);
     BlurOutputFormat.setIndexLocally(job, false);
 
@@ -232,6 +240,8 @@ public class BlurOutputFormatTest {
     tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.setTableUri(tableUri);
 
+    createShardDirectories(outDir,7);
+    
     BlurOutputFormat.setupJob(job, tableDescriptor);
     int multiple = 2;
     BlurOutputFormat.setReducerMultiplier(job, multiple);
@@ -253,6 +263,36 @@ public class BlurOutputFormatTest {
     }
     assertEquals(80000, total);
 
+  }
+  
+  @Test (expected = IllegalArgumentException.class)
+  public void testBlurOutputFormatValidateReducerCount() throws IOException, InterruptedException, ClassNotFoundException {
+    localFs.delete(new Path(TEST_ROOT_DIR + "/in"), true);
+    localFs.delete(new Path(TEST_ROOT_DIR + "/out"), true);
+    writeRecordsFile("in/part1", 1, 1, 1, 1, "cf1");
+    writeRecordsFile("in/part2", 1, 1, 2, 1, "cf1");
+
+    Job job = new Job(jobConf, "blur index");
+    job.setJarByClass(BlurOutputFormatTest.class);
+    job.setMapperClass(CsvBlurMapper.class);
+    job.setInputFormatClass(TrackingTextInputFormat.class);
+
+    FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
+    String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();
+    CsvBlurMapper.addColumns(job, "cf1", "col");
+
+    TableDescriptor tableDescriptor = new TableDescriptor();
+    tableDescriptor.setShardCount(1);
+    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
+    tableDescriptor.setTableUri(tableUri);
+    
+    createShardDirectories(outDir,1);
+    
+    BlurOutputFormat.setupJob(job, tableDescriptor);
+    BlurOutputFormat.setReducerMultiplier(job, 2);
+    job.setNumReduceTasks(4);
+    job.submit();
+    
   }
 
   public static String readFile(String name) throws IOException {
@@ -285,6 +325,12 @@ public class BlurOutputFormatTest {
     return file;
   }
 
+  private void createShardDirectories(Path outDir, int shardCount) throws IOException{
+    localFs.mkdirs(outDir);
+    for(int i=0; i<shardCount; i++){
+      localFs.mkdirs(new Path(outDir, BlurUtil.getShardName(i)));
+    }
+  }
   private String getRecord(int rowId, int recordId, String family) {
     return rowId + "," + recordId + "," + family + ",valuetoindex";
   }

@@ -21,8 +21,11 @@ rm ../../../../../../src/blur-thrift/src/main/java/org/apache/blur/thrift/genera
 rm -r gen-java/ gen-perl/ gen-rb/ gen-html/
 thrift --gen html --gen perl --gen java --gen rb --gen js Blur.thrift
 for f in gen-java/org/apache/blur/thrift/generated/*.java; do
-  awk -v f="apache.header" 'BEGIN {while (getline < f) txt=txt $0 "\n"} /package org\.apache\.blur\.thrift\.generated;/ {sub("package org.apache.blur.thrift.generated;", txt)} 1' $f > $f.new
-  rm $f
-  mv $f.new $f
+  awk -v f="apache.header" 'BEGIN {while (getline < f) txt=txt $0 "\n"} /package org\.apache\.blur\.thrift\.generated;/ {sub("package org.apache.blur.thrift.generated;", txt)} 1' $f > $f.new1
+  sed 's/org\.apache\.thrift\./org\.apache\.blur\.thirdparty\.thrift_0_9_0\./g' $f.new1 > $f.new2
+  sed 's/import\ org\.slf4j\.Logger/\/\/import\ org\.slf4j\.Logger/g' $f.new2 > $f.new3
+  sed 's/private\ static\ final\ Logger\ LOGGER/\/\/private\ static\ final\ Logger\ LOGGER/g' $f.new3 > $f.new4
+  rm $f.new1 $f.new2 $f.new3 $f
+  mv $f.new4 $f
 done
 cp -r gen-java/* ../../../../../../src/blur-thrift/src/main/java/

@@ -25,15 +25,15 @@ package org.apache.blur.thrift.generated;
 
 
 
-import org.apache.blur.thirdparty.thrift_0_9_0.EncodingUtils;
-import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolException;
-import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TTupleProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.scheme.IScheme;
 import org.apache.blur.thirdparty.thrift_0_9_0.scheme.SchemeFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.scheme.StandardScheme;
-import org.apache.blur.thirdparty.thrift_0_9_0.scheme.TupleScheme;
 
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.TupleScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TTupleProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolException;
+import org.apache.blur.thirdparty.thrift_0_9_0.EncodingUtils;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -46,8 +46,8 @@ import java.util.Collections;
 import java.util.BitSet;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 public class Blur {
 
@@ -1943,7 +1943,7 @@ public class Blur {
   }
 
   public static class Processor<I extends Iface> extends org.apache.blur.thirdparty.thrift_0_9_0.TBaseProcessor<I> implements org.apache.blur.thirdparty.thrift_0_9_0.TProcessor {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Processor.class.getName());
+    //private static final Logger LOGGER = LoggerFactory.getLogger(Processor.class.getName());
     public Processor(I iface) {
       super(iface, getProcessMap(new HashMap<String, org.apache.blur.thirdparty.thrift_0_9_0.ProcessFunction<I, ? extends org.apache.blur.thirdparty.thrift_0_9_0.TBase>>()));
     }

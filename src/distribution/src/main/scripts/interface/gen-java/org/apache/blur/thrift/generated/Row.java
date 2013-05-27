@@ -25,15 +25,15 @@ package org.apache.blur.thrift.generated;
 
 
 
-import org.apache.thrift.scheme.IScheme;
-import org.apache.thrift.scheme.SchemeFactory;
-import org.apache.thrift.scheme.StandardScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.IScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.SchemeFactory;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.StandardScheme;
 
-import org.apache.thrift.scheme.TupleScheme;
-import org.apache.thrift.protocol.TTupleProtocol;
-import org.apache.thrift.protocol.TProtocolException;
-import org.apache.thrift.EncodingUtils;
-import org.apache.thrift.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.TupleScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TTupleProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolException;
+import org.apache.blur.thirdparty.thrift_0_9_0.EncodingUtils;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -46,18 +46,18 @@ import java.util.Collections;
 import java.util.BitSet;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 /**
  * Rows contain a list of records.
  */
-public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Row");
+public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, Row._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("Row");
 
-  private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField RECORDS_FIELD_DESC = new org.apache.thrift.protocol.TField("records", org.apache.thrift.protocol.TType.LIST, (short)2);
-  private static final org.apache.thrift.protocol.TField RECORD_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("recordCount", org.apache.thrift.protocol.TType.I32, (short)3);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("id", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RECORDS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("records", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RECORD_COUNT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("recordCount", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -81,7 +81,7 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
   public int recordCount; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+  public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
      * The row id.
      */
@@ -158,18 +158,18 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
   // isset id assignments
   private static final int __RECORDCOUNT_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.RECORDS, new org.apache.thrift.meta_data.FieldMetaData("records", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Record.class))));
-    tmpMap.put(_Fields.RECORD_COUNT, new org.apache.thrift.meta_data.FieldMetaData("recordCount", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("id", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.RECORDS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("records", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Record.class))));
+    tmpMap.put(_Fields.RECORD_COUNT, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("recordCount", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Row.class, metaDataMap);
+    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(Row.class, metaDataMap);
   }
 
   public Row() {
@@ -447,7 +447,7 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
       return lastComparison;
     }
     if (isSetId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.id, typedOther.id);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.id, typedOther.id);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -457,7 +457,7 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
       return lastComparison;
     }
     if (isSetRecords()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.records, typedOther.records);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.records, typedOther.records);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -467,7 +467,7 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
       return lastComparison;
     }
     if (isSetRecordCount()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.recordCount, typedOther.recordCount);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.recordCount, typedOther.recordCount);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -479,11 +479,11 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+  public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
   }
 
-  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+  public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
   }
 
@@ -515,15 +515,15 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
     return sb.toString();
   }
 
-  public void validate() throws org.apache.thrift.TException {
+  public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     // check for required fields
     // check for sub-struct validity
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
     try {
-      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-    } catch (org.apache.thrift.TException te) {
+      write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -532,8 +532,8 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
     try {
       // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
       __isset_bitfield = 0;
-      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-    } catch (org.apache.thrift.TException te) {
+      read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -546,28 +546,28 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
 
   private static class RowStandardScheme extends StandardScheme<Row> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, Row struct) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField schemeField;
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, Row struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+        if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
           break;
         }
         switch (schemeField.id) {
           case 1: // ID
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
               struct.id = iprot.readString();
               struct.setIdIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 2: // RECORDS
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list8 = iprot.readListBegin();
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list8 = iprot.readListBegin();
                 struct.records = new ArrayList<Record>(_list8.size);
                 for (int _i9 = 0; _i9 < _list8.size; ++_i9)
                 {
@@ -580,19 +580,19 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
               }
               struct.setRecordsIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 3: // RECORD_COUNT
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
               struct.recordCount = iprot.readI32();
               struct.setRecordCountIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
         iprot.readFieldEnd();
       }
@@ -602,7 +602,7 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, Row struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, Row struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -614,7 +614,7 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
       if (struct.records != null) {
         oprot.writeFieldBegin(RECORDS_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.records.size()));
+          oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.records.size()));
           for (Record _iter11 : struct.records)
           {
             _iter11.write(oprot);
@@ -641,7 +641,7 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
   private static class RowTupleScheme extends TupleScheme<Row> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, Row struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, Row struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
       if (struct.isSetId()) {
@@ -672,7 +672,7 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, Row struct) throws org.apache.thrift.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, Row struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
@@ -681,7 +681,7 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list13 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list13 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
           struct.records = new ArrayList<Record>(_list13.size);
           for (int _i14 = 0; _i14 < _list13.size; ++_i14)
           {

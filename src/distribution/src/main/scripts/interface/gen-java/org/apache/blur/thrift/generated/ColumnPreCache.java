@@ -25,15 +25,15 @@ package org.apache.blur.thrift.generated;
 
 
 
-import org.apache.thrift.scheme.IScheme;
-import org.apache.thrift.scheme.SchemeFactory;
-import org.apache.thrift.scheme.StandardScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.IScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.SchemeFactory;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.StandardScheme;
 
-import org.apache.thrift.scheme.TupleScheme;
-import org.apache.thrift.protocol.TTupleProtocol;
-import org.apache.thrift.protocol.TProtocolException;
-import org.apache.thrift.EncodingUtils;
-import org.apache.thrift.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.TupleScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TTupleProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolException;
+import org.apache.blur.thirdparty.thrift_0_9_0.EncodingUtils;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -46,16 +46,16 @@ import java.util.Collections;
 import java.util.BitSet;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 /**
  * 
  */
-public class ColumnPreCache implements org.apache.thrift.TBase<ColumnPreCache, ColumnPreCache._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ColumnPreCache");
+public class ColumnPreCache implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<ColumnPreCache, ColumnPreCache._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("ColumnPreCache");
 
-  private static final org.apache.thrift.protocol.TField PRE_CACHE_COLS_FIELD_DESC = new org.apache.thrift.protocol.TField("preCacheCols", org.apache.thrift.protocol.TType.LIST, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField PRE_CACHE_COLS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("preCacheCols", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)1);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -69,7 +69,7 @@ public class ColumnPreCache implements org.apache.thrift.TBase<ColumnPreCache, C
   public List<String> preCacheCols; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+  public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
      * This map sets what column families and columns to prefetch into block cache on shard open.
      */
@@ -130,14 +130,14 @@ public class ColumnPreCache implements org.apache.thrift.TBase<ColumnPreCache, C
   }
 
   // isset id assignments
-  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.PRE_CACHE_COLS, new org.apache.thrift.meta_data.FieldMetaData("preCacheCols", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.PRE_CACHE_COLS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("preCacheCols", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ColumnPreCache.class, metaDataMap);
+    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(ColumnPreCache.class, metaDataMap);
   }
 
   public ColumnPreCache() {
@@ -295,7 +295,7 @@ public class ColumnPreCache implements org.apache.thrift.TBase<ColumnPreCache, C
       return lastComparison;
     }
     if (isSetPreCacheCols()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.preCacheCols, typedOther.preCacheCols);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.preCacheCols, typedOther.preCacheCols);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -307,11 +307,11 @@ public class ColumnPreCache implements org.apache.thrift.TBase<ColumnPreCache, C
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+  public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
   }
 
-  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+  public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
   }
 
@@ -331,23 +331,23 @@ public class ColumnPreCache implements org.apache.thrift.TBase<ColumnPreCache, C
     return sb.toString();
   }
 
-  public void validate() throws org.apache.thrift.TException {
+  public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     // check for required fields
     // check for sub-struct validity
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
     try {
-      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-    } catch (org.apache.thrift.TException te) {
+      write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
-      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-    } catch (org.apache.thrift.TException te) {
+      read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -360,20 +360,20 @@ public class ColumnPreCache implements org.apache.thrift.TBase<ColumnPreCache, C
 
   private static class ColumnPreCacheStandardScheme extends StandardScheme<ColumnPreCache> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, ColumnPreCache struct) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField schemeField;
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, ColumnPreCache struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+        if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
           break;
         }
         switch (schemeField.id) {
           case 1: // PRE_CACHE_COLS
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list150 = iprot.readListBegin();
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list150 = iprot.readListBegin();
                 struct.preCacheCols = new ArrayList<String>(_list150.size);
                 for (int _i151 = 0; _i151 < _list150.size; ++_i151)
                 {
@@ -385,11 +385,11 @@ public class ColumnPreCache implements org.apache.thrift.TBase<ColumnPreCache, C
               }
               struct.setPreCacheColsIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
         iprot.readFieldEnd();
       }
@@ -399,14 +399,14 @@ public class ColumnPreCache implements org.apache.thrift.TBase<ColumnPreCache, C
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, ColumnPreCache struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, ColumnPreCache struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
       if (struct.preCacheCols != null) {
         oprot.writeFieldBegin(PRE_CACHE_COLS_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.preCacheCols.size()));
+          oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.preCacheCols.size()));
           for (String _iter153 : struct.preCacheCols)
           {
             oprot.writeString(_iter153);
@@ -430,7 +430,7 @@ public class ColumnPreCache implements org.apache.thrift.TBase<ColumnPreCache, C
   private static class ColumnPreCacheTupleScheme extends TupleScheme<ColumnPreCache> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, ColumnPreCache struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, ColumnPreCache struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
       if (struct.isSetPreCacheCols()) {
@@ -449,12 +449,12 @@ public class ColumnPreCache implements org.apache.thrift.TBase<ColumnPreCache, C
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, ColumnPreCache struct) throws org.apache.thrift.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, ColumnPreCache struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list155 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list155 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
           struct.preCacheCols = new ArrayList<String>(_list155.size);
           for (int _i156 = 0; _i156 < _list155.size; ++_i156)
           {

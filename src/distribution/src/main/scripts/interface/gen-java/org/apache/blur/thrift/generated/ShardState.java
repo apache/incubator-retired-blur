@@ -28,12 +28,12 @@ package org.apache.blur.thrift.generated;
 
 import java.util.Map;
 import java.util.HashMap;
-import org.apache.thrift.TEnum;
+import org.apache.blur.thirdparty.thrift_0_9_0.TEnum;
 
 /**
  * See shardServerLayoutOptions method in the Blur service for details.
  */
-public enum ShardState implements org.apache.thrift.TEnum {
+public enum ShardState implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
   OPENING(0),
   OPEN(1),
   OPENING_ERROR(2),

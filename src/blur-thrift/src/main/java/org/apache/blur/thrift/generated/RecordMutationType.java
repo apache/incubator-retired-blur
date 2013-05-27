@@ -28,7 +28,6 @@ package org.apache.blur.thrift.generated;
 
 import java.util.Map;
 import java.util.HashMap;
-
 import org.apache.blur.thirdparty.thrift_0_9_0.TEnum;
 
 /**

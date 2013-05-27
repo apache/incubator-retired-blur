@@ -25,15 +25,15 @@ package org.apache.blur.thrift.generated;
 
 
 
-import org.apache.thrift.scheme.IScheme;
-import org.apache.thrift.scheme.SchemeFactory;
-import org.apache.thrift.scheme.StandardScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.IScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.SchemeFactory;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.StandardScheme;
 
-import org.apache.thrift.scheme.TupleScheme;
-import org.apache.thrift.protocol.TTupleProtocol;
-import org.apache.thrift.protocol.TProtocolException;
-import org.apache.thrift.EncodingUtils;
-import org.apache.thrift.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.TupleScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TTupleProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolException;
+import org.apache.blur.thirdparty.thrift_0_9_0.EncodingUtils;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -46,18 +46,18 @@ import java.util.Collections;
 import java.util.BitSet;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 /**
  * BlurException that carries a message plus the original stack
  * trace (if any).
  */
-public class BlurException extends TException implements org.apache.thrift.TBase<BlurException, BlurException._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("BlurException");
+public class BlurException extends TException implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<BlurException, BlurException._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("BlurException");
 
-  private static final org.apache.thrift.protocol.TField MESSAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("message", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField STACK_TRACE_STR_FIELD_DESC = new org.apache.thrift.protocol.TField("stackTraceStr", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField MESSAGE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("message", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField STACK_TRACE_STR_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("stackTraceStr", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -75,7 +75,7 @@ public class BlurException extends TException implements org.apache.thrift.TBase
   public String stackTraceStr; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+  public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
      * The message in the exception.
      */
@@ -142,15 +142,15 @@ public class BlurException extends TException implements org.apache.thrift.TBase
   }
 
   // isset id assignments
-  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.MESSAGE, new org.apache.thrift.meta_data.FieldMetaData("message", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.STACK_TRACE_STR, new org.apache.thrift.meta_data.FieldMetaData("stackTraceStr", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.MESSAGE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("message", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.STACK_TRACE_STR, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("stackTraceStr", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BlurException.class, metaDataMap);
+    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(BlurException.class, metaDataMap);
   }
 
   public BlurException() {
@@ -347,7 +347,7 @@ public class BlurException extends TException implements org.apache.thrift.TBase
       return lastComparison;
     }
     if (isSetMessage()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.message, typedOther.message);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.message, typedOther.message);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -357,7 +357,7 @@ public class BlurException extends TException implements org.apache.thrift.TBase
       return lastComparison;
     }
     if (isSetStackTraceStr()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.stackTraceStr, typedOther.stackTraceStr);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.stackTraceStr, typedOther.stackTraceStr);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -369,11 +369,11 @@ public class BlurException extends TException implements org.apache.thrift.TBase
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+  public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
   }
 
-  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+  public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
   }
 
@@ -401,23 +401,23 @@ public class BlurException extends TException implements org.apache.thrift.TBase
     return sb.toString();
   }
 
-  public void validate() throws org.apache.thrift.TException {
+  public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     // check for required fields
     // check for sub-struct validity
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
     try {
-      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-    } catch (org.apache.thrift.TException te) {
+      write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
-      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-    } catch (org.apache.thrift.TException te) {
+      read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -430,34 +430,34 @@ public class BlurException extends TException implements org.apache.thrift.TBase
 
   private static class BlurExceptionStandardScheme extends StandardScheme<BlurException> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, BlurException struct) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField schemeField;
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, BlurException struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+        if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
           break;
         }
         switch (schemeField.id) {
           case 1: // MESSAGE
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
               struct.message = iprot.readString();
               struct.setMessageIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 2: // STACK_TRACE_STR
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
               struct.stackTraceStr = iprot.readString();
               struct.setStackTraceStrIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
         iprot.readFieldEnd();
       }
@@ -467,7 +467,7 @@ public class BlurException extends TException implements org.apache.thrift.TBase
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, BlurException struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, BlurException struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -496,7 +496,7 @@ public class BlurException extends TException implements org.apache.thrift.TBase
   private static class BlurExceptionTupleScheme extends TupleScheme<BlurException> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, BlurException struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, BlurException struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
       if (struct.isSetMessage()) {
@@ -515,7 +515,7 @@ public class BlurException extends TException implements org.apache.thrift.TBase
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, BlurException struct) throws org.apache.thrift.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, BlurException struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {

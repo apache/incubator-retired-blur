@@ -28,7 +28,7 @@ package org.apache.blur.thrift.generated;
 
 import java.util.Map;
 import java.util.HashMap;
-import org.apache.thrift.TEnum;
+import org.apache.blur.thirdparty.thrift_0_9_0.TEnum;
 
 /**
  * The scoring type used during a SuperQuery to score multi Record hits within a ColumnFamily.<br/><br/>
@@ -37,7 +37,7 @@ import org.apache.thrift.TEnum;
  * BEST - During a multi Record match, the best score of all the Records within a ColumnFamily is used in the scoring of the SuperQuery.<br/><br/>
  * CONSTANT - A constant score of 1 is used in the scoring of the SuperQuery.<br/>
  */
-public enum ScoreType implements org.apache.thrift.TEnum {
+public enum ScoreType implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
   SUPER(0),
   AGGREGATE(1),
   BEST(2),

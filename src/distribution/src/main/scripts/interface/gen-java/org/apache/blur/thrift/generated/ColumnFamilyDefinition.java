@@ -25,15 +25,15 @@ package org.apache.blur.thrift.generated;
 
 
 
-import org.apache.thrift.scheme.IScheme;
-import org.apache.thrift.scheme.SchemeFactory;
-import org.apache.thrift.scheme.StandardScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.IScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.SchemeFactory;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.StandardScheme;
 
-import org.apache.thrift.scheme.TupleScheme;
-import org.apache.thrift.protocol.TTupleProtocol;
-import org.apache.thrift.protocol.TProtocolException;
-import org.apache.thrift.EncodingUtils;
-import org.apache.thrift.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.TupleScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TTupleProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolException;
+import org.apache.blur.thirdparty.thrift_0_9_0.EncodingUtils;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -46,17 +46,17 @@ import java.util.Collections;
 import java.util.BitSet;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 /**
  * 
  */
-public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFamilyDefinition, ColumnFamilyDefinition._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ColumnFamilyDefinition");
+public class ColumnFamilyDefinition implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<ColumnFamilyDefinition, ColumnFamilyDefinition._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("ColumnFamilyDefinition");
 
-  private static final org.apache.thrift.protocol.TField DEFAULT_DEFINITION_FIELD_DESC = new org.apache.thrift.protocol.TField("defaultDefinition", org.apache.thrift.protocol.TType.STRUCT, (short)1);
-  private static final org.apache.thrift.protocol.TField COLUMN_DEFINITIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("columnDefinitions", org.apache.thrift.protocol.TType.MAP, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField DEFAULT_DEFINITION_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("defaultDefinition", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COLUMN_DEFINITIONS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("columnDefinitions", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -74,7 +74,7 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
   public Map<String,ColumnDefinition> columnDefinitions; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+  public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
      * 
      */
@@ -141,17 +141,17 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
   }
 
   // isset id assignments
-  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.DEFAULT_DEFINITION, new org.apache.thrift.meta_data.FieldMetaData("defaultDefinition", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ColumnDefinition.class)));
-    tmpMap.put(_Fields.COLUMN_DEFINITIONS, new org.apache.thrift.meta_data.FieldMetaData("columnDefinitions", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ColumnDefinition.class))));
+    Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.DEFAULT_DEFINITION, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("defaultDefinition", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, ColumnDefinition.class)));
+    tmpMap.put(_Fields.COLUMN_DEFINITIONS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("columnDefinitions", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.MapMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING), 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, ColumnDefinition.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ColumnFamilyDefinition.class, metaDataMap);
+    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(ColumnFamilyDefinition.class, metaDataMap);
   }
 
   public ColumnFamilyDefinition() {
@@ -371,7 +371,7 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
       return lastComparison;
     }
     if (isSetDefaultDefinition()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.defaultDefinition, typedOther.defaultDefinition);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.defaultDefinition, typedOther.defaultDefinition);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -381,7 +381,7 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
       return lastComparison;
     }
     if (isSetColumnDefinitions()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.columnDefinitions, typedOther.columnDefinitions);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.columnDefinitions, typedOther.columnDefinitions);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -393,11 +393,11 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+  public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
   }
 
-  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+  public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
   }
 
@@ -425,7 +425,7 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
     return sb.toString();
   }
 
-  public void validate() throws org.apache.thrift.TException {
+  public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     // check for required fields
     // check for sub-struct validity
     if (defaultDefinition != null) {
@@ -435,16 +435,16 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
     try {
-      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-    } catch (org.apache.thrift.TException te) {
+      write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
-      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-    } catch (org.apache.thrift.TException te) {
+      read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -457,29 +457,29 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
 
   private static class ColumnFamilyDefinitionStandardScheme extends StandardScheme<ColumnFamilyDefinition> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, ColumnFamilyDefinition struct) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField schemeField;
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, ColumnFamilyDefinition struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+        if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
           break;
         }
         switch (schemeField.id) {
           case 1: // DEFAULT_DEFINITION
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
               struct.defaultDefinition = new ColumnDefinition();
               struct.defaultDefinition.read(iprot);
               struct.setDefaultDefinitionIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 2: // COLUMN_DEFINITIONS
-            if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map130 = iprot.readMapBegin();
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map130 = iprot.readMapBegin();
                 struct.columnDefinitions = new HashMap<String,ColumnDefinition>(2*_map130.size);
                 for (int _i131 = 0; _i131 < _map130.size; ++_i131)
                 {
@@ -494,11 +494,11 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
               }
               struct.setColumnDefinitionsIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
         iprot.readFieldEnd();
       }
@@ -508,7 +508,7 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, ColumnFamilyDefinition struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, ColumnFamilyDefinition struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -520,7 +520,7 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
       if (struct.columnDefinitions != null) {
         oprot.writeFieldBegin(COLUMN_DEFINITIONS_FIELD_DESC);
         {
-          oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, struct.columnDefinitions.size()));
+          oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.columnDefinitions.size()));
           for (Map.Entry<String, ColumnDefinition> _iter134 : struct.columnDefinitions.entrySet())
           {
             oprot.writeString(_iter134.getKey());
@@ -545,7 +545,7 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
   private static class ColumnFamilyDefinitionTupleScheme extends TupleScheme<ColumnFamilyDefinition> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, ColumnFamilyDefinition struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, ColumnFamilyDefinition struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
       if (struct.isSetDefaultDefinition()) {
@@ -571,7 +571,7 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, ColumnFamilyDefinition struct) throws org.apache.thrift.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, ColumnFamilyDefinition struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
@@ -581,7 +581,7 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TMap _map136 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map136 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
           struct.columnDefinitions = new HashMap<String,ColumnDefinition>(2*_map136.size);
           for (int _i137 = 0; _i137 < _map136.size; ++_i137)
           {

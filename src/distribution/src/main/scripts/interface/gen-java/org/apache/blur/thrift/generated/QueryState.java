@@ -28,7 +28,7 @@ package org.apache.blur.thrift.generated;
 
 import java.util.Map;
 import java.util.HashMap;
-import org.apache.thrift.TEnum;
+import org.apache.blur.thirdparty.thrift_0_9_0.TEnum;
 
 /**
  * The state of a query.<br/><br/>
@@ -36,7 +36,7 @@ import org.apache.thrift.TEnum;
  * INTERRUPTED - Query has been interrupted.<br/><br/>
  * COMPLETE - Query is complete.<br/>
  */
-public enum QueryState implements org.apache.thrift.TEnum {
+public enum QueryState implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
   RUNNING(0),
   INTERRUPTED(1),
   COMPLETE(2);

@@ -25,15 +25,15 @@ package org.apache.blur.thrift.generated;
 
 
 
-import org.apache.thrift.scheme.IScheme;
-import org.apache.thrift.scheme.SchemeFactory;
-import org.apache.thrift.scheme.StandardScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.IScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.SchemeFactory;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.StandardScheme;
 
-import org.apache.thrift.scheme.TupleScheme;
-import org.apache.thrift.protocol.TTupleProtocol;
-import org.apache.thrift.protocol.TProtocolException;
-import org.apache.thrift.EncodingUtils;
-import org.apache.thrift.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.scheme.TupleScheme;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TTupleProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolException;
+import org.apache.blur.thirdparty.thrift_0_9_0.EncodingUtils;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -46,24 +46,24 @@ import java.util.Collections;
 import java.util.BitSet;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 /**
  * Select carries the request for information to be retrieved from the stored columns.
  */
-public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Selector");
+public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Selector, Selector._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("Selector");
 
-  private static final org.apache.thrift.protocol.TField RECORD_ONLY_FIELD_DESC = new org.apache.thrift.protocol.TField("recordOnly", org.apache.thrift.protocol.TType.BOOL, (short)1);
-  private static final org.apache.thrift.protocol.TField LOCATION_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("locationId", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField ROW_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("rowId", org.apache.thrift.protocol.TType.STRING, (short)3);
-  private static final org.apache.thrift.protocol.TField RECORD_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("recordId", org.apache.thrift.protocol.TType.STRING, (short)4);
-  private static final org.apache.thrift.protocol.TField COLUMN_FAMILIES_TO_FETCH_FIELD_DESC = new org.apache.thrift.protocol.TField("columnFamiliesToFetch", org.apache.thrift.protocol.TType.SET, (short)5);
-  private static final org.apache.thrift.protocol.TField COLUMNS_TO_FETCH_FIELD_DESC = new org.apache.thrift.protocol.TField("columnsToFetch", org.apache.thrift.protocol.TType.MAP, (short)6);
-  private static final org.apache.thrift.protocol.TField ALLOW_STALE_DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("allowStaleData", org.apache.thrift.protocol.TType.BOOL, (short)7);
-  private static final org.apache.thrift.protocol.TField START_RECORD_FIELD_DESC = new org.apache.thrift.protocol.TField("startRecord", org.apache.thrift.protocol.TType.I32, (short)8);
-  private static final org.apache.thrift.protocol.TField MAX_RECORDS_TO_FETCH_FIELD_DESC = new org.apache.thrift.protocol.TField("maxRecordsToFetch", org.apache.thrift.protocol.TType.I32, (short)9);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RECORD_ONLY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("recordOnly", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField LOCATION_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("locationId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ROW_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("rowId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)3);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RECORD_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("recordId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)4);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COLUMN_FAMILIES_TO_FETCH_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("columnFamiliesToFetch", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, (short)5);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COLUMNS_TO_FETCH_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("columnsToFetch", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, (short)6);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ALLOW_STALE_DATA_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("allowStaleData", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)7);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField START_RECORD_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("startRecord", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)8);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField MAX_RECORDS_TO_FETCH_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("maxRecordsToFetch", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)9);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -116,7 +116,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
   public int maxRecordsToFetch; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+  public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
      * Fetch the Record only, not the entire Row.
      */
@@ -237,33 +237,33 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
   private static final int __STARTRECORD_ISSET_ID = 2;
   private static final int __MAXRECORDSTOFETCH_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.RECORD_ONLY, new org.apache.thrift.meta_data.FieldMetaData("recordOnly", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.LOCATION_ID, new org.apache.thrift.meta_data.FieldMetaData("locationId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.ROW_ID, new org.apache.thrift.meta_data.FieldMetaData("rowId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.RECORD_ID, new org.apache.thrift.meta_data.FieldMetaData("recordId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.COLUMN_FAMILIES_TO_FETCH, new org.apache.thrift.meta_data.FieldMetaData("columnFamiliesToFetch", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-    tmpMap.put(_Fields.COLUMNS_TO_FETCH, new org.apache.thrift.meta_data.FieldMetaData("columnsToFetch", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
-            new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
-                new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)))));
-    tmpMap.put(_Fields.ALLOW_STALE_DATA, new org.apache.thrift.meta_data.FieldMetaData("allowStaleData", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.START_RECORD, new org.apache.thrift.meta_data.FieldMetaData("startRecord", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.MAX_RECORDS_TO_FETCH, new org.apache.thrift.meta_data.FieldMetaData("maxRecordsToFetch", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.RECORD_ONLY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("recordOnly", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.LOCATION_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("locationId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.ROW_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("rowId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.RECORD_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("recordId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.COLUMN_FAMILIES_TO_FETCH, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("columnFamiliesToFetch", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.SetMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING))));
+    tmpMap.put(_Fields.COLUMNS_TO_FETCH, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("columnsToFetch", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.MapMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING), 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.SetMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, 
+                new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)))));
+    tmpMap.put(_Fields.ALLOW_STALE_DATA, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("allowStaleData", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.START_RECORD, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("startRecord", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32)));
+    tmpMap.put(_Fields.MAX_RECORDS_TO_FETCH, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("maxRecordsToFetch", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Selector.class, metaDataMap);
+    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(Selector.class, metaDataMap);
   }
 
   public Selector() {
@@ -926,7 +926,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       return lastComparison;
     }
     if (isSetRecordOnly()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.recordOnly, typedOther.recordOnly);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.recordOnly, typedOther.recordOnly);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -936,7 +936,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       return lastComparison;
     }
     if (isSetLocationId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.locationId, typedOther.locationId);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.locationId, typedOther.locationId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -946,7 +946,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       return lastComparison;
     }
     if (isSetRowId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.rowId, typedOther.rowId);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.rowId, typedOther.rowId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -956,7 +956,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       return lastComparison;
     }
     if (isSetRecordId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.recordId, typedOther.recordId);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.recordId, typedOther.recordId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -966,7 +966,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       return lastComparison;
     }
     if (isSetColumnFamiliesToFetch()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.columnFamiliesToFetch, typedOther.columnFamiliesToFetch);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.columnFamiliesToFetch, typedOther.columnFamiliesToFetch);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -976,7 +976,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       return lastComparison;
     }
     if (isSetColumnsToFetch()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.columnsToFetch, typedOther.columnsToFetch);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.columnsToFetch, typedOther.columnsToFetch);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -986,7 +986,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       return lastComparison;
     }
     if (isSetAllowStaleData()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.allowStaleData, typedOther.allowStaleData);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.allowStaleData, typedOther.allowStaleData);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -996,7 +996,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       return lastComparison;
     }
     if (isSetStartRecord()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.startRecord, typedOther.startRecord);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.startRecord, typedOther.startRecord);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1006,7 +1006,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       return lastComparison;
     }
     if (isSetMaxRecordsToFetch()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.maxRecordsToFetch, typedOther.maxRecordsToFetch);
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.maxRecordsToFetch, typedOther.maxRecordsToFetch);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1018,11 +1018,11 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+  public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
   }
 
-  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+  public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
   }
 
@@ -1090,15 +1090,15 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     return sb.toString();
   }
 
-  public void validate() throws org.apache.thrift.TException {
+  public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     // check for required fields
     // check for sub-struct validity
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
     try {
-      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-    } catch (org.apache.thrift.TException te) {
+      write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -1107,8 +1107,8 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     try {
       // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
       __isset_bitfield = 0;
-      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-    } catch (org.apache.thrift.TException te) {
+      read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+    } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
@@ -1121,52 +1121,52 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
 
   private static class SelectorStandardScheme extends StandardScheme<Selector> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, Selector struct) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField schemeField;
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, Selector struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+        if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
           break;
         }
         switch (schemeField.id) {
           case 1: // RECORD_ONLY
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
               struct.recordOnly = iprot.readBool();
               struct.setRecordOnlyIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 2: // LOCATION_ID
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
               struct.locationId = iprot.readString();
               struct.setLocationIdIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 3: // ROW_ID
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
               struct.rowId = iprot.readString();
               struct.setRowIdIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 4: // RECORD_ID
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
               struct.recordId = iprot.readString();
               struct.setRecordIdIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 5: // COLUMN_FAMILIES_TO_FETCH
-            if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TSet _set16 = iprot.readSetBegin();
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set16 = iprot.readSetBegin();
                 struct.columnFamiliesToFetch = new HashSet<String>(2*_set16.size);
                 for (int _i17 = 0; _i17 < _set16.size; ++_i17)
                 {
@@ -1178,13 +1178,13 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
               }
               struct.setColumnFamiliesToFetchIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 6: // COLUMNS_TO_FETCH
-            if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map19 = iprot.readMapBegin();
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map19 = iprot.readMapBegin();
                 struct.columnsToFetch = new HashMap<String,Set<String>>(2*_map19.size);
                 for (int _i20 = 0; _i20 < _map19.size; ++_i20)
                 {
@@ -1192,7 +1192,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
                   Set<String> _val22; // optional
                   _key21 = iprot.readString();
                   {
-                    org.apache.thrift.protocol.TSet _set23 = iprot.readSetBegin();
+                    org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set23 = iprot.readSetBegin();
                     _val22 = new HashSet<String>(2*_set23.size);
                     for (int _i24 = 0; _i24 < _set23.size; ++_i24)
                     {
@@ -1208,35 +1208,35 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
               }
               struct.setColumnsToFetchIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 7: // ALLOW_STALE_DATA
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
               struct.allowStaleData = iprot.readBool();
               struct.setAllowStaleDataIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 8: // START_RECORD
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
               struct.startRecord = iprot.readI32();
               struct.setStartRecordIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 9: // MAX_RECORDS_TO_FETCH
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
               struct.maxRecordsToFetch = iprot.readI32();
               struct.setMaxRecordsToFetchIsSet(true);
             } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
         iprot.readFieldEnd();
       }
@@ -1246,7 +1246,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, Selector struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, Selector struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -1271,7 +1271,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       if (struct.columnFamiliesToFetch != null) {
         oprot.writeFieldBegin(COLUMN_FAMILIES_TO_FETCH_FIELD_DESC);
         {
-          oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.columnFamiliesToFetch.size()));
+          oprot.writeSetBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.columnFamiliesToFetch.size()));
           for (String _iter26 : struct.columnFamiliesToFetch)
           {
             oprot.writeString(_iter26);
@@ -1283,12 +1283,12 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       if (struct.columnsToFetch != null) {
         oprot.writeFieldBegin(COLUMNS_TO_FETCH_FIELD_DESC);
         {
-          oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.SET, struct.columnsToFetch.size()));
+          oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, struct.columnsToFetch.size()));
           for (Map.Entry<String, Set<String>> _iter27 : struct.columnsToFetch.entrySet())
           {
             oprot.writeString(_iter27.getKey());
             {
-              oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, _iter27.getValue().size()));
+              oprot.writeSetBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, _iter27.getValue().size()));
               for (String _iter28 : _iter27.getValue())
               {
                 oprot.writeString(_iter28);
@@ -1324,7 +1324,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
   private static class SelectorTupleScheme extends TupleScheme<Selector> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, Selector struct) throws org.apache.thrift.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, Selector struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
       if (struct.isSetRecordOnly()) {
@@ -1404,7 +1404,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, Selector struct) throws org.apache.thrift.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, Selector struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(9);
       if (incoming.get(0)) {
@@ -1425,7 +1425,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       }
       if (incoming.get(4)) {
         {
-          org.apache.thrift.protocol.TSet _set32 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set32 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
           struct.columnFamiliesToFetch = new HashSet<String>(2*_set32.size);
           for (int _i33 = 0; _i33 < _set32.size; ++_i33)
           {
@@ -1438,7 +1438,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       }
       if (incoming.get(5)) {
         {
-          org.apache.thrift.protocol.TMap _map35 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.SET, iprot.readI32());
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map35 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, iprot.readI32());
           struct.columnsToFetch = new HashMap<String,Set<String>>(2*_map35.size);
           for (int _i36 = 0; _i36 < _map35.size; ++_i36)
           {
@@ -1446,7 +1446,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
             Set<String> _val38; // optional
             _key37 = iprot.readString();
             {
-              org.apache.thrift.protocol.TSet _set39 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set39 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
               _val38 = new HashSet<String>(2*_set39.size);
               for (int _i40 = 0; _i40 < _set39.size; ++_i40)
               {

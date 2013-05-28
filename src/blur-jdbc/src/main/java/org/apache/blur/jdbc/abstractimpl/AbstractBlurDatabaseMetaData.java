@@ -27,6 +27,11 @@ import java.sql.SQLException;
 
 import org.apache.blur.jdbc.util.NotImplemented;
 
+/**
+ * This DatabaseMetaData implementation is simply to provide the major of the method
+ * implementations that only throw not implemented exceptions. That way it's
+ * easier to see what has been implemented in the real class.
+ */
 public abstract class AbstractBlurDatabaseMetaData implements DatabaseMetaData {
 
   private DatabaseMetaData throwExceptionDelegate;

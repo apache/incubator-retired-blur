@@ -44,6 +44,11 @@ import java.util.Calendar;
 
 import org.apache.blur.jdbc.util.NotImplemented;
 
+/**
+ * This PreparedStatement implementation is simply to provide the major of the
+ * method implementations that only throw not implemented exceptions. That way
+ * it's easier to see what has been implemented in the real class.
+ */
 public class AbstractBlurPreparedStatement implements PreparedStatement {
 
   private PreparedStatement throwExceptionDelegate;
@@ -428,6 +433,7 @@ public class AbstractBlurPreparedStatement implements PreparedStatement {
     throwExceptionDelegate.setURL(parameterIndex, x);
   }
 
+  @SuppressWarnings("deprecation")
   public void setUnicodeStream(int parameterIndex, InputStream x, int length) throws SQLException {
     throwExceptionDelegate.setUnicodeStream(parameterIndex, x, length);
   }

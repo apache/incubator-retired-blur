@@ -43,6 +43,11 @@ import java.util.Map;
 
 import org.apache.blur.jdbc.util.NotImplemented;
 
+/**
+ * This ResultSet implementation is simply to provide the major of the
+ * method implementations that only throw not implemented exceptions. That way
+ * it's easier to see what has been implemented in the real class.
+ */
 public abstract class AbstractBlurResultSet implements ResultSet {
 
   private ResultSet throwExceptionDelegate;

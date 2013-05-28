@@ -27,6 +27,11 @@ import java.sql.Statement;
 
 import org.apache.blur.jdbc.util.NotImplemented;
 
+/**
+ * This Statement implementation is simply to provide the major of the
+ * method implementations that only throw not implemented exceptions. That way
+ * it's easier to see what has been implemented in the real class.
+ */
 public class AbstractBlurStatement implements Statement {
 
   private Statement throwExceptionDelegate;

@@ -152,6 +152,7 @@ public class Main {
         .put("indexaccesslog", new IndexAccessLogCommand())
         .put("shardclusterlist", new ShardClusterListCommand())
         .put("shardserverlayout", new ShardServerLayoutCommand())
+        .put("controllers", new ControllersEchoCommand())
         .build();
 
     try {

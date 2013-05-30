@@ -370,6 +370,7 @@ public class TransactionRecorder extends TimerTask implements Closeable {
     Document document = new Document();
     document.add(new Field(BlurConstants.ROW_ID, rowId, ID_TYPE));
     document.add(new Field(BlurConstants.RECORD_ID, record.recordId, ID_TYPE));
+    document.add(new Field(BlurConstants.FAMILY, record.family, ID_TYPE));
     RowIndexWriter.addColumns(document, analyzer, builder, record.family, record.columns);
     return document;
   }

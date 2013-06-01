@@ -37,7 +37,7 @@ var ControllerCollection = Backbone.StreamCollection.extend({
       }
     });
     this.on('remove', function(controller){
-      if (this.length == 1){
+      if (this.length == 0){
         $('#controllers .no_children').show();
         controller.view.destroy();
       } else {
@@ -59,7 +59,7 @@ var ControllerView = Backbone.View.extend({
     return this;
   },
   setRowStatus: function(){
-    switch(this.model.get('status'))
+    switch(this.model.get('controller_status'))
     {
       case 0:
         this.$el.attr('class', 'error');

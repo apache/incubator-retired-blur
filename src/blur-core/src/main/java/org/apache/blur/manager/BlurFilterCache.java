@@ -16,19 +16,69 @@ package org.apache.blur.manager;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.apache.blur.lucene.search.SuperParser;
 import org.apache.blur.manager.writer.BlurIndex;
+import org.apache.blur.thrift.generated.Record;
+import org.apache.blur.thrift.generated.Row;
 import org.apache.lucene.search.Filter;
 
-
+/**
+ * The {@link BlurFilterCache} class provides the ability to cache pre and post
+ * filters on a per table basis. The closing and opening methods should be used
+ * as hooks to for when tables are being enabled and disabled.
+ */
 public abstract class BlurFilterCache {
 
+  /**
+   * The fetchPreFilter method fetches the cache pre-filter (or {@link Record}
+   * Filter) before attempting to execute the filter provided by the user.
+   * 
+   * @param table
+   *          the table name.
+   * @param filterStr
+   *          the filter query string, should be used as a key.
+   * @return the {@link Filter} to execute or not is missing.
+   */
   public abstract Filter fetchPreFilter(String table, String filterStr);
 
+  /**
+   * The fetchPostFilter method fetches the cache post-filter (or {@link Row}
+   * Filter) before attempting to execute the filter provided by the user.
+   * 
+   * @param table
+   *          the table name.
+   * @param filterStr
+   *          the filter query string, should be used as a key.
+   * @return the {@link Filter} to execute or not is missing.
+   */
   public abstract Filter fetchPostFilter(String table, String filterStr);
 
+  /**
+   * The storePreFilter method stores the parsed pre {@link Filter} (or
+   * {@link Record} Filter) for caching, and should return the {@link Filter} to
+   * be executed.
+   * 
+   * @param table
+   *          the table name.
+   * @param filterStr
+   *          the filter query string, should be used as a key.
+   * @return the {@link Filter} that was parsed by the {@link SuperParser}.
+   */
   public abstract Filter storePreFilter(String table, String filterStr, Filter filter);
 
+  /**
+   * The storePreFilter method stores the parsed post {@link Filter} (or
+   * {@link Row} Filter) for caching, and should return the {@link Filter} to
+   * be executed.
+   * 
+   * @param table
+   *          the table name.
+   * @param filterStr
+   *          the filter query string, should be used as a key.
+   * @return the {@link Filter} that was parsed by the {@link SuperParser}.
+   */
   public abstract Filter storePostFilter(String table, String filterStr, Filter filter);
+
 
   public abstract void closing(String table, String shard, BlurIndex index);
 

@@ -20,6 +20,9 @@ import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.lucene.search.Filter;
 
 
+/**
+ * This implementation on {@link BlurFilterCache} does nothing and it is the default {@link BlurFilterCache}.
+ */
 public class DefaultBlurFilterCache extends BlurFilterCache {
 
   @Override

@@ -21,8 +21,10 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Partitioner;
 
 /**
- * Simple hashing class used to guide the rows to the correct shards during
- * MapReduce jobs as well as during normal runtime operations.
+ * The {@link BlurPartitioner} class is a Hadoop {@link Partitioner}
+ * implementation for Blur. Simple hashing class used to guide the rows to the
+ * correct shards during MapReduce jobs as well as during normal runtime
+ * operations.
  */
 public class BlurPartitioner extends Partitioner<Text, Writable> {
 

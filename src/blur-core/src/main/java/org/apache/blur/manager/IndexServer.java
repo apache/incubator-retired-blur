@@ -27,9 +27,15 @@ import org.apache.blur.thrift.generated.ShardState;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.search.similarities.Similarity;
 
-
+/**
+ * The {@link IndexServer} interface provides the internal API to interact with
+ * the indexes being served in the shard server instance.
+ */
 public interface IndexServer {
 
+  /**
+   * Enum that describes whether a table is enabled or not.
+   */
   public enum TABLE_STATUS {
     ENABLED, DISABLED
   }
@@ -120,24 +126,6 @@ public interface IndexServer {
    */
   int getShardCount(String table);
 
-  /**
-   * Gets the compress codec for the given table.
-   * 
-   * @param table
-   *          the name of the table.
-   * @return the {@link CompressionCodec}
-   */
-  CompressionCodec getCompressionCodec(String table);
-
-  /**
-   * Get the compression block size.
-   * 
-   * @param table
-   *          the name of the table.
-   * @return the block size.
-   */
-  int getCompressionBlockSize(String table);
-
   // Metrics
 
   /**
@@ -175,6 +163,14 @@ public interface IndexServer {
    */
   void close();
 
+  /**
+   * Get the shard state. Provides access to the as is state of the shards in
+   * this instance.
+   * 
+   * @param table
+   *          the table name.
+   * @return the map of shard name to state.
+   */
   Map<String, ShardState> getShardState(String table);
 
 }

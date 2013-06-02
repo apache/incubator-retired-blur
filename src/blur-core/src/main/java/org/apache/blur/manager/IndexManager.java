@@ -954,7 +954,7 @@ public class IndexManager {
     return _indexServer.getShardCount(table);
   }
 
-  public static class SimpleQueryParallelCall implements ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> {
+  static class SimpleQueryParallelCall implements ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> {
 
     private final String _table;
     private final QueryStatus _status;

@@ -80,7 +80,6 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
@@ -412,20 +411,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
       _tableAnalyzers.put(table, blurAnalyzer);
     }
     return blurAnalyzer;
-  }
-
-  @Override
-  public int getCompressionBlockSize(String table) {
-    checkTable(table);
-    TableDescriptor descriptor = getTableDescriptor(table);
-    return descriptor.compressionBlockSize;
-  }
-
-  @Override
-  public CompressionCodec getCompressionCodec(String table) {
-    checkTable(table);
-    TableDescriptor descriptor = getTableDescriptor(table);
-    return getInstance(descriptor.compressionClass, CompressionCodec.class);
   }
 
   @Override

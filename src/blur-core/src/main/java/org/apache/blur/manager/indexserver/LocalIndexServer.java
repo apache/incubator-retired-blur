@@ -49,7 +49,6 @@ import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.util.CharArraySet;
@@ -234,16 +233,6 @@ public class LocalIndexServer extends AbstractIndexServer {
       size += file.length();
     }
     return size;
-  }
-
-  @Override
-  public CompressionCodec getCompressionCodec(String table) {
-    throw new RuntimeException("Should not be used.");
-  }
-
-  @Override
-  public int getCompressionBlockSize(String table) {
-    throw new RuntimeException("Should not be used.");
   }
 
   @Override

@@ -511,16 +511,16 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  # 
+  # Holds the cpu time for a query executing on a single shard in a table.
   class CpuTime
     include ::Thrift::Struct, ::Thrift::Struct_Union
     CPUTIME = 1
     REALTIME = 2
 
     FIELDS = {
-      # 
+      # The total cpu time for the query on the given shard.
       CPUTIME => {:type => ::Thrift::Types::I64, :name => 'cpuTime'},
-      # 
+      # The real time of the query execution for a given shard.
       REALTIME => {:type => ::Thrift::Types::I64, :name => 'realTime'}
     }
 
@@ -532,7 +532,9 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  # 
+  # The BlurQueryStatus object hold the status of BlurQueries.  The state of the query
+# (QueryState), the number of shards the query is executing against, the number of
+# shards that are complete, etc.
   class BlurQueryStatus
     include ::Thrift::Struct, ::Thrift::Struct_Union
     QUERY = 1
@@ -543,17 +545,21 @@ module Blur
     UUID = 6
 
     FIELDS = {
-      # 
+      # The original query.
       QUERY => {:type => ::Thrift::Types::STRUCT, :name => 'query', :class => ::Blur::BlurQuery},
-      # 
+      # A map of shard names to CpuTime, one for each shard in the table.
       CPUTIMES => {:type => ::Thrift::Types::MAP, :name => 'cpuTimes', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::CpuTime}},
-      # 
+      # The number of completed shards.  The shard server will respond with
+# how many are complete on that server, while the controller will aggregate
+# all the shard server completed totals together.
       COMPLETESHARDS => {:type => ::Thrift::Types::I32, :name => 'completeShards'},
-      # 
+      # The total number of shards that the query is executing against.  The shard
+# server will respond with how many shards are being queried on that server, while
+# the controller will aggregate all the shard server totals together.
       TOTALSHARDS => {:type => ::Thrift::Types::I32, :name => 'totalShards'},
-      # 
+      # The state of the query.  e.g. RUNNING, INTERRUPTED, COMPLETE
       STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::Blur::QueryState},
-      # 
+      # The uuid of the query.
       UUID => {:type => ::Thrift::Types::I64, :name => 'uuid'}
     }
 

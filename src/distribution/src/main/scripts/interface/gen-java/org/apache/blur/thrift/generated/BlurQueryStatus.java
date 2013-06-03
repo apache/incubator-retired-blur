@@ -50,7 +50,9 @@ import java.util.Arrays;
 //import org.slf4j.LoggerFactory;
 
 /**
- * 
+ * The BlurQueryStatus object hold the status of BlurQueries.  The state of the query
+ * (QueryState), the number of shards the query is executing against, the number of
+ * shards that are complete, etc.
  */
 public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<BlurQueryStatus, BlurQueryStatus._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("BlurQueryStatus");
@@ -69,58 +71,66 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * 
+   * The original query.
    */
   public BlurQuery query; // required
   /**
-   * 
+   * A map of shard names to CpuTime, one for each shard in the table.
    */
   public Map<String,CpuTime> cpuTimes; // required
   /**
-   * 
+   * The number of completed shards.  The shard server will respond with
+   * how many are complete on that server, while the controller will aggregate
+   * all the shard server completed totals together.
    */
   public int completeShards; // required
   /**
-   * 
+   * The total number of shards that the query is executing against.  The shard
+   * server will respond with how many shards are being queried on that server, while
+   * the controller will aggregate all the shard server totals together.
    */
   public int totalShards; // required
   /**
-   * 
+   * The state of the query.  e.g. RUNNING, INTERRUPTED, COMPLETE
    * 
    * @see QueryState
    */
   public QueryState state; // required
   /**
-   * 
+   * The uuid of the query.
    */
   public long uuid; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
-     * 
+     * The original query.
      */
     QUERY((short)1, "query"),
     /**
-     * 
+     * A map of shard names to CpuTime, one for each shard in the table.
      */
     CPU_TIMES((short)2, "cpuTimes"),
     /**
-     * 
+     * The number of completed shards.  The shard server will respond with
+     * how many are complete on that server, while the controller will aggregate
+     * all the shard server completed totals together.
      */
     COMPLETE_SHARDS((short)3, "completeShards"),
     /**
-     * 
+     * The total number of shards that the query is executing against.  The shard
+     * server will respond with how many shards are being queried on that server, while
+     * the controller will aggregate all the shard server totals together.
      */
     TOTAL_SHARDS((short)4, "totalShards"),
     /**
-     * 
+     * The state of the query.  e.g. RUNNING, INTERRUPTED, COMPLETE
      * 
      * @see QueryState
      */
     STATE((short)5, "state"),
     /**
-     * 
+     * The uuid of the query.
      */
     UUID((short)6, "uuid");
 
@@ -286,14 +296,14 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * 
+   * The original query.
    */
   public BlurQuery getQuery() {
     return this.query;
   }
 
   /**
-   * 
+   * The original query.
    */
   public BlurQueryStatus setQuery(BlurQuery query) {
     this.query = query;
@@ -327,14 +337,14 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * 
+   * A map of shard names to CpuTime, one for each shard in the table.
    */
   public Map<String,CpuTime> getCpuTimes() {
     return this.cpuTimes;
   }
 
   /**
-   * 
+   * A map of shard names to CpuTime, one for each shard in the table.
    */
   public BlurQueryStatus setCpuTimes(Map<String,CpuTime> cpuTimes) {
     this.cpuTimes = cpuTimes;
@@ -357,14 +367,18 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * 
+   * The number of completed shards.  The shard server will respond with
+   * how many are complete on that server, while the controller will aggregate
+   * all the shard server completed totals together.
    */
   public int getCompleteShards() {
     return this.completeShards;
   }
 
   /**
-   * 
+   * The number of completed shards.  The shard server will respond with
+   * how many are complete on that server, while the controller will aggregate
+   * all the shard server completed totals together.
    */
   public BlurQueryStatus setCompleteShards(int completeShards) {
     this.completeShards = completeShards;
@@ -386,14 +400,18 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * 
+   * The total number of shards that the query is executing against.  The shard
+   * server will respond with how many shards are being queried on that server, while
+   * the controller will aggregate all the shard server totals together.
    */
   public int getTotalShards() {
     return this.totalShards;
   }
 
   /**
-   * 
+   * The total number of shards that the query is executing against.  The shard
+   * server will respond with how many shards are being queried on that server, while
+   * the controller will aggregate all the shard server totals together.
    */
   public BlurQueryStatus setTotalShards(int totalShards) {
     this.totalShards = totalShards;
@@ -415,7 +433,7 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * 
+   * The state of the query.  e.g. RUNNING, INTERRUPTED, COMPLETE
    * 
    * @see QueryState
    */
@@ -424,7 +442,7 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * 
+   * The state of the query.  e.g. RUNNING, INTERRUPTED, COMPLETE
    * 
    * @see QueryState
    */
@@ -449,14 +467,14 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * 
+   * The uuid of the query.
    */
   public long getUuid() {
     return this.uuid;
   }
 
   /**
-   * 
+   * The uuid of the query.
    */
   public BlurQueryStatus setUuid(long uuid) {
     this.uuid = uuid;

@@ -458,45 +458,51 @@ struct RowMutation {
 }
 
 /**
- *
+ * Holds the cpu time for a query executing on a single shard in a table.
  */
 struct CpuTime {
   /**
-   *
+   * The total cpu time for the query on the given shard.
    */
   1:i64 cpuTime,
   /**
-   *
+   * The real time of the query execution for a given shard.
    */
   2:i64 realTime
 }
 
 /**
- *
+ * The BlurQueryStatus object hold the status of BlurQueries.  The state of the query
+ * (QueryState), the number of shards the query is executing against, the number of 
+ * shards that are complete, etc.
  */
 struct BlurQueryStatus {
   /**
-   *
+   * The original query.
    */
   1:BlurQuery query,
   /**
-   *
+   * A map of shard names to CpuTime, one for each shard in the table.
    */
   2:map<string,CpuTime> cpuTimes,
   /**
-   *
+   * The number of completed shards.  The shard server will respond with 
+   * how many are complete on that server, while the controller will aggregate 
+   * all the shard server completed totals together.
    */
   3:i32 completeShards,
   /**
-   *
+   * The total number of shards that the query is executing against.  The shard 
+   * server will respond with how many shards are being queried on that server, while 
+   * the controller will aggregate all the shard server totals together.
    */
   4:i32 totalShards,
   /**
-   *
+   * The state of the query.  e.g. RUNNING, INTERRUPTED, COMPLETE
    */
   5:QueryState state,
   /**
-   *
+   * The uuid of the query.
    */
   6:i64 uuid
 }

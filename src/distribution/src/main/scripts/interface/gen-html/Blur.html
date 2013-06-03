@@ -323,26 +323,32 @@ records in the row, be careful.
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_CpuTime">Struct: CpuTime</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>cpuTime</td><td><code>i64</code></td><td>
+<tr><td>1</td><td>cpuTime</td><td><code>i64</code></td><td>The total cpu time for the query on the given shard.
 </td><td>default</td><td></td></tr>
-<tr><td>2</td><td>realTime</td><td><code>i64</code></td><td>
+<tr><td>2</td><td>realTime</td><td><code>i64</code></td><td>The real time of the query execution for a given shard.
 </td><td>default</td><td></td></tr>
-</table><br/><p/>
+</table><br/>Holds the cpu time for a query executing on a single shard in a table.
 <br/></div><div class="definition"><h3 id="Struct_BlurQueryStatus">Struct: BlurQueryStatus</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>query</td><td><code><a href="Blur.html#Struct_BlurQuery">BlurQuery</a></code></td><td>
+<tr><td>1</td><td>query</td><td><code><a href="Blur.html#Struct_BlurQuery">BlurQuery</a></code></td><td>The original query.
 </td><td>default</td><td></td></tr>
-<tr><td>2</td><td>cpuTimes</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_CpuTime">CpuTime</a></code>&gt;</code></td><td>
+<tr><td>2</td><td>cpuTimes</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_CpuTime">CpuTime</a></code>&gt;</code></td><td>A map of shard names to CpuTime, one for each shard in the table.
 </td><td>default</td><td></td></tr>
-<tr><td>3</td><td>completeShards</td><td><code>i32</code></td><td>
+<tr><td>3</td><td>completeShards</td><td><code>i32</code></td><td>The number of completed shards.  The shard server will respond with
+how many are complete on that server, while the controller will aggregate
+all the shard server completed totals together.
 </td><td>default</td><td></td></tr>
-<tr><td>4</td><td>totalShards</td><td><code>i32</code></td><td>
+<tr><td>4</td><td>totalShards</td><td><code>i32</code></td><td>The total number of shards that the query is executing against.  The shard
+server will respond with how many shards are being queried on that server, while
+the controller will aggregate all the shard server totals together.
 </td><td>default</td><td></td></tr>
-<tr><td>5</td><td>state</td><td><code><a href="Blur.html#Enum_QueryState">QueryState</a></code></td><td>
+<tr><td>5</td><td>state</td><td><code><a href="Blur.html#Enum_QueryState">QueryState</a></code></td><td>The state of the query.  e.g. RUNNING, INTERRUPTED, COMPLETE
 </td><td>default</td><td></td></tr>
-<tr><td>6</td><td>uuid</td><td><code>i64</code></td><td>
+<tr><td>6</td><td>uuid</td><td><code>i64</code></td><td>The uuid of the query.
 </td><td>default</td><td></td></tr>
-</table><br/><p/>
+</table><br/>The BlurQueryStatus object hold the status of BlurQueries.  The state of the query
+(QueryState), the number of shards the query is executing against, the number of
+shards that are complete, etc.
 <br/></div><div class="definition"><h3 id="Struct_TableStats">Struct: TableStats</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>tableName</td><td><code>string</code></td><td>

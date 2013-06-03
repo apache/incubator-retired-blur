@@ -50,7 +50,7 @@ import java.util.Arrays;
 //import org.slf4j.LoggerFactory;
 
 /**
- * 
+ * Holds the cpu time for a query executing on a single shard in a table.
  */
 public class CpuTime implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<CpuTime, CpuTime._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("CpuTime");
@@ -65,22 +65,22 @@ public class CpuTime implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Cp
   }
 
   /**
-   * 
+   * The total cpu time for the query on the given shard.
    */
   public long cpuTime; // required
   /**
-   * 
+   * The real time of the query execution for a given shard.
    */
   public long realTime; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
-     * 
+     * The total cpu time for the query on the given shard.
      */
     CPU_TIME((short)1, "cpuTime"),
     /**
-     * 
+     * The real time of the query execution for a given shard.
      */
     REAL_TIME((short)2, "realTime");
 
@@ -191,14 +191,14 @@ public class CpuTime implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Cp
   }
 
   /**
-   * 
+   * The total cpu time for the query on the given shard.
    */
   public long getCpuTime() {
     return this.cpuTime;
   }
 
   /**
-   * 
+   * The total cpu time for the query on the given shard.
    */
   public CpuTime setCpuTime(long cpuTime) {
     this.cpuTime = cpuTime;
@@ -220,14 +220,14 @@ public class CpuTime implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Cp
   }
 
   /**
-   * 
+   * The real time of the query execution for a given shard.
    */
   public long getRealTime() {
     return this.realTime;
   }
 
   /**
-   * 
+   * The real time of the query execution for a given shard.
    */
   public CpuTime setRealTime(long realTime) {
     this.realTime = realTime;

@@ -76,10 +76,13 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.SlowCompositeReaderWrapper;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.RamUsageEstimator;
+import org.apache.lucene.search.BooleanClause;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.Code;
@@ -583,10 +586,24 @@ public class BlurUtil {
   public static List<Document> fetchDocuments(IndexReader reader, Term term,
       ResetableDocumentStoredFieldVisitor fieldSelector, Selector selector) throws IOException {
     IndexSearcher indexSearcher = new IndexSearcher(reader);
-    int docFreq = reader.docFreq(term);
-    TopDocs topDocs = indexSearcher.search(new TermQuery(term), docFreq);
-    int totalHits = topDocs.totalHits;
-    List<Document> docs = new ArrayList<Document>();
+		int docFreq = reader.docFreq(term);
+		BooleanQuery booleanQueryForFamily = null;
+		BooleanQuery booleanQuery = null;
+		if (selector.getColumnFamiliesToFetchSize() > 0) {
+			booleanQueryForFamily = new BooleanQuery();
+			for (String familyName : selector.getColumnFamiliesToFetch()) {
+				booleanQueryForFamily.add(new TermQuery(new Term(
+						BlurConstants.FAMILY, familyName)),
+						BooleanClause.Occur.SHOULD);
+			}
+			booleanQuery = new BooleanQuery();
+			booleanQuery.add(new TermQuery(term), BooleanClause.Occur.MUST);
+			booleanQuery.add(booleanQueryForFamily, BooleanClause.Occur.MUST);
+		}
+		Query query = booleanQuery == null ? new TermQuery(term) : booleanQuery;
+		TopDocs topDocs = indexSearcher.search(query, docFreq);
+		int totalHits = topDocs.totalHits;
+		List<Document> docs = new ArrayList<Document>();
 
     int start = selector.getStartRecord();
     int end = selector.getMaxRecordsToFetch() + start;

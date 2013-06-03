@@ -24,8 +24,11 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.blur.thrift.generated.Selector;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -38,6 +41,7 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.junit.Test;
@@ -156,6 +160,27 @@ public class BlurUtilsTest {
       // Should throw exception
     }
   }
+  
+  @Test
+  public void testFetchDocuments() throws CorruptIndexException, LockObtainFailedException, IOException{
+	  Selector selector = new Selector();
+	  HashSet<String> columnFamiliesToFetch = new HashSet<String>();
+	  columnFamiliesToFetch.add("f1");
+	  columnFamiliesToFetch.add("f2");
+	  selector.setColumnFamiliesToFetch(columnFamiliesToFetch);
+	  
+	  ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
+	  List<Document> docs = BlurUtil.fetchDocuments(getReader(), new Term("a","b"), resetableDocumentStoredFieldVisitor, selector);
+	  assertEquals(docs.size(),1);
+  }
+  
+  @Test
+  public void testFetchDocumentsWithoutFamily() throws CorruptIndexException, LockObtainFailedException, IOException{
+	  Selector selector = new Selector();
+	  ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
+	  List<Document> docs = BlurUtil.fetchDocuments(getReader(), new Term("a","b"), resetableDocumentStoredFieldVisitor, selector);
+	  assertEquals(docs.size(),2);
+  }
 
   private void rm(File file) {
     if (!file.exists()) {
@@ -181,7 +206,12 @@ public class BlurUtilsTest {
     IndexWriter writer = new IndexWriter(directory, conf);
     Document doc = new Document();
     doc.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+    doc.add(new Field("family", "f1", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+    
+    Document doc1 = new Document();
+    doc1.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     writer.addDocument(doc);
+    writer.addDocument(doc1);
     writer.close();
     return IndexReader.open(directory);
   }

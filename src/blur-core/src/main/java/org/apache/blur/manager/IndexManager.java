@@ -19,10 +19,10 @@ package org.apache.blur.manager;
 import static org.apache.blur.metrics.MetricsConstants.BLUR;
 import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 import static org.apache.blur.thrift.util.BlurThriftHelper.findRecordMutation;
-import static org.apache.blur.utils.BlurConstants.PRIME_DOC;
+import static org.apache.blur.utils.BlurConstants.*;
 import static org.apache.blur.utils.BlurConstants.RECORD_ID;
 import static org.apache.blur.utils.BlurConstants.ROW_ID;
-import static org.apache.blur.utils.RowDocumentUtil.getColumns;
+import static org.apache.blur.utils.RowDocumentUtil.getRecord;
 import static org.apache.blur.utils.RowDocumentUtil.getRow;
 
 import java.io.IOException;
@@ -174,7 +174,7 @@ public class IndexManager {
     String shard;
     try {
       if (selector.getLocationId() == null) {
-        //Not looking up by location id so we should resetSearchers.
+        // Not looking up by location id so we should resetSearchers.
         ShardServerContext.resetSearchers();
         populateSelector(table, selector);
       }
@@ -447,7 +447,15 @@ public class IndexManager {
     if (docId >= reader.maxDoc()) {
       throw new RuntimeException("Location id [" + locationId + "] with docId [" + docId + "] is not valid.");
     }
+
+    boolean returnIdsOnly = false;
+    if (selector.columnFamiliesToFetch.isEmpty() && selector.columnsToFetch.isEmpty()) {
+      // exit early
+      returnIdsOnly = true;
+    }
+
     Bits liveDocs = MultiFields.getLiveDocs(reader);
+    ResetableDocumentStoredFieldVisitor fieldVisitor = getFieldSelector(selector);
     if (selector.isRecordOnly()) {
       // select only the row for the given data or location id.
       if (liveDocs != null && !liveDocs.get(docId)) {
@@ -457,9 +465,10 @@ public class IndexManager {
       } else {
         fetchResult.exists = true;
         fetchResult.deleted = false;
-        reader.document(docId, getFieldSelector(selector));
-        Document document = reader.document(docId);
-        fetchResult.recordResult = getColumns(document);
+        reader.document(docId, fieldVisitor);
+        Document document = fieldVisitor.getDocument();
+        fieldVisitor.reset();
+        fetchResult.recordResult = getRecord(document);
         return;
       }
     } else {
@@ -471,9 +480,16 @@ public class IndexManager {
         fetchResult.exists = true;
         fetchResult.deleted = false;
         String rowId = getRowId(reader, docId);
-        List<Document> docs = BlurUtil.fetchDocuments(reader, new Term(ROW_ID, rowId), getFieldSelector(selector),
-            selector);
-        fetchResult.rowResult = new FetchRowResult(getRow(docs));
+        Term term = new Term(ROW_ID, rowId);
+        if (returnIdsOnly) {
+          int recordCount = BlurUtil.countDocuments(reader, term);
+          fetchResult.rowResult = new FetchRowResult();
+          fetchResult.rowResult.row = new Row(rowId, null, recordCount);
+        } else {
+          List<Document> docs = BlurUtil.fetchDocuments(reader, term, fieldVisitor,
+              selector);
+          fetchResult.rowResult = new FetchRowResult(getRow(docs));
+        }
         return;
       }
     }
@@ -512,6 +528,9 @@ public class IndexManager {
         }
         if (PRIME_DOC.equals(fieldInfo.name)) {
           return StoredFieldVisitor.Status.NO;
+        }
+        if (FAMILY.equals(fieldInfo.name)) {
+          return StoredFieldVisitor.Status.YES;
         }
         if (selector.columnFamiliesToFetch == null && selector.columnsToFetch == null) {
           return StoredFieldVisitor.Status.YES;
@@ -993,8 +1012,10 @@ public class IndexManager {
         searcher.setSimilarity(_indexServer.getSimilarity(_table));
         Query rewrite = searcher.rewrite((Query) _query.clone());
 
-        // BlurResultIterableSearcher will close searcher, if shard server context is null.
-        return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector, _shardServerContext == null);
+        // BlurResultIterableSearcher will close searcher, if shard server
+        // context is null.
+        return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector,
+            _shardServerContext == null);
       } finally {
         _queriesInternalMeter.mark();
         _status.deattachThread();

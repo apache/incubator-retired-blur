@@ -19,7 +19,11 @@ package org.apache.blur.thrift.commands;
 import org.apache.blur.thrift.AbstractCommand;
 import org.apache.blur.thrift.generated.Blur;
 
-
 public abstract class BlurCommand<T> extends AbstractCommand<Blur.Client, T> {
+
+  @Override
+  public BlurCommand<T> clone() {
+    return (BlurCommand<T>) super.clone();
+  }
 
 }

@@ -574,6 +574,13 @@ public class BlurUtil {
     recordMutation.setRecordMutationType(RecordMutationType.REPLACE_ENTIRE_RECORD);
     return recordMutation;
   }
+  
+  public static int countDocuments(IndexReader reader, Term term) throws IOException {
+    TermQuery query = new TermQuery(term);
+    IndexSearcher indexSearcher = new IndexSearcher(reader);
+    TopDocs topDocs = indexSearcher.search(query, 1);
+    return topDocs.totalHits;
+  }
 
   /**
    * NOTE: This is a potentially dangerous call, it will return all the

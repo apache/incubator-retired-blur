@@ -16,7 +16,7 @@ package org.apache.blur.utils;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.apache.blur.utils.BlurConstants.RECORD_ID;
+import static org.apache.blur.utils.BlurConstants.*;
 import static org.apache.blur.utils.BlurConstants.ROW_ID;
 import static org.apache.blur.utils.BlurConstants.SEP;
 
@@ -31,7 +31,7 @@ import org.apache.lucene.index.IndexableField;
 
 public class RowDocumentUtil {
 
-  public static FetchRecordResult getColumns(Document document) {
+  public static FetchRecordResult getRecord(Document document) {
     FetchRecordResult result = new FetchRecordResult();
     BlurThriftRecord record = new BlurThriftRecord();
     String rowId = readRecord(document, record);
@@ -69,26 +69,23 @@ public class RowDocumentUtil {
 
   public static String readRecord(Document document, ReaderBlurRecord reader) {
     String rowId = null;
-    String family = null;
     for (IndexableField field : document.getFields()) {
       if (field.name().equals(ROW_ID)) {
         rowId = field.stringValue();
       } else if (field.name().equals(RECORD_ID)) {
         reader.setRecordIdStr(field.stringValue());
+      } else if (field.name().equals(FAMILY)) {
+        reader.setFamilyStr(field.stringValue());
       } else {
         String name = field.name();
         int index = name.indexOf(SEP);
         if (index < 0) {
           continue;
-        } else if (family == null) {
-          family = name.substring(0, index);
         }
         name = name.substring(index + 1);
         reader.addColumn(name, field.stringValue());
       }
     }
-    reader.setFamilyStr(family);
-    reader.setRowIdStr(rowId);
     return rowId;
   }
 }

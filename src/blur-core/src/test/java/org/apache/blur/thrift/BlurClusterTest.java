@@ -19,6 +19,8 @@ package org.apache.blur.thrift;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +36,7 @@ import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
+import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RowMutation;
@@ -82,7 +85,7 @@ public class BlurClusterTest {
   public static void shutdownCluster() {
     MiniCluster.shutdownBlurCluster();
   }
-  
+
   private Iface getClient() {
     return BlurClient.getClient(MiniCluster.getControllerConnectionStr());
   }
@@ -106,7 +109,8 @@ public class BlurClusterTest {
     List<RowMutation> mutations = new ArrayList<RowMutation>();
     for (int i = 0; i < length; i++) {
       String rowId = UUID.randomUUID().toString();
-      RecordMutation mutation = BlurThriftHelper.newRecordMutation("test", rowId, BlurThriftHelper.newColumn("test", "value"));
+      RecordMutation mutation = BlurThriftHelper.newRecordMutation("test", rowId,
+          BlurThriftHelper.newColumn("test", "value"));
       RowMutation rowMutation = BlurThriftHelper.newRowMutation("test", rowId, mutation);
       rowMutation.setWaitToBeVisible(true);
       mutations.add(rowMutation);
@@ -115,16 +119,27 @@ public class BlurClusterTest {
     client.mutateBatch(mutations);
     long e = System.nanoTime();
     System.out.println("mutateBatch took [" + (e - s) / 1000000.0 + "]");
-    BlurQuery blurQuery = new BlurQuery();
-    SimpleQuery simpleQuery = new SimpleQuery();
-    simpleQuery.setQueryStr("test.test:value");
-    blurQuery.setSimpleQuery(simpleQuery);
-    BlurResults results = client.query("test", blurQuery);
-    assertEquals(length, results.getTotalResults());
+    BlurQuery blurQueryRow = new BlurQuery();
+    SimpleQuery simpleQueryRow = new SimpleQuery();
+    simpleQueryRow.setQueryStr("test.test:value");
+    blurQueryRow.setSimpleQuery(simpleQueryRow);
+    BlurResults resultsRow = client.query("test", blurQueryRow);
+    assertRowResults(resultsRow);
+    assertEquals(length, resultsRow.getTotalResults());
+
+    BlurQuery blurQueryRecord = new BlurQuery();
+    SimpleQuery simpleQueryRecord = new SimpleQuery();
+    simpleQueryRecord.superQueryOn = false;
+    simpleQueryRecord.setQueryStr("test.test:value");
+    blurQueryRecord.setSimpleQuery(simpleQueryRecord);
+    BlurResults resultsRecord = client.query("test", blurQueryRecord);
+    assertRecordResults(resultsRecord);
+    assertEquals(length, resultsRecord.getTotalResults());
   }
-  
+
   @Test
-  public void testTestShardFailover() throws BlurException, TException, InterruptedException, IOException, KeeperException {
+  public void testTestShardFailover() throws BlurException, TException, InterruptedException, IOException,
+      KeeperException {
     Iface client = getClient();
     int length = 100;
     BlurQuery blurQuery = new BlurQuery();
@@ -134,17 +149,40 @@ public class BlurClusterTest {
     blurQuery.setSimpleQuery(simpleQuery);
     BlurResults results1 = client.query("test", blurQuery);
     assertEquals(length, results1.getTotalResults());
-    
+    assertRowResults(results1);
+
     MiniCluster.killShardServer(1);
-    
-    //make sure the WAL syncs
+
+    // make sure the WAL syncs
     Thread.sleep(TimeUnit.SECONDS.toMillis(1));
-    
-    //This should block until shards have failed over
+
+    // This should block until shards have failed over
     client.shardServerLayout("test");
-    
+
     assertEquals(length, client.query("test", blurQuery).getTotalResults());
-    
+
+  }
+
+  private void assertRowResults(BlurResults results) {
+    for (BlurResult result : results.getResults()) {
+      assertNull(result.locationId);
+      assertNull(result.fetchResult.recordResult);
+      assertNull(result.fetchResult.rowResult.row.records);
+      assertNotNull(result.fetchResult.rowResult.row.id);
+    }
+  }
+
+  private void assertRecordResults(BlurResults results) {
+    for (BlurResult result : results.getResults()) {
+      assertNull(result.locationId);
+      assertNotNull(result.fetchResult.recordResult);
+      assertNotNull(result.fetchResult.recordResult.rowid);
+      assertNotNull(result.fetchResult.recordResult.record.recordId);
+      assertNotNull(result.fetchResult.recordResult.record.family);
+      assertNull("Not null [" + result.fetchResult.recordResult.record.columns + "]",
+          result.fetchResult.recordResult.record.columns);
+      assertNull(result.fetchResult.rowResult);
+    }
   }
 
   @Test

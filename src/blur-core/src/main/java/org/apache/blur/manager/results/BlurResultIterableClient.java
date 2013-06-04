@@ -25,30 +25,35 @@ import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.thrift.BlurClientManager;
+import org.apache.blur.thrift.Connection;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.Blur.Client;
 
-
 public class BlurResultIterableClient implements BlurResultIterable {
 
   private static final Log LOG = LogFactory.getLog(BlurResultIterableClient.class);
 
-  private Map<String, Long> _shardInfo = new TreeMap<String, Long>();
-  private Client _client;
-  private String _table;
+  private final Map<String, Long> _shardInfo = new TreeMap<String, Long>();
+  private final Client _client;
+  private final String _table;
+  private final BlurQuery _originalQuery;
+  private final Connection _connection;
+  private final int _remoteFetchCount;
+  private final AtomicLongArray _facetCounts;
+
   private BlurResults _results;
-  private int _remoteFetchCount;
   private int _batch = 0;
   private long _totalResults;
   private long _skipTo;
-  private AtomicLongArray _facetCounts;
   private boolean _alreadyProcessed;
-  private BlurQuery _originalQuery;
 
-  public BlurResultIterableClient(Blur.Client client, String table, BlurQuery query, AtomicLongArray facetCounts, int remoteFetchCount) {
+  public BlurResultIterableClient(Connection connection, Blur.Client client, String table, BlurQuery query,
+      AtomicLongArray facetCounts, int remoteFetchCount) {
+    _connection = connection;
     _client = client;
     _table = table;
     _facetCounts = facetCounts;
@@ -57,13 +62,19 @@ public class BlurResultIterableClient implements BlurResultIterable {
     performSearch();
   }
 
+  public Client getClient() {
+    return _client;
+  }
+
   private void performSearch() {
     try {
       long cursor = _remoteFetchCount * _batch;
-      BlurQuery blurQuery = new BlurQuery(_originalQuery.simpleQuery, _originalQuery.expertQuery, _originalQuery.facets, null, false, _originalQuery.useCacheIfPresent, cursor,
-          _remoteFetchCount, _originalQuery.minimumNumberOfResults, _originalQuery.maxQueryTime, _originalQuery.uuid, _originalQuery.userContext, _originalQuery.cacheResult,
-          _originalQuery.startTime, _originalQuery.modifyFileCaches);
-      _results = _client.query(_table, blurQuery);
+      BlurQuery blurQuery = new BlurQuery(_originalQuery.simpleQuery, _originalQuery.expertQuery,
+          _originalQuery.facets, null, false, _originalQuery.useCacheIfPresent, cursor, _remoteFetchCount,
+          _originalQuery.minimumNumberOfResults, _originalQuery.maxQueryTime, _originalQuery.uuid,
+          _originalQuery.userContext, _originalQuery.cacheResult, _originalQuery.startTime,
+          _originalQuery.modifyFileCaches);
+      _results = makeLazy(_client.query(_table, blurQuery));
       addFacets();
       _totalResults = _results.totalResults;
       _shardInfo.putAll(_results.shardInfo);
@@ -72,6 +83,17 @@ public class BlurResultIterableClient implements BlurResultIterable {
       LOG.error("Error during for [{0}]", e, _originalQuery);
       throw new RuntimeException(e);
     }
+  }
+
+  private BlurResults makeLazy(BlurResults results) {
+    List<BlurResult> list = results.results;
+    for (int i = 0; i < list.size(); i++) {
+      BlurResult blurResult = list.get(i);
+      if (blurResult != null) {
+        list.set(i, new LazyBlurResult(blurResult, _client));
+      }
+    }
+    return results;
   }
 
   private void addFacets() {
@@ -144,6 +166,6 @@ public class BlurResultIterableClient implements BlurResultIterable {
 
   @Override
   public void close() throws IOException {
-    // nothing
+    BlurClientManager.returnClient(_connection, _client);
   }
 }

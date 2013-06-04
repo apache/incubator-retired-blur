@@ -64,7 +64,7 @@ public class SharedMergeScheduler extends MergeScheduler implements Runnable {
           merge(writer);
         }
       } catch (InterruptedException e) {
-        LOG.info("Merging interrupted, exiting.");
+        LOG.debug("Merging interrupted, exiting.");
         return;
       } catch (IOException e) {
         LOG.error("Unknown IOException", e);
@@ -83,7 +83,7 @@ public class SharedMergeScheduler extends MergeScheduler implements Runnable {
     long e = System.currentTimeMillis();
     double time = (e - s) / 1000.0;
     double rate = (merge.totalBytesSize() / 1024 / 1024) / time;
-    LOG.info("Merge took [{0} s] to complete at rate of [{1} MB/s]", time, rate);
+    LOG.debug("Merge took [{0} s] to complete at rate of [{1} MB/s]", time, rate);
     return true;
   }
 

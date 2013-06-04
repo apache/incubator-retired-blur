@@ -189,7 +189,7 @@ public class TransactionRecorder extends TimerTask implements Closeable {
   }
 
   private void rollLog() throws IOException {
-    LOG.info("Rolling WAL path [" + _walPath + "]");
+    LOG.debug("Rolling WAL path [" + _walPath + "]");
     FSDataOutputStream os = _outputStream.get();
     if (os != null) {
       os.close();
@@ -343,10 +343,10 @@ public class TransactionRecorder extends TimerTask implements Closeable {
       long s = System.nanoTime();
       writer.commit();
       long m = System.nanoTime();
-      LOG.info("Commit took [{0} ms] for [{1}/{2}]", (m - s) / 1000000.0, _table, _shard);
+      LOG.debug("Commit took [{0} ms] for [{1}/{2}]", (m - s) / 1000000.0, _table, _shard);
       rollLog();
       long e = System.nanoTime();
-      LOG.info("Log roller took [{0} ms] for [{1}/{2}]", (e - m) / 1000000.0, _table, _shard);
+      LOG.debug("Log roller took [{0} ms] for [{1}/{2}]", (e - m) / 1000000.0, _table, _shard);
     }
   }
 

@@ -21,7 +21,6 @@ import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 import java.util.UUID;
@@ -29,106 +28,125 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.blur.analysis.BlurAnalyzer;
-import org.apache.blur.index.IndexWriter;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.store.buffer.BufferStore;
+import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.search.NRTManager.TrackingIndexWriter;
-import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.Directory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class IndexImporterTest {
 
-  private static final File TMPDIR = new File("./target/tmp");
-  
-  private File base;
+  private static final Path TMPDIR = new Path("target/tmp");
+
+  private Path base;
   private Configuration configuration;
-  private IndexWriter writer;
+  private IndexWriter commitWriter;
   private IndexImporter indexImporter;
   private Random random = new Random();
-  private File path;
-  private File badRowIdsPath;
-  
+  private Path path;
+  private Path badRowIdsPath;
+  private IndexWriter mainWriter;
+  private FileSystem fileSystem;
+
   @Before
   public void setup() throws IOException {
-    base = new File(TMPDIR, "blur-index-importer-test");
-    rm(base);
-    base.mkdirs();
+    TableContext.clear();
     configuration = new Configuration();
+    base = new Path(TMPDIR, "blur-index-importer-test");
+    fileSystem = base.getFileSystem(configuration);
+    fileSystem.delete(base, true);
+    fileSystem.mkdirs(base);
+    setupWriter(configuration);
   }
 
   private void setupWriter(Configuration configuration) throws IOException {
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName("test-table");
     String uuid = UUID.randomUUID().toString();
-    tableDescriptor.setTableUri(new File(base, "table-store").toURI().toString());
+    
+    tableDescriptor.setTableUri(new Path(base, "table-table").toUri().toString());
     tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.setShardCount(2);
+    
     TableContext tableContext = TableContext.create(tableDescriptor);
     ShardContext shardContext = ShardContext.create(tableContext, "shard-00000000");
-    File tablePath = new File(base, "table-store");
-    File shardPath = new File(tablePath, "shard-00000000");
+    Path tablePath = new Path(base, "table-table");
+    Path shardPath = new Path(tablePath, "shard-00000000");
     String indexDirName = "index_" + uuid;
-    path = new File(shardPath, indexDirName +".commit");
-    path.mkdirs();
-    badRowIdsPath = new File(shardPath, indexDirName +".bad_rowids");
-    FSDirectory directory = FSDirectory.open(path);
+    path = new Path(shardPath, indexDirName + ".commit");
+    fileSystem.mkdirs(path);
+    badRowIdsPath = new Path(shardPath, indexDirName + ".bad_rowids");
+    Directory commitDirectory = new HdfsDirectory(configuration, path);
+    Directory mainDirectory = new HdfsDirectory(configuration, shardPath);
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, tableContext.getAnalyzer());
-    writer = new IndexWriter(directory, conf);
+    commitWriter = new IndexWriter(commitDirectory, conf);
+    
+    mainWriter = new IndexWriter(mainDirectory, conf);
     BufferStore.init(128, 128);
-    indexImporter = new IndexImporter(new TrackingIndexWriter(writer), new ReentrantReadWriteLock(), shardContext, TimeUnit.MINUTES, 10);
+    
+    indexImporter = new IndexImporter(new TrackingIndexWriter(mainWriter), new ReentrantReadWriteLock(), shardContext,
+        TimeUnit.MINUTES, 10);
   }
 
   @After
   public void tearDown() throws IOException {
-    writer.close();
+    mainWriter.close();
     indexImporter.close();
-    rm(base);
+    base.getFileSystem(configuration).delete(base, true);
   }
 
-  private void rm(File file) {
-    if (!file.exists()) {
-      return;
-    }
-    if (file.isDirectory()) {
-      for (File f : file.listFiles()) {
-        rm(f);
-      }
-    }
-    file.delete();
-  }
-  
+
   @Test
   public void testIndexImporterWithCorrectRowIdShardCombination() throws IOException {
-    setupWriter(configuration);
+    
     Document document = TransactionRecorder.convert("1", genRecord("1"), new StringBuilder(), new BlurAnalyzer());
-    writer.addDocument(document);
-    writer.commit();
+    commitWriter.addDocument(document);
+    commitWriter.commit();
+    commitWriter.close();
     indexImporter.run();
-    assertFalse(path.exists());
-    assertFalse(badRowIdsPath.exists());
+    assertFalse(fileSystem.exists(path));
+    assertFalse(fileSystem.exists(badRowIdsPath));
   }
-  
+
+//  private void debug(Path file) throws IOException {
+//    if (!fileSystem.exists(file)) {
+//      return;
+//    }
+//    System.out.println(file);
+//    if (!fileSystem.isFile(file)) {
+//      FileStatus[] listStatus = fileSystem.listStatus(file);
+//      for (FileStatus f : listStatus) {
+//        debug(f.getPath());
+//      }
+//    }
+//  }
+
   @Test
   public void testIndexImporterWithWrongRowIdShardCombination() throws IOException {
     setupWriter(configuration);
     Document document = TransactionRecorder.convert("2", genRecord("1"), new StringBuilder(), new BlurAnalyzer());
-    writer.addDocument(document);
-    writer.commit();
+    commitWriter.addDocument(document);
+    commitWriter.commit();
+    commitWriter.close();
     indexImporter.run();
-    assertFalse(path.exists());
-    assertTrue(badRowIdsPath.exists());
+    assertFalse(fileSystem.exists(path));
+    assertTrue(fileSystem.exists(badRowIdsPath));
   }
-  
+
   private Record genRecord(String recordId) {
     Record record = new Record();
     record.setFamily("testing");

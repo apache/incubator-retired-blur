@@ -80,6 +80,7 @@ public class TransactionRecorderTest {
 
   @Test
   public void testReplaySimpleTest() throws IOException, InterruptedException {
+    TableContext.clear();
     Configuration configuration = new Configuration(false);
     URI fileSystemUri = MiniCluster.getFileSystemUri();
     Path path = new Path(fileSystemUri.toString() + "/transaction-recorder-test");
@@ -101,13 +102,14 @@ public class TransactionRecorderTest {
     TransactionRecorder transactionRecorder = new TransactionRecorder(shardContext);
     closeThis.add(transactionRecorder);
     transactionRecorder.open();
+
     try {
       transactionRecorder.replaceRow(true, genRow(), null);
       fail("Should NPE");
     } catch (NullPointerException e) {
     }
 
-    Thread.sleep(TimeUnit.NANOSECONDS.toMillis(tableContext.getTimeBetweenWALSyncsNanos()) * 2);
+    Thread.sleep(TimeUnit.SECONDS.toMillis(2));
 
     RAMDirectory directory = new RAMDirectory();
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, analyzer);
@@ -115,8 +117,11 @@ public class TransactionRecorderTest {
 
     TransactionRecorder replayTransactionRecorder = new TransactionRecorder(shardContext);
     closeThis.add(replayTransactionRecorder);
+    System.out.println("REPLAY");
     replayTransactionRecorder.replay(writer);
+    System.out.println("REPLAY COMPLETE");
     IndexReader reader = DirectoryReader.open(directory);
+    System.out.println("assert");
     assertEquals(1, reader.numDocs());
   }
   

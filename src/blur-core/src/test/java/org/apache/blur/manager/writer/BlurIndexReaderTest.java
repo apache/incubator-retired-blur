@@ -58,6 +58,7 @@ public class BlurIndexReaderTest {
 
   @Before
   public void setup() throws IOException {
+    TableContext.clear();
     base = new File(TMPDIR, "blur-index-reader-test");
     rm(base);
     base.mkdirs();

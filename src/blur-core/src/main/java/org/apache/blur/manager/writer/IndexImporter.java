@@ -97,14 +97,13 @@ public class IndexImporter extends TimerTask implements Closeable {
           indexWriter.commit();
           boolean isSuccess = true;
           boolean isRollbackDueToException = false;
-          if (indexWriter.numDocs() != 0) {
-            try {
-              isSuccess = applyDeletes(directory, indexWriter, shard);
-            } catch (IOException e) {
-              LOG.error("Some issue with deleting the old index on [{0}/{1}]", e, shard, table);
-              isSuccess = false;
-              isRollbackDueToException = true;
-            }
+          boolean emitDeletes = indexWriter.numDocs() != 0;
+          try {
+            isSuccess = applyDeletes(directory, indexWriter, shard, emitDeletes);
+          } catch (IOException e) {
+            LOG.error("Some issue with deleting the old index on [{0}/{1}]", e, shard, table);
+            isSuccess = false;
+            isRollbackDueToException = true;
           }
           Path dirPath = directory.getPath();
           if (isSuccess) {
@@ -116,8 +115,10 @@ public class IndexImporter extends TimerTask implements Closeable {
             fileSystem.delete(dirPath, true);
             LOG.info("Import complete on [{0}/{1}]", shard, table);
           } else {
-            if(!isRollbackDueToException){
-              LOG.error("Index is corrupted, RowIds are found in wrong shard [{0}/{1}], cancelling index import for [{2}]", shard, table, directory);
+            if (!isRollbackDueToException) {
+              LOG.error(
+                  "Index is corrupted, RowIds are found in wrong shard [{0}/{1}], cancelling index import for [{2}]",
+                  shard, table, directory);
             }
             LOG.info("Starting rollback on [{0}/{1}]", shard, table);
             indexWriter.rollback();
@@ -145,7 +146,8 @@ public class IndexImporter extends TimerTask implements Closeable {
     return result;
   }
 
-  private boolean applyDeletes(Directory directory, IndexWriter indexWriter, String shard) throws IOException {
+  private boolean applyDeletes(Directory directory, IndexWriter indexWriter, String shard, boolean emitDeletes)
+      throws IOException {
     DirectoryReader reader = DirectoryReader.open(directory);
     try {
       LOG.info("Applying deletes in reader [{0}]", reader);
@@ -165,11 +167,13 @@ public class IndexImporter extends TimerTask implements Closeable {
           key.set(rowIdInBytes, 0, rowIdInBytes.length);
           int partition = blurPartitioner.getPartition(key, null, numberOfShards);
           int shardId = BlurUtil.getShardIndex(shard);
-          if( shardId != partition){
+          if (shardId != partition) {
             return false;
           }
-          Term term = new Term(BlurConstants.ROW_ID, BytesRef.deepCopyOf(ref));
-          indexWriter.deleteDocuments(term);
+          if (emitDeletes) {
+            Term term = new Term(BlurConstants.ROW_ID, BytesRef.deepCopyOf(ref));
+            indexWriter.deleteDocuments(term);
+          }
         }
       }
     } finally {

@@ -62,6 +62,7 @@ public class BlurNRTIndexTest {
 
   @Before
   public void setup() throws IOException {
+    TableContext.clear();
     base = new File(TMPDIR, "blur-index-writer-test");
     rm(base);
     base.mkdirs();

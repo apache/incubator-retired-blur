@@ -70,7 +70,7 @@ public class IndexInputCloser implements Runnable, Closeable {
           refs.remove(ref);
         }
       } catch (InterruptedException e) {
-        LOG.info("Interrupted");
+        LOG.debug("Interrupted");
         running.set(false);
         return;
       }

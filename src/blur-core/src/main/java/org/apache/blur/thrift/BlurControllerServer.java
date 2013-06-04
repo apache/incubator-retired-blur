@@ -22,13 +22,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -46,6 +49,7 @@ import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.indexserver.DistributedLayoutManager;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.results.BlurResultIterableClient;
+import org.apache.blur.manager.results.LazyBlurResult;
 import org.apache.blur.manager.results.MergerBlurResultIterable;
 import org.apache.blur.manager.stats.MergerTableStats;
 import org.apache.blur.manager.status.MergerQueryStatus;
@@ -57,6 +61,7 @@ import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
+import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.RowMutation;
@@ -83,19 +88,21 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   public static abstract class BlurClient {
     public abstract <T> T execute(String node, BlurCommand<T> command, int maxRetries, long backOffTime,
-        long maxBackOffTime) throws Exception;
+        long maxBackOffTime) throws BlurException, TException, IOException;
   }
 
   public static class BlurClientRemote extends BlurClient {
     @Override
     public <T> T execute(String node, BlurCommand<T> command, int maxRetries, long backOffTime, long maxBackOffTime)
-        throws Exception {
+        throws BlurException, TException, IOException {
       return BlurClientManager.execute(node, command, maxRetries, backOffTime, maxBackOffTime);
     }
   }
 
   private static final String CONTROLLER_THREAD_POOL = "controller-thread-pool";
   private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
+  private static final Map<String, Set<String>> EMPTY_MAP = new HashMap<String, Set<String>>();
+  private static final Set<String> EMPTY_SET = new HashSet<String>();
 
   private ExecutorService _executor;
   private AtomicReference<Map<String, Map<String, String>>> _shardServerLayout = new AtomicReference<Map<String, Map<String, String>>>(
@@ -292,7 +299,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public BlurResults query(final String table, final BlurQuery blurQuery) throws BlurException, TException {
-    // @TODO make this faster
     checkTable(table);
     String cluster = _clusterStatus.getCluster(true, table);
     _queryChecker.checkQuery(blurQuery);
@@ -303,31 +309,101 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
 
         BlurQuery original = new BlurQuery(blurQuery);
-        
+
         BlurUtil.setStartTime(original);
 
         Selector selector = blurQuery.getSelector();
+        if (selector == null) {
+          selector = new Selector();
+          selector.setColumnFamiliesToFetch(EMPTY_SET);
+          selector.setColumnsToFetch(EMPTY_MAP);
+          if (!blurQuery.simpleQuery.superQueryOn) {
+            selector.setRecordOnly(true);
+          }
+        }
         blurQuery.setSelector(null);
 
-        BlurResultIterable hitsIterable = scatterGather(getCluster(table), new BlurCommand<BlurResultIterable>() {
+        BlurCommand<BlurResultIterable> command = new BlurCommand<BlurResultIterable>() {
+          @Override
+          public BlurResultIterable call(Client client, Connection connection) throws BlurException, TException {
+            return new BlurResultIterableClient(connection, client, table, blurQuery, facetCounts, _remoteFetchCount);
+          }
+
           @Override
           public BlurResultIterable call(Client client) throws BlurException, TException {
-            return new BlurResultIterableClient(client, table, blurQuery, facetCounts, _remoteFetchCount);
+            throw new RuntimeException("Won't be called.");
           }
-        }, new MergerBlurResultIterable(blurQuery));
-        BlurResults results = BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _executor, selector, this,
-            table);
-        if (!validResults(results, shardCount, blurQuery)) {
-          BlurClientManager.sleep(_defaultDelay, _maxDefaultDelay, retries, _maxDefaultRetries);
-          continue OUTER;
+        };
+
+        command.setDetachClient(true);
+
+        MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
+        BlurResultIterable hitsIterable = null;
+        try {
+          hitsIterable = scatterGather(getCluster(table), command, merger);
+          BlurResults results = convertToBlurResults(hitsIterable, blurQuery, facetCounts, _executor, selector, table);
+          if (!validResults(results, shardCount, blurQuery)) {
+            BlurClientManager.sleep(_defaultDelay, _maxDefaultDelay, retries, _maxDefaultRetries);
+            continue OUTER;
+          }
+          return results;
+        } finally {
+          if (hitsIterable != null) {
+            hitsIterable.close();
+          }
         }
-        return results;
       } catch (Exception e) {
         LOG.error("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
         throw new BException("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
       }
     }
     throw new BlurException("Query could not be completed.", null);
+  }
+
+  public BlurResults convertToBlurResults(BlurResultIterable hitsIterable, BlurQuery query,
+      AtomicLongArray facetCounts, ExecutorService executor, Selector selector, final String table)
+      throws InterruptedException, ExecutionException {
+    BlurResults results = new BlurResults();
+    results.setTotalResults(hitsIterable.getTotalResults());
+    results.setShardInfo(hitsIterable.getShardInfo());
+    if (query.minimumNumberOfResults > 0) {
+      hitsIterable.skipTo(query.start);
+      int count = 0;
+      Iterator<BlurResult> iterator = hitsIterable.iterator();
+      while (iterator.hasNext() && count < query.fetch) {
+        results.addToResults(iterator.next());
+        count++;
+      }
+    }
+    if (results.results == null) {
+      results.results = new ArrayList<BlurResult>();
+    }
+    if (facetCounts != null) {
+      results.facetCounts = BlurUtil.toList(facetCounts);
+    }
+    if (selector != null) {
+      List<Future<FetchResult>> futures = new ArrayList<Future<FetchResult>>();
+      for (int i = 0; i < results.results.size(); i++) {
+        final LazyBlurResult result = (LazyBlurResult) results.results.get(i);
+        final Selector s = new Selector(selector);
+        s.setLocationId(result.locationId);
+        futures.add(executor.submit(new Callable<FetchResult>() {
+          @Override
+          public FetchResult call() throws Exception {
+            return result.fetchRow(table, s);
+          }
+        }));
+      }
+      for (int i = 0; i < results.results.size(); i++) {
+        Future<FetchResult> future = futures.get(i);
+        BlurResult result = results.results.get(i);
+        result.setFetchResult(future.get());
+        result.setLocationId(null);
+      }
+    }
+    results.query = query;
+    results.query.selector = selector;
+    return results;
   }
 
   private boolean validResults(BlurResults results, int shardCount, BlurQuery query) {
@@ -618,11 +694,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private <R> R scatterGather(String cluster, final BlurCommand<R> command, Merger<R> merger) throws Exception {
     return ForkJoin.execute(_executor, _clusterStatus.getOnlineShardServers(true, cluster),
         new ParallelCall<String, R>() {
-          @SuppressWarnings("unchecked")
           @Override
-          public R call(String hostnamePort) throws Exception {
-            return _client.execute(hostnamePort, (BlurCommand<R>) command.clone(), _maxDefaultRetries, _defaultDelay,
-                _maxDefaultDelay);
+          public R call(String hostnamePort) throws BlurException, TException, IOException {
+            return _client.execute(hostnamePort, command.clone(), _maxDefaultRetries, _defaultDelay, _maxDefaultDelay);
           }
         }).merge(merger);
   }

@@ -33,25 +33,25 @@ public class ShardServerEventHandler implements TServerEventHandler {
 
   @Override
   public void preServe() {
-    LOG.info("preServe");
+    LOG.debug("preServe");
   }
 
   @Override
   public ServerContext createContext(TProtocol input, TProtocol output) {
-    LOG.info("Client connected");
+    LOG.debug("Client connected");
     return new ShardServerContext();
   }
 
   @Override
   public void deleteContext(ServerContext serverContext, TProtocol input, TProtocol output) {
-    LOG.info("Client disconnected");
+    LOG.debug("Client disconnected");
     ShardServerContext context = (ShardServerContext) serverContext;
     context.close();
   }
 
   @Override
   public void processContext(ServerContext serverContext, TTransport inputTransport, TTransport outputTransport) {
-    LOG.info("Method called");
+    LOG.debug("Method called");
     ShardServerContext context = (ShardServerContext) serverContext;
     ShardServerContext.registerContextForCall(context);
   }

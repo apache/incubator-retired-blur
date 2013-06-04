@@ -49,7 +49,6 @@ import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Blur.Client;
 
-
 public class BlurClientManager {
 
   private static final Object NULL = new Object();
@@ -111,16 +110,18 @@ public class BlurClientManager {
     return false;
   }
 
-  public static <CLIENT, T> T execute(Connection connection, AbstractCommand<CLIENT, T> command) throws BlurException, TException, IOException {
+  public static <CLIENT, T> T execute(Connection connection, AbstractCommand<CLIENT, T> command) throws BlurException,
+      TException, IOException {
     return execute(connection, command, MAX_RETRIES, BACK_OFF_TIME, MAX_BACK_OFF_TIME);
   }
 
-  public static <CLIENT, T> T execute(Connection connection, AbstractCommand<CLIENT, T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws BlurException,
-      TException, IOException {
+  public static <CLIENT, T> T execute(Connection connection, AbstractCommand<CLIENT, T> command, int maxRetries,
+      long backOffTime, long maxBackOffTime) throws BlurException, TException, IOException {
     return execute(Arrays.asList(connection), command, maxRetries, backOffTime, maxBackOffTime);
   }
 
-  public static <CLIENT, T> T execute(List<Connection> connections, AbstractCommand<CLIENT, T> command) throws BlurException, TException, IOException {
+  public static <CLIENT, T> T execute(List<Connection> connections, AbstractCommand<CLIENT, T> command)
+      throws BlurException, TException, IOException {
     return execute(connections, command, MAX_RETRIES, BACK_OFF_TIME, MAX_BACK_OFF_TIME);
   }
 
@@ -132,8 +133,8 @@ public class BlurClientManager {
   }
 
   @SuppressWarnings("unchecked")
-  public static <CLIENT, T> T execute(List<Connection> connections, AbstractCommand<CLIENT, T> command, int maxRetries, long backOffTime, long maxBackOffTime)
-      throws BlurException, TException, IOException {
+  public static <CLIENT, T> T execute(List<Connection> connections, AbstractCommand<CLIENT, T> command, int maxRetries,
+      long backOffTime, long maxBackOffTime) throws BlurException, TException, IOException {
     LocalResources localResources = new LocalResources();
     AtomicReference<Client> client = localResources.client;
     Random random = localResources.random;
@@ -163,8 +164,13 @@ public class BlurClientManager {
           }
         }
         try {
-          T result = command.call((CLIENT) client.get());
+          T result = command.call((CLIENT) client.get(), connection);
           allBad = false;
+          if (command.isDetachClient()) {
+            // if the is detach client is set then the command will return the
+            // client to the pool.
+            client.set(null);
+          }
           return result;
         } catch (RuntimeException e) {
           Throwable cause = e.getCause();
@@ -210,8 +216,9 @@ public class BlurClientManager {
     return badConnections.containsKey(connection);
   }
 
-  private static <CLIENT, T> boolean handleError(Connection connection, AtomicReference<Blur.Client> client, AtomicInteger retries, AbstractCommand<CLIENT, T> command,
-      Exception e, int maxRetries, long backOffTime, long maxBackOffTime) {
+  private static <CLIENT, T> boolean handleError(Connection connection, AtomicReference<Blur.Client> client,
+      AtomicInteger retries, AbstractCommand<CLIENT, T> command, Exception e, int maxRetries, long backOffTime,
+      long maxBackOffTime) {
     if (client.get() != null) {
       trashConnections(connection, client);
       markBadConnection(connection);
@@ -221,7 +228,8 @@ public class BlurClientManager {
       LOG.error("No more retries [{0}] out of [{1}]", retries, maxRetries);
       return true;
     }
-    LOG.error("Retrying call [{0}] retry [{1}] out of [{2}] message [{3}]", command, retries.get(), maxRetries, e.getMessage());
+    LOG.error("Retrying call [{0}] retry [{1}] out of [{2}] message [{3}]", command, retries.get(), maxRetries,
+        e.getMessage());
     sleep(backOffTime, maxBackOffTime, retries.get(), maxRetries);
     retries.incrementAndGet();
     return false;
@@ -238,8 +246,8 @@ public class BlurClientManager {
     }
   }
 
-  public static <CLIENT, T> T execute(String connectionStr, AbstractCommand<CLIENT, T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws BlurException,
-      TException, IOException {
+  public static <CLIENT, T> T execute(String connectionStr, AbstractCommand<CLIENT, T> command, int maxRetries,
+      long backOffTime, long maxBackOffTime) throws BlurException, TException, IOException {
     return execute(getConnections(connectionStr), command, maxRetries, backOffTime, maxBackOffTime);
   }
 
@@ -259,15 +267,16 @@ public class BlurClientManager {
     return Arrays.asList(new Connection(connectionStr));
   }
 
-  public static <CLIENT, T> T execute(String connectionStr, AbstractCommand<CLIENT, T> command) throws BlurException, TException, IOException {
+  public static <CLIENT, T> T execute(String connectionStr, AbstractCommand<CLIENT, T> command) throws BlurException,
+      TException, IOException {
     return execute(getConnections(connectionStr), command);
   }
 
-  private static void returnClient(Connection connection, AtomicReference<Blur.Client> client) {
+  public static void returnClient(Connection connection, AtomicReference<Blur.Client> client) {
     returnClient(connection, client.get());
   }
 
-  private static void returnClient(Connection connection, Blur.Client client) {
+  public static void returnClient(Connection connection, Blur.Client client) {
     try {
       clientPool.get(connection).put(client);
     } catch (InterruptedException e) {

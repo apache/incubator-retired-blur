@@ -1,5 +1,3 @@
-package org.apache.blur.manager.results;
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,17 +14,34 @@ package org.apache.blur.manager.results;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import java.io.Closeable;
-import java.util.Map;
 
+package org.apache.blur.manager.results;
+
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.generated.Blur.Client;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
+import org.apache.blur.thrift.generated.FetchResult;
+import org.apache.blur.thrift.generated.Selector;
 
-public interface BlurResultIterable extends Iterable<BlurResult>, Closeable {
+/**
+ * The {@link LazyBlurResult} adds a method to fetch the result with the client
+ * that was used to execute the query.
+ */
+@SuppressWarnings("serial")
+public class LazyBlurResult extends BlurResult {
 
-  void skipTo(long skipTo);
+  private final Client _client;
 
-  long getTotalResults();
+  public LazyBlurResult(BlurResult result, Client client) {
+    super(result);
+    _client = client;
+  }
 
-  Map<String, Long> getShardInfo();
+  public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException {
+    synchronized (_client) {
+      return _client.fetchRow(table, selector);
+    }
+  }
 
 }

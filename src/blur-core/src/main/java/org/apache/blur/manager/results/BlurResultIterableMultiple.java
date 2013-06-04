@@ -24,11 +24,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.utils.BlurConstants;
+import org.apache.hadoop.io.IOUtils;
 
 
 public class BlurResultIterableMultiple implements BlurResultIterable {
+  
+  private static final Log LOG = LogFactory.getLog(BlurResultIterableMultiple.class);
 
   private long totalResults;
   private Map<String, Long> shardInfo = new TreeMap<String, Long>();
@@ -108,7 +113,7 @@ public class BlurResultIterableMultiple implements BlurResultIterable {
   @Override
   public void close() throws IOException {
     for (BlurResultIterable it : results) {
-      it.close();
+      IOUtils.cleanup(LOG, it);
     }
   }
 }

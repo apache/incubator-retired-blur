@@ -57,9 +57,10 @@ public class IndexImporterTest {
   private Random random = new Random();
   private File path;
   private File badRowIdsPath;
+  
   @Before
   public void setup() throws IOException {
-    base = new File(TMPDIR, "blur-index-writer-test");
+    base = new File(TMPDIR, "blur-index-importer-test");
     rm(base);
     base.mkdirs();
     configuration = new Configuration();

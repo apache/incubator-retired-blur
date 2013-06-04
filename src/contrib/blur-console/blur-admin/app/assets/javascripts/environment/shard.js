@@ -6,10 +6,10 @@ var ShardModel = Backbone.Model.extend({
     return '/blur_shards/' + this.get('id') + '.json';
   },
   status: function(){
-    var statusString = "Shard: " + this.get('node_name');
+    var statusString = this.get('node_name');
     statusString += " | Blur Version: " + this.get('blur_version');
     statusString += " | Status: " + this.onlineStatus();
-    if (this.get('status') != 1) {
+    if (this.get('shard_status') != 1) {
       statusString += " at " + this.offlineDate();
     }
     return statusString;
@@ -59,7 +59,7 @@ var ShardCollection = Backbone.Collection.extend({
     });
   },
   comparator: function(shard){
-    return shard.get('node_name');
+    return [shard.get('shard_status'), shard.get('node_name')];
   }
 });
 

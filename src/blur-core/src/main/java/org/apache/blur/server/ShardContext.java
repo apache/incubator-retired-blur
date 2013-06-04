@@ -19,6 +19,7 @@ package org.apache.blur.server;
 import java.io.IOException;
 
 import org.apache.blur.store.hdfs.HdfsDirectory;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.store.Directory;
 
@@ -75,6 +76,7 @@ public class ShardContext {
   }
 
   public static ShardContext create(TableContext tableContext, String shard) throws IOException {
+    BlurUtil.validateShardName(shard);
     ShardContext shardContext = new ShardContext();
     shardContext.tableContext = tableContext;
     shardContext.walShardPath = new Path(tableContext.getWalTablePath(), shard);

@@ -45,6 +45,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLongArray;
+import java.util.regex.Pattern;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -58,6 +59,7 @@ import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
+import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.RecordMutation;
@@ -101,6 +103,7 @@ public class BlurUtil {
   private static final Class<?>[] EMPTY_PARAMETER_TYPES = new Class[] {};
   private static final Log LOG = LogFactory.getLog(BlurUtil.class);
   private static final String UNKNOWN = "UNKNOWN";
+  private static Pattern validator = Pattern.compile("^[a-zA-Z0-9\\_\\-]+$");
 
   @SuppressWarnings("unchecked")
   public static <T extends Iface> T recordMethodCallsAndAverageTimes(final T t, Class<T> clazz) {
@@ -635,5 +638,28 @@ public class BlurUtil {
     int index = shard.indexOf('-');
     return Integer.parseInt(shard.substring(index + 1));
   }
+  
+	public static void validateRowIdAndRecord(String rowId, Record record) {
+		if (!validator.matcher(record.family).matches()) {
+			throw new IllegalArgumentException("Invalid column family name [ " + record.family + " ]. It should contain only this pattern [A-Za-z0-9_-]");
+		}
 
+		for (Column column : record.getColumns()) {
+			if (!validator.matcher(column.name).matches()) {
+				throw new IllegalArgumentException("Invalid column name [ " + column.name + " ]. It should contain only this pattern [A-Za-z0-9_-]");
+			}
+		}
+	}
+
+	public static void validateTableName(String tableName) {
+		if (!validator.matcher(tableName).matches()) {
+			throw new IllegalArgumentException("Invalid table name [ " + tableName + " ]. It should contain only this pattern [A-Za-z0-9_-]");
+		}
+	}
+
+	public static void validateShardName(String shardName) {
+		if (!validator.matcher(shardName).matches()) {
+			throw new IllegalArgumentException("Invalid shard name [ " + shardName + " ]. It should contain only this pattern [A-Za-z0-9_-]");
+		}
+	}
 }

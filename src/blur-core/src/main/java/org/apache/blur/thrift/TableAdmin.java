@@ -31,6 +31,7 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.zookeeper.ZooKeeper;
 
 public abstract class TableAdmin implements Iface {
@@ -59,6 +60,7 @@ public abstract class TableAdmin implements Iface {
   public final void createTable(TableDescriptor tableDescriptor) throws BlurException, TException {
     try {
       TableContext.clear();
+      BlurUtil.validateTableName(tableDescriptor.name);
       // @todo Remove this once issue #27 is resolved
       if (tableDescriptor.compressionBlockSize > 32768) {
         tableDescriptor.compressionBlockSize = 32768;

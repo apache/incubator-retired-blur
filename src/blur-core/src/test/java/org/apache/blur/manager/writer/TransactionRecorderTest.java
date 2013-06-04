@@ -136,18 +136,33 @@ public class TransactionRecorderTest {
   }
   
   @Test(expected=IllegalArgumentException.class)
-  public void testConvertShouldFail(){
-    String rowId = "RowId_123.1";
+  public void testConvertWithBadFamilyNameShouldFail(){
+    String rowId = "RowId_123-1";
     Record record = new Record();
     record.setRecordId("RecordId_123-1");
-    record.setFamily("Family_123-1");
+    record.setFamily("Family_123.1");
     
     Column column = new Column();
     column.setName("columnName_123-1");
     record.setColumns(Arrays.asList(column));
     
     TransactionRecorder.convert(rowId, record, new StringBuilder(), new BlurAnalyzer());
-    assert(true);
+    fail();
+  }
+  
+  @Test(expected=IllegalArgumentException.class)
+  public void testConvertWithBadColumnNameShouldFail(){
+    String rowId = "RowId_123-1";
+    Record record = new Record();
+    record.setRecordId("RecordId_123-1");
+    record.setFamily("Family_123-1");
+    
+    Column column = new Column();
+    column.setName("columnName_123.1");
+    record.setColumns(Arrays.asList(column));
+    
+    TransactionRecorder.convert(rowId, record, new StringBuilder(), new BlurAnalyzer());
+    fail();
   }
 
   private Row genRow() {

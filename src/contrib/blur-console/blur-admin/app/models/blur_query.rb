@@ -39,7 +39,7 @@ class BlurQuery < ActiveRecord::Base
     summary_hash =
     {
       :id => id,
-      :can_update => user.can?(:update, :blur_queries),
+      :can_update => user.can?(:cancel, :blur_queries),
       :userid => print_value(userid),
       :query => print_value(query_string),
       :tablename => print_value(blur_table.table_name),

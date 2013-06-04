@@ -449,7 +449,8 @@ public class IndexManager {
     }
 
     boolean returnIdsOnly = false;
-    if (selector.columnFamiliesToFetch.isEmpty() && selector.columnsToFetch.isEmpty()) {
+    if (selector.columnFamiliesToFetch != null && selector.columnsToFetch != null
+        && selector.columnFamiliesToFetch.isEmpty() && selector.columnsToFetch.isEmpty()) {
       // exit early
       returnIdsOnly = true;
     }
@@ -486,8 +487,7 @@ public class IndexManager {
           fetchResult.rowResult = new FetchRowResult();
           fetchResult.rowResult.row = new Row(rowId, null, recordCount);
         } else {
-          List<Document> docs = BlurUtil.fetchDocuments(reader, term, fieldVisitor,
-              selector);
+          List<Document> docs = BlurUtil.fetchDocuments(reader, term, fieldVisitor, selector);
           fetchResult.rowResult = new FetchRowResult(getRow(docs));
         }
         return;

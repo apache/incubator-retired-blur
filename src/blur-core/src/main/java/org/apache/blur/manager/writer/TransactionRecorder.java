@@ -42,6 +42,7 @@ import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.RowIndexWriter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -86,7 +87,6 @@ public class TransactionRecorder extends TimerTask implements Closeable {
 
   private static final Log LOG = LogFactory.getLog(TransactionRecorder.class);
   public static FieldType ID_TYPE;
-
   static {
     ID_TYPE = new FieldType();
     ID_TYPE.setIndexed(true);
@@ -367,6 +367,7 @@ public class TransactionRecorder extends TimerTask implements Closeable {
   }
 
   public static Document convert(String rowId, Record record, StringBuilder builder, BlurAnalyzer analyzer) {
+    BlurUtil.validateRowIdAndRecord(rowId, record);
     Document document = new Document();
     document.add(new Field(BlurConstants.ROW_ID, rowId, ID_TYPE));
     document.add(new Field(BlurConstants.RECORD_ID, record.recordId, ID_TYPE));

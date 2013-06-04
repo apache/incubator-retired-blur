@@ -24,11 +24,13 @@ import static org.junit.Assert.fail;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.MiniCluster;
+import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.index.IndexWriter;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -116,6 +118,36 @@ public class TransactionRecorderTest {
     replayTransactionRecorder.replay(writer);
     IndexReader reader = DirectoryReader.open(directory);
     assertEquals(1, reader.numDocs());
+  }
+  
+  @Test
+  public void testConvertShouldPass(){
+    String rowId = "RowId_123-1";
+    Record record = new Record();
+    record.setRecordId("RecordId_123-1");
+    record.setFamily("Family_123-1");
+    
+    Column column = new Column();
+    column.setName("columnName_123-1");
+    record.setColumns(Arrays.asList(column));
+    
+    TransactionRecorder.convert(rowId, record, new StringBuilder(), new BlurAnalyzer());
+    assert(true);
+  }
+  
+  @Test(expected=IllegalArgumentException.class)
+  public void testConvertShouldFail(){
+    String rowId = "RowId_123.1";
+    Record record = new Record();
+    record.setRecordId("RecordId_123-1");
+    record.setFamily("Family_123-1");
+    
+    Column column = new Column();
+    column.setName("columnName_123-1");
+    record.setColumns(Arrays.asList(column));
+    
+    TransactionRecorder.convert(rowId, record, new StringBuilder(), new BlurAnalyzer());
+    assert(true);
   }
 
   private Row genRow() {

@@ -26,7 +26,7 @@ import org.junit.Test;
 
 @SuppressWarnings("deprecation")
 public class BlurTaskTest {
-  private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "/tmp"));
+  private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp/BlurTaskTest_tmp"));
 
   @Test
   public void testGetNumReducersBadPath() {

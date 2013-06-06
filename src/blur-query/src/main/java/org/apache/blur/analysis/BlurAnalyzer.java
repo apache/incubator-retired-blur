@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,8 +52,14 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.AnalyzerWrapper;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Field.Index;
-import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.DoubleField;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.FloatField;
+import org.apache.lucene.document.IntField;
+import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.FieldInfo.IndexOptions;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
@@ -60,7 +67,7 @@ import org.apache.lucene.util.Version;
 public final class BlurAnalyzer extends AnalyzerWrapper {
 
   public enum TYPE {
-    LONG, DOUBLE, FLOAT, INTEGER, DEFAULT
+    LONG, DOUBLE, FLOAT, INTEGER, TEXT
   }
 
   @SuppressWarnings("serial")
@@ -75,17 +82,24 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
 
   private static final String STANDARD = "org.apache.lucene.analysis.standard.StandardAnalyzer";
   public static final BlurAnalyzer BLANK_ANALYZER = new BlurAnalyzer(new KeywordAnalyzer());
+
+  private static final Analyzer ERROR_ANALYZER = new Analyzer() {
+    @Override
+    protected TokenStreamComponents createComponents(String field, Reader reader) {
+      throw new RuntimeException("This analyzer should never be used.");
+    }
+  };
   private static Map<String, Class<? extends Analyzer>> aliases = new HashMap<String, Class<? extends Analyzer>>();
 
-  private Map<String, Store> _storeMap = new HashMap<String, Store>();
+  private Set<String> _subIndexNames = new HashSet<String>();
   private Map<String, Set<String>> _subIndexNameLookups = new HashMap<String, Set<String>>();
   private Map<String, Boolean> _fullTextFields = new HashMap<String, Boolean>();
   private Map<String, Boolean> _fullTextColumnFamilies = new HashMap<String, Boolean>();
   private AnalyzerDefinition _analyzerDefinition;
-  private Analyzer _fullTextAnalyzer = new StandardAnalyzer(LUCENE_VERSION);
   private Analyzer _defaultAnalyzer;
   private Map<String, Analyzer> _analyzers = new HashMap<String, Analyzer>();
   private Map<String, TYPE> _typeLookup = new HashMap<String, BlurAnalyzer.TYPE>();
+  private Map<String, FieldType> _fieldTypes = new HashMap<String, FieldType>();
 
   public Set<String> getSubIndexNames(String indexName) {
     return _subIndexNameLookups.get(indexName);
@@ -99,22 +113,20 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
   public BlurAnalyzer(AnalyzerDefinition analyzerDefinition) {
     _analyzerDefinition = analyzerDefinition;
     ColumnDefinition defaultDefinition = analyzerDefinition.getDefaultDefinition();
-    String fullTextAnalyzerClassName = analyzerDefinition.fullTextAnalyzerClassName;
-    if (fullTextAnalyzerClassName != null) {
-      _fullTextAnalyzer = getAnalyzerByClassName(fullTextAnalyzerClassName, aliases, null, null);
-    }
     if (defaultDefinition == null) {
       defaultDefinition = new ColumnDefinition(STANDARD, true, null);
       analyzerDefinition.setDefaultDefinition(defaultDefinition);
     }
-    _defaultAnalyzer = getAnalyzerByClassName(defaultDefinition.getAnalyzerClassName(), aliases, null, null);
-    KeywordAnalyzer keywordAnalyzer = new KeywordAnalyzer();
+    _defaultAnalyzer = getAnalyzerByClassName(defaultDefinition.getAnalyzerClassName(), aliases, null, null,
+        _fieldTypes);
     _analyzers = new HashMap<String, Analyzer>();
-    _analyzers.put(ROW_ID, keywordAnalyzer);
-    _analyzers.put(RECORD_ID, keywordAnalyzer);
-    _analyzers.put(PRIME_DOC, keywordAnalyzer);
-    _analyzers.put(SUPER, _fullTextAnalyzer);
-    load(_analyzers, _analyzerDefinition.columnFamilyDefinitions, _fullTextFields, _subIndexNameLookups, _storeMap, _fullTextColumnFamilies, _typeLookup);
+    _analyzers.put(ROW_ID, ERROR_ANALYZER);
+    _analyzers.put(RECORD_ID, ERROR_ANALYZER);
+    _analyzers.put(PRIME_DOC, ERROR_ANALYZER);
+    _analyzers.put(PRIME_DOC, ERROR_ANALYZER);
+    _analyzers.put(SUPER, ERROR_ANALYZER);
+    load(_analyzers, _analyzerDefinition.columnFamilyDefinitions, _fullTextFields, _subIndexNameLookups,
+        _subIndexNames, _fullTextColumnFamilies, _typeLookup, _fieldTypes);
   }
 
   public BlurAnalyzer() {
@@ -129,41 +141,49 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
   public TYPE getTypeLookup(String field) {
     TYPE type = _typeLookup.get(field);
     if (type == null) {
-      return TYPE.DEFAULT;
+      return TYPE.TEXT;
     }
     return type;
   }
 
   public Query getNewRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
-    Analyzer analyzer = getAnalyzer(field);
-    if (analyzer instanceof LongAnalyzer) {
-      LongAnalyzer a = (LongAnalyzer) analyzer;
-      int precisionStep = a.getPrecisionStep();
-      int radix = a.getRadix();
-      long min = Long.parseLong(part1, radix);
-      long max = Long.parseLong(part2, radix);
-      return NumericRangeQuery.newLongRange(field, precisionStep, min, max, startInclusive, endInclusive);
-    } else if (analyzer instanceof DoubleAnalyzer) {
-      DoubleAnalyzer a = (DoubleAnalyzer) analyzer;
-      int precisionStep = a.getPrecisionStep();
-      double min = Double.parseDouble(part1);
-      double max = Double.parseDouble(part2);
-      return NumericRangeQuery.newDoubleRange(field, precisionStep, min, max, startInclusive, endInclusive);
-    } else if (analyzer instanceof FloatAnalyzer) {
-      FloatAnalyzer a = (FloatAnalyzer) analyzer;
-      int precisionStep = a.getPrecisionStep();
-      float min = Float.parseFloat(part1);
-      float max = Float.parseFloat(part2);
-      return NumericRangeQuery.newFloatRange(field, precisionStep, min, max, startInclusive, endInclusive);
-    } else if (analyzer instanceof IntegerAnalyzer) {
-      IntegerAnalyzer a = (IntegerAnalyzer) analyzer;
-      int precisionStep = a.getPrecisionStep();
-      int radix = a.getRadix();
-      int min = Integer.parseInt(part1, radix);
-      int max = Integer.parseInt(part2, radix);
-      return NumericRangeQuery.newIntRange(field, precisionStep, min, max, startInclusive, endInclusive);
+    TYPE type = _typeLookup.get(field);
+    if (type == null) {
+      return null;
     }
-    return null;
+    FieldType fieldType = _fieldTypes.get(field);
+    switch (type) {
+    case INTEGER:
+      int integerPrecisionStep = fieldType.numericPrecisionStep();
+      int integerMin = Integer.parseInt(part1);
+      int integerMax = Integer.parseInt(part2);
+      return NumericRangeQuery.newIntRange(field, integerPrecisionStep, integerMin, integerMax, startInclusive,
+          endInclusive);
+
+    case DOUBLE:
+      int doublePrecisionStep = fieldType.numericPrecisionStep();
+      double doubleMin = Double.parseDouble(part1);
+      double doubleMax = Double.parseDouble(part2);
+      return NumericRangeQuery.newDoubleRange(field, doublePrecisionStep, doubleMin, doubleMax, startInclusive,
+          endInclusive);
+
+    case FLOAT:
+      int floatPrecisionStep = fieldType.numericPrecisionStep();
+      float floatMin = Float.parseFloat(part1);
+      float floatMax = Float.parseFloat(part2);
+      return NumericRangeQuery.newFloatRange(field, floatPrecisionStep, floatMin, floatMax, startInclusive,
+          endInclusive);
+
+    case LONG:
+      int longPrecisionStep = fieldType.numericPrecisionStep();
+      long longMin = Long.parseLong(part1);
+      long longMax = Long.parseLong(part2);
+      return NumericRangeQuery.newLongRange(field, longPrecisionStep, longMin, longMax, startInclusive, endInclusive);
+
+    default:
+      return null;
+    }
+
   }
 
   public boolean isFullTextField(String fieldName) {
@@ -186,16 +206,64 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
     return false;
   }
 
-  public Store getStore(String indexName) {
-    Store store = _storeMap.get(indexName);
-    if (store == null) {
-      return Store.YES;
+  /**
+   * This method decides on the field type for the given field by name. Sub
+   * fields will also be passed in the fieldName such as fam1.col.sub1.
+   * 
+   * @param fieldName
+   * @return the {@link FieldType}
+   */
+  public FieldType getFieldType(String field) {
+    FieldType fieldType = _fieldTypes.get(field);
+    if (fieldType == null) {
+      fieldType = new FieldType(TextField.TYPE_STORED);
+      fieldType.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS);
     }
-    return store;
+    if (isSubFieldName(field)) {
+      fieldType.setStored(false);
+    }
+    return fieldType;
   }
 
-  public Index getIndex(String indexName) {
-    return Index.ANALYZED_NO_NORMS;
+  /**
+   * Checks if the fieldName is a sub field or not.
+   * 
+   * @param fieldName
+   *          the field name to check.
+   * @return boolean
+   */
+  public boolean isSubFieldName(String fieldName) {
+    return _subIndexNames.contains(fieldName);
+  }
+
+  /**
+   * Get field will return the proper field for the given {@link FieldType}.
+   * 
+   * @param fieldName
+   *          the field name.
+   * @param value
+   *          the value.
+   * @param fieldType
+   *          the {@link FieldType}.
+   * @return the new {@link Field}.
+   */
+  public Field getField(String fieldName, String value, FieldType fieldType) {
+    TYPE type = _typeLookup.get(fieldName);
+    if (type == null) {
+      return new Field(fieldName, value, fieldType);
+    }
+    switch (type) {
+    case INTEGER:
+      return new IntField(fieldName, Integer.parseInt(value), fieldType);
+    case DOUBLE:
+      return new DoubleField(fieldName, Double.parseDouble(value), fieldType);
+    case FLOAT:
+      return new FloatField(fieldName, Float.parseFloat(value), fieldType);
+    case LONG:
+      return new LongField(fieldName, Long.parseLong(value), fieldType);
+    default:
+      return new Field(fieldName, value, fieldType);
+    }
   }
 
   public String toJSON() {
@@ -226,7 +294,7 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
   public void close() {
 
   }
-  
+
   @Override
   protected Analyzer getWrappedAnalyzer(String fieldName) {
     Analyzer analyzer = getAnalyzer(fieldName);
@@ -291,8 +359,9 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
     return outputStream.toByteArray();
   }
 
-  private static void load(Map<String, Analyzer> analyzers, Map<String, ColumnFamilyDefinition> familyDefinitions, Map<String, Boolean> fullTextFields,
-      Map<String, Set<String>> subIndexNameLookups, Map<String, Store> storeMap, Map<String, Boolean> fullTextColumnFamilies, Map<String, TYPE> typeLookup) {
+  private static void load(Map<String, Analyzer> analyzers, Map<String, ColumnFamilyDefinition> familyDefinitions,
+      Map<String, Boolean> fullTextFields, Map<String, Set<String>> subIndexNameLookups, Set<String> subIndexNames,
+      Map<String, Boolean> fullTextColumnFamilies, Map<String, TYPE> typeLookup, Map<String, FieldType> fieldTypes) {
     if (familyDefinitions != null) {
       for (String family : familyDefinitions.keySet()) {
         ColumnFamilyDefinition familyDefinition = familyDefinitions.get(family);
@@ -300,33 +369,41 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
         if (defaultDefinition != null) {
           fullTextColumnFamilies.put(family, defaultDefinition.isFullTextIndex());
         }
-        load(family, familyDefinition, analyzers, fullTextFields, subIndexNameLookups, storeMap, typeLookup);
+        load(family, familyDefinition, analyzers, fullTextFields, subIndexNameLookups, subIndexNames, typeLookup,
+            fieldTypes);
       }
     }
   }
 
-  private static void load(String family, ColumnFamilyDefinition familyDefinition, Map<String, Analyzer> analyzers, Map<String, Boolean> fullTextFields,
-      Map<String, Set<String>> subIndexNameLookups, Map<String, Store> storeMap, Map<String, TYPE> typeLookup) {
+  private static void load(String family, ColumnFamilyDefinition familyDefinition, Map<String, Analyzer> analyzers,
+      Map<String, Boolean> fullTextFields, Map<String, Set<String>> subIndexNameLookups, Set<String> subIndexNames,
+      Map<String, TYPE> typeLookup, Map<String, FieldType> fieldTypes) {
     Map<String, ColumnDefinition> columnDefinitions = familyDefinition.getColumnDefinitions();
     if (columnDefinitions != null) {
       for (String column : columnDefinitions.keySet()) {
         ColumnDefinition columnDefinition = columnDefinitions.get(column);
-        load(family, familyDefinition, column, columnDefinition, analyzers, fullTextFields, subIndexNameLookups, storeMap, typeLookup);
+        load(family, familyDefinition, column, columnDefinition, analyzers, fullTextFields, subIndexNameLookups,
+            subIndexNames, typeLookup, fieldTypes);
       }
     }
   }
 
-  private static void load(String family, ColumnFamilyDefinition familyDefinition, String column, ColumnDefinition columnDefinition, Map<String, Analyzer> analyzers,
-      Map<String, Boolean> fullTextFields, Map<String, Set<String>> subIndexNameLookups, Map<String, Store> storeMap, Map<String, TYPE> typeLookup) {
-    Map<String, AlternateColumnDefinition> alternateColumnDefinitions = columnDefinition.getAlternateColumnDefinitions();
+  private static void load(String family, ColumnFamilyDefinition familyDefinition, String column,
+      ColumnDefinition columnDefinition, Map<String, Analyzer> analyzers, Map<String, Boolean> fullTextFields,
+      Map<String, Set<String>> subIndexNameLookups, Set<String> subIndexNames, Map<String, TYPE> typeLookup,
+      Map<String, FieldType> fieldTypes) {
+    Map<String, AlternateColumnDefinition> alternateColumnDefinitions = columnDefinition
+        .getAlternateColumnDefinitions();
     if (alternateColumnDefinitions != null) {
       for (String subColumn : alternateColumnDefinitions.keySet()) {
         AlternateColumnDefinition alternateColumnDefinition = alternateColumnDefinitions.get(subColumn);
-        load(family, familyDefinition, column, columnDefinition, subColumn, alternateColumnDefinition, analyzers, subIndexNameLookups, storeMap, typeLookup);
+        load(family, familyDefinition, column, columnDefinition, subColumn, alternateColumnDefinition, analyzers,
+            subIndexNameLookups, subIndexNames, typeLookup, fieldTypes);
       }
     }
     String fieldName = family + "." + column;
-    Analyzer analyzer = getAnalyzerByClassName(columnDefinition.getAnalyzerClassName(), aliases, fieldName, typeLookup);
+    Analyzer analyzer = getAnalyzerByClassName(columnDefinition.getAnalyzerClassName(), aliases, fieldName, typeLookup,
+        fieldTypes);
     analyzers.put(fieldName, analyzer);
     if (columnDefinition.isFullTextIndex()) {
       fullTextFields.put(fieldName, Boolean.TRUE);
@@ -335,25 +412,27 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
     }
   }
 
-  private static void load(String family, ColumnFamilyDefinition familyDefinition, String column, ColumnDefinition columnDefinition, String subColumn,
-      AlternateColumnDefinition alternateColumnDefinition, Map<String, Analyzer> analyzers, Map<String, Set<String>> subIndexNameLookups, Map<String, Store> storeMap,
-      Map<String, TYPE> typeLookup) {
+  private static void load(String family, ColumnFamilyDefinition familyDefinition, String column,
+      ColumnDefinition columnDefinition, String subColumn, AlternateColumnDefinition alternateColumnDefinition,
+      Map<String, Analyzer> analyzers, Map<String, Set<String>> subIndexNameLookups, Set<String> subIndexNames,
+      Map<String, TYPE> typeLookup, Map<String, FieldType> fieldTypes) {
     String fieldName = family + "." + column + "." + subColumn;
-    Analyzer analyzer = getAnalyzerByClassName(alternateColumnDefinition.getAnalyzerClassName(), aliases, fieldName, typeLookup);
+    Analyzer analyzer = getAnalyzerByClassName(alternateColumnDefinition.getAnalyzerClassName(), aliases, fieldName,
+        typeLookup, fieldTypes);
     analyzers.put(fieldName, analyzer);
-    putStore(fieldName, Store.NO, storeMap);
     addSubField(fieldName, subIndexNameLookups);
-  }
-
-  private static void putStore(String name, Store store, Map<String, Store> storeMap) {
-    storeMap.put(name, store);
+    subIndexNames.add(fieldName);
   }
 
   @SuppressWarnings("unchecked")
-  private static Analyzer getAnalyzerByClassName(String className, Map<String, Class<? extends Analyzer>> aliases, String fieldName, Map<String, TYPE> typeLookup) {
-    Analyzer type = getType(className, fieldName, typeLookup);
-    if (type != null) {
-      return type;
+  private static Analyzer getAnalyzerByClassName(String className, Map<String, Class<? extends Analyzer>> aliases,
+      String fieldName, Map<String, TYPE> typeLookup, Map<String, FieldType> fieldTypes) {
+    TYPE type = getType(className, fieldName, fieldTypes);
+    if (fieldName != null) {
+      typeLookup.put(fieldName, type);
+    }
+    if (type != TYPE.TEXT) {
+      return null;
     }
     try {
       Class<? extends Analyzer> clazz = aliases.get(className);
@@ -371,55 +450,54 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
     }
   }
 
-  private static Analyzer getType(String typeStr, String fieldName, Map<String, TYPE> typeLookup) {
+  private static TYPE getType(String typeStr, String fieldName, Map<String, FieldType> fieldTypes) {
     if (typeStr == null) {
       return null;
     }
     String[] types = typeStr.split(",");
     String type = types[0];
     String typeUpper = type.toUpperCase();
+
+    TYPE t = null;
     if (!typeNameCache.contains(typeUpper)) {
-      return null;
+      t = TYPE.TEXT;
+    } else {
+      t = TYPE.valueOf(typeUpper);
     }
-    TYPE t = TYPE.valueOf(typeUpper);
-    if (fieldName != null) {
-      typeLookup.put(fieldName, t);
-    }
+
+    FieldType fieldType;
     switch (t) {
     case LONG:
-      LongAnalyzer longAnalyzer = new LongAnalyzer();
+      fieldType = new FieldType(LongField.TYPE_STORED);
       if (types.length > 1) {
-        longAnalyzer.setPrecisionStep(Integer.parseInt(types[1]));
+        fieldType.setNumericPrecisionStep(Integer.parseInt(types[1]));
       }
-      if (types.length > 2) {
-        longAnalyzer.setRadix(Integer.parseInt(types[2]));
-      }
-      return longAnalyzer;
+      break;
     case INTEGER:
-      IntegerAnalyzer integerAnalyzer = new IntegerAnalyzer();
+      fieldType = new FieldType(IntField.TYPE_STORED);
       if (types.length > 1) {
-        integerAnalyzer.setPrecisionStep(Integer.parseInt(types[1]));
+        fieldType.setNumericPrecisionStep(Integer.parseInt(types[1]));
       }
-      if (types.length > 2) {
-        integerAnalyzer.setRadix(Integer.parseInt(types[2]));
-      }
-      return integerAnalyzer;
+      break;
     case FLOAT:
-      FloatAnalyzer floatAnalyzer = new FloatAnalyzer();
+      fieldType = new FieldType(FloatField.TYPE_STORED);
       if (types.length > 1) {
-        floatAnalyzer.setPrecisionStep(Integer.parseInt(types[1]));
+        fieldType.setNumericPrecisionStep(Integer.parseInt(types[1]));
       }
-      return floatAnalyzer;
+      break;
     case DOUBLE:
-      DoubleAnalyzer doubleAnalyzer = new DoubleAnalyzer();
+      fieldType = new FieldType(DoubleField.TYPE_STORED);
       if (types.length > 1) {
-        doubleAnalyzer.setPrecisionStep(Integer.parseInt(types[1]));
+        fieldType.setNumericPrecisionStep(Integer.parseInt(types[1]));
       }
-      return doubleAnalyzer;
+      break;
     default:
+      fieldType = new FieldType(TextField.TYPE_STORED);
+      fieldType.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS);
       break;
     }
-    return null;
+    fieldTypes.put(fieldName, fieldType);
+    return t;
   }
 
   private static void addSubField(String name, Map<String, Set<String>> subIndexNameLookups) {
@@ -432,6 +510,5 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
     }
     set.add(name);
   }
-
 
 }

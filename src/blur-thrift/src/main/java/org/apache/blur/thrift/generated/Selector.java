@@ -64,6 +64,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ALLOW_STALE_DATA_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("allowStaleData", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)7);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField START_RECORD_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("startRecord", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)8);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField MAX_RECORDS_TO_FETCH_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("maxRecordsToFetch", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)9);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField HIGHLIGHT_OPTIONS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("highlightOptions", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)10);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -114,6 +115,10 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
    * records in the row, be careful.
    */
   public int maxRecordsToFetch; // required
+  /**
+   * The HighlightOptions object controls how the data is highlighted.  If null no highlighting will occur.
+   */
+  public HighlightOptions highlightOptions; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
@@ -159,7 +164,11 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
      * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the
      * records in the row, be careful.
      */
-    MAX_RECORDS_TO_FETCH((short)9, "maxRecordsToFetch");
+    MAX_RECORDS_TO_FETCH((short)9, "maxRecordsToFetch"),
+    /**
+     * The HighlightOptions object controls how the data is highlighted.  If null no highlighting will occur.
+     */
+    HIGHLIGHT_OPTIONS((short)10, "highlightOptions");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -192,6 +201,8 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
           return START_RECORD;
         case 9: // MAX_RECORDS_TO_FETCH
           return MAX_RECORDS_TO_FETCH;
+        case 10: // HIGHLIGHT_OPTIONS
+          return HIGHLIGHT_OPTIONS;
         default:
           return null;
       }
@@ -262,6 +273,8 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32)));
     tmpMap.put(_Fields.MAX_RECORDS_TO_FETCH, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("maxRecordsToFetch", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32)));
+    tmpMap.put(_Fields.HIGHLIGHT_OPTIONS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("highlightOptions", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, HighlightOptions.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(Selector.class, metaDataMap);
   }
@@ -282,7 +295,8 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
     Map<String,Set<String>> columnsToFetch,
     boolean allowStaleData,
     int startRecord,
-    int maxRecordsToFetch)
+    int maxRecordsToFetch,
+    HighlightOptions highlightOptions)
   {
     this();
     this.recordOnly = recordOnly;
@@ -298,6 +312,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
     setStartRecordIsSet(true);
     this.maxRecordsToFetch = maxRecordsToFetch;
     setMaxRecordsToFetchIsSet(true);
+    this.highlightOptions = highlightOptions;
   }
 
   /**
@@ -343,6 +358,9 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
     this.allowStaleData = other.allowStaleData;
     this.startRecord = other.startRecord;
     this.maxRecordsToFetch = other.maxRecordsToFetch;
+    if (other.isSetHighlightOptions()) {
+      this.highlightOptions = new HighlightOptions(other.highlightOptions);
+    }
   }
 
   public Selector deepCopy() {
@@ -364,6 +382,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
 
     this.maxRecordsToFetch = 2147483647;
 
+    this.highlightOptions = null;
   }
 
   /**
@@ -672,6 +691,36 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __MAXRECORDSTOFETCH_ISSET_ID, value);
   }
 
+  /**
+   * The HighlightOptions object controls how the data is highlighted.  If null no highlighting will occur.
+   */
+  public HighlightOptions getHighlightOptions() {
+    return this.highlightOptions;
+  }
+
+  /**
+   * The HighlightOptions object controls how the data is highlighted.  If null no highlighting will occur.
+   */
+  public Selector setHighlightOptions(HighlightOptions highlightOptions) {
+    this.highlightOptions = highlightOptions;
+    return this;
+  }
+
+  public void unsetHighlightOptions() {
+    this.highlightOptions = null;
+  }
+
+  /** Returns true if field highlightOptions is set (has been assigned a value) and false otherwise */
+  public boolean isSetHighlightOptions() {
+    return this.highlightOptions != null;
+  }
+
+  public void setHighlightOptionsIsSet(boolean value) {
+    if (!value) {
+      this.highlightOptions = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case RECORD_ONLY:
@@ -746,6 +795,14 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       }
       break;
 
+    case HIGHLIGHT_OPTIONS:
+      if (value == null) {
+        unsetHighlightOptions();
+      } else {
+        setHighlightOptions((HighlightOptions)value);
+      }
+      break;
+
     }
   }
 
@@ -778,6 +835,9 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
     case MAX_RECORDS_TO_FETCH:
       return Integer.valueOf(getMaxRecordsToFetch());
 
+    case HIGHLIGHT_OPTIONS:
+      return getHighlightOptions();
+
     }
     throw new IllegalStateException();
   }
@@ -807,6 +867,8 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       return isSetStartRecord();
     case MAX_RECORDS_TO_FETCH:
       return isSetMaxRecordsToFetch();
+    case HIGHLIGHT_OPTIONS:
+      return isSetHighlightOptions();
     }
     throw new IllegalStateException();
   }
@@ -902,6 +964,15 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       if (!(this_present_maxRecordsToFetch && that_present_maxRecordsToFetch))
         return false;
       if (this.maxRecordsToFetch != that.maxRecordsToFetch)
+        return false;
+    }
+
+    boolean this_present_highlightOptions = true && this.isSetHighlightOptions();
+    boolean that_present_highlightOptions = true && that.isSetHighlightOptions();
+    if (this_present_highlightOptions || that_present_highlightOptions) {
+      if (!(this_present_highlightOptions && that_present_highlightOptions))
+        return false;
+      if (!this.highlightOptions.equals(that.highlightOptions))
         return false;
     }
 
@@ -1011,6 +1082,16 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetHighlightOptions()).compareTo(typedOther.isSetHighlightOptions());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetHighlightOptions()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.highlightOptions, typedOther.highlightOptions);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1086,6 +1167,14 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
     sb.append("maxRecordsToFetch:");
     sb.append(this.maxRecordsToFetch);
     first = false;
+    if (!first) sb.append(", ");
+    sb.append("highlightOptions:");
+    if (this.highlightOptions == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.highlightOptions);
+    }
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -1093,6 +1182,9 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
   public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     // check for required fields
     // check for sub-struct validity
+    if (highlightOptions != null) {
+      highlightOptions.validate();
+    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -1166,13 +1258,13 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
           case 5: // COLUMN_FAMILIES_TO_FETCH
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set16 = iprot.readSetBegin();
-                struct.columnFamiliesToFetch = new HashSet<String>(2*_set16.size);
-                for (int _i17 = 0; _i17 < _set16.size; ++_i17)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set24 = iprot.readSetBegin();
+                struct.columnFamiliesToFetch = new HashSet<String>(2*_set24.size);
+                for (int _i25 = 0; _i25 < _set24.size; ++_i25)
                 {
-                  String _elem18; // required
-                  _elem18 = iprot.readString();
-                  struct.columnFamiliesToFetch.add(_elem18);
+                  String _elem26; // required
+                  _elem26 = iprot.readString();
+                  struct.columnFamiliesToFetch.add(_elem26);
                 }
                 iprot.readSetEnd();
               }
@@ -1184,25 +1276,25 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
           case 6: // COLUMNS_TO_FETCH
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map19 = iprot.readMapBegin();
-                struct.columnsToFetch = new HashMap<String,Set<String>>(2*_map19.size);
-                for (int _i20 = 0; _i20 < _map19.size; ++_i20)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map27 = iprot.readMapBegin();
+                struct.columnsToFetch = new HashMap<String,Set<String>>(2*_map27.size);
+                for (int _i28 = 0; _i28 < _map27.size; ++_i28)
                 {
-                  String _key21; // required
-                  Set<String> _val22; // optional
-                  _key21 = iprot.readString();
+                  String _key29; // required
+                  Set<String> _val30; // optional
+                  _key29 = iprot.readString();
                   {
-                    org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set23 = iprot.readSetBegin();
-                    _val22 = new HashSet<String>(2*_set23.size);
-                    for (int _i24 = 0; _i24 < _set23.size; ++_i24)
+                    org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set31 = iprot.readSetBegin();
+                    _val30 = new HashSet<String>(2*_set31.size);
+                    for (int _i32 = 0; _i32 < _set31.size; ++_i32)
                     {
-                      String _elem25; // required
-                      _elem25 = iprot.readString();
-                      _val22.add(_elem25);
+                      String _elem33; // required
+                      _elem33 = iprot.readString();
+                      _val30.add(_elem33);
                     }
                     iprot.readSetEnd();
                   }
-                  struct.columnsToFetch.put(_key21, _val22);
+                  struct.columnsToFetch.put(_key29, _val30);
                 }
                 iprot.readMapEnd();
               }
@@ -1231,6 +1323,15 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
               struct.maxRecordsToFetch = iprot.readI32();
               struct.setMaxRecordsToFetchIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 10: // HIGHLIGHT_OPTIONS
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
+              struct.highlightOptions = new HighlightOptions();
+              struct.highlightOptions.read(iprot);
+              struct.setHighlightOptionsIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1272,9 +1373,9 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
         oprot.writeFieldBegin(COLUMN_FAMILIES_TO_FETCH_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.columnFamiliesToFetch.size()));
-          for (String _iter26 : struct.columnFamiliesToFetch)
+          for (String _iter34 : struct.columnFamiliesToFetch)
           {
-            oprot.writeString(_iter26);
+            oprot.writeString(_iter34);
           }
           oprot.writeSetEnd();
         }
@@ -1284,14 +1385,14 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
         oprot.writeFieldBegin(COLUMNS_TO_FETCH_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, struct.columnsToFetch.size()));
-          for (Map.Entry<String, Set<String>> _iter27 : struct.columnsToFetch.entrySet())
+          for (Map.Entry<String, Set<String>> _iter35 : struct.columnsToFetch.entrySet())
           {
-            oprot.writeString(_iter27.getKey());
+            oprot.writeString(_iter35.getKey());
             {
-              oprot.writeSetBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, _iter27.getValue().size()));
-              for (String _iter28 : _iter27.getValue())
+              oprot.writeSetBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, _iter35.getValue().size()));
+              for (String _iter36 : _iter35.getValue())
               {
-                oprot.writeString(_iter28);
+                oprot.writeString(_iter36);
               }
               oprot.writeSetEnd();
             }
@@ -1309,6 +1410,11 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       oprot.writeFieldBegin(MAX_RECORDS_TO_FETCH_FIELD_DESC);
       oprot.writeI32(struct.maxRecordsToFetch);
       oprot.writeFieldEnd();
+      if (struct.highlightOptions != null) {
+        oprot.writeFieldBegin(HIGHLIGHT_OPTIONS_FIELD_DESC);
+        struct.highlightOptions.write(oprot);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1354,7 +1460,10 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       if (struct.isSetMaxRecordsToFetch()) {
         optionals.set(8);
       }
-      oprot.writeBitSet(optionals, 9);
+      if (struct.isSetHighlightOptions()) {
+        optionals.set(9);
+      }
+      oprot.writeBitSet(optionals, 10);
       if (struct.isSetRecordOnly()) {
         oprot.writeBool(struct.recordOnly);
       }
@@ -1370,23 +1479,23 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       if (struct.isSetColumnFamiliesToFetch()) {
         {
           oprot.writeI32(struct.columnFamiliesToFetch.size());
-          for (String _iter29 : struct.columnFamiliesToFetch)
+          for (String _iter37 : struct.columnFamiliesToFetch)
           {
-            oprot.writeString(_iter29);
+            oprot.writeString(_iter37);
           }
         }
       }
       if (struct.isSetColumnsToFetch()) {
         {
           oprot.writeI32(struct.columnsToFetch.size());
-          for (Map.Entry<String, Set<String>> _iter30 : struct.columnsToFetch.entrySet())
+          for (Map.Entry<String, Set<String>> _iter38 : struct.columnsToFetch.entrySet())
           {
-            oprot.writeString(_iter30.getKey());
+            oprot.writeString(_iter38.getKey());
             {
-              oprot.writeI32(_iter30.getValue().size());
-              for (String _iter31 : _iter30.getValue())
+              oprot.writeI32(_iter38.getValue().size());
+              for (String _iter39 : _iter38.getValue())
               {
-                oprot.writeString(_iter31);
+                oprot.writeString(_iter39);
               }
             }
           }
@@ -1401,12 +1510,15 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       if (struct.isSetMaxRecordsToFetch()) {
         oprot.writeI32(struct.maxRecordsToFetch);
       }
+      if (struct.isSetHighlightOptions()) {
+        struct.highlightOptions.write(oprot);
+      }
     }
 
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, Selector struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(9);
+      BitSet incoming = iprot.readBitSet(10);
       if (incoming.get(0)) {
         struct.recordOnly = iprot.readBool();
         struct.setRecordOnlyIsSet(true);
@@ -1425,37 +1537,37 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       }
       if (incoming.get(4)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set32 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-          struct.columnFamiliesToFetch = new HashSet<String>(2*_set32.size);
-          for (int _i33 = 0; _i33 < _set32.size; ++_i33)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set40 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.columnFamiliesToFetch = new HashSet<String>(2*_set40.size);
+          for (int _i41 = 0; _i41 < _set40.size; ++_i41)
           {
-            String _elem34; // required
-            _elem34 = iprot.readString();
-            struct.columnFamiliesToFetch.add(_elem34);
+            String _elem42; // required
+            _elem42 = iprot.readString();
+            struct.columnFamiliesToFetch.add(_elem42);
           }
         }
         struct.setColumnFamiliesToFetchIsSet(true);
       }
       if (incoming.get(5)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map35 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, iprot.readI32());
-          struct.columnsToFetch = new HashMap<String,Set<String>>(2*_map35.size);
-          for (int _i36 = 0; _i36 < _map35.size; ++_i36)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map43 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, iprot.readI32());
+          struct.columnsToFetch = new HashMap<String,Set<String>>(2*_map43.size);
+          for (int _i44 = 0; _i44 < _map43.size; ++_i44)
           {
-            String _key37; // required
-            Set<String> _val38; // optional
-            _key37 = iprot.readString();
+            String _key45; // required
+            Set<String> _val46; // optional
+            _key45 = iprot.readString();
             {
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set39 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-              _val38 = new HashSet<String>(2*_set39.size);
-              for (int _i40 = 0; _i40 < _set39.size; ++_i40)
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set47 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+              _val46 = new HashSet<String>(2*_set47.size);
+              for (int _i48 = 0; _i48 < _set47.size; ++_i48)
               {
-                String _elem41; // required
-                _elem41 = iprot.readString();
-                _val38.add(_elem41);
+                String _elem49; // required
+                _elem49 = iprot.readString();
+                _val46.add(_elem49);
               }
             }
-            struct.columnsToFetch.put(_key37, _val38);
+            struct.columnsToFetch.put(_key45, _val46);
           }
         }
         struct.setColumnsToFetchIsSet(true);
@@ -1471,6 +1583,11 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       if (incoming.get(8)) {
         struct.maxRecordsToFetch = iprot.readI32();
         struct.setMaxRecordsToFetchIsSet(true);
+      }
+      if (incoming.get(9)) {
+        struct.highlightOptions = new HighlightOptions();
+        struct.highlightOptions.read(iprot);
+        struct.setHighlightOptionsIsSet(true);
       }
     }
   }

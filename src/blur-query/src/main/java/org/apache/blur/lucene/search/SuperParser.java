@@ -117,7 +117,7 @@ public class SuperParser extends QueryParser {
       int prefixLength) {
     String field = term.field();
     TYPE type = blurAnalyzer.getTypeLookup(field);
-    if (type != TYPE.DEFAULT) {
+    if (type != TYPE.TEXT) {
       throw new RuntimeException("Field [" + field + "] is type [" + type
           + "] which does not support fuzzy queries.");
     }
@@ -162,7 +162,7 @@ public class SuperParser extends QueryParser {
   protected Query newPrefixQuery(Term prefix) {
     String field = prefix.field();
     TYPE type = blurAnalyzer.getTypeLookup(field);
-    if (type != TYPE.DEFAULT) {
+    if (type != TYPE.TEXT) {
       throw new RuntimeException("Field [" + field + "] is type [" + type
           + "] which does not support prefix queries.");
     }
@@ -199,7 +199,7 @@ public class SuperParser extends QueryParser {
     }
     String field = t.field();
     TYPE type = blurAnalyzer.getTypeLookup(field);
-    if (type != TYPE.DEFAULT) {
+    if (type != TYPE.TEXT) {
       throw new RuntimeException("Field [" + field + "] is type [" + type
           + "] which does not support wildcard queries.");
     }

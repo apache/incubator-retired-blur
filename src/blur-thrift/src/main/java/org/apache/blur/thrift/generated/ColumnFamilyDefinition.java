@@ -479,16 +479,16 @@ public class ColumnFamilyDefinition implements org.apache.blur.thirdparty.thrift
           case 2: // COLUMN_DEFINITIONS
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map130 = iprot.readMapBegin();
-                struct.columnDefinitions = new HashMap<String,ColumnDefinition>(2*_map130.size);
-                for (int _i131 = 0; _i131 < _map130.size; ++_i131)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map138 = iprot.readMapBegin();
+                struct.columnDefinitions = new HashMap<String,ColumnDefinition>(2*_map138.size);
+                for (int _i139 = 0; _i139 < _map138.size; ++_i139)
                 {
-                  String _key132; // required
-                  ColumnDefinition _val133; // optional
-                  _key132 = iprot.readString();
-                  _val133 = new ColumnDefinition();
-                  _val133.read(iprot);
-                  struct.columnDefinitions.put(_key132, _val133);
+                  String _key140; // required
+                  ColumnDefinition _val141; // optional
+                  _key140 = iprot.readString();
+                  _val141 = new ColumnDefinition();
+                  _val141.read(iprot);
+                  struct.columnDefinitions.put(_key140, _val141);
                 }
                 iprot.readMapEnd();
               }
@@ -521,10 +521,10 @@ public class ColumnFamilyDefinition implements org.apache.blur.thirdparty.thrift
         oprot.writeFieldBegin(COLUMN_DEFINITIONS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.columnDefinitions.size()));
-          for (Map.Entry<String, ColumnDefinition> _iter134 : struct.columnDefinitions.entrySet())
+          for (Map.Entry<String, ColumnDefinition> _iter142 : struct.columnDefinitions.entrySet())
           {
-            oprot.writeString(_iter134.getKey());
-            _iter134.getValue().write(oprot);
+            oprot.writeString(_iter142.getKey());
+            _iter142.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -561,10 +561,10 @@ public class ColumnFamilyDefinition implements org.apache.blur.thirdparty.thrift
       if (struct.isSetColumnDefinitions()) {
         {
           oprot.writeI32(struct.columnDefinitions.size());
-          for (Map.Entry<String, ColumnDefinition> _iter135 : struct.columnDefinitions.entrySet())
+          for (Map.Entry<String, ColumnDefinition> _iter143 : struct.columnDefinitions.entrySet())
           {
-            oprot.writeString(_iter135.getKey());
-            _iter135.getValue().write(oprot);
+            oprot.writeString(_iter143.getKey());
+            _iter143.getValue().write(oprot);
           }
         }
       }
@@ -581,16 +581,16 @@ public class ColumnFamilyDefinition implements org.apache.blur.thirdparty.thrift
       }
       if (incoming.get(1)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map136 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-          struct.columnDefinitions = new HashMap<String,ColumnDefinition>(2*_map136.size);
-          for (int _i137 = 0; _i137 < _map136.size; ++_i137)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map144 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+          struct.columnDefinitions = new HashMap<String,ColumnDefinition>(2*_map144.size);
+          for (int _i145 = 0; _i145 < _map144.size; ++_i145)
           {
-            String _key138; // required
-            ColumnDefinition _val139; // optional
-            _key138 = iprot.readString();
-            _val139 = new ColumnDefinition();
-            _val139.read(iprot);
-            struct.columnDefinitions.put(_key138, _val139);
+            String _key146; // required
+            ColumnDefinition _val147; // optional
+            _key146 = iprot.readString();
+            _val147 = new ColumnDefinition();
+            _val147.read(iprot);
+            struct.columnDefinitions.put(_key146, _val147);
           }
         }
         struct.setColumnDefinitionsIsSet(true);

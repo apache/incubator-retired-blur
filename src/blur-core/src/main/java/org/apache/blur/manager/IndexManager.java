@@ -214,7 +214,9 @@ public class IndexManager {
         usedCache = false;
       }
 
-      fetchRow(searcher.getIndexReader(), table, selector, fetchResult);
+      Query highlightQuery = getHighlightQuery(selector);
+      
+      fetchRow(searcher.getIndexReader(), table, selector, fetchResult, highlightQuery);
       if (fetchResult.rowResult != null) {
         if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
           _recordsMeter.mark(fetchResult.rowResult.row.records.size());
@@ -238,6 +240,11 @@ public class IndexManager {
         }
       }
     }
+  }
+
+  private Query getHighlightQuery(Selector selector) {
+    // TODO Auto-generated method stub
+    return null;
   }
 
   private void populateSelector(String table, Selector selector) throws IOException, BlurException {
@@ -438,7 +445,7 @@ public class IndexManager {
     return _statusManager.queryStatusIdList(table);
   }
 
-  public static void fetchRow(IndexReader reader, String table, Selector selector, FetchResult fetchResult)
+  public static void fetchRow(IndexReader reader, String table, Selector selector, FetchResult fetchResult, Query highlightQuery)
       throws CorruptIndexException, IOException {
     fetchResult.table = table;
     String locationId = selector.locationId;

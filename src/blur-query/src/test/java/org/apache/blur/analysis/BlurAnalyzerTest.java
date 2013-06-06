@@ -32,7 +32,6 @@ import org.apache.blur.thrift.generated.AlternateColumnDefinition;
 import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.ColumnFamilyDefinition;
-import org.apache.lucene.document.Field.Store;
 import org.junit.Test;
 
 public class BlurAnalyzerTest {
@@ -50,8 +49,8 @@ public class BlurAnalyzerTest {
   @Test
   public void testStoringOfFieldDef1() throws IOException {
     BlurAnalyzer analyzer = new BlurAnalyzer(getDef1());
-    assertEquals(Store.NO, analyzer.getStore("b.c.sub1"));
-    assertEquals(Store.YES, analyzer.getStore("b.c"));
+    assertFalse(analyzer.getFieldType("b.c.sub1").stored());
+    assertTrue(analyzer.getFieldType("b.c").stored());
   }
 
   @Test
@@ -83,8 +82,8 @@ public class BlurAnalyzerTest {
   @Test
   public void testStoringOfFieldDef2() throws IOException {
     BlurAnalyzer analyzer = new BlurAnalyzer(getDef2());
-    assertEquals(Store.YES, analyzer.getStore("a.b"));
-    assertEquals(Store.YES, analyzer.getStore("b.c"));
+    assertTrue(analyzer.getFieldType("a.b").stored());
+    assertTrue(analyzer.getFieldType("b.c").stored());
   }
 
   @Test
@@ -102,32 +101,52 @@ public class BlurAnalyzerTest {
 
   private AnalyzerDefinition getDef1() {
 
-    AnalyzerDefinition analyzerDefinition = new AnalyzerDefinition().setDefaultDefinition(new ColumnDefinition(STANDARD, false, null)).setFullTextAnalyzerClassName(STANDARD);
-    Map<String, ColumnFamilyDefinition> columnFamilyDefinitions = new HashMap<String, ColumnFamilyDefinition>();
+    AnalyzerDefinition analyzerDefinition = new AnalyzerDefinition().setDefaultDefinition(
+        new ColumnDefinition(STANDARD, false, null)).setFullTextAnalyzerClassName(STANDARD);
+    Map<String, ColumnFamilyDefinition> colFamDefs = new HashMap<String, ColumnFamilyDefinition>();
 
-    ColumnFamilyDefinition aColumnFamilyDefinition = new ColumnFamilyDefinition();
+    ColumnFamilyDefinition aColFamDef;
+    Map<String, ColumnDefinition> aColDef;
+    Map<String, ColumnDefinition> bColDef;
+    Map<String, ColumnDefinition> cColDef;
+    Map<String, AlternateColumnDefinition> alternates;
+    ColumnFamilyDefinition bColFamDef;
+    ColumnFamilyDefinition cColFamDef;
+    
+    aColFamDef = new ColumnFamilyDefinition();
+    
+    aColDef = new HashMap<String, ColumnDefinition>();
+    aColDef.put("b", new ColumnDefinition(STANDARD, true, null));
+    aColFamDef.setColumnDefinitions(aColDef);
+    colFamDefs.put("a", aColFamDef);
+    
+    bColDef = new HashMap<String, ColumnDefinition>();
 
-    Map<String, ColumnDefinition> aColumnDefinitions = new HashMap<String, ColumnDefinition>();
-    aColumnDefinitions.put("b", new ColumnDefinition(STANDARD, true, null));
-    aColumnFamilyDefinition.setColumnDefinitions(aColumnDefinitions);
-    columnFamilyDefinitions.put("a", aColumnFamilyDefinition);
-
-    Map<String, ColumnDefinition> bColumnDefinitions = new HashMap<String, ColumnDefinition>();
-    Map<String, AlternateColumnDefinition> alternates = new HashMap<String, AlternateColumnDefinition>();
+    alternates = new HashMap<String, AlternateColumnDefinition>();
     alternates.put("sub1", new AlternateColumnDefinition(STANDARD));
     alternates.put("sub2", new AlternateColumnDefinition(STANDARD));
-    bColumnDefinitions.put("c", new ColumnDefinition(STANDARD, true, alternates));
-    ColumnFamilyDefinition bColumnFamilyDefinition = new ColumnFamilyDefinition();
-    bColumnFamilyDefinition.setColumnDefinitions(bColumnDefinitions);
-    columnFamilyDefinitions.put("b", bColumnFamilyDefinition);
+    bColDef.put("c", new ColumnDefinition(STANDARD, true, alternates));
 
-    analyzerDefinition.setColumnFamilyDefinitions(columnFamilyDefinitions);
+    bColFamDef = new ColumnFamilyDefinition();
+    bColFamDef.setColumnDefinitions(bColDef);
+    colFamDefs.put("b", bColFamDef);
+    
+    cColFamDef = new ColumnFamilyDefinition();
+    cColDef = new HashMap<String, ColumnDefinition>();
+    cColDef.put("cint", new ColumnDefinition(BlurAnalyzer.TYPE.INTEGER.name(), true, null));
+    cColFamDef.setColumnDefinitions(cColDef);
+    
+    colFamDefs.put("c", cColFamDef);
+
+    analyzerDefinition.setColumnFamilyDefinitions(colFamDefs);
     return analyzerDefinition;
   }
 
   private AnalyzerDefinition getDef2() {
-    AnalyzerDefinition analyzerDefinition = new AnalyzerDefinition().setDefaultDefinition(new ColumnDefinition(STANDARD, false, null)).setFullTextAnalyzerClassName(STANDARD);
-    analyzerDefinition.putToColumnFamilyDefinitions("a", new ColumnFamilyDefinition().setDefaultDefinition(new ColumnDefinition(STANDARD, true, null)));
+    AnalyzerDefinition analyzerDefinition = new AnalyzerDefinition().setDefaultDefinition(
+        new ColumnDefinition(STANDARD, false, null)).setFullTextAnalyzerClassName(STANDARD);
+    analyzerDefinition.putToColumnFamilyDefinitions("a",
+        new ColumnFamilyDefinition().setDefaultDefinition(new ColumnDefinition(STANDARD, true, null)));
     return analyzerDefinition;
   }
 }

@@ -539,16 +539,16 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
           case 3: // ALTERNATE_COLUMN_DEFINITIONS
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map120 = iprot.readMapBegin();
-                struct.alternateColumnDefinitions = new HashMap<String,AlternateColumnDefinition>(2*_map120.size);
-                for (int _i121 = 0; _i121 < _map120.size; ++_i121)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map128 = iprot.readMapBegin();
+                struct.alternateColumnDefinitions = new HashMap<String,AlternateColumnDefinition>(2*_map128.size);
+                for (int _i129 = 0; _i129 < _map128.size; ++_i129)
                 {
-                  String _key122; // required
-                  AlternateColumnDefinition _val123; // optional
-                  _key122 = iprot.readString();
-                  _val123 = new AlternateColumnDefinition();
-                  _val123.read(iprot);
-                  struct.alternateColumnDefinitions.put(_key122, _val123);
+                  String _key130; // required
+                  AlternateColumnDefinition _val131; // optional
+                  _key130 = iprot.readString();
+                  _val131 = new AlternateColumnDefinition();
+                  _val131.read(iprot);
+                  struct.alternateColumnDefinitions.put(_key130, _val131);
                 }
                 iprot.readMapEnd();
               }
@@ -584,10 +584,10 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
         oprot.writeFieldBegin(ALTERNATE_COLUMN_DEFINITIONS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.alternateColumnDefinitions.size()));
-          for (Map.Entry<String, AlternateColumnDefinition> _iter124 : struct.alternateColumnDefinitions.entrySet())
+          for (Map.Entry<String, AlternateColumnDefinition> _iter132 : struct.alternateColumnDefinitions.entrySet())
           {
-            oprot.writeString(_iter124.getKey());
-            _iter124.getValue().write(oprot);
+            oprot.writeString(_iter132.getKey());
+            _iter132.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -630,10 +630,10 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       if (struct.isSetAlternateColumnDefinitions()) {
         {
           oprot.writeI32(struct.alternateColumnDefinitions.size());
-          for (Map.Entry<String, AlternateColumnDefinition> _iter125 : struct.alternateColumnDefinitions.entrySet())
+          for (Map.Entry<String, AlternateColumnDefinition> _iter133 : struct.alternateColumnDefinitions.entrySet())
           {
-            oprot.writeString(_iter125.getKey());
-            _iter125.getValue().write(oprot);
+            oprot.writeString(_iter133.getKey());
+            _iter133.getValue().write(oprot);
           }
         }
       }
@@ -653,16 +653,16 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       }
       if (incoming.get(2)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map126 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-          struct.alternateColumnDefinitions = new HashMap<String,AlternateColumnDefinition>(2*_map126.size);
-          for (int _i127 = 0; _i127 < _map126.size; ++_i127)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map134 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+          struct.alternateColumnDefinitions = new HashMap<String,AlternateColumnDefinition>(2*_map134.size);
+          for (int _i135 = 0; _i135 < _map134.size; ++_i135)
           {
-            String _key128; // required
-            AlternateColumnDefinition _val129; // optional
-            _key128 = iprot.readString();
-            _val129 = new AlternateColumnDefinition();
-            _val129.read(iprot);
-            struct.alternateColumnDefinitions.put(_key128, _val129);
+            String _key136; // required
+            AlternateColumnDefinition _val137; // optional
+            _key136 = iprot.readString();
+            _val137 = new AlternateColumnDefinition();
+            _val137.read(iprot);
+            struct.alternateColumnDefinitions.put(_key136, _val137);
           }
         }
         struct.setAlternateColumnDefinitionsIsSet(true);

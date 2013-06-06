@@ -69,7 +69,7 @@ public class ZookeeperClusterStatusTest {
 
   @BeforeClass
   public static void setupOnce() throws InterruptedException, IOException, KeeperException {
-    MiniCluster.startZooKeeper("./tmp/zk_test");
+    MiniCluster.startZooKeeper("./target/zk_test");
   }
 
   @AfterClass
@@ -199,7 +199,7 @@ public class ZookeeperClusterStatusTest {
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName(name);
     tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
-    tableDescriptor.setTableUri("./tmp/zk_test_hdfs");
+    tableDescriptor.setTableUri("./target/tmp/zk_test_hdfs");
     tableDescriptor.setIsEnabled(enabled);
     clusterStatus.createTable(tableDescriptor);
     if (enabled) {

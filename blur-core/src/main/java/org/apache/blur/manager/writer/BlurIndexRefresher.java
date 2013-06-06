@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-
+import org.apache.lucene.store.AlreadyClosedException;
 
 public class BlurIndexRefresher extends TimerTask {
 
@@ -70,6 +70,8 @@ public class BlurIndexRefresher extends TimerTask {
         index.refresh();
       } catch (IOException e) {
         LOG.error("Unknown error while refreshing index of writer [{0}]", e, index);
+      } catch (AlreadyClosedException e) {
+        LOG.warn("Index has already been closed [{0}]", e, index);
       }
     }
   }

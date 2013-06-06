@@ -85,7 +85,7 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
     FetchResult fetchResult = new FetchResult();
     _selector.setLocationId(resolveId);
     IndexManager.validSelector(_selector);
-    IndexManager.fetchRow(_searcher.getIndexReader(), _table, _selector, fetchResult);
+    IndexManager.fetchRow(_searcher.getIndexReader(), _table, _selector, fetchResult, null);
     return fetchResult;
   }
 

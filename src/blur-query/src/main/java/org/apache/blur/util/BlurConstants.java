@@ -19,10 +19,10 @@ package org.apache.blur.util;
 
 
 public class BlurConstants {
-
   public static final String PRIME_DOC = "_prime_";
   public static final String PRIME_DOC_VALUE = "true";
   public static final String ROW_ID = "rowid";
   public static final String RECORD_ID = "recordid";
   public static final String SUPER = "super";
+  public static final String FAMILY = "family";
 }

@@ -40,11 +40,11 @@ import org.apache.blur.manager.writer.TransactionRecorder;
 import org.apache.blur.mapreduce.BlurTask.INDEXING_TYPE;
 import org.apache.blur.mapreduce.lib.BlurColumn;
 import org.apache.blur.mapreduce.lib.BlurMutate;
+import org.apache.blur.mapreduce.lib.BlurMutate.MUTATE_TYPE;
 import org.apache.blur.mapreduce.lib.BlurOutputFormat;
 import org.apache.blur.mapreduce.lib.BlurRecord;
 import org.apache.blur.mapreduce.lib.DefaultBlurReducer;
 import org.apache.blur.mapreduce.lib.ProgressableDirectory;
-import org.apache.blur.mapreduce.lib.BlurMutate.MUTATE_TYPE;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Selector;
@@ -54,7 +54,6 @@ import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.Converter;
 import org.apache.blur.utils.IterableConverter;
 import org.apache.blur.utils.ResetableDocumentStoredFieldVisitor;
-import org.apache.blur.utils.RowIndexWriter;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -476,7 +475,7 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
     document.add(new Field(BlurConstants.RECORD_ID, record.getRecordId(), TransactionRecorder.ID_TYPE));
 
     String columnFamily = record.getFamily();
-    RowIndexWriter.addColumns(document, _analyzer, builder, columnFamily, new IterableConverter<BlurColumn, Column>(
+    TransactionRecorder.addColumns(document, _analyzer, builder, columnFamily, new IterableConverter<BlurColumn, Column>(
         record.getColumns(), new Converter<BlurColumn, Column>() {
           @Override
           public Column convert(BlurColumn from) throws Exception {

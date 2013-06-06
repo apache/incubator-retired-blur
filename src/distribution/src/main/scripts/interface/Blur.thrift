@@ -131,7 +131,12 @@ struct Record {
   /**
    * A list of columns, multiple columns with the same name are allowed.
    */
-  3:list<Column> columns
+  3:list<Column> columns,
+
+  /**
+   * A list of the highlighted columns.
+   */
+  4:list<Column> highlightedColumns
 }
 
 /**
@@ -156,7 +161,50 @@ struct Row {
   3:i32 recordCount
 }
 
+/**
+ * The SimpleQuery object holds the query string (normal Lucene syntax), filters and type of scoring (used when super query is on).
+ */
+struct SimpleQuery {
+  /**
+   * A Lucene syntax based query.
+   */
+  1:string queryStr,
+  /**
+   * If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
+   */
+  2:bool superQueryOn = 1,
+  /**
+   * The scoring type, see the document on ScoreType for explanation of each score type.
+   */
+  3:ScoreType type = ScoreType.SUPER, 
+  /**
+   * The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
+   */
+  4:string postSuperFilter,
+  /**
+   * The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
+   */
+  5:string preSuperFilter
+}
 
+/**
+ * The HighlightOptions controls how the data is fetched and returned.
+ */
+struct HighlightOptions {
+  /**
+   * The original query is required if used in the Blur.fetchRow call.  If 
+   * the highlightOptions is used in a call to Blur.query then the SimpleQuery 
+   * passed into the call via the BlurQuery will be used if this simpleQuery is 
+   * null.  So that means if you use highlighting from the query call you can 
+   * leave this attribute null and it will default to the normal behavior.
+   */
+  1:SimpleQuery simpleQuery,
+  /**
+   * Only returns the records within a Row that matched in the query.  If the BlurQuery 
+   * is not a superQuery then this option is not used.  Enabled by default.
+   */
+  2:bool onlyMatchingRecords = true
+}
 
 /**
  * Select carries the request for information to be retrieved from the stored columns.
@@ -204,7 +252,11 @@ struct Selector {
    * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the 
    * records in the row, be careful.
    */
-  9:i32 maxRecordsToFetch = 2147483647
+  9:i32 maxRecordsToFetch = 2147483647,
+  /**
+   * The HighlightOptions object controls how the data is highlighted.  If null no highlighting will occur.
+   */
+  10:HighlightOptions highlightOptions
 }
 
 /**
@@ -255,32 +307,6 @@ struct FetchResult {
    * The record result if a record was selected form the Selector.
    */
   5:FetchRecordResult recordResult
-}
-
-/**
- * The SimpleQuery object holds the query string (normal Lucene syntax), filters and type of scoring (used when super query is on).
- */
-struct SimpleQuery {
-  /**
-   * A Lucene syntax based query.
-   */
-  1:string queryStr,
-  /**
-   * If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
-   */
-  2:bool superQueryOn = 1,
-  /**
-   * The scoring type, see the document on ScoreType for explanation of each score type.
-   */
-  3:ScoreType type = ScoreType.SUPER, 
-  /**
-   * The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
-   */
-  4:string postSuperFilter,
-  /**
-   * The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
-   */
-  5:string preSuperFilter
 }
 
 /**

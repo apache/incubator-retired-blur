@@ -16,6 +16,8 @@ package org.apache.blur.manager.writer;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.utils.BlurConstants.SEP;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -25,6 +27,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +46,6 @@ import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
-import org.apache.blur.utils.RowIndexWriter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -372,7 +374,7 @@ public class TransactionRecorder extends TimerTask implements Closeable {
     document.add(new Field(BlurConstants.ROW_ID, rowId, ID_TYPE));
     document.add(new Field(BlurConstants.RECORD_ID, record.recordId, ID_TYPE));
     document.add(new Field(BlurConstants.FAMILY, record.family, ID_TYPE));
-    RowIndexWriter.addColumns(document, analyzer, builder, record.family, record.columns);
+    addColumns(document, analyzer, builder, record.family, record.columns);
     return document;
   }
 
@@ -400,6 +402,46 @@ public class TransactionRecorder extends TimerTask implements Closeable {
         }
       }
     }
+  }
+  
+  public static boolean addColumns(Document document, BlurAnalyzer analyzer, StringBuilder builder,
+      String columnFamily, Iterable<Column> set) {
+    if (set == null) {
+      return false;
+    }
+    builder.setLength(0);
+    OUTER: for (Column column : set) {
+      String name = column.getName();
+      String value = column.value;
+      if (value == null || name == null) {
+        continue OUTER;
+      }
+      String fieldName = getFieldName(columnFamily, name);
+      FieldType fieldType = analyzer.getFieldType(fieldName);
+      Field field = analyzer.getField(fieldName, value, fieldType);
+      document.add(field);
+      
+      // @TODO remove full text stuff
+//      if (analyzer.isFullTextField(fieldName)) {
+//        builder.append(value).append(' ');
+//      }
+      Set<String> subFieldNames = analyzer.getSubIndexNames(fieldName);
+      if (subFieldNames != null) {
+        for (String subFieldName : subFieldNames) {
+          FieldType subFieldType = analyzer.getFieldType(subFieldName);
+          document.add(analyzer.getField(subFieldName, value, subFieldType));
+        }
+      }
+    }
+//    if (builder.length() != 0) {
+//      String superValue = builder.toString();
+//      document.add(new Field(SUPER, superValue, Store.NO, Index.ANALYZED_NO_NORMS));
+//    }
+    return true;
+  }
+
+  public static String getFieldName(String columnFamily, String name) {
+    return columnFamily + SEP + name;
   }
 
 }

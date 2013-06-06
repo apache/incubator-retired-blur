@@ -101,6 +101,7 @@ module Blur
     RECORDID = 1
     FAMILY = 2
     COLUMNS = 3
+    HIGHLIGHTEDCOLUMNS = 4
 
     FIELDS = {
       # Record id uniquely identifies a record within a single row.
@@ -108,7 +109,9 @@ module Blur
       # The family in which this record resides.
       FAMILY => {:type => ::Thrift::Types::STRING, :name => 'family'},
       # A list of columns, multiple columns with the same name are allowed.
-      COLUMNS => {:type => ::Thrift::Types::LIST, :name => 'columns', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Column}}
+      COLUMNS => {:type => ::Thrift::Types::LIST, :name => 'columns', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Column}},
+      # A list of the highlighted columns.
+      HIGHLIGHTEDCOLUMNS => {:type => ::Thrift::Types::LIST, :name => 'highlightedColumns', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Column}}
     }
 
     def struct_fields; FIELDS; end
@@ -145,6 +148,65 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
+  # The SimpleQuery object holds the query string (normal Lucene syntax), filters and type of scoring (used when super query is on).
+  class SimpleQuery
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    QUERYSTR = 1
+    SUPERQUERYON = 2
+    TYPE = 3
+    POSTSUPERFILTER = 4
+    PRESUPERFILTER = 5
+
+    FIELDS = {
+      # A Lucene syntax based query.
+      QUERYSTR => {:type => ::Thrift::Types::STRING, :name => 'queryStr'},
+      # If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
+      SUPERQUERYON => {:type => ::Thrift::Types::BOOL, :name => 'superQueryOn', :default => true},
+      # The scoring type, see the document on ScoreType for explanation of each score type.
+      TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :default =>       0, :enum_class => ::Blur::ScoreType},
+      # The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
+      POSTSUPERFILTER => {:type => ::Thrift::Types::STRING, :name => 'postSuperFilter'},
+      # The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
+      PRESUPERFILTER => {:type => ::Thrift::Types::STRING, :name => 'preSuperFilter'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+      unless @type.nil? || ::Blur::ScoreType::VALID_VALUES.include?(@type)
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
+      end
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  # The HighlightOptions controls how the data is fetched and returned.
+  class HighlightOptions
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SIMPLEQUERY = 1
+    ONLYMATCHINGRECORDS = 2
+
+    FIELDS = {
+      # The original query is required if used in the Blur.fetchRow call.  If
+# the highlightOptions is used in a call to Blur.query then the SimpleQuery
+# passed into the call via the BlurQuery will be used if this simpleQuery is
+# null.  So that means if you use highlighting from the query call you can
+# leave this attribute null and it will default to the normal behavior.
+      SIMPLEQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'simpleQuery', :class => ::Blur::SimpleQuery},
+      # Only returns the records within a Row that matched in the query.  If the BlurQuery
+# is not a superQuery then this option is not used.  Enabled by default.
+      ONLYMATCHINGRECORDS => {:type => ::Thrift::Types::BOOL, :name => 'onlyMatchingRecords', :default => true}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   # Select carries the request for information to be retrieved from the stored columns.
   class Selector
     include ::Thrift::Struct, ::Thrift::Struct_Union
@@ -157,6 +219,7 @@ module Blur
     ALLOWSTALEDATA = 7
     STARTRECORD = 8
     MAXRECORDSTOFETCH = 9
+    HIGHLIGHTOPTIONS = 10
 
     FIELDS = {
       # Fetch the Record only, not the entire Row.
@@ -183,7 +246,9 @@ module Blur
 # and you want the first 100, then this value is 100.  If you want records 300-400 then this value
 # would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the
 # records in the row, be careful.
-      MAXRECORDSTOFETCH => {:type => ::Thrift::Types::I32, :name => 'maxRecordsToFetch', :default => 2147483647}
+      MAXRECORDSTOFETCH => {:type => ::Thrift::Types::I32, :name => 'maxRecordsToFetch', :default => 2147483647},
+      # The HighlightOptions object controls how the data is highlighted.  If null no highlighting will occur.
+      HIGHLIGHTOPTIONS => {:type => ::Thrift::Types::STRUCT, :name => 'highlightOptions', :class => ::Blur::HighlightOptions}
     }
 
     def struct_fields; FIELDS; end
@@ -258,39 +323,6 @@ module Blur
     def struct_fields; FIELDS; end
 
     def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  # The SimpleQuery object holds the query string (normal Lucene syntax), filters and type of scoring (used when super query is on).
-  class SimpleQuery
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    QUERYSTR = 1
-    SUPERQUERYON = 2
-    TYPE = 3
-    POSTSUPERFILTER = 4
-    PRESUPERFILTER = 5
-
-    FIELDS = {
-      # A Lucene syntax based query.
-      QUERYSTR => {:type => ::Thrift::Types::STRING, :name => 'queryStr'},
-      # If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
-      SUPERQUERYON => {:type => ::Thrift::Types::BOOL, :name => 'superQueryOn', :default => true},
-      # The scoring type, see the document on ScoreType for explanation of each score type.
-      TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :default =>       0, :enum_class => ::Blur::ScoreType},
-      # The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
-      POSTSUPERFILTER => {:type => ::Thrift::Types::STRING, :name => 'postSuperFilter'},
-      # The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
-      PRESUPERFILTER => {:type => ::Thrift::Types::STRING, :name => 'preSuperFilter'}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-      unless @type.nil? || ::Blur::ScoreType::VALID_VALUES.include?(@type)
-        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
-      end
     end
 
     ::Thrift::Struct.generate_accessors self

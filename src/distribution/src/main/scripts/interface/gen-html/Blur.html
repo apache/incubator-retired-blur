@@ -58,6 +58,7 @@
 <a href="Blur.html#Struct_FetchRecordResult">FetchRecordResult</a><br/>
 <a href="Blur.html#Struct_FetchResult">FetchResult</a><br/>
 <a href="Blur.html#Struct_FetchRowResult">FetchRowResult</a><br/>
+<a href="Blur.html#Struct_HighlightOptions">HighlightOptions</a><br/>
 <a href="Blur.html#Enum_QueryState">QueryState</a><br/>
 <a href="Blur.html#Struct_Record">Record</a><br/>
 <a href="Blur.html#Struct_RecordMutation">RecordMutation</a><br/>
@@ -154,6 +155,8 @@ trace (if any).
 </td><td>default</td><td></td></tr>
 <tr><td>3</td><td>columns</td><td><code>list&lt;<code><a href="Blur.html#Struct_Column">Column</a></code>&gt;</code></td><td>A list of columns, multiple columns with the same name are allowed.
 </td><td>default</td><td></td></tr>
+<tr><td>4</td><td>highlightedColumns</td><td><code>list&lt;<code><a href="Blur.html#Struct_Column">Column</a></code>&gt;</code></td><td>A list of the highlighted columns.
+</td><td>default</td><td></td></tr>
 </table><br/>Records contain a list of columns, multiple columns with the same name are allowed.
 <br/></div><div class="definition"><h3 id="Struct_Row">Struct: Row</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
@@ -166,6 +169,31 @@ reflect the paged records from the selector.
 through records of a row, this count will reflect the entire row.
 </td><td>default</td><td></td></tr>
 </table><br/>Rows contain a list of records.
+<br/></div><div class="definition"><h3 id="Struct_SimpleQuery">Struct: SimpleQuery</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>queryStr</td><td><code>string</code></td><td>A Lucene syntax based query.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>superQueryOn</td><td><code>bool</code></td><td>If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
+</td><td>default</td><td>1</td></tr>
+<tr><td>3</td><td>type</td><td><code><a href="Blur.html#Enum_ScoreType">ScoreType</a></code></td><td>The scoring type, see the document on ScoreType for explanation of each score type.
+</td><td>default</td><td>UNKNOWN</td></tr>
+<tr><td>4</td><td>postSuperFilter</td><td><code>string</code></td><td>The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>preSuperFilter</td><td><code>string</code></td><td>The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
+</td><td>default</td><td></td></tr>
+</table><br/>The SimpleQuery object holds the query string (normal Lucene syntax), filters and type of scoring (used when super query is on).
+<br/></div><div class="definition"><h3 id="Struct_HighlightOptions">Struct: HighlightOptions</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>simpleQuery</td><td><code><a href="Blur.html#Struct_SimpleQuery">SimpleQuery</a></code></td><td>The original query is required if used in the Blur.fetchRow call.  If
+the highlightOptions is used in a call to Blur.query then the SimpleQuery
+passed into the call via the BlurQuery will be used if this simpleQuery is
+null.  So that means if you use highlighting from the query call you can
+leave this attribute null and it will default to the normal behavior.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>onlyMatchingRecords</td><td><code>bool</code></td><td>Only returns the records within a Row that matched in the query.  If the BlurQuery
+is not a superQuery then this option is not used.  Enabled by default.
+</td><td>default</td><td>1</td></tr>
+</table><br/>The HighlightOptions controls how the data is fetched and returned.
 <br/></div><div class="definition"><h3 id="Struct_Selector">Struct: Selector</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>recordOnly</td><td><code>bool</code></td><td>Fetch the Record only, not the entire Row.
@@ -193,6 +221,8 @@ and you want the first 100, then this value is 100.  If you want records 300-400
 would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the
 records in the row, be careful.
 </td><td>default</td><td>2147483647</td></tr>
+<tr><td>10</td><td>highlightOptions</td><td><code><a href="Blur.html#Struct_HighlightOptions">HighlightOptions</a></code></td><td>The HighlightOptions object controls how the data is highlighted.  If null no highlighting will occur.
+</td><td>default</td><td></td></tr>
 </table><br/>Select carries the request for information to be retrieved from the stored columns.
 <br/></div><div class="definition"><h3 id="Struct_FetchRowResult">Struct: FetchRowResult</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
@@ -219,19 +249,6 @@ records in the row, be careful.
 <tr><td>5</td><td>recordResult</td><td><code><a href="Blur.html#Struct_FetchRecordResult">FetchRecordResult</a></code></td><td>The record result if a record was selected form the Selector.
 </td><td>default</td><td></td></tr>
 </table><br/>FetchResult contains the row or record fetch result based if the Selector was going to fetch the entire row or a single record.
-<br/></div><div class="definition"><h3 id="Struct_SimpleQuery">Struct: SimpleQuery</h3>
-<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>queryStr</td><td><code>string</code></td><td>A Lucene syntax based query.
-</td><td>default</td><td></td></tr>
-<tr><td>2</td><td>superQueryOn</td><td><code>bool</code></td><td>If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
-</td><td>default</td><td>1</td></tr>
-<tr><td>3</td><td>type</td><td><code><a href="Blur.html#Enum_ScoreType">ScoreType</a></code></td><td>The scoring type, see the document on ScoreType for explanation of each score type.
-</td><td>default</td><td>UNKNOWN</td></tr>
-<tr><td>4</td><td>postSuperFilter</td><td><code>string</code></td><td>The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
-</td><td>default</td><td></td></tr>
-<tr><td>5</td><td>preSuperFilter</td><td><code>string</code></td><td>The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
-</td><td>default</td><td></td></tr>
-</table><br/>The SimpleQuery object holds the query string (normal Lucene syntax), filters and type of scoring (used when super query is on).
 <br/></div><div class="definition"><h3 id="Struct_ExpertQuery">Struct: ExpertQuery</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>query</td><td><code>binary</code></td><td>The serialized query.

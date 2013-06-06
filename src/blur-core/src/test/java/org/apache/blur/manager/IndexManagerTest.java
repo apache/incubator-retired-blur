@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicLongArray;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.indexserver.LocalIndexServer;
 import org.apache.blur.manager.results.BlurResultIterable;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -87,6 +88,7 @@ public class IndexManagerTest {
 
   @Before
   public void setUp() throws BlurException, IOException, InterruptedException {
+    TableContext.clear();
     base = new File(TMPDIR, "blur-index-manager-test");
     rm(base);
     

@@ -998,11 +998,11 @@ public class IndexManager {
 
     @Override
     public BlurResultIterable call(Entry<String, BlurIndex> entry) throws Exception {
-      _status.attachThread();
+      String shard = entry.getKey();
+      _status.attachThread(shard);
       BlurIndex index = entry.getValue();
       IndexSearcherClosable searcher = index.getIndexReader();
       try {
-        String shard = entry.getKey();
         // @TODO need to add escapable rewriter
         // IndexReader escapeReader = EscapeRewrite.wrap(reader, _running);
         // IndexSearcher searcher = new IndexSearcher(escapeReader);
@@ -1018,7 +1018,7 @@ public class IndexManager {
             _shardServerContext == null);
       } finally {
         _queriesInternalMeter.mark();
-        _status.deattachThread();
+        _status.deattachThread(shard);
       }
     }
   }

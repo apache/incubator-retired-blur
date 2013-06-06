@@ -21,12 +21,19 @@ import java.lang.management.ThreadMXBean;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.QueryState;
+import org.apache.blur.thrift.generated.CpuTime;
 
-
+/**
+ * This class is accessed by multiple threads (one for each shard) 
+ * executing the query. Tracks status and collects metrics
+ *
+ */
 public class QueryStatus implements Comparable<QueryStatus> {
 
   private final static boolean CPU_TIME_SUPPORTED = ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported();
@@ -36,14 +43,13 @@ public class QueryStatus implements Comparable<QueryStatus> {
   private final long _startingTime;
   private boolean _finished = false;
   private long _finishedTime;
-  private final AtomicLong _cpuTimeOfFinishedThreads = new AtomicLong();
   private final ThreadMXBean _bean = ManagementFactory.getThreadMXBean();
   private final long _ttl;
-  private final ThreadLocal<Long> _cpuTimes = new ThreadLocal<Long>();
   private final AtomicBoolean _interrupted = new AtomicBoolean(false);
   private final AtomicInteger _totalShards = new AtomicInteger();
   private final AtomicInteger _completeShards = new AtomicInteger();
   private AtomicBoolean _running;
+  private final Map<String, CpuTime> _cpuTimes = new HashMap<String, CpuTime>();
 
   public QueryStatus(long ttl, String table, BlurQuery blurQuery, AtomicBoolean running) {
     _ttl = ttl;
@@ -53,23 +59,26 @@ public class QueryStatus implements Comparable<QueryStatus> {
     _running = running;
   }
 
-  public QueryStatus attachThread() {
+  public QueryStatus attachThread(String shardName) {
+    CpuTime cpuTime = new CpuTime();
     if (CPU_TIME_SUPPORTED) {
-      _cpuTimes.set(_bean.getCurrentThreadCpuTime());
+      cpuTime.cpuTime = _bean.getCurrentThreadCpuTime();
     } else {
-      _cpuTimes.set(-1L);
+      cpuTime.cpuTime = -1L;
     }
+    cpuTime.realTime = System.nanoTime();
+    _cpuTimes.put(shardName, cpuTime);
     _totalShards.incrementAndGet();
     return this;
   }
 
-  public QueryStatus deattachThread() {
+  public QueryStatus deattachThread(String shardName) {
     _completeShards.incrementAndGet();
+     CpuTime cpuTime = _cpuTimes.get(shardName);
     if (CPU_TIME_SUPPORTED) {
-      long startingThreadCpuTime = _cpuTimes.get();
-      long currentThreadCpuTime = _bean.getCurrentThreadCpuTime();
-      _cpuTimeOfFinishedThreads.addAndGet(currentThreadCpuTime - startingThreadCpuTime);
+    	cpuTime.cpuTime = _bean.getCurrentThreadCpuTime() - cpuTime.cpuTime;
     }
+    cpuTime.realTime = System.nanoTime() - cpuTime.realTime;
     return this;
   }
 
@@ -91,6 +100,7 @@ public class QueryStatus implements Comparable<QueryStatus> {
     if (queryStatus.query != null) {
       queryStatus.uuid = queryStatus.query.uuid;
     }
+    queryStatus.cpuTimes = _cpuTimes;
     return queryStatus;
   }
 

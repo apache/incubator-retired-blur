@@ -31,10 +31,7 @@ import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.TieredMergePolicy;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
 
 public class BlurIndexReader extends BlurIndex {
@@ -57,16 +54,14 @@ public class BlurIndexReader extends BlurIndex {
     _shardContext = shardContext;
     _refresher = refresher;
     _closer = closer;
-    IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _tableContext.getAnalyzer());
-    conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
-    conf.setIndexDeletionPolicy(_tableContext.getIndexDeletionPolicy());
-    conf.setSimilarity(_tableContext.getSimilarity());
-    TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
-    mergePolicy.setUseCompoundFile(false);
 
     _open.set(true);
 
     if (!DirectoryReader.indexExists(directory)) {
+      LOG.info("Creating an empty index");
+      // if the directory is empty then create an empty index.
+      IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _tableContext.getAnalyzer());
+      conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
       new IndexWriter(directory, conf).close();
     }
     _indexReaderRef.set(DirectoryReader.open(directory));
@@ -107,23 +102,30 @@ public class BlurIndexReader extends BlurIndex {
 
   @Override
   public void optimize(int numberOfSegmentsPerShard) throws IOException {
-    // Do nothing
+    throw new RuntimeException("Read-only shard");
   }
 
   @Override
   public IndexSearcherClosable getIndexReader() throws IOException {
-    throw new RuntimeException("not implemented");
+    final DirectoryReader reader = _indexReaderRef.get();
+    reader.incRef();
+    return new IndexSearcherClosable(reader, null) {
+
+      @Override
+      public Directory getDirectory() {
+        return _directory;
+      }
+
+      @Override
+      public void close() throws IOException {
+        reader.decRef();
+      }
+    };
   }
 
   @Override
   public AtomicBoolean isClosed() {
     return _isClosed;
-  }
-
-  public IndexSearcher getSearcher() {
-    IndexReader indexReader = _indexReaderRef.get();
-    indexReader.incRef();
-    return new IndexSearcher(indexReader);
   }
 
 }

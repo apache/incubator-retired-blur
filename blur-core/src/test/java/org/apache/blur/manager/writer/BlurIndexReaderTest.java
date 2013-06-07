@@ -21,32 +21,34 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.blur.concurrent.Executors;
+import org.apache.blur.index.IndexWriter;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
+import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.AnalyzerDefinition;
-import org.apache.blur.thrift.generated.Column;
-import org.apache.blur.thrift.generated.Record;
-import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.LockObtainFailedException;
+import org.apache.lucene.util.Version;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class BlurIndexReaderTest {
 
-  private static final File TMPDIR = new File("./target/tmp");
+  private static final File TMPDIR = new File("./target/tmp/BlurIndexReaderTest");
 
-  private BlurNRTIndex writer;
-  private Random random = new Random();
   private ExecutorService service;
   private File base;
   private Configuration configuration;
@@ -55,6 +57,10 @@ public class BlurIndexReaderTest {
   private IndexInputCloser closer;
   private SharedMergeScheduler mergeScheduler;
   private BlurIndexReader reader;
+
+  private BlurIndexRefresher refresher;
+  private BlurIndexCloser indexCloser;
+  private FSDirectory directory;
 
   @Before
   public void setup() throws IOException {
@@ -71,25 +77,23 @@ public class BlurIndexReaderTest {
 
     configuration = new Configuration();
     service = Executors.newThreadPool("test", 1);
-    
+
   }
 
   private void setupWriter(Configuration configuration, long refresh) throws IOException {
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName("test-table");
-    tableDescriptor.setTableUri(new File(base, "table-store").toURI().toString());
+    tableDescriptor.setTableUri(new File(base, "table-store-" + UUID.randomUUID().toString()).toURI().toString());
     tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.putToTableProperties("blur.shard.time.between.refreshs", Long.toString(refresh));
     tableDescriptor.putToTableProperties("blur.shard.time.between.commits", Long.toString(1000));
-    
+
     TableContext tableContext = TableContext.create(tableDescriptor);
-    FSDirectory directory = FSDirectory.open(new File(base, "index"));
+    directory = FSDirectory.open(new File(tableDescriptor.getTableUri()));
 
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard");
-
-    writer = new BlurNRTIndex(shardContext, mergeScheduler, closer, directory, gc, service);
-    BlurIndexRefresher refresher = new BlurIndexRefresher();
-    BlurIndexCloser indexCloser = new BlurIndexCloser();
+    refresher = new BlurIndexRefresher();
+    indexCloser = new BlurIndexCloser();
     refresher.init();
     indexCloser.init();
     reader = new BlurIndexReader(shardContext, directory, refresher, indexCloser);
@@ -97,7 +101,6 @@ public class BlurIndexReaderTest {
 
   @After
   public void tearDown() throws IOException {
-    writer.close();
     mergeScheduler.close();
     closer.close();
     gc.close();
@@ -120,25 +123,25 @@ public class BlurIndexReaderTest {
   @Test
   public void testBlurIndexWriter() throws IOException, InterruptedException {
     setupWriter(configuration, 1);
-    IndexSearcher searcher = reader.getSearcher();
-    writer.replaceRow(true, true, genRow());
-    Thread.sleep(1500);
-    assertEquals(0,searcher.getIndexReader().numDocs());
+    IndexSearcherClosable indexReader1 = reader.getIndexReader();
+    doWrite();
+    assertEquals(0, indexReader1.getIndexReader().numDocs());
+    indexReader1.close();
     reader.refresh();
-    assertEquals(1,reader.getSearcher().getIndexReader().numDocs());
+    IndexSearcherClosable indexReader2 = reader.getIndexReader();
+    assertEquals(1, indexReader2.getIndexReader().numDocs());
+    indexReader2.close();
   }
-  
-  private Row genRow() {
-    Row row = new Row();
-    row.setId(Long.toString(random.nextLong()));
-    Record record = new Record();
-    record.setFamily("testing");
-    record.setRecordId(Long.toString(random.nextLong()));
-    for (int i = 0; i < 10; i++) {
-      record.addToColumns(new Column("col" + i, Long.toString(random.nextLong())));
-    }
-    row.addToRecords(record);
-    return row;
+
+  private void doWrite() throws CorruptIndexException, LockObtainFailedException, IOException {
+    IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_43, new KeywordAnalyzer());
+    IndexWriter writer = new IndexWriter(directory, conf);
+    writer.addDocument(getDoc());
+    writer.close();
+  }
+
+  private Document getDoc() {
+    return new Document();
   }
 
 }

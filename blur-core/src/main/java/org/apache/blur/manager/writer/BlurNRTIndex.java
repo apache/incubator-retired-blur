@@ -35,6 +35,7 @@ import org.apache.blur.lucene.store.refcounter.DirectoryReferenceCounter;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
 import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.server.IndexSearcherClosableNRT;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.Record;
@@ -97,7 +98,7 @@ public class BlurNRTIndex extends BlurIndex {
     _searcherFactory = new SearcherFactory() {
       @Override
       public IndexSearcher newSearcher(IndexReader reader) throws IOException {
-        return new IndexSearcherClosable(reader, searchExecutor, _nrtManagerRef, _directory);
+        return new IndexSearcherClosableNRT(reader, searchExecutor, _nrtManagerRef, _directory);
       }
     };
 

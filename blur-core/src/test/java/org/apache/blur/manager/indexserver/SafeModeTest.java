@@ -77,7 +77,8 @@ public class SafeModeTest {
     }
 
     for (AtomicReference<Throwable> t : errors) {
-      assertNull(t.get());
+      Throwable throwable = t.get();
+      assertNull(throwable == null ? null : throwable.getMessage(), throwable);
     }
 
     long oldest = -1;
@@ -91,7 +92,7 @@ public class SafeModeTest {
         newest = l;
       }
     }
-    assertTrue((newest - oldest) < TimeUnit.SECONDS.toMillis(1));
+    assertTrue("newest [" + newest + "] oldest [" + oldest + "]", (newest - oldest) < TimeUnit.SECONDS.toMillis(5));
   }
 
   @Test

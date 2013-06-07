@@ -30,7 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.generated.Blur.Client;
+import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
@@ -43,7 +43,7 @@ import com.google.common.collect.Lists;
 
 public class IndexAccessLogCommand extends Command {
   @Override
-  public void doit(PrintWriter out, Client client, String[] args)
+  public void doit(PrintWriter out, Blur.Iface client, String[] args)
       throws CommandException, TException, BlurException {
     if (args.length < 6) {
       throw new CommandException("Invalid args: " + help());

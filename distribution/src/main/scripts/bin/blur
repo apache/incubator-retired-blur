@@ -20,7 +20,10 @@ bin=`cd "$bin"; pwd`
 
 . "$bin"/blur-config.sh
 PROC_NAME=$1
-"$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH $BLUR_COMMAND -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=$PROC_NAME.log -cp $BLUR_CLASSPATH $@
-
+if [ $1 = "shell" ]; then
+  "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH $BLUR_COMMAND -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=$PROC_NAME.log -cp $BLUR_CLASSPATH org.apache.blur.shell.Main $2
+else
+  "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH $BLUR_COMMAND -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=$PROC_NAME.log -cp $BLUR_CLASSPATH $@
+fi
 
 

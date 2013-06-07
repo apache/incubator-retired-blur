@@ -18,6 +18,10 @@
 
 package org.apache.blur.shell;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,15 +37,12 @@ import jline.console.completer.StringsCompleter;
 import org.apache.blur.shell.Command.CommandException;
 import org.apache.blur.shell.Main.QuitCommand.QuitCommandException;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TBinaryProtocol;
-import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol;
-import org.apache.blur.thirdparty.thrift_0_9_0.transport.TFramedTransport;
-import org.apache.blur.thirdparty.thrift_0_9_0.transport.TSocket;
-import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransport;
-import org.apache.blur.thrift.generated.Blur.Client;
+import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 
 public class Main {
   /** is debugging enabled - off by default */
@@ -50,17 +51,16 @@ public class Main {
   static boolean timed = false;
 
   private static Map<String, Command> commands;
-  
+
   public static void usage() {
-    System.out.println("Usage: java " + Main.class.getName()
-        + " controller:port");
+    System.out.println("Usage: java " + Main.class.getName() + " controller1:port,controller2:port,...");
   }
 
   private static class DebugCommand extends Command {
 
     @Override
-    public void doit(PrintWriter out, Client client, String[] args)
-        throws CommandException, TException, BlurException {
+    public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+        BlurException {
       if (debug == true) {
         debug = false;
       } else {
@@ -73,14 +73,14 @@ public class Main {
     public String help() {
       return "toggle debugging on/off";
     }
-    
+
   }
 
   private static class TimedCommand extends Command {
 
     @Override
-    public void doit(PrintWriter out, Client client, String[] args)
-        throws CommandException, TException, BlurException {
+    public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+        BlurException {
       if (timed == true) {
         timed = false;
       } else {
@@ -93,15 +93,15 @@ public class Main {
     public String help() {
       return "toggle timing of commands on/off";
     }
-    
+
   }
 
   private static class HelpCommand extends Command {
     @Override
-    public void doit(PrintWriter out, Client client, String[] args)
-        throws CommandException, TException, BlurException {
+    public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+        BlurException {
       out.println("Available commands:");
-      for (Entry<String, Command> e: commands.entrySet()) {
+      for (Entry<String, Command> e : commands.entrySet()) {
         out.println("  " + e.getKey() + " - " + e.getValue().help());
       }
     }
@@ -121,8 +121,8 @@ public class Main {
     }
 
     @Override
-    public void doit(PrintWriter out, Client client, String[] args)
-        throws CommandException, TException, BlurException {
+    public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+        BlurException {
       throw new QuitCommandException();
     }
 
@@ -133,43 +133,45 @@ public class Main {
   }
 
   public static void main(String[] args) throws Throwable {
-    commands = new ImmutableMap.Builder<String,Command>()
-        .put("help", new HelpCommand())
-        .put("debug", new DebugCommand())
-        .put("timed", new TimedCommand())
-        .put("quit", new QuitCommand())
-        .put("listtables", new ListTablesCommand())
-        .put("createtable", new CreateTableCommand())
-        .put("enabletable", new EnableDisableTableCommand())
-        .put("disabletable", new EnableDisableTableCommand())
-        .put("removetable", new RemoveTableCommand())
-        .put("describetable", new DescribeTableCommand())
-        .put("tablestats", new TableStatsCommand())
-        .put("schema", new SchemaTableCommand())
-        .put("query", new QueryCommand())
-        .put("getrow", new GetRowCommand())
-        .put("mutaterow", new MutateRowCommand())
-        .put("indexaccesslog", new IndexAccessLogCommand())
-        .put("shardclusterlist", new ShardClusterListCommand())
-        .put("shardserverlayout", new ShardServerLayoutCommand())
-        .put("controllers", new ControllersEchoCommand())
-        .build();
+    Builder<String, Command> builder = new ImmutableMap.Builder<String, Command>();
+    builder.put("help", new HelpCommand());
+    builder.put("debug", new DebugCommand());
+    builder.put("timed", new TimedCommand());
+    builder.put("quit", new QuitCommand());
+    builder.put("list", new ListTablesCommand());
+    builder.put("create", new CreateTableCommand());
+    builder.put("enable", new EnableDisableTableCommand());
+    builder.put("disable", new EnableDisableTableCommand());
+    builder.put("remove", new RemoveTableCommand());
+    builder.put("describe", new DescribeTableCommand());
+    builder.put("tablestats", new TableStatsCommand());
+    builder.put("schema", new SchemaTableCommand());
+    builder.put("query", new QueryCommand());
+    builder.put("getrow", new GetRowCommand());
+    builder.put("mutaterow", new MutateRowCommand());
+    builder.put("indexaccesslog", new IndexAccessLogCommand());
+    builder.put("shardclusterlist", new ShardClusterListCommand());
+    builder.put("shardserverlayout", new ShardServerLayoutCommand());
+    builder.put("controllers", new ControllersEchoCommand());
+    builder.put("shards", new ShardsEchoCommand());
+    commands = builder.build();
 
     try {
       ConsoleReader reader = new ConsoleReader();
 
       reader.setPrompt("blur> ");
 
+      String controllerConnectionString = null;
+
       if ((args == null) || (args.length != 1)) {
-        usage();
-        return;
-      }
+        controllerConnectionString = loadControllerConnectionString();
+        if (controllerConnectionString == null) {
+          usage();
+          return;
+        }
+      } else {
+        controllerConnectionString = args[0];
 
-      String[] hostport = args[0].split(":"); 
-
-      if (hostport.length != 2) {
-        usage();
-        return;
       }
 
       List<Completer> completors = new LinkedList<Completer>();
@@ -181,61 +183,74 @@ public class Main {
         reader.addCompleter(c);
       }
 
-      TTransport trans = new TSocket(hostport[0], Integer.parseInt(hostport[1]));
-      TProtocol proto = new TBinaryProtocol(new TFramedTransport(trans));
-      Client client = new Client(proto);
-      try {
-          trans.open();
+      Blur.Iface client = BlurClient.getClient(controllerConnectionString);
 
-          String line;
-          PrintWriter out = new PrintWriter(reader.getOutput());
-          try {
-            while ((line = reader.readLine()) != null) {
-              line = line.trim();
-              // ignore empty lines and comments
-              if (line.length() == 0 || line.startsWith("#")) {
-                continue;
+      String line;
+      PrintWriter out = new PrintWriter(reader.getOutput());
+      try {
+        while ((line = reader.readLine()) != null) {
+          line = line.trim();
+          // ignore empty lines and comments
+          if (line.length() == 0 || line.startsWith("#")) {
+            continue;
+          }
+          String[] commandArgs = line.split("\\s");
+          Command command = commands.get(commandArgs[0]);
+          if (command == null) {
+            out.println("unknown command \"" + commandArgs[0] + "\"");
+          } else {
+            long start = System.nanoTime();
+            try {
+              command.doit(out, client, commandArgs);
+            } catch (QuitCommandException e) {
+              // exit gracefully
+              System.exit(0);
+            } catch (CommandException e) {
+              out.println(e.getMessage());
+              if (debug) {
+                e.printStackTrace(out);
               }
-              String[] commandArgs = line.split("\\s");
-              Command command = commands.get(commandArgs[0]);
-              if (command == null) {
-                out.println("unknown command \"" + commandArgs[0] + "\"");
-              } else {
-                long start = System.nanoTime();
-                try {
-                  command.doit(out, client, commandArgs);
-                } catch (QuitCommandException e) {
-                  // exit gracefully
-                  System.exit(0);
-                } catch (CommandException e) {
-                  out.println(e.getMessage());
-                  if (debug) {
-                    e.printStackTrace(out);
-                  }
-                } catch (BlurException e) {
-                  out.println(e.getMessage());
-                  if (debug) {
-                    e.printStackTrace(out);
-                  }
-                } finally {
-                  if (timed) {
-                    out.println("Last command took "
-                        + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
-                        + "ms");
-                  }
-                }
+            } catch (BlurException e) {
+              out.println(e.getMessage());
+              if (debug) {
+                e.printStackTrace(out);
+              }
+            } finally {
+              if (timed) {
+                out.println("Last command took " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) + "ms");
               }
             }
-          } finally {
-            out.close();
           }
+        }
       } finally {
-          trans.close();
+        out.close();
       }
+
     } catch (Throwable t) {
       t.printStackTrace();
       throw t;
     }
   }
 
+  private static String loadControllerConnectionString() throws IOException {
+    StringBuilder builder = new StringBuilder();
+    InputStream inputStream = Main.class.getResourceAsStream("/controllers");
+    if (inputStream == null) {
+      return null;
+    }
+    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+    String line;
+    while ((line = bufferedReader.readLine()) != null) {
+      if (builder.length() != 0) {
+        builder.append(',');
+      }
+      String trim = line.trim();
+      if (trim.startsWith("#")) {
+        continue;
+      }
+      builder.append(trim).append(":40010");
+    }
+    bufferedReader.close();
+    return builder.toString();
+  }
 }

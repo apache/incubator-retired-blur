@@ -20,10 +20,9 @@ package org.apache.blur.shell;
 
 import java.io.PrintWriter;
 
-
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
-import org.apache.blur.thrift.generated.Blur.Client;
 
 public abstract class Command {
   @SuppressWarnings("serial")
@@ -32,7 +31,7 @@ public abstract class Command {
       super(msg);
     }
   }
-  abstract public void doit(PrintWriter out, Client client, String[] args)
+  abstract public void doit(PrintWriter out, Blur.Iface client, String[] args)
       throws CommandException, TException, BlurException;
   abstract public String help();
 }

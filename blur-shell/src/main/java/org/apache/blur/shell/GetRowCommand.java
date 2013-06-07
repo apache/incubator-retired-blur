@@ -21,7 +21,7 @@ package org.apache.blur.shell;
 import java.io.PrintWriter;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.generated.Blur.Client;
+import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.FetchRowResult;
@@ -30,7 +30,7 @@ import org.apache.blur.thrift.generated.Selector;
 
 public class GetRowCommand extends Command {
   @Override
-  public void doit(PrintWriter out, Client client, String[] args) throws CommandException, TException, BlurException {
+  public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException, BlurException {
     if (args.length != 3) {
       throw new CommandException("Invalid args: " + help());
     }

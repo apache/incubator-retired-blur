@@ -52,6 +52,7 @@ import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.zookeeper.ZooKeeper;
@@ -86,7 +87,8 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
 
-    BlurUtil.setupZookeeper(zooKeeper);
+    //@TODO this is confusing because controllers are in a cluster by default, but they see all the shards clusters.
+    BlurUtil.setupZookeeper(zooKeeper, BlurConstants.BLUR_CLUSTER);
 
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper);
 

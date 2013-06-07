@@ -451,9 +451,15 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   private byte[] getData(String path) throws KeeperException, InterruptedException {
     Stat stat = _zk.exists(path, false);
     if (stat == null) {
+      LOG.debug("Tried to fetch path [{0}] and path is missing",path);
       return null;
     }
-    return _zk.getData(path, false, stat);
+    byte[] data = _zk.getData(path, false, stat);
+    if (data == null) {
+      LOG.debug("Fetched path [{0}] and data is null",path);
+      return null;
+    }
+    return data;
   }
 
   @Override

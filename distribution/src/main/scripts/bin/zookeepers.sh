@@ -20,8 +20,15 @@ bin=`cd "$bin"; pwd`
 
 . "$bin"/blur-config.sh
 
-$BLUR_HOME/bin/stop-controllers.sh
-$BLUR_HOME/bin/stop-shards.sh
-if [ $BLUR_MANAGE_ZK = true ]; then
-  $BLUR_HOME/bin/stop-zookeepers.sh
-fi
+export HOSTLIST="${BLUR_HOME_CONF}/zookeepers"
+
+for zookeeper in `cat "$HOSTLIST"|sed  "s/#.*$//;/^$/d"`; do
+ ssh $BLUR_SSH_OPTS $zookeeper $"${@// /\\ }" \
+   2>&1 | sed "s/^/$zookeeper: /" &
+ if [ "$BLUR_ZK_SLEEP" != "" ]; then
+   sleep $BLUR_ZK_SLEEP
+ fi
+done
+
+wait
+

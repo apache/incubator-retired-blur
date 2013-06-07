@@ -20,8 +20,6 @@ bin=`cd "$bin"; pwd`
 
 . "$bin"/blur-config.sh
 
-$BLUR_HOME/bin/stop-controllers.sh
-$BLUR_HOME/bin/stop-shards.sh
-if [ $BLUR_MANAGE_ZK = true ]; then
-  $BLUR_HOME/bin/stop-zookeepers.sh
-fi
+$BLUR_HOME/bin/zookeepers.sh $BLUR_HOME/bin/start-zookeeper-server.sh
+
+

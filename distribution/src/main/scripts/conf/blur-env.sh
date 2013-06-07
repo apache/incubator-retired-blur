@@ -28,10 +28,18 @@
 #-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:CMSIncrementalDutyCycleMin=10 -XX:CMSIncrementalDutyCycle=50 \
 #-XX:ParallelGCThreads=8 -XX:+UseParNewGC -XX:MaxGCPauseMillis=200 -XX:GCTimeRatio=10 -XX:+DisableExplicitGC \
 #-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$BLUR_HOME/logs/gc-blur-shard-server_`date +%Y%m%d_%H%M%S`.log
-export BLUR_SHARD_JVM_OPTIONS="-Xmx1024m -Djava.net.preferIPv4Stack=true -XX:MaxDirectMemorySize=256m -XX:OnOutOfMemoryError=\"kill -9 %p\""
+# Consider adding the -XX:OnOutOfMemoryError="kill -9 %p" option to kill jvms that are failing due to memory issues.
+export BLUR_SHARD_JVM_OPTIONS="-Xmx1024m -Djava.net.preferIPv4Stack=true -XX:MaxDirectMemorySize=256m "
 
-# JAVA JVM OPTIONS for the shard servers, jvm tuning parameters are placed here.
-export BLUR_CONTROLLER_JVM_OPTIONS="-Xmx1024m -Djava.net.preferIPv4Stack=true -XX:OnOutOfMemoryError=\"kill -9 %p\""
+# JAVA JVM OPTIONS for the controller servers, jvm tuning parameters are placed here.
+# Consider adding the -XX:OnOutOfMemoryError="kill -9 %p" option to kill jvms that are failing due to memory issues.
+export BLUR_CONTROLLER_JVM_OPTIONS="-Xmx1024m -Djava.net.preferIPv4Stack=true "
+
+# This tells blur to manage the ZooKeeper instances, set this to false if Blur is not going to manage the ZooKeeper cluster
+export BLUR_MANAGE_ZK=true
+
+# JAVA JVM OPTIONS for the zookeepers servers, jvm tuning parameters are placed here.
+export BLUR_ZK_JVM_OPTIONS="-Xmx128m -Djava.net.preferIPv4Stack=true "
 
 # JAVA JVM OPTIONS for the shard servers, jvm tuning parameters are placed here.
 export BLUR_COMMAND="-Xmx1024m -Djava.net.preferIPv4Stack=true"
@@ -44,6 +52,9 @@ export BLUR_SHARD_SLEEP=0.1
 
 # Time to sleep between controller server commands.
 export BLUR_CONTROLLER_SLEEP=0.1
+
+# Time to sleep between zookeeper server commands.
+export BLUR_ZK_SLEEP=0.1
 
 # The of shard servers to spawn per machine.
 export BLUR_NUMBER_OF_SHARD_SERVER_INSTANCES_PER_MACHINE=1

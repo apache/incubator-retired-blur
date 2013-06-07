@@ -20,8 +20,18 @@ bin=`cd "$bin"; pwd`
 
 . "$bin"/blur-config.sh
 
-$BLUR_HOME/bin/stop-controllers.sh
-$BLUR_HOME/bin/stop-shards.sh
 if [ $BLUR_MANAGE_ZK = true ]; then
-  $BLUR_HOME/bin/stop-zookeepers.sh
+  PID_FILE=$BLUR_HOME/pids/zk.pid
+  if [ -f $PID_FILE ]; then
+    if kill -0 `cat $PID_FILE` > /dev/null 2>&1; then
+      echo Stopping ZooKeeper with pid [`cat $PID_FILE`].
+      kill `cat $PID_FILE`
+    else
+      echo No ZooKeeper to stop
+    fi
+  else
+    echo No ZooKeeper to stop
+  fi
+else 
+  echo Blur is not managing ZooKeeper
 fi

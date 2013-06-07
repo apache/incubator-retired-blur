@@ -20,8 +20,20 @@ bin=`cd "$bin"; pwd`
 
 . "$bin"/blur-config.sh
 
-$BLUR_HOME/bin/stop-controllers.sh
-$BLUR_HOME/bin/stop-shards.sh
 if [ $BLUR_MANAGE_ZK = true ]; then
-  $BLUR_HOME/bin/stop-zookeepers.sh
+  PID_FILE=$BLUR_HOME/pids/zk.pid
+
+  if [ -f $PID_FILE ]; then
+    if kill -0 `cat $PID_FILE` > /dev/null 2>&1; then
+      echo ZooKeeper already running as process `cat $PID_FILE`.  Stop it first.
+      exit 0
+    fi
+  fi
+
+  PROC_NAME=blur-zk-$HOSTNAME
+  nohup "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH -Dblur-zk $BLUR_ZK_JVM_OPTIONS -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=$PROC_NAME.log -cp $BLUR_CLASSPATH org.apache.zookeeper.server.quorum.QuorumPeerMain $BLUR_HOME/conf/default_zoo.cfg > "$BLUR_LOGS/$PROC_NAME.out" 2>&1 < /dev/null &
+  echo $! > $PID_FILE
+  echo ZooKeeper starting as process `cat $PID_FILE`.
+else 
+  echo Blur is not managing ZooKeeper
 fi

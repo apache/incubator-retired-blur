@@ -58,6 +58,7 @@ import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.FloatField;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.FieldInfo.IndexOptions;
 import org.apache.lucene.search.NumericRangeQuery;
@@ -67,7 +68,7 @@ import org.apache.lucene.util.Version;
 public final class BlurAnalyzer extends AnalyzerWrapper {
 
   public enum TYPE {
-    LONG, DOUBLE, FLOAT, INTEGER, TEXT
+    LONG, DOUBLE, FLOAT, INTEGER, TEXT, STRING
   }
 
   @SuppressWarnings("serial")
@@ -97,6 +98,7 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
   private Map<String, Boolean> _fullTextColumnFamilies = new HashMap<String, Boolean>();
   private AnalyzerDefinition _analyzerDefinition;
   private Analyzer _defaultAnalyzer;
+  private Analyzer _keywordAnalyzer = new KeywordAnalyzer();
   private Map<String, Analyzer> _analyzers = new HashMap<String, Analyzer>();
   private Map<String, TYPE> _typeLookup = new HashMap<String, BlurAnalyzer.TYPE>();
   private Map<String, FieldType> _fieldTypes = new HashMap<String, FieldType>();
@@ -134,8 +136,11 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
   }
 
   private Analyzer getAnalyzer(String name) {
-    Analyzer analyzer = _analyzers.get(name);
-    return analyzer;
+    TYPE type = _typeLookup.get(name);
+    if (type == TYPE.STRING) {
+      return _keywordAnalyzer;
+    }
+    return _analyzers.get(name);
   }
 
   public TYPE getTypeLookup(String field) {
@@ -153,6 +158,10 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
     }
     FieldType fieldType = _fieldTypes.get(field);
     switch (type) {
+    
+    case STRING:
+      return null;
+    
     case INTEGER:
       int integerPrecisionStep = fieldType.numericPrecisionStep();
       int integerMin = Integer.parseInt(part1);
@@ -253,6 +262,8 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
       return new Field(fieldName, value, fieldType);
     }
     switch (type) {
+    case STRING:
+      return new Field(fieldName, value, fieldType);
     case INTEGER:
       return new IntField(fieldName, Integer.parseInt(value), fieldType);
     case DOUBLE:
@@ -467,6 +478,9 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
 
     FieldType fieldType;
     switch (t) {
+    case STRING:
+      fieldType = new FieldType(StringField.TYPE_STORED);
+      break;
     case LONG:
       fieldType = new FieldType(LongField.TYPE_STORED);
       if (types.length > 1) {

@@ -85,12 +85,13 @@ under the License.
 			<plugin>
 				<groupId>org.apache.rat</groupId>
 				<artifactId>apache-rat-plugin</artifactId>
+				<version>0.9</version>
 				<configuration>
 					<excludes>
-						<exclude>**/generated/**</exclude>
+						<!--exclude>**/generated/**</exclude>
 						<exclude>**/*min.js</exclude>
 						<exclude>**/input-data/*.txt</exclude>
-						<exclude>**/testsuite/words.txt</exclude>
+						<exclude>**/testsuite/words.txt</exclude-->
 						<exclude>**/README.textile</exclude>
 					</excludes>
 				</configuration>

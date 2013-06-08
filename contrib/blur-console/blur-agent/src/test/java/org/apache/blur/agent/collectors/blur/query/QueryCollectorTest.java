@@ -6,9 +6,9 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 
 import org.apache.blur.MiniCluster;
-import org.apache.blur.agent.collectors.blur.query.QueryCollector;
 import org.apache.blur.agent.connections.blur.BlurDatabaseConnection;
 import org.apache.blur.agent.test.BlurAgentBaseTestClass;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -17,7 +17,6 @@ import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.TableDescriptor;
-import org.apache.thrift.TException;
 import org.junit.Test;
 
 

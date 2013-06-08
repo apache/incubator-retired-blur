@@ -54,17 +54,12 @@
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-thrift</artifactId>
-			<version>0.1.5</version>
+			<version>0.1.5-incubating</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-util</artifactId>
-			<version>0.1.5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.thrift</groupId>
-			<artifactId>libthrift</artifactId>
-			<version>0.9.0</version>
+			<version>0.1.5-incubating</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -120,13 +115,13 @@
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-core</artifactId>
-			<version>0.1.5</version>
+			<version>0.1.5-incubating</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-core</artifactId>
-			<version>0.1.5</version>
+			<version>0.1.5-incubating</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
@@ -139,7 +134,7 @@
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-store</artifactId>
-			<version>0.1.5</version>
+			<version>0.1.5-incubating</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

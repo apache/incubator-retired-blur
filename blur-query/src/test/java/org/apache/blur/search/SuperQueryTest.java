@@ -159,13 +159,19 @@ public class SuperQueryTest {
 
   public static Directory createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {
     Directory directory = new RAMDirectory();
-    IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)));
-    writer.addDocuments(addPrime(Arrays.asList(newDocument(newStringField(ROW_ID, "1"), newStringField(PERSON_NAME, NAME1)),
-        newDocument(newStringField(ROW_ID, "1"), newStringField(PERSON_NAME, NAME1)), newDocument(newStringField(ROW_ID, "1"), newStringField(ADDRESS_STREET, STREET1)))));
-    writer.addDocuments(addPrime(Arrays.asList(newDocument(newStringField(ROW_ID, "2"), newStringField(PERSON_NAME, NAME2)),
+    IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(
+        LUCENE_VERSION)));
+    writer.addDocuments(addPrime(Arrays.asList(
+        newDocument(newStringField(ROW_ID, "1"), newStringField(PERSON_NAME, NAME1)),
+        newDocument(newStringField(ROW_ID, "1"), newStringField(PERSON_NAME, NAME1)),
+        newDocument(newStringField(ROW_ID, "1"), newStringField(ADDRESS_STREET, STREET1)))));
+    writer.addDocuments(addPrime(Arrays.asList(
+        newDocument(newStringField(ROW_ID, "2"), newStringField(PERSON_NAME, NAME2)),
         newDocument(newStringField(ROW_ID, "2"), newStringField(ADDRESS_STREET, STREET1)))));
-    writer.addDocuments(addPrime(Arrays.asList(newDocument(newStringField(ROW_ID, "3"), newStringField(PERSON_NAME, NAME1)),
-        newDocument(newStringField(ROW_ID, "3"), newStringField(ADDRESS_STREET, STREET1)), newDocument(newStringField(ROW_ID, "3"), newStringField(ADDRESS_STREET, STREET2)))));
+    writer.addDocuments(addPrime(Arrays.asList(
+        newDocument(newStringField(ROW_ID, "3"), newStringField(PERSON_NAME, NAME1)),
+        newDocument(newStringField(ROW_ID, "3"), newStringField(ADDRESS_STREET, STREET1)),
+        newDocument(newStringField(ROW_ID, "3"), newStringField(ADDRESS_STREET, STREET2)))));
     writer.close();
     return directory;
   }

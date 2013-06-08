@@ -33,7 +33,6 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.ServerContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServer;
-import org.apache.blur.thirdparty.thrift_0_9_0.server.TServer.AbstractServerArgs;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TFramedTransport;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport;

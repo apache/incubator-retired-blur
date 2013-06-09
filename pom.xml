@@ -93,6 +93,9 @@ under the License.
 						<exclude>**/input-data/*.txt</exclude>
 						<exclude>**/testsuite/words.txt</exclude-->
 						<exclude>**/README.textile</exclude>
+						<exclude>**/.classpath</exclude>
+						<exclude>**/.project</exclude>
+						<exclude>**/.settings/**</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

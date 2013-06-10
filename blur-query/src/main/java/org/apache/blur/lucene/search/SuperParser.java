@@ -97,7 +97,7 @@ public class SuperParser extends QueryParser {
       }
     }
     if (booleanQuery == null) {
-      return super.parse(query);
+      return reprocess(super.parse(query));
     }
     return booleanQuery;
   }

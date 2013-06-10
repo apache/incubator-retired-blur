@@ -17,6 +17,7 @@ package org.apache.blur.analysis;
  * limitations under the License.
  */
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
+import static org.apache.blur.utils.BlurConstants.FAMILY;
 import static org.apache.blur.utils.BlurConstants.PRIME_DOC;
 import static org.apache.blur.utils.BlurConstants.RECORD_ID;
 import static org.apache.blur.utils.BlurConstants.ROW_ID;
@@ -125,7 +126,7 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
     _analyzers.put(ROW_ID, ERROR_ANALYZER);
     _analyzers.put(RECORD_ID, ERROR_ANALYZER);
     _analyzers.put(PRIME_DOC, ERROR_ANALYZER);
-    _analyzers.put(PRIME_DOC, ERROR_ANALYZER);
+    _analyzers.put(FAMILY, ERROR_ANALYZER);
     _analyzers.put(SUPER, ERROR_ANALYZER);
     load(_analyzers, _analyzerDefinition.columnFamilyDefinitions, _fullTextFields, _subIndexNameLookups,
         _subIndexNames, _fullTextColumnFamilies, _typeLookup, _fieldTypes);
@@ -158,10 +159,10 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
     }
     FieldType fieldType = _fieldTypes.get(field);
     switch (type) {
-    
+
     case STRING:
       return null;
-    
+
     case INTEGER:
       int integerPrecisionStep = fieldType.numericPrecisionStep();
       int integerMin = Integer.parseInt(part1);

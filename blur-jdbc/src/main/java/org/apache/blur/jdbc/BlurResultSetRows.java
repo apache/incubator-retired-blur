@@ -139,7 +139,7 @@ public class BlurResultSetRows extends AbstractBlurResultSet {
       displayRowsPosition = 0;
       final BlurResult result = results.results.get(resultPosition);
       try {
-        selector.setLocationId(result.getLocationId());
+        selector.setRowId(result.getFetchResult().getRowResult().getRow().getId());
         fetchResult = client.fetchRow(tableName, selector);
         Row row = fetchResult.rowResult.row;
         String rowId = row.id;

@@ -27,15 +27,13 @@ import org.apache.blur.jdbc.abstractimpl.AbstractBlurConnection;
 public class BlurConnection extends AbstractBlurConnection {
 
   private boolean closed;
-  private int port;
-  private String host;
+  private String connectionString;
   private String catalog;
   private String url;
   private String username;
 
-  public BlurConnection(String url, String username, String host, int port, String catalog) {
-    this.host = host;
-    this.port = port;
+  public BlurConnection(String url, String username, String connectionString, String catalog) {
+    this.connectionString = connectionString;
     this.catalog = catalog;
     this.url = url;
     this.username = username;
@@ -53,7 +51,7 @@ public class BlurConnection extends AbstractBlurConnection {
 
   @Override
   public DatabaseMetaData getMetaData() throws SQLException {
-    return new BlurDatabaseMetaData(url, username, host, port);
+    return new BlurDatabaseMetaData(url, username, connectionString);
   }
 
   @Override
@@ -101,12 +99,8 @@ public class BlurConnection extends AbstractBlurConnection {
 
   }
 
-  public int getPort() {
-    return port;
-  }
-
-  public String getHost() {
-    return host;
+  public String getConnectionString() {
+    return connectionString;
   }
 
   @Override

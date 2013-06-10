@@ -66,7 +66,7 @@ public class BlurStatement extends AbstractBlurStatement {
   public ResultSet getResultSet() throws SQLException {
     try {
       System.out.println(sql);
-      Iface client = BlurClient.getClient(connection.getHost() + ":" + connection.getPort());
+      Iface client = BlurClient.getClient(connection.getConnectionString());
       Parser parser = new Parser();
       parser.parse(sql);
       if (isSuperQuery(parser, client)) {

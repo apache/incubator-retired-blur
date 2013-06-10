@@ -40,6 +40,7 @@ import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.Column;
+import org.apache.blur.thrift.generated.FetchRecordResult;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Schema;
@@ -150,7 +151,9 @@ public class BlurResultSetRecords extends AbstractBlurResultSet {
 
         final BlurResult result = results.results.get(resultPosition);
         try {
-          selector.setLocationId(result.getLocationId());
+          FetchRecordResult recordResult = result.getFetchResult().getRecordResult();
+          selector.setRecordId(recordResult.getRowid());
+          selector.setRecordId(recordResult.getRecord().getRecordId());
           fetchResult = client.fetchRow(tableName, selector);
           Record record = fetchResult.recordResult.record;
           if (!record.family.equals(columnFamily)) {

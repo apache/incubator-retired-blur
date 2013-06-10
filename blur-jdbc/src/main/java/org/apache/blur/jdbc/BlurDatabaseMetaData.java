@@ -58,19 +58,14 @@ public class BlurDatabaseMetaData extends AbstractBlurDatabaseMetaData {
   private int majorVersion = 1;
   private String url;
   private String username;
-  private int port;
-  private String host;
   private List<String> tables;
   private Map<String, Schema> schemaMap = new TreeMap<String, Schema>();
 
-  public BlurDatabaseMetaData(String url, String username, String host, int port) {
+  public BlurDatabaseMetaData(String url, String username, String connectionString) {
     this.url = url;
     this.username = username;
-    this.host = host;
-    this.port = port;
     try {
-      BlurClientManager.execute(this.host + ":" + this.port, new BlurCommand<Void>() {
-
+      BlurClientManager.execute(connectionString, new BlurCommand<Void>() {
         @Override
         public Void call(Client client) throws BlurException, TException {
           tables = client.tableList();

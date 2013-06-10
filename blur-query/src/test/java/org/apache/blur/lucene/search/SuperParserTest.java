@@ -1,21 +1,5 @@
 package org.apache.blur.lucene.search;
 
-/**
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.junit.Assert.*;
 
@@ -57,8 +41,7 @@ public class SuperParserTest {
     cfDef.putToColumnDefinitions("id_i", new ColumnDefinition("integer", false, null));
     ad.putToColumnFamilyDefinitions("a", cfDef);
     analyzer = new BlurAnalyzer(ad);
-    parser = new SuperParser(LUCENE_VERSION, new BlurAnalyzer(new WhitespaceAnalyzer(LUCENE_VERSION)), true, null,
-        ScoreType.SUPER, new Term("_primedoc_"));
+    parser = new SuperParser(LUCENE_VERSION, new BlurAnalyzer(new WhitespaceAnalyzer(LUCENE_VERSION)), true, null,  ScoreType.SUPER, new Term("_primedoc_"));
   }
 
   @Test
@@ -73,7 +56,7 @@ public class SuperParserTest {
 
     BooleanQuery bq = new BooleanQuery();
     bq.add(superQuery, Occur.MUST);
-
+    
     assertEquals(bq, query);
 
   }
@@ -96,12 +79,7 @@ public class SuperParserTest {
   @Test
   public void testParser3() throws ParseException {
     Query query = parser.parse("a:a d:e b:b");
-
-    BooleanQuery booleanQuery = new BooleanQuery();
-    booleanQuery.add(new TermQuery(new Term("a", "a")), Occur.SHOULD);
-    booleanQuery.add(new TermQuery(new Term("d", "e")), Occur.SHOULD);
-    booleanQuery.add(new TermQuery(new Term("b", "b")), Occur.SHOULD);
-    assertEquals(booleanQuery, query);
+    assertQuery(bq(bc(sq(tq("a", "a"))), bc(sq(tq("d", "e"))), bc(sq(tq("b", "b")))), query);
   }
 
   @Test
@@ -155,7 +133,7 @@ public class SuperParserTest {
 
   @Test
   public void testParser6() throws ParseException {
-    SuperParser parser = new SuperParser(LUCENE_VERSION, analyzer, true, null, ScoreType.SUPER, new Term("_primedoc_"));
+    SuperParser parser = new SuperParser(LUCENE_VERSION, analyzer, true, null,  ScoreType.SUPER, new Term("_primedoc_"));
     try {
       parser.parse("super : <a:a d:{e TO d} b:b super:<test:hello\\<>> super:<c:c d:d>");
       fail();
@@ -163,79 +141,79 @@ public class SuperParserTest {
       // should throw an error
     }
   }
-
+  
   @Test
   public void test7() throws ParseException {
     Query q = parseSq("(a.b:cool) (+a.c:cool a.b:cool)");
-    assertQuery(bq(bc(tq("a.b", "cool")), bc(bq(bc_m(tq("a.c", "cool")), bc(tq("a.b", "cool"))))), q);
+    assertQuery(bq(bc(sq(tq("a.b", "cool"))), bc(sq(bq(bc_m(tq("a.c", "cool")), bc(tq("a.b", "cool")))))), q);
   }
 
   @Test
   public void test8() throws ParseException {
     Query q = parseSq("(a.b:cool) (a.c:cool a.b:cool)");
-    assertQuery(bq(bc(tq("a.b", "cool")), bc(bq(bc(tq("a.c", "cool")), bc(tq("a.b", "cool"))))), q);
+    assertQuery(bq(bc(sq(tq("a.b", "cool"))), bc(sq(bq(bc(tq("a.c", "cool")), bc(tq("a.b", "cool")))))), q);
   }
 
   @Test
   public void test9() throws ParseException {
-    Query q = parseSq("a.b:cool (a.c:cool a.b:cool)");
-    assertQuery(bq(bc(tq("a.b", "cool")), bc(bq(bc(tq("a.c", "cool")), bc(tq("a.b", "cool"))))), q);
+    Query q = parseSq("(a.b:cool) (a.c:cool a.b:cool)");
+    assertQuery(bq(bc(sq(tq("a.b", "cool"))), bc(sq(bq(bc(tq("a.c", "cool")), bc(tq("a.b", "cool")))))), q);
   }
 
   @Test
   public void test10() throws ParseException {
     Query q = parseSq("a.b:cool a.c:cool a.b:cool");
-    assertQuery(bq(bc(tq("a.b", "cool")), bc(tq("a.c", "cool")), bc(tq("a.b", "cool"))), q);
+    assertQuery(bq(bc(sq(tq("a.b", "cool"))), bc(sq(tq("a.c", "cool"))), bc(sq(tq("a.b", "cool")))), q);
   }
 
   @Test
   public void test11() throws ParseException {
     Query q = parseSq("(a.b:cool) (+a.c:cool c.b:cool)");
-    assertQuery(bq(bc(tq("a.b", "cool")), bc(bq(bc_m(tq("a.c", "cool")), bc(tq("c.b", "cool"))))), q);
+    assertQuery(bq(bc(sq(tq("a.b", "cool"))), bc(sq(bq(bc_m(tq("a.c", "cool")), bc(tq("c.b", "cool")))))), q);
   }
 
   @Test
   public void test12() throws ParseException {
     Query q = parseSq("(a.b:cool) (a.c:cool c.b:cool)");
-    assertQuery(bq(bc(tq("a.b", "cool")), bc(bq(bc(tq("a.c", "cool")), bc(tq("c.b", "cool"))))), q);
+    assertQuery(bq(bc(sq(tq("a.b", "cool"))), bc(sq(bq(bc(tq("a.c", "cool")), bc(tq("c.b", "cool")))))), q);
   }
 
   @Test
   public void test13() throws ParseException {
     Query q = parseSq("a.b:cool (a.c:cool c.b:cool)");
-    assertQuery(bq(bc(tq("a.b", "cool")), bc(bq(bc(tq("a.c", "cool")), bc(tq("c.b", "cool"))))), q);
+    assertQuery(bq(bc(sq(tq("a.b", "cool"))), bc(sq(bq(bc(tq("a.c", "cool")), bc(tq("c.b", "cool")))))), q);
   }
 
   @Test
   public void test14() throws ParseException {
     Query q = parseSq("a.b:cool a.c:cool c.b:cool");
-    assertQuery(bq(bc(tq("a.b", "cool")), bc(tq("a.c", "cool")), bc(tq("c.b", "cool"))), q);
+    assertQuery(bq(bc(sq(tq("a.b", "cool"))), bc(sq(tq("a.c", "cool"))), bc(sq(tq("c.b", "cool")))), q);
   }
 
   @Test
   public void test15() throws ParseException {
     Query q = parseSq("a.id_l:[0 TO 2]");
     Query q1 = rq_i("a.id_l", 0L, 2L);
-    assertQuery(q1, q);
+    assertQuery(sq(q1), q);
   }
-
+  
   @Test
   public void test16() throws ParseException {
     Query q = parseSq("a.id_d:[0 TO 2]");
-    assertQuery(rq_i("a.id_d", 0.0D, 2.0D), q);
+    assertQuery(sq(rq_i("a.id_d", 0.0D, 2.0D)), q);
   }
-
+  
   @Test
   public void test17() throws ParseException {
     Query q = parseSq("a.id_f:[0 TO 2]");
-    assertQuery(rq_i("a.id_f", 0.0F, 2.0F), q);
+    assertQuery(sq(rq_i("a.id_f", 0.0F, 2.0F)), q);
   }
-
+  
   @Test
   public void test18() throws ParseException {
     Query q = parseSq("a.id_i:[0 TO 2]");
     Query q1 = rq_i("a.id_i", 0, 2);
-    assertQuery(q1, q);
+    assertQuery(sq(q1), q);
   }
 
   public static BooleanClause bc_m(Query q) {
@@ -266,7 +244,8 @@ public class SuperParserTest {
       assertEqualsTermQuery((TermQuery) expected, (TermQuery) actual);
     } else if (expected instanceof NumericRangeQuery<?>) {
       assertEqualsNumericRangeQuery((NumericRangeQuery<?>) expected, (NumericRangeQuery<?>) actual);
-    } else {
+    }
+    else {
       fail("Type [" + expected.getClass() + "] not supported");
     }
   }
@@ -280,7 +259,7 @@ public class SuperParserTest {
   public static void assertEqualsNumericRangeQuery(NumericRangeQuery<?> expected, NumericRangeQuery<?> actual) {
     assertEquals(expected, actual);
   }
-
+  
   public static void assertEqualsSuperQuery(SuperQuery expected, SuperQuery actual) {
     assertEquals(expected.getQuery(), actual.getQuery());
   }
@@ -311,15 +290,15 @@ public class SuperParserTest {
     assertEquals(booleanClause1.getOccur(), booleanClause2.getOccur());
     assertEqualsQuery(booleanClause1.getQuery(), booleanClause2.getQuery());
   }
-
+  
   private Query rq_i(String field, float min, float max) {
     return NumericRangeQuery.newFloatRange(field, min, max, true, true);
   }
-
+  
   private Query rq_i(String field, int min, int max) {
     return NumericRangeQuery.newIntRange(field, min, max, true, true);
   }
-
+  
   private Query rq_i(String field, double min, double max) {
     return NumericRangeQuery.newDoubleRange(field, min, max, true, true);
   }
@@ -345,9 +324,8 @@ public class SuperParserTest {
   }
 
   private Query parseSq(String qstr) throws ParseException {
-    SuperParser superParser = new SuperParser(LUCENE_VERSION, analyzer, true, null, ScoreType.SUPER, new Term(
-        "_primedoc_"));
+    SuperParser superParser = new SuperParser(LUCENE_VERSION, analyzer, true, null,  ScoreType.SUPER, new Term("_primedoc_"));
     return superParser.parse(qstr);
   }
-
+  
 }

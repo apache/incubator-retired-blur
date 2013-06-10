@@ -59,7 +59,7 @@ public class ThriftServer {
   private TServerEventHandler _eventHandler;
 
   public static void printUlimits() throws IOException {
-    ProcessBuilder processBuilder = new ProcessBuilder("ulimit", "-a");
+    ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c" ,"ulimit -a");
     Process process;
     try {
       process = processBuilder.start();

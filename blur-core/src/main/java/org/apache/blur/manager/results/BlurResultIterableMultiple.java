@@ -27,7 +27,7 @@ import java.util.TreeMap;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.BlurResult;
-import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.io.IOUtils;
 
 
@@ -96,7 +96,7 @@ public class BlurResultIterableMultiple implements BlurResultIterable {
 
     @Override
     public BlurResult next() {
-      Collections.sort(iterators, BlurConstants.HITS_PEEKABLE_ITERATOR_COMPARATOR);
+      Collections.sort(iterators, BlurUtil.HITS_PEEKABLE_ITERATOR_COMPARATOR);
       return fetchResult(iterators.get(0).next());
     }
 

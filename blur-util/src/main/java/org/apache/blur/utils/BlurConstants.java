@@ -17,15 +17,9 @@ package org.apache.blur.utils;
  * limitations under the License.
  */
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.BlurConfiguration;
-import org.apache.blur.manager.results.BlurResultComparator;
-import org.apache.blur.manager.results.BlurResultPeekableIteratorComparator;
-import org.apache.blur.manager.results.PeekableIterator;
-import org.apache.blur.thrift.generated.BlurResult;
-import org.apache.lucene.index.Term;
 
 
 public class BlurConstants {
@@ -33,8 +27,6 @@ public class BlurConstants {
   public static final String CONTROLLER = "controller";
   public static final String SHARD = "shard";
   public static final String SHARD_PREFIX = "shard-";
-  public static final Comparator<? super PeekableIterator<BlurResult>> HITS_PEEKABLE_ITERATOR_COMPARATOR = new BlurResultPeekableIteratorComparator();
-  public static final Comparator<? super BlurResult> HITS_COMPARATOR = new BlurResultComparator();
 
   public static final String PRIME_DOC = "_prime_";
   public static final String PRIME_DOC_VALUE = "true";
@@ -100,8 +92,6 @@ public class BlurConstants {
 
   public static final long ZK_WAIT_TIME = TimeUnit.SECONDS.toMillis(5);
 
-  public static final Term PRIME_DOC_TERM = new Term(PRIME_DOC, BlurConstants.PRIME_DOC_VALUE);
-
   static {
     try {
       BlurConfiguration configuration = new BlurConfiguration();
@@ -109,9 +99,5 @@ public class BlurConstants {
     } catch (IOException e) {
       throw new RuntimeException("Unknown error parsing configuration.", e);
     }
-  }
-
-  public static int getPid() {
-    return 0;
   }
 }

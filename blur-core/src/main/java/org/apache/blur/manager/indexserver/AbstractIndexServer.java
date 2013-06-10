@@ -22,7 +22,7 @@ import java.util.Map;
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.IndexSearcherClosable;
-import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
@@ -66,7 +66,7 @@ public abstract class AbstractIndexServer implements IndexServer {
 
   private long getRowCount(IndexReader indexReader) throws IOException {
     IndexSearcher searcher = new IndexSearcher(indexReader);
-    TopDocs topDocs = searcher.search(new TermQuery(BlurConstants.PRIME_DOC_TERM), 1);
+    TopDocs topDocs = searcher.search(new TermQuery(BlurUtil.PRIME_DOC_TERM), 1);
     return topDocs.totalHits;
   }
 }

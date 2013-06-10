@@ -264,7 +264,7 @@ public class IndexManager {
         query.add(new TermQuery(new Term(ROW_ID, rowId)), Occur.MUST);
       } else {
         query.add(new TermQuery(new Term(ROW_ID, rowId)), Occur.MUST);
-        query.add(new TermQuery(BlurConstants.PRIME_DOC_TERM), Occur.MUST);
+        query.add(new TermQuery(BlurUtil.PRIME_DOC_TERM), Occur.MUST);
       }
       TopDocs topDocs = searcher.search(query, 1);
       if (topDocs.totalHits > 1) {

@@ -70,7 +70,6 @@ import org.apache.blur.store.hdfs.BlurLockFactory;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
-import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.WatchChildren;
 import org.apache.blur.zookeeper.WatchChildren.OnChange;
@@ -447,7 +446,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     Path tablePath = new Path(getTableDescriptor(table).tableUri);
     Path hdfsDirPath = new Path(tablePath, shard);
 
-    BlurLockFactory lockFactory = new BlurLockFactory(_configuration, hdfsDirPath, _nodeName, BlurConstants.getPid());
+    BlurLockFactory lockFactory = new BlurLockFactory(_configuration, hdfsDirPath, _nodeName, BlurUtil.getPid());
 
     Directory directory = new HdfsDirectory(_configuration, hdfsDirPath);
     directory.setLockFactory(lockFactory);

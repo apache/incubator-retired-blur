@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.blur.thrift.generated.BlurResult;
-import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.utils.BlurUtil;
 
 
 public class BlurResultIterableSimple implements BlurResultIterable {
@@ -34,7 +34,7 @@ public class BlurResultIterableSimple implements BlurResultIterable {
   private long skipTo;
 
   public BlurResultIterableSimple(String shard, List<BlurResult> hits) {
-    Collections.sort(hits, BlurConstants.HITS_COMPARATOR);
+    Collections.sort(hits, BlurUtil.HITS_COMPARATOR);
     this.results = hits;
     this.shardInfo = new TreeMap<String, Long>();
     this.shardInfo.put(shard, (long) hits.size());

@@ -40,7 +40,7 @@ public class BlurLockFactory extends LockFactory {
   private byte[] _lockKey;
   private final Path _dir;
 
-  public BlurLockFactory(Configuration configuration, Path dir, String host, int pid) throws IOException {
+  public BlurLockFactory(Configuration configuration, Path dir, String host, String pid) throws IOException {
     _configuration = configuration;
     _dir = dir;
     _fileSystem = _dir.getFileSystem(_configuration);

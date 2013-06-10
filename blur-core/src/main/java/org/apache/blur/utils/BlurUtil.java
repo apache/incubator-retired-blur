@@ -28,12 +28,14 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +52,10 @@ import java.util.regex.Pattern;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
+import org.apache.blur.manager.results.BlurResultComparator;
 import org.apache.blur.manager.results.BlurResultIterable;
+import org.apache.blur.manager.results.BlurResultPeekableIteratorComparator;
+import org.apache.blur.manager.results.PeekableIterator;
 import org.apache.blur.thirdparty.thrift_0_9_0.TBase;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
@@ -78,13 +83,13 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.SlowCompositeReaderWrapper;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.RamUsageEstimator;
-import org.apache.lucene.search.BooleanClause;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.Code;
@@ -104,6 +109,10 @@ public class BlurUtil {
   private static final Log LOG = LogFactory.getLog(BlurUtil.class);
   private static final String UNKNOWN = "UNKNOWN";
   private static Pattern validator = Pattern.compile("^[a-zA-Z0-9\\_\\-]+$");
+
+  public static final Comparator<? super PeekableIterator<BlurResult>> HITS_PEEKABLE_ITERATOR_COMPARATOR = new BlurResultPeekableIteratorComparator();
+  public static final Comparator<? super BlurResult> HITS_COMPARATOR = new BlurResultComparator();
+  public static final Term PRIME_DOC_TERM = new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE);
 
   @SuppressWarnings("unchecked")
   public static <T extends Iface> T recordMethodCallsAndAverageTimes(final T t, Class<T> clazz) {
@@ -577,7 +586,7 @@ public class BlurUtil {
     recordMutation.setRecordMutationType(RecordMutationType.REPLACE_ENTIRE_RECORD);
     return recordMutation;
   }
-  
+
   public static int countDocuments(IndexReader reader, Term term) throws IOException {
     TermQuery query = new TermQuery(term);
     IndexSearcher indexSearcher = new IndexSearcher(reader);
@@ -596,24 +605,23 @@ public class BlurUtil {
   public static List<Document> fetchDocuments(IndexReader reader, Term term,
       ResetableDocumentStoredFieldVisitor fieldSelector, Selector selector) throws IOException {
     IndexSearcher indexSearcher = new IndexSearcher(reader);
-		int docFreq = reader.docFreq(term);
-		BooleanQuery booleanQueryForFamily = null;
-		BooleanQuery booleanQuery = null;
-		if (selector.getColumnFamiliesToFetchSize() > 0) {
-			booleanQueryForFamily = new BooleanQuery();
-			for (String familyName : selector.getColumnFamiliesToFetch()) {
-				booleanQueryForFamily.add(new TermQuery(new Term(
-						BlurConstants.FAMILY, familyName)),
-						BooleanClause.Occur.SHOULD);
-			}
-			booleanQuery = new BooleanQuery();
-			booleanQuery.add(new TermQuery(term), BooleanClause.Occur.MUST);
-			booleanQuery.add(booleanQueryForFamily, BooleanClause.Occur.MUST);
-		}
-		Query query = booleanQuery == null ? new TermQuery(term) : booleanQuery;
-		TopDocs topDocs = indexSearcher.search(query, docFreq);
-		int totalHits = topDocs.totalHits;
-		List<Document> docs = new ArrayList<Document>();
+    int docFreq = reader.docFreq(term);
+    BooleanQuery booleanQueryForFamily = null;
+    BooleanQuery booleanQuery = null;
+    if (selector.getColumnFamiliesToFetchSize() > 0) {
+      booleanQueryForFamily = new BooleanQuery();
+      for (String familyName : selector.getColumnFamiliesToFetch()) {
+        booleanQueryForFamily
+            .add(new TermQuery(new Term(BlurConstants.FAMILY, familyName)), BooleanClause.Occur.SHOULD);
+      }
+      booleanQuery = new BooleanQuery();
+      booleanQuery.add(new TermQuery(term), BooleanClause.Occur.MUST);
+      booleanQuery.add(booleanQueryForFamily, BooleanClause.Occur.MUST);
+    }
+    Query query = booleanQuery == null ? new TermQuery(term) : booleanQuery;
+    TopDocs topDocs = indexSearcher.search(query, docFreq);
+    int totalHits = topDocs.totalHits;
+    List<Document> docs = new ArrayList<Document>();
 
     int start = selector.getStartRecord();
     int end = selector.getMaxRecordsToFetch() + start;
@@ -638,28 +646,36 @@ public class BlurUtil {
     int index = shard.indexOf('-');
     return Integer.parseInt(shard.substring(index + 1));
   }
-  
-	public static void validateRowIdAndRecord(String rowId, Record record) {
-		if (!validator.matcher(record.family).matches()) {
-			throw new IllegalArgumentException("Invalid column family name [ " + record.family + " ]. It should contain only this pattern [A-Za-z0-9_-]");
-		}
 
-		for (Column column : record.getColumns()) {
-			if (!validator.matcher(column.name).matches()) {
-				throw new IllegalArgumentException("Invalid column name [ " + column.name + " ]. It should contain only this pattern [A-Za-z0-9_-]");
-			}
-		}
-	}
+  public static void validateRowIdAndRecord(String rowId, Record record) {
+    if (!validator.matcher(record.family).matches()) {
+      throw new IllegalArgumentException("Invalid column family name [ " + record.family
+          + " ]. It should contain only this pattern [A-Za-z0-9_-]");
+    }
 
-	public static void validateTableName(String tableName) {
-		if (!validator.matcher(tableName).matches()) {
-			throw new IllegalArgumentException("Invalid table name [ " + tableName + " ]. It should contain only this pattern [A-Za-z0-9_-]");
-		}
-	}
+    for (Column column : record.getColumns()) {
+      if (!validator.matcher(column.name).matches()) {
+        throw new IllegalArgumentException("Invalid column name [ " + column.name
+            + " ]. It should contain only this pattern [A-Za-z0-9_-]");
+      }
+    }
+  }
 
-	public static void validateShardName(String shardName) {
-		if (!validator.matcher(shardName).matches()) {
-			throw new IllegalArgumentException("Invalid shard name [ " + shardName + " ]. It should contain only this pattern [A-Za-z0-9_-]");
-		}
-	}
+  public static void validateTableName(String tableName) {
+    if (!validator.matcher(tableName).matches()) {
+      throw new IllegalArgumentException("Invalid table name [ " + tableName
+          + " ]. It should contain only this pattern [A-Za-z0-9_-]");
+    }
+  }
+
+  public static void validateShardName(String shardName) {
+    if (!validator.matcher(shardName).matches()) {
+      throw new IllegalArgumentException("Invalid shard name [ " + shardName
+          + " ]. It should contain only this pattern [A-Za-z0-9_-]");
+    }
+  }
+
+  public static String getPid() {
+    return ManagementFactory.getRuntimeMXBean().getName();
+  }
 }

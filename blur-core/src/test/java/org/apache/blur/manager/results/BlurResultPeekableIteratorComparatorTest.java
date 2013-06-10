@@ -22,9 +22,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.blur.manager.results.PeekableIterator;
 import org.apache.blur.thrift.generated.BlurResult;
-import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.utils.BlurUtil;
 import org.junit.Test;
 
 
@@ -41,7 +40,7 @@ public class BlurResultPeekableIteratorComparatorTest {
     results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>(Arrays.asList(newResult("9", 1))).iterator()));
     results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>().iterator()));
 
-    Collections.sort(results, BlurConstants.HITS_PEEKABLE_ITERATOR_COMPARATOR);
+    Collections.sort(results, BlurUtil.HITS_PEEKABLE_ITERATOR_COMPARATOR);
 
     for (PeekableIterator<BlurResult> iterator : results) {
       System.out.println(iterator.peek());

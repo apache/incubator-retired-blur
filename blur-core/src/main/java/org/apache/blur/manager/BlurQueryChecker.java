@@ -25,7 +25,7 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.Selector;
-import org.apache.blur.util.BlurConstants;
+import org.apache.blur.utils.BlurConstants;
 
 /**
  * The {@link BlurQueryChecker} class check the {@link BlurQuery} for valid

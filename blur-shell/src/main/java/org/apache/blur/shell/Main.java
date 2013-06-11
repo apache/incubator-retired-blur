@@ -27,6 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import jline.console.ConsoleReader;
@@ -101,9 +103,63 @@ public class Main {
     public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
         BlurException {
       out.println("Available commands:");
-      for (Entry<String, Command> e : commands.entrySet()) {
-        out.println("  " + e.getKey() + " - " + e.getValue().help());
+
+      Map<String, Command> cmds = new TreeMap<String, Command>(commands);
+
+      int bufferLength = getMaxCommandLength(cmds.keySet()) + 2;
+      out.println(" - Table commands - ");
+      String[] tableCommands = { "create", "enable", "disable", "remove", "describe", "list", "schema", "stats",
+          "layout" };
+      printCommandAndHelp(out, cmds, tableCommands, bufferLength);
+
+      out.println();
+      out.println(" - Data commands - ");
+      String[] dataCommands = { "query", "get", "mutate", "delete" };
+      printCommandAndHelp(out, cmds, dataCommands, bufferLength);
+
+      out.println();
+      out.println(" - Cluster commands - ");
+      String[] clusterCommands = { "controllers", "shards", "clusterlist" };
+      printCommandAndHelp(out, cmds, clusterCommands, bufferLength);
+
+      out.println();
+      out.println(" - Shell commands - ");
+      String[] shellCommands = { "help", "debug", "timed", "quit" };
+      printCommandAndHelp(out, cmds, shellCommands, bufferLength);
+
+      if (!cmds.isEmpty()) {
+        out.println();
+        out.println(" - Other operations - ");
+
+        for (Entry<String, Command> e : cmds.entrySet()) {
+          out.println("  " + buffer(e.getKey(), bufferLength) + " - " + e.getValue().help());
+        }
       }
+    }
+
+    private int getMaxCommandLength(Set<String> keySet) {
+      int result = 0;
+      for (String s : keySet) {
+        if (s.length() > result) {
+          result = s.length();
+        }
+      }
+      return result;
+    }
+
+    private void printCommandAndHelp(PrintWriter out, Map<String, Command> cmds, String[] tableCommands,
+        int bufferLength) {
+      for (String c : tableCommands) {
+        Command command = cmds.remove(c);
+        out.println("  " + buffer(c, bufferLength) + " - " + command.help());
+      }
+    }
+
+    private String buffer(String s, int bufferLength) {
+      while (s.length() < bufferLength) {
+        s = s + " ";
+      }
+      return s;
     }
 
     @Override
@@ -144,14 +200,15 @@ public class Main {
     builder.put("disable", new EnableDisableTableCommand());
     builder.put("remove", new RemoveTableCommand());
     builder.put("describe", new DescribeTableCommand());
-    builder.put("tablestats", new TableStatsCommand());
+    builder.put("stats", new TableStatsCommand());
     builder.put("schema", new SchemaTableCommand());
     builder.put("query", new QueryCommand());
-    builder.put("getrow", new GetRowCommand());
-    builder.put("mutaterow", new MutateRowCommand());
+    builder.put("get", new GetRowCommand());
+    builder.put("delete", new DeleteRowCommand());
+    builder.put("mutate", new MutateRowCommand());
     builder.put("indexaccesslog", new IndexAccessLogCommand());
-    builder.put("shardclusterlist", new ShardClusterListCommand());
-    builder.put("shardserverlayout", new ShardServerLayoutCommand());
+    builder.put("clusterlist", new ShardClusterListCommand());
+    builder.put("layout", new ShardServerLayoutCommand());
     builder.put("controllers", new ControllersEchoCommand());
     builder.put("shards", new ShardsEchoCommand());
     commands = builder.build();

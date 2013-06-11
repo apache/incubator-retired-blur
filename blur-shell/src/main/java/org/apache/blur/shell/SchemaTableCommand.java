@@ -19,21 +19,33 @@
 package org.apache.blur.shell;
 
 import java.io.PrintWriter;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.Schema;
 
 public class SchemaTableCommand extends Command {
   @Override
-  public void doit(PrintWriter out, Blur.Iface client, String[] args)
-      throws CommandException, TException, BlurException {
+  public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+      BlurException {
     if (args.length != 2) {
       throw new CommandException("Invalid args: " + help());
     }
     String tablename = args[1];
 
-    out.println(client.schema(tablename));
+    Schema schema = client.schema(tablename);
+    out.println(schema.getTable());
+    Map<String, Set<String>> columnFamilies = schema.getColumnFamilies();
+    for (String cf : columnFamilies.keySet()) {
+      out.println("family : " + cf);
+      Set<String> columns = columnFamilies.get(cf);
+      for (String c : columns) {
+        out.println("\tcolumn : " + c);
+      }
+    }
   }
 
   @Override

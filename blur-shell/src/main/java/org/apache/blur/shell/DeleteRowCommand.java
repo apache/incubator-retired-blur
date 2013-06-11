@@ -1,3 +1,5 @@
+package org.apache.blur.shell;
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -15,46 +17,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.blur.shell;
-
 import java.io.PrintWriter;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
-import org.apache.blur.thrift.generated.FetchResult;
-import org.apache.blur.thrift.generated.FetchRowResult;
-import org.apache.blur.thrift.generated.Row;
-import org.apache.blur.thrift.generated.Selector;
+import org.apache.blur.thrift.generated.RowMutation;
+import org.apache.blur.thrift.generated.RowMutationType;
 
-public class GetRowCommand extends Command {
+public class DeleteRowCommand extends Command {
+
   @Override
-  public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException, BlurException {
+  public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+      BlurException {
     if (args.length != 3) {
       throw new CommandException("Invalid args: " + help());
     }
     String tablename = args[1];
     String rowId = args[2];
 
-    Selector selector = new Selector();
-    selector.setRowId(rowId);
-    FetchResult fetchRow = client.fetchRow(tablename, selector);
-    FetchRowResult rowResult = fetchRow.getRowResult();
-    if (rowResult == null) {
-      out.println("Row [" + rowId + "] not found.");
-      return;
-    }
-    Row row = rowResult.getRow();
-    if (row == null) {
-      out.println("Row [" + rowId + "] not found.");
-      return;
-    }
-    out.println(row);
+    RowMutation mutation = new RowMutation();
+    mutation.setRowId(rowId);
+    mutation.setTable(tablename);
+    mutation.setRowMutationType(RowMutationType.DELETE_ROW);
+    client.mutate(mutation);
   }
 
   @Override
   public String help() {
-    return "display the specified row, args; tablename rowid";
+    return "delete the specified row, args; tablename rowid";
   }
+
 }

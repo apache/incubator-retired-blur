@@ -23,6 +23,7 @@ import java.io.PrintWriter;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.TableDescriptor;
 
 public class DescribeTableCommand extends Command {
   @Override
@@ -33,7 +34,20 @@ public class DescribeTableCommand extends Command {
     }
     String tablename = args[1];
 
-    out.println(client.describe(tablename));
+    TableDescriptor describe = client.describe(tablename);
+    out.println("cluster               : "+ describe.cluster);
+    out.println("name                  : "+ describe.name);
+    out.println("enabled               : "+ describe.isEnabled);
+    out.println("tableUri              : "+ describe.tableUri);
+    out.println("shardCount            : "+ describe.shardCount);
+    out.println("readOnly              : "+ describe.readOnly);
+    out.println("columnPreCache        : "+ describe.columnPreCache);
+    out.println(" - Other Options -");
+    //@TODO needs improvement
+    out.println("analyzerDefinition    : "+ describe.analyzerDefinition);
+    out.println("blockCaching          : "+ describe.blockCaching);
+    out.println("blockCachingFileTypes : "+ describe.blockCachingFileTypes);
+    out.println("tableProperties       : "+ describe.tableProperties);
   }
 
   @Override

@@ -23,7 +23,7 @@ under the License.
 		<parent>
 		<groupId>org.apache.blur</groupId>
 		<artifactId>blur</artifactId>
-		<version>0.1.5-incubating</version>
+		<version>0.2.0-incubating</version>
         <relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>org.apache.blur</groupId>
@@ -77,12 +77,12 @@ under the License.
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-thrift</artifactId>
-			<version>0.1.5-incubating</version>
+			<version>0.2.0-incubating</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-util</artifactId>
-			<version>0.1.5-incubating</version>
+			<version>0.2.0-incubating</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -138,13 +138,13 @@ under the License.
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-core</artifactId>
-			<version>0.1.5-incubating</version>
+			<version>0.2.0-incubating</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-core</artifactId>
-			<version>0.1.5-incubating</version>
+			<version>0.2.0-incubating</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
@@ -157,7 +157,7 @@ under the License.
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-store</artifactId>
-			<version>0.1.5-incubating</version>
+			<version>0.2.0-incubating</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -393,20 +394,35 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     TableDescriptor tableDescriptor = new TableDescriptor();
     try {
       checkIfOpen();
-      tableDescriptor.shardCount = Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableShardCountPath(cluster, table))));
-      tableDescriptor.tableUri = new String(getData(ZookeeperPathConstants.getTableUriPath(cluster, table)));
-      tableDescriptor.compressionClass = new String(getData(ZookeeperPathConstants.getTableCompressionCodecPath(cluster, table)));
-      tableDescriptor.compressionBlockSize = Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableCompressionBlockSizePath(cluster, table))));
-      tableDescriptor.analyzerDefinition = fromBytes(getData(ZookeeperPathConstants.getTablePath(cluster, table)), AnalyzerDefinition.class);
-      tableDescriptor.blockCaching = isBlockCacheEnabled(cluster, table);
-      tableDescriptor.blockCachingFileTypes = getBlockCacheFileTypes(cluster, table);
-      tableDescriptor.name = table;
-      tableDescriptor.columnPreCache = fromBytes(getData(ZookeeperPathConstants.getTableColumnsToPreCache(cluster, table)), ColumnPreCache.class);
-      byte[] data = getData(ZookeeperPathConstants.getTableSimilarityPath(cluster, table));
-      if (data != null) {
-        tableDescriptor.similarityClass = new String(data);
+      NullPointerException npe = null;
+      LOOP:
+      for (int i = 0; i < 10; i++) {
+        npe = null;
+        try {
+          tableDescriptor.shardCount = Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableShardCountPath(cluster, table))));
+          tableDescriptor.tableUri = new String(getData(ZookeeperPathConstants.getTableUriPath(cluster, table)));
+          tableDescriptor.compressionClass = new String(getData(ZookeeperPathConstants.getTableCompressionCodecPath(cluster, table)));
+          tableDescriptor.compressionBlockSize = Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableCompressionBlockSizePath(cluster, table))));
+          tableDescriptor.analyzerDefinition = fromBytes(getData(ZookeeperPathConstants.getTablePath(cluster, table)), AnalyzerDefinition.class);
+          tableDescriptor.blockCaching = isBlockCacheEnabled(cluster, table);
+          tableDescriptor.blockCachingFileTypes = getBlockCacheFileTypes(cluster, table);
+          tableDescriptor.name = table;
+          tableDescriptor.columnPreCache = fromBytes(getData(ZookeeperPathConstants.getTableColumnsToPreCache(cluster, table)), ColumnPreCache.class);
+          byte[] data = getData(ZookeeperPathConstants.getTableSimilarityPath(cluster, table));
+          if (data != null) {
+            tableDescriptor.similarityClass = new String(data);
+          }
+          updateReadOnlyAndEnabled(useCache, tableDescriptor, cluster, table);
+          break LOOP;
+        } catch (NullPointerException e) {
+          npe = e;
+          LOG.warn("Terrible hack to make the table admins pick up on changes to table descriptors while it's being created.");
+          Thread.sleep(TimeUnit.SECONDS.toMillis(3));
+        }
       }
-      updateReadOnlyAndEnabled(useCache, tableDescriptor, cluster, table);
+      if (npe != null) {
+        throw npe;
+      }
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {

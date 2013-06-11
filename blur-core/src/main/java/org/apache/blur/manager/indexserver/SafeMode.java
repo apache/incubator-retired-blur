@@ -18,19 +18,16 @@ package org.apache.blur.manager.indexserver;
  */
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.zookeeper.ZkUtils;
+import org.apache.blur.zookeeper.ZooKeeperLockManager;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 
@@ -43,32 +40,23 @@ import org.apache.zookeeper.ZooKeeper;
  * settled and can now come online.
  * 
  */
-public class SafeMode {
+public class SafeMode extends ZooKeeperLockManager {
 
   private static final Log LOG = LogFactory.getLog(SafeMode.class);
   private static final String STARTUP = "STARTUP";
   private static final String SETUP = "SETUP";
 
   private final ZooKeeper zooKeeper;
-  private final String lockPath;
+  
   private final long waitTime;
-  private final Object lock = new Object();
-  private final Watcher watcher = new Watcher() {
-    @Override
-    public void process(WatchedEvent event) {
-      synchronized (lock) {
-        lock.notify();
-      }
-    }
-  };
-  private final Map<String, String> lockMap = new HashMap<String, String>();
+  
   private final String nodePath;
   private final long duplicateNodeTimeout;
 
   public SafeMode(ZooKeeper zooKeeper, String lockPath, String nodePath, TimeUnit waitTimeUnit, long waitTime,
       TimeUnit duplicateNodeTimeoutTimeUnit, long duplicateNodeTimeout) {
+    super(zooKeeper,lockPath);
     this.zooKeeper = zooKeeper;
-    this.lockPath = lockPath;
     this.waitTime = waitTimeUnit.toMillis(waitTime);
     this.duplicateNodeTimeout = duplicateNodeTimeoutTimeUnit.toNanos(duplicateNodeTimeout);
     this.nodePath = nodePath;
@@ -130,15 +118,6 @@ public class SafeMode {
     return false;
   }
 
-  private void unlock(String name) throws InterruptedException, KeeperException {
-    if (!lockMap.containsKey(name)) {
-      throw new RuntimeException("Lock [" + name + "] has not be created.");
-    }
-    String lockPath = lockMap.get(name);
-    LOG.debug("Unlocking on path [" + lockPath + "] with name [" + name + "]");
-    zooKeeper.delete(lockPath, -1);
-  }
-
   private void register(String node, byte[] data) throws KeeperException, InterruptedException {
     String p = nodePath + "/" + node;
     long start = System.nanoTime();
@@ -154,40 +133,6 @@ public class SafeMode {
       zooKeeper.delete(tmpPath, -1);
     }
     zooKeeper.create(p, data, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-  }
-
-  private void lock(String name) throws KeeperException, InterruptedException {
-    if (lockMap.containsKey(name)) {
-      throw new RuntimeException("Lock [" + name + "] already created.");
-    }
-    String newPath = zooKeeper.create(lockPath + "/" + name + "_", null, Ids.OPEN_ACL_UNSAFE,
-        CreateMode.EPHEMERAL_SEQUENTIAL);
-    lockMap.put(name, newPath);
-    while (true) {
-      synchronized (lock) {
-        List<String> children = getOnlyThisLocksChildren(name, zooKeeper.getChildren(lockPath, watcher));
-        Collections.sort(children);
-        String firstElement = children.get(0);
-        if ((lockPath + "/" + firstElement).equals(newPath)) {
-          // yay!, we got the lock
-          LOG.debug("Lock on path [" + lockPath + "] with name [" + name + "]");
-          return;
-        } else {
-          LOG.debug("Waiting for lock on path [" + lockPath + "] with name [" + name + "]");
-          lock.wait();
-        }
-      }
-    }
-  }
-
-  private List<String> getOnlyThisLocksChildren(String name, List<String> children) {
-    List<String> result = new ArrayList<String>();
-    for (String c : children) {
-      if (c.startsWith(name + "_")) {
-        result.add(c);
-      }
-    }
-    return result;
   }
 
 }

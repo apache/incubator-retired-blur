@@ -19,6 +19,9 @@
 package org.apache.blur.shell;
 
 import java.io.PrintWriter;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
@@ -32,8 +35,10 @@ public class ShardServerLayoutCommand extends Command {
       throw new CommandException("Invalid args: " + help());
     }
     String tablename = args[1];
-
-    out.println(client.shardServerLayout(tablename));
+    Map<String, String> shardServerLayout = new TreeMap<String,String>( client.shardServerLayout(tablename));
+    for (Entry<String,String> e : shardServerLayout.entrySet()) {
+      out.println(e.getKey() + " on " + e.getValue());  
+    }
   }
 
   @Override

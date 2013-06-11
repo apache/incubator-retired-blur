@@ -23,17 +23,57 @@ import java.io.PrintWriter;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.TableStats;
 
 public class TableStatsCommand extends Command {
+  private static final double _1KB = 1000;
+  private static final double _1MB = _1KB * 1000;
+  private static final double _1GB = _1MB * 1000;
+  private static final double _1TB = _1GB * 1000;
+  private static final double _1PB = _1TB * 1000;
+
   @Override
-  public void doit(PrintWriter out, Blur.Iface client, String[] args)
-      throws CommandException, TException, BlurException {
+  public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+      BlurException {
     if (args.length != 2) {
       throw new CommandException("Invalid args: " + help());
     }
     String tablename = args[1];
 
-    out.println(client.tableStats(tablename));
+    TableStats tableStats = client.tableStats(tablename);
+    long bytes = tableStats.getBytes();
+//    long queries = tableStats.getQueries();
+    long recordCount = tableStats.getRecordCount();
+    long rowCount = tableStats.getRowCount();
+    //Queries is an unknown value now.
+//    out.println("Queries      : " + queries);
+    out.println("Row Count    : " + rowCount);
+    out.println("Record Count : " + recordCount);
+    out.println("Table Size   : " + humanize(bytes));
+  }
+
+  private String humanize(long bytes) {
+    double result = bytes / _1PB;
+    if (((long) result) > 0) {
+      return result + " PB";
+    }
+    result = bytes / _1TB;
+    if (((long) result) > 0) {
+      return result + " TB";
+    }
+    result = bytes / _1GB;
+    if (((long) result) > 0) {
+      return result + " GB";
+    }
+    result = bytes / _1MB;
+    if (((long) result) > 0) {
+      return result + " MB";
+    }
+    result = bytes / _1KB;
+    if (((long) result) > 0) {
+      return result + " KB";
+    }
+    return result + " Bytes";
   }
 
   @Override

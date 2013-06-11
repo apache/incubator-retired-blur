@@ -33,9 +33,9 @@ public class EnableDisableTableCommand extends Command {
     }
     String tablename = args[1];
 
-    if (args[0].equalsIgnoreCase("enabletable")) {
+    if (args[0].equalsIgnoreCase("enable")) {
       client.enableTable(tablename);
-    } else if (args[0].equalsIgnoreCase("disabletable")) {
+    } else if (args[0].equalsIgnoreCase("disable")) {
       client.disableTable(tablename);
     } else {
       throw new CommandException("unknown command" + args[0]);

@@ -1,8 +1,0 @@
-To run tests
-> rake spec
-
-Or run autotest, which will run tests every time you change files.
-> bundle exec autotest
-
-Details on writing tests
-http://relishapp.com/rspec/rspec-rails/v/2-6/file/gettingstarted

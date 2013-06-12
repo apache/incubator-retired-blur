@@ -215,7 +215,9 @@ public class Main {
 
     try {
       ConsoleReader reader = new ConsoleReader();
-
+      
+      setConsoleReader(commands, reader);
+      
       reader.setPrompt("blur> ");
 
       String controllerConnectionString = null;
@@ -286,6 +288,12 @@ public class Main {
     } catch (Throwable t) {
       t.printStackTrace();
       throw t;
+    }
+  }
+
+  private static void setConsoleReader(Map<String, Command> cmds, ConsoleReader reader) {
+    for (Entry<String, Command> c : cmds.entrySet()) {
+      c.getValue().setConsoleReader(reader);
     }
   }
 

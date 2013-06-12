@@ -19,18 +19,26 @@
 package org.apache.blur.shell;
 
 import java.io.PrintWriter;
+import java.util.List;
+
+import jline.Terminal;
+import jline.console.ConsoleReader;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.FetchRowResult;
+import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.Selector;
 
 public class GetRowCommand extends Command {
+
   @Override
-  public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException, BlurException {
+  public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+      BlurException {
     if (args.length != 3) {
       throw new CommandException("Invalid args: " + help());
     }
@@ -50,7 +58,57 @@ public class GetRowCommand extends Command {
       out.println("Row [" + rowId + "] not found.");
       return;
     }
-    out.println(row);
+    int maxWidth = 100;
+    ConsoleReader reader = getConsoleReader();
+    if (reader != null) {
+      Terminal terminal = reader.getTerminal();
+      maxWidth = terminal.getWidth() - 15;
+    }
+    format(out, row, maxWidth);
+  }
+
+  private void format(PrintWriter out, Row row, int maxWidth) {
+    String id = row.getId();
+    int recordCount = row.getRecordCount();
+    out.println("id:" + id);
+    out.println("recordCount:" + recordCount);
+    List<Record> records = row.getRecords();
+    for (Record record : records) {
+      format(out, record, maxWidth);
+    }
+  }
+
+  private void format(PrintWriter out, Record record, int maxWidth) {
+    String recordId = record.getRecordId();
+    String family = record.getFamily();
+    List<Column> columns = record.getColumns();
+    out.println(" recordId:" + recordId);
+    out.println("   family:" + family);
+    for (Column column : columns) {
+      format(out, column, maxWidth);
+    }
+  }
+
+  private void format(PrintWriter out, Column column, int maxWidth) {
+    String lead = "     " + column.getName() + ":";
+    String value = column.getValue();
+    int length = value.length();
+    int position = 0;
+    while (length > 0) {
+      int len = Math.min(maxWidth, length);
+      String s = value.substring(position, position + len);
+      if (position == 0) {
+        out.println(lead + s);
+      } else {
+        for (int o = 0; o < lead.length(); o++) {
+          out.print(' ');
+        }
+        out.println(s);
+      }
+      position += len;
+      length -= len;
+    }
+
   }
 
   @Override

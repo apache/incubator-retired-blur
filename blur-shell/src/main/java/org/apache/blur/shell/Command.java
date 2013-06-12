@@ -20,6 +20,8 @@ package org.apache.blur.shell;
 
 import java.io.PrintWriter;
 
+import jline.console.ConsoleReader;
+
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
@@ -31,7 +33,20 @@ public abstract class Command {
       super(msg);
     }
   }
-  abstract public void doit(PrintWriter out, Blur.Iface client, String[] args)
-      throws CommandException, TException, BlurException;
+
+  private ConsoleReader consoleReader;
+
+  abstract public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+      BlurException;
+
   abstract public String help();
+
+  public ConsoleReader getConsoleReader() {
+    return consoleReader;
+  }
+
+  public void setConsoleReader(ConsoleReader consoleReader) {
+    this.consoleReader = consoleReader;
+  }
+
 }

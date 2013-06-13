@@ -51,6 +51,7 @@ import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
+import org.apache.blur.metrics.ReporterSetup;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
@@ -67,6 +68,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     LOG.info("Setting up Controller Server");
     BlurConfiguration configuration = new BlurConfiguration();
     printUlimits();
+    ReporterSetup.setupReporters(configuration);
     ThriftServer server = createServer(serverIndex, configuration);
     server.start();
   }

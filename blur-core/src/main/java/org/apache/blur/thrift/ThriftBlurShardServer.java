@@ -59,6 +59,7 @@ import org.apache.blur.manager.indexserver.DistributedIndexServer;
 import org.apache.blur.manager.writer.BlurIndexRefresher;
 import org.apache.blur.metrics.JSONReporter;
 import org.apache.blur.metrics.JSONReporterServlet;
+import org.apache.blur.metrics.ReporterSetup;
 import org.apache.blur.server.ShardServerEventHandler;
 import org.apache.blur.store.blockcache.BlockCache;
 import org.apache.blur.store.blockcache.BlockDirectory;
@@ -87,6 +88,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
     BlurConfiguration configuration = new BlurConfiguration();
     printUlimits();
+    ReporterSetup.setupReporters(configuration);
     ThriftServer server = createServer(serverIndex, configuration);
     server.start();
   }

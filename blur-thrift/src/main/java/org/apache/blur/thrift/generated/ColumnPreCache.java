@@ -373,13 +373,13 @@ public class ColumnPreCache implements org.apache.blur.thirdparty.thrift_0_9_0.T
           case 1: // PRE_CACHE_COLS
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list158 = iprot.readListBegin();
-                struct.preCacheCols = new ArrayList<String>(_list158.size);
-                for (int _i159 = 0; _i159 < _list158.size; ++_i159)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list150 = iprot.readListBegin();
+                struct.preCacheCols = new ArrayList<String>(_list150.size);
+                for (int _i151 = 0; _i151 < _list150.size; ++_i151)
                 {
-                  String _elem160; // required
-                  _elem160 = iprot.readString();
-                  struct.preCacheCols.add(_elem160);
+                  String _elem152; // required
+                  _elem152 = iprot.readString();
+                  struct.preCacheCols.add(_elem152);
                 }
                 iprot.readListEnd();
               }
@@ -407,9 +407,9 @@ public class ColumnPreCache implements org.apache.blur.thirdparty.thrift_0_9_0.T
         oprot.writeFieldBegin(PRE_CACHE_COLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.preCacheCols.size()));
-          for (String _iter161 : struct.preCacheCols)
+          for (String _iter153 : struct.preCacheCols)
           {
-            oprot.writeString(_iter161);
+            oprot.writeString(_iter153);
           }
           oprot.writeListEnd();
         }
@@ -440,9 +440,9 @@ public class ColumnPreCache implements org.apache.blur.thirdparty.thrift_0_9_0.T
       if (struct.isSetPreCacheCols()) {
         {
           oprot.writeI32(struct.preCacheCols.size());
-          for (String _iter162 : struct.preCacheCols)
+          for (String _iter154 : struct.preCacheCols)
           {
-            oprot.writeString(_iter162);
+            oprot.writeString(_iter154);
           }
         }
       }
@@ -454,13 +454,13 @@ public class ColumnPreCache implements org.apache.blur.thirdparty.thrift_0_9_0.T
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list163 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-          struct.preCacheCols = new ArrayList<String>(_list163.size);
-          for (int _i164 = 0; _i164 < _list163.size; ++_i164)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list155 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.preCacheCols = new ArrayList<String>(_list155.size);
+          for (int _i156 = 0; _i156 < _list155.size; ++_i156)
           {
-            String _elem165; // required
-            _elem165 = iprot.readString();
-            struct.preCacheCols.add(_elem165);
+            String _elem157; // required
+            _elem157 = iprot.readString();
+            struct.preCacheCols.add(_elem157);
           }
         }
         struct.setPreCacheColsIsSet(true);

@@ -131,12 +131,7 @@ struct Record {
   /**
    * A list of columns, multiple columns with the same name are allowed.
    */
-  3:list<Column> columns,
-
-  /**
-   * A list of the highlighted columns.
-   */
-  4:list<Column> highlightedColumns
+  3:list<Column> columns
 }
 
 /**
@@ -199,11 +194,16 @@ struct HighlightOptions {
    * leave this attribute null and it will default to the normal behavior.
    */
   1:SimpleQuery simpleQuery,
+
   /**
-   * Only returns the records within a Row that matched in the query.  If the BlurQuery 
-   * is not a superQuery then this option is not used.  Enabled by default.
+   * The pre tag is the tag that marks the beginning of the highlighting.
    */
-  2:bool onlyMatchingRecords = true
+  2:string preTag = "<<<",
+
+  /**
+   * The post tag is the tag that marks the end of the highlighting.
+   */
+  3:string postTag = ">>>"
 }
 
 /**

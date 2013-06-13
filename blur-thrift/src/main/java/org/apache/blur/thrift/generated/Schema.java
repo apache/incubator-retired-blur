@@ -479,25 +479,25 @@ public class Schema implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Sch
           case 2: // COLUMN_FAMILIES
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map110 = iprot.readMapBegin();
-                struct.columnFamilies = new HashMap<String,Set<String>>(2*_map110.size);
-                for (int _i111 = 0; _i111 < _map110.size; ++_i111)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map102 = iprot.readMapBegin();
+                struct.columnFamilies = new HashMap<String,Set<String>>(2*_map102.size);
+                for (int _i103 = 0; _i103 < _map102.size; ++_i103)
                 {
-                  String _key112; // required
-                  Set<String> _val113; // optional
-                  _key112 = iprot.readString();
+                  String _key104; // required
+                  Set<String> _val105; // optional
+                  _key104 = iprot.readString();
                   {
-                    org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set114 = iprot.readSetBegin();
-                    _val113 = new HashSet<String>(2*_set114.size);
-                    for (int _i115 = 0; _i115 < _set114.size; ++_i115)
+                    org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set106 = iprot.readSetBegin();
+                    _val105 = new HashSet<String>(2*_set106.size);
+                    for (int _i107 = 0; _i107 < _set106.size; ++_i107)
                     {
-                      String _elem116; // required
-                      _elem116 = iprot.readString();
-                      _val113.add(_elem116);
+                      String _elem108; // required
+                      _elem108 = iprot.readString();
+                      _val105.add(_elem108);
                     }
                     iprot.readSetEnd();
                   }
-                  struct.columnFamilies.put(_key112, _val113);
+                  struct.columnFamilies.put(_key104, _val105);
                 }
                 iprot.readMapEnd();
               }
@@ -530,14 +530,14 @@ public class Schema implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Sch
         oprot.writeFieldBegin(COLUMN_FAMILIES_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, struct.columnFamilies.size()));
-          for (Map.Entry<String, Set<String>> _iter117 : struct.columnFamilies.entrySet())
+          for (Map.Entry<String, Set<String>> _iter109 : struct.columnFamilies.entrySet())
           {
-            oprot.writeString(_iter117.getKey());
+            oprot.writeString(_iter109.getKey());
             {
-              oprot.writeSetBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, _iter117.getValue().size()));
-              for (String _iter118 : _iter117.getValue())
+              oprot.writeSetBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, _iter109.getValue().size()));
+              for (String _iter110 : _iter109.getValue())
               {
-                oprot.writeString(_iter118);
+                oprot.writeString(_iter110);
               }
               oprot.writeSetEnd();
             }
@@ -577,14 +577,14 @@ public class Schema implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Sch
       if (struct.isSetColumnFamilies()) {
         {
           oprot.writeI32(struct.columnFamilies.size());
-          for (Map.Entry<String, Set<String>> _iter119 : struct.columnFamilies.entrySet())
+          for (Map.Entry<String, Set<String>> _iter111 : struct.columnFamilies.entrySet())
           {
-            oprot.writeString(_iter119.getKey());
+            oprot.writeString(_iter111.getKey());
             {
-              oprot.writeI32(_iter119.getValue().size());
-              for (String _iter120 : _iter119.getValue())
+              oprot.writeI32(_iter111.getValue().size());
+              for (String _iter112 : _iter111.getValue())
               {
-                oprot.writeString(_iter120);
+                oprot.writeString(_iter112);
               }
             }
           }
@@ -602,24 +602,24 @@ public class Schema implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Sch
       }
       if (incoming.get(1)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map121 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, iprot.readI32());
-          struct.columnFamilies = new HashMap<String,Set<String>>(2*_map121.size);
-          for (int _i122 = 0; _i122 < _map121.size; ++_i122)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map113 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, iprot.readI32());
+          struct.columnFamilies = new HashMap<String,Set<String>>(2*_map113.size);
+          for (int _i114 = 0; _i114 < _map113.size; ++_i114)
           {
-            String _key123; // required
-            Set<String> _val124; // optional
-            _key123 = iprot.readString();
+            String _key115; // required
+            Set<String> _val116; // optional
+            _key115 = iprot.readString();
             {
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set125 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-              _val124 = new HashSet<String>(2*_set125.size);
-              for (int _i126 = 0; _i126 < _set125.size; ++_i126)
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set117 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+              _val116 = new HashSet<String>(2*_set117.size);
+              for (int _i118 = 0; _i118 < _set117.size; ++_i118)
               {
-                String _elem127; // required
-                _elem127 = iprot.readString();
-                _val124.add(_elem127);
+                String _elem119; // required
+                _elem119 = iprot.readString();
+                _val116.add(_elem119);
               }
             }
-            struct.columnFamilies.put(_key123, _val124);
+            struct.columnFamilies.put(_key115, _val116);
           }
         }
         struct.setColumnFamiliesIsSet(true);

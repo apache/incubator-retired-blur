@@ -31,6 +31,7 @@ import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.FetchRowResult;
+import org.apache.blur.thrift.generated.HighlightOptions;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.SimpleQuery;
@@ -53,6 +54,10 @@ public class QueryCommand extends Command {
     simpleQuery.setQueryStr(query);
     blurQuery.setSimpleQuery(simpleQuery);
     blurQuery.setSelector(new Selector());
+    
+    if (Main.highlight) {
+      blurQuery.getSelector().setHighlightOptions(new HighlightOptions());
+    }
 
     if (Main.debug) {
       out.println(blurQuery);

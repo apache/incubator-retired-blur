@@ -155,8 +155,6 @@ trace (if any).
 </td><td>default</td><td></td></tr>
 <tr><td>3</td><td>columns</td><td><code>list&lt;<code><a href="Blur.html#Struct_Column">Column</a></code>&gt;</code></td><td>A list of columns, multiple columns with the same name are allowed.
 </td><td>default</td><td></td></tr>
-<tr><td>4</td><td>highlightedColumns</td><td><code>list&lt;<code><a href="Blur.html#Struct_Column">Column</a></code>&gt;</code></td><td>A list of the highlighted columns.
-</td><td>default</td><td></td></tr>
 </table><br/>Records contain a list of columns, multiple columns with the same name are allowed.
 <br/></div><div class="definition"><h3 id="Struct_Row">Struct: Row</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
@@ -190,9 +188,10 @@ passed into the call via the BlurQuery will be used if this simpleQuery is
 null.  So that means if you use highlighting from the query call you can
 leave this attribute null and it will default to the normal behavior.
 </td><td>default</td><td></td></tr>
-<tr><td>2</td><td>onlyMatchingRecords</td><td><code>bool</code></td><td>Only returns the records within a Row that matched in the query.  If the BlurQuery
-is not a superQuery then this option is not used.  Enabled by default.
-</td><td>default</td><td>1</td></tr>
+<tr><td>2</td><td>preTag</td><td><code>string</code></td><td>The pre tag is the tag that marks the beginning of the highlighting.
+</td><td>default</td><td>"&lt;&lt;&lt;"</td></tr>
+<tr><td>3</td><td>postTag</td><td><code>string</code></td><td>The post tag is the tag that marks the end of the highlighting.
+</td><td>default</td><td>"&gt;&gt;&gt;"</td></tr>
 </table><br/>The HighlightOptions controls how the data is fetched and returned.
 <br/></div><div class="definition"><h3 id="Struct_Selector">Struct: Selector</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>

@@ -58,7 +58,6 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RECORD_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("recordId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FAMILY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("family", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COLUMNS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("columns", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)3);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField HIGHLIGHTED_COLUMNS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("highlightedColumns", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -78,10 +77,6 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
    * A list of columns, multiple columns with the same name are allowed.
    */
   public List<Column> columns; // required
-  /**
-   * A list of the highlighted columns.
-   */
-  public List<Column> highlightedColumns; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
@@ -96,11 +91,7 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
     /**
      * A list of columns, multiple columns with the same name are allowed.
      */
-    COLUMNS((short)3, "columns"),
-    /**
-     * A list of the highlighted columns.
-     */
-    HIGHLIGHTED_COLUMNS((short)4, "highlightedColumns");
+    COLUMNS((short)3, "columns");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -121,8 +112,6 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
           return FAMILY;
         case 3: // COLUMNS
           return COLUMNS;
-        case 4: // HIGHLIGHTED_COLUMNS
-          return HIGHLIGHTED_COLUMNS;
         default:
           return null;
       }
@@ -173,9 +162,6 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
     tmpMap.put(_Fields.COLUMNS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("columns", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Column.class))));
-    tmpMap.put(_Fields.HIGHLIGHTED_COLUMNS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("highlightedColumns", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
-            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Column.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(Record.class, metaDataMap);
   }
@@ -186,14 +172,12 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
   public Record(
     String recordId,
     String family,
-    List<Column> columns,
-    List<Column> highlightedColumns)
+    List<Column> columns)
   {
     this();
     this.recordId = recordId;
     this.family = family;
     this.columns = columns;
-    this.highlightedColumns = highlightedColumns;
   }
 
   /**
@@ -213,13 +197,6 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
       }
       this.columns = __this__columns;
     }
-    if (other.isSetHighlightedColumns()) {
-      List<Column> __this__highlightedColumns = new ArrayList<Column>();
-      for (Column other_element : other.highlightedColumns) {
-        __this__highlightedColumns.add(new Column(other_element));
-      }
-      this.highlightedColumns = __this__highlightedColumns;
-    }
   }
 
   public Record deepCopy() {
@@ -231,7 +208,6 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
     this.recordId = null;
     this.family = null;
     this.columns = null;
-    this.highlightedColumns = null;
   }
 
   /**
@@ -339,51 +315,6 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
     }
   }
 
-  public int getHighlightedColumnsSize() {
-    return (this.highlightedColumns == null) ? 0 : this.highlightedColumns.size();
-  }
-
-  public java.util.Iterator<Column> getHighlightedColumnsIterator() {
-    return (this.highlightedColumns == null) ? null : this.highlightedColumns.iterator();
-  }
-
-  public void addToHighlightedColumns(Column elem) {
-    if (this.highlightedColumns == null) {
-      this.highlightedColumns = new ArrayList<Column>();
-    }
-    this.highlightedColumns.add(elem);
-  }
-
-  /**
-   * A list of the highlighted columns.
-   */
-  public List<Column> getHighlightedColumns() {
-    return this.highlightedColumns;
-  }
-
-  /**
-   * A list of the highlighted columns.
-   */
-  public Record setHighlightedColumns(List<Column> highlightedColumns) {
-    this.highlightedColumns = highlightedColumns;
-    return this;
-  }
-
-  public void unsetHighlightedColumns() {
-    this.highlightedColumns = null;
-  }
-
-  /** Returns true if field highlightedColumns is set (has been assigned a value) and false otherwise */
-  public boolean isSetHighlightedColumns() {
-    return this.highlightedColumns != null;
-  }
-
-  public void setHighlightedColumnsIsSet(boolean value) {
-    if (!value) {
-      this.highlightedColumns = null;
-    }
-  }
-
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case RECORD_ID:
@@ -410,14 +341,6 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
       }
       break;
 
-    case HIGHLIGHTED_COLUMNS:
-      if (value == null) {
-        unsetHighlightedColumns();
-      } else {
-        setHighlightedColumns((List<Column>)value);
-      }
-      break;
-
     }
   }
 
@@ -431,9 +354,6 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
 
     case COLUMNS:
       return getColumns();
-
-    case HIGHLIGHTED_COLUMNS:
-      return getHighlightedColumns();
 
     }
     throw new IllegalStateException();
@@ -452,8 +372,6 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
       return isSetFamily();
     case COLUMNS:
       return isSetColumns();
-    case HIGHLIGHTED_COLUMNS:
-      return isSetHighlightedColumns();
     }
     throw new IllegalStateException();
   }
@@ -495,15 +413,6 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
       if (!(this_present_columns && that_present_columns))
         return false;
       if (!this.columns.equals(that.columns))
-        return false;
-    }
-
-    boolean this_present_highlightedColumns = true && this.isSetHighlightedColumns();
-    boolean that_present_highlightedColumns = true && that.isSetHighlightedColumns();
-    if (this_present_highlightedColumns || that_present_highlightedColumns) {
-      if (!(this_present_highlightedColumns && that_present_highlightedColumns))
-        return false;
-      if (!this.highlightedColumns.equals(that.highlightedColumns))
         return false;
     }
 
@@ -553,16 +462,6 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetHighlightedColumns()).compareTo(typedOther.isSetHighlightedColumns());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetHighlightedColumns()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.highlightedColumns, typedOther.highlightedColumns);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     return 0;
   }
 
@@ -604,14 +503,6 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
       sb.append("null");
     } else {
       sb.append(this.columns);
-    }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("highlightedColumns:");
-    if (this.highlightedColumns == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.highlightedColumns);
     }
     first = false;
     sb.append(")");
@@ -692,25 +583,6 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // HIGHLIGHTED_COLUMNS
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
-              {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list3 = iprot.readListBegin();
-                struct.highlightedColumns = new ArrayList<Column>(_list3.size);
-                for (int _i4 = 0; _i4 < _list3.size; ++_i4)
-                {
-                  Column _elem5; // required
-                  _elem5 = new Column();
-                  _elem5.read(iprot);
-                  struct.highlightedColumns.add(_elem5);
-                }
-                iprot.readListEnd();
-              }
-              struct.setHighlightedColumnsIsSet(true);
-            } else { 
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           default:
             org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -740,21 +612,9 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
         oprot.writeFieldBegin(COLUMNS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.columns.size()));
-          for (Column _iter6 : struct.columns)
+          for (Column _iter3 : struct.columns)
           {
-            _iter6.write(oprot);
-          }
-          oprot.writeListEnd();
-        }
-        oprot.writeFieldEnd();
-      }
-      if (struct.highlightedColumns != null) {
-        oprot.writeFieldBegin(HIGHLIGHTED_COLUMNS_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.highlightedColumns.size()));
-          for (Column _iter7 : struct.highlightedColumns)
-          {
-            _iter7.write(oprot);
+            _iter3.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -787,10 +647,7 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
       if (struct.isSetColumns()) {
         optionals.set(2);
       }
-      if (struct.isSetHighlightedColumns()) {
-        optionals.set(3);
-      }
-      oprot.writeBitSet(optionals, 4);
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetRecordId()) {
         oprot.writeString(struct.recordId);
       }
@@ -800,18 +657,9 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
       if (struct.isSetColumns()) {
         {
           oprot.writeI32(struct.columns.size());
-          for (Column _iter8 : struct.columns)
+          for (Column _iter4 : struct.columns)
           {
-            _iter8.write(oprot);
-          }
-        }
-      }
-      if (struct.isSetHighlightedColumns()) {
-        {
-          oprot.writeI32(struct.highlightedColumns.size());
-          for (Column _iter9 : struct.highlightedColumns)
-          {
-            _iter9.write(oprot);
+            _iter4.write(oprot);
           }
         }
       }
@@ -820,7 +668,7 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, Record struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.recordId = iprot.readString();
         struct.setRecordIdIsSet(true);
@@ -831,31 +679,17 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
       }
       if (incoming.get(2)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list10 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-          struct.columns = new ArrayList<Column>(_list10.size);
-          for (int _i11 = 0; _i11 < _list10.size; ++_i11)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list5 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+          struct.columns = new ArrayList<Column>(_list5.size);
+          for (int _i6 = 0; _i6 < _list5.size; ++_i6)
           {
-            Column _elem12; // required
-            _elem12 = new Column();
-            _elem12.read(iprot);
-            struct.columns.add(_elem12);
+            Column _elem7; // required
+            _elem7 = new Column();
+            _elem7.read(iprot);
+            struct.columns.add(_elem7);
           }
         }
         struct.setColumnsIsSet(true);
-      }
-      if (incoming.get(3)) {
-        {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list13 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-          struct.highlightedColumns = new ArrayList<Column>(_list13.size);
-          for (int _i14 = 0; _i14 < _list13.size; ++_i14)
-          {
-            Column _elem15; // required
-            _elem15 = new Column();
-            _elem15.read(iprot);
-            struct.highlightedColumns.add(_elem15);
-          }
-        }
-        struct.setHighlightedColumnsIsSet(true);
       }
     }
   }

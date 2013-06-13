@@ -57,6 +57,7 @@ import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Facet;
 import org.apache.blur.thrift.generated.FetchRecordResult;
 import org.apache.blur.thrift.generated.FetchResult;
+import org.apache.blur.thrift.generated.HighlightOptions;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.Row;
@@ -72,9 +73,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-
 public class IndexManagerTest {
-  
+
   private static final File TMPDIR = new File("./target/tmp");
 
   private static final String SHARD_NAME = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, 0);
@@ -91,7 +91,7 @@ public class IndexManagerTest {
     TableContext.clear();
     base = new File(TMPDIR, "blur-index-manager-test");
     rm(base);
-    
+
     File file = new File(base, TABLE);
     file.mkdirs();
 
@@ -108,97 +108,97 @@ public class IndexManagerTest {
     indexManager.setIndexServer(server);
     indexManager.setThreadCount(1);
     indexManager.setClusterStatus(new ClusterStatus() {
-      
+
       @Override
       public void removeTable(String cluster, String table, boolean deleteIndexFiles) {
         throw new RuntimeException("Not impl");
       }
-      
+
       @Override
       public boolean isReadOnly(boolean useCache, String cluster, String table) {
         throw new RuntimeException("Not impl");
       }
-      
+
       @Override
       public boolean isOpen() {
         throw new RuntimeException("Not impl");
       }
-      
+
       @Override
       public boolean isInSafeMode(boolean useCache, String cluster) {
         throw new RuntimeException("Not impl");
       }
-      
+
       @Override
       public boolean isEnabled(boolean useCache, String cluster, String table) {
         throw new RuntimeException("Not impl");
       }
-      
+
       @Override
       public boolean isBlockCacheEnabled(String cluster, String table) {
         throw new RuntimeException("Not impl");
       }
-      
+
       @Override
       public List<String> getTableList(boolean useCache, String cluster) {
         throw new RuntimeException("Not impl");
       }
-      
+
       @Override
       public TableDescriptor getTableDescriptor(boolean useCache, String cluster, String table) {
         return tableDescriptor;
       }
-      
+
       @Override
       public List<String> getShardServerList(String cluster) {
         throw new RuntimeException("Not impl");
       }
-      
+
       @Override
       public int getShardCount(boolean useCache, String cluster, String table) {
         throw new RuntimeException("Not impl");
       }
-      
+
       @Override
       public List<String> getOnlineShardServers(boolean useCache, String cluster) {
         throw new RuntimeException("Not impl");
       }
-      
+
       @Override
       public List<String> getControllerServerList() {
         throw new RuntimeException("Not impl");
       }
-      
+
       @Override
       public List<String> getClusterList(boolean useCache) {
         throw new RuntimeException("Not impl");
       }
-      
+
       @Override
       public String getCluster(boolean useCache, String table) {
         return BlurConstants.BLUR_CLUSTER;
       }
-      
+
       @Override
       public Set<String> getBlockCacheFileTypes(String cluster, String table) {
         throw new RuntimeException("Not impl");
       }
-      
+
       @Override
       public boolean exists(boolean useCache, String cluster, String table) {
         throw new RuntimeException("Not impl");
       }
-      
+
       @Override
       public void enableTable(String cluster, String table) {
         throw new RuntimeException("Not impl");
       }
-      
+
       @Override
       public void disableTable(String cluster, String table) {
         throw new RuntimeException("Not impl");
       }
-      
+
       @Override
       public void createTable(TableDescriptor tableDescriptor) {
         throw new RuntimeException("Not impl");
@@ -225,25 +225,43 @@ public class IndexManagerTest {
   }
 
   private void setupData() throws BlurException, IOException {
-    RowMutation mutation1 = newRowMutation(TABLE, "row-1",
-        newRecordMutation(FAMILY, "record-1",   newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
-    RowMutation mutation2 = newRowMutation(TABLE, "row-2",
-        newRecordMutation(FAMILY, "record-2",   newColumn("testcol1", "value4"), newColumn("testcol2", "value5"), newColumn("testcol3", "value6")),
-        newRecordMutation(FAMILY, "record-2B",  newColumn("testcol2", "value234123"), newColumn("testcol3", "value234123")));
-    RowMutation mutation3 = newRowMutation(TABLE, "row-3",
-        newRecordMutation(FAMILY, "record-3",   newColumn("testcol1", "value7"), newColumn("testcol2", "value8"), newColumn("testcol3", "value9")));
-    RowMutation mutation4 = newRowMutation(TABLE, "row-4",
-        newRecordMutation(FAMILY, "record-4",   newColumn("testcol1", "value1"), newColumn("testcol2", "value5"), newColumn("testcol3", "value9")),
-        newRecordMutation(FAMILY, "record-4B",  newColumn("testcol2", "value234123"), newColumn("testcol3", "value234123")));
-    RowMutation mutation5 = newRowMutation(TABLE,"row-5",
-        newRecordMutation(FAMILY, "record-5A",  newColumn("testcol1", "value13"), newColumn("testcol2", "value14"), newColumn("testcol3", "value15")),
-        newRecordMutation(FAMILY, "record-5B",  newColumn("testcol1", "value16"), newColumn("testcol2", "value17"), newColumn("testcol3", "value18"), newColumn("testcol3", "value19")));
-    RowMutation mutation6 = newRowMutation(TABLE, "row-6", 
-        newRecordMutation(FAMILY, "record-6A",  newColumn("testcol12", "value110"), newColumn("testcol13", "value102")),
-        newRecordMutation(FAMILY, "record-6B",  newColumn("testcol12", "value101"), newColumn("testcol13", "value104")),
+    RowMutation mutation1 = newRowMutation(
+        TABLE,
+        "row-1",
+        newRecordMutation(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"),
+            newColumn("testcol3", "value3")));
+    RowMutation mutation2 = newRowMutation(
+        TABLE,
+        "row-2",
+        newRecordMutation(FAMILY, "record-2", newColumn("testcol1", "value4"), newColumn("testcol2", "value5"),
+            newColumn("testcol3", "value6")),
+        newRecordMutation(FAMILY, "record-2B", newColumn("testcol2", "value234123"),
+            newColumn("testcol3", "value234123")));
+    RowMutation mutation3 = newRowMutation(
+        TABLE,
+        "row-3",
+        newRecordMutation(FAMILY, "record-3", newColumn("testcol1", "value7"), newColumn("testcol2", "value8"),
+            newColumn("testcol3", "value9")));
+    RowMutation mutation4 = newRowMutation(
+        TABLE,
+        "row-4",
+        newRecordMutation(FAMILY, "record-4", newColumn("testcol1", "value1"), newColumn("testcol2", "value5"),
+            newColumn("testcol3", "value9")),
+        newRecordMutation(FAMILY, "record-4B", newColumn("testcol2", "value234123"),
+            newColumn("testcol3", "value234123")));
+    RowMutation mutation5 = newRowMutation(
+        TABLE,
+        "row-5",
+        newRecordMutation(FAMILY, "record-5A", newColumn("testcol1", "value13"), newColumn("testcol2", "value14"),
+            newColumn("testcol3", "value15")),
+        newRecordMutation(FAMILY, "record-5B", newColumn("testcol1", "value16"), newColumn("testcol2", "value17"),
+            newColumn("testcol3", "value18"), newColumn("testcol3", "value19")));
+    RowMutation mutation6 = newRowMutation(TABLE, "row-6",
+        newRecordMutation(FAMILY, "record-6A", newColumn("testcol12", "value110"), newColumn("testcol13", "value102")),
+        newRecordMutation(FAMILY, "record-6B", newColumn("testcol12", "value101"), newColumn("testcol13", "value104")),
         newRecordMutation(FAMILY2, "record-6C", newColumn("testcol18", "value501")));
-    RowMutation mutation7 = newRowMutation(TABLE, "row-7", 
-        newRecordMutation(FAMILY, "record-7A",  newColumn("testcol12", "value101"), newColumn("testcol13", "value102")),
+    RowMutation mutation7 = newRowMutation(TABLE, "row-7",
+        newRecordMutation(FAMILY, "record-7A", newColumn("testcol12", "value101"), newColumn("testcol13", "value102")),
         newRecordMutation(FAMILY2, "record-7B", newColumn("testcol18", "value501")));
     mutation7.waitToBeVisible = true;
     indexManager.mutate(mutation1);
@@ -256,11 +274,50 @@ public class IndexManagerTest {
   }
 
   @Test
+  public void testFetchRowByRowIdHighlighting() throws Exception {
+    Selector selector = new Selector().setRowId("row-6");
+    HighlightOptions highlightOptions = new HighlightOptions();
+    SimpleQuery simpleQuery = new SimpleQuery();
+    simpleQuery.setQueryStr(FAMILY + ".testcol12:value101");
+    highlightOptions.setSimpleQuery(simpleQuery);
+    selector.setHighlightOptions(highlightOptions);
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+
+    assertNotNull(fetchResult.rowResult.row);
+    Row row = newRow("row-6", newRecord(FAMILY, "record-6B", newColumn("testcol12", "<<<value101>>>")));
+    row.recordCount = 3;
+    assertEquals(row, fetchResult.rowResult.row);
+  }
+
+  @Test
+  public void testFetchRecordByLocationIdHighlighting() throws Exception {
+    Selector selector = new Selector().setLocationId(SHARD_NAME + "/0").setRecordOnly(true);
+    HighlightOptions highlightOptions = new HighlightOptions();
+    SimpleQuery simpleQuery = new SimpleQuery();
+    simpleQuery.setQueryStr(FAMILY + ".testcol1:value1");
+    simpleQuery.setSuperQueryOn(false);
+    highlightOptions.setSimpleQuery(simpleQuery);
+    selector.setHighlightOptions(highlightOptions);
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNull(fetchResult.rowResult);
+    assertNotNull(fetchResult.recordResult.record);
+
+    assertEquals("row-1", fetchResult.recordResult.rowid);
+    assertEquals("record-1", fetchResult.recordResult.record.recordId);
+    assertEquals(FAMILY, fetchResult.recordResult.record.family);
+
+    Record record = newRecord(FAMILY, "record-1", newColumn("testcol1", "<<<value1>>>"));
+    assertEquals(record, fetchResult.recordResult.record);
+  }
+
+  @Test
   public void testQueryWithJoinAll() throws Exception {
     BlurQuery blurQuery = new BlurQuery();
     blurQuery.simpleQuery = new SimpleQuery();
     blurQuery.simpleQuery.queryStr = "+super:<+test-family.testcol12:value101 +test-family.testcol13:value102> +super:<test-family2.testcol18:value501>";
-    
+
     blurQuery.simpleQuery.superQueryOn = true;
     blurQuery.simpleQuery.type = ScoreType.SUPER;
     blurQuery.fetch = 10;
@@ -336,7 +393,8 @@ public class IndexManagerTest {
     blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
     blurQuery.maxQueryTime = Long.MAX_VALUE;
     blurQuery.uuid = 1;
-    blurQuery.facets = Arrays.asList(new Facet("test-family.testcol1:value*", Long.MAX_VALUE), new Facet("test-family.testcol1:value-nohit", Long.MAX_VALUE));
+    blurQuery.facets = Arrays.asList(new Facet("test-family.testcol1:value*", Long.MAX_VALUE), new Facet(
+        "test-family.testcol1:value-nohit", Long.MAX_VALUE));
 
     AtomicLongArray facetedCounts = new AtomicLongArray(2);
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, facetedCounts);
@@ -363,7 +421,10 @@ public class IndexManagerTest {
     FetchResult fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
     assertNotNull(fetchResult.rowResult.row);
-    Row row = newRow("row-1", newRecord(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
+    Row row = newRow(
+        "row-1",
+        newRecord(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"),
+            newColumn("testcol3", "value3")));
     row.recordCount = 1;
     assertEquals(row, fetchResult.rowResult.row);
   }
@@ -391,7 +452,8 @@ public class IndexManagerTest {
     assertEquals("record-1", fetchResult.recordResult.record.recordId);
     assertEquals(FAMILY, fetchResult.recordResult.record.family);
 
-    Record record = newRecord(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3"));
+    Record record = newRecord(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"),
+        newColumn("testcol3", "value3"));
     assertEquals(record, fetchResult.recordResult.record);
   }
 
@@ -401,11 +463,14 @@ public class IndexManagerTest {
     FetchResult fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
     assertNotNull(fetchResult.rowResult.row);
-    Row row = newRow("row-1", newRecord(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
+    Row row = newRow(
+        "row-1",
+        newRecord(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"),
+            newColumn("testcol3", "value3")));
     row.recordCount = 1;
     assertEquals(row, fetchResult.rowResult.row);
   }
-  
+
   @Test
   public void testFetchRowByRowIdPaging() throws Exception {
     Selector selector = new Selector().setRowId("row-6").setStartRecord(0).setMaxRecordsToFetch(1);
@@ -413,28 +478,30 @@ public class IndexManagerTest {
     indexManager.fetchRow(TABLE, selector, fetchResult);
     assertNotNull(fetchResult.rowResult.row);
 
-    Row row1 = newRow("row-6", newRecord(FAMILY, "record-6A", newColumn("testcol12", "value110"), newColumn("testcol13", "value102")));
+    Row row1 = newRow("row-6",
+        newRecord(FAMILY, "record-6A", newColumn("testcol12", "value110"), newColumn("testcol13", "value102")));
     row1.recordCount = 1;
     assertEquals(row1, fetchResult.rowResult.row);
-    
+
     selector = new Selector().setRowId("row-6").setStartRecord(1).setMaxRecordsToFetch(1);
     fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
     assertNotNull(fetchResult.rowResult.row);
-    
-    Row row2 = newRow("row-6", newRecord(FAMILY, "record-6B", newColumn("testcol12", "value101"), newColumn("testcol13", "value104")));
+
+    Row row2 = newRow("row-6",
+        newRecord(FAMILY, "record-6B", newColumn("testcol12", "value101"), newColumn("testcol13", "value104")));
     row2.recordCount = 1;
     assertEquals(row2, fetchResult.rowResult.row);
-    
+
     selector = new Selector().setRowId("row-6").setStartRecord(2).setMaxRecordsToFetch(1);
     fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
     assertNotNull(fetchResult.rowResult.row);
-    
+
     Row row3 = newRow("row-6", newRecord(FAMILY2, "record-6C", newColumn("testcol18", "value501")));
     row3.recordCount = 1;
     assertEquals(row3, fetchResult.rowResult.row);
-    
+
     selector = new Selector().setRowId("row-6").setStartRecord(3).setMaxRecordsToFetch(1);
     fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
@@ -486,7 +553,8 @@ public class IndexManagerTest {
     assertEquals("record-1", recordResult.record.recordId);
     assertEquals("row-1", recordResult.rowid);
 
-    Record record = newRecord(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3"));
+    Record record = newRecord(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"),
+        newColumn("testcol3", "value3"));
     assertEquals(record, recordResult.record);
 
   }
@@ -503,7 +571,8 @@ public class IndexManagerTest {
     assertEquals(TABLE, schema.table);
     Map<String, Set<String>> columnFamilies = schema.columnFamilies;
     assertEquals(new TreeSet<String>(Arrays.asList(FAMILY, FAMILY2)), new TreeSet<String>(columnFamilies.keySet()));
-    assertEquals(new TreeSet<String>(Arrays.asList("testcol1", "testcol2", "testcol3", "testcol12", "testcol13")), new TreeSet<String>(columnFamilies.get(FAMILY)));
+    assertEquals(new TreeSet<String>(Arrays.asList("testcol1", "testcol2", "testcol3", "testcol12", "testcol13")),
+        new TreeSet<String>(columnFamilies.get(FAMILY)));
     assertEquals(new TreeSet<String>(Arrays.asList("testcol18")), new TreeSet<String>(columnFamilies.get(FAMILY2)));
   }
 
@@ -654,7 +723,8 @@ public class IndexManagerTest {
     blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
     blurQuery.maxQueryTime = Long.MAX_VALUE;
     blurQuery.uuid = 1;
-    blurQuery.facets = Arrays.asList(new Facet("test-family.testcol1:value1", Long.MAX_VALUE), new Facet("test-family.testcol1:value-nohit", Long.MAX_VALUE));
+    blurQuery.facets = Arrays.asList(new Facet("test-family.testcol1:value1", Long.MAX_VALUE), new Facet(
+        "test-family.testcol1:value-nohit", Long.MAX_VALUE));
 
     AtomicLongArray facetedCounts = new AtomicLongArray(2);
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, facetedCounts);
@@ -683,8 +753,11 @@ public class IndexManagerTest {
 
   @Test
   public void testMutationReplaceRow() throws Exception {
-    RowMutation mutation = newRowMutation(TABLE, "row-4",
-        newRecordMutation(FAMILY, "record-4", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"), newColumn("testcol3", "value4")));
+    RowMutation mutation = newRowMutation(
+        TABLE,
+        "row-4",
+        newRecordMutation(FAMILY, "record-4", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"),
+            newColumn("testcol3", "value4")));
     mutation.waitToBeVisible = true;
     indexManager.mutate(mutation);
 
@@ -692,7 +765,10 @@ public class IndexManagerTest {
     FetchResult fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
     assertNotNull(fetchResult.rowResult.row);
-    Row row = newRow("row-4", newRecord(FAMILY, "record-4", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"), newColumn("testcol3", "value4")));
+    Row row = newRow(
+        "row-4",
+        newRecord(FAMILY, "record-4", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"),
+            newColumn("testcol3", "value4")));
     row.recordCount = 1;
     assertEquals(row, fetchResult.rowResult.row);
   }
@@ -713,7 +789,10 @@ public class IndexManagerTest {
     indexManager.fetchRow(TABLE, selector, fetchResult);
     Row r = fetchResult.rowResult.row;
     assertNotNull("new row should exist", r);
-    Row row = newRow("row-6", newRecord(FAMILY, "record-6", newColumn("testcol1", "value20"), newColumn("testcol2", "value21"), newColumn("testcol3", "value22")));
+    Row row = newRow(
+        "row-6",
+        newRecord(FAMILY, "record-6", newColumn("testcol1", "value20"), newColumn("testcol2", "value21"),
+            newColumn("testcol3", "value22")));
     row.recordCount = 1;
     assertEquals("row should match", row, r);
   }
@@ -1020,7 +1099,8 @@ public class IndexManagerTest {
     updateAndFetchRecord("row-6", rec, rm);
   }
 
-  private Record updateAndFetchRecord(String rowId, String recordId, RecordMutation... recordMutations) throws Exception {
+  private Record updateAndFetchRecord(String rowId, String recordId, RecordMutation... recordMutations)
+      throws Exception {
     RowMutation rowMutation = newRowMutation(UPDATE_ROW, TABLE, rowId, recordMutations);
     rowMutation.waitToBeVisible = true;
     indexManager.mutate(rowMutation);

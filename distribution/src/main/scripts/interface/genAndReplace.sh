@@ -17,7 +17,7 @@
 
 
 
-rm ../../../../../../src/blur-thrift/src/main/java/org/apache/blur/thrift/generated/*
+rm ../../../../../blur-thrift/src/main/java/org/apache/blur/thrift/generated/*
 rm -r gen-java/ gen-perl/ gen-rb/ gen-html/
 thrift --gen html --gen perl --gen java --gen rb --gen js Blur.thrift
 for f in gen-java/org/apache/blur/thrift/generated/*.java; do
@@ -28,4 +28,4 @@ for f in gen-java/org/apache/blur/thrift/generated/*.java; do
   rm $f.new1 $f.new2 $f.new3 $f
   mv $f.new4 $f
 done
-cp -r gen-java/* ../../../../../../src/blur-thrift/src/main/java/
+cp -r gen-java/* ../../../../../blur-thrift/src/main/java/

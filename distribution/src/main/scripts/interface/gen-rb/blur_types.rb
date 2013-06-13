@@ -101,7 +101,6 @@ module Blur
     RECORDID = 1
     FAMILY = 2
     COLUMNS = 3
-    HIGHLIGHTEDCOLUMNS = 4
 
     FIELDS = {
       # Record id uniquely identifies a record within a single row.
@@ -109,9 +108,7 @@ module Blur
       # The family in which this record resides.
       FAMILY => {:type => ::Thrift::Types::STRING, :name => 'family'},
       # A list of columns, multiple columns with the same name are allowed.
-      COLUMNS => {:type => ::Thrift::Types::LIST, :name => 'columns', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Column}},
-      # A list of the highlighted columns.
-      HIGHLIGHTEDCOLUMNS => {:type => ::Thrift::Types::LIST, :name => 'highlightedColumns', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Column}}
+      COLUMNS => {:type => ::Thrift::Types::LIST, :name => 'columns', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Column}}
     }
 
     def struct_fields; FIELDS; end
@@ -185,7 +182,8 @@ module Blur
   class HighlightOptions
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SIMPLEQUERY = 1
-    ONLYMATCHINGRECORDS = 2
+    PRETAG = 2
+    POSTTAG = 3
 
     FIELDS = {
       # The original query is required if used in the Blur.fetchRow call.  If
@@ -194,9 +192,10 @@ module Blur
 # null.  So that means if you use highlighting from the query call you can
 # leave this attribute null and it will default to the normal behavior.
       SIMPLEQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'simpleQuery', :class => ::Blur::SimpleQuery},
-      # Only returns the records within a Row that matched in the query.  If the BlurQuery
-# is not a superQuery then this option is not used.  Enabled by default.
-      ONLYMATCHINGRECORDS => {:type => ::Thrift::Types::BOOL, :name => 'onlyMatchingRecords', :default => true}
+      # The pre tag is the tag that marks the beginning of the highlighting.
+      PRETAG => {:type => ::Thrift::Types::STRING, :name => 'preTag', :default => %q"<<<"},
+      # The post tag is the tag that marks the end of the highlighting.
+      POSTTAG => {:type => ::Thrift::Types::STRING, :name => 'postTag', :default => %q">>>"}
     }
 
     def struct_fields; FIELDS; end

@@ -51,6 +51,8 @@ public class Main {
   static boolean debug = false;
   /** is timing enabled - off by default */
   static boolean timed = false;
+  /** is highlight enabled - off by default */
+  static boolean highlight = false;
 
   private static Map<String, Command> commands;
 
@@ -97,6 +99,26 @@ public class Main {
     }
 
   }
+  
+  private static class HighlightCommand extends Command {
+
+    @Override
+    public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+        BlurException {
+      if (highlight == true) {
+        highlight = false;
+      } else {
+        highlight = true;
+      }
+      out.println("highlight of query command is now " + (highlight ? "on" : "off"));
+    }
+
+    @Override
+    public String help() {
+      return "toggle highlight of query output on/off";
+    }
+
+  }
 
   private static class HelpCommand extends Command {
     @Override
@@ -114,7 +136,7 @@ public class Main {
 
       out.println();
       out.println(" - Data commands - ");
-      String[] dataCommands = { "query", "get", "mutate", "delete" };
+      String[] dataCommands = { "query", "get", "mutate", "delete", "highlight" };
       printCommandAndHelp(out, cmds, dataCommands, bufferLength);
 
       out.println();
@@ -193,6 +215,7 @@ public class Main {
     builder.put("help", new HelpCommand());
     builder.put("debug", new DebugCommand());
     builder.put("timed", new TimedCommand());
+    builder.put("highlight", new HighlightCommand());
     builder.put("quit", new QuitCommand());
     builder.put("list", new ListTablesCommand());
     builder.put("create", new CreateTableCommand());

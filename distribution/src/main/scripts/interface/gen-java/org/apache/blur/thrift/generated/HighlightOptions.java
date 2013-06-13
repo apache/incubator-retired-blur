@@ -56,7 +56,8 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("HighlightOptions");
 
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SIMPLE_QUERY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("simpleQuery", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ONLY_MATCHING_RECORDS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("onlyMatchingRecords", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField PRE_TAG_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("preTag", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField POST_TAG_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("postTag", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -73,10 +74,13 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
    */
   public SimpleQuery simpleQuery; // required
   /**
-   * Only returns the records within a Row that matched in the query.  If the BlurQuery
-   * is not a superQuery then this option is not used.  Enabled by default.
+   * The pre tag is the tag that marks the beginning of the highlighting.
    */
-  public boolean onlyMatchingRecords; // required
+  public String preTag; // required
+  /**
+   * The post tag is the tag that marks the end of the highlighting.
+   */
+  public String postTag; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
@@ -89,10 +93,13 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
      */
     SIMPLE_QUERY((short)1, "simpleQuery"),
     /**
-     * Only returns the records within a Row that matched in the query.  If the BlurQuery
-     * is not a superQuery then this option is not used.  Enabled by default.
+     * The pre tag is the tag that marks the beginning of the highlighting.
      */
-    ONLY_MATCHING_RECORDS((short)2, "onlyMatchingRecords");
+    PRE_TAG((short)2, "preTag"),
+    /**
+     * The post tag is the tag that marks the end of the highlighting.
+     */
+    POST_TAG((short)3, "postTag");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -109,8 +116,10 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
       switch(fieldId) {
         case 1: // SIMPLE_QUERY
           return SIMPLE_QUERY;
-        case 2: // ONLY_MATCHING_RECORDS
-          return ONLY_MATCHING_RECORDS;
+        case 2: // PRE_TAG
+          return PRE_TAG;
+        case 3: // POST_TAG
+          return POST_TAG;
         default:
           return null;
       }
@@ -151,43 +160,50 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
   }
 
   // isset id assignments
-  private static final int __ONLYMATCHINGRECORDS_ISSET_ID = 0;
-  private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.SIMPLE_QUERY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("simpleQuery", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, SimpleQuery.class)));
-    tmpMap.put(_Fields.ONLY_MATCHING_RECORDS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("onlyMatchingRecords", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.PRE_TAG, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("preTag", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.POST_TAG, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("postTag", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(HighlightOptions.class, metaDataMap);
   }
 
   public HighlightOptions() {
-    this.onlyMatchingRecords = true;
+    this.preTag = "<<<";
+
+    this.postTag = ">>>";
 
   }
 
   public HighlightOptions(
     SimpleQuery simpleQuery,
-    boolean onlyMatchingRecords)
+    String preTag,
+    String postTag)
   {
     this();
     this.simpleQuery = simpleQuery;
-    this.onlyMatchingRecords = onlyMatchingRecords;
-    setOnlyMatchingRecordsIsSet(true);
+    this.preTag = preTag;
+    this.postTag = postTag;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public HighlightOptions(HighlightOptions other) {
-    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetSimpleQuery()) {
       this.simpleQuery = new SimpleQuery(other.simpleQuery);
     }
-    this.onlyMatchingRecords = other.onlyMatchingRecords;
+    if (other.isSetPreTag()) {
+      this.preTag = other.preTag;
+    }
+    if (other.isSetPostTag()) {
+      this.postTag = other.postTag;
+    }
   }
 
   public HighlightOptions deepCopy() {
@@ -197,7 +213,9 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
   @Override
   public void clear() {
     this.simpleQuery = null;
-    this.onlyMatchingRecords = true;
+    this.preTag = "<<<";
+
+    this.postTag = ">>>";
 
   }
 
@@ -240,34 +258,63 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
   }
 
   /**
-   * Only returns the records within a Row that matched in the query.  If the BlurQuery
-   * is not a superQuery then this option is not used.  Enabled by default.
+   * The pre tag is the tag that marks the beginning of the highlighting.
    */
-  public boolean isOnlyMatchingRecords() {
-    return this.onlyMatchingRecords;
+  public String getPreTag() {
+    return this.preTag;
   }
 
   /**
-   * Only returns the records within a Row that matched in the query.  If the BlurQuery
-   * is not a superQuery then this option is not used.  Enabled by default.
+   * The pre tag is the tag that marks the beginning of the highlighting.
    */
-  public HighlightOptions setOnlyMatchingRecords(boolean onlyMatchingRecords) {
-    this.onlyMatchingRecords = onlyMatchingRecords;
-    setOnlyMatchingRecordsIsSet(true);
+  public HighlightOptions setPreTag(String preTag) {
+    this.preTag = preTag;
     return this;
   }
 
-  public void unsetOnlyMatchingRecords() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ONLYMATCHINGRECORDS_ISSET_ID);
+  public void unsetPreTag() {
+    this.preTag = null;
   }
 
-  /** Returns true if field onlyMatchingRecords is set (has been assigned a value) and false otherwise */
-  public boolean isSetOnlyMatchingRecords() {
-    return EncodingUtils.testBit(__isset_bitfield, __ONLYMATCHINGRECORDS_ISSET_ID);
+  /** Returns true if field preTag is set (has been assigned a value) and false otherwise */
+  public boolean isSetPreTag() {
+    return this.preTag != null;
   }
 
-  public void setOnlyMatchingRecordsIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ONLYMATCHINGRECORDS_ISSET_ID, value);
+  public void setPreTagIsSet(boolean value) {
+    if (!value) {
+      this.preTag = null;
+    }
+  }
+
+  /**
+   * The post tag is the tag that marks the end of the highlighting.
+   */
+  public String getPostTag() {
+    return this.postTag;
+  }
+
+  /**
+   * The post tag is the tag that marks the end of the highlighting.
+   */
+  public HighlightOptions setPostTag(String postTag) {
+    this.postTag = postTag;
+    return this;
+  }
+
+  public void unsetPostTag() {
+    this.postTag = null;
+  }
+
+  /** Returns true if field postTag is set (has been assigned a value) and false otherwise */
+  public boolean isSetPostTag() {
+    return this.postTag != null;
+  }
+
+  public void setPostTagIsSet(boolean value) {
+    if (!value) {
+      this.postTag = null;
+    }
   }
 
   public void setFieldValue(_Fields field, Object value) {
@@ -280,11 +327,19 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
       }
       break;
 
-    case ONLY_MATCHING_RECORDS:
+    case PRE_TAG:
       if (value == null) {
-        unsetOnlyMatchingRecords();
+        unsetPreTag();
       } else {
-        setOnlyMatchingRecords((Boolean)value);
+        setPreTag((String)value);
+      }
+      break;
+
+    case POST_TAG:
+      if (value == null) {
+        unsetPostTag();
+      } else {
+        setPostTag((String)value);
       }
       break;
 
@@ -296,8 +351,11 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
     case SIMPLE_QUERY:
       return getSimpleQuery();
 
-    case ONLY_MATCHING_RECORDS:
-      return Boolean.valueOf(isOnlyMatchingRecords());
+    case PRE_TAG:
+      return getPreTag();
+
+    case POST_TAG:
+      return getPostTag();
 
     }
     throw new IllegalStateException();
@@ -312,8 +370,10 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
     switch (field) {
     case SIMPLE_QUERY:
       return isSetSimpleQuery();
-    case ONLY_MATCHING_RECORDS:
-      return isSetOnlyMatchingRecords();
+    case PRE_TAG:
+      return isSetPreTag();
+    case POST_TAG:
+      return isSetPostTag();
     }
     throw new IllegalStateException();
   }
@@ -340,12 +400,21 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
         return false;
     }
 
-    boolean this_present_onlyMatchingRecords = true;
-    boolean that_present_onlyMatchingRecords = true;
-    if (this_present_onlyMatchingRecords || that_present_onlyMatchingRecords) {
-      if (!(this_present_onlyMatchingRecords && that_present_onlyMatchingRecords))
+    boolean this_present_preTag = true && this.isSetPreTag();
+    boolean that_present_preTag = true && that.isSetPreTag();
+    if (this_present_preTag || that_present_preTag) {
+      if (!(this_present_preTag && that_present_preTag))
         return false;
-      if (this.onlyMatchingRecords != that.onlyMatchingRecords)
+      if (!this.preTag.equals(that.preTag))
+        return false;
+    }
+
+    boolean this_present_postTag = true && this.isSetPostTag();
+    boolean that_present_postTag = true && that.isSetPostTag();
+    if (this_present_postTag || that_present_postTag) {
+      if (!(this_present_postTag && that_present_postTag))
+        return false;
+      if (!this.postTag.equals(that.postTag))
         return false;
     }
 
@@ -375,12 +444,22 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetOnlyMatchingRecords()).compareTo(typedOther.isSetOnlyMatchingRecords());
+    lastComparison = Boolean.valueOf(isSetPreTag()).compareTo(typedOther.isSetPreTag());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetOnlyMatchingRecords()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.onlyMatchingRecords, typedOther.onlyMatchingRecords);
+    if (isSetPreTag()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.preTag, typedOther.preTag);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetPostTag()).compareTo(typedOther.isSetPostTag());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPostTag()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.postTag, typedOther.postTag);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -413,8 +492,20 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("onlyMatchingRecords:");
-    sb.append(this.onlyMatchingRecords);
+    sb.append("preTag:");
+    if (this.preTag == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.preTag);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("postTag:");
+    if (this.postTag == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.postTag);
+    }
     first = false;
     sb.append(")");
     return sb.toString();
@@ -438,8 +529,6 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
-      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-      __isset_bitfield = 0;
       read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
     } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
@@ -473,10 +562,18 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // ONLY_MATCHING_RECORDS
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
-              struct.onlyMatchingRecords = iprot.readBool();
-              struct.setOnlyMatchingRecordsIsSet(true);
+          case 2: // PRE_TAG
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+              struct.preTag = iprot.readString();
+              struct.setPreTagIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // POST_TAG
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+              struct.postTag = iprot.readString();
+              struct.setPostTagIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -501,9 +598,16 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
         struct.simpleQuery.write(oprot);
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(ONLY_MATCHING_RECORDS_FIELD_DESC);
-      oprot.writeBool(struct.onlyMatchingRecords);
-      oprot.writeFieldEnd();
+      if (struct.preTag != null) {
+        oprot.writeFieldBegin(PRE_TAG_FIELD_DESC);
+        oprot.writeString(struct.preTag);
+        oprot.writeFieldEnd();
+      }
+      if (struct.postTag != null) {
+        oprot.writeFieldBegin(POST_TAG_FIELD_DESC);
+        oprot.writeString(struct.postTag);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -525,30 +629,40 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
       if (struct.isSetSimpleQuery()) {
         optionals.set(0);
       }
-      if (struct.isSetOnlyMatchingRecords()) {
+      if (struct.isSetPreTag()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetPostTag()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetSimpleQuery()) {
         struct.simpleQuery.write(oprot);
       }
-      if (struct.isSetOnlyMatchingRecords()) {
-        oprot.writeBool(struct.onlyMatchingRecords);
+      if (struct.isSetPreTag()) {
+        oprot.writeString(struct.preTag);
+      }
+      if (struct.isSetPostTag()) {
+        oprot.writeString(struct.postTag);
       }
     }
 
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, HighlightOptions struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.simpleQuery = new SimpleQuery();
         struct.simpleQuery.read(iprot);
         struct.setSimpleQueryIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.onlyMatchingRecords = iprot.readBool();
-        struct.setOnlyMatchingRecordsIsSet(true);
+        struct.preTag = iprot.readString();
+        struct.setPreTagIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.postTag = iprot.readString();
+        struct.setPostTagIsSet(true);
       }
     }
   }

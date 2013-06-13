@@ -579,16 +579,16 @@ public class AnalyzerDefinition implements org.apache.blur.thirdparty.thrift_0_9
           case 3: // COLUMN_FAMILY_DEFINITIONS
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map148 = iprot.readMapBegin();
-                struct.columnFamilyDefinitions = new HashMap<String,ColumnFamilyDefinition>(2*_map148.size);
-                for (int _i149 = 0; _i149 < _map148.size; ++_i149)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map140 = iprot.readMapBegin();
+                struct.columnFamilyDefinitions = new HashMap<String,ColumnFamilyDefinition>(2*_map140.size);
+                for (int _i141 = 0; _i141 < _map140.size; ++_i141)
                 {
-                  String _key150; // required
-                  ColumnFamilyDefinition _val151; // optional
-                  _key150 = iprot.readString();
-                  _val151 = new ColumnFamilyDefinition();
-                  _val151.read(iprot);
-                  struct.columnFamilyDefinitions.put(_key150, _val151);
+                  String _key142; // required
+                  ColumnFamilyDefinition _val143; // optional
+                  _key142 = iprot.readString();
+                  _val143 = new ColumnFamilyDefinition();
+                  _val143.read(iprot);
+                  struct.columnFamilyDefinitions.put(_key142, _val143);
                 }
                 iprot.readMapEnd();
               }
@@ -626,10 +626,10 @@ public class AnalyzerDefinition implements org.apache.blur.thirdparty.thrift_0_9
         oprot.writeFieldBegin(COLUMN_FAMILY_DEFINITIONS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.columnFamilyDefinitions.size()));
-          for (Map.Entry<String, ColumnFamilyDefinition> _iter152 : struct.columnFamilyDefinitions.entrySet())
+          for (Map.Entry<String, ColumnFamilyDefinition> _iter144 : struct.columnFamilyDefinitions.entrySet())
           {
-            oprot.writeString(_iter152.getKey());
-            _iter152.getValue().write(oprot);
+            oprot.writeString(_iter144.getKey());
+            _iter144.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -672,10 +672,10 @@ public class AnalyzerDefinition implements org.apache.blur.thirdparty.thrift_0_9
       if (struct.isSetColumnFamilyDefinitions()) {
         {
           oprot.writeI32(struct.columnFamilyDefinitions.size());
-          for (Map.Entry<String, ColumnFamilyDefinition> _iter153 : struct.columnFamilyDefinitions.entrySet())
+          for (Map.Entry<String, ColumnFamilyDefinition> _iter145 : struct.columnFamilyDefinitions.entrySet())
           {
-            oprot.writeString(_iter153.getKey());
-            _iter153.getValue().write(oprot);
+            oprot.writeString(_iter145.getKey());
+            _iter145.getValue().write(oprot);
           }
         }
       }
@@ -696,16 +696,16 @@ public class AnalyzerDefinition implements org.apache.blur.thirdparty.thrift_0_9
       }
       if (incoming.get(2)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map154 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-          struct.columnFamilyDefinitions = new HashMap<String,ColumnFamilyDefinition>(2*_map154.size);
-          for (int _i155 = 0; _i155 < _map154.size; ++_i155)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map146 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+          struct.columnFamilyDefinitions = new HashMap<String,ColumnFamilyDefinition>(2*_map146.size);
+          for (int _i147 = 0; _i147 < _map146.size; ++_i147)
           {
-            String _key156; // required
-            ColumnFamilyDefinition _val157; // optional
-            _key156 = iprot.readString();
-            _val157 = new ColumnFamilyDefinition();
-            _val157.read(iprot);
-            struct.columnFamilyDefinitions.put(_key156, _val157);
+            String _key148; // required
+            ColumnFamilyDefinition _val149; // optional
+            _key148 = iprot.readString();
+            _val149 = new ColumnFamilyDefinition();
+            _val149.read(iprot);
+            struct.columnFamilyDefinitions.put(_key148, _val149);
           }
         }
         struct.setColumnFamilyDefinitionsIsSet(true);

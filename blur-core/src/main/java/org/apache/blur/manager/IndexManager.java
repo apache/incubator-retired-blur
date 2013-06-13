@@ -69,6 +69,7 @@ import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.ExpertQuery;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.FetchRowResult;
+import org.apache.blur.thrift.generated.HighlightOptions;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RecordMutationType;
@@ -85,6 +86,7 @@ import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.ForkJoin;
 import org.apache.blur.utils.ForkJoin.Merger;
 import org.apache.blur.utils.ForkJoin.ParallelCall;
+import org.apache.blur.utils.HighlightHelper;
 import org.apache.blur.utils.ResetableDocumentStoredFieldVisitor;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.AtomicReader;
@@ -105,6 +107,7 @@ import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 
@@ -213,10 +216,11 @@ public class IndexManager {
         searcher = index.getIndexReader();
         usedCache = false;
       }
+      BlurAnalyzer analyzer = _indexServer.getAnalyzer(table);
 
-      Query highlightQuery = getHighlightQuery(selector);
-      
-      fetchRow(searcher.getIndexReader(), table, selector, fetchResult, highlightQuery);
+      Query highlightQuery = getHighlightQuery(selector, table, analyzer);
+
+      fetchRow(searcher.getIndexReader(), table, selector, fetchResult, highlightQuery, analyzer);
       if (fetchResult.rowResult != null) {
         if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
           _recordsMeter.mark(fetchResult.rowResult.row.records.size());
@@ -242,9 +246,24 @@ public class IndexManager {
     }
   }
 
-  private Query getHighlightQuery(Selector selector) {
-    // TODO Auto-generated method stub
-    return null;
+  private Query getHighlightQuery(Selector selector, String table, BlurAnalyzer analyzer) throws ParseException,
+      BlurException {
+    HighlightOptions highlightOptions = selector.getHighlightOptions();
+    if (highlightOptions == null) {
+      return null;
+    }
+    SimpleQuery simpleQuery = highlightOptions.getSimpleQuery();
+    if (simpleQuery == null) {
+      return null;
+    }
+
+    TableContext context = getTableContext(table);
+    Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.preSuperFilter, false, analyzer, _filterCache,
+        context);
+    Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, analyzer, _filterCache,
+        context);
+    return QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, analyzer, postFilter, preFilter,
+        getScoreType(simpleQuery.type), context);
   }
 
   private void populateSelector(String table, Selector selector) throws IOException, BlurException {
@@ -445,8 +464,13 @@ public class IndexManager {
     return _statusManager.queryStatusIdList(table);
   }
 
-  public static void fetchRow(IndexReader reader, String table, Selector selector, FetchResult fetchResult, Query highlightQuery)
-      throws CorruptIndexException, IOException {
+  public static void fetchRow(IndexReader reader, String table, Selector selector, FetchResult fetchResult,
+      Query highlightQuery) throws CorruptIndexException, IOException {
+    fetchRow(reader, table, selector, fetchResult, highlightQuery, null);
+  }
+
+  public static void fetchRow(IndexReader reader, String table, Selector selector, FetchResult fetchResult,
+      Query highlightQuery, BlurAnalyzer analyzer) throws CorruptIndexException, IOException {
     fetchResult.table = table;
     String locationId = selector.locationId;
     int lastSlash = locationId.lastIndexOf('/');
@@ -475,6 +499,16 @@ public class IndexManager {
         fetchResult.deleted = false;
         reader.document(docId, fieldVisitor);
         Document document = fieldVisitor.getDocument();
+        if (highlightQuery != null && analyzer != null) {
+          HighlightOptions highlightOptions = selector.getHighlightOptions();
+          String preTag = highlightOptions.getPreTag();
+          String postTag = highlightOptions.getPostTag();
+          try {
+            document = HighlightHelper.highlight(docId, document, highlightQuery, analyzer, reader, preTag, postTag);
+          } catch (InvalidTokenOffsetsException e) {
+            LOG.error("Unknown error while tring to highlight", e);
+          }
+        }
         fieldVisitor.reset();
         fetchResult.recordResult = getRecord(document);
         return;
@@ -494,7 +528,16 @@ public class IndexManager {
           fetchResult.rowResult = new FetchRowResult();
           fetchResult.rowResult.row = new Row(rowId, null, recordCount);
         } else {
-          List<Document> docs = BlurUtil.fetchDocuments(reader, term, fieldVisitor, selector);
+          List<Document> docs;
+          if (highlightQuery != null && analyzer != null) {
+            HighlightOptions highlightOptions = selector.getHighlightOptions();
+            String preTag = highlightOptions.getPreTag();
+            String postTag = highlightOptions.getPostTag();
+            docs = HighlightHelper.highlightDocuments(reader, term, fieldVisitor, selector, highlightQuery, analyzer,
+                preTag, postTag);
+          } else {
+            docs = BlurUtil.fetchDocuments(reader, term, fieldVisitor, selector);
+          }
           fetchResult.rowResult = new FetchRowResult(getRow(docs));
         }
         return;

@@ -47,6 +47,7 @@ import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.FetchResult;
+import org.apache.blur.thrift.generated.HighlightOptions;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
@@ -92,6 +93,14 @@ public class BlurShardServer extends TableAdmin implements Iface {
     _queryChecker.checkQuery(blurQuery);
     try {
       BlurQuery original = new BlurQuery(blurQuery);
+      Selector selector = original.getSelector();
+      if (selector != null) {
+        HighlightOptions highlightOptions = selector.getHighlightOptions();
+        if (highlightOptions != null && highlightOptions.getSimpleQuery() == null) {
+          highlightOptions.setSimpleQuery(blurQuery.getSimpleQuery());
+        }
+      }
+      
       if (blurQuery.useCacheIfPresent) {
         LOG.debug("Using cache for query [{0}] on table [{1}].", blurQuery, table);
         QueryCacheKey key = QueryCache.getNormalizedBlurQueryKey(table, blurQuery);

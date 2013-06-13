@@ -64,6 +64,7 @@ import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.FetchResult;
+import org.apache.blur.thrift.generated.HighlightOptions;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
@@ -319,6 +320,11 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           selector.setColumnsToFetch(EMPTY_MAP);
           if (!blurQuery.simpleQuery.superQueryOn) {
             selector.setRecordOnly(true);
+          }
+        } else {
+          HighlightOptions highlightOptions = selector.getHighlightOptions();
+          if (highlightOptions != null && highlightOptions.getSimpleQuery() == null) {
+            highlightOptions.setSimpleQuery(blurQuery.getSimpleQuery());
           }
         }
         blurQuery.setSelector(null);

@@ -67,30 +67,32 @@ public class GetRowCommand extends Command {
     format(out, row, maxWidth);
   }
 
-  private void format(PrintWriter out, Row row, int maxWidth) {
+  public static void format(PrintWriter out, Row row, int maxWidth) {
     String id = row.getId();
     int recordCount = row.getRecordCount();
-    out.println("id:" + id);
-    out.println("recordCount:" + recordCount);
+    out.println("       id : " + id);
+    if (Main.debug) {
+      out.println("recordCount : " + recordCount);
+    }
     List<Record> records = row.getRecords();
     for (Record record : records) {
       format(out, record, maxWidth);
     }
   }
 
-  private void format(PrintWriter out, Record record, int maxWidth) {
+  public static void format(PrintWriter out, Record record, int maxWidth) {
     String recordId = record.getRecordId();
     String family = record.getFamily();
     List<Column> columns = record.getColumns();
-    out.println(" recordId:" + recordId);
-    out.println("   family:" + family);
+    out.println(" recordId : " + recordId);
+    out.println("   family : " + family);
     for (Column column : columns) {
       format(out, column, maxWidth);
     }
   }
 
-  private void format(PrintWriter out, Column column, int maxWidth) {
-    String lead = "     " + column.getName() + ":";
+  private static void format(PrintWriter out, Column column, int maxWidth) {
+    String lead = "     " + column.getName() + " : ";
     String value = column.getValue();
     int length = value.length();
     int position = 0;

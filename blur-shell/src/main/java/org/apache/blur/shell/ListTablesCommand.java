@@ -19,6 +19,7 @@
 package org.apache.blur.shell;
 
 import java.io.PrintWriter;
+import java.util.List;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
@@ -26,9 +27,12 @@ import org.apache.blur.thrift.generated.BlurException;
 
 public class ListTablesCommand extends Command {
   @Override
-  public void doit(PrintWriter out, Blur.Iface client, String[] args)
-      throws CommandException, TException, BlurException {
-    out.println("tables: " + client.tableList());
+  public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+      BlurException {
+    List<String> tableList = client.tableList();
+    for (String s : tableList) {
+      out.println(s);
+    }
   }
 
   @Override

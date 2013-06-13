@@ -200,3 +200,13 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+==========================================================================
+The Apache License, Version 2.0 applies to the following included libraries:
+ConcurrentLinkedHashMap, Data Mapper for Jackson, Digester, Distribution, EL,
+Glassfish Jasper API, Guava: Google Core Libraries for Java, Jackson,
+Jackson-annotations, Jackson-core, jackson-databind, jakarta-regexp,
+jasper-compiler, jasper-runtime, Jetty Server, Jetty Utilities,
+Metrics Core Library, Metrics Ganglia Support, Metrics Graphite Support,
+Metrics Servlet, oro, Servlet Specification API, The Netty Project
+

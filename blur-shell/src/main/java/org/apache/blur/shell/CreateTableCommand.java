@@ -33,8 +33,9 @@ public class CreateTableCommand extends Command {
     if (args.length != 4) {
       throw new CommandException("Invalid args: " + help());
     }
-    String tableuri = args[1];
-    String tablename = args[2];
+    
+    String tablename = args[1];
+    String tableuri = args[2];
     int shardCount = Integer.parseInt(args[3]);
 
     AnalyzerDefinition ad = new AnalyzerDefinition();
@@ -57,6 +58,6 @@ public class CreateTableCommand extends Command {
 
   @Override
   public String help() {
-    return "create the named table, args; tableuri tablename shardcount";
+    return "create the named table, args; tablename tableuri shardcount";
   }
 }

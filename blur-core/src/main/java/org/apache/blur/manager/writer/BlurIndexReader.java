@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.blur.index.IndexWriter;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.lucene.warmup.TraceableDirectory;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
@@ -50,7 +51,8 @@ public class BlurIndexReader extends BlurIndex {
   public BlurIndexReader(ShardContext shardContext, Directory directory, BlurIndexRefresher refresher,
       BlurIndexCloser closer) throws IOException {
     _tableContext = shardContext.getTableContext();
-    _directory = directory;
+    // This directory allows for warm up by adding tracing ability.
+    _directory = new TraceableDirectory(directory);
     _shardContext = shardContext;
     _refresher = refresher;
     _closer = closer;

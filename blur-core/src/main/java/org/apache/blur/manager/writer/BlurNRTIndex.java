@@ -34,6 +34,7 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceCounter;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
+import org.apache.blur.lucene.warmup.TraceableDirectory;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.IndexSearcherClosableNRT;
 import org.apache.blur.server.ShardContext;
@@ -90,8 +91,9 @@ public class BlurNRTIndex extends BlurIndex {
     conf.setMergeScheduler(mergeScheduler);
 
     DirectoryReferenceCounter referenceCounter = new DirectoryReferenceCounter(directory, gc, closer);
-
-    _writer = new IndexWriter(referenceCounter, conf);
+    // This directory allows for warm up by adding tracing ability.
+    TraceableDirectory dir = new TraceableDirectory(referenceCounter);
+    _writer = new IndexWriter(dir, conf);
     _recorder = new TransactionRecorder(shardContext);
     _recorder.replay(_writer);
 

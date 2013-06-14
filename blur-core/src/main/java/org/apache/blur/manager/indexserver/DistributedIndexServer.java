@@ -51,6 +51,7 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
+import org.apache.blur.lucene.warmup.TraceableDirectory;
 import org.apache.blur.manager.BlurFilterCache;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
@@ -463,10 +464,10 @@ public class DistributedIndexServer extends AbstractIndexServer {
     } else {
       dir = directory;
     }
-
+    
     BlurIndex index;
     if (_clusterStatus.isReadOnly(true, _cluster, table)) {
-      BlurIndexReader reader = new BlurIndexReader(shardContext, directory, _refresher, _indexCloser);
+      BlurIndexReader reader = new BlurIndexReader(shardContext, dir, _refresher, _indexCloser);
       index = reader;
     } else {
       BlurNRTIndex writer = new BlurNRTIndex(shardContext, _mergeScheduler, _closer, dir, _gc, _searchExecutor);

@@ -115,8 +115,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private BlurPartitioner _blurPartitioner = new BlurPartitioner();
   private String _nodeName;
   private int _remoteFetchCount = 100;
-  private long _maxTimeToLive = TimeUnit.MINUTES.toMillis(1);
-  private int _maxQueryCacheElements = 128;
   private BlurQueryChecker _queryChecker;
   private AtomicBoolean _running = new AtomicBoolean();
 
@@ -840,22 +838,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   public void setRemoteFetchCount(int remoteFetchCount) {
     _remoteFetchCount = remoteFetchCount;
-  }
-
-  public long getMaxTimeToLive() {
-    return _maxTimeToLive;
-  }
-
-  public void setMaxTimeToLive(long maxTimeToLive) {
-    _maxTimeToLive = maxTimeToLive;
-  }
-
-  public int getMaxQueryCacheElements() {
-    return _maxQueryCacheElements;
-  }
-
-  public void setMaxQueryCacheElements(int maxQueryCacheElements) {
-    _maxQueryCacheElements = maxQueryCacheElements;
   }
 
   public void setQueryChecker(BlurQueryChecker queryChecker) {

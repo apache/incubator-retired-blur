@@ -35,18 +35,20 @@ public class TraceableDirectory extends Directory implements DirectoryDecorator 
    * massively parallel environment that Blur operates. Please do NOT! This
    * field cannot be volatile for performance reasons. For every query in Lucene
    * there are a number of clones made of each file handle in each segment in
-   * each index. If this were volatile every thread would have to check this
-   * field every time a clone was called (see {@link TraceableIndexInput}). In
-   * fact I want this field to the remain false in all cases except for when a
-   * warm up trace is needed. If that occurs the Thread running the actually the
-   * trace will set this field to true for a brief moment while all the clones
-   * are made and the trace is performed (the clones are also made with this
-   * this trace thread). After the trace is complete is will return the false.
-   * During the time when the field is true, if any other field actually reads
-   * the value as true there is a second {@link ThreadLocal} field in
-   * {@link IndexWarmup} that prevents any other threads from running a trace.
-   * However there will be a small performance penalty while that situation
-   * occurs, because accessing a {@link ThreadLocal} field is fairly expensive.
+   * each index. If this were volatile every thread would have to check main
+   * memory for this field every time a clone was called (see
+   * {@link TraceableIndexInput}). In fact I want this field to the remain false
+   * in all cases, except for when a warm up trace is needed. If that occurs the
+   * Thread running the actual the trace will set this field to true for a brief
+   * moment while all the clones are made and the trace is performed (the clones
+   * are also made with this this trace thread), this will likely just alter the
+   * value for that thread and not commit it back to main memory (heap). After
+   * the trace is complete is will return the field to false. During the time
+   * when the field is true, if any other field actually reads the value as true
+   * there is a second {@link ThreadLocal} field in {@link IndexWarmup} that
+   * prevents any other threads from running a trace. However there will be a
+   * small performance penalty while that situation occurs, because accessing a
+   * {@link ThreadLocal} field is fairly expensive.
    * 
    * In short please leave this the way it is, if you really want to change it
    * please post a question on the mail list first.

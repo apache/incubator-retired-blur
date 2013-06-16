@@ -682,7 +682,7 @@ module Blur
     ALTERNATECOLUMNDEFINITIONS = 3
 
     FIELDS = {
-      ANALYZERCLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'analyzerClassName', :default => %q"org.apache.lucene.analysis.standard.StandardAnalyzer"},
+      ANALYZERCLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'analyzerClassName', :default => %q"org.apache.blur.analysis.NoStopWordStandardAnalyzer"},
       FULLTEXTINDEX => {:type => ::Thrift::Types::BOOL, :name => 'fullTextIndex'},
       ALTERNATECOLUMNDEFINITIONS => {:type => ::Thrift::Types::MAP, :name => 'alternateColumnDefinitions', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::AlternateColumnDefinition}}
     }
@@ -727,7 +727,7 @@ module Blur
       # 
       DEFAULTDEFINITION => {:type => ::Thrift::Types::STRUCT, :name => 'defaultDefinition', :class => ::Blur::ColumnDefinition},
       # 
-      FULLTEXTANALYZERCLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'fullTextAnalyzerClassName', :default => %q"org.apache.lucene.analysis.standard.StandardAnalyzer"},
+      FULLTEXTANALYZERCLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'fullTextAnalyzerClassName', :default => %q"org.apache.blur.analysis.NoStopWordStandardAnalyzer"},
       # 
       COLUMNFAMILYDEFINITIONS => {:type => ::Thrift::Types::MAP, :name => 'columnFamilyDefinitions', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::ColumnFamilyDefinition}}
     }

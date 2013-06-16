@@ -48,58 +48,120 @@ public class SuperParser extends QueryParser {
   private static final Pattern PATTERN = Pattern.compile("([-+]{0,1})\\s*?super\\s*?\\:\\s*?\\<(.*?)\\>");
   private static final Pattern CHECK = Pattern.compile("super\\s*?\\:\\s*?\\<");
   private static final String SUPER = "super";
-  private final Map<Query, String> fieldNames = new HashMap<Query, String>();
-  private final boolean superSearch;
-  private final Filter queryFilter;
-  private final ScoreType scoreType;
-  private final BlurAnalyzer blurAnalyzer;
-  private final Version matchVersion;
-  private final Term defaultPrimeDocTerm;
+  private final Map<Query, String> _fieldNames = new HashMap<Query, String>();
+  private final boolean _superSearch;
+  private final Filter _queryFilter;
+  private final ScoreType _scoreType;
+  private final BlurAnalyzer _blurAnalyzer;
+  private final Version _matchVersion;
+  private final Term _defaultPrimeDocTerm;
+  private final boolean _autoGrouping;
 
-  public SuperParser(Version matchVersion, BlurAnalyzer a, boolean superSearch, Filter queryFilter, ScoreType scoreType, Term defaultPrimeDocTerm) {
+  public SuperParser(Version matchVersion, BlurAnalyzer a, boolean superSearch, Filter queryFilter,
+      ScoreType scoreType, Term defaultPrimeDocTerm) {
+    this(matchVersion, a, superSearch, queryFilter, scoreType, defaultPrimeDocTerm, false);
+  }
+
+  public SuperParser(Version matchVersion, BlurAnalyzer a, boolean superSearch, Filter queryFilter,
+      ScoreType scoreType, Term defaultPrimeDocTerm, boolean autoGrouping) {
     super(matchVersion, "super", a);
-    this.matchVersion = matchVersion;
-    this.setAutoGeneratePhraseQueries(true);
-    this.setAllowLeadingWildcard(true);
-    this.superSearch = superSearch;
-    this.queryFilter = queryFilter;
-    this.scoreType = scoreType;
-    this.blurAnalyzer = a;
-    this.defaultPrimeDocTerm = defaultPrimeDocTerm;
+    _matchVersion = matchVersion;
+    _superSearch = superSearch;
+    _queryFilter = queryFilter;
+    _scoreType = scoreType;
+    _blurAnalyzer = a;
+    _defaultPrimeDocTerm = defaultPrimeDocTerm;
+    _autoGrouping = autoGrouping;
+    setAutoGeneratePhraseQueries(true);
+    setAllowLeadingWildcard(true);
   }
 
   @Override
   public Query parse(String query) throws ParseException {
     Matcher matcher = PATTERN.matcher(query);
     BooleanQuery booleanQuery = null;
+    int lastEnd = -1;
     while (matcher.find()) {
       int count = matcher.groupCount();
+      int start = matcher.start();
+      int end = matcher.end();
+
+      booleanQuery = addExtraQueryInfo(query, booleanQuery, lastEnd, start, end);
+
       for (int i = 0; i < count; i++) {
         String occurString = matcher.group(i + 1);
         i++;
         String superQueryStr = matcher.group(i + 1);
         Matcher matcherCheck = CHECK.matcher(superQueryStr);
         if (matcherCheck.find()) {
-          throw new ParseException(
-              "Embedded super queries are not allowed [" + query
-                  + "].");
+          throw new ParseException("Embedded super queries are not allowed [" + query + "].");
         }
 
+        // Adding clause
         if (booleanQuery == null) {
           booleanQuery = new BooleanQuery();
         }
-
         Occur occur = getOccur(occurString);
-        QueryParser parser = new QueryParser(matchVersion, SUPER, blurAnalyzer);
-
+        QueryParser parser = getNewParser();
         Query superQuery = parser.parse(superQueryStr);
-        booleanQuery.add(new SuperQuery(superQuery, scoreType, defaultPrimeDocTerm), occur);
+        booleanQuery.add(new SuperQuery(superQuery, _scoreType, _defaultPrimeDocTerm), occur);
+        lastEnd = end;
       }
     }
+    booleanQuery = addExtraQueryInfo(query, booleanQuery, lastEnd);
     if (booleanQuery == null) {
       return reprocess(super.parse(query));
     }
     return booleanQuery;
+  }
+
+  private BooleanQuery addExtraQueryInfo(String query, BooleanQuery booleanQuery, int lastEnd, int start, int end)
+      throws ParseException {
+    if (lastEnd != -1 && start != lastEnd) {
+      // there was text inbetween the matches
+      String missingMatch = query.substring(lastEnd, start);
+      booleanQuery = addExtraQueryInfo(booleanQuery, missingMatch);
+    } else if (lastEnd == -1 && start != 0) {
+      // this means there was text in front of the first super query
+      String missingMatch = query.substring(0, start);
+      booleanQuery = addExtraQueryInfo(booleanQuery, missingMatch);
+    }
+    return booleanQuery;
+  }
+
+  private BooleanQuery addExtraQueryInfo(String query, BooleanQuery booleanQuery, int lastEnd) throws ParseException {
+    if (lastEnd != -1 && lastEnd < query.length()) {
+      // there was text at the end
+      String missingMatch = query.substring(lastEnd);
+      booleanQuery = addExtraQueryInfo(booleanQuery, missingMatch);
+    }
+    return booleanQuery;
+  }
+
+  private BooleanQuery addExtraQueryInfo(BooleanQuery booleanQuery, String missingMatch) throws ParseException {
+    if (missingMatch.trim().isEmpty()) {
+      return booleanQuery;
+    }
+    // Adding clause
+    if (booleanQuery == null) {
+      booleanQuery = new BooleanQuery();
+    }
+    QueryParser parser = getNewParser();
+    Query subQuery = parser.parse(missingMatch);
+    if (subQuery instanceof BooleanQuery) {
+      BooleanQuery bq = (BooleanQuery) subQuery;
+      for (BooleanClause clause : bq) {
+        booleanQuery.add(new SuperQuery(clause.getQuery(), _scoreType, _defaultPrimeDocTerm), clause.getOccur());
+      }
+    } else {
+      booleanQuery.add(new SuperQuery(subQuery, _scoreType, _defaultPrimeDocTerm), Occur.SHOULD);
+    }
+    return booleanQuery;
+  }
+
+  private QueryParser getNewParser() {
+    QueryParser parser = new QueryParser(_matchVersion, SUPER, _blurAnalyzer);
+    return parser;
   }
 
   private Occur getOccur(String occurString) {
@@ -113,23 +175,18 @@ public class SuperParser extends QueryParser {
   }
 
   @Override
-  protected Query newFuzzyQuery(Term term, float minimumSimilarity,
-      int prefixLength) {
+  protected Query newFuzzyQuery(Term term, float minimumSimilarity, int prefixLength) {
     String field = term.field();
-    TYPE type = blurAnalyzer.getTypeLookup(field);
+    TYPE type = _blurAnalyzer.getTypeLookup(field);
     if (type != TYPE.TEXT) {
-      throw new RuntimeException("Field [" + field + "] is type [" + type
-          + "] which does not support fuzzy queries.");
+      throw new RuntimeException("Field [" + field + "] is type [" + type + "] which does not support fuzzy queries.");
     }
-    return addField(
-        super.newFuzzyQuery(term, minimumSimilarity, prefixLength),
-        term.field());
+    return addField(super.newFuzzyQuery(term, minimumSimilarity, prefixLength), term.field());
   }
 
   @Override
   protected Query newMatchAllDocsQuery() {
-    return addField(super.newMatchAllDocsQuery(), UUID.randomUUID()
-        .toString());
+    return addField(super.newMatchAllDocsQuery(), UUID.randomUUID().toString());
   }
 
   @Override
@@ -161,31 +218,26 @@ public class SuperParser extends QueryParser {
   @Override
   protected Query newPrefixQuery(Term prefix) {
     String field = prefix.field();
-    TYPE type = blurAnalyzer.getTypeLookup(field);
+    TYPE type = _blurAnalyzer.getTypeLookup(field);
     if (type != TYPE.TEXT) {
-      throw new RuntimeException("Field [" + field + "] is type [" + type
-          + "] which does not support prefix queries.");
+      throw new RuntimeException("Field [" + field + "] is type [" + type + "] which does not support prefix queries.");
     }
     return addField(super.newPrefixQuery(prefix), field);
   }
 
   @Override
-  protected Query newRangeQuery(String field, String part1, String part2,
-      boolean startInclusive, boolean endInclusive) {
-    Query q = blurAnalyzer.getNewRangeQuery(field, part1, part2,
-        startInclusive, endInclusive);
+  protected Query newRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
+    Query q = _blurAnalyzer.getNewRangeQuery(field, part1, part2, startInclusive, endInclusive);
     if (q != null) {
       return addField(q, field);
     }
-    return addField(super.newRangeQuery(field, part1, part2,
-        startInclusive, endInclusive), field);
+    return addField(super.newRangeQuery(field, part1, part2, startInclusive, endInclusive), field);
   }
 
   @Override
   protected Query newTermQuery(Term term) {
     String field = term.field();
-    Query q = blurAnalyzer.getNewRangeQuery(field, term.text(),
-        term.text(), true, true);
+    Query q = _blurAnalyzer.getNewRangeQuery(field, term.text(), term.text(), true, true);
     if (q != null) {
       return addField(q, field);
     }
@@ -198,7 +250,7 @@ public class SuperParser extends QueryParser {
       return new MatchAllDocsQuery();
     }
     String field = t.field();
-    TYPE type = blurAnalyzer.getTypeLookup(field);
+    TYPE type = _blurAnalyzer.getTypeLookup(field);
     if (type != TYPE.TEXT) {
       throw new RuntimeException("Field [" + field + "] is type [" + type
           + "] which does not support wildcard queries.");
@@ -207,14 +259,14 @@ public class SuperParser extends QueryParser {
   }
 
   private SuperQuery newSuperQuery(Query query) {
-    return new SuperQuery(wrapFilter(query), scoreType, defaultPrimeDocTerm);
+    return new SuperQuery(wrapFilter(query), _scoreType, _defaultPrimeDocTerm);
   }
 
   private Query wrapFilter(Query query) {
-    if (queryFilter == null) {
+    if (_queryFilter == null) {
       return query;
     }
-    return new FilteredQuery(query, queryFilter);
+    return new FilteredQuery(query, _queryFilter);
   }
 
   // private boolean isSameGroupName(BooleanQuery booleanQuery) {
@@ -267,6 +319,7 @@ public class SuperParser extends QueryParser {
   // return getGroupName(fieldName);
   // }
   // }
+
   private Query reprocess(Query query) {
     if (query == null || !isSuperSearch()) {
       return wrapFilter(query);
@@ -293,12 +346,13 @@ public class SuperParser extends QueryParser {
       return newSuperQuery(query);
     }
   }
+
   private Query addField(Query q, String field) {
-    fieldNames.put(q, field);
+    _fieldNames.put(q, field);
     return q;
   }
 
   public boolean isSuperSearch() {
-    return superSearch;
+    return _superSearch;
   }
 }

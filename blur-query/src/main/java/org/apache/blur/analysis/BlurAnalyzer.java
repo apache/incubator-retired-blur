@@ -52,7 +52,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.AnalyzerWrapper;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.document.DoubleField;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
@@ -82,7 +82,7 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
     }
   };
 
-  private static final String STANDARD = "org.apache.lucene.analysis.standard.StandardAnalyzer";
+  private static final String STANDARD = "org.apache.blur.analysis.NoStopWordStandardAnalyzer";
   public static final BlurAnalyzer BLANK_ANALYZER = new BlurAnalyzer(new KeywordAnalyzer());
 
   private static final Analyzer ERROR_ANALYZER = new Analyzer() {
@@ -127,13 +127,13 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
     _analyzers.put(RECORD_ID, ERROR_ANALYZER);
     _analyzers.put(PRIME_DOC, ERROR_ANALYZER);
     _analyzers.put(FAMILY, ERROR_ANALYZER);
-    _analyzers.put(SUPER, ERROR_ANALYZER);
+    _analyzers.put(SUPER, new WhitespaceAnalyzer(LUCENE_VERSION));
     load(_analyzers, _analyzerDefinition.columnFamilyDefinitions, _fullTextFields, _subIndexNameLookups,
         _subIndexNames, _fullTextColumnFamilies, _typeLookup, _fieldTypes);
   }
 
   public BlurAnalyzer() {
-    this(new StandardAnalyzer(LUCENE_VERSION));
+    this(new NoStopWordStandardAnalyzer());
   }
 
   private Analyzer getAnalyzer(String name) {

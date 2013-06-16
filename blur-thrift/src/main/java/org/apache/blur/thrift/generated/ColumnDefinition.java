@@ -152,7 +152,7 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
   }
 
   public ColumnDefinition() {
-    this.analyzerClassName = "org.apache.lucene.analysis.standard.StandardAnalyzer";
+    this.analyzerClassName = "org.apache.blur.analysis.NoStopWordStandardAnalyzer";
 
   }
 
@@ -200,7 +200,7 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
 
   @Override
   public void clear() {
-    this.analyzerClassName = "org.apache.lucene.analysis.standard.StandardAnalyzer";
+    this.analyzerClassName = "org.apache.blur.analysis.NoStopWordStandardAnalyzer";
 
     setFullTextIndexIsSet(false);
     this.fullTextIndex = false;

@@ -1,21 +1,22 @@
 package org.apache.blur.lucene.search;
 
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 
-import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.blur.analysis.BlurAnalyzer;
+import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
 import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.ColumnFamilyDefinition;
 import org.apache.blur.thrift.generated.ScoreType;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
@@ -33,7 +34,7 @@ public class SuperParserTest {
   @Before
   public void setup() {
     AnalyzerDefinition ad = new AnalyzerDefinition();
-    ad.setDefaultDefinition(new ColumnDefinition(StandardAnalyzer.class.getName(), true, null));
+    ad.setDefaultDefinition(new ColumnDefinition(NoStopWordStandardAnalyzer.class.getName(), true, null));
     ColumnFamilyDefinition cfDef = new ColumnFamilyDefinition();
     cfDef.putToColumnDefinitions("id_l", new ColumnDefinition("long", false, null));
     cfDef.putToColumnDefinitions("id_d", new ColumnDefinition("double", false, null));
@@ -41,7 +42,7 @@ public class SuperParserTest {
     cfDef.putToColumnDefinitions("id_i", new ColumnDefinition("integer", false, null));
     ad.putToColumnFamilyDefinitions("a", cfDef);
     analyzer = new BlurAnalyzer(ad);
-    parser = new SuperParser(LUCENE_VERSION, new BlurAnalyzer(new WhitespaceAnalyzer(LUCENE_VERSION)), true, null,  ScoreType.SUPER, new Term("_primedoc_"));
+    parser = new SuperParser(LUCENE_VERSION, analyzer, true, null, ScoreType.SUPER, new Term("_primedoc_"));
   }
 
   @Test
@@ -56,8 +57,8 @@ public class SuperParserTest {
 
     BooleanQuery bq = new BooleanQuery();
     bq.add(superQuery, Occur.MUST);
-    
-    assertEquals(bq, query);
+
+    assertQuery(bq, query);
 
   }
 
@@ -73,7 +74,7 @@ public class SuperParserTest {
     BooleanQuery bq = new BooleanQuery();
     bq.add(superQuery, Occur.SHOULD);
 
-    assertEquals(bq, query);
+    assertQuery(bq, query);
   }
 
   @Test
@@ -102,12 +103,13 @@ public class SuperParserTest {
     booleanQuery.add(superQuery1, Occur.SHOULD);
     booleanQuery.add(superQuery2, Occur.MUST_NOT);
 
-    assertEquals(booleanQuery, query);
+    assertQuery(booleanQuery, query);
   }
 
   @Test
   public void testParser5() throws ParseException {
-
+    parser = new SuperParser(LUCENE_VERSION, new BlurAnalyzer(new WhitespaceAnalyzer(LUCENE_VERSION)), true, null,
+        ScoreType.SUPER, new Term("_primedoc_"));
     Query query = parser.parse("super:<a:a d:{e TO f} b:b test:hello\\<> - super:<c:c d:d>");
 
     BooleanQuery booleanQuery1 = new BooleanQuery();
@@ -128,12 +130,12 @@ public class SuperParserTest {
     booleanQuery.add(superQuery1, Occur.SHOULD);
     booleanQuery.add(superQuery2, Occur.MUST_NOT);
 
-    assertEquals(booleanQuery, query);
+    assertQuery(booleanQuery, query);
   }
 
   @Test
   public void testParser6() throws ParseException {
-    SuperParser parser = new SuperParser(LUCENE_VERSION, analyzer, true, null,  ScoreType.SUPER, new Term("_primedoc_"));
+    SuperParser parser = new SuperParser(LUCENE_VERSION, analyzer, true, null, ScoreType.SUPER, new Term("_primedoc_"));
     try {
       parser.parse("super : <a:a d:{e TO d} b:b super:<test:hello\\<>> super:<c:c d:d>");
       fail();
@@ -141,7 +143,7 @@ public class SuperParserTest {
       // should throw an error
     }
   }
-  
+
   @Test
   public void test7() throws ParseException {
     Query q = parseSq("(a.b:cool) (+a.c:cool a.b:cool)");
@@ -196,24 +198,83 @@ public class SuperParserTest {
     Query q1 = rq_i("a.id_l", 0L, 2L);
     assertQuery(sq(q1), q);
   }
-  
+
   @Test
   public void test16() throws ParseException {
     Query q = parseSq("a.id_d:[0 TO 2]");
     assertQuery(sq(rq_i("a.id_d", 0.0D, 2.0D)), q);
   }
-  
+
   @Test
   public void test17() throws ParseException {
     Query q = parseSq("a.id_f:[0 TO 2]");
     assertQuery(sq(rq_i("a.id_f", 0.0F, 2.0F)), q);
   }
-  
+
   @Test
   public void test18() throws ParseException {
     Query q = parseSq("a.id_i:[0 TO 2]");
     Query q1 = rq_i("a.id_i", 0, 2);
     assertQuery(sq(q1), q);
+  }
+
+  @Test
+  public void test19() throws ParseException {
+    Query q = parseSq("word1");
+    Query q1 = sq(tq("super", "word1"));
+    assertQuery(q1, q);
+  }
+
+  @Test
+  public void test20() throws ParseException {
+    Query q = parseSq("word1 word2");
+    Query q1 = bq(bc(sq(tq("super", "word1"))), bc(sq(tq("super", "word2"))));
+    assertQuery(q1, q);
+  }
+
+  @Test
+  public void test21() throws ParseException {
+    Query q = parseSq("super:<f1:word1> word2");
+    Query q1 = bq(bc(sq(tq("f1", "word1"))), bc(sq(tq("super", "word2"))));
+    assertQuery(q1, q);
+  }
+
+  @Test
+  public void test22() throws ParseException {
+    Query q = parseSq("super:<f1:word1> word2 super:<word3>");
+    Query q1 = bq(bc(sq(tq("f1", "word1"))), bc(sq(tq("super", "word2"))), bc(sq(tq("super", "word3"))));
+    assertQuery(q1, q);
+  }
+
+  @Test
+  public void test23() throws ParseException {
+    Query q = parseSq("super:<f1:word1>  super:<word3> word2");
+    Query q1 = bq(bc(sq(tq("f1", "word1"))), bc(sq(tq("super", "word3"))), bc(sq(tq("super", "word2"))));
+    assertQuery(q1, q);
+  }
+
+  @Test
+  public void test24() throws ParseException {
+    Query q = parseSq("super:<f1:word1> +word6 super:<word3> word2");
+    Query q1 = bq(bc(sq(tq("f1", "word1"))), bc_m(sq(tq("super", "word6"))), bc(sq(tq("super", "word3"))),
+        bc(sq(tq("super", "word2"))));
+    assertQuery(q1, q);
+  }
+
+  @Test
+  public void test25() throws ParseException {
+    Query q = parseSq("+leading super:<f1:word1> +word6 super:<word3> word2");
+    Query q1 = bq(bc_m(sq(tq("super", "leading"))), bc(sq(tq("f1", "word1"))), bc_m(sq(tq("super", "word6"))),
+        bc(sq(tq("super", "word3"))), bc(sq(tq("super", "word2"))));
+    assertQuery(q1, q);
+  }
+
+  @Test
+  public void test26() throws ParseException {
+    Query q = parseSq("-leading super:<f1:word1> +word6 super:<word3> word2");
+    Query q1 = bq(bc_n(sq(tq("super", "leading"))), bc(sq(tq("f1", "word1"))), bc_m(sq(tq("super", "word6"))),
+        bc(sq(tq("super", "word3"))), bc(sq(tq("super", "word2"))));
+    assertQuery(q1, q);
   }
 
   public static BooleanClause bc_m(Query q) {
@@ -244,8 +305,7 @@ public class SuperParserTest {
       assertEqualsTermQuery((TermQuery) expected, (TermQuery) actual);
     } else if (expected instanceof NumericRangeQuery<?>) {
       assertEqualsNumericRangeQuery((NumericRangeQuery<?>) expected, (NumericRangeQuery<?>) actual);
-    }
-    else {
+    } else {
       fail("Type [" + expected.getClass() + "] not supported");
     }
   }
@@ -259,7 +319,7 @@ public class SuperParserTest {
   public static void assertEqualsNumericRangeQuery(NumericRangeQuery<?> expected, NumericRangeQuery<?> actual) {
     assertEquals(expected, actual);
   }
-  
+
   public static void assertEqualsSuperQuery(SuperQuery expected, SuperQuery actual) {
     assertEquals(expected.getQuery(), actual.getQuery());
   }
@@ -290,15 +350,15 @@ public class SuperParserTest {
     assertEquals(booleanClause1.getOccur(), booleanClause2.getOccur());
     assertEqualsQuery(booleanClause1.getQuery(), booleanClause2.getQuery());
   }
-  
+
   private Query rq_i(String field, float min, float max) {
     return NumericRangeQuery.newFloatRange(field, min, max, true, true);
   }
-  
+
   private Query rq_i(String field, int min, int max) {
     return NumericRangeQuery.newIntRange(field, min, max, true, true);
   }
-  
+
   private Query rq_i(String field, double min, double max) {
     return NumericRangeQuery.newDoubleRange(field, min, max, true, true);
   }
@@ -324,8 +384,13 @@ public class SuperParserTest {
   }
 
   private Query parseSq(String qstr) throws ParseException {
-    SuperParser superParser = new SuperParser(LUCENE_VERSION, analyzer, true, null,  ScoreType.SUPER, new Term("_primedoc_"));
+    return parseSq(qstr, false);
+  }
+
+  private Query parseSq(String qstr, boolean autoGrouping) throws ParseException {
+    SuperParser superParser = new SuperParser(LUCENE_VERSION, analyzer, true, null, ScoreType.SUPER, new Term(
+        "_primedoc_"), autoGrouping);
     return superParser.parse(qstr);
   }
-  
+
 }

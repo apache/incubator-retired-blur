@@ -2566,7 +2566,7 @@ AlternateColumnDefinition.prototype.write = function(output) {
 };
 
 ColumnDefinition = function(args) {
-  this.analyzerClassName = 'org.apache.lucene.analysis.standard.StandardAnalyzer';
+  this.analyzerClassName = 'org.apache.blur.analysis.NoStopWordStandardAnalyzer';
   this.fullTextIndex = null;
   this.alternateColumnDefinitions = null;
   if (args) {
@@ -2782,7 +2782,7 @@ ColumnFamilyDefinition.prototype.write = function(output) {
 
 AnalyzerDefinition = function(args) {
   this.defaultDefinition = null;
-  this.fullTextAnalyzerClassName = 'org.apache.lucene.analysis.standard.StandardAnalyzer';
+  this.fullTextAnalyzerClassName = 'org.apache.blur.analysis.NoStopWordStandardAnalyzer';
   this.columnFamilyDefinitions = null;
   if (args) {
     if (args.defaultDefinition !== undefined) {

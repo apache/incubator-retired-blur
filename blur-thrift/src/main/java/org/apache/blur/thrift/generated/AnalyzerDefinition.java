@@ -168,7 +168,7 @@ public class AnalyzerDefinition implements org.apache.blur.thirdparty.thrift_0_9
   }
 
   public AnalyzerDefinition() {
-    this.fullTextAnalyzerClassName = "org.apache.lucene.analysis.standard.StandardAnalyzer";
+    this.fullTextAnalyzerClassName = "org.apache.blur.analysis.NoStopWordStandardAnalyzer";
 
   }
 
@@ -217,7 +217,7 @@ public class AnalyzerDefinition implements org.apache.blur.thirdparty.thrift_0_9
   @Override
   public void clear() {
     this.defaultDefinition = null;
-    this.fullTextAnalyzerClassName = "org.apache.lucene.analysis.standard.StandardAnalyzer";
+    this.fullTextAnalyzerClassName = "org.apache.blur.analysis.NoStopWordStandardAnalyzer";
 
     this.columnFamilyDefinitions = null;
   }

@@ -46,13 +46,13 @@ public class SuperParserTest {
   }
 
   @Test
-  public void testParser1() throws ParseException {
-    Query query = parser.parse(" +super:<a:a d:e b:b> ");
+  public void test1() throws ParseException {
+    Query query = parser.parse(" +super:<a.a:a a.d:e a.b:b> ");
 
     BooleanQuery booleanQuery = new BooleanQuery();
-    booleanQuery.add(new TermQuery(new Term("a", "a")), Occur.SHOULD);
-    booleanQuery.add(new TermQuery(new Term("d", "e")), Occur.SHOULD);
-    booleanQuery.add(new TermQuery(new Term("b", "b")), Occur.SHOULD);
+    booleanQuery.add(new TermQuery(new Term("a.a", "a")), Occur.SHOULD);
+    booleanQuery.add(new TermQuery(new Term("a.d", "e")), Occur.SHOULD);
+    booleanQuery.add(new TermQuery(new Term("a.b", "b")), Occur.SHOULD);
     SuperQuery superQuery = new SuperQuery(booleanQuery, ScoreType.SUPER, new Term("_primedoc_"));
 
     BooleanQuery bq = new BooleanQuery();
@@ -63,12 +63,12 @@ public class SuperParserTest {
   }
 
   @Test
-  public void testParser2() throws ParseException {
-    Query query = parser.parse("super:<c:c d:d>");
+  public void test2() throws ParseException {
+    Query query = parser.parse("super:<a.c:c a.d:d>");
 
     BooleanQuery booleanQuery = new BooleanQuery();
-    booleanQuery.add(new TermQuery(new Term("c", "c")), Occur.SHOULD);
-    booleanQuery.add(new TermQuery(new Term("d", "d")), Occur.SHOULD);
+    booleanQuery.add(new TermQuery(new Term("a.c", "c")), Occur.SHOULD);
+    booleanQuery.add(new TermQuery(new Term("a.d", "d")), Occur.SHOULD);
     SuperQuery superQuery = new SuperQuery(booleanQuery, ScoreType.SUPER, new Term("_primedoc_"));
 
     BooleanQuery bq = new BooleanQuery();
@@ -78,23 +78,23 @@ public class SuperParserTest {
   }
 
   @Test
-  public void testParser3() throws ParseException {
+  public void test3() throws ParseException {
     Query query = parser.parse("a:a d:e b:b");
     assertQuery(bq(bc(sq(tq("a", "a"))), bc(sq(tq("d", "e"))), bc(sq(tq("b", "b")))), query);
   }
 
   @Test
-  public void testParser4() throws ParseException {
-    Query query = parser.parse("super:<a:a d:e b:b>  - super:<c:c d:d>");
+  public void test4() throws ParseException {
+    Query query = parser.parse("super:<a.a:a a.d:e a.b:b>  - super:<b.c:c b.d:d>");
 
     BooleanQuery booleanQuery1 = new BooleanQuery();
-    booleanQuery1.add(new TermQuery(new Term("a", "a")), Occur.SHOULD);
-    booleanQuery1.add(new TermQuery(new Term("d", "e")), Occur.SHOULD);
-    booleanQuery1.add(new TermQuery(new Term("b", "b")), Occur.SHOULD);
+    booleanQuery1.add(new TermQuery(new Term("a.a", "a")), Occur.SHOULD);
+    booleanQuery1.add(new TermQuery(new Term("a.d", "e")), Occur.SHOULD);
+    booleanQuery1.add(new TermQuery(new Term("a.b", "b")), Occur.SHOULD);
 
     BooleanQuery booleanQuery2 = new BooleanQuery();
-    booleanQuery2.add(new TermQuery(new Term("c", "c")), Occur.SHOULD);
-    booleanQuery2.add(new TermQuery(new Term("d", "d")), Occur.SHOULD);
+    booleanQuery2.add(new TermQuery(new Term("b.c", "c")), Occur.SHOULD);
+    booleanQuery2.add(new TermQuery(new Term("b.d", "d")), Occur.SHOULD);
 
     SuperQuery superQuery1 = new SuperQuery(booleanQuery1, ScoreType.SUPER, new Term("_primedoc_"));
     SuperQuery superQuery2 = new SuperQuery(booleanQuery2, ScoreType.SUPER, new Term("_primedoc_"));
@@ -107,21 +107,21 @@ public class SuperParserTest {
   }
 
   @Test
-  public void testParser5() throws ParseException {
+  public void test5() throws ParseException {
     parser = new SuperParser(LUCENE_VERSION, new BlurAnalyzer(new WhitespaceAnalyzer(LUCENE_VERSION)), true, null,
         ScoreType.SUPER, new Term("_primedoc_"));
-    Query query = parser.parse("super:<a:a d:{e TO f} b:b test:hello\\<> - super:<c:c d:d>");
+    Query query = parser.parse("super:<a.a:a a.d:{e TO f} a.b:b a.test:hello\\<> - super:<g.c:c g.d:d>");
 
     BooleanQuery booleanQuery1 = new BooleanQuery();
-    booleanQuery1.add(new TermQuery(new Term("a", "a")), Occur.SHOULD);
-    booleanQuery1.add(new TermRangeQuery("d", new BytesRef("e"), new BytesRef("f"), false, false), Occur.SHOULD);
-    booleanQuery1.add(new TermQuery(new Term("b", "b")), Occur.SHOULD);
+    booleanQuery1.add(new TermQuery(new Term("a.a", "a")), Occur.SHOULD);
+    booleanQuery1.add(new TermRangeQuery("a.d", new BytesRef("e"), new BytesRef("f"), false, false), Occur.SHOULD);
+    booleanQuery1.add(new TermQuery(new Term("a.b", "b")), Occur.SHOULD);
     // std analyzer took the "<" out
-    booleanQuery1.add(new TermQuery(new Term("test", "hello<")), Occur.SHOULD);
+    booleanQuery1.add(new TermQuery(new Term("a.test", "hello<")), Occur.SHOULD);
 
     BooleanQuery booleanQuery2 = new BooleanQuery();
-    booleanQuery2.add(new TermQuery(new Term("c", "c")), Occur.SHOULD);
-    booleanQuery2.add(new TermQuery(new Term("d", "d")), Occur.SHOULD);
+    booleanQuery2.add(new TermQuery(new Term("g.c", "c")), Occur.SHOULD);
+    booleanQuery2.add(new TermQuery(new Term("g.d", "d")), Occur.SHOULD);
 
     SuperQuery superQuery1 = new SuperQuery(booleanQuery1, ScoreType.SUPER, new Term("_primedoc_"));
     SuperQuery superQuery2 = new SuperQuery(booleanQuery2, ScoreType.SUPER, new Term("_primedoc_"));
@@ -134,7 +134,7 @@ public class SuperParserTest {
   }
 
   @Test
-  public void testParser6() throws ParseException {
+  public void test6() throws ParseException {
     SuperParser parser = new SuperParser(LUCENE_VERSION, analyzer, true, null, ScoreType.SUPER, new Term("_primedoc_"));
     try {
       parser.parse("super : <a:a d:{e TO d} b:b super:<test:hello\\<>> super:<c:c d:d>");
@@ -384,12 +384,8 @@ public class SuperParserTest {
   }
 
   private Query parseSq(String qstr) throws ParseException {
-    return parseSq(qstr, false);
-  }
-
-  private Query parseSq(String qstr, boolean autoGrouping) throws ParseException {
     SuperParser superParser = new SuperParser(LUCENE_VERSION, analyzer, true, null, ScoreType.SUPER, new Term(
-        "_primedoc_"), autoGrouping);
+        "_primedoc_"));
     return superParser.parse(qstr);
   }
 

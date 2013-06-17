@@ -375,7 +375,8 @@ public class IndexManager {
             _filterCache, context);
         Query userQuery = QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, analyzer,
             postFilter, preFilter, getScoreType(simpleQuery.type), context);
-        Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer, context);
+        Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer, context, postFilter,
+            preFilter);
         call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
             _queriesInternalMeter, shardServerContext);
       } else {
@@ -387,7 +388,7 @@ public class IndexManager {
         } else {
           userQuery = query;
         }
-        Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer, context);
+        Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer, context, null, null);
         call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
             _queriesInternalMeter, shardServerContext);
       }
@@ -423,20 +424,20 @@ public class IndexManager {
   }
 
   private Query getFacetedQuery(BlurQuery blurQuery, Query userQuery, AtomicLongArray counts, BlurAnalyzer analyzer,
-      TableContext context) throws ParseException {
+      TableContext context, Filter postFilter, Filter preFilter) throws ParseException {
     if (blurQuery.facets == null) {
       return userQuery;
     }
-    return new FacetQuery(userQuery, getFacetQueries(blurQuery, analyzer, context), counts);
+    return new FacetQuery(userQuery, getFacetQueries(blurQuery, analyzer, context, postFilter, preFilter), counts);
   }
 
-  private Query[] getFacetQueries(BlurQuery blurQuery, BlurAnalyzer analyzer, TableContext context)
-      throws ParseException {
+  private Query[] getFacetQueries(BlurQuery blurQuery, BlurAnalyzer analyzer, TableContext context, Filter postFilter,
+      Filter preFilter) throws ParseException {
     int size = blurQuery.facets.size();
     Query[] queries = new Query[size];
     for (int i = 0; i < size; i++) {
       queries[i] = QueryParserUtil.parseQuery(blurQuery.facets.get(i).queryStr, blurQuery.simpleQuery.superQueryOn,
-          analyzer, null, null, ScoreType.CONSTANT, context);
+          analyzer, postFilter, preFilter, ScoreType.CONSTANT, context);
     }
     return queries;
   }

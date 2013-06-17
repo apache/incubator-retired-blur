@@ -89,6 +89,8 @@ public class BlurConstants {
   public static final String BLUR_CLUSTER;
 
   public static final long ZK_WAIT_TIME = TimeUnit.SECONDS.toMillis(5);
+  public static final String DELETE_MARKER_VALUE = "delete";
+  public static final String DELETE_MARKER = "_deletemarker_";
 
   static {
     try {

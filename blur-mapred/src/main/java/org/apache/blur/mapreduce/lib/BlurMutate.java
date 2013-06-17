@@ -20,12 +20,28 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.blur.thrift.generated.Record;
+import org.apache.blur.thrift.generated.Row;
 import org.apache.hadoop.io.Writable;
 
+/**
+ * {@link BlurMutate} carries the {@link Record}s bound for the {@link Row} for
+ * indexing. If this mutate represents a delete of the {@link Row} the recordId
+ * of the {@link BlurRecord} is ignored.
+ */
 public class BlurMutate implements Writable {
 
+  /**
+   * The {@link MUTATE_TYPE} controls the mutating of the {@link Row}. DELETE
+   * indicates that the {@link Row} is to be deleted. REPLACE indicates that the
+   * group of mutates are to replace the existing {@link Row}.
+   * 
+   * If both a DELETE and a REPLACE exist for a single {@link Row} in the
+   * {@link BlurOutputFormat} then the {@link Row} will be replaced not just
+   * deleted.
+   */
   public enum MUTATE_TYPE {
-    /*ADD(0), UPDATE(1),*/ DELETE(2), REPLACE(3);
+    /* ADD(0), UPDATE(1), */DELETE(2), REPLACE(3);
     private int _value;
 
     private MUTATE_TYPE(int value) {
@@ -38,11 +54,11 @@ public class BlurMutate implements Writable {
 
     public MUTATE_TYPE find(int value) {
       switch (value) {
-   // @TODO Updates through MR is going to be disabled
-//      case 0:
-//        return ADD;
-//      case 1:
-//        return UPDATE;
+      // @TODO Updates through MR is going to be disabled
+      // case 0:
+      // return ADD;
+      // case 1:
+      // return UPDATE;
       case 2:
         return DELETE;
       case 3:
@@ -63,6 +79,11 @@ public class BlurMutate implements Writable {
   public BlurMutate(MUTATE_TYPE type, BlurRecord record) {
     _mutateType = type;
     _record = record;
+  }
+
+  public BlurMutate(MUTATE_TYPE type, String rowId) {
+    _mutateType = type;
+    _record.setRowId(rowId);
   }
 
   public BlurMutate(MUTATE_TYPE type, String rowId, String recordId) {

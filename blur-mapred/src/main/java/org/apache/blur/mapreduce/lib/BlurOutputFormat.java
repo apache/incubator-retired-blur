@@ -29,6 +29,7 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.LuceneVersionConstant;
 import org.apache.blur.manager.writer.TransactionRecorder;
+import org.apache.blur.mapreduce.lib.BlurMutate.MUTATE_TYPE;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
@@ -123,8 +124,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
   }
 
   @Override
-  public void checkOutputSpecs(JobContext context) throws IOException,
-      InterruptedException {
+  public void checkOutputSpecs(JobContext context) throws IOException, InterruptedException {
     Configuration config = context.getConfiguration();
     TableDescriptor tableDescriptor = getTableDescriptor(config);
     if (tableDescriptor == null) {
@@ -133,17 +133,19 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     int shardCount = tableDescriptor.getShardCount();
     FileSystem fileSystem = getOutputPath(config).getFileSystem(config);
     Path tablePath = new Path(tableDescriptor.getTableUri());
-    if(fileSystem.exists(tablePath)) {
+    if (fileSystem.exists(tablePath)) {
       BlurUtil.validateShardCount(shardCount, fileSystem, tablePath);
-    }else{
-      throw new IOException("Table path [ "+ tablePath + " ] doesn't exist for table [ " + tableDescriptor.getName() + " ].");
+    } else {
+      throw new IOException("Table path [ " + tablePath + " ] doesn't exist for table [ " + tableDescriptor.getName()
+          + " ].");
     }
 
     int reducers = context.getNumReduceTasks();
     int reducerMultiplier = getReducerMultiplier(config);
     int validNumberOfReducers = reducerMultiplier * shardCount;
     if (reducers > 0 && reducers != validNumberOfReducers) {
-      throw new IllegalArgumentException("Invalid number of reducers [ " + reducers +" ]." + " Number of Reducers should be [ " + validNumberOfReducers + " ].");
+      throw new IllegalArgumentException("Invalid number of reducers [ " + reducers + " ]."
+          + " Number of Reducers should be [ " + validNumberOfReducers + " ].");
     }
   }
 
@@ -199,7 +201,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     Configuration configuration = job.getConfiguration();
     configuration.setInt(BLUR_OUTPUT_REDUCER_MULTIPLIER, multiple);
   }
-  
+
   public static int getReducerMultiplier(Configuration configuration) {
     return configuration.getInt(BLUR_OUTPUT_REDUCER_MULTIPLIER, 1);
   }
@@ -364,6 +366,9 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     private File _localTmpPath;
     private ProgressableDirectory _localTmpDir;
     private Counter _rowOverFlowCount;
+    private String _deletedRowId;
+
+    private Counter _rowDeleteCount;
 
     public BlurRecordWriter(Configuration configuration, BlurAnalyzer blurAnalyzer, int attemptId, String tmpDirName)
         throws IOException {
@@ -420,6 +425,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       _recordCount = getCounter.getCounter(BlurCounters.RECORD_COUNT);
       _recordDuplicateCount = getCounter.getCounter(BlurCounters.RECORD_DUPLICATE_COUNT);
       _rowCount = getCounter.getCounter(BlurCounters.ROW_COUNT);
+      _rowDeleteCount = getCounter.getCounter(BlurCounters.ROW_DELETE_COUNT);
       _rowOverFlowCount = getCounter.getCounter(BlurCounters.ROW_OVERFLOW_COUNT);
       _recordRateCounter = new RateCounter(getCounter.getCounter(BlurCounters.RECORD_RATE));
       _rowRateCounter = new RateCounter(getCounter.getCounter(BlurCounters.ROW_RATE));
@@ -430,6 +436,10 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       BlurRecord blurRecord = value.getRecord();
       Record record = getRecord(blurRecord);
       String recordId = record.getRecordId();
+      if (value.getMutateType() == MUTATE_TYPE.DELETE) {
+        _deletedRowId = blurRecord.getRowId();
+        return;
+      }
       Document document = TransactionRecorder.convert(blurRecord.getRowId(), record, _builder, _analyzer);
       if (_documents.size() == 0) {
         document.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
@@ -485,6 +495,8 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
 
     private void flush() throws CorruptIndexException, IOException {
       if (_usingLocalTmpindex) {
+        // since we have flushed to disk then we do not need to index the
+        // delete.
         flushToTmpIndex();
         _localTmpWriter.close(false);
         DirectoryReader reader = DirectoryReader.open(_localTmpDir);
@@ -495,14 +507,28 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
         _rowOverFlowCount.increment(1);
       } else {
         if (_documents.isEmpty()) {
-          return;
+          if (_deletedRowId != null) {
+            _writer.addDocument(getDeleteDoc());
+            _rowDeleteCount.increment(1);
+          } else {
+            LOG.info("This case should never happen, no records to index and no row deletes to emit.");
+          }
+        } else {
+          _writer.addDocuments(_documents.values());
+          _recordRateCounter.mark(_documents.size());
+          _documents.clear();
         }
-        _writer.addDocuments(_documents.values());
-        _recordRateCounter.mark(_documents.size());
-        _documents.clear();
       }
+      _deletedRowId = null;
       _rowRateCounter.mark();
       _rowCount.increment(1);
+    }
+
+    private Document getDeleteDoc() {
+      Document document = new Document();
+      document.add(new StringField(BlurConstants.ROW_ID, _deletedRowId, Store.NO));
+      document.add(new StringField(BlurConstants.DELETE_MARKER, BlurConstants.DELETE_MARKER_VALUE, Store.NO));
+      return document;
     }
 
     @Override

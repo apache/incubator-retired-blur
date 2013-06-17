@@ -125,6 +125,8 @@ public class IndexImporter extends TimerTask implements Closeable {
           if (isSuccess) {
             LOG.info("Add index [{0}] [{1}/{2}]", directory, shard, table);
             indexWriter.addIndexes(directory);
+            LOG.info("Removing delete markers [{0}] on [{1}/{2}]", directory, shard, table);
+            indexWriter.deleteDocuments(new Term(BlurConstants.DELETE_MARKER, BlurConstants.DELETE_MARKER_VALUE));
             LOG.info("Finishing import [{0}], commiting on [{1}/{2}]", directory, shard, table);
             indexWriter.commit();
             LOG.info("Cleaning up old directory [{0}] for [{1}/{2}]", dirPath, shard, table);

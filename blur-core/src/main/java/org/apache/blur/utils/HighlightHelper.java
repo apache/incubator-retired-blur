@@ -59,6 +59,7 @@ public class HighlightHelper {
   private static final Log LOG = LogFactory.getLog(HighlightHelper.class);
 
   private static final Collection<String> FIELDS_NOT_TO_HIGHLIGHT = new HashSet<String>() {
+    private static final long serialVersionUID = 1L;
     {
       add(BlurConstants.SUPER);
       add(BlurConstants.ROW_ID);
@@ -119,6 +120,8 @@ public class HighlightHelper {
    */
   public static Document highlight(int docId, Document document, Query query, BlurAnalyzer analyzer,
       IndexReader reader, String preTag, String postTag) throws IOException, InvalidTokenOffsetsException {
+    
+    Query fixedQuery = fixSuperQuery(query, null);
 
     SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter(preTag, postTag);
     Document result = new Document();
@@ -130,16 +133,21 @@ public class HighlightHelper {
       }
       String text = f.stringValue();
       Number numericValue = f.numericValue();
-
-      Query fixedQuery = fixSuperQuery(query, name);
+      
+      Query fieldFixedQuery;
+      if (analyzer.isFullTextField(text)) {
+        fieldFixedQuery = fixSuperQuery(query, name);  
+      } else {
+        fieldFixedQuery = fixedQuery;
+      }
 
       if (numericValue != null) {
-        if (shouldNumberBeHighlighted(name, numericValue, fixedQuery)) {
+        if (shouldNumberBeHighlighted(name, numericValue, fieldFixedQuery)) {
           String numberHighlight = preTag + text + postTag;
           result.add(new StringField(name, numberHighlight, Store.YES));
         }
       } else {
-        Highlighter highlighter = new Highlighter(htmlFormatter, new QueryScorer(fixedQuery, name));
+        Highlighter highlighter = new Highlighter(htmlFormatter, new QueryScorer(fieldFixedQuery, name));
         TokenStream tokenStream = TokenSources.getAnyTokenStream(reader, docId, name, analyzer);
         TextFragment[] frag = highlighter.getBestTextFragments(tokenStream, text, false, 10);
         for (int j = 0; j < frag.length; j++) {
@@ -169,6 +177,9 @@ public class HighlightHelper {
   }
 
   private static Query setFieldIfNeeded(Query query, String name) {
+    if (name == null) {
+      return query;
+    }
     if (query instanceof TermQuery) {
       TermQuery tq = (TermQuery) query;
       Term term = tq.getTerm();

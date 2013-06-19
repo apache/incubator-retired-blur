@@ -344,7 +344,6 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     private final Map<String, Document> _documents = new TreeMap<String, Document>();
     private final IndexWriter _writer;
     private final BlurAnalyzer _analyzer;
-    private final StringBuilder _builder = new StringBuilder();
     private final Directory _finalDir;
     private final Directory _localDir;
     private final File _localPath;
@@ -440,7 +439,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
         _deletedRowId = blurRecord.getRowId();
         return;
       }
-      Document document = TransactionRecorder.convert(blurRecord.getRowId(), record, _builder, _analyzer);
+      Document document = TransactionRecorder.convert(blurRecord.getRowId(), record, _analyzer);
       if (_documents.size() == 0) {
         document.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
       }

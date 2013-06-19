@@ -136,7 +136,7 @@ public class TransactionRecorderTest {
     column.setName("columnName_123-1");
     record.setColumns(Arrays.asList(column));
     
-    TransactionRecorder.convert(rowId, record, new StringBuilder(), new BlurAnalyzer());
+    TransactionRecorder.convert(rowId, record, new BlurAnalyzer());
     assert(true);
   }
   
@@ -151,7 +151,7 @@ public class TransactionRecorderTest {
     column.setName("columnName_123-1");
     record.setColumns(Arrays.asList(column));
     
-    TransactionRecorder.convert(rowId, record, new StringBuilder(), new BlurAnalyzer());
+    TransactionRecorder.convert(rowId, record, new BlurAnalyzer());
     fail();
   }
   
@@ -166,7 +166,7 @@ public class TransactionRecorderTest {
     column.setName("columnName_123.1");
     record.setColumns(Arrays.asList(column));
     
-    TransactionRecorder.convert(rowId, record, new StringBuilder(), new BlurAnalyzer());
+    TransactionRecorder.convert(rowId, record, new BlurAnalyzer());
     fail();
   }
 

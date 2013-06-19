@@ -124,7 +124,6 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
   protected Counter _fieldCounter;
   protected Counter _rowBreak;
   protected Counter _rowFailures;
-  protected StringBuilder _builder = new StringBuilder();
   protected byte[] _copyBuf;
   protected Configuration _configuration;
   protected long _start;
@@ -184,7 +183,7 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
         _recordIdsToDelete.add(record.getRecordId());
         continue;
       }
-      Document document = toDocument(record, _builder);
+      Document document = toDocument(record);
       _newDocs.put(record.getRecordId(), document);
 
       context.progress();
@@ -469,13 +468,13 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
     _analyzer = new BlurAnalyzer(_blurTask.getTableDescriptor().getAnalyzerDefinition());
   }
 
-  protected Document toDocument(BlurRecord record, StringBuilder builder) {
+  protected Document toDocument(BlurRecord record) {
     Document document = new Document();
     document.add(new Field(BlurConstants.ROW_ID, record.getRowId(), TransactionRecorder.ID_TYPE));
     document.add(new Field(BlurConstants.RECORD_ID, record.getRecordId(), TransactionRecorder.ID_TYPE));
 
     String columnFamily = record.getFamily();
-    TransactionRecorder.addColumns(document, _analyzer, builder, columnFamily, new IterableConverter<BlurColumn, Column>(
+    TransactionRecorder.addColumns(document, _analyzer, columnFamily, new IterableConverter<BlurColumn, Column>(
         record.getColumns(), new Converter<BlurColumn, Column>() {
           @Override
           public Column convert(BlurColumn from) throws Exception {

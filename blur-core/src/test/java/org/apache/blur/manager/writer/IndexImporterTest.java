@@ -113,7 +113,7 @@ public class IndexImporterTest {
   @Test
   public void testIndexImporterWithCorrectRowIdShardCombination() throws IOException {
     
-    Document document = TransactionRecorder.convert("1", genRecord("1"), new StringBuilder(), new BlurAnalyzer());
+    Document document = TransactionRecorder.convert("1", genRecord("1"), new BlurAnalyzer());
     commitWriter.addDocument(document);
     commitWriter.commit();
     commitWriter.close();
@@ -138,7 +138,7 @@ public class IndexImporterTest {
   @Test
   public void testIndexImporterWithWrongRowIdShardCombination() throws IOException {
     setupWriter(configuration);
-    Document document = TransactionRecorder.convert("2", genRecord("1"), new StringBuilder(), new BlurAnalyzer());
+    Document document = TransactionRecorder.convert("2", genRecord("1"), new BlurAnalyzer());
     commitWriter.addDocument(document);
     commitWriter.commit();
     commitWriter.close();

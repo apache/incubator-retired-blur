@@ -17,6 +17,7 @@ package org.apache.blur.manager.writer;
  * limitations under the License.
  */
 import static org.apache.blur.utils.BlurConstants.SEP;
+import static org.apache.blur.utils.BlurConstants.SUPER;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -56,6 +57,7 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.Term;
@@ -356,10 +358,9 @@ public class TransactionRecorder extends TimerTask implements Closeable {
     List<Record> records = row.records;
     int size = records.size();
     final String rowId = row.id;
-    final StringBuilder builder = new StringBuilder();
     List<Document> docs = new ArrayList<Document>(size);
     for (int i = 0; i < size; i++) {
-      Document document = convert(rowId, records.get(i), builder, analyzer);
+      Document document = convert(rowId, records.get(i), analyzer);
       if (i == 0) {
         document.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
       }
@@ -368,13 +369,13 @@ public class TransactionRecorder extends TimerTask implements Closeable {
     return docs;
   }
 
-  public static Document convert(String rowId, Record record, StringBuilder builder, BlurAnalyzer analyzer) {
+  public static Document convert(String rowId, Record record, BlurAnalyzer analyzer) {
     BlurUtil.validateRowIdAndRecord(rowId, record);
     Document document = new Document();
     document.add(new Field(BlurConstants.ROW_ID, rowId, ID_TYPE));
     document.add(new Field(BlurConstants.RECORD_ID, record.recordId, ID_TYPE));
     document.add(new Field(BlurConstants.FAMILY, record.family, ID_TYPE));
-    addColumns(document, analyzer, builder, record.family, record.columns);
+    addColumns(document, analyzer, record.family, record.columns);
     return document;
   }
 
@@ -403,13 +404,11 @@ public class TransactionRecorder extends TimerTask implements Closeable {
       }
     }
   }
-  
-  public static boolean addColumns(Document document, BlurAnalyzer analyzer, StringBuilder builder,
-      String columnFamily, Iterable<Column> set) {
+
+  public static boolean addColumns(Document document, BlurAnalyzer analyzer, String columnFamily, Iterable<Column> set) {
     if (set == null) {
       return false;
     }
-    builder.setLength(0);
     OUTER: for (Column column : set) {
       String name = column.getName();
       String value = column.value;
@@ -420,11 +419,10 @@ public class TransactionRecorder extends TimerTask implements Closeable {
       FieldType fieldType = analyzer.getFieldType(fieldName);
       Field field = analyzer.getField(fieldName, value, fieldType);
       document.add(field);
-      
-      // @TODO remove full text stuff
-//      if (analyzer.isFullTextField(fieldName)) {
-//        builder.append(value).append(' ');
-//      }
+
+      if (analyzer.isFullTextField(fieldName)) {
+        document.add(new Field(SUPER, value, TextField.TYPE_NOT_STORED));
+      }
       Set<String> subFieldNames = analyzer.getSubIndexNames(fieldName);
       if (subFieldNames != null) {
         for (String subFieldName : subFieldNames) {
@@ -433,10 +431,6 @@ public class TransactionRecorder extends TimerTask implements Closeable {
         }
       }
     }
-//    if (builder.length() != 0) {
-//      String superValue = builder.toString();
-//      document.add(new Field(SUPER, superValue, Store.NO, Index.ANALYZED_NO_NORMS));
-//    }
     return true;
   }
 

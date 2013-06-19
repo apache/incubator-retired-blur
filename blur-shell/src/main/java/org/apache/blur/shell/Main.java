@@ -99,7 +99,7 @@ public class Main {
     }
 
   }
-  
+
   private static class HighlightCommand extends Command {
 
     @Override
@@ -130,8 +130,8 @@ public class Main {
 
       int bufferLength = getMaxCommandLength(cmds.keySet()) + 2;
       out.println(" - Table commands - ");
-      String[] tableCommands = { "create", "enable", "disable", "remove", "describe", "list", "schema", "stats",
-          "layout" };
+      String[] tableCommands = { "create", "enable", "disable", "remove", "truncate", "describe", "list", "schema",
+          "stats", "layout" };
       printCommandAndHelp(out, cmds, tableCommands, bufferLength);
 
       out.println();
@@ -234,13 +234,14 @@ public class Main {
     builder.put("layout", new ShardServerLayoutCommand());
     builder.put("controllers", new ControllersEchoCommand());
     builder.put("shards", new ShardsEchoCommand());
+    builder.put("truncate", new TruncateTableCommand());
     commands = builder.build();
 
     try {
       ConsoleReader reader = new ConsoleReader();
-      
+
       setConsoleReader(commands, reader);
-      
+
       reader.setPrompt("blur> ");
 
       String controllerConnectionString = null;

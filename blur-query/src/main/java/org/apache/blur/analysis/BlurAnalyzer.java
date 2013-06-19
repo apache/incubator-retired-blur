@@ -126,7 +126,7 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
   }
 
   public BlurAnalyzer() {
-    this(new NoStopWordStandardAnalyzer());
+    this(new AnalyzerDefinition());
   }
 
   private Analyzer getAnalyzer(String name) {

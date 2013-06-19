@@ -135,7 +135,7 @@ public class HighlightHelper {
       Number numericValue = f.numericValue();
       
       Query fieldFixedQuery;
-      if (analyzer.isFullTextField(text)) {
+      if (analyzer.isFullTextField(name)) {
         fieldFixedQuery = fixSuperQuery(query, name);  
       } else {
         fieldFixedQuery = fixedQuery;

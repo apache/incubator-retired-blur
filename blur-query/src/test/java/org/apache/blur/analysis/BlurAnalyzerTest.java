@@ -98,6 +98,13 @@ public class BlurAnalyzerTest {
     assertTrue(analyzer.isFullTextField("a.b"));
     assertFalse(analyzer.isFullTextField("d.a"));
   }
+  
+  @Test
+  public void testFullTextFieldsDefault() throws IOException {
+    BlurAnalyzer analyzer = new BlurAnalyzer();
+    assertTrue(analyzer.isFullTextField("a.b"));
+    assertTrue(analyzer.isFullTextField("d.a"));
+  }
 
   private AnalyzerDefinition getDef1() {
 

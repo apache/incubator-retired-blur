@@ -295,4 +295,8 @@ public class ExitableReader extends FilterDirectoryReader {
     return in;
   }
 
+  @Override
+  public String toString() {
+    return super.toString();
+  }
 }

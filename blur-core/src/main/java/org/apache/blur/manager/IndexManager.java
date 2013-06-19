@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicLongArray;
 import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.index.ExitableReader;
+import org.apache.blur.index.ExitableReader.ExitingReaderException;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FacetQuery;
@@ -1066,7 +1067,13 @@ public class IndexManager {
           _shardServerContext.setIndexSearcherClosable(_table, shard, searcher);
         }
         searcher.setSimilarity(_indexServer.getSimilarity(_table));
-        Query rewrite = searcher.rewrite((Query) _query.clone());
+        Query rewrite;
+        try {
+          rewrite = searcher.rewrite((Query) _query.clone());
+        } catch (ExitingReaderException e) {
+          LOG.info("Query [{0}] has been cancelled during the rewrite phase.", _query);
+          throw e;
+        }
 
         // BlurResultIterableSearcher will close searcher, if shard server
         // context is null.

@@ -40,12 +40,12 @@ import org.apache.lucene.util.automaton.CompiledAutomaton;
  * The {@link DirectoryReader} wraps a real index {@link DirectoryReader} and
  * allows for a {@link AtomicBoolean} to be checked periodically to see if the
  * thread should exit or not. The exit mechanism is by throw a
- * {@link ExitingReader} exception.
+ * {@link ExitingReaderException} exception.
  */
 public class ExitableReader extends FilterDirectoryReader {
 
   @SuppressWarnings("serial")
-  public static class ExitingReader extends RuntimeException {
+  public static class ExitingReaderException extends RuntimeException {
 
   }
 
@@ -211,7 +211,7 @@ public class ExitableReader extends FilterDirectoryReader {
 
     private void checkAndThrow() {
       if (!_running.get()) {
-        throw new ExitingReader();
+        throw new ExitingReaderException();
       }
     }
 

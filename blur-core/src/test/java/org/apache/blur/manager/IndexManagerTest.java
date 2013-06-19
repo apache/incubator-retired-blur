@@ -278,7 +278,41 @@ public class IndexManagerTest {
     Selector selector = new Selector().setRowId("row-6");
     HighlightOptions highlightOptions = new HighlightOptions();
     SimpleQuery simpleQuery = new SimpleQuery();
-    simpleQuery.setQueryStr(FAMILY + ".testcol12:value101");
+    simpleQuery.setQueryStr(FAMILY2 + ".testcol13:value105 " + FAMILY + ".testcol12:value101");
+    highlightOptions.setSimpleQuery(simpleQuery);
+    selector.setHighlightOptions(highlightOptions);
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+
+    assertNotNull(fetchResult.rowResult.row);
+    Row row = newRow("row-6", newRecord(FAMILY, "record-6B", newColumn("testcol12", "<<<value101>>>")));
+    row.recordCount = 3;
+    assertEquals(row, fetchResult.rowResult.row);
+  }
+  
+  @Test
+  public void testFetchRowByRowIdHighlightingWithFullText() throws Exception {
+    Selector selector = new Selector().setRowId("row-6");
+    HighlightOptions highlightOptions = new HighlightOptions();
+    SimpleQuery simpleQuery = new SimpleQuery();
+    simpleQuery.setQueryStr("cool value101");
+    highlightOptions.setSimpleQuery(simpleQuery);
+    selector.setHighlightOptions(highlightOptions);
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+
+    assertNotNull(fetchResult.rowResult.row);
+    Row row = newRow("row-6", newRecord(FAMILY, "record-6B", newColumn("testcol12", "<<<value101>>>")));
+    row.recordCount = 3;
+    assertEquals(row, fetchResult.rowResult.row);
+  }
+  
+  @Test
+  public void testFetchRowByRowIdHighlightingWithFullTextWildCard() throws Exception {
+    Selector selector = new Selector().setRowId("row-6");
+    HighlightOptions highlightOptions = new HighlightOptions();
+    SimpleQuery simpleQuery = new SimpleQuery();
+    simpleQuery.setQueryStr("cool ?alue101");
     highlightOptions.setSimpleQuery(simpleQuery);
     selector.setHighlightOptions(highlightOptions);
     FetchResult fetchResult = new FetchResult();

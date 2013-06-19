@@ -37,16 +37,22 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.NumericRangeQuery;
+import org.apache.lucene.search.PhraseQuery;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
 import org.apache.lucene.search.highlight.TextFragment;
 import org.apache.lucene.search.highlight.TokenSources;
+import org.apache.lucene.util.BytesRef;
 
 public class HighlightHelper {
 
@@ -114,8 +120,6 @@ public class HighlightHelper {
   public static Document highlight(int docId, Document document, Query query, BlurAnalyzer analyzer,
       IndexReader reader, String preTag, String postTag) throws IOException, InvalidTokenOffsetsException {
 
-    Query fixedQuery = fixSuperQuery(query);
-
     SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter(preTag, postTag);
     Document result = new Document();
     for (IndexableField f : document) {
@@ -126,6 +130,9 @@ public class HighlightHelper {
       }
       String text = f.stringValue();
       Number numericValue = f.numericValue();
+
+      Query fixedQuery = fixSuperQuery(query, name);
+
       if (numericValue != null) {
         if (shouldNumberBeHighlighted(name, numericValue, fixedQuery)) {
           String numberHighlight = preTag + text + postTag;
@@ -145,19 +152,91 @@ public class HighlightHelper {
     return result;
   }
 
-  private static Query fixSuperQuery(Query query) {
+  private static Query fixSuperQuery(Query query, String name) {
     if (query instanceof BooleanQuery) {
       BooleanQuery bq = (BooleanQuery) query;
+      BooleanQuery newBq = new BooleanQuery();
       for (BooleanClause booleanClause : bq) {
-        booleanClause.setQuery(fixSuperQuery(booleanClause.getQuery()));
+        newBq.add(fixSuperQuery(booleanClause.getQuery(), name), booleanClause.getOccur());
       }
-      return bq;
+      return newBq;
     } else if (query instanceof SuperQuery) {
       SuperQuery sq = (SuperQuery) query;
-      return sq.getQuery();
+      return setFieldIfNeeded(sq.getQuery(), name);
     } else {
-      return query;
+      return setFieldIfNeeded(query, name);
     }
+  }
+
+  private static Query setFieldIfNeeded(Query query, String name) {
+    if (query instanceof TermQuery) {
+      TermQuery tq = (TermQuery) query;
+      Term term = tq.getTerm();
+      if (term.field().equals(BlurConstants.SUPER)) {
+        return new TermQuery(new Term(name, term.bytes()));
+      }
+    } else if (query instanceof WildcardQuery) {
+      WildcardQuery wq = (WildcardQuery) query;
+      Term term = wq.getTerm();
+      if (term.field().equals(BlurConstants.SUPER)) {
+        return new WildcardQuery(new Term(name, term.bytes()));
+      }
+    } else if (query instanceof MultiPhraseQuery) {
+      MultiPhraseQuery mpq = (MultiPhraseQuery) query;
+      int[] positions = mpq.getPositions();
+      List<Term[]> termArrays = mpq.getTermArrays();
+      if (isTermField(termArrays, BlurConstants.SUPER)) {
+        MultiPhraseQuery multiPhraseQuery = new MultiPhraseQuery();
+        multiPhraseQuery.setSlop(mpq.getSlop());
+        for (int i = 0; i < termArrays.size(); i++) {
+          multiPhraseQuery.add(changeFields(termArrays.get(i), name), positions[i]);
+        }
+        return multiPhraseQuery;
+      }
+    } else if (query instanceof PhraseQuery) {
+      PhraseQuery pq = (PhraseQuery) query;
+      Term[] terms = pq.getTerms();
+      int[] positions = pq.getPositions();
+      String field = terms[0].field();
+      if (field.equals(BlurConstants.SUPER)) {
+        PhraseQuery phraseQuery = new PhraseQuery();
+        for (int i = 0; i < terms.length; i++) {
+          phraseQuery.add(new Term(name, terms[i].bytes()), positions[i]);
+        }
+        phraseQuery.setSlop(pq.getSlop());
+        return phraseQuery;
+      }
+    } else if (query instanceof PrefixQuery) {
+      PrefixQuery pq = (PrefixQuery) query;
+      Term term = pq.getPrefix();
+      if (term.field().equals(BlurConstants.SUPER)) {
+        return new PrefixQuery(new Term(name, term.bytes()));
+      }
+    } else if (query instanceof TermRangeQuery) {
+      TermRangeQuery trq = (TermRangeQuery) query;
+      BytesRef lowerTerm = trq.getLowerTerm();
+      BytesRef upperTerm = trq.getUpperTerm();
+      boolean includeUpper = trq.includesUpper();
+      boolean includeLower = trq.includesLower();
+      String field = trq.getField();
+      if (field.equals(BlurConstants.SUPER)) {
+        return new TermRangeQuery(name, lowerTerm, upperTerm, includeLower, includeUpper);
+      }
+    }
+    return query;
+  }
+
+  private static Term[] changeFields(Term[] terms, String name) {
+    Term[] newTerms = new Term[terms.length];
+    for (int i = 0; i < terms.length; i++) {
+      newTerms[i] = new Term(name, terms[i].bytes());
+    }
+    return newTerms;
+  }
+
+  private static boolean isTermField(List<Term[]> termArrays, String fieldName) {
+    Term[] terms = termArrays.get(0);
+    return terms[0].field().equals(fieldName);
   }
 
   public static boolean shouldNumberBeHighlighted(String name, Number numericValue, Query query) {

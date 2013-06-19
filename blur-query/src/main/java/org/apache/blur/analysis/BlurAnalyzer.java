@@ -58,6 +58,7 @@ import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.FloatField;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.FieldInfo.IndexOptions;
@@ -68,7 +69,7 @@ import org.apache.lucene.util.Version;
 public final class BlurAnalyzer extends AnalyzerWrapper {
 
   public enum TYPE {
-    LONG, DOUBLE, FLOAT, INTEGER, TEXT, STRING
+    LONG, DOUBLE, FLOAT, INTEGER, TEXT, STRING, STORED
   }
 
   @SuppressWarnings("serial")
@@ -132,6 +133,8 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
     TYPE type = _typeLookup.get(name);
     if (type == TYPE.STRING) {
       return _keywordAnalyzer;
+    } else if (type == TYPE.STORED) {
+      throw new RuntimeException("Stored fields should never call this method.");
     }
     return _analyzers.get(name);
   }
@@ -255,6 +258,8 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
       return new Field(fieldName, value, fieldType);
     }
     switch (type) {
+    case STORED:
+      return new StoredField(fieldName, value);
     case STRING:
       return new Field(fieldName, value, fieldType);
     case INTEGER:
@@ -471,6 +476,9 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
 
     FieldType fieldType;
     switch (t) {
+    case STORED:
+      fieldType = StoredField.TYPE;
+      break;
     case STRING:
       fieldType = new FieldType(StringField.TYPE_STORED);
       break;

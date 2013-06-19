@@ -1,4 +1,4 @@
-package org.apache.blur.index;
+package org.apache.lucene.index;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -19,13 +19,14 @@ package org.apache.blur.index;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
+import org.apache.blur.index.ExitableReader;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockObtainFailedException;
 
-public class IndexWriter extends org.apache.lucene.index.IndexWriter {
+public class BlurIndexWriter extends org.apache.lucene.index.IndexWriter {
 
   public static class LockOwnerException extends IOException {
     private static final long serialVersionUID = -8211546713487754992L;
@@ -35,16 +36,40 @@ public class IndexWriter extends org.apache.lucene.index.IndexWriter {
     }
   }
 
-  private Lock internalLock;
+  private final Lock internalLock;
+  private final boolean _makeReaderExitable;
 
-  public IndexWriter(Directory d, IndexWriterConfig conf) throws CorruptIndexException, LockObtainFailedException,
+  public BlurIndexWriter(Directory d, IndexWriterConfig conf) throws CorruptIndexException, LockObtainFailedException,
       IOException {
+    this(d, conf, false);
+  }
+
+  public BlurIndexWriter(Directory d, IndexWriterConfig conf, boolean makeReaderExitable) throws CorruptIndexException,
+      LockObtainFailedException, IOException {
     super(d, conf);
     try {
       internalLock = getInternalLock();
     } catch (Exception e) {
       throw new RuntimeException("Could not get the write lock instance.", e);
     }
+    _makeReaderExitable = makeReaderExitable;
+  }
+
+  @Override
+  DirectoryReader getReader() throws IOException {
+    return wrap(super.getReader());
+  }
+
+  @Override
+  DirectoryReader getReader(boolean applyAllDeletes) throws IOException {
+    return wrap(super.getReader(applyAllDeletes));
+  }
+
+  private DirectoryReader wrap(DirectoryReader reader) {
+    if (_makeReaderExitable) {
+      reader = new ExitableReader(reader);
+    }
+    return reader;
   }
 
   private Lock getInternalLock() throws SecurityException, NoSuchFieldException, IllegalArgumentException,

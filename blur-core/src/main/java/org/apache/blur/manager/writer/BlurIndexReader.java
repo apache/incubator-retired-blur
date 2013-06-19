@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.blur.index.IndexWriter;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.warmup.TraceableDirectory;
@@ -31,6 +30,7 @@ import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.Row;
+import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
@@ -64,7 +64,7 @@ public class BlurIndexReader extends BlurIndex {
       // if the directory is empty then create an empty index.
       IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _tableContext.getAnalyzer());
       conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
-      new IndexWriter(directory, conf).close();
+      new BlurIndexWriter(directory, conf).close();
     }
     _indexReaderRef.set(DirectoryReader.open(directory));
     _refresher.register(this);

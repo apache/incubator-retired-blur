@@ -27,8 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.apache.blur.index.IndexWriter;
-import org.apache.blur.index.IndexWriter.LockOwnerException;
+import org.apache.blur.index.ExitableReader;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceCounter;
@@ -41,6 +40,8 @@ import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
+import org.apache.lucene.index.BlurIndexWriter;
+import org.apache.lucene.index.BlurIndexWriter.LockOwnerException;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -59,7 +60,7 @@ public class BlurNRTIndex extends BlurIndex {
 
   private final AtomicReference<NRTManager> _nrtManagerRef = new AtomicReference<NRTManager>();
   private final AtomicBoolean _isClosed = new AtomicBoolean();
-  private final IndexWriter _writer;
+  private final BlurIndexWriter _writer;
   private final Thread _committer;
   private final SearcherFactory _searcherFactory;
   private final Directory _directory;
@@ -93,7 +94,7 @@ public class BlurNRTIndex extends BlurIndex {
     DirectoryReferenceCounter referenceCounter = new DirectoryReferenceCounter(directory, gc, closer);
     // This directory allows for warm up by adding tracing ability.
     TraceableDirectory dir = new TraceableDirectory(referenceCounter);
-    _writer = new IndexWriter(dir, conf);
+    _writer = new BlurIndexWriter(dir, conf, true);
     _recorder = new TransactionRecorder(shardContext);
     _recorder.replay(_writer);
 
@@ -155,7 +156,16 @@ public class BlurNRTIndex extends BlurIndex {
    */
   @Override
   public IndexSearcherClosable getIndexReader() throws IOException {
-    return (IndexSearcherClosable) getNRTManager().acquire();
+    return resetRunning((IndexSearcherClosable) getNRTManager().acquire());
+  }
+
+  private IndexSearcherClosable resetRunning(IndexSearcherClosable indexSearcherClosable) {
+    IndexReader indexReader = indexSearcherClosable.getIndexReader();
+    if (indexReader instanceof ExitableReader) {
+      ExitableReader er = (ExitableReader) indexReader;
+      er.getRunning().set(true);
+    }
+    return indexSearcherClosable;
   }
 
   private NRTManager getNRTManager() {

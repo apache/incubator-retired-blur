@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,13 +83,6 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
 
   private static final String STANDARD = "org.apache.blur.analysis.NoStopWordStandardAnalyzer";
   public static final BlurAnalyzer BLANK_ANALYZER = new BlurAnalyzer(new KeywordAnalyzer());
-
-  private static final Analyzer ERROR_ANALYZER = new Analyzer() {
-    @Override
-    protected TokenStreamComponents createComponents(String field, Reader reader) {
-      throw new RuntimeException("This analyzer should never be used.");
-    }
-  };
   private static Map<String, Class<? extends Analyzer>> aliases = new HashMap<String, Class<? extends Analyzer>>();
 
   private Set<String> _subIndexNames = new HashSet<String>();
@@ -123,10 +115,10 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
     _defaultAnalyzer = getAnalyzerByClassName(defaultDefinition.getAnalyzerClassName(), aliases, null, null,
         _fieldTypes);
     _analyzers = new HashMap<String, Analyzer>();
-    _analyzers.put(ROW_ID, ERROR_ANALYZER);
-    _analyzers.put(RECORD_ID, ERROR_ANALYZER);
-    _analyzers.put(PRIME_DOC, ERROR_ANALYZER);
-    _analyzers.put(FAMILY, ERROR_ANALYZER);
+    _analyzers.put(ROW_ID, new KeywordAnalyzer());
+    _analyzers.put(RECORD_ID, new KeywordAnalyzer());
+    _analyzers.put(PRIME_DOC, new KeywordAnalyzer());
+    _analyzers.put(FAMILY, new KeywordAnalyzer());
     _analyzers.put(SUPER, new WhitespaceAnalyzer(LUCENE_VERSION));
     load(_analyzers, _analyzerDefinition.columnFamilyDefinitions, _fullTextFields, _subIndexNameLookups,
         _subIndexNames, _fullTextColumnFamilies, _typeLookup, _fieldTypes);

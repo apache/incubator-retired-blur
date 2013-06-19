@@ -25,7 +25,6 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.blur.concurrent.Executors;
-import org.apache.blur.index.IndexWriter;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
 import org.apache.blur.server.IndexSearcherClosable;
@@ -36,6 +35,7 @@ import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.FSDirectory;
@@ -135,7 +135,7 @@ public class BlurIndexReaderTest {
 
   private void doWrite() throws CorruptIndexException, LockObtainFailedException, IOException {
     IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_43, new KeywordAnalyzer());
-    IndexWriter writer = new IndexWriter(directory, conf);
+    BlurIndexWriter writer = new BlurIndexWriter(directory, conf);
     writer.addDocument(getDoc());
     writer.close();
   }

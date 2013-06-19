@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.concurrent.Executors;
+import org.apache.blur.index.ExitableReader;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FacetQuery;
@@ -1054,9 +1055,13 @@ public class IndexManager {
       BlurIndex index = entry.getValue();
       IndexSearcherClosable searcher = index.getIndexReader();
       try {
-        // @TODO need to add escapable rewriter
-        // IndexReader escapeReader = EscapeRewrite.wrap(reader, _running);
-        // IndexSearcher searcher = new IndexSearcher(escapeReader);
+        IndexReader indexReader = searcher.getIndexReader();
+        if (indexReader instanceof ExitableReader) {
+          ExitableReader er = (ExitableReader) indexReader;
+          er.setRunning(_running);
+        } else {
+          throw new IOException("IndexReader is not ExitableReader");
+        }
         if (_shardServerContext != null) {
           _shardServerContext.setIndexSearcherClosable(_table, shard, searcher);
         }

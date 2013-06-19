@@ -31,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.MiniCluster;
 import org.apache.blur.analysis.BlurAnalyzer;
-import org.apache.blur.index.IndexWriter;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.server.ShardContext;
@@ -46,6 +45,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -113,7 +113,7 @@ public class TransactionRecorderTest {
 
     RAMDirectory directory = new RAMDirectory();
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, analyzer);
-    IndexWriter writer = new IndexWriter(directory, conf);
+    BlurIndexWriter writer = new BlurIndexWriter(directory, conf);
 
     TransactionRecorder replayTransactionRecorder = new TransactionRecorder(shardContext);
     closeThis.add(replayTransactionRecorder);

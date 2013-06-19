@@ -276,6 +276,13 @@ public class SuperParserTest {
         bc(sq(tq("super", "word3"))), bc(sq(tq("super", "word2"))));
     assertQuery(q1, q);
   }
+  
+  @Test
+  public void test27() throws ParseException {
+    Query q = parseSq("rowid:1");
+    Query q1 = sq(tq("rowid", "1"));
+    assertQuery(q1, q);
+  }
 
   public static BooleanClause bc_m(Query q) {
     return new BooleanClause(q, Occur.MUST);

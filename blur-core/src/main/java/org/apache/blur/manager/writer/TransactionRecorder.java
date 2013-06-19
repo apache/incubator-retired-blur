@@ -36,7 +36,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.blur.analysis.BlurAnalyzer;
-import org.apache.blur.index.IndexWriter;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.server.ShardContext;
@@ -57,6 +56,7 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.StringField;
+import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.NRTManager.TrackingIndexWriter;
@@ -137,7 +137,7 @@ public class TransactionRecorder extends TimerTask implements Closeable {
     _lastSync.set(System.nanoTime());
   }
 
-  public void replay(IndexWriter writer) throws IOException {
+  public void replay(BlurIndexWriter writer) throws IOException {
     if (_fileSystem.exists(_walPath)) {
       FSDataInputStream inputStream = _fileSystem.open(_walPath);
       replay(writer, inputStream);
@@ -148,7 +148,7 @@ public class TransactionRecorder extends TimerTask implements Closeable {
     }
   }
 
-  private void replay(IndexWriter writer, DataInputStream inputStream) throws CorruptIndexException, IOException {
+  private void replay(BlurIndexWriter writer, DataInputStream inputStream) throws CorruptIndexException, IOException {
     long updateCount = 0;
     long deleteCount = 0;
     byte[] buffer;
@@ -340,7 +340,7 @@ public class TransactionRecorder extends TimerTask implements Closeable {
     return writer.deleteDocuments(createRowId(rowId));
   }
 
-  public void commit(IndexWriter writer) throws CorruptIndexException, IOException {
+  public void commit(BlurIndexWriter writer) throws CorruptIndexException, IOException {
     synchronized (_running) {
       long s = System.nanoTime();
       writer.commit();

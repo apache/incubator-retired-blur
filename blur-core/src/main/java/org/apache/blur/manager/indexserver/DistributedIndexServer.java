@@ -51,7 +51,6 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
-import org.apache.blur.lucene.warmup.TraceableDirectory;
 import org.apache.blur.manager.BlurFilterCache;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
@@ -81,8 +80,10 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexReaderContext;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.util.RamUsageEstimator;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -94,7 +95,7 @@ import com.yammer.metrics.core.MetricName;
 public class DistributedIndexServer extends AbstractIndexServer {
 
   private static final Log LOG = LogFactory.getLog(DistributedIndexServer.class);
-  private static final long _delay = TimeUnit.SECONDS.toMillis(5);
+  private static final long _delay = TimeUnit.SECONDS.toMillis(10);
 
   private Map<String, BlurAnalyzer> _tableAnalyzers = new ConcurrentHashMap<String, BlurAnalyzer>();
   private Map<String, TableDescriptor> _tableDescriptors = new ConcurrentHashMap<String, TableDescriptor>();
@@ -144,7 +145,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     MetricName indexCount = new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_COUNT, _cluster);
     MetricName segmentCount = new MetricName(ORG_APACHE_BLUR, BLUR, SEGMENT_COUNT, _cluster);
     MetricName indexMemoryUsage = new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_MEMORY_USAGE, _cluster);
-    
+
     Metrics.newGauge(tableCount, new AtomicLongGauge(_tableCount));
     Metrics.newGauge(indexCount, new AtomicLongGauge(_indexCount));
     Metrics.newGauge(segmentCount, new AtomicLongGauge(_segmentCount));
@@ -165,11 +166,12 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _indexCloser = new BlurIndexCloser();
     _indexCloser.init();
     setupFlushCacheTimer();
-    
+
     registerMyselfAsMemberOfCluster();
     String onlineShardsPath = ZookeeperPathConstants.getOnlineShardsPath(_cluster);
     String safemodePath = ZookeeperPathConstants.getSafemodePath(_cluster);
-    SafeMode safeMode = new SafeMode(_zookeeper, safemodePath, onlineShardsPath, TimeUnit.MILLISECONDS, _safeModeDelay, TimeUnit.SECONDS, 60);
+    SafeMode safeMode = new SafeMode(_zookeeper, safemodePath, onlineShardsPath, TimeUnit.MILLISECONDS, _safeModeDelay,
+        TimeUnit.SECONDS, 60);
     safeMode.registerNode(getNodeName(), BlurUtil.getVersion().getBytes());
 
     _running.set(true);
@@ -250,18 +252,19 @@ public class DistributedIndexServer extends AbstractIndexServer {
       private void updateMetrics(Map<String, BlurIndex> indexes, AtomicLong segmentCount, AtomicLong indexMemoryUsage)
           throws IOException {
         // @TODO not sure how to do this yet
-        // for (BlurIndex index : indexes.values()) {
-        // IndexReader reader = index.getIndexReader();
-        // try {
-        // IndexReader[] readers = reader.getSequentialSubReaders();
-        // if (readers != null) {
-        // segmentCount.addAndGet(readers.length);
-        // }
-        // indexMemoryUsage.addAndGet(BlurUtil.getMemoryUsage(reader));
-        // } finally {
-        // reader.decRef();
-        // }
-        // }
+
+        indexMemoryUsage.addAndGet(RamUsageEstimator.sizeOf(indexes));
+        for (BlurIndex index : indexes.values()) {
+          IndexSearcherClosable indexSearcherClosable = index.getIndexReader();
+          try {
+            IndexReader indexReader = indexSearcherClosable.getIndexReader();
+            IndexReaderContext context = indexReader.getContext();
+            segmentCount.addAndGet(context.leaves().size());
+
+          } finally {
+            indexSearcherClosable.close();
+          }
+        }
       }
     }, _delay, _delay);
   }
@@ -369,7 +372,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   @Override
   public void close() {
     if (_running.get()) {
-      
+
       _shardStateManager.close();
       _running.set(false);
       closeAllIndexes();
@@ -464,7 +467,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     } else {
       dir = directory;
     }
-    
+
     BlurIndex index;
     if (_clusterStatus.isReadOnly(true, _cluster, table)) {
       BlurIndexReader reader = new BlurIndexReader(shardContext, dir, _refresher, _indexCloser);

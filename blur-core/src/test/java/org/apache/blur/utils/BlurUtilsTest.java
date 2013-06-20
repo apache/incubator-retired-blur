@@ -19,7 +19,6 @@ package org.apache.blur.utils;
 
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -89,13 +88,6 @@ public class BlurUtilsTest {
     long time = TimeUnit.HOURS.toMillis(0) + TimeUnit.MINUTES.toMillis(0) + TimeUnit.SECONDS.toMillis(0) + TimeUnit.MILLISECONDS.toMillis(124);
     String humanizeTime = BlurUtil.humanizeTime(time, TimeUnit.MILLISECONDS);
     assertEquals("0 seconds", humanizeTime);
-  }
-
-  @Test
-  public void testMemoryUsage() throws CorruptIndexException, LockObtainFailedException, IOException {
-    IndexReader reader = getReader();
-    long memoryUsage = BlurUtil.getMemoryUsage(reader);
-    assertTrue(memoryUsage > 0);
   }
 
   @Test

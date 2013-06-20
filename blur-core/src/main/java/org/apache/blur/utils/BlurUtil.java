@@ -89,7 +89,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.util.RamUsageEstimator;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.Code;
@@ -421,11 +420,6 @@ public class BlurUtil {
 
   private static long getHours(long seconds) {
     return seconds / TimeUnit.HOURS.toSeconds(1);
-  }
-
-  public static long getMemoryUsage(IndexReader r) {
-    long sizeOf = RamUsageEstimator.sizeOf(r);
-    return sizeOf;
   }
 
   public static void createPath(ZooKeeper zookeeper, String path, byte[] data) throws KeeperException,

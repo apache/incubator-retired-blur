@@ -32,7 +32,7 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 
 public class ZooKeeperLockManager {
-  
+
   private static final Log LOG = LogFactory.getLog(ZooKeeperLockManager.class);
 
   protected final Map<String, String> lockMap = new HashMap<String, String>();
@@ -51,6 +51,17 @@ public class ZooKeeperLockManager {
   public ZooKeeperLockManager(ZooKeeper zooKeeper, String lockPath) {
     this.zooKeeper = zooKeeper;
     this.lockPath = lockPath;
+  }
+
+  public int getNumberOfLockNodesPresent(String name) throws KeeperException, InterruptedException {
+    List<String> children = zooKeeper.getChildren(lockPath, false);
+    int count = 0;
+    for (String s : children) {
+      if (s.startsWith(name + "_")) {
+        count++;
+      }
+    }
+    return count;
   }
 
   public void unlock(String name) throws InterruptedException, KeeperException {

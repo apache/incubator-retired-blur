@@ -58,11 +58,12 @@ public class Main {
 
   private static Map<String, Command> commands;
   static String cluster;
-  
+
   static String getCluster(Iface client) throws BlurException, TException, CommandException {
-    return getCluster(client,"There is more than one shard cluster, use \"cluster\" command to set the cluster that should be in use.");
+    return getCluster(client,
+        "There is more than one shard cluster, use \"cluster\" command to set the cluster that should be in use.");
   }
-  
+
   static String getCluster(Iface client, String errorMessage) throws BlurException, TException, CommandException {
     if (cluster != null) {
       return cluster;
@@ -121,7 +122,7 @@ public class Main {
     }
 
   }
-  
+
   private static class ClusterCommand extends Command {
 
     @Override
@@ -222,7 +223,7 @@ public class Main {
 
       out.println();
       out.println(" - Cluster commands - ");
-      String[] clusterCommands = { "controllers", "shards", "clusterlist", "cluster" };
+      String[] clusterCommands = { "controllers", "shards", "clusterlist", "cluster", "safemodewait" };
       printCommandAndHelp(out, cmds, clusterCommands, bufferLength);
 
       out.println();
@@ -238,6 +239,10 @@ public class Main {
           out.println("  " + buffer(e.getKey(), bufferLength) + " - " + e.getValue().help());
         }
       }
+      
+      out.println();
+      out.println("  " + buffer("shell", bufferLength) + " - enters into the Blur interactive shell");
+      out.println("  " + buffer("execute", bufferLength) + " - executes a custom class passing all the command line args to the main method");
     }
 
     private int getMaxCommandLength(Set<String> keySet) {
@@ -292,6 +297,9 @@ public class Main {
   }
 
   public static void main(String[] args) throws Throwable {
+
+    args = removeLeadingShellFromScript(args);
+
     Builder<String, Command> builder = new ImmutableMap.Builder<String, Command>();
     builder.put("help", new HelpCommand());
     builder.put("debug", new DebugCommand());
@@ -317,6 +325,7 @@ public class Main {
     builder.put("shards", new ShardsEchoCommand());
     builder.put("truncate", new TruncateTableCommand());
     builder.put("cluster", new ClusterCommand());
+    builder.put("safemodewait", new WaitInSafemodeCommand());
     commands = builder.build();
 
     CliShellOptions cliShellOptions = getCliShellOptions(args);
@@ -350,9 +359,13 @@ public class Main {
               continue;
             }
             String[] commandArgs = line.split("\\s");
-            Command command = commands.get(commandArgs[0]);
+            String commandStr = commandArgs[0];
+            if (commandStr.equals("exit")) {
+              commandStr = "quit";
+            }
+            Command command = commands.get(commandStr);
             if (command == null) {
-              out.println("unknown command \"" + commandArgs[0] + "\"");
+              out.println("unknown command \"" + commandStr + "\"");
             } else {
               long start = System.nanoTime();
               try {
@@ -398,6 +411,17 @@ public class Main {
       t.printStackTrace();
       throw t;
     }
+  }
+
+  private static String[] removeLeadingShellFromScript(String[] args) {
+    if (args.length > 0) {
+      if (args[0].equals("shell")) {
+        String[] newArgs = new String[args.length - 1];
+        System.arraycopy(args, 1, newArgs, 0, newArgs.length);
+        return newArgs;
+      }
+    }
+    return args;
   }
 
   private static CliShellOptions getCliShellOptions(String[] args) throws IOException {
@@ -446,6 +470,13 @@ public class Main {
           return cliShellOptions;
         }
       } else {
+        String controllerConnectionString = loadControllerConnectionString();
+        if (controllerConnectionString == null) {
+          System.err
+              .println("Could not locate controller connection string in the blu-site.properties file and it was not passed in via command line args.");
+          return null;
+        }
+        cliShellOptions.setControllerConnectionString(controllerConnectionString);
         // command was found at arg0
         cliShellOptions.setShell(false);
         cliShellOptions.setArgs(args);

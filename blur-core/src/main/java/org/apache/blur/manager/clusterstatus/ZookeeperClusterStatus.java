@@ -49,6 +49,7 @@ import org.apache.blur.zookeeper.WatchChildren.OnChange;
 import org.apache.blur.zookeeper.WatchNodeData;
 import org.apache.blur.zookeeper.WatchNodeExistance;
 import org.apache.blur.zookeeper.ZkUtils;
+import org.apache.blur.zookeeper.ZooKeeperLockManager;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.lucene.search.similarities.Similarity;
@@ -104,7 +105,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
           _tableWatchers.put(cluster, clusterWatcher);
           String safemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
           ZkUtils.waitUntilExists(_zk, safemodePath);
-          WatchNodeExistance watchNodeExistance = new WatchNodeExistance(_zk, safemodePath).watch(new SafeExistance(cluster));
+          WatchNodeExistance watchNodeExistance = new WatchNodeExistance(_zk, safemodePath).watch(new SafeExistance(
+              cluster));
           _safeModeWatchers.put(cluster, watchNodeExistance);
         }
       }
@@ -170,7 +172,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       for (String table : newTables) {
         final String clusterTableKey = getClusterTableKey(cluster, table);
 
-        WatchNodeExistance readOnlyWatcher = new WatchNodeExistance(_zk, ZookeeperPathConstants.getTableReadOnlyPath(cluster, table));
+        WatchNodeExistance readOnlyWatcher = new WatchNodeExistance(_zk, ZookeeperPathConstants.getTableReadOnlyPath(
+            cluster, table));
         readOnlyWatcher.watch(new WatchNodeExistance.OnChange() {
           @Override
           public void action(Stat stat) {
@@ -185,7 +188,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
           readOnlyWatcher.close();
         }
 
-        WatchNodeExistance enabledWatcher = new WatchNodeExistance(_zk, ZookeeperPathConstants.getTableEnabledPath(cluster, table));
+        WatchNodeExistance enabledWatcher = new WatchNodeExistance(_zk, ZookeeperPathConstants.getTableEnabledPath(
+            cluster, table));
         enabledWatcher.watch(new WatchNodeExistance.OnChange() {
           @Override
           public void action(Stat stat) {
@@ -297,12 +301,13 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   private void watchForOnlineShardNodes(final String cluster) {
-    WatchChildren watch = new WatchChildren(_zk, ZookeeperPathConstants.getOnlineShardsPath(cluster)).watch(new OnChange() {
-      @Override
-      public void action(List<String> children) {
-        _onlineShardsNodes.put(cluster, children);
-      }
-    });
+    WatchChildren watch = new WatchChildren(_zk, ZookeeperPathConstants.getOnlineShardsPath(cluster))
+        .watch(new OnChange() {
+          @Override
+          public void action(List<String> children) {
+            _onlineShardsNodes.put(cluster, children);
+          }
+        });
     if (_onlineShardsNodesWatchers.putIfAbsent(cluster, watch) != null) {
       // There was already a watch created. Close the extra watcher.
       watch.close();
@@ -395,19 +400,23 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     try {
       checkIfOpen();
       NullPointerException npe = null;
-      LOOP:
-      for (int i = 0; i < 10; i++) {
+      LOOP: for (int i = 0; i < 10; i++) {
         npe = null;
         try {
-          tableDescriptor.shardCount = Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableShardCountPath(cluster, table))));
+          tableDescriptor.shardCount = Integer.parseInt(new String(getData(ZookeeperPathConstants
+              .getTableShardCountPath(cluster, table))));
           tableDescriptor.tableUri = new String(getData(ZookeeperPathConstants.getTableUriPath(cluster, table)));
-          tableDescriptor.compressionClass = new String(getData(ZookeeperPathConstants.getTableCompressionCodecPath(cluster, table)));
-          tableDescriptor.compressionBlockSize = Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableCompressionBlockSizePath(cluster, table))));
-          tableDescriptor.analyzerDefinition = fromBytes(getData(ZookeeperPathConstants.getTablePath(cluster, table)), AnalyzerDefinition.class);
+          tableDescriptor.compressionClass = new String(getData(ZookeeperPathConstants.getTableCompressionCodecPath(
+              cluster, table)));
+          tableDescriptor.compressionBlockSize = Integer.parseInt(new String(getData(ZookeeperPathConstants
+              .getTableCompressionBlockSizePath(cluster, table))));
+          tableDescriptor.analyzerDefinition = fromBytes(getData(ZookeeperPathConstants.getTablePath(cluster, table)),
+              AnalyzerDefinition.class);
           tableDescriptor.blockCaching = isBlockCacheEnabled(cluster, table);
           tableDescriptor.blockCachingFileTypes = getBlockCacheFileTypes(cluster, table);
           tableDescriptor.name = table;
-          tableDescriptor.columnPreCache = fromBytes(getData(ZookeeperPathConstants.getTableColumnsToPreCache(cluster, table)), ColumnPreCache.class);
+          tableDescriptor.columnPreCache = fromBytes(
+              getData(ZookeeperPathConstants.getTableColumnsToPreCache(cluster, table)), ColumnPreCache.class);
           byte[] data = getData(ZookeeperPathConstants.getTableSimilarityPath(cluster, table));
           if (data != null) {
             tableDescriptor.similarityClass = new String(data);
@@ -467,12 +476,12 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   private byte[] getData(String path) throws KeeperException, InterruptedException {
     Stat stat = _zk.exists(path, false);
     if (stat == null) {
-      LOG.debug("Tried to fetch path [{0}] and path is missing",path);
+      LOG.debug("Tried to fetch path [{0}] and path is missing", path);
       return null;
     }
     byte[] data = _zk.getData(path, false, stat);
     if (data == null) {
-      LOG.debug("Fetched path [{0}] and data is null",path);
+      LOG.debug("Fetched path [{0}] and data is null", path);
       return null;
     }
     return data;
@@ -561,30 +570,15 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public boolean isInSafeMode(boolean useCache, String cluster) {
-    if (useCache) {
-      Long safeModeTimestamp = _safeModeMap.get(cluster);
-      if (safeModeTimestamp != null && safeModeTimestamp != Long.MIN_VALUE) {
-        return safeModeTimestamp < System.currentTimeMillis() ? false : true;
-      }
-    }
     long s = System.nanoTime();
     try {
       checkIfOpen();
-      String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
-      Stat stat = _zk.exists(blurSafemodePath, false);
-      if (stat == null) {
+      String safemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
+      ZooKeeperLockManager zooKeeperLockManager = new ZooKeeperLockManager(_zk, safemodePath);
+      if (zooKeeperLockManager.getNumberOfLockNodesPresent(cluster) == 0) {
         return false;
       }
-      byte[] data = _zk.getData(blurSafemodePath, false, stat);
-      if (data == null) {
-        return false;
-      }
-      long timestamp = Long.parseLong(new String(data));
-      long waitTime = timestamp - System.currentTimeMillis();
-      if (waitTime > 0) {
-        return true;
-      }
-      return false;
+      return true;
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
@@ -704,10 +698,13 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       }
       String table = BlurUtil.nullCheck(tableDescriptor.name, "tableDescriptor.name cannot be null.");
       String cluster = BlurUtil.nullCheck(tableDescriptor.cluster, "tableDescriptor.cluster cannot be null.");
-      BlurAnalyzer analyzer = new BlurAnalyzer(BlurUtil.nullCheck(tableDescriptor.analyzerDefinition, "tableDescriptor.analyzerDefinition cannot be null."));
+      BlurAnalyzer analyzer = new BlurAnalyzer(BlurUtil.nullCheck(tableDescriptor.analyzerDefinition,
+          "tableDescriptor.analyzerDefinition cannot be null."));
       String uri = BlurUtil.nullCheck(tableDescriptor.tableUri, "tableDescriptor.tableUri cannot be null.");
-      int shardCount = BlurUtil.zeroCheck(tableDescriptor.shardCount, "tableDescriptor.shardCount cannot be less than 1");
-      CompressionCodec compressionCodec = BlurUtil.getInstance(tableDescriptor.compressionClass, CompressionCodec.class);
+      int shardCount = BlurUtil.zeroCheck(tableDescriptor.shardCount,
+          "tableDescriptor.shardCount cannot be less than 1");
+      CompressionCodec compressionCodec = BlurUtil
+          .getInstance(tableDescriptor.compressionClass, CompressionCodec.class);
       // @TODO check block size
       int compressionBlockSize = tableDescriptor.compressionBlockSize;
       Similarity similarity = BlurUtil.getInstance(tableDescriptor.similarityClass, Similarity.class);
@@ -721,12 +718,17 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       }
       BlurUtil.setupFileSystem(uri, shardCount);
       BlurUtil.createPath(_zk, blurTablePath, analyzer.toJSON().getBytes());
-      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableColumnsToPreCache(cluster, table), BlurUtil.read(columnPreCache));
+      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableColumnsToPreCache(cluster, table),
+          BlurUtil.read(columnPreCache));
       BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableUriPath(cluster, table), uri.getBytes());
-      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableShardCountPath(cluster, table), Integer.toString(shardCount).getBytes());
-      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableCompressionCodecPath(cluster, table), compressionCodec.getClass().getName().getBytes());
-      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableCompressionBlockSizePath(cluster, table), Integer.toString(compressionBlockSize).getBytes());
-      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableSimilarityPath(cluster, table), similarity.getClass().getName().getBytes());
+      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableShardCountPath(cluster, table),
+          Integer.toString(shardCount).getBytes());
+      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableCompressionCodecPath(cluster, table), compressionCodec
+          .getClass().getName().getBytes());
+      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableCompressionBlockSizePath(cluster, table), Integer
+          .toString(compressionBlockSize).getBytes());
+      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableSimilarityPath(cluster, table), similarity.getClass()
+          .getName().getBytes());
       BlurUtil.createPath(_zk, ZookeeperPathConstants.getLockPath(cluster, table), null);
       BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableFieldNamesPath(cluster, table), null);
       if (tableDescriptor.readOnly) {
@@ -735,7 +737,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       if (blockCaching) {
         BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableBlockCachingPath(cluster, table), null);
       }
-      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table), toBytes(blockCachingFileTypes));
+      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table),
+          toBytes(blockCachingFileTypes));
     } catch (IOException e) {
       throw new RuntimeException(e);
     } catch (KeeperException e) {

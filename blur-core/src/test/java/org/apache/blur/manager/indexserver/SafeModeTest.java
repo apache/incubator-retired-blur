@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.blur.MiniCluster;
+import org.apache.blur.zookeeper.ZooKeeperLockManager;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -59,7 +60,7 @@ public class SafeModeTest {
   }
 
   @Test
-  public void testBasicStartup() throws IOException, InterruptedException {
+  public void testBasicStartup() throws IOException, InterruptedException, KeeperException {
     List<AtomicReference<Throwable>> errors = new ArrayList<AtomicReference<Throwable>>();
     List<AtomicLong> timeRegisteredLst = new ArrayList<AtomicLong>();
     List<Thread> threads = new ArrayList<Thread>();
@@ -93,6 +94,9 @@ public class SafeModeTest {
       }
     }
     assertTrue("newest [" + newest + "] oldest [" + oldest + "]", (newest - oldest) < TimeUnit.SECONDS.toMillis(5));
+    ZooKeeperLockManager zooKeeperLockManager = new ZooKeeperLockManager(zk, "/testing/safemode");
+    Thread.sleep(5000);
+    assertEquals(0, zooKeeperLockManager.getNumberOfLockNodesPresent(SafeMode.STARTUP));
   }
 
   @Test

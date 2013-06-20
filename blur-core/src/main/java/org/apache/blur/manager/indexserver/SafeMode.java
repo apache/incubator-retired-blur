@@ -43,8 +43,8 @@ import org.apache.zookeeper.ZooKeeper;
 public class SafeMode extends ZooKeeperLockManager {
 
   private static final Log LOG = LogFactory.getLog(SafeMode.class);
-  private static final String STARTUP = "STARTUP";
-  private static final String SETUP = "SETUP";
+  public static final String STARTUP = "STARTUP";
+  public static final String SETUP = "SETUP";
 
   private final ZooKeeper zooKeeper;
   

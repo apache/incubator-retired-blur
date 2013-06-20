@@ -31,10 +31,12 @@ public class ShardsEchoCommand extends Command {
   @Override
   public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
       BlurException {
+    String cluster;
     if (args.length != 2) {
-      throw new CommandException("Invalid args: " + help());
+      cluster = Main.getCluster(client, "Invalid args: " + help());
+    } else {
+      cluster = args[1];
     }
-    String cluster = args[1];
     List<String> shardServerList = client.shardServerList(cluster);
     String nodeName = getNodeName();
     for (String shards : shardServerList) {

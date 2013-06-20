@@ -40,7 +40,9 @@ import org.apache.blur.shell.Command.CommandException;
 import org.apache.blur.shell.Main.QuitCommand.QuitCommandException;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.Connection;
 import org.apache.blur.thrift.generated.Blur;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 
 import com.google.common.collect.ImmutableMap;
@@ -55,9 +57,88 @@ public class Main {
   static boolean highlight = false;
 
   private static Map<String, Command> commands;
+  static String cluster;
+  
+  static String getCluster(Iface client) throws BlurException, TException, CommandException {
+    return getCluster(client,"There is more than one shard cluster, use \"cluster\" command to set the cluster that should be in use.");
+  }
+  
+  static String getCluster(Iface client, String errorMessage) throws BlurException, TException, CommandException {
+    if (cluster != null) {
+      return cluster;
+    } else {
+      List<String> shardClusterList = client.shardClusterList();
+      if (shardClusterList.size() == 1) {
+        cluster = shardClusterList.get(0);
+        return cluster;
+      }
+      throw new CommandException(errorMessage);
+    }
+  }
 
   public static void usage() {
-    System.out.println("Usage: java " + Main.class.getName() + " controller1:port,controller2:port,...");
+    System.out.println("Usage: java " + Main.class.getName()
+        + " [controller1:port,controller2:port,...] [command] [options]");
+  }
+
+  private static class CliShellOptions {
+
+    private String _controllerConnectionString;
+    private boolean _shell;
+    private String[] _args;
+    private String _command;
+
+    public boolean isShell() {
+      return _shell;
+    }
+
+    public String getControllerConnectionString() {
+      return _controllerConnectionString;
+    }
+
+    public String getCommand() {
+      return _command;
+    }
+
+    public String[] getArgs() {
+      return _args;
+    }
+
+    public void setControllerConnectionString(String controllerConnectionString) {
+      this._controllerConnectionString = controllerConnectionString;
+    }
+
+    public void setShell(boolean shell) {
+      this._shell = shell;
+    }
+
+    public void setArgs(String[] args) {
+      this._args = args;
+    }
+
+    public void setCommand(String command) {
+      this._command = command;
+    }
+
+  }
+  
+  private static class ClusterCommand extends Command {
+
+    @Override
+    public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+        BlurException {
+      if (args.length != 2) {
+        throw new CommandException("Invalid args: " + help());
+      }
+      cluster = args[1];
+      out.println("cluster is now " + cluster);
+    }
+
+    @Override
+    public String help() {
+      return "set the cluster in use, args; clustername";
+    }
+
   }
 
   private static class DebugCommand extends Command {
@@ -141,7 +222,7 @@ public class Main {
 
       out.println();
       out.println(" - Cluster commands - ");
-      String[] clusterCommands = { "controllers", "shards", "clusterlist" };
+      String[] clusterCommands = { "controllers", "shards", "clusterlist", "cluster" };
       printCommandAndHelp(out, cmds, clusterCommands, bufferLength);
 
       out.println();
@@ -235,83 +316,142 @@ public class Main {
     builder.put("controllers", new ControllersEchoCommand());
     builder.put("shards", new ShardsEchoCommand());
     builder.put("truncate", new TruncateTableCommand());
+    builder.put("cluster", new ClusterCommand());
     commands = builder.build();
 
+    CliShellOptions cliShellOptions = getCliShellOptions(args);
+    if (cliShellOptions == null) {
+      return;
+    }
+
     try {
-      ConsoleReader reader = new ConsoleReader();
+      Blur.Iface client = BlurClient.getClient(cliShellOptions.getControllerConnectionString());
+      if (cliShellOptions.isShell()) {
+        ConsoleReader reader = new ConsoleReader();
+        setConsoleReader(commands, reader);
+        reader.setPrompt("blur> ");
 
-      setConsoleReader(commands, reader);
+        List<Completer> completors = new LinkedList<Completer>();
 
-      reader.setPrompt("blur> ");
+        completors.add(new StringsCompleter(commands.keySet()));
+        completors.add(new FileNameCompleter());
 
-      String controllerConnectionString = null;
-
-      if ((args == null) || (args.length != 1)) {
-        controllerConnectionString = loadControllerConnectionString();
-        if (controllerConnectionString == null) {
-          usage();
-          return;
+        for (Completer c : completors) {
+          reader.addCompleter(c);
         }
-      } else {
-        controllerConnectionString = args[0];
 
-      }
-
-      List<Completer> completors = new LinkedList<Completer>();
-
-      completors.add(new StringsCompleter(commands.keySet()));
-      completors.add(new FileNameCompleter());
-
-      for (Completer c : completors) {
-        reader.addCompleter(c);
-      }
-
-      Blur.Iface client = BlurClient.getClient(controllerConnectionString);
-
-      String line;
-      PrintWriter out = new PrintWriter(reader.getOutput());
-      try {
-        while ((line = reader.readLine()) != null) {
-          line = line.trim();
-          // ignore empty lines and comments
-          if (line.length() == 0 || line.startsWith("#")) {
-            continue;
-          }
-          String[] commandArgs = line.split("\\s");
-          Command command = commands.get(commandArgs[0]);
-          if (command == null) {
-            out.println("unknown command \"" + commandArgs[0] + "\"");
-          } else {
-            long start = System.nanoTime();
-            try {
-              command.doit(out, client, commandArgs);
-            } catch (QuitCommandException e) {
-              // exit gracefully
-              System.exit(0);
-            } catch (CommandException e) {
-              out.println(e.getMessage());
-              if (debug) {
-                e.printStackTrace(out);
-              }
-            } catch (BlurException e) {
-              out.println(e.getMessage());
-              if (debug) {
-                e.printStackTrace(out);
-              }
-            } finally {
-              if (timed) {
-                out.println("Last command took " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) + "ms");
+        String line;
+        PrintWriter out = new PrintWriter(reader.getOutput());
+        try {
+          while ((line = reader.readLine()) != null) {
+            line = line.trim();
+            // ignore empty lines and comments
+            if (line.length() == 0 || line.startsWith("#")) {
+              continue;
+            }
+            String[] commandArgs = line.split("\\s");
+            Command command = commands.get(commandArgs[0]);
+            if (command == null) {
+              out.println("unknown command \"" + commandArgs[0] + "\"");
+            } else {
+              long start = System.nanoTime();
+              try {
+                command.doit(out, client, commandArgs);
+              } catch (QuitCommandException e) {
+                // exit gracefully
+                System.exit(0);
+              } catch (CommandException e) {
+                out.println(e.getMessage());
+                if (debug) {
+                  e.printStackTrace(out);
+                }
+              } catch (BlurException e) {
+                out.println(e.getMessage());
+                if (debug) {
+                  e.printStackTrace(out);
+                }
+              } finally {
+                if (timed) {
+                  out.println("Last command took " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) + "ms");
+                }
               }
             }
           }
+        } finally {
+          out.close();
         }
-      } finally {
+      } else {
+        Command command = commands.get(cliShellOptions.getCommand());
+        PrintWriter out = new PrintWriter(System.out);
+        try {
+          command.doit(out, client, cliShellOptions.getArgs());
+        } catch (CommandException e) {
+          out.println(e.getMessage());
+        } catch (BlurException e) {
+          out.println(e.getMessage());
+          e.printStackTrace(out);
+        }
         out.close();
+        return;
       }
-
     } catch (Throwable t) {
       t.printStackTrace();
       throw t;
+    }
+  }
+
+  private static CliShellOptions getCliShellOptions(String[] args) throws IOException {
+    CliShellOptions cliShellOptions = new CliShellOptions();
+    if (args.length == 0) {
+      String controllerConnectionString = loadControllerConnectionString();
+      if (controllerConnectionString == null) {
+        System.err
+            .println("Could not locate controller connection string in the blu-site.properties file and it was not passed in via command line args.");
+        return null;
+      }
+      cliShellOptions.setControllerConnectionString(controllerConnectionString);
+      cliShellOptions.setShell(true);
+      return cliShellOptions;
+    } else {
+      String arg0 = args[0];
+      Command command = commands.get(arg0);
+      if (command == null) {
+        // then might be controller string
+        try {
+          new Connection(arg0);
+        } catch (RuntimeException e) {
+          String message = e.getMessage();
+          System.err.println("Arg [" + arg0 + "] could not be located as a command and is not a connection string. ["
+              + message + "]");
+          return null;
+        }
+        cliShellOptions.setControllerConnectionString(arg0);
+        if (args.length > 1) {
+          // there's might be a command after the connection string
+          cliShellOptions.setShell(false);
+          String arg1 = args[1];
+          command = commands.get(arg1);
+          if (command == null) {
+            System.err.println("Command [" + arg1 + "] not found");
+            return null;
+          } else {
+            cliShellOptions.setCommand(arg1);
+            String[] newArgs = new String[args.length - 1];
+            System.arraycopy(args, 1, newArgs, 0, newArgs.length);
+            cliShellOptions.setArgs(newArgs);
+            return cliShellOptions;
+          }
+        } else {
+          cliShellOptions.setShell(true);
+          return cliShellOptions;
+        }
+      } else {
+        // command was found at arg0
+        cliShellOptions.setShell(false);
+        cliShellOptions.setArgs(args);
+        cliShellOptions.setCommand(arg0);
+        return cliShellOptions;
+      }
     }
   }
 
@@ -342,4 +482,5 @@ public class Main {
     bufferedReader.close();
     return builder.toString();
   }
+
 }

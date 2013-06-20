@@ -42,7 +42,7 @@ public class CreateTableCommand extends Command {
 
     TableDescriptor td = new TableDescriptor(); 
     td.setTableUri(tableuri);
-    td.setCluster("default");
+    td.setCluster(Main.getCluster(client));
     td.setAnalyzerDefinition(ad);
     td.setName(tablename);
 

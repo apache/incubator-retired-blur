@@ -29,7 +29,8 @@ public class ListTablesCommand extends Command {
   @Override
   public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
       BlurException {
-    List<String> tableList = client.tableList();
+    
+    List<String> tableList = client.tableListByCluster(Main.getCluster(client));
     for (String s : tableList) {
       out.println(s);
     }

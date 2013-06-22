@@ -129,6 +129,7 @@ public class IndexImporter extends TimerTask implements Closeable {
             indexWriter.deleteDocuments(new Term(BlurConstants.DELETE_MARKER, BlurConstants.DELETE_MARKER_VALUE));
             LOG.info("Finishing import [{0}], commiting on [{1}/{2}]", directory, shard, table);
             indexWriter.commit();
+            indexWriter.maybeMerge();
             LOG.info("Cleaning up old directory [{0}] for [{1}/{2}]", dirPath, shard, table);
             fileSystem.delete(dirPath, true);
             LOG.info("Import complete on [{0}/{1}]", shard, table);

@@ -815,4 +815,26 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Metric
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    NAME = 1
+    STRMAP = 2
+    LONGMAP = 3
+    DOUBLEMAP = 4
+
+    FIELDS = {
+      NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+      STRMAP => {:type => ::Thrift::Types::MAP, :name => 'strMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+      LONGMAP => {:type => ::Thrift::Types::MAP, :name => 'longMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::I64}},
+      DOUBLEMAP => {:type => ::Thrift::Types::MAP, :name => 'doubleMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::DOUBLE}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
 end

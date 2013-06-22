@@ -156,6 +156,22 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'query failed: unknown result')
       end
 
+      def parseQuery(table, simpleQuery)
+        send_parseQuery(table, simpleQuery)
+        return recv_parseQuery()
+      end
+
+      def send_parseQuery(table, simpleQuery)
+        send_message('parseQuery', ParseQuery_args, :table => table, :simpleQuery => simpleQuery)
+      end
+
+      def recv_parseQuery()
+        result = receive_message(ParseQuery_result)
+        return result.success unless result.success.nil?
+        raise result.ex unless result.ex.nil?
+        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'parseQuery failed: unknown result')
+      end
+
       def cancelQuery(table, uuid)
         send_cancelQuery(table, uuid)
         recv_cancelQuery()
@@ -452,6 +468,22 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'configuration failed: unknown result')
       end
 
+      def metrics(metrics)
+        send_metrics(metrics)
+        return recv_metrics()
+      end
+
+      def send_metrics(metrics)
+        send_message('metrics', Metrics_args, :metrics => metrics)
+      end
+
+      def recv_metrics()
+        result = receive_message(Metrics_result)
+        return result.success unless result.success.nil?
+        raise result.ex unless result.ex.nil?
+        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'metrics failed: unknown result')
+      end
+
     end
 
     class Processor
@@ -554,6 +586,17 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'query', seqid)
+      end
+
+      def process_parseQuery(seqid, iprot, oprot)
+        args = read_args(iprot, ParseQuery_args)
+        result = ParseQuery_result.new()
+        begin
+          result.success = @handler.parseQuery(args.table, args.simpleQuery)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'parseQuery', seqid)
       end
 
       def process_cancelQuery(seqid, iprot, oprot)
@@ -763,6 +806,17 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'configuration', seqid)
+      end
+
+      def process_metrics(seqid, iprot, oprot)
+        args = read_args(iprot, Metrics_args)
+        result = Metrics_result.new()
+        begin
+          result.success = @handler.metrics(args.metrics)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'metrics', seqid)
       end
 
     end
@@ -1063,6 +1117,42 @@ module Blur
 
       FIELDS = {
         SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Blur::BlurResults},
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ParseQuery_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+      SIMPLEQUERY = 2
+
+      FIELDS = {
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        SIMPLEQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'simpleQuery', :class => ::Blur::SimpleQuery}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ParseQuery_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SUCCESS = 0
+      EX = 1
+
+      FIELDS = {
+        SUCCESS => {:type => ::Thrift::Types::STRING, :name => 'success'},
         EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
       }
 
@@ -1716,6 +1806,40 @@ module Blur
 
       FIELDS = {
         SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class Metrics_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      METRICS = 1
+
+      FIELDS = {
+        METRICS => {:type => ::Thrift::Types::SET, :name => 'metrics', :element => {:type => ::Thrift::Types::STRING}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class Metrics_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SUCCESS = 0
+      EX = 1
+
+      FIELDS = {
+        SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Metric}},
         EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
       }
 

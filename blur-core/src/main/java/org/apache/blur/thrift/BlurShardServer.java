@@ -52,6 +52,7 @@ import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
+import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
@@ -100,7 +101,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
           highlightOptions.setSimpleQuery(blurQuery.getSimpleQuery());
         }
       }
-      
+
       if (blurQuery.useCacheIfPresent) {
         LOG.debug("Using cache for query [{0}] on table [{1}].", blurQuery, table);
         QueryCacheKey key = QueryCache.getNormalizedBlurQueryKey(table, blurQuery);
@@ -129,6 +130,16 @@ public class BlurShardServer extends TableAdmin implements Iface {
       }
     } catch (IOException e) {
       LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  @Override
+  public String parseQuery(String table, SimpleQuery simpleQuery) throws BlurException, TException {
+    try {
+      return _indexManager.parseQuery(table, simpleQuery);
+    } catch (Throwable e) {
+      LOG.error("Unknown error during parsing of [table={0},simpleQuery={1}]", e, table, simpleQuery);
       throw new BException(e.getMessage(), e);
     }
   }

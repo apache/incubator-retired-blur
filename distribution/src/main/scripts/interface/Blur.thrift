@@ -694,7 +694,12 @@ struct TableDescriptor {
   14:map<string,string> tableProperties
 }
 
-
+struct Metric {
+  1:string name,
+  2:map<string,string> strMap,
+  3:map<string,i64> longMap,
+  4:map<string,double> doubleMap
+}
 
 /**
  *
@@ -765,6 +770,13 @@ service Blur {
   BlurResults query(1:string table, 2:BlurQuery blurQuery) throws (1:BlurException ex)
 
   /**
+   * Parses the given query and return the string represents the query.
+   * @param table the table name.
+   * @param simpleQuery the query to parse.
+   */
+  string parseQuery(1:string table, 2:SimpleQuery simpleQuery) throws (1:BlurException ex)
+
+  /**
    * Cancels a query that is executing against the given table with the given uuid.  Note, the cancel call maybe take some time for the query actually stops executing.
    * @param table the table name.
    * @param uuid the uuid of the query.
@@ -810,6 +822,9 @@ service Blur {
   bool isInSafeMode(1:string cluster) throws (1:BlurException ex)
 
   map<string,string> configuration() throws (1:BlurException ex)
+
+  map<string,Metric> metrics(1:set<string> metrics) throws (1:BlurException ex)
+
 }
 
 

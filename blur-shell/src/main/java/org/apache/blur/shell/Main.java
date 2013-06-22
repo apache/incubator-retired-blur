@@ -49,6 +49,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
 public class Main {
+  static final String PROMPT = "blur> ";
   /** is debugging enabled - off by default */
   static boolean debug = false;
   /** is timing enabled - off by default */
@@ -213,7 +214,7 @@ public class Main {
       int bufferLength = getMaxCommandLength(cmds.keySet()) + 2;
       out.println(" - Table commands - ");
       String[] tableCommands = { "create", "enable", "disable", "remove", "truncate", "describe", "list", "schema",
-          "stats", "layout" };
+          "stats", "layout", "parse" };
       printCommandAndHelp(out, cmds, tableCommands, bufferLength);
 
       out.println();
@@ -223,7 +224,7 @@ public class Main {
 
       out.println();
       out.println(" - Cluster commands - ");
-      String[] clusterCommands = { "controllers", "shards", "clusterlist", "cluster", "safemodewait" };
+      String[] clusterCommands = { "controllers", "shards", "clusterlist", "cluster", "safemodewait", "top" };
       printCommandAndHelp(out, cmds, clusterCommands, bufferLength);
 
       out.println();
@@ -239,10 +240,11 @@ public class Main {
           out.println("  " + buffer(e.getKey(), bufferLength) + " - " + e.getValue().help());
         }
       }
-      
+
       out.println();
       out.println("  " + buffer("shell", bufferLength) + " - enters into the Blur interactive shell");
-      out.println("  " + buffer("execute", bufferLength) + " - executes a custom class passing all the command line args to the main method");
+      out.println("  " + buffer("execute", bufferLength)
+          + " - executes a custom class passing all the command line args to the main method");
     }
 
     private int getMaxCommandLength(Set<String> keySet) {
@@ -326,6 +328,8 @@ public class Main {
     builder.put("truncate", new TruncateTableCommand());
     builder.put("cluster", new ClusterCommand());
     builder.put("safemodewait", new WaitInSafemodeCommand());
+    builder.put("top", new TopCommand());
+    builder.put("parse", new ParseCommand());
     commands = builder.build();
 
     CliShellOptions cliShellOptions = getCliShellOptions(args);
@@ -338,7 +342,7 @@ public class Main {
       if (cliShellOptions.isShell()) {
         ConsoleReader reader = new ConsoleReader();
         setConsoleReader(commands, reader);
-        reader.setPrompt("blur> ");
+        reader.setPrompt(PROMPT);
 
         List<Completer> completors = new LinkedList<Completer>();
 

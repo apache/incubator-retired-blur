@@ -16,9 +16,11 @@ package org.apache.blur.thrift;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
@@ -28,10 +30,12 @@ import org.apache.blur.server.TableContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.Metric;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.MemoryReporter;
 import org.apache.zookeeper.ZooKeeper;
 
 public abstract class TableAdmin implements Iface {
@@ -40,6 +44,28 @@ public abstract class TableAdmin implements Iface {
   protected ZooKeeper _zookeeper;
   protected ClusterStatus _clusterStatus;
   protected BlurConfiguration _configuration;
+
+  @Override
+  public Map<String, Metric> metrics(Set<String> metrics) throws BlurException, TException {
+    try {
+      Map<String, Metric> metricsMap = MemoryReporter.getMetrics();
+      if (metrics == null) {
+        return metricsMap;
+      } else {
+        Map<String, Metric> result = new HashMap<String, Metric>();
+        for (String n : metrics) {
+          Metric metric = metricsMap.get(n);
+          if (metric != null) {
+            result.put(n, metric);
+          }
+        }
+        return result;
+      }
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to get metrics [{0}] ", e, metrics);
+      throw new BException(e.getMessage(), e);
+    }
+  }
 
   @Override
   public TableStats getTableStats(String table) throws BlurException, TException {

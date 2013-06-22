@@ -22,9 +22,11 @@
 <li><a href="Blur.html#Fn_Blur_fetchRow">fetchRow</a></li>
 <li><a href="Blur.html#Fn_Blur_getTableStats">getTableStats</a></li>
 <li><a href="Blur.html#Fn_Blur_isInSafeMode">isInSafeMode</a></li>
+<li><a href="Blur.html#Fn_Blur_metrics">metrics</a></li>
 <li><a href="Blur.html#Fn_Blur_mutate">mutate</a></li>
 <li><a href="Blur.html#Fn_Blur_mutateBatch">mutateBatch</a></li>
 <li><a href="Blur.html#Fn_Blur_optimize">optimize</a></li>
+<li><a href="Blur.html#Fn_Blur_parseQuery">parseQuery</a></li>
 <li><a href="Blur.html#Fn_Blur_query">query</a></li>
 <li><a href="Blur.html#Fn_Blur_queryStatusById">queryStatusById</a></li>
 <li><a href="Blur.html#Fn_Blur_queryStatusIdList">queryStatusIdList</a></li>
@@ -59,6 +61,7 @@
 <a href="Blur.html#Struct_FetchResult">FetchResult</a><br/>
 <a href="Blur.html#Struct_FetchRowResult">FetchRowResult</a><br/>
 <a href="Blur.html#Struct_HighlightOptions">HighlightOptions</a><br/>
+<a href="Blur.html#Struct_Metric">Metric</a><br/>
 <a href="Blur.html#Enum_QueryState">QueryState</a><br/>
 <a href="Blur.html#Struct_Record">Record</a><br/>
 <a href="Blur.html#Struct_RecordMutation">RecordMutation</a><br/>
@@ -448,7 +451,13 @@ updates through MapReduce are allowed and in fact they are only allowed if the t
 </td><td>default</td><td></td></tr>
 <tr><td>14</td><td>tableProperties</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
 </table><br/><p/>
-<br/></div><hr/><h2 id="Services">Services</h2>
+<br/></div><div class="definition"><h3 id="Struct_Metric">Struct: Metric</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>name</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>strMap</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>longMap</td><td><code>map&lt;<code>string</code>, <code>i64</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>4</td><td>doubleMap</td><td><code>map&lt;<code>string</code>, <code>double</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+</table><br/></div><hr/><h2 id="Services">Services</h2>
 <h3 id="Svc_Blur">Service: Blur</h3>
 <p/>
 <br/><div class="definition"><h4 id="Fn_Blur_shardClusterList">Function: Blur.shardClusterList</h4>
@@ -512,6 +521,13 @@ the shard given the same situation.
 </pre>Executes a query against a the given table and returns the results.  If this method is executed against a controller the results will contain the aggregated results from all the shards.  If this method is executed against a shard server the results will only contain aggregated results from the shards of the given table that are being served on the shard server, if any.
 @param table the table name.
 @param blurQuery the query to execute.
+<br/></div><div class="definition"><h4 id="Fn_Blur_parseQuery">Function: Blur.parseQuery</h4>
+<pre><code>string</code> parseQuery(<code>string</code> table,
+                  <code><a href="Blur.html#Struct_SimpleQuery">SimpleQuery</a></code> simpleQuery)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Parses the given query and return the string represents the query.
+@param table the table name.
+@param simpleQuery the query to parse.
 <br/></div><div class="definition"><h4 id="Fn_Blur_cancelQuery">Function: Blur.cancelQuery</h4>
 <pre><code>void</code> cancelQuery(<code>string</code> table,
                  <code>i64</code> uuid)
@@ -590,5 +606,8 @@ the shard given the same situation.
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre></div><div class="definition"><h4 id="Fn_Blur_configuration">Function: Blur.configuration</h4>
 <pre><code>map&lt;<code>string</code>, <code>string</code>&gt;</code> configuration()
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_metrics">Function: Blur.metrics</h4>
+<pre><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_Metric">Metric</a></code>&gt;</code> metrics(<code>set&lt;<code>string</code>&gt;</code> metrics)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre></div></div></body></html>

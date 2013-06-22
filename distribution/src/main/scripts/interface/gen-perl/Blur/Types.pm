@@ -3501,4 +3501,188 @@ sub write {
   return $xfer;
 }
 
+package Blur::Metric;
+use base qw(Class::Accessor);
+Blur::Metric->mk_accessors( qw( name strMap longMap doubleMap ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{name} = undef;
+  $self->{strMap} = undef;
+  $self->{longMap} = undef;
+  $self->{doubleMap} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{name}) {
+      $self->{name} = $vals->{name};
+    }
+    if (defined $vals->{strMap}) {
+      $self->{strMap} = $vals->{strMap};
+    }
+    if (defined $vals->{longMap}) {
+      $self->{longMap} = $vals->{longMap};
+    }
+    if (defined $vals->{doubleMap}) {
+      $self->{doubleMap} = $vals->{doubleMap};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Metric';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{name});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::MAP) {
+        {
+          my $_size156 = 0;
+          $self->{strMap} = {};
+          my $_ktype157 = 0;
+          my $_vtype158 = 0;
+          $xfer += $input->readMapBegin(\$_ktype157, \$_vtype158, \$_size156);
+          for (my $_i160 = 0; $_i160 < $_size156; ++$_i160)
+          {
+            my $key161 = '';
+            my $val162 = '';
+            $xfer += $input->readString(\$key161);
+            $xfer += $input->readString(\$val162);
+            $self->{strMap}->{$key161} = $val162;
+          }
+          $xfer += $input->readMapEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^3$/ && do{      if ($ftype == TType::MAP) {
+        {
+          my $_size163 = 0;
+          $self->{longMap} = {};
+          my $_ktype164 = 0;
+          my $_vtype165 = 0;
+          $xfer += $input->readMapBegin(\$_ktype164, \$_vtype165, \$_size163);
+          for (my $_i167 = 0; $_i167 < $_size163; ++$_i167)
+          {
+            my $key168 = '';
+            my $val169 = 0;
+            $xfer += $input->readString(\$key168);
+            $xfer += $input->readI64(\$val169);
+            $self->{longMap}->{$key168} = $val169;
+          }
+          $xfer += $input->readMapEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^4$/ && do{      if ($ftype == TType::MAP) {
+        {
+          my $_size170 = 0;
+          $self->{doubleMap} = {};
+          my $_ktype171 = 0;
+          my $_vtype172 = 0;
+          $xfer += $input->readMapBegin(\$_ktype171, \$_vtype172, \$_size170);
+          for (my $_i174 = 0; $_i174 < $_size170; ++$_i174)
+          {
+            my $key175 = '';
+            my $val176 = 0.0;
+            $xfer += $input->readString(\$key175);
+            $xfer += $input->readDouble(\$val176);
+            $self->{doubleMap}->{$key175} = $val176;
+          }
+          $xfer += $input->readMapEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Metric');
+  if (defined $self->{name}) {
+    $xfer += $output->writeFieldBegin('name', TType::STRING, 1);
+    $xfer += $output->writeString($self->{name});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{strMap}) {
+    $xfer += $output->writeFieldBegin('strMap', TType::MAP, 2);
+    {
+      $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{strMap}}));
+      {
+        while( my ($kiter177,$viter178) = each %{$self->{strMap}}) 
+        {
+          $xfer += $output->writeString($kiter177);
+          $xfer += $output->writeString($viter178);
+        }
+      }
+      $xfer += $output->writeMapEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{longMap}) {
+    $xfer += $output->writeFieldBegin('longMap', TType::MAP, 3);
+    {
+      $xfer += $output->writeMapBegin(TType::STRING, TType::I64, scalar(keys %{$self->{longMap}}));
+      {
+        while( my ($kiter179,$viter180) = each %{$self->{longMap}}) 
+        {
+          $xfer += $output->writeString($kiter179);
+          $xfer += $output->writeI64($viter180);
+        }
+      }
+      $xfer += $output->writeMapEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{doubleMap}) {
+    $xfer += $output->writeFieldBegin('doubleMap', TType::MAP, 4);
+    {
+      $xfer += $output->writeMapBegin(TType::STRING, TType::DOUBLE, scalar(keys %{$self->{doubleMap}}));
+      {
+        while( my ($kiter181,$viter182) = each %{$self->{doubleMap}}) 
+        {
+          $xfer += $output->writeString($kiter181);
+          $xfer += $output->writeDouble($viter182);
+        }
+      }
+      $xfer += $output->writeMapEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 1;

@@ -71,6 +71,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.server.TServlet;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.MemoryReporter;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.zookeeper.ZooKeeper;
@@ -89,6 +90,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     BlurConfiguration configuration = new BlurConfiguration();
     printUlimits();
     ReporterSetup.setupReporters(configuration);
+    MemoryReporter.enable();
     ThriftServer server = createServer(serverIndex, configuration);
     server.start();
   }

@@ -69,6 +69,7 @@ import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
+import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.utils.BlurConstants;
@@ -909,6 +910,33 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       throw new BException("Unknown error while trying to optimize [table={0},numberOfSegmentsPerShard={1}]", e, table,
           numberOfSegmentsPerShard);
     }
+  }
+
+  @Override
+  public String parseQuery(final String table, final SimpleQuery simpleQuery) throws BlurException, TException {
+    checkTable(table);
+    String cluster = getCluster(table);
+    List<String> onlineShardServers = _clusterStatus.getOnlineShardServers(true, cluster);
+    try {
+      return BlurClientManager.execute(getConnections(onlineShardServers), new BlurCommand<String>() {
+        @Override
+        public String call(Client client) throws BlurException, TException {
+          return client.parseQuery(table, simpleQuery);
+        }
+      });
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to parse query [table={0},simpleQuery={1}]", e, table, simpleQuery);
+      throw new BException("Unknown error while trying to parse query [table={0},simpleQuery={1}]", e, table,
+          simpleQuery);
+    }
+  }
+
+  private List<Connection> getConnections(List<String> onlineShardServers) {
+    List<Connection> connections = new ArrayList<Connection>();
+    for (String c : onlineShardServers) {
+      connections.add(new Connection(c));
+    }
+    return connections;
   }
 
 }

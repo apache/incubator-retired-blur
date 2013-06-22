@@ -51,6 +51,7 @@ import org.apache.blur.metrics.ReporterSetup;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.MemoryReporter;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.zookeeper.ZooKeeper;
 
@@ -65,6 +66,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     BlurConfiguration configuration = new BlurConfiguration();
     printUlimits();
     ReporterSetup.setupReporters(configuration);
+    MemoryReporter.enable();
     ThriftServer server = createServer(serverIndex, configuration);
     server.start();
   }

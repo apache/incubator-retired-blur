@@ -406,6 +406,18 @@ public class IndexManager {
     }
   }
 
+  public String parseQuery(String table, SimpleQuery simpleQuery) throws ParseException, BlurException {
+    TableContext context = getTableContext(table);
+    BlurAnalyzer analyzer = _indexServer.getAnalyzer(table);
+    Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.preSuperFilter, false, analyzer, _filterCache,
+        context);
+    Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, analyzer, _filterCache,
+        context);
+    Query userQuery = QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, analyzer, postFilter,
+        preFilter, getScoreType(simpleQuery.type), context);
+    return userQuery.toString();
+  }
+
   private TableContext getTableContext(final String table) {
     return TableContext.create(_clusterStatus.getTableDescriptor(true, _clusterStatus.getCluster(true, table), table));
   }

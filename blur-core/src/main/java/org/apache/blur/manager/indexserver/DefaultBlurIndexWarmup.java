@@ -17,6 +17,7 @@ package org.apache.blur.manager.indexserver;
  * limitations under the License.
  */
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +33,7 @@ import org.apache.blur.thrift.generated.ColumnPreCache;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.FilterDirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReaderContext;
 import org.apache.lucene.index.SegmentReader;
@@ -45,6 +47,9 @@ public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
       AtomicBoolean isClosed, ReleaseReader releaseReader) throws IOException {
     LOG.info("Running warmup for reader [{0}]", reader);
     try {
+      if (reader instanceof FilterDirectoryReader) {
+        reader = getBase((FilterDirectoryReader) reader);
+      }
       int maxSampleSize = 1000;
       IndexWarmup indexWarmup = new IndexWarmup(isClosed, maxSampleSize);
       String context = table.getName() + "/" + shard;
@@ -57,6 +62,17 @@ public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
       }
     } finally {
       releaseReader.release();
+    }
+  }
+
+  private IndexReader getBase(FilterDirectoryReader reader) {
+    try {
+      Field field = FilterDirectoryReader.class.getDeclaredField("in");
+      field.setAccessible(true);
+      return (IndexReader) field.get(reader);
+    } catch (Exception e) {
+      LOG.error("Unknown error trying to get base reader from [{0}]",e,reader);
+      return reader;
     }
   }
 

@@ -54,9 +54,9 @@ public class BlurClientManager {
   private static final Object NULL = new Object();
 
   private static final Log LOG = LogFactory.getLog(BlurClientManager.class);
-  private static final int MAX_RETRIES = 5;
-  private static final long BACK_OFF_TIME = TimeUnit.MILLISECONDS.toMillis(250);
-  private static final long MAX_BACK_OFF_TIME = TimeUnit.SECONDS.toMillis(10);
+  public static final int MAX_RETRIES = 5;
+  public static final long BACK_OFF_TIME = TimeUnit.MILLISECONDS.toMillis(250);
+  public static final long MAX_BACK_OFF_TIME = TimeUnit.SECONDS.toMillis(10);
   private static final long ONE_SECOND = TimeUnit.SECONDS.toMillis(1);
 
   private static Map<Connection, BlockingQueue<Client>> clientPool = new ConcurrentHashMap<Connection, BlockingQueue<Client>>();
@@ -195,7 +195,7 @@ public class BlurClientManager {
       if (allBad) {
         connectionErrorCount++;
         LOG.error("All connections are bad [" + connectionErrorCount + "].");
-        if (connectionErrorCount >= 5) {
+        if (connectionErrorCount >= maxRetries) {
           throw new IOException("All connections are bad.");
         }
         try {
@@ -236,6 +236,9 @@ public class BlurClientManager {
   }
 
   public static void sleep(long backOffTime, long maxBackOffTime, int retry, int maxRetries) {
+    if (maxRetries == 0) {
+      return;
+    }
     long extra = (maxBackOffTime - backOffTime) / maxRetries;
     long sleep = backOffTime + (extra * retry);
     LOG.info("Backing off call for [{0} ms]", sleep);

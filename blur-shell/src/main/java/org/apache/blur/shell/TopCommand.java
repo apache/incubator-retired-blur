@@ -26,14 +26,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import jline.Terminal;
 import jline.console.ConsoleReader;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.BlurClientManager;
+import org.apache.blur.thrift.Connection;
 import org.apache.blur.thrift.generated.Blur;
+import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Metric;
@@ -56,6 +61,9 @@ public class TopCommand extends Command {
   private static final String CH = "bc hit";
   private static final String IQ = "in qry";
   private static final String EQ = "ex qry";
+  private static final String HU = "heap usd";
+  private static final String SL = "sys load";
+
   private static final String SHARD_SERVER = "Shard Server";
   private static final String INTERNAL_QUERIES = "\"org.apache.blur\":type=\"Blur\",name=\"Internal Queries/s\"";
   private static final String EXTERNAL_QUERIES = "\"org.apache.blur\":type=\"Blur\",name=\"External Queries/s\"";
@@ -72,10 +80,14 @@ public class TopCommand extends Command {
   private static final String TABLE_COUNT = "\"org.apache.blur\":type=\"Blur\",scope=\"default\",name=\"Table Count\"";
   private static final String INDEX_COUNT = "\"org.apache.blur\":type=\"Blur\",scope=\"default\",name=\"Index Count\"";
   private static final String SEGMENT_COUNT = "\"org.apache.blur\":type=\"Blur\",scope=\"default\",name=\"Segment Count\"";
-  private static final double ONE_MILLION = 1000000;
-  private static final double ONE_BILLION = 1000 * ONE_MILLION;
-  private static final double ONE_TRILLION = 1000 * ONE_BILLION;
-  private static final double ONE_QUADRILLION = 1000 * ONE_TRILLION;
+  private static final String LOAD_AVERAGE = "\"org.apache.blur\":type=\"System\",name=\"Load Average\"";
+  private static final String HEAP_USED = "\"org.apache.blur\":type=\"JVM\",name=\"Heap Used\"";
+
+  private static final double ONE_THOUSAND = 1000;
+  private static final double ONE_MILLION = ONE_THOUSAND * ONE_THOUSAND;
+  private static final double ONE_BILLION = ONE_THOUSAND * ONE_MILLION;
+  private static final double ONE_TRILLION = ONE_THOUSAND * ONE_BILLION;
+  private static final double ONE_QUADRILLION = ONE_THOUSAND * ONE_TRILLION;
 
   private int _width = Integer.MAX_VALUE;
   private int _height;
@@ -97,6 +109,7 @@ public class TopCommand extends Command {
       BlurException {
 
     AtomicBoolean quit = new AtomicBoolean();
+    AtomicBoolean help = new AtomicBoolean();
 
     Map<String, String> metricNames = new HashMap<String, String>();
     metricNames.put(IQ, INTERNAL_QUERIES);
@@ -111,11 +124,14 @@ public class TopCommand extends Command {
     metricNames.put(TC, TABLE_COUNT);
     metricNames.put(IC, INDEX_COUNT);
     metricNames.put(SC, SEGMENT_COUNT);
+    metricNames.put(HU, HEAP_USED);
+    metricNames.put(SL, LOAD_AVERAGE);
 
-    Object[] labels = new Object[] { SHARD_SERVER, EQ, IQ, CH, CM, CE, CS, RO, RE, IM, TC, IC, SC };
+    Object[] labels = new Object[] { SHARD_SERVER, SL, HU, IM, EQ, IQ, RO, RE, CH, CM, CE, CS, TC, IC, SC };
 
     Set<String> sizes = new HashSet<String>();
     sizes.add(IM);
+    sizes.add(SL);
 
     Set<String> keys = new HashSet<String>(metricNames.values());
 
@@ -141,12 +157,26 @@ public class TopCommand extends Command {
           e.printStackTrace();
         }
       }
-      startCommandWatcher(reader, quit, this);
+
+      startCommandWatcher(reader, quit, help, this);
     }
 
-    Map<String, Blur.Iface> shardClients = new HashMap<String, Blur.Iface>();
+    Map<String, AtomicReference<Blur.Iface>> shardClients = new ConcurrentHashMap<String, AtomicReference<Blur.Iface>>();
     for (String sc : shardServerList) {
-      shardClients.put(sc, BlurClient.getClient(sc));
+      AtomicReference<Iface> ref = shardClients.get(sc);
+      if (ref == null) {
+        ref = new AtomicReference<Blur.Iface>();
+        shardClients.put(sc, ref);
+      }
+      try {
+        Client c = BlurClientManager.newClient(new Connection(sc));
+        ref.set(c);
+      } catch (IOException e) {
+        ref.set(null);
+        if (Main.debug) {
+          e.printStackTrace();
+        }
+      }
     }
 
     int longestServerName = Math.max(getSizeOfLongestKey(shardClients), SHARD_SERVER.length());
@@ -158,33 +188,43 @@ public class TopCommand extends Command {
     header.append("%n");
 
     do {
+      StringBuilder output = new StringBuilder();
       if (quit.get()) {
         return;
-      }
-      out.printf(truncate(header.toString()), labels);
-      for (Entry<String, Blur.Iface> e : shardClients.entrySet()) {
-        String shardServer = e.getKey();
-        Iface shardClient = e.getValue();
-        Object[] cols = new Object[labels.length];
-        int c = 0;
-        cols[c++] = shardServer;
-        StringBuilder sb = new StringBuilder("%" + longestServerName + "s");
-
-        Map<String, Metric> metrics = shardClient.metrics(keys);
-        for (int i = 1; i < labels.length; i++) {
-          String mn = metricNames.get(labels[i]);
-          Metric metric = metrics.get(mn);
-          Map<String, Double> doubleMap = metric.getDoubleMap();
-          Double value = doubleMap.get("oneMinuteRate");
-          if (value == null) {
-            value = doubleMap.get("value");
+      } else if (help.get()) {
+        showHelp(output, labels, metricNames);
+      } else {
+        output.append(truncate(String.format(header.toString(), labels)));
+        for (Entry<String, AtomicReference<Blur.Iface>> e : new TreeMap<String, AtomicReference<Blur.Iface>>(
+            shardClients).entrySet()) {
+          String shardServer = e.getKey();
+          Iface shardClient = e.getValue().get();
+          if (shardClient == null) {
+            String line = String.format("%" + longestServerName + "s*%n", shardServer);
+            output.append(line);
+          } else {
+            Object[] cols = new Object[labels.length];
+            int c = 0;
+            cols[c++] = shardServer;
+            StringBuilder sb = new StringBuilder("%" + longestServerName + "s");
+            Map<String, Metric> metrics = shardClient.metrics(keys);
+            for (int i = 1; i < labels.length; i++) {
+              String mn = metricNames.get(labels[i]);
+              Metric metric = metrics.get(mn);
+              Map<String, Double> doubleMap = metric.getDoubleMap();
+              Double value = doubleMap.get("oneMinuteRate");
+              if (value == null) {
+                value = doubleMap.get("value");
+              }
+              cols[c++] = humanize(value, sizes.contains(mn));
+              sb.append(" %10s");
+            }
+            sb.append("%n");
+            output.append(truncate(String.format(sb.toString(), cols)));
           }
-          cols[c++] = humanize(value, sizes.contains(mn));
-          sb.append(" %10s");
         }
-        sb.append("%n");
-        out.printf(truncate(sb.toString()), cols);
       }
+      out.print(output.toString());
       out.flush();
       if (reader != null) {
         try {
@@ -209,7 +249,22 @@ public class TopCommand extends Command {
 
   }
 
-  private void startCommandWatcher(final ConsoleReader reader, final AtomicBoolean quit, final Object lock) {
+  private void showHelp(StringBuilder output, Object[] labels, Map<String, String> metricNames) {
+    output.append("Help\n");
+
+    for (int i = 0; i < labels.length; i++) {
+      String shortName = (String) labels[i];
+      String longName = metricNames.get(shortName);
+      output.append(String.format("%15s", shortName));
+      output.append(" - ");
+      output.append(longName);
+      output.append('\n');
+    }
+
+  }
+
+  private void startCommandWatcher(final ConsoleReader reader, final AtomicBoolean quit, final AtomicBoolean help,
+      final Object lock) {
     Thread thread = new Thread(new Runnable() {
       @Override
       public void run() {
@@ -222,6 +277,11 @@ public class TopCommand extends Command {
                 lock.notify();
               }
               return;
+            } else if (readCharacter == 'h') {
+              help.set(!help.get());
+              synchronized (lock) {
+                lock.notify();
+              }
             }
           }
         } catch (IOException e) {
@@ -255,6 +315,10 @@ public class TopCommand extends Command {
     v = (long) (value / ONE_MILLION);
     if (v > 0) {
       return String.format("%7.2f%s", value / ONE_MILLION, "M");
+    }
+    v = (long) (value / ONE_THOUSAND);
+    if (v > 0) {
+      return String.format("%7.2f%s", value / ONE_THOUSAND, "K");
     }
     return String.format("%7.2f", value);
   }

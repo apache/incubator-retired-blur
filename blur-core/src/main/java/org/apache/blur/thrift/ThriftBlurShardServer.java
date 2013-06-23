@@ -91,6 +91,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     printUlimits();
     ReporterSetup.setupReporters(configuration);
     MemoryReporter.enable();
+    setupJvmMetrics();
     ThriftServer server = createServer(serverIndex, configuration);
     server.start();
   }

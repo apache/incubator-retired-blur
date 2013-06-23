@@ -16,10 +16,20 @@ package org.apache.blur.thrift;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.metrics.MetricsConstants.HEAP_USED;
+import static org.apache.blur.metrics.MetricsConstants.JVM;
+import static org.apache.blur.metrics.MetricsConstants.LOAD_AVERAGE;
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
+import static org.apache.blur.metrics.MetricsConstants.SYSTEM;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
+import java.lang.management.OperatingSystemMXBean;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -39,6 +49,10 @@ import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransportException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.server.TThreadedSelectorServer;
+
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Gauge;
+import com.yammer.metrics.core.MetricName;
 
 public class ThriftServer {
 
@@ -76,6 +90,26 @@ public class ThriftServer {
     }
     reader.close();
   }
+  
+  public static void setupJvmMetrics() {
+    final MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+    final OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
+    
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, SYSTEM, LOAD_AVERAGE), new Gauge<Double>() {
+      @Override
+      public Double value() {
+        return operatingSystemMXBean.getSystemLoadAverage();
+      }
+    });
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, JVM, HEAP_USED), new Gauge<Long>() {
+      @Override
+      public Long value() {
+        MemoryUsage usage = memoryMXBean.getHeapMemoryUsage();
+        return usage.getUsed();
+      }
+    });
+  }
+
 
   public synchronized void close() {
     if (!_closed) {

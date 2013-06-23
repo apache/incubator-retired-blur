@@ -25,18 +25,29 @@ import java.util.List;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.commands.BlurCommand;
-import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurException;
 
 public class BlurClient {
 
   static class BlurClientInvocationHandler implements InvocationHandler {
 
     private List<Connection> connections;
+    private int _maxRetries = BlurClientManager.MAX_RETRIES;
+    private long _backOffTime = BlurClientManager.BACK_OFF_TIME;
+    private long _maxBackOffTime = BlurClientManager.MAX_BACK_OFF_TIME;
 
     public BlurClientInvocationHandler(List<Connection> connections) {
       this.connections = connections;
+    }
+
+    public BlurClientInvocationHandler(List<Connection> connections, int maxRetries, long backOffTime,
+        long maxBackOffTime) {
+      this(connections);
+      _maxRetries = maxRetries;
+      _backOffTime = backOffTime;
+      _maxBackOffTime = maxBackOffTime;
     }
 
     @Override
@@ -61,7 +72,7 @@ public class BlurClient {
             throw new RuntimeException(targetException);
           }
         }
-      });
+      }, _maxRetries, _backOffTime, _maxBackOffTime);
     }
 
   }
@@ -73,10 +84,11 @@ public class BlurClient {
    * Blur.Iface client = Blur.getClient(&quot;controller1:40010,controller2:40010&quot;);
    * </pre>
    * 
-   * The connectionStr also supports passing a proxy host/port (e.g. a SOCKS proxy configuration):
+   * The connectionStr also supports passing a proxy host/port (e.g. a SOCKS
+   * proxy configuration):
    * 
    * <pre>
-   * Blur.Iface client = Blur.getClient("host1:port/proxyhost1:proxyport");
+   * Blur.Iface client = Blur.getClient(&quot;host1:port/proxyhost1:proxyport&quot;);
    * </pre>
    * 
    * @param connectionStr
@@ -88,12 +100,27 @@ public class BlurClient {
     return getClient(connections);
   }
 
+  public static Iface getClient(String connectionStr, int maxRetries, long backOffTime, long maxBackOffTime) {
+    List<Connection> connections = BlurClientManager.getConnections(connectionStr);
+    return getClient(connections, maxRetries, backOffTime, maxBackOffTime);
+  }
+
   public static Iface getClient(Connection connection) {
     return getClient(Arrays.asList(connection));
   }
 
   public static Iface getClient(List<Connection> connections) {
-    return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class }, new BlurClientInvocationHandler(connections));
+    return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class },
+        new BlurClientInvocationHandler(connections));
+  }
+
+  public static Iface getClient(Connection connection, int maxRetries, long backOffTime, long maxBackOffTime) {
+    return getClient(Arrays.asList(connection), maxRetries, backOffTime, maxBackOffTime);
+  }
+
+  public static Iface getClient(List<Connection> connections, int maxRetries, long backOffTime, long maxBackOffTime) {
+    return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class },
+        new BlurClientInvocationHandler(connections, maxRetries, backOffTime, maxBackOffTime));
   }
 
 }

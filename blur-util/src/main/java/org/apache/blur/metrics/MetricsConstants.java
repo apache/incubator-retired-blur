@@ -37,6 +37,8 @@ public class MetricsConstants {
   public static final String HIT = "Hit";
   public static final String MISS = "Miss";
   public static final String CACHE = "Cache";
+  public static final String JVM = "JVM";
+  public static final String HEAP_USED = "Heap Used";
   public static final String EVICTION = "Eviction";
   public static final String TABLE_COUNT = "Table Count";
   public static final String FILES_IN_QUEUE_TO_BE_DELETED = "Files in Queue to be Deleted";
@@ -47,4 +49,6 @@ public class MetricsConstants {
   public static final String SEARCH_TIMER = "search-timer";
   public static final String ENTRIES = "Entries";
   public static final String SIZE = "Size";
+  public static final String LOAD_AVERAGE = "Load Average";
+  public static final String SYSTEM = "System";
 }

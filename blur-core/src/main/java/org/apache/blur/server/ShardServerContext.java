@@ -83,7 +83,7 @@ public class ShardServerContext implements ServerContext {
   public void reset() {
     Collection<IndexSearcherClosable> values = _indexSearcherMap.values();
     for (IndexSearcherClosable indexSearcherClosable : values) {
-      LOG.info("Closing [{0}]", indexSearcherClosable);
+      LOG.debug("Closing [{0}]", indexSearcherClosable);
       IOUtils.cleanup(LOG, indexSearcherClosable);
     }
     _indexSearcherMap.clear();
@@ -102,7 +102,7 @@ public class ShardServerContext implements ServerContext {
   public IndexSearcherClosable getIndexSearcherClosable(String table, String shard) {
     IndexSearcherClosable indexSearcherClosable = _indexSearcherMap.get(getKey(table, shard));
     if (indexSearcherClosable != null) {
-      LOG.info("Using cached searcher [{0}] for table [{1}] shard [{2}]", indexSearcherClosable, table, shard);
+      LOG.debug("Using cached searcher [{0}] for table [{1}] shard [{2}]", indexSearcherClosable, table, shard);
     }
     return indexSearcherClosable;
   }

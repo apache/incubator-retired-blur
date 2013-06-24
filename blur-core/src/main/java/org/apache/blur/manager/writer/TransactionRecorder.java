@@ -90,6 +90,11 @@ public class TransactionRecorder extends TimerTask implements Closeable {
   }
 
   private static final Log LOG = LogFactory.getLog(TransactionRecorder.class);
+  private static final FieldType SUPER_FIELD_TYPE;
+  static {
+    SUPER_FIELD_TYPE = new FieldType(TextField.TYPE_NOT_STORED);
+    SUPER_FIELD_TYPE.setOmitNorms(true);
+  }
   public static FieldType ID_TYPE;
   static {
     ID_TYPE = new FieldType();
@@ -421,7 +426,7 @@ public class TransactionRecorder extends TimerTask implements Closeable {
       document.add(field);
 
       if (analyzer.isFullTextField(fieldName)) {
-        document.add(new Field(SUPER, value, TextField.TYPE_NOT_STORED));
+        document.add(new Field(SUPER, value, SUPER_FIELD_TYPE));
       }
       Set<String> subFieldNames = analyzer.getSubIndexNames(fieldName);
       if (subFieldNames != null) {

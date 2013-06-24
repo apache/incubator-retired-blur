@@ -223,6 +223,7 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
     if (fieldType == null) {
       fieldType = new FieldType(TextField.TYPE_STORED);
       fieldType.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS);
+      fieldType.setOmitNorms(true);
     }
     if (isSubFieldName(field)) {
       fieldType.setStored(false);
@@ -509,6 +510,7 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
     default:
       fieldType = new FieldType(TextField.TYPE_STORED);
       fieldType.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS);
+      fieldType.setOmitNorms(true);
       break;
     }
     fieldTypes.put(fieldName, fieldType);

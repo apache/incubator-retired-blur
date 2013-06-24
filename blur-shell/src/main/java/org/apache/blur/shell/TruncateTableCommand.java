@@ -35,7 +35,7 @@ public class TruncateTableCommand extends Command {
     }
     String tablename = args[1];
     List<String> tableList = client.tableList();
-    if (tableList.contains(tablename)) {
+    if (!tableList.contains(tablename)) {
       out.println("Table does not exist.");
       return;
     }

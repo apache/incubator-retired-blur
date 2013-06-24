@@ -161,6 +161,9 @@ public class IndexWarmup {
   }
 
   private Directory getDirectory(IndexReader reader, String segmentName, String context) {
+    if (reader instanceof AtomicReader) {
+      return getDirectory((AtomicReader) reader, segmentName, context);
+    }
     for (IndexReaderContext ctext : reader.getContext().leaves()) {
       if (_isClosed.get()) {
         LOG.info("Context [{0}] index closed", context);
@@ -173,6 +176,16 @@ public class IndexWarmup {
         if (segmentReader.getSegmentName().equals(segmentName)) {
           return segmentReader.directory();
         }
+      }
+    }
+    return null;
+  }
+
+  private Directory getDirectory(AtomicReader atomicReader, String segmentName, String context) {
+    if (atomicReader instanceof SegmentReader) {
+      SegmentReader segmentReader = (SegmentReader) atomicReader;
+      if (segmentReader.getSegmentName().equals(segmentName)) {
+        return segmentReader.directory();
       }
     }
     return null;
@@ -202,50 +215,56 @@ public class IndexWarmup {
 
   public Map<String, List<IndexTracerResult>> sampleIndex(IndexReader reader, String context) throws IOException {
     Map<String, List<IndexTracerResult>> results = new HashMap<String, List<IndexTracerResult>>();
-    LOOP: for (IndexReaderContext ctext : reader.getContext().leaves()) {
+    for (IndexReaderContext ctext : reader.getContext().leaves()) {
       if (_isClosed.get()) {
         LOG.info("Context [{0}] index closed", context);
         return null;
       }
       AtomicReaderContext atomicReaderContext = (AtomicReaderContext) ctext;
       AtomicReader atomicReader = atomicReaderContext.reader();
-      if (atomicReader instanceof SegmentReader) {
-        SegmentReader segmentReader = (SegmentReader) atomicReader;
-        Directory directory = segmentReader.directory();
-        if (!(directory instanceof TraceableDirectory)) {
-          LOG.info("Context [{1}] cannot warmup directory [{0}] needs to be a TraceableDirectory.", directory, context);
-          continue LOOP;
-        }
-        IndexTracer tracer = new IndexTracer((TraceableDirectory) directory, _maxSampleSize);
-        String fileName = segmentReader.getSegmentName() + SAMPLE_EXT;
-        List<IndexTracerResult> segmentTraces = new ArrayList<IndexTracerResult>();
-        if (directory.fileExists(fileName)) {
-          IndexInput input = directory.openInput(fileName, IOContext.READONCE);
-          segmentTraces = read(input);
-          input.close();
-        } else {
-          Fields fields = atomicReader.fields();
-          for (String field : fields) {
-            LOG.info("Context [{1}] sampling field [{0}].", field, context);
-            Terms terms = fields.terms(field);
-            boolean hasOffsets = terms.hasOffsets();
-            boolean hasPayloads = terms.hasPayloads();
-            boolean hasPositions = terms.hasPositions();
+      results.putAll(sampleIndex(atomicReader, context));
+    }
+    return results;
+  }
 
-            tracer.initTrace(segmentReader, field, hasPositions, hasPayloads, hasOffsets);
-            IndexTracerResult result = tracer.runTrace(terms);
-            segmentTraces.add(result);
-          }
-          if (_isClosed.get()) {
-            LOG.info("Context [{0}] index closed", context);
-            return null;
-          }
-          IndexOutput output = directory.createOutput(fileName, IOContext.DEFAULT);
-          write(segmentTraces, output);
-          output.close();
-        }
-        results.put(segmentReader.getSegmentName(), segmentTraces);
+  public Map<String, List<IndexTracerResult>> sampleIndex(AtomicReader atomicReader, String context) throws IOException {
+    Map<String, List<IndexTracerResult>> results = new HashMap<String, List<IndexTracerResult>>();
+    if (atomicReader instanceof SegmentReader) {
+      SegmentReader segmentReader = (SegmentReader) atomicReader;
+      Directory directory = segmentReader.directory();
+      if (!(directory instanceof TraceableDirectory)) {
+        LOG.info("Context [{1}] cannot warmup directory [{0}] needs to be a TraceableDirectory.", directory, context);
+        return results;
       }
+      IndexTracer tracer = new IndexTracer((TraceableDirectory) directory, _maxSampleSize);
+      String fileName = segmentReader.getSegmentName() + SAMPLE_EXT;
+      List<IndexTracerResult> segmentTraces = new ArrayList<IndexTracerResult>();
+      if (directory.fileExists(fileName)) {
+        IndexInput input = directory.openInput(fileName, IOContext.READONCE);
+        segmentTraces = read(input);
+        input.close();
+      } else {
+        Fields fields = atomicReader.fields();
+        for (String field : fields) {
+          LOG.info("Context [{1}] sampling field [{0}].", field, context);
+          Terms terms = fields.terms(field);
+          boolean hasOffsets = terms.hasOffsets();
+          boolean hasPayloads = terms.hasPayloads();
+          boolean hasPositions = terms.hasPositions();
+
+          tracer.initTrace(segmentReader, field, hasPositions, hasPayloads, hasOffsets);
+          IndexTracerResult result = tracer.runTrace(terms);
+          segmentTraces.add(result);
+        }
+        if (_isClosed.get()) {
+          LOG.info("Context [{0}] index closed", context);
+          return null;
+        }
+        IndexOutput output = directory.createOutput(fileName, IOContext.DEFAULT);
+        write(segmentTraces, output);
+        output.close();
+      }
+      results.put(segmentReader.getSegmentName(), segmentTraces);
     }
     return results;
   }

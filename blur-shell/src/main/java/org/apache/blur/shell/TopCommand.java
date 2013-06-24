@@ -20,11 +20,15 @@ package org.apache.blur.shell;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,53 +39,25 @@ import jline.Terminal;
 import jline.console.ConsoleReader;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransportException;
 import org.apache.blur.thrift.BlurClientManager;
 import org.apache.blur.thrift.Connection;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Client;
-import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Metric;
 
 public class TopCommand extends Command {
 
+  private static final String TOP = "top.";
+  private static final String LONGNAME = ".longname";
+  private static final String SHORTNAME = ".shortname";
+  private static final String UNKNOWN = "Unknown";
+  private static final String TOP_SHARD_SERVER_SHORTNAME = "top.SHARD_SERVER.shortname";
+
   public enum SCREEN {
     HELP, TOP
   }
-
-  private static final String SC = "seg cnt";
-  private static final String IC = "idx cnt";
-  private static final String TC = "tble cnt";
-  private static final String RE = "rd rec";
-  private static final String IM = "idx mem";
-  private static final String RO = "rd row";
-  private static final String CS = "bc size";
-  private static final String CE = "bc evt";
-  private static final String CM = "bc miss";
-  private static final String CH = "bc hit";
-  private static final String IQ = "in qry";
-  private static final String EQ = "ex qry";
-  private static final String HU = "heap usd";
-  private static final String SL = "sys load";
-
-  private static final String SHARD_SERVER = "Shard Server";
-  private static final String INTERNAL_QUERIES = "\"org.apache.blur\":type=\"Blur\",name=\"Internal Queries/s\"";
-  private static final String EXTERNAL_QUERIES = "\"org.apache.blur\":type=\"Blur\",name=\"External Queries/s\"";
-
-  private static final String CACHE_HIT = "\"org.apache.blur\":type=\"Cache\",name=\"Hit\"";
-  private static final String CACHE_MISS = "\"org.apache.blur\":type=\"Cache\",name=\"Miss\"";
-  private static final String CACHE_EVICTION = "\"org.apache.blur\":type=\"Cache\",name=\"Eviction\"";
-  private static final String CACHE_SIZE = "\"org.apache.blur\":type=\"Cache\",name=\"Size\"";
-
-  private static final String READ_RECORDS = "\"org.apache.blur\":type=\"Blur\",name=\"Read Records/s\"";
-  private static final String READ_ROWS = "\"org.apache.blur\":type=\"Blur\",name=\"Read Row/s\"";
-
-  private static final String INDEX_MEMORY_USAGE = "\"org.apache.blur\":type=\"Blur\",scope=\"default\",name=\"Index Memory Usage\"";
-  private static final String TABLE_COUNT = "\"org.apache.blur\":type=\"Blur\",scope=\"default\",name=\"Table Count\"";
-  private static final String INDEX_COUNT = "\"org.apache.blur\":type=\"Blur\",scope=\"default\",name=\"Index Count\"";
-  private static final String SEGMENT_COUNT = "\"org.apache.blur\":type=\"Blur\",scope=\"default\",name=\"Segment Count\"";
-  private static final String LOAD_AVERAGE = "\"org.apache.blur\":type=\"System\",name=\"Load Average\"";
-  private static final String HEAP_USED = "\"org.apache.blur\":type=\"JVM\",name=\"Heap Used\"";
 
   private static final double ONE_THOUSAND = 1000;
   private static final double ONE_MILLION = ONE_THOUSAND * ONE_THOUSAND;
@@ -111,28 +87,32 @@ public class TopCommand extends Command {
     AtomicBoolean quit = new AtomicBoolean();
     AtomicBoolean help = new AtomicBoolean();
 
+    Properties properties = new Properties();
+    try {
+      properties.load(getClass().getResourceAsStream("top.properties"));
+    } catch (IOException e) {
+      if (Main.debug) {
+        e.printStackTrace();
+      }
+      throw new CommandException(e.getMessage());
+    }
+
     Map<String, String> metricNames = new HashMap<String, String>();
-    metricNames.put(IQ, INTERNAL_QUERIES);
-    metricNames.put(EQ, EXTERNAL_QUERIES);
-    metricNames.put(CH, CACHE_HIT);
-    metricNames.put(CM, CACHE_MISS);
-    metricNames.put(CE, CACHE_EVICTION);
-    metricNames.put(CS, CACHE_SIZE);
-    metricNames.put(RO, READ_RECORDS);
-    metricNames.put(RE, READ_ROWS);
-    metricNames.put(IM, INDEX_MEMORY_USAGE);
-    metricNames.put(TC, TABLE_COUNT);
-    metricNames.put(IC, INDEX_COUNT);
-    metricNames.put(SC, SEGMENT_COUNT);
-    metricNames.put(HU, HEAP_USED);
-    metricNames.put(SL, LOAD_AVERAGE);
+    Set<Object> keySet = properties.keySet();
+    for (Object k : keySet) {
+      String key = k.toString();
+      if (isShortName(key)) {
+        String shortName = getShortName(key, properties);
+        String longName = getLongName(getLongNameKey(key), properties);
+        metricNames.put(shortName, longName);
+      }
+    }
 
-    Object[] labels = new Object[] { SHARD_SERVER, SL, HU, IM, EQ, IQ, RO, RE, CH, CM, CE, CS, TC, IC, SC };
+    String labelsStr = properties.getProperty("top.columns");
+    String[] labels = resolveShortNames(labelsStr.split(","), properties);
 
-    Set<String> sizes = new HashSet<String>();
-    sizes.add(IM);
-    sizes.add(SL);
-
+    String sizesStr = properties.getProperty("top.sizes");
+    Set<String> sizes = new HashSet<String>(Arrays.asList(resolveShortNames(sizesStr.split(","), properties)));
     Set<String> keys = new HashSet<String>(metricNames.values());
 
     String cluster;
@@ -141,8 +121,6 @@ public class TopCommand extends Command {
     } else {
       cluster = args[1];
     }
-
-    List<String> shardServerList = client.shardServerList(cluster);
 
     ConsoleReader reader = this.getConsoleReader();
     if (reader != null) {
@@ -161,25 +139,12 @@ public class TopCommand extends Command {
       startCommandWatcher(reader, quit, help, this);
     }
 
-    Map<String, AtomicReference<Blur.Iface>> shardClients = new ConcurrentHashMap<String, AtomicReference<Blur.Iface>>();
-    for (String sc : shardServerList) {
-      AtomicReference<Iface> ref = shardClients.get(sc);
-      if (ref == null) {
-        ref = new AtomicReference<Blur.Iface>();
-        shardClients.put(sc, ref);
-      }
-      try {
-        Client c = BlurClientManager.newClient(new Connection(sc));
-        ref.set(c);
-      } catch (IOException e) {
-        ref.set(null);
-        if (Main.debug) {
-          e.printStackTrace();
-        }
-      }
-    }
+    List<String> shardServerList = new ArrayList<String>(client.shardServerList(cluster));
+    Collections.sort(shardServerList);
+    Map<String, AtomicReference<Client>> shardClients = setupClients(shardServerList);
 
-    int longestServerName = Math.max(getSizeOfLongestKey(shardClients), SHARD_SERVER.length());
+    String shardServerLabel = properties.getProperty(TOP_SHARD_SERVER_SHORTNAME);
+    int longestServerName = Math.max(getSizeOfLongestKey(shardClients), shardServerLabel.length());
 
     StringBuilder header = new StringBuilder("%" + longestServerName + "s");
     for (int i = 1; i < labels.length; i++) {
@@ -194,12 +159,13 @@ public class TopCommand extends Command {
       } else if (help.get()) {
         showHelp(output, labels, metricNames);
       } else {
-        output.append(truncate(String.format(header.toString(), labels)));
-        for (Entry<String, AtomicReference<Blur.Iface>> e : new TreeMap<String, AtomicReference<Blur.Iface>>(
-            shardClients).entrySet()) {
+        output.append(truncate(String.format(header.toString(), (Object[]) labels)));
+        for (Entry<String, AtomicReference<Client>> e : new TreeMap<String, AtomicReference<Client>>(shardClients)
+            .entrySet()) {
           String shardServer = e.getKey();
-          Iface shardClient = e.getValue().get();
-          if (shardClient == null) {
+          AtomicReference<Client> ref = e.getValue();
+          Map<String, Metric> metrics = getMetrics(shardServer, ref, keys);
+          if (metrics == null) {
             String line = String.format("%" + longestServerName + "s*%n", shardServer);
             output.append(line);
           } else {
@@ -207,7 +173,7 @@ public class TopCommand extends Command {
             int c = 0;
             cols[c++] = shardServer;
             StringBuilder sb = new StringBuilder("%" + longestServerName + "s");
-            Map<String, Metric> metrics = shardClient.metrics(keys);
+
             for (int i = 1; i < labels.length; i++) {
               String mn = metricNames.get(labels[i]);
               Metric metric = metrics.get(mn);
@@ -244,9 +210,114 @@ public class TopCommand extends Command {
         Terminal terminal = reader.getTerminal();
         _height = terminal.getHeight() - 2;
         _width = terminal.getWidth() - 2;
+        
+        List<String> currentShardServerList = new ArrayList<String>(client.shardServerList(cluster));
+        Collections.sort(currentShardServerList);
+        if (!shardServerList.equals(currentShardServerList)) {
+          close(shardClients);
+          shardClients = setupClients(shardServerList);
+        }
       }
     } while (reader != null);
+  }
 
+  private void close(Map<String, AtomicReference<Client>> shardClients) {
+    for (AtomicReference<Client> client : shardClients.values()) {
+      tryToClose(client);
+    }
+  }
+
+  private Map<String, AtomicReference<Client>> setupClients(List<String> shardServerList) {
+    Map<String, AtomicReference<Client>> shardClients = new ConcurrentHashMap<String, AtomicReference<Client>>();
+    for (String sc : shardServerList) {
+      AtomicReference<Client> ref = shardClients.get(sc);
+      if (ref == null) {
+        ref = new AtomicReference<Client>();
+        shardClients.put(sc, ref);
+      }
+      tryToConnect(sc, ref);
+    }
+    return shardClients;
+  }
+
+  private boolean tryToConnect(String sc, AtomicReference<Client> ref) {
+    try {
+      Client c = BlurClientManager.newClient(new Connection(sc));
+      ref.set(c);
+      return true;
+    } catch (TTransportException e) {
+      ref.set(null);
+      if (Main.debug) {
+        e.printStackTrace();
+      }
+    } catch (IOException e) {
+      ref.set(null);
+      if (Main.debug) {
+        e.printStackTrace();
+      }
+    }
+    return false;
+  }
+
+  private Map<String, Metric> getMetrics(String sc, AtomicReference<Client> ref, Set<String> keys) {
+    if (ref.get() == null) {
+      if (!tryToConnect(sc, ref)) {
+        return null;
+      }
+    }
+    try {
+      return ref.get().metrics(keys);
+    } catch (BlurException e) {
+      if (Main.debug) {
+        e.printStackTrace();
+      }
+    } catch (TException e) {
+      if (Main.debug) {
+        e.printStackTrace();
+      }
+      tryToClose(ref);
+    }
+    return null;
+  }
+
+  private void tryToClose(AtomicReference<Client> ref) {
+    Client client = ref.get();
+    if (client != null) {
+      ref.set(null);
+      try {
+        client.getInputProtocol().getTransport().close();
+      } catch (Exception e) {
+        if (Main.debug) {
+          e.printStackTrace();
+        }
+      }
+    }
+  }
+
+  private String[] resolveShortNames(String[] keys, Properties properties) {
+    String[] labels = new String[keys.length];
+    int i = 0;
+    for (String key : keys) {
+      String shortName = properties.getProperty(TOP + key + SHORTNAME);
+      labels[i++] = shortName;
+    }
+    return labels;
+  }
+
+  private String getLongNameKey(String key) {
+    return key.replace(SHORTNAME, LONGNAME);
+  }
+
+  private String getShortName(String key, Properties properties) {
+    return properties.getProperty(key, UNKNOWN);
+  }
+
+  private String getLongName(String key, Properties properties) {
+    return properties.getProperty(key, UNKNOWN);
+  }
+
+  private boolean isShortName(String key) {
+    return key.endsWith(SHORTNAME);
   }
 
   private void showHelp(StringBuilder output, Object[] labels, Map<String, String> metricNames) {

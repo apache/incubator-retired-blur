@@ -16,12 +16,23 @@ package org.apache.blur.server;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.metrics.MetricsConstants.BLUR;
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.ServerContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServerEventHandler;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransport;
+
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Gauge;
+import com.yammer.metrics.core.Meter;
+import com.yammer.metrics.core.MetricName;
 
 /**
  * {@link ShardServerContext} is the session manager for the shard servers. It
@@ -30,6 +41,18 @@ import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransport;
 public class ShardServerEventHandler implements TServerEventHandler {
 
   private static final Log LOG = LogFactory.getLog(ShardServerEventHandler.class);
+  private final Meter _connectionMeter;
+  private final AtomicLong _connections = new AtomicLong();
+  
+  public ShardServerEventHandler() {
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, "Connections"), new Gauge<Long>() {
+      @Override
+      public Long value() {
+        return null;
+      }
+    });
+    _connectionMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Connections/s"), "Connections/s", TimeUnit.SECONDS);
+  }
 
   @Override
   public void preServe() {
@@ -39,6 +62,8 @@ public class ShardServerEventHandler implements TServerEventHandler {
   @Override
   public ServerContext createContext(TProtocol input, TProtocol output) {
     LOG.debug("Client connected");
+    _connectionMeter.mark();
+    _connections.incrementAndGet();
     return new ShardServerContext();
   }
 
@@ -47,6 +72,7 @@ public class ShardServerEventHandler implements TServerEventHandler {
     LOG.debug("Client disconnected");
     ShardServerContext context = (ShardServerContext) serverContext;
     context.close();
+    _connections.decrementAndGet();
   }
 
   @Override

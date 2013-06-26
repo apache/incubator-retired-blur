@@ -135,6 +135,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private AtomicLong _indexMemoryUsage = new AtomicLong();
   private BlurIndexRefresher _refresher;
   private BlurIndexCloser _indexCloser;
+  private int _internalSearchThreads;
+  private ExecutorService _warmupExecutor;
+  private int _warmupThreads;
 
   public static interface ReleaseReader {
     void release() throws IOException;
@@ -158,7 +161,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
     // @TODO allow for configuration of these
     _mergeScheduler = new SharedMergeScheduler();
-    _searchExecutor = Executors.newThreadPool("internal-search", 16);
+    _searchExecutor = Executors.newThreadPool("internal-search", _internalSearchThreads);
+    _warmupExecutor = Executors.newThreadPool("warmup", _warmupThreads);
     _closer = new IndexInputCloser();
     _closer.init();
     _refresher = new BlurIndexRefresher();
@@ -372,7 +376,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
   @Override
   public void close() {
     if (_running.get()) {
-
       _shardStateManager.close();
       _running.set(false);
       closeAllIndexes();
@@ -387,6 +390,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
       _closer.close();
       _gc.close();
       _openerService.shutdownNow();
+      _searchExecutor.shutdownNow();
+      _warmupExecutor.shutdownNow();
     }
   }
 
@@ -478,20 +483,30 @@ public class DistributedIndexServer extends AbstractIndexServer {
     }
     _filterCache.opening(table, shard, index);
     TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, _cluster, table);
-    return warmUp(index, tableDescriptor, shard);
+    warmUp(index, tableDescriptor, shard);
+    return index;
   }
 
-  private BlurIndex warmUp(BlurIndex index, TableDescriptor table, String shard) throws IOException {
-    final IndexSearcherClosable searcher = index.getIndexReader();
-    IndexReader reader = searcher.getIndexReader();
-    _warmup.warmBlurIndex(table, shard, reader, index.isClosed(), new ReleaseReader() {
+  private void warmUp(final BlurIndex index, final TableDescriptor table, final String shard) throws IOException {
+    _warmupExecutor.submit(new Runnable() {
       @Override
-      public void release() throws IOException {
-        // this will allow for closing of index
-        searcher.close();
+      public void run() {
+        try {
+          final IndexSearcherClosable searcher = index.getIndexReader();
+          IndexReader reader = searcher.getIndexReader();
+          _warmup.warmBlurIndex(table, shard, reader, index.isClosed(), new ReleaseReader() {
+            @Override
+            public void release() throws IOException {
+              // this will allow for closing of index
+              searcher.close();
+            }
+          });
+        } catch (Exception e) {
+          LOG.error("Unknown error while trying to warmup index [" + index + "]", e);
+        }
       }
     });
-    return index;
+
   }
 
   private synchronized Map<String, BlurIndex> openMissingShards(final String table, Set<String> shardsToServe,
@@ -741,5 +756,13 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   public void setClusterName(String cluster) {
     _cluster = cluster;
+  }
+
+  public void setInternalSearchThreads(int internalSearchThreads) {
+    _internalSearchThreads = internalSearchThreads;
+  }
+
+  public void setWarmupThreads(int warmupThreads) {
+    _warmupThreads = warmupThreads;
   }
 }

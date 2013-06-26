@@ -182,7 +182,7 @@ public class BlurNRTIndex extends BlurIndex {
       _refresher.close();
       try {
         _recorder.close();
-        _writer.close();
+        _writer.close(false);
         getNRTManager().close();
       } finally {
         _directory.close();

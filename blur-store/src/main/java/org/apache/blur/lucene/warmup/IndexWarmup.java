@@ -58,17 +58,24 @@ import org.apache.lucene.store.IndexOutput;
  */
 public class IndexWarmup {
 
+  private static final String SAMPLE_PREFIX = "sample";
   private static final Log LOG = LogFactory.getLog(IndexWarmup.class);
-
-  private static final String SAMPLE_EXT = ".sample";
+  private static final String SAMPLE_EXT = ".spl";
   private static final long _5_SECONDS = TimeUnit.SECONDS.toNanos(5);
+  private static final int DEFAULT_THROTTLE = 2000000;
 
   private final AtomicBoolean _isClosed;
   private final int _maxSampleSize;
+  private final long _maxBytesPerSec;
 
-  public IndexWarmup(AtomicBoolean isClosed, int maxSampleSize) {
+  public IndexWarmup(AtomicBoolean isClosed, int maxSampleSize, long maxBytesPerSec) {
     _isClosed = isClosed;
     _maxSampleSize = maxSampleSize;
+    _maxBytesPerSec = maxBytesPerSec;
+  }
+
+  public IndexWarmup(AtomicBoolean isClosed, int maxSampleSize) {
+    this(isClosed, maxSampleSize, DEFAULT_THROTTLE);
   }
 
   private static ThreadLocal<Boolean> runTrace = new ThreadLocal<Boolean>() {
@@ -137,18 +144,21 @@ public class IndexWarmup {
     }
     long length = endingPosition - startingPosition;
     final long totalLength = length;
-    LOG.info("Context [{3}] warming field [{0}] in file [{1}] has length [{2}]", fieldName, fileName, length, context);
-    IndexInput input = dir.openInput(fileName, IOContext.READ);
+    IndexInput input = new ThrottledIndexInput(dir.openInput(fileName, IOContext.READ), _maxBytesPerSec);
     input.seek(startingPosition);
     byte[] buf = new byte[8192];
     long start = System.nanoTime();
+    long bytesReadPerPass = 0;
     while (length > 0) {
       long now = System.nanoTime();
       if (start + _5_SECONDS < now) {
+        double seconds = (now - start) / 1000000000.0;
+        double rateMbPerSec = (bytesReadPerPass / seconds) / 1000 / 1000;
         double complete = (((double) totalLength - (double) length) / (double) totalLength) * 100.0;
-        LOG.info("Context [{3}] warming field [{0}] in file [{1}] is [{2}%] complete", fieldName, fileName, complete,
-            context);
+        LOG.info("Context [{3}] warming field [{0}] in file [{1}] is [{2}%] complete at rate of [{4} MB/s]", fieldName,
+            fileName, complete, context, rateMbPerSec);
         start = System.nanoTime();
+        bytesReadPerPass = 0;
         if (_isClosed.get()) {
           LOG.info("Context [{0}] index closed", context);
           return;
@@ -157,7 +167,17 @@ public class IndexWarmup {
       int len = (int) Math.min(length, buf.length);
       input.readBytes(buf, 0, len);
       length -= len;
+      bytesReadPerPass += len;
     }
+    long now = System.nanoTime();
+    double seconds = (now - start) / 1000000000.0;
+    if (seconds < 1) {
+      seconds = 1;
+    }
+    double rateMbPerSec = (bytesReadPerPass / seconds) / 1000 / 1000;
+    LOG.info("Context [{3}] warming field [{0}] in file [{1}] is [{2}%] complete at rate of [{4} MB/s]", fieldName,
+        fileName, 100, context, rateMbPerSec);
+    input.clone();
   }
 
   private Directory getDirectory(IndexReader reader, String segmentName, String context) {
@@ -237,7 +257,7 @@ public class IndexWarmup {
         return results;
       }
       IndexTracer tracer = new IndexTracer((TraceableDirectory) directory, _maxSampleSize);
-      String fileName = segmentReader.getSegmentName() + SAMPLE_EXT;
+      String fileName = SAMPLE_PREFIX + segmentReader.getSegmentName() + SAMPLE_EXT;
       List<IndexTracerResult> segmentTraces = new ArrayList<IndexTracerResult>();
       if (directory.fileExists(fileName)) {
         IndexInput input = directory.openInput(fileName, IOContext.READONCE);

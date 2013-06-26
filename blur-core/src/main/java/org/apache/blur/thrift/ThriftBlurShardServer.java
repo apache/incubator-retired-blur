@@ -16,7 +16,7 @@ package org.apache.blur.thrift;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER;
+import static org.apache.blur.utils.BlurConstants.*;
 import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER_NAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
@@ -169,7 +169,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
 
     int sessionTimeout = configuration.getInt(BLUR_ZOOKEEPER_TIMEOUT, BLUR_ZOOKEEPER_TIMEOUT_DEFAULT);
-    
+
     final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr, sessionTimeout);
 
     BlurUtil.setupZookeeper(zooKeeper, configuration.get(BLUR_CLUSTER_NAME));
@@ -228,7 +228,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     int threadCount = configuration.getInt(BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT, 32);
 
     ShardServerEventHandler eventHandler = new ShardServerEventHandler();
-    
+
     final ThriftBlurShardServer server = new ThriftBlurShardServer();
     server.setNodeName(nodeName);
     server.setBindAddress(bindAddress);
@@ -297,14 +297,23 @@ public class ThriftBlurShardServer extends ThriftServer {
 
   private static BlurIndexWarmup getIndexWarmup(BlurConfiguration configuration) {
     String _blurFilterCacheClass = configuration.get(BLUR_SHARD_INDEX_WARMUP_CLASS);
-    if (_blurFilterCacheClass != null) {
-      try {
-        Class<?> clazz = Class.forName(_blurFilterCacheClass);
-        return (BlurIndexWarmup) clazz.newInstance();
-      } catch (Exception e) {
-        throw new RuntimeException(e);
+    if (_blurFilterCacheClass != null && _blurFilterCacheClass.isEmpty()) {
+      if (!_blurFilterCacheClass.equals("org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup")) {
+        try {
+          Class<?> clazz = Class.forName(_blurFilterCacheClass);
+          return (BlurIndexWarmup) clazz.newInstance();
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
       }
     }
-    return new DefaultBlurIndexWarmup();
+    long totalThrottle = configuration.getLong(BLUR_SHARD_INDEX_WARMUP_THROTTLE, 30000000);
+    int totalThreadCount = configuration.getInt(BLUR_SHARD_WARMUP_THREAD_COUNT, 30000000);
+    long warmupBandwidthThrottleBytesPerSec = totalThrottle / totalThreadCount;
+    if (warmupBandwidthThrottleBytesPerSec <= 0) {
+      LOG.warn("Invalid values of either [{0} = {1}] or [{2} = {3}], needs to be greater then 0",
+          BLUR_SHARD_INDEX_WARMUP_THROTTLE, totalThrottle, BLUR_SHARD_WARMUP_THREAD_COUNT, totalThreadCount);
+    }
+    return new DefaultBlurIndexWarmup(warmupBandwidthThrottleBytesPerSec);
   }
 }

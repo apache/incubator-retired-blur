@@ -25,6 +25,13 @@ import org.apache.lucene.index.IndexReader;
 
 
 public abstract class BlurIndexWarmup {
+  
+  
+  protected long _warmupBandwidthThrottleBytesPerSec;
+
+  public BlurIndexWarmup(long warmupBandwidthThrottleBytesPerSec) {
+    _warmupBandwidthThrottleBytesPerSec = warmupBandwidthThrottleBytesPerSec;
+  }
 
   /**
    * Once the reader has be warmed up, release() must be called on the
@@ -42,7 +49,6 @@ public abstract class BlurIndexWarmup {
    *          to release the handle on the reader.
    * @throws IOException
    * 
-   * @deprecated
    */
   public void warmBlurIndex(String table, String shard, IndexReader reader, AtomicBoolean isClosed, ReleaseReader releaseReader) throws IOException {
 

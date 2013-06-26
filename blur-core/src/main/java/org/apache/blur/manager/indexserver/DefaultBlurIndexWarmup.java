@@ -40,6 +40,10 @@ import org.apache.lucene.index.SegmentReader;
 
 public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
 
+  public DefaultBlurIndexWarmup(long warmupBandwidthThrottleBytesPerSec) {
+    super(warmupBandwidthThrottleBytesPerSec);
+  }
+
   private static final Log LOG = LogFactory.getLog(DefaultBlurIndexWarmup.class);
 
   @Override
@@ -51,7 +55,7 @@ public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
         reader = getBase((FilterDirectoryReader) reader);
       }
       int maxSampleSize = 1000;
-      IndexWarmup indexWarmup = new IndexWarmup(isClosed, maxSampleSize);
+      IndexWarmup indexWarmup = new IndexWarmup(isClosed, maxSampleSize, _warmupBandwidthThrottleBytesPerSec);
       String context = table.getName() + "/" + shard;
       Map<String, List<IndexTracerResult>> sampleIndex = indexWarmup.sampleIndex(reader, context);
       ColumnPreCache columnPreCache = table.getColumnPreCache();
@@ -71,7 +75,7 @@ public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
       field.setAccessible(true);
       return (IndexReader) field.get(reader);
     } catch (Exception e) {
-      LOG.error("Unknown error trying to get base reader from [{0}]",e,reader);
+      LOG.error("Unknown error trying to get base reader from [{0}]", e, reader);
       return reader;
     }
   }

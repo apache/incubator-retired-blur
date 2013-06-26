@@ -121,7 +121,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private BlurFilterCache _filterCache;
   private AtomicBoolean _running = new AtomicBoolean();
   private long _safeModeDelay;
-  private BlurIndexWarmup _warmup = new DefaultBlurIndexWarmup();
+  private BlurIndexWarmup _warmup = new DefaultBlurIndexWarmup(1000000);
   private DirectoryReferenceFileGC _gc;
   private WatchChildren _watchOnlineShards;
 

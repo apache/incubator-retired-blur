@@ -35,6 +35,8 @@ import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
+import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
+import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
 import static org.apache.blur.utils.BlurUtil.quietClose;
 
 import org.apache.blur.BlurConfiguration;
@@ -59,6 +61,7 @@ import org.apache.zookeeper.ZooKeeper;
 public class ThriftBlurControllerServer extends ThriftServer {
 
   private static final Log LOG = LogFactory.getLog(ThriftBlurControllerServer.class);
+
 
   public static void main(String[] args) throws Exception {
     int serverIndex = getServerIndex(args);
@@ -85,8 +88,10 @@ public class ThriftBlurControllerServer extends ThriftServer {
     String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
+    
+    int sessionTimeout = configuration.getInt(BLUR_ZOOKEEPER_TIMEOUT, BLUR_ZOOKEEPER_TIMEOUT_DEFAULT);
 
-    final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
+    final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr, sessionTimeout);
 
     //@TODO this is confusing because controllers are in a cluster by default, but they see all the shards clusters.
     BlurUtil.setupZookeeper(zooKeeper, BlurConstants.BLUR_CLUSTER);

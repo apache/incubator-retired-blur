@@ -34,6 +34,8 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
+import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
+import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
 import static org.apache.blur.utils.BlurUtil.quietClose;
 
 import java.lang.management.ManagementFactory;
@@ -164,7 +166,9 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
 
-    final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
+    int sessionTimeout = configuration.getInt(BLUR_ZOOKEEPER_TIMEOUT, BLUR_ZOOKEEPER_TIMEOUT_DEFAULT);
+    
+    final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr, sessionTimeout);
 
     BlurUtil.setupZookeeper(zooKeeper, configuration.get(BLUR_CLUSTER_NAME));
 

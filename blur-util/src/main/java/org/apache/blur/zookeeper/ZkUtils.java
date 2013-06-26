@@ -32,15 +32,11 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
-
-/** @author Aaron McCurry (amccurry@nearinfinity.com) */
 public class ZkUtils {
 
   private final static Log LOG = LogFactory.getLog(ZkUtils.class);
 
   public static final int ANY_VERSION = -1;
-
-  public static final int DEFAULT_ZK_SESSION_TIMEOUT = 60000;
 
   public static class ConnectionWatcher implements Watcher {
 
@@ -72,9 +68,8 @@ public class ZkUtils {
       }
     }
   }
-  
-  public static ZooKeeper newZooKeeper(String zkConnectionString) throws IOException {
-    int sessionTimeout = DEFAULT_ZK_SESSION_TIMEOUT;
+
+  public static ZooKeeper newZooKeeper(String zkConnectionString, int sessionTimeout) throws IOException {
     ConnectionWatcher watcher = new ConnectionWatcher();
     watcher.setSessionTimeout(sessionTimeout);
     watcher.setZkConnectionString(zkConnectionString);

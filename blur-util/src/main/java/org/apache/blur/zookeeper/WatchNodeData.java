@@ -76,8 +76,13 @@ public class WatchNodeData implements Closeable {
                 LOG.debug("Path [{0}] not found.", _path);
                 return;
               }
-              _data = _zooKeeper.getData(_path, watcher, stat);
-              onChange.action(_data);
+              byte[] data = _zooKeeper.getData(_path, watcher, stat);
+              try {
+                onChange.action(data);
+                _data = data;
+              } catch (Throwable t) {
+                LOG.error("Unknown error during onchange action [" + this + "].", t);
+              }
               _lock.wait();
             } catch (KeeperException e) {
               if (!_running.get()) {

@@ -80,9 +80,10 @@ public class WatchChildren implements Closeable {
         while (_running.get()) {
           synchronized (_lock) {
             try {
-              _children = _zooKeeper.getChildren(_path, watcher);
+              List<String> children = _zooKeeper.getChildren(_path, watcher);
               try {
-                onChange.action(_children);
+                onChange.action(children);
+                _children = children;
               } catch (Throwable t) {
                 LOG.error("Unknown error during onchange action [" + this + "].", t);
               }

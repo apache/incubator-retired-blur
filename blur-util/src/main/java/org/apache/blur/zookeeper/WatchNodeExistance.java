@@ -30,7 +30,6 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.data.Stat;
 
-
 public class WatchNodeExistance implements Closeable {
 
   private final static Log LOG = LogFactory.getLog(WatchNodeExistance.class);
@@ -69,8 +68,13 @@ public class WatchNodeExistance implements Closeable {
         while (_running.get()) {
           synchronized (_lock) {
             try {
-              _stat = _zooKeeper.exists(_path, watcher);
-              onChange.action(_stat);
+              Stat stat = _zooKeeper.exists(_path, watcher);
+              try {
+                onChange.action(stat);
+                _stat = stat;
+              } catch (Throwable t) {
+                LOG.error("Unknown error during onchange action [" + this + "].", t);
+              }
               _lock.wait();
             } catch (KeeperException e) {
               if (!_running.get()) {

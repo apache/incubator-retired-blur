@@ -262,6 +262,9 @@ public class BlockCache implements Closeable {
   }
 
   public int getSize() {
+    if (_cache == null) {
+      return 0;
+    }
     return _cache.size();
   }
 

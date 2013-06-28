@@ -138,6 +138,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private int _internalSearchThreads;
   private ExecutorService _warmupExecutor;
   private int _warmupThreads;
+  private final AtomicLong _pauseWarmup = new AtomicLong();
 
   public static interface ReleaseReader {
     void release() throws IOException;
@@ -500,7 +501,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
               // this will allow for closing of index
               searcher.close();
             }
-          });
+          }, _pauseWarmup);
         } catch (Exception e) {
           LOG.error("Unknown error while trying to warmup index [" + index + "]", e);
         }
@@ -516,6 +517,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
       final String shard = s;
       BlurIndex blurIndex = tableIndexes.get(shard);
       if (blurIndex == null) {
+        _pauseWarmup.incrementAndGet();
         LOG.info("Opening missing shard [{0}] from table [{1}]", shard, table);
         Future<BlurIndex> submit = _openerService.submit(new Callable<BlurIndex>() {
           @Override
@@ -531,6 +533,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
             } catch (Throwable t) {
               _shardStateManager.openingError(table, shard);
               throw new RuntimeException(t);
+            } finally {
+              _pauseWarmup.decrementAndGet();
             }
           }
         });

@@ -22,7 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -48,7 +50,7 @@ public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
 
   @Override
   public void warmBlurIndex(final TableDescriptor table, final String shard, IndexReader reader,
-      AtomicBoolean isClosed, ReleaseReader releaseReader) throws IOException {
+      AtomicBoolean isClosed, ReleaseReader releaseReader, AtomicLong pauseWarmup) throws IOException {
     LOG.info("Running warmup for reader [{0}]", reader);
     try {
       if (reader instanceof FilterDirectoryReader) {
@@ -60,9 +62,9 @@ public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
       Map<String, List<IndexTracerResult>> sampleIndex = indexWarmup.sampleIndex(reader, context);
       ColumnPreCache columnPreCache = table.getColumnPreCache();
       if (columnPreCache != null) {
-        warm(reader, columnPreCache.preCacheCols, indexWarmup, sampleIndex, context, isClosed);
+        warm(reader, columnPreCache.preCacheCols, indexWarmup, sampleIndex, context, isClosed, pauseWarmup);
       } else {
-        warm(reader, getFields(reader), indexWarmup, sampleIndex, context, isClosed);
+        warm(reader, getFields(reader), indexWarmup, sampleIndex, context, isClosed, pauseWarmup);
       }
     } finally {
       releaseReader.release();
@@ -95,8 +97,9 @@ public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
   }
 
   private void warm(IndexReader reader, Iterable<String> preCacheCols, IndexWarmup indexWarmup,
-      Map<String, List<IndexTracerResult>> sampleIndex, String context, AtomicBoolean isClosed) {
+      Map<String, List<IndexTracerResult>> sampleIndex, String context, AtomicBoolean isClosed, AtomicLong pauseWarmup) {
     for (String field : preCacheCols) {
+      maybePause(pauseWarmup);
       try {
         indexWarmup.warm(reader, sampleIndex, field, context);
       } catch (IOException e) {
@@ -107,7 +110,18 @@ public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
         return;
       }
     }
+  }
 
+  private void maybePause(AtomicLong pauseWarmup) {
+    while (pauseWarmup.get() > 0) {
+      synchronized (this) {
+        try {
+          this.wait(TimeUnit.SECONDS.toMillis(5));
+        } catch (InterruptedException e) {
+          return;
+        }
+      }
+    }
   }
 
 }

@@ -36,6 +36,7 @@ import java.sql.Statement;
 import java.sql.Struct;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Executor;
 
 import org.apache.blur.jdbc.util.NotImplemented;
 
@@ -256,25 +257,24 @@ public abstract class AbstractBlurConnection implements Connection {
 
   // java 7
 
-  // public void setSchema(String schema) throws SQLException {
-  // throwExceptionDelegate.setSchema(schema);
-  // }
-  //
-  // public String getSchema() throws SQLException {
-  // return throwExceptionDelegate.getSchema();
-  // }
-  //
-  // public void abort(Executor executor) throws SQLException {
-  // throwExceptionDelegate.abort(executor);
-  // }
-  //
-  // public void setNetworkTimeout(Executor executor, int milliseconds) throws
-  // SQLException {
-  // throwExceptionDelegate.setNetworkTimeout(executor, milliseconds);
-  // }
-  //
-  // public int getNetworkTimeout() throws SQLException {
-  // return throwExceptionDelegate.getNetworkTimeout();
-  // }
+  public void setSchema(String schema) throws SQLException {
+    throwExceptionDelegate.setSchema(schema);
+  }
+
+  public String getSchema() throws SQLException {
+    return throwExceptionDelegate.getSchema();
+  }
+
+  public void abort(Executor executor) throws SQLException {
+    throwExceptionDelegate.abort(executor);
+  }
+
+  public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+    throwExceptionDelegate.setNetworkTimeout(executor, milliseconds);
+  }
+
+  public int getNetworkTimeout() throws SQLException {
+    return throwExceptionDelegate.getNetworkTimeout();
+  }
 
 }

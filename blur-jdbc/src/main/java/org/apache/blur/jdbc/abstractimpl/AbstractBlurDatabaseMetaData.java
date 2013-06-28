@@ -28,9 +28,9 @@ import java.sql.SQLException;
 import org.apache.blur.jdbc.util.NotImplemented;
 
 /**
- * This DatabaseMetaData implementation is simply to provide the major of the method
- * implementations that only throw not implemented exceptions. That way it's
- * easier to see what has been implemented in the real class.
+ * This DatabaseMetaData implementation is simply to provide the major of the
+ * method implementations that only throw not implemented exceptions. That way
+ * it's easier to see what has been implemented in the real class.
  */
 public abstract class AbstractBlurDatabaseMetaData implements DatabaseMetaData {
 
@@ -760,12 +760,12 @@ public abstract class AbstractBlurDatabaseMetaData implements DatabaseMetaData {
 
   // java 7
 
-//  public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern,
-//      String columnNamePattern) throws SQLException {
-//    return throwExceptionDelegate.getPseudoColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
-//  }
-//
-//  public boolean generatedKeyAlwaysReturned() throws SQLException {
-//    return throwExceptionDelegate.generatedKeyAlwaysReturned();
-//  }
+  public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern,
+      String columnNamePattern) throws SQLException {
+    return throwExceptionDelegate.getPseudoColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
+  }
+
+  public boolean generatedKeyAlwaysReturned() throws SQLException {
+    return throwExceptionDelegate.generatedKeyAlwaysReturned();
+  }
 }

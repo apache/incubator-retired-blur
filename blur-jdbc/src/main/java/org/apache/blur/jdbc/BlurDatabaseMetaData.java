@@ -415,7 +415,4 @@ public class BlurDatabaseMetaData extends AbstractBlurDatabaseMetaData {
   public String getSystemFunctions() throws SQLException {
     return "";
   }
-
-
-
 }

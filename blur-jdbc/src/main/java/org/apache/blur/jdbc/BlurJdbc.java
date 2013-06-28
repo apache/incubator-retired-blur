@@ -77,9 +77,8 @@ public class BlurJdbc implements Driver {
   }
 
   // java 7
-
-  // public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-  // throw new SQLFeatureNotSupportedException();
-  // }
+  public java.util.logging.Logger getParentLogger() throws java.sql.SQLFeatureNotSupportedException {
+    throw new java.sql.SQLFeatureNotSupportedException();
+  }
 
 }

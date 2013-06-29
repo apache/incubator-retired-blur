@@ -258,23 +258,23 @@ public abstract class AbstractBlurConnection implements Connection {
   // java 7
 
   public void setSchema(String schema) throws SQLException {
-    throwExceptionDelegate.setSchema(schema);
+    throw new NotImplemented("setSchema");
   }
 
   public String getSchema() throws SQLException {
-    return throwExceptionDelegate.getSchema();
+    throw new NotImplemented("getSchema");
   }
 
   public void abort(Executor executor) throws SQLException {
-    throwExceptionDelegate.abort(executor);
+    throw new NotImplemented("abort");
   }
 
   public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-    throwExceptionDelegate.setNetworkTimeout(executor, milliseconds);
+    throw new NotImplemented("setNetworkTimeout");
   }
 
   public int getNetworkTimeout() throws SQLException {
-    return throwExceptionDelegate.getNetworkTimeout();
+    throw new NotImplemented("getNetworkTimeout");
   }
 
 }

@@ -96,6 +96,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   private static final Log LOG = LogFactory.getLog(DistributedIndexServer.class);
   private static final long _delay = TimeUnit.SECONDS.toMillis(10);
+  private static final long CHECK_PERIOD = TimeUnit.SECONDS.toMillis(60);
 
   private Map<String, BlurAnalyzer> _tableAnalyzers = new ConcurrentHashMap<String, BlurAnalyzer>();
   private Map<String, TableDescriptor> _tableDescriptors = new ConcurrentHashMap<String, TableDescriptor>();
@@ -139,6 +140,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private ExecutorService _warmupExecutor;
   private int _warmupThreads;
   private final AtomicLong _pauseWarmup = new AtomicLong();
+  private long _lastRamUsageCheck = 0;
 
   public static interface ReleaseReader {
     void release() throws IOException;
@@ -235,6 +237,11 @@ public class DistributedIndexServer extends AbstractIndexServer {
           List<String> tableList = _clusterStatus.getTableList(false, _cluster);
           _tableCount.set(tableList.size());
           long indexCount = 0;
+          long now = System.currentTimeMillis();
+          boolean checkRamUsage = false;
+          if (_lastRamUsageCheck + CHECK_PERIOD < now) {
+            checkRamUsage = true;
+          }
           AtomicLong segmentCount = new AtomicLong();
           AtomicLong indexMemoryUsage = new AtomicLong();
           for (String table : tableList) {
@@ -242,7 +249,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
               Map<String, BlurIndex> indexes = getIndexes(table);
               int count = indexes.size();
               indexCount += count;
-              updateMetrics(indexes, segmentCount, indexMemoryUsage);
+              updateMetrics(indexes, segmentCount, indexMemoryUsage, checkRamUsage);
               LOG.debug("Table [{0}] has [{1}] number of shards online in this node.", table, count);
             } catch (IOException e) {
               LOG.error("Unknown error trying to warm table [{0}]", e, table);
@@ -251,14 +258,19 @@ public class DistributedIndexServer extends AbstractIndexServer {
           _indexCount.set(indexCount);
           _segmentCount.set(segmentCount.get());
           _indexMemoryUsage.set(indexMemoryUsage.get());
+          if (checkRamUsage) {
+            _lastRamUsageCheck = now;
+          }
         }
       }
 
-      private void updateMetrics(Map<String, BlurIndex> indexes, AtomicLong segmentCount, AtomicLong indexMemoryUsage)
-          throws IOException {
+      private void updateMetrics(Map<String, BlurIndex> indexes, AtomicLong segmentCount, AtomicLong indexMemoryUsage,
+          boolean checkRamUsage) throws IOException {
         // @TODO not sure how to do this yet
+        if (checkRamUsage) {
+          indexMemoryUsage.addAndGet(RamUsageEstimator.sizeOf(indexes));
+        }
 
-        indexMemoryUsage.addAndGet(RamUsageEstimator.sizeOf(indexes));
         for (BlurIndex index : indexes.values()) {
           IndexSearcherClosable indexSearcherClosable = index.getIndexReader();
           try {

@@ -30,7 +30,7 @@ public class StopExecutionCollector extends Collector {
 
   private final Collector _collector;
   private final AtomicBoolean _running;
-  private long _last;
+  private long last;
 
   public StopExecutionCollector(Collector collector, AtomicBoolean running) {
     _collector = collector;
@@ -47,11 +47,11 @@ public class StopExecutionCollector extends Collector {
 
   public void collect(int doc) throws IOException {
     long now = System.nanoTime();
-    if (_last + _5MS < now) {
+    if (last + _5MS < now) {
       if (!_running.get()) {
         throw new StopExecutionCollectorException();
       }
-      _last = now;
+      last = now;
     }
     _collector.collect(doc);
   }

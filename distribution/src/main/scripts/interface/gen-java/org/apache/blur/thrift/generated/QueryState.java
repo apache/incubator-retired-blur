@@ -39,7 +39,8 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TEnum;
 public enum QueryState implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
   RUNNING(0),
   INTERRUPTED(1),
-  COMPLETE(2);
+  COMPLETE(2),
+  BACK_PRESSURE_INTERRUPTED(3);
 
   private final int value;
 
@@ -66,6 +67,8 @@ public enum QueryState implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum 
         return INTERRUPTED;
       case 2:
         return COMPLETE;
+      case 3:
+        return BACK_PRESSURE_INTERRUPTED;
       default:
         return null;
     }

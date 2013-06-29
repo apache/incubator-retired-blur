@@ -18,16 +18,16 @@ package org.apache.blur.manager.status;
  */
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
-import org.apache.blur.thrift.generated.QueryState;
 import org.apache.blur.thrift.generated.CpuTime;
+import org.apache.blur.thrift.generated.QueryState;
 
 /**
  * This class is accessed by multiple threads (one for each shard) 
@@ -45,10 +45,10 @@ public class QueryStatus implements Comparable<QueryStatus> {
   private long _finishedTime;
   private final ThreadMXBean _bean = ManagementFactory.getThreadMXBean();
   private final long _ttl;
-  private final AtomicBoolean _interrupted = new AtomicBoolean(false);
+  private final AtomicReference<QueryState> _state = new AtomicReference<QueryState>();
   private final AtomicInteger _totalShards = new AtomicInteger();
   private final AtomicInteger _completeShards = new AtomicInteger();
-  private AtomicBoolean _running;
+  private final AtomicBoolean _running;
   private final Map<String, CpuTime> _cpuTimes = new HashMap<String, CpuTime>();
 
   public QueryStatus(long ttl, String table, BlurQuery blurQuery, AtomicBoolean running) {
@@ -85,9 +85,14 @@ public class QueryStatus implements Comparable<QueryStatus> {
   public long getUserUuid() {
     return _blurQuery.uuid;
   }
+  
+  public void stopQueryForBackPressure() {
+    _state.set(QueryState.BACK_PRESSURE_INTERRUPTED);
+    _running.set(false);
+  }
 
   public void cancelQuery() {
-    _interrupted.set(true);
+    _state.set(QueryState.INTERRUPTED);
     _running.set(false);
   }
 
@@ -105,13 +110,7 @@ public class QueryStatus implements Comparable<QueryStatus> {
   }
 
   private QueryState getQueryState() {
-    if (_interrupted.get()) {
-      return QueryState.INTERRUPTED;
-    } else if (_finished) {
-      return QueryState.COMPLETE;
-    } else {
-      return QueryState.RUNNING;
-    }
+    return _state.get();
   }
 
   public String getTable() {
@@ -123,6 +122,9 @@ public class QueryStatus implements Comparable<QueryStatus> {
   }
 
   public void setFinished(boolean finished) {
+    if (_state.get() == QueryState.RUNNING) {
+      _state.set(QueryState.COMPLETE);
+    }
     this._finished = finished;
     _finishedTime = System.currentTimeMillis();
   }

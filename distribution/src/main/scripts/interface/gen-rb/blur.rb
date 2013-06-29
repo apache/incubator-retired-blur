@@ -153,6 +153,7 @@ module Blur
         result = receive_message(Query_result)
         return result.success unless result.success.nil?
         raise result.ex unless result.ex.nil?
+        raise result.bpex unless result.bpex.nil?
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'query failed: unknown result')
       end
 
@@ -328,6 +329,7 @@ module Blur
         result = receive_message(FetchRow_result)
         return result.success unless result.success.nil?
         raise result.ex unless result.ex.nil?
+        raise result.bpex unless result.bpex.nil?
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'fetchRow failed: unknown result')
       end
 
@@ -584,6 +586,8 @@ module Blur
           result.success = @handler.query(args.table, args.blurQuery)
         rescue ::Blur::BlurException => ex
           result.ex = ex
+        rescue ::Blur::BackPressureException => bpex
+          result.bpex = bpex
         end
         write_result(result, oprot, 'query', seqid)
       end
@@ -705,6 +709,8 @@ module Blur
           result.success = @handler.fetchRow(args.table, args.selector)
         rescue ::Blur::BlurException => ex
           result.ex = ex
+        rescue ::Blur::BackPressureException => bpex
+          result.bpex = bpex
         end
         write_result(result, oprot, 'fetchRow', seqid)
       end
@@ -1114,10 +1120,12 @@ module Blur
       include ::Thrift::Struct, ::Thrift::Struct_Union
       SUCCESS = 0
       EX = 1
+      BPEX = 2
 
       FIELDS = {
         SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Blur::BlurResults},
-        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException},
+        BPEX => {:type => ::Thrift::Types::STRUCT, :name => 'bpex', :class => ::Blur::BackPressureException}
       }
 
       def struct_fields; FIELDS; end
@@ -1508,10 +1516,12 @@ module Blur
       include ::Thrift::Struct, ::Thrift::Struct_Union
       SUCCESS = 0
       EX = 1
+      BPEX = 2
 
       FIELDS = {
         SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Blur::FetchResult},
-        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException},
+        BPEX => {:type => ::Thrift::Types::STRUCT, :name => 'bpex', :class => ::Blur::BackPressureException}
       }
 
       def struct_fields; FIELDS; end

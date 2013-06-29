@@ -1381,12 +1381,16 @@ sub new {
   my $vals      = shift || {};
   $self->{success} = undef;
   $self->{ex} = undef;
+  $self->{bpex} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{success}) {
       $self->{success} = $vals->{success};
     }
     if (defined $vals->{ex}) {
       $self->{ex} = $vals->{ex};
+    }
+    if (defined $vals->{bpex}) {
+      $self->{bpex} = $vals->{bpex};
     }
   }
   return bless ($self, $classname);
@@ -1425,6 +1429,13 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^2$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{bpex} = new Blur::BackPressureException();
+        $xfer += $self->{bpex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -1445,6 +1456,11 @@ sub write {
   if (defined $self->{ex}) {
     $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
     $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{bpex}) {
+    $xfer += $output->writeFieldBegin('bpex', TType::STRUCT, 2);
+    $xfer += $self->{bpex}->write($output);
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -3186,12 +3202,16 @@ sub new {
   my $vals      = shift || {};
   $self->{success} = undef;
   $self->{ex} = undef;
+  $self->{bpex} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{success}) {
       $self->{success} = $vals->{success};
     }
     if (defined $vals->{ex}) {
       $self->{ex} = $vals->{ex};
+    }
+    if (defined $vals->{bpex}) {
+      $self->{bpex} = $vals->{bpex};
     }
   }
   return bless ($self, $classname);
@@ -3230,6 +3250,13 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^2$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{bpex} = new Blur::BackPressureException();
+        $xfer += $self->{bpex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -3250,6 +3277,11 @@ sub write {
   if (defined $self->{ex}) {
     $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
     $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{bpex}) {
+    $xfer += $output->writeFieldBegin('bpex', TType::STRUCT, 2);
+    $xfer += $self->{bpex}->write($output);
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -5576,6 +5608,9 @@ sub recv_query{
   if (defined $result->{ex}) {
     die $result->{ex};
   }
+  if (defined $result->{bpex}) {
+    die $result->{bpex};
+  }
   die "query failed: unknown result";
 }
 sub parseQuery{
@@ -6111,6 +6146,9 @@ sub recv_fetchRow{
   }
   if (defined $result->{ex}) {
     die $result->{ex};
+  }
+  if (defined $result->{bpex}) {
+    die $result->{bpex};
   }
   die "fetchRow failed: unknown result";
 }
@@ -6736,6 +6774,8 @@ sub process_query {
       $result->{success} = $self->{handler}->query($args->table, $args->blurQuery);
     }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
       $result->{ex} = $@;
+        }; if( UNIVERSAL::isa($@,'Blur::BackPressureException') ){ 
+      $result->{bpex} = $@;
     }
     $output->writeMessageBegin('query', TMessageType::REPLY, $seqid);
     $result->write($output);
@@ -6923,6 +6963,8 @@ sub process_fetchRow {
       $result->{success} = $self->{handler}->fetchRow($args->table, $args->selector);
     }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
       $result->{ex} = $@;
+        }; if( UNIVERSAL::isa($@,'Blur::BackPressureException') ){ 
+      $result->{bpex} = $@;
     }
     $output->writeMessageBegin('fetchRow', TMessageType::REPLY, $seqid);
     $result->write($output);

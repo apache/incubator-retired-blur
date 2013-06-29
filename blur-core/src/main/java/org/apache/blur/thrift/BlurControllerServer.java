@@ -58,6 +58,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.commands.BlurCommand;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BackPressureException;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
@@ -298,7 +299,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public BlurResults query(final String table, final BlurQuery blurQuery) throws BlurException, TException {
+  public BlurResults query(final String table, final BlurQuery blurQuery) throws BlurException, BackPressureException, TException {
     checkTable(table);
     String cluster = _clusterStatus.getCluster(true, table);
     _queryChecker.checkQuery(blurQuery);
@@ -423,7 +424,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public FetchResult fetchRow(final String table, final Selector selector) throws BlurException, TException {
+  public FetchResult fetchRow(final String table, final Selector selector) throws BlurException, BackPressureException, TException {
     checkTable(table);
     IndexManager.validSelector(selector);
     String clientHostnamePort = null;

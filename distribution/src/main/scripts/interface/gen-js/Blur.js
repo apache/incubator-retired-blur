@@ -1201,8 +1201,13 @@ Blur_query_args.prototype.write = function(output) {
 Blur_query_result = function(args) {
   this.success = null;
   this.ex = null;
+  this.bpex = null;
   if (args instanceof BlurException) {
     this.ex = args;
+    return;
+  }
+  if (args instanceof BackPressureException) {
+    this.bpex = args;
     return;
   }
   if (args) {
@@ -1211,6 +1216,9 @@ Blur_query_result = function(args) {
     }
     if (args.ex !== undefined) {
       this.ex = args.ex;
+    }
+    if (args.bpex !== undefined) {
+      this.bpex = args.bpex;
     }
   }
 };
@@ -1244,6 +1252,14 @@ Blur_query_result.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 2:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.bpex = new BackPressureException();
+        this.bpex.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -1263,6 +1279,11 @@ Blur_query_result.prototype.write = function(output) {
   if (this.ex !== null && this.ex !== undefined) {
     output.writeFieldBegin('ex', Thrift.Type.STRUCT, 1);
     this.ex.write(output);
+    output.writeFieldEnd();
+  }
+  if (this.bpex !== null && this.bpex !== undefined) {
+    output.writeFieldBegin('bpex', Thrift.Type.STRUCT, 2);
+    this.bpex.write(output);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
@@ -2784,8 +2805,13 @@ Blur_fetchRow_args.prototype.write = function(output) {
 Blur_fetchRow_result = function(args) {
   this.success = null;
   this.ex = null;
+  this.bpex = null;
   if (args instanceof BlurException) {
     this.ex = args;
+    return;
+  }
+  if (args instanceof BackPressureException) {
+    this.bpex = args;
     return;
   }
   if (args) {
@@ -2794,6 +2820,9 @@ Blur_fetchRow_result = function(args) {
     }
     if (args.ex !== undefined) {
       this.ex = args.ex;
+    }
+    if (args.bpex !== undefined) {
+      this.bpex = args.bpex;
     }
   }
 };
@@ -2827,6 +2856,14 @@ Blur_fetchRow_result.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 2:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.bpex = new BackPressureException();
+        this.bpex.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -2846,6 +2883,11 @@ Blur_fetchRow_result.prototype.write = function(output) {
   if (this.ex !== null && this.ex !== undefined) {
     output.writeFieldBegin('ex', Thrift.Type.STRUCT, 1);
     this.ex.write(output);
+    output.writeFieldEnd();
+  }
+  if (this.bpex !== null && this.bpex !== undefined) {
+    output.writeFieldBegin('bpex', Thrift.Type.STRUCT, 2);
+    this.bpex.write(output);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
@@ -4447,6 +4489,9 @@ BlurClient.prototype.recv_query = function() {
   if (null !== result.ex) {
     throw result.ex;
   }
+  if (null !== result.bpex) {
+    throw result.bpex;
+  }
   if (null !== result.success) {
     return result.success;
   }
@@ -4861,6 +4906,9 @@ BlurClient.prototype.recv_fetchRow = function() {
 
   if (null !== result.ex) {
     throw result.ex;
+  }
+  if (null !== result.bpex) {
+    throw result.bpex;
   }
   if (null !== result.success) {
     return result.success;

@@ -136,7 +136,7 @@ public class Blur {
      * @param table
      * @param blurQuery
      */
-    public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, BackPressureException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
      * Parses the given query and return the string represents the query.
@@ -194,7 +194,7 @@ public class Blur {
 
     public long recordFrequency(String table, String columnFamily, String columnName, String value) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
-    public FetchResult fetchRow(String table, Selector selector) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public FetchResult fetchRow(String table, Selector selector) throws BlurException, BackPressureException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     public void mutate(RowMutation mutation) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
@@ -507,7 +507,7 @@ public class Blur {
       throw new org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException(org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException.MISSING_RESULT, "describe failed: unknown result");
     }
 
-    public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, BackPressureException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       send_query(table, blurQuery);
       return recv_query();
@@ -521,7 +521,7 @@ public class Blur {
       sendBase("query", args);
     }
 
-    public BlurResults recv_query() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public BlurResults recv_query() throws BlurException, BackPressureException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       query_result result = new query_result();
       receiveBase(result, "query");
@@ -530,6 +530,9 @@ public class Blur {
       }
       if (result.ex != null) {
         throw result.ex;
+      }
+      if (result.bpex != null) {
+        throw result.bpex;
       }
       throw new org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException(org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException.MISSING_RESULT, "query failed: unknown result");
     }
@@ -801,7 +804,7 @@ public class Blur {
       throw new org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException(org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException.MISSING_RESULT, "recordFrequency failed: unknown result");
     }
 
-    public FetchResult fetchRow(String table, Selector selector) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public FetchResult fetchRow(String table, Selector selector) throws BlurException, BackPressureException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       send_fetchRow(table, selector);
       return recv_fetchRow();
@@ -815,7 +818,7 @@ public class Blur {
       sendBase("fetchRow", args);
     }
 
-    public FetchResult recv_fetchRow() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public FetchResult recv_fetchRow() throws BlurException, BackPressureException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       fetchRow_result result = new fetchRow_result();
       receiveBase(result, "fetchRow");
@@ -824,6 +827,9 @@ public class Blur {
       }
       if (result.ex != null) {
         throw result.ex;
+      }
+      if (result.bpex != null) {
+        throw result.bpex;
       }
       throw new org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException(org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException.MISSING_RESULT, "fetchRow failed: unknown result");
     }
@@ -1358,7 +1364,7 @@ public class Blur {
         prot.writeMessageEnd();
       }
 
-      public BlurResults getResult() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      public BlurResults getResult() throws BlurException, BackPressureException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
         if (getState() != org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -1743,7 +1749,7 @@ public class Blur {
         prot.writeMessageEnd();
       }
 
-      public FetchResult getResult() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      public FetchResult getResult() throws BlurException, BackPressureException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
         if (getState() != org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -2333,6 +2339,8 @@ public class Blur {
           result.success = iface.query(args.table, args.blurQuery);
         } catch (BlurException ex) {
           result.ex = ex;
+        } catch (BackPressureException bpex) {
+          result.bpex = bpex;
         }
         return result;
       }
@@ -2598,6 +2606,8 @@ public class Blur {
           result.success = iface.fetchRow(args.table, args.selector);
         } catch (BlurException ex) {
           result.ex = ex;
+        } catch (BackPressureException bpex) {
+          result.bpex = bpex;
         }
         return result;
       }
@@ -9908,6 +9918,7 @@ public class Blur {
 
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SUCCESS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("success", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)0);
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField EX_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("ex", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BPEX_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("bpex", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -9917,11 +9928,13 @@ public class Blur {
 
     public BlurResults success; // required
     public BlurException ex; // required
+    public BackPressureException bpex; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
       SUCCESS((short)0, "success"),
-      EX((short)1, "ex");
+      EX((short)1, "ex"),
+      BPEX((short)2, "bpex");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -9940,6 +9953,8 @@ public class Blur {
             return SUCCESS;
           case 1: // EX
             return EX;
+          case 2: // BPEX
+            return BPEX;
           default:
             return null;
         }
@@ -9987,6 +10002,8 @@ public class Blur {
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, BlurResults.class)));
       tmpMap.put(_Fields.EX, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("ex", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.BPEX, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("bpex", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(query_result.class, metaDataMap);
     }
@@ -9996,11 +10013,13 @@ public class Blur {
 
     public query_result(
       BlurResults success,
-      BlurException ex)
+      BlurException ex,
+      BackPressureException bpex)
     {
       this();
       this.success = success;
       this.ex = ex;
+      this.bpex = bpex;
     }
 
     /**
@@ -10013,6 +10032,9 @@ public class Blur {
       if (other.isSetEx()) {
         this.ex = new BlurException(other.ex);
       }
+      if (other.isSetBpex()) {
+        this.bpex = new BackPressureException(other.bpex);
+      }
     }
 
     public query_result deepCopy() {
@@ -10023,6 +10045,7 @@ public class Blur {
     public void clear() {
       this.success = null;
       this.ex = null;
+      this.bpex = null;
     }
 
     public BlurResults getSuccess() {
@@ -10073,6 +10096,30 @@ public class Blur {
       }
     }
 
+    public BackPressureException getBpex() {
+      return this.bpex;
+    }
+
+    public query_result setBpex(BackPressureException bpex) {
+      this.bpex = bpex;
+      return this;
+    }
+
+    public void unsetBpex() {
+      this.bpex = null;
+    }
+
+    /** Returns true if field bpex is set (has been assigned a value) and false otherwise */
+    public boolean isSetBpex() {
+      return this.bpex != null;
+    }
+
+    public void setBpexIsSet(boolean value) {
+      if (!value) {
+        this.bpex = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case SUCCESS:
@@ -10091,6 +10138,14 @@ public class Blur {
         }
         break;
 
+      case BPEX:
+        if (value == null) {
+          unsetBpex();
+        } else {
+          setBpex((BackPressureException)value);
+        }
+        break;
+
       }
     }
 
@@ -10101,6 +10156,9 @@ public class Blur {
 
       case EX:
         return getEx();
+
+      case BPEX:
+        return getBpex();
 
       }
       throw new IllegalStateException();
@@ -10117,6 +10175,8 @@ public class Blur {
         return isSetSuccess();
       case EX:
         return isSetEx();
+      case BPEX:
+        return isSetBpex();
       }
       throw new IllegalStateException();
     }
@@ -10149,6 +10209,15 @@ public class Blur {
         if (!(this_present_ex && that_present_ex))
           return false;
         if (!this.ex.equals(that.ex))
+          return false;
+      }
+
+      boolean this_present_bpex = true && this.isSetBpex();
+      boolean that_present_bpex = true && that.isSetBpex();
+      if (this_present_bpex || that_present_bpex) {
+        if (!(this_present_bpex && that_present_bpex))
+          return false;
+        if (!this.bpex.equals(that.bpex))
           return false;
       }
 
@@ -10188,6 +10257,16 @@ public class Blur {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetBpex()).compareTo(typedOther.isSetBpex());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetBpex()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.bpex, typedOther.bpex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -10221,6 +10300,14 @@ public class Blur {
         sb.append("null");
       } else {
         sb.append(this.ex);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("bpex:");
+      if (this.bpex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.bpex);
       }
       first = false;
       sb.append(")");
@@ -10287,6 +10374,15 @@ public class Blur {
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
+            case 2: // BPEX
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
+                struct.bpex = new BackPressureException();
+                struct.bpex.read(iprot);
+                struct.setBpexIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -10310,6 +10406,11 @@ public class Blur {
         if (struct.ex != null) {
           oprot.writeFieldBegin(EX_FIELD_DESC);
           struct.ex.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.bpex != null) {
+          oprot.writeFieldBegin(BPEX_FIELD_DESC);
+          struct.bpex.write(oprot);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -10336,19 +10437,25 @@ public class Blur {
         if (struct.isSetEx()) {
           optionals.set(1);
         }
-        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetBpex()) {
+          optionals.set(2);
+        }
+        oprot.writeBitSet(optionals, 3);
         if (struct.isSetSuccess()) {
           struct.success.write(oprot);
         }
         if (struct.isSetEx()) {
           struct.ex.write(oprot);
         }
+        if (struct.isSetBpex()) {
+          struct.bpex.write(oprot);
+        }
       }
 
       @Override
       public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, query_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(2);
+        BitSet incoming = iprot.readBitSet(3);
         if (incoming.get(0)) {
           struct.success = new BlurResults();
           struct.success.read(iprot);
@@ -10358,6 +10465,11 @@ public class Blur {
           struct.ex = new BlurException();
           struct.ex.read(iprot);
           struct.setExIsSet(true);
+        }
+        if (incoming.get(2)) {
+          struct.bpex = new BackPressureException();
+          struct.bpex.read(iprot);
+          struct.setBpexIsSet(true);
         }
       }
     }
@@ -20005,6 +20117,7 @@ public class Blur {
 
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SUCCESS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("success", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)0);
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField EX_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("ex", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BPEX_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("bpex", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -20014,11 +20127,13 @@ public class Blur {
 
     public FetchResult success; // required
     public BlurException ex; // required
+    public BackPressureException bpex; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
       SUCCESS((short)0, "success"),
-      EX((short)1, "ex");
+      EX((short)1, "ex"),
+      BPEX((short)2, "bpex");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -20037,6 +20152,8 @@ public class Blur {
             return SUCCESS;
           case 1: // EX
             return EX;
+          case 2: // BPEX
+            return BPEX;
           default:
             return null;
         }
@@ -20084,6 +20201,8 @@ public class Blur {
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, FetchResult.class)));
       tmpMap.put(_Fields.EX, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("ex", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.BPEX, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("bpex", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(fetchRow_result.class, metaDataMap);
     }
@@ -20093,11 +20212,13 @@ public class Blur {
 
     public fetchRow_result(
       FetchResult success,
-      BlurException ex)
+      BlurException ex,
+      BackPressureException bpex)
     {
       this();
       this.success = success;
       this.ex = ex;
+      this.bpex = bpex;
     }
 
     /**
@@ -20110,6 +20231,9 @@ public class Blur {
       if (other.isSetEx()) {
         this.ex = new BlurException(other.ex);
       }
+      if (other.isSetBpex()) {
+        this.bpex = new BackPressureException(other.bpex);
+      }
     }
 
     public fetchRow_result deepCopy() {
@@ -20120,6 +20244,7 @@ public class Blur {
     public void clear() {
       this.success = null;
       this.ex = null;
+      this.bpex = null;
     }
 
     public FetchResult getSuccess() {
@@ -20170,6 +20295,30 @@ public class Blur {
       }
     }
 
+    public BackPressureException getBpex() {
+      return this.bpex;
+    }
+
+    public fetchRow_result setBpex(BackPressureException bpex) {
+      this.bpex = bpex;
+      return this;
+    }
+
+    public void unsetBpex() {
+      this.bpex = null;
+    }
+
+    /** Returns true if field bpex is set (has been assigned a value) and false otherwise */
+    public boolean isSetBpex() {
+      return this.bpex != null;
+    }
+
+    public void setBpexIsSet(boolean value) {
+      if (!value) {
+        this.bpex = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case SUCCESS:
@@ -20188,6 +20337,14 @@ public class Blur {
         }
         break;
 
+      case BPEX:
+        if (value == null) {
+          unsetBpex();
+        } else {
+          setBpex((BackPressureException)value);
+        }
+        break;
+
       }
     }
 
@@ -20198,6 +20355,9 @@ public class Blur {
 
       case EX:
         return getEx();
+
+      case BPEX:
+        return getBpex();
 
       }
       throw new IllegalStateException();
@@ -20214,6 +20374,8 @@ public class Blur {
         return isSetSuccess();
       case EX:
         return isSetEx();
+      case BPEX:
+        return isSetBpex();
       }
       throw new IllegalStateException();
     }
@@ -20246,6 +20408,15 @@ public class Blur {
         if (!(this_present_ex && that_present_ex))
           return false;
         if (!this.ex.equals(that.ex))
+          return false;
+      }
+
+      boolean this_present_bpex = true && this.isSetBpex();
+      boolean that_present_bpex = true && that.isSetBpex();
+      if (this_present_bpex || that_present_bpex) {
+        if (!(this_present_bpex && that_present_bpex))
+          return false;
+        if (!this.bpex.equals(that.bpex))
           return false;
       }
 
@@ -20285,6 +20456,16 @@ public class Blur {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetBpex()).compareTo(typedOther.isSetBpex());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetBpex()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.bpex, typedOther.bpex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -20318,6 +20499,14 @@ public class Blur {
         sb.append("null");
       } else {
         sb.append(this.ex);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("bpex:");
+      if (this.bpex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.bpex);
       }
       first = false;
       sb.append(")");
@@ -20384,6 +20573,15 @@ public class Blur {
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
+            case 2: // BPEX
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
+                struct.bpex = new BackPressureException();
+                struct.bpex.read(iprot);
+                struct.setBpexIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -20407,6 +20605,11 @@ public class Blur {
         if (struct.ex != null) {
           oprot.writeFieldBegin(EX_FIELD_DESC);
           struct.ex.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.bpex != null) {
+          oprot.writeFieldBegin(BPEX_FIELD_DESC);
+          struct.bpex.write(oprot);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -20433,19 +20636,25 @@ public class Blur {
         if (struct.isSetEx()) {
           optionals.set(1);
         }
-        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetBpex()) {
+          optionals.set(2);
+        }
+        oprot.writeBitSet(optionals, 3);
         if (struct.isSetSuccess()) {
           struct.success.write(oprot);
         }
         if (struct.isSetEx()) {
           struct.ex.write(oprot);
         }
+        if (struct.isSetBpex()) {
+          struct.bpex.write(oprot);
+        }
       }
 
       @Override
       public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, fetchRow_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(2);
+        BitSet incoming = iprot.readBitSet(3);
         if (incoming.get(0)) {
           struct.success = new FetchResult();
           struct.success.read(iprot);
@@ -20455,6 +20664,11 @@ public class Blur {
           struct.ex = new BlurException();
           struct.ex.read(iprot);
           struct.setExIsSet(true);
+        }
+        if (incoming.get(2)) {
+          struct.bpex = new BackPressureException();
+          struct.bpex.read(iprot);
+          struct.setBpexIsSet(true);
         }
       }
     }

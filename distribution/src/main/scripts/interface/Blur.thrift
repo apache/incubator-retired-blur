@@ -36,6 +36,16 @@ exception BlurException {
 }
 
 /** 
+  * BackPressureException that carries a message.
+  */
+exception BackPressureException {
+  /** 
+   * The message in the exception. 
+   */
+  1:string message
+}
+
+/** 
   * The scoring type used during a SuperQuery to score multi Record hits within a ColumnFamily.<br/><br/>
   * SUPER - During a multi Record match, a calculation of the best match Record plus how often it occurs within the match Row produces the score that is used in the scoring of the SuperQuery.<br/><br/>
   * AGGREGATE - During a multi Record match, the aggregate score of all the Records within a ColumnFamily is used in the scoring of the SuperQuery.<br/><br/>
@@ -58,7 +68,8 @@ enum ScoreType {
 enum QueryState {
   RUNNING,
   INTERRUPTED,
-  COMPLETE
+  COMPLETE,
+  BACK_PRESSURE_INTERRUPTED
 }
 
 /**
@@ -767,7 +778,7 @@ service Blur {
    * @param table the table name.
    * @param blurQuery the query to execute.
    */
-  BlurResults query(1:string table, 2:BlurQuery blurQuery) throws (1:BlurException ex)
+  BlurResults query(1:string table, 2:BlurQuery blurQuery) throws (1:BlurException ex, 2:BackPressureException bpex)
 
   /**
    * Parses the given query and return the string represents the query.
@@ -807,7 +818,7 @@ service Blur {
   list<string> terms(1:string table, 2:string columnFamily, 3:string columnName, 4:string startWith, 5:i16 size) throws (1:BlurException ex)
   i64 recordFrequency(1:string table, 2:string columnFamily, 3:string columnName, 4:string value) throws (1:BlurException ex)
 
-  FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException ex)
+  FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException ex, 2:BackPressureException bpex)
 
   void mutate(1:RowMutation mutation) throws (1:BlurException ex)
   void mutateBatch(1:list<RowMutation> mutations) throws (1:BlurException ex)

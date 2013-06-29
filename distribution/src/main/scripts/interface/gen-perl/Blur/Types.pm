@@ -17,6 +17,7 @@ package Blur::QueryState;
 use constant RUNNING => 0;
 use constant INTERRUPTED => 1;
 use constant COMPLETE => 2;
+use constant BACK_PRESSURE_INTERRUPTED => 3;
 package Blur::RowMutationType;
 use constant DELETE_ROW => 0;
 use constant REPLACE_ROW => 1;
@@ -106,6 +107,71 @@ sub write {
   if (defined $self->{stackTraceStr}) {
     $xfer += $output->writeFieldBegin('stackTraceStr', TType::STRING, 2);
     $xfer += $output->writeString($self->{stackTraceStr});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::BackPressureException;
+use base qw(Thrift::TException);
+use base qw(Class::Accessor);
+Blur::BackPressureException->mk_accessors( qw( message ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{message} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{message}) {
+      $self->{message} = $vals->{message};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'BackPressureException';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{message});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('BackPressureException');
+  if (defined $self->{message}) {
+    $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
+    $xfer += $output->writeString($self->{message});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

@@ -20,8 +20,9 @@ module Blur
     RUNNING = 0
     INTERRUPTED = 1
     COMPLETE = 2
-    VALUE_MAP = {0 => "RUNNING", 1 => "INTERRUPTED", 2 => "COMPLETE"}
-    VALID_VALUES = Set.new([RUNNING, INTERRUPTED, COMPLETE]).freeze
+    BACK_PRESSURE_INTERRUPTED = 3
+    VALUE_MAP = {0 => "RUNNING", 1 => "INTERRUPTED", 2 => "COMPLETE", 3 => "BACK_PRESSURE_INTERRUPTED"}
+    VALID_VALUES = Set.new([RUNNING, INTERRUPTED, COMPLETE, BACK_PRESSURE_INTERRUPTED]).freeze
   end
 
   module RowMutationType
@@ -64,6 +65,29 @@ module Blur
       MESSAGE => {:type => ::Thrift::Types::STRING, :name => 'message'},
       # The original stack trace (if any).
       STACKTRACESTR => {:type => ::Thrift::Types::STRING, :name => 'stackTraceStr'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  # BackPressureException that carries a message.
+  class BackPressureException < ::Thrift::Exception
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    def initialize(message=nil)
+      super()
+      self.message = message
+    end
+
+    MESSAGE = 1
+
+    FIELDS = {
+      # The message in the exception.
+      MESSAGE => {:type => ::Thrift::Types::STRING, :name => 'message'}
     }
 
     def struct_fields; FIELDS; end

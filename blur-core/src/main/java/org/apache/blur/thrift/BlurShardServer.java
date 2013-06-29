@@ -41,6 +41,7 @@ import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.generated.BackPressureException;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -88,7 +89,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, TException {
+  public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, BackPressureException, TException {
     checkTable(_cluster, table);
     resetSearchers();
     _queryChecker.checkQuery(blurQuery);
@@ -135,7 +136,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public String parseQuery(String table, SimpleQuery simpleQuery) throws BlurException, TException {
+  public String parseQuery(String table, SimpleQuery simpleQuery) throws BlurException, BackPressureException, TException {
     try {
       return _indexManager.parseQuery(table, simpleQuery);
     } catch (Throwable e) {

@@ -13,7 +13,8 @@ ScoreType = {
 QueryState = {
 'RUNNING' : 0,
 'INTERRUPTED' : 1,
-'COMPLETE' : 2
+'COMPLETE' : 2,
+'BACK_PRESSURE_INTERRUPTED' : 3
 };
 RowMutationType = {
 'DELETE_ROW' : 0,
@@ -94,6 +95,60 @@ BlurException.prototype.write = function(output) {
   if (this.stackTraceStr !== null && this.stackTraceStr !== undefined) {
     output.writeFieldBegin('stackTraceStr', Thrift.Type.STRING, 2);
     output.writeString(this.stackTraceStr);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+BackPressureException = function(args) {
+  this.message = null;
+  if (args) {
+    if (args.message !== undefined) {
+      this.message = args.message;
+    }
+  }
+};
+Thrift.inherits(BackPressureException, Thrift.TException);
+BackPressureException.prototype.name = 'BackPressureException';
+BackPressureException.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.message = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+BackPressureException.prototype.write = function(output) {
+  output.writeStructBegin('BackPressureException');
+  if (this.message !== null && this.message !== undefined) {
+    output.writeFieldBegin('message', Thrift.Type.STRING, 1);
+    output.writeString(this.message);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

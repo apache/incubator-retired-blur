@@ -72,8 +72,10 @@ public class GCWatcher extends TimerTask {
     if (_bean != null) {
       _timer = new Timer("gc-watch", true);
       _timer.schedule(this, _period, _period);
+      LOG.info("GCWatcher was setup.");
     } else {
       _timer = null;
+      LOG.warn("GCWatcher was NOT setup.");
     }
   }
 
@@ -120,7 +122,7 @@ public class GCWatcher extends TimerTask {
         LOG.info("totalTime spent in GC [{0}] collected [{1}]", totalTime, (max - used));
         long upperLimit = (long) (max * _ratio);
         if (used > upperLimit) {
-          LOG.error("WARNING!!!! - Heap used [{0}] over limit of [{1}], taking action to avoid an OOM error.", used,
+          LOG.error("----- WARNING !!!! - Heap used [{0}] over limit of [{1}], taking action to avoid an OOM error.", used,
               upperLimit);
           synchronized (_actions) {
             for (Action action : _actions) {
@@ -220,7 +222,7 @@ public class GCWatcher extends TimerTask {
       try {
         _instance = new GCWatcher(ratio);
       } catch (Exception e) {
-
+        LOG.error("GCWatcher had error initializing", e);
       }
     } else {
       LOG.warn("GCWatcher has already been initialized");

@@ -16,6 +16,7 @@ package org.apache.blur.analysis;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.blur.thrift.generated.Column;
@@ -47,7 +48,18 @@ public abstract class FieldTypeDefinition {
    *          the {@link Column}
    * @return the {@link Iterable} of fields.
    */
-  public abstract Iterable<? extends Field> getFields(Column column);
+  public abstract Iterable<? extends Field> getFieldsForColumn(String family, Column column);
+
+  /**
+   * Gets the {@link Field}s for indexing from a single Column, but should not
+   * be stored because the original value should be stored in the main
+   * {@link Column}.
+   * 
+   * @param column
+   *          the {@link Column}
+   * @return the {@link Iterable} of fields.
+   */
+  public abstract Iterable<? extends Field> getFieldsForSubColumn(String family, Column column, String subName);
 
   /**
    * Gets the {@link FieldType} for stored version. This is the normal Column
@@ -80,5 +92,41 @@ public abstract class FieldTypeDefinition {
    * @return the {@link Analyzer}.
    */
   public abstract Analyzer getAnalyzerForQuery();
+
+  protected Iterable<? extends Field> makeIterable(final Field field) {
+    return new Iterable<Field>() {
+      @Override
+      public Iterator<Field> iterator() {
+        return new Iterator<Field>() {
+
+          private boolean _hasNext = true;
+
+          @Override
+          public void remove() {
+
+          }
+
+          @Override
+          public Field next() {
+            _hasNext = false;
+            return field;
+          }
+
+          @Override
+          public boolean hasNext() {
+            return _hasNext;
+          }
+        };
+      }
+    };
+  }
+
+  protected String getName(String family, String name) {
+    return family + "." + name;
+  }
+
+  protected String getName(String family, String name, String subName) {
+    return family + "." + name + "." + subName;
+  }
 
 }

@@ -762,10 +762,10 @@ public abstract class AbstractBlurDatabaseMetaData implements DatabaseMetaData {
 
   public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern,
       String columnNamePattern) throws SQLException {
-    return throwExceptionDelegate.getPseudoColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
+    throw new NotImplemented("getPseudoColumns");
   }
 
   public boolean generatedKeyAlwaysReturned() throws SQLException {
-    return throwExceptionDelegate.generatedKeyAlwaysReturned();
+    throw new NotImplemented("generatedKeyAlwaysReturned");
   }
 }

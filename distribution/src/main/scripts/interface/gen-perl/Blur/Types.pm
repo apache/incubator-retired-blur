@@ -8,6 +8,11 @@ use strict;
 use warnings;
 use Thrift;
 
+package Blur::ErrorType;
+use constant UNKNOWN => 0;
+use constant QUERY_CANCEL => 1;
+use constant QUERY_TIMEOUT => 2;
+use constant BACK_PRESSURE => 3;
 package Blur::ScoreType;
 use constant SUPER => 0;
 use constant AGGREGATE => 1;
@@ -37,7 +42,7 @@ use constant CLOSING_ERROR => 5;
 package Blur::BlurException;
 use base qw(Thrift::TException);
 use base qw(Class::Accessor);
-Blur::BlurException->mk_accessors( qw( message stackTraceStr ) );
+Blur::BlurException->mk_accessors( qw( message stackTraceStr errorType ) );
 
 sub new {
   my $classname = shift;
@@ -45,12 +50,16 @@ sub new {
   my $vals      = shift || {};
   $self->{message} = undef;
   $self->{stackTraceStr} = undef;
+  $self->{errorType} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{message}) {
       $self->{message} = $vals->{message};
     }
     if (defined $vals->{stackTraceStr}) {
       $self->{stackTraceStr} = $vals->{stackTraceStr};
+    }
+    if (defined $vals->{errorType}) {
+      $self->{errorType} = $vals->{errorType};
     }
   }
   return bless ($self, $classname);
@@ -87,6 +96,12 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^3$/ && do{      if ($ftype == TType::I32) {
+        $xfer += $input->readI32(\$self->{errorType});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -109,69 +124,9 @@ sub write {
     $xfer += $output->writeString($self->{stackTraceStr});
     $xfer += $output->writeFieldEnd();
   }
-  $xfer += $output->writeFieldStop();
-  $xfer += $output->writeStructEnd();
-  return $xfer;
-}
-
-package Blur::BackPressureException;
-use base qw(Thrift::TException);
-use base qw(Class::Accessor);
-Blur::BackPressureException->mk_accessors( qw( message ) );
-
-sub new {
-  my $classname = shift;
-  my $self      = {};
-  my $vals      = shift || {};
-  $self->{message} = undef;
-  if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{message}) {
-      $self->{message} = $vals->{message};
-    }
-  }
-  return bless ($self, $classname);
-}
-
-sub getName {
-  return 'BackPressureException';
-}
-
-sub read {
-  my ($self, $input) = @_;
-  my $xfer  = 0;
-  my $fname;
-  my $ftype = 0;
-  my $fid   = 0;
-  $xfer += $input->readStructBegin(\$fname);
-  while (1) 
-  {
-    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
-    if ($ftype == TType::STOP) {
-      last;
-    }
-    SWITCH: for($fid)
-    {
-      /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{message});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-        $xfer += $input->skip($ftype);
-    }
-    $xfer += $input->readFieldEnd();
-  }
-  $xfer += $input->readStructEnd();
-  return $xfer;
-}
-
-sub write {
-  my ($self, $output) = @_;
-  my $xfer   = 0;
-  $xfer += $output->writeStructBegin('BackPressureException');
-  if (defined $self->{message}) {
-    $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
-    $xfer += $output->writeString($self->{message});
+  if (defined $self->{errorType}) {
+    $xfer += $output->writeFieldBegin('errorType', TType::I32, 3);
+    $xfer += $output->writeI32($self->{errorType});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

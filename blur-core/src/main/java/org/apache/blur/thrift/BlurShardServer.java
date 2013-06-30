@@ -41,7 +41,6 @@ import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.generated.BackPressureException;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -89,7 +88,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, BackPressureException, TException {
+  public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, TException {
     checkTable(_cluster, table);
     resetSearchers();
     _queryChecker.checkQuery(blurQuery);
@@ -121,6 +120,8 @@ public class BlurShardServer extends TableAdmin implements Iface {
         hitsIterable = _indexManager.query(table, blurQuery, facetCounts);
         return _queryCache.cache(table, original,
             BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _dataFetch, blurQuery.selector, this, table));
+      } catch (BlurException e) {
+        throw e;
       } catch (Exception e) {
         LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
         throw new BException(e.getMessage(), e);
@@ -136,7 +137,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public String parseQuery(String table, SimpleQuery simpleQuery) throws BlurException, BackPressureException, TException {
+  public String parseQuery(String table, SimpleQuery simpleQuery) throws BlurException, TException {
     try {
       return _indexManager.parseQuery(table, simpleQuery);
     } catch (Throwable e) {
@@ -374,7 +375,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
       throw new BException(e.getMessage(), e);
     }
     if (blurQueryStatus == null) {
-      throw new BlurException("Query status for table [" + table + "] and uuid [" + uuid + "] not found", null);
+      throw new BException("Query status for table [" + table + "] and uuid [" + uuid + "] not found");
     }
     return blurQueryStatus;
   }

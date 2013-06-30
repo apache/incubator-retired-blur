@@ -18,7 +18,9 @@ package org.apache.blur.utils;
  */
 import java.util.Iterator;
 
-public class IteratorConverter<F, T> implements Iterator<T> {
+import org.apache.blur.manager.results.BlurIterator;
+
+public class IteratorConverter<F, T, E extends Exception> implements BlurIterator<T, E> {
 
   private Converter<F, T> converter;
   private Iterator<F> iterator;
@@ -40,11 +42,6 @@ public class IteratorConverter<F, T> implements Iterator<T> {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @Override
-  public void remove() {
-    iterator.remove();
   }
 
 }

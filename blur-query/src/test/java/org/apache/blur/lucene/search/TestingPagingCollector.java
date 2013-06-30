@@ -21,7 +21,6 @@ import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.blur.lucene.search.IterablePaging;
 import org.apache.blur.lucene.search.IterablePaging.ProgressRef;
 import org.apache.blur.lucene.search.IterablePaging.TotalHitsRef;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
@@ -42,7 +41,6 @@ import org.junit.Test;
 /**
  * Testing the paging collector.
  * 
- * @author Aaron McCurry
  */
 public class TestingPagingCollector {
 
@@ -59,7 +57,7 @@ public class TestingPagingCollector {
     ProgressRef progressRef = new ProgressRef();
 
     TermQuery query = new TermQuery(new Term("f1", "value"));
-    IterablePaging paging = new IterablePaging(new AtomicBoolean(true), searcher, query, 100, null, null);
+    IterablePaging paging = new IterablePaging(new AtomicBoolean(true), searcher, query, 100, null, null, false);
 
     for (ScoreDoc sd : paging.skipTo(90).gather(20).totalHits(totalHitsRef).progress(progressRef)) {
 

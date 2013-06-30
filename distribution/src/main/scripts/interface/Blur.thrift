@@ -19,6 +19,13 @@ namespace java org.apache.blur.thrift.generated
 namespace rb blur
 namespace perl Blur
 
+enum ErrorType {
+  UNKNOWN,
+  QUERY_CANCEL,
+  QUERY_TIMEOUT,
+  BACK_PRESSURE
+}
+
 /** 
   * BlurException that carries a message plus the original stack 
   * trace (if any). 
@@ -32,17 +39,9 @@ exception BlurException {
   /** 
    * The original stack trace (if any). 
    */
-  2:string stackTraceStr
-}
+  2:string stackTraceStr,
 
-/** 
-  * BackPressureException that carries a message.
-  */
-exception BackPressureException {
-  /** 
-   * The message in the exception. 
-   */
-  1:string message
+  3:ErrorType errorType
 }
 
 /** 
@@ -778,7 +777,7 @@ service Blur {
    * @param table the table name.
    * @param blurQuery the query to execute.
    */
-  BlurResults query(1:string table, 2:BlurQuery blurQuery) throws (1:BlurException ex, 2:BackPressureException bpex)
+  BlurResults query(1:string table, 2:BlurQuery blurQuery) throws (1:BlurException ex)
 
   /**
    * Parses the given query and return the string represents the query.
@@ -818,7 +817,7 @@ service Blur {
   list<string> terms(1:string table, 2:string columnFamily, 3:string columnName, 4:string startWith, 5:i16 size) throws (1:BlurException ex)
   i64 recordFrequency(1:string table, 2:string columnFamily, 3:string columnName, 4:string value) throws (1:BlurException ex)
 
-  FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException ex, 2:BackPressureException bpex)
+  FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException ex)
 
   void mutate(1:RowMutation mutation) throws (1:BlurException ex)
   void mutateBatch(1:list<RowMutation> mutations) throws (1:BlurException ex)

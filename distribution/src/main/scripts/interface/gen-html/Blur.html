@@ -45,7 +45,6 @@
 </td>
 <td><a href="Blur.html#Struct_AlternateColumnDefinition">AlternateColumnDefinition</a><br/>
 <a href="Blur.html#Struct_AnalyzerDefinition">AnalyzerDefinition</a><br/>
-<a href="Blur.html#Struct_BackPressureException">BackPressureException</a><br/>
 <a href="Blur.html#Struct_BlurException">BlurException</a><br/>
 <a href="Blur.html#Struct_BlurQuery">BlurQuery</a><br/>
 <a href="Blur.html#Struct_BlurQueryStatus">BlurQueryStatus</a><br/>
@@ -56,6 +55,7 @@
 <a href="Blur.html#Struct_ColumnFamilyDefinition">ColumnFamilyDefinition</a><br/>
 <a href="Blur.html#Struct_ColumnPreCache">ColumnPreCache</a><br/>
 <a href="Blur.html#Struct_CpuTime">CpuTime</a><br/>
+<a href="Blur.html#Enum_ErrorType">ErrorType</a><br/>
 <a href="Blur.html#Struct_ExpertQuery">ExpertQuery</a><br/>
 <a href="Blur.html#Struct_Facet">Facet</a><br/>
 <a href="Blur.html#Struct_FetchRecordResult">FetchRecordResult</a><br/>
@@ -81,6 +81,13 @@
 <td></code></td>
 </tr></table>
 <hr/><h2 id="Enumerations">Enumerations</h2>
+<div class="definition"><h3 id="Enum_ErrorType">Enumeration: ErrorType</h3>
+<br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>UNKNOWN</code></td><td><code>0</code></td></tr>
+<tr><td><code>QUERY_CANCEL</code></td><td><code>1</code></td></tr>
+<tr><td><code>QUERY_TIMEOUT</code></td><td><code>2</code></td></tr>
+<tr><td><code>BACK_PRESSURE</code></td><td><code>3</code></td></tr>
+</table></div>
 <div class="definition"><h3 id="Enum_ScoreType">Enumeration: ScoreType</h3>
 The scoring type used during a SuperQuery to score multi Record hits within a ColumnFamily.<br/><br/>
 SUPER - During a multi Record match, a calculation of the best match Record plus how often it occurs within the match Row produces the score that is used in the scoring of the SuperQuery.<br/><br/>
@@ -143,13 +150,9 @@ See shardServerLayoutOptions method in the Blur service for details.
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>stackTraceStr</td><td><code>string</code></td><td>The original stack trace (if any).
 </td><td>default</td><td></td></tr>
+<tr><td>3</td><td>errorType</td><td><code><a href="Blur.html#Enum_ErrorType">ErrorType</a></code></td><td></td><td>default</td><td></td></tr>
 </table><br/>BlurException that carries a message plus the original stack
 trace (if any).
-<br/></div><div class="definition"><h3 id="Struct_BackPressureException">Exception: BackPressureException</h3>
-<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>message</td><td><code>string</code></td><td>The message in the exception.
-</td><td>default</td><td></td></tr>
-</table><br/>BackPressureException that carries a message.
 <br/></div><div class="definition"><h3 id="Struct_Column">Struct: Column</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>name</td><td><code>string</code></td><td>The name of the column.
@@ -524,7 +527,7 @@ the shard given the same situation.
 <br/></div><div class="definition"><h4 id="Fn_Blur_query">Function: Blur.query</h4>
 <pre><code><a href="Blur.html#Struct_BlurResults">BlurResults</a></code> query(<code>string</code> table,
                   <code><a href="Blur.html#Struct_BlurQuery">BlurQuery</a></code> blurQuery)
-    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>, <code><a href="Blur.html#Struct_BackPressureException">BackPressureException</a></code>
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Executes a query against a the given table and returns the results.  If this method is executed against a controller the results will contain the aggregated results from all the shards.  If this method is executed against a shard server the results will only contain aggregated results from the shards of the given table that are being served on the shard server, if any.
 @param table the table name.
 @param blurQuery the query to execute.
@@ -584,7 +587,7 @@ the shard given the same situation.
 </pre></div><div class="definition"><h4 id="Fn_Blur_fetchRow">Function: Blur.fetchRow</h4>
 <pre><code><a href="Blur.html#Struct_FetchResult">FetchResult</a></code> fetchRow(<code>string</code> table,
                      <code><a href="Blur.html#Struct_Selector">Selector</a></code> selector)
-    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>, <code><a href="Blur.html#Struct_BackPressureException">BackPressureException</a></code>
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre></div><div class="definition"><h4 id="Fn_Blur_mutate">Function: Blur.mutate</h4>
 <pre><code>void</code> mutate(<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code> mutation)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>

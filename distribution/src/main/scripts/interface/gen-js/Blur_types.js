@@ -4,6 +4,12 @@
 // DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
 //
 
+ErrorType = {
+'UNKNOWN' : 0,
+'QUERY_CANCEL' : 1,
+'QUERY_TIMEOUT' : 2,
+'BACK_PRESSURE' : 3
+};
 ScoreType = {
 'SUPER' : 0,
 'AGGREGATE' : 1,
@@ -38,12 +44,16 @@ ShardState = {
 BlurException = function(args) {
   this.message = null;
   this.stackTraceStr = null;
+  this.errorType = null;
   if (args) {
     if (args.message !== undefined) {
       this.message = args.message;
     }
     if (args.stackTraceStr !== undefined) {
       this.stackTraceStr = args.stackTraceStr;
+    }
+    if (args.errorType !== undefined) {
+      this.errorType = args.errorType;
     }
   }
 };
@@ -76,6 +86,13 @@ BlurException.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 3:
+      if (ftype == Thrift.Type.I32) {
+        this.errorType = input.readI32().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -97,58 +114,9 @@ BlurException.prototype.write = function(output) {
     output.writeString(this.stackTraceStr);
     output.writeFieldEnd();
   }
-  output.writeFieldStop();
-  output.writeStructEnd();
-  return;
-};
-
-BackPressureException = function(args) {
-  this.message = null;
-  if (args) {
-    if (args.message !== undefined) {
-      this.message = args.message;
-    }
-  }
-};
-Thrift.inherits(BackPressureException, Thrift.TException);
-BackPressureException.prototype.name = 'BackPressureException';
-BackPressureException.prototype.read = function(input) {
-  input.readStructBegin();
-  while (true)
-  {
-    var ret = input.readFieldBegin();
-    var fname = ret.fname;
-    var ftype = ret.ftype;
-    var fid = ret.fid;
-    if (ftype == Thrift.Type.STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 1:
-      if (ftype == Thrift.Type.STRING) {
-        this.message = input.readString().value;
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 0:
-        input.skip(ftype);
-        break;
-      default:
-        input.skip(ftype);
-    }
-    input.readFieldEnd();
-  }
-  input.readStructEnd();
-  return;
-};
-
-BackPressureException.prototype.write = function(output) {
-  output.writeStructBegin('BackPressureException');
-  if (this.message !== null && this.message !== undefined) {
-    output.writeFieldBegin('message', Thrift.Type.STRING, 1);
-    output.writeString(this.message);
+  if (this.errorType !== null && this.errorType !== undefined) {
+    output.writeFieldBegin('errorType', Thrift.Type.I32, 3);
+    output.writeI32(this.errorType);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

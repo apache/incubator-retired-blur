@@ -25,8 +25,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLongArray;
 
-import org.apache.blur.lucene.search.FacetQuery;
-import org.apache.blur.lucene.search.SuperQuery;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;

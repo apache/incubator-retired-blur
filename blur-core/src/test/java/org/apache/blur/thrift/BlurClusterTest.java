@@ -31,6 +31,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.MiniCluster;
+import org.apache.blur.manager.IndexManager;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -123,6 +124,8 @@ public class BlurClusterTest {
     SimpleQuery simpleQueryRow = new SimpleQuery();
     simpleQueryRow.setQueryStr("test.test:value");
     blurQueryRow.setSimpleQuery(simpleQueryRow);
+    blurQueryRow.setUseCacheIfPresent(false);
+    blurQueryRow.setCacheResult(false);
     BlurResults resultsRow = client.query("test", blurQueryRow);
     assertRowResults(resultsRow);
     assertEquals(length, resultsRow.getTotalResults());
@@ -135,6 +138,45 @@ public class BlurClusterTest {
     BlurResults resultsRecord = client.query("test", blurQueryRecord);
     assertRecordResults(resultsRecord);
     assertEquals(length, resultsRecord.getTotalResults());
+  }
+
+  @Test
+  public void testQueryCancel() throws BlurException, TException, InterruptedException {
+    // This will make each collect in the collectors pause 250 ms per collect call
+    IndexManager.DEBUG_RUN_SLOW.set(true);
+    
+    final Iface client = getClient();
+    final BlurQuery blurQueryRow = new BlurQuery();
+    SimpleQuery simpleQueryRow = new SimpleQuery();
+    simpleQueryRow.setQueryStr("test.test:value");
+    blurQueryRow.setSimpleQuery(simpleQueryRow);
+    blurQueryRow.setUseCacheIfPresent(false);
+    blurQueryRow.setCacheResult(false);
+    blurQueryRow.setUuid(1234l);
+    
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+//        int length = 100;
+        
+        BlurResults resultsRow;
+        try {
+          // This call will take several seconds to execute.
+          resultsRow = client.query("test", blurQueryRow);
+        } catch (BlurException e) {
+          System.out.println("error " + e);
+        } catch (TException e) {
+          e.printStackTrace();
+        }
+//        assertRowResults(resultsRow);
+//        assertEquals(length, resultsRow.getTotalResults());    
+      }
+    }).start();
+    
+    Thread.sleep(500);
+    
+    client.cancelQuery("test", blurQueryRow.getUuid());
+
   }
 
   @Test

@@ -24,6 +24,7 @@ import java.util.UUID;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.results.BlurResultIterableMultiple;
 import org.apache.blur.manager.results.BlurResultIterableSimple;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.junit.Test;
 
@@ -31,7 +32,7 @@ import org.junit.Test;
 public class MultipleBlurResultIterableTest {
 
   @Test
-  public void testMultipleHitsIterable() {
+  public void testMultipleHitsIterable() throws BlurException {
     BlurResultIterableMultiple iterable = new BlurResultIterableMultiple();
     iterable.addBlurResultIterable(newBlurResultIterable(0, 0.1, 3, 2, 9, 10, 2));
     iterable.addBlurResultIterable(newBlurResultIterable(7, 2, 9, 1, 34, 53, 12));
@@ -39,7 +40,9 @@ public class MultipleBlurResultIterableTest {
     iterable.addBlurResultIterable(newBlurResultIterable(7, 2, 34, 132));
     iterable.addBlurResultIterable(newBlurResultIterable());
 
-    for (BlurResult hit : iterable) {
+    BlurIterator<BlurResult, BlurException> iterator = iterable.iterator();
+    while (iterator.hasNext()) {
+      BlurResult hit = iterator.next();
       System.out.println(hit);
     }
   }

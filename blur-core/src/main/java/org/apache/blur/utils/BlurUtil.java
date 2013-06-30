@@ -52,6 +52,7 @@ import java.util.regex.Pattern;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
+import org.apache.blur.manager.results.BlurIterator;
 import org.apache.blur.manager.results.BlurResultComparator;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.results.BlurResultPeekableIteratorComparator;
@@ -61,6 +62,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryBuffer;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
@@ -109,7 +111,7 @@ public class BlurUtil {
   private static final String UNKNOWN = "UNKNOWN";
   private static Pattern validator = Pattern.compile("^[a-zA-Z0-9\\_\\-]+$");
 
-  public static final Comparator<? super PeekableIterator<BlurResult>> HITS_PEEKABLE_ITERATOR_COMPARATOR = new BlurResultPeekableIteratorComparator();
+  public static final Comparator<? super PeekableIterator<BlurResult, BlurException>> HITS_PEEKABLE_ITERATOR_COMPARATOR = new BlurResultPeekableIteratorComparator();
   public static final Comparator<? super BlurResult> HITS_COMPARATOR = new BlurResultComparator();
   public static final Term PRIME_DOC_TERM = new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE);
 
@@ -261,14 +263,14 @@ public class BlurUtil {
 
   public static BlurResults convertToHits(BlurResultIterable hitsIterable, BlurQuery query,
       AtomicLongArray facetCounts, ExecutorService executor, Selector selector, final Iface iface, final String table)
-      throws InterruptedException, ExecutionException {
+      throws InterruptedException, ExecutionException, BlurException {
     BlurResults results = new BlurResults();
     results.setTotalResults(hitsIterable.getTotalResults());
     results.setShardInfo(hitsIterable.getShardInfo());
     if (query.minimumNumberOfResults > 0) {
       hitsIterable.skipTo(query.start);
       int count = 0;
-      Iterator<BlurResult> iterator = hitsIterable.iterator();
+      BlurIterator<BlurResult, BlurException> iterator = hitsIterable.iterator();
       while (iterator.hasNext() && count < query.fetch) {
         results.addToResults(iterator.next());
         count++;
@@ -671,5 +673,24 @@ public class BlurUtil {
 
   public static String getPid() {
     return ManagementFactory.getRuntimeMXBean().getName();
+  }
+  
+//  public static <T> BlurIterator<T, BlurException> convert(final Iterator<T> iterator) {
+//    return convert(iterator, BlurException.class);
+//  }
+
+  public static <T, E extends Exception> BlurIterator<T, E> convert(final Iterator<T> iterator) {
+    return new BlurIterator<T, E>() {
+
+      @Override
+      public boolean hasNext() throws E {
+        return iterator.hasNext();
+      }
+
+      @Override
+      public T next() throws E {
+        return iterator.next();
+      }
+    };
   }
 }

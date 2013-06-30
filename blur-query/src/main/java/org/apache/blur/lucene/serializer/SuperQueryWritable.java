@@ -20,8 +20,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.lucene.search.SuperQuery;
+import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 

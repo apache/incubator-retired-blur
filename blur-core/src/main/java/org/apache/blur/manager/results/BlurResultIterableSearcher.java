@@ -17,7 +17,6 @@ package org.apache.blur.manager.results;
  * limitations under the License.
  */
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,7 +35,6 @@ import org.apache.blur.utils.IteratorConverter;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 
-
 public class BlurResultIterableSearcher implements BlurResultIterable {
 
   private Map<String, Long> _shardInfo = new TreeMap<String, Long>();
@@ -45,7 +43,7 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
   private String _table;
   private int _fetchCount = 1000;
 
-  private IteratorConverter<ScoreDoc, BlurResult> _iterator;
+  private IteratorConverter<ScoreDoc, BlurResult, BlurException> _iterator;
   private final Selector _selector;
   private final Query _query;
   private IndexSearcherClosable _searcher;
@@ -53,9 +51,10 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
   private final ProgressRef _progressRef = new ProgressRef();
   private final AtomicBoolean _running;
   private final boolean _closeSearcher;
+  private final boolean _runSlow;
 
-  public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard, IndexSearcherClosable searcher, Selector selector, boolean closeSearcher)
-      throws IOException {
+  public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard,
+      IndexSearcherClosable searcher, Selector selector, boolean closeSearcher, boolean runSlow) throws IOException {
     _running = running;
     _table = table;
     _query = query;
@@ -63,18 +62,21 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
     _searcher = searcher;
     _selector = selector;
     _closeSearcher = closeSearcher;
+    _runSlow = runSlow;
     performSearch();
   }
 
   private void performSearch() throws IOException {
-    IterablePaging iterablePaging = new IterablePaging(_running, _searcher, _query, _fetchCount, _totalHitsRef, _progressRef);
-    _iterator = new IteratorConverter<ScoreDoc, BlurResult>(iterablePaging.iterator(), new Converter<ScoreDoc, BlurResult>() {
-      @Override
-      public BlurResult convert(ScoreDoc scoreDoc) throws Exception {
-        String resolveId = resolveId(scoreDoc.doc);
-        return new BlurResult(resolveId, scoreDoc.score, getFetchResult(resolveId));
-      }
-    });
+    IterablePaging iterablePaging = new IterablePaging(_running, _searcher, _query, _fetchCount, _totalHitsRef,
+        _progressRef, _runSlow);
+    _iterator = new IteratorConverter<ScoreDoc, BlurResult, BlurException>(iterablePaging.iterator(),
+        new Converter<ScoreDoc, BlurResult>() {
+          @Override
+          public BlurResult convert(ScoreDoc scoreDoc) throws Exception {
+            String resolveId = resolveId(scoreDoc.doc);
+            return new BlurResult(resolveId, scoreDoc.score, getFetchResult(resolveId));
+          }
+        });
     _shardInfo.put(_shard, (long) _totalHitsRef.totalHits());
   }
 
@@ -105,7 +107,7 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
   }
 
   @Override
-  public Iterator<BlurResult> iterator() {
+  public BlurIterator<BlurResult, BlurException> iterator() {
     long start = 0;
     while (_iterator.hasNext() && start < _skipTo) {
       _iterator.next();

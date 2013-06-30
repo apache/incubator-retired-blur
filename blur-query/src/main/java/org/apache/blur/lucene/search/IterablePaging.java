@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -37,6 +38,7 @@ public class IterablePaging implements Iterable<ScoreDoc> {
   private final Query query;
   private final AtomicBoolean running;
   private final int numHitsToCollect;
+  private final boolean _runSlow;
 
   private TotalHitsRef totalHitsRef;
   private ProgressRef progressRef;
@@ -44,14 +46,14 @@ public class IterablePaging implements Iterable<ScoreDoc> {
   private int gather = -1;
 
   public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query,
-      int numHitsToCollect, TotalHitsRef totalHitsRef, ProgressRef progressRef) throws IOException {
+      int numHitsToCollect, TotalHitsRef totalHitsRef, ProgressRef progressRef, boolean runSlow) throws IOException {
     this.running = running;
     this.query = searcher.rewrite(query);
     this.searcher = searcher;
     this.numHitsToCollect = numHitsToCollect;
     this.totalHitsRef = totalHitsRef == null ? new TotalHitsRef() : totalHitsRef;
     this.progressRef = progressRef == null ? new ProgressRef() : progressRef;
-
+    _runSlow = runSlow;
   }
 
   public static class TotalHitsRef {
@@ -170,8 +172,11 @@ public class IterablePaging implements Iterable<ScoreDoc> {
       progressRef.searchesPerformed.incrementAndGet();
       try {
         TopScoreDocCollector collector = TopScoreDocCollector.create(numHitsToCollect, lastScoreDoc, true);
-        StopExecutionCollector stopExecutionCollector = new StopExecutionCollector(collector, running);
-        searcher.search(query, stopExecutionCollector);
+        Collector col = new StopExecutionCollector(collector, running);
+        if (_runSlow) {
+          col = new SlowCollector(col);
+        }
+        searcher.search(query, col);
         totalHitsRef.totalHits.set(collector.getTotalHits());
         TopDocs topDocs = collector.topDocs();
         scoreDocs = topDocs.scoreDocs;

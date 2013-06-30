@@ -18,8 +18,8 @@ package org.apache.blur.lucene.serializer;
  */
 import java.io.IOException;
 
-import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.lucene.search.SuperQuery;
+import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;

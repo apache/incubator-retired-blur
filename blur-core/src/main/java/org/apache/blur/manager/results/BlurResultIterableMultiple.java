@@ -19,20 +19,19 @@ package org.apache.blur.manager.results;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.io.IOUtils;
 
-
 public class BlurResultIterableMultiple implements BlurResultIterable {
-  
+
   private static final Log LOG = LogFactory.getLog(BlurResultIterableMultiple.class);
 
   private long totalResults;
@@ -62,7 +61,7 @@ public class BlurResultIterableMultiple implements BlurResultIterable {
   }
 
   @Override
-  public Iterator<BlurResult> iterator() {
+  public BlurIterator<BlurResult, BlurException> iterator() throws BlurException {
     MultipleHitsIterator iterator = new MultipleHitsIterator(results);
     long start = 0;
     while (iterator.hasNext() && start < skipTo) {
@@ -72,20 +71,23 @@ public class BlurResultIterableMultiple implements BlurResultIterable {
     return iterator;
   }
 
-  public static class MultipleHitsIterator implements Iterator<BlurResult> {
+  public static class MultipleHitsIterator implements BlurIterator<BlurResult, BlurException> {
 
-    private List<PeekableIterator<BlurResult>> iterators = new ArrayList<PeekableIterator<BlurResult>>();
+    private List<PeekableIterator<BlurResult, BlurException>> iterators = new ArrayList<PeekableIterator<BlurResult, BlurException>>();
     private int length;
 
-    public MultipleHitsIterator(List<BlurResultIterable> hits) {
+    public MultipleHitsIterator(List<BlurResultIterable> hits) throws BlurException {
       for (BlurResultIterable hitsIterable : hits) {
-        iterators.add(new PeekableIterator<BlurResult>(hitsIterable.iterator()));
+        BlurIterator<BlurResult, BlurException> iterator = hitsIterable.iterator();
+//        PeekableIterator<BlurResult, BlurException> peekableIterator = new PeekableIterator<BlurResult, BlurException>(iterator);
+        PeekableIterator<BlurResult, BlurException> peekableIterator = PeekableIterator.wrap(iterator);
+        iterators.add(peekableIterator);
       }
       length = iterators.size();
     }
 
     @Override
-    public boolean hasNext() {
+    public boolean hasNext() throws BlurException {
       for (int i = 0; i < length; i++) {
         if (iterators.get(i).hasNext()) {
           return true;
@@ -95,18 +97,13 @@ public class BlurResultIterableMultiple implements BlurResultIterable {
     }
 
     @Override
-    public BlurResult next() {
+    public BlurResult next() throws BlurException {
       Collections.sort(iterators, BlurUtil.HITS_PEEKABLE_ITERATOR_COMPARATOR);
       return fetchResult(iterators.get(0).next());
     }
 
     public BlurResult fetchResult(BlurResult next) {
       return next;
-    }
-
-    @Override
-    public void remove() {
-
     }
   }
 

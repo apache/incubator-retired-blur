@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +30,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.blur.MiniCluster;
 import org.apache.blur.manager.IndexManager;
@@ -39,6 +42,7 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
+import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.SimpleQuery;
@@ -142,9 +146,10 @@ public class BlurClusterTest {
 
   @Test
   public void testQueryCancel() throws BlurException, TException, InterruptedException {
-    // This will make each collect in the collectors pause 250 ms per collect call
+    // This will make each collect in the collectors pause 250 ms per collect
+    // call
     IndexManager.DEBUG_RUN_SLOW.set(true);
-    
+
     final Iface client = getClient();
     final BlurQuery blurQueryRow = new BlurQuery();
     SimpleQuery simpleQueryRow = new SimpleQuery();
@@ -153,33 +158,49 @@ public class BlurClusterTest {
     blurQueryRow.setUseCacheIfPresent(false);
     blurQueryRow.setCacheResult(false);
     blurQueryRow.setUuid(1234l);
-    
+
+    final AtomicReference<BlurException> error = new AtomicReference<BlurException>();
+    final AtomicBoolean fail = new AtomicBoolean();
+
     new Thread(new Runnable() {
       @Override
       public void run() {
-//        int length = 100;
-        
-        BlurResults resultsRow;
         try {
           // This call will take several seconds to execute.
-          resultsRow = client.query("test", blurQueryRow);
+          client.query("test", blurQueryRow);
+          fail.set(true);
         } catch (BlurException e) {
-          System.out.println("error " + e);
+          error.set(e);
         } catch (TException e) {
           e.printStackTrace();
+          fail.set(true);
         }
-//        assertRowResults(resultsRow);
-//        assertEquals(length, resultsRow.getTotalResults());    
       }
     }).start();
-    
     Thread.sleep(500);
-    
     client.cancelQuery("test", blurQueryRow.getUuid());
-
+    BlurException blurException = pollForError(error, 10, TimeUnit.SECONDS);
+    if (fail.get()) {
+      fail("Unknown error, failing test.");
+    }
+    assertEquals(blurException.getErrorType(), ErrorType.QUERY_CANCEL);
   }
 
-//  @Test
+  private BlurException pollForError(AtomicReference<BlurException> error, long period, TimeUnit timeUnit)
+      throws InterruptedException {
+    long s = System.nanoTime();
+    long totalTime = timeUnit.toNanos(period) + s;
+    while (totalTime > System.nanoTime()) {
+      BlurException blurException = error.get();
+      if (blurException != null) {
+        return blurException;
+      }
+      Thread.sleep(500);
+    }
+    return null;
+  }
+
+  @Test
   public void testTestShardFailover() throws BlurException, TException, InterruptedException, IOException,
       KeeperException {
     Iface client = getClient();
@@ -227,7 +248,7 @@ public class BlurClusterTest {
     }
   }
 
-//  @Test
+  @Test
   public void testCreateDisableAndRemoveTable() throws IOException, BlurException, TException {
     Iface client = getClient();
     String tableName = UUID.randomUUID().toString();

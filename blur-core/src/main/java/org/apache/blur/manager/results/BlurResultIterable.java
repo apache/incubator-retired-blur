@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
+import org.apache.blur.utils.BlurIterable;
 
 public interface BlurResultIterable extends BlurIterable<BlurResult, BlurException>, Closeable {
 

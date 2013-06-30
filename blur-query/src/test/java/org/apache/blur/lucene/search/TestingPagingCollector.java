@@ -23,6 +23,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.lucene.search.IterablePaging.ProgressRef;
 import org.apache.blur.lucene.search.IterablePaging.TotalHitsRef;
+import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.utils.BlurIterator;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -58,9 +60,10 @@ public class TestingPagingCollector {
 
     TermQuery query = new TermQuery(new Term("f1", "value"));
     IterablePaging paging = new IterablePaging(new AtomicBoolean(true), searcher, query, 100, null, null, false);
-
-    for (ScoreDoc sd : paging.skipTo(90).gather(20).totalHits(totalHitsRef).progress(progressRef)) {
-
+    IterablePaging itPaging = paging.skipTo(90).gather(20).totalHits(totalHitsRef).progress(progressRef);
+    BlurIterator<ScoreDoc, BlurException> iterator = itPaging.iterator();
+    while (iterator.hasNext()) {
+      ScoreDoc sd = iterator.next(); 
       System.out.println("time [" + progressRef.queryTime() + "] " + "total hits [" + totalHitsRef.totalHits() + "] "
           + "searches [" + progressRef.searchesPerformed() + "] " + "position [" + progressRef.currentHitPosition()
           + "] " + "doc id [" + sd.doc + "] " + "score [" + sd.score + "]");

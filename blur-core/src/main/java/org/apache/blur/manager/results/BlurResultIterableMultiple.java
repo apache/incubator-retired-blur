@@ -27,6 +27,7 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
+import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.io.IOUtils;
 
@@ -79,7 +80,6 @@ public class BlurResultIterableMultiple implements BlurResultIterable {
     public MultipleHitsIterator(List<BlurResultIterable> hits) throws BlurException {
       for (BlurResultIterable hitsIterable : hits) {
         BlurIterator<BlurResult, BlurException> iterator = hitsIterable.iterator();
-//        PeekableIterator<BlurResult, BlurException> peekableIterator = new PeekableIterator<BlurResult, BlurException>(iterator);
         PeekableIterator<BlurResult, BlurException> peekableIterator = PeekableIterator.wrap(iterator);
         iterators.add(peekableIterator);
       }

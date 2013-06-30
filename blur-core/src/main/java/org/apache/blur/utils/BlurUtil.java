@@ -52,7 +52,6 @@ import java.util.regex.Pattern;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
-import org.apache.blur.manager.results.BlurIterator;
 import org.apache.blur.manager.results.BlurResultComparator;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.results.BlurResultPeekableIteratorComparator;

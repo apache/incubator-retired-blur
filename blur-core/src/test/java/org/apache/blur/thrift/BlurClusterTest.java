@@ -179,7 +179,7 @@ public class BlurClusterTest {
 
   }
 
-  @Test
+//  @Test
   public void testTestShardFailover() throws BlurException, TException, InterruptedException, IOException,
       KeeperException {
     Iface client = getClient();
@@ -227,7 +227,7 @@ public class BlurClusterTest {
     }
   }
 
-  @Test
+//  @Test
   public void testCreateDisableAndRemoveTable() throws IOException, BlurException, TException {
     Iface client = getClient();
     String tableName = UUID.randomUUID().toString();

@@ -121,8 +121,14 @@ public class BlurShardServer extends TableAdmin implements Iface {
         return _queryCache.cache(table, original,
             BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _dataFetch, blurQuery.selector, this, table));
       } catch (BlurException e) {
+        
+        System.out.println("I got here 1!!!!!!!!!!!!");
+        
         throw e;
       } catch (Exception e) {
+        
+        System.out.println("I got here 2!!!!!!!!!!!!");
+        
         LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
         throw new BException(e.getMessage(), e);
       } finally {

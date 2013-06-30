@@ -1,4 +1,4 @@
-package org.apache.blur.manager.results;
+package org.apache.blur.utils;
 
 public interface BlurIterable<T, E extends Exception> {
 

@@ -24,6 +24,7 @@ import java.util.TreeMap;
 
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
+import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
 
 public class BlurResultIterableSimple implements BlurResultIterable {

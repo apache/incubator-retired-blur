@@ -26,6 +26,7 @@ import org.apache.blur.manager.results.BlurResultIterableMultiple;
 import org.apache.blur.manager.results.BlurResultIterableSimple;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
+import org.apache.blur.utils.BlurIterator;
 import org.junit.Test;
 
 

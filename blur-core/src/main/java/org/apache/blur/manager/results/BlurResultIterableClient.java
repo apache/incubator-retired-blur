@@ -32,7 +32,7 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
-import org.apache.blur.thrift.generated.ErrorType;
+import org.apache.blur.utils.BlurIterator;
 
 public class BlurResultIterableClient implements BlurResultIterable {
 
@@ -53,7 +53,7 @@ public class BlurResultIterableClient implements BlurResultIterable {
   private boolean _alreadyProcessed;
 
   public BlurResultIterableClient(Connection connection, Blur.Client client, String table, BlurQuery query,
-      AtomicLongArray facetCounts, int remoteFetchCount) {
+      AtomicLongArray facetCounts, int remoteFetchCount) throws BlurException {
     _connection = connection;
     _client = client;
     _table = table;
@@ -67,7 +67,7 @@ public class BlurResultIterableClient implements BlurResultIterable {
     return _client;
   }
 
-  private void performSearch() {
+  private void performSearch() throws BlurException {
     try {
       long cursor = _remoteFetchCount * _batch;
       BlurQuery blurQuery = new BlurQuery(_originalQuery.simpleQuery, _originalQuery.expertQuery,
@@ -81,13 +81,13 @@ public class BlurResultIterableClient implements BlurResultIterable {
       _shardInfo.putAll(_results.shardInfo);
       _batch++;
     } catch (BlurException e) {
-      ErrorType errorType = e.getErrorType();
-      if (errorType == ErrorType.UNKNOWN) {
-        LOG.error("Error during for [{0}]", e, _originalQuery);
-        throw new RuntimeException(e);
-      }
-      LOG.info("Error during for [{0}]", e, _originalQuery);
-
+      // ErrorType errorType = e.getErrorType();
+      // if (errorType == ErrorType.UNKNOWN) {
+      // LOG.error("Error during for [{0}]", e, _originalQuery);
+      // throw new RuntimeException(e);
+      // }
+      // LOG.info("Error during for [{0}]", e, _originalQuery);
+      throw e;
     } catch (Exception e) {
       LOG.error("Error during for [{0}]", e, _originalQuery);
       throw new RuntimeException(e);
@@ -134,7 +134,7 @@ public class BlurResultIterableClient implements BlurResultIterable {
   }
 
   @Override
-  public BlurIterator<BlurResult, BlurException> iterator() {
+  public BlurIterator<BlurResult, BlurException> iterator() throws BlurException {
     SearchIterator iterator = new SearchIterator();
     long start = 0;
     while (iterator.hasNext() && start < _skipTo) {
@@ -158,7 +158,7 @@ public class BlurResultIterableClient implements BlurResultIterable {
     }
 
     @Override
-    public BlurResult next() {
+    public BlurResult next() throws BlurException {
       if (relposition >= _results.results.size()) {
         performSearch();
         relposition = 0;

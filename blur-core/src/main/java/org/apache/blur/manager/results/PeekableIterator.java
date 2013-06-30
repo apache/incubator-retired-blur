@@ -1,5 +1,7 @@
 package org.apache.blur.manager.results;
 
+import org.apache.blur.utils.BlurIterator;
+
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more

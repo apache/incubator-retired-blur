@@ -47,7 +47,6 @@ import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.indexserver.LocalIndexServer;
-import org.apache.blur.manager.results.BlurIterator;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.AnalyzerDefinition;
@@ -69,6 +68,7 @@ import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
 import org.junit.After;
 import org.junit.Before;

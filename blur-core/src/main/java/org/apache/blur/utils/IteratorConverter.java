@@ -16,32 +16,26 @@ package org.apache.blur.utils;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import java.util.Iterator;
 
-import org.apache.blur.manager.results.BlurIterator;
 
 public class IteratorConverter<F, T, E extends Exception> implements BlurIterator<T, E> {
 
-  private Converter<F, T> converter;
-  private Iterator<F> iterator;
+  private Converter<F, T, E> converter;
+  private BlurIterator<F,E> iterator;
 
-  public IteratorConverter(Iterator<F> iterator, Converter<F, T> converter) {
+  public IteratorConverter(BlurIterator<F,E> iterator, Converter<F, T, E> converter) {
     this.converter = converter;
     this.iterator = iterator;
   }
 
   @Override
-  public boolean hasNext() {
+  public boolean hasNext() throws E {
     return iterator.hasNext();
   }
 
   @Override
-  public T next() {
-    try {
+  public T next() throws E {
       return converter.convert(iterator.next());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
   }
 
 }

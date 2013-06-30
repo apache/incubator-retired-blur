@@ -1,4 +1,4 @@
-package org.apache.blur.manager.results;
+package org.apache.blur.utils;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more

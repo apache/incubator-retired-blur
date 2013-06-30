@@ -81,12 +81,6 @@ public class BlurResultIterableClient implements BlurResultIterable {
       _shardInfo.putAll(_results.shardInfo);
       _batch++;
     } catch (BlurException e) {
-      // ErrorType errorType = e.getErrorType();
-      // if (errorType == ErrorType.UNKNOWN) {
-      // LOG.error("Error during for [{0}]", e, _originalQuery);
-      // throw new RuntimeException(e);
-      // }
-      // LOG.info("Error during for [{0}]", e, _originalQuery);
       throw e;
     } catch (Exception e) {
       LOG.error("Error during for [{0}]", e, _originalQuery);

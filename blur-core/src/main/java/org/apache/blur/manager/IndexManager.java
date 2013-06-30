@@ -1116,6 +1116,18 @@ public class IndexManager {
         // context is null.
         return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector,
             _shardServerContext == null, _runSlow);
+      } catch (BlurException e) {
+        switch (_status.getQueryStatus().getState()) {
+        case INTERRUPTED:
+          e.setErrorType(ErrorType.QUERY_CANCEL);
+          throw e;
+        case BACK_PRESSURE_INTERRUPTED:
+          e.setErrorType(ErrorType.BACK_PRESSURE);
+          throw e;
+        default:
+          e.setErrorType(ErrorType.UNKNOWN);
+          throw e;
+        }
       } finally {
         _queriesInternalMeter.mark();
         _status.deattachThread(shard);

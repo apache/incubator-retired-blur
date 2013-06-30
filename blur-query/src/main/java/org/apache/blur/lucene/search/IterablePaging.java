@@ -168,6 +168,7 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
   }
 
   class PagingIterator implements BlurIterator<ScoreDoc, BlurException> {
+    private static final String STOP_EXECUTION_COLLECTOR_EXCEPTION = "StopExecutionCollectorException";
     private ScoreDoc[] scoreDocs;
     private int counter = 0;
     private int offset = 0;
@@ -192,7 +193,7 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
         TopDocs topDocs = collector.topDocs();
         scoreDocs = topDocs.scoreDocs;
       } catch (StopExecutionCollectorException e) {
-        throw new BlurException("Query was stopped", null, ErrorType.UNKNOWN);
+        throw new BlurException(STOP_EXECUTION_COLLECTOR_EXCEPTION, null, ErrorType.UNKNOWN);
       } catch (IOException e) {
         throw new BException("Unknown error during search call", e);
       }

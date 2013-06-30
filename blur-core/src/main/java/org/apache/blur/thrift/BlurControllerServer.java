@@ -358,6 +358,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           }
         }
       } catch (Exception e) {
+        if (e instanceof BlurException) {
+          throw (BlurException) e;
+        }
         LOG.error("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
         throw new BException("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
       }

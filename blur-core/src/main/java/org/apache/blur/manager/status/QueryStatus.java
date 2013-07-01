@@ -30,13 +30,14 @@ import org.apache.blur.thrift.generated.CpuTime;
 import org.apache.blur.thrift.generated.QueryState;
 
 /**
- * This class is accessed by multiple threads (one for each shard) 
- * executing the query. Tracks status and collects metrics
- *
+ * This class is accessed by multiple threads (one for each shard) executing the
+ * query. Tracks status and collects metrics
+ * 
  */
 public class QueryStatus implements Comparable<QueryStatus> {
 
-  private final static boolean CPU_TIME_SUPPORTED = ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported();
+  private final static boolean CPU_TIME_SUPPORTED = ManagementFactory.getThreadMXBean()
+      .isCurrentThreadCpuTimeSupported();
 
   private final BlurQuery _blurQuery;
   private final String _table;
@@ -57,6 +58,7 @@ public class QueryStatus implements Comparable<QueryStatus> {
     _blurQuery = blurQuery;
     _startingTime = System.currentTimeMillis();
     _running = running;
+    _state.set(QueryState.RUNNING);
   }
 
   public QueryStatus attachThread(String shardName) {
@@ -74,9 +76,9 @@ public class QueryStatus implements Comparable<QueryStatus> {
 
   public QueryStatus deattachThread(String shardName) {
     _completeShards.incrementAndGet();
-     CpuTime cpuTime = _cpuTimes.get(shardName);
+    CpuTime cpuTime = _cpuTimes.get(shardName);
     if (CPU_TIME_SUPPORTED) {
-    	cpuTime.cpuTime = _bean.getCurrentThreadCpuTime() - cpuTime.cpuTime;
+      cpuTime.cpuTime = _bean.getCurrentThreadCpuTime() - cpuTime.cpuTime;
     }
     cpuTime.realTime = System.nanoTime() - cpuTime.realTime;
     return this;
@@ -85,7 +87,7 @@ public class QueryStatus implements Comparable<QueryStatus> {
   public long getUserUuid() {
     return _blurQuery.uuid;
   }
-  
+
   public void stopQueryForBackPressure() {
     _state.set(QueryState.BACK_PRESSURE_INTERRUPTED);
     _running.set(false);

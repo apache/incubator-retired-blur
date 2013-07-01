@@ -18,6 +18,7 @@ package org.apache.blur.utils;
  */
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -45,7 +46,8 @@ public class GCWatcher extends TimerTask {
   private Method _method;
   private GcInfo _gcInfo;
   private long _lastIndex;
-  private List<Action> _actions = new ArrayList<Action>();
+  private final List<Action> _actions = new ArrayList<Action>();
+  private final MemoryMXBean _memoryMXBean;
   private static GCWatcher _instance;
 
   public interface Action {
@@ -53,6 +55,7 @@ public class GCWatcher extends TimerTask {
   }
 
   private GCWatcher(double ratio) {
+    _memoryMXBean = ManagementFactory.getMemoryMXBean();
     List<GarbageCollectorMXBean> garbageCollectorMXBeans = ManagementFactory.getGarbageCollectorMXBeans();
     for (GarbageCollectorMXBean bean : garbageCollectorMXBeans) {
       String name = bean.getName();
@@ -113,13 +116,20 @@ public class GCWatcher extends TimerTask {
         }
         long startTime = _gcInfo.getStartTime();
         long endTime = _gcInfo.getEndTime();
+        Map<String, MemoryUsage> usageBeforeGc = _gcInfo.getUsageBeforeGc();
         Map<String, MemoryUsage> usageAfterGc = _gcInfo.getUsageAfterGc();
+        
+        MemoryUsage before = usageBeforeGc.get(CMS_OLD_GEN);
+        long usedBefore = before.getUsed();
+        
         MemoryUsage after = usageAfterGc.get(CMS_OLD_GEN);
-        long used = after.getUsed();
-        long max = after.getMax();
-
+        long usedAfter = after.getUsed();
+        
         long totalTime = endTime - startTime;
-        LOG.info("totalTime spent in GC [{0}] collected [{1}]", totalTime, (max - used));
+        LOG.info("totalTime spent in GC [{0}] collected [{1}]", totalTime, (usedBefore - usedAfter));
+        MemoryUsage heapMemoryUsage = _memoryMXBean.getHeapMemoryUsage();
+        long max = heapMemoryUsage.getMax();
+        long used = heapMemoryUsage.getUsed();
         long upperLimit = (long) (max * _ratio);
         if (used > upperLimit) {
           LOG.error("----- WARNING !!!! - Heap used [{0}] over limit of [{1}], taking action to avoid an OOM error.", used,

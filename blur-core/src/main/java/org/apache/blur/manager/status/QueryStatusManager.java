@@ -139,7 +139,8 @@ public class QueryStatusManager {
   public void stopAllQueriesForBackPressure() {
     LOG.warn("Stopping all queries for back pressure.");
     for (QueryStatus status : currentQueryStatusCollection.keySet()) {
-      if (status.getQueryStatus().getState() == QueryState.RUNNING) {
+      QueryState state = status.getQueryStatus().getState();
+      if (state == QueryState.RUNNING) {
         status.stopQueryForBackPressure();
       }
     }

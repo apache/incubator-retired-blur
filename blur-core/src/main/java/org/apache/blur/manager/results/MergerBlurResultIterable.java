@@ -23,6 +23,7 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
+import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.ForkJoin.Merger;
 
@@ -56,7 +57,7 @@ public class MergerBlurResultIterable implements Merger<BlurResultIterable> {
       } else {
         LOG.info("Query timeout with max query time of [{2}] for query [{1}].", _maxQueryTime, _blurQuery);
         throw new BlurException("Query timeout with max query time of [" + _maxQueryTime + "] for query [" + _blurQuery
-            + "].", null);
+            + "].", null, ErrorType.QUERY_TIMEOUT);
       }
     }
     return iterable;

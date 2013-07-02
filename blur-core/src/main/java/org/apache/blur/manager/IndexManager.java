@@ -52,6 +52,7 @@ import org.apache.blur.index.ExitableReader.ExitingReaderException;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FacetQuery;
+import org.apache.blur.lucene.search.StopExecutionCollector.StopExecutionCollectorException;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.results.BlurResultIterableSearcher;
@@ -68,10 +69,12 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.Column;
+import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.ExpertQuery;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.FetchRowResult;
 import org.apache.blur.thrift.generated.HighlightOptions;
+import org.apache.blur.thrift.generated.QueryState;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RecordMutationType;
@@ -140,6 +143,8 @@ public class IndexManager {
   private Meter _queriesInternalMeter;
   private Timer _fetchTimer;
 
+  public static AtomicBoolean DEBUG_RUN_SLOW = new AtomicBoolean(false);
+
   public void setMaxClauseCount(int maxClauseCount) {
     BooleanQuery.setMaxClauseCount(maxClauseCount);
   }
@@ -193,12 +198,12 @@ public class IndexManager {
       Map<String, BlurIndex> blurIndexes = _indexServer.getIndexes(table);
       if (blurIndexes == null) {
         LOG.error("Table [{0}] not found", table);
-        throw new BlurException("Table [" + table + "] not found", null);
+        throw new BException("Table [" + table + "] not found");
       }
       index = blurIndexes.get(shard);
       if (index == null) {
         LOG.error("Shard [{0}] not found in table [{1}]", shard, table);
-        throw new BlurException("Shard [" + shard + "] not found in table [" + table + "]", null);
+        throw new BException("Shard [" + shard + "] not found in table [" + table + "]");
       }
     } catch (BlurException e) {
       throw e;
@@ -275,7 +280,7 @@ public class IndexManager {
     Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
     BlurIndex blurIndex = indexes.get(shardName);
     if (blurIndex == null) {
-      throw new BlurException("Shard [" + shardName + "] is not being servered by this shardserver.", null);
+      throw new BException("Shard [" + shardName + "] is not being servered by this shardserver.");
     }
     IndexSearcherClosable searcher = blurIndex.getIndexReader();
     try {
@@ -315,25 +320,25 @@ public class IndexManager {
 
     if (locationId != null) {
       if (recordId != null && rowId != null) {
-        throw new BlurException("Invalid selector locationId [" + locationId + "] and recordId [" + recordId
-            + "] and rowId [" + rowId + "] are set, if using locationId, then rowId and recordId are not needed.", null);
+        throw new BException("Invalid selector locationId [" + locationId + "] and recordId [" + recordId
+            + "] and rowId [" + rowId + "] are set, if using locationId, then rowId and recordId are not needed.");
       } else if (recordId != null) {
-        throw new BlurException("Invalid selector locationId [" + locationId + "] and recordId [" + recordId
-            + "] sre set, if using locationId recordId is not needed.", null);
+        throw new BException("Invalid selector locationId [" + locationId + "] and recordId [" + recordId
+            + "] sre set, if using locationId recordId is not needed.");
       } else if (rowId != null) {
-        throw new BlurException("Invalid selector locationId [" + locationId + "] and rowId [" + rowId
-            + "] are set, if using locationId rowId is not needed.", null);
+        throw new BException("Invalid selector locationId [" + locationId + "] and rowId [" + rowId
+            + "] are set, if using locationId rowId is not needed.");
       }
     } else {
       if (rowId != null && recordId != null) {
         if (!recordOnly) {
-          throw new BlurException("Invalid both rowid [" + rowId + "] and recordId [" + recordId
+          throw new BException("Invalid both rowid [" + rowId + "] and recordId [" + recordId
               + "] are set, and recordOnly is set to [false].  "
-              + "If you want entire row, then remove recordId, if you want record only set recordOnly to [true].", null);
+              + "If you want entire row, then remove recordId, if you want record only set recordOnly to [true].");
         }
       } else if (recordId != null) {
-        throw new BlurException("Invalid recordId [" + recordId
-            + "] is set but rowId is not set.  If rowId is not known then a query will be required.", null);
+        throw new BException("Invalid recordId [" + recordId
+            + "] is set but rowId is not set.  If rowId is not known then a query will be required.");
       }
     }
   }
@@ -354,6 +359,7 @@ public class IndexManager {
 
   public BlurResultIterable query(final String table, final BlurQuery blurQuery, AtomicLongArray facetedCounts)
       throws Exception {
+    boolean runSlow = DEBUG_RUN_SLOW.get();
     final AtomicBoolean running = new AtomicBoolean(true);
     final QueryStatus status = _statusManager.newQueryStatus(table, blurQuery, _threadCount, running);
     _queriesExternalMeter.mark();
@@ -380,7 +386,7 @@ public class IndexManager {
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer, context, postFilter,
             preFilter);
         call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
-            _queriesInternalMeter, shardServerContext);
+            _queriesInternalMeter, shardServerContext, runSlow);
       } else {
         Query query = getQuery(blurQuery.expertQuery);
         Filter filter = getFilter(blurQuery.expertQuery);
@@ -392,7 +398,7 @@ public class IndexManager {
         }
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer, context, null, null);
         call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
-            _queriesInternalMeter, shardServerContext);
+            _queriesInternalMeter, shardServerContext, runSlow);
       }
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
       return ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
@@ -401,6 +407,24 @@ public class IndexManager {
           running.set(false);
         }
       }).merge(merger);
+    } catch (StopExecutionCollectorException e) {
+      BlurQueryStatus queryStatus = status.getQueryStatus();
+      QueryState state = queryStatus.getState();
+      if (state == QueryState.BACK_PRESSURE_INTERRUPTED) {
+        throw new BlurException("Cannot execute query right now.", null, ErrorType.BACK_PRESSURE);  
+      } else if (state == QueryState.INTERRUPTED) {
+        throw new BlurException("Cannot execute query right now.", null, ErrorType.QUERY_CANCEL);
+      }
+      throw e;
+    } catch (ExitingReaderException e) {
+      BlurQueryStatus queryStatus = status.getQueryStatus();
+      QueryState state = queryStatus.getState();
+      if (state == QueryState.BACK_PRESSURE_INTERRUPTED) {
+        throw new BlurException("Cannot execute query right now.", null, ErrorType.BACK_PRESSURE);  
+      } else if (state == QueryState.INTERRUPTED) {
+        throw new BlurException("Cannot execute query right now.", null, ErrorType.QUERY_CANCEL);
+      }
+      throw e;
     } finally {
       _statusManager.removeStatus(status);
     }
@@ -860,8 +884,7 @@ public class IndexManager {
       }
       BlurIndex blurIndex = indexes.get(shard);
       if (blurIndex == null) {
-        throw new BlurException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.",
-            null);
+        throw new BException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.");
       }
 
       boolean waitVisiblity = false;
@@ -909,8 +932,7 @@ public class IndexManager {
     String shard = MutationHelper.getShardName(table, mutation.rowId, getNumberOfShards(table), _blurPartitioner);
     BlurIndex blurIndex = indexes.get(shard);
     if (blurIndex == null) {
-      throw new BlurException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.",
-          null);
+      throw new BException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.");
     }
 
     RowMutationType type = mutation.rowMutationType;
@@ -1048,9 +1070,11 @@ public class IndexManager {
     private final AtomicBoolean _running;
     private final Meter _queriesInternalMeter;
     private final ShardServerContext _shardServerContext;
+    private final boolean _runSlow;
 
     public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, IndexServer indexServer,
-        Query query, Selector selector, Meter queriesInternalMeter, ShardServerContext shardServerContext) {
+        Query query, Selector selector, Meter queriesInternalMeter, ShardServerContext shardServerContext,
+        boolean runSlow) {
       _running = running;
       _table = table;
       _status = status;
@@ -1059,6 +1083,7 @@ public class IndexManager {
       _selector = selector;
       _queriesInternalMeter = queriesInternalMeter;
       _shardServerContext = shardServerContext;
+      _runSlow = runSlow;
     }
 
     @Override
@@ -1090,7 +1115,19 @@ public class IndexManager {
         // BlurResultIterableSearcher will close searcher, if shard server
         // context is null.
         return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector,
-            _shardServerContext == null);
+            _shardServerContext == null, _runSlow);
+      } catch (BlurException e) {
+        switch (_status.getQueryStatus().getState()) {
+        case INTERRUPTED:
+          e.setErrorType(ErrorType.QUERY_CANCEL);
+          throw e;
+        case BACK_PRESSURE_INTERRUPTED:
+          e.setErrorType(ErrorType.BACK_PRESSURE);
+          throw e;
+        default:
+          e.setErrorType(ErrorType.UNKNOWN);
+          throw e;
+        }
       } finally {
         _queriesInternalMeter.mark();
         _status.deattachThread(shard);

@@ -68,6 +68,7 @@ import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -361,7 +362,9 @@ public class IndexManagerTest {
 
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
     assertEquals(iterable.getTotalResults(), 1);
-    for (BlurResult result : iterable) {
+    BlurIterator<BlurResult, BlurException> iterator = iterable.iterator();
+    while (iterator.hasNext()) {
+      BlurResult result = iterator.next();
       Selector selector = new Selector().setLocationId(result.getLocationId());
       FetchResult fetchResult = new FetchResult();
       indexManager.fetchRow(TABLE, selector, fetchResult);
@@ -384,7 +387,9 @@ public class IndexManagerTest {
 
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
     assertEquals(iterable.getTotalResults(), 1);
-    for (BlurResult result : iterable) {
+    BlurIterator<BlurResult, BlurException> iterator = iterable.iterator();
+    while (iterator.hasNext()) {
+      BlurResult result = iterator.next();
       Selector selector = new Selector().setLocationId(result.getLocationId());
       FetchResult fetchResult = new FetchResult();
       indexManager.fetchRow(TABLE, selector, fetchResult);
@@ -407,7 +412,9 @@ public class IndexManagerTest {
 
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
     assertEquals(iterable.getTotalResults(), 1);
-    for (BlurResult result : iterable) {
+    BlurIterator<BlurResult, BlurException> iterator = iterable.iterator();
+    while (iterator.hasNext()) {
+      BlurResult result = iterator.next();
       Selector selector = new Selector().setLocationId(result.getLocationId());
       FetchResult fetchResult = new FetchResult();
       indexManager.fetchRow(TABLE, selector, fetchResult);
@@ -433,7 +440,9 @@ public class IndexManagerTest {
     AtomicLongArray facetedCounts = new AtomicLongArray(2);
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, facetedCounts);
     assertEquals(iterable.getTotalResults(), 2);
-    for (BlurResult result : iterable) {
+    BlurIterator<BlurResult, BlurException> iterator = iterable.iterator();
+    while (iterator.hasNext()) {
+      BlurResult result = iterator.next();
       Selector selector = new Selector().setLocationId(result.getLocationId());
       FetchResult fetchResult = new FetchResult();
       indexManager.fetchRow(TABLE, selector, fetchResult);
@@ -624,7 +633,9 @@ public class IndexManagerTest {
 
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
     assertEquals(2, iterable.getTotalResults());
-    for (BlurResult result : iterable) {
+    BlurIterator<BlurResult, BlurException> iterator = iterable.iterator();
+    while (iterator.hasNext()) {
+      BlurResult result = iterator.next();
       Selector selector = new Selector().setLocationId(result.getLocationId());
       FetchResult fetchResult = new FetchResult();
       indexManager.fetchRow(TABLE, selector, fetchResult);
@@ -652,7 +663,9 @@ public class IndexManagerTest {
 
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
     assertEquals(iterable.getTotalResults(), 2);
-    for (BlurResult result : iterable) {
+    BlurIterator<BlurResult, BlurException> iterator = iterable.iterator();
+    while (iterator.hasNext()) {
+      BlurResult result = iterator.next();
       assertNotNull(result.fetchResult.rowResult);
       assertNull(result.fetchResult.recordResult);
     }
@@ -675,7 +688,9 @@ public class IndexManagerTest {
 
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
     assertEquals(iterable.getTotalResults(), 2);
-    for (BlurResult result : iterable) {
+    BlurIterator<BlurResult, BlurException> iterator = iterable.iterator();
+    while (iterator.hasNext()) {
+      BlurResult result = iterator.next();
       Selector selector = new Selector().setLocationId(result.getLocationId()).setRecordOnly(true);
       FetchResult fetchResult = new FetchResult();
       indexManager.fetchRow(TABLE, selector, fetchResult);
@@ -703,7 +718,9 @@ public class IndexManagerTest {
 
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
     assertEquals(iterable.getTotalResults(), 2);
-    for (BlurResult result : iterable) {
+    BlurIterator<BlurResult, BlurException> iterator = iterable.iterator();
+    while (iterator.hasNext()) {
+      BlurResult result = iterator.next();
       assertNull(result.fetchResult.rowResult);
       assertNotNull(result.fetchResult.recordResult);
     }
@@ -727,7 +744,9 @@ public class IndexManagerTest {
     int matchRecord1 = 0;
     int matchRecord4 = 0;
 
-    for (BlurResult result : iterable) {
+    BlurIterator<BlurResult, BlurException> iterator = iterable.iterator();
+    while (iterator.hasNext()) {
+      BlurResult result = iterator.next();
       assertNull(result.fetchResult.rowResult);
       assertNotNull(result.fetchResult.recordResult);
 
@@ -763,7 +782,9 @@ public class IndexManagerTest {
     AtomicLongArray facetedCounts = new AtomicLongArray(2);
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, facetedCounts);
     assertEquals(iterable.getTotalResults(), 2);
-    for (BlurResult result : iterable) {
+    BlurIterator<BlurResult, BlurException> iterator = iterable.iterator();
+    while (iterator.hasNext()) {
+      BlurResult result = iterator.next();
       Selector selector = new Selector().setLocationId(result.getLocationId());
       FetchResult fetchResult = new FetchResult();
       indexManager.fetchRow(TABLE, selector, fetchResult);

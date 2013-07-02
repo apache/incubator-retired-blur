@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.text.MessageFormat;
 
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.ErrorType;
 
 
 public class BException extends BlurException {
@@ -28,7 +29,7 @@ public class BException extends BlurException {
   private static final long serialVersionUID = 5846541677293727358L;
 
   public BException(String message, Throwable t) {
-    super(message, toString(t));
+    super(message, toString(t), ErrorType.UNKNOWN);
   }
 
   public BException(String message, Object... parameters) {

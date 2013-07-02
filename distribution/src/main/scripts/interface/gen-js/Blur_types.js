@@ -4,6 +4,12 @@
 // DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
 //
 
+ErrorType = {
+'UNKNOWN' : 0,
+'QUERY_CANCEL' : 1,
+'QUERY_TIMEOUT' : 2,
+'BACK_PRESSURE' : 3
+};
 ScoreType = {
 'SUPER' : 0,
 'AGGREGATE' : 1,
@@ -13,7 +19,8 @@ ScoreType = {
 QueryState = {
 'RUNNING' : 0,
 'INTERRUPTED' : 1,
-'COMPLETE' : 2
+'COMPLETE' : 2,
+'BACK_PRESSURE_INTERRUPTED' : 3
 };
 RowMutationType = {
 'DELETE_ROW' : 0,
@@ -37,12 +44,16 @@ ShardState = {
 BlurException = function(args) {
   this.message = null;
   this.stackTraceStr = null;
+  this.errorType = null;
   if (args) {
     if (args.message !== undefined) {
       this.message = args.message;
     }
     if (args.stackTraceStr !== undefined) {
       this.stackTraceStr = args.stackTraceStr;
+    }
+    if (args.errorType !== undefined) {
+      this.errorType = args.errorType;
     }
   }
 };
@@ -75,6 +86,13 @@ BlurException.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 3:
+      if (ftype == Thrift.Type.I32) {
+        this.errorType = input.readI32().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -94,6 +112,11 @@ BlurException.prototype.write = function(output) {
   if (this.stackTraceStr !== null && this.stackTraceStr !== undefined) {
     output.writeFieldBegin('stackTraceStr', Thrift.Type.STRING, 2);
     output.writeString(this.stackTraceStr);
+    output.writeFieldEnd();
+  }
+  if (this.errorType !== null && this.errorType !== undefined) {
+    output.writeFieldBegin('errorType', Thrift.Type.I32, 3);
+    output.writeI32(this.errorType);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

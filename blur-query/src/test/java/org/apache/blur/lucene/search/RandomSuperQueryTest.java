@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Random;
 
 import org.apache.blur.thrift.generated.ScoreType;
-import org.apache.blur.lucene.search.SuperQuery;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;

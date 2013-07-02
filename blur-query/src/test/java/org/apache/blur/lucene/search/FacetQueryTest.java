@@ -17,6 +17,8 @@ package org.apache.blur.lucene.search;
  * limitations under the License.
  */
 
+import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
+
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLongArray;
 
@@ -37,7 +39,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
-import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

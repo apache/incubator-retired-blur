@@ -7,6 +7,15 @@
 require 'thrift'
 
 module Blur
+  module ErrorType
+    UNKNOWN = 0
+    QUERY_CANCEL = 1
+    QUERY_TIMEOUT = 2
+    BACK_PRESSURE = 3
+    VALUE_MAP = {0 => "UNKNOWN", 1 => "QUERY_CANCEL", 2 => "QUERY_TIMEOUT", 3 => "BACK_PRESSURE"}
+    VALID_VALUES = Set.new([UNKNOWN, QUERY_CANCEL, QUERY_TIMEOUT, BACK_PRESSURE]).freeze
+  end
+
   module ScoreType
     SUPER = 0
     AGGREGATE = 1
@@ -20,8 +29,9 @@ module Blur
     RUNNING = 0
     INTERRUPTED = 1
     COMPLETE = 2
-    VALUE_MAP = {0 => "RUNNING", 1 => "INTERRUPTED", 2 => "COMPLETE"}
-    VALID_VALUES = Set.new([RUNNING, INTERRUPTED, COMPLETE]).freeze
+    BACK_PRESSURE_INTERRUPTED = 3
+    VALUE_MAP = {0 => "RUNNING", 1 => "INTERRUPTED", 2 => "COMPLETE", 3 => "BACK_PRESSURE_INTERRUPTED"}
+    VALID_VALUES = Set.new([RUNNING, INTERRUPTED, COMPLETE, BACK_PRESSURE_INTERRUPTED]).freeze
   end
 
   module RowMutationType
@@ -58,17 +68,22 @@ module Blur
     include ::Thrift::Struct, ::Thrift::Struct_Union
     MESSAGE = 1
     STACKTRACESTR = 2
+    ERRORTYPE = 3
 
     FIELDS = {
       # The message in the exception.
       MESSAGE => {:type => ::Thrift::Types::STRING, :name => 'message'},
       # The original stack trace (if any).
-      STACKTRACESTR => {:type => ::Thrift::Types::STRING, :name => 'stackTraceStr'}
+      STACKTRACESTR => {:type => ::Thrift::Types::STRING, :name => 'stackTraceStr'},
+      ERRORTYPE => {:type => ::Thrift::Types::I32, :name => 'errorType', :enum_class => ::Blur::ErrorType}
     }
 
     def struct_fields; FIELDS; end
 
     def validate
+      unless @errorType.nil? || ::Blur::ErrorType::VALID_VALUES.include?(@errorType)
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field errorType!')
+      end
     end
 
     ::Thrift::Struct.generate_accessors self

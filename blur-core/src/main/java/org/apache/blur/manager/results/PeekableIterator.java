@@ -1,5 +1,8 @@
 package org.apache.blur.manager.results;
 
+import org.apache.blur.utils.BlurIterator;
+
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,51 +19,50 @@ package org.apache.blur.manager.results;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import java.util.Iterator;
 
-public class PeekableIterator<E> implements Iterator<E> {
+public class PeekableIterator<T, E extends Exception> implements BlurIterator<T, E> {
 
-  private Iterator<E> iterator;
-  private E current;
-
-  public PeekableIterator(Iterator<E> iterator) {
+  private final BlurIterator<T, E> _iterator;
+  private T _current;
+  
+  private PeekableIterator(BlurIterator<T, E> iterator,T current) {
+    _iterator = iterator;
+    _current = current;
+  }
+  
+  public static<T,E extends Exception> PeekableIterator<T, E> wrap(BlurIterator<T, E> iterator) throws E {
     if (iterator.hasNext()) {
-      current = iterator.next();
+      return new PeekableIterator<T, E>(iterator, iterator.next());
     }
-    this.iterator = iterator;
+    return new PeekableIterator<T, E>(iterator, null);
   }
 
   /**
    * Only valid is hasNext is true. If hasNext if false, peek will return null;
    * 
-   * @return <E>
+   * @return <T>
    */
-  public E peek() {
-    return current;
+  public T peek() {
+    return _current;
   }
 
   @Override
-  public boolean hasNext() {
-    if (current != null) {
+  public boolean hasNext() throws E {
+    if (_current != null) {
       return true;
     }
-    return iterator.hasNext();
+    return _iterator.hasNext();
   }
 
   @Override
-  public E next() {
-    E next = null;
-    if (iterator.hasNext()) {
-      next = iterator.next();
+  public T next() throws E {
+    T next = null;
+    if (_iterator.hasNext()) {
+      next = _iterator.next();
     }
-    E result = current;
-    current = next;
+    T result = _current;
+    _current = next;
     return result;
-  }
-
-  @Override
-  public void remove() {
-
   }
 
 }

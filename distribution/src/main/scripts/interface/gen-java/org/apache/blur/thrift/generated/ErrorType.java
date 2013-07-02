@@ -30,21 +30,15 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.blur.thirdparty.thrift_0_9_0.TEnum;
 
-/**
- * The state of a query.<br/><br/>
- * RUNNING - Query is running.<br/><br/>
- * INTERRUPTED - Query has been interrupted.<br/><br/>
- * COMPLETE - Query is complete.<br/>
- */
-public enum QueryState implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
-  RUNNING(0),
-  INTERRUPTED(1),
-  COMPLETE(2),
-  BACK_PRESSURE_INTERRUPTED(3);
+public enum ErrorType implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
+  UNKNOWN(0),
+  QUERY_CANCEL(1),
+  QUERY_TIMEOUT(2),
+  BACK_PRESSURE(3);
 
   private final int value;
 
-  private QueryState(int value) {
+  private ErrorType(int value) {
     this.value = value;
   }
 
@@ -59,16 +53,16 @@ public enum QueryState implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum 
    * Find a the enum type by its integer value, as defined in the Thrift IDL.
    * @return null if the value is not found.
    */
-  public static QueryState findByValue(int value) { 
+  public static ErrorType findByValue(int value) { 
     switch (value) {
       case 0:
-        return RUNNING;
+        return UNKNOWN;
       case 1:
-        return INTERRUPTED;
+        return QUERY_CANCEL;
       case 2:
-        return COMPLETE;
+        return QUERY_TIMEOUT;
       case 3:
-        return BACK_PRESSURE_INTERRUPTED;
+        return BACK_PRESSURE;
       default:
         return null;
     }

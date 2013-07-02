@@ -17,19 +17,10 @@ package org.apache.blur.utils;
  * the License.
  */
 
-public class IterableConverter<F, T, E extends Exception> implements BlurIterable<T, E> {
+public interface BlurIterator<T, E extends Exception> {
 
-  private Converter<F, T, E> converter;
-  private BlurIterable<F, E> iterable;
+  public boolean hasNext() throws E;
 
-  public IterableConverter(BlurIterable<F, E> iterable, Converter<F, T, E> converter) {
-    this.converter = converter;
-    this.iterable = iterable;
-  }
-
-  @Override
-  public BlurIterator<T, E> iterator() throws E {
-    return new IteratorConverter<F, T, E>(iterable.iterator(), converter);
-  }
+  public T next() throws E;
 
 }

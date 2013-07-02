@@ -110,7 +110,7 @@ public abstract class TableAdmin implements Iface {
       TableContext.clear();
       String cluster = _clusterStatus.getCluster(false, table);
       if (cluster == null) {
-        throw new BlurException("Table [" + table + "] not found.", null);
+        throw new BException("Table [" + table + "] not found.");
       }
       _clusterStatus.disableTable(cluster, table);
       waitForTheTableToDisable(cluster, table);
@@ -127,7 +127,7 @@ public abstract class TableAdmin implements Iface {
       TableContext.clear();
       String cluster = _clusterStatus.getCluster(false, table);
       if (cluster == null) {
-        throw new BlurException("Table [" + table + "] not found.", null);
+        throw new BException("Table [" + table + "] not found.");
       }
       _clusterStatus.enableTable(cluster, table);
       waitForTheTableToEnable(cluster, table);
@@ -264,7 +264,7 @@ public abstract class TableAdmin implements Iface {
       TableContext.clear();
       String cluster = _clusterStatus.getCluster(false, table);
       if (cluster == null) {
-        throw new BlurException("Table [" + table + "] not found.", null);
+        throw new BException("Table [" + table + "] not found.");
       }
       _clusterStatus.removeTable(cluster, table, deleteIndexFiles);
     } catch (Exception e) {
@@ -279,40 +279,40 @@ public abstract class TableAdmin implements Iface {
 
   public void checkTable(String table) throws BlurException {
     if (table == null) {
-      throw new BlurException("Table cannot be null.", null);
+      throw new BException("Table cannot be null.");
     }
     String cluster = _clusterStatus.getCluster(true, table);
     if (cluster == null) {
-      throw new BlurException("Table [" + table + "] does not exist", null);
+      throw new BException("Table [" + table + "] does not exist");
     }
     checkTable(cluster, table);
   }
 
   public void checkTable(String cluster, String table) throws BlurException {
     if (inSafeMode(true, table)) {
-      throw new BlurException("Cluster for [" + table + "] is in safe mode", null);
+      throw new BException("Cluster for [" + table + "] is in safe mode");
     }
     if (tableExists(true, cluster, table)) {
       if (isTableEnabled(true, cluster, table)) {
         return;
       }
-      throw new BlurException("Table [" + table + "] exists, but is not enabled", null);
+      throw new BException("Table [" + table + "] exists, but is not enabled");
     } else {
-      throw new BlurException("Table [" + table + "] does not exist", null);
+      throw new BException("Table [" + table + "] does not exist");
     }
   }
 
   public void checkForUpdates(String table) throws BlurException {
     String cluster = _clusterStatus.getCluster(true, table);
     if (cluster == null) {
-      throw new BlurException("Table [" + table + "] does not exist", null);
+      throw new BException("Table [" + table + "] does not exist");
     }
     checkForUpdates(cluster, table);
   }
 
   public void checkForUpdates(String cluster, String table) throws BlurException {
     if (_clusterStatus.isReadOnly(true, cluster, table)) {
-      throw new BlurException("Table [" + table + "] in cluster [" + cluster + "] is read only.", null);
+      throw new BException("Table [" + table + "] in cluster [" + cluster + "] is read only.");
     }
   }
 
@@ -351,7 +351,7 @@ public abstract class TableAdmin implements Iface {
     try {
       String cluster = _clusterStatus.getCluster(true, table);
       if (cluster == null) {
-        throw new BlurException("Table [" + table + "] not found.", null);
+        throw new BException("Table [" + table + "] not found.");
       }
       return _clusterStatus.getTableDescriptor(true, cluster, table);
     } catch (Exception e) {
@@ -383,7 +383,7 @@ public abstract class TableAdmin implements Iface {
   private boolean inSafeMode(boolean useCache, String table) throws BlurException {
     String cluster = _clusterStatus.getCluster(useCache, table);
     if (cluster == null) {
-      throw new BlurException("Table [" + table + "] not found.", null);
+      throw new BException("Table [" + table + "] not found.");
     }
     return _clusterStatus.isInSafeMode(useCache, cluster);
   }

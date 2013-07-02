@@ -58,6 +58,7 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
 
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField MESSAGE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("message", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField STACK_TRACE_STR_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("stackTraceStr", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ERROR_TYPE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("errorType", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -73,6 +74,11 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
    * The original stack trace (if any).
    */
   public String stackTraceStr; // required
+  /**
+   * 
+   * @see ErrorType
+   */
+  public ErrorType errorType; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
@@ -83,7 +89,12 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
     /**
      * The original stack trace (if any).
      */
-    STACK_TRACE_STR((short)2, "stackTraceStr");
+    STACK_TRACE_STR((short)2, "stackTraceStr"),
+    /**
+     * 
+     * @see ErrorType
+     */
+    ERROR_TYPE((short)3, "errorType");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -102,6 +113,8 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
           return MESSAGE;
         case 2: // STACK_TRACE_STR
           return STACK_TRACE_STR;
+        case 3: // ERROR_TYPE
+          return ERROR_TYPE;
         default:
           return null;
       }
@@ -149,6 +162,8 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     tmpMap.put(_Fields.STACK_TRACE_STR, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("stackTraceStr", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.ERROR_TYPE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("errorType", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.EnumMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.ENUM, ErrorType.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(BlurException.class, metaDataMap);
   }
@@ -158,11 +173,13 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
 
   public BlurException(
     String message,
-    String stackTraceStr)
+    String stackTraceStr,
+    ErrorType errorType)
   {
     this();
     this.message = message;
     this.stackTraceStr = stackTraceStr;
+    this.errorType = errorType;
   }
 
   /**
@@ -175,6 +192,9 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
     if (other.isSetStackTraceStr()) {
       this.stackTraceStr = other.stackTraceStr;
     }
+    if (other.isSetErrorType()) {
+      this.errorType = other.errorType;
+    }
   }
 
   public BlurException deepCopy() {
@@ -185,6 +205,7 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
   public void clear() {
     this.message = null;
     this.stackTraceStr = null;
+    this.errorType = null;
   }
 
   /**
@@ -247,6 +268,38 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
     }
   }
 
+  /**
+   * 
+   * @see ErrorType
+   */
+  public ErrorType getErrorType() {
+    return this.errorType;
+  }
+
+  /**
+   * 
+   * @see ErrorType
+   */
+  public BlurException setErrorType(ErrorType errorType) {
+    this.errorType = errorType;
+    return this;
+  }
+
+  public void unsetErrorType() {
+    this.errorType = null;
+  }
+
+  /** Returns true if field errorType is set (has been assigned a value) and false otherwise */
+  public boolean isSetErrorType() {
+    return this.errorType != null;
+  }
+
+  public void setErrorTypeIsSet(boolean value) {
+    if (!value) {
+      this.errorType = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case MESSAGE:
@@ -265,6 +318,14 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
       }
       break;
 
+    case ERROR_TYPE:
+      if (value == null) {
+        unsetErrorType();
+      } else {
+        setErrorType((ErrorType)value);
+      }
+      break;
+
     }
   }
 
@@ -275,6 +336,9 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
 
     case STACK_TRACE_STR:
       return getStackTraceStr();
+
+    case ERROR_TYPE:
+      return getErrorType();
 
     }
     throw new IllegalStateException();
@@ -291,6 +355,8 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
       return isSetMessage();
     case STACK_TRACE_STR:
       return isSetStackTraceStr();
+    case ERROR_TYPE:
+      return isSetErrorType();
     }
     throw new IllegalStateException();
   }
@@ -323,6 +389,15 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
       if (!(this_present_stackTraceStr && that_present_stackTraceStr))
         return false;
       if (!this.stackTraceStr.equals(that.stackTraceStr))
+        return false;
+    }
+
+    boolean this_present_errorType = true && this.isSetErrorType();
+    boolean that_present_errorType = true && that.isSetErrorType();
+    if (this_present_errorType || that_present_errorType) {
+      if (!(this_present_errorType && that_present_errorType))
+        return false;
+      if (!this.errorType.equals(that.errorType))
         return false;
     }
 
@@ -362,6 +437,16 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetErrorType()).compareTo(typedOther.isSetErrorType());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetErrorType()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.errorType, typedOther.errorType);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -395,6 +480,14 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
       sb.append("null");
     } else {
       sb.append(this.stackTraceStr);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("errorType:");
+    if (this.errorType == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.errorType);
     }
     first = false;
     sb.append(")");
@@ -456,6 +549,14 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 3: // ERROR_TYPE
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
+              struct.errorType = ErrorType.findByValue(iprot.readI32());
+              struct.setErrorTypeIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -479,6 +580,11 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
       if (struct.stackTraceStr != null) {
         oprot.writeFieldBegin(STACK_TRACE_STR_FIELD_DESC);
         oprot.writeString(struct.stackTraceStr);
+        oprot.writeFieldEnd();
+      }
+      if (struct.errorType != null) {
+        oprot.writeFieldBegin(ERROR_TYPE_FIELD_DESC);
+        oprot.writeI32(struct.errorType.getValue());
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -505,19 +611,25 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
       if (struct.isSetStackTraceStr()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetErrorType()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetMessage()) {
         oprot.writeString(struct.message);
       }
       if (struct.isSetStackTraceStr()) {
         oprot.writeString(struct.stackTraceStr);
       }
+      if (struct.isSetErrorType()) {
+        oprot.writeI32(struct.errorType.getValue());
+      }
     }
 
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, BlurException struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.message = iprot.readString();
         struct.setMessageIsSet(true);
@@ -525,6 +637,10 @@ public class BlurException extends TException implements org.apache.blur.thirdpa
       if (incoming.get(1)) {
         struct.stackTraceStr = iprot.readString();
         struct.setStackTraceStrIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.errorType = ErrorType.findByValue(iprot.readI32());
+        struct.setErrorTypeIsSet(true);
       }
     }
   }

@@ -55,6 +55,7 @@
 <a href="Blur.html#Struct_ColumnFamilyDefinition">ColumnFamilyDefinition</a><br/>
 <a href="Blur.html#Struct_ColumnPreCache">ColumnPreCache</a><br/>
 <a href="Blur.html#Struct_CpuTime">CpuTime</a><br/>
+<a href="Blur.html#Enum_ErrorType">ErrorType</a><br/>
 <a href="Blur.html#Struct_ExpertQuery">ExpertQuery</a><br/>
 <a href="Blur.html#Struct_Facet">Facet</a><br/>
 <a href="Blur.html#Struct_FetchRecordResult">FetchRecordResult</a><br/>
@@ -80,6 +81,13 @@
 <td></code></td>
 </tr></table>
 <hr/><h2 id="Enumerations">Enumerations</h2>
+<div class="definition"><h3 id="Enum_ErrorType">Enumeration: ErrorType</h3>
+<br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>UNKNOWN</code></td><td><code>0</code></td></tr>
+<tr><td><code>QUERY_CANCEL</code></td><td><code>1</code></td></tr>
+<tr><td><code>QUERY_TIMEOUT</code></td><td><code>2</code></td></tr>
+<tr><td><code>BACK_PRESSURE</code></td><td><code>3</code></td></tr>
+</table></div>
 <div class="definition"><h3 id="Enum_ScoreType">Enumeration: ScoreType</h3>
 The scoring type used during a SuperQuery to score multi Record hits within a ColumnFamily.<br/><br/>
 SUPER - During a multi Record match, a calculation of the best match Record plus how often it occurs within the match Row produces the score that is used in the scoring of the SuperQuery.<br/><br/>
@@ -101,6 +109,7 @@ COMPLETE - Query is complete.<br/>
 <tr><td><code>RUNNING</code></td><td><code>0</code></td></tr>
 <tr><td><code>INTERRUPTED</code></td><td><code>1</code></td></tr>
 <tr><td><code>COMPLETE</code></td><td><code>2</code></td></tr>
+<tr><td><code>BACK_PRESSURE_INTERRUPTED</code></td><td><code>3</code></td></tr>
 </table></div>
 <div class="definition"><h3 id="Enum_RowMutationType">Enumeration: RowMutationType</h3>
 Specifies the type of Row mutation that should occur during a mutation of a given Row.<br/><br/>
@@ -141,6 +150,7 @@ See shardServerLayoutOptions method in the Blur service for details.
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>stackTraceStr</td><td><code>string</code></td><td>The original stack trace (if any).
 </td><td>default</td><td></td></tr>
+<tr><td>3</td><td>errorType</td><td><code><a href="Blur.html#Enum_ErrorType">ErrorType</a></code></td><td></td><td>default</td><td></td></tr>
 </table><br/>BlurException that carries a message plus the original stack
 trace (if any).
 <br/></div><div class="definition"><h3 id="Struct_Column">Struct: Column</h3>

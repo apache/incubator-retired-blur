@@ -18,50 +18,43 @@ package org.apache.blur.lucene.search;
  */
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.Scorer;
 
-public class StopExecutionCollector extends Collector {
+public class SlowCollector extends Collector {
 
-  private static final long _5MS = TimeUnit.MILLISECONDS.toNanos(5);
+  private static final long DELAY = TimeUnit.MILLISECONDS.toMillis(250);
+  private Collector _collector;
 
-  private final Collector _collector;
-  private final AtomicBoolean _running;
-  private long last;
-
-  public StopExecutionCollector(Collector collector, AtomicBoolean running) {
+  public SlowCollector(Collector collector) {
     _collector = collector;
-    _running = running;
   }
 
-  public static class StopExecutionCollectorException extends RuntimeException {
-    private static final long serialVersionUID = 5753875017543945163L;
+  @Override
+  public void setScorer(Scorer scorer) throws IOException {
+    _collector.setScorer(scorer);
   }
 
-  public boolean acceptsDocsOutOfOrder() {
-    return _collector.acceptsDocsOutOfOrder();
-  }
-
+  @Override
   public void collect(int doc) throws IOException {
-    long now = System.nanoTime();
-    if (last + _5MS < now) {
-      if (!_running.get()) {
-        throw new StopExecutionCollectorException();
-      }
-      last = now;
-    }
     _collector.collect(doc);
+    try {
+      Thread.sleep(DELAY);
+    } catch (InterruptedException e) {
+      return;
+    }
   }
 
+  @Override
   public void setNextReader(AtomicReaderContext context) throws IOException {
     _collector.setNextReader(context);
   }
 
-  public void setScorer(Scorer scorer) throws IOException {
-    _collector.setScorer(scorer);
+  @Override
+  public boolean acceptsDocsOutOfOrder() {
+    return _collector.acceptsDocsOutOfOrder();
   }
 
 }

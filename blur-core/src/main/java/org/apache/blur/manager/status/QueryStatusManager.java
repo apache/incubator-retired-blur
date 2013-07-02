@@ -31,6 +31,9 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
+import org.apache.blur.thrift.generated.QueryState;
+import org.apache.blur.utils.GCWatcher;
+import org.apache.blur.utils.GCWatcher.Action;
 
 public class QueryStatusManager {
 
@@ -53,6 +56,12 @@ public class QueryStatusManager {
         }
       }
     }, statusCleanupTimerDelay, statusCleanupTimerDelay);
+    GCWatcher.registerAction(new Action() {
+      @Override
+      public void takeAction() throws Exception {
+        stopAllQueriesForBackPressure();
+      }
+    });
   }
 
   public void close() {
@@ -125,5 +134,15 @@ public class QueryStatusManager {
       }
     }
     return new ArrayList<Long>(ids);
+  }
+
+  public void stopAllQueriesForBackPressure() {
+    LOG.warn("Stopping all queries for back pressure.");
+    for (QueryStatus status : currentQueryStatusCollection.keySet()) {
+      QueryState state = status.getQueryStatus().getState();
+      if (state == QueryState.RUNNING) {
+        status.stopQueryForBackPressure();
+      }
+    }
   }
 }

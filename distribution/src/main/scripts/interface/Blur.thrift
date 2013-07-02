@@ -19,6 +19,13 @@ namespace java org.apache.blur.thrift.generated
 namespace rb blur
 namespace perl Blur
 
+enum ErrorType {
+  UNKNOWN,
+  QUERY_CANCEL,
+  QUERY_TIMEOUT,
+  BACK_PRESSURE
+}
+
 /** 
   * BlurException that carries a message plus the original stack 
   * trace (if any). 
@@ -32,7 +39,9 @@ exception BlurException {
   /** 
    * The original stack trace (if any). 
    */
-  2:string stackTraceStr
+  2:string stackTraceStr,
+
+  3:ErrorType errorType
 }
 
 /** 
@@ -58,7 +67,8 @@ enum ScoreType {
 enum QueryState {
   RUNNING,
   INTERRUPTED,
-  COMPLETE
+  COMPLETE,
+  BACK_PRESSURE_INTERRUPTED
 }
 
 /**

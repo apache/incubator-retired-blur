@@ -19,9 +19,11 @@ package org.apache.blur.manager.results;
 import java.io.Closeable;
 import java.util.Map;
 
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
+import org.apache.blur.utils.BlurIterable;
 
-public interface BlurResultIterable extends Iterable<BlurResult>, Closeable {
+public interface BlurResultIterable extends BlurIterable<BlurResult, BlurException>, Closeable {
 
   void skipTo(long skipTo);
 

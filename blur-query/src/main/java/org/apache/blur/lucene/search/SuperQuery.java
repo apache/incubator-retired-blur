@@ -18,6 +18,7 @@ package org.apache.blur.lucene.search;
  */
 import java.io.IOException;
 
+import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
@@ -28,7 +29,6 @@ import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.OpenBitSet;
-import org.apache.blur.thrift.generated.ScoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

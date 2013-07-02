@@ -18,13 +18,13 @@ package org.apache.blur.manager.results;
  */
 import java.util.Comparator;
 
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
 
-
-public class BlurResultPeekableIteratorComparator implements Comparator<PeekableIterator<BlurResult>> {
+public class BlurResultPeekableIteratorComparator implements Comparator<PeekableIterator<BlurResult, BlurException>> {
 
   @Override
-  public int compare(PeekableIterator<BlurResult> o1, PeekableIterator<BlurResult> o2) {
+  public int compare(PeekableIterator<BlurResult, BlurException> o1, PeekableIterator<BlurResult, BlurException> o2) {
     BlurResult result1 = o1.peek();
     BlurResult result2 = o2.peek();
     if (result1 == null && result2 == null) {

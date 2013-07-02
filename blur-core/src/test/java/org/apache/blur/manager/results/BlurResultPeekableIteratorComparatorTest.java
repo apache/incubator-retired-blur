@@ -20,9 +20,12 @@ package org.apache.blur.manager.results;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
+import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
 import org.junit.Test;
 
@@ -30,21 +33,25 @@ import org.junit.Test;
 public class BlurResultPeekableIteratorComparatorTest {
 
   @Test
-  public void testResultPeekableIteratorComparator() {
-    List<PeekableIterator<BlurResult>> results = new ArrayList<PeekableIterator<BlurResult>>();
-    results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>(Arrays.asList(newResult("5", 5))).iterator()));
-    results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>().iterator()));
-    results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>().iterator()));
-    results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>(Arrays.asList(newResult("2", 2))).iterator()));
-    results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>(Arrays.asList(newResult("1", 1))).iterator()));
-    results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>(Arrays.asList(newResult("9", 1))).iterator()));
-    results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>().iterator()));
+  public void testResultPeekableIteratorComparator() throws BlurException {
+    List<PeekableIterator<BlurResult,BlurException>> results = new ArrayList<PeekableIterator<BlurResult,BlurException>>();
+    results.add(PeekableIterator.wrap(wrap(new ArrayList<BlurResult>(Arrays.asList(newResult("5", 5))).iterator())));
+    results.add(PeekableIterator.wrap(wrap(new ArrayList<BlurResult>().iterator())));
+    results.add(PeekableIterator.wrap(wrap(new ArrayList<BlurResult>().iterator())));
+    results.add(PeekableIterator.wrap(wrap(new ArrayList<BlurResult>(Arrays.asList(newResult("2", 2))).iterator())));
+    results.add(PeekableIterator.wrap(wrap(new ArrayList<BlurResult>(Arrays.asList(newResult("1", 1))).iterator())));
+    results.add(PeekableIterator.wrap(wrap(new ArrayList<BlurResult>(Arrays.asList(newResult("9", 1))).iterator())));
+    results.add(PeekableIterator.wrap(wrap(new ArrayList<BlurResult>().iterator())));
 
     Collections.sort(results, BlurUtil.HITS_PEEKABLE_ITERATOR_COMPARATOR);
 
-    for (PeekableIterator<BlurResult> iterator : results) {
+    for (PeekableIterator<BlurResult,BlurException> iterator : results) {
       System.out.println(iterator.peek());
     }
+  }
+
+  private BlurIterator<BlurResult, BlurException> wrap(Iterator<BlurResult> iterator) {
+    return BlurUtil.convert(iterator);
   }
 
   private BlurResult newResult(String id, double score) {

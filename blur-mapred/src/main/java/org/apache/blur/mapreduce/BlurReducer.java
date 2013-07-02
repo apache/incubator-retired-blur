@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,8 +52,6 @@ import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
-import org.apache.blur.utils.Converter;
-import org.apache.blur.utils.IterableConverter;
 import org.apache.blur.utils.ResetableDocumentStoredFieldVisitor;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -474,14 +473,31 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
     document.add(new Field(BlurConstants.RECORD_ID, record.getRecordId(), TransactionRecorder.ID_TYPE));
 
     String columnFamily = record.getFamily();
-    TransactionRecorder.addColumns(document, _analyzer, columnFamily, new IterableConverter<BlurColumn, Column>(
-        record.getColumns(), new Converter<BlurColumn, Column>() {
+    List<BlurColumn> columns = record.getColumns();
+    final Iterator<BlurColumn> iterator = columns.iterator();
+    TransactionRecorder.addColumns(document, _analyzer, columnFamily, new Iterable<Column>() {
+      @Override
+      public Iterator<Column> iterator() {
+        return new Iterator<Column>() {
+
           @Override
-          public Column convert(BlurColumn from) throws Exception {
-            _fieldCounter.increment(1);
-            return new Column(from.getName(), from.getValue());
+          public Column next() {
+            BlurColumn bc = iterator.next();
+            return new Column(bc.getName(), bc.getValue());
           }
-        }));
+
+          @Override
+          public boolean hasNext() {
+            return iterator.hasNext();
+          }
+
+          @Override
+          public void remove() {
+
+          }
+        };
+      }
+    });
     return document;
   }
 

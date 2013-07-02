@@ -21,16 +21,23 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.blur.MiniCluster;
+import org.apache.blur.manager.IndexManager;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -38,11 +45,13 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
+import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.util.BlurThriftHelper;
+import org.apache.blur.utils.GCWatcher;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -56,10 +65,12 @@ import org.junit.Test;
 
 public class BlurClusterTest {
 
+  private static final long _20MB = 20 * 1000 * 1000;
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp_BlurClusterTest"));
 
   @BeforeClass
   public static void startCluster() throws IOException {
+    GCWatcher.init(0.80);
     LocalFileSystem localFS = FileSystem.getLocal(new Configuration());
     File testDirectory = new File(TMPDIR, "blur-cluster-test");
     testDirectory.mkdirs();
@@ -123,6 +134,8 @@ public class BlurClusterTest {
     SimpleQuery simpleQueryRow = new SimpleQuery();
     simpleQueryRow.setQueryStr("test.test:value");
     blurQueryRow.setSimpleQuery(simpleQueryRow);
+    blurQueryRow.setUseCacheIfPresent(false);
+    blurQueryRow.setCacheResult(false);
     BlurResults resultsRow = client.query("test", blurQueryRow);
     assertRowResults(resultsRow);
     assertEquals(length, resultsRow.getTotalResults());
@@ -135,6 +148,115 @@ public class BlurClusterTest {
     BlurResults resultsRecord = client.query("test", blurQueryRecord);
     assertRecordResults(resultsRecord);
     assertEquals(length, resultsRecord.getTotalResults());
+  }
+
+  @Test
+  public void testQueryCancel() throws BlurException, TException, InterruptedException {
+    // This will make each collect in the collectors pause 250 ms per collect
+    // call
+    IndexManager.DEBUG_RUN_SLOW.set(true);
+
+    final Iface client = getClient();
+    final BlurQuery blurQueryRow = new BlurQuery();
+    SimpleQuery simpleQueryRow = new SimpleQuery();
+    simpleQueryRow.setQueryStr("test.test:value");
+    blurQueryRow.setSimpleQuery(simpleQueryRow);
+    blurQueryRow.setUseCacheIfPresent(false);
+    blurQueryRow.setCacheResult(false);
+    blurQueryRow.setUuid(1234l);
+
+    final AtomicReference<BlurException> error = new AtomicReference<BlurException>();
+    final AtomicBoolean fail = new AtomicBoolean();
+
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          // This call will take several seconds to execute.
+          client.query("test", blurQueryRow);
+          fail.set(true);
+        } catch (BlurException e) {
+          error.set(e);
+        } catch (TException e) {
+          e.printStackTrace();
+          fail.set(true);
+        }
+      }
+    }).start();
+    Thread.sleep(500);
+    client.cancelQuery("test", blurQueryRow.getUuid());
+    BlurException blurException = pollForError(error, 10, TimeUnit.SECONDS);
+    if (fail.get()) {
+      fail("Unknown error, failing test.");
+    }
+    assertEquals(blurException.getErrorType(), ErrorType.QUERY_CANCEL);
+  }
+
+  @Test
+  public void testBackPressureViaQuery() throws BlurException, TException, InterruptedException {
+    // This will make each collect in the collectors pause 250 ms per collect
+    // call
+    IndexManager.DEBUG_RUN_SLOW.set(true);
+
+    final Iface client = getClient();
+    final BlurQuery blurQueryRow = new BlurQuery();
+    SimpleQuery simpleQueryRow = new SimpleQuery();
+    simpleQueryRow.setQueryStr("test.test:value");
+    blurQueryRow.setSimpleQuery(simpleQueryRow);
+    blurQueryRow.setUseCacheIfPresent(false);
+    blurQueryRow.setCacheResult(false);
+    blurQueryRow.setUuid(1234l);
+
+    final AtomicReference<BlurException> error = new AtomicReference<BlurException>();
+    final AtomicBoolean fail = new AtomicBoolean();
+
+    System.gc();
+    System.gc();
+    MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+    MemoryUsage usage = memoryMXBean.getHeapMemoryUsage();
+    long max = usage.getMax();
+    long used = usage.getUsed();
+    long limit = (long) (max * 0.80);
+    long difference = limit - used;
+    byte[] bufferToFillHeap = new byte[(int) (difference - _20MB)];
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          // This call will take several seconds to execute.
+          client.query("test", blurQueryRow);
+          fail.set(true);
+        } catch (BlurException e) {
+          error.set(e);
+        } catch (TException e) {
+          e.printStackTrace();
+          fail.set(true);
+        }
+      }
+    }).start();
+    Thread.sleep(500);
+    byte[] bufferToPutGcWatcherOverLimit = new byte[(int) _20MB];
+    BlurException blurException = pollForError(error, 10, TimeUnit.SECONDS);
+    if (fail.get()) {
+      fail("Unknown error, failing test.");
+    }
+    System.out.println(bufferToFillHeap.hashCode());
+    System.out.println(bufferToPutGcWatcherOverLimit.hashCode());
+    assertEquals(blurException.getErrorType(), ErrorType.BACK_PRESSURE);
+  }
+
+  private BlurException pollForError(AtomicReference<BlurException> error, long period, TimeUnit timeUnit)
+      throws InterruptedException {
+    long s = System.nanoTime();
+    long totalTime = timeUnit.toNanos(period) + s;
+    while (totalTime > System.nanoTime()) {
+      BlurException blurException = error.get();
+      if (blurException != null) {
+        return blurException;
+      }
+      Thread.sleep(500);
+    }
+    return null;
   }
 
   @Test

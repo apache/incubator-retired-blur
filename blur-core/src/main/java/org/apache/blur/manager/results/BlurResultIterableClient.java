@@ -17,7 +17,6 @@ package org.apache.blur.manager.results;
  * limitations under the License.
  */
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -28,10 +27,12 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.BlurClientManager;
 import org.apache.blur.thrift.Connection;
 import org.apache.blur.thrift.generated.Blur;
+import org.apache.blur.thrift.generated.Blur.Client;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
-import org.apache.blur.thrift.generated.Blur.Client;
+import org.apache.blur.utils.BlurIterator;
 
 public class BlurResultIterableClient implements BlurResultIterable {
 
@@ -52,7 +53,7 @@ public class BlurResultIterableClient implements BlurResultIterable {
   private boolean _alreadyProcessed;
 
   public BlurResultIterableClient(Connection connection, Blur.Client client, String table, BlurQuery query,
-      AtomicLongArray facetCounts, int remoteFetchCount) {
+      AtomicLongArray facetCounts, int remoteFetchCount) throws BlurException {
     _connection = connection;
     _client = client;
     _table = table;
@@ -66,7 +67,7 @@ public class BlurResultIterableClient implements BlurResultIterable {
     return _client;
   }
 
-  private void performSearch() {
+  private void performSearch() throws BlurException {
     try {
       long cursor = _remoteFetchCount * _batch;
       BlurQuery blurQuery = new BlurQuery(_originalQuery.simpleQuery, _originalQuery.expertQuery,
@@ -79,6 +80,8 @@ public class BlurResultIterableClient implements BlurResultIterable {
       _totalResults = _results.totalResults;
       _shardInfo.putAll(_results.shardInfo);
       _batch++;
+    } catch (BlurException e) {
+      throw e;
     } catch (Exception e) {
       LOG.error("Error during for [{0}]", e, _originalQuery);
       throw new RuntimeException(e);
@@ -125,7 +128,7 @@ public class BlurResultIterableClient implements BlurResultIterable {
   }
 
   @Override
-  public Iterator<BlurResult> iterator() {
+  public BlurIterator<BlurResult, BlurException> iterator() throws BlurException {
     SearchIterator iterator = new SearchIterator();
     long start = 0;
     while (iterator.hasNext() && start < _skipTo) {
@@ -135,7 +138,7 @@ public class BlurResultIterableClient implements BlurResultIterable {
     return iterator;
   }
 
-  public class SearchIterator implements Iterator<BlurResult> {
+  public class SearchIterator implements BlurIterator<BlurResult, BlurException> {
 
     private int position = 0;
     private int relposition = 0;
@@ -149,18 +152,13 @@ public class BlurResultIterableClient implements BlurResultIterable {
     }
 
     @Override
-    public BlurResult next() {
+    public BlurResult next() throws BlurException {
       if (relposition >= _results.results.size()) {
         performSearch();
         relposition = 0;
       }
       position++;
       return _results.results.get(relposition++);
-    }
-
-    @Override
-    public void remove() {
-
     }
   }
 

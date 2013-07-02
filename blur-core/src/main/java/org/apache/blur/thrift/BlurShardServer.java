@@ -120,6 +120,8 @@ public class BlurShardServer extends TableAdmin implements Iface {
         hitsIterable = _indexManager.query(table, blurQuery, facetCounts);
         return _queryCache.cache(table, original,
             BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _dataFetch, blurQuery.selector, this, table));
+      } catch (BlurException e) {
+        throw e;
       } catch (Exception e) {
         LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
         throw new BException(e.getMessage(), e);
@@ -373,7 +375,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
       throw new BException(e.getMessage(), e);
     }
     if (blurQueryStatus == null) {
-      throw new BlurException("Query status for table [" + table + "] and uuid [" + uuid + "] not found", null);
+      throw new BException("Query status for table [" + table + "] and uuid [" + uuid + "] not found");
     }
     return blurQueryStatus;
   }

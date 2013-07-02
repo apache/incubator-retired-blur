@@ -21,9 +21,10 @@ import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.blur.lucene.search.IterablePaging;
 import org.apache.blur.lucene.search.IterablePaging.ProgressRef;
 import org.apache.blur.lucene.search.IterablePaging.TotalHitsRef;
+import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.utils.BlurIterator;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -42,7 +43,6 @@ import org.junit.Test;
 /**
  * Testing the paging collector.
  * 
- * @author Aaron McCurry
  */
 public class TestingPagingCollector {
 
@@ -59,10 +59,11 @@ public class TestingPagingCollector {
     ProgressRef progressRef = new ProgressRef();
 
     TermQuery query = new TermQuery(new Term("f1", "value"));
-    IterablePaging paging = new IterablePaging(new AtomicBoolean(true), searcher, query, 100, null, null);
-
-    for (ScoreDoc sd : paging.skipTo(90).gather(20).totalHits(totalHitsRef).progress(progressRef)) {
-
+    IterablePaging paging = new IterablePaging(new AtomicBoolean(true), searcher, query, 100, null, null, false);
+    IterablePaging itPaging = paging.skipTo(90).gather(20).totalHits(totalHitsRef).progress(progressRef);
+    BlurIterator<ScoreDoc, BlurException> iterator = itPaging.iterator();
+    while (iterator.hasNext()) {
+      ScoreDoc sd = iterator.next(); 
       System.out.println("time [" + progressRef.queryTime() + "] " + "total hits [" + totalHitsRef.totalHits() + "] "
           + "searches [" + progressRef.searchesPerformed() + "] " + "position [" + progressRef.currentHitPosition()
           + "] " + "doc id [" + sd.doc + "] " + "score [" + sd.score + "]");

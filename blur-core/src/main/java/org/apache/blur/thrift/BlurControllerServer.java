@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -74,6 +73,7 @@ import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurExecutorCompletionService;
+import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.ForkJoin;
 import org.apache.blur.utils.ForkJoin.Merger;
@@ -358,23 +358,26 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           }
         }
       } catch (Exception e) {
+        if (e instanceof BlurException) {
+          throw (BlurException) e;
+        }
         LOG.error("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
         throw new BException("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
       }
     }
-    throw new BlurException("Query could not be completed.", null);
+    throw new BException("Query could not be completed.");
   }
 
   public BlurResults convertToBlurResults(BlurResultIterable hitsIterable, BlurQuery query,
       AtomicLongArray facetCounts, ExecutorService executor, Selector selector, final String table)
-      throws InterruptedException, ExecutionException {
+      throws InterruptedException, ExecutionException, BlurException {
     BlurResults results = new BlurResults();
     results.setTotalResults(hitsIterable.getTotalResults());
     results.setShardInfo(hitsIterable.getShardInfo());
     if (query.minimumNumberOfResults > 0) {
       hitsIterable.skipTo(query.start);
       int count = 0;
-      Iterator<BlurResult> iterator = hitsIterable.iterator();
+      BlurIterator<BlurResult, BlurException> iterator = hitsIterable.iterator();
       while (iterator.hasNext() && count < query.fetch) {
         results.addToResults(iterator.next());
         count++;
@@ -693,7 +696,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       String shardName = MutationHelper.getShardName(table, selector.rowId, numberOfShards, _blurPartitioner);
       return layout.get(shardName);
     }
-    throw new BlurException("Selector is missing both a locationid and a rowid, one is needed.", null);
+    throw new BException("Selector is missing both a locationid and a rowid, one is needed.");
   }
 
   private <R> R scatterGather(String cluster, final BlurCommand<R> command, Merger<R> merger) throws Exception {
@@ -722,7 +725,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private String getCluster(String table) throws BlurException, TException {
     TableDescriptor describe = describe(table);
     if (describe == null) {
-      throw new BlurException("Table [" + table + "] not found.", null);
+      throw new BException("Table [" + table + "] not found.");
     }
     return describe.cluster;
   }
@@ -753,7 +756,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       int numberOfShards = getShardCount(table);
       Map<String, String> tableLayout = _shardServerLayout.get().get(table);
       if (tableLayout.size() != numberOfShards) {
-        throw new BlurException("Cannot update data while shard is missing", null);
+        throw new BException("Cannot update data while shard is missing");
       }
 
       String shardName = MutationHelper.getShardName(table, mutation.rowId, numberOfShards, _blurPartitioner);
@@ -797,7 +800,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       int numberOfShards = getShardCount(table);
       Map<String, String> tableLayout = _shardServerLayout.get().get(table);
       if (tableLayout.size() != numberOfShards) {
-        throw new BlurException("Cannot update data while shard is missing", null);
+        throw new BException("Cannot update data while shard is missing");
       }
 
       String shardName = MutationHelper.getShardName(table, mutation.rowId, numberOfShards, _blurPartitioner);

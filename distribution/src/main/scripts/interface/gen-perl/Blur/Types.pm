@@ -8,6 +8,11 @@ use strict;
 use warnings;
 use Thrift;
 
+package Blur::ErrorType;
+use constant UNKNOWN => 0;
+use constant QUERY_CANCEL => 1;
+use constant QUERY_TIMEOUT => 2;
+use constant BACK_PRESSURE => 3;
 package Blur::ScoreType;
 use constant SUPER => 0;
 use constant AGGREGATE => 1;
@@ -17,6 +22,7 @@ package Blur::QueryState;
 use constant RUNNING => 0;
 use constant INTERRUPTED => 1;
 use constant COMPLETE => 2;
+use constant BACK_PRESSURE_INTERRUPTED => 3;
 package Blur::RowMutationType;
 use constant DELETE_ROW => 0;
 use constant REPLACE_ROW => 1;
@@ -36,7 +42,7 @@ use constant CLOSING_ERROR => 5;
 package Blur::BlurException;
 use base qw(Thrift::TException);
 use base qw(Class::Accessor);
-Blur::BlurException->mk_accessors( qw( message stackTraceStr ) );
+Blur::BlurException->mk_accessors( qw( message stackTraceStr errorType ) );
 
 sub new {
   my $classname = shift;
@@ -44,12 +50,16 @@ sub new {
   my $vals      = shift || {};
   $self->{message} = undef;
   $self->{stackTraceStr} = undef;
+  $self->{errorType} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{message}) {
       $self->{message} = $vals->{message};
     }
     if (defined $vals->{stackTraceStr}) {
       $self->{stackTraceStr} = $vals->{stackTraceStr};
+    }
+    if (defined $vals->{errorType}) {
+      $self->{errorType} = $vals->{errorType};
     }
   }
   return bless ($self, $classname);
@@ -86,6 +96,12 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^3$/ && do{      if ($ftype == TType::I32) {
+        $xfer += $input->readI32(\$self->{errorType});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -106,6 +122,11 @@ sub write {
   if (defined $self->{stackTraceStr}) {
     $xfer += $output->writeFieldBegin('stackTraceStr', TType::STRING, 2);
     $xfer += $output->writeString($self->{stackTraceStr});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{errorType}) {
+    $xfer += $output->writeFieldBegin('errorType', TType::I32, 3);
+    $xfer += $output->writeI32($self->{errorType});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

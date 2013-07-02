@@ -18,14 +18,14 @@ package org.apache.blur.manager.results;
  */
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
+import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
-
 
 public class BlurResultIterableSimple implements BlurResultIterable {
 
@@ -56,9 +56,9 @@ public class BlurResultIterableSimple implements BlurResultIterable {
   }
 
   @Override
-  public Iterator<BlurResult> iterator() {
+  public BlurIterator<BlurResult, BlurException> iterator() throws BlurException {
     long start = 0;
-    Iterator<BlurResult> iterator = results.iterator();
+    BlurIterator<BlurResult, BlurException> iterator = BlurUtil.convert(results.iterator());
     while (iterator.hasNext() && start < skipTo) {
       iterator.next();
       start++;

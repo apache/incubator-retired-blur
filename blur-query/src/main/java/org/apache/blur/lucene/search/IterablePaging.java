@@ -17,11 +17,17 @@ package org.apache.blur.lucene.search;
  * limitations under the License.
  */
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.blur.lucene.search.StopExecutionCollector.StopExecutionCollectorException;
+import org.apache.blur.thrift.BException;
+import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.ErrorType;
+import org.apache.blur.utils.BlurIterable;
+import org.apache.blur.utils.BlurIterator;
+import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -31,27 +37,32 @@ import org.apache.lucene.search.TopScoreDocCollector;
 /**
  * The {@link IterablePaging} class allows for easy paging through lucene hits.
  */
-public class IterablePaging implements Iterable<ScoreDoc> {
+public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
 
   private final IndexSearcher searcher;
   private final Query query;
   private final AtomicBoolean running;
   private final int numHitsToCollect;
+  private final boolean _runSlow;
 
   private TotalHitsRef totalHitsRef;
   private ProgressRef progressRef;
   private int skipTo;
   private int gather = -1;
 
-  public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query,
-      int numHitsToCollect, TotalHitsRef totalHitsRef, ProgressRef progressRef) throws IOException {
+  public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query, int numHitsToCollect,
+      TotalHitsRef totalHitsRef, ProgressRef progressRef, boolean runSlow) throws BlurException {
     this.running = running;
-    this.query = searcher.rewrite(query);
+    try {
+      this.query = searcher.rewrite(query);
+    } catch (IOException e) {
+      throw new BException("Unknown error during rewrite", e);
+    }
     this.searcher = searcher;
     this.numHitsToCollect = numHitsToCollect;
     this.totalHitsRef = totalHitsRef == null ? new TotalHitsRef() : totalHitsRef;
     this.progressRef = progressRef == null ? new ProgressRef() : progressRef;
-
+    _runSlow = runSlow;
   }
 
   public static class TotalHitsRef {
@@ -148,36 +159,43 @@ public class IterablePaging implements Iterable<ScoreDoc> {
 
   /**
    * The {@link ScoreDoc} iterator.
+   * 
+   * @throws BlurException
    */
   @Override
-  public Iterator<ScoreDoc> iterator() {
+  public BlurIterator<ScoreDoc, BlurException> iterator() throws BlurException {
     return skipHits(new PagingIterator());
   }
 
-  class PagingIterator implements Iterator<ScoreDoc> {
+  class PagingIterator implements BlurIterator<ScoreDoc, BlurException> {
+    private static final String STOP_EXECUTION_COLLECTOR_EXCEPTION = "StopExecutionCollectorException";
     private ScoreDoc[] scoreDocs;
     private int counter = 0;
     private int offset = 0;
     private int endPosition = gather == -1 ? Integer.MAX_VALUE : skipTo + gather;
     private ScoreDoc lastScoreDoc;
 
-    PagingIterator() {
+    PagingIterator() throws BlurException {
       search();
     }
 
-    void search() {
+    void search() throws BlurException {
       long s = System.currentTimeMillis();
       progressRef.searchesPerformed.incrementAndGet();
       try {
         TopScoreDocCollector collector = TopScoreDocCollector.create(numHitsToCollect, lastScoreDoc, true);
-        StopExecutionCollector stopExecutionCollector = new StopExecutionCollector(collector, running);
-        searcher.search(query, stopExecutionCollector);
+        Collector col = new StopExecutionCollector(collector, running);
+        if (_runSlow) {
+          col = new SlowCollector(col);
+        }
+        searcher.search(query, col);
         totalHitsRef.totalHits.set(collector.getTotalHits());
         TopDocs topDocs = collector.topDocs();
         scoreDocs = topDocs.scoreDocs;
+      } catch (StopExecutionCollectorException e) {
+        throw new BlurException(STOP_EXECUTION_COLLECTOR_EXCEPTION, null, ErrorType.UNKNOWN);
       } catch (IOException e) {
-        e.printStackTrace();
-        throw new RuntimeException(e);
+        throw new BException("Unknown error during search call", e);
       }
       if (scoreDocs.length > 0) {
         lastScoreDoc = scoreDocs[scoreDocs.length - 1];
@@ -194,7 +212,7 @@ public class IterablePaging implements Iterable<ScoreDoc> {
     }
 
     @Override
-    public ScoreDoc next() {
+    public ScoreDoc next() throws BlurException {
       if (isCurrentCollectorExhausted()) {
         search();
         offset = 0;
@@ -207,14 +225,10 @@ public class IterablePaging implements Iterable<ScoreDoc> {
     private boolean isCurrentCollectorExhausted() {
       return offset < scoreDocs.length ? false : true;
     }
-
-    @Override
-    public void remove() {
-      throw new RuntimeException("read only");
-    }
   }
 
-  private Iterator<ScoreDoc> skipHits(Iterator<ScoreDoc> iterator) {
+  private BlurIterator<ScoreDoc, BlurException> skipHits(BlurIterator<ScoreDoc, BlurException> iterator)
+      throws BlurException {
     progressRef.skipTo.set(skipTo);
     for (int i = 0; i < skipTo && iterator.hasNext(); i++) {
       // eats the hits, and moves the iterator to the desired skip to position.

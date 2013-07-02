@@ -31,7 +31,7 @@ public abstract class FieldManager {
    * @param record
    * @return
    */
-  public abstract Iterable<? extends Field> getFields(Record record);
+  public abstract Iterable<? extends Field> getFields(String rowId, Record record);
 
   /**
    * Adds a column definition.
@@ -43,13 +43,16 @@ public abstract class FieldManager {
    * @param subColumnName
    *          the sub column name, optional can be null if it's not a sub
    *          column.
+   * @param fieldLessIndexing
+   *          indicates whether the field should be added to the default field
+   *          for the record for fieldless searching.
    * @param fieldType
    *          the field type name, required.
    * @param props
    *          the configuration properties for this column and type.
    */
-  public abstract void addColumnDefinition(String family, String columnName, String subColumnName, String fieldType,
-      Map<String, String> props);
+  public abstract void addColumnDefinition(String family, String columnName, String subColumnName,
+      boolean fieldLessIndexing, String fieldType, Map<String, String> props);
 
   /**
    * Gets the analyzer for the indexing process.
@@ -68,5 +71,17 @@ public abstract class FieldManager {
    * @return {@link Analyzer}.
    */
   public abstract Analyzer getAnalyzerForQuery(String fieldName);
+
+  /**
+   * Checks if there is a valid column definition for the given family and
+   * column name.
+   * 
+   * @param family
+   *          the family name,
+   * @param columnName
+   *          the column name.
+   * @return boolean
+   */
+  public abstract boolean isValidColumnDefinition(String family, String columnName);
 
 }

@@ -19,28 +19,18 @@ package org.apache.blur.analysis.type;
 import java.util.Map;
 
 import org.apache.blur.analysis.FieldTypeDefinition;
-import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
-import org.apache.lucene.document.TextField;
+import org.apache.lucene.document.LongField;
 
-public class TextFieldTypeDefinition extends FieldTypeDefinition {
+public class LongFieldTypeDefinition extends FieldTypeDefinition {
 
-  public static final String NAME = "text";
-  public static final FieldType TYPE_NOT_STORED;
-  public static final FieldType TYPE_STORED;
-
-  static {
-    TYPE_STORED = new FieldType(TextField.TYPE_STORED);
-    TYPE_STORED.setOmitNorms(true);
-    TYPE_STORED.freeze();
-
-    TYPE_NOT_STORED = new FieldType(TextField.TYPE_NOT_STORED);
-    TYPE_NOT_STORED.setOmitNorms(true);
-    TYPE_NOT_STORED.freeze();
-  }
+  public static final String NAME = "long";
+  private FieldType _typeStored;
+  private FieldType _typeNotStored;
 
   @Override
   public String getName() {
@@ -49,41 +39,53 @@ public class TextFieldTypeDefinition extends FieldTypeDefinition {
 
   @Override
   public void configure(Map<String, String> properties) {
-
+    String precisionStepStr = properties.get(NUMERIC_PRECISION_STEP);
+    if (precisionStepStr != null) {
+      int precisionStep = Integer.parseInt(precisionStepStr);
+      _typeStored = new FieldType(LongField.TYPE_STORED);
+      _typeStored.setNumericPrecisionStep(precisionStep);
+      _typeStored.freeze();
+      _typeNotStored = new FieldType(LongField.TYPE_NOT_STORED);
+      _typeNotStored.setNumericPrecisionStep(precisionStep);
+      _typeNotStored.freeze();
+    } else {
+      _typeStored = LongField.TYPE_STORED;
+      _typeNotStored = LongField.TYPE_NOT_STORED;
+    }
   }
 
   @Override
   public Iterable<? extends Field> getFieldsForColumn(String family, Column column) {
     String name = getName(family, column.getName());
-    Field field = new Field(name, column.getValue(), getStoredFieldType());
+    LongField field = new LongField(name, Long.parseLong(column.getValue()), getStoredFieldType());
     return makeIterable(field);
   }
 
   @Override
   public Iterable<? extends Field> getFieldsForSubColumn(String family, Column column, String subName) {
     String name = getName(family, column.getName(), subName);
-    Field field = new Field(name, column.getValue(), getNotStoredFieldType());
-    return makeIterable(field);
+    return makeIterable(new LongField(name, Long.parseLong(column.getValue()), getNotStoredFieldType()));
   }
 
   @Override
   public FieldType getStoredFieldType() {
-    return TYPE_STORED;
+    return _typeStored;
   }
 
   @Override
   public FieldType getNotStoredFieldType() {
-    return TYPE_NOT_STORED;
+    return _typeNotStored;
   }
 
   @Override
   public Analyzer getAnalyzerForIndex() {
-    return new NoStopWordStandardAnalyzer();
+    // shouldn't be used ever
+    return new KeywordAnalyzer();
   }
 
   @Override
   public Analyzer getAnalyzerForQuery() {
-    return new NoStopWordStandardAnalyzer();
+    return new KeywordAnalyzer();
   }
 
 }

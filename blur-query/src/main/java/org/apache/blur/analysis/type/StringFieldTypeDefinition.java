@@ -19,28 +19,16 @@ package org.apache.blur.analysis.type;
 import java.util.Map;
 
 import org.apache.blur.analysis.FieldTypeDefinition;
-import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
-import org.apache.lucene.document.TextField;
+import org.apache.lucene.document.StringField;
 
-public class TextFieldTypeDefinition extends FieldTypeDefinition {
+public class StringFieldTypeDefinition extends FieldTypeDefinition {
 
-  public static final String NAME = "text";
-  public static final FieldType TYPE_NOT_STORED;
-  public static final FieldType TYPE_STORED;
-
-  static {
-    TYPE_STORED = new FieldType(TextField.TYPE_STORED);
-    TYPE_STORED.setOmitNorms(true);
-    TYPE_STORED.freeze();
-
-    TYPE_NOT_STORED = new FieldType(TextField.TYPE_NOT_STORED);
-    TYPE_NOT_STORED.setOmitNorms(true);
-    TYPE_NOT_STORED.freeze();
-  }
+  public static final String NAME = "string";
 
   @Override
   public String getName() {
@@ -68,22 +56,23 @@ public class TextFieldTypeDefinition extends FieldTypeDefinition {
 
   @Override
   public FieldType getStoredFieldType() {
-    return TYPE_STORED;
+    return StringField.TYPE_STORED;
   }
 
   @Override
   public FieldType getNotStoredFieldType() {
-    return TYPE_NOT_STORED;
+    return StringField.TYPE_NOT_STORED;
   }
 
   @Override
   public Analyzer getAnalyzerForIndex() {
-    return new NoStopWordStandardAnalyzer();
+    // shouldn't be used ever
+    return new KeywordAnalyzer();
   }
 
   @Override
   public Analyzer getAnalyzerForQuery() {
-    return new NoStopWordStandardAnalyzer();
+    return new KeywordAnalyzer();
   }
 
 }

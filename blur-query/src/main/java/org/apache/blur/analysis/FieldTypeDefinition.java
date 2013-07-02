@@ -25,6 +25,10 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 
 public abstract class FieldTypeDefinition {
+  
+  protected static final String NUMERIC_PRECISION_STEP = "numericPrecisionStep";
+
+  protected boolean _fieldLessIndexing;
 
   /**
    * Gets the name of the field type.
@@ -129,4 +133,11 @@ public abstract class FieldTypeDefinition {
     return family + "." + name + "." + subName;
   }
 
+  public boolean isFieldLessIndexing() {
+    return _fieldLessIndexing;
+  }
+
+  public void setFieldLessIndexing(boolean fieldLessIndexing) {
+    _fieldLessIndexing = fieldLessIndexing;
+  }
 }

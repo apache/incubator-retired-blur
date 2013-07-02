@@ -45,7 +45,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLongArray;
 
-import org.apache.blur.analysis.BlurAnalyzer;
+import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.index.ExitableReader;
 import org.apache.blur.index.ExitableReader.ExitingReaderException;
@@ -223,11 +223,13 @@ public class IndexManager {
         searcher = index.getIndexReader();
         usedCache = false;
       }
-      BlurAnalyzer analyzer = _indexServer.getAnalyzer(table);
+      
+      TableContext tableContext = getTableContext(table);
+      FieldManager fieldManager = tableContext.getFieldManager();
+      
+      Query highlightQuery = getHighlightQuery(selector, table, fieldManager);
 
-      Query highlightQuery = getHighlightQuery(selector, table, analyzer);
-
-      fetchRow(searcher.getIndexReader(), table, selector, fetchResult, highlightQuery, analyzer);
+      fetchRow(searcher.getIndexReader(), table, selector, fetchResult, highlightQuery, fieldManager);
       if (fetchResult.rowResult != null) {
         if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
           _recordsMeter.mark(fetchResult.rowResult.row.records.size());
@@ -253,7 +255,7 @@ public class IndexManager {
     }
   }
 
-  private Query getHighlightQuery(Selector selector, String table, BlurAnalyzer analyzer) throws ParseException,
+  private Query getHighlightQuery(Selector selector, String table, FieldManager fieldManager) throws ParseException,
       BlurException {
     HighlightOptions highlightOptions = selector.getHighlightOptions();
     if (highlightOptions == null) {
@@ -265,11 +267,11 @@ public class IndexManager {
     }
 
     TableContext context = getTableContext(table);
-    Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.preSuperFilter, false, analyzer, _filterCache,
+    Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.preSuperFilter, false, fieldManager, _filterCache,
         context);
-    Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, analyzer, _filterCache,
+    Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, fieldManager, _filterCache,
         context);
-    return QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, analyzer, postFilter, preFilter,
+    return QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, fieldManager, postFilter, preFilter,
         getScoreType(simpleQuery.type), context);
   }
 
@@ -372,18 +374,18 @@ public class IndexManager {
         throw new BException(e.getMessage(), e);
       }
       ShardServerContext shardServerContext = ShardServerContext.getShardServerContext();
-      BlurAnalyzer analyzer = _indexServer.getAnalyzer(table);
       ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> call;
       TableContext context = getTableContext(table);
+      FieldManager fieldManager = context.getFieldManager();
       if (isSimpleQuery(blurQuery)) {
         SimpleQuery simpleQuery = blurQuery.simpleQuery;
-        Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.preSuperFilter, false, analyzer,
+        Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.preSuperFilter, false, fieldManager,
             _filterCache, context);
-        Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, analyzer,
+        Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, fieldManager,
             _filterCache, context);
-        Query userQuery = QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, analyzer,
+        Query userQuery = QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, fieldManager,
             postFilter, preFilter, getScoreType(simpleQuery.type), context);
-        Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer, context, postFilter,
+        Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, fieldManager, context, postFilter,
             preFilter);
         call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
             _queriesInternalMeter, shardServerContext, runSlow);
@@ -396,7 +398,7 @@ public class IndexManager {
         } else {
           userQuery = query;
         }
-        Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer, context, null, null);
+        Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, fieldManager, context, null, null);
         call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
             _queriesInternalMeter, shardServerContext, runSlow);
       }
@@ -432,12 +434,12 @@ public class IndexManager {
 
   public String parseQuery(String table, SimpleQuery simpleQuery) throws ParseException, BlurException {
     TableContext context = getTableContext(table);
-    BlurAnalyzer analyzer = _indexServer.getAnalyzer(table);
-    Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.preSuperFilter, false, analyzer, _filterCache,
+    FieldManager fieldManager = context.getFieldManager();
+    Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.preSuperFilter, false, fieldManager, _filterCache,
         context);
-    Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, analyzer, _filterCache,
+    Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, fieldManager, _filterCache,
         context);
-    Query userQuery = QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, analyzer, postFilter,
+    Query userQuery = QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, fieldManager, postFilter,
         preFilter, getScoreType(simpleQuery.type), context);
     return userQuery.toString();
   }
@@ -461,21 +463,21 @@ public class IndexManager {
     return false;
   }
 
-  private Query getFacetedQuery(BlurQuery blurQuery, Query userQuery, AtomicLongArray counts, BlurAnalyzer analyzer,
+  private Query getFacetedQuery(BlurQuery blurQuery, Query userQuery, AtomicLongArray counts, FieldManager fieldManager,
       TableContext context, Filter postFilter, Filter preFilter) throws ParseException {
     if (blurQuery.facets == null) {
       return userQuery;
     }
-    return new FacetQuery(userQuery, getFacetQueries(blurQuery, analyzer, context, postFilter, preFilter), counts);
+    return new FacetQuery(userQuery, getFacetQueries(blurQuery, fieldManager, context, postFilter, preFilter), counts);
   }
 
-  private Query[] getFacetQueries(BlurQuery blurQuery, BlurAnalyzer analyzer, TableContext context, Filter postFilter,
+  private Query[] getFacetQueries(BlurQuery blurQuery, FieldManager fieldManager, TableContext context, Filter postFilter,
       Filter preFilter) throws ParseException {
     int size = blurQuery.facets.size();
     Query[] queries = new Query[size];
     for (int i = 0; i < size; i++) {
       queries[i] = QueryParserUtil.parseQuery(blurQuery.facets.get(i).queryStr, blurQuery.simpleQuery.superQueryOn,
-          analyzer, postFilter, preFilter, ScoreType.CONSTANT, context);
+          fieldManager, postFilter, preFilter, ScoreType.CONSTANT, context);
     }
     return queries;
   }
@@ -509,7 +511,7 @@ public class IndexManager {
   }
 
   public static void fetchRow(IndexReader reader, String table, Selector selector, FetchResult fetchResult,
-      Query highlightQuery, BlurAnalyzer analyzer) throws CorruptIndexException, IOException {
+      Query highlightQuery, FieldManager fieldManager) throws CorruptIndexException, IOException {
     fetchResult.table = table;
     String locationId = selector.locationId;
     int lastSlash = locationId.lastIndexOf('/');
@@ -538,12 +540,12 @@ public class IndexManager {
         fetchResult.deleted = false;
         reader.document(docId, fieldVisitor);
         Document document = fieldVisitor.getDocument();
-        if (highlightQuery != null && analyzer != null) {
+        if (highlightQuery != null && fieldManager != null) {
           HighlightOptions highlightOptions = selector.getHighlightOptions();
           String preTag = highlightOptions.getPreTag();
           String postTag = highlightOptions.getPostTag();
           try {
-            document = HighlightHelper.highlight(docId, document, highlightQuery, analyzer, reader, preTag, postTag);
+            document = HighlightHelper.highlight(docId, document, highlightQuery, fieldManager, reader, preTag, postTag);
           } catch (InvalidTokenOffsetsException e) {
             LOG.error("Unknown error while tring to highlight", e);
           }
@@ -568,11 +570,11 @@ public class IndexManager {
           fetchResult.rowResult.row = new Row(rowId, null, recordCount);
         } else {
           List<Document> docs;
-          if (highlightQuery != null && analyzer != null) {
+          if (highlightQuery != null && fieldManager != null) {
             HighlightOptions highlightOptions = selector.getHighlightOptions();
             String preTag = highlightOptions.getPreTag();
             String postTag = highlightOptions.getPostTag();
-            docs = HighlightHelper.highlightDocuments(reader, term, fieldVisitor, selector, highlightQuery, analyzer,
+            docs = HighlightHelper.highlightDocuments(reader, term, fieldVisitor, selector, highlightQuery, fieldManager,
                 preTag, postTag);
           } else {
             docs = BlurUtil.fetchDocuments(reader, term, fieldVisitor, selector);

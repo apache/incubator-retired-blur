@@ -20,8 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.blur.analysis.BlurAnalyzer;
-import org.apache.blur.analysis.BlurAnalyzer.TYPE;
+import org.apache.blur.analysis.FieldManager;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.MatchAllDocsQuery;
@@ -35,20 +34,20 @@ public class BlurQueryParser extends QueryParser {
   public static final String SUPER = "super";
 
   protected final Map<Query, String> _fieldNames;
-  protected final BlurAnalyzer _blurAnalyzer;
+  protected final FieldManager _fieldManager;
 
-  public BlurQueryParser(Version matchVersion, String f, BlurAnalyzer a, Map<Query, String> fieldNames) {
-    super(matchVersion, f, a);
-    _blurAnalyzer = a;
+  public BlurQueryParser(Version matchVersion, String f, Map<Query, String> fieldNames, FieldManager fieldManager) {
+    super(matchVersion, f, fieldManager.getAnalyzerForQuery());
     _fieldNames = fieldNames == null ? new HashMap<Query, String>() : fieldNames;
+    _fieldManager = fieldManager;
   }
 
   @Override
   protected Query newFuzzyQuery(Term term, float minimumSimilarity, int prefixLength) {
     String field = term.field();
-    TYPE type = _blurAnalyzer.getTypeLookup(field);
-    if (type != TYPE.TEXT) {
-      throw new RuntimeException("Field [" + field + "] is type [" + type + "] which does not support fuzzy queries.");
+    if (!_fieldManager.checkSupportForFuzzyQuery(field)) {
+      throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
+          + "] which does not support fuzzy queries.");
     }
     return addField(super.newFuzzyQuery(term, minimumSimilarity, prefixLength), term.field());
   }
@@ -61,7 +60,6 @@ public class BlurQueryParser extends QueryParser {
   @Override
   protected MultiPhraseQuery newMultiPhraseQuery() {
     return new MultiPhraseQuery() {
-
       @Override
       public void add(Term[] terms, int position) {
         super.add(terms, position);
@@ -87,16 +85,16 @@ public class BlurQueryParser extends QueryParser {
   @Override
   protected Query newPrefixQuery(Term prefix) {
     String field = prefix.field();
-    TYPE type = _blurAnalyzer.getTypeLookup(field);
-    if (type != TYPE.TEXT) {
-      throw new RuntimeException("Field [" + field + "] is type [" + type + "] which does not support prefix queries.");
+    if (!_fieldManager.checkSupportForPrefixQuery(field)) {
+      throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
+          + "] which does not support prefix queries.");
     }
     return addField(super.newPrefixQuery(prefix), field);
   }
 
   @Override
   protected Query newRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
-    Query q = _blurAnalyzer.getNewRangeQuery(field, part1, part2, startInclusive, endInclusive);
+    Query q = _fieldManager.getNewRangeQuery(field, part1, part2, startInclusive, endInclusive);
     if (q != null) {
       return addField(q, field);
     }
@@ -106,7 +104,7 @@ public class BlurQueryParser extends QueryParser {
   @Override
   protected Query newTermQuery(Term term) {
     String field = term.field();
-    Query q = _blurAnalyzer.getNewRangeQuery(field, term.text(), term.text(), true, true);
+    Query q = _fieldManager.getTermQueryIfNumeric(field, term.text());
     if (q != null) {
       return addField(q, field);
     }
@@ -119,9 +117,8 @@ public class BlurQueryParser extends QueryParser {
       return new MatchAllDocsQuery();
     }
     String field = t.field();
-    TYPE type = _blurAnalyzer.getTypeLookup(field);
-    if (type != TYPE.TEXT) {
-      throw new RuntimeException("Field [" + field + "] is type [" + type
+    if (!_fieldManager.checkSupportForWildcardQuery(field)) {
+      throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
           + "] which does not support wildcard queries.");
     }
     return addField(super.newWildcardQuery(t), t.field());

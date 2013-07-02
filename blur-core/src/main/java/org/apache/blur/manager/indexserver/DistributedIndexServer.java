@@ -44,7 +44,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -98,7 +97,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private static final long _delay = TimeUnit.SECONDS.toMillis(10);
   private static final long CHECK_PERIOD = TimeUnit.SECONDS.toMillis(60);
 
-  private Map<String, BlurAnalyzer> _tableAnalyzers = new ConcurrentHashMap<String, BlurAnalyzer>();
   private Map<String, TableDescriptor> _tableDescriptors = new ConcurrentHashMap<String, TableDescriptor>();
   private Map<String, Similarity> _tableSimilarity = new ConcurrentHashMap<String, Similarity>();
   private Map<String, DistributedLayoutManager> _layoutManagers = new ConcurrentHashMap<String, DistributedLayoutManager>();
@@ -318,7 +316,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
       }
 
       private void cleanup() {
-        clearMapOfOldTables(_tableAnalyzers);
         clearMapOfOldTables(_tableDescriptors);
         clearMapOfOldTables(_layoutManagers);
         clearMapOfOldTables(_layoutCache);
@@ -420,18 +417,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
         }
       }
     }
-  }
-
-  @Override
-  public BlurAnalyzer getAnalyzer(String table) {
-    checkTable(table);
-    BlurAnalyzer blurAnalyzer = _tableAnalyzers.get(table);
-    if (blurAnalyzer == null) {
-      TableDescriptor descriptor = getTableDescriptor(table);
-      blurAnalyzer = new BlurAnalyzer(descriptor.analyzerDefinition);
-      _tableAnalyzers.put(table, blurAnalyzer);
-    }
-    return blurAnalyzer;
   }
 
   @Override

@@ -27,6 +27,7 @@ import org.apache.blur.analysis.type.TextFieldTypeDefinition;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.utils.BlurConstants;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
@@ -171,7 +172,7 @@ public class BaseFiledManagerTest {
   }
 
   private BaseFieldManager newBaseFieldManager() {
-    return new BaseFieldManager() {
+    return new BaseFieldManager(new KeywordAnalyzer()) {
       @Override
       protected void tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType, Map<String, String> props) {
 

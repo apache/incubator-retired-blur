@@ -75,4 +75,24 @@ public class StringFieldTypeDefinition extends FieldTypeDefinition {
     return new KeywordAnalyzer();
   }
 
+  @Override
+  public boolean checkSupportForFuzzyQuery() {
+    return false;
+  }
+
+  @Override
+  public boolean checkSupportForWildcardQuery() {
+    return false;
+  }
+
+  @Override
+  public boolean checkSupportForPrefixQuery() {
+    return false;
+  }
+
+  @Override
+  public boolean isNumeric() {
+    return false;
+  }
+
 }

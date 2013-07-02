@@ -17,7 +17,6 @@ package org.apache.blur.manager.writer;
  * limitations under the License.
  */
 import static org.apache.blur.utils.BlurConstants.SEP;
-import static org.apache.blur.utils.BlurConstants.SUPER;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -28,7 +27,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.blur.analysis.BlurAnalyzer;
+import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.server.ShardContext;
@@ -52,7 +50,6 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.record.Utils;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
@@ -112,16 +109,16 @@ public class TransactionRecorder extends TimerTask implements Closeable {
 
   private final Path _walPath;
   private final Configuration _configuration;
-  private final BlurAnalyzer _analyzer;
   private final FileSystem _fileSystem;
   private final Timer _timer;
   private final String _table;
   private final String _shard;
+  private final FieldManager _fieldManager;
 
   public TransactionRecorder(ShardContext shardContext) throws IOException {
     TableContext tableContext = shardContext.getTableContext();
     _configuration = tableContext.getConfiguration();
-    _analyzer = tableContext.getAnalyzer();
+    _fieldManager = tableContext.getFieldManager();
     _walPath = shardContext.getWalShardPath();
     _fileSystem = _walPath.getFileSystem(_configuration);
     _timeBetweenSyncsNanos = tableContext.getTimeBetweenWALSyncsNanos();
@@ -165,7 +162,7 @@ public class TransactionRecorder extends TimerTask implements Closeable {
       switch (lookup) {
       case ROW:
         Row row = readRow(dataInputStream);
-        writer.updateDocuments(createRowId(row.id), getDocs(row, _analyzer));
+        writer.updateDocuments(createRowId(row.id), getDocs(row, _fieldManager));
         updateCount++;
         continue;
       case DELETE:
@@ -329,7 +326,7 @@ public class TransactionRecorder extends TimerTask implements Closeable {
       }
     }
     Term term = createRowId(row.id);
-    List<Document> docs = getDocs(row, _analyzer);
+    List<List<Field>> docs = getDocs(row, _fieldManager);
     return writer.updateDocuments(term, docs);
   }
 
@@ -359,30 +356,32 @@ public class TransactionRecorder extends TimerTask implements Closeable {
     }
   }
 
-  public static List<Document> getDocs(Row row, BlurAnalyzer analyzer) {
+  public static List<List<Field>> getDocs(Row row, FieldManager fieldManager) {
     List<Record> records = row.records;
     int size = records.size();
     final String rowId = row.id;
-    List<Document> docs = new ArrayList<Document>(size);
+    List<List<Field>> docs = new ArrayList<List<Field>>(size);
     for (int i = 0; i < size; i++) {
-      Document document = convert(rowId, records.get(i), analyzer);
+      Record record = records.get(i);
+      BlurUtil.validateRowIdAndRecord(rowId, record);
+      List<Field> fields = fieldManager.getFields(rowId, record);
       if (i == 0) {
-        document.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
+        fields.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
       }
-      docs.add(document);
+      docs.add(fields);
     }
     return docs;
   }
 
-  public static Document convert(String rowId, Record record, BlurAnalyzer analyzer) {
-    BlurUtil.validateRowIdAndRecord(rowId, record);
-    Document document = new Document();
-    document.add(new Field(BlurConstants.ROW_ID, rowId, ID_TYPE));
-    document.add(new Field(BlurConstants.RECORD_ID, record.recordId, ID_TYPE));
-    document.add(new Field(BlurConstants.FAMILY, record.family, ID_TYPE));
-    addColumns(document, analyzer, record.family, record.columns);
-    return document;
-  }
+//  public static Document convert(String rowId, Record record, Analyzer analyzer) {
+//    BlurUtil.validateRowIdAndRecord(rowId, record);
+//    Document document = new Document();
+//    document.add(new Field(BlurConstants.ROW_ID, rowId, ID_TYPE));
+//    document.add(new Field(BlurConstants.RECORD_ID, record.recordId, ID_TYPE));
+//    document.add(new Field(BlurConstants.FAMILY, record.family, ID_TYPE));
+//    addColumns(document, analyzer, record.family, record.columns);
+//    return document;
+//  }
 
   private Term createRowId(String id) {
     return new Term(BlurConstants.ROW_ID, id);
@@ -410,34 +409,34 @@ public class TransactionRecorder extends TimerTask implements Closeable {
     }
   }
 
-  public static boolean addColumns(Document document, BlurAnalyzer analyzer, String columnFamily, Iterable<Column> set) {
-    if (set == null) {
-      return false;
-    }
-    OUTER: for (Column column : set) {
-      String name = column.getName();
-      String value = column.value;
-      if (value == null || name == null) {
-        continue OUTER;
-      }
-      String fieldName = getFieldName(columnFamily, name);
-      FieldType fieldType = analyzer.getFieldType(fieldName);
-      Field field = analyzer.getField(fieldName, value, fieldType);
-      document.add(field);
-
-      if (analyzer.isFullTextField(fieldName)) {
-        document.add(new Field(SUPER, value, SUPER_FIELD_TYPE));
-      }
-      Set<String> subFieldNames = analyzer.getSubIndexNames(fieldName);
-      if (subFieldNames != null) {
-        for (String subFieldName : subFieldNames) {
-          FieldType subFieldType = analyzer.getFieldType(subFieldName);
-          document.add(analyzer.getField(subFieldName, value, subFieldType));
-        }
-      }
-    }
-    return true;
-  }
+//  public static boolean addColumns(Document document, Analyzer analyzer, String columnFamily, Iterable<Column> set) {
+//    if (set == null) {
+//      return false;
+//    }
+//    OUTER: for (Column column : set) {
+//      String name = column.getName();
+//      String value = column.value;
+//      if (value == null || name == null) {
+//        continue OUTER;
+//      }
+//      String fieldName = getFieldName(columnFamily, name);
+//      FieldType fieldType = analyzer.getFieldType(fieldName);
+//      Field field = analyzer.getField(fieldName, value, fieldType);
+//      document.add(field);
+//
+//      if (analyzer.isFullTextField(fieldName)) {
+//        document.add(new Field(SUPER, value, SUPER_FIELD_TYPE));
+//      }
+//      Set<String> subFieldNames = analyzer.getSubIndexNames(fieldName);
+//      if (subFieldNames != null) {
+//        for (String subFieldName : subFieldNames) {
+//          FieldType subFieldType = analyzer.getFieldType(subFieldName);
+//          document.add(analyzer.getField(subFieldName, value, subFieldType));
+//        }
+//      }
+//    }
+//    return true;
+//  }
 
   public static String getFieldName(String columnFamily, String name) {
     return columnFamily + SEP + name;

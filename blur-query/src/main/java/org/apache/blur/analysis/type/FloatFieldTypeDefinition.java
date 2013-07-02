@@ -18,15 +18,14 @@ package org.apache.blur.analysis.type;
  */
 import java.util.Map;
 
-import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.thrift.generated.Column;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.FloatField;
+import org.apache.lucene.search.NumericRangeQuery;
+import org.apache.lucene.search.Query;
 
-public class FloatFieldTypeDefinition extends FieldTypeDefinition {
+public class FloatFieldTypeDefinition extends NumericFieldTypeDefinition {
 
   public static final String NAME = "float";
   private FieldType _typeStored;
@@ -41,12 +40,12 @@ public class FloatFieldTypeDefinition extends FieldTypeDefinition {
   public void configure(Map<String, String> properties) {
     String precisionStepStr = properties.get(NUMERIC_PRECISION_STEP);
     if (precisionStepStr != null) {
-      int precisionStep = Integer.parseInt(precisionStepStr);
+      _precisionStep = Integer.parseInt(precisionStepStr);
       _typeStored = new FieldType(FloatField.TYPE_STORED);
-      _typeStored.setNumericPrecisionStep(precisionStep);
+      _typeStored.setNumericPrecisionStep(_precisionStep);
       _typeStored.freeze();
       _typeNotStored = new FieldType(FloatField.TYPE_NOT_STORED);
-      _typeNotStored.setNumericPrecisionStep(precisionStep);
+      _typeNotStored.setNumericPrecisionStep(_precisionStep);
       _typeNotStored.freeze();
     } else {
       _typeStored = FloatField.TYPE_STORED;
@@ -78,14 +77,10 @@ public class FloatFieldTypeDefinition extends FieldTypeDefinition {
   }
 
   @Override
-  public Analyzer getAnalyzerForIndex() {
-    // shouldn't be used ever
-    return new KeywordAnalyzer();
-  }
-
-  @Override
-  public Analyzer getAnalyzerForQuery() {
-    return new KeywordAnalyzer();
+  public Query getNewRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
+    float p1 = Float.parseFloat(part1);
+    float p2 = Float.parseFloat(part2);
+    return NumericRangeQuery.newFloatRange(field, _precisionStep, p1, p2, startInclusive, endInclusive);
   }
 
 }

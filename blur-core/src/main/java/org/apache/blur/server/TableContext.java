@@ -27,7 +27,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.blur.analysis.BlurAnalyzer;
+import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.ScoreType;
@@ -50,7 +50,6 @@ public class TableContext {
 
   private Path tablePath;
   private Path walTablePath;
-  private BlurAnalyzer analyzer;
   private String defaultFieldName;
   private String table;
   private IndexDeletionPolicy indexDeletionPolicy;
@@ -61,6 +60,7 @@ public class TableContext {
   private long timeBetweenRefreshs;
   private ScoreType defaultScoreType;
   private Term defaultPrimeDocTerm;
+  private FieldManager fieldManager;
 
   private static ConcurrentHashMap<String, TableContext> cache = new ConcurrentHashMap<String, TableContext>();
 
@@ -90,7 +90,7 @@ public class TableContext {
     tableContext.configuration = configuration;
     tableContext.tablePath = new Path(tableDescriptor.getTableUri());
     tableContext.walTablePath = new Path(tableContext.tablePath, LOGS);
-    tableContext.analyzer = new BlurAnalyzer(tableDescriptor.getAnalyzerDefinition());
+    tableContext.fieldManager = null;
     tableContext.defaultFieldName = SUPER;
     tableContext.table = tableDescriptor.getName();
     tableContext.descriptor = tableDescriptor;
@@ -131,8 +131,8 @@ public class TableContext {
     return timeBetweenRefreshs;
   }
 
-  public BlurAnalyzer getAnalyzer() {
-    return analyzer;
+  public FieldManager getFieldManager() {
+    return fieldManager;
   }
 
   public String getTable() {

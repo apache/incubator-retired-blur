@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
-import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.lucene.search.similarities.Similarity;
@@ -90,15 +89,6 @@ public interface IndexServer {
    * @return the status.
    */
   TABLE_STATUS getTableStatus(String table);
-
-  /**
-   * Gets the analyzer for the table.
-   * 
-   * @param table
-   *          the table name.
-   * @return the analyzer for lucene.
-   */
-  BlurAnalyzer getAnalyzer(String table);
 
   /**
    * Gets the current nodes name.

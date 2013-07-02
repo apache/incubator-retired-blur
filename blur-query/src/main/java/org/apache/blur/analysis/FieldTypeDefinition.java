@@ -26,8 +26,6 @@ import org.apache.lucene.document.FieldType;
 
 public abstract class FieldTypeDefinition {
   
-  protected static final String NUMERIC_PRECISION_STEP = "numericPrecisionStep";
-
   protected boolean _fieldLessIndexing;
 
   /**
@@ -140,4 +138,13 @@ public abstract class FieldTypeDefinition {
   public void setFieldLessIndexing(boolean fieldLessIndexing) {
     _fieldLessIndexing = fieldLessIndexing;
   }
+
+  public abstract boolean checkSupportForFuzzyQuery();
+
+  public abstract boolean checkSupportForWildcardQuery();
+
+  public abstract boolean checkSupportForPrefixQuery();
+
+  public abstract boolean isNumeric();
+
 }

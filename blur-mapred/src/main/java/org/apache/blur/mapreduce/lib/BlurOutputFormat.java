@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 
-import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.LuceneVersionConstant;
@@ -154,7 +153,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       InterruptedException {
     int id = context.getTaskAttemptID().getTaskID().getId();
     TaskAttemptID taskAttemptID = context.getTaskAttemptID();
-    return new BlurRecordWriter(context.getConfiguration(), new BlurAnalyzer(), id, taskAttemptID.toString() + ".tmp");
+    return new BlurRecordWriter(context.getConfiguration(), id, taskAttemptID.toString() + ".tmp");
   }
 
   @Override
@@ -369,7 +368,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
 
     private Counter _rowDeleteCount;
 
-    public BlurRecordWriter(Configuration configuration, BlurAnalyzer blurAnalyzer, int attemptId, String tmpDirName)
+    public BlurRecordWriter(Configuration configuration, int attemptId, String tmpDirName)
         throws IOException {
 
       _indexLocally = BlurOutputFormat.isIndexLocally(configuration);

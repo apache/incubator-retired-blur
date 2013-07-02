@@ -18,15 +18,14 @@ package org.apache.blur.analysis.type;
  */
 import java.util.Map;
 
-import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.thrift.generated.Column;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.LongField;
+import org.apache.lucene.search.NumericRangeQuery;
+import org.apache.lucene.search.Query;
 
-public class LongFieldTypeDefinition extends FieldTypeDefinition {
+public class LongFieldTypeDefinition extends NumericFieldTypeDefinition {
 
   public static final String NAME = "long";
   private FieldType _typeStored;
@@ -41,12 +40,12 @@ public class LongFieldTypeDefinition extends FieldTypeDefinition {
   public void configure(Map<String, String> properties) {
     String precisionStepStr = properties.get(NUMERIC_PRECISION_STEP);
     if (precisionStepStr != null) {
-      int precisionStep = Integer.parseInt(precisionStepStr);
+      _precisionStep = Integer.parseInt(precisionStepStr);
       _typeStored = new FieldType(LongField.TYPE_STORED);
-      _typeStored.setNumericPrecisionStep(precisionStep);
+      _typeStored.setNumericPrecisionStep(_precisionStep);
       _typeStored.freeze();
       _typeNotStored = new FieldType(LongField.TYPE_NOT_STORED);
-      _typeNotStored.setNumericPrecisionStep(precisionStep);
+      _typeNotStored.setNumericPrecisionStep(_precisionStep);
       _typeNotStored.freeze();
     } else {
       _typeStored = LongField.TYPE_STORED;
@@ -78,14 +77,10 @@ public class LongFieldTypeDefinition extends FieldTypeDefinition {
   }
 
   @Override
-  public Analyzer getAnalyzerForIndex() {
-    // shouldn't be used ever
-    return new KeywordAnalyzer();
-  }
-
-  @Override
-  public Analyzer getAnalyzerForQuery() {
-    return new KeywordAnalyzer();
+  public Query getNewRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
+    long p1 = Long.parseLong(part1);
+    long p2 = Long.parseLong(part2);
+    return NumericRangeQuery.newLongRange(field, _precisionStep, p1, p2, startInclusive, endInclusive);
   }
 
 }

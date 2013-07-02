@@ -30,6 +30,7 @@ import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.Row;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -62,7 +63,7 @@ public class BlurIndexReader extends BlurIndex {
     if (!DirectoryReader.indexExists(directory)) {
       LOG.info("Creating an empty index");
       // if the directory is empty then create an empty index.
-      IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _tableContext.getAnalyzer());
+      IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
       conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
       new BlurIndexWriter(directory, conf).close();
     }

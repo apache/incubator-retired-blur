@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.index.ExitableReader;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -40,6 +41,7 @@ import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.BlurIndexWriter.LockOwnerException;
 import org.apache.lucene.index.CorruptIndexException;
@@ -81,7 +83,9 @@ public class BlurNRTIndex extends BlurIndex {
     _directory = directory;
     _shardContext = shardContext;
 
-    IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _tableContext.getAnalyzer());
+    FieldManager fieldManager = _tableContext.getFieldManager();
+    Analyzer analyzer = fieldManager.getAnalyzerForIndex();
+    IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, analyzer);
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
     conf.setSimilarity(_tableContext.getSimilarity());
     conf.setIndexDeletionPolicy(_tableContext.getIndexDeletionPolicy());

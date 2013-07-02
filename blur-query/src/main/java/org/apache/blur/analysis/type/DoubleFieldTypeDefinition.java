@@ -18,15 +18,14 @@ package org.apache.blur.analysis.type;
  */
 import java.util.Map;
 
-import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.thrift.generated.Column;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.document.DoubleField;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
-import org.apache.lucene.document.DoubleField;
+import org.apache.lucene.search.NumericRangeQuery;
+import org.apache.lucene.search.Query;
 
-public class DoubleFieldTypeDefinition extends FieldTypeDefinition {
+public class DoubleFieldTypeDefinition extends NumericFieldTypeDefinition {
 
   public static final String NAME = "double";
   private FieldType _typeStored;
@@ -41,12 +40,12 @@ public class DoubleFieldTypeDefinition extends FieldTypeDefinition {
   public void configure(Map<String, String> properties) {
     String precisionStepStr = properties.get(NUMERIC_PRECISION_STEP);
     if (precisionStepStr != null) {
-      int precisionStep = Integer.parseInt(precisionStepStr);
+      _precisionStep = Integer.parseInt(precisionStepStr);
       _typeStored = new FieldType(DoubleField.TYPE_STORED);
-      _typeStored.setNumericPrecisionStep(precisionStep);
+      _typeStored.setNumericPrecisionStep(_precisionStep);
       _typeStored.freeze();
       _typeNotStored = new FieldType(DoubleField.TYPE_NOT_STORED);
-      _typeNotStored.setNumericPrecisionStep(precisionStep);
+      _typeNotStored.setNumericPrecisionStep(_precisionStep);
       _typeNotStored.freeze();
     } else {
       _typeStored = DoubleField.TYPE_STORED;
@@ -78,14 +77,10 @@ public class DoubleFieldTypeDefinition extends FieldTypeDefinition {
   }
 
   @Override
-  public Analyzer getAnalyzerForIndex() {
-    // shouldn't be used ever
-    return new KeywordAnalyzer();
-  }
-
-  @Override
-  public Analyzer getAnalyzerForQuery() {
-    return new KeywordAnalyzer();
+  public Query getNewRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
+    double p1 = Double.parseDouble(part1);
+    double p2 = Double.parseDouble(part2);
+    return NumericRangeQuery.newDoubleRange(field, _precisionStep, p1, p2, startInclusive, endInclusive);
   }
 
 }

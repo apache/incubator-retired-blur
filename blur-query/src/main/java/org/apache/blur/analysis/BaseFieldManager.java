@@ -29,6 +29,7 @@ import org.apache.blur.analysis.type.DoubleFieldTypeDefinition;
 import org.apache.blur.analysis.type.FloatFieldTypeDefinition;
 import org.apache.blur.analysis.type.IntFieldTypeDefinition;
 import org.apache.blur.analysis.type.LongFieldTypeDefinition;
+import org.apache.blur.analysis.type.NumericFieldTypeDefinition;
 import org.apache.blur.analysis.type.StoredFieldTypeDefinition;
 import org.apache.blur.analysis.type.StringFieldTypeDefinition;
 import org.apache.blur.analysis.type.TextFieldTypeDefinition;
@@ -38,9 +39,11 @@ import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.AnalyzerWrapper;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.TextField;
+import org.apache.lucene.search.Query;
 
 public abstract class BaseFieldManager extends FieldManager {
 
@@ -50,8 +53,24 @@ public abstract class BaseFieldManager extends FieldManager {
   private Map<String, FieldTypeDefinition> _fieldNameToDefMap = new ConcurrentHashMap<String, FieldTypeDefinition>();
   private Map<String, Class<? extends FieldTypeDefinition>> _typeMap = new ConcurrentHashMap<String, Class<? extends FieldTypeDefinition>>();
   private Map<String, Set<String>> _columnToSubColumn = new ConcurrentHashMap<String, Set<String>>();
+  private Analyzer _baseAnalyzerForQuery;
 
-  public BaseFieldManager() {
+  public static FieldType ID_TYPE;
+  static {
+    ID_TYPE = new FieldType();
+    ID_TYPE.setIndexed(true);
+    ID_TYPE.setTokenized(false);
+    ID_TYPE.setOmitNorms(true);
+    ID_TYPE.setStored(true);
+    ID_TYPE.freeze();
+  }
+  private static final FieldType SUPER_FIELD_TYPE;
+  static {
+    SUPER_FIELD_TYPE = new FieldType(TextField.TYPE_NOT_STORED);
+    SUPER_FIELD_TYPE.setOmitNorms(true);
+  }
+
+  public BaseFieldManager(final Analyzer defaultAnalyzerForQuerying) {
     _typeMap.put(TextFieldTypeDefinition.NAME, TextFieldTypeDefinition.class);
     _typeMap.put(StringFieldTypeDefinition.NAME, StringFieldTypeDefinition.class);
     _typeMap.put(StoredFieldTypeDefinition.NAME, StoredFieldTypeDefinition.class);
@@ -59,15 +78,36 @@ public abstract class BaseFieldManager extends FieldManager {
     _typeMap.put(LongFieldTypeDefinition.NAME, LongFieldTypeDefinition.class);
     _typeMap.put(DoubleFieldTypeDefinition.NAME, DoubleFieldTypeDefinition.class);
     _typeMap.put(FloatFieldTypeDefinition.NAME, FloatFieldTypeDefinition.class);
+
+    _baseAnalyzerForQuery = new AnalyzerWrapper() {
+      @Override
+      protected Analyzer getWrappedAnalyzer(String fieldName) {
+        FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(fieldName);
+        if (fieldTypeDefinition == null) {
+          return defaultAnalyzerForQuerying;
+        }
+        return fieldTypeDefinition.getAnalyzerForQuery();
+      }
+
+      @Override
+      protected TokenStreamComponents wrapComponents(String fieldName, TokenStreamComponents components) {
+        return components;
+      }
+    };
   }
 
   @Override
-  public Iterable<? extends Field> getFields(String rowId, Record record) {
+  public List<Field> getFields(String rowId, Record record) {
     List<Field> fields = new ArrayList<Field>();
     String family = record.getFamily();
     List<Column> columns = record.getColumns();
     addDefaultFields(fields, rowId, record);
     for (Column column : columns) {
+      String name = column.getName();
+      String value = column.getValue();
+      if (value == null || name == null) {
+        continue;
+      }
       getAndAddFields(fields, family, column, getFieldTypeDefinition(family, column));
       Collection<String> subColumns = getSubColumns(family, column);
       if (subColumns != null) {
@@ -94,9 +134,9 @@ public abstract class BaseFieldManager extends FieldManager {
     validateNotNull(family, "family");
     validateNotNull(recordId, "recordId");
 
-    fields.add(new StringField(BlurConstants.FAMILY, family, Store.YES));
-    fields.add(new StringField(BlurConstants.ROW_ID, rowId, Store.YES));
-    fields.add(new StringField(BlurConstants.RECORD_ID, recordId, Store.YES));
+    fields.add(new Field(BlurConstants.FAMILY, family, ID_TYPE));
+    fields.add(new Field(BlurConstants.ROW_ID, rowId, ID_TYPE));
+    fields.add(new Field(BlurConstants.RECORD_ID, recordId, ID_TYPE));
   }
 
   private void validateNotNull(String value, String fieldName) {
@@ -116,7 +156,7 @@ public abstract class BaseFieldManager extends FieldManager {
   }
 
   private void addFieldLessIndex(List<Field> fields, String value) {
-    fields.add(new Field(BlurConstants.SUPER, value, TextFieldTypeDefinition.TYPE_NOT_STORED));
+    fields.add(new Field(BlurConstants.SUPER, value, SUPER_FIELD_TYPE));
   }
 
   private FieldTypeDefinition getFieldTypeDefinition(String family, Column column, String subName) {
@@ -218,6 +258,92 @@ public abstract class BaseFieldManager extends FieldManager {
       throw new AnalyzerNotFoundException(fieldName);
     }
     return fieldTypeDefinition.getAnalyzerForQuery();
+  }
+
+  public void addColumnDefinitionInt(String family, String columnName) {
+    addColumnDefinition(family, columnName, null, false, IntFieldTypeDefinition.NAME, null);
+  }
+
+  public void addColumnDefinitionLong(String family, String columnName) {
+    addColumnDefinition(family, columnName, null, false, LongFieldTypeDefinition.NAME, null);
+  }
+
+  public void addColumnDefinitionFloat(String family, String columnName) {
+    addColumnDefinition(family, columnName, null, false, FloatFieldTypeDefinition.NAME, null);
+  }
+
+  public void addColumnDefinitionDouble(String family, String columnName) {
+    addColumnDefinition(family, columnName, null, false, DoubleFieldTypeDefinition.NAME, null);
+  }
+
+  public void addColumnDefinitionString(String family, String columnName) {
+    addColumnDefinition(family, columnName, null, false, StringFieldTypeDefinition.NAME, null);
+  }
+
+  public void addColumnDefinitionText(String family, String columnName) {
+    addColumnDefinition(family, columnName, null, false, TextFieldTypeDefinition.NAME, null);
+  }
+
+  public void addColumnDefinitionTextFieldLess(String family, String columnName) {
+    addColumnDefinition(family, columnName, null, true, TextFieldTypeDefinition.NAME, null);
+  }
+
+  @Override
+  public Analyzer getAnalyzerForQuery() {
+    return _baseAnalyzerForQuery;
+  }
+
+  @Override
+  public boolean checkSupportForFuzzyQuery(String field) {
+    FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
+    return fieldTypeDefinition.checkSupportForFuzzyQuery();
+  }
+
+  @Override
+  public boolean checkSupportForPrefixQuery(String field) {
+    FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
+    return fieldTypeDefinition.checkSupportForPrefixQuery();
+  }
+
+  @Override
+  public boolean checkSupportForWildcardQuery(String field) {
+    FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
+    return fieldTypeDefinition.checkSupportForWildcardQuery();
+  }
+
+  @Override
+  public Query getNewRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
+    FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
+    if (fieldTypeDefinition != null && fieldTypeDefinition.isNumeric()) {
+      NumericFieldTypeDefinition numericFieldTypeDefinition = (NumericFieldTypeDefinition) fieldTypeDefinition;
+      return numericFieldTypeDefinition.getNewRangeQuery(field, part1, part2, startInclusive, endInclusive);
+    }
+    return null;
+  }
+
+  @Override
+  public Query getTermQueryIfNumeric(String field, String text) {
+    FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
+    if (fieldTypeDefinition != null && fieldTypeDefinition.isNumeric()) {
+      NumericFieldTypeDefinition numericFieldTypeDefinition = (NumericFieldTypeDefinition) fieldTypeDefinition;
+      return numericFieldTypeDefinition.getNewRangeQuery(field, text, text, true, true);
+    }
+    return null;
+  }
+
+  @Override
+  public FieldTypeDefinition getFieldTypeDefinition(String field) {
+    return _fieldNameToDefMap.get(field);
+  }
+  
+  @Override
+  public boolean isFieldLessIndexed(String name) {
+    return false;
+  }
+
+  @Override
+  public Analyzer getAnalyzerForIndex() {
+    return null;
   }
 
 }

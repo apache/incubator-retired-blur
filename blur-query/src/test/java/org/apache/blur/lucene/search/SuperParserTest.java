@@ -5,13 +5,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.util.List;
+import java.util.Map;
 
-import org.apache.blur.analysis.BlurAnalyzer;
+import org.apache.blur.analysis.BaseFieldManager;
 import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
-import org.apache.blur.thrift.generated.AnalyzerDefinition;
-import org.apache.blur.thrift.generated.ColumnDefinition;
-import org.apache.blur.thrift.generated.ColumnFamilyDefinition;
 import org.apache.blur.thrift.generated.ScoreType;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -29,20 +28,36 @@ import org.junit.Test;
 public class SuperParserTest {
 
   private SuperParser parser;
-  private BlurAnalyzer analyzer;
+  private BaseFieldManager _fieldManager;
 
   @Before
   public void setup() {
-    AnalyzerDefinition ad = new AnalyzerDefinition();
-    ad.setDefaultDefinition(new ColumnDefinition(NoStopWordStandardAnalyzer.class.getName(), true, null));
-    ColumnFamilyDefinition cfDef = new ColumnFamilyDefinition();
-    cfDef.putToColumnDefinitions("id_l", new ColumnDefinition("long", false, null));
-    cfDef.putToColumnDefinitions("id_d", new ColumnDefinition("double", false, null));
-    cfDef.putToColumnDefinitions("id_f", new ColumnDefinition("float", false, null));
-    cfDef.putToColumnDefinitions("id_i", new ColumnDefinition("integer", false, null));
-    ad.putToColumnFamilyDefinitions("a", cfDef);
-    analyzer = new BlurAnalyzer(ad);
-    parser = new SuperParser(LUCENE_VERSION, analyzer, true, null, ScoreType.SUPER, new Term("_primedoc_"));
+//    AnalyzerDefinition ad = new AnalyzerDefinition();
+//    ad.setDefaultDefinition(new ColumnDefinition(NoStopWordStandardAnalyzer.class.getName(), true, null));
+//    ColumnFamilyDefinition cfDef = new ColumnFamilyDefinition();
+//    cfDef.putToColumnDefinitions("id_l", new ColumnDefinition("long", false, null));
+//    cfDef.putToColumnDefinitions("id_d", new ColumnDefinition("double", false, null));
+//    cfDef.putToColumnDefinitions("id_f", new ColumnDefinition("float", false, null));
+//    cfDef.putToColumnDefinitions("id_i", new ColumnDefinition("integer", false, null));
+//    ad.putToColumnFamilyDefinitions("a", cfDef);
+
+    _fieldManager = getFieldManager(new NoStopWordStandardAnalyzer());
+    parser = new SuperParser(LUCENE_VERSION, _fieldManager, true, null, ScoreType.SUPER, new Term("_primedoc_"));
+  }
+
+  private BaseFieldManager getFieldManager(Analyzer a) {
+    BaseFieldManager fieldManager = new BaseFieldManager(a) {
+      @Override
+      protected void tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType, Map<String, String> props) {
+        
+      }
+    };
+    
+    fieldManager.addColumnDefinitionInt("a", "id_i");
+    fieldManager.addColumnDefinitionDouble("a", "id_d");
+    fieldManager.addColumnDefinitionFloat("a", "id_f");
+    fieldManager.addColumnDefinitionLong("a", "id_l");
+    return fieldManager;
   }
 
   @Test
@@ -108,7 +123,7 @@ public class SuperParserTest {
 
   @Test
   public void test5() throws ParseException {
-    parser = new SuperParser(LUCENE_VERSION, new BlurAnalyzer(new WhitespaceAnalyzer(LUCENE_VERSION)), true, null,
+    parser = new SuperParser(LUCENE_VERSION, getFieldManager(new WhitespaceAnalyzer(LUCENE_VERSION)), true, null,
         ScoreType.SUPER, new Term("_primedoc_"));
     Query query = parser.parse("super:<a.a:a a.d:{e TO f} a.b:b a.test:hello\\<> - super:<g.c:c g.d:d>");
 
@@ -135,7 +150,8 @@ public class SuperParserTest {
 
   @Test
   public void test6() throws ParseException {
-    SuperParser parser = new SuperParser(LUCENE_VERSION, analyzer, true, null, ScoreType.SUPER, new Term("_primedoc_"));
+    //analyzer
+    SuperParser parser = new SuperParser(LUCENE_VERSION, _fieldManager, true, null, ScoreType.SUPER, new Term("_primedoc_"));
     try {
       parser.parse("super : <a:a d:{e TO d} b:b super:<test:hello\\<>> super:<c:c d:d>");
       fail();
@@ -391,7 +407,7 @@ public class SuperParserTest {
   }
 
   private Query parseSq(String qstr) throws ParseException {
-    SuperParser superParser = new SuperParser(LUCENE_VERSION, analyzer, true, null, ScoreType.SUPER, new Term(
+    SuperParser superParser = new SuperParser(LUCENE_VERSION, _fieldManager, true, null, ScoreType.SUPER, new Term(
         "_primedoc_"));
     return superParser.parse(qstr);
   }

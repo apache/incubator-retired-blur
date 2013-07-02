@@ -22,11 +22,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-import org.apache.blur.analysis.BlurAnalyzer;
+import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.SuperQuery;
 import org.apache.blur.thrift.generated.Selector;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
@@ -71,7 +72,7 @@ public class HighlightHelper {
 
   public static List<Document> highlightDocuments(IndexReader reader, Term term,
       ResetableDocumentStoredFieldVisitor fieldSelector, Selector selector, Query highlightQuery,
-      BlurAnalyzer analyzer, String preTag, String postTag) throws IOException {
+      FieldManager fieldManager, String preTag, String postTag) throws IOException {
     IndexSearcher indexSearcher = new IndexSearcher(reader);
     int docFreq = reader.docFreq(term);
     BooleanQuery booleanQueryForFamily = null;
@@ -102,7 +103,7 @@ public class HighlightHelper {
       indexSearcher.doc(doc, fieldSelector);
       Document document = fieldSelector.getDocument();
       try {
-        document = highlight(doc, document, highlightQuery, analyzer, reader, preTag, postTag);
+        document = highlight(doc, document, highlightQuery, fieldManager, reader, preTag, postTag);
       } catch (InvalidTokenOffsetsException e) {
         LOG.error("Unknown error while tring to highlight", e);
       }
@@ -118,10 +119,12 @@ public class HighlightHelper {
    * @param preTag
    * @param postTag
    */
-  public static Document highlight(int docId, Document document, Query query, BlurAnalyzer analyzer,
+  public static Document highlight(int docId, Document document, Query query, FieldManager fieldManager,
       IndexReader reader, String preTag, String postTag) throws IOException, InvalidTokenOffsetsException {
     
     Query fixedQuery = fixSuperQuery(query, null);
+    
+    Analyzer analyzer = fieldManager.getAnalyzerForQuery();
 
     SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter(preTag, postTag);
     Document result = new Document();
@@ -135,7 +138,7 @@ public class HighlightHelper {
       Number numericValue = f.numericValue();
       
       Query fieldFixedQuery;
-      if (analyzer.isFullTextField(name)) {
+      if (fieldManager.isFieldLessIndexed(name)) {
         fieldFixedQuery = fixSuperQuery(query, name);  
       } else {
         fieldFixedQuery = fixedQuery;

@@ -32,7 +32,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
@@ -98,11 +97,6 @@ public class LocalIndexServer extends AbstractIndexServer {
     for (String table : _readersMap.keySet()) {
       close(_readersMap.get(table));
     }
-  }
-
-  @Override
-  public BlurAnalyzer getAnalyzer(String table) {
-    return _tableContext.getAnalyzer();
   }
 
   @Override

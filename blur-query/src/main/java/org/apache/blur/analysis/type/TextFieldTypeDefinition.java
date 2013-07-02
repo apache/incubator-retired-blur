@@ -86,4 +86,24 @@ public class TextFieldTypeDefinition extends FieldTypeDefinition {
     return new NoStopWordStandardAnalyzer();
   }
 
+  @Override
+  public boolean checkSupportForFuzzyQuery() {
+    return true;
+  }
+
+  @Override
+  public boolean checkSupportForWildcardQuery() {
+    return true;
+  }
+
+  @Override
+  public boolean checkSupportForPrefixQuery() {
+    return true;
+  }
+
+  @Override
+  public boolean isNumeric() {
+    return false;
+  }
+
 }

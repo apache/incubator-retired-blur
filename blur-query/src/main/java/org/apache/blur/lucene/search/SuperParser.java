@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.blur.analysis.BlurAnalyzer;
+import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -47,9 +47,9 @@ public class SuperParser extends BlurQueryParser {
   private final Version _matchVersion;
   private final Term _defaultPrimeDocTerm;
 
-  public SuperParser(Version matchVersion, BlurAnalyzer a, boolean superSearch, Filter queryFilter,
+  public SuperParser(Version matchVersion, FieldManager fieldManager, boolean superSearch, Filter queryFilter,
       ScoreType scoreType, Term defaultPrimeDocTerm) {
-    super(matchVersion, SUPER, a, null);
+    super(matchVersion, SUPER, null, fieldManager);
     _matchVersion = matchVersion;
     _superSearch = superSearch;
     _queryFilter = queryFilter;
@@ -155,7 +155,7 @@ public class SuperParser extends BlurQueryParser {
   }
 
   private QueryParser getNewParser() {
-    return new BlurQueryParser(_matchVersion, SUPER, _blurAnalyzer,_fieldNames);
+    return new BlurQueryParser(_matchVersion, SUPER, _fieldNames,_fieldManager);
   }
 
   private Occur getOccur(String occurString) {

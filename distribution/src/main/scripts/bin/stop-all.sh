@@ -22,6 +22,6 @@ bin=`cd "$bin"; pwd`
 
 $BLUR_HOME/bin/stop-controllers.sh
 $BLUR_HOME/bin/stop-shards.sh
-if [ $BLUR_MANAGE_ZK = true ]; then
+if [ "$BLUR_MANAGE_ZK" == "true" ]; then
   $BLUR_HOME/bin/stop-zookeepers.sh
 fi

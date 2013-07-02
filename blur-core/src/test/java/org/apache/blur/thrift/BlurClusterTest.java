@@ -193,7 +193,7 @@ public class BlurClusterTest {
   }
 
   @Test
-  public void testBackPressure() throws BlurException, TException, InterruptedException {
+  public void testBackPressureViaQuery() throws BlurException, TException, InterruptedException {
     // This will make each collect in the collectors pause 250 ms per collect
     // call
     IndexManager.DEBUG_RUN_SLOW.set(true);

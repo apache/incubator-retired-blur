@@ -39,7 +39,6 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TBase;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport;
-import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.ColumnPreCache;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
@@ -409,8 +408,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
               cluster, table)));
           tableDescriptor.compressionBlockSize = Integer.parseInt(new String(getData(ZookeeperPathConstants
               .getTableCompressionBlockSizePath(cluster, table))));
-          tableDescriptor.analyzerDefinition = fromBytes(getData(ZookeeperPathConstants.getTablePath(cluster, table)),
-              AnalyzerDefinition.class);
           tableDescriptor.blockCaching = isBlockCacheEnabled(cluster, table);
           tableDescriptor.blockCachingFileTypes = getBlockCacheFileTypes(cluster, table);
           tableDescriptor.name = table;
@@ -692,13 +689,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       if (tableDescriptor.getSimilarityClass() == null) {
         tableDescriptor.setSimilarityClass(FairSimilarity.class.getName());
       }
-      if (tableDescriptor.getAnalyzerDefinition() == null) {
-        tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
-      }
       String table = BlurUtil.nullCheck(tableDescriptor.name, "tableDescriptor.name cannot be null.");
       String cluster = BlurUtil.nullCheck(tableDescriptor.cluster, "tableDescriptor.cluster cannot be null.");
-      BlurAnalyzer analyzer = new BlurAnalyzer(BlurUtil.nullCheck(tableDescriptor.analyzerDefinition,
-          "tableDescriptor.analyzerDefinition cannot be null."));
       String uri = BlurUtil.nullCheck(tableDescriptor.tableUri, "tableDescriptor.tableUri cannot be null.");
       int shardCount = BlurUtil.zeroCheck(tableDescriptor.shardCount,
           "tableDescriptor.shardCount cannot be less than 1");
@@ -716,7 +708,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         throw new IOException("Table [" + table + "] already exists.");
       }
       BlurUtil.setupFileSystem(uri, shardCount);
-      BlurUtil.createPath(_zk, blurTablePath, analyzer.toJSON().getBytes());
+      BlurUtil.createPath(_zk, blurTablePath, null);
       BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableColumnsToPreCache(cluster, table),
           BlurUtil.read(columnPreCache));
       BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableUriPath(cluster, table), uri.getBytes());

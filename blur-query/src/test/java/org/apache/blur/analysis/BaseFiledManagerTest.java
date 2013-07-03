@@ -29,11 +29,11 @@ import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.StringField;
 import org.junit.Test;
 
 public class BaseFiledManagerTest {
+
+  private static final String _fieldLessField = BlurConstants.SUPER;
 
   @Test
   public void testFiledManager() {
@@ -46,7 +46,7 @@ public class BaseFiledManagerTest {
     record.addToColumns(new Column("col1", "value1"));
 
     List<Field> fields = getFields("fam1", "1", "1213", newTextField("fam1.col1", "value1"),
-        newTextFieldNoStore(BlurConstants.SUPER, "value1"));
+        newTextFieldNoStore(_fieldLessField, "value1"));
 
     int c = 0;
     for (Field field : memoryFieldManager.getFields("1", record)) {
@@ -88,7 +88,7 @@ public class BaseFiledManagerTest {
     record.addToColumns(new Column("col2", "value2"));
 
     List<Field> fields = getFields("fam1", "1", "1213", newTextField("fam1.col1", "value1"),
-        newTextField("fam1.col2", "value2"), newTextFieldNoStore(BlurConstants.SUPER, "value2"));
+        newTextField("fam1.col2", "value2"), newTextFieldNoStore(_fieldLessField, "value2"));
 
     int c = 0;
     for (Field field : memoryFieldManager.getFields("1", record)) {
@@ -148,9 +148,9 @@ public class BaseFiledManagerTest {
 
   private List<Field> getFields(String family, String rowId, String recordId, Field... fields) {
     List<Field> fieldLst = new ArrayList<Field>();
-    fieldLst.add(new StringField("family", family, Store.YES));
-    fieldLst.add(new StringField("rowid", rowId, Store.YES));
-    fieldLst.add(new StringField("recordid", recordId, Store.YES));
+    fieldLst.add(new Field("family", family, BaseFieldManager.ID_TYPE));
+    fieldLst.add(new Field("rowid", rowId, BaseFieldManager.ID_TYPE));
+    fieldLst.add(new Field("recordid", recordId, BaseFieldManager.ID_TYPE));
     for (Field field : fields) {
       fieldLst.add(field);
     }
@@ -166,16 +166,20 @@ public class BaseFiledManagerTest {
   }
 
   private void assertFieldEquals(Field expected, Field actual) {
-    assertEquals(expected.name(), actual.name());
-    assertEquals(expected.stringValue(), actual.stringValue());
-    assertEquals(expected.fieldType().toString(), actual.fieldType().toString());
+    assertEquals("Names did not match Expected [" + expected + "] Actual [" + actual + "]", expected.name(),
+        actual.name());
+    assertEquals("Values did not match Expected [" + expected + "] Actual [" + actual + "]", expected.stringValue(),
+        actual.stringValue());
+    assertEquals("FileTypes did not match Expected [" + expected + "] Actual [" + actual + "]", expected.fieldType()
+        .toString(), actual.fieldType().toString());
   }
 
   private BaseFieldManager newBaseFieldManager() {
-    return new BaseFieldManager(new KeywordAnalyzer()) {
+    return new BaseFieldManager(_fieldLessField, new KeywordAnalyzer()) {
       @Override
-      protected void tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType, Map<String, String> props) {
-
+      protected boolean tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType,
+          Map<String, String> props) {
+        return true;
       }
     };
   }

@@ -30,7 +30,6 @@ import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
-import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
@@ -84,7 +83,6 @@ public class BlurIndexReaderTest {
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName("test-table");
     tableDescriptor.setTableUri(new File(base, "table-store-" + UUID.randomUUID().toString()).toURI().toString());
-    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.putToTableProperties("blur.shard.time.between.refreshs", Long.toString(refresh));
     tableDescriptor.putToTableProperties("blur.shard.time.between.commits", Long.toString(1000));
 

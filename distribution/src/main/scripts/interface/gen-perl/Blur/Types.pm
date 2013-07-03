@@ -3217,14 +3217,13 @@ sub write {
 
 package Blur::TableDescriptor;
 use base qw(Class::Accessor);
-Blur::TableDescriptor->mk_accessors( qw( isEnabled analyzerDefinition shardCount tableUri compressionClass compressionBlockSize cluster name similarityClass blockCaching blockCachingFileTypes readOnly columnPreCache tableProperties ) );
+Blur::TableDescriptor->mk_accessors( qw( isEnabled shardCount tableUri compressionClass compressionBlockSize cluster name similarityClass blockCaching blockCachingFileTypes readOnly columnPreCache tableProperties ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
   $self->{isEnabled} = 1;
-  $self->{analyzerDefinition} = undef;
   $self->{shardCount} = 1;
   $self->{tableUri} = undef;
   $self->{compressionClass} = "org.apache.hadoop.io.compress.DefaultCodec";
@@ -3240,9 +3239,6 @@ sub new {
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{isEnabled}) {
       $self->{isEnabled} = $vals->{isEnabled};
-    }
-    if (defined $vals->{analyzerDefinition}) {
-      $self->{analyzerDefinition} = $vals->{analyzerDefinition};
     }
     if (defined $vals->{shardCount}) {
       $self->{shardCount} = $vals->{shardCount};
@@ -3305,13 +3301,6 @@ sub read {
     {
       /^1$/ && do{      if ($ftype == TType::BOOL) {
         $xfer += $input->readBool(\$self->{isEnabled});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^2$/ && do{      if ($ftype == TType::STRUCT) {
-        $self->{analyzerDefinition} = new Blur::AnalyzerDefinition();
-        $xfer += $self->{analyzerDefinition}->read($input);
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -3431,11 +3420,6 @@ sub write {
   if (defined $self->{isEnabled}) {
     $xfer += $output->writeFieldBegin('isEnabled', TType::BOOL, 1);
     $xfer += $output->writeBool($self->{isEnabled});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{analyzerDefinition}) {
-    $xfer += $output->writeFieldBegin('analyzerDefinition', TType::STRUCT, 2);
-    $xfer += $self->{analyzerDefinition}->write($output);
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{shardCount}) {

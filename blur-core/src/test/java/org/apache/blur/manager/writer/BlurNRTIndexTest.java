@@ -31,7 +31,6 @@ import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
-import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
@@ -82,7 +81,6 @@ public class BlurNRTIndexTest {
     tableDescriptor.setName("test-table");
     String uuid = UUID.randomUUID().toString();
     tableDescriptor.setTableUri(new File(base, "table-store-" + uuid).toURI().toString());
-    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.putToTableProperties("blur.shard.time.between.refreshs", Long.toString(refresh));
 
     TableContext tableContext = TableContext.create(tableDescriptor);

@@ -10,6 +10,7 @@ import java.util.Map;
 import org.apache.blur.analysis.BaseFieldManager;
 import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
 import org.apache.blur.thrift.generated.ScoreType;
+import org.apache.blur.utils.BlurConstants;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.index.Term;
@@ -32,27 +33,34 @@ public class SuperParserTest {
 
   @Before
   public void setup() {
-//    AnalyzerDefinition ad = new AnalyzerDefinition();
-//    ad.setDefaultDefinition(new ColumnDefinition(NoStopWordStandardAnalyzer.class.getName(), true, null));
-//    ColumnFamilyDefinition cfDef = new ColumnFamilyDefinition();
-//    cfDef.putToColumnDefinitions("id_l", new ColumnDefinition("long", false, null));
-//    cfDef.putToColumnDefinitions("id_d", new ColumnDefinition("double", false, null));
-//    cfDef.putToColumnDefinitions("id_f", new ColumnDefinition("float", false, null));
-//    cfDef.putToColumnDefinitions("id_i", new ColumnDefinition("integer", false, null));
-//    ad.putToColumnFamilyDefinitions("a", cfDef);
+    // AnalyzerDefinition ad = new AnalyzerDefinition();
+    // ad.setDefaultDefinition(new
+    // ColumnDefinition(NoStopWordStandardAnalyzer.class.getName(), true,
+    // null));
+    // ColumnFamilyDefinition cfDef = new ColumnFamilyDefinition();
+    // cfDef.putToColumnDefinitions("id_l", new ColumnDefinition("long", false,
+    // null));
+    // cfDef.putToColumnDefinitions("id_d", new ColumnDefinition("double",
+    // false, null));
+    // cfDef.putToColumnDefinitions("id_f", new ColumnDefinition("float", false,
+    // null));
+    // cfDef.putToColumnDefinitions("id_i", new ColumnDefinition("integer",
+    // false, null));
+    // ad.putToColumnFamilyDefinitions("a", cfDef);
 
     _fieldManager = getFieldManager(new NoStopWordStandardAnalyzer());
     parser = new SuperParser(LUCENE_VERSION, _fieldManager, true, null, ScoreType.SUPER, new Term("_primedoc_"));
   }
 
   private BaseFieldManager getFieldManager(Analyzer a) {
-    BaseFieldManager fieldManager = new BaseFieldManager(a) {
+    BaseFieldManager fieldManager = new BaseFieldManager(BlurConstants.SUPER, a) {
       @Override
-      protected void tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType, Map<String, String> props) {
-        
+      protected boolean tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType,
+          Map<String, String> props) {
+        return true;
       }
     };
-    
+
     fieldManager.addColumnDefinitionInt("a", "id_i");
     fieldManager.addColumnDefinitionDouble("a", "id_d");
     fieldManager.addColumnDefinitionFloat("a", "id_f");
@@ -150,8 +158,9 @@ public class SuperParserTest {
 
   @Test
   public void test6() throws ParseException {
-    //analyzer
-    SuperParser parser = new SuperParser(LUCENE_VERSION, _fieldManager, true, null, ScoreType.SUPER, new Term("_primedoc_"));
+    // analyzer
+    SuperParser parser = new SuperParser(LUCENE_VERSION, _fieldManager, true, null, ScoreType.SUPER, new Term(
+        "_primedoc_"));
     try {
       parser.parse("super : <a:a d:{e TO d} b:b super:<test:hello\\<>> super:<c:c d:d>");
       fail();
@@ -292,7 +301,7 @@ public class SuperParserTest {
         bc(sq(tq("super", "word3"))), bc(sq(tq("super", "word2"))));
     assertQuery(q1, q);
   }
-  
+
   @Test
   public void test27() throws ParseException {
     Query q = parseSq("rowid:1");

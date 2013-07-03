@@ -22,24 +22,25 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.apache.blur.analysis.BlurAnalyzer;
+import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.store.hdfs.HdfsDirectory;
-import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.lucene.document.Document;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.search.NRTManager.TrackingIndexWriter;
@@ -62,6 +63,8 @@ public class IndexImporterTest {
   private IndexWriter mainWriter;
   private FileSystem fileSystem;
 
+  private FieldManager _fieldManager;
+
   @Before
   public void setup() throws IOException {
     TableContext.clear();
@@ -79,7 +82,6 @@ public class IndexImporterTest {
     String uuid = UUID.randomUUID().toString();
     
     tableDescriptor.setTableUri(new Path(base, "table-table").toUri().toString());
-    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.setShardCount(2);
     
     TableContext tableContext = TableContext.create(tableDescriptor);
@@ -92,7 +94,9 @@ public class IndexImporterTest {
     badRowIdsPath = new Path(shardPath, indexDirName + ".bad_rowids");
     Directory commitDirectory = new HdfsDirectory(configuration, path);
     Directory mainDirectory = new HdfsDirectory(configuration, shardPath);
-    IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, tableContext.getAnalyzer());
+    _fieldManager = tableContext.getFieldManager();
+    Analyzer analyzerForIndex = _fieldManager.getAnalyzerForIndex();
+    IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, analyzerForIndex);
     commitWriter = new IndexWriter(commitDirectory, conf);
     
     mainWriter = new IndexWriter(mainDirectory, conf);
@@ -112,8 +116,7 @@ public class IndexImporterTest {
 
   @Test
   public void testIndexImporterWithCorrectRowIdShardCombination() throws IOException {
-    
-    Document document = TransactionRecorder.convert("1", genRecord("1"), new BlurAnalyzer());
+    List<Field> document = _fieldManager.getFields("1", genRecord("1"));
     commitWriter.addDocument(document);
     commitWriter.commit();
     commitWriter.close();
@@ -138,7 +141,7 @@ public class IndexImporterTest {
   @Test
   public void testIndexImporterWithWrongRowIdShardCombination() throws IOException {
     setupWriter(configuration);
-    Document document = TransactionRecorder.convert("2", genRecord("1"), new BlurAnalyzer());
+    List<Field> document = _fieldManager.getFields("2", genRecord("1"));
     commitWriter.addDocument(document);
     commitWriter.commit();
     commitWriter.close();

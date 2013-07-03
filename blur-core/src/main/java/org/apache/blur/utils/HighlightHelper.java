@@ -62,7 +62,6 @@ public class HighlightHelper {
   private static final Collection<String> FIELDS_NOT_TO_HIGHLIGHT = new HashSet<String>() {
     private static final long serialVersionUID = 1L;
     {
-      add(BlurConstants.SUPER);
       add(BlurConstants.ROW_ID);
       add(BlurConstants.RECORD_ID);
       add(BlurConstants.PRIME_DOC);
@@ -121,25 +120,27 @@ public class HighlightHelper {
    */
   public static Document highlight(int docId, Document document, Query query, FieldManager fieldManager,
       IndexReader reader, String preTag, String postTag) throws IOException, InvalidTokenOffsetsException {
-    
-    Query fixedQuery = fixSuperQuery(query, null);
-    
+
+    String fieldLessFieldName = fieldManager.getFieldLessFieldName();
+
+    Query fixedQuery = fixSuperQuery(query, null, fieldLessFieldName);
+
     Analyzer analyzer = fieldManager.getAnalyzerForQuery();
 
     SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter(preTag, postTag);
     Document result = new Document();
     for (IndexableField f : document) {
       String name = f.name();
-      if (FIELDS_NOT_TO_HIGHLIGHT.contains(name)) {
+      if (fieldLessFieldName.equals(name) || FIELDS_NOT_TO_HIGHLIGHT.contains(name)) {
         result.add(f);
         continue;
       }
       String text = f.stringValue();
       Number numericValue = f.numericValue();
-      
+
       Query fieldFixedQuery;
       if (fieldManager.isFieldLessIndexed(name)) {
-        fieldFixedQuery = fixSuperQuery(query, name);  
+        fieldFixedQuery = fixSuperQuery(query, name, fieldLessFieldName);
       } else {
         fieldFixedQuery = fixedQuery;
       }
@@ -163,43 +164,43 @@ public class HighlightHelper {
     return result;
   }
 
-  private static Query fixSuperQuery(Query query, String name) {
+  private static Query fixSuperQuery(Query query, String name, String fieldLessFieldName) {
     if (query instanceof BooleanQuery) {
       BooleanQuery bq = (BooleanQuery) query;
       BooleanQuery newBq = new BooleanQuery();
       for (BooleanClause booleanClause : bq) {
-        newBq.add(fixSuperQuery(booleanClause.getQuery(), name), booleanClause.getOccur());
+        newBq.add(fixSuperQuery(booleanClause.getQuery(), name, fieldLessFieldName), booleanClause.getOccur());
       }
       return newBq;
     } else if (query instanceof SuperQuery) {
       SuperQuery sq = (SuperQuery) query;
-      return setFieldIfNeeded(sq.getQuery(), name);
+      return setFieldIfNeeded(sq.getQuery(), name, fieldLessFieldName);
     } else {
-      return setFieldIfNeeded(query, name);
+      return setFieldIfNeeded(query, name, fieldLessFieldName);
     }
   }
 
-  private static Query setFieldIfNeeded(Query query, String name) {
+  private static Query setFieldIfNeeded(Query query, String name, String fieldLessFieldName) {
     if (name == null) {
       return query;
     }
     if (query instanceof TermQuery) {
       TermQuery tq = (TermQuery) query;
       Term term = tq.getTerm();
-      if (term.field().equals(BlurConstants.SUPER)) {
+      if (term.field().equals(fieldLessFieldName)) {
         return new TermQuery(new Term(name, term.bytes()));
       }
     } else if (query instanceof WildcardQuery) {
       WildcardQuery wq = (WildcardQuery) query;
       Term term = wq.getTerm();
-      if (term.field().equals(BlurConstants.SUPER)) {
+      if (term.field().equals(fieldLessFieldName)) {
         return new WildcardQuery(new Term(name, term.bytes()));
       }
     } else if (query instanceof MultiPhraseQuery) {
       MultiPhraseQuery mpq = (MultiPhraseQuery) query;
       int[] positions = mpq.getPositions();
       List<Term[]> termArrays = mpq.getTermArrays();
-      if (isTermField(termArrays, BlurConstants.SUPER)) {
+      if (isTermField(termArrays, fieldLessFieldName)) {
         MultiPhraseQuery multiPhraseQuery = new MultiPhraseQuery();
         multiPhraseQuery.setSlop(mpq.getSlop());
         for (int i = 0; i < termArrays.size(); i++) {

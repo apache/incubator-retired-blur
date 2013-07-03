@@ -55,7 +55,7 @@ public class DescribeTableCommand extends Command {
     out.println("tableProperties       : " + describe.tableProperties);
 
     out.println(" - Analyzer Definition -");
-    print(0, out, describe.getAnalyzerDefinition());
+//    print(0, out, describe.getAnalyzerDefinition());
   }
 
   private void print(int indent, PrintWriter out, AnalyzerDefinition analyzerDefinition) {

@@ -777,7 +777,6 @@ module Blur
   class TableDescriptor
     include ::Thrift::Struct, ::Thrift::Struct_Union
     ISENABLED = 1
-    ANALYZERDEFINITION = 2
     SHARDCOUNT = 3
     TABLEURI = 4
     COMPRESSIONCLASS = 5
@@ -794,8 +793,6 @@ module Blur
     FIELDS = {
       # 
       ISENABLED => {:type => ::Thrift::Types::BOOL, :name => 'isEnabled', :default => true},
-      # 
-      ANALYZERDEFINITION => {:type => ::Thrift::Types::STRUCT, :name => 'analyzerDefinition', :class => ::Blur::AnalyzerDefinition},
       # 
       SHARDCOUNT => {:type => ::Thrift::Types::I32, :name => 'shardCount', :default => 1},
       # 

@@ -655,10 +655,6 @@ struct TableDescriptor {
   /**
    *
    */
-  2:AnalyzerDefinition analyzerDefinition,
-  /**
-   *
-   */
   3:i32 shardCount = 1,
   /**
    *

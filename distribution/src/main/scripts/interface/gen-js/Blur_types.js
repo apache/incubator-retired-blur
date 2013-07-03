@@ -2996,7 +2996,6 @@ ColumnPreCache.prototype.write = function(output) {
 
 TableDescriptor = function(args) {
   this.isEnabled = true;
-  this.analyzerDefinition = null;
   this.shardCount = 1;
   this.tableUri = null;
   this.compressionClass = 'org.apache.hadoop.io.compress.DefaultCodec';
@@ -3012,9 +3011,6 @@ TableDescriptor = function(args) {
   if (args) {
     if (args.isEnabled !== undefined) {
       this.isEnabled = args.isEnabled;
-    }
-    if (args.analyzerDefinition !== undefined) {
-      this.analyzerDefinition = args.analyzerDefinition;
     }
     if (args.shardCount !== undefined) {
       this.shardCount = args.shardCount;
@@ -3071,14 +3067,6 @@ TableDescriptor.prototype.read = function(input) {
       case 1:
       if (ftype == Thrift.Type.BOOL) {
         this.isEnabled = input.readBool().value;
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 2:
-      if (ftype == Thrift.Type.STRUCT) {
-        this.analyzerDefinition = new AnalyzerDefinition();
-        this.analyzerDefinition.read(input);
       } else {
         input.skip(ftype);
       }
@@ -3217,11 +3205,6 @@ TableDescriptor.prototype.write = function(output) {
   if (this.isEnabled !== null && this.isEnabled !== undefined) {
     output.writeFieldBegin('isEnabled', Thrift.Type.BOOL, 1);
     output.writeBool(this.isEnabled);
-    output.writeFieldEnd();
-  }
-  if (this.analyzerDefinition !== null && this.analyzerDefinition !== undefined) {
-    output.writeFieldBegin('analyzerDefinition', Thrift.Type.STRUCT, 2);
-    this.analyzerDefinition.write(output);
     output.writeFieldEnd();
   }
   if (this.shardCount !== null && this.shardCount !== undefined) {

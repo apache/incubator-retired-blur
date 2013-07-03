@@ -21,7 +21,6 @@ package org.apache.blur.shell;
 import java.io.PrintWriter;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.TableDescriptor;
@@ -38,14 +37,10 @@ public class CreateTableCommand extends Command {
     String tableuri = args[2];
     int shardCount = Integer.parseInt(args[3]);
 
-    AnalyzerDefinition ad = new AnalyzerDefinition();
-
     TableDescriptor td = new TableDescriptor(); 
     td.setTableUri(tableuri);
     td.setCluster(Main.getCluster(client));
-    td.setAnalyzerDefinition(ad);
     td.setName(tablename);
-
     td.setShardCount(shardCount);
 
     if (Main.debug) {

@@ -56,7 +56,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("TableDescriptor");
 
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField IS_ENABLED_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("isEnabled", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)1);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ANALYZER_DEFINITION_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("analyzerDefinition", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)2);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SHARD_COUNT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("shardCount", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)3);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_URI_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("tableUri", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)4);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COMPRESSION_CLASS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("compressionClass", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)5);
@@ -80,10 +79,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
    * 
    */
   public boolean isEnabled; // required
-  /**
-   * 
-   */
-  public AnalyzerDefinition analyzerDefinition; // required
   /**
    * 
    */
@@ -137,10 +132,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
      * 
      */
     IS_ENABLED((short)1, "isEnabled"),
-    /**
-     * 
-     */
-    ANALYZER_DEFINITION((short)2, "analyzerDefinition"),
     /**
      * 
      */
@@ -203,8 +194,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       switch(fieldId) {
         case 1: // IS_ENABLED
           return IS_ENABLED;
-        case 2: // ANALYZER_DEFINITION
-          return ANALYZER_DEFINITION;
         case 3: // SHARD_COUNT
           return SHARD_COUNT;
         case 4: // TABLE_URI
@@ -280,8 +269,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.IS_ENABLED, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("isEnabled", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.ANALYZER_DEFINITION, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("analyzerDefinition", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, AnalyzerDefinition.class)));
     tmpMap.put(_Fields.SHARD_COUNT, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("shardCount", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32)));
     tmpMap.put(_Fields.TABLE_URI, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("tableUri", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
@@ -332,7 +319,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
 
   public TableDescriptor(
     boolean isEnabled,
-    AnalyzerDefinition analyzerDefinition,
     int shardCount,
     String tableUri,
     String compressionClass,
@@ -349,7 +335,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     this();
     this.isEnabled = isEnabled;
     setIsEnabledIsSet(true);
-    this.analyzerDefinition = analyzerDefinition;
     this.shardCount = shardCount;
     setShardCountIsSet(true);
     this.tableUri = tableUri;
@@ -374,9 +359,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   public TableDescriptor(TableDescriptor other) {
     __isset_bitfield = other.__isset_bitfield;
     this.isEnabled = other.isEnabled;
-    if (other.isSetAnalyzerDefinition()) {
-      this.analyzerDefinition = new AnalyzerDefinition(other.analyzerDefinition);
-    }
     this.shardCount = other.shardCount;
     if (other.isSetTableUri()) {
       this.tableUri = other.tableUri;
@@ -431,7 +413,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   public void clear() {
     this.isEnabled = true;
 
-    this.analyzerDefinition = null;
     this.shardCount = 1;
 
     this.tableUri = null;
@@ -479,36 +460,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
 
   public void setIsEnabledIsSet(boolean value) {
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISENABLED_ISSET_ID, value);
-  }
-
-  /**
-   * 
-   */
-  public AnalyzerDefinition getAnalyzerDefinition() {
-    return this.analyzerDefinition;
-  }
-
-  /**
-   * 
-   */
-  public TableDescriptor setAnalyzerDefinition(AnalyzerDefinition analyzerDefinition) {
-    this.analyzerDefinition = analyzerDefinition;
-    return this;
-  }
-
-  public void unsetAnalyzerDefinition() {
-    this.analyzerDefinition = null;
-  }
-
-  /** Returns true if field analyzerDefinition is set (has been assigned a value) and false otherwise */
-  public boolean isSetAnalyzerDefinition() {
-    return this.analyzerDefinition != null;
-  }
-
-  public void setAnalyzerDefinitionIsSet(boolean value) {
-    if (!value) {
-      this.analyzerDefinition = null;
-    }
   }
 
   /**
@@ -899,14 +850,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       }
       break;
 
-    case ANALYZER_DEFINITION:
-      if (value == null) {
-        unsetAnalyzerDefinition();
-      } else {
-        setAnalyzerDefinition((AnalyzerDefinition)value);
-      }
-      break;
-
     case SHARD_COUNT:
       if (value == null) {
         unsetShardCount();
@@ -1011,9 +954,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     case IS_ENABLED:
       return Boolean.valueOf(isIsEnabled());
 
-    case ANALYZER_DEFINITION:
-      return getAnalyzerDefinition();
-
     case SHARD_COUNT:
       return Integer.valueOf(getShardCount());
 
@@ -1063,8 +1003,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     switch (field) {
     case IS_ENABLED:
       return isSetIsEnabled();
-    case ANALYZER_DEFINITION:
-      return isSetAnalyzerDefinition();
     case SHARD_COUNT:
       return isSetShardCount();
     case TABLE_URI:
@@ -1112,15 +1050,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (!(this_present_isEnabled && that_present_isEnabled))
         return false;
       if (this.isEnabled != that.isEnabled)
-        return false;
-    }
-
-    boolean this_present_analyzerDefinition = true && this.isSetAnalyzerDefinition();
-    boolean that_present_analyzerDefinition = true && that.isSetAnalyzerDefinition();
-    if (this_present_analyzerDefinition || that_present_analyzerDefinition) {
-      if (!(this_present_analyzerDefinition && that_present_analyzerDefinition))
-        return false;
-      if (!this.analyzerDefinition.equals(that.analyzerDefinition))
         return false;
     }
 
@@ -1254,16 +1183,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     }
     if (isSetIsEnabled()) {
       lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.isEnabled, typedOther.isEnabled);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetAnalyzerDefinition()).compareTo(typedOther.isSetAnalyzerDefinition());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetAnalyzerDefinition()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.analyzerDefinition, typedOther.analyzerDefinition);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1412,14 +1331,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     sb.append(this.isEnabled);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("analyzerDefinition:");
-    if (this.analyzerDefinition == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.analyzerDefinition);
-    }
-    first = false;
-    if (!first) sb.append(", ");
     sb.append("shardCount:");
     sb.append(this.shardCount);
     first = false;
@@ -1506,9 +1417,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     // check for required fields
     // check for sub-struct validity
-    if (analyzerDefinition != null) {
-      analyzerDefinition.validate();
-    }
     if (columnPreCache != null) {
       columnPreCache.validate();
     }
@@ -1554,15 +1462,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
               struct.isEnabled = iprot.readBool();
               struct.setIsEnabledIsSet(true);
-            } else { 
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 2: // ANALYZER_DEFINITION
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
-              struct.analyzerDefinition = new AnalyzerDefinition();
-              struct.analyzerDefinition.read(iprot);
-              struct.setAnalyzerDefinitionIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1704,11 +1603,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       oprot.writeFieldBegin(IS_ENABLED_FIELD_DESC);
       oprot.writeBool(struct.isEnabled);
       oprot.writeFieldEnd();
-      if (struct.analyzerDefinition != null) {
-        oprot.writeFieldBegin(ANALYZER_DEFINITION_FIELD_DESC);
-        struct.analyzerDefinition.write(oprot);
-        oprot.writeFieldEnd();
-      }
       oprot.writeFieldBegin(SHARD_COUNT_FIELD_DESC);
       oprot.writeI32(struct.shardCount);
       oprot.writeFieldEnd();
@@ -1797,51 +1691,45 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (struct.isSetIsEnabled()) {
         optionals.set(0);
       }
-      if (struct.isSetAnalyzerDefinition()) {
+      if (struct.isSetShardCount()) {
         optionals.set(1);
       }
-      if (struct.isSetShardCount()) {
+      if (struct.isSetTableUri()) {
         optionals.set(2);
       }
-      if (struct.isSetTableUri()) {
+      if (struct.isSetCompressionClass()) {
         optionals.set(3);
       }
-      if (struct.isSetCompressionClass()) {
+      if (struct.isSetCompressionBlockSize()) {
         optionals.set(4);
       }
-      if (struct.isSetCompressionBlockSize()) {
+      if (struct.isSetCluster()) {
         optionals.set(5);
       }
-      if (struct.isSetCluster()) {
+      if (struct.isSetName()) {
         optionals.set(6);
       }
-      if (struct.isSetName()) {
+      if (struct.isSetSimilarityClass()) {
         optionals.set(7);
       }
-      if (struct.isSetSimilarityClass()) {
+      if (struct.isSetBlockCaching()) {
         optionals.set(8);
       }
-      if (struct.isSetBlockCaching()) {
+      if (struct.isSetBlockCachingFileTypes()) {
         optionals.set(9);
       }
-      if (struct.isSetBlockCachingFileTypes()) {
+      if (struct.isSetReadOnly()) {
         optionals.set(10);
       }
-      if (struct.isSetReadOnly()) {
+      if (struct.isSetColumnPreCache()) {
         optionals.set(11);
       }
-      if (struct.isSetColumnPreCache()) {
+      if (struct.isSetTableProperties()) {
         optionals.set(12);
       }
-      if (struct.isSetTableProperties()) {
-        optionals.set(13);
-      }
-      oprot.writeBitSet(optionals, 14);
+      oprot.writeBitSet(optionals, 13);
       if (struct.isSetIsEnabled()) {
         oprot.writeBool(struct.isEnabled);
-      }
-      if (struct.isSetAnalyzerDefinition()) {
-        struct.analyzerDefinition.write(oprot);
       }
       if (struct.isSetShardCount()) {
         oprot.writeI32(struct.shardCount);
@@ -1897,49 +1785,44 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, TableDescriptor struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(14);
+      BitSet incoming = iprot.readBitSet(13);
       if (incoming.get(0)) {
         struct.isEnabled = iprot.readBool();
         struct.setIsEnabledIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.analyzerDefinition = new AnalyzerDefinition();
-        struct.analyzerDefinition.read(iprot);
-        struct.setAnalyzerDefinitionIsSet(true);
-      }
-      if (incoming.get(2)) {
         struct.shardCount = iprot.readI32();
         struct.setShardCountIsSet(true);
       }
-      if (incoming.get(3)) {
+      if (incoming.get(2)) {
         struct.tableUri = iprot.readString();
         struct.setTableUriIsSet(true);
       }
-      if (incoming.get(4)) {
+      if (incoming.get(3)) {
         struct.compressionClass = iprot.readString();
         struct.setCompressionClassIsSet(true);
       }
-      if (incoming.get(5)) {
+      if (incoming.get(4)) {
         struct.compressionBlockSize = iprot.readI32();
         struct.setCompressionBlockSizeIsSet(true);
       }
-      if (incoming.get(6)) {
+      if (incoming.get(5)) {
         struct.cluster = iprot.readString();
         struct.setClusterIsSet(true);
       }
-      if (incoming.get(7)) {
+      if (incoming.get(6)) {
         struct.name = iprot.readString();
         struct.setNameIsSet(true);
       }
-      if (incoming.get(8)) {
+      if (incoming.get(7)) {
         struct.similarityClass = iprot.readString();
         struct.setSimilarityClassIsSet(true);
       }
-      if (incoming.get(9)) {
+      if (incoming.get(8)) {
         struct.blockCaching = iprot.readBool();
         struct.setBlockCachingIsSet(true);
       }
-      if (incoming.get(10)) {
+      if (incoming.get(9)) {
         {
           org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set169 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
           struct.blockCachingFileTypes = new HashSet<String>(2*_set169.size);
@@ -1952,16 +1835,16 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         }
         struct.setBlockCachingFileTypesIsSet(true);
       }
-      if (incoming.get(11)) {
+      if (incoming.get(10)) {
         struct.readOnly = iprot.readBool();
         struct.setReadOnlyIsSet(true);
       }
-      if (incoming.get(12)) {
+      if (incoming.get(11)) {
         struct.columnPreCache = new ColumnPreCache();
         struct.columnPreCache.read(iprot);
         struct.setColumnPreCacheIsSet(true);
       }
-      if (incoming.get(13)) {
+      if (incoming.get(12)) {
         {
           org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map172 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
           struct.tableProperties = new HashMap<String,String>(2*_map172.size);

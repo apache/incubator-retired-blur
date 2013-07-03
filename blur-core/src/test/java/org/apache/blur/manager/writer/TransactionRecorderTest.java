@@ -30,16 +30,15 @@ import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.MiniCluster;
-import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
-import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -95,7 +94,6 @@ public class TransactionRecorderTest {
 
     System.out.println("tableUri=" + tableUri);
     tableDescriptor.setTableUri(tableUri);
-    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
 
     TableContext tableContext = TableContext.create(tableDescriptor);
     ShardContext shardContext = ShardContext.create(tableContext, "shard-1");
@@ -136,7 +134,7 @@ public class TransactionRecorderTest {
     column.setName("columnName_123-1");
     record.setColumns(Arrays.asList(column));
     
-    TransactionRecorder.convert(rowId, record, new BlurAnalyzer());
+    BlurUtil.validateRowIdAndRecord(rowId, record);
     assert(true);
   }
   
@@ -151,7 +149,7 @@ public class TransactionRecorderTest {
     column.setName("columnName_123-1");
     record.setColumns(Arrays.asList(column));
     
-    TransactionRecorder.convert(rowId, record, new BlurAnalyzer());
+    BlurUtil.validateRowIdAndRecord(rowId, record);
     fail();
   }
   
@@ -166,7 +164,7 @@ public class TransactionRecorderTest {
     column.setName("columnName_123.1");
     record.setColumns(Arrays.asList(column));
     
-    TransactionRecorder.convert(rowId, record, new BlurAnalyzer());
+    BlurUtil.validateRowIdAndRecord(rowId, record);
     fail();
   }
 

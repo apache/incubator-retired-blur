@@ -31,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.blur.MiniCluster;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.ZooKeeperClient;
@@ -198,7 +197,6 @@ public class ZookeeperClusterStatusTest {
   private void createTable(String name, boolean enabled) throws KeeperException, InterruptedException {
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName(name);
-    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.setTableUri("./target/tmp/zk_test_hdfs");
     tableDescriptor.setIsEnabled(enabled);
     clusterStatus.createTable(tableDescriptor);

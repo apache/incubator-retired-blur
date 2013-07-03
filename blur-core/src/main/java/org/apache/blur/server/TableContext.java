@@ -27,7 +27,9 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.blur.analysis.BaseFieldManager;
 import org.apache.blur.analysis.FieldManager;
+import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.ScoreType;
@@ -42,7 +44,6 @@ import org.apache.lucene.search.similarities.DefaultSimilarity;
 import org.apache.lucene.search.similarities.Similarity;
 
 public class TableContext {
-
 
   private static final Log LOG = LogFactory.getLog(TableContext.class);
 
@@ -67,7 +68,7 @@ public class TableContext {
   protected TableContext() {
 
   }
-  
+
   public static void clear() {
     cache.clear();
   }
@@ -90,7 +91,7 @@ public class TableContext {
     tableContext.configuration = configuration;
     tableContext.tablePath = new Path(tableDescriptor.getTableUri());
     tableContext.walTablePath = new Path(tableContext.tablePath, LOGS);
-    tableContext.fieldManager = null;
+
     tableContext.defaultFieldName = SUPER;
     tableContext.table = tableDescriptor.getName();
     tableContext.descriptor = tableDescriptor;
@@ -99,11 +100,15 @@ public class TableContext {
     tableContext.defaultPrimeDocTerm = new Term("_prime_", "true");
     tableContext.defaultScoreType = ScoreType.SUPER;
 
-    Class<?> c1 = configuration.getClass(BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE, KeepOnlyLastCommitDeletionPolicy.class);
-    tableContext.indexDeletionPolicy = (IndexDeletionPolicy) configure(ReflectionUtils.newInstance(c1, configuration), tableContext);
+    tableContext.fieldManager = null;
+
+    Class<?> c1 = configuration.getClass(BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE,
+        KeepOnlyLastCommitDeletionPolicy.class);
+    tableContext.indexDeletionPolicy = (IndexDeletionPolicy) configure(ReflectionUtils.newInstance(c1, configuration),
+        tableContext);
     Class<?> c2 = configuration.getClass(BLUR_SAHRD_INDEX_SIMILARITY, DefaultSimilarity.class);
     tableContext.similarity = (Similarity) configure(ReflectionUtils.newInstance(c2, configuration), tableContext);
-    
+
     cache.put(tableDescriptor.getName(), tableContext);
     return tableContext;
   }

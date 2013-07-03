@@ -49,7 +49,6 @@ import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.indexserver.LocalIndexServer;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.server.TableContext;
-import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
@@ -99,7 +98,6 @@ public class IndexManagerTest {
     final TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName(TABLE);
     tableDescriptor.setTableUri(file.toURI().toString());
-    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.putToTableProperties("blur.shard.time.between.refreshs", Long.toString(100));
     tableDescriptor.setShardCount(1);
     server = new LocalIndexServer(tableDescriptor);

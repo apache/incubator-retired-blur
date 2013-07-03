@@ -20,10 +20,9 @@ import java.io.IOException;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.generated.AnalyzerDefinition;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.TableDescriptor;
-import org.apache.blur.thrift.generated.Blur.Iface;
 
 
 public class CreateTable {
@@ -36,7 +35,6 @@ public class CreateTable {
     String uri = args[4];
 
     final TableDescriptor tableDescriptor = new TableDescriptor();
-    tableDescriptor.analyzerDefinition = new AnalyzerDefinition();
     tableDescriptor.cluster = cluster;
     tableDescriptor.name = tableName;
     tableDescriptor.readOnly = false;

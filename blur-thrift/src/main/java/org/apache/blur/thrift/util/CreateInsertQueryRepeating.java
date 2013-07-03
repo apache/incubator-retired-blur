@@ -16,6 +16,9 @@ package org.apache.blur.thrift.util;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.thrift.util.BlurThriftHelper.newColumn;
+import static org.apache.blur.thrift.util.BlurThriftHelper.newRecordMutation;
+
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -25,7 +28,7 @@ import java.util.UUID;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.generated.AnalyzerDefinition;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResults;
@@ -33,10 +36,6 @@ import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.TableDescriptor;
-import org.apache.blur.thrift.generated.Blur.Iface;
-
-
-import static org.apache.blur.thrift.util.BlurThriftHelper.*;
 
 /**
  * Tests a lot of things, mainly connecting to a blur cluster and slamming a
@@ -107,7 +106,6 @@ public class CreateInsertQueryRepeating {
 
   public void createTable(Iface client, String tableName, String cluster) throws BlurException, TException {
     TableDescriptor td = new TableDescriptor();
-    td.analyzerDefinition = new AnalyzerDefinition();
 
     td.name = tableName;
     // TODO: doc doesnt say required, yet it barfs without it?

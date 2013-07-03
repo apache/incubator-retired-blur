@@ -131,7 +131,7 @@ public abstract class FieldTypeDefinition {
     return family + "." + name + "." + subName;
   }
 
-  public boolean isFieldLessIndexing() {
+  public boolean isFieldLessIndexed() {
     return _fieldLessIndexing;
   }
 

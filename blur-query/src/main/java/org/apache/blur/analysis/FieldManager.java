@@ -163,5 +163,7 @@ public abstract class FieldManager {
   public abstract boolean isFieldLessIndexed(String name);
 
   public abstract Analyzer getAnalyzerForIndex();
+  
+  public abstract String getFieldLessFieldName();
 
 }

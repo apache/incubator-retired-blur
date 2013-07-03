@@ -50,10 +50,14 @@ public abstract class BaseFieldManager extends FieldManager {
   private static final Log LOG = LogFactory.getLog(BaseFieldManager.class);
   private static final Map<String, String> EMPTY_MAP = new HashMap<String, String>();;
 
-  private Map<String, FieldTypeDefinition> _fieldNameToDefMap = new ConcurrentHashMap<String, FieldTypeDefinition>();
-  private Map<String, Class<? extends FieldTypeDefinition>> _typeMap = new ConcurrentHashMap<String, Class<? extends FieldTypeDefinition>>();
-  private Map<String, Set<String>> _columnToSubColumn = new ConcurrentHashMap<String, Set<String>>();
-  private Analyzer _baseAnalyzerForQuery;
+  private final Map<String, Set<String>> _columnToSubColumn = new ConcurrentHashMap<String, Set<String>>();
+  private final Map<String, FieldTypeDefinition> _fieldNameToDefMap = new ConcurrentHashMap<String, FieldTypeDefinition>();
+  
+  // This is loaded at object creation and never changed again.
+  private final Map<String, Class<? extends FieldTypeDefinition>> _typeMap = new ConcurrentHashMap<String, Class<? extends FieldTypeDefinition>>();
+  private final Analyzer _baseAnalyzerForQuery;
+  private final Analyzer _baseAnalyzerForIndex;
+  private final String _fieldLessField;
 
   public static FieldType ID_TYPE;
   static {
@@ -70,7 +74,7 @@ public abstract class BaseFieldManager extends FieldManager {
     SUPER_FIELD_TYPE.setOmitNorms(true);
   }
 
-  public BaseFieldManager(final Analyzer defaultAnalyzerForQuerying) {
+  public BaseFieldManager(String fieldLessField, final Analyzer defaultAnalyzerForQuerying) {
     _typeMap.put(TextFieldTypeDefinition.NAME, TextFieldTypeDefinition.class);
     _typeMap.put(StringFieldTypeDefinition.NAME, StringFieldTypeDefinition.class);
     _typeMap.put(StoredFieldTypeDefinition.NAME, StoredFieldTypeDefinition.class);
@@ -78,6 +82,7 @@ public abstract class BaseFieldManager extends FieldManager {
     _typeMap.put(LongFieldTypeDefinition.NAME, LongFieldTypeDefinition.class);
     _typeMap.put(DoubleFieldTypeDefinition.NAME, DoubleFieldTypeDefinition.class);
     _typeMap.put(FloatFieldTypeDefinition.NAME, FloatFieldTypeDefinition.class);
+    _fieldLessField = fieldLessField;
 
     _baseAnalyzerForQuery = new AnalyzerWrapper() {
       @Override
@@ -85,6 +90,22 @@ public abstract class BaseFieldManager extends FieldManager {
         FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(fieldName);
         if (fieldTypeDefinition == null) {
           return defaultAnalyzerForQuerying;
+        }
+        return fieldTypeDefinition.getAnalyzerForQuery();
+      }
+
+      @Override
+      protected TokenStreamComponents wrapComponents(String fieldName, TokenStreamComponents components) {
+        return components;
+      }
+    };
+
+    _baseAnalyzerForIndex = new AnalyzerWrapper() {
+      @Override
+      protected Analyzer getWrappedAnalyzer(String fieldName) {
+        FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(fieldName);
+        if (fieldTypeDefinition == null) {
+          throw new RuntimeException("Field [" + fieldName + "] not found.");
         }
         return fieldTypeDefinition.getAnalyzerForQuery();
       }
@@ -150,13 +171,13 @@ public abstract class BaseFieldManager extends FieldManager {
     for (Field field : fieldTypeDefinition.getFieldsForColumn(family, column)) {
       fields.add(field);
     }
-    if (fieldTypeDefinition.isFieldLessIndexing()) {
+    if (fieldTypeDefinition.isFieldLessIndexed()) {
       addFieldLessIndex(fields, column.getValue());
     }
   }
 
   private void addFieldLessIndex(List<Field> fields, String value) {
-    fields.add(new Field(BlurConstants.SUPER, value, SUPER_FIELD_TYPE));
+    fields.add(new Field(_fieldLessField, value, SUPER_FIELD_TYPE));
   }
 
   private FieldTypeDefinition getFieldTypeDefinition(String family, Column column, String subName) {
@@ -201,7 +222,9 @@ public abstract class BaseFieldManager extends FieldManager {
     } else {
       fieldName = baseFieldName;
     }
-    tryToStore(fieldName, fieldLessIndexing, fieldType, props);
+    if (!tryToStore(fieldName, fieldLessIndexing, fieldType, props)) {
+      
+    }
     Class<? extends FieldTypeDefinition> clazz = _typeMap.get(fieldType);
     if (clazz == null) {
       throw new IllegalArgumentException("FieldType of [" + fieldType + "] was not found.");
@@ -229,7 +252,7 @@ public abstract class BaseFieldManager extends FieldManager {
     }
   }
 
-  protected abstract void tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType,
+  protected abstract boolean tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType,
       Map<String, String> props);
 
   private Set<String> getConcurrentSet() {
@@ -294,6 +317,17 @@ public abstract class BaseFieldManager extends FieldManager {
   }
 
   @Override
+  public Analyzer getAnalyzerForIndex() {
+    return _baseAnalyzerForIndex;
+  }
+
+  @Override
+  public boolean isFieldLessIndexed(String field) {
+    FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
+    return fieldTypeDefinition.isFieldLessIndexed();
+  }
+
+  @Override
   public boolean checkSupportForFuzzyQuery(String field) {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
     return fieldTypeDefinition.checkSupportForFuzzyQuery();
@@ -335,15 +369,9 @@ public abstract class BaseFieldManager extends FieldManager {
   public FieldTypeDefinition getFieldTypeDefinition(String field) {
     return _fieldNameToDefMap.get(field);
   }
-  
-  @Override
-  public boolean isFieldLessIndexed(String name) {
-    return false;
-  }
 
-  @Override
-  public Analyzer getAnalyzerForIndex() {
-    return null;
+  public String getFieldLessFieldName() {
+    return _fieldLessField;
   }
 
 }

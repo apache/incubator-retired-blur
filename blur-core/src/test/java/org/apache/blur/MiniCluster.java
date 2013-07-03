@@ -53,7 +53,6 @@ import org.apache.blur.thrift.Connection;
 import org.apache.blur.thrift.ThriftBlurControllerServer;
 import org.apache.blur.thrift.ThriftBlurShardServer;
 import org.apache.blur.thrift.ThriftServer;
-import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
@@ -155,7 +154,6 @@ public abstract class MiniCluster {
     final TableDescriptor descriptor = new TableDescriptor();
     descriptor.setName(test);
     descriptor.setShardCount(7);
-    descriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     descriptor.setTableUri(getFileSystemUri() + "/blur/" + test);
     client.createTable(descriptor);
   }

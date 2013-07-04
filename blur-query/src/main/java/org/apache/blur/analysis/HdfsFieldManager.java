@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -77,6 +78,12 @@ public class HdfsFieldManager extends BaseFieldManager {
 
   private String getComments() {
     return null;
+  }
+
+  @Override
+  protected void tryToLoad(String field, Map<String, FieldTypeDefinition> fieldNameToDefMap,
+      Map<String, Set<String>> columnToSubColumn) {
+    
   }
 
 }

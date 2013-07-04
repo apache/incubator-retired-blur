@@ -52,7 +52,7 @@ public abstract class BaseFieldManager extends FieldManager {
 
   private final Map<String, Set<String>> _columnToSubColumn = new ConcurrentHashMap<String, Set<String>>();
   private final Map<String, FieldTypeDefinition> _fieldNameToDefMap = new ConcurrentHashMap<String, FieldTypeDefinition>();
-  
+
   // This is loaded at object creation and never changed again.
   private final Map<String, Class<? extends FieldTypeDefinition>> _typeMap = new ConcurrentHashMap<String, Class<? extends FieldTypeDefinition>>();
   private final Analyzer _baseAnalyzerForQuery;
@@ -181,7 +181,7 @@ public abstract class BaseFieldManager extends FieldManager {
   }
 
   private FieldTypeDefinition getFieldTypeDefinition(String family, Column column, String subName) {
-    return _fieldNameToDefMap.get(getSubColumnName(family, column, subName));
+    return getFieldTypeDefinition(getSubColumnName(family, column, subName));
   }
 
   private String getSubColumnName(String family, Column column, String subName) {
@@ -201,16 +201,17 @@ public abstract class BaseFieldManager extends FieldManager {
   }
 
   private FieldTypeDefinition getFieldTypeDefinition(String family, Column column) {
-    return _fieldNameToDefMap.get(getColumnName(family, column));
+    return getFieldTypeDefinition(getColumnName(family, column));
   }
 
   @Override
-  public void addColumnDefinition(String family, String columnName, String subColumnName, boolean fieldLessIndexing,
+  public boolean addColumnDefinition(String family, String columnName, String subColumnName, boolean fieldLessIndexing,
       String fieldType, Map<String, String> props) {
     String baseFieldName = family + "." + columnName;
     String fieldName;
     if (subColumnName != null) {
-      if (!_fieldNameToDefMap.containsKey(baseFieldName)) {
+      FieldTypeDefinition primeFieldTypeDefinition = getFieldTypeDefinition(baseFieldName);
+      if (primeFieldTypeDefinition == null) {
         throw new IllegalArgumentException("Base column of [" + baseFieldName
             + "] not found, please add base before adding sub column.");
       }
@@ -222,14 +223,17 @@ public abstract class BaseFieldManager extends FieldManager {
     } else {
       fieldName = baseFieldName;
     }
+    FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(fieldName);
+    if (fieldTypeDefinition != null) {
+      return false;
+    }
     if (!tryToStore(fieldName, fieldLessIndexing, fieldType, props)) {
-      
+      return false;
     }
     Class<? extends FieldTypeDefinition> clazz = _typeMap.get(fieldType);
     if (clazz == null) {
       throw new IllegalArgumentException("FieldType of [" + fieldType + "] was not found.");
     }
-    FieldTypeDefinition fieldTypeDefinition;
     try {
       fieldTypeDefinition = clazz.newInstance();
     } catch (InstantiationException e) {
@@ -250,10 +254,14 @@ public abstract class BaseFieldManager extends FieldManager {
       Set<String> subColumnNames = _columnToSubColumn.put(baseFieldName, getConcurrentSet());
       subColumnNames.add(subColumnName);
     }
+    return true;
   }
 
   protected abstract boolean tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType,
       Map<String, String> props);
+
+  protected abstract void tryToLoad(String field, Map<String, FieldTypeDefinition> fieldNameToDefMap,
+      Map<String, Set<String>> columnToSubColumn);
 
   private Set<String> getConcurrentSet() {
     return Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
@@ -262,12 +270,16 @@ public abstract class BaseFieldManager extends FieldManager {
   @Override
   public boolean isValidColumnDefinition(String family, String columnName) {
     String fieldName = getColumnName(family, columnName);
-    return _fieldNameToDefMap.containsKey(fieldName);
+    FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(fieldName);
+    if (fieldTypeDefinition == null) {
+      return false;
+    }
+    return true;
   }
 
   @Override
   public Analyzer getAnalyzerForIndex(String fieldName) {
-    FieldTypeDefinition fieldTypeDefinition = _fieldNameToDefMap.get(fieldName);
+    FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(fieldName);
     if (fieldTypeDefinition == null) {
       throw new AnalyzerNotFoundException(fieldName);
     }
@@ -276,7 +288,7 @@ public abstract class BaseFieldManager extends FieldManager {
 
   @Override
   public Analyzer getAnalyzerForQuery(String fieldName) {
-    FieldTypeDefinition fieldTypeDefinition = _fieldNameToDefMap.get(fieldName);
+    FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(fieldName);
     if (fieldTypeDefinition == null) {
       throw new AnalyzerNotFoundException(fieldName);
     }
@@ -367,7 +379,12 @@ public abstract class BaseFieldManager extends FieldManager {
 
   @Override
   public FieldTypeDefinition getFieldTypeDefinition(String field) {
-    return _fieldNameToDefMap.get(field);
+    FieldTypeDefinition fieldTypeDefinition = _fieldNameToDefMap.get(field);
+    if (fieldTypeDefinition == null) {
+      tryToLoad(field, _fieldNameToDefMap, _columnToSubColumn);
+      fieldTypeDefinition = _fieldNameToDefMap.get(field);
+    }
+    return fieldTypeDefinition;
   }
 
   public String getFieldLessFieldName() {

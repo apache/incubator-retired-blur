@@ -52,8 +52,9 @@ public abstract class FieldManager {
    *          the field type name, required.
    * @param props
    *          the configuration properties for this column and type.
+   * @return 
    */
-  public abstract void addColumnDefinition(String family, String columnName, String subColumnName,
+  public abstract boolean addColumnDefinition(String family, String columnName, String subColumnName,
       boolean fieldLessIndexing, String fieldType, Map<String, String> props);
 
   /**

@@ -94,7 +94,7 @@ public class TableShardCountCollapserTest {
   private static void createShard(Configuration configuration, int i, Path path, int totalShardCount)
       throws IOException {
     HdfsDirectory hdfsDirectory = new HdfsDirectory(configuration, path);
-    IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_42, new KeywordAnalyzer());
+    IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_43, new KeywordAnalyzer());
     TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     IndexWriter indexWriter = new IndexWriter(hdfsDirectory, conf);

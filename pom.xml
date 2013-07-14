@@ -38,7 +38,6 @@ under the License.
 	<inceptionYear>2012</inceptionYear>
 	
 	<properties>
-		<hadoop.version>1.0.4</hadoop.version>
 		<zookeeper.version>3.4.5</zookeeper.version>
 		<log4j.version>1.2.15</log4j.version>
 		<jersey.version>1.14</jersey.version>
@@ -79,6 +78,17 @@ under the License.
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	
+	<repositories>
+		<repository>
+			<id>libdir</id>
+			<url>file://${basedir}/../lib</url>
+		</repository>
+		<repository>
+	      <id>cloudera</id>
+	      <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+	    </repository>
+	</repositories>
 
 	<build>		
 		<plugins>
@@ -108,6 +118,9 @@ under the License.
 				  <artifactId>maven-surefire-plugin</artifactId>
 				  <configuration>
 				    <reuseForks>false</reuseForks>
+					<systemPropertyVariables>
+						<blur.tmp.dir>${project.build.directory}/target/tmp</blur.tmp.dir>
+					</systemPropertyVariables>
 				  </configuration>
 				</plugin>
 				<!-- Ignore/Execute plugin execution -->
@@ -157,64 +170,23 @@ under the License.
 			</plugins>
 		</pluginManagement>
 	</build>
+	
 	<profiles>
 		<profile>
-			<id>default</id>
+			<id>hadoop-1x</id>
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<excludes>
-								<exclude>**/IT*.java</exclude>
-							</excludes>
-							<systemPropertyVariables>
-								<blur.tmp.dir>${project.build.directory}/tmp</blur.tmp.dir>
-							</systemPropertyVariables>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
+			<properties>
+				<hadoop.version>1.1.2</hadoop.version>
+			</properties>
 		</profile>
-				
+		
 		<profile>
-			<id>integration-test</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<includes>
-								<include>**/IT*.java</include>
-							</includes>
-							<systemPropertyVariables>
-								<blur.tmp.dir>${project.build.directory}/tmp</blur.tmp.dir>
-							</systemPropertyVariables>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-failsafe-plugin</artifactId>
-						<version>2.12</version>
-						<executions>
-							<execution>
-								<goals>
-									<goal>integration-test</goal>
-									<goal>verify</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
+			<id>cdh4-mr1</id>
+            <properties>
+			    <hadoop.version>2.0.0-mr1-cdh4.3.0</hadoop.version>
+			</properties>
 		</profile>
 	</profiles>
 </project>

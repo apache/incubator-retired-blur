@@ -1,4 +1,4 @@
-package org.apache.blur.metrics;
+package org.apache.blur.gui;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -23,6 +23,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.blur.metrics.JSONReporter;
 
 public class JSONReporterServlet extends HttpServlet {
   private static final long serialVersionUID = -3086441832701983642L;

@@ -23,7 +23,7 @@ under the License.
 	<parent>
 		<groupId>org.apache.blur</groupId>
 		<artifactId>blur</artifactId>
-		<version>0.2.0-incubating</version>
+		<version>0.2.0-incubating-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -45,13 +45,7 @@ under the License.
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
-
-	<profiles>
-		<profile>
-			<id>distribution</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
+	
 			<build>
 				<plugins>
 					<plugin>
@@ -74,6 +68,4 @@ under the License.
 					</plugin>
 				</plugins>
 			</build>
-		</profile>
-	</profiles>
 </project>

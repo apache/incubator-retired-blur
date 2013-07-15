@@ -118,6 +118,7 @@ public class HdfsDirectory extends Directory {
   public HdfsDirectory(Configuration configuration, Path path) throws IOException {
     this.path = path;
     fileSystem = path.getFileSystem(configuration);
+    fileSystem.mkdirs(path);
     setLockFactory(NoLockFactory.getNoLockFactory());
     synchronized (metricsGroupMap) {
       URI uri = fileSystem.getUri();

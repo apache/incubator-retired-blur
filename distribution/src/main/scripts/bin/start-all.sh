@@ -20,7 +20,7 @@ bin=`cd "$bin"; pwd`
 
 . "$bin"/blur-config.sh
 
-if [ $BLUR_MANAGE_ZK = true ]; then
+if [ "$BLUR_MANAGE_ZK" == "true" ]; then
   $BLUR_HOME/bin/start-zookeepers.sh
 fi
 $BLUR_HOME/bin/start-shards.sh

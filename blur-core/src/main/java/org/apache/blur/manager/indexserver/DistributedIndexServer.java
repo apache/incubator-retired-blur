@@ -96,6 +96,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private static final Log LOG = LogFactory.getLog(DistributedIndexServer.class);
   private static final long _delay = TimeUnit.SECONDS.toMillis(10);
   private static final long CHECK_PERIOD = TimeUnit.SECONDS.toMillis(60);
+  
+  private static final AtomicLong _pauseWarmup = new AtomicLong();
 
   private Map<String, TableDescriptor> _tableDescriptors = new ConcurrentHashMap<String, TableDescriptor>();
   private Map<String, Similarity> _tableSimilarity = new ConcurrentHashMap<String, Similarity>();
@@ -137,13 +139,13 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private int _internalSearchThreads;
   private ExecutorService _warmupExecutor;
   private int _warmupThreads;
-  private final AtomicLong _pauseWarmup = new AtomicLong();
+  
   private long _lastRamUsageCheck = 0;
 
   public static interface ReleaseReader {
     void release() throws IOException;
   }
-
+  
   public void init() throws KeeperException, InterruptedException, IOException {
     MetricName tableCount = new MetricName(ORG_APACHE_BLUR, BLUR, TABLE_COUNT, _cluster);
     MetricName indexCount = new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_COUNT, _cluster);
@@ -765,5 +767,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   public void setWarmupThreads(int warmupThreads) {
     _warmupThreads = warmupThreads;
+  }
+  
+  public static AtomicLong getPauseWarmup() {
+    return _pauseWarmup;
   }
 }

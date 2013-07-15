@@ -1,0 +1,2 @@
+#NOTE: There is additional setup in the default_zoo.cfg file needed for multiple instances of ZooKeeper.  See ZooKeeper documentation.
+localhost

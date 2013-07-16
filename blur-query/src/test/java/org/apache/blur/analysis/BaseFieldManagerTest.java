@@ -19,6 +19,7 @@ package org.apache.blur.analysis;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,13 +32,13 @@ import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
 import org.junit.Test;
 
-public class BaseFiledManagerTest {
+public class BaseFieldManagerTest {
 
-  private static final String _fieldLessField = BlurConstants.SUPER;
+  public static final String _fieldLessField = BlurConstants.SUPER;
 
   @Test
-  public void testFiledManager() {
-    BaseFieldManager memoryFieldManager = newBaseFieldManager();
+  public void testFiledManager() throws IOException {
+    BaseFieldManager memoryFieldManager = newFieldManager(true);
     memoryFieldManager.addColumnDefinition("fam1", "col1", null, true, "text", null);
 
     Record record = new Record();
@@ -55,8 +56,8 @@ public class BaseFiledManagerTest {
   }
 
   @Test
-  public void testFiledManagerMultipleColumnsSameName() {
-    BaseFieldManager memoryFieldManager = newBaseFieldManager();
+  public void testFiledManagerMultipleColumnsSameName() throws IOException {
+    BaseFieldManager memoryFieldManager = newFieldManager(true);
     memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", null);
 
     Record record = new Record();
@@ -76,8 +77,8 @@ public class BaseFiledManagerTest {
   }
 
   @Test
-  public void testFiledManagerMultipleColumnsDifferentNames() {
-    BaseFieldManager memoryFieldManager = newBaseFieldManager();
+  public void testFiledManagerMultipleColumnsDifferentNames() throws IOException {
+    BaseFieldManager memoryFieldManager = newFieldManager(true);
     memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", null);
     memoryFieldManager.addColumnDefinition("fam1", "col2", null, true, "text", null);
 
@@ -97,8 +98,8 @@ public class BaseFiledManagerTest {
   }
 
   @Test
-  public void testFiledManagerMultipleColumnsDifferentNamesDifferentFamilies() {
-    BaseFieldManager memoryFieldManager = newBaseFieldManager();
+  public void testFiledManagerMultipleColumnsDifferentNamesDifferentFamilies() throws IOException {
+    BaseFieldManager memoryFieldManager = newFieldManager(true);
     memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", null);
     memoryFieldManager.addColumnDefinition("fam2", "col2", null, false, "text", null);
 
@@ -126,8 +127,8 @@ public class BaseFiledManagerTest {
   }
 
   @Test
-  public void testFiledManagerSubNameWithMainColumnNameNoParent() {
-    BaseFieldManager memoryFieldManager = newBaseFieldManager();
+  public void testFiledManagerSubNameWithMainColumnNameNoParent() throws IOException {
+    BaseFieldManager memoryFieldManager = newFieldManager(true);
     try {
       memoryFieldManager.addColumnDefinition("fam1", "col1", "sub1", false, "text", null);
       fail("Should throw IllegalArgumentException");
@@ -136,8 +137,8 @@ public class BaseFiledManagerTest {
   }
 
   @Test
-  public void testFiledManagerSubNameWithMainColumnNameNoFieldLess() {
-    BaseFieldManager memoryFieldManager = newBaseFieldManager();
+  public void testFiledManagerSubNameWithMainColumnNameNoFieldLess() throws IOException {
+    BaseFieldManager memoryFieldManager = newFieldManager(true);
     memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", null);
     try {
       memoryFieldManager.addColumnDefinition("fam1", "col1", "sub1", true, "text", null);
@@ -174,12 +175,17 @@ public class BaseFiledManagerTest {
         .toString(), actual.fieldType().toString());
   }
 
-  private BaseFieldManager newBaseFieldManager() {
+  protected BaseFieldManager newFieldManager(boolean create) throws IOException {
     return new BaseFieldManager(_fieldLessField, new KeywordAnalyzer()) {
       @Override
       protected boolean tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType,
           Map<String, String> props) {
         return true;
+      }
+
+      @Override
+      protected void tryToLoad(String field) {
+
       }
     };
   }

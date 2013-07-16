@@ -4,6 +4,7 @@ import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +33,7 @@ public class SuperParserTest {
   private BaseFieldManager _fieldManager;
 
   @Before
-  public void setup() {
+  public void setup() throws IOException {
     // AnalyzerDefinition ad = new AnalyzerDefinition();
     // ad.setDefaultDefinition(new
     // ColumnDefinition(NoStopWordStandardAnalyzer.class.getName(), true,
@@ -52,12 +53,17 @@ public class SuperParserTest {
     parser = new SuperParser(LUCENE_VERSION, _fieldManager, true, null, ScoreType.SUPER, new Term("_primedoc_"));
   }
 
-  private BaseFieldManager getFieldManager(Analyzer a) {
+  private BaseFieldManager getFieldManager(Analyzer a) throws IOException {
     BaseFieldManager fieldManager = new BaseFieldManager(BlurConstants.SUPER, a) {
       @Override
       protected boolean tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType,
           Map<String, String> props) {
         return true;
+      }
+
+      @Override
+      protected void tryToLoad(String fieldName) {
+
       }
     };
 
@@ -130,7 +136,7 @@ public class SuperParserTest {
   }
 
   @Test
-  public void test5() throws ParseException {
+  public void test5() throws ParseException, IOException {
     parser = new SuperParser(LUCENE_VERSION, getFieldManager(new WhitespaceAnalyzer(LUCENE_VERSION)), true, null,
         ScoreType.SUPER, new Term("_primedoc_"));
     Query query = parser.parse("super:<a.a:a a.d:{e TO f} a.b:b a.test:hello\\<> - super:<g.c:c g.d:d>");

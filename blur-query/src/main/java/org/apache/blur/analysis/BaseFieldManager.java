@@ -16,6 +16,7 @@ package org.apache.blur.analysis;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.blur.analysis.type.DoubleFieldTypeDefinition;
 import org.apache.blur.analysis.type.FloatFieldTypeDefinition;
@@ -50,8 +52,8 @@ public abstract class BaseFieldManager extends FieldManager {
   private static final Log LOG = LogFactory.getLog(BaseFieldManager.class);
   private static final Map<String, String> EMPTY_MAP = new HashMap<String, String>();;
 
-  private final Map<String, Set<String>> _columnToSubColumn = new ConcurrentHashMap<String, Set<String>>();
-  private final Map<String, FieldTypeDefinition> _fieldNameToDefMap = new ConcurrentHashMap<String, FieldTypeDefinition>();
+  private final ConcurrentMap<String, Set<String>> _columnToSubColumn = new ConcurrentHashMap<String, Set<String>>();
+  private final ConcurrentMap<String, FieldTypeDefinition> _fieldNameToDefMap = new ConcurrentHashMap<String, FieldTypeDefinition>();
 
   // This is loaded at object creation and never changed again.
   private final Map<String, Class<? extends FieldTypeDefinition>> _typeMap = new ConcurrentHashMap<String, Class<? extends FieldTypeDefinition>>();
@@ -87,7 +89,12 @@ public abstract class BaseFieldManager extends FieldManager {
     _baseAnalyzerForQuery = new AnalyzerWrapper() {
       @Override
       protected Analyzer getWrappedAnalyzer(String fieldName) {
-        FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(fieldName);
+        FieldTypeDefinition fieldTypeDefinition;
+        try {
+          fieldTypeDefinition = getFieldTypeDefinition(fieldName);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
         if (fieldTypeDefinition == null) {
           return defaultAnalyzerForQuerying;
         }
@@ -103,7 +110,12 @@ public abstract class BaseFieldManager extends FieldManager {
     _baseAnalyzerForIndex = new AnalyzerWrapper() {
       @Override
       protected Analyzer getWrappedAnalyzer(String fieldName) {
-        FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(fieldName);
+        FieldTypeDefinition fieldTypeDefinition;
+        try {
+          fieldTypeDefinition = getFieldTypeDefinition(fieldName);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
         if (fieldTypeDefinition == null) {
           throw new RuntimeException("Field [" + fieldName + "] not found.");
         }
@@ -118,7 +130,7 @@ public abstract class BaseFieldManager extends FieldManager {
   }
 
   @Override
-  public List<Field> getFields(String rowId, Record record) {
+  public List<Field> getFields(String rowId, Record record) throws IOException {
     List<Field> fields = new ArrayList<Field>();
     String family = record.getFamily();
     List<Column> columns = record.getColumns();
@@ -180,7 +192,7 @@ public abstract class BaseFieldManager extends FieldManager {
     fields.add(new Field(_fieldLessField, value, SUPER_FIELD_TYPE));
   }
 
-  private FieldTypeDefinition getFieldTypeDefinition(String family, Column column, String subName) {
+  private FieldTypeDefinition getFieldTypeDefinition(String family, Column column, String subName) throws IOException {
     return getFieldTypeDefinition(getSubColumnName(family, column, subName));
   }
 
@@ -200,13 +212,13 @@ public abstract class BaseFieldManager extends FieldManager {
     return _columnToSubColumn.get(getColumnName(family, column));
   }
 
-  private FieldTypeDefinition getFieldTypeDefinition(String family, Column column) {
+  private FieldTypeDefinition getFieldTypeDefinition(String family, Column column) throws IOException {
     return getFieldTypeDefinition(getColumnName(family, column));
   }
 
   @Override
   public boolean addColumnDefinition(String family, String columnName, String subColumnName, boolean fieldLessIndexing,
-      String fieldType, Map<String, String> props) {
+      String fieldType, Map<String, String> props) throws IOException {
     String baseFieldName = family + "." + columnName;
     String fieldName;
     if (subColumnName != null) {
@@ -230,10 +242,46 @@ public abstract class BaseFieldManager extends FieldManager {
     if (!tryToStore(fieldName, fieldLessIndexing, fieldType, props)) {
       return false;
     }
+    fieldTypeDefinition = newFieldTypeDefinition(fieldLessIndexing, fieldType, props);
+    registerFieldTypeDefinition(fieldName, fieldTypeDefinition);
+    return true;
+  }
+
+  protected void registerFieldTypeDefinition(String fieldName, FieldTypeDefinition fieldTypeDefinition) {
+    _fieldNameToDefMap.put(fieldName, fieldTypeDefinition);
+    String baseFieldName = getBaseFieldName(fieldName);
+    String subColumnName = getSubColumnName(fieldName);
+    if (subColumnName != null) {
+      Set<String> subColumnNames = _columnToSubColumn.get(baseFieldName);
+      if (subColumnNames == null) {
+        subColumnNames = getConcurrentSet();
+        _columnToSubColumn.put(baseFieldName, subColumnNames);
+      }
+      subColumnNames.add(subColumnName);
+    }
+  }
+
+  private String getSubColumnName(String fieldName) {
+    int lastIndexOf = fieldName.lastIndexOf('.');
+    int indexOf = fieldName.indexOf('.');
+    if (indexOf == lastIndexOf) {
+      return null;
+    }
+    return fieldName.substring(lastIndexOf + 1);
+  }
+
+  private String getBaseFieldName(String fieldName) {
+    int indexOf = fieldName.indexOf('.');
+    return fieldName.substring(0, indexOf);
+  }
+
+  protected FieldTypeDefinition newFieldTypeDefinition(boolean fieldLessIndexing, String fieldType,
+      Map<String, String> props) {
     Class<? extends FieldTypeDefinition> clazz = _typeMap.get(fieldType);
     if (clazz == null) {
       throw new IllegalArgumentException("FieldType of [" + fieldType + "] was not found.");
     }
+    FieldTypeDefinition fieldTypeDefinition;
     try {
       fieldTypeDefinition = clazz.newInstance();
     } catch (InstantiationException e) {
@@ -249,26 +297,20 @@ public abstract class BaseFieldManager extends FieldManager {
       fieldTypeDefinition.configure(props);
     }
     fieldTypeDefinition.setFieldLessIndexing(fieldLessIndexing);
-    _fieldNameToDefMap.put(fieldName, fieldTypeDefinition);
-    if (subColumnName != null) {
-      Set<String> subColumnNames = _columnToSubColumn.put(baseFieldName, getConcurrentSet());
-      subColumnNames.add(subColumnName);
-    }
-    return true;
+    return fieldTypeDefinition;
   }
 
   protected abstract boolean tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType,
-      Map<String, String> props);
+      Map<String, String> props) throws IOException;
 
-  protected abstract void tryToLoad(String field, Map<String, FieldTypeDefinition> fieldNameToDefMap,
-      Map<String, Set<String>> columnToSubColumn);
+  protected abstract void tryToLoad(String fieldName) throws IOException;
 
   private Set<String> getConcurrentSet() {
     return Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
   }
 
   @Override
-  public boolean isValidColumnDefinition(String family, String columnName) {
+  public boolean isValidColumnDefinition(String family, String columnName) throws IOException {
     String fieldName = getColumnName(family, columnName);
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(fieldName);
     if (fieldTypeDefinition == null) {
@@ -278,7 +320,7 @@ public abstract class BaseFieldManager extends FieldManager {
   }
 
   @Override
-  public Analyzer getAnalyzerForIndex(String fieldName) {
+  public Analyzer getAnalyzerForIndex(String fieldName) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(fieldName);
     if (fieldTypeDefinition == null) {
       throw new AnalyzerNotFoundException(fieldName);
@@ -287,7 +329,7 @@ public abstract class BaseFieldManager extends FieldManager {
   }
 
   @Override
-  public Analyzer getAnalyzerForQuery(String fieldName) {
+  public Analyzer getAnalyzerForQuery(String fieldName) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(fieldName);
     if (fieldTypeDefinition == null) {
       throw new AnalyzerNotFoundException(fieldName);
@@ -295,31 +337,31 @@ public abstract class BaseFieldManager extends FieldManager {
     return fieldTypeDefinition.getAnalyzerForQuery();
   }
 
-  public void addColumnDefinitionInt(String family, String columnName) {
+  public void addColumnDefinitionInt(String family, String columnName) throws IOException {
     addColumnDefinition(family, columnName, null, false, IntFieldTypeDefinition.NAME, null);
   }
 
-  public void addColumnDefinitionLong(String family, String columnName) {
+  public void addColumnDefinitionLong(String family, String columnName) throws IOException {
     addColumnDefinition(family, columnName, null, false, LongFieldTypeDefinition.NAME, null);
   }
 
-  public void addColumnDefinitionFloat(String family, String columnName) {
+  public void addColumnDefinitionFloat(String family, String columnName) throws IOException {
     addColumnDefinition(family, columnName, null, false, FloatFieldTypeDefinition.NAME, null);
   }
 
-  public void addColumnDefinitionDouble(String family, String columnName) {
+  public void addColumnDefinitionDouble(String family, String columnName) throws IOException {
     addColumnDefinition(family, columnName, null, false, DoubleFieldTypeDefinition.NAME, null);
   }
 
-  public void addColumnDefinitionString(String family, String columnName) {
+  public void addColumnDefinitionString(String family, String columnName) throws IOException {
     addColumnDefinition(family, columnName, null, false, StringFieldTypeDefinition.NAME, null);
   }
 
-  public void addColumnDefinitionText(String family, String columnName) {
+  public void addColumnDefinitionText(String family, String columnName) throws IOException {
     addColumnDefinition(family, columnName, null, false, TextFieldTypeDefinition.NAME, null);
   }
 
-  public void addColumnDefinitionTextFieldLess(String family, String columnName) {
+  public void addColumnDefinitionTextFieldLess(String family, String columnName) throws IOException {
     addColumnDefinition(family, columnName, null, true, TextFieldTypeDefinition.NAME, null);
   }
 
@@ -334,31 +376,32 @@ public abstract class BaseFieldManager extends FieldManager {
   }
 
   @Override
-  public boolean isFieldLessIndexed(String field) {
+  public boolean isFieldLessIndexed(String field) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
     return fieldTypeDefinition.isFieldLessIndexed();
   }
 
   @Override
-  public boolean checkSupportForFuzzyQuery(String field) {
+  public boolean checkSupportForFuzzyQuery(String field) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
     return fieldTypeDefinition.checkSupportForFuzzyQuery();
   }
 
   @Override
-  public boolean checkSupportForPrefixQuery(String field) {
+  public boolean checkSupportForPrefixQuery(String field) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
     return fieldTypeDefinition.checkSupportForPrefixQuery();
   }
 
   @Override
-  public boolean checkSupportForWildcardQuery(String field) {
+  public boolean checkSupportForWildcardQuery(String field) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
     return fieldTypeDefinition.checkSupportForWildcardQuery();
   }
 
   @Override
-  public Query getNewRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
+  public Query getNewRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive)
+      throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
     if (fieldTypeDefinition != null && fieldTypeDefinition.isNumeric()) {
       NumericFieldTypeDefinition numericFieldTypeDefinition = (NumericFieldTypeDefinition) fieldTypeDefinition;
@@ -368,7 +411,7 @@ public abstract class BaseFieldManager extends FieldManager {
   }
 
   @Override
-  public Query getTermQueryIfNumeric(String field, String text) {
+  public Query getTermQueryIfNumeric(String field, String text) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
     if (fieldTypeDefinition != null && fieldTypeDefinition.isNumeric()) {
       NumericFieldTypeDefinition numericFieldTypeDefinition = (NumericFieldTypeDefinition) fieldTypeDefinition;
@@ -378,10 +421,10 @@ public abstract class BaseFieldManager extends FieldManager {
   }
 
   @Override
-  public FieldTypeDefinition getFieldTypeDefinition(String field) {
+  public FieldTypeDefinition getFieldTypeDefinition(String field) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = _fieldNameToDefMap.get(field);
     if (fieldTypeDefinition == null) {
-      tryToLoad(field, _fieldNameToDefMap, _columnToSubColumn);
+      tryToLoad(field);
       fieldTypeDefinition = _fieldNameToDefMap.get(field);
     }
     return fieldTypeDefinition;

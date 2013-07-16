@@ -16,6 +16,7 @@ package org.apache.blur.lucene.search;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -45,9 +46,13 @@ public class BlurQueryParser extends QueryParser {
   @Override
   protected Query newFuzzyQuery(Term term, float minimumSimilarity, int prefixLength) {
     String field = term.field();
-    if (!_fieldManager.checkSupportForFuzzyQuery(field)) {
-      throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
-          + "] which does not support fuzzy queries.");
+    try {
+      if (!_fieldManager.checkSupportForFuzzyQuery(field)) {
+        throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
+            + "] which does not support fuzzy queries.");
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
     return addField(super.newFuzzyQuery(term, minimumSimilarity, prefixLength), term.field());
   }
@@ -85,16 +90,25 @@ public class BlurQueryParser extends QueryParser {
   @Override
   protected Query newPrefixQuery(Term prefix) {
     String field = prefix.field();
-    if (!_fieldManager.checkSupportForPrefixQuery(field)) {
-      throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
-          + "] which does not support prefix queries.");
+    try {
+      if (!_fieldManager.checkSupportForPrefixQuery(field)) {
+        throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
+            + "] which does not support prefix queries.");
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
     return addField(super.newPrefixQuery(prefix), field);
   }
 
   @Override
   protected Query newRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
-    Query q = _fieldManager.getNewRangeQuery(field, part1, part2, startInclusive, endInclusive);
+    Query q;
+    try {
+      q = _fieldManager.getNewRangeQuery(field, part1, part2, startInclusive, endInclusive);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
     if (q != null) {
       return addField(q, field);
     }
@@ -104,7 +118,12 @@ public class BlurQueryParser extends QueryParser {
   @Override
   protected Query newTermQuery(Term term) {
     String field = term.field();
-    Query q = _fieldManager.getTermQueryIfNumeric(field, term.text());
+    Query q;
+    try {
+      q = _fieldManager.getTermQueryIfNumeric(field, term.text());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
     if (q != null) {
       return addField(q, field);
     }
@@ -117,9 +136,13 @@ public class BlurQueryParser extends QueryParser {
       return new MatchAllDocsQuery();
     }
     String field = t.field();
-    if (!_fieldManager.checkSupportForWildcardQuery(field)) {
-      throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
-          + "] which does not support wildcard queries.");
+    try {
+      if (!_fieldManager.checkSupportForWildcardQuery(field)) {
+        throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
+            + "] which does not support wildcard queries.");
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
     return addField(super.newWildcardQuery(t), t.field());
   }

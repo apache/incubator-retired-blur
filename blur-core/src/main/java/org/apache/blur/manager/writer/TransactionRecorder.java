@@ -356,7 +356,7 @@ public class TransactionRecorder extends TimerTask implements Closeable {
     }
   }
 
-  public static List<List<Field>> getDocs(Row row, FieldManager fieldManager) {
+  public static List<List<Field>> getDocs(Row row, FieldManager fieldManager) throws IOException {
     List<Record> records = row.records;
     int size = records.size();
     final String rowId = row.id;

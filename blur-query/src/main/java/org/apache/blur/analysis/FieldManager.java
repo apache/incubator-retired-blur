@@ -16,6 +16,7 @@ package org.apache.blur.analysis;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -32,8 +33,9 @@ public abstract class FieldManager {
    * 
    * @param record
    * @return
+   * @throws IOException 
    */
-  public abstract List<Field> getFields(String rowId, Record record);
+  public abstract List<Field> getFields(String rowId, Record record) throws IOException;
 
   /**
    * Adds a column definition.
@@ -53,9 +55,10 @@ public abstract class FieldManager {
    * @param props
    *          the configuration properties for this column and type.
    * @return 
+   * @throws IOException 
    */
   public abstract boolean addColumnDefinition(String family, String columnName, String subColumnName,
-      boolean fieldLessIndexing, String fieldType, Map<String, String> props);
+      boolean fieldLessIndexing, String fieldType, Map<String, String> props) throws IOException;
 
   /**
    * Gets the analyzer for the indexing process.
@@ -63,8 +66,9 @@ public abstract class FieldManager {
    * @param fieldName
    *          the Lucene field name.
    * @return {@link Analyzer}.
+   * @throws IOException 
    */
-  public abstract Analyzer getAnalyzerForIndex(String fieldName);
+  public abstract Analyzer getAnalyzerForIndex(String fieldName) throws IOException;
 
   /**
    * Gets the analyzer for the querying.
@@ -72,8 +76,9 @@ public abstract class FieldManager {
    * @param fieldName
    *          the Lucene field name.
    * @return {@link Analyzer}.
+   * @throws IOException 
    */
-  public abstract Analyzer getAnalyzerForQuery(String fieldName);
+  public abstract Analyzer getAnalyzerForQuery(String fieldName) throws IOException;
 
   /**
    * Checks if there is a valid column definition for the given family and
@@ -84,8 +89,9 @@ public abstract class FieldManager {
    * @param columnName
    *          the column name.
    * @return boolean
+   * @throws IOException 
    */
-  public abstract boolean isValidColumnDefinition(String family, String columnName);
+  public abstract boolean isValidColumnDefinition(String family, String columnName) throws IOException;
 
   /**
    * Gets an {@link Analyzer} for quering.
@@ -100,8 +106,9 @@ public abstract class FieldManager {
    * @param field
    *          the field name.
    * @return boolean
+   * @throws IOException 
    */
-  public abstract boolean checkSupportForFuzzyQuery(String field);
+  public abstract boolean checkSupportForFuzzyQuery(String field) throws IOException;
 
   /**
    * Checks if this field supports prefix queries.
@@ -109,8 +116,9 @@ public abstract class FieldManager {
    * @param field
    *          the field name.
    * @return boolean
+   * @throws IOException 
    */
-  public abstract boolean checkSupportForPrefixQuery(String field);
+  public abstract boolean checkSupportForPrefixQuery(String field) throws IOException;
 
   /**
    * Checks if this field supports wildcard queries.
@@ -118,8 +126,9 @@ public abstract class FieldManager {
    * @param field
    *          the field name.
    * @return boolean
+   * @throws IOException 
    */
-  public abstract boolean checkSupportForWildcardQuery(String field);
+  public abstract boolean checkSupportForWildcardQuery(String field) throws IOException;
 
   /**
    * Gets a range query, if the method returns null the default term range query
@@ -136,9 +145,10 @@ public abstract class FieldManager {
    * @param endInclusive
    *          if the end is inclusive.
    * @return the new range query or null.
+   * @throws IOException 
    */
   public abstract Query getNewRangeQuery(String field, String part1, String part2, boolean startInclusive,
-      boolean endInclusive);
+      boolean endInclusive) throws IOException;
 
   /**
    * This method should return a query (probably a range query) for numeric
@@ -149,8 +159,9 @@ public abstract class FieldManager {
    * @param text
    *          the text for the term.
    * @return the query or null.
+   * @throws IOException 
    */
-  public abstract Query getTermQueryIfNumeric(String field, String text);
+  public abstract Query getTermQueryIfNumeric(String field, String text) throws IOException;
 
   /**
    * Gets the {@link FieldTypeDefinition} for the given field.
@@ -158,10 +169,11 @@ public abstract class FieldManager {
    * @param field
    *          the field name.
    * @return the {@link FieldTypeDefinition} or null if missing.
+   * @throws IOException 
    */
-  public abstract FieldTypeDefinition getFieldTypeDefinition(String field);
+  public abstract FieldTypeDefinition getFieldTypeDefinition(String field) throws IOException;
 
-  public abstract boolean isFieldLessIndexed(String name);
+  public abstract boolean isFieldLessIndexed(String name) throws IOException;
 
   public abstract Analyzer getAnalyzerForIndex();
   

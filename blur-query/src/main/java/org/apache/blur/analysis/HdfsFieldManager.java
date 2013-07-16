@@ -17,20 +17,24 @@ package org.apache.blur.analysis;
  * limitations under the License.
  */
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.Analyzer;
 
 public class HdfsFieldManager extends BaseFieldManager {
+
+  private static final String FIELD_TYPE = "fieldType";
+  private static final String FIELD_LESS_INDEXING = "fieldLessIndexing";
 
   private static final Log LOG = LogFactory.getLog(HdfsFieldManager.class);
 
@@ -47,43 +51,58 @@ public class HdfsFieldManager extends BaseFieldManager {
   }
 
   @Override
-  protected boolean tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType, Map<String, String> props) {
+  protected boolean tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType, Map<String, String> props)
+      throws IOException {
+    LOG.info("Attempting to store new field [{0}] with fieldLessIndexing [{1}] with type [{2}] and properties [{3}]",
+        fieldName, fieldLessIndexing, fieldType, props);
     Properties properties = new Properties();
-    properties.put("fieldLessIndexing", fieldLessIndexing);
-    properties.put("fieldType", fieldType);
+    properties.setProperty(FIELD_LESS_INDEXING, Boolean.toString(fieldLessIndexing));
+    properties.setProperty(FIELD_TYPE, fieldType);
     if (props != null) {
       for (Entry<String, String> e : props.entrySet()) {
         properties.put(e.getKey(), e.getValue());
       }
     }
-    Path path = new Path(_storagePath, fieldName);
-    try {
-      if (_fileSystem.exists(path)) {
-        return false;
-      }
-    } catch (IOException e) {
-      LOG.error("Could not check filesystem for existence of path [{0}]", e, path);
+    Path path = getFieldPath(fieldName);
+    if (_fileSystem.exists(path)) {
+      LOG.info("Field [{0}] already exists.", fieldName, fieldLessIndexing, fieldType, props);
       return false;
     }
-    try {
-      FSDataOutputStream outputStream = _fileSystem.create(path, false);
-      properties.store(outputStream, getComments());
-      outputStream.close();
-    } catch (IOException e) {
-      LOG.error("Could not create field [" + fieldName + "]", e);
-      return false;
-    }
+    FSDataOutputStream outputStream = _fileSystem.create(path, false);
+    properties.store(outputStream, getComments());
+    outputStream.close();
     return true;
   }
 
+  private Path getFieldPath(String fieldName) {
+    return new Path(_storagePath, fieldName);
+  }
+
   private String getComments() {
-    return null;
+    return "This file is generated from Apache Blur to store meta data about field types.  DO NOT MODIFIY!";
   }
 
   @Override
-  protected void tryToLoad(String field, Map<String, FieldTypeDefinition> fieldNameToDefMap,
-      Map<String, Set<String>> columnToSubColumn) {
-    
+  protected void tryToLoad(String fieldName) throws IOException {
+    Path path = getFieldPath(fieldName);
+    if (!_fileSystem.exists(path)) {
+      return;
+    }
+    FSDataInputStream inputStream = _fileSystem.open(path);
+    Properties props = new Properties();
+    props.load(inputStream);
+    inputStream.close();
+    boolean fieldLessIndexing = Boolean.parseBoolean(props.getProperty(FIELD_LESS_INDEXING));
+    String fieldType = props.getProperty(FIELD_TYPE);
+    FieldTypeDefinition fieldTypeDefinition = newFieldTypeDefinition(fieldLessIndexing, fieldType, toMap(props));
+    registerFieldTypeDefinition(fieldName, fieldTypeDefinition);
   }
 
+  private Map<String, String> toMap(Properties props) {
+    Map<String, String> result = new HashMap<String, String>();
+    for (Entry<Object, Object> e : props.entrySet()) {
+      result.put(e.getKey().toString(), e.getValue().toString());
+    }
+    return result;
+  }
 }

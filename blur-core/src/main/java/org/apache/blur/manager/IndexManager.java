@@ -142,6 +142,7 @@ public class IndexManager {
   private Meter _queriesExternalMeter;
   private Meter _queriesInternalMeter;
   private Timer _fetchTimer;
+  private int _fetchCount = 100;
 
   public static AtomicBoolean DEBUG_RUN_SLOW = new AtomicBoolean(false);
 
@@ -386,7 +387,7 @@ public class IndexManager {
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer, context, postFilter,
             preFilter);
         call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
-            _queriesInternalMeter, shardServerContext, runSlow);
+            _queriesInternalMeter, shardServerContext, runSlow, _fetchCount);
       } else {
         Query query = getQuery(blurQuery.expertQuery);
         Filter filter = getFilter(blurQuery.expertQuery);
@@ -398,7 +399,7 @@ public class IndexManager {
         }
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer, context, null, null);
         call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
-            _queriesInternalMeter, shardServerContext, runSlow);
+            _queriesInternalMeter, shardServerContext, runSlow, _fetchCount);
       }
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
       return ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
@@ -1071,10 +1072,11 @@ public class IndexManager {
     private final Meter _queriesInternalMeter;
     private final ShardServerContext _shardServerContext;
     private final boolean _runSlow;
+    private final int _fetchCount;
 
     public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, IndexServer indexServer,
         Query query, Selector selector, Meter queriesInternalMeter, ShardServerContext shardServerContext,
-        boolean runSlow) {
+        boolean runSlow, int fetchCount) {
       _running = running;
       _table = table;
       _status = status;
@@ -1084,6 +1086,7 @@ public class IndexManager {
       _queriesInternalMeter = queriesInternalMeter;
       _shardServerContext = shardServerContext;
       _runSlow = runSlow;
+      _fetchCount = fetchCount;
     }
 
     @Override
@@ -1115,7 +1118,7 @@ public class IndexManager {
         // BlurResultIterableSearcher will close searcher, if shard server
         // context is null.
         return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector,
-            _shardServerContext == null, _runSlow);
+            _shardServerContext == null, _runSlow, _fetchCount);
       } catch (BlurException e) {
         switch (_status.getQueryStatus().getState()) {
         case INTERRUPTED:
@@ -1165,6 +1168,10 @@ public class IndexManager {
 
   public void setClusterStatus(ClusterStatus clusterStatus) {
     _clusterStatus = clusterStatus;
+  }
+  
+  public void setFetchCount(int fetchCount) {
+    _fetchCount = fetchCount;
   }
 
 }

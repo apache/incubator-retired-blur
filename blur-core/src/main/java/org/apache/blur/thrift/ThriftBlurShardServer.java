@@ -206,6 +206,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexManager.setThreadCount(configuration.getInt(BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT, 32));
     indexManager.setFilterCache(filterCache);
     indexManager.setClusterStatus(clusterStatus);
+    indexManager.setFetchCount(configuration.getInt(BLUR_SHARD_FETCHCOUNT, 100));
     indexManager.init();
 
     final BlurShardServer shardServer = new BlurShardServer();

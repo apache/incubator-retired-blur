@@ -43,7 +43,7 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
   private String _shard;
   private long _skipTo;
   private String _table;
-  private int _fetchCount = 1000;
+  private final int _fetchCount;
 
   private IteratorConverter<ScoreDoc, BlurResult, BlurException> _iterator;
   private final Selector _selector;
@@ -56,7 +56,7 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
   private final boolean _runSlow;
 
   public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard,
-      IndexSearcherClosable searcher, Selector selector, boolean closeSearcher, boolean runSlow) throws BlurException {
+      IndexSearcherClosable searcher, Selector selector, boolean closeSearcher, boolean runSlow, int fetchCount) throws BlurException {
     _running = running;
     _table = table;
     _query = query;
@@ -65,6 +65,7 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
     _selector = selector;
     _closeSearcher = closeSearcher;
     _runSlow = runSlow;
+    _fetchCount = fetchCount;
     performSearch();
   }
 

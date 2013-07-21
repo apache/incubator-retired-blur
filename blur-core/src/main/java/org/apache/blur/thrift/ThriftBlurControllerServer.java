@@ -50,6 +50,7 @@ import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.metrics.ReporterSetup;
+import org.apache.blur.server.ControllerServerEventHandler;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
@@ -120,9 +121,11 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     controllerServer.init();
 
-    Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(controllerServer, Iface.class);
+    Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(controllerServer, Iface.class, true);
 
     int threadCount = configuration.getInt(BLUR_CONTROLLER_SERVER_THRIFT_THREAD_COUNT, 32);
+    
+    ControllerServerEventHandler eventHandler = new ControllerServerEventHandler();
 
     final ThriftBlurControllerServer server = new ThriftBlurControllerServer();
     server.setNodeName(nodeName);
@@ -130,6 +133,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     server.setBindAddress(bindAddress);
     server.setBindPort(bindPort);
     server.setThreadCount(threadCount);
+    server.setEventHandler(eventHandler);
     server.setIface(iface);
 
     int baseGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_CONTROLLER_PORT));

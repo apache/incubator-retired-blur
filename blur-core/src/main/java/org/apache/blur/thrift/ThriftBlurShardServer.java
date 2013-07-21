@@ -218,7 +218,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.setConfiguration(configuration);
     shardServer.init();
 
-    Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(shardServer, Iface.class);
+    Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(shardServer, Iface.class, false);
     if (httpServer != null) {
       WebAppContext context = httpServer.getContext();
       context.addServlet(new ServletHolder(new TServlet(new Blur.Processor<Blur.Iface>(iface),

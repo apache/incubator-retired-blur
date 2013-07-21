@@ -33,9 +33,11 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +48,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.regex.Pattern;
 
@@ -56,6 +59,8 @@ import org.apache.blur.manager.results.BlurResultComparator;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.results.BlurResultPeekableIteratorComparator;
 import org.apache.blur.manager.results.PeekableIterator;
+import org.apache.blur.server.ControllerServerContext;
+import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TBase;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
@@ -74,6 +79,7 @@ import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.Selector;
+import org.apache.blur.thrift.util.ResetableTMemoryBuffer;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -104,6 +110,9 @@ import com.yammer.metrics.core.MetricName;
 
 public class BlurUtil {
 
+  private static final Log REQUEST_LOG = LogFactory.getLog("REQUEST_LOG");
+  private static final Log RESPONSE_LOG = LogFactory.getLog("RESPONSE_LOG");
+
   private static final Object[] EMPTY_OBJECT_ARRAY = new Object[] {};
   private static final Class<?>[] EMPTY_PARAMETER_TYPES = new Class[] {};
   private static final Log LOG = LogFactory.getLog(BlurUtil.class);
@@ -113,29 +122,148 @@ public class BlurUtil {
   public static final Comparator<? super PeekableIterator<BlurResult, BlurException>> HITS_PEEKABLE_ITERATOR_COMPARATOR = new BlurResultPeekableIteratorComparator();
   public static final Comparator<? super BlurResult> HITS_COMPARATOR = new BlurResultComparator();
   public static final Term PRIME_DOC_TERM = new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE);
+  
+  static class LoggerArgsState {
+    public LoggerArgsState(int size) {
+      _buffer = new ResetableTMemoryBuffer(size);
+      _tjsonProtocol = new TJSONProtocol(_buffer);
+    }
+    TJSONProtocol _tjsonProtocol;
+    ResetableTMemoryBuffer _buffer;
+    StringBuilder _builder = new StringBuilder();
+  }
 
   @SuppressWarnings("unchecked")
-  public static <T extends Iface> T recordMethodCallsAndAverageTimes(final T t, Class<T> clazz) {
+  public static <T extends Iface> T recordMethodCallsAndAverageTimes(final T t, Class<T> clazz, final boolean controller) {
     final Map<String, Histogram> histogramMap = new ConcurrentHashMap<String, Histogram>();
     Method[] declaredMethods = Iface.class.getDeclaredMethods();
     for (Method m : declaredMethods) {
       String name = m.getName();
       histogramMap.put(name, Metrics.newHistogram(new MetricName(ORG_APACHE_BLUR, BLUR, name, THRIFT_CALLS)));
     }
+    final String prefix = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
     InvocationHandler handler = new InvocationHandler() {
+      private final AtomicLong _requestCounter = new AtomicLong();
+      private ThreadLocal<LoggerArgsState> _loggerArgsState = new ThreadLocal<LoggerArgsState>() {
+        @Override
+        protected LoggerArgsState initialValue() {
+          return new LoggerArgsState(1024);
+        }
+      };
+
       @Override
       public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        long requestNumber = _requestCounter.incrementAndGet();
+        String requestId = prefix + "-" + requestNumber;
+        String connectionString;
+        if (controller) {
+          ControllerServerContext controllerServerContext = ControllerServerContext.getShardServerContext();
+          connectionString = controllerServerContext.getConnectionString();
+        } else {
+          ShardServerContext shardServerContext = ShardServerContext.getShardServerContext();
+          connectionString = shardServerContext.getConnectionString();
+        }
+        String argsStr = null;
         long start = System.nanoTime();
+        String name = method.getName();
+        boolean error = false;
+        LoggerArgsState loggerArgsState = null;
         try {
+          if (REQUEST_LOG.isInfoEnabled()) {
+            if (argsStr == null) {
+              loggerArgsState = _loggerArgsState.get();
+              argsStr = getArgsStr(args, name, loggerArgsState);
+            }
+            REQUEST_LOG.info(requestId + "\t" + connectionString + "\t" + name + "\t" + argsStr);
+          }
           return method.invoke(t, args);
         } catch (InvocationTargetException e) {
+          error = true;
           throw e.getTargetException();
         } finally {
           long end = System.nanoTime();
-          String name = method.getName();
+          double ms = (end - start) / 1000000.0;
+          if (RESPONSE_LOG.isInfoEnabled()) {
+            if (argsStr == null) {
+              if (loggerArgsState == null) {
+                loggerArgsState = _loggerArgsState.get();
+              }
+              argsStr = getArgsStr(args, name, loggerArgsState);
+            }
+            if (error) {
+              RESPONSE_LOG.info(requestId + "\t" + connectionString + "\tERROR\t" + name + "\t" + ms + "\t" + argsStr);
+            } else {
+              RESPONSE_LOG
+                  .info(requestId + "\t" + connectionString + "\tSUCCESS\t" + name + "\t" + ms + "\t" + argsStr);
+            }
+          }
           Histogram histogram = histogramMap.get(name);
           histogram.update((end - start) / 1000);
         }
+      }
+
+      private String getArgsStr(Object[] args, String name, LoggerArgsState loggerArgsState) {
+        String argsStr;
+        if (name.equals("mutate")) {
+          RowMutation rowMutation = (RowMutation) args[0];
+          if (rowMutation == null) {
+            argsStr = "[null]";
+          } else {
+            argsStr = "[" + rowMutation.getTable() + "," + rowMutation.getRowId() + "]";
+          }
+        } else if (name.equals("mutateBatch")) {
+          argsStr = "[Batch Update]";
+        } else {
+          argsStr = getArgsStr(args, loggerArgsState);
+        }
+        return argsStr;
+      }
+
+      private String getArgsStr(Object[] args, LoggerArgsState loggerArgsState) {
+        if (args == null) {
+          return null;
+        }
+        StringBuilder builder = loggerArgsState._builder;
+        builder.setLength(0);
+        for (Object o : args) {
+          if (builder.length() == 0) {
+            builder.append('[');
+          } else {
+            builder.append(',');
+          }
+          builder.append(getArgsStr(o, loggerArgsState));
+        }
+        if (builder.length() != 0) {
+          builder.append(']');
+        }
+        return builder.toString();
+      }
+
+      @SuppressWarnings("rawtypes")
+      private String getArgsStr(Object o, LoggerArgsState loggerArgsState) {
+        if (o == null) {
+          return null;
+        }
+        if (o instanceof TBase) {
+          return getArgsStr((TBase) o, loggerArgsState);
+        }
+        return o.toString();
+      }
+
+      @SuppressWarnings("rawtypes")
+      private String getArgsStr(TBase o, LoggerArgsState loggerArgsState) {
+        ResetableTMemoryBuffer buffer = loggerArgsState._buffer;
+        TJSONProtocol tjsonProtocol = loggerArgsState._tjsonProtocol;
+        buffer.resetBuffer();
+        tjsonProtocol.reset();
+        try {
+          o.write(tjsonProtocol);
+        } catch (TException e) {
+          LOG.error("Unknown error tyring to write object [{0}] to json.", e, o);
+        }
+        byte[] array = buffer.getArray();
+        int length = buffer.length();
+        return new String(array, 0, length);
       }
     };
     return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[] { clazz }, handler);
@@ -673,10 +801,11 @@ public class BlurUtil {
   public static String getPid() {
     return ManagementFactory.getRuntimeMXBean().getName();
   }
-  
-//  public static <T> BlurIterator<T, BlurException> convert(final Iterator<T> iterator) {
-//    return convert(iterator, BlurException.class);
-//  }
+
+  // public static <T> BlurIterator<T, BlurException> convert(final Iterator<T>
+  // iterator) {
+  // return convert(iterator, BlurException.class);
+  // }
 
   public static <T, E extends Exception> BlurIterator<T, E> convert(final Iterator<T> iterator) {
     return new BlurIterator<T, E>() {

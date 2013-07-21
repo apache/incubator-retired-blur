@@ -318,7 +318,7 @@ public abstract class AbstractNonblockingServer extends TServer {
       outProt_ = outputProtocolFactory_.getProtocol(outTrans_);
 
       if (eventHandler_ != null) {
-        context_ = eventHandler_.createContext(inProt_, outProt_);
+        context_ = eventHandler_.createContext(inProt_, outProt_, selectionKey);
       } else {
         context_  = null;
       }

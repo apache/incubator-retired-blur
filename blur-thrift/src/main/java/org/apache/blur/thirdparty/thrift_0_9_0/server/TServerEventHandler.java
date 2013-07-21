@@ -38,9 +38,10 @@ public interface TServerEventHandler {
 
   /**
    * Called when a new client has connected and is about to being processing.
+   * @param frameBuffer 
    */
   ServerContext createContext(TProtocol input,
-                              TProtocol output);
+                              TProtocol output, Object frameBuffer);
 
   /**
    * Called when a client has finished request-handling to delete server

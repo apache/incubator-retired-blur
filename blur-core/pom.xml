@@ -157,6 +157,16 @@ under the License.
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-client</artifactId>
+					<version>${hadoop.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-core</artifactId>
+					<version>${hadoop.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hadoop</groupId>
 					<artifactId>hadoop-test</artifactId>
 					<version>${hadoop.version}</version>
 					<scope>test</scope>
@@ -166,16 +176,6 @@ under the License.
 					<artifactId>hadoop-minicluster</artifactId>
 					<version>${hadoop.version}</version>
 					<scope>test</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.hadoop</groupId>
-					<artifactId>hadoop-core</artifactId>
-					<version>${hadoop.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.hadoop</groupId>
-					<artifactId>hadoop-client</artifactId>
-					<version>${hadoop.version}</version>
 				</dependency>
 			</dependencies>
 		</profile>

@@ -77,12 +77,6 @@ under the License.
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.mrunit</groupId>
-			<artifactId>mrunit</artifactId>
-			<version>${mrunit.version}</version>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 
 	<repositories>
@@ -130,14 +124,44 @@ under the License.
 					<version>${hadoop.version}</version>
 					<scope>test</scope>
 				</dependency>
+				<dependency>
+				      <groupId>org.apache.mrunit</groupId>
+				      <artifactId>mrunit</artifactId>
+				      <version>${mrunit.version}</version>
+				      <classifier>hadoop1</classifier>
+					  <scope>test</scope>
+                </dependency>
 			</dependencies>
 		</profile>
 		<profile>
 			<id>cdh4-mr1</id>
 			<dependencies>
 				<dependency>
+				      <groupId>org.apache.mrunit</groupId>
+				      <artifactId>mrunit</artifactId>
+				      <version>${mrunit.version}</version>
+				      <classifier>hadoop1</classifier>
+					  <scope>test</scope>
+                </dependency>
+				<dependency>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-client</artifactId>
+					<version>${hadoop.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-core</artifactId>
+					<version>${hadoop.version}</version>
+				</dependency>
+				<dependency>
 					<groupId>org.apache.hadoop</groupId>
 					<artifactId>hadoop-test</artifactId>
+					<version>${hadoop.version}</version>
+					<scope>test</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-minicluster</artifactId>
 					<version>${hadoop.version}</version>
 					<scope>test</scope>
 				</dependency>

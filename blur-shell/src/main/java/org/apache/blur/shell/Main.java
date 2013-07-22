@@ -133,11 +133,26 @@ public class Main {
       if (args.length != 2) {
         throw new CommandException("Invalid args: " + help());
       }
-      cluster = args[1];
-      out.println("cluster is now " + cluster);
+      String clusterNamePassed = args[1];
+      if(validateClusterName(client, clusterNamePassed)) {
+    	  cluster = clusterNamePassed;
+    	  out.println("cluster is now " + cluster);
+      }else{
+    	  out.println("[ " + clusterNamePassed + " ]"+" is not a valid cluster name.");
+      }
     }
 
-    @Override
+    private boolean validateClusterName(Iface client, String clusterName) throws BlurException, TException {
+    	List<String> clusterNamesList = client.shardClusterList();
+    	if(clusterNamesList != null && !clusterNamesList.isEmpty()){
+    		if(clusterNamesList.contains(clusterName)){
+    			return true;
+    		}
+    	}
+    	return false;
+	}
+
+	@Override
     public String help() {
       return "set the cluster in use, args; clustername";
     }

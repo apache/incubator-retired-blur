@@ -39,6 +39,7 @@ import jline.console.completer.StringsCompleter;
 import org.apache.blur.shell.Command.CommandException;
 import org.apache.blur.shell.Main.QuitCommand.QuitCommandException;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.BadConnectionException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.Connection;
 import org.apache.blur.thrift.generated.Blur;
@@ -387,7 +388,9 @@ public class Main {
                 if (debug) {
                   e.printStackTrace(out);
                 }
-              } finally {
+              }catch (BadConnectionException e){
+            	  out.println(e.getMessage());
+              }finally {
                 if (timed) {
                   out.println("Last command took " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) + "ms");
                 }
@@ -407,6 +410,8 @@ public class Main {
         } catch (BlurException e) {
           out.println(e.getMessage());
           e.printStackTrace(out);
+        } catch (BadConnectionException e){
+      	  out.println(e.getMessage());
         }
         out.close();
         return;

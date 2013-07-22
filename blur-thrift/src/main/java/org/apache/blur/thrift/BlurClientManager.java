@@ -196,7 +196,7 @@ public class BlurClientManager {
         connectionErrorCount++;
         LOG.error("All connections are bad [" + connectionErrorCount + "].");
         if (connectionErrorCount >= maxRetries) {
-          throw new IOException("All connections are bad.");
+          throw new BadConnectionException("Could not connect to controller/shard server. All connections are bad.");
         }
         try {
           Thread.sleep(1000);

@@ -606,7 +606,7 @@ Selector = function(args) {
   this.columnsToFetch = null;
   this.allowStaleData = null;
   this.startRecord = 0;
-  this.maxRecordsToFetch = 2147483647;
+  this.maxRecordsToFetch = 1000;
   this.highlightOptions = null;
   if (args) {
     if (args.recordOnly !== undefined) {

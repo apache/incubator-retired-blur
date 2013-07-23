@@ -111,8 +111,8 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
   /**
    * Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
    * and you want the first 100, then this value is 100.  If you want records 300-400 then this value
-   * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the
-   * records in the row, be careful.
+   * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch the first
+   * 1000 records of the row.
    */
   public int maxRecordsToFetch; // required
   /**
@@ -161,8 +161,8 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
     /**
      * Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
      * and you want the first 100, then this value is 100.  If you want records 300-400 then this value
-     * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the
-     * records in the row, be careful.
+     * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch the first
+     * 1000 records of the row.
      */
     MAX_RECORDS_TO_FETCH((short)9, "maxRecordsToFetch"),
     /**
@@ -282,7 +282,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
   public Selector() {
     this.startRecord = 0;
 
-    this.maxRecordsToFetch = 2147483647;
+    this.maxRecordsToFetch = 1000;
 
   }
 
@@ -380,7 +380,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
     this.allowStaleData = false;
     this.startRecord = 0;
 
-    this.maxRecordsToFetch = 2147483647;
+    this.maxRecordsToFetch = 1000;
 
     this.highlightOptions = null;
   }
@@ -659,8 +659,8 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
   /**
    * Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
    * and you want the first 100, then this value is 100.  If you want records 300-400 then this value
-   * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the
-   * records in the row, be careful.
+   * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch the first
+   * 1000 records of the row.
    */
   public int getMaxRecordsToFetch() {
     return this.maxRecordsToFetch;
@@ -669,8 +669,8 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
   /**
    * Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
    * and you want the first 100, then this value is 100.  If you want records 300-400 then this value
-   * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the
-   * records in the row, be careful.
+   * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch the first
+   * 1000 records of the row.
    */
   public Selector setMaxRecordsToFetch(int maxRecordsToFetch) {
     this.maxRecordsToFetch = maxRecordsToFetch;

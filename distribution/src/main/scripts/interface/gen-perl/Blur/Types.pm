@@ -680,7 +680,7 @@ sub new {
   $self->{columnsToFetch} = undef;
   $self->{allowStaleData} = undef;
   $self->{startRecord} = 0;
-  $self->{maxRecordsToFetch} = 2147483647;
+  $self->{maxRecordsToFetch} = 1000;
   $self->{highlightOptions} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{recordOnly}) {

@@ -258,9 +258,9 @@ module Blur
       STARTRECORD => {:type => ::Thrift::Types::I32, :name => 'startRecord', :default => 0},
       # Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
 # and you want the first 100, then this value is 100.  If you want records 300-400 then this value
-# would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the
-# records in the row, be careful.
-      MAXRECORDSTOFETCH => {:type => ::Thrift::Types::I32, :name => 'maxRecordsToFetch', :default => 2147483647},
+# would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch the first
+# 1000 records of the row.
+      MAXRECORDSTOFETCH => {:type => ::Thrift::Types::I32, :name => 'maxRecordsToFetch', :default => 1000},
       # The HighlightOptions object controls how the data is highlighted.  If null no highlighting will occur.
       HIGHLIGHTOPTIONS => {:type => ::Thrift::Types::STRUCT, :name => 'highlightOptions', :class => ::Blur::HighlightOptions}
     }

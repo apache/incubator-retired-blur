@@ -51,7 +51,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.AnalyzerWrapper;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
-import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.document.DoubleField;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
@@ -120,7 +119,7 @@ public final class BlurAnalyzer extends AnalyzerWrapper {
     _analyzers.put(RECORD_ID, new KeywordAnalyzer());
     _analyzers.put(PRIME_DOC, new KeywordAnalyzer());
     _analyzers.put(FAMILY, new KeywordAnalyzer());
-    _analyzers.put(SUPER, new WhitespaceAnalyzer(LUCENE_VERSION));
+    _analyzers.put(SUPER, new NoStopWordStandardAnalyzer());
     load(_analyzers, _analyzerDefinition.columnFamilyDefinitions, _fullTextFields, _subIndexNameLookups,
         _subIndexNames, _fullTextColumnFamilies, _typeLookup, _fieldTypes);
   }

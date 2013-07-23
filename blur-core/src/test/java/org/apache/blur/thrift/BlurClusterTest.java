@@ -65,7 +65,8 @@ import org.junit.Test;
 
 public class BlurClusterTest {
 
-  private static final long _20MB = 20 * 1000 * 1000;
+  private static final int _1MB = 1000 * 1000;
+  private static final int _20MB = 20 * _1MB;
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp_BlurClusterTest"));
 
   @BeforeClass
@@ -185,7 +186,7 @@ public class BlurClusterTest {
     }).start();
     Thread.sleep(500);
     client.cancelQuery("test", blurQueryRow.getUuid());
-    BlurException blurException = pollForError(error, 10, TimeUnit.SECONDS);
+    BlurException blurException = pollForError(error, 10, TimeUnit.SECONDS, null);
     if (fail.get()) {
       fail("Unknown error, failing test.");
     }
@@ -235,26 +236,35 @@ public class BlurClusterTest {
       }
     }).start();
     Thread.sleep(500);
-    byte[] bufferToPutGcWatcherOverLimit = new byte[(int) _20MB];
-    BlurException blurException = pollForError(error, 10, TimeUnit.SECONDS);
+    List<byte[]> bufferToPutGcWatcherOverLimitList = new ArrayList<byte[]>();
+    BlurException blurException = pollForError(error, 10, TimeUnit.SECONDS, bufferToPutGcWatcherOverLimitList);
     if (fail.get()) {
       fail("Unknown error, failing test.");
     }
     System.out.println(bufferToFillHeap.hashCode());
-    System.out.println(bufferToPutGcWatcherOverLimit.hashCode());
+    System.out.println(bufferToPutGcWatcherOverLimitList.hashCode());
     assertEquals(blurException.getErrorType(), ErrorType.BACK_PRESSURE);
+    bufferToPutGcWatcherOverLimitList.clear();
+    bufferToPutGcWatcherOverLimitList = null;
+    bufferToFillHeap = null;
   }
 
-  private BlurException pollForError(AtomicReference<BlurException> error, long period, TimeUnit timeUnit)
-      throws InterruptedException {
+  private BlurException pollForError(AtomicReference<BlurException> error, long period, TimeUnit timeUnit,
+      List<byte[]> bufferToPutGcWatcherOverLimitList) throws InterruptedException {
     long s = System.nanoTime();
     long totalTime = timeUnit.toNanos(period) + s;
+    if (bufferToPutGcWatcherOverLimitList != null) {
+      bufferToPutGcWatcherOverLimitList.add(new byte[_1MB * 5]);
+    }
     while (totalTime > System.nanoTime()) {
       BlurException blurException = error.get();
       if (blurException != null) {
         return blurException;
       }
       Thread.sleep(500);
+      if (bufferToPutGcWatcherOverLimitList != null) {
+        bufferToPutGcWatcherOverLimitList.add(new byte[_1MB * 5]);
+      }
     }
     return null;
   }

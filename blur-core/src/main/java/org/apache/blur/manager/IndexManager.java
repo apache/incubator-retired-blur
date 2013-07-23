@@ -199,11 +199,13 @@ public class IndexManager {
       Map<String, BlurIndex> blurIndexes = _indexServer.getIndexes(table);
       if (blurIndexes == null) {
         LOG.error("Table [{0}] not found", table);
+        //@TODO probably should make a enum for not found on this server so the controller knows to try another server.
         throw new BException("Table [" + table + "] not found");
       }
       index = blurIndexes.get(shard);
       if (index == null) {
         LOG.error("Shard [{0}] not found in table [{1}]", shard, table);
+        //@TODO probably should make a enum for not found on this server so the controller knows to try another server.
         throw new BException("Shard [" + shard + "] not found in table [" + table + "]");
       }
     } catch (BlurException e) {

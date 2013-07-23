@@ -143,6 +143,7 @@ public class IndexManager {
   private Meter _queriesInternalMeter;
   private Timer _fetchTimer;
   private int _fetchCount = 100;
+  private int _maxHeapPerRowFetch = 10000000;
 
   public static AtomicBoolean DEBUG_RUN_SLOW = new AtomicBoolean(false);
 
@@ -230,7 +231,7 @@ public class IndexManager {
 
       Query highlightQuery = getHighlightQuery(selector, table, analyzer);
 
-      fetchRow(searcher.getIndexReader(), table, selector, fetchResult, highlightQuery, analyzer);
+      fetchRow(searcher.getIndexReader(), table, shard, selector, fetchResult, highlightQuery, analyzer, _maxHeapPerRowFetch);
       if (fetchResult.rowResult != null) {
         if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
           _recordsMeter.mark(fetchResult.rowResult.row.records.size());
@@ -389,7 +390,7 @@ public class IndexManager {
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer, context, postFilter,
             preFilter);
         call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
-            _queriesInternalMeter, shardServerContext, runSlow, _fetchCount);
+            _queriesInternalMeter, shardServerContext, runSlow, _fetchCount, _maxHeapPerRowFetch);
       } else {
         Query query = getQuery(blurQuery.expertQuery);
         Filter filter = getFilter(blurQuery.expertQuery);
@@ -401,7 +402,7 @@ public class IndexManager {
         }
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer, context, null, null);
         call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
-            _queriesInternalMeter, shardServerContext, runSlow, _fetchCount);
+            _queriesInternalMeter, shardServerContext, runSlow, _fetchCount, _maxHeapPerRowFetch);
       }
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
       return ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
@@ -506,13 +507,13 @@ public class IndexManager {
     return _statusManager.queryStatusIdList(table);
   }
 
-  public static void fetchRow(IndexReader reader, String table, Selector selector, FetchResult fetchResult,
-      Query highlightQuery) throws CorruptIndexException, IOException {
-    fetchRow(reader, table, selector, fetchResult, highlightQuery, null);
+  public static void fetchRow(IndexReader reader, String table, String shard, Selector selector, FetchResult fetchResult,
+      Query highlightQuery, int maxHeap) throws CorruptIndexException, IOException {
+    fetchRow(reader, table, shard, selector, fetchResult, highlightQuery, null, maxHeap);
   }
 
-  public static void fetchRow(IndexReader reader, String table, Selector selector, FetchResult fetchResult,
-      Query highlightQuery, BlurAnalyzer analyzer) throws CorruptIndexException, IOException {
+  public static void fetchRow(IndexReader reader, String table, String shard, Selector selector, FetchResult fetchResult,
+      Query highlightQuery, BlurAnalyzer analyzer, int maxHeap) throws CorruptIndexException, IOException {
     fetchResult.table = table;
     String locationId = selector.locationId;
     int lastSlash = locationId.lastIndexOf('/');
@@ -578,7 +579,7 @@ public class IndexManager {
             docs = HighlightHelper.highlightDocuments(reader, term, fieldVisitor, selector, highlightQuery, analyzer,
                 preTag, postTag);
           } else {
-            docs = BlurUtil.fetchDocuments(reader, term, fieldVisitor, selector);
+            docs = BlurUtil.fetchDocuments(reader, term, fieldVisitor, selector, maxHeap, table + "/" + shard);
           }
           fetchResult.rowResult = new FetchRowResult(getRow(docs));
         }
@@ -1075,10 +1076,11 @@ public class IndexManager {
     private final ShardServerContext _shardServerContext;
     private final boolean _runSlow;
     private final int _fetchCount;
+    private final int _maxHeapPerRowFetch;
 
     public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, IndexServer indexServer,
         Query query, Selector selector, Meter queriesInternalMeter, ShardServerContext shardServerContext,
-        boolean runSlow, int fetchCount) {
+        boolean runSlow, int fetchCount, int maxHeapPerRowFetch) {
       _running = running;
       _table = table;
       _status = status;
@@ -1089,6 +1091,7 @@ public class IndexManager {
       _shardServerContext = shardServerContext;
       _runSlow = runSlow;
       _fetchCount = fetchCount;
+      _maxHeapPerRowFetch = maxHeapPerRowFetch;
     }
 
     @Override
@@ -1120,7 +1123,7 @@ public class IndexManager {
         // BlurResultIterableSearcher will close searcher, if shard server
         // context is null.
         return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector,
-            _shardServerContext == null, _runSlow, _fetchCount);
+            _shardServerContext == null, _runSlow, _fetchCount, _maxHeapPerRowFetch);
       } catch (BlurException e) {
         switch (_status.getQueryStatus().getState()) {
         case INTERRUPTED:
@@ -1175,5 +1178,10 @@ public class IndexManager {
   public void setFetchCount(int fetchCount) {
     _fetchCount = fetchCount;
   }
+  
+  public void setMaxHeapPerRowFetch(int maxHeapPerRowFetch) {
+    _maxHeapPerRowFetch = maxHeapPerRowFetch;
+  }
+  
 
 }

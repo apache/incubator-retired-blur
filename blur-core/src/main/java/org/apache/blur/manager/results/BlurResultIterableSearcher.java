@@ -54,9 +54,11 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
   private final AtomicBoolean _running;
   private final boolean _closeSearcher;
   private final boolean _runSlow;
+  private final int _maxHeapPerRowFetch;
 
   public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard,
-      IndexSearcherClosable searcher, Selector selector, boolean closeSearcher, boolean runSlow, int fetchCount) throws BlurException {
+      IndexSearcherClosable searcher, Selector selector, boolean closeSearcher, boolean runSlow, int fetchCount,
+      int maxHeapPerRowFetch) throws BlurException {
     _running = running;
     _table = table;
     _query = query;
@@ -66,6 +68,7 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
     _closeSearcher = closeSearcher;
     _runSlow = runSlow;
     _fetchCount = fetchCount;
+    _maxHeapPerRowFetch = maxHeapPerRowFetch;
     performSearch();
   }
 
@@ -91,7 +94,9 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
     _selector.setLocationId(resolveId);
     IndexManager.validSelector(_selector);
     try {
-      IndexManager.fetchRow(_searcher.getIndexReader(), _table, _selector, fetchResult, null);
+
+      IndexManager.fetchRow(_searcher.getIndexReader(), _table, _shard, _selector, fetchResult, null,
+          _maxHeapPerRowFetch);
     } catch (IOException e) {
       throw new BlurException("Unknown IO error", null, ErrorType.UNKNOWN);
     }

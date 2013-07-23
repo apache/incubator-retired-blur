@@ -122,12 +122,13 @@ public class BlurUtil {
   public static final Comparator<? super PeekableIterator<BlurResult, BlurException>> HITS_PEEKABLE_ITERATOR_COMPARATOR = new BlurResultPeekableIteratorComparator();
   public static final Comparator<? super BlurResult> HITS_COMPARATOR = new BlurResultComparator();
   public static final Term PRIME_DOC_TERM = new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE);
-  
+
   static class LoggerArgsState {
     public LoggerArgsState(int size) {
       _buffer = new ResetableTMemoryBuffer(size);
       _tjsonProtocol = new TJSONProtocol(_buffer);
     }
+
     TJSONProtocol _tjsonProtocol;
     ResetableTMemoryBuffer _buffer;
     StringBuilder _builder = new StringBuilder();
@@ -726,7 +727,8 @@ public class BlurUtil {
    * @throws IOException
    */
   public static List<Document> fetchDocuments(IndexReader reader, Term term,
-      ResetableDocumentStoredFieldVisitor fieldSelector, Selector selector) throws IOException {
+      ResetableDocumentStoredFieldVisitor fieldSelector, Selector selector, int maxHeap, String context)
+      throws IOException {
     IndexSearcher indexSearcher = new IndexSearcher(reader);
     int docFreq = reader.docFreq(term);
     BooleanQuery booleanQueryForFamily = null;
@@ -749,13 +751,22 @@ public class BlurUtil {
     int start = selector.getStartRecord();
     int end = selector.getMaxRecordsToFetch() + start;
 
+    int totalHeap = 0;
+
     for (int i = start; i < end; i++) {
       if (i >= totalHits) {
+        break;
+      }
+      if (totalHeap >= maxHeap) {
+        LOG.warn("Max heap size exceeded for this request [{0}] max [{1}] for [{2}] and rowid [{3}]", totalHeap,
+            maxHeap, context, term.text());
         break;
       }
       int doc = topDocs.scoreDocs[i].doc;
       indexSearcher.doc(doc, fieldSelector);
       docs.add(fieldSelector.getDocument());
+      int heapSize = fieldSelector.getSize();
+      totalHeap += heapSize;
       fieldSelector.reset();
     }
     return docs;

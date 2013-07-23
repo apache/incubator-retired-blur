@@ -302,6 +302,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     checkTable(table);
     String cluster = _clusterStatus.getCluster(true, table);
     _queryChecker.checkQuery(blurQuery);
+    checkSelectorFetchSize(blurQuery.getSelector());
     int shardCount = _clusterStatus.getShardCount(true, cluster, table);
 
     OUTER: for (int retries = 0; retries < _maxDefaultRetries; retries++) {
@@ -428,6 +429,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   @Override
   public FetchResult fetchRow(final String table, final Selector selector) throws BlurException, TException {
     checkTable(table);
+    checkSelectorFetchSize(selector);
     IndexManager.validSelector(selector);
     String clientHostnamePort = null;
     try {

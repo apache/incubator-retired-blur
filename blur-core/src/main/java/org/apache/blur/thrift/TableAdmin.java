@@ -31,6 +31,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Metric;
+import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
@@ -44,6 +45,19 @@ public abstract class TableAdmin implements Iface {
   protected ZooKeeper _zookeeper;
   protected ClusterStatus _clusterStatus;
   protected BlurConfiguration _configuration;
+  protected int _maxRecordsPerRowFetchRequest = 1000;
+
+  protected void checkSelectorFetchSize(Selector selector) {
+    if (selector == null) {
+      return;
+    }
+    int maxRecordsToFetch = selector.getMaxRecordsToFetch();
+    if (maxRecordsToFetch > _maxRecordsPerRowFetchRequest) {
+      LOG.warn("Max records to fetch is too high [{0}] max [{1}] in Selector [{2}]", maxRecordsToFetch,
+          _maxRecordsPerRowFetchRequest, selector);
+      selector.setMaxRecordsToFetch(_maxRecordsPerRowFetchRequest);
+    }
+  }
 
   @Override
   public Map<String, Metric> metrics(Set<String> metrics) throws BlurException, TException {
@@ -405,5 +419,13 @@ public abstract class TableAdmin implements Iface {
   @Override
   public Map<String, String> configuration() throws BlurException, TException {
     return _configuration.getProperties();
+  }
+  
+  public int getMaxRecordsPerRowFetchRequest() {
+    return _maxRecordsPerRowFetchRequest;
+  }
+
+  public void setMaxRecordsPerRowFetchRequest(int _maxRecordsPerRowFetchRequest) {
+    this._maxRecordsPerRowFetchRequest = _maxRecordsPerRowFetchRequest;
   }
 }

@@ -162,7 +162,7 @@ public class BlurUtilsTest {
 	  selector.setColumnFamiliesToFetch(columnFamiliesToFetch);
 	  
 	  ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
-	  List<Document> docs = BlurUtil.fetchDocuments(getReader(), new Term("a","b"), resetableDocumentStoredFieldVisitor, selector);
+	  List<Document> docs = BlurUtil.fetchDocuments(getReader(), new Term("a","b"), resetableDocumentStoredFieldVisitor, selector, 10000000, "test-context");
 	  assertEquals(docs.size(),1);
   }
   
@@ -170,7 +170,7 @@ public class BlurUtilsTest {
   public void testFetchDocumentsWithoutFamily() throws CorruptIndexException, LockObtainFailedException, IOException{
 	  Selector selector = new Selector();
 	  ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
-	  List<Document> docs = BlurUtil.fetchDocuments(getReader(), new Term("a","b"), resetableDocumentStoredFieldVisitor, selector);
+	  List<Document> docs = BlurUtil.fetchDocuments(getReader(), new Term("a","b"), resetableDocumentStoredFieldVisitor, selector, 10000000, "test-context");
 	  assertEquals(docs.size(),2);
   }
 

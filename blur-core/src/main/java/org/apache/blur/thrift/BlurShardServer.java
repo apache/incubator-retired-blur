@@ -93,6 +93,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
     resetSearchers();
     _queryChecker.checkQuery(blurQuery);
     try {
+      checkSelectorFetchSize(blurQuery.getSelector());
       BlurQuery original = new BlurQuery(blurQuery);
       Selector selector = original.getSelector();
       if (selector != null) {
@@ -149,6 +150,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException {
     checkTable(_cluster, table);
+    checkSelectorFetchSize(selector);
     try {
       FetchResult fetchResult = new FetchResult();
       _indexManager.fetchRow(table, selector, fetchResult);

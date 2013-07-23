@@ -87,12 +87,6 @@ public abstract class TableAdmin implements Iface {
     try {
       TableContext.clear();
       BlurUtil.validateTableName(tableDescriptor.name);
-      // @todo Remove this once issue #27 is resolved
-      if (tableDescriptor.compressionBlockSize > 32768) {
-        tableDescriptor.compressionBlockSize = 32768;
-      } else if (tableDescriptor.compressionBlockSize < 8192) {
-        tableDescriptor.compressionBlockSize = 8192;
-      }
       _clusterStatus.createTable(tableDescriptor);
     } catch (Exception e) {
       LOG.error("Unknown error during create of [table={0}, tableDescriptor={1}]", e, tableDescriptor.name,

@@ -649,47 +649,39 @@ struct ColumnPreCache {
  */
 struct TableDescriptor {
   /**
-   *
+   * Is the table enabled or not, enabled by default.
    */
   1:bool isEnabled = 1,
   /**
-   *
+   * Defines the field and their types (as well as the Analyzers to use).
    */
   2:AnalyzerDefinition analyzerDefinition,
   /**
-   *
+   * The number of shards within the given table.
    */
   3:i32 shardCount = 1,
   /**
-   *
+   * The location where the table should be stored this can be "file:///" for a local instance of Blur or "hdfs://" for a distributed installation of Blur.
    */
   4:string tableUri,
   /**
-   *
-   */
-  5:string compressionClass = 'org.apache.hadoop.io.compress.DefaultCodec',
-  /**
-   *
-   */
-  6:i32 compressionBlockSize = 32768,
-  /**
-   *
+   * The cluster where this table should be created.
    */
   7:string cluster = 'default',
   /**
-   *
+   * The table name.
    */
   8:string name,
   /**
-   *
+   * Sets the similarity class in Lucene.
    */
   9:string similarityClass,
   /**
-   *
+   * Should block cache be enable or disabled for this table.
    */
   10:bool blockCaching = 1,
   /**
-   *
+   * The files extensions that you would like to allow block cache to to cache.  If null (default) everything is cached.
    */
   11:set<string> blockCachingFileTypes,
   /**

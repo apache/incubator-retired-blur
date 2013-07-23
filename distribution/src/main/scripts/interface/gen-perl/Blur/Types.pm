@@ -3217,7 +3217,7 @@ sub write {
 
 package Blur::TableDescriptor;
 use base qw(Class::Accessor);
-Blur::TableDescriptor->mk_accessors( qw( isEnabled analyzerDefinition shardCount tableUri compressionClass compressionBlockSize cluster name similarityClass blockCaching blockCachingFileTypes readOnly columnPreCache tableProperties ) );
+Blur::TableDescriptor->mk_accessors( qw( isEnabled analyzerDefinition shardCount tableUri cluster name similarityClass blockCaching blockCachingFileTypes readOnly columnPreCache tableProperties ) );
 
 sub new {
   my $classname = shift;
@@ -3227,8 +3227,6 @@ sub new {
   $self->{analyzerDefinition} = undef;
   $self->{shardCount} = 1;
   $self->{tableUri} = undef;
-  $self->{compressionClass} = "org.apache.hadoop.io.compress.DefaultCodec";
-  $self->{compressionBlockSize} = 32768;
   $self->{cluster} = "default";
   $self->{name} = undef;
   $self->{similarityClass} = undef;
@@ -3249,12 +3247,6 @@ sub new {
     }
     if (defined $vals->{tableUri}) {
       $self->{tableUri} = $vals->{tableUri};
-    }
-    if (defined $vals->{compressionClass}) {
-      $self->{compressionClass} = $vals->{compressionClass};
-    }
-    if (defined $vals->{compressionBlockSize}) {
-      $self->{compressionBlockSize} = $vals->{compressionBlockSize};
     }
     if (defined $vals->{cluster}) {
       $self->{cluster} = $vals->{cluster};
@@ -3324,18 +3316,6 @@ sub read {
       last; };
       /^4$/ && do{      if ($ftype == TType::STRING) {
         $xfer += $input->readString(\$self->{tableUri});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^5$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{compressionClass});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^6$/ && do{      if ($ftype == TType::I32) {
-        $xfer += $input->readI32(\$self->{compressionBlockSize});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -3446,16 +3426,6 @@ sub write {
   if (defined $self->{tableUri}) {
     $xfer += $output->writeFieldBegin('tableUri', TType::STRING, 4);
     $xfer += $output->writeString($self->{tableUri});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{compressionClass}) {
-    $xfer += $output->writeFieldBegin('compressionClass', TType::STRING, 5);
-    $xfer += $output->writeString($self->{compressionClass});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{compressionBlockSize}) {
-    $xfer += $output->writeFieldBegin('compressionBlockSize', TType::I32, 6);
-    $xfer += $output->writeI32($self->{compressionBlockSize});
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{cluster}) {

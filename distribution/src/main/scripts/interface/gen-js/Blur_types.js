@@ -2999,8 +2999,6 @@ TableDescriptor = function(args) {
   this.analyzerDefinition = null;
   this.shardCount = 1;
   this.tableUri = null;
-  this.compressionClass = 'org.apache.hadoop.io.compress.DefaultCodec';
-  this.compressionBlockSize = 32768;
   this.cluster = 'default';
   this.name = null;
   this.similarityClass = null;
@@ -3021,12 +3019,6 @@ TableDescriptor = function(args) {
     }
     if (args.tableUri !== undefined) {
       this.tableUri = args.tableUri;
-    }
-    if (args.compressionClass !== undefined) {
-      this.compressionClass = args.compressionClass;
-    }
-    if (args.compressionBlockSize !== undefined) {
-      this.compressionBlockSize = args.compressionBlockSize;
     }
     if (args.cluster !== undefined) {
       this.cluster = args.cluster;
@@ -3093,20 +3085,6 @@ TableDescriptor.prototype.read = function(input) {
       case 4:
       if (ftype == Thrift.Type.STRING) {
         this.tableUri = input.readString().value;
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 5:
-      if (ftype == Thrift.Type.STRING) {
-        this.compressionClass = input.readString().value;
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 6:
-      if (ftype == Thrift.Type.I32) {
-        this.compressionBlockSize = input.readI32().value;
       } else {
         input.skip(ftype);
       }
@@ -3232,16 +3210,6 @@ TableDescriptor.prototype.write = function(output) {
   if (this.tableUri !== null && this.tableUri !== undefined) {
     output.writeFieldBegin('tableUri', Thrift.Type.STRING, 4);
     output.writeString(this.tableUri);
-    output.writeFieldEnd();
-  }
-  if (this.compressionClass !== null && this.compressionClass !== undefined) {
-    output.writeFieldBegin('compressionClass', Thrift.Type.STRING, 5);
-    output.writeString(this.compressionClass);
-    output.writeFieldEnd();
-  }
-  if (this.compressionBlockSize !== null && this.compressionBlockSize !== undefined) {
-    output.writeFieldBegin('compressionBlockSize', Thrift.Type.I32, 6);
-    output.writeI32(this.compressionBlockSize);
     output.writeFieldEnd();
   }
   if (this.cluster !== null && this.cluster !== undefined) {

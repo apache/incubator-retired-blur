@@ -67,14 +67,6 @@ public class ZookeeperPathConstants {
     return getClusterPath(cluster) + "/registered-nodes";
   }
 
-  public static String getTableCompressionCodecPath(String cluster, String table) {
-    return getTablePath(cluster, table) + "/compression-codec";
-  }
-
-  public static String getTableCompressionBlockSizePath(String cluster, String table) {
-    return getTablePath(cluster, table) + "/compression-blocksize";
-  }
-
   public static String getLockPath(String cluster, String table) {
     return getTablePath(cluster, table) + "/locks";
   }

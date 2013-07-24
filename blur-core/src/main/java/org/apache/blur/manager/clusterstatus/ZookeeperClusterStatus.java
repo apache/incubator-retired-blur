@@ -75,8 +75,10 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   private WatchChildren _clusterWatcher;
   private ConcurrentMap<String, WatchChildren> _onlineShardsNodesWatchers = new ConcurrentHashMap<String, WatchChildren>();
   private ConcurrentMap<String, WatchChildren> _tableWatchers = new ConcurrentHashMap<String, WatchChildren>();
-  private ConcurrentMap<String, WatchNodeExistance> _safeModeWatchers = new ConcurrentHashMap<String, WatchNodeExistance>();
-  private ConcurrentMap<String, WatchNodeData> _safeModeDataWatchers = new ConcurrentHashMap<String, WatchNodeData>();
+  // private ConcurrentMap<String, WatchNodeExistance> _safeModeWatchers = new
+  // ConcurrentHashMap<String, WatchNodeExistance>();
+  private Map<String, SafeModeCacheEntry> _clusterToSafeMode = new ConcurrentHashMap<String, ZookeeperClusterStatus.SafeModeCacheEntry>();
+//  private ConcurrentMap<String, WatchNodeData> _safeModeDataWatchers = new ConcurrentHashMap<String, WatchNodeData>();
   private ConcurrentMap<String, WatchNodeExistance> _enabledWatchNodeExistance = new ConcurrentHashMap<String, WatchNodeExistance>();
   private ConcurrentMap<String, WatchNodeExistance> _readOnlyWatchNodeExistance = new ConcurrentHashMap<String, WatchNodeExistance>();
 
@@ -101,11 +103,13 @@ public class ZookeeperClusterStatus extends ClusterStatus {
           ZkUtils.waitUntilExists(_zk, tablesPath);
           WatchChildren clusterWatcher = new WatchChildren(_zk, tablesPath).watch(new Tables(cluster));
           _tableWatchers.put(cluster, clusterWatcher);
-          String safemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
-          ZkUtils.waitUntilExists(_zk, safemodePath);
-          WatchNodeExistance watchNodeExistance = new WatchNodeExistance(_zk, safemodePath).watch(new SafeExistance(
-              cluster));
-          _safeModeWatchers.put(cluster, watchNodeExistance);
+          // String safemodePath =
+          // ZookeeperPathConstants.getSafemodePath(cluster);
+          // ZkUtils.waitUntilExists(_zk, safemodePath);
+          // WatchNodeExistance watchNodeExistance = new WatchNodeExistance(_zk,
+          // safemodePath).watch(new SafeExistance(
+          // cluster));
+          // _safeModeWatchers.put(cluster, watchNodeExistance);
         }
       }
 
@@ -147,10 +151,10 @@ public class ZookeeperClusterStatus extends ClusterStatus {
             }
           }
         });
-        WatchNodeData nodeData = _safeModeDataWatchers.put(cluster, watchNodeData);
-        if (nodeData != null) {
-          nodeData.close();
-        }
+//        WatchNodeData nodeData = _safeModeDataWatchers.put(cluster, watchNodeData);
+//        if (nodeData != null) {
+//          nodeData.close();
+//        }
       }
     }
   }
@@ -509,8 +513,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       close(_clusterWatcher);
       close(_onlineShardsNodesWatchers);
       close(_tableWatchers);
-      close(_safeModeWatchers);
-      close(_safeModeDataWatchers);
+      // close(_safeModeWatchers);
+//      close(_safeModeDataWatchers);
       close(_enabledWatchNodeExistance);
       close(_readOnlyWatchNodeExistance);
     }
@@ -562,14 +566,40 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     return null;
   }
 
+  static class SafeModeCacheEntry {
+    static final long _10_SECONDS = TimeUnit.SECONDS.toMillis(10);
+    boolean _safeMode;
+    long _lastCheck;
+
+    public SafeModeCacheEntry(boolean safeMode) {
+      _lastCheck = System.currentTimeMillis();
+      _safeMode = safeMode;
+    }
+
+    boolean isValid() {
+      long now = System.currentTimeMillis();
+      if (_lastCheck + _10_SECONDS < now) {
+        return false;
+      }
+      return true;
+    }
+  }
+
   @Override
   public boolean isInSafeMode(boolean useCache, String cluster) {
+    if (useCache) {
+      SafeModeCacheEntry safeModeCacheEntry = _clusterToSafeMode.get(cluster);
+      if (safeModeCacheEntry != null && safeModeCacheEntry.isValid()) {
+        return safeModeCacheEntry._safeMode;
+      }
+    }
     long s = System.nanoTime();
     try {
       checkIfOpen();
       String safemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
       ZooKeeperLockManager zooKeeperLockManager = new ZooKeeperLockManager(_zk, safemodePath);
       if (zooKeeperLockManager.getNumberOfLockNodesPresent(cluster) == 0) {
+        _clusterToSafeMode.put(cluster, new SafeModeCacheEntry(false));
         return false;
       }
       return true;

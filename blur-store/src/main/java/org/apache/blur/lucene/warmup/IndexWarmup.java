@@ -266,7 +266,7 @@ public class IndexWarmup {
       } else {
         Fields fields = atomicReader.fields();
         for (String field : fields) {
-          LOG.info("Context [{1}] sampling field [{0}].", field, context);
+          LOG.debug("Context [{1}] sampling field [{0}].", field, context);
           Terms terms = fields.terms(field);
           boolean hasOffsets = terms.hasOffsets();
           boolean hasPayloads = terms.hasPayloads();

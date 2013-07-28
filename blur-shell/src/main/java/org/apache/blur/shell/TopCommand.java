@@ -49,6 +49,7 @@ import org.apache.blur.thrift.generated.Metric;
 
 public class TopCommand extends Command {
 
+  private static final String HELP = ".help";
   private static final String TOP = "top.";
   private static final String LONGNAME = ".longname";
   private static final String SHORTNAME = ".shortname";
@@ -98,6 +99,7 @@ public class TopCommand extends Command {
     }
 
     Map<String, String> metricNames = new HashMap<String, String>();
+    Map<String, String> helpMap = new HashMap<String, String>();
     Set<Object> keySet = properties.keySet();
     for (Object k : keySet) {
       String key = k.toString();
@@ -105,6 +107,14 @@ public class TopCommand extends Command {
         String shortName = getShortName(key, properties);
         String longName = getLongName(getLongNameKey(key), properties);
         metricNames.put(shortName, longName);
+      } else if (isHelpName(key)) {
+        int indexOf = key.indexOf(HELP);
+        String strKey = key.substring(0, indexOf);
+        Object shortNameKey = properties.get(strKey + SHORTNAME);
+        Object helpMessage = properties.get(key);
+        if (shortNameKey != null && helpMessage != null) {
+          helpMap.put(shortNameKey.toString(), helpMessage.toString());
+        }
       }
     }
 
@@ -157,7 +167,7 @@ public class TopCommand extends Command {
       if (quit.get()) {
         return;
       } else if (help.get()) {
-        showHelp(output, labels, metricNames);
+        showHelp(output, labels, helpMap);
       } else {
         output.append(truncate(String.format(header.toString(), (Object[]) labels)));
         for (Entry<String, AtomicReference<Client>> e : new TreeMap<String, AtomicReference<Client>>(shardClients)
@@ -210,7 +220,7 @@ public class TopCommand extends Command {
         Terminal terminal = reader.getTerminal();
         _height = terminal.getHeight() - 2;
         _width = terminal.getWidth() - 2;
-        
+
         List<String> currentShardServerList = new ArrayList<String>(client.shardServerList(cluster));
         Collections.sort(currentShardServerList);
         if (!shardServerList.equals(currentShardServerList)) {
@@ -219,6 +229,10 @@ public class TopCommand extends Command {
         }
       }
     } while (reader != null);
+  }
+
+  private boolean isHelpName(String key) {
+    return key.endsWith(HELP);
   }
 
   private void close(Map<String, AtomicReference<Client>> shardClients) {
@@ -320,15 +334,14 @@ public class TopCommand extends Command {
     return key.endsWith(SHORTNAME);
   }
 
-  private void showHelp(StringBuilder output, Object[] labels, Map<String, String> metricNames) {
+  private void showHelp(StringBuilder output, Object[] labels, Map<String, String> helpMap) {
     output.append("Help\n");
-
     for (int i = 0; i < labels.length; i++) {
       String shortName = (String) labels[i];
-      String longName = metricNames.get(shortName);
+      String helpMessage = helpMap.get(shortName);
       output.append(String.format("%15s", shortName));
       output.append(" - ");
-      output.append(longName);
+      output.append(helpMessage);
       output.append('\n');
     }
 

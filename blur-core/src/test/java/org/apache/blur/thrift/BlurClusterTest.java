@@ -198,7 +198,14 @@ public class BlurClusterTest {
     // This will make each collect in the collectors pause 250 ms per collect
     // call
     IndexManager.DEBUG_RUN_SLOW.set(true);
+    runBackPressureViaQuery();
+    Thread.sleep(1000);
+    System.gc();
+    System.gc();
+    Thread.sleep(1000);
+  }
 
+  private void runBackPressureViaQuery() throws InterruptedException {
     final Iface client = getClient();
     final BlurQuery blurQueryRow = new BlurQuery();
     SimpleQuery simpleQueryRow = new SimpleQuery();

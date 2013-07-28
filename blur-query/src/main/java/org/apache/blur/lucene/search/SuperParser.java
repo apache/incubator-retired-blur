@@ -2,8 +2,6 @@ package org.apache.blur.lucene.search;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.blur.analysis.BlurAnalyzer;
 import org.apache.blur.log.Log;
@@ -24,9 +22,15 @@ public class SuperParser extends BlurQueryParser {
 
   private static Log LOG = LogFactory.getLog(SuperParser.class);
 
+  interface Group {
+    void match(int start, int end) throws ParseException;
+  }
+
   private final String _defaultField = SUPER;
-  private static final Pattern PATTERN = Pattern.compile("super\\s*?\\:\\s*?\\<(.*?)\\>");
-  private static final Pattern CHECK = Pattern.compile("super\\s*?\\:\\s*?\\<");
+  // private static final Pattern PATTERN =
+  // Pattern.compile("super\\s*?\\:\\s*?\\<(.*?)\\>");
+  // private static final Pattern CHECK =
+  // Pattern.compile("super\\s*?\\:\\s*?\\<");
   private static final String SEP = ".";
   private final boolean _superSearch;
   private final Filter _queryFilter;
@@ -34,6 +38,8 @@ public class SuperParser extends BlurQueryParser {
   private final Version _matchVersion;
   private final Term _defaultPrimeDocTerm;
   private final String _prefixToSub = "______SUPERBASEFIELD_";
+  private int _lastStart = 0;
+  private int _lastEnd = 0;
 
   public SuperParser(Version matchVersion, BlurAnalyzer a, boolean superSearch, Filter queryFilter,
       ScoreType scoreType, Term defaultPrimeDocTerm) {
@@ -47,30 +53,22 @@ public class SuperParser extends BlurQueryParser {
     setAllowLeadingWildcard(true);
   }
 
-  public Query parse(String queryStr) throws ParseException {
-    Matcher matcher = PATTERN.matcher(queryStr);
-    Map<String, Query> subQueries = new HashMap<String, Query>();
-    int subQueryIndex = 0;
-    StringBuilder builder = new StringBuilder();
-    int lastStart = 0;
-    int lastEnd = 0;
-    while (matcher.find()) {
-      int count = matcher.groupCount();
-      int start = matcher.start();
-      int end = matcher.end();
-      if (lastStart != start) {
-        builder.append(queryStr.substring(lastEnd, start));
-      }
-      String realQuery = queryStr.substring(start, end);
-      LOG.debug("Realquery [{0}]", realQuery);
-      for (int i = 0; i < count; i++) {
-        String superQueryStr = matcher.group(i + 1);
-        Matcher matcherCheck = CHECK.matcher(superQueryStr);
-        if (matcherCheck.find()) {
-          throw new ParseException("Embedded super queries are not allowed [" + queryStr + "].");
+  public Query parse(final String queryStr) throws ParseException {
+    final Map<String, Query> subQueries = new HashMap<String, Query>();
+    final StringBuilder builder = new StringBuilder();
+    match(queryStr, new Group() {
+      int _subQueryIndex = 0;
+
+      @Override
+      public void match(int start, int end) throws ParseException {
+        if (_lastStart != start) {
+          builder.append(queryStr.substring(_lastEnd, start));
         }
+        String realQuery = queryStr.substring(start, end);
+        LOG.debug("Realquery [{0}]", realQuery);
+        String superQueryStr = getMatchText(realQuery);
         LOG.debug("Parseable sub query [{0}]", superQueryStr);
-        String key = _prefixToSub + subQueryIndex;
+        String key = _prefixToSub + _subQueryIndex;
         QueryParser newParser = getNewParser();
         Query query = newParser.parse(superQueryStr);
         if (!isSameGroupName(query)) {
@@ -82,17 +80,57 @@ public class SuperParser extends BlurQueryParser {
           query = wrapFilter(query);
         }
         subQueries.put(key, query);
-        builder.append(_prefixToSub).append(':').append(subQueryIndex);
-        subQueryIndex++;
+        builder.append(_prefixToSub).append(':').append(_subQueryIndex);
+        _subQueryIndex++;
+        _lastStart = start;
+        _lastEnd = end;
       }
-      lastStart = start;
-      lastEnd = end;
-    }
-    if (lastEnd < queryStr.length()) {
-      builder.append(queryStr.substring(lastEnd));
+
+      private String getMatchText(String match) {
+        return match.substring(1, match.length() - 1);
+      }
+    });
+    if (_lastEnd < queryStr.length()) {
+      builder.append(queryStr.substring(_lastEnd));
     }
     Query query = super.parse(builder.toString());
     return reprocess(replaceRealQueries(query, subQueries));
+  }
+
+  private static void match(String source, Group group) throws ParseException {
+    int line = 1;
+    int length = source.length();
+    int start = -1;
+    char p = 0;
+    int column = 1;
+    for (int i = 0; i < length; i++) {
+      char c = source.charAt(i);
+      if (c == '<') {
+        if (p != '\\') {
+          if (start == -1) {
+            start = i;
+          } else {
+            throw new ParseException("Cannot parse '" + source + "': Encountered \"<\" at line " + line + ", column "
+                + column + ".");
+          }
+        }
+      } else if (c == '>') {
+        if (p != '\\') {
+          if (start != -1) {
+            group.match(start, i + 1);
+            start = -1;
+          } else {
+            throw new ParseException("Cannot parse '" + source + "': Encountered \">\" at line " + line + ", column "
+                + column + ".");
+          }
+        }
+      } else if (c == '\n') {
+        line++;
+        column = 0;
+      }
+      column++;
+      p = c;
+    }
   }
 
   private SuperQuery newSuperQuery(Query query) {

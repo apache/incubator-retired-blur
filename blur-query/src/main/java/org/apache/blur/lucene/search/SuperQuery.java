@@ -74,11 +74,11 @@ public class SuperQuery extends AbstractWrapperQuery {
   }
 
   public String toString() {
-    return "super:<" + _query.toString() + ">";
+    return "<" + _query.toString() + ">";
   }
 
   public String toString(String field) {
-    return "super:<" + _query.toString(field) + ">";
+    return "<" + _query.toString(field) + ">";
   }
 
   @Override

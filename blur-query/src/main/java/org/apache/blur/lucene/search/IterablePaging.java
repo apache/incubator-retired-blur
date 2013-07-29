@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.blur.index.ExitableReader.ExitingReaderException;
 import org.apache.blur.lucene.search.StopExecutionCollector.StopExecutionCollectorException;
 import org.apache.blur.thrift.BException;
 import org.apache.blur.thrift.generated.BlurException;
@@ -193,6 +194,8 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
         TopDocs topDocs = collector.topDocs();
         scoreDocs = topDocs.scoreDocs;
       } catch (StopExecutionCollectorException e) {
+        throw new BlurException(STOP_EXECUTION_COLLECTOR_EXCEPTION, null, ErrorType.UNKNOWN);
+      } catch (ExitingReaderException e) {
         throw new BlurException(STOP_EXECUTION_COLLECTOR_EXCEPTION, null, ErrorType.UNKNOWN);
       } catch (IOException e) {
         throw new BException("Unknown error during search call", e);

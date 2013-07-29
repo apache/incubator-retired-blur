@@ -39,16 +39,15 @@ import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
 
 /**
- * {@link ShardServerContext} is the session manager for the shard servers. It
- * allows for reader reuse across method calls.
+ * {@link ConrtollerServerContext} is the session manager for the controller servers.
  */
-public class ShardServerEventHandler implements TServerEventHandler {
+public class ControllerServerEventHandler implements TServerEventHandler {
 
-  private static final Log LOG = LogFactory.getLog(ShardServerEventHandler.class);
+  private static final Log LOG = LogFactory.getLog(ControllerServerEventHandler.class);
   private final Meter _connectionMeter;
   private final AtomicLong _connections = new AtomicLong();
 
-  public ShardServerEventHandler() {
+  public ControllerServerEventHandler() {
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, BLUR, "Connections"), new Gauge<Long>() {
       @Override
       public Long value() {
@@ -74,22 +73,20 @@ public class ShardServerEventHandler implements TServerEventHandler {
     SocketAddress localSocketAddress = socket.getLocalSocketAddress();
     _connectionMeter.mark();
     _connections.incrementAndGet();
-    return new ShardServerContext(localSocketAddress, remoteSocketAddress);
+    return new ControllerServerContext(localSocketAddress, remoteSocketAddress);
   }
 
   @Override
   public void deleteContext(ServerContext serverContext, TProtocol input, TProtocol output) {
     LOG.debug("Client disconnected");
-    ShardServerContext context = (ShardServerContext) serverContext;
-    context.close();
     _connections.decrementAndGet();
   }
 
   @Override
   public void processContext(ServerContext serverContext, TTransport inputTransport, TTransport outputTransport) {
     LOG.debug("Method called");
-    ShardServerContext context = (ShardServerContext) serverContext;
-    ShardServerContext.registerContextForCall(context);
+    ControllerServerContext context = (ControllerServerContext) serverContext;
+    ControllerServerContext.registerContextForCall(context);
   }
 
 }

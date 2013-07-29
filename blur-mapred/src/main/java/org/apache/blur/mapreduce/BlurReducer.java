@@ -246,7 +246,7 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
 
   protected void fetchOldRecords() throws IOException {
     List<Document> docs = BlurUtil.fetchDocuments(_reader, _rowIdTerm, new ResetableDocumentStoredFieldVisitor(),
-        new Selector());
+        new Selector(), Integer.MAX_VALUE, "reducer-context");
     for (Document document : docs) {
       String recordId = document.get(RECORD_ID);
       // add them to the new records if the new records do not contain them.

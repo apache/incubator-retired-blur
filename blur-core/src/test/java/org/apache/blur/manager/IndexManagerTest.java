@@ -349,7 +349,7 @@ public class IndexManagerTest {
   public void testQueryWithJoinAll() throws Exception {
     BlurQuery blurQuery = new BlurQuery();
     blurQuery.simpleQuery = new SimpleQuery();
-    blurQuery.simpleQuery.queryStr = "+super:<+test-family.testcol12:value101 +test-family.testcol13:value102> +super:<test-family2.testcol18:value501>";
+    blurQuery.simpleQuery.queryStr = "+<+test-family.testcol12:value101 +test-family.testcol13:value102> +<test-family2.testcol18:value501>";
 
     blurQuery.simpleQuery.superQueryOn = true;
     blurQuery.simpleQuery.type = ScoreType.SUPER;
@@ -375,7 +375,7 @@ public class IndexManagerTest {
   public void testQueryWithJoin() throws Exception {
     BlurQuery blurQuery = new BlurQuery();
     blurQuery.simpleQuery = new SimpleQuery();
-    blurQuery.simpleQuery.queryStr = "+super:<+test-family.testcol12:value101 +test-family.testcol13:value102> +super:<test-family2.testcol18:value501>";
+    blurQuery.simpleQuery.queryStr = "+<+test-family.testcol12:value101 +test-family.testcol13:value102> +<test-family2.testcol18:value501>";
     blurQuery.simpleQuery.superQueryOn = true;
     blurQuery.simpleQuery.type = ScoreType.SUPER;
     blurQuery.fetch = 10;
@@ -400,7 +400,7 @@ public class IndexManagerTest {
   public void testQueryWithJoinForcingSuperQuery() throws Exception {
     BlurQuery blurQuery = new BlurQuery();
     blurQuery.simpleQuery = new SimpleQuery();
-    blurQuery.simpleQuery.queryStr = "+super:<test-family.testcol1:value1> +super:<test-family.testcol3:value234123>";
+    blurQuery.simpleQuery.queryStr = "+<test-family.testcol1:value1> +<test-family.testcol3:value234123>";
     blurQuery.simpleQuery.superQueryOn = true;
     blurQuery.simpleQuery.type = ScoreType.SUPER;
     blurQuery.fetch = 10;

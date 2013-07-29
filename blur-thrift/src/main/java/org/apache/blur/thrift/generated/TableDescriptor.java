@@ -58,8 +58,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField IS_ENABLED_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("isEnabled", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)1);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SHARD_COUNT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("shardCount", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)3);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_URI_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("tableUri", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)4);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COMPRESSION_CLASS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("compressionClass", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)5);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COMPRESSION_BLOCK_SIZE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("compressionBlockSize", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)6);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField CLUSTER_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("cluster", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)7);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField NAME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("name", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)8);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SIMILARITY_CLASS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("similarityClass", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)9);
@@ -76,43 +74,35 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * 
+   * Is the table enabled or not, enabled by default.
    */
   public boolean isEnabled; // required
   /**
-   * 
+   * The number of shards within the given table.
    */
   public int shardCount; // required
   /**
-   * 
+   * The location where the table should be stored this can be "file:///" for a local instance of Blur or "hdfs://" for a distributed installation of Blur.
    */
   public String tableUri; // required
   /**
-   * 
-   */
-  public String compressionClass; // required
-  /**
-   * 
-   */
-  public int compressionBlockSize; // required
-  /**
-   * 
+   * The cluster where this table should be created.
    */
   public String cluster; // required
   /**
-   * 
+   * The table name.
    */
   public String name; // required
   /**
-   * 
+   * Sets the similarity class in Lucene.
    */
   public String similarityClass; // required
   /**
-   * 
+   * Should block cache be enable or disabled for this table.
    */
   public boolean blockCaching; // required
   /**
-   * 
+   * The files extensions that you would like to allow block cache to to cache.  If null (default) everything is cached.
    */
   public Set<String> blockCachingFileTypes; // required
   /**
@@ -129,43 +119,35 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
-     * 
+     * Is the table enabled or not, enabled by default.
      */
     IS_ENABLED((short)1, "isEnabled"),
     /**
-     * 
+     * The number of shards within the given table.
      */
     SHARD_COUNT((short)3, "shardCount"),
     /**
-     * 
+     * The location where the table should be stored this can be "file:///" for a local instance of Blur or "hdfs://" for a distributed installation of Blur.
      */
     TABLE_URI((short)4, "tableUri"),
     /**
-     * 
-     */
-    COMPRESSION_CLASS((short)5, "compressionClass"),
-    /**
-     * 
-     */
-    COMPRESSION_BLOCK_SIZE((short)6, "compressionBlockSize"),
-    /**
-     * 
+     * The cluster where this table should be created.
      */
     CLUSTER((short)7, "cluster"),
     /**
-     * 
+     * The table name.
      */
     NAME((short)8, "name"),
     /**
-     * 
+     * Sets the similarity class in Lucene.
      */
     SIMILARITY_CLASS((short)9, "similarityClass"),
     /**
-     * 
+     * Should block cache be enable or disabled for this table.
      */
     BLOCK_CACHING((short)10, "blockCaching"),
     /**
-     * 
+     * The files extensions that you would like to allow block cache to to cache.  If null (default) everything is cached.
      */
     BLOCK_CACHING_FILE_TYPES((short)11, "blockCachingFileTypes"),
     /**
@@ -198,10 +180,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
           return SHARD_COUNT;
         case 4: // TABLE_URI
           return TABLE_URI;
-        case 5: // COMPRESSION_CLASS
-          return COMPRESSION_CLASS;
-        case 6: // COMPRESSION_BLOCK_SIZE
-          return COMPRESSION_BLOCK_SIZE;
         case 7: // CLUSTER
           return CLUSTER;
         case 8: // NAME
@@ -260,9 +238,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   // isset id assignments
   private static final int __ISENABLED_ISSET_ID = 0;
   private static final int __SHARDCOUNT_ISSET_ID = 1;
-  private static final int __COMPRESSIONBLOCKSIZE_ISSET_ID = 2;
-  private static final int __BLOCKCACHING_ISSET_ID = 3;
-  private static final int __READONLY_ISSET_ID = 4;
+  private static final int __BLOCKCACHING_ISSET_ID = 2;
+  private static final int __READONLY_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -273,10 +250,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32)));
     tmpMap.put(_Fields.TABLE_URI, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("tableUri", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
-    tmpMap.put(_Fields.COMPRESSION_CLASS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("compressionClass", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
-    tmpMap.put(_Fields.COMPRESSION_BLOCK_SIZE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("compressionBlockSize", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32)));
     tmpMap.put(_Fields.CLUSTER, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("cluster", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     tmpMap.put(_Fields.NAME, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("name", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
@@ -305,10 +278,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
 
     this.shardCount = 1;
 
-    this.compressionClass = "org.apache.hadoop.io.compress.DefaultCodec";
-
-    this.compressionBlockSize = 32768;
-
     this.cluster = "default";
 
     this.blockCaching = true;
@@ -321,8 +290,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     boolean isEnabled,
     int shardCount,
     String tableUri,
-    String compressionClass,
-    int compressionBlockSize,
     String cluster,
     String name,
     String similarityClass,
@@ -338,9 +305,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     this.shardCount = shardCount;
     setShardCountIsSet(true);
     this.tableUri = tableUri;
-    this.compressionClass = compressionClass;
-    this.compressionBlockSize = compressionBlockSize;
-    setCompressionBlockSizeIsSet(true);
     this.cluster = cluster;
     this.name = name;
     this.similarityClass = similarityClass;
@@ -363,10 +327,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     if (other.isSetTableUri()) {
       this.tableUri = other.tableUri;
     }
-    if (other.isSetCompressionClass()) {
-      this.compressionClass = other.compressionClass;
-    }
-    this.compressionBlockSize = other.compressionBlockSize;
     if (other.isSetCluster()) {
       this.cluster = other.cluster;
     }
@@ -416,10 +376,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     this.shardCount = 1;
 
     this.tableUri = null;
-    this.compressionClass = "org.apache.hadoop.io.compress.DefaultCodec";
-
-    this.compressionBlockSize = 32768;
-
     this.cluster = "default";
 
     this.name = null;
@@ -434,14 +390,14 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * 
+   * Is the table enabled or not, enabled by default.
    */
   public boolean isIsEnabled() {
     return this.isEnabled;
   }
 
   /**
-   * 
+   * Is the table enabled or not, enabled by default.
    */
   public TableDescriptor setIsEnabled(boolean isEnabled) {
     this.isEnabled = isEnabled;
@@ -463,14 +419,14 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * 
+   * The number of shards within the given table.
    */
   public int getShardCount() {
     return this.shardCount;
   }
 
   /**
-   * 
+   * The number of shards within the given table.
    */
   public TableDescriptor setShardCount(int shardCount) {
     this.shardCount = shardCount;
@@ -492,14 +448,14 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * 
+   * The location where the table should be stored this can be "file:///" for a local instance of Blur or "hdfs://" for a distributed installation of Blur.
    */
   public String getTableUri() {
     return this.tableUri;
   }
 
   /**
-   * 
+   * The location where the table should be stored this can be "file:///" for a local instance of Blur or "hdfs://" for a distributed installation of Blur.
    */
   public TableDescriptor setTableUri(String tableUri) {
     this.tableUri = tableUri;
@@ -522,73 +478,14 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * 
-   */
-  public String getCompressionClass() {
-    return this.compressionClass;
-  }
-
-  /**
-   * 
-   */
-  public TableDescriptor setCompressionClass(String compressionClass) {
-    this.compressionClass = compressionClass;
-    return this;
-  }
-
-  public void unsetCompressionClass() {
-    this.compressionClass = null;
-  }
-
-  /** Returns true if field compressionClass is set (has been assigned a value) and false otherwise */
-  public boolean isSetCompressionClass() {
-    return this.compressionClass != null;
-  }
-
-  public void setCompressionClassIsSet(boolean value) {
-    if (!value) {
-      this.compressionClass = null;
-    }
-  }
-
-  /**
-   * 
-   */
-  public int getCompressionBlockSize() {
-    return this.compressionBlockSize;
-  }
-
-  /**
-   * 
-   */
-  public TableDescriptor setCompressionBlockSize(int compressionBlockSize) {
-    this.compressionBlockSize = compressionBlockSize;
-    setCompressionBlockSizeIsSet(true);
-    return this;
-  }
-
-  public void unsetCompressionBlockSize() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __COMPRESSIONBLOCKSIZE_ISSET_ID);
-  }
-
-  /** Returns true if field compressionBlockSize is set (has been assigned a value) and false otherwise */
-  public boolean isSetCompressionBlockSize() {
-    return EncodingUtils.testBit(__isset_bitfield, __COMPRESSIONBLOCKSIZE_ISSET_ID);
-  }
-
-  public void setCompressionBlockSizeIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __COMPRESSIONBLOCKSIZE_ISSET_ID, value);
-  }
-
-  /**
-   * 
+   * The cluster where this table should be created.
    */
   public String getCluster() {
     return this.cluster;
   }
 
   /**
-   * 
+   * The cluster where this table should be created.
    */
   public TableDescriptor setCluster(String cluster) {
     this.cluster = cluster;
@@ -611,14 +508,14 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * 
+   * The table name.
    */
   public String getName() {
     return this.name;
   }
 
   /**
-   * 
+   * The table name.
    */
   public TableDescriptor setName(String name) {
     this.name = name;
@@ -641,14 +538,14 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * 
+   * Sets the similarity class in Lucene.
    */
   public String getSimilarityClass() {
     return this.similarityClass;
   }
 
   /**
-   * 
+   * Sets the similarity class in Lucene.
    */
   public TableDescriptor setSimilarityClass(String similarityClass) {
     this.similarityClass = similarityClass;
@@ -671,14 +568,14 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * 
+   * Should block cache be enable or disabled for this table.
    */
   public boolean isBlockCaching() {
     return this.blockCaching;
   }
 
   /**
-   * 
+   * Should block cache be enable or disabled for this table.
    */
   public TableDescriptor setBlockCaching(boolean blockCaching) {
     this.blockCaching = blockCaching;
@@ -715,14 +612,14 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * 
+   * The files extensions that you would like to allow block cache to to cache.  If null (default) everything is cached.
    */
   public Set<String> getBlockCachingFileTypes() {
     return this.blockCachingFileTypes;
   }
 
   /**
-   * 
+   * The files extensions that you would like to allow block cache to to cache.  If null (default) everything is cached.
    */
   public TableDescriptor setBlockCachingFileTypes(Set<String> blockCachingFileTypes) {
     this.blockCachingFileTypes = blockCachingFileTypes;
@@ -866,22 +763,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       }
       break;
 
-    case COMPRESSION_CLASS:
-      if (value == null) {
-        unsetCompressionClass();
-      } else {
-        setCompressionClass((String)value);
-      }
-      break;
-
-    case COMPRESSION_BLOCK_SIZE:
-      if (value == null) {
-        unsetCompressionBlockSize();
-      } else {
-        setCompressionBlockSize((Integer)value);
-      }
-      break;
-
     case CLUSTER:
       if (value == null) {
         unsetCluster();
@@ -960,12 +841,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     case TABLE_URI:
       return getTableUri();
 
-    case COMPRESSION_CLASS:
-      return getCompressionClass();
-
-    case COMPRESSION_BLOCK_SIZE:
-      return Integer.valueOf(getCompressionBlockSize());
-
     case CLUSTER:
       return getCluster();
 
@@ -1007,10 +882,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       return isSetShardCount();
     case TABLE_URI:
       return isSetTableUri();
-    case COMPRESSION_CLASS:
-      return isSetCompressionClass();
-    case COMPRESSION_BLOCK_SIZE:
-      return isSetCompressionBlockSize();
     case CLUSTER:
       return isSetCluster();
     case NAME:
@@ -1068,24 +939,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (!(this_present_tableUri && that_present_tableUri))
         return false;
       if (!this.tableUri.equals(that.tableUri))
-        return false;
-    }
-
-    boolean this_present_compressionClass = true && this.isSetCompressionClass();
-    boolean that_present_compressionClass = true && that.isSetCompressionClass();
-    if (this_present_compressionClass || that_present_compressionClass) {
-      if (!(this_present_compressionClass && that_present_compressionClass))
-        return false;
-      if (!this.compressionClass.equals(that.compressionClass))
-        return false;
-    }
-
-    boolean this_present_compressionBlockSize = true;
-    boolean that_present_compressionBlockSize = true;
-    if (this_present_compressionBlockSize || that_present_compressionBlockSize) {
-      if (!(this_present_compressionBlockSize && that_present_compressionBlockSize))
-        return false;
-      if (this.compressionBlockSize != that.compressionBlockSize)
         return false;
     }
 
@@ -1207,26 +1060,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetCompressionClass()).compareTo(typedOther.isSetCompressionClass());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetCompressionClass()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.compressionClass, typedOther.compressionClass);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetCompressionBlockSize()).compareTo(typedOther.isSetCompressionBlockSize());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetCompressionBlockSize()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.compressionBlockSize, typedOther.compressionBlockSize);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = Boolean.valueOf(isSetCluster()).compareTo(typedOther.isSetCluster());
     if (lastComparison != 0) {
       return lastComparison;
@@ -1341,18 +1174,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     } else {
       sb.append(this.tableUri);
     }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("compressionClass:");
-    if (this.compressionClass == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.compressionClass);
-    }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("compressionBlockSize:");
-    sb.append(this.compressionBlockSize);
     first = false;
     if (!first) sb.append(", ");
     sb.append("cluster:");
@@ -1482,22 +1303,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // COMPRESSION_CLASS
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
-              struct.compressionClass = iprot.readString();
-              struct.setCompressionClassIsSet(true);
-            } else { 
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 6: // COMPRESSION_BLOCK_SIZE
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
-              struct.compressionBlockSize = iprot.readI32();
-              struct.setCompressionBlockSizeIsSet(true);
-            } else { 
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           case 7: // CLUSTER
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
               struct.cluster = iprot.readString();
@@ -1611,14 +1416,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         oprot.writeString(struct.tableUri);
         oprot.writeFieldEnd();
       }
-      if (struct.compressionClass != null) {
-        oprot.writeFieldBegin(COMPRESSION_CLASS_FIELD_DESC);
-        oprot.writeString(struct.compressionClass);
-        oprot.writeFieldEnd();
-      }
-      oprot.writeFieldBegin(COMPRESSION_BLOCK_SIZE_FIELD_DESC);
-      oprot.writeI32(struct.compressionBlockSize);
-      oprot.writeFieldEnd();
       if (struct.cluster != null) {
         oprot.writeFieldBegin(CLUSTER_FIELD_DESC);
         oprot.writeString(struct.cluster);
@@ -1697,37 +1494,31 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (struct.isSetTableUri()) {
         optionals.set(2);
       }
-      if (struct.isSetCompressionClass()) {
+      if (struct.isSetCluster()) {
         optionals.set(3);
       }
-      if (struct.isSetCompressionBlockSize()) {
+      if (struct.isSetName()) {
         optionals.set(4);
       }
-      if (struct.isSetCluster()) {
+      if (struct.isSetSimilarityClass()) {
         optionals.set(5);
       }
-      if (struct.isSetName()) {
+      if (struct.isSetBlockCaching()) {
         optionals.set(6);
       }
-      if (struct.isSetSimilarityClass()) {
+      if (struct.isSetBlockCachingFileTypes()) {
         optionals.set(7);
       }
-      if (struct.isSetBlockCaching()) {
+      if (struct.isSetReadOnly()) {
         optionals.set(8);
       }
-      if (struct.isSetBlockCachingFileTypes()) {
+      if (struct.isSetColumnPreCache()) {
         optionals.set(9);
       }
-      if (struct.isSetReadOnly()) {
+      if (struct.isSetTableProperties()) {
         optionals.set(10);
       }
-      if (struct.isSetColumnPreCache()) {
-        optionals.set(11);
-      }
-      if (struct.isSetTableProperties()) {
-        optionals.set(12);
-      }
-      oprot.writeBitSet(optionals, 13);
+      oprot.writeBitSet(optionals, 11);
       if (struct.isSetIsEnabled()) {
         oprot.writeBool(struct.isEnabled);
       }
@@ -1736,12 +1527,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       }
       if (struct.isSetTableUri()) {
         oprot.writeString(struct.tableUri);
-      }
-      if (struct.isSetCompressionClass()) {
-        oprot.writeString(struct.compressionClass);
-      }
-      if (struct.isSetCompressionBlockSize()) {
-        oprot.writeI32(struct.compressionBlockSize);
       }
       if (struct.isSetCluster()) {
         oprot.writeString(struct.cluster);
@@ -1785,7 +1570,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, TableDescriptor struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(13);
+      BitSet incoming = iprot.readBitSet(11);
       if (incoming.get(0)) {
         struct.isEnabled = iprot.readBool();
         struct.setIsEnabledIsSet(true);
@@ -1799,30 +1584,22 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         struct.setTableUriIsSet(true);
       }
       if (incoming.get(3)) {
-        struct.compressionClass = iprot.readString();
-        struct.setCompressionClassIsSet(true);
-      }
-      if (incoming.get(4)) {
-        struct.compressionBlockSize = iprot.readI32();
-        struct.setCompressionBlockSizeIsSet(true);
-      }
-      if (incoming.get(5)) {
         struct.cluster = iprot.readString();
         struct.setClusterIsSet(true);
       }
-      if (incoming.get(6)) {
+      if (incoming.get(4)) {
         struct.name = iprot.readString();
         struct.setNameIsSet(true);
       }
-      if (incoming.get(7)) {
+      if (incoming.get(5)) {
         struct.similarityClass = iprot.readString();
         struct.setSimilarityClassIsSet(true);
       }
-      if (incoming.get(8)) {
+      if (incoming.get(6)) {
         struct.blockCaching = iprot.readBool();
         struct.setBlockCachingIsSet(true);
       }
-      if (incoming.get(9)) {
+      if (incoming.get(7)) {
         {
           org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set169 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
           struct.blockCachingFileTypes = new HashSet<String>(2*_set169.size);
@@ -1835,16 +1612,16 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         }
         struct.setBlockCachingFileTypesIsSet(true);
       }
-      if (incoming.get(10)) {
+      if (incoming.get(8)) {
         struct.readOnly = iprot.readBool();
         struct.setReadOnlyIsSet(true);
       }
-      if (incoming.get(11)) {
+      if (incoming.get(9)) {
         struct.columnPreCache = new ColumnPreCache();
         struct.columnPreCache.read(iprot);
         struct.setColumnPreCacheIsSet(true);
       }
-      if (incoming.get(12)) {
+      if (incoming.get(10)) {
         {
           org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map172 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
           struct.tableProperties = new HashMap<String,String>(2*_map172.size);

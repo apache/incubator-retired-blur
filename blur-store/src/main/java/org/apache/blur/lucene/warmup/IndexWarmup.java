@@ -155,7 +155,7 @@ public class IndexWarmup {
         double seconds = (now - start) / 1000000000.0;
         double rateMbPerSec = (bytesReadPerPass / seconds) / 1000 / 1000;
         double complete = (((double) totalLength - (double) length) / (double) totalLength) * 100.0;
-        LOG.info("Context [{3}] warming field [{0}] in file [{1}] is [{2}%] complete at rate of [{4} MB/s]", fieldName,
+        LOG.debug("Context [{3}] warming field [{0}] in file [{1}] is [{2}%] complete at rate of [{4} MB/s]", fieldName,
             fileName, complete, context, rateMbPerSec);
         start = System.nanoTime();
         bytesReadPerPass = 0;
@@ -175,7 +175,7 @@ public class IndexWarmup {
       seconds = 1;
     }
     double rateMbPerSec = (bytesReadPerPass / seconds) / 1000 / 1000;
-    LOG.info("Context [{3}] warming field [{0}] in file [{1}] is [{2}%] complete at rate of [{4} MB/s]", fieldName,
+    LOG.debug("Context [{3}] warming field [{0}] in file [{1}] is [{2}%] complete at rate of [{4} MB/s]", fieldName,
         fileName, 100, context, rateMbPerSec);
     input.clone();
   }
@@ -266,7 +266,7 @@ public class IndexWarmup {
       } else {
         Fields fields = atomicReader.fields();
         for (String field : fields) {
-          LOG.info("Context [{1}] sampling field [{0}].", field, context);
+          LOG.debug("Context [{1}] sampling field [{0}].", field, context);
           Terms terms = fields.terms(field);
           boolean hasOffsets = terms.hasOffsets();
           boolean hasPayloads = terms.hasPayloads();

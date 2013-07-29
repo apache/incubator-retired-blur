@@ -230,9 +230,9 @@ FetchResult.  Used in conjunction with maxRecordsToFetch.
 </td><td>default</td><td>0</td></tr>
 <tr><td>9</td><td>maxRecordsToFetch</td><td><code>i32</code></td><td>Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
 and you want the first 100, then this value is 100.  If you want records 300-400 then this value
-would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the
-records in the row, be careful.
-</td><td>default</td><td>2147483647</td></tr>
+would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch the first
+1000 records of the row.
+</td><td>default</td><td>1000</td></tr>
 <tr><td>10</td><td>highlightOptions</td><td><code><a href="Blur.html#Struct_HighlightOptions">HighlightOptions</a></code></td><td>The HighlightOptions object controls how the data is highlighted.  If null no highlighting will occur.
 </td><td>default</td><td></td></tr>
 </table><br/>Select carries the request for information to be retrieved from the stored columns.
@@ -432,25 +432,21 @@ shards that are complete, etc.
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_TableDescriptor">Struct: TableDescriptor</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>isEnabled</td><td><code>bool</code></td><td>
+<tr><td>1</td><td>isEnabled</td><td><code>bool</code></td><td>Is the table enabled or not, enabled by default.
 </td><td>default</td><td>1</td></tr>
-<tr><td>3</td><td>shardCount</td><td><code>i32</code></td><td>
+<tr><td>3</td><td>shardCount</td><td><code>i32</code></td><td>The number of shards within the given table.
 </td><td>default</td><td>1</td></tr>
-<tr><td>4</td><td>tableUri</td><td><code>string</code></td><td>
+<tr><td>4</td><td>tableUri</td><td><code>string</code></td><td>The location where the table should be stored this can be "file:///" for a local instance of Blur or "hdfs://" for a distributed installation of Blur.
 </td><td>default</td><td></td></tr>
-<tr><td>5</td><td>compressionClass</td><td><code>string</code></td><td>
-</td><td>default</td><td>"org.apache.hadoop.io.compress.DefaultCodec"</td></tr>
-<tr><td>6</td><td>compressionBlockSize</td><td><code>i32</code></td><td>
-</td><td>default</td><td>32768</td></tr>
-<tr><td>7</td><td>cluster</td><td><code>string</code></td><td>
+<tr><td>7</td><td>cluster</td><td><code>string</code></td><td>The cluster where this table should be created.
 </td><td>default</td><td>"default"</td></tr>
-<tr><td>8</td><td>name</td><td><code>string</code></td><td>
+<tr><td>8</td><td>name</td><td><code>string</code></td><td>The table name.
 </td><td>default</td><td></td></tr>
-<tr><td>9</td><td>similarityClass</td><td><code>string</code></td><td>
+<tr><td>9</td><td>similarityClass</td><td><code>string</code></td><td>Sets the similarity class in Lucene.
 </td><td>default</td><td></td></tr>
-<tr><td>10</td><td>blockCaching</td><td><code>bool</code></td><td>
+<tr><td>10</td><td>blockCaching</td><td><code>bool</code></td><td>Should block cache be enable or disabled for this table.
 </td><td>default</td><td>1</td></tr>
-<tr><td>11</td><td>blockCachingFileTypes</td><td><code>set&lt;<code>string</code>&gt;</code></td><td>
+<tr><td>11</td><td>blockCachingFileTypes</td><td><code>set&lt;<code>string</code>&gt;</code></td><td>The files extensions that you would like to allow block cache to to cache.  If null (default) everything is cached.
 </td><td>default</td><td></td></tr>
 <tr><td>12</td><td>readOnly</td><td><code>bool</code></td><td>If a table is set to be readonly, that means that mutates through Thrift are NOT allowed.  However
 updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.

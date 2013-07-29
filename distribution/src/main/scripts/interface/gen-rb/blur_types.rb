@@ -258,9 +258,9 @@ module Blur
       STARTRECORD => {:type => ::Thrift::Types::I32, :name => 'startRecord', :default => 0},
       # Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
 # and you want the first 100, then this value is 100.  If you want records 300-400 then this value
-# would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the
-# records in the row, be careful.
-      MAXRECORDSTOFETCH => {:type => ::Thrift::Types::I32, :name => 'maxRecordsToFetch', :default => 2147483647},
+# would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch the first
+# 1000 records of the row.
+      MAXRECORDSTOFETCH => {:type => ::Thrift::Types::I32, :name => 'maxRecordsToFetch', :default => 1000},
       # The HighlightOptions object controls how the data is highlighted.  If null no highlighting will occur.
       HIGHLIGHTOPTIONS => {:type => ::Thrift::Types::STRUCT, :name => 'highlightOptions', :class => ::Blur::HighlightOptions}
     }
@@ -779,8 +779,6 @@ module Blur
     ISENABLED = 1
     SHARDCOUNT = 3
     TABLEURI = 4
-    COMPRESSIONCLASS = 5
-    COMPRESSIONBLOCKSIZE = 6
     CLUSTER = 7
     NAME = 8
     SIMILARITYCLASS = 9
@@ -791,25 +789,21 @@ module Blur
     TABLEPROPERTIES = 14
 
     FIELDS = {
-      # 
+      # Is the table enabled or not, enabled by default.
       ISENABLED => {:type => ::Thrift::Types::BOOL, :name => 'isEnabled', :default => true},
-      # 
+      # The number of shards within the given table.
       SHARDCOUNT => {:type => ::Thrift::Types::I32, :name => 'shardCount', :default => 1},
-      # 
+      # The location where the table should be stored this can be "file:///" for a local instance of Blur or "hdfs://" for a distributed installation of Blur.
       TABLEURI => {:type => ::Thrift::Types::STRING, :name => 'tableUri'},
-      # 
-      COMPRESSIONCLASS => {:type => ::Thrift::Types::STRING, :name => 'compressionClass', :default => %q"org.apache.hadoop.io.compress.DefaultCodec"},
-      # 
-      COMPRESSIONBLOCKSIZE => {:type => ::Thrift::Types::I32, :name => 'compressionBlockSize', :default => 32768},
-      # 
+      # The cluster where this table should be created.
       CLUSTER => {:type => ::Thrift::Types::STRING, :name => 'cluster', :default => %q"default"},
-      # 
+      # The table name.
       NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
-      # 
+      # Sets the similarity class in Lucene.
       SIMILARITYCLASS => {:type => ::Thrift::Types::STRING, :name => 'similarityClass'},
-      # 
+      # Should block cache be enable or disabled for this table.
       BLOCKCACHING => {:type => ::Thrift::Types::BOOL, :name => 'blockCaching', :default => true},
-      # 
+      # The files extensions that you would like to allow block cache to to cache.  If null (default) everything is cached.
       BLOCKCACHINGFILETYPES => {:type => ::Thrift::Types::SET, :name => 'blockCachingFileTypes', :element => {:type => ::Thrift::Types::STRING}},
       # If a table is set to be readonly, that means that mutates through Thrift are NOT allowed.  However
 # updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.

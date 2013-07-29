@@ -74,7 +74,7 @@ public class TSimpleServer extends TServer {
           inputProtocol = inputProtocolFactory_.getProtocol(inputTransport);
           outputProtocol = outputProtocolFactory_.getProtocol(outputTransport);
           if (eventHandler_ != null) {
-            connectionContext = eventHandler_.createContext(inputProtocol, outputProtocol);
+            connectionContext = eventHandler_.createContext(inputProtocol, outputProtocol, null);
           }
           while (true) {
             if (eventHandler_ != null) {

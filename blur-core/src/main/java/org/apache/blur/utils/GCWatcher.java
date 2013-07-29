@@ -126,7 +126,7 @@ public class GCWatcher extends TimerTask {
         long usedAfter = after.getUsed();
         
         long totalTime = endTime - startTime;
-        LOG.info("totalTime spent in GC [{0}] collected [{1}]", totalTime, (usedBefore - usedAfter));
+        LOG.info("totalTime spent in GC [{0} ms] collected [{1} bytes]", totalTime, (usedBefore - usedAfter));
         MemoryUsage heapMemoryUsage = _memoryMXBean.getHeapMemoryUsage();
         long max = heapMemoryUsage.getMax();
         long used = heapMemoryUsage.getUsed();

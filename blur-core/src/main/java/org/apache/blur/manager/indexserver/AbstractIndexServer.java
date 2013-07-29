@@ -21,12 +21,6 @@ import java.util.Map;
 
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.writer.BlurIndex;
-import org.apache.blur.server.IndexSearcherClosable;
-import org.apache.blur.utils.BlurUtil;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
 
 public abstract class AbstractIndexServer implements IndexServer {
 
@@ -34,15 +28,7 @@ public abstract class AbstractIndexServer implements IndexServer {
     long recordCount = 0;
     Map<String, BlurIndex> indexes = getIndexes(table);
     for (Map.Entry<String, BlurIndex> index : indexes.entrySet()) {
-      IndexSearcherClosable searcher = null;
-      try {
-        searcher = index.getValue().getIndexReader();
-        recordCount += searcher.getIndexReader().numDocs();
-      } finally {
-        if (searcher != null) {
-          searcher.close();
-        }
-      }
+      recordCount += index.getValue().getRecordCount();
     }
     return recordCount;
   }
@@ -51,22 +37,9 @@ public abstract class AbstractIndexServer implements IndexServer {
     long rowCount = 0;
     Map<String, BlurIndex> indexes = getIndexes(table);
     for (Map.Entry<String, BlurIndex> index : indexes.entrySet()) {
-      IndexSearcherClosable searcher = null;
-      try {
-        searcher = index.getValue().getIndexReader();
-        rowCount += getRowCount(searcher.getIndexReader());
-      } finally {
-        if (searcher != null) {
-          searcher.close();
-        }
-      }
+      rowCount += index.getValue().getRowCount();
     }
     return rowCount;
   }
 
-  private long getRowCount(IndexReader indexReader) throws IOException {
-    IndexSearcher searcher = new IndexSearcher(indexReader);
-    TopDocs topDocs = searcher.search(new TermQuery(BlurUtil.PRIME_DOC_TERM), 1);
-    return topDocs.totalHits;
-  }
 }

@@ -21,6 +21,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.thrift.generated.Row;
+import org.apache.blur.utils.BlurUtil;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 
 public abstract class BlurIndex {
 
@@ -38,5 +42,31 @@ public abstract class BlurIndex {
 
   public abstract void optimize(int numberOfSegmentsPerShard) throws IOException;
 
+  public long getRecordCount() throws IOException {
+    IndexSearcherClosable searcher = getIndexReader();
+    try {
+      return searcher.getIndexReader().numDocs();
+    } finally {
+      if (searcher != null) {
+        searcher.close();
+      }
+    }
+  }
+
+  public long getRowCount() throws IOException {
+    IndexSearcherClosable searcher = getIndexReader();
+    try {
+      return getRowCount(searcher);
+    } finally {
+      if (searcher != null) {
+        searcher.close();
+      }
+    }
+  }
+
+  protected long getRowCount(IndexSearcher searcher) throws IOException {
+    TopDocs topDocs = searcher.search(new TermQuery(BlurUtil.PRIME_DOC_TERM), 1);
+    return topDocs.totalHits;
+  }
 
 }

@@ -259,10 +259,10 @@ struct Selector {
   /**
    * Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records 
    * and you want the first 100, then this value is 100.  If you want records 300-400 then this value 
-   * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch all the 
-   * records in the row, be careful.
+   * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch the first 
+   * 1000 records of the row.
    */
-  9:i32 maxRecordsToFetch = 2147483647,
+  9:i32 maxRecordsToFetch = 1000,
   /**
    * The HighlightOptions object controls how the data is highlighted.  If null no highlighting will occur.
    */
@@ -649,43 +649,35 @@ struct ColumnPreCache {
  */
 struct TableDescriptor {
   /**
-   *
+   * Is the table enabled or not, enabled by default.
    */
   1:bool isEnabled = 1,
   /**
-   *
+   * The number of shards within the given table.
    */
   3:i32 shardCount = 1,
   /**
-   *
+   * The location where the table should be stored this can be "file:///" for a local instance of Blur or "hdfs://" for a distributed installation of Blur.
    */
   4:string tableUri,
   /**
-   *
-   */
-  5:string compressionClass = 'org.apache.hadoop.io.compress.DefaultCodec',
-  /**
-   *
-   */
-  6:i32 compressionBlockSize = 32768,
-  /**
-   *
+   * The cluster where this table should be created.
    */
   7:string cluster = 'default',
   /**
-   *
+   * The table name.
    */
   8:string name,
   /**
-   *
+   * Sets the similarity class in Lucene.
    */
   9:string similarityClass,
   /**
-   *
+   * Should block cache be enable or disabled for this table.
    */
   10:bool blockCaching = 1,
   /**
-   *
+   * The files extensions that you would like to allow block cache to to cache.  If null (default) everything is cached.
    */
   11:set<string> blockCachingFileTypes,
   /**

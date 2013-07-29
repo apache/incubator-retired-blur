@@ -130,5 +130,4 @@ public class BlurIndexReader extends BlurIndex {
   public AtomicBoolean isClosed() {
     return _isClosed;
   }
-
 }

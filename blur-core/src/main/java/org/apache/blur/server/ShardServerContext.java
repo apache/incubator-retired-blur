@@ -17,6 +17,7 @@ package org.apache.blur.server;
  * limitations under the License.
  */
 import java.io.IOException;
+import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +40,15 @@ public class ShardServerContext implements ServerContext {
 
   private final static Map<Thread, ShardServerContext> _threadsToContext = new ConcurrentHashMap<Thread, ShardServerContext>();
   private final Map<String, IndexSearcherClosable> _indexSearcherMap = new HashMap<String, IndexSearcherClosable>();
+  private final SocketAddress _localSocketAddress;
+  private final SocketAddress _remoteSocketAddress;
+  private final String _connectionString;
+
+  public ShardServerContext(SocketAddress localSocketAddress, SocketAddress remoteSocketAddress) {
+    _localSocketAddress = localSocketAddress;
+    _remoteSocketAddress = remoteSocketAddress;
+    _connectionString = _localSocketAddress.toString() + "\t" + _remoteSocketAddress.toString();
+  }
 
   /**
    * Registers the {@link ShardServerContext} for this thread.
@@ -130,4 +140,15 @@ public class ShardServerContext implements ServerContext {
     return table + "/" + shard;
   }
 
+  public SocketAddress getRocalSocketAddress() {
+    return _localSocketAddress;
+  }
+
+  public SocketAddress getRemoteSocketAddress() {
+    return _remoteSocketAddress;
+  }
+
+  public String getConnectionString() {
+    return _connectionString;
+  }
 }

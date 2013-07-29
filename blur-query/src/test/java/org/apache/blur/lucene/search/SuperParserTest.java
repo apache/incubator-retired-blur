@@ -76,7 +76,7 @@ public class SuperParserTest {
 
   @Test
   public void test1() throws ParseException {
-    Query query = parser.parse(" +super:<a.a:a a.d:e a.b:b> ");
+    Query query = parser.parse(" +<a.a:a a.d:e a.b:b> ");
 
     BooleanQuery booleanQuery = new BooleanQuery();
     booleanQuery.add(new TermQuery(new Term("a.a", "a")), Occur.SHOULD);
@@ -93,17 +93,14 @@ public class SuperParserTest {
 
   @Test
   public void test2() throws ParseException {
-    Query query = parser.parse("super:<a.c:c a.d:d>");
+    Query query = parser.parse("<a.c:c a.d:d>");
 
     BooleanQuery booleanQuery = new BooleanQuery();
     booleanQuery.add(new TermQuery(new Term("a.c", "c")), Occur.SHOULD);
     booleanQuery.add(new TermQuery(new Term("a.d", "d")), Occur.SHOULD);
     SuperQuery superQuery = new SuperQuery(booleanQuery, ScoreType.SUPER, new Term("_primedoc_"));
 
-    BooleanQuery bq = new BooleanQuery();
-    bq.add(superQuery, Occur.SHOULD);
-
-    assertQuery(bq, query);
+    assertQuery(superQuery, query);
   }
 
   @Test
@@ -114,7 +111,7 @@ public class SuperParserTest {
 
   @Test
   public void test4() throws ParseException {
-    Query query = parser.parse("super:<a.a:a a.d:e a.b:b>  - super:<b.c:c b.d:d>");
+    Query query = parser.parse("<a.a:a a.d:e a.b:b>  -<b.c:c b.d:d>");
 
     BooleanQuery booleanQuery1 = new BooleanQuery();
     booleanQuery1.add(new TermQuery(new Term("a.a", "a")), Occur.SHOULD);
@@ -139,7 +136,7 @@ public class SuperParserTest {
   public void test5() throws ParseException, IOException {
     parser = new SuperParser(LUCENE_VERSION, getFieldManager(new WhitespaceAnalyzer(LUCENE_VERSION)), true, null,
         ScoreType.SUPER, new Term("_primedoc_"));
-    Query query = parser.parse("super:<a.a:a a.d:{e TO f} a.b:b a.test:hello\\<> - super:<g.c:c g.d:d>");
+    Query query = parser.parse("<a.a:a a.d:{e TO f} a.b:b a.test:hello\\<> -<g.c:c g.d:d>");
 
     BooleanQuery booleanQuery1 = new BooleanQuery();
     booleanQuery1.add(new TermQuery(new Term("a.a", "a")), Occur.SHOULD);
@@ -178,7 +175,11 @@ public class SuperParserTest {
   @Test
   public void test7() throws ParseException {
     Query q = parseSq("(a.b:cool) (+a.c:cool a.b:cool)");
-    assertQuery(bq(bc(sq(tq("a.b", "cool"))), bc(sq(bq(bc_m(tq("a.c", "cool")), bc(tq("a.b", "cool")))))), q);
+    BooleanQuery bq = bq(bc(sq(tq("a.b", "cool"))), bc(sq(bq(bc_m(tq("a.c", "cool")), bc(tq("a.b", "cool"))))));
+
+    System.out.println(q);
+    System.out.println(bq);
+    assertQuery(bq, q);
   }
 
   @Test
@@ -265,28 +266,28 @@ public class SuperParserTest {
 
   @Test
   public void test21() throws ParseException {
-    Query q = parseSq("super:<f1:word1> word2");
+    Query q = parseSq("<f1:word1> word2");
     Query q1 = bq(bc(sq(tq("f1", "word1"))), bc(sq(tq("super", "word2"))));
     assertQuery(q1, q);
   }
 
   @Test
   public void test22() throws ParseException {
-    Query q = parseSq("super:<f1:word1> word2 super:<word3>");
+    Query q = parseSq("<f1:word1> word2 <word3>");
     Query q1 = bq(bc(sq(tq("f1", "word1"))), bc(sq(tq("super", "word2"))), bc(sq(tq("super", "word3"))));
     assertQuery(q1, q);
   }
 
   @Test
   public void test23() throws ParseException {
-    Query q = parseSq("super:<f1:word1>  super:<word3> word2");
+    Query q = parseSq("<f1:word1>  <word3> word2");
     Query q1 = bq(bc(sq(tq("f1", "word1"))), bc(sq(tq("super", "word3"))), bc(sq(tq("super", "word2"))));
     assertQuery(q1, q);
   }
 
   @Test
   public void test24() throws ParseException {
-    Query q = parseSq("super:<f1:word1> +word6 super:<word3> word2");
+    Query q = parseSq("<f1:word1> +word6 <word3> word2");
     Query q1 = bq(bc(sq(tq("f1", "word1"))), bc_m(sq(tq("super", "word6"))), bc(sq(tq("super", "word3"))),
         bc(sq(tq("super", "word2"))));
     assertQuery(q1, q);
@@ -294,15 +295,23 @@ public class SuperParserTest {
 
   @Test
   public void test25() throws ParseException {
-    Query q = parseSq("+leading super:<f1:word1> +word6 super:<word3> word2");
+    Query q = parseSq("+leading <f1:word1> +word6 <word3> word2");
     Query q1 = bq(bc_m(sq(tq("super", "leading"))), bc(sq(tq("f1", "word1"))), bc_m(sq(tq("super", "word6"))),
         bc(sq(tq("super", "word3"))), bc(sq(tq("super", "word2"))));
     assertQuery(q1, q);
   }
 
   @Test
+  public void test25_AND_ORs() throws ParseException {
+    Query q = parseSq("leading AND <f1:word1> OR word6 <word3> word2");
+    Query q1 = bq(bc_m(sq(tq("super", "leading"))), bc_m(sq(tq("f1", "word1"))), bc(sq(tq("super", "word6"))),
+        bc(sq(tq("super", "word3"))), bc(sq(tq("super", "word2"))));
+    assertQuery(q1, q);
+  }
+
+  @Test
   public void test26() throws ParseException {
-    Query q = parseSq("-leading super:<f1:word1> +word6 super:<word3> word2");
+    Query q = parseSq("-leading <f1:word1> +word6 <word3> word2");
     Query q1 = bq(bc_n(sq(tq("super", "leading"))), bc(sq(tq("f1", "word1"))), bc_m(sq(tq("super", "word6"))),
         bc(sq(tq("super", "word3"))), bc(sq(tq("super", "word2"))));
     assertQuery(q1, q);
@@ -328,8 +337,8 @@ public class SuperParserTest {
   }
 
   public static void assertQuery(Query expected, Query actual) {
-    System.out.println(expected);
-    System.out.println(actual);
+    System.out.println("expected =" + expected);
+    System.out.println("actual   =" + actual);
     assertEqualsQuery(expected, actual);
   }
 

@@ -124,8 +124,7 @@ public class ThriftBlurShardServer extends ThriftServer {
       int webServerPort = baseGuiPort + serverIndex;
 
       // TODO: this got ugly, there has to be a better way to handle all these
-      // params
-      // without reversing the mvn dependancy and making blur-gui on top.
+      // params without reversing the mvn dependancy and making blur-gui on top.
       httpServer = new HttpJettyServer(bindPort, webServerPort, configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1),
           configuration.getInt(BLUR_SHARD_BIND_PORT, -1), configuration.getInt(BLUR_GUI_CONTROLLER_PORT, -1),
           configuration.getInt(BLUR_GUI_SHARD_PORT, -1), "shard");
@@ -206,6 +205,8 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexManager.setThreadCount(configuration.getInt(BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT, 32));
     indexManager.setFilterCache(filterCache);
     indexManager.setClusterStatus(clusterStatus);
+    indexManager.setFetchCount(configuration.getInt(BLUR_SHARD_FETCHCOUNT, 100));
+    indexManager.setMaxHeapPerRowFetch(configuration.getInt(BLUR_MAX_HEAP_PER_ROW_FETCH, 10000000));
     indexManager.init();
 
     final BlurShardServer shardServer = new BlurShardServer();
@@ -215,9 +216,10 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.setClusterStatus(clusterStatus);
     shardServer.setQueryChecker(queryChecker);
     shardServer.setConfiguration(configuration);
+    shardServer.setMaxRecordsPerRowFetchRequest(configuration.getInt(BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST, 1000));
     shardServer.init();
 
-    Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(shardServer, Iface.class);
+    Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(shardServer, Iface.class, false);
     if (httpServer != null) {
       WebAppContext context = httpServer.getContext();
       context.addServlet(new ServletHolder(new TServlet(new Blur.Processor<Blur.Iface>(iface),

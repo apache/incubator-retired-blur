@@ -119,7 +119,14 @@ public class LoadData {
   }
 
   private static String getWord() {
-    return words.get(random.nextInt(words.size()));
+    return makeUpperCaseRandomly(words.get(random.nextInt(words.size())),random);
+  }
+
+  private static String makeUpperCaseRandomly(String s, Random r) {
+    if (r.nextBoolean()) {
+      return s.substring(0, 1).toUpperCase() + s.substring(1);
+    }
+    return s;
   }
 
   protected static String getRowId() {

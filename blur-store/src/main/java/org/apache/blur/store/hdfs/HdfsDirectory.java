@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -54,43 +53,6 @@ import com.yammer.metrics.core.MetricName;
 public class HdfsDirectory extends Directory {
 
   private static final Log LOG = LogFactory.getLog(HdfsDirectory.class);
-
-  private static AtomicLong deleteCounter = new AtomicLong();
-  private static AtomicLong existsCounter = new AtomicLong();
-  private static AtomicLong fileStatusCounter = new AtomicLong();
-  private static AtomicLong renameCounter = new AtomicLong();
-  private static AtomicLong listCounter = new AtomicLong();
-  private static AtomicLong createCounter = new AtomicLong();
-  private static AtomicLong isFileCounter = new AtomicLong();
-
-  private static final boolean debug = false;
-
-  static {
-    if (debug) {
-      Thread thread = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          while (true) {
-            LOG.debug("Delete Counter [" + deleteCounter + "]");
-            LOG.debug("Exists Counter [" + existsCounter + "]");
-            LOG.debug("File Status Counter [" + fileStatusCounter + "]");
-            LOG.debug("Rename Counter [" + renameCounter + "]");
-            LOG.debug("List Counter [" + listCounter + "]");
-            LOG.debug("Create Counter [" + createCounter + "]");
-            LOG.debug("IsFile Counter [" + isFileCounter + "]");
-            try {
-              Thread.sleep(5000);
-            } catch (InterruptedException e) {
-              return;
-            }
-          }
-        }
-      });
-      thread.setName("HDFS dir counter logger");
-      thread.setDaemon(true);
-      thread.start();
-    }
-  }
 
   private final Path path;
   private final FileSystem fileSystem;
@@ -200,11 +162,11 @@ public class HdfsDirectory extends Directory {
 
   @Override
   public IndexOutput createOutput(String name, IOContext context) throws IOException {
+    LOG.debug("createOutput [{0}] [{1}] [{2}]", name, context, path);
     if (fileExists(name)) {
       throw new IOException("File [" + name + "] already exists found.");
     }
     final FSDataOutputStream outputStream = fileSystem.create(getPath(name));
-    createCounter.incrementAndGet();
     return new BufferedIndexOutput() {
 
       @Override
@@ -236,6 +198,7 @@ public class HdfsDirectory extends Directory {
 
   @Override
   public IndexInput openInput(String name, IOContext context) throws IOException {
+    LOG.debug("openInput [{0}] [{1}] [{2}]", name, context, path);
     if (!fileExists(name)) {
       throw new FileNotFoundException("File [" + name + "] not found.");
     }
@@ -245,12 +208,11 @@ public class HdfsDirectory extends Directory {
 
   @Override
   public String[] listAll() throws IOException {
-    listCounter.incrementAndGet();
+    LOG.debug("listAll [{0}]", path);
     FileStatus[] files = fileSystem.listStatus(path, new PathFilter() {
       @Override
       public boolean accept(Path path) {
         try {
-          isFileCounter.incrementAndGet();
           return fileSystem.isFile(path);
         } catch (IOException e) {
           throw new RuntimeException(e);
@@ -266,14 +228,14 @@ public class HdfsDirectory extends Directory {
 
   @Override
   public boolean fileExists(String name) throws IOException {
-    existsCounter.incrementAndGet();
+    LOG.debug("fileExists [{0}] [{1}]", name, path);
     return fileSystem.exists(getPath(name));
   }
 
   @Override
   public void deleteFile(String name) throws IOException {
+    LOG.debug("deleteFile [{0}] [{1}]", name, path);
     if (fileExists(name)) {
-      deleteCounter.incrementAndGet();
       fileSystem.delete(getPath(name), true);
     } else {
       throw new FileNotFoundException("File [" + name + "] not found");
@@ -282,7 +244,7 @@ public class HdfsDirectory extends Directory {
 
   @Override
   public long fileLength(String name) throws IOException {
-    fileStatusCounter.incrementAndGet();
+    LOG.debug("fileLength [{0}] [{1}]", name, path);
     FileStatus fileStatus = fileSystem.getFileStatus(getPath(name));
     return fileStatus.getLen();
   }
@@ -296,7 +258,7 @@ public class HdfsDirectory extends Directory {
   public void close() throws IOException {
 
   }
-  
+
   public Path getPath() {
     return path;
   }
@@ -310,12 +272,12 @@ public class HdfsDirectory extends Directory {
       throw new FileNotFoundException("File [" + name + "] not found");
     }
     Path file = getPath(name);
-    fileStatusCounter.incrementAndGet();
     return fileSystem.getFileStatus(file).getModificationTime();
   }
 
   @Override
   public void copy(Directory to, String src, String dest, IOContext context) throws IOException {
+    LOG.debug("copy [{0}] [{1}] [{2}] [{3}] [{4}]", to, src, dest, context, path);
     if (to instanceof DirectoryDecorator) {
       copy(((DirectoryDecorator) to).getOriginalDirectory(), src, dest, context);
     } else if (to instanceof HdfsDirectory) {
@@ -332,7 +294,6 @@ public class HdfsDirectory extends Directory {
     if (ifSameCluster(simpleTo, this)) {
       Path newDest = simpleTo.getPath(dest);
       Path oldSrc = getPath(src);
-      renameCounter.incrementAndGet();
       return fileSystem.rename(oldSrc, newDest);
     }
     return false;

@@ -24,10 +24,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Random;
 
-import javax.jws.Oneway;
-
-import org.apache.blur.store.blockcache.BlockDirectory;
-import org.apache.blur.store.blockcache.Cache;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -172,21 +168,23 @@ public class BlockDirectoryTest {
     IndexInput hdfsInput = hdfs.openInput(name, IOContext.DEFAULT);
     assertEquals(fsInput.length(), hdfsInput.length());
     int fileLength = (int) fsInput.length();
-    for (int i = 0; i < reads; i++) {
-      byte[] fsBuf = new byte[random.nextInt(Math.min(MAX_BUFFER_SIZE - MIN_BUFFER_SIZE, fileLength)) + MIN_BUFFER_SIZE];
-      byte[] hdfsBuf = new byte[fsBuf.length];
-      int offset = random.nextInt(fsBuf.length);
-      int length = random.nextInt(fsBuf.length - offset);
-      int pos = random.nextInt(fileLength - length);
-      fsInput.seek(pos);
-      fsInput.readBytes(fsBuf, offset, length);
-      hdfsInput.seek(pos);
-      hdfsInput.readBytes(hdfsBuf, offset, length);
-      for (int f = offset; f < length; f++) {
-        if (fsBuf[f] != hdfsBuf[f]) {
-          fail(Long.toString(seed) + " read [" + i + "]");
+    if (fileLength != 0) {
+      for (int i = 0; i < reads; i++) {
+        byte[] fsBuf = new byte[random.nextInt(Math.min(MAX_BUFFER_SIZE - MIN_BUFFER_SIZE, fileLength)) + MIN_BUFFER_SIZE];
+        byte[] hdfsBuf = new byte[fsBuf.length];
+        int offset = random.nextInt(fsBuf.length);
+        int length = random.nextInt(fsBuf.length - offset);
+        int pos = random.nextInt(fileLength - length);
+        fsInput.seek(pos);
+        fsInput.readBytes(fsBuf, offset, length);
+        hdfsInput.seek(pos);
+        hdfsInput.readBytes(hdfsBuf, offset, length);
+        for (int f = offset; f < length; f++) {
+          if (fsBuf[f] != hdfsBuf[f]) {
+            fail(Long.toString(seed) + " read [" + i + "]");
+          }
         }
-      }
+      } 
     }
     fsInput.close();
     hdfsInput.close();

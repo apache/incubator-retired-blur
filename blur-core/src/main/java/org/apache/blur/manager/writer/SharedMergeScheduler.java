@@ -16,6 +16,7 @@ package org.apache.blur.manager.writer;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -29,7 +30,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.MergePolicy;
 import org.apache.lucene.index.MergeScheduler;
 
-public class SharedMergeScheduler extends MergeScheduler implements Runnable {
+public class SharedMergeScheduler implements Runnable, Closeable {
 
   private static final Log LOG = LogFactory.getLog(SharedMergeScheduler.class);
 
@@ -47,14 +48,37 @@ public class SharedMergeScheduler extends MergeScheduler implements Runnable {
     }
   }
 
-  @Override
-  public void merge(IndexWriter writer) throws IOException {
+  private void mergeIndexWriter(IndexWriter writer) {
     synchronized (_writers) {
       if (!_writers.contains(writer)) {
         LOG.debug("Adding writer to merge [{0}]", writer);
         _writers.add(writer);
       }
     }
+  }
+  
+  private void removeWriter(IndexWriter writer) {
+    synchronized (_writers) {
+      _writers.remove(writer);
+    }
+  }
+
+  public MergeScheduler getMergeScheduler() {
+    return new MergeScheduler() {
+
+      private IndexWriter _writer;
+
+      @Override
+      public void merge(IndexWriter writer) throws IOException {
+        _writer = writer;
+        mergeIndexWriter(writer);
+      }
+
+      @Override
+      public void close() throws IOException {
+        removeWriter(_writer);
+      }
+    };
   }
 
   @Override
@@ -75,9 +99,9 @@ public class SharedMergeScheduler extends MergeScheduler implements Runnable {
           synchronized (this) {
             wait(ONE_SECOND);
           }
-        } else if (mergeWriter(writer)) {
+        } else if (performMergeWriter(writer)) {
           // there seems to be more merges to do
-          merge(writer);
+          mergeIndexWriter(writer);
         }
       } catch (InterruptedException e) {
         LOG.debug("Merging interrupted, exiting.");
@@ -88,7 +112,7 @@ public class SharedMergeScheduler extends MergeScheduler implements Runnable {
     }
   }
 
-  private boolean mergeWriter(IndexWriter writer) throws IOException {
+  private boolean performMergeWriter(IndexWriter writer) throws IOException {
     MergePolicy.OneMerge merge = writer.getNextMerge();
     if (merge == null) {
       LOG.debug("No merges to run for [{0}]", writer);

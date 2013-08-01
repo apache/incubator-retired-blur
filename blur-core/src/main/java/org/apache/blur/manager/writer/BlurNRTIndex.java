@@ -89,7 +89,7 @@ public class BlurNRTIndex extends BlurIndex {
 
     TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
-    conf.setMergeScheduler(mergeScheduler);
+    conf.setMergeScheduler(mergeScheduler.getMergeScheduler());
 
     DirectoryReferenceCounter referenceCounter = new DirectoryReferenceCounter(directory, gc, closer);
     // This directory allows for warm up by adding tracing ability.

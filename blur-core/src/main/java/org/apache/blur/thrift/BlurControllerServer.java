@@ -813,23 +813,36 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         batches.put(node, list);
       }
       list.add(mutation);
-
     }
 
+    List<Future<Void>> futures = new ArrayList<Future<Void>>();
+
     for (Entry<String, List<RowMutation>> entry : batches.entrySet()) {
-      String node = entry.getKey();
+      final String node = entry.getKey();
       final List<RowMutation> mutationsLst = entry.getValue();
+      futures.add(_executor.submit(new Callable<Void>() {
+        @Override
+        public Void call() throws Exception {
+          return _client.execute(node, new BlurCommand<Void>() {
+            @Override
+            public Void call(Client client) throws BlurException, TException {
+              client.mutateBatch(mutationsLst);
+              return null;
+            }
+          }, _maxMutateRetries, _mutateDelay, _maxMutateDelay);
+        }
+      }));
+    }
+    
+    for (Future<Void> future : futures) {
       try {
-        _client.execute(node, new BlurCommand<Void>() {
-          @Override
-          public Void call(Client client) throws BlurException, TException {
-            client.mutateBatch(mutationsLst);
-            return null;
-          }
-        }, _maxMutateRetries, _mutateDelay, _maxMutateDelay);
-      } catch (Exception e) {
-        LOG.error("Unknown error during mutations of [{0}]", e, mutationsLst);
-        throw new BException("Unknown error during mutations of [{0}]", e, mutationsLst);
+        future.get();
+      } catch (InterruptedException e) {
+        LOG.error("Unknown error during batch mutations", e);
+        throw new BException("Unknown error during batch mutations", e);
+      } catch (ExecutionException e) {
+        LOG.error("Unknown error during batch mutations", e.getCause());
+        throw new BException("Unknown error during batch mutations", e.getCause());
       }
     }
   }

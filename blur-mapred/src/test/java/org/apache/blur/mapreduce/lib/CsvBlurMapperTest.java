@@ -18,19 +18,19 @@ package org.apache.blur.mapreduce.lib;
  */
 import java.io.IOException;
 
-import org.apache.blur.mapreduce.lib.CsvBlurMapper;
 import org.apache.blur.mapreduce.lib.BlurMutate.MUTATE_TYPE;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Before;
 import org.junit.Test;
 
 public class CsvBlurMapperTest {
 
-  private MapDriver<LongWritable, Text, Text, BlurMutate> _mapDriver;
+  private MapDriver<Writable, Text, Text, BlurMutate> _mapDriver;
   private CsvBlurMapper _mapper;
 
   @Before
@@ -59,6 +59,21 @@ public class CsvBlurMapperTest {
 
     _mapDriver.withInput(new LongWritable(), new Text("rowid1,record1,value1,value2"));
     _mapDriver.withOutput(new Text("rowid1"), new BlurMutate(MUTATE_TYPE.REPLACE, "rowid1", "record1", "cf1")
+        .addColumn("col1", "value1").addColumn("col2", "value2"));
+    _mapDriver.runTest();
+  }
+  
+  @Test
+  public void testMapperAutoGenerateRecordId() {
+    Configuration configuration = _mapDriver.getConfiguration();
+    CsvBlurMapper.setAutoGenerateRecordIdAsHashOfData(configuration, true);
+    CsvBlurMapper.setFamilyNotInFile(configuration, true);
+    CsvBlurMapper.setColumns(configuration, "cf1:col1,col2|cf2:col1,col2,col3");
+    CsvBlurMapper.addFamilyPath(configuration, "cf1", new Path("/"));
+    _mapper.setFamilyFromPath("cf1");
+
+    _mapDriver.withInput(new LongWritable(), new Text("rowid1,value1,value2"));
+    _mapDriver.withOutput(new Text("rowid1"), new BlurMutate(MUTATE_TYPE.REPLACE, "rowid1", "-25nqln3n2vb4cayex9y9tpxx3", "cf1")
         .addColumn("col1", "value1").addColumn("col2", "value2"));
     _mapDriver.runTest();
   }

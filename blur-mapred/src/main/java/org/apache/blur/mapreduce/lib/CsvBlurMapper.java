@@ -17,6 +17,9 @@ package org.apache.blur.mapreduce.lib;
  * limitations under the License.
  */
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,8 +31,8 @@ import java.util.TreeSet;
 import org.apache.blur.mapreduce.lib.BlurMutate.MUTATE_TYPE;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
@@ -40,8 +43,9 @@ import com.google.common.base.Splitter;
  * This will parse a standard csv file into a {@link BlurMutate} object. Use the
  * static addColumns, and setSeparator methods to configure the class.
  */
-public class CsvBlurMapper extends BaseBlurMapper<LongWritable, Text> {
+public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
 
+  public static final String BLUR_CSV_AUTO_GENERATE_RECORD_ID_AS_HASH_OF_DATA = "blur.csv.auto.generate.record.id.as.hash.of.data";
   public static final String BLUR_CSV_FAMILYISNOTINFILE = "blur.csv.familyisnotinfile";
   public static final String BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILIES = "blur.csv.family.path.mappings.families";
   public static final String BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILY_PREFIX = "blur.csv.family.path.mappings.family.";
@@ -49,11 +53,13 @@ public class CsvBlurMapper extends BaseBlurMapper<LongWritable, Text> {
   public static final String BLUR_CSV_FAMILY_COLUMN_PREFIX = "blur.csv.family.";
   public static final String BLUR_CSV_FAMILIES = "blur.csv.families";
 
-  private Map<String, List<String>> columnNameMap;
-  private String separator = ",";
-  private Splitter splitter;
-  private boolean familyNotInFile;
-  private String familyFromPath;
+  private Map<String, List<String>> _columnNameMap;
+  private String _separator = ",";
+  private Splitter _splitter;
+  private boolean _familyNotInFile;
+  private String _familyFromPath;
+  private boolean _autoGenerateRecordIdAsHashOfData;
+  private MessageDigest _digest;
 
   /**
    * Add a mapping for a family to a path. This is to be used when an entire
@@ -131,6 +137,45 @@ public class CsvBlurMapper extends BaseBlurMapper<LongWritable, Text> {
 
   public static boolean isFamilyNotInFile(Configuration configuration) {
     return configuration.getBoolean(BLUR_CSV_FAMILYISNOTINFILE, false);
+  }
+
+  /**
+   * If set to true the record id will be automatically generated as a hash of
+   * the data that the record contains.
+   * 
+   * @param job
+   *          the job to setup.
+   * @param autoGenerateRecordIdAsHashOfData
+   *          boolean.
+   */
+  public static void setAutoGenerateRecordIdAsHashOfData(Job job, boolean autoGenerateRecordIdAsHashOfData) {
+    setAutoGenerateRecordIdAsHashOfData(job.getConfiguration(), autoGenerateRecordIdAsHashOfData);
+  }
+
+  /**
+   * If set to true the record id will be automatically generated as a hash of
+   * the data that the record contains.
+   * 
+   * @param configuration
+   *          the configuration to setup.
+   * @param autoGenerateRecordIdAsHashOfData
+   *          boolean.
+   */
+  public static void setAutoGenerateRecordIdAsHashOfData(Configuration configuration,
+      boolean autoGenerateRecordIdAsHashOfData) {
+    configuration.setBoolean(BLUR_CSV_AUTO_GENERATE_RECORD_ID_AS_HASH_OF_DATA, autoGenerateRecordIdAsHashOfData);
+  }
+
+  /**
+   * Gets whether or not to generate a recordid for the record based on the
+   * data.
+   * 
+   * @param configuration
+   *          the configuration.
+   * @return boolean.
+   */
+  public static boolean isAutoGenerateRecordIdAsHashOfData(Configuration configuration) {
+    return configuration.getBoolean(BLUR_CSV_AUTO_GENERATE_RECORD_ID_AS_HASH_OF_DATA, false);
   }
 
   /**
@@ -249,16 +294,24 @@ public class CsvBlurMapper extends BaseBlurMapper<LongWritable, Text> {
   protected void setup(Context context) throws IOException, InterruptedException {
     super.setup(context);
     Configuration configuration = context.getConfiguration();
+    _autoGenerateRecordIdAsHashOfData = isAutoGenerateRecordIdAsHashOfData(configuration);
+    if (_autoGenerateRecordIdAsHashOfData) {
+      try {
+        _digest = MessageDigest.getInstance("MD5");
+      } catch (NoSuchAlgorithmException e) {
+        throw new IOException(e);
+      }
+    }
     Collection<String> familyNames = configuration.getStringCollection(BLUR_CSV_FAMILIES);
-    columnNameMap = new HashMap<String, List<String>>();
+    _columnNameMap = new HashMap<String, List<String>>();
     for (String family : familyNames) {
       String[] columnsNames = configuration.getStrings(BLUR_CSV_FAMILY_COLUMN_PREFIX + family);
-      columnNameMap.put(family, Arrays.asList(columnsNames));
+      _columnNameMap.put(family, Arrays.asList(columnsNames));
     }
-    splitter = Splitter.on(separator);
-    separator = configuration.get(BLUR_CSV_SEPARATOR, separator);
-    familyNotInFile = isFamilyNotInFile(configuration);
-    if (familyNotInFile) {
+    _splitter = Splitter.on(_separator);
+    _separator = configuration.get(BLUR_CSV_SEPARATOR, _separator);
+    _familyNotInFile = isFamilyNotInFile(configuration);
+    if (_familyNotInFile) {
       Path fileCurrentlyProcessing = getCurrentFile(context);
       Collection<String> families = configuration.getStringCollection(BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILIES);
       for (String family : families) {
@@ -266,7 +319,7 @@ public class CsvBlurMapper extends BaseBlurMapper<LongWritable, Text> {
         Path path = new Path(pathStr);
         path = path.makeQualified(path.getFileSystem(configuration));
         if (isParent(path, fileCurrentlyProcessing)) {
-          familyFromPath = family;
+          _familyFromPath = family;
           break;
         }
       }
@@ -294,12 +347,12 @@ public class CsvBlurMapper extends BaseBlurMapper<LongWritable, Text> {
   }
 
   @Override
-  protected void map(LongWritable k, Text value, Context context) throws IOException, InterruptedException {
+  protected void map(Writable k, Text value, Context context) throws IOException, InterruptedException {
     BlurRecord record = _mutate.getRecord();
     record.clearColumns();
     String str = value.toString();
 
-    Iterable<String> split = splitter.split(str);
+    Iterable<String> split = _splitter.split(str);
     List<String> list = toList(split);
 
     if (list.size() < 3) {
@@ -307,25 +360,49 @@ public class CsvBlurMapper extends BaseBlurMapper<LongWritable, Text> {
     }
     int column = 0;
     record.setRowId(list.get(column++));
-    record.setRecordId(list.get(column++));
+    int offset = 2;
+    if (!_autoGenerateRecordIdAsHashOfData) {
+      record.setRecordId(list.get(column++));
+    } else {
+      offset--;
+      _digest.reset();
+      byte[] bs = value.getBytes();
+      int length = value.getLength();
+      _digest.update(bs, 0, length);
+      record.setRecordId(new BigInteger(_digest.digest()).toString(Character.MAX_RADIX));
+    }
     String family;
-    int offset;
-    if (familyNotInFile) {
-      family = familyFromPath;
-      offset = 2;
+    if (_familyNotInFile) {
+      family = _familyFromPath;
     } else {
       family = list.get(column++);
-      offset = 3;
+      offset++;
     }
     record.setFamily(family);
 
-    List<String> columnNames = columnNameMap.get(family);
+    List<String> columnNames = _columnNameMap.get(family);
     if (columnNames == null) {
       throw new IOException("Family [" + family + "] is missing in the definition.");
     }
     if (list.size() - offset != columnNames.size()) {
-      throw new IOException("Record [" + str + "] too short, does not match defined record [rowid,recordid,family"
-          + getColumnNames(columnNames) + "].");
+      if (_familyNotInFile) {
+        if (_autoGenerateRecordIdAsHashOfData) {
+          throw new IOException("Record [" + str + "] too short, does not match defined record [rowid,"
+              + getColumnNames(columnNames) + "].");
+        } else {
+          throw new IOException("Record [" + str + "] too short, does not match defined record [rowid,recordid,"
+              + getColumnNames(columnNames) + "].");
+        }
+      } else {
+        if (_autoGenerateRecordIdAsHashOfData) {
+          throw new IOException("Record [" + str + "] too short, does not match defined record [rowid,family"
+              + getColumnNames(columnNames) + "].");
+        } else {
+          throw new IOException("Record [" + str + "] too short, does not match defined record [rowid,recordid,family"
+              + getColumnNames(columnNames) + "].");
+        }
+      }
+
     }
 
     for (int i = 0; i < columnNames.size(); i++) {
@@ -340,7 +417,7 @@ public class CsvBlurMapper extends BaseBlurMapper<LongWritable, Text> {
   }
 
   public void setFamilyFromPath(String familyFromPath) {
-    this.familyFromPath = familyFromPath;
+    this._familyFromPath = familyFromPath;
   }
 
   private String getColumnNames(List<String> columnNames) {

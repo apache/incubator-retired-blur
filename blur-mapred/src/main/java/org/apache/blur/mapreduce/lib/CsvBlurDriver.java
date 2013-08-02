@@ -36,25 +36,27 @@ public class CsvBlurDriver {
       BlurException, TException {
     Configuration configuration = new Configuration();
     String[] otherArgs = new GenericOptionsParser(configuration, args).getRemainingArgs();
-    if (otherArgs.length != 4) {
+    if (otherArgs.length != 5) {
       System.err
-          .println("Usage: csvindexer <thrift controller connection str> <tablename> <column family definitions> <in>");
+          .println("Usage: csvindexer <thrift controller connection str> <tablename> <column family definitions> <auto generate record id> <in>");
       System.exit(2);
     }
     int c = 0;
     final String controllerConnectionStr = otherArgs[c++];
     final String tableName = otherArgs[c++];
     final String columnDefs = otherArgs[c++];
+    final Boolean autoGenerateRecordIds = Boolean.parseBoolean(otherArgs[c++]);
     final String input = otherArgs[c++];
 
     final Iface client = BlurClient.getClient(controllerConnectionStr);
     TableDescriptor tableDescriptor = client.describe(tableName);
-
+    
     Job job = new Job(configuration, "Blur indexer [" + tableName + "] [" + input + "]");
+    CsvBlurMapper.setAutoGenerateRecordIdAsHashOfData(job, autoGenerateRecordIds);
     job.setJarByClass(CsvBlurDriver.class);
     job.setMapperClass(CsvBlurMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
-
+    
     FileInputFormat.addInputPath(job, new Path(input));
     CsvBlurMapper.setColumns(job, columnDefs);
     BlurOutputFormat.setupJob(job, tableDescriptor);
@@ -62,4 +64,5 @@ public class CsvBlurDriver {
     boolean waitForCompletion = job.waitForCompletion(true);
     System.exit(waitForCompletion ? 0 : 1);
   }
+  
 }

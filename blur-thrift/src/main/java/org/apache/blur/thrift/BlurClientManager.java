@@ -17,10 +17,6 @@ package org.apache.blur.thrift;
  * limitations under the License.
  */
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.Proxy.Type;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,9 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,14 +34,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TBinaryProtocol;
-import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol;
-import org.apache.blur.thirdparty.thrift_0_9_0.transport.TFramedTransport;
-import org.apache.blur.thirdparty.thrift_0_9_0.transport.TSocket;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransportException;
 import org.apache.blur.thrift.generated.Blur;
-import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Blur.Client;
+import org.apache.blur.thrift.generated.BlurException;
 
 public class BlurClientManager {
 
@@ -59,31 +49,39 @@ public class BlurClientManager {
   public static final long MAX_BACK_OFF_TIME = TimeUnit.SECONDS.toMillis(10);
   private static final long ONE_SECOND = TimeUnit.SECONDS.toMillis(1);
 
-  private static Map<Connection, BlockingQueue<Client>> clientPool = new ConcurrentHashMap<Connection, BlockingQueue<Client>>();
-  private static Thread daemon;
-  private static AtomicBoolean running = new AtomicBoolean(true);
-  private static Map<Connection, Object> badConnections = new ConcurrentHashMap<Connection, Object>();
+  private static ClientPool _clientPool = new ClientPool();
+  private static Thread _daemon;
+  private static AtomicBoolean _running = new AtomicBoolean(true);
+  private static Map<Connection, Object> _badConnections = new ConcurrentHashMap<Connection, Object>();
 
   static {
     startDaemon();
   }
 
+  public static void setClientPool(ClientPool clientPool) {
+    _clientPool = clientPool;
+  }
+
+  public static ClientPool getClientPool() {
+    return _clientPool;
+  }
+
   private static void startDaemon() {
-    daemon = new Thread(new Runnable() {
+    _daemon = new Thread(new Runnable() {
       private Set<Connection> good = new HashSet<Connection>();
 
       @Override
       public void run() {
-        while (running.get()) {
+        while (_running.get()) {
           good.clear();
-          Set<Connection> badConns = badConnections.keySet();
+          Set<Connection> badConns = _badConnections.keySet();
           for (Connection connection : badConns) {
             if (isConnectionGood(connection)) {
               good.add(connection);
             }
           }
           for (Connection connection : good) {
-            badConnections.remove(connection);
+            _badConnections.remove(connection);
           }
           try {
             Thread.sleep(ONE_SECOND);
@@ -93,14 +91,14 @@ public class BlurClientManager {
         }
       }
     });
-    daemon.setDaemon(true);
-    daemon.setName("Blur-Client-Manager-Connection-Checker");
-    daemon.start();
+    _daemon.setDaemon(true);
+    _daemon.setName("Blur-Client-Manager-Connection-Checker");
+    _daemon.start();
   }
 
   protected static boolean isConnectionGood(Connection connection) {
     try {
-      returnClient(connection, getClient(connection));
+      returnClient(connection, _clientPool.getClient(connection));
       return true;
     } catch (TTransportException e) {
       LOG.debug("Connection [{0}] is still bad.", connection);
@@ -154,7 +152,7 @@ public class BlurClientManager {
         }
         client.set(null);
         try {
-          client.set(getClient(connection));
+          client.set(_clientPool.getClient(connection));
         } catch (IOException e) {
           if (handleError(connection, client, retries, command, e, maxRetries, backOffTime, maxBackOffTime)) {
             throw e;
@@ -209,11 +207,11 @@ public class BlurClientManager {
 
   private static void markBadConnection(Connection connection) {
     LOG.info("Marking bad connection [{0}]", connection);
-    badConnections.put(connection, NULL);
+    _badConnections.put(connection, NULL);
   }
 
   private static boolean isBadConnection(Connection connection) {
-    return badConnections.containsKey(connection);
+    return _badConnections.containsKey(connection);
   }
 
   private static <CLIENT, T> boolean handleError(Connection connection, AtomicReference<Blur.Client> client,
@@ -279,73 +277,20 @@ public class BlurClientManager {
     returnClient(connection, client.get());
   }
 
-  public static void returnClient(Connection connection, Blur.Client client) {
-    try {
-      clientPool.get(connection).put(client);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
+  private static void trashConnections(Connection connection, AtomicReference<Client> c) {
+    _clientPool.trashConnections(connection, c.get());
   }
 
-  private static void trashConnections(Connection connection, AtomicReference<Client> c) {
-    BlockingQueue<Client> blockingQueue;
-    synchronized (clientPool) {
-      blockingQueue = clientPool.put(connection, new LinkedBlockingQueue<Client>());
-      try {
-        blockingQueue.put(c.get());
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    LOG.info("Trashing client for connections [{0}]", connection);
-    for (Client client : blockingQueue) {
-      close(client);
-    }
+  public static void returnClient(Connection connection, Blur.Client client) {
+    _clientPool.returnClient(connection, client);
   }
 
   public static void close(Client client) {
-    client.getInputProtocol().getTransport().close();
-    client.getOutputProtocol().getTransport().close();
-  }
-
-  private static Client getClient(Connection connection) throws TTransportException, IOException {
-    BlockingQueue<Client> blockingQueue;
-    synchronized (clientPool) {
-      blockingQueue = clientPool.get(connection);
-      if (blockingQueue == null) {
-        blockingQueue = new LinkedBlockingQueue<Client>();
-        clientPool.put(connection, blockingQueue);
-      }
-    }
-    if (blockingQueue.isEmpty()) {
-      return newClient(connection);
-    }
-    try {
-      return blockingQueue.take();
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
+    _clientPool.close(client);
   }
 
   public static Client newClient(Connection connection) throws TTransportException, IOException {
-    String host = connection.getHost();
-    int port = connection.getPort();
-    TSocket trans;
-    Socket socket;
-    if (connection.isProxy()) {
-      Proxy proxy = new Proxy(Type.SOCKS, new InetSocketAddress(connection.getProxyHost(), connection.getProxyPort()));
-      socket = new Socket(proxy);
-    } else {
-      socket = new Socket();
-    }
-    socket.setTcpNoDelay(true);
-    socket.connect(new InetSocketAddress(host, port));
-    trans = new TSocket(socket);
-
-    TProtocol proto = new TBinaryProtocol(new TFramedTransport(trans));
-    Client client = new Client(proto);
-    return client;
+    return _clientPool.newClient(connection);
   }
 
 }

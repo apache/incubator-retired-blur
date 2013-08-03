@@ -179,19 +179,21 @@ public class IndexImporter extends TimerTask implements Closeable {
         AtomicReader atomicReader = context.reader();
         Fields fields = atomicReader.fields();
         Terms terms = fields.terms(BlurConstants.ROW_ID);
-        TermsEnum termsEnum = terms.iterator(null);
-        BytesRef ref = null;
-        while ((ref = termsEnum.next()) != null) {
-          byte[] rowIdInBytes = ref.bytes;
-          key.set(rowIdInBytes, 0, rowIdInBytes.length);
-          int partition = blurPartitioner.getPartition(key, null, numberOfShards);
-          int shardId = BlurUtil.getShardIndex(shard);
-          if (shardId != partition) {
-            return false;
-          }
-          if (emitDeletes) {
-            Term term = new Term(BlurConstants.ROW_ID, BytesRef.deepCopyOf(ref));
-            indexWriter.deleteDocuments(term);
+        if (terms != null) {
+          TermsEnum termsEnum = terms.iterator(null);
+          BytesRef ref = null;
+          while ((ref = termsEnum.next()) != null) {
+            byte[] rowIdInBytes = ref.bytes;
+            key.set(rowIdInBytes, 0, rowIdInBytes.length);
+            int partition = blurPartitioner.getPartition(key, null, numberOfShards);
+            int shardId = BlurUtil.getShardIndex(shard);
+            if (shardId != partition) {
+              return false;
+            }
+            if (emitDeletes) {
+              Term term = new Term(BlurConstants.ROW_ID, BytesRef.deepCopyOf(ref));
+              indexWriter.deleteDocuments(term);
+            }
           }
         }
       }

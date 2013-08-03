@@ -352,22 +352,21 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     private final Path _newIndex;
     private final boolean _indexLocally;
     private final boolean _optimizeInFlight;
-    private Counter _fieldCount;
-    private Counter _recordCount;
-    private Counter _rowCount;
-    private Counter _recordDuplicateCount;
+    private Counter _fieldCount = emptyCounter();
+    private Counter _recordCount = emptyCounter();
+    private Counter _rowCount = emptyCounter();
+    private Counter _recordDuplicateCount = emptyCounter();
+    private Counter _rowOverFlowCount = emptyCounter();
+    private Counter _rowDeleteCount = emptyCounter();
+    private RateCounter _recordRateCounter = new RateCounter(emptyCounter());
+    private RateCounter _rowRateCounter = new RateCounter(emptyCounter());
+    private RateCounter _copyRateCounter = new RateCounter(emptyCounter());
     private boolean _countersSetup = false;
-    private RateCounter _recordRateCounter;
-    private RateCounter _rowRateCounter;
-    private RateCounter _copyRateCounter;
     private IndexWriter _localTmpWriter;
     private boolean _usingLocalTmpindex;
     private File _localTmpPath;
     private ProgressableDirectory _localTmpDir;
-    private Counter _rowOverFlowCount;
     private String _deletedRowId;
-
-    private Counter _rowDeleteCount;
 
     public BlurRecordWriter(Configuration configuration, BlurAnalyzer blurAnalyzer, int attemptId, String tmpDirName)
         throws IOException {
@@ -403,6 +402,11 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
         _localDir = null;
         _writer = new IndexWriter(_finalDir, _conf.clone());
       }
+    }
+
+    private Counter emptyCounter() {
+      return new Counter() {
+      };
     }
 
     @Override

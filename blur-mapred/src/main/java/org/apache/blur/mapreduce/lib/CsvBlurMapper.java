@@ -308,8 +308,8 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
       String[] columnsNames = configuration.getStrings(BLUR_CSV_FAMILY_COLUMN_PREFIX + family);
       _columnNameMap.put(family, Arrays.asList(columnsNames));
     }
-    _splitter = Splitter.on(_separator);
     _separator = configuration.get(BLUR_CSV_SEPARATOR, _separator);
+    _splitter = Splitter.on(_separator);
     _familyNotInFile = isFamilyNotInFile(configuration);
     if (_familyNotInFile) {
       Path fileCurrentlyProcessing = getCurrentFile(context);

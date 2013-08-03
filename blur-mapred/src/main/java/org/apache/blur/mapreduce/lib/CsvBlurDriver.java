@@ -60,6 +60,8 @@ public class CsvBlurDriver {
     FileInputFormat.addInputPath(job, new Path(input));
     CsvBlurMapper.setColumns(job, columnDefs);
     BlurOutputFormat.setupJob(job, tableDescriptor);
+    
+//    CsvBlurCombineFileInputFormat
 
     boolean waitForCompletion = job.waitForCompletion(true);
     System.exit(waitForCompletion ? 0 : 1);

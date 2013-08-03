@@ -80,10 +80,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexReaderContext;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.util.RamUsageEstimator;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -96,8 +94,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   private static final Log LOG = LogFactory.getLog(DistributedIndexServer.class);
   private static final long _delay = TimeUnit.SECONDS.toMillis(10);
-  private static final long CHECK_PERIOD = TimeUnit.SECONDS.toMillis(60);
-  
   private static final AtomicLong _pauseWarmup = new AtomicLong();
 
   private Map<String, BlurAnalyzer> _tableAnalyzers = new ConcurrentHashMap<String, BlurAnalyzer>();
@@ -141,13 +137,11 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private int _internalSearchThreads;
   private ExecutorService _warmupExecutor;
   private int _warmupThreads;
-  
-  private long _lastRamUsageCheck = 0;
 
   public static interface ReleaseReader {
     void release() throws IOException;
   }
-  
+
   public void init() throws KeeperException, InterruptedException, IOException {
     MetricName tableCount = new MetricName(ORG_APACHE_BLUR, BLUR, TABLE_COUNT, _cluster);
     MetricName indexCount = new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_COUNT, _cluster);
@@ -239,11 +233,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
           List<String> tableList = _clusterStatus.getTableList(false, _cluster);
           _tableCount.set(tableList.size());
           long indexCount = 0;
-          long now = System.currentTimeMillis();
-          boolean checkRamUsage = false;
-          if (_lastRamUsageCheck + CHECK_PERIOD < now) {
-            checkRamUsage = true;
-          }
           AtomicLong segmentCount = new AtomicLong();
           AtomicLong indexMemoryUsage = new AtomicLong();
           for (String table : tableList) {
@@ -251,7 +240,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
               Map<String, BlurIndex> indexes = getIndexes(table);
               int count = indexes.size();
               indexCount += count;
-              updateMetrics(indexes, segmentCount, indexMemoryUsage, checkRamUsage);
+              updateMetrics(indexes, segmentCount, indexMemoryUsage);
               LOG.debug("Table [{0}] has [{1}] number of shards online in this node.", table, count);
             } catch (IOException e) {
               LOG.error("Unknown error trying to warm table [{0}]", e, table);
@@ -260,29 +249,14 @@ public class DistributedIndexServer extends AbstractIndexServer {
           _indexCount.set(indexCount);
           _segmentCount.set(segmentCount.get());
           _indexMemoryUsage.set(indexMemoryUsage.get());
-          if (checkRamUsage) {
-            _lastRamUsageCheck = now;
-          }
         }
       }
 
-      private void updateMetrics(Map<String, BlurIndex> indexes, AtomicLong segmentCount, AtomicLong indexMemoryUsage,
-          boolean checkRamUsage) throws IOException {
-        // @TODO not sure how to do this yet
-        if (checkRamUsage) {
-          indexMemoryUsage.addAndGet(RamUsageEstimator.sizeOf(indexes));
-        }
-
+      private void updateMetrics(Map<String, BlurIndex> indexes, AtomicLong segmentCount, AtomicLong indexMemoryUsage)
+          throws IOException {
         for (BlurIndex index : indexes.values()) {
-          IndexSearcherClosable indexSearcherClosable = index.getIndexReader();
-          try {
-            IndexReader indexReader = indexSearcherClosable.getIndexReader();
-            IndexReaderContext context = indexReader.getContext();
-            segmentCount.addAndGet(context.leaves().size());
-
-          } finally {
-            indexSearcherClosable.close();
-          }
+          indexMemoryUsage.addAndGet(index.getIndexMemoryUsage());
+          segmentCount.addAndGet(index.getSegmentCount());
         }
       }
     }, _delay, _delay);
@@ -783,7 +757,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   public void setWarmupThreads(int warmupThreads) {
     _warmupThreads = warmupThreads;
   }
-  
+
   public static AtomicLong getPauseWarmup() {
     return _pauseWarmup;
   }

@@ -17,16 +17,26 @@ package org.apache.blur.manager.writer;
  * limitations under the License.
  */
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ClassNameFilter;
+import org.apache.blur.utils.RamUsageEstimator;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexReaderContext;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 
 public abstract class BlurIndex {
+
+  private static final long ONE_MINUTE = TimeUnit.MINUTES.toMillis(1);
+
+  private long _lastMemoryCheck = 0;
+  private long _memoryUsage = 0;
 
   public abstract void replaceRow(boolean waitToBeVisible, boolean wal, Row row) throws IOException;
 
@@ -67,6 +77,43 @@ public abstract class BlurIndex {
   protected long getRowCount(IndexSearcher searcher) throws IOException {
     TopDocs topDocs = searcher.search(new TermQuery(BlurUtil.PRIME_DOC_TERM), 1);
     return topDocs.totalHits;
+  }
+
+  public long getIndexMemoryUsage() throws IOException {
+    long now = System.currentTimeMillis();
+    if (_lastMemoryCheck + ONE_MINUTE > now) {
+      return _memoryUsage;
+    }
+    IndexSearcherClosable searcher = getIndexReader();
+    try {
+      IndexReaderContext topReaderContext = searcher.getTopReaderContext();
+      return _memoryUsage = RamUsageEstimator.sizeOf(topReaderContext, new ClassNameFilter() {
+        @Override
+        public boolean include(String className) {
+          if (className.startsWith("org.apache.blur.index.ExitableReader")) {
+            return true;
+          } else if (className.startsWith("org.apache.blur.")) {
+            // System.out.println("className [" + className + "]");
+            return false;
+          }
+          return true;
+        }
+      });
+    } finally {
+      searcher.close();
+      _lastMemoryCheck = System.currentTimeMillis();
+    }
+  }
+
+  public long getSegmentCount() throws IOException {
+    IndexSearcherClosable indexSearcherClosable = getIndexReader();
+    try {
+      IndexReader indexReader = indexSearcherClosable.getIndexReader();
+      IndexReaderContext context = indexReader.getContext();
+      return context.leaves().size();
+    } finally {
+      indexSearcherClosable.close();
+    }
   }
 
 }

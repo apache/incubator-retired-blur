@@ -17,6 +17,7 @@ package org.apache.blur.mapreduce.lib;
  * limitations under the License.
  */
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import org.apache.blur.mapreduce.lib.BlurMutate.MUTATE_TYPE;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -45,16 +47,17 @@ import com.google.common.base.Splitter;
  */
 public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
 
+  private static final String UTF_8 = "UTF-8";
   public static final String BLUR_CSV_AUTO_GENERATE_RECORD_ID_AS_HASH_OF_DATA = "blur.csv.auto.generate.record.id.as.hash.of.data";
   public static final String BLUR_CSV_FAMILYISNOTINFILE = "blur.csv.familyisnotinfile";
   public static final String BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILIES = "blur.csv.family.path.mappings.families";
   public static final String BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILY_PREFIX = "blur.csv.family.path.mappings.family.";
-  public static final String BLUR_CSV_SEPARATOR = "blur.csv.separator";
+  public static final String BLUR_CSV_SEPARATOR_BASE64 = "blur.csv.separator.base64";
   public static final String BLUR_CSV_FAMILY_COLUMN_PREFIX = "blur.csv.family.";
   public static final String BLUR_CSV_FAMILIES = "blur.csv.families";
 
   private Map<String, List<String>> _columnNameMap;
-  private String _separator = ",";
+  private String _separator = Base64.encodeBase64String(",".getBytes());
   private Splitter _splitter;
   private boolean _familyNotInFile;
   private String _familyFromPath;
@@ -287,7 +290,11 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
    *          the separator.
    */
   public static void setSeparator(Configuration configuration, String separator) {
-    configuration.set(BLUR_CSV_SEPARATOR, separator);
+    try {
+      configuration.set(BLUR_CSV_SEPARATOR_BASE64, Base64.encodeBase64String(separator.getBytes(UTF_8)));
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -308,7 +315,7 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
       String[] columnsNames = configuration.getStrings(BLUR_CSV_FAMILY_COLUMN_PREFIX + family);
       _columnNameMap.put(family, Arrays.asList(columnsNames));
     }
-    _separator = configuration.get(BLUR_CSV_SEPARATOR, _separator);
+    _separator = new String(Base64.decodeBase64(configuration.get(BLUR_CSV_SEPARATOR_BASE64, _separator)), UTF_8);
     _splitter = Splitter.on(_separator);
     _familyNotInFile = isFamilyNotInFile(configuration);
     if (_familyNotInFile) {

@@ -42,6 +42,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -831,5 +832,21 @@ public class BlurUtil {
         return iterator.next();
       }
     };
+  }
+
+  public static void validateWritableDirectory(FileSystem fileSystem, Path tablePath) throws IOException {
+    String tmpDir = UUID.randomUUID().toString();
+    String tmpFile = UUID.randomUUID().toString();
+    Path path = new Path(tablePath, tmpDir);
+    if (!fileSystem.mkdirs(path)) {
+      throw new IOException("Could not create new directory in [" + tablePath + "] ");
+    }
+    Path filePath = new Path(path, tmpFile);
+    try {
+      fileSystem.create(filePath).close();
+    } catch (IOException e) {
+      throw new IOException("Could not create new filr in [" + path + "] ");
+    }
+    fileSystem.delete(path, true);
   }
 }

@@ -139,7 +139,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       throw new IOException("Table path [ " + tablePath + " ] doesn't exist for table [ " + tableDescriptor.getName()
           + " ].");
     }
-
+    BlurUtil.validateWritableDirectory(fileSystem, tablePath);
     int reducers = context.getNumReduceTasks();
     int reducerMultiplier = getReducerMultiplier(config);
     int validNumberOfReducers = reducerMultiplier * shardCount;

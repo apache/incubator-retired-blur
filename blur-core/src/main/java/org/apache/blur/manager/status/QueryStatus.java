@@ -18,8 +18,8 @@ package org.apache.blur.manager.status;
  */
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -50,7 +50,7 @@ public class QueryStatus implements Comparable<QueryStatus> {
   private final AtomicInteger _totalShards = new AtomicInteger();
   private final AtomicInteger _completeShards = new AtomicInteger();
   private final AtomicBoolean _running;
-  private final Map<String, CpuTime> _cpuTimes = new HashMap<String, CpuTime>();
+  private final Map<String, CpuTime> _cpuTimes = new ConcurrentHashMap<String, CpuTime>();
 
   public QueryStatus(long ttl, String table, BlurQuery blurQuery, AtomicBoolean running) {
     _ttl = ttl;

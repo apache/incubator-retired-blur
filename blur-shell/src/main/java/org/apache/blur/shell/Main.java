@@ -378,7 +378,7 @@ public class Main {
             if (line.length() == 0 || line.startsWith("#")) {
               continue;
             }
-            String[] commandArgs = line.split("\\s");
+            String[] commandArgs = line.split("\\s+");
             String commandStr = commandArgs[0];
             if (commandStr.equals("exit")) {
               commandStr = "quit";

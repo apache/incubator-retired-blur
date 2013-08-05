@@ -200,6 +200,15 @@ public class TopCommand extends Command {
           }
         }
       }
+      if (reader != null) {
+        try {
+          reader.clearScreen();
+        } catch (IOException e) {
+          if (Main.debug) {
+            e.printStackTrace();
+          }
+        }
+      }
       out.print(output.toString());
       out.flush();
       if (reader != null) {
@@ -209,13 +218,6 @@ public class TopCommand extends Command {
           }
         } catch (InterruptedException e) {
           return;
-        }
-        try {
-          reader.clearScreen();
-        } catch (IOException e) {
-          if (Main.debug) {
-            e.printStackTrace();
-          }
         }
         Terminal terminal = reader.getTerminal();
         _height = terminal.getHeight() - 2;

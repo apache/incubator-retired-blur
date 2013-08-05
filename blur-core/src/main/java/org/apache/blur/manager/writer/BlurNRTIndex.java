@@ -71,11 +71,11 @@ public class BlurNRTIndex extends BlurIndex {
   private final ShardContext _shardContext;
   private final TransactionRecorder _recorder;
   private final TrackingIndexWriter _trackingWriter;
+  private final IndexImporter _indexImporter;
   // This lock is used during a import of data from the file system. For example
   // after a mapreduce program.
   private final ReadWriteLock _lock = new ReentrantReadWriteLock();
   private long _lastRefresh = 0;
-  private IndexImporter _indexImporter;
 
   public BlurNRTIndex(ShardContext shardContext, SharedMergeScheduler mergeScheduler, IndexInputCloser closer,
       Directory directory, DirectoryReferenceFileGC gc, final ExecutorService searchExecutor) throws IOException {
@@ -93,7 +93,7 @@ public class BlurNRTIndex extends BlurIndex {
 
     TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
-    conf.setMergeScheduler(mergeScheduler);
+    conf.setMergeScheduler(mergeScheduler.getMergeScheduler());
 
     DirectoryReferenceCounter referenceCounter = new DirectoryReferenceCounter(directory, gc, closer);
     // This directory allows for warm up by adding tracing ability.
@@ -263,4 +263,5 @@ public class BlurNRTIndex extends BlurIndex {
       }
     }
   }
+
 }

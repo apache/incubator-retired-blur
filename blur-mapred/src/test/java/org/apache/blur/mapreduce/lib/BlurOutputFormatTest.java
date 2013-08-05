@@ -17,6 +17,7 @@ package org.apache.blur.mapreduce.lib;
  * limitations under the License.
  */
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -308,6 +309,57 @@ public class BlurOutputFormatTest {
     job.setNumReduceTasks(4);
     job.submit();
 
+  }
+
+  @Test
+  public void testBlurOutputFormatCleanupDuringJobKillTest() throws IOException, InterruptedException,
+      ClassNotFoundException {
+    localFs.delete(new Path(TEST_ROOT_DIR + "/in"), true);
+    localFs.delete(new Path(TEST_ROOT_DIR + "/out"), true);
+
+    writeRecordsFile("in/part1", 1, 50, 1, 1500, "cf1"); // 1500 * 50 = 75,000
+    writeRecordsFile("in/part2", 1, 5000, 2000, 100, "cf1"); // 100 * 5000 =
+                                                             // 500,000
+
+    Job job = new Job(jobConf, "blur index");
+    job.setJarByClass(BlurOutputFormatTest.class);
+    job.setMapperClass(CsvBlurMapper.class);
+    job.setInputFormatClass(TrackingTextInputFormat.class);
+
+    FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
+    String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();
+    CsvBlurMapper.addColumns(job, "cf1", "col");
+
+    TableDescriptor tableDescriptor = new TableDescriptor();
+    tableDescriptor.setShardCount(2);
+    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
+    tableDescriptor.setTableUri(tableUri);
+
+    createShardDirectories(outDir, 2);
+
+    BlurOutputFormat.setupJob(job, tableDescriptor);
+    BlurOutputFormat.setIndexLocally(job, false);
+
+    job.submit();
+    boolean killCalled = false;
+    while (!job.isComplete()) {
+      Thread.sleep(1000);
+      System.out.printf("Killed [" + killCalled + "] Map [%f] Reduce [%f]%n", job.mapProgress() * 100,
+          job.reduceProgress() * 100);
+      if (job.reduceProgress() > 0.7 && !killCalled) {
+        job.killJob();
+        killCalled = true;
+      }
+    }
+
+    assertFalse(job.isSuccessful());
+
+    for (int i = 0; i < tableDescriptor.getShardCount(); i++) {
+      Path path = new Path(tableUri, BlurUtil.getShardName(i));
+      FileSystem fileSystem = path.getFileSystem(job.getConfiguration());
+      FileStatus[] listStatus = fileSystem.listStatus(path);
+      assertEquals(0, listStatus.length);
+    }
   }
 
   public static String readFile(String name) throws IOException {

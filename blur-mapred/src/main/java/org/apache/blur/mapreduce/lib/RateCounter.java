@@ -32,7 +32,7 @@ public class RateCounter {
   private long _count = 0;
 
   public RateCounter(Counter counter) {
-    this(counter, TimeUnit.SECONDS, 10);
+    this(counter, TimeUnit.SECONDS, 1);
   }
 
   public RateCounter(Counter counter, TimeUnit unit, long reportTime) {

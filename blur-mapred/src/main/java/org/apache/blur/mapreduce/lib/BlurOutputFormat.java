@@ -138,7 +138,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       throw new IOException("Table path [ " + tablePath + " ] doesn't exist for table [ " + tableDescriptor.getName()
           + " ].");
     }
-
+    BlurUtil.validateWritableDirectory(fileSystem, tablePath);
     int reducers = context.getNumReduceTasks();
     int reducerMultiplier = getReducerMultiplier(config);
     int validNumberOfReducers = reducerMultiplier * shardCount;
@@ -351,22 +351,23 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     private final Path _newIndex;
     private final boolean _indexLocally;
     private final boolean _optimizeInFlight;
-    private Counter _fieldCount;
-    private Counter _recordCount;
-    private Counter _rowCount;
-    private Counter _recordDuplicateCount;
+    private Counter _columnCount = emptyCounter();
+    private Counter _fieldCount = emptyCounter();
+    private Counter _recordCount = emptyCounter();
+    private Counter _rowCount = emptyCounter();
+    private Counter _recordDuplicateCount = emptyCounter();
+    private Counter _rowOverFlowCount = emptyCounter();
+    private Counter _rowDeleteCount = emptyCounter();
+    private RateCounter _recordRateCounter = new RateCounter(emptyCounter());
+    private RateCounter _rowRateCounter = new RateCounter(emptyCounter());
+    private RateCounter _copyRateCounter = new RateCounter(emptyCounter());
     private boolean _countersSetup = false;
-    private RateCounter _recordRateCounter;
-    private RateCounter _rowRateCounter;
-    private RateCounter _copyRateCounter;
     private IndexWriter _localTmpWriter;
     private boolean _usingLocalTmpindex;
     private File _localTmpPath;
     private ProgressableDirectory _localTmpDir;
-    private Counter _rowOverFlowCount;
     private String _deletedRowId;
-
-    private Counter _rowDeleteCount;
+    
 
     public BlurRecordWriter(Configuration configuration, int attemptId, String tmpDirName)
         throws IOException {
@@ -404,6 +405,11 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       }
     }
 
+    private Counter emptyCounter() {
+      return new Counter() {
+      };
+    }
+
     @Override
     public void write(Text key, BlurMutate value) throws IOException, InterruptedException {
       if (!_countersSetup) {
@@ -419,7 +425,8 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
 
     private void setupCounter() {
       GetCounter getCounter = BlurOutputFormat.getGetCounter();
-      _fieldCount = getCounter.getCounter(BlurCounters.FIELD_COUNT);
+      _fieldCount = getCounter.getCounter(BlurCounters.LUCENE_FIELD_COUNT);
+      _columnCount = getCounter.getCounter(BlurCounters.COLUMN_COUNT);
       _recordCount = getCounter.getCounter(BlurCounters.RECORD_COUNT);
       _recordDuplicateCount = getCounter.getCounter(BlurCounters.RECORD_DUPLICATE_COUNT);
       _rowCount = getCounter.getCounter(BlurCounters.ROW_COUNT);
@@ -438,6 +445,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
         _deletedRowId = blurRecord.getRowId();
         return;
       }
+      _columnCount.increment(record.getColumns().size());
       Document document = TransactionRecorder.convert(blurRecord.getRowId(), record, _analyzer);
       if (_documents.size() == 0) {
         document.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));

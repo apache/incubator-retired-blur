@@ -32,7 +32,7 @@ public abstract class BaseBlurMapper<KEY, VALUE> extends Mapper<KEY, VALUE, Text
   protected BlurMutate _mutate;
   protected Text _key;
   protected Counter _recordCounter;
-  protected Counter _fieldCounter;
+  protected Counter _columnCounter;
 
   @Override
   protected void setup(Context context) throws IOException, InterruptedException {
@@ -40,7 +40,7 @@ public abstract class BaseBlurMapper<KEY, VALUE> extends Mapper<KEY, VALUE, Text
     _mutate.setRecord(new BlurRecord());
     _key = new Text();
     _recordCounter = context.getCounter(BlurCounters.RECORD_COUNT);
-    _fieldCounter = context.getCounter(BlurCounters.FIELD_COUNT);
+    _columnCounter = context.getCounter(BlurCounters.COLUMN_COUNT);
   }
 
   @Override

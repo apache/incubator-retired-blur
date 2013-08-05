@@ -1,4 +1,4 @@
-package org.apache.blur.mapreduce.lib;
+package org.apache.blur.utils;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -16,11 +16,8 @@ package org.apache.blur.mapreduce.lib;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+public interface ClassNameFilter {
 
-/**
- * The enum class used for all the internal counters during map reduce jobs.
- */
-public enum BlurCounters {
-  RECORD_COUNT, LUCENE_FIELD_COUNT, ROW_COUNT, RECORD_RATE, COPY_RATE, ROW_RATE, RECORD_DUPLICATE_COUNT, ROW_OVERFLOW_COUNT, ROW_DELETE_COUNT, COLUMN_COUNT
+  boolean include(String className);
 
 }

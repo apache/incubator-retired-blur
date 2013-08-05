@@ -53,7 +53,7 @@ public abstract class AbstractOutputCommitter extends OutputCommitter {
     FileSystem fileSystem = tableOutput.getFileSystem(configuration);
     for (FileStatus fileStatus : fileSystem.listStatus(tableOutput)) {
       if (isShard(fileStatus)) {
-        commitJob(jobContext, fileStatus.getPath());
+        commitOrAbortJob(jobContext, fileStatus.getPath(), true);
       }
     }
 
@@ -69,18 +69,29 @@ public abstract class AbstractOutputCommitter extends OutputCommitter {
     }
   }
 
-  private void commitJob(JobContext jobContext, Path shardPath) throws IOException {
+  private void commitOrAbortJob(JobContext jobContext, Path shardPath, boolean commit) throws IOException {
     FileSystem fileSystem = shardPath.getFileSystem(jobContext.getConfiguration());
     FileStatus[] listStatus = fileSystem.listStatus(shardPath);
     for (FileStatus fileStatus : listStatus) {
       Path path = fileStatus.getPath();
       String name = path.getName();
-      if (fileStatus.isDir() && name.endsWith(".task_complete")) {
+      boolean taskComplete = name.endsWith(".task_complete");
+      if (fileStatus.isDir()) {
         String taskAttemptName = getTaskAttemptName(name);
         TaskAttemptID taskAttemptID = TaskAttemptID.forName(taskAttemptName);
         if (taskAttemptID.getJobID().equals(jobContext.getJobID())) {
-          fileSystem.rename(path, new Path(shardPath, taskAttemptName + ".commit"));
-          LOG.info("Committing [{0}] in path [{1}]", taskAttemptID, path);
+          if (commit) {
+            if (taskComplete) {
+              fileSystem.rename(path, new Path(shardPath, taskAttemptName + ".commit"));
+              LOG.info("Committing [{0}] in path [{1}]", taskAttemptID, path);
+            } else {
+              fileSystem.delete(path, true);
+              LOG.info("Deleteing tmp dir [{0}] in path [{1}]", taskAttemptID, path);
+            }
+          } else {
+            fileSystem.delete(path, true);
+            LOG.info("Deleteing aborted job dir [{0}] in path [{1}]", taskAttemptID, path);
+          }
         }
       }
     }
@@ -101,12 +112,21 @@ public abstract class AbstractOutputCommitter extends OutputCommitter {
 
   @Override
   public void abortJob(JobContext jobContext, int status) throws IOException {
-    System.out.println("abortJob");
+    LOG.info("Abort Job [{0}]", jobContext.getJobID());
+    Configuration configuration = jobContext.getConfiguration();
+    Path tableOutput = BlurOutputFormat.getOutputPath(configuration);
+    makeSureNoEmptyShards(configuration, tableOutput);
+    FileSystem fileSystem = tableOutput.getFileSystem(configuration);
+    for (FileStatus fileStatus : fileSystem.listStatus(tableOutput)) {
+      if (isShard(fileStatus)) {
+        commitOrAbortJob(jobContext, fileStatus.getPath(), false);
+      }
+    }
   }
 
   @Override
   public void cleanupJob(JobContext context) throws IOException {
-    System.out.println("cleanupJob");
+
   }
 
 }

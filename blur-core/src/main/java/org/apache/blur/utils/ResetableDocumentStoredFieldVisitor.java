@@ -29,7 +29,6 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.StoredFieldVisitor;
-import org.apache.lucene.util.RamUsageEstimator;
 
 /**
  * A {@link StoredFieldVisitor} that creates a {@link Document} containing all

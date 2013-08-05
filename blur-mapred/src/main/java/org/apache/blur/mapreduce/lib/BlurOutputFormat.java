@@ -352,6 +352,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     private final Path _newIndex;
     private final boolean _indexLocally;
     private final boolean _optimizeInFlight;
+    private Counter _columnCount = emptyCounter();
     private Counter _fieldCount = emptyCounter();
     private Counter _recordCount = emptyCounter();
     private Counter _rowCount = emptyCounter();
@@ -367,6 +368,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     private File _localTmpPath;
     private ProgressableDirectory _localTmpDir;
     private String _deletedRowId;
+    
 
     public BlurRecordWriter(Configuration configuration, BlurAnalyzer blurAnalyzer, int attemptId, String tmpDirName)
         throws IOException {
@@ -424,7 +426,8 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
 
     private void setupCounter() {
       GetCounter getCounter = BlurOutputFormat.getGetCounter();
-      _fieldCount = getCounter.getCounter(BlurCounters.FIELD_COUNT);
+      _fieldCount = getCounter.getCounter(BlurCounters.LUCENE_FIELD_COUNT);
+      _columnCount = getCounter.getCounter(BlurCounters.COLUMN_COUNT);
       _recordCount = getCounter.getCounter(BlurCounters.RECORD_COUNT);
       _recordDuplicateCount = getCounter.getCounter(BlurCounters.RECORD_DUPLICATE_COUNT);
       _rowCount = getCounter.getCounter(BlurCounters.ROW_COUNT);
@@ -443,6 +446,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
         _deletedRowId = blurRecord.getRowId();
         return;
       }
+      _columnCount.increment(record.getColumns().size());
       Document document = TransactionRecorder.convert(blurRecord.getRowId(), record, _analyzer);
       if (_documents.size() == 0) {
         document.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));

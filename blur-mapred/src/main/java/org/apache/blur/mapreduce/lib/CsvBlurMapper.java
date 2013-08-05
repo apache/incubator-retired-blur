@@ -414,7 +414,7 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
 
     for (int i = 0; i < columnNames.size(); i++) {
       record.addColumn(columnNames.get(i), list.get(i + offset));
-      _fieldCounter.increment(1);
+      _columnCounter.increment(1);
     }
     _key.set(record.getRowId());
     _mutate.setMutateType(MUTATE_TYPE.REPLACE);

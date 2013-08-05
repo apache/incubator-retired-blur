@@ -179,7 +179,7 @@ under the License.
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<properties>
-				<hadoop.version>1.1.2</hadoop.version>
+				<hadoop.version>1.2.1</hadoop.version>
 			</properties>
 		</profile>
 		

@@ -49,7 +49,7 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
 
   private static final String UTF_8 = "UTF-8";
   public static final String BLUR_CSV_AUTO_GENERATE_RECORD_ID_AS_HASH_OF_DATA = "blur.csv.auto.generate.record.id.as.hash.of.data";
-  public static final String BLUR_CSV_FAMILYISNOTINFILE = "blur.csv.familyisnotinfile";
+  public static final String BLUR_CSV_AUTO_GENERATE_ROW_ID_AS_HASH_OF_DATA = "blur.csv.auto.generate.row.id.as.hash.of.data";
   public static final String BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILIES = "blur.csv.family.path.mappings.families";
   public static final String BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILY_PREFIX = "blur.csv.family.path.mappings.family.";
   public static final String BLUR_CSV_SEPARATOR_BASE64 = "blur.csv.separator.base64";
@@ -63,6 +63,7 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
   private String _familyFromPath;
   private boolean _autoGenerateRecordIdAsHashOfData;
   private MessageDigest _digest;
+  private boolean _autoGenerateRowIdAsHashOfData;
 
   /**
    * Add a mapping for a family to a path. This is to be used when an entire
@@ -85,20 +86,6 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
   }
 
   /**
-   * Sets the property familyIsNotInFile so that the parser know that the family
-   * is not to be parsed. Is to be used in conjunction with the addFamilyPath
-   * method.
-   * 
-   * @param job
-   *          the job to setup.
-   * @param familyIsNotInFile
-   *          boolean.
-   */
-  public static void setFamilyNotInFile(Job job, boolean familyIsNotInFile) {
-    setFamilyNotInFile(job.getConfiguration(), familyIsNotInFile);
-  }
-
-  /**
    * Add a mapping for a family to a path. This is to be used when an entire
    * path is to be processed as a single family and the data itself does not
    * contain the family.<br/>
@@ -115,31 +102,17 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
    *          the path.
    */
   public static void addFamilyPath(Configuration configuration, String family, Path path) {
-    Collection<String> mappings = configuration.getStringCollection(BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILIES);
-    if (mappings == null) {
-      mappings = new TreeSet<String>();
+    append(configuration, BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILIES, family);
+    append(configuration, BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILY_PREFIX + family, path.toString());
+  }
+
+  private static void append(Configuration configuration, String name, String value) {
+    Collection<String> set = configuration.getStringCollection(name);
+    if (set == null) {
+      set = new TreeSet<String>();
     }
-    mappings.add(family);
-    configuration.setStrings(BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILIES, mappings.toArray(new String[mappings.size()]));
-    configuration.set(BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILY_PREFIX + family, path.toString());
-  }
-
-  /**
-   * Sets the property familyIsNotInFile so that the parser know that the family
-   * is not to be parsed. Is to be used in conjunction with the addFamilyPath
-   * method.
-   * 
-   * @param configuration
-   *          the configuration to setup.
-   * @param familyIsNotInFile
-   *          boolean.
-   */
-  public static void setFamilyNotInFile(Configuration configuration, boolean familyIsNotInFile) {
-    configuration.setBoolean(BLUR_CSV_FAMILYISNOTINFILE, familyIsNotInFile);
-  }
-
-  public static boolean isFamilyNotInFile(Configuration configuration) {
-    return configuration.getBoolean(BLUR_CSV_FAMILYISNOTINFILE, false);
+    set.add(value);
+    configuration.setStrings(name, set.toArray(new String[set.size()]));
   }
 
   /**
@@ -179,6 +152,44 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
    */
   public static boolean isAutoGenerateRecordIdAsHashOfData(Configuration configuration) {
     return configuration.getBoolean(BLUR_CSV_AUTO_GENERATE_RECORD_ID_AS_HASH_OF_DATA, false);
+  }
+
+  /**
+   * If set to true the record id will be automatically generated as a hash of
+   * the data that the record contains.
+   * 
+   * @param job
+   *          the job to setup.
+   * @param autoGenerateRecordIdAsHashOfData
+   *          boolean.
+   */
+  public static void setAutoGenerateRowIdAsHashOfData(Job job, boolean autoGenerateRowIdAsHashOfData) {
+    setAutoGenerateRecordIdAsHashOfData(job.getConfiguration(), autoGenerateRowIdAsHashOfData);
+  }
+
+  /**
+   * If set to true the record id will be automatically generated as a hash of
+   * the data that the record contains.
+   * 
+   * @param configuration
+   *          the configuration to setup.
+   * @param autoGenerateRecordIdAsHashOfData
+   *          boolean.
+   */
+  public static void setAutoGenerateRowIdAsHashOfData(Configuration configuration, boolean autoGenerateRowIdAsHashOfData) {
+    configuration.setBoolean(BLUR_CSV_AUTO_GENERATE_ROW_ID_AS_HASH_OF_DATA, autoGenerateRowIdAsHashOfData);
+  }
+
+  /**
+   * Gets whether or not to generate a recordid for the record based on the
+   * data.
+   * 
+   * @param configuration
+   *          the configuration.
+   * @return boolean.
+   */
+  public static boolean isAutoGenerateRowIdAsHashOfData(Configuration configuration) {
+    return configuration.getBoolean(BLUR_CSV_AUTO_GENERATE_ROW_ID_AS_HASH_OF_DATA, false);
   }
 
   /**
@@ -269,6 +280,19 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
     configuration.setStrings(BLUR_CSV_FAMILY_COLUMN_PREFIX + family, columns);
   }
 
+  public static Collection<String> getFamilyNames(Configuration configuration) {
+    return configuration.getStringCollection(BLUR_CSV_FAMILIES);
+  }
+
+  public static Map<String, List<String>> getFamilyAndColumnNameMap(Configuration configuration) {
+    Map<String, List<String>> columnNameMap = new HashMap<String, List<String>>();
+    for (String family : getFamilyNames(configuration)) {
+      String[] columnsNames = configuration.getStrings(BLUR_CSV_FAMILY_COLUMN_PREFIX + family);
+      columnNameMap.put(family, Arrays.asList(columnsNames));
+    }
+    return columnNameMap;
+  }
+
   /**
    * Sets the separator of the file, by default it is ",".
    * 
@@ -302,32 +326,29 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
     super.setup(context);
     Configuration configuration = context.getConfiguration();
     _autoGenerateRecordIdAsHashOfData = isAutoGenerateRecordIdAsHashOfData(configuration);
-    if (_autoGenerateRecordIdAsHashOfData) {
+    _autoGenerateRowIdAsHashOfData = isAutoGenerateRowIdAsHashOfData(configuration);
+    if (_autoGenerateRecordIdAsHashOfData || _autoGenerateRowIdAsHashOfData) {
       try {
         _digest = MessageDigest.getInstance("MD5");
       } catch (NoSuchAlgorithmException e) {
         throw new IOException(e);
       }
     }
-    Collection<String> familyNames = configuration.getStringCollection(BLUR_CSV_FAMILIES);
-    _columnNameMap = new HashMap<String, List<String>>();
-    for (String family : familyNames) {
-      String[] columnsNames = configuration.getStrings(BLUR_CSV_FAMILY_COLUMN_PREFIX + family);
-      _columnNameMap.put(family, Arrays.asList(columnsNames));
-    }
+    _columnNameMap = getFamilyAndColumnNameMap(configuration);
     _separator = new String(Base64.decodeBase64(configuration.get(BLUR_CSV_SEPARATOR_BASE64, _separator)), UTF_8);
     _splitter = Splitter.on(_separator);
-    _familyNotInFile = isFamilyNotInFile(configuration);
-    if (_familyNotInFile) {
-      Path fileCurrentlyProcessing = getCurrentFile(context);
-      Collection<String> families = configuration.getStringCollection(BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILIES);
-      for (String family : families) {
-        String pathStr = configuration.get(BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILY_PREFIX + family);
+    Path fileCurrentlyProcessing = getCurrentFile(context);
+    Collection<String> families = configuration.getStringCollection(BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILIES);
+    OUTER: for (String family : families) {
+      Collection<String> pathStrCollection = configuration
+          .getStringCollection(BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILY_PREFIX + family);
+      for (String pathStr : pathStrCollection) {
         Path path = new Path(pathStr);
         path = path.makeQualified(path.getFileSystem(configuration));
         if (isParent(path, fileCurrentlyProcessing)) {
           _familyFromPath = family;
-          break;
+          _familyNotInFile = true;
+          break OUTER;
         }
       }
     }
@@ -362,28 +383,37 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
     Iterable<String> split = _splitter.split(str);
     List<String> list = toList(split);
 
-    if (list.size() < 3) {
-      throw new IOException("Record [" + str + "] too short.");
-    }
-    int column = 0;
-    record.setRowId(list.get(column++));
-    int offset = 2;
-    if (!_autoGenerateRecordIdAsHashOfData) {
-      record.setRecordId(list.get(column++));
+    int offset = 0;
+    boolean gen = false;
+    if (!_autoGenerateRowIdAsHashOfData) {
+      record.setRowId(list.get(offset++));
     } else {
-      offset--;
       _digest.reset();
       byte[] bs = value.getBytes();
       int length = value.getLength();
       _digest.update(bs, 0, length);
-      record.setRecordId(new BigInteger(_digest.digest()).toString(Character.MAX_RADIX));
+      record.setRowId(new BigInteger(_digest.digest()).toString(Character.MAX_RADIX));
+      gen = true;
+    }
+
+    if (!_autoGenerateRecordIdAsHashOfData) {
+      record.setRecordId(list.get(offset++));
+    } else {
+      if (gen) {
+        record.setRecordId(record.getRowId());
+      } else {
+        _digest.reset();
+        byte[] bs = value.getBytes();
+        int length = value.getLength();
+        _digest.update(bs, 0, length);
+        record.setRecordId(new BigInteger(_digest.digest()).toString(Character.MAX_RADIX));
+      }
     }
     String family;
     if (_familyNotInFile) {
       family = _familyFromPath;
     } else {
-      family = list.get(column++);
-      offset++;
+      family = list.get(offset++);
     }
     record.setFamily(family);
 
@@ -409,7 +439,6 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
               + getColumnNames(columnNames) + "].");
         }
       }
-
     }
 
     for (int i = 0; i < columnNames.size(); i++) {

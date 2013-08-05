@@ -52,7 +52,6 @@ public class CsvBlurMapperTest {
   @Test
   public void testMapperFamilyPerPath() {
     Configuration configuration = _mapDriver.getConfiguration();
-    CsvBlurMapper.setFamilyNotInFile(configuration, true);
     CsvBlurMapper.setColumns(configuration, "cf1:col1,col2|cf2:col1,col2,col3");
     CsvBlurMapper.addFamilyPath(configuration, "cf1", new Path("/"));
     _mapper.setFamilyFromPath("cf1");
@@ -67,13 +66,41 @@ public class CsvBlurMapperTest {
   public void testMapperAutoGenerateRecordId() {
     Configuration configuration = _mapDriver.getConfiguration();
     CsvBlurMapper.setAutoGenerateRecordIdAsHashOfData(configuration, true);
-    CsvBlurMapper.setFamilyNotInFile(configuration, true);
     CsvBlurMapper.setColumns(configuration, "cf1:col1,col2|cf2:col1,col2,col3");
     CsvBlurMapper.addFamilyPath(configuration, "cf1", new Path("/"));
     _mapper.setFamilyFromPath("cf1");
 
     _mapDriver.withInput(new LongWritable(), new Text("rowid1,value1,value2"));
     _mapDriver.withOutput(new Text("rowid1"), new BlurMutate(MUTATE_TYPE.REPLACE, "rowid1", "-25nqln3n2vb4cayex9y9tpxx3", "cf1")
+        .addColumn("col1", "value1").addColumn("col2", "value2"));
+    _mapDriver.runTest();
+  }
+  
+  @Test
+  public void testMapperAutoGenerateRowId() {
+    Configuration configuration = _mapDriver.getConfiguration();
+    CsvBlurMapper.setAutoGenerateRowIdAsHashOfData(configuration, true);
+    CsvBlurMapper.setColumns(configuration, "cf1:col1,col2|cf2:col1,col2,col3");
+    CsvBlurMapper.addFamilyPath(configuration, "cf1", new Path("/"));
+    _mapper.setFamilyFromPath("cf1");
+
+    _mapDriver.withInput(new LongWritable(), new Text("record1,value1,value2"));
+    _mapDriver.withOutput(new Text("-50b4uzohynr7j7s9pve7ytz66"), new BlurMutate(MUTATE_TYPE.REPLACE, "-50b4uzohynr7j7s9pve7ytz66", "record1", "cf1")
+        .addColumn("col1", "value1").addColumn("col2", "value2"));
+    _mapDriver.runTest();
+  }
+  
+  @Test
+  public void testMapperAutoGenerateRowIdAndRecordId() {
+    Configuration configuration = _mapDriver.getConfiguration();
+    CsvBlurMapper.setAutoGenerateRecordIdAsHashOfData(configuration, true);
+    CsvBlurMapper.setAutoGenerateRowIdAsHashOfData(configuration, true);
+    CsvBlurMapper.setColumns(configuration, "cf1:col1,col2|cf2:col1,col2,col3");
+    CsvBlurMapper.addFamilyPath(configuration, "cf1", new Path("/"));
+    _mapper.setFamilyFromPath("cf1");
+
+    _mapDriver.withInput(new LongWritable(), new Text("value1,value2"));
+    _mapDriver.withOutput(new Text("5q0tme15ph3h5pns8sv3u5wy2"), new BlurMutate(MUTATE_TYPE.REPLACE, "5q0tme15ph3h5pns8sv3u5wy2", "5q0tme15ph3h5pns8sv3u5wy2", "cf1")
         .addColumn("col1", "value1").addColumn("col2", "value2"));
     _mapDriver.runTest();
   }

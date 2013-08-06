@@ -20,6 +20,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -61,6 +63,7 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.NoMergePolicy;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -349,6 +352,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     private final File _localPath;
     private final int _maxDocumentBufferSize;
     private final IndexWriterConfig _conf;
+    private final IndexWriterConfig _overFlowConf;
     private final Path _newIndex;
     private final boolean _indexLocally;
     private final boolean _optimizeInFlight;
@@ -368,7 +372,6 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     private File _localTmpPath;
     private ProgressableDirectory _localTmpDir;
     private String _deletedRowId;
-    
 
     public BlurRecordWriter(Configuration configuration, BlurAnalyzer blurAnalyzer, int attemptId, String tmpDirName)
         throws IOException {
@@ -393,6 +396,9 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       _conf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, _analyzer);
       TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();
       mergePolicy.setUseCompoundFile(false);
+
+      _overFlowConf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, _analyzer);
+      _overFlowConf.setMergePolicy(NoMergePolicy.NO_COMPOUND_FILES);
 
       if (_indexLocally) {
         String localDirPath = System.getProperty(JAVA_IO_TMPDIR);
@@ -448,9 +454,6 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       }
       _columnCount.increment(record.getColumns().size());
       Document document = TransactionRecorder.convert(blurRecord.getRowId(), record, _analyzer);
-      if (_documents.size() == 0) {
-        document.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
-      }
       Document dup = _documents.put(recordId, document);
       if (dup != null) {
         _recordDuplicateCount.increment(1);
@@ -476,9 +479,15 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
         String localDirPath = System.getProperty(JAVA_IO_TMPDIR);
         _localTmpPath = new File(localDirPath, UUID.randomUUID().toString() + ".tmp");
         _localTmpDir = new ProgressableDirectory(FSDirectory.open(_localTmpPath), BlurOutputFormat.getProgressable());
-        _localTmpWriter = new IndexWriter(_localTmpDir, _conf.clone());
+        _localTmpWriter = new IndexWriter(_localTmpDir, _overFlowConf.clone());
+        //The local tmp writer has merging disabled so the first document in is going to be doc 0.
+        //Therefore the first document added is the prime doc
+        List<Document> docs = new ArrayList<Document>(_documents.values());
+        docs.get(0).add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
+        _localTmpWriter.addDocuments(docs);
+      } else {
+        _localTmpWriter.addDocuments(_documents.values());
       }
-      _localTmpWriter.addDocuments(_documents.values());
       _documents.clear();
     }
 
@@ -517,11 +526,11 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
           if (_deletedRowId != null) {
             _writer.addDocument(getDeleteDoc());
             _rowDeleteCount.increment(1);
-          } else {
-            LOG.info("This case should never happen, no records to index and no row deletes to emit.");
           }
         } else {
-          _writer.addDocuments(_documents.values());
+          List<Document> docs = new ArrayList<Document>(_documents.values());
+          docs.get(0).add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
+          _writer.addDocuments(docs);
           _recordRateCounter.mark(_documents.size());
           _documents.clear();
         }

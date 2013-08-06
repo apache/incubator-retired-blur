@@ -253,7 +253,7 @@ public class CsvBlurDriver {
         .withDescription(
             "The reducer multipler allows for an increase in the number of reducers per "
                 + "shard in the given table.  For example if the table has 128 shards and the "
-                + "reducer multiplier is 4 the total number of redcuer will be 512, 4 reducers "
+                + "reducer multiplier is 4 the total number of reducers will be 512, 4 reducers "
                 + "per shard. (default 1)").create("r"));
     options.addOption(OptionBuilder
         .withArgName("minimum maximum")

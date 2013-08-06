@@ -203,23 +203,23 @@ public class CsvBlurDriver {
 
   private static CommandLine parse(String... otherArgs) throws ParseException {
     Options options = new Options();
-    options.addOption(OptionBuilder.withArgName("controller").hasArgs().isRequired(true)
+    options.addOption(OptionBuilder.withArgName("controller*").hasArgs().isRequired(true)
         .withDescription("* Thrift controller connection string. (host1:40010 host2:40010 ...)").create("c"));
     options.addOption(OptionBuilder.withArgName("tablename").hasArg().isRequired(true)
         .withDescription("* Blur table name.").create("t"));
-    options.addOption(OptionBuilder.withArgName("family and column definitions").hasArgs().isRequired(true)
+    options.addOption(OptionBuilder.withArgName("family column*").hasArgs().isRequired(true)
         .withDescription("* Define the mapping of fields in the CSV file to column names. (family col1 col2 col3 ...)")
         .create("d"));
     options.addOption(OptionBuilder
-        .withArgName("file delimiter")
+        .withArgName("delimiter")
         .hasArg()
         .withDescription(
             "The file delimiter to be used. (default value ',')  NOTE: For special "
                 + "charactors like the default hadoop separator of ASCII value 1, you can use standard "
                 + "java escaping (\\u0001)").create("s"));
-    options.addOption(OptionBuilder.withArgName("file input").hasArg()
+    options.addOption(OptionBuilder.withArgName("path*").hasArg()
         .withDescription("The directory to index. (hdfs://namenode/input/in1)").create("i"));
-    options.addOption(OptionBuilder.withArgName("file input").hasArgs()
+    options.addOption(OptionBuilder.withArgName("family path*").hasArgs()
         .withDescription("The directory to index with family name. (family hdfs://namenode/input/in1)").create("I"));
     options.addOption(OptionBuilder
         .withArgName("auto generate record ids")
@@ -242,13 +242,13 @@ public class CsvBlurDriver {
     options.addOption(OptionBuilder.withArgName("sequence files inputs")
         .withDescription("The input files are sequence files.").create("S"));
     options.addOption(OptionBuilder
-        .withArgName("lucene document buffer size")
+        .withArgName("size")
         .hasArg()
         .withDescription(
             "The maximum number of Lucene documents to buffer in the reducer for a single "
                 + "row before spilling over to disk. (default 1000)").create("b"));
     options.addOption(OptionBuilder
-        .withArgName("reducer multiplier")
+        .withArgName("multiplier")
         .hasArg()
         .withDescription(
             "The reducer multipler allows for an increase in the number of reducers per "

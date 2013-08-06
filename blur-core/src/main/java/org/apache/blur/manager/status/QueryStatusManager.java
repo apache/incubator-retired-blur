@@ -32,6 +32,7 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.QueryState;
+import org.apache.blur.thrift.generated.Status;
 import org.apache.blur.utils.GCWatcher;
 import org.apache.blur.utils.GCWatcher.Action;
 

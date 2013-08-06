@@ -72,6 +72,15 @@ enum QueryState {
 }
 
 /**
+  * NOT_FOUND : when UUID is not found<br/><br/>
+  * FOUND : when UUID is present<br/>
+  */
+enum Status {
+    NOT_FOUND,
+    FOUND
+}
+
+/**
  * Specifies the type of Row mutation that should occur during a mutation of a given Row.<br/><br/>
  * DELETE_ROW - Indicates that the entire Row is to be deleted.  No changes are made if the specified row does not exist.<br/><br/>
  * REPLACE_ROW - Indicates that the entire Row is to be deleted, and then a new Row with the same id is to be added.  If the specified row does not exist, the new row will still be created.<br/><br/>
@@ -541,6 +550,10 @@ struct BlurQueryStatus {
    * The uuid of the query.
    */
   6:i64 uuid
+  /**
+   * The status of the query NOT_FOUND if uuid is not found else FOUND
+   */
+  7:Status status
 }
 
 /**

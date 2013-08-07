@@ -137,8 +137,10 @@ public class IndexManager {
   private BlurPartitioner _blurPartitioner = new BlurPartitioner();
   private BlurFilterCache _filterCache = new DefaultBlurFilterCache();
   private long _defaultParallelCallTimeout = TimeUnit.MINUTES.toMillis(1);
-  private Meter _recordsMeter;
-  private Meter _rowMeter;
+  private Meter _readRecordsMeter;
+  private Meter _readRowMeter;
+  private Meter _writeRecordsMeter;
+  private Meter _writeRowMeter;
   private Meter _queriesExternalMeter;
   private Meter _queriesInternalMeter;
   private Timer _fetchTimer;
@@ -152,9 +154,11 @@ public class IndexManager {
   }
 
   public void init() {
-    _recordsMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Read Records/s"), "Records/s",
-        TimeUnit.SECONDS);
-    _rowMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Read Row/s"), "Row/s", TimeUnit.SECONDS);
+    _readRecordsMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Read Records/s"), "Records/s", TimeUnit.SECONDS);
+    _readRowMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Read Row/s"), "Row/s", TimeUnit.SECONDS);
+    _writeRecordsMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Write Records/s"), "Records/s", TimeUnit.SECONDS);
+    _writeRowMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Write Row/s"), "Row/s", TimeUnit.SECONDS);
+    
     _queriesExternalMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "External Queries/s"),
         "External Queries/s", TimeUnit.SECONDS);
     _queriesInternalMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Internal Queries/s"),
@@ -234,11 +238,11 @@ public class IndexManager {
       fetchRow(searcher.getIndexReader(), table, shard, selector, fetchResult, highlightQuery, analyzer, _maxHeapPerRowFetch);
       if (fetchResult.rowResult != null) {
         if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
-          _recordsMeter.mark(fetchResult.rowResult.row.records.size());
+          _readRecordsMeter.mark(fetchResult.rowResult.row.records.size());
         }
-        _rowMeter.mark();
+        _readRowMeter.mark();
       } else if (fetchResult.recordResult != null) {
-        _recordsMeter.mark();
+        _readRecordsMeter.mark();
       }
     } catch (Exception e) {
       LOG.error("Unknown error while trying to fetch row.", e);
@@ -899,7 +903,7 @@ public class IndexManager {
       switch (type) {
       case REPLACE_ROW:
         Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);
-        blurIndex.replaceRow(waitVisiblity, mutation.wal, row);
+        blurIndex.replaceRow(waitVisiblity, mutation.wal, updateMetrics(row));
         break;
       case UPDATE_ROW:
         doUpdateRowMutation(mutation, blurIndex);
@@ -943,7 +947,7 @@ public class IndexManager {
     switch (type) {
     case REPLACE_ROW:
       Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);
-      blurIndex.replaceRow(mutation.waitToBeVisible, mutation.wal, row);
+      blurIndex.replaceRow(mutation.waitToBeVisible, mutation.wal, updateMetrics(row));
       break;
     case UPDATE_ROW:
       doUpdateRowMutation(mutation, blurIndex);
@@ -954,6 +958,12 @@ public class IndexManager {
     default:
       throw new RuntimeException("Not supported [" + type + "]");
     }
+  }
+
+  private Row updateMetrics(Row row) {
+    _writeRowMeter.mark();
+    _writeRecordsMeter.mark(row.getRecords().size());
+    return row;
   }
 
   private void doUpdateRowMutation(RowMutation mutation, BlurIndex blurIndex) throws BlurException, IOException {
@@ -1009,7 +1019,7 @@ public class IndexManager {
       }
 
       // Finally, replace the existing row with the new row we have built.
-      blurIndex.replaceRow(mutation.waitToBeVisible, mutation.wal, newRow);
+      blurIndex.replaceRow(mutation.waitToBeVisible, mutation.wal, updateMetrics(newRow));
     } else {
       throw new BException("Mutation cannot update row that does not exist.", mutation);
     }

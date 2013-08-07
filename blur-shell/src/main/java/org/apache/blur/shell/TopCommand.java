@@ -160,7 +160,6 @@ public class TopCommand extends Command {
     for (int i = 1; i < labels.length; i++) {
       header.append(" %10s");
     }
-    header.append("%n");
 
     do {
       StringBuilder output = new StringBuilder();
@@ -169,7 +168,7 @@ public class TopCommand extends Command {
       } else if (help.get()) {
         showHelp(output, labels, helpMap);
       } else {
-        output.append(truncate(String.format(header.toString(), (Object[]) labels)));
+        output.append(truncate(String.format(header.toString(), (Object[]) labels)) + "\n");
         for (Entry<String, AtomicReference<Client>> e : new TreeMap<String, AtomicReference<Client>>(shardClients)
             .entrySet()) {
           String shardServer = e.getKey();
@@ -195,8 +194,7 @@ public class TopCommand extends Command {
               cols[c++] = humanize(value, sizes.contains(mn));
               sb.append(" %10s");
             }
-            sb.append("%n");
-            output.append(truncate(String.format(sb.toString(), cols)));
+            output.append(truncate(String.format(sb.toString(), cols)) + "\n");
           }
         }
       }

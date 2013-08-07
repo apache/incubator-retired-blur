@@ -16,6 +16,7 @@ package org.apache.blur.thrift;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.metrics.MetricsConstants.CPU_USED;
 import static org.apache.blur.metrics.MetricsConstants.HEAP_USED;
 import static org.apache.blur.metrics.MetricsConstants.JVM;
 import static org.apache.blur.metrics.MetricsConstants.LOAD_AVERAGE;
@@ -30,6 +31,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.lang.management.OperatingSystemMXBean;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -73,7 +75,7 @@ public class ThriftServer {
   private TServerEventHandler _eventHandler;
 
   public static void printUlimits() throws IOException {
-    ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c" ,"ulimit -a");
+    ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", "ulimit -a");
     Process process;
     try {
       process = processBuilder.start();
@@ -90,11 +92,11 @@ public class ThriftServer {
     }
     reader.close();
   }
-  
+
   public static void setupJvmMetrics() {
     final MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
     final OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
-    
+
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, SYSTEM, LOAD_AVERAGE), new Gauge<Double>() {
       @Override
       public Double value() {
@@ -108,8 +110,45 @@ public class ThriftServer {
         return usage.getUsed();
       }
     });
+    Method processCpuTimeMethod = null;
+    for (Method method : operatingSystemMXBean.getClass().getDeclaredMethods()) {
+      if (method.getName().equals("getProcessCpuTime")) {
+        method.setAccessible(true);
+        processCpuTimeMethod = method;
+      }
+    }
+    final double availableProcessors = operatingSystemMXBean.getAvailableProcessors();
+    if (processCpuTimeMethod != null) {
+      final Method pctm = processCpuTimeMethod;
+      Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, JVM, CPU_USED), new Gauge<Double>() {
+        private long start = System.nanoTime();
+        private long lastCpuTime = getProcessCputTime(pctm, operatingSystemMXBean);
+
+        @Override
+        public Double value() {
+          long now = System.nanoTime();
+          long cpuTime = getProcessCputTime(pctm, operatingSystemMXBean);
+          long time = now - start;
+          long processTime = cpuTime - lastCpuTime;
+          try {
+            return ((processTime / (double) time) / availableProcessors) * 100.0;
+          } finally {
+            lastCpuTime = cpuTime;
+            start = System.nanoTime();
+          }
+        }
+      });
+    }
   }
 
+  private static long getProcessCputTime(Method processCpuTimeMethod, OperatingSystemMXBean operatingSystemMXBean) {
+    try {
+      return (Long) processCpuTimeMethod.invoke(operatingSystemMXBean, new Object[] {});
+    } catch (Exception e) {
+      LOG.error("Unknown Error", e);
+      return 0;
+    }
+  }
 
   public synchronized void close() {
     if (!_closed) {

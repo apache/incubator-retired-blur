@@ -45,6 +45,7 @@ import org.apache.blur.thrift.Connection;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.Selector;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -57,6 +58,8 @@ public class Main {
   static boolean timed = false;
   /** is highlight enabled - off by default */
   static boolean highlight = false;
+  /** default selector */
+  static Selector selector = new Selector();
 
   private static Map<String, Command> commands;
   static String cluster;
@@ -235,7 +238,7 @@ public class Main {
 
       out.println();
       out.println(" - Data commands - ");
-      String[] dataCommands = { "query", "get", "mutate", "delete", "highlight" };
+      String[] dataCommands = { "query", "get", "mutate", "delete", "highlight", "selector" };
       printCommandAndHelp(out, cmds, dataCommands, bufferLength);
 
       out.println();
@@ -347,6 +350,7 @@ public class Main {
     builder.put("top", new TopCommand());
     builder.put("parse", new ParseCommand());
     builder.put("loadtestdata", new LoadTestDataCommand());
+    builder.put("selector", new SelectorCommand());
     commands = builder.build();
 
     CliShellOptions cliShellOptions = getCliShellOptions(args);

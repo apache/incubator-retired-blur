@@ -23,6 +23,7 @@ import java.io.PrintWriter;
 import jline.Terminal;
 import jline.console.ConsoleReader;
 
+import org.apache.blur.shell.PagingPrintWriter.FinishedException;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
@@ -33,16 +34,28 @@ import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.FetchRowResult;
 import org.apache.blur.thrift.generated.HighlightOptions;
 import org.apache.blur.thrift.generated.Row;
-import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.SimpleQuery;
 
 public class QueryCommand extends Command {
   @Override
-  public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+  public void doit(PrintWriter outPw, Blur.Iface client, String[] args) throws CommandException, TException,
       BlurException {
     if (args.length < 3) {
       throw new CommandException("Invalid args: " + help());
     }
+    PagingPrintWriter out = new PagingPrintWriter(outPw);
+
+    try {
+      doItInternal(client, args, out);
+    } catch (FinishedException e) {
+      if (Main.debug) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  private void doItInternal(Blur.Iface client, String[] args, PagingPrintWriter out) throws FinishedException,
+      BlurException, TException {
     String tablename = args[1];
     String query = "";
     for (int i = 2; i < args.length; i++) {
@@ -53,8 +66,8 @@ public class QueryCommand extends Command {
     SimpleQuery simpleQuery = new SimpleQuery();
     simpleQuery.setQueryStr(query);
     blurQuery.setSimpleQuery(simpleQuery);
-    blurQuery.setSelector(new Selector());
-    
+    blurQuery.setSelector(Main.selector);
+
     if (Main.highlight) {
       blurQuery.getSelector().setHighlightOptions(new HighlightOptions());
     }
@@ -68,6 +81,7 @@ public class QueryCommand extends Command {
     if (reader != null) {
       Terminal terminal = reader.getTerminal();
       maxWidth = terminal.getWidth() - 15;
+      out.setLineLimit(terminal.getHeight() - 2);
     }
     long s = System.nanoTime();
     BlurResults blurResults = client.query(tablename, blurQuery);
@@ -76,7 +90,7 @@ public class QueryCommand extends Command {
 
     printSummary(out, blurResults, maxWidth, timeInNanos);
     lineBreak(out, maxWidth);
-    
+
     int hit = 0;
     for (BlurResult result : blurResults.getResults()) {
       double score = result.getScore();
@@ -105,14 +119,14 @@ public class QueryCommand extends Command {
     printSummary(out, blurResults, maxWidth, timeInNanos);
   }
 
-  private void lineBreak(PrintWriter out, int maxWidth) {
+  private void lineBreak(PagingPrintWriter out, int maxWidth) throws FinishedException {
     for (int i = 0; i < maxWidth; i++) {
       out.print('-');
     }
     out.println();
   }
 
-  private void printSummary(PrintWriter out, BlurResults blurResults, int maxWidth, long timeInNanos) {
+  private void printSummary(PagingPrintWriter out, BlurResults blurResults, int maxWidth, long timeInNanos) throws FinishedException {
     long totalResults = blurResults.getTotalResults();
     out.println(" - Results Summary -");
     out.println("    total : " + totalResults);

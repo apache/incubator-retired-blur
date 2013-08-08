@@ -27,6 +27,7 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.CpuTime;
 import org.apache.blur.thrift.generated.QueryState;
+import org.apache.blur.thrift.generated.Status;
 import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.ForkJoin.Merger;
 
@@ -62,6 +63,13 @@ public class MergerQueryStatus implements Merger<List<BlurQueryStatus>> {
   }
 
   public static BlurQueryStatus merge(BlurQueryStatus s1, BlurQueryStatus s2) {
+	// Depending on the timing the status can be cleared (NOT_FOUND) on one shard server and not the other
+	if (s1.status == Status.NOT_FOUND) {
+		return s2;
+	}
+	if (s2.status == Status.NOT_FOUND) {
+		return s1;
+	}
     s1.completeShards = s1.completeShards + s2.completeShards;
     s1.totalShards = s1.totalShards + s2.totalShards;
     if (s1.state != s2.state) {

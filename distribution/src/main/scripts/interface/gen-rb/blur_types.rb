@@ -34,6 +34,13 @@ module Blur
     VALID_VALUES = Set.new([RUNNING, INTERRUPTED, COMPLETE, BACK_PRESSURE_INTERRUPTED]).freeze
   end
 
+  module Status
+    NOT_FOUND = 0
+    FOUND = 1
+    VALUE_MAP = {0 => "NOT_FOUND", 1 => "FOUND"}
+    VALID_VALUES = Set.new([NOT_FOUND, FOUND]).freeze
+  end
+
   module RowMutationType
     DELETE_ROW = 0
     REPLACE_ROW = 1
@@ -589,6 +596,7 @@ module Blur
     TOTALSHARDS = 4
     STATE = 5
     UUID = 6
+    STATUS = 7
 
     FIELDS = {
       # The original query.
@@ -606,7 +614,9 @@ module Blur
       # The state of the query.  e.g. RUNNING, INTERRUPTED, COMPLETE
       STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::Blur::QueryState},
       # The uuid of the query.
-      UUID => {:type => ::Thrift::Types::I64, :name => 'uuid'}
+      UUID => {:type => ::Thrift::Types::I64, :name => 'uuid'},
+      # The status of the query NOT_FOUND if uuid is not found else FOUND
+      STATUS => {:type => ::Thrift::Types::I32, :name => 'status', :enum_class => ::Blur::Status}
     }
 
     def struct_fields; FIELDS; end
@@ -614,6 +624,9 @@ module Blur
     def validate
       unless @state.nil? || ::Blur::QueryState::VALID_VALUES.include?(@state)
         raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field state!')
+      end
+      unless @status.nil? || ::Blur::Status::VALID_VALUES.include?(@status)
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field status!')
       end
     end
 

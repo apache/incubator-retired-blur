@@ -39,6 +39,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.compress.BZip2Codec;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.DefaultCodec;
+import org.apache.hadoop.io.compress.GzipCodec;
+import org.apache.hadoop.io.compress.SnappyCodec;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.RecordReader;
@@ -53,15 +58,30 @@ import org.apache.hadoop.util.GenericOptionsParser;
 @SuppressWarnings("static-access")
 public class CsvBlurDriver {
 
+  public static final String MAPRED_COMPRESS_MAP_OUTPUT = "mapred.compress.map.output";
+  public static final String MAPRED_MAP_OUTPUT_COMPRESSION_CODEC = "mapred.map.output.compression.codec";
+
+  enum COMPRESSION {
+    SNAPPY(SnappyCodec.class), GZIP(GzipCodec.class), BZIP(BZip2Codec.class), DEFAULT(DefaultCodec.class);
+
+    private final String className;
+
+    private COMPRESSION(Class<? extends CompressionCodec> clazz) {
+      className = clazz.getName();
+    }
+
+    public String getClassName() {
+      return className;
+    }
+  }
+
   interface ControllerPool {
     Iface getClient(String controllerConnectionStr);
   }
 
   public static void main(String... args) throws Exception {
-
     Configuration configuration = new Configuration();
     String[] otherArgs = new GenericOptionsParser(configuration, args).getRemainingArgs();
-
     Job job = setupJob(configuration, new ControllerPool() {
       @Override
       public Iface getClient(String controllerConnectionStr) {
@@ -93,6 +113,21 @@ public class CsvBlurDriver {
     job.setJarByClass(CsvBlurDriver.class);
     job.setMapperClass(CsvBlurMapper.class);
 
+    if (cmd.hasOption("p")) {
+      job.getConfiguration().set(MAPRED_COMPRESS_MAP_OUTPUT, "true");
+      String codecStr = cmd.getOptionValue("p");
+      COMPRESSION compression;
+      try {
+        compression = COMPRESSION.valueOf(codecStr.trim().toUpperCase());
+      } catch (IllegalArgumentException e) {
+        compression = null;
+      }
+      if (compression == null) {
+        job.getConfiguration().set(MAPRED_MAP_OUTPUT_COMPRESSION_CODEC, codecStr.trim());
+      } else {
+        job.getConfiguration().set(MAPRED_MAP_OUTPUT_COMPRESSION_CODEC, compression.getClassName());
+      }
+    }
     if (cmd.hasOption("a")) {
       CsvBlurMapper.setAutoGenerateRecordIdAsHashOfData(job, true);
     }
@@ -104,7 +139,7 @@ public class CsvBlurDriver {
     } else {
       job.setInputFormatClass(TextInputFormat.class);
     }
-    
+
     if (cmd.hasOption("C")) {
       if (cmd.hasOption("S")) {
         String[] optionValues = cmd.getOptionValues("C");
@@ -259,9 +294,15 @@ public class CsvBlurDriver {
         .withArgName("minimum maximum")
         .hasArgs(2)
         .withDescription(
-            "Enables a combine file input to help deal with many small files as the input. Provide " +
-            "the minimum and maximum size per mapper.  For a minimum of 1GB and a maximum of " +
-            "2.5GB: (1000000000 2500000000)").create("C"));
+            "Enables a combine file input to help deal with many small files as the input. Provide "
+                + "the minimum and maximum size per mapper.  For a minimum of 1GB and a maximum of "
+                + "2.5GB: (1000000000 2500000000)").create("C"));
+    options.addOption(OptionBuilder
+        .withArgName("codec")
+        .hasArgs(1)
+        .withDescription(
+            "Sets the compression codec for the map compress output setting. (SNAPPY,GZIP,BZIP,DEFAULT, or classname)")
+        .create("p"));
 
     CommandLineParser parser = new PosixParser();
     CommandLine cmd = null;

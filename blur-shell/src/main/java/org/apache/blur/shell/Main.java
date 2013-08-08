@@ -134,25 +134,25 @@ public class Main {
         throw new CommandException("Invalid args: " + help());
       }
       String clusterNamePassed = args[1];
-      if(validateClusterName(client, clusterNamePassed)) {
-    	  cluster = clusterNamePassed;
-    	  out.println("cluster is now " + cluster);
-      }else{
-    	  out.println("[ " + clusterNamePassed + " ]"+" is not a valid cluster name.");
+      if (validateClusterName(client, clusterNamePassed)) {
+        cluster = clusterNamePassed;
+        out.println("cluster is now " + cluster);
+      } else {
+        out.println("[ " + clusterNamePassed + " ]" + " is not a valid cluster name.");
       }
     }
 
     private boolean validateClusterName(Iface client, String clusterName) throws BlurException, TException {
-    	List<String> clusterNamesList = client.shardClusterList();
-    	if(clusterNamesList != null && !clusterNamesList.isEmpty()){
-    		if(clusterNamesList.contains(clusterName)){
-    			return true;
-    		}
-    	}
-    	return false;
-	}
+      List<String> clusterNamesList = client.shardClusterList();
+      if (clusterNamesList != null && !clusterNamesList.isEmpty()) {
+        if (clusterNamesList.contains(clusterName)) {
+          return true;
+        }
+      }
+      return false;
+    }
 
-	@Override
+    @Override
     public String help() {
       return "set the cluster in use, args; clustername";
     }
@@ -346,6 +346,7 @@ public class Main {
     builder.put("safemodewait", new WaitInSafemodeCommand());
     builder.put("top", new TopCommand());
     builder.put("parse", new ParseCommand());
+    builder.put("loadtestdata", new LoadTestDataCommand());
     commands = builder.build();
 
     CliShellOptions cliShellOptions = getCliShellOptions(args);
@@ -403,9 +404,9 @@ public class Main {
                 if (debug) {
                   e.printStackTrace(out);
                 }
-              }catch (BadConnectionException e){
-            	  out.println(e.getMessage());
-              }finally {
+              } catch (BadConnectionException e) {
+                out.println(e.getMessage());
+              } finally {
                 if (timed) {
                   out.println("Last command took " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) + "ms");
                 }
@@ -425,8 +426,8 @@ public class Main {
         } catch (BlurException e) {
           out.println(e.getMessage());
           e.printStackTrace(out);
-        } catch (BadConnectionException e){
-      	  out.println(e.getMessage());
+        } catch (BadConnectionException e) {
+          out.println(e.getMessage());
         }
         out.close();
         return;

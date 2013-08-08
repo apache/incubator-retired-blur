@@ -20,12 +20,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
@@ -33,35 +36,51 @@ import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RecordMutationType;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
-import org.apache.blur.thrift.generated.Blur.Iface;
-
 
 public class LoadData {
 
+  private static final long _5_SECONDS = TimeUnit.SECONDS.toNanos(5);
   private static Random random = new Random();
   private static List<String> words = new ArrayList<String>();
 
   public static void main(String[] args) throws BlurException, TException, IOException {
-    loadWords();
     final boolean wal = true;
     final int numberOfColumns = 3;
     int numberRows = 100000;
     final int numberRecordsPerRow = 3;
     final int numberOfFamilies = 3;
     final int numberOfWords = 30;
-    int count = 0;
-    int max = 100;
-    long start = System.currentTimeMillis();
-    final String table = args[1];
+    int batch = 1;
+    String connectionString = args[0];
+    String table = args[1];
+    Iface client = BlurClient.getClient(connectionString);
+    runLoad(client, table, wal, numberRows, numberRecordsPerRow, numberOfFamilies, numberOfColumns, numberOfWords,
+        batch, new PrintWriter(System.out));
+  }
+
+  public static void runLoad(Iface client, String table, boolean wal, int numberRows, int numberRecordsPerRow,
+      int numberOfFamilies, int numberOfColumns, int numberOfWords, int batch, PrintWriter out) throws IOException,
+      BlurException, TException {
+    loadWords();
+
+    int countRow = 0;
+    int countRecord = 0;
+    final long start = System.currentTimeMillis();
+    long s = start;
+
+    List<RowMutation> mutations = new ArrayList<RowMutation>();
+
+    long ts = System.nanoTime();
     for (int i = 0; i < numberRows; i++) {
-      if (count >= max) {
-        double seconds = (System.currentTimeMillis() - start) / 1000.0;
-        double rate = i / seconds;
-        System.out.println("Rows indexed [" + i + "] at [" + rate + "/s]");
-        count = 0;
+      long now = System.nanoTime();
+      if (ts + _5_SECONDS < now) {
+        printPerformance(out, countRow, countRecord, start, s, i);
+        countRow = 0;
+        countRecord = 0;
+        s = System.currentTimeMillis();
+        ts = System.nanoTime();
       }
 
-      Iface client = BlurClient.getClient(args[0]);
       RowMutation mutation = new RowMutation();
       mutation.setTable(table);
       String rowId = getRowId();
@@ -70,10 +89,32 @@ public class LoadData {
       mutation.setRowMutationType(RowMutationType.REPLACE_ROW);
       for (int j = 0; j < numberRecordsPerRow; j++) {
         mutation.addToRecordMutations(getRecordMutation(numberOfColumns, numberOfFamilies, numberOfWords));
+        countRecord++;
       }
-      client.mutate(mutation);
-      count++;
+      if (batch == 1) {
+        client.mutate(mutation);
+      } else {
+        mutations.add(mutation);
+        if (mutations.size() >= batch) {
+          client.mutateBatch(mutations);
+          mutations.clear();
+        }
+      }
+      countRow++;
     }
+    client.mutateBatch(mutations);
+    printPerformance(out, countRow, countRecord, start, s, numberRows);
+  }
+
+  private static void printPerformance(PrintWriter out, int countRow, int countRecord, final long start, long s, int i) {
+    double totalSeconds = (System.currentTimeMillis() - start) / 1000.0;
+    double seconds = (System.currentTimeMillis() - s) / 1000.0;
+    double recordRate = countRecord / seconds;
+    double rowRate = countRow / seconds;
+    double avgRowRate = i / totalSeconds;
+    out.printf("Rows indexed [%d] at Avg Rows [%f/s] Rows [%f/s] Records [%f/s]%n", i, avgRowRate, rowRate,
+        recordRate);
+    out.flush();
   }
 
   private static void loadWords() throws IOException {
@@ -119,7 +160,7 @@ public class LoadData {
   }
 
   private static String getWord() {
-    return makeUpperCaseRandomly(words.get(random.nextInt(words.size())),random);
+    return makeUpperCaseRandomly(words.get(random.nextInt(words.size())), random);
   }
 
   private static String makeUpperCaseRandomly(String s, Random r) {

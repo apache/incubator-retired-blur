@@ -154,11 +154,13 @@ public class IndexManager {
   }
 
   public void init() {
-    _readRecordsMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Read Records/s"), "Records/s", TimeUnit.SECONDS);
+    _readRecordsMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Read Records/s"), "Records/s",
+        TimeUnit.SECONDS);
     _readRowMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Read Row/s"), "Row/s", TimeUnit.SECONDS);
-    _writeRecordsMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Write Records/s"), "Records/s", TimeUnit.SECONDS);
+    _writeRecordsMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Write Records/s"), "Records/s",
+        TimeUnit.SECONDS);
     _writeRowMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Write Row/s"), "Row/s", TimeUnit.SECONDS);
-    
+
     _queriesExternalMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "External Queries/s"),
         "External Queries/s", TimeUnit.SECONDS);
     _queriesInternalMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Internal Queries/s"),
@@ -204,13 +206,15 @@ public class IndexManager {
       Map<String, BlurIndex> blurIndexes = _indexServer.getIndexes(table);
       if (blurIndexes == null) {
         LOG.error("Table [{0}] not found", table);
-        //@TODO probably should make a enum for not found on this server so the controller knows to try another server.
+        // @TODO probably should make a enum for not found on this server so the
+        // controller knows to try another server.
         throw new BException("Table [" + table + "] not found");
       }
       index = blurIndexes.get(shard);
       if (index == null) {
         LOG.error("Shard [{0}] not found in table [{1}]", shard, table);
-        //@TODO probably should make a enum for not found on this server so the controller knows to try another server.
+        // @TODO probably should make a enum for not found on this server so the
+        // controller knows to try another server.
         throw new BException("Shard [" + shard + "] not found in table [" + table + "]");
       }
     } catch (BlurException e) {
@@ -235,7 +239,8 @@ public class IndexManager {
 
       Query highlightQuery = getHighlightQuery(selector, table, analyzer);
 
-      fetchRow(searcher.getIndexReader(), table, shard, selector, fetchResult, highlightQuery, analyzer, _maxHeapPerRowFetch);
+      fetchRow(searcher.getIndexReader(), table, shard, selector, fetchResult, highlightQuery, analyzer,
+          _maxHeapPerRowFetch);
       if (fetchResult.rowResult != null) {
         if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
           _readRecordsMeter.mark(fetchResult.rowResult.row.records.size());
@@ -419,7 +424,7 @@ public class IndexManager {
       BlurQueryStatus queryStatus = status.getQueryStatus();
       QueryState state = queryStatus.getState();
       if (state == QueryState.BACK_PRESSURE_INTERRUPTED) {
-        throw new BlurException("Cannot execute query right now.", null, ErrorType.BACK_PRESSURE);  
+        throw new BlurException("Cannot execute query right now.", null, ErrorType.BACK_PRESSURE);
       } else if (state == QueryState.INTERRUPTED) {
         throw new BlurException("Cannot execute query right now.", null, ErrorType.QUERY_CANCEL);
       }
@@ -428,7 +433,7 @@ public class IndexManager {
       BlurQueryStatus queryStatus = status.getQueryStatus();
       QueryState state = queryStatus.getState();
       if (state == QueryState.BACK_PRESSURE_INTERRUPTED) {
-        throw new BlurException("Cannot execute query right now.", null, ErrorType.BACK_PRESSURE);  
+        throw new BlurException("Cannot execute query right now.", null, ErrorType.BACK_PRESSURE);
       } else if (state == QueryState.INTERRUPTED) {
         throw new BlurException("Cannot execute query right now.", null, ErrorType.QUERY_CANCEL);
       }
@@ -511,13 +516,14 @@ public class IndexManager {
     return _statusManager.queryStatusIdList(table);
   }
 
-  public static void fetchRow(IndexReader reader, String table, String shard, Selector selector, FetchResult fetchResult,
-      Query highlightQuery, int maxHeap) throws CorruptIndexException, IOException {
+  public static void fetchRow(IndexReader reader, String table, String shard, Selector selector,
+      FetchResult fetchResult, Query highlightQuery, int maxHeap) throws CorruptIndexException, IOException {
     fetchRow(reader, table, shard, selector, fetchResult, highlightQuery, null, maxHeap);
   }
 
-  public static void fetchRow(IndexReader reader, String table, String shard, Selector selector, FetchResult fetchResult,
-      Query highlightQuery, BlurAnalyzer analyzer, int maxHeap) throws CorruptIndexException, IOException {
+  public static void fetchRow(IndexReader reader, String table, String shard, Selector selector,
+      FetchResult fetchResult, Query highlightQuery, BlurAnalyzer analyzer, int maxHeap) throws CorruptIndexException,
+      IOException {
     fetchResult.table = table;
     String locationId = selector.locationId;
     int lastSlash = locationId.lastIndexOf('/');
@@ -962,7 +968,10 @@ public class IndexManager {
 
   private Row updateMetrics(Row row) {
     _writeRowMeter.mark();
-    _writeRecordsMeter.mark(row.getRecords().size());
+    List<Record> records = row.getRecords();
+    if (records != null) {
+      _writeRecordsMeter.mark(records.size());
+    }
     return row;
   }
 
@@ -1184,14 +1193,13 @@ public class IndexManager {
   public void setClusterStatus(ClusterStatus clusterStatus) {
     _clusterStatus = clusterStatus;
   }
-  
+
   public void setFetchCount(int fetchCount) {
     _fetchCount = fetchCount;
   }
-  
+
   public void setMaxHeapPerRowFetch(int maxHeapPerRowFetch) {
     _maxHeapPerRowFetch = maxHeapPerRowFetch;
   }
-  
 
 }

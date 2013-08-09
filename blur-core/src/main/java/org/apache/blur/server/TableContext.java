@@ -22,13 +22,15 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_COMMIT
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_REFRESHS;
 import static org.apache.blur.utils.BlurConstants.SUPER;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.blur.analysis.BaseFieldManager;
 import org.apache.blur.analysis.FieldManager;
+import org.apache.blur.analysis.HdfsFieldManager;
 import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -48,6 +50,7 @@ public class TableContext {
   private static final Log LOG = LogFactory.getLog(TableContext.class);
 
   private static final String LOGS = "logs";
+  private static final String TYPES = "types";
 
   private Path tablePath;
   private Path walTablePath;
@@ -74,11 +77,18 @@ public class TableContext {
   }
 
   public static TableContext create(TableDescriptor tableDescriptor) {
-    TableContext tableContext = cache.get(tableDescriptor.getName());
+    if (tableDescriptor == null) {
+      throw new NullPointerException("TableDescriptor can not be null.");
+    }
+    String name = tableDescriptor.getName();
+    if (name == null) {
+      throw new NullPointerException("Table name in the TableDescriptor can not be null.");
+    }
+    TableContext tableContext = cache.get(name);
     if (tableContext != null) {
       return tableContext;
     }
-    LOG.info("Creating table context for table [{0}]", tableDescriptor.getName());
+    LOG.info("Creating table context for table [{0}]", name);
     Configuration configuration = new Configuration();
     Map<String, String> tableProperties = tableDescriptor.getTableProperties();
     if (tableProperties != null) {
@@ -93,14 +103,25 @@ public class TableContext {
     tableContext.walTablePath = new Path(tableContext.tablePath, LOGS);
 
     tableContext.defaultFieldName = SUPER;
-    tableContext.table = tableDescriptor.getName();
+    tableContext.table = name;
     tableContext.descriptor = tableDescriptor;
     tableContext.timeBetweenCommits = configuration.getLong(BLUR_SHARD_TIME_BETWEEN_COMMITS, 60000);
     tableContext.timeBetweenRefreshs = configuration.getLong(BLUR_SHARD_TIME_BETWEEN_REFRESHS, 5000);
     tableContext.defaultPrimeDocTerm = new Term("_prime_", "true");
     tableContext.defaultScoreType = ScoreType.SUPER;
 
-    tableContext.fieldManager = null;
+    boolean strict = tableDescriptor.isStrictTypes();
+    String defaultMissingFieldType = tableDescriptor.getDefaultMissingFieldType();
+    boolean defaultMissingFieldLessIndexing = tableDescriptor.isDefaultMissingFieldLessIndexing();
+    Map<String, String> defaultMissingFieldProps = emptyIfNull(tableDescriptor.getDefaultMissingFieldProps());
+
+    Path storagePath = new Path(tableContext.tablePath, TYPES);
+    try {
+      tableContext.fieldManager = new HdfsFieldManager(SUPER, new NoStopWordStandardAnalyzer(), storagePath,
+          configuration, strict, defaultMissingFieldType, defaultMissingFieldLessIndexing, defaultMissingFieldProps);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
 
     Class<?> c1 = configuration.getClass(BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE,
         KeepOnlyLastCommitDeletionPolicy.class);
@@ -109,8 +130,15 @@ public class TableContext {
     Class<?> c2 = configuration.getClass(BLUR_SAHRD_INDEX_SIMILARITY, DefaultSimilarity.class);
     tableContext.similarity = (Similarity) configure(ReflectionUtils.newInstance(c2, configuration), tableContext);
 
-    cache.put(tableDescriptor.getName(), tableContext);
+    cache.put(name, tableContext);
     return tableContext;
+  }
+
+  private static Map<String, String> emptyIfNull(Map<String, String> defaultMissingFieldProps) {
+    if (defaultMissingFieldProps == null) {
+      return new HashMap<String, String>();
+    }
+    return defaultMissingFieldProps;
   }
 
   private static Object configure(Object o, TableContext tableContext) {

@@ -3026,6 +3026,10 @@ TableDescriptor = function(args) {
   this.readOnly = false;
   this.columnPreCache = null;
   this.tableProperties = null;
+  this.strictTypes = false;
+  this.defaultMissingFieldType = 'text';
+  this.defaultMissingFieldLessIndexing = true;
+  this.defaultMissingFieldProps = null;
   if (args) {
     if (args.isEnabled !== undefined) {
       this.isEnabled = args.isEnabled;
@@ -3059,6 +3063,18 @@ TableDescriptor = function(args) {
     }
     if (args.tableProperties !== undefined) {
       this.tableProperties = args.tableProperties;
+    }
+    if (args.strictTypes !== undefined) {
+      this.strictTypes = args.strictTypes;
+    }
+    if (args.defaultMissingFieldType !== undefined) {
+      this.defaultMissingFieldType = args.defaultMissingFieldType;
+    }
+    if (args.defaultMissingFieldLessIndexing !== undefined) {
+      this.defaultMissingFieldLessIndexing = args.defaultMissingFieldLessIndexing;
+    }
+    if (args.defaultMissingFieldProps !== undefined) {
+      this.defaultMissingFieldProps = args.defaultMissingFieldProps;
     }
   }
 };
@@ -3189,6 +3205,56 @@ TableDescriptor.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 15:
+      if (ftype == Thrift.Type.BOOL) {
+        this.strictTypes = input.readBool().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 16:
+      if (ftype == Thrift.Type.STRING) {
+        this.defaultMissingFieldType = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 17:
+      if (ftype == Thrift.Type.BOOL) {
+        this.defaultMissingFieldLessIndexing = input.readBool().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 18:
+      if (ftype == Thrift.Type.MAP) {
+        var _size173 = 0;
+        var _rtmp3177;
+        this.defaultMissingFieldProps = {};
+        var _ktype174 = 0;
+        var _vtype175 = 0;
+        _rtmp3177 = input.readMapBegin();
+        _ktype174 = _rtmp3177.ktype;
+        _vtype175 = _rtmp3177.vtype;
+        _size173 = _rtmp3177.size;
+        for (var _i178 = 0; _i178 < _size173; ++_i178)
+        {
+          if (_i178 > 0 ) {
+            if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
+              input.rstack.pop();
+            }
+          }
+          var key179 = null;
+          var val180 = null;
+          key179 = input.readString().value;
+          val180 = input.readString().value;
+          this.defaultMissingFieldProps[key179] = val180;
+        }
+        input.readMapEnd();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -3238,12 +3304,12 @@ TableDescriptor.prototype.write = function(output) {
   if (this.blockCachingFileTypes !== null && this.blockCachingFileTypes !== undefined) {
     output.writeFieldBegin('blockCachingFileTypes', Thrift.Type.SET, 11);
     output.writeSetBegin(Thrift.Type.STRING, this.blockCachingFileTypes.length);
-    for (var iter173 in this.blockCachingFileTypes)
+    for (var iter181 in this.blockCachingFileTypes)
     {
-      if (this.blockCachingFileTypes.hasOwnProperty(iter173))
+      if (this.blockCachingFileTypes.hasOwnProperty(iter181))
       {
-        iter173 = this.blockCachingFileTypes[iter173];
-        output.writeString(iter173);
+        iter181 = this.blockCachingFileTypes[iter181];
+        output.writeString(iter181);
       }
     }
     output.writeSetEnd();
@@ -3262,13 +3328,43 @@ TableDescriptor.prototype.write = function(output) {
   if (this.tableProperties !== null && this.tableProperties !== undefined) {
     output.writeFieldBegin('tableProperties', Thrift.Type.MAP, 14);
     output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRING, Thrift.objectLength(this.tableProperties));
-    for (var kiter174 in this.tableProperties)
+    for (var kiter182 in this.tableProperties)
     {
-      if (this.tableProperties.hasOwnProperty(kiter174))
+      if (this.tableProperties.hasOwnProperty(kiter182))
       {
-        var viter175 = this.tableProperties[kiter174];
-        output.writeString(kiter174);
-        output.writeString(viter175);
+        var viter183 = this.tableProperties[kiter182];
+        output.writeString(kiter182);
+        output.writeString(viter183);
+      }
+    }
+    output.writeMapEnd();
+    output.writeFieldEnd();
+  }
+  if (this.strictTypes !== null && this.strictTypes !== undefined) {
+    output.writeFieldBegin('strictTypes', Thrift.Type.BOOL, 15);
+    output.writeBool(this.strictTypes);
+    output.writeFieldEnd();
+  }
+  if (this.defaultMissingFieldType !== null && this.defaultMissingFieldType !== undefined) {
+    output.writeFieldBegin('defaultMissingFieldType', Thrift.Type.STRING, 16);
+    output.writeString(this.defaultMissingFieldType);
+    output.writeFieldEnd();
+  }
+  if (this.defaultMissingFieldLessIndexing !== null && this.defaultMissingFieldLessIndexing !== undefined) {
+    output.writeFieldBegin('defaultMissingFieldLessIndexing', Thrift.Type.BOOL, 17);
+    output.writeBool(this.defaultMissingFieldLessIndexing);
+    output.writeFieldEnd();
+  }
+  if (this.defaultMissingFieldProps !== null && this.defaultMissingFieldProps !== undefined) {
+    output.writeFieldBegin('defaultMissingFieldProps', Thrift.Type.MAP, 18);
+    output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRING, Thrift.objectLength(this.defaultMissingFieldProps));
+    for (var kiter184 in this.defaultMissingFieldProps)
+    {
+      if (this.defaultMissingFieldProps.hasOwnProperty(kiter184))
+      {
+        var viter185 = this.defaultMissingFieldProps[kiter184];
+        output.writeString(kiter184);
+        output.writeString(viter185);
       }
     }
     output.writeMapEnd();
@@ -3322,27 +3418,27 @@ Metric.prototype.read = function(input) {
       break;
       case 2:
       if (ftype == Thrift.Type.MAP) {
-        var _size176 = 0;
-        var _rtmp3180;
+        var _size186 = 0;
+        var _rtmp3190;
         this.strMap = {};
-        var _ktype177 = 0;
-        var _vtype178 = 0;
-        _rtmp3180 = input.readMapBegin();
-        _ktype177 = _rtmp3180.ktype;
-        _vtype178 = _rtmp3180.vtype;
-        _size176 = _rtmp3180.size;
-        for (var _i181 = 0; _i181 < _size176; ++_i181)
+        var _ktype187 = 0;
+        var _vtype188 = 0;
+        _rtmp3190 = input.readMapBegin();
+        _ktype187 = _rtmp3190.ktype;
+        _vtype188 = _rtmp3190.vtype;
+        _size186 = _rtmp3190.size;
+        for (var _i191 = 0; _i191 < _size186; ++_i191)
         {
-          if (_i181 > 0 ) {
+          if (_i191 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key182 = null;
-          var val183 = null;
-          key182 = input.readString().value;
-          val183 = input.readString().value;
-          this.strMap[key182] = val183;
+          var key192 = null;
+          var val193 = null;
+          key192 = input.readString().value;
+          val193 = input.readString().value;
+          this.strMap[key192] = val193;
         }
         input.readMapEnd();
       } else {
@@ -3351,27 +3447,27 @@ Metric.prototype.read = function(input) {
       break;
       case 3:
       if (ftype == Thrift.Type.MAP) {
-        var _size184 = 0;
-        var _rtmp3188;
+        var _size194 = 0;
+        var _rtmp3198;
         this.longMap = {};
-        var _ktype185 = 0;
-        var _vtype186 = 0;
-        _rtmp3188 = input.readMapBegin();
-        _ktype185 = _rtmp3188.ktype;
-        _vtype186 = _rtmp3188.vtype;
-        _size184 = _rtmp3188.size;
-        for (var _i189 = 0; _i189 < _size184; ++_i189)
+        var _ktype195 = 0;
+        var _vtype196 = 0;
+        _rtmp3198 = input.readMapBegin();
+        _ktype195 = _rtmp3198.ktype;
+        _vtype196 = _rtmp3198.vtype;
+        _size194 = _rtmp3198.size;
+        for (var _i199 = 0; _i199 < _size194; ++_i199)
         {
-          if (_i189 > 0 ) {
+          if (_i199 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key190 = null;
-          var val191 = null;
-          key190 = input.readString().value;
-          val191 = input.readI64().value;
-          this.longMap[key190] = val191;
+          var key200 = null;
+          var val201 = null;
+          key200 = input.readString().value;
+          val201 = input.readI64().value;
+          this.longMap[key200] = val201;
         }
         input.readMapEnd();
       } else {
@@ -3380,27 +3476,27 @@ Metric.prototype.read = function(input) {
       break;
       case 4:
       if (ftype == Thrift.Type.MAP) {
-        var _size192 = 0;
-        var _rtmp3196;
+        var _size202 = 0;
+        var _rtmp3206;
         this.doubleMap = {};
-        var _ktype193 = 0;
-        var _vtype194 = 0;
-        _rtmp3196 = input.readMapBegin();
-        _ktype193 = _rtmp3196.ktype;
-        _vtype194 = _rtmp3196.vtype;
-        _size192 = _rtmp3196.size;
-        for (var _i197 = 0; _i197 < _size192; ++_i197)
+        var _ktype203 = 0;
+        var _vtype204 = 0;
+        _rtmp3206 = input.readMapBegin();
+        _ktype203 = _rtmp3206.ktype;
+        _vtype204 = _rtmp3206.vtype;
+        _size202 = _rtmp3206.size;
+        for (var _i207 = 0; _i207 < _size202; ++_i207)
         {
-          if (_i197 > 0 ) {
+          if (_i207 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key198 = null;
-          var val199 = null;
-          key198 = input.readString().value;
-          val199 = input.readDouble().value;
-          this.doubleMap[key198] = val199;
+          var key208 = null;
+          var val209 = null;
+          key208 = input.readString().value;
+          val209 = input.readDouble().value;
+          this.doubleMap[key208] = val209;
         }
         input.readMapEnd();
       } else {
@@ -3426,13 +3522,13 @@ Metric.prototype.write = function(output) {
   if (this.strMap !== null && this.strMap !== undefined) {
     output.writeFieldBegin('strMap', Thrift.Type.MAP, 2);
     output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRING, Thrift.objectLength(this.strMap));
-    for (var kiter200 in this.strMap)
+    for (var kiter210 in this.strMap)
     {
-      if (this.strMap.hasOwnProperty(kiter200))
+      if (this.strMap.hasOwnProperty(kiter210))
       {
-        var viter201 = this.strMap[kiter200];
-        output.writeString(kiter200);
-        output.writeString(viter201);
+        var viter211 = this.strMap[kiter210];
+        output.writeString(kiter210);
+        output.writeString(viter211);
       }
     }
     output.writeMapEnd();
@@ -3441,13 +3537,13 @@ Metric.prototype.write = function(output) {
   if (this.longMap !== null && this.longMap !== undefined) {
     output.writeFieldBegin('longMap', Thrift.Type.MAP, 3);
     output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.I64, Thrift.objectLength(this.longMap));
-    for (var kiter202 in this.longMap)
+    for (var kiter212 in this.longMap)
     {
-      if (this.longMap.hasOwnProperty(kiter202))
+      if (this.longMap.hasOwnProperty(kiter212))
       {
-        var viter203 = this.longMap[kiter202];
-        output.writeString(kiter202);
-        output.writeI64(viter203);
+        var viter213 = this.longMap[kiter212];
+        output.writeString(kiter212);
+        output.writeI64(viter213);
       }
     }
     output.writeMapEnd();
@@ -3456,13 +3552,13 @@ Metric.prototype.write = function(output) {
   if (this.doubleMap !== null && this.doubleMap !== undefined) {
     output.writeFieldBegin('doubleMap', Thrift.Type.MAP, 4);
     output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.DOUBLE, Thrift.objectLength(this.doubleMap));
-    for (var kiter204 in this.doubleMap)
+    for (var kiter214 in this.doubleMap)
     {
-      if (this.doubleMap.hasOwnProperty(kiter204))
+      if (this.doubleMap.hasOwnProperty(kiter214))
       {
-        var viter205 = this.doubleMap[kiter204];
-        output.writeString(kiter204);
-        output.writeDouble(viter205);
+        var viter215 = this.doubleMap[kiter214];
+        output.writeString(kiter214);
+        output.writeDouble(viter215);
       }
     }
     output.writeMapEnd();

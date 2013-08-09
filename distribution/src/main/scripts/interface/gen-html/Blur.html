@@ -463,7 +463,16 @@ updates through MapReduce are allowed and in fact they are only allowed if the t
 </td><td>default</td><td>0</td></tr>
 <tr><td>13</td><td>columnPreCache</td><td><code><a href="Blur.html#Struct_ColumnPreCache">ColumnPreCache</a></code></td><td>Sets what column families and columns to prefetch into block cache on shard open.
 </td><td>default</td><td></td></tr>
-<tr><td>14</td><td>tableProperties</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>14</td><td>tableProperties</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td>The table properties that can modify the default behavior of the table.  TODO: Document all options.
+</td><td>default</td><td></td></tr>
+<tr><td>15</td><td>strictTypes</td><td><code>bool</code></td><td>Whether strict types are enabled or not (default).  If they are enabled no column can be added without first having it's type defined.
+</td><td>default</td><td>0</td></tr>
+<tr><td>16</td><td>defaultMissingFieldType</td><td><code>string</code></td><td>If strict is not enabled, the default field type.
+</td><td>default</td><td>"text"</td></tr>
+<tr><td>17</td><td>defaultMissingFieldLessIndexing</td><td><code>bool</code></td><td>If strict is not enabled, defines whether or not field less indexing is enabled on the newly created fields.
+</td><td>default</td><td>1</td></tr>
+<tr><td>18</td><td>defaultMissingFieldProps</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td>If strict is not enabled, defines the properties to be used in the new field creation.
+</td><td>default</td><td></td></tr>
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_Metric">Struct: Metric</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>

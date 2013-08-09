@@ -16,74 +16,52 @@ package org.apache.blur.analysis;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.ZooDefs.Ids;
+import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.data.Stat;
 
-public class HdfsFieldManager extends BaseFieldManager {
+public class ZooKeeperFieldManager extends BaseFieldManager {
 
-  public static abstract class Lock {
-
-    public abstract void lock();
-
-    public abstract void unlock();
-
-  }
-
-  private static final Log LOG = LogFactory.getLog(HdfsFieldManager.class);
   private static final String FIELD_TYPE = "fieldType";
   private static final String FIELD_LESS_INDEXING = "fieldLessIndexing";
-  private static Lock _lock = new Lock() {
-    private final java.util.concurrent.locks.Lock _javalock = new ReentrantReadWriteLock().writeLock();
+  private static final Object lock = new Object();
 
-    @Override
-    public void lock() {
-      _javalock.lock();
-    }
+  private static final Log LOG = LogFactory.getLog(ZooKeeperFieldManager.class);
+  private final ZooKeeper _zooKeeper;
+  private final String _basePath;
 
-    @Override
-    public void unlock() {
-      _javalock.unlock();
-    }
-  };
-
-  private final Configuration _configuration;
-  private final Path _storagePath;
-  private final FileSystem _fileSystem;
-
-  public HdfsFieldManager(String fieldLessField, Analyzer defaultAnalyzerForQuerying, Path storagePath,
-      Configuration configuration) throws IOException {
-    this(fieldLessField, defaultAnalyzerForQuerying, storagePath, configuration, true, null, false, null);
+  public ZooKeeperFieldManager(String fieldLessField, Analyzer defaultAnalyzerForQuerying, ZooKeeper zooKeeper, String basePath)
+      throws IOException {
+    this(fieldLessField, defaultAnalyzerForQuerying, zooKeeper, basePath, true, null, false, null);
   }
 
-  public HdfsFieldManager(String fieldLessField, Analyzer defaultAnalyzerForQuerying, Path storagePath,
-      Configuration configuration, boolean strict, String defaultMissingFieldType,
-      boolean defaultMissingFieldLessIndexing, Map<String, String> defaultMissingFieldProps) throws IOException {
+  public ZooKeeperFieldManager(String fieldLessField, Analyzer defaultAnalyzerForQuerying, ZooKeeper zooKeeper,
+      String basePath, boolean strict, String defaultMissingFieldType, boolean defaultMissingFieldLessIndexing,
+      Map<String, String> defaultMissingFieldProps) throws IOException {
     super(fieldLessField, defaultAnalyzerForQuerying, strict, defaultMissingFieldType, defaultMissingFieldLessIndexing,
         defaultMissingFieldProps);
-    _storagePath = storagePath;
-    _configuration = configuration;
-    _fileSystem = _storagePath.getFileSystem(_configuration);
+    _zooKeeper = zooKeeper;
+    _basePath = basePath;
   }
 
   @Override
   protected boolean tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType, Map<String, String> props)
       throws IOException {
     // Might want to make this a ZK lock
-    _lock.lock();
-    try {
+    synchronized (lock) {
       LOG.info("Attempting to store new field [{0}] with fieldLessIndexing [{1}] with type [{2}] and properties [{3}]",
           fieldName, fieldLessIndexing, fieldType, props);
       Properties properties = new Properties();
@@ -94,31 +72,43 @@ public class HdfsFieldManager extends BaseFieldManager {
           properties.setProperty(e.getKey(), e.getValue());
         }
       }
-      Path path = getFieldPath(fieldName);
-      if (_fileSystem.exists(path)) {
+      String path = getFieldPath(fieldName);
+      Stat stat;
+      try {
+        stat = _zooKeeper.exists(path, false);
+      } catch (KeeperException e) {
+        throw new IOException(e);
+      } catch (InterruptedException e) {
+        throw new IOException(e);
+      }
+      if (stat != null) {
         LOG.info("Field [{0}] already exists.", fieldName, fieldLessIndexing, fieldType, props);
         return false;
       }
       try {
-        FSDataOutputStream outputStream = _fileSystem.create(path, false);
-        properties.store(outputStream, getComments());
-        outputStream.close();
-      } catch (IOException e) {
-        if (_fileSystem.exists(path)) {
+        _zooKeeper.create(path, toBytes(properties), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+        return true;
+      } catch (KeeperException e) {
+        if (e.code() == KeeperException.Code.NODEEXISTS) {
           LOG.info("Field [{0}] already exists.", fieldName, fieldLessIndexing, fieldType, props);
           return false;
-        } else {
-          throw e;
         }
+        throw new IOException(e);
+      } catch (InterruptedException e) {
+        throw new IOException(e);
       }
-      return true;
-    } finally {
-      _lock.unlock();
     }
   }
 
-  private Path getFieldPath(String fieldName) {
-    return new Path(_storagePath, fieldName);
+  private byte[] toBytes(Properties properties) throws IOException {
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    properties.store(outputStream, getComments());
+    outputStream.close();
+    return outputStream.toByteArray();
+  }
+
+  private String getFieldPath(String fieldName) {
+    return _basePath + "/" + fieldName;
   }
 
   private String getComments() {
@@ -127,12 +117,28 @@ public class HdfsFieldManager extends BaseFieldManager {
 
   @Override
   protected void tryToLoad(String fieldName) throws IOException {
-    Path path = getFieldPath(fieldName);
-    if (!_fileSystem.exists(path)) {
+    String path = getFieldPath(fieldName);
+    Stat stat;
+    try {
+      stat = _zooKeeper.exists(path, false);
+    } catch (KeeperException e) {
+      throw new IOException(e);
+    } catch (InterruptedException e) {
+      throw new IOException(e);
+    }
+    if (stat != null) {
       return;
     }
-    FSDataInputStream inputStream = _fileSystem.open(path);
+    byte[] data;
+    try {
+      data = _zooKeeper.getData(path, false, stat);
+    } catch (KeeperException e) {
+      throw new IOException(e);
+    } catch (InterruptedException e) {
+      throw new IOException(e);
+    }
     Properties props = new Properties();
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
     props.load(inputStream);
     inputStream.close();
     boolean fieldLessIndexing = Boolean.parseBoolean(props.getProperty(FIELD_LESS_INDEXING));
@@ -147,13 +153,5 @@ public class HdfsFieldManager extends BaseFieldManager {
       result.put(e.getKey().toString(), e.getValue().toString());
     }
     return result;
-  }
-  
-  public static Lock getLock() {
-    return _lock;
-  }
-
-  public static void setLock(Lock lock) {
-    _lock = lock;
   }
 }

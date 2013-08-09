@@ -26,11 +26,13 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 
+import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.LuceneVersionConstant;
 import org.apache.blur.manager.writer.TransactionRecorder;
 import org.apache.blur.mapreduce.lib.BlurMutate.MUTATE_TYPE;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
@@ -55,7 +57,9 @@ import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.util.Progressable;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.CorruptIndexException;
@@ -343,9 +347,9 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     private static final Log LOG = LogFactory.getLog(BlurRecordWriter.class);
 
     private final Text _prevKey = new Text();
-    private final Map<String, Document> _documents = new TreeMap<String, Document>();
+    private final Map<String, List<Field>> _documents = new TreeMap<String, List<Field>>();
     private final IndexWriter _writer;
-    private final BlurAnalyzer _analyzer;
+    private final FieldManager _fieldManager;
     private final Directory _finalDir;
     private final Directory _localDir;
     private final File _localPath;
@@ -390,13 +394,16 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       _finalDir = new ProgressableDirectory(new HdfsDirectory(configuration, _newIndex),
           BlurOutputFormat.getProgressable());
       _finalDir.setLockFactory(NoLockFactory.getNoLockFactory());
-
-      _analyzer = new BlurAnalyzer(tableDescriptor.getAnalyzerDefinition());
-      _conf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, _analyzer);
+      
+      TableContext tableContext = TableContext.create(tableDescriptor);
+      _fieldManager = tableContext.getFieldManager();
+      Analyzer analyzer = _fieldManager.getAnalyzerForIndex();
+      
+      _conf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, analyzer);
       TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();
       mergePolicy.setUseCompoundFile(false);
 
-      _overFlowConf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, _analyzer);
+      _overFlowConf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, analyzer);
       _overFlowConf.setMergePolicy(NoMergePolicy.NO_COMPOUND_FILES);
 
       if (_indexLocally) {
@@ -452,12 +459,12 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
         return;
       }
       _columnCount.increment(record.getColumns().size());
-      Document document = TransactionRecorder.convert(blurRecord.getRowId(), record, _analyzer);
-      Document dup = _documents.put(recordId, document);
+      List<Field> document = TransactionRecorder.getDoc(_fieldManager,blurRecord.getRowId(), record);
+      List<Field> dup = _documents.put(recordId, document);
       if (dup != null) {
         _recordDuplicateCount.increment(1);
       } else {
-        _fieldCount.increment(document.getFields().size());
+        _fieldCount.increment(document.size());
         _recordCount.increment(1);
       }
       flushToTmpIndexIfNeeded();
@@ -481,7 +488,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
         _localTmpWriter = new IndexWriter(_localTmpDir, _overFlowConf.clone());
         //The local tmp writer has merging disabled so the first document in is going to be doc 0.
         //Therefore the first document added is the prime doc
-        List<Document> docs = new ArrayList<Document>(_documents.values());
+        List<List<Field>> docs = new ArrayList<List<Field>>(_documents.values());
         docs.get(0).add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
         _localTmpWriter.addDocuments(docs);
       } else {
@@ -527,7 +534,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
             _rowDeleteCount.increment(1);
           }
         } else {
-          List<Document> docs = new ArrayList<Document>(_documents.values());
+          List<List<Field>> docs = new ArrayList<List<Field>>(_documents.values());
           docs.get(0).add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
           _writer.addDocuments(docs);
           _recordRateCounter.mark(_documents.size());

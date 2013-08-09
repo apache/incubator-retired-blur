@@ -702,7 +702,26 @@ struct TableDescriptor {
    * Sets what column families and columns to prefetch into block cache on shard open.
    */
   13:ColumnPreCache columnPreCache,
-  14:map<string,string> tableProperties
+  /**
+   * The table properties that can modify the default behavior of the table.  TODO: Document all options.
+   */
+  14:map<string,string> tableProperties,
+  /**
+   * Whether strict types are enabled or not (default).  If they are enabled no column can be added without first having it's type defined.
+   */
+  15:bool strictTypes = false,
+  /**
+   * If strict is not enabled, the default field type.
+   */
+  16:string defaultMissingFieldType = "text",
+  /**
+   * If strict is not enabled, defines whether or not field less indexing is enabled on the newly created fields.
+   */
+  17:bool defaultMissingFieldLessIndexing = true,
+  /**
+   * If strict is not enabled, defines the properties to be used in the new field creation.
+   */
+  18:map<string,string> defaultMissingFieldProps
 }
 
 struct Metric {

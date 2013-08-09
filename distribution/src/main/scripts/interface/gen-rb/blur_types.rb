@@ -800,6 +800,10 @@ module Blur
     READONLY = 12
     COLUMNPRECACHE = 13
     TABLEPROPERTIES = 14
+    STRICTTYPES = 15
+    DEFAULTMISSINGFIELDTYPE = 16
+    DEFAULTMISSINGFIELDLESSINDEXING = 17
+    DEFAULTMISSINGFIELDPROPS = 18
 
     FIELDS = {
       # Is the table enabled or not, enabled by default.
@@ -823,7 +827,16 @@ module Blur
       READONLY => {:type => ::Thrift::Types::BOOL, :name => 'readOnly', :default => false},
       # Sets what column families and columns to prefetch into block cache on shard open.
       COLUMNPRECACHE => {:type => ::Thrift::Types::STRUCT, :name => 'columnPreCache', :class => ::Blur::ColumnPreCache},
-      TABLEPROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'tableProperties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
+      # The table properties that can modify the default behavior of the table.  TODO: Document all options.
+      TABLEPROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'tableProperties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+      # Whether strict types are enabled or not (default).  If they are enabled no column can be added without first having it's type defined.
+      STRICTTYPES => {:type => ::Thrift::Types::BOOL, :name => 'strictTypes', :default => false},
+      # If strict is not enabled, the default field type.
+      DEFAULTMISSINGFIELDTYPE => {:type => ::Thrift::Types::STRING, :name => 'defaultMissingFieldType', :default => %q"text"},
+      # If strict is not enabled, defines whether or not field less indexing is enabled on the newly created fields.
+      DEFAULTMISSINGFIELDLESSINDEXING => {:type => ::Thrift::Types::BOOL, :name => 'defaultMissingFieldLessIndexing', :default => true},
+      # If strict is not enabled, defines the properties to be used in the new field creation.
+      DEFAULTMISSINGFIELDPROPS => {:type => ::Thrift::Types::MAP, :name => 'defaultMissingFieldProps', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
     }
 
     def struct_fields; FIELDS; end

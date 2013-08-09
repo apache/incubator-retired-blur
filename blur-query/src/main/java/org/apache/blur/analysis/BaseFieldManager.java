@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.blur.analysis.type.DoubleFieldTypeDefinition;
+import org.apache.blur.analysis.type.FieldLessFieldTypeDefinition;
 import org.apache.blur.analysis.type.FloatFieldTypeDefinition;
 import org.apache.blur.analysis.type.IntFieldTypeDefinition;
 import org.apache.blur.analysis.type.LongFieldTypeDefinition;
@@ -60,6 +61,11 @@ public abstract class BaseFieldManager extends FieldManager {
   private final Analyzer _baseAnalyzerForQuery;
   private final Analyzer _baseAnalyzerForIndex;
   private final String _fieldLessField;
+  private final Map<String, String> _defaultMissingFieldProps;
+  private final String _defaultMissingFieldType;
+  private final boolean _defaultMissingFieldLessIndexing;
+  private final boolean _strict;
+  private final FieldTypeDefinition _fieldLessFieldTypeDefinition;
 
   public static FieldType ID_TYPE;
   static {
@@ -76,7 +82,13 @@ public abstract class BaseFieldManager extends FieldManager {
     SUPER_FIELD_TYPE.setOmitNorms(true);
   }
 
-  public BaseFieldManager(String fieldLessField, final Analyzer defaultAnalyzerForQuerying) {
+  public BaseFieldManager(String fieldLessField, final Analyzer defaultAnalyzerForQuerying) throws IOException {
+    this(fieldLessField, defaultAnalyzerForQuerying, true, null, false, null);
+  }
+
+  public BaseFieldManager(String fieldLessField, final Analyzer defaultAnalyzerForQuerying, boolean strict,
+      String defaultMissingFieldType, boolean defaultMissingFieldLessIndexing,
+      Map<String, String> defaultMissingFieldProps) throws IOException {
     _typeMap.put(TextFieldTypeDefinition.NAME, TextFieldTypeDefinition.class);
     _typeMap.put(StringFieldTypeDefinition.NAME, StringFieldTypeDefinition.class);
     _typeMap.put(StoredFieldTypeDefinition.NAME, StoredFieldTypeDefinition.class);
@@ -85,6 +97,12 @@ public abstract class BaseFieldManager extends FieldManager {
     _typeMap.put(DoubleFieldTypeDefinition.NAME, DoubleFieldTypeDefinition.class);
     _typeMap.put(FloatFieldTypeDefinition.NAME, FloatFieldTypeDefinition.class);
     _fieldLessField = fieldLessField;
+    _strict = strict;
+    _defaultMissingFieldLessIndexing = defaultMissingFieldLessIndexing;
+    _defaultMissingFieldType = defaultMissingFieldType;
+    _defaultMissingFieldProps = defaultMissingFieldProps;
+
+    _fieldLessFieldTypeDefinition = new FieldLessFieldTypeDefinition();
 
     _baseAnalyzerForQuery = new AnalyzerWrapper() {
       @Override
@@ -141,11 +159,22 @@ public abstract class BaseFieldManager extends FieldManager {
       if (value == null || name == null) {
         continue;
       }
-      getAndAddFields(fields, family, column, getFieldTypeDefinition(family, column));
+      FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(family, column);
+      if (fieldTypeDefinition == null) {
+        if (isStrict()) {
+          LOG.error("Family [{0}] Column [{1}] not defined", family, column);
+          throw new IOException("Family [" + family + "] Column [" + column + "] not defined");
+        }
+        addColumnDefinition(family, name, null, getDefaultMissingFieldLessIndexing(), getDefaultMissingFieldType(),
+            getDefaultMissingFieldProps());
+        fieldTypeDefinition = getFieldTypeDefinition(family, column);
+      }
+      getAndAddFields(fields, family, column, fieldTypeDefinition);
       Collection<String> subColumns = getSubColumns(family, column);
       if (subColumns != null) {
         for (String subName : subColumns) {
-          getAndAddFields(fields, family, column, subName, getFieldTypeDefinition(family, column, subName));
+          FieldTypeDefinition subFieldTypeDefinition = getFieldTypeDefinition(family, column, subName);
+          getAndAddFields(fields, family, column, subName, subFieldTypeDefinition);
         }
       }
     }
@@ -235,6 +264,11 @@ public abstract class BaseFieldManager extends FieldManager {
     } else {
       fieldName = baseFieldName;
     }
+    return addFieldTypeDefinition(fieldName, fieldLessIndexing, fieldType, props);
+  }
+
+  private boolean addFieldTypeDefinition(String fieldName, boolean fieldLessIndexing, String fieldType,
+      Map<String, String> props) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(fieldName);
     if (fieldTypeDefinition != null) {
       return false;
@@ -277,6 +311,9 @@ public abstract class BaseFieldManager extends FieldManager {
 
   protected FieldTypeDefinition newFieldTypeDefinition(boolean fieldLessIndexing, String fieldType,
       Map<String, String> props) {
+    if (fieldType == null) {
+      throw new IllegalArgumentException("Field type can not be null.");
+    }
     Class<? extends FieldTypeDefinition> clazz = _typeMap.get(fieldType);
     if (clazz == null) {
       throw new IllegalArgumentException("FieldType of [" + fieldType + "] was not found.");
@@ -378,24 +415,36 @@ public abstract class BaseFieldManager extends FieldManager {
   @Override
   public boolean isFieldLessIndexed(String field) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
+    if (fieldTypeDefinition == null) {
+      throw new IOException("FieldTypeDefinition for field [" + field + "] is missing.");
+    }
     return fieldTypeDefinition.isFieldLessIndexed();
   }
 
   @Override
   public boolean checkSupportForFuzzyQuery(String field) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
+    if (fieldTypeDefinition == null) {
+      throw new IOException("FieldTypeDefinition for field [" + field + "] is missing.");
+    }
     return fieldTypeDefinition.checkSupportForFuzzyQuery();
   }
 
   @Override
   public boolean checkSupportForPrefixQuery(String field) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
+    if (fieldTypeDefinition == null) {
+      throw new IOException("FieldTypeDefinition for field [" + field + "] is missing.");
+    }
     return fieldTypeDefinition.checkSupportForPrefixQuery();
   }
 
   @Override
   public boolean checkSupportForWildcardQuery(String field) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
+    if (fieldTypeDefinition == null) {
+      throw new IOException("FieldTypeDefinition for field [" + field + "] is missing.");
+    }
     return fieldTypeDefinition.checkSupportForWildcardQuery();
   }
 
@@ -422,6 +471,9 @@ public abstract class BaseFieldManager extends FieldManager {
 
   @Override
   public FieldTypeDefinition getFieldTypeDefinition(String field) throws IOException {
+    if (field.equals(_fieldLessField)) {
+      return _fieldLessFieldTypeDefinition;
+    }
     FieldTypeDefinition fieldTypeDefinition = _fieldNameToDefMap.get(field);
     if (fieldTypeDefinition == null) {
       tryToLoad(field);
@@ -430,8 +482,29 @@ public abstract class BaseFieldManager extends FieldManager {
     return fieldTypeDefinition;
   }
 
+  @Override
   public String getFieldLessFieldName() {
     return _fieldLessField;
+  }
+
+  @Override
+  public Map<String, String> getDefaultMissingFieldProps() {
+    return _defaultMissingFieldProps;
+  }
+
+  @Override
+  public String getDefaultMissingFieldType() {
+    return _defaultMissingFieldType;
+  }
+
+  @Override
+  public boolean getDefaultMissingFieldLessIndexing() {
+    return _defaultMissingFieldLessIndexing;
+  }
+
+  @Override
+  public boolean isStrict() {
+    return _strict;
   }
 
 }

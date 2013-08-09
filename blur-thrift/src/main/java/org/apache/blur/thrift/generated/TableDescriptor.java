@@ -66,6 +66,10 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField READ_ONLY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("readOnly", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)12);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COLUMN_PRE_CACHE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("columnPreCache", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)13);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_PROPERTIES_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("tableProperties", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, (short)14);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField STRICT_TYPES_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("strictTypes", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)15);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField DEFAULT_MISSING_FIELD_TYPE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("defaultMissingFieldType", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)16);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField DEFAULT_MISSING_FIELD_LESS_INDEXING_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("defaultMissingFieldLessIndexing", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)17);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField DEFAULT_MISSING_FIELD_PROPS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("defaultMissingFieldProps", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, (short)18);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -114,7 +118,26 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
    * Sets what column families and columns to prefetch into block cache on shard open.
    */
   public ColumnPreCache columnPreCache; // required
+  /**
+   * The table properties that can modify the default behavior of the table.  TODO: Document all options.
+   */
   public Map<String,String> tableProperties; // required
+  /**
+   * Whether strict types are enabled or not (default).  If they are enabled no column can be added without first having it's type defined.
+   */
+  public boolean strictTypes; // required
+  /**
+   * If strict is not enabled, the default field type.
+   */
+  public String defaultMissingFieldType; // required
+  /**
+   * If strict is not enabled, defines whether or not field less indexing is enabled on the newly created fields.
+   */
+  public boolean defaultMissingFieldLessIndexing; // required
+  /**
+   * If strict is not enabled, defines the properties to be used in the new field creation.
+   */
+  public Map<String,String> defaultMissingFieldProps; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
@@ -159,7 +182,26 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
      * Sets what column families and columns to prefetch into block cache on shard open.
      */
     COLUMN_PRE_CACHE((short)13, "columnPreCache"),
-    TABLE_PROPERTIES((short)14, "tableProperties");
+    /**
+     * The table properties that can modify the default behavior of the table.  TODO: Document all options.
+     */
+    TABLE_PROPERTIES((short)14, "tableProperties"),
+    /**
+     * Whether strict types are enabled or not (default).  If they are enabled no column can be added without first having it's type defined.
+     */
+    STRICT_TYPES((short)15, "strictTypes"),
+    /**
+     * If strict is not enabled, the default field type.
+     */
+    DEFAULT_MISSING_FIELD_TYPE((short)16, "defaultMissingFieldType"),
+    /**
+     * If strict is not enabled, defines whether or not field less indexing is enabled on the newly created fields.
+     */
+    DEFAULT_MISSING_FIELD_LESS_INDEXING((short)17, "defaultMissingFieldLessIndexing"),
+    /**
+     * If strict is not enabled, defines the properties to be used in the new field creation.
+     */
+    DEFAULT_MISSING_FIELD_PROPS((short)18, "defaultMissingFieldProps");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -196,6 +238,14 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
           return COLUMN_PRE_CACHE;
         case 14: // TABLE_PROPERTIES
           return TABLE_PROPERTIES;
+        case 15: // STRICT_TYPES
+          return STRICT_TYPES;
+        case 16: // DEFAULT_MISSING_FIELD_TYPE
+          return DEFAULT_MISSING_FIELD_TYPE;
+        case 17: // DEFAULT_MISSING_FIELD_LESS_INDEXING
+          return DEFAULT_MISSING_FIELD_LESS_INDEXING;
+        case 18: // DEFAULT_MISSING_FIELD_PROPS
+          return DEFAULT_MISSING_FIELD_PROPS;
         default:
           return null;
       }
@@ -240,6 +290,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   private static final int __SHARDCOUNT_ISSET_ID = 1;
   private static final int __BLOCKCACHING_ISSET_ID = 2;
   private static final int __READONLY_ISSET_ID = 3;
+  private static final int __STRICTTYPES_ISSET_ID = 4;
+  private static final int __DEFAULTMISSINGFIELDLESSINDEXING_ISSET_ID = 5;
   private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -269,6 +321,16 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.MapMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING), 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING))));
+    tmpMap.put(_Fields.STRICT_TYPES, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("strictTypes", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.DEFAULT_MISSING_FIELD_TYPE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("defaultMissingFieldType", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.DEFAULT_MISSING_FIELD_LESS_INDEXING, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("defaultMissingFieldLessIndexing", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.DEFAULT_MISSING_FIELD_PROPS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("defaultMissingFieldProps", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.MapMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING), 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(TableDescriptor.class, metaDataMap);
   }
@@ -284,6 +346,12 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
 
     this.readOnly = false;
 
+    this.strictTypes = false;
+
+    this.defaultMissingFieldType = "text";
+
+    this.defaultMissingFieldLessIndexing = true;
+
   }
 
   public TableDescriptor(
@@ -297,7 +365,11 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     Set<String> blockCachingFileTypes,
     boolean readOnly,
     ColumnPreCache columnPreCache,
-    Map<String,String> tableProperties)
+    Map<String,String> tableProperties,
+    boolean strictTypes,
+    String defaultMissingFieldType,
+    boolean defaultMissingFieldLessIndexing,
+    Map<String,String> defaultMissingFieldProps)
   {
     this();
     this.isEnabled = isEnabled;
@@ -315,6 +387,12 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     setReadOnlyIsSet(true);
     this.columnPreCache = columnPreCache;
     this.tableProperties = tableProperties;
+    this.strictTypes = strictTypes;
+    setStrictTypesIsSet(true);
+    this.defaultMissingFieldType = defaultMissingFieldType;
+    this.defaultMissingFieldLessIndexing = defaultMissingFieldLessIndexing;
+    setDefaultMissingFieldLessIndexingIsSet(true);
+    this.defaultMissingFieldProps = defaultMissingFieldProps;
   }
 
   /**
@@ -363,6 +441,26 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       }
       this.tableProperties = __this__tableProperties;
     }
+    this.strictTypes = other.strictTypes;
+    if (other.isSetDefaultMissingFieldType()) {
+      this.defaultMissingFieldType = other.defaultMissingFieldType;
+    }
+    this.defaultMissingFieldLessIndexing = other.defaultMissingFieldLessIndexing;
+    if (other.isSetDefaultMissingFieldProps()) {
+      Map<String,String> __this__defaultMissingFieldProps = new HashMap<String,String>();
+      for (Map.Entry<String, String> other_element : other.defaultMissingFieldProps.entrySet()) {
+
+        String other_element_key = other_element.getKey();
+        String other_element_value = other_element.getValue();
+
+        String __this__defaultMissingFieldProps_copy_key = other_element_key;
+
+        String __this__defaultMissingFieldProps_copy_value = other_element_value;
+
+        __this__defaultMissingFieldProps.put(__this__defaultMissingFieldProps_copy_key, __this__defaultMissingFieldProps_copy_value);
+      }
+      this.defaultMissingFieldProps = __this__defaultMissingFieldProps;
+    }
   }
 
   public TableDescriptor deepCopy() {
@@ -387,6 +485,13 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
 
     this.columnPreCache = null;
     this.tableProperties = null;
+    this.strictTypes = false;
+
+    this.defaultMissingFieldType = "text";
+
+    this.defaultMissingFieldLessIndexing = true;
+
+    this.defaultMissingFieldProps = null;
   }
 
   /**
@@ -713,10 +818,16 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     this.tableProperties.put(key, val);
   }
 
+  /**
+   * The table properties that can modify the default behavior of the table.  TODO: Document all options.
+   */
   public Map<String,String> getTableProperties() {
     return this.tableProperties;
   }
 
+  /**
+   * The table properties that can modify the default behavior of the table.  TODO: Document all options.
+   */
   public TableDescriptor setTableProperties(Map<String,String> tableProperties) {
     this.tableProperties = tableProperties;
     return this;
@@ -734,6 +845,135 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   public void setTablePropertiesIsSet(boolean value) {
     if (!value) {
       this.tableProperties = null;
+    }
+  }
+
+  /**
+   * Whether strict types are enabled or not (default).  If they are enabled no column can be added without first having it's type defined.
+   */
+  public boolean isStrictTypes() {
+    return this.strictTypes;
+  }
+
+  /**
+   * Whether strict types are enabled or not (default).  If they are enabled no column can be added without first having it's type defined.
+   */
+  public TableDescriptor setStrictTypes(boolean strictTypes) {
+    this.strictTypes = strictTypes;
+    setStrictTypesIsSet(true);
+    return this;
+  }
+
+  public void unsetStrictTypes() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __STRICTTYPES_ISSET_ID);
+  }
+
+  /** Returns true if field strictTypes is set (has been assigned a value) and false otherwise */
+  public boolean isSetStrictTypes() {
+    return EncodingUtils.testBit(__isset_bitfield, __STRICTTYPES_ISSET_ID);
+  }
+
+  public void setStrictTypesIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __STRICTTYPES_ISSET_ID, value);
+  }
+
+  /**
+   * If strict is not enabled, the default field type.
+   */
+  public String getDefaultMissingFieldType() {
+    return this.defaultMissingFieldType;
+  }
+
+  /**
+   * If strict is not enabled, the default field type.
+   */
+  public TableDescriptor setDefaultMissingFieldType(String defaultMissingFieldType) {
+    this.defaultMissingFieldType = defaultMissingFieldType;
+    return this;
+  }
+
+  public void unsetDefaultMissingFieldType() {
+    this.defaultMissingFieldType = null;
+  }
+
+  /** Returns true if field defaultMissingFieldType is set (has been assigned a value) and false otherwise */
+  public boolean isSetDefaultMissingFieldType() {
+    return this.defaultMissingFieldType != null;
+  }
+
+  public void setDefaultMissingFieldTypeIsSet(boolean value) {
+    if (!value) {
+      this.defaultMissingFieldType = null;
+    }
+  }
+
+  /**
+   * If strict is not enabled, defines whether or not field less indexing is enabled on the newly created fields.
+   */
+  public boolean isDefaultMissingFieldLessIndexing() {
+    return this.defaultMissingFieldLessIndexing;
+  }
+
+  /**
+   * If strict is not enabled, defines whether or not field less indexing is enabled on the newly created fields.
+   */
+  public TableDescriptor setDefaultMissingFieldLessIndexing(boolean defaultMissingFieldLessIndexing) {
+    this.defaultMissingFieldLessIndexing = defaultMissingFieldLessIndexing;
+    setDefaultMissingFieldLessIndexingIsSet(true);
+    return this;
+  }
+
+  public void unsetDefaultMissingFieldLessIndexing() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __DEFAULTMISSINGFIELDLESSINDEXING_ISSET_ID);
+  }
+
+  /** Returns true if field defaultMissingFieldLessIndexing is set (has been assigned a value) and false otherwise */
+  public boolean isSetDefaultMissingFieldLessIndexing() {
+    return EncodingUtils.testBit(__isset_bitfield, __DEFAULTMISSINGFIELDLESSINDEXING_ISSET_ID);
+  }
+
+  public void setDefaultMissingFieldLessIndexingIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __DEFAULTMISSINGFIELDLESSINDEXING_ISSET_ID, value);
+  }
+
+  public int getDefaultMissingFieldPropsSize() {
+    return (this.defaultMissingFieldProps == null) ? 0 : this.defaultMissingFieldProps.size();
+  }
+
+  public void putToDefaultMissingFieldProps(String key, String val) {
+    if (this.defaultMissingFieldProps == null) {
+      this.defaultMissingFieldProps = new HashMap<String,String>();
+    }
+    this.defaultMissingFieldProps.put(key, val);
+  }
+
+  /**
+   * If strict is not enabled, defines the properties to be used in the new field creation.
+   */
+  public Map<String,String> getDefaultMissingFieldProps() {
+    return this.defaultMissingFieldProps;
+  }
+
+  /**
+   * If strict is not enabled, defines the properties to be used in the new field creation.
+   */
+  public TableDescriptor setDefaultMissingFieldProps(Map<String,String> defaultMissingFieldProps) {
+    this.defaultMissingFieldProps = defaultMissingFieldProps;
+    return this;
+  }
+
+  public void unsetDefaultMissingFieldProps() {
+    this.defaultMissingFieldProps = null;
+  }
+
+  /** Returns true if field defaultMissingFieldProps is set (has been assigned a value) and false otherwise */
+  public boolean isSetDefaultMissingFieldProps() {
+    return this.defaultMissingFieldProps != null;
+  }
+
+  public void setDefaultMissingFieldPropsIsSet(boolean value) {
+    if (!value) {
+      this.defaultMissingFieldProps = null;
     }
   }
 
@@ -827,6 +1067,38 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       }
       break;
 
+    case STRICT_TYPES:
+      if (value == null) {
+        unsetStrictTypes();
+      } else {
+        setStrictTypes((Boolean)value);
+      }
+      break;
+
+    case DEFAULT_MISSING_FIELD_TYPE:
+      if (value == null) {
+        unsetDefaultMissingFieldType();
+      } else {
+        setDefaultMissingFieldType((String)value);
+      }
+      break;
+
+    case DEFAULT_MISSING_FIELD_LESS_INDEXING:
+      if (value == null) {
+        unsetDefaultMissingFieldLessIndexing();
+      } else {
+        setDefaultMissingFieldLessIndexing((Boolean)value);
+      }
+      break;
+
+    case DEFAULT_MISSING_FIELD_PROPS:
+      if (value == null) {
+        unsetDefaultMissingFieldProps();
+      } else {
+        setDefaultMissingFieldProps((Map<String,String>)value);
+      }
+      break;
+
     }
   }
 
@@ -865,6 +1137,18 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     case TABLE_PROPERTIES:
       return getTableProperties();
 
+    case STRICT_TYPES:
+      return Boolean.valueOf(isStrictTypes());
+
+    case DEFAULT_MISSING_FIELD_TYPE:
+      return getDefaultMissingFieldType();
+
+    case DEFAULT_MISSING_FIELD_LESS_INDEXING:
+      return Boolean.valueOf(isDefaultMissingFieldLessIndexing());
+
+    case DEFAULT_MISSING_FIELD_PROPS:
+      return getDefaultMissingFieldProps();
+
     }
     throw new IllegalStateException();
   }
@@ -898,6 +1182,14 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       return isSetColumnPreCache();
     case TABLE_PROPERTIES:
       return isSetTableProperties();
+    case STRICT_TYPES:
+      return isSetStrictTypes();
+    case DEFAULT_MISSING_FIELD_TYPE:
+      return isSetDefaultMissingFieldType();
+    case DEFAULT_MISSING_FIELD_LESS_INDEXING:
+      return isSetDefaultMissingFieldLessIndexing();
+    case DEFAULT_MISSING_FIELD_PROPS:
+      return isSetDefaultMissingFieldProps();
     }
     throw new IllegalStateException();
   }
@@ -1011,6 +1303,42 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (!(this_present_tableProperties && that_present_tableProperties))
         return false;
       if (!this.tableProperties.equals(that.tableProperties))
+        return false;
+    }
+
+    boolean this_present_strictTypes = true;
+    boolean that_present_strictTypes = true;
+    if (this_present_strictTypes || that_present_strictTypes) {
+      if (!(this_present_strictTypes && that_present_strictTypes))
+        return false;
+      if (this.strictTypes != that.strictTypes)
+        return false;
+    }
+
+    boolean this_present_defaultMissingFieldType = true && this.isSetDefaultMissingFieldType();
+    boolean that_present_defaultMissingFieldType = true && that.isSetDefaultMissingFieldType();
+    if (this_present_defaultMissingFieldType || that_present_defaultMissingFieldType) {
+      if (!(this_present_defaultMissingFieldType && that_present_defaultMissingFieldType))
+        return false;
+      if (!this.defaultMissingFieldType.equals(that.defaultMissingFieldType))
+        return false;
+    }
+
+    boolean this_present_defaultMissingFieldLessIndexing = true;
+    boolean that_present_defaultMissingFieldLessIndexing = true;
+    if (this_present_defaultMissingFieldLessIndexing || that_present_defaultMissingFieldLessIndexing) {
+      if (!(this_present_defaultMissingFieldLessIndexing && that_present_defaultMissingFieldLessIndexing))
+        return false;
+      if (this.defaultMissingFieldLessIndexing != that.defaultMissingFieldLessIndexing)
+        return false;
+    }
+
+    boolean this_present_defaultMissingFieldProps = true && this.isSetDefaultMissingFieldProps();
+    boolean that_present_defaultMissingFieldProps = true && that.isSetDefaultMissingFieldProps();
+    if (this_present_defaultMissingFieldProps || that_present_defaultMissingFieldProps) {
+      if (!(this_present_defaultMissingFieldProps && that_present_defaultMissingFieldProps))
+        return false;
+      if (!this.defaultMissingFieldProps.equals(that.defaultMissingFieldProps))
         return false;
     }
 
@@ -1140,6 +1468,46 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetStrictTypes()).compareTo(typedOther.isSetStrictTypes());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetStrictTypes()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.strictTypes, typedOther.strictTypes);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetDefaultMissingFieldType()).compareTo(typedOther.isSetDefaultMissingFieldType());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetDefaultMissingFieldType()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.defaultMissingFieldType, typedOther.defaultMissingFieldType);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetDefaultMissingFieldLessIndexing()).compareTo(typedOther.isSetDefaultMissingFieldLessIndexing());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetDefaultMissingFieldLessIndexing()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.defaultMissingFieldLessIndexing, typedOther.defaultMissingFieldLessIndexing);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetDefaultMissingFieldProps()).compareTo(typedOther.isSetDefaultMissingFieldProps());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetDefaultMissingFieldProps()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.defaultMissingFieldProps, typedOther.defaultMissingFieldProps);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1229,6 +1597,30 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       sb.append("null");
     } else {
       sb.append(this.tableProperties);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("strictTypes:");
+    sb.append(this.strictTypes);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("defaultMissingFieldType:");
+    if (this.defaultMissingFieldType == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.defaultMissingFieldType);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("defaultMissingFieldLessIndexing:");
+    sb.append(this.defaultMissingFieldLessIndexing);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("defaultMissingFieldProps:");
+    if (this.defaultMissingFieldProps == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.defaultMissingFieldProps);
     }
     first = false;
     sb.append(")");
@@ -1390,6 +1782,50 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 15: // STRICT_TYPES
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
+              struct.strictTypes = iprot.readBool();
+              struct.setStrictTypesIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 16: // DEFAULT_MISSING_FIELD_TYPE
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+              struct.defaultMissingFieldType = iprot.readString();
+              struct.setDefaultMissingFieldTypeIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 17: // DEFAULT_MISSING_FIELD_LESS_INDEXING
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
+              struct.defaultMissingFieldLessIndexing = iprot.readBool();
+              struct.setDefaultMissingFieldLessIndexingIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 18: // DEFAULT_MISSING_FIELD_PROPS
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
+              {
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map165 = iprot.readMapBegin();
+                struct.defaultMissingFieldProps = new HashMap<String,String>(2*_map165.size);
+                for (int _i166 = 0; _i166 < _map165.size; ++_i166)
+                {
+                  String _key167; // required
+                  String _val168; // optional
+                  _key167 = iprot.readString();
+                  _val168 = iprot.readString();
+                  struct.defaultMissingFieldProps.put(_key167, _val168);
+                }
+                iprot.readMapEnd();
+              }
+              struct.setDefaultMissingFieldPropsIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1438,9 +1874,9 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         oprot.writeFieldBegin(BLOCK_CACHING_FILE_TYPES_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.blockCachingFileTypes.size()));
-          for (String _iter165 : struct.blockCachingFileTypes)
+          for (String _iter169 : struct.blockCachingFileTypes)
           {
-            oprot.writeString(_iter165);
+            oprot.writeString(_iter169);
           }
           oprot.writeSetEnd();
         }
@@ -1458,10 +1894,34 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         oprot.writeFieldBegin(TABLE_PROPERTIES_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.tableProperties.size()));
-          for (Map.Entry<String, String> _iter166 : struct.tableProperties.entrySet())
+          for (Map.Entry<String, String> _iter170 : struct.tableProperties.entrySet())
           {
-            oprot.writeString(_iter166.getKey());
-            oprot.writeString(_iter166.getValue());
+            oprot.writeString(_iter170.getKey());
+            oprot.writeString(_iter170.getValue());
+          }
+          oprot.writeMapEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldBegin(STRICT_TYPES_FIELD_DESC);
+      oprot.writeBool(struct.strictTypes);
+      oprot.writeFieldEnd();
+      if (struct.defaultMissingFieldType != null) {
+        oprot.writeFieldBegin(DEFAULT_MISSING_FIELD_TYPE_FIELD_DESC);
+        oprot.writeString(struct.defaultMissingFieldType);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldBegin(DEFAULT_MISSING_FIELD_LESS_INDEXING_FIELD_DESC);
+      oprot.writeBool(struct.defaultMissingFieldLessIndexing);
+      oprot.writeFieldEnd();
+      if (struct.defaultMissingFieldProps != null) {
+        oprot.writeFieldBegin(DEFAULT_MISSING_FIELD_PROPS_FIELD_DESC);
+        {
+          oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.defaultMissingFieldProps.size()));
+          for (Map.Entry<String, String> _iter171 : struct.defaultMissingFieldProps.entrySet())
+          {
+            oprot.writeString(_iter171.getKey());
+            oprot.writeString(_iter171.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -1518,7 +1978,19 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (struct.isSetTableProperties()) {
         optionals.set(10);
       }
-      oprot.writeBitSet(optionals, 11);
+      if (struct.isSetStrictTypes()) {
+        optionals.set(11);
+      }
+      if (struct.isSetDefaultMissingFieldType()) {
+        optionals.set(12);
+      }
+      if (struct.isSetDefaultMissingFieldLessIndexing()) {
+        optionals.set(13);
+      }
+      if (struct.isSetDefaultMissingFieldProps()) {
+        optionals.set(14);
+      }
+      oprot.writeBitSet(optionals, 15);
       if (struct.isSetIsEnabled()) {
         oprot.writeBool(struct.isEnabled);
       }
@@ -1543,9 +2015,9 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (struct.isSetBlockCachingFileTypes()) {
         {
           oprot.writeI32(struct.blockCachingFileTypes.size());
-          for (String _iter167 : struct.blockCachingFileTypes)
+          for (String _iter172 : struct.blockCachingFileTypes)
           {
-            oprot.writeString(_iter167);
+            oprot.writeString(_iter172);
           }
         }
       }
@@ -1558,10 +2030,29 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (struct.isSetTableProperties()) {
         {
           oprot.writeI32(struct.tableProperties.size());
-          for (Map.Entry<String, String> _iter168 : struct.tableProperties.entrySet())
+          for (Map.Entry<String, String> _iter173 : struct.tableProperties.entrySet())
           {
-            oprot.writeString(_iter168.getKey());
-            oprot.writeString(_iter168.getValue());
+            oprot.writeString(_iter173.getKey());
+            oprot.writeString(_iter173.getValue());
+          }
+        }
+      }
+      if (struct.isSetStrictTypes()) {
+        oprot.writeBool(struct.strictTypes);
+      }
+      if (struct.isSetDefaultMissingFieldType()) {
+        oprot.writeString(struct.defaultMissingFieldType);
+      }
+      if (struct.isSetDefaultMissingFieldLessIndexing()) {
+        oprot.writeBool(struct.defaultMissingFieldLessIndexing);
+      }
+      if (struct.isSetDefaultMissingFieldProps()) {
+        {
+          oprot.writeI32(struct.defaultMissingFieldProps.size());
+          for (Map.Entry<String, String> _iter174 : struct.defaultMissingFieldProps.entrySet())
+          {
+            oprot.writeString(_iter174.getKey());
+            oprot.writeString(_iter174.getValue());
           }
         }
       }
@@ -1570,7 +2061,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, TableDescriptor struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(11);
+      BitSet incoming = iprot.readBitSet(15);
       if (incoming.get(0)) {
         struct.isEnabled = iprot.readBool();
         struct.setIsEnabledIsSet(true);
@@ -1601,13 +2092,13 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       }
       if (incoming.get(7)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set169 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-          struct.blockCachingFileTypes = new HashSet<String>(2*_set169.size);
-          for (int _i170 = 0; _i170 < _set169.size; ++_i170)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set175 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.blockCachingFileTypes = new HashSet<String>(2*_set175.size);
+          for (int _i176 = 0; _i176 < _set175.size; ++_i176)
           {
-            String _elem171; // required
-            _elem171 = iprot.readString();
-            struct.blockCachingFileTypes.add(_elem171);
+            String _elem177; // required
+            _elem177 = iprot.readString();
+            struct.blockCachingFileTypes.add(_elem177);
           }
         }
         struct.setBlockCachingFileTypesIsSet(true);
@@ -1623,18 +2114,45 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       }
       if (incoming.get(10)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map172 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-          struct.tableProperties = new HashMap<String,String>(2*_map172.size);
-          for (int _i173 = 0; _i173 < _map172.size; ++_i173)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map178 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.tableProperties = new HashMap<String,String>(2*_map178.size);
+          for (int _i179 = 0; _i179 < _map178.size; ++_i179)
           {
-            String _key174; // required
-            String _val175; // optional
-            _key174 = iprot.readString();
-            _val175 = iprot.readString();
-            struct.tableProperties.put(_key174, _val175);
+            String _key180; // required
+            String _val181; // optional
+            _key180 = iprot.readString();
+            _val181 = iprot.readString();
+            struct.tableProperties.put(_key180, _val181);
           }
         }
         struct.setTablePropertiesIsSet(true);
+      }
+      if (incoming.get(11)) {
+        struct.strictTypes = iprot.readBool();
+        struct.setStrictTypesIsSet(true);
+      }
+      if (incoming.get(12)) {
+        struct.defaultMissingFieldType = iprot.readString();
+        struct.setDefaultMissingFieldTypeIsSet(true);
+      }
+      if (incoming.get(13)) {
+        struct.defaultMissingFieldLessIndexing = iprot.readBool();
+        struct.setDefaultMissingFieldLessIndexingIsSet(true);
+      }
+      if (incoming.get(14)) {
+        {
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map182 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.defaultMissingFieldProps = new HashMap<String,String>(2*_map182.size);
+          for (int _i183 = 0; _i183 < _map182.size; ++_i183)
+          {
+            String _key184; // required
+            String _val185; // optional
+            _key184 = iprot.readString();
+            _val185 = iprot.readString();
+            struct.defaultMissingFieldProps.put(_key184, _val185);
+          }
+        }
+        struct.setDefaultMissingFieldPropsIsSet(true);
       }
     }
   }

@@ -30,9 +30,9 @@ import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.TreeSet;
 
+import org.apache.blur.server.TableContext;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.store.hdfs.HdfsDirectory;
-import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.conf.Configuration;
@@ -47,6 +47,7 @@ import org.apache.hadoop.mapreduce.TestMapReduceLocal.TrackingTextInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.lucene.index.DirectoryReader;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -61,7 +62,7 @@ public class BlurOutputFormatTest {
   private Path inDir = new Path(TEST_ROOT_DIR + "/in");
 
   @BeforeClass
-  public static void setup() throws Exception {
+  public static void setupTest() throws Exception {
     System.setProperty("test.build.data", "./target/BlurOutputFormatTest/data");
     TEST_ROOT_DIR = new Path(System.getProperty("test.build.data", "target/tmp/BlurOutputFormatTest_tmp"));
     System.setProperty("hadoop.log.dir", "./target/BlurOutputFormatTest/hadoop_log");
@@ -95,6 +96,11 @@ public class BlurOutputFormatTest {
     file.delete();
   }
 
+  @Before
+  public void setup() {
+    TableContext.clear();
+  }
+
   @Test
   public void testBlurOutputFormat() throws IOException, InterruptedException, ClassNotFoundException {
     localFs.delete(inDir, true);
@@ -113,8 +119,8 @@ public class BlurOutputFormatTest {
 
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setShardCount(1);
-    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.setTableUri(tableUri);
+    tableDescriptor.setName("test");
 
     createShardDirectories(outDir, 1);
 
@@ -164,8 +170,8 @@ public class BlurOutputFormatTest {
 
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setShardCount(1);
-    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.setTableUri(tableUri);
+    tableDescriptor.setName("test");
 
     createShardDirectories(outDir, 1);
 
@@ -206,8 +212,8 @@ public class BlurOutputFormatTest {
 
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setShardCount(2);
-    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.setTableUri(tableUri);
+    tableDescriptor.setName("test");
 
     createShardDirectories(outDir, 2);
 
@@ -252,8 +258,8 @@ public class BlurOutputFormatTest {
 
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setShardCount(7);
-    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.setTableUri(tableUri);
+    tableDescriptor.setName("test");
 
     createShardDirectories(outDir, 7);
 
@@ -299,8 +305,8 @@ public class BlurOutputFormatTest {
 
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setShardCount(1);
-    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.setTableUri(tableUri);
+    tableDescriptor.setName("test");
 
     createShardDirectories(outDir, 1);
 
@@ -332,7 +338,6 @@ public class BlurOutputFormatTest {
 
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setShardCount(2);
-    tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.setTableUri(tableUri);
 
     createShardDirectories(outDir, 2);

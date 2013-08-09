@@ -33,7 +33,7 @@ public abstract class FieldManager {
    * 
    * @param record
    * @return
-   * @throws IOException 
+   * @throws IOException
    */
   public abstract List<Field> getFields(String rowId, Record record) throws IOException;
 
@@ -54,8 +54,8 @@ public abstract class FieldManager {
    *          the field type name, required.
    * @param props
    *          the configuration properties for this column and type.
-   * @return 
-   * @throws IOException 
+   * @return
+   * @throws IOException
    */
   public abstract boolean addColumnDefinition(String family, String columnName, String subColumnName,
       boolean fieldLessIndexing, String fieldType, Map<String, String> props) throws IOException;
@@ -66,7 +66,7 @@ public abstract class FieldManager {
    * @param fieldName
    *          the Lucene field name.
    * @return {@link Analyzer}.
-   * @throws IOException 
+   * @throws IOException
    */
   public abstract Analyzer getAnalyzerForIndex(String fieldName) throws IOException;
 
@@ -76,7 +76,7 @@ public abstract class FieldManager {
    * @param fieldName
    *          the Lucene field name.
    * @return {@link Analyzer}.
-   * @throws IOException 
+   * @throws IOException
    */
   public abstract Analyzer getAnalyzerForQuery(String fieldName) throws IOException;
 
@@ -89,7 +89,7 @@ public abstract class FieldManager {
    * @param columnName
    *          the column name.
    * @return boolean
-   * @throws IOException 
+   * @throws IOException
    */
   public abstract boolean isValidColumnDefinition(String family, String columnName) throws IOException;
 
@@ -106,7 +106,7 @@ public abstract class FieldManager {
    * @param field
    *          the field name.
    * @return boolean
-   * @throws IOException 
+   * @throws IOException
    */
   public abstract boolean checkSupportForFuzzyQuery(String field) throws IOException;
 
@@ -116,7 +116,7 @@ public abstract class FieldManager {
    * @param field
    *          the field name.
    * @return boolean
-   * @throws IOException 
+   * @throws IOException
    */
   public abstract boolean checkSupportForPrefixQuery(String field) throws IOException;
 
@@ -126,7 +126,7 @@ public abstract class FieldManager {
    * @param field
    *          the field name.
    * @return boolean
-   * @throws IOException 
+   * @throws IOException
    */
   public abstract boolean checkSupportForWildcardQuery(String field) throws IOException;
 
@@ -145,7 +145,7 @@ public abstract class FieldManager {
    * @param endInclusive
    *          if the end is inclusive.
    * @return the new range query or null.
-   * @throws IOException 
+   * @throws IOException
    */
   public abstract Query getNewRangeQuery(String field, String part1, String part2, boolean startInclusive,
       boolean endInclusive) throws IOException;
@@ -159,7 +159,7 @@ public abstract class FieldManager {
    * @param text
    *          the text for the term.
    * @return the query or null.
-   * @throws IOException 
+   * @throws IOException
    */
   public abstract Query getTermQueryIfNumeric(String field, String text) throws IOException;
 
@@ -169,14 +169,63 @@ public abstract class FieldManager {
    * @param field
    *          the field name.
    * @return the {@link FieldTypeDefinition} or null if missing.
-   * @throws IOException 
+   * @throws IOException
    */
   public abstract FieldTypeDefinition getFieldTypeDefinition(String field) throws IOException;
 
+  /**
+   * Checks to see if the field should also be indexed in the field less field.
+   * 
+   * @param name
+   *          the field name.
+   * @return boolean
+   * @throws IOException
+   */
   public abstract boolean isFieldLessIndexed(String name) throws IOException;
 
+  /**
+   * Gets the analyzer used for indexing.
+   * 
+   * @return the {@link Analyzer}.
+   */
   public abstract Analyzer getAnalyzerForIndex();
-  
+
+  /**
+   * Gets the Lucene field name of the field that is used for queries that do
+   * not specify a field.
+   * 
+   * @return the field name.
+   */
   public abstract String getFieldLessFieldName();
+
+  /**
+   * The field properties used if the table is is not in strict mode.
+   * 
+   * @return properties.
+   */
+  public abstract Map<String, String> getDefaultMissingFieldProps();
+
+  /**
+   * The field type used if the table is is not in strict mode.
+   * 
+   * @return field type.
+   */
+  public abstract String getDefaultMissingFieldType();
+
+  /**
+   * Should the field be placed in the field less indexing if the table is is
+   * not in strict mode.
+   * 
+   * @return boolean.
+   */
+  public abstract boolean getDefaultMissingFieldLessIndexing();
+
+  /**
+   * Does the table have strict field names and types. If so then if a new
+   * Column is attempted to be used for indexing then an error will be raised.
+   * 
+   * @return boolean
+   */
+  public abstract boolean isStrict();
 
 }

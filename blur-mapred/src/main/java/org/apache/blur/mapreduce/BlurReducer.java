@@ -27,13 +27,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.blur.analysis.BlurAnalyzer;
+import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
@@ -46,8 +45,10 @@ import org.apache.blur.mapreduce.lib.BlurOutputFormat;
 import org.apache.blur.mapreduce.lib.BlurRecord;
 import org.apache.blur.mapreduce.lib.DefaultBlurReducer;
 import org.apache.blur.mapreduce.lib.ProgressableDirectory;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.Column;
+import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
@@ -61,6 +62,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
@@ -115,7 +117,7 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
   protected static final double MB = 1024 * 1024;
   protected IndexWriter _writer;
   protected Directory _directory;
-  protected BlurAnalyzer _analyzer;
+  protected Analyzer _analyzer;
   protected BlurTask _blurTask;
 
   protected Counter _recordCounter;
@@ -133,6 +135,7 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
   protected Map<String, Document> _newDocs = new HashMap<String, Document>();
   protected Set<String> _recordIdsToDelete = new HashSet<String>();
   protected Term _rowIdTerm = new Term(BlurConstants.ROW_ID);
+  private FieldManager _fieldManager;
 
   @Override
   protected void setup(Context context) throws IOException, InterruptedException {
@@ -464,41 +467,32 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
   }
 
   protected void setupAnalyzer(Context context) {
-    _analyzer = new BlurAnalyzer(_blurTask.getTableDescriptor().getAnalyzerDefinition());
+    TableContext tableContext = TableContext.create(_blurTask.getTableDescriptor());
+    _fieldManager = tableContext.getFieldManager();
+    _analyzer = _fieldManager.getAnalyzerForIndex();
   }
 
-  protected Document toDocument(BlurRecord record) {
+  protected Document toDocument(BlurRecord record) throws IOException {
     Document document = new Document();
     document.add(new Field(BlurConstants.ROW_ID, record.getRowId(), TransactionRecorder.ID_TYPE));
     document.add(new Field(BlurConstants.RECORD_ID, record.getRecordId(), TransactionRecorder.ID_TYPE));
 
-    String columnFamily = record.getFamily();
-    List<BlurColumn> columns = record.getColumns();
-    final Iterator<BlurColumn> iterator = columns.iterator();
-    TransactionRecorder.addColumns(document, _analyzer, columnFamily, new Iterable<Column>() {
-      @Override
-      public Iterator<Column> iterator() {
-        return new Iterator<Column>() {
-
-          @Override
-          public Column next() {
-            BlurColumn bc = iterator.next();
-            return new Column(bc.getName(), bc.getValue());
-          }
-
-          @Override
-          public boolean hasNext() {
-            return iterator.hasNext();
-          }
-
-          @Override
-          public void remove() {
-
-          }
-        };
-      }
-    });
+    List<Field> doc = TransactionRecorder.getDoc(_fieldManager, record.getRowId(), toRecord(record));
+    for (Field field : doc) {
+      document.add(field);
+    }
     return document;
+  }
+
+  private Record toRecord(BlurRecord record) {
+    Record r = new Record();
+    r.setFamily(record.getFamily());
+    r.setRecordId(record.getRecordId());
+    List<BlurColumn> columns = record.getColumns();
+    for (BlurColumn blurColumn : columns) {
+      r.addToColumns(new Column(blurColumn.getName(), blurColumn.getValue()));
+    }
+    return r;
   }
 
   protected static void report(Context context, long totalBytesCopied, long totalBytesToCopy, long startTime, String src) {

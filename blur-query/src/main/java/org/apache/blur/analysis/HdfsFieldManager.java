@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.blur.log.Log;
@@ -99,19 +100,17 @@ public class HdfsFieldManager extends BaseFieldManager {
         LOG.info("Field [{0}] already exists.", fieldName, fieldLessIndexing, fieldType, props);
         return false;
       }
-      try {
-        FSDataOutputStream outputStream = _fileSystem.create(path, false);
-        properties.store(outputStream, getComments());
-        outputStream.close();
-      } catch (IOException e) {
-        if (_fileSystem.exists(path)) {
-          LOG.info("Field [{0}] already exists.", fieldName, fieldLessIndexing, fieldType, props);
-          return false;
-        } else {
-          throw e;
-        }
+      Path tmpPath = new Path(path.getParent(), UUID.randomUUID().toString() + ".tmp");
+      FSDataOutputStream outputStream = _fileSystem.create(tmpPath, false);
+      properties.store(outputStream, getComments());
+      outputStream.close();
+      if (_fileSystem.rename(tmpPath, path)) {
+        return true;
+      } else {
+        _fileSystem.delete(tmpPath, false);
+        LOG.info("Field [{0}] already exists.", fieldName, fieldLessIndexing, fieldType, props);
+        return false;
       }
-      return true;
     } finally {
       _lock.unlock();
     }
@@ -127,18 +126,23 @@ public class HdfsFieldManager extends BaseFieldManager {
 
   @Override
   protected void tryToLoad(String fieldName) throws IOException {
-    Path path = getFieldPath(fieldName);
-    if (!_fileSystem.exists(path)) {
-      return;
+    _lock.lock();
+    try {
+      Path path = getFieldPath(fieldName);
+      if (!_fileSystem.exists(path)) {
+        return;
+      }
+      FSDataInputStream inputStream = _fileSystem.open(path);
+      Properties props = new Properties();
+      props.load(inputStream);
+      inputStream.close();
+      boolean fieldLessIndexing = Boolean.parseBoolean(props.getProperty(FIELD_LESS_INDEXING));
+      String fieldType = props.getProperty(FIELD_TYPE);
+      FieldTypeDefinition fieldTypeDefinition = newFieldTypeDefinition(fieldLessIndexing, fieldType, toMap(props));
+      registerFieldTypeDefinition(fieldName, fieldTypeDefinition);
+    } finally {
+      _lock.unlock();
     }
-    FSDataInputStream inputStream = _fileSystem.open(path);
-    Properties props = new Properties();
-    props.load(inputStream);
-    inputStream.close();
-    boolean fieldLessIndexing = Boolean.parseBoolean(props.getProperty(FIELD_LESS_INDEXING));
-    String fieldType = props.getProperty(FIELD_TYPE);
-    FieldTypeDefinition fieldTypeDefinition = newFieldTypeDefinition(fieldLessIndexing, fieldType, toMap(props));
-    registerFieldTypeDefinition(fieldName, fieldTypeDefinition);
   }
 
   private Map<String, String> toMap(Properties props) {
@@ -148,7 +152,7 @@ public class HdfsFieldManager extends BaseFieldManager {
     }
     return result;
   }
-  
+
   public static Lock getLock() {
     return _lock;
   }

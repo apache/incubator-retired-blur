@@ -23,6 +23,9 @@ use constant RUNNING => 0;
 use constant INTERRUPTED => 1;
 use constant COMPLETE => 2;
 use constant BACK_PRESSURE_INTERRUPTED => 3;
+package Blur::Status;
+use constant NOT_FOUND => 0;
+use constant FOUND => 1;
 package Blur::RowMutationType;
 use constant DELETE_ROW => 0;
 use constant REPLACE_ROW => 1;
@@ -2306,7 +2309,7 @@ sub write {
 
 package Blur::BlurQueryStatus;
 use base qw(Class::Accessor);
-Blur::BlurQueryStatus->mk_accessors( qw( query cpuTimes completeShards totalShards state uuid ) );
+Blur::BlurQueryStatus->mk_accessors( qw( query cpuTimes completeShards totalShards state uuid status ) );
 
 sub new {
   my $classname = shift;
@@ -2318,6 +2321,7 @@ sub new {
   $self->{totalShards} = undef;
   $self->{state} = undef;
   $self->{uuid} = undef;
+  $self->{status} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{query}) {
       $self->{query} = $vals->{query};
@@ -2336,6 +2340,9 @@ sub new {
     }
     if (defined $vals->{uuid}) {
       $self->{uuid} = $vals->{uuid};
+    }
+    if (defined $vals->{status}) {
+      $self->{status} = $vals->{status};
     }
   }
   return bless ($self, $classname);
@@ -2413,6 +2420,12 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^7$/ && do{      if ($ftype == TType::I32) {
+        $xfer += $input->readI32(\$self->{status});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -2463,6 +2476,11 @@ sub write {
   if (defined $self->{uuid}) {
     $xfer += $output->writeFieldBegin('uuid', TType::I64, 6);
     $xfer += $output->writeI64($self->{uuid});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{status}) {
+    $xfer += $output->writeFieldBegin('status', TType::I32, 7);
+    $xfer += $output->writeI32($self->{status});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

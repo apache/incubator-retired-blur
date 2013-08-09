@@ -39,6 +39,7 @@ public class MetricsConstants {
   public static final String CACHE = "Cache";
   public static final String JVM = "JVM";
   public static final String HEAP_USED = "Heap Used";
+  public static final String CPU_USED = "Cpu Used";
   public static final String EVICTION = "Eviction";
   public static final String TABLE_COUNT = "Table Count";
   public static final String FILES_IN_QUEUE_TO_BE_DELETED = "Files in Queue to be Deleted";

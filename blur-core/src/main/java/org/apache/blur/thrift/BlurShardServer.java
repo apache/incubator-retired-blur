@@ -53,6 +53,7 @@ import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.SimpleQuery;
+import org.apache.blur.thrift.generated.Status;
 import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
@@ -377,7 +378,10 @@ public class BlurShardServer extends TableAdmin implements Iface {
       throw new BException(e.getMessage(), e);
     }
     if (blurQueryStatus == null) {
-      throw new BException("Query status for table [" + table + "] and uuid [" + uuid + "] not found");
+      blurQueryStatus = new BlurQueryStatus();
+      blurQueryStatus.status = Status.NOT_FOUND;
+    } else {
+      blurQueryStatus.status = Status.FOUND;
     }
     return blurQueryStatus;
   }

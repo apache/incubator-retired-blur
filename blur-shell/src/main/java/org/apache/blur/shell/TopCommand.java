@@ -160,16 +160,18 @@ public class TopCommand extends Command {
     for (int i = 1; i < labels.length; i++) {
       header.append(" %10s");
     }
-    header.append("%n");
 
     do {
+      int lineCount = 0;
       StringBuilder output = new StringBuilder();
       if (quit.get()) {
         return;
       } else if (help.get()) {
         showHelp(output, labels, helpMap);
       } else {
-        output.append(truncate(String.format(header.toString(), (Object[]) labels)));
+        output.append(truncate(String.format(header.toString(), (Object[]) labels)) + "\n");
+        lineCount++;
+        SERVER:
         for (Entry<String, AtomicReference<Client>> e : new TreeMap<String, AtomicReference<Client>>(shardClients)
             .entrySet()) {
           String shardServer = e.getKey();
@@ -178,6 +180,10 @@ public class TopCommand extends Command {
           if (metrics == null) {
             String line = String.format("%" + longestServerName + "s*%n", shardServer);
             output.append(line);
+            lineCount++;
+            if (tooLong(lineCount)) {
+              break SERVER;
+            }
           } else {
             Object[] cols = new Object[labels.length];
             int c = 0;
@@ -195,8 +201,11 @@ public class TopCommand extends Command {
               cols[c++] = humanize(value, sizes.contains(mn));
               sb.append(" %10s");
             }
-            sb.append("%n");
-            output.append(truncate(String.format(sb.toString(), cols)));
+            output.append(truncate(String.format(sb.toString(), cols)) + "\n");
+            lineCount++;
+            if (tooLong(lineCount)) {
+              break SERVER;
+            }
           }
         }
       }
@@ -231,6 +240,13 @@ public class TopCommand extends Command {
         }
       }
     } while (reader != null);
+  }
+
+  private boolean tooLong(int lineCount) {
+    if (lineCount >= _height) {
+      return true;
+    }
+    return false;
   }
 
   private boolean isHelpName(String key) {

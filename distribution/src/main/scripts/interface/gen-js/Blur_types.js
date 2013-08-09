@@ -22,6 +22,10 @@ QueryState = {
 'COMPLETE' : 2,
 'BACK_PRESSURE_INTERRUPTED' : 3
 };
+Status = {
+'NOT_FOUND' : 0,
+'FOUND' : 1
+};
 RowMutationType = {
 'DELETE_ROW' : 0,
 'REPLACE_ROW' : 1,
@@ -2144,6 +2148,7 @@ BlurQueryStatus = function(args) {
   this.totalShards = null;
   this.state = null;
   this.uuid = null;
+  this.status = null;
   if (args) {
     if (args.query !== undefined) {
       this.query = args.query;
@@ -2162,6 +2167,9 @@ BlurQueryStatus = function(args) {
     }
     if (args.uuid !== undefined) {
       this.uuid = args.uuid;
+    }
+    if (args.status !== undefined) {
+      this.status = args.status;
     }
   }
 };
@@ -2245,6 +2253,13 @@ BlurQueryStatus.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 7:
+      if (ftype == Thrift.Type.I32) {
+        this.status = input.readI32().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -2294,6 +2309,11 @@ BlurQueryStatus.prototype.write = function(output) {
   if (this.uuid !== null && this.uuid !== undefined) {
     output.writeFieldBegin('uuid', Thrift.Type.I64, 6);
     output.writeI64(this.uuid);
+    output.writeFieldEnd();
+  }
+  if (this.status !== null && this.status !== undefined) {
+    output.writeFieldBegin('status', Thrift.Type.I32, 7);
+    output.writeI32(this.status);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

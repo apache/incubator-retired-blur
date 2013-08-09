@@ -45,6 +45,7 @@ import org.apache.blur.thrift.Connection;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.Selector;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -57,6 +58,8 @@ public class Main {
   static boolean timed = false;
   /** is highlight enabled - off by default */
   static boolean highlight = false;
+  /** default selector */
+  static Selector selector = new Selector();
 
   private static Map<String, Command> commands;
   static String cluster;
@@ -134,25 +137,25 @@ public class Main {
         throw new CommandException("Invalid args: " + help());
       }
       String clusterNamePassed = args[1];
-      if(validateClusterName(client, clusterNamePassed)) {
-    	  cluster = clusterNamePassed;
-    	  out.println("cluster is now " + cluster);
-      }else{
-    	  out.println("[ " + clusterNamePassed + " ]"+" is not a valid cluster name.");
+      if (validateClusterName(client, clusterNamePassed)) {
+        cluster = clusterNamePassed;
+        out.println("cluster is now " + cluster);
+      } else {
+        out.println("[ " + clusterNamePassed + " ]" + " is not a valid cluster name.");
       }
     }
 
     private boolean validateClusterName(Iface client, String clusterName) throws BlurException, TException {
-    	List<String> clusterNamesList = client.shardClusterList();
-    	if(clusterNamesList != null && !clusterNamesList.isEmpty()){
-    		if(clusterNamesList.contains(clusterName)){
-    			return true;
-    		}
-    	}
-    	return false;
-	}
+      List<String> clusterNamesList = client.shardClusterList();
+      if (clusterNamesList != null && !clusterNamesList.isEmpty()) {
+        if (clusterNamesList.contains(clusterName)) {
+          return true;
+        }
+      }
+      return false;
+    }
 
-	@Override
+    @Override
     public String help() {
       return "set the cluster in use, args; clustername";
     }
@@ -235,7 +238,7 @@ public class Main {
 
       out.println();
       out.println(" - Data commands - ");
-      String[] dataCommands = { "query", "get", "mutate", "delete", "highlight" };
+      String[] dataCommands = { "query", "get", "mutate", "delete", "highlight", "selector" };
       printCommandAndHelp(out, cmds, dataCommands, bufferLength);
 
       out.println();
@@ -346,6 +349,8 @@ public class Main {
     builder.put("safemodewait", new WaitInSafemodeCommand());
     builder.put("top", new TopCommand());
     builder.put("parse", new ParseCommand());
+    builder.put("loadtestdata", new LoadTestDataCommand());
+    builder.put("selector", new SelectorCommand());
     commands = builder.build();
 
     CliShellOptions cliShellOptions = getCliShellOptions(args);
@@ -403,9 +408,9 @@ public class Main {
                 if (debug) {
                   e.printStackTrace(out);
                 }
-              }catch (BadConnectionException e){
-            	  out.println(e.getMessage());
-              }finally {
+              } catch (BadConnectionException e) {
+                out.println(e.getMessage());
+              } finally {
                 if (timed) {
                   out.println("Last command took " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) + "ms");
                 }
@@ -425,8 +430,8 @@ public class Main {
         } catch (BlurException e) {
           out.println(e.getMessage());
           e.printStackTrace(out);
-        } catch (BadConnectionException e){
-      	  out.println(e.getMessage());
+        } catch (BadConnectionException e) {
+          out.println(e.getMessage());
         }
         out.close();
         return;

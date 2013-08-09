@@ -358,8 +358,22 @@ public class BlurOutputFormatTest {
       Path path = new Path(tableUri, BlurUtil.getShardName(i));
       FileSystem fileSystem = path.getFileSystem(job.getConfiguration());
       FileStatus[] listStatus = fileSystem.listStatus(path);
-      assertEquals(0, listStatus.length);
+      assertEquals(toString(listStatus), 0, listStatus.length);
     }
+  }
+
+  private String toString(FileStatus[] listStatus) {
+    if (listStatus == null || listStatus.length == 0) {
+      return "";
+    }
+    String s = "";
+    for (FileStatus fileStatus : listStatus) {
+      if (s.length() > 0) {
+        s += ",";
+      }
+      s += fileStatus.getPath();
+    }
+    return s;
   }
 
   public static String readFile(String name) throws IOException {

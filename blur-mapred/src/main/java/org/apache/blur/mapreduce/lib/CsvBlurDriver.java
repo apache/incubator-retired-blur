@@ -39,6 +39,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.compress.BZip2Codec;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.DefaultCodec;
+import org.apache.hadoop.io.compress.GzipCodec;
+import org.apache.hadoop.io.compress.SnappyCodec;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.RecordReader;
@@ -53,15 +58,30 @@ import org.apache.hadoop.util.GenericOptionsParser;
 @SuppressWarnings("static-access")
 public class CsvBlurDriver {
 
+  public static final String MAPRED_COMPRESS_MAP_OUTPUT = "mapred.compress.map.output";
+  public static final String MAPRED_MAP_OUTPUT_COMPRESSION_CODEC = "mapred.map.output.compression.codec";
+
+  enum COMPRESSION {
+    SNAPPY(SnappyCodec.class), GZIP(GzipCodec.class), BZIP(BZip2Codec.class), DEFAULT(DefaultCodec.class);
+
+    private final String className;
+
+    private COMPRESSION(Class<? extends CompressionCodec> clazz) {
+      className = clazz.getName();
+    }
+
+    public String getClassName() {
+      return className;
+    }
+  }
+
   interface ControllerPool {
     Iface getClient(String controllerConnectionStr);
   }
 
   public static void main(String... args) throws Exception {
-
     Configuration configuration = new Configuration();
     String[] otherArgs = new GenericOptionsParser(configuration, args).getRemainingArgs();
-
     Job job = setupJob(configuration, new ControllerPool() {
       @Override
       public Iface getClient(String controllerConnectionStr) {
@@ -93,6 +113,21 @@ public class CsvBlurDriver {
     job.setJarByClass(CsvBlurDriver.class);
     job.setMapperClass(CsvBlurMapper.class);
 
+    if (cmd.hasOption("p")) {
+      job.getConfiguration().set(MAPRED_COMPRESS_MAP_OUTPUT, "true");
+      String codecStr = cmd.getOptionValue("p");
+      COMPRESSION compression;
+      try {
+        compression = COMPRESSION.valueOf(codecStr.trim().toUpperCase());
+      } catch (IllegalArgumentException e) {
+        compression = null;
+      }
+      if (compression == null) {
+        job.getConfiguration().set(MAPRED_MAP_OUTPUT_COMPRESSION_CODEC, codecStr.trim());
+      } else {
+        job.getConfiguration().set(MAPRED_MAP_OUTPUT_COMPRESSION_CODEC, compression.getClassName());
+      }
+    }
     if (cmd.hasOption("a")) {
       CsvBlurMapper.setAutoGenerateRecordIdAsHashOfData(job, true);
     }
@@ -104,7 +139,7 @@ public class CsvBlurDriver {
     } else {
       job.setInputFormatClass(TextInputFormat.class);
     }
-    
+
     if (cmd.hasOption("C")) {
       if (cmd.hasOption("S")) {
         String[] optionValues = cmd.getOptionValues("C");
@@ -203,33 +238,33 @@ public class CsvBlurDriver {
 
   private static CommandLine parse(String... otherArgs) throws ParseException {
     Options options = new Options();
-    options.addOption(OptionBuilder.withArgName("controller").hasArgs().isRequired(true)
+    options.addOption(OptionBuilder.withArgName("controller*").hasArgs().isRequired(true)
         .withDescription("* Thrift controller connection string. (host1:40010 host2:40010 ...)").create("c"));
     options.addOption(OptionBuilder.withArgName("tablename").hasArg().isRequired(true)
         .withDescription("* Blur table name.").create("t"));
-    options.addOption(OptionBuilder.withArgName("family and column definitions").hasArgs().isRequired(true)
+    options.addOption(OptionBuilder.withArgName("family column*").hasArgs().isRequired(true)
         .withDescription("* Define the mapping of fields in the CSV file to column names. (family col1 col2 col3 ...)")
         .create("d"));
     options.addOption(OptionBuilder
-        .withArgName("file delimiter")
+        .withArgName("delimiter")
         .hasArg()
         .withDescription(
             "The file delimiter to be used. (default value ',')  NOTE: For special "
                 + "charactors like the default hadoop separator of ASCII value 1, you can use standard "
                 + "java escaping (\\u0001)").create("s"));
-    options.addOption(OptionBuilder.withArgName("file input").hasArg()
+    options.addOption(OptionBuilder.withArgName("path*").hasArg()
         .withDescription("The directory to index. (hdfs://namenode/input/in1)").create("i"));
-    options.addOption(OptionBuilder.withArgName("file input").hasArgs()
+    options.addOption(OptionBuilder.withArgName("family path*").hasArgs()
         .withDescription("The directory to index with family name. (family hdfs://namenode/input/in1)").create("I"));
     options.addOption(OptionBuilder
         .withArgName("auto generate record ids")
         .withDescription(
-            "Automatically generate record ids for each record based on a MD5 has of the data within the record.")
+            "No Record Ids - Automatically generate record ids for each record based on a MD5 has of the data within the record.")
         .create("a"));
     options.addOption(OptionBuilder
         .withArgName("auto generate row ids")
         .withDescription(
-            "Automatically generate row ids for each record based on a MD5 has of the data within the record.")
+            "No Row Ids - Automatically generate row ids for each record based on a MD5 has of the data within the record.")
         .create("A"));
     options.addOption(OptionBuilder.withArgName("disable optimize indexes during copy")
         .withDescription("Disable optimize indexes during copy, this has very little overhead. (enabled by default)")
@@ -242,26 +277,32 @@ public class CsvBlurDriver {
     options.addOption(OptionBuilder.withArgName("sequence files inputs")
         .withDescription("The input files are sequence files.").create("S"));
     options.addOption(OptionBuilder
-        .withArgName("lucene document buffer size")
+        .withArgName("size")
         .hasArg()
         .withDescription(
             "The maximum number of Lucene documents to buffer in the reducer for a single "
                 + "row before spilling over to disk. (default 1000)").create("b"));
     options.addOption(OptionBuilder
-        .withArgName("reducer multiplier")
+        .withArgName("multiplier")
         .hasArg()
         .withDescription(
             "The reducer multipler allows for an increase in the number of reducers per "
                 + "shard in the given table.  For example if the table has 128 shards and the "
-                + "reducer multiplier is 4 the total number of redcuer will be 512, 4 reducers "
+                + "reducer multiplier is 4 the total number of reducers will be 512, 4 reducers "
                 + "per shard. (default 1)").create("r"));
     options.addOption(OptionBuilder
         .withArgName("minimum maximum")
         .hasArgs(2)
         .withDescription(
-            "Enables a combine file input to help deal with many small files as the input. Provide " +
-            "the minimum and maximum size per mapper.  For a minimum of 1GB and a maximum of " +
-            "2.5GB: (1000000000 2500000000)").create("C"));
+            "Enables a combine file input to help deal with many small files as the input. Provide "
+                + "the minimum and maximum size per mapper.  For a minimum of 1GB and a maximum of "
+                + "2.5GB: (1000000000 2500000000)").create("C"));
+    options.addOption(OptionBuilder
+        .withArgName("codec")
+        .hasArgs(1)
+        .withDescription(
+            "Sets the compression codec for the map compress output setting. (SNAPPY,GZIP,BZIP,DEFAULT, or classname)")
+        .create("p"));
 
     CommandLineParser parser = new PosixParser();
     CommandLine cmd = null;

@@ -24,6 +24,7 @@ import java.util.List;
 import jline.Terminal;
 import jline.console.ConsoleReader;
 
+import org.apache.blur.shell.PagingPrintWriter.FinishedException;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
@@ -37,15 +38,29 @@ import org.apache.blur.thrift.generated.Selector;
 public class GetRowCommand extends Command {
 
   @Override
-  public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+  public void doit(PrintWriter outPw, Blur.Iface client, String[] args) throws CommandException, TException,
       BlurException {
     if (args.length != 3) {
       throw new CommandException("Invalid args: " + help());
     }
+    
+    PagingPrintWriter out = new PagingPrintWriter(outPw);
+    
+    try {
+      doItInternal(client, args, out);
+    } catch (FinishedException e) {
+      if (Main.debug) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  private void doItInternal(Blur.Iface client, String[] args, PagingPrintWriter out) throws BlurException, TException,
+      FinishedException {
     String tablename = args[1];
     String rowId = args[2];
 
-    Selector selector = new Selector();
+    Selector selector = new Selector(Main.selector);
     selector.setRowId(rowId);
     FetchResult fetchRow = client.fetchRow(tablename, selector);
     FetchRowResult rowResult = fetchRow.getRowResult();
@@ -63,11 +78,12 @@ public class GetRowCommand extends Command {
     if (reader != null) {
       Terminal terminal = reader.getTerminal();
       maxWidth = terminal.getWidth() - 15;
+      out.setLineLimit(terminal.getHeight() - 2);
     }
     format(out, row, maxWidth);
   }
 
-  public static void format(PrintWriter out, Row row, int maxWidth) {
+  public static void format(PagingPrintWriter out, Row row, int maxWidth) throws FinishedException {
     String id = row.getId();
     int recordCount = row.getRecordCount();
     out.println("       id : " + id);
@@ -80,7 +96,7 @@ public class GetRowCommand extends Command {
     }
   }
 
-  public static void format(PrintWriter out, Record record, int maxWidth) {
+  public static void format(PagingPrintWriter out, Record record, int maxWidth) throws FinishedException {
     String recordId = record.getRecordId();
     String family = record.getFamily();
     List<Column> columns = record.getColumns();
@@ -91,7 +107,7 @@ public class GetRowCommand extends Command {
     }
   }
 
-  private static void format(PrintWriter out, Column column, int maxWidth) {
+  private static void format(PagingPrintWriter out, Column column, int maxWidth) throws FinishedException {
     String lead = "     " + column.getName() + " : ";
     String value = column.getValue();
     int length = value.length();

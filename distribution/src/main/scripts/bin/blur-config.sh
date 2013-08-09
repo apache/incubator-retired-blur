@@ -65,6 +65,18 @@ for f in $BLUR_HOME/lib/*.war; do
   BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
 done
 
+if [ -z "$HADOOP_HOME" ]; then
+	export HADOOP_HOME=`ls -d1 $BLUR_HOME/lib/hadoop-*/ | head -1`
+fi
+
+for f in $HADOOP_HOME/hadoop*/*.jar; do
+  BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
+done
+
+for f in $HADOOP_HOME/lib/*.jar; do
+  BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
+done
+
 export BLUR_CLASSPATH
 
 HOSTNAME=`hostname`

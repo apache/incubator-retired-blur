@@ -34,6 +34,7 @@ public class Connection {
         int indexOfProxyPort = connectionStr.indexOf(':', slashIndex);
         _proxyHost = connectionStr.substring(slashIndex + 1, indexOfProxyPort);
         _proxyPort = Integer.parseInt(connectionStr.substring(indexOfProxyPort + 1));
+        _proxy = true;
       } else {
         _host = connectionStr.substring(0, index);
         _port = Integer.parseInt(connectionStr.substring(index + 1));

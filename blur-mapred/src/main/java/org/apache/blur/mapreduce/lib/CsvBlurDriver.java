@@ -259,12 +259,12 @@ public class CsvBlurDriver {
     options.addOption(OptionBuilder
         .withArgName("auto generate record ids")
         .withDescription(
-            "Automatically generate record ids for each record based on a MD5 has of the data within the record.")
+            "No Record Ids - Automatically generate record ids for each record based on a MD5 has of the data within the record.")
         .create("a"));
     options.addOption(OptionBuilder
         .withArgName("auto generate row ids")
         .withDescription(
-            "Automatically generate row ids for each record based on a MD5 has of the data within the record.")
+            "No Row Ids - Automatically generate row ids for each record based on a MD5 has of the data within the record.")
         .create("A"));
     options.addOption(OptionBuilder.withArgName("disable optimize indexes during copy")
         .withDescription("Disable optimize indexes during copy, this has very little overhead. (enabled by default)")

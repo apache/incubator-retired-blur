@@ -339,6 +339,7 @@ public class BlurOutputFormatTest {
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setShardCount(2);
     tableDescriptor.setTableUri(tableUri);
+    tableDescriptor.setName("test");
 
     createShardDirectories(outDir, 2);
 

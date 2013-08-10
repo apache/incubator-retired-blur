@@ -502,7 +502,7 @@ public class Main {
         String controllerConnectionString = loadControllerConnectionString();
         if (controllerConnectionString == null) {
           System.err
-              .println("Could not locate controller connection string in the blu-site.properties file and it was not passed in via command line args.");
+              .println("Could not locate controller connection string in the blur-site.properties file and it was not passed in via command line args.");
           return null;
         }
         cliShellOptions.setControllerConnectionString(controllerConnectionString);

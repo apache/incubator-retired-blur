@@ -32,7 +32,7 @@ under the License.
 	</appender>
 
 	<appender name="FILE" class="org.apache.log4j.DailyRollingFileAppender">
-		<param name="File" value="${blur.logs.dir}/${blur.log.file}" />
+		<param name="File" value="${blur.logs.dir}/${blur.log.file}_main.log" />
 		<param name="DatePattern" value="'.'yyyyMMdd" />
 		<param name="Append" value="true" />
 		<layout class="org.apache.log4j.PatternLayout">
@@ -45,7 +45,7 @@ under the License.
 	</appender>
 	
 	<appender name="REQUEST_LOG_FILE" class="org.apache.log4j.DailyRollingFileAppender">
-		<param name="File" value="${blur.logs.dir}/request_${blur.name}.log" />
+		<param name="File" value="${blur.logs.dir}/${blur.log.file}_request.log" />
 		<param name="DatePattern" value="'.'yyyyMMdd" />
 		<param name="Append" value="true" />
 		<layout class="org.apache.log4j.PatternLayout">
@@ -58,7 +58,7 @@ under the License.
 	</appender>
 	
 	<appender name="RESPONSE_LOG_FILE" class="org.apache.log4j.DailyRollingFileAppender">
-		<param name="File" value="${blur.logs.dir}/response_${blur.name}.log" />
+		<param name="File" value="${blur.logs.dir}/${blur.log.file}_response.log" />
 		<param name="DatePattern" value="'.'yyyyMMdd" />
 		<param name="Append" value="true" />
 		<layout class="org.apache.log4j.PatternLayout">

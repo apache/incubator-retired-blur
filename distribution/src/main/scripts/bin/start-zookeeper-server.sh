@@ -30,8 +30,8 @@ if [ $BLUR_MANAGE_ZK = true ]; then
     fi
   fi
 
-  PROC_NAME=blur-zk-$HOSTNAME
-  nohup "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH -Dblur-zk $BLUR_ZK_JVM_OPTIONS -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=$PROC_NAME.log -cp $BLUR_CLASSPATH org.apache.zookeeper.server.quorum.QuorumPeerMain $BLUR_HOME/conf/default_zoo.cfg > "$BLUR_LOGS/$PROC_NAME.out" 2>&1 < /dev/null &
+  PROC_NAME=zk-$HOSTNAME
+  nohup "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH -Dblur-zk $BLUR_ZK_JVM_OPTIONS -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=blur-$USER-$PROC_NAME -Dlog4j.configuration=file://$BLUR_HOME/conf/log4j-command.xml -cp $BLUR_CLASSPATH org.apache.zookeeper.server.quorum.QuorumPeerMain $BLUR_HOME/conf/default_zoo.cfg > "$BLUR_LOGS/blur-$USER-$PROC_NAME.out" 2>&1 < /dev/null &
   echo $! > $PID_FILE
   echo ZooKeeper starting as process `cat $PID_FILE`.
 else 

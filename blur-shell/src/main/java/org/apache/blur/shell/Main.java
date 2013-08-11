@@ -41,8 +41,11 @@ import org.apache.blur.shell.Main.QuitCommand.QuitCommandException;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BadConnectionException;
 import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.BlurClientManager;
 import org.apache.blur.thrift.Connection;
+import org.apache.blur.thrift.commands.BlurCommand;
 import org.apache.blur.thrift.generated.Blur;
+import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Selector;
@@ -362,8 +365,9 @@ public class Main {
       Blur.Iface client = BlurClient.getClient(cliShellOptions.getControllerConnectionString());
       if (cliShellOptions.isShell()) {
         ConsoleReader reader = new ConsoleReader();
+        PrintWriter out = new PrintWriter(reader.getOutput());
         setConsoleReader(commands, reader);
-        reader.setPrompt(PROMPT);
+        setPrompt(client, reader, cliShellOptions.getControllerConnectionString(), out);
 
         List<Completer> completors = new LinkedList<Completer>();
 
@@ -375,7 +379,6 @@ public class Main {
         }
 
         String line;
-        PrintWriter out = new PrintWriter(reader.getOutput());
         try {
           while ((line = reader.readLine()) != null) {
             line = line.trim();
@@ -410,11 +413,15 @@ public class Main {
                 }
               } catch (BadConnectionException e) {
                 out.println(e.getMessage());
+                if (debug) {
+                  e.printStackTrace(out);
+                }
               } finally {
                 if (timed) {
                   out.println("Last command took " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) + "ms");
                 }
               }
+              setPrompt(client, reader, cliShellOptions.getControllerConnectionString(), out);
             }
           }
         } finally {
@@ -439,6 +446,36 @@ public class Main {
     } catch (Throwable t) {
       t.printStackTrace();
       throw t;
+    }
+  }
+
+  private static void setPrompt(Iface client, ConsoleReader reader, String connectionStr, PrintWriter out) throws BlurException,
+      TException, CommandException, IOException {
+    List<String> shardClusterList;
+    try {
+      shardClusterList = BlurClientManager.execute(connectionStr, new BlurCommand<List<String>>() {
+        @Override
+        public List<String> call(Client client) throws BlurException, TException {
+          return client.shardClusterList();
+        }
+      }, 0, 0, 0);
+    } catch (BadConnectionException e) {
+      out.println(e.getMessage() + " Connection (" + connectionStr + ")");
+      out.flush();
+      if (debug) {
+        e.printStackTrace(out);
+      }
+      System.exit(1);
+      throw e; //will never be called
+    }
+    if (shardClusterList.size() == 1) {
+      reader.setPrompt("blur (" + getCluster(client) + ")> ");
+    } else {
+      if (cluster == null) {
+        reader.setPrompt(PROMPT);
+      } else {
+        reader.setPrompt("blur (" + cluster + ")> ");
+      }
     }
   }
 
@@ -502,7 +539,7 @@ public class Main {
         String controllerConnectionString = loadControllerConnectionString();
         if (controllerConnectionString == null) {
           System.err
-              .println("Could not locate controller connection string in the blu-site.properties file and it was not passed in via command line args.");
+              .println("Could not locate controller connection string in the blur-site.properties file and it was not passed in via command line args.");
           return null;
         }
         cliShellOptions.setControllerConnectionString(controllerConnectionString);

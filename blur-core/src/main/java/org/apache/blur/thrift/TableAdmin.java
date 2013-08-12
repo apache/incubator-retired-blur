@@ -103,7 +103,7 @@ public abstract class TableAdmin implements Iface {
   public final void createTable(TableDescriptor tableDescriptor) throws BlurException, TException {
     try {
       TableContext.clear();
-      BlurUtil.validateTableName(tableDescriptor.name);
+      BlurUtil.validateTableName(tableDescriptor.getName());
       _clusterStatus.createTable(tableDescriptor);
     } catch (Exception e) {
       LOG.error("Unknown error during create of [table={0}, tableDescriptor={1}]", e, tableDescriptor.name,
@@ -111,7 +111,7 @@ public abstract class TableAdmin implements Iface {
       throw new BException(e.getMessage(), e);
     }
     if (tableDescriptor.isEnabled) {
-      enableTable(tableDescriptor.name);
+      enableTable(tableDescriptor.getName());
     }
   }
 

@@ -73,10 +73,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   private WatchChildren _clusterWatcher;
   private ConcurrentMap<String, WatchChildren> _onlineShardsNodesWatchers = new ConcurrentHashMap<String, WatchChildren>();
   private ConcurrentMap<String, WatchChildren> _tableWatchers = new ConcurrentHashMap<String, WatchChildren>();
-  // private ConcurrentMap<String, WatchNodeExistance> _safeModeWatchers = new
-  // ConcurrentHashMap<String, WatchNodeExistance>();
   private Map<String, SafeModeCacheEntry> _clusterToSafeMode = new ConcurrentHashMap<String, ZookeeperClusterStatus.SafeModeCacheEntry>();
-//  private ConcurrentMap<String, WatchNodeData> _safeModeDataWatchers = new ConcurrentHashMap<String, WatchNodeData>();
   private ConcurrentMap<String, WatchNodeExistance> _enabledWatchNodeExistance = new ConcurrentHashMap<String, WatchNodeExistance>();
   private ConcurrentMap<String, WatchNodeExistance> _readOnlyWatchNodeExistance = new ConcurrentHashMap<String, WatchNodeExistance>();
 
@@ -101,13 +98,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
           ZkUtils.waitUntilExists(_zk, tablesPath);
           WatchChildren clusterWatcher = new WatchChildren(_zk, tablesPath).watch(new Tables(cluster));
           _tableWatchers.put(cluster, clusterWatcher);
-          // String safemodePath =
-          // ZookeeperPathConstants.getSafemodePath(cluster);
-          // ZkUtils.waitUntilExists(_zk, safemodePath);
-          // WatchNodeExistance watchNodeExistance = new WatchNodeExistance(_zk,
-          // safemodePath).watch(new SafeExistance(
-          // cluster));
-          // _safeModeWatchers.put(cluster, watchNodeExistance);
         }
       }
 
@@ -149,10 +139,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
             }
           }
         });
-//        WatchNodeData nodeData = _safeModeDataWatchers.put(cluster, watchNodeData);
-//        if (nodeData != null) {
-//          nodeData.close();
-//        }
       }
     }
   }
@@ -509,8 +495,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       close(_clusterWatcher);
       close(_onlineShardsNodesWatchers);
       close(_tableWatchers);
-      // close(_safeModeWatchers);
-//      close(_safeModeDataWatchers);
       close(_enabledWatchNodeExistance);
       close(_readOnlyWatchNodeExistance);
     }

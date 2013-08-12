@@ -838,11 +838,6 @@ public class BlurUtil {
     return ManagementFactory.getRuntimeMXBean().getName();
   }
 
-  // public static <T> BlurIterator<T, BlurException> convert(final Iterator<T>
-  // iterator) {
-  // return convert(iterator, BlurException.class);
-  // }
-
   public static <T, E extends Exception> BlurIterator<T, E> convert(final Iterator<T> iterator) {
     return new BlurIterator<T, E>() {
 

@@ -253,7 +253,7 @@ module Blur
       # The record id of the Record to be fetched, not to be used with location id.  However the row id needs to be provided to locate the correct Row with the requested Record.
       RECORDID => {:type => ::Thrift::Types::STRING, :name => 'recordId'},
       # The column families to fetch.  If null, fetch all.  If empty, fetch none.
-      COLUMNFAMILIESTOFETCH => {:type => ::Thrift::Types::SET, :name => 'columnFamiliesToFetch', :element => {:type => ::Thrift::Types::STRING}},
+      COLUMNFAMILIESTOFETCH => {:type => ::Thrift::Types::LIST, :name => 'columnFamiliesToFetch', :element => {:type => ::Thrift::Types::STRING}},
       # The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
       COLUMNSTOFETCH => {:type => ::Thrift::Types::MAP, :name => 'columnsToFetch', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::SET, :element => {:type => ::Thrift::Types::STRING}}},
       # @deprecated This value is no longer used.  This allows the fetch to see the most current data that has been added to the table.

@@ -225,7 +225,7 @@ The location id of the Record or Row to be fetched.
 </td><td>default</td><td></td></tr>
 <tr><td>4</td><td>recordId</td><td><code>string</code></td><td>The record id of the Record to be fetched, not to be used with location id.  However the row id needs to be provided to locate the correct Row with the requested Record.
 </td><td>default</td><td></td></tr>
-<tr><td>5</td><td>columnFamiliesToFetch</td><td><code>set&lt;<code>string</code>&gt;</code></td><td>The column families to fetch.  If null, fetch all.  If empty, fetch none.
+<tr><td>5</td><td>columnFamiliesToFetch</td><td><code>list&lt;<code>string</code>&gt;</code></td><td>The column families to fetch.  If null, fetch all.  If empty, fetch none.
 </td><td>default</td><td></td></tr>
 <tr><td>6</td><td>columnsToFetch</td><td><code>map&lt;<code>string</code>, <code>set&lt;<code>string</code>&gt;</code>&gt;</code></td><td>The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
 </td><td>default</td><td></td></tr>

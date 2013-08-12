@@ -19,7 +19,9 @@
 package org.apache.blur.shell;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -41,13 +43,13 @@ public class SelectorCommand extends Command {
       command = args[1];
     }
     if (command == null) {
-      Set<String> columnFamiliesToFetch = Main.selector.getColumnFamiliesToFetch();
+      List<String> columnFamiliesToFetch = Main.selector.getColumnFamiliesToFetch();
       Map<String, Set<String>> columnsToFetch = Main.selector.getColumnsToFetch();
-      TreeSet<String> names = new TreeSet<String>();
+      List<String> names = new ArrayList<String>();
       if (columnFamiliesToFetch != null) {
         names.addAll(columnFamiliesToFetch);
       } else {
-        columnFamiliesToFetch = new TreeSet<String>();
+        columnFamiliesToFetch = new ArrayList<String>();
       }
       if (columnsToFetch != null) {
         names.addAll(columnsToFetch.keySet());

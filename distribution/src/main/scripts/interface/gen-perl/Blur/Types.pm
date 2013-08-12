@@ -763,19 +763,19 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^5$/ && do{      if ($ftype == TType::SET) {
+      /^5$/ && do{      if ($ftype == TType::LIST) {
         {
           my $_size14 = 0;
-          $self->{columnFamiliesToFetch} = {};
+          $self->{columnFamiliesToFetch} = [];
           my $_etype17 = 0;
-          $xfer += $input->readSetBegin(\$_etype17, \$_size14);
+          $xfer += $input->readListBegin(\$_etype17, \$_size14);
           for (my $_i18 = 0; $_i18 < $_size14; ++$_i18)
           {
             my $elem19 = undef;
             $xfer += $input->readString(\$elem19);
-            $self->{columnFamiliesToFetch}->{$elem19} = 1;
+            push(@{$self->{columnFamiliesToFetch}},$elem19);
           }
-          $xfer += $input->readSetEnd();
+          $xfer += $input->readListEnd();
         }
       } else {
         $xfer += $input->skip($ftype);
@@ -872,16 +872,16 @@ sub write {
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{columnFamiliesToFetch}) {
-    $xfer += $output->writeFieldBegin('columnFamiliesToFetch', TType::SET, 5);
+    $xfer += $output->writeFieldBegin('columnFamiliesToFetch', TType::LIST, 5);
     {
-      $xfer += $output->writeSetBegin(TType::STRING, scalar(@{$self->{columnFamiliesToFetch}}));
+      $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{columnFamiliesToFetch}}));
       {
-        foreach my $iter33 (@{$self->{columnFamiliesToFetch}})
+        foreach my $iter33 (@{$self->{columnFamiliesToFetch}}) 
         {
           $xfer += $output->writeString($iter33);
         }
       }
-      $xfer += $output->writeSetEnd();
+      $xfer += $output->writeListEnd();
     }
     $xfer += $output->writeFieldEnd();
   }

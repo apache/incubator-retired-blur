@@ -249,7 +249,7 @@ struct Selector {
   /**
    * The column families to fetch.  If null, fetch all.  If empty, fetch none.
    */
-  5:set<string> columnFamiliesToFetch,
+  5:list<string> columnFamiliesToFetch,
   /**
    * The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
    */

@@ -734,59 +734,68 @@ public class BlurUtil {
       throws IOException {
     IndexSearcher indexSearcher = new IndexSearcher(reader);
     int docFreq = reader.docFreq(term);
-    
+
     int start = selector.getStartRecord();
     int end = selector.getMaxRecordsToFetch() + start;
-    
+
+    // remove potential duplicates provided from the client
+    List<String> families = new ArrayList<String>();
+    if (selector.getColumnFamiliesToFetch() != null) {
+      for (String family : selector.getColumnFamiliesToFetch()) {
+        if (!families.contains(family)) {
+          families.add(family);
+        }
+      }
+    }
+
     List<Document> docs = new ArrayList<Document>();
     List<ScoreDoc> scoreDocs = new ArrayList<ScoreDoc>();
     int count = 0;
     int totalHits = 0;
-    while (scoreDocs.size() < end ){
-    	Query query = getQuery(term, selector, count++);
-    	if(query == null){
-    		break;
-    	}
-    	TopDocs topDocs = indexSearcher.search(query, docFreq);
-    	totalHits += topDocs.totalHits;
-    	scoreDocs.addAll(Arrays.asList(topDocs.scoreDocs));
-    	topDocs = null;
+    while (scoreDocs.size() < end) {
+      Query query = getQuery(term, families, count++);
+      if (query == null) {
+        break;
+      }
+      TopDocs topDocs = indexSearcher.search(query, docFreq);
+      totalHits += topDocs.totalHits;
+      scoreDocs.addAll(Arrays.asList(topDocs.scoreDocs));
+      topDocs = null;
     }
-     
+
     int totalHeap = 0;
     for (int i = start; i < end; i++) {
-    	if (i >= totalHits) {
-    		 break;
-    	 }
-    	 if (totalHeap >= maxHeap) {
-    		 LOG.warn("Max heap size exceeded for this request [{0}] max [{1}] for [{2}] and rowid [{3}]", totalHeap,
+      if (i >= totalHits) {
+        break;
+      }
+      if (totalHeap >= maxHeap) {
+        LOG.warn("Max heap size exceeded for this request [{0}] max [{1}] for [{2}] and rowid [{3}]", totalHeap,
             maxHeap, context, term.text());
-    		 break;
-    	 }
-    	 int doc = scoreDocs.get(i).doc;
-    	 indexSearcher.doc(doc, fieldSelector);
-    	 docs.add(fieldSelector.getDocument());
-    	 int heapSize = fieldSelector.getSize();
-    	 totalHeap += heapSize;
-    	 fieldSelector.reset();
-     }
+        break;
+      }
+      int doc = scoreDocs.get(i).doc;
+      indexSearcher.doc(doc, fieldSelector);
+      docs.add(fieldSelector.getDocument());
+      int heapSize = fieldSelector.getSize();
+      totalHeap += heapSize;
+      fieldSelector.reset();
+    }
     return docs;
   }
 
-private static Query getQuery(Term term,
-		Selector selector, int index) {
+  private static Query getQuery(Term term, List<String> families, int index) {
     BooleanQuery booleanQuery = null;
-    int familySize = selector.getColumnFamiliesToFetchSize();
-    if ( familySize > 0 && index < familySize) {
+    int familySize = families.size();
+    if (familySize > 0 && index < familySize) {
       booleanQuery = new BooleanQuery();
       booleanQuery.add(new TermQuery(term), BooleanClause.Occur.MUST);
-      booleanQuery.add(new TermQuery(new Term(BlurConstants.FAMILY, selector.getColumnFamiliesToFetch().get(index))), BooleanClause.Occur.MUST);
+      booleanQuery.add(new TermQuery(new Term(BlurConstants.FAMILY, families.get(index))), BooleanClause.Occur.MUST);
     }
-    if (booleanQuery == null && index == 0){
-    	return new TermQuery(term);
+    if (booleanQuery == null && index == 0) {
+      return new TermQuery(term);
     }
-	return booleanQuery;
-}
+    return booleanQuery;
+  }
 
   public static AtomicReader getAtomicReader(IndexReader reader) throws IOException {
     return SlowCompositeReaderWrapper.wrap(reader);

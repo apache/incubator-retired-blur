@@ -155,8 +155,8 @@ public class IndexWarmup {
         double seconds = (now - start) / 1000000000.0;
         double rateMbPerSec = (bytesReadPerPass / seconds) / 1000 / 1000;
         double complete = (((double) totalLength - (double) length) / (double) totalLength) * 100.0;
-        LOG.debug("Context [{3}] warming field [{0}] in file [{1}] is [{2}%] complete at rate of [{4} MB/s]", fieldName,
-            fileName, complete, context, rateMbPerSec);
+        LOG.debug("Context [{3}] warming field [{0}] in file [{1}] is [{2}%] complete at rate of [{4} MB/s]",
+            fieldName, fileName, complete, context, rateMbPerSec);
         start = System.nanoTime();
         bytesReadPerPass = 0;
         if (_isClosed.get()) {
@@ -257,7 +257,7 @@ public class IndexWarmup {
         return results;
       }
       IndexTracer tracer = new IndexTracer((TraceableDirectory) directory, _maxSampleSize);
-      String fileName = SAMPLE_PREFIX + segmentReader.getSegmentName() + SAMPLE_EXT;
+      String fileName = getSampleFileName(segmentReader.getSegmentName());
       List<IndexTracerResult> segmentTraces = new ArrayList<IndexTracerResult>();
       if (directory.fileExists(fileName)) {
         IndexInput input = directory.openInput(fileName, IOContext.READONCE);
@@ -287,6 +287,10 @@ public class IndexWarmup {
       results.put(segmentReader.getSegmentName(), segmentTraces);
     }
     return results;
+  }
+
+  public static String getSampleFileName(String segmentName) {
+    return SAMPLE_PREFIX + segmentName + SAMPLE_EXT;
   }
 
   private List<IndexTracerResult> read(IndexInput input) throws IOException {

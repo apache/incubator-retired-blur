@@ -21,6 +21,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
@@ -80,16 +82,18 @@ public class BlurIndexReaderTest {
 
   }
 
-  private void setupWriter(Configuration configuration, long refresh) throws IOException {
+  private void setupWriter(Configuration configuration, long refresh) throws IOException, URISyntaxException {
+    String tableUri = new File(base, "table-store-" + UUID.randomUUID().toString()).toURI().toString();
+    System.out.println("TableURI " + tableUri);
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName("test-table");
-    tableDescriptor.setTableUri(new File(base, "table-store-" + UUID.randomUUID().toString()).toURI().toString());
+    tableDescriptor.setTableUri(tableUri);
     tableDescriptor.setAnalyzerDefinition(new AnalyzerDefinition());
     tableDescriptor.putToTableProperties("blur.shard.time.between.refreshs", Long.toString(refresh));
     tableDescriptor.putToTableProperties("blur.shard.time.between.commits", Long.toString(1000));
 
     TableContext tableContext = TableContext.create(tableDescriptor);
-    directory = FSDirectory.open(new File(tableDescriptor.getTableUri()));
+    directory = FSDirectory.open(new File(new URI(tableDescriptor.getTableUri())));
 
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard");
     refresher = new BlurIndexRefresher();
@@ -121,7 +125,7 @@ public class BlurIndexReaderTest {
   }
 
   @Test
-  public void testBlurIndexWriter() throws IOException, InterruptedException {
+  public void testBlurIndexWriter() throws IOException, InterruptedException, URISyntaxException {
     setupWriter(configuration, 1);
     IndexSearcherClosable indexReader1 = reader.getIndexReader();
     doWrite();

@@ -54,15 +54,17 @@ public class TraceableDirectory extends Directory implements DirectoryDecorator 
    * please post a question on the mail list first.
    */
   private boolean _trace = false;
-  private IndexTracer _indexTracer;
+  private ThreadLocal<IndexTracer> _indexTracer = new ThreadLocal<IndexTracer>();
 
   public TraceableDirectory(Directory dir) {
     _dir = dir;
   }
 
   public void trace(String name, long filePointer) {
-    if (_indexTracer != null) {
-      _indexTracer.trace(name, filePointer);
+    if (_trace) {
+      if (_indexTracer != null) {
+        _indexTracer.get().trace(name, filePointer);
+      }
     }
   }
 
@@ -107,7 +109,7 @@ public class TraceableDirectory extends Directory implements DirectoryDecorator 
   }
 
   public void setIndexTracer(IndexTracer indexTracer) {
-    _indexTracer = indexTracer;
+    _indexTracer.set(indexTracer);
   }
 
   public Lock makeLock(String name) {

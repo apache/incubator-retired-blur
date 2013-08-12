@@ -59,7 +59,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField LOCATION_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("locationId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ROW_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("rowId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)3);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RECORD_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("recordId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)4);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COLUMN_FAMILIES_TO_FETCH_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("columnFamiliesToFetch", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, (short)5);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COLUMN_FAMILIES_TO_FETCH_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("columnFamiliesToFetch", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)5);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COLUMNS_TO_FETCH_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("columnsToFetch", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, (short)6);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ALLOW_STALE_DATA_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("allowStaleData", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)7);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField START_RECORD_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("startRecord", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)8);
@@ -92,7 +92,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
   /**
    * The column families to fetch.  If null, fetch all.  If empty, fetch none.
    */
-  public Set<String> columnFamiliesToFetch; // required
+  public List<String> columnFamiliesToFetch; // required
   /**
    * The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
    */
@@ -260,7 +260,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
     tmpMap.put(_Fields.RECORD_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("recordId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     tmpMap.put(_Fields.COLUMN_FAMILIES_TO_FETCH, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("columnFamiliesToFetch", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.SetMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING))));
     tmpMap.put(_Fields.COLUMNS_TO_FETCH, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("columnsToFetch", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.MapMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, 
@@ -291,7 +291,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
     String locationId,
     String rowId,
     String recordId,
-    Set<String> columnFamiliesToFetch,
+    List<String> columnFamiliesToFetch,
     Map<String,Set<String>> columnsToFetch,
     boolean allowStaleData,
     int startRecord,
@@ -331,7 +331,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       this.recordId = other.recordId;
     }
     if (other.isSetColumnFamiliesToFetch()) {
-      Set<String> __this__columnFamiliesToFetch = new HashSet<String>();
+      List<String> __this__columnFamiliesToFetch = new ArrayList<String>();
       for (String other_element : other.columnFamiliesToFetch) {
         __this__columnFamiliesToFetch.add(other_element);
       }
@@ -516,7 +516,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
 
   public void addToColumnFamiliesToFetch(String elem) {
     if (this.columnFamiliesToFetch == null) {
-      this.columnFamiliesToFetch = new HashSet<String>();
+      this.columnFamiliesToFetch = new ArrayList<String>();
     }
     this.columnFamiliesToFetch.add(elem);
   }
@@ -524,14 +524,14 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
   /**
    * The column families to fetch.  If null, fetch all.  If empty, fetch none.
    */
-  public Set<String> getColumnFamiliesToFetch() {
+  public List<String> getColumnFamiliesToFetch() {
     return this.columnFamiliesToFetch;
   }
 
   /**
    * The column families to fetch.  If null, fetch all.  If empty, fetch none.
    */
-  public Selector setColumnFamiliesToFetch(Set<String> columnFamiliesToFetch) {
+  public Selector setColumnFamiliesToFetch(List<String> columnFamiliesToFetch) {
     this.columnFamiliesToFetch = columnFamiliesToFetch;
     return this;
   }
@@ -759,7 +759,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       if (value == null) {
         unsetColumnFamiliesToFetch();
       } else {
-        setColumnFamiliesToFetch((Set<String>)value);
+        setColumnFamiliesToFetch((List<String>)value);
       }
       break;
 
@@ -1256,17 +1256,17 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
             }
             break;
           case 5: // COLUMN_FAMILIES_TO_FETCH
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET) {
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set16 = iprot.readSetBegin();
-                struct.columnFamiliesToFetch = new HashSet<String>(2*_set16.size);
-                for (int _i17 = 0; _i17 < _set16.size; ++_i17)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list16 = iprot.readListBegin();
+                struct.columnFamiliesToFetch = new ArrayList<String>(_list16.size);
+                for (int _i17 = 0; _i17 < _list16.size; ++_i17)
                 {
                   String _elem18; // required
                   _elem18 = iprot.readString();
                   struct.columnFamiliesToFetch.add(_elem18);
                 }
-                iprot.readSetEnd();
+                iprot.readListEnd();
               }
               struct.setColumnFamiliesToFetchIsSet(true);
             } else { 
@@ -1281,7 +1281,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
                 for (int _i20 = 0; _i20 < _map19.size; ++_i20)
                 {
                   String _key21; // required
-                  Set<String> _val22; // optional
+                  Set<String> _val22; // required
                   _key21 = iprot.readString();
                   {
                     org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set23 = iprot.readSetBegin();
@@ -1372,12 +1372,12 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       if (struct.columnFamiliesToFetch != null) {
         oprot.writeFieldBegin(COLUMN_FAMILIES_TO_FETCH_FIELD_DESC);
         {
-          oprot.writeSetBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.columnFamiliesToFetch.size()));
+          oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.columnFamiliesToFetch.size()));
           for (String _iter26 : struct.columnFamiliesToFetch)
           {
             oprot.writeString(_iter26);
           }
-          oprot.writeSetEnd();
+          oprot.writeListEnd();
         }
         oprot.writeFieldEnd();
       }
@@ -1537,9 +1537,9 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       }
       if (incoming.get(4)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set32 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-          struct.columnFamiliesToFetch = new HashSet<String>(2*_set32.size);
-          for (int _i33 = 0; _i33 < _set32.size; ++_i33)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list32 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.columnFamiliesToFetch = new ArrayList<String>(_list32.size);
+          for (int _i33 = 0; _i33 < _list32.size; ++_i33)
           {
             String _elem34; // required
             _elem34 = iprot.readString();
@@ -1555,7 +1555,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
           for (int _i36 = 0; _i36 < _map35.size; ++_i36)
           {
             String _key37; // required
-            Set<String> _val38; // optional
+            Set<String> _val38; // required
             _key37 = iprot.readString();
             {
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set39 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());

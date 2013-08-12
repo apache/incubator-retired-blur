@@ -688,12 +688,12 @@ Selector.prototype.read = function(input) {
       }
       break;
       case 5:
-      if (ftype == Thrift.Type.SET) {
+      if (ftype == Thrift.Type.LIST) {
         var _size16 = 0;
         var _rtmp320;
         this.columnFamiliesToFetch = [];
         var _etype19 = 0;
-        _rtmp320 = input.readSetBegin();
+        _rtmp320 = input.readListBegin();
         _etype19 = _rtmp320.etype;
         _size16 = _rtmp320.size;
         for (var _i21 = 0; _i21 < _size16; ++_i21)
@@ -702,7 +702,7 @@ Selector.prototype.read = function(input) {
           elem22 = input.readString().value;
           this.columnFamiliesToFetch.push(elem22);
         }
-        input.readSetEnd();
+        input.readListEnd();
       } else {
         input.skip(ftype);
       }
@@ -810,8 +810,8 @@ Selector.prototype.write = function(output) {
     output.writeFieldEnd();
   }
   if (this.columnFamiliesToFetch !== null && this.columnFamiliesToFetch !== undefined) {
-    output.writeFieldBegin('columnFamiliesToFetch', Thrift.Type.SET, 5);
-    output.writeSetBegin(Thrift.Type.STRING, this.columnFamiliesToFetch.length);
+    output.writeFieldBegin('columnFamiliesToFetch', Thrift.Type.LIST, 5);
+    output.writeListBegin(Thrift.Type.STRING, this.columnFamiliesToFetch.length);
     for (var iter38 in this.columnFamiliesToFetch)
     {
       if (this.columnFamiliesToFetch.hasOwnProperty(iter38))
@@ -820,7 +820,7 @@ Selector.prototype.write = function(output) {
         output.writeString(iter38);
       }
     }
-    output.writeSetEnd();
+    output.writeListEnd();
     output.writeFieldEnd();
   }
   if (this.columnsToFetch !== null && this.columnsToFetch !== undefined) {

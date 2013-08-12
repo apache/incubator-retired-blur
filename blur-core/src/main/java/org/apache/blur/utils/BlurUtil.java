@@ -35,6 +35,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -95,6 +96,7 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.zookeeper.CreateMode;
@@ -732,46 +734,59 @@ public class BlurUtil {
       throws IOException {
     IndexSearcher indexSearcher = new IndexSearcher(reader);
     int docFreq = reader.docFreq(term);
-    BooleanQuery booleanQueryForFamily = null;
-    BooleanQuery booleanQuery = null;
-    if (selector.getColumnFamiliesToFetchSize() > 0) {
-      booleanQueryForFamily = new BooleanQuery();
-      for (String familyName : selector.getColumnFamiliesToFetch()) {
-        booleanQueryForFamily
-            .add(new TermQuery(new Term(BlurConstants.FAMILY, familyName)), BooleanClause.Occur.SHOULD);
-      }
-      booleanQuery = new BooleanQuery();
-      booleanQuery.add(new TermQuery(term), BooleanClause.Occur.MUST);
-      booleanQuery.add(booleanQueryForFamily, BooleanClause.Occur.MUST);
-    }
-    Query query = booleanQuery == null ? new TermQuery(term) : booleanQuery;
-    TopDocs topDocs = indexSearcher.search(query, docFreq);
-    int totalHits = topDocs.totalHits;
-    List<Document> docs = new ArrayList<Document>();
-
+    
     int start = selector.getStartRecord();
     int end = selector.getMaxRecordsToFetch() + start;
-
-    int totalHeap = 0;
-
-    for (int i = start; i < end; i++) {
-      if (i >= totalHits) {
-        break;
-      }
-      if (totalHeap >= maxHeap) {
-        LOG.warn("Max heap size exceeded for this request [{0}] max [{1}] for [{2}] and rowid [{3}]", totalHeap,
-            maxHeap, context, term.text());
-        break;
-      }
-      int doc = topDocs.scoreDocs[i].doc;
-      indexSearcher.doc(doc, fieldSelector);
-      docs.add(fieldSelector.getDocument());
-      int heapSize = fieldSelector.getSize();
-      totalHeap += heapSize;
-      fieldSelector.reset();
+    
+    List<Document> docs = new ArrayList<Document>();
+    List<ScoreDoc> scoreDocs = new ArrayList<ScoreDoc>();
+    int count = 0;
+    int totalHits = 0;
+    while (scoreDocs.size() < end ){
+    	Query query = getQuery(term, selector, count++);
+    	if(query == null){
+    		break;
+    	}
+    	TopDocs topDocs = indexSearcher.search(query, docFreq);
+    	totalHits += topDocs.totalHits;
+    	scoreDocs.addAll(Arrays.asList(topDocs.scoreDocs));
+    	topDocs = null;
     }
+     
+    int totalHeap = 0;
+    for (int i = start; i < end; i++) {
+    	if (i >= totalHits) {
+    		 break;
+    	 }
+    	 if (totalHeap >= maxHeap) {
+    		 LOG.warn("Max heap size exceeded for this request [{0}] max [{1}] for [{2}] and rowid [{3}]", totalHeap,
+            maxHeap, context, term.text());
+    		 break;
+    	 }
+    	 int doc = scoreDocs.get(i).doc;
+    	 indexSearcher.doc(doc, fieldSelector);
+    	 docs.add(fieldSelector.getDocument());
+    	 int heapSize = fieldSelector.getSize();
+    	 totalHeap += heapSize;
+    	 fieldSelector.reset();
+     }
     return docs;
   }
+
+private static Query getQuery(Term term,
+		Selector selector, int index) {
+    BooleanQuery booleanQuery = null;
+    int familySize = selector.getColumnFamiliesToFetchSize();
+    if ( familySize > 0 && index < familySize) {
+      booleanQuery = new BooleanQuery();
+      booleanQuery.add(new TermQuery(term), BooleanClause.Occur.MUST);
+      booleanQuery.add(new TermQuery(new Term(BlurConstants.FAMILY, selector.getColumnFamiliesToFetch().get(index))), BooleanClause.Occur.MUST);
+    }
+    if (booleanQuery == null && index == 0){
+    	return new TermQuery(term);
+    }
+	return booleanQuery;
+}
 
   public static AtomicReader getAtomicReader(IndexReader reader) throws IOException {
     return SlowCompositeReaderWrapper.wrap(reader);

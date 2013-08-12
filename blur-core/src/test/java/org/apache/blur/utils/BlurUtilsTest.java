@@ -23,7 +23,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -156,7 +156,7 @@ public class BlurUtilsTest {
   @Test
   public void testFetchDocuments() throws CorruptIndexException, LockObtainFailedException, IOException{
 	  Selector selector = new Selector();
-	  HashSet<String> columnFamiliesToFetch = new HashSet<String>();
+	  List<String> columnFamiliesToFetch = new ArrayList<String>();
 	  columnFamiliesToFetch.add("f1");
 	  columnFamiliesToFetch.add("f2");
 	  selector.setColumnFamiliesToFetch(columnFamiliesToFetch);
@@ -164,6 +164,21 @@ public class BlurUtilsTest {
 	  ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
 	  List<Document> docs = BlurUtil.fetchDocuments(getReader(), new Term("a","b"), resetableDocumentStoredFieldVisitor, selector, 10000000, "test-context");
 	  assertEquals(docs.size(),1);
+  }
+  
+  @Test
+  public void testFetchDocumentsStrictFamilyOrder() throws CorruptIndexException, LockObtainFailedException, IOException{
+	  Selector selector = new Selector();
+	  List<String> columnFamiliesToFetch = new ArrayList<String>();
+	  columnFamiliesToFetch.add("f1");
+	  columnFamiliesToFetch.add("f2");
+	  selector.setColumnFamiliesToFetch(columnFamiliesToFetch);
+	  
+	  ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
+	  List<Document> docs = BlurUtil.fetchDocuments(getReaderWithDocsHavingFamily(), new Term("a","b"), resetableDocumentStoredFieldVisitor, selector, 10000000, "test-context");
+	  assertEquals(docs.size(),2);
+	  assertEquals(docs.get(0).getField("family").stringValue(),"f1");
+	  assertEquals(docs.get(1).getField("family").stringValue(),"f2");
   }
   
   @Test
@@ -207,5 +222,22 @@ public class BlurUtilsTest {
     writer.close();
     return IndexReader.open(directory);
   }
+  
+  private IndexReader getReaderWithDocsHavingFamily() throws CorruptIndexException, LockObtainFailedException, IOException {
+	    RAMDirectory directory = new RAMDirectory();
+	    IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
+	    IndexWriter writer = new IndexWriter(directory, conf);
+	    Document doc = new Document();
+	    doc.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+	    doc.add(new Field("family", "f2", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+	    
+	    Document doc1 = new Document();
+	    doc1.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+	    doc1.add(new Field("family", "f1", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+	    writer.addDocument(doc);
+	    writer.addDocument(doc1);
+	    writer.close();
+	    return IndexReader.open(directory);
+	  }
 
 }

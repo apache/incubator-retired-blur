@@ -104,7 +104,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private static final String CONTROLLER_THREAD_POOL = "controller-thread-pool";
   private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
   private static final Map<String, Set<String>> EMPTY_MAP = new HashMap<String, Set<String>>();
-  private static final Set<String> EMPTY_SET = new HashSet<String>();
+  private static final List<String> EMPTY_LIST = new ArrayList<String>();
 
   private ExecutorService _executor;
   private AtomicReference<Map<String, Map<String, String>>> _shardServerLayout = new AtomicReference<Map<String, Map<String, String>>>(
@@ -316,7 +316,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         Selector selector = blurQuery.getSelector();
         if (selector == null) {
           selector = new Selector();
-          selector.setColumnFamiliesToFetch(EMPTY_SET);
+          selector.setColumnFamiliesToFetch(EMPTY_LIST);
           selector.setColumnsToFetch(EMPTY_MAP);
           if (!blurQuery.simpleQuery.superQueryOn) {
             selector.setRecordOnly(true);

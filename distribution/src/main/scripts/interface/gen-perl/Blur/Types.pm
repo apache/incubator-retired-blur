@@ -2737,417 +2737,6 @@ sub write {
   return $xfer;
 }
 
-package Blur::AlternateColumnDefinition;
-use base qw(Class::Accessor);
-Blur::AlternateColumnDefinition->mk_accessors( qw( analyzerClassName ) );
-
-sub new {
-  my $classname = shift;
-  my $self      = {};
-  my $vals      = shift || {};
-  $self->{analyzerClassName} = undef;
-  if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{analyzerClassName}) {
-      $self->{analyzerClassName} = $vals->{analyzerClassName};
-    }
-  }
-  return bless ($self, $classname);
-}
-
-sub getName {
-  return 'AlternateColumnDefinition';
-}
-
-sub read {
-  my ($self, $input) = @_;
-  my $xfer  = 0;
-  my $fname;
-  my $ftype = 0;
-  my $fid   = 0;
-  $xfer += $input->readStructBegin(\$fname);
-  while (1) 
-  {
-    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
-    if ($ftype == TType::STOP) {
-      last;
-    }
-    SWITCH: for($fid)
-    {
-      /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{analyzerClassName});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-        $xfer += $input->skip($ftype);
-    }
-    $xfer += $input->readFieldEnd();
-  }
-  $xfer += $input->readStructEnd();
-  return $xfer;
-}
-
-sub write {
-  my ($self, $output) = @_;
-  my $xfer   = 0;
-  $xfer += $output->writeStructBegin('AlternateColumnDefinition');
-  if (defined $self->{analyzerClassName}) {
-    $xfer += $output->writeFieldBegin('analyzerClassName', TType::STRING, 1);
-    $xfer += $output->writeString($self->{analyzerClassName});
-    $xfer += $output->writeFieldEnd();
-  }
-  $xfer += $output->writeFieldStop();
-  $xfer += $output->writeStructEnd();
-  return $xfer;
-}
-
-package Blur::ColumnDefinition;
-use base qw(Class::Accessor);
-Blur::ColumnDefinition->mk_accessors( qw( analyzerClassName fullTextIndex alternateColumnDefinitions ) );
-
-sub new {
-  my $classname = shift;
-  my $self      = {};
-  my $vals      = shift || {};
-  $self->{analyzerClassName} = "org.apache.blur.analysis.NoStopWordStandardAnalyzer";
-  $self->{fullTextIndex} = undef;
-  $self->{alternateColumnDefinitions} = undef;
-  if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{analyzerClassName}) {
-      $self->{analyzerClassName} = $vals->{analyzerClassName};
-    }
-    if (defined $vals->{fullTextIndex}) {
-      $self->{fullTextIndex} = $vals->{fullTextIndex};
-    }
-    if (defined $vals->{alternateColumnDefinitions}) {
-      $self->{alternateColumnDefinitions} = $vals->{alternateColumnDefinitions};
-    }
-  }
-  return bless ($self, $classname);
-}
-
-sub getName {
-  return 'ColumnDefinition';
-}
-
-sub read {
-  my ($self, $input) = @_;
-  my $xfer  = 0;
-  my $fname;
-  my $ftype = 0;
-  my $fid   = 0;
-  $xfer += $input->readStructBegin(\$fname);
-  while (1) 
-  {
-    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
-    if ($ftype == TType::STOP) {
-      last;
-    }
-    SWITCH: for($fid)
-    {
-      /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{analyzerClassName});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^2$/ && do{      if ($ftype == TType::BOOL) {
-        $xfer += $input->readBool(\$self->{fullTextIndex});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^3$/ && do{      if ($ftype == TType::MAP) {
-        {
-          my $_size106 = 0;
-          $self->{alternateColumnDefinitions} = {};
-          my $_ktype107 = 0;
-          my $_vtype108 = 0;
-          $xfer += $input->readMapBegin(\$_ktype107, \$_vtype108, \$_size106);
-          for (my $_i110 = 0; $_i110 < $_size106; ++$_i110)
-          {
-            my $key111 = '';
-            my $val112 = new Blur::AlternateColumnDefinition();
-            $xfer += $input->readString(\$key111);
-            $val112 = new Blur::AlternateColumnDefinition();
-            $xfer += $val112->read($input);
-            $self->{alternateColumnDefinitions}->{$key111} = $val112;
-          }
-          $xfer += $input->readMapEnd();
-        }
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-        $xfer += $input->skip($ftype);
-    }
-    $xfer += $input->readFieldEnd();
-  }
-  $xfer += $input->readStructEnd();
-  return $xfer;
-}
-
-sub write {
-  my ($self, $output) = @_;
-  my $xfer   = 0;
-  $xfer += $output->writeStructBegin('ColumnDefinition');
-  if (defined $self->{analyzerClassName}) {
-    $xfer += $output->writeFieldBegin('analyzerClassName', TType::STRING, 1);
-    $xfer += $output->writeString($self->{analyzerClassName});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{fullTextIndex}) {
-    $xfer += $output->writeFieldBegin('fullTextIndex', TType::BOOL, 2);
-    $xfer += $output->writeBool($self->{fullTextIndex});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{alternateColumnDefinitions}) {
-    $xfer += $output->writeFieldBegin('alternateColumnDefinitions', TType::MAP, 3);
-    {
-      $xfer += $output->writeMapBegin(TType::STRING, TType::STRUCT, scalar(keys %{$self->{alternateColumnDefinitions}}));
-      {
-        while( my ($kiter113,$viter114) = each %{$self->{alternateColumnDefinitions}}) 
-        {
-          $xfer += $output->writeString($kiter113);
-          $xfer += ${viter114}->write($output);
-        }
-      }
-      $xfer += $output->writeMapEnd();
-    }
-    $xfer += $output->writeFieldEnd();
-  }
-  $xfer += $output->writeFieldStop();
-  $xfer += $output->writeStructEnd();
-  return $xfer;
-}
-
-package Blur::ColumnFamilyDefinition;
-use base qw(Class::Accessor);
-Blur::ColumnFamilyDefinition->mk_accessors( qw( defaultDefinition columnDefinitions ) );
-
-sub new {
-  my $classname = shift;
-  my $self      = {};
-  my $vals      = shift || {};
-  $self->{defaultDefinition} = undef;
-  $self->{columnDefinitions} = undef;
-  if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{defaultDefinition}) {
-      $self->{defaultDefinition} = $vals->{defaultDefinition};
-    }
-    if (defined $vals->{columnDefinitions}) {
-      $self->{columnDefinitions} = $vals->{columnDefinitions};
-    }
-  }
-  return bless ($self, $classname);
-}
-
-sub getName {
-  return 'ColumnFamilyDefinition';
-}
-
-sub read {
-  my ($self, $input) = @_;
-  my $xfer  = 0;
-  my $fname;
-  my $ftype = 0;
-  my $fid   = 0;
-  $xfer += $input->readStructBegin(\$fname);
-  while (1) 
-  {
-    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
-    if ($ftype == TType::STOP) {
-      last;
-    }
-    SWITCH: for($fid)
-    {
-      /^1$/ && do{      if ($ftype == TType::STRUCT) {
-        $self->{defaultDefinition} = new Blur::ColumnDefinition();
-        $xfer += $self->{defaultDefinition}->read($input);
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^2$/ && do{      if ($ftype == TType::MAP) {
-        {
-          my $_size115 = 0;
-          $self->{columnDefinitions} = {};
-          my $_ktype116 = 0;
-          my $_vtype117 = 0;
-          $xfer += $input->readMapBegin(\$_ktype116, \$_vtype117, \$_size115);
-          for (my $_i119 = 0; $_i119 < $_size115; ++$_i119)
-          {
-            my $key120 = '';
-            my $val121 = new Blur::ColumnDefinition();
-            $xfer += $input->readString(\$key120);
-            $val121 = new Blur::ColumnDefinition();
-            $xfer += $val121->read($input);
-            $self->{columnDefinitions}->{$key120} = $val121;
-          }
-          $xfer += $input->readMapEnd();
-        }
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-        $xfer += $input->skip($ftype);
-    }
-    $xfer += $input->readFieldEnd();
-  }
-  $xfer += $input->readStructEnd();
-  return $xfer;
-}
-
-sub write {
-  my ($self, $output) = @_;
-  my $xfer   = 0;
-  $xfer += $output->writeStructBegin('ColumnFamilyDefinition');
-  if (defined $self->{defaultDefinition}) {
-    $xfer += $output->writeFieldBegin('defaultDefinition', TType::STRUCT, 1);
-    $xfer += $self->{defaultDefinition}->write($output);
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{columnDefinitions}) {
-    $xfer += $output->writeFieldBegin('columnDefinitions', TType::MAP, 2);
-    {
-      $xfer += $output->writeMapBegin(TType::STRING, TType::STRUCT, scalar(keys %{$self->{columnDefinitions}}));
-      {
-        while( my ($kiter122,$viter123) = each %{$self->{columnDefinitions}}) 
-        {
-          $xfer += $output->writeString($kiter122);
-          $xfer += ${viter123}->write($output);
-        }
-      }
-      $xfer += $output->writeMapEnd();
-    }
-    $xfer += $output->writeFieldEnd();
-  }
-  $xfer += $output->writeFieldStop();
-  $xfer += $output->writeStructEnd();
-  return $xfer;
-}
-
-package Blur::AnalyzerDefinition;
-use base qw(Class::Accessor);
-Blur::AnalyzerDefinition->mk_accessors( qw( defaultDefinition fullTextAnalyzerClassName columnFamilyDefinitions ) );
-
-sub new {
-  my $classname = shift;
-  my $self      = {};
-  my $vals      = shift || {};
-  $self->{defaultDefinition} = undef;
-  $self->{fullTextAnalyzerClassName} = "org.apache.blur.analysis.NoStopWordStandardAnalyzer";
-  $self->{columnFamilyDefinitions} = undef;
-  if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{defaultDefinition}) {
-      $self->{defaultDefinition} = $vals->{defaultDefinition};
-    }
-    if (defined $vals->{fullTextAnalyzerClassName}) {
-      $self->{fullTextAnalyzerClassName} = $vals->{fullTextAnalyzerClassName};
-    }
-    if (defined $vals->{columnFamilyDefinitions}) {
-      $self->{columnFamilyDefinitions} = $vals->{columnFamilyDefinitions};
-    }
-  }
-  return bless ($self, $classname);
-}
-
-sub getName {
-  return 'AnalyzerDefinition';
-}
-
-sub read {
-  my ($self, $input) = @_;
-  my $xfer  = 0;
-  my $fname;
-  my $ftype = 0;
-  my $fid   = 0;
-  $xfer += $input->readStructBegin(\$fname);
-  while (1) 
-  {
-    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
-    if ($ftype == TType::STOP) {
-      last;
-    }
-    SWITCH: for($fid)
-    {
-      /^1$/ && do{      if ($ftype == TType::STRUCT) {
-        $self->{defaultDefinition} = new Blur::ColumnDefinition();
-        $xfer += $self->{defaultDefinition}->read($input);
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^2$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{fullTextAnalyzerClassName});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^3$/ && do{      if ($ftype == TType::MAP) {
-        {
-          my $_size124 = 0;
-          $self->{columnFamilyDefinitions} = {};
-          my $_ktype125 = 0;
-          my $_vtype126 = 0;
-          $xfer += $input->readMapBegin(\$_ktype125, \$_vtype126, \$_size124);
-          for (my $_i128 = 0; $_i128 < $_size124; ++$_i128)
-          {
-            my $key129 = '';
-            my $val130 = new Blur::ColumnFamilyDefinition();
-            $xfer += $input->readString(\$key129);
-            $val130 = new Blur::ColumnFamilyDefinition();
-            $xfer += $val130->read($input);
-            $self->{columnFamilyDefinitions}->{$key129} = $val130;
-          }
-          $xfer += $input->readMapEnd();
-        }
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-        $xfer += $input->skip($ftype);
-    }
-    $xfer += $input->readFieldEnd();
-  }
-  $xfer += $input->readStructEnd();
-  return $xfer;
-}
-
-sub write {
-  my ($self, $output) = @_;
-  my $xfer   = 0;
-  $xfer += $output->writeStructBegin('AnalyzerDefinition');
-  if (defined $self->{defaultDefinition}) {
-    $xfer += $output->writeFieldBegin('defaultDefinition', TType::STRUCT, 1);
-    $xfer += $self->{defaultDefinition}->write($output);
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{fullTextAnalyzerClassName}) {
-    $xfer += $output->writeFieldBegin('fullTextAnalyzerClassName', TType::STRING, 2);
-    $xfer += $output->writeString($self->{fullTextAnalyzerClassName});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{columnFamilyDefinitions}) {
-    $xfer += $output->writeFieldBegin('columnFamilyDefinitions', TType::MAP, 3);
-    {
-      $xfer += $output->writeMapBegin(TType::STRING, TType::STRUCT, scalar(keys %{$self->{columnFamilyDefinitions}}));
-      {
-        while( my ($kiter131,$viter132) = each %{$self->{columnFamilyDefinitions}}) 
-        {
-          $xfer += $output->writeString($kiter131);
-          $xfer += ${viter132}->write($output);
-        }
-      }
-      $xfer += $output->writeMapEnd();
-    }
-    $xfer += $output->writeFieldEnd();
-  }
-  $xfer += $output->writeFieldStop();
-  $xfer += $output->writeStructEnd();
-  return $xfer;
-}
-
 package Blur::ColumnPreCache;
 use base qw(Class::Accessor);
 Blur::ColumnPreCache->mk_accessors( qw( preCacheCols ) );
@@ -3186,15 +2775,15 @@ sub read {
     {
       /^1$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size133 = 0;
+          my $_size106 = 0;
           $self->{preCacheCols} = [];
-          my $_etype136 = 0;
-          $xfer += $input->readListBegin(\$_etype136, \$_size133);
-          for (my $_i137 = 0; $_i137 < $_size133; ++$_i137)
+          my $_etype109 = 0;
+          $xfer += $input->readListBegin(\$_etype109, \$_size106);
+          for (my $_i110 = 0; $_i110 < $_size106; ++$_i110)
           {
-            my $elem138 = undef;
-            $xfer += $input->readString(\$elem138);
-            push(@{$self->{preCacheCols}},$elem138);
+            my $elem111 = undef;
+            $xfer += $input->readString(\$elem111);
+            push(@{$self->{preCacheCols}},$elem111);
           }
           $xfer += $input->readListEnd();
         }
@@ -3219,9 +2808,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{preCacheCols}}));
       {
-        foreach my $iter139 (@{$self->{preCacheCols}}) 
+        foreach my $iter112 (@{$self->{preCacheCols}}) 
         {
-          $xfer += $output->writeString($iter139);
+          $xfer += $output->writeString($iter112);
         }
       }
       $xfer += $output->writeListEnd();
@@ -3369,15 +2958,15 @@ sub read {
       last; };
       /^11$/ && do{      if ($ftype == TType::SET) {
         {
-          my $_size140 = 0;
+          my $_size113 = 0;
           $self->{blockCachingFileTypes} = {};
-          my $_etype143 = 0;
-          $xfer += $input->readSetBegin(\$_etype143, \$_size140);
-          for (my $_i144 = 0; $_i144 < $_size140; ++$_i144)
+          my $_etype116 = 0;
+          $xfer += $input->readSetBegin(\$_etype116, \$_size113);
+          for (my $_i117 = 0; $_i117 < $_size113; ++$_i117)
           {
-            my $elem145 = undef;
-            $xfer += $input->readString(\$elem145);
-            $self->{blockCachingFileTypes}->{$elem145} = 1;
+            my $elem118 = undef;
+            $xfer += $input->readString(\$elem118);
+            $self->{blockCachingFileTypes}->{$elem118} = 1;
           }
           $xfer += $input->readSetEnd();
         }
@@ -3400,18 +2989,18 @@ sub read {
       last; };
       /^14$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size146 = 0;
+          my $_size119 = 0;
           $self->{tableProperties} = {};
-          my $_ktype147 = 0;
-          my $_vtype148 = 0;
-          $xfer += $input->readMapBegin(\$_ktype147, \$_vtype148, \$_size146);
-          for (my $_i150 = 0; $_i150 < $_size146; ++$_i150)
+          my $_ktype120 = 0;
+          my $_vtype121 = 0;
+          $xfer += $input->readMapBegin(\$_ktype120, \$_vtype121, \$_size119);
+          for (my $_i123 = 0; $_i123 < $_size119; ++$_i123)
           {
-            my $key151 = '';
-            my $val152 = '';
-            $xfer += $input->readString(\$key151);
-            $xfer += $input->readString(\$val152);
-            $self->{tableProperties}->{$key151} = $val152;
+            my $key124 = '';
+            my $val125 = '';
+            $xfer += $input->readString(\$key124);
+            $xfer += $input->readString(\$val125);
+            $self->{tableProperties}->{$key124} = $val125;
           }
           $xfer += $input->readMapEnd();
         }
@@ -3439,18 +3028,18 @@ sub read {
       last; };
       /^18$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size153 = 0;
+          my $_size126 = 0;
           $self->{defaultMissingFieldProps} = {};
-          my $_ktype154 = 0;
-          my $_vtype155 = 0;
-          $xfer += $input->readMapBegin(\$_ktype154, \$_vtype155, \$_size153);
-          for (my $_i157 = 0; $_i157 < $_size153; ++$_i157)
+          my $_ktype127 = 0;
+          my $_vtype128 = 0;
+          $xfer += $input->readMapBegin(\$_ktype127, \$_vtype128, \$_size126);
+          for (my $_i130 = 0; $_i130 < $_size126; ++$_i130)
           {
-            my $key158 = '';
-            my $val159 = '';
-            $xfer += $input->readString(\$key158);
-            $xfer += $input->readString(\$val159);
-            $self->{defaultMissingFieldProps}->{$key158} = $val159;
+            my $key131 = '';
+            my $val132 = '';
+            $xfer += $input->readString(\$key131);
+            $xfer += $input->readString(\$val132);
+            $self->{defaultMissingFieldProps}->{$key131} = $val132;
           }
           $xfer += $input->readMapEnd();
         }
@@ -3510,9 +3099,9 @@ sub write {
     {
       $xfer += $output->writeSetBegin(TType::STRING, scalar(@{$self->{blockCachingFileTypes}}));
       {
-        foreach my $iter160 (@{$self->{blockCachingFileTypes}})
+        foreach my $iter133 (@{$self->{blockCachingFileTypes}})
         {
-          $xfer += $output->writeString($iter160);
+          $xfer += $output->writeString($iter133);
         }
       }
       $xfer += $output->writeSetEnd();
@@ -3534,10 +3123,10 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{tableProperties}}));
       {
-        while( my ($kiter161,$viter162) = each %{$self->{tableProperties}}) 
+        while( my ($kiter134,$viter135) = each %{$self->{tableProperties}}) 
         {
-          $xfer += $output->writeString($kiter161);
-          $xfer += $output->writeString($viter162);
+          $xfer += $output->writeString($kiter134);
+          $xfer += $output->writeString($viter135);
         }
       }
       $xfer += $output->writeMapEnd();
@@ -3564,10 +3153,10 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{defaultMissingFieldProps}}));
       {
-        while( my ($kiter163,$viter164) = each %{$self->{defaultMissingFieldProps}}) 
+        while( my ($kiter136,$viter137) = each %{$self->{defaultMissingFieldProps}}) 
         {
-          $xfer += $output->writeString($kiter163);
-          $xfer += $output->writeString($viter164);
+          $xfer += $output->writeString($kiter136);
+          $xfer += $output->writeString($viter137);
         }
       }
       $xfer += $output->writeMapEnd();
@@ -3635,18 +3224,18 @@ sub read {
       last; };
       /^2$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size165 = 0;
+          my $_size138 = 0;
           $self->{strMap} = {};
-          my $_ktype166 = 0;
-          my $_vtype167 = 0;
-          $xfer += $input->readMapBegin(\$_ktype166, \$_vtype167, \$_size165);
-          for (my $_i169 = 0; $_i169 < $_size165; ++$_i169)
+          my $_ktype139 = 0;
+          my $_vtype140 = 0;
+          $xfer += $input->readMapBegin(\$_ktype139, \$_vtype140, \$_size138);
+          for (my $_i142 = 0; $_i142 < $_size138; ++$_i142)
           {
-            my $key170 = '';
-            my $val171 = '';
-            $xfer += $input->readString(\$key170);
-            $xfer += $input->readString(\$val171);
-            $self->{strMap}->{$key170} = $val171;
+            my $key143 = '';
+            my $val144 = '';
+            $xfer += $input->readString(\$key143);
+            $xfer += $input->readString(\$val144);
+            $self->{strMap}->{$key143} = $val144;
           }
           $xfer += $input->readMapEnd();
         }
@@ -3656,18 +3245,18 @@ sub read {
       last; };
       /^3$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size172 = 0;
+          my $_size145 = 0;
           $self->{longMap} = {};
-          my $_ktype173 = 0;
-          my $_vtype174 = 0;
-          $xfer += $input->readMapBegin(\$_ktype173, \$_vtype174, \$_size172);
-          for (my $_i176 = 0; $_i176 < $_size172; ++$_i176)
+          my $_ktype146 = 0;
+          my $_vtype147 = 0;
+          $xfer += $input->readMapBegin(\$_ktype146, \$_vtype147, \$_size145);
+          for (my $_i149 = 0; $_i149 < $_size145; ++$_i149)
           {
-            my $key177 = '';
-            my $val178 = 0;
-            $xfer += $input->readString(\$key177);
-            $xfer += $input->readI64(\$val178);
-            $self->{longMap}->{$key177} = $val178;
+            my $key150 = '';
+            my $val151 = 0;
+            $xfer += $input->readString(\$key150);
+            $xfer += $input->readI64(\$val151);
+            $self->{longMap}->{$key150} = $val151;
           }
           $xfer += $input->readMapEnd();
         }
@@ -3677,18 +3266,18 @@ sub read {
       last; };
       /^4$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size179 = 0;
+          my $_size152 = 0;
           $self->{doubleMap} = {};
-          my $_ktype180 = 0;
-          my $_vtype181 = 0;
-          $xfer += $input->readMapBegin(\$_ktype180, \$_vtype181, \$_size179);
-          for (my $_i183 = 0; $_i183 < $_size179; ++$_i183)
+          my $_ktype153 = 0;
+          my $_vtype154 = 0;
+          $xfer += $input->readMapBegin(\$_ktype153, \$_vtype154, \$_size152);
+          for (my $_i156 = 0; $_i156 < $_size152; ++$_i156)
           {
-            my $key184 = '';
-            my $val185 = 0.0;
-            $xfer += $input->readString(\$key184);
-            $xfer += $input->readDouble(\$val185);
-            $self->{doubleMap}->{$key184} = $val185;
+            my $key157 = '';
+            my $val158 = 0.0;
+            $xfer += $input->readString(\$key157);
+            $xfer += $input->readDouble(\$val158);
+            $self->{doubleMap}->{$key157} = $val158;
           }
           $xfer += $input->readMapEnd();
         }
@@ -3718,10 +3307,10 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{strMap}}));
       {
-        while( my ($kiter186,$viter187) = each %{$self->{strMap}}) 
+        while( my ($kiter159,$viter160) = each %{$self->{strMap}}) 
         {
-          $xfer += $output->writeString($kiter186);
-          $xfer += $output->writeString($viter187);
+          $xfer += $output->writeString($kiter159);
+          $xfer += $output->writeString($viter160);
         }
       }
       $xfer += $output->writeMapEnd();
@@ -3733,10 +3322,10 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::I64, scalar(keys %{$self->{longMap}}));
       {
-        while( my ($kiter188,$viter189) = each %{$self->{longMap}}) 
+        while( my ($kiter161,$viter162) = each %{$self->{longMap}}) 
         {
-          $xfer += $output->writeString($kiter188);
-          $xfer += $output->writeI64($viter189);
+          $xfer += $output->writeString($kiter161);
+          $xfer += $output->writeI64($viter162);
         }
       }
       $xfer += $output->writeMapEnd();
@@ -3748,10 +3337,174 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::DOUBLE, scalar(keys %{$self->{doubleMap}}));
       {
-        while( my ($kiter190,$viter191) = each %{$self->{doubleMap}}) 
+        while( my ($kiter163,$viter164) = each %{$self->{doubleMap}}) 
         {
-          $xfer += $output->writeString($kiter190);
-          $xfer += $output->writeDouble($viter191);
+          $xfer += $output->writeString($kiter163);
+          $xfer += $output->writeDouble($viter164);
+        }
+      }
+      $xfer += $output->writeMapEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::ColumnDefinition;
+use base qw(Class::Accessor);
+Blur::ColumnDefinition->mk_accessors( qw( family columnName subColumnName fieldLessIndexing fieldType properties ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{family} = undef;
+  $self->{columnName} = undef;
+  $self->{subColumnName} = undef;
+  $self->{fieldLessIndexing} = undef;
+  $self->{fieldType} = undef;
+  $self->{properties} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{family}) {
+      $self->{family} = $vals->{family};
+    }
+    if (defined $vals->{columnName}) {
+      $self->{columnName} = $vals->{columnName};
+    }
+    if (defined $vals->{subColumnName}) {
+      $self->{subColumnName} = $vals->{subColumnName};
+    }
+    if (defined $vals->{fieldLessIndexing}) {
+      $self->{fieldLessIndexing} = $vals->{fieldLessIndexing};
+    }
+    if (defined $vals->{fieldType}) {
+      $self->{fieldType} = $vals->{fieldType};
+    }
+    if (defined $vals->{properties}) {
+      $self->{properties} = $vals->{properties};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'ColumnDefinition';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{family});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{columnName});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^3$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{subColumnName});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^4$/ && do{      if ($ftype == TType::BOOL) {
+        $xfer += $input->readBool(\$self->{fieldLessIndexing});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^5$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{fieldType});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^6$/ && do{      if ($ftype == TType::MAP) {
+        {
+          my $_size165 = 0;
+          $self->{properties} = {};
+          my $_ktype166 = 0;
+          my $_vtype167 = 0;
+          $xfer += $input->readMapBegin(\$_ktype166, \$_vtype167, \$_size165);
+          for (my $_i169 = 0; $_i169 < $_size165; ++$_i169)
+          {
+            my $key170 = '';
+            my $val171 = '';
+            $xfer += $input->readString(\$key170);
+            $xfer += $input->readString(\$val171);
+            $self->{properties}->{$key170} = $val171;
+          }
+          $xfer += $input->readMapEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('ColumnDefinition');
+  if (defined $self->{family}) {
+    $xfer += $output->writeFieldBegin('family', TType::STRING, 1);
+    $xfer += $output->writeString($self->{family});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{columnName}) {
+    $xfer += $output->writeFieldBegin('columnName', TType::STRING, 2);
+    $xfer += $output->writeString($self->{columnName});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{subColumnName}) {
+    $xfer += $output->writeFieldBegin('subColumnName', TType::STRING, 3);
+    $xfer += $output->writeString($self->{subColumnName});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{fieldLessIndexing}) {
+    $xfer += $output->writeFieldBegin('fieldLessIndexing', TType::BOOL, 4);
+    $xfer += $output->writeBool($self->{fieldLessIndexing});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{fieldType}) {
+    $xfer += $output->writeFieldBegin('fieldType', TType::STRING, 5);
+    $xfer += $output->writeString($self->{fieldType});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{properties}) {
+    $xfer += $output->writeFieldBegin('properties', TType::MAP, 6);
+    {
+      $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{properties}}));
+      {
+        while( my ($kiter172,$viter173) = each %{$self->{properties}}) 
+        {
+          $xfer += $output->writeString($kiter172);
+          $xfer += $output->writeString($viter173);
         }
       }
       $xfer += $output->writeMapEnd();

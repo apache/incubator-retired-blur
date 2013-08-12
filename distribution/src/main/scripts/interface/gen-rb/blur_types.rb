@@ -685,90 +685,6 @@ module Blur
   end
 
   # 
-  class AlternateColumnDefinition
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    ANALYZERCLASSNAME = 1
-
-    FIELDS = {
-      # 
-      ANALYZERCLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'analyzerClassName'}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  # 
-  class ColumnDefinition
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    ANALYZERCLASSNAME = 1
-    FULLTEXTINDEX = 2
-    ALTERNATECOLUMNDEFINITIONS = 3
-
-    FIELDS = {
-      ANALYZERCLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'analyzerClassName', :default => %q"org.apache.blur.analysis.NoStopWordStandardAnalyzer"},
-      FULLTEXTINDEX => {:type => ::Thrift::Types::BOOL, :name => 'fullTextIndex'},
-      ALTERNATECOLUMNDEFINITIONS => {:type => ::Thrift::Types::MAP, :name => 'alternateColumnDefinitions', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::AlternateColumnDefinition}}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  # 
-  class ColumnFamilyDefinition
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    DEFAULTDEFINITION = 1
-    COLUMNDEFINITIONS = 2
-
-    FIELDS = {
-      # 
-      DEFAULTDEFINITION => {:type => ::Thrift::Types::STRUCT, :name => 'defaultDefinition', :class => ::Blur::ColumnDefinition},
-      # 
-      COLUMNDEFINITIONS => {:type => ::Thrift::Types::MAP, :name => 'columnDefinitions', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::ColumnDefinition}}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  # 
-  class AnalyzerDefinition
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    DEFAULTDEFINITION = 1
-    FULLTEXTANALYZERCLASSNAME = 2
-    COLUMNFAMILYDEFINITIONS = 3
-
-    FIELDS = {
-      # 
-      DEFAULTDEFINITION => {:type => ::Thrift::Types::STRUCT, :name => 'defaultDefinition', :class => ::Blur::ColumnDefinition},
-      # 
-      FULLTEXTANALYZERCLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'fullTextAnalyzerClassName', :default => %q"org.apache.blur.analysis.NoStopWordStandardAnalyzer"},
-      # 
-      COLUMNFAMILYDEFINITIONS => {:type => ::Thrift::Types::MAP, :name => 'columnFamilyDefinitions', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::ColumnFamilyDefinition}}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  # 
   class ColumnPreCache
     include ::Thrift::Struct, ::Thrift::Struct_Union
     PRECACHECOLS = 1
@@ -859,6 +775,48 @@ module Blur
       STRMAP => {:type => ::Thrift::Types::MAP, :name => 'strMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
       LONGMAP => {:type => ::Thrift::Types::MAP, :name => 'longMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::I64}},
       DOUBLEMAP => {:type => ::Thrift::Types::MAP, :name => 'doubleMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::DOUBLE}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class ColumnDefinition
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    FAMILY = 1
+    COLUMNNAME = 2
+    SUBCOLUMNNAME = 3
+    FIELDLESSINDEXING = 4
+    FIELDTYPE = 5
+    PROPERTIES = 6
+
+    FIELDS = {
+      # Required. The family the this column existing within.
+      FAMILY => {:type => ::Thrift::Types::STRING, :name => 'family'},
+      # Required. The column name.
+      COLUMNNAME => {:type => ::Thrift::Types::STRING, :name => 'columnName'},
+      # If this column definition is for a sub column then provide the sub column name.  Otherwise leave this field null.
+      SUBCOLUMNNAME => {:type => ::Thrift::Types::STRING, :name => 'subColumnName'},
+      # If this column should be searchable without having to specify the name of the column in the query.
+# NOTE: This will index the column as a full text field in a default field, so that means it's going to be indexed twice.
+      FIELDLESSINDEXING => {:type => ::Thrift::Types::BOOL, :name => 'fieldLessIndexing'},
+      # The field type for the column.  The built in types are:
+# <ul>
+# <li>text - Full text indexing.</li>
+# <li>string - Indexed string literal</li>
+# <li>int - Converted to an integer and indexed numerically.</li>
+# <li>long - Converted to an long and indexed numerically.</li>
+# <li>float - Converted to an float and indexed numerically.</li>
+# <li>double - Converted to an double and indexed numerically.</li>
+# <li>stored - Not indexed, only stored.</li>
+# </ul>
+      FIELDTYPE => {:type => ::Thrift::Types::STRING, :name => 'fieldType'},
+      # For any custom field types, you can pass in configuration properties.
+      PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
     }
 
     def struct_fields; FIELDS; end

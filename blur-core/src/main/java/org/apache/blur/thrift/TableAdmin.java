@@ -16,6 +16,7 @@ package org.apache.blur.thrift;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
@@ -30,6 +32,7 @@ import org.apache.blur.server.TableContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.Metric;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
@@ -388,6 +391,41 @@ public abstract class TableAdmin implements Iface {
     }
   }
 
+  @Override
+  public boolean addColumnDefinition(String table, ColumnDefinition columnDefinition) throws BlurException, TException {
+    if (table == null) {
+      throw new BException("Table cannot be null.");
+    }
+    if (columnDefinition == null) {
+      throw new BException("ColumnDefinition cannot be null.");
+    }
+    TableDescriptor tableDescriptor = describe(table);
+    TableContext context = TableContext.create(tableDescriptor);
+    FieldManager fieldManager = context.getFieldManager();
+    String family = columnDefinition.getFamily();
+    if (family == null) {
+      throw new BException("Family in ColumnDefinition [{0}] cannot be null.", columnDefinition);
+    }
+    String columnName = columnDefinition.getColumnName();
+    if (columnName == null) {
+      throw new BException("ColumnName in ColumnDefinition [{0}] cannot be null.", columnDefinition);
+    }
+    String subColumnName = columnDefinition.getSubColumnName();
+    boolean fieldLessIndexing = columnDefinition.isFieldLessIndexing();
+    String fieldType = columnDefinition.getFieldType();
+    if (fieldType == null) {
+      throw new BException("FieldType in ColumnDefinition [{0}] cannot be null.", columnDefinition);
+    }
+    Map<String, String> props = columnDefinition.getProperties();
+    try {
+      return fieldManager.addColumnDefinition(family, columnName, subColumnName, fieldLessIndexing, fieldType, props);
+    } catch (IOException e) {
+      throw new BException(
+          "Unknown error while trying to addColumnDefinition on table [{0}] with columnDefinition [{1}]", e, table,
+          columnDefinition);
+    }
+  }
+
   private boolean inSafeMode(boolean useCache, String table) throws BlurException {
     String cluster = _clusterStatus.getCluster(useCache, table);
     if (cluster == null) {
@@ -420,7 +458,7 @@ public abstract class TableAdmin implements Iface {
   public Map<String, String> configuration() throws BlurException, TException {
     return _configuration.getProperties();
   }
-  
+
   public int getMaxRecordsPerRowFetchRequest() {
     return _maxRecordsPerRowFetchRequest;
   }

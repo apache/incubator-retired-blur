@@ -1730,13 +1730,13 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
           case 11: // BLOCK_CACHING_FILE_TYPES
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set158 = iprot.readSetBegin();
-                struct.blockCachingFileTypes = new HashSet<String>(2*_set158.size);
-                for (int _i159 = 0; _i159 < _set158.size; ++_i159)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set128 = iprot.readSetBegin();
+                struct.blockCachingFileTypes = new HashSet<String>(2*_set128.size);
+                for (int _i129 = 0; _i129 < _set128.size; ++_i129)
                 {
-                  String _elem160; // required
-                  _elem160 = iprot.readString();
-                  struct.blockCachingFileTypes.add(_elem160);
+                  String _elem130; // required
+                  _elem130 = iprot.readString();
+                  struct.blockCachingFileTypes.add(_elem130);
                 }
                 iprot.readSetEnd();
               }
@@ -1765,15 +1765,15 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
           case 14: // TABLE_PROPERTIES
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map161 = iprot.readMapBegin();
-                struct.tableProperties = new HashMap<String,String>(2*_map161.size);
-                for (int _i162 = 0; _i162 < _map161.size; ++_i162)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map131 = iprot.readMapBegin();
+                struct.tableProperties = new HashMap<String,String>(2*_map131.size);
+                for (int _i132 = 0; _i132 < _map131.size; ++_i132)
                 {
-                  String _key163; // required
-                  String _val164; // optional
-                  _key163 = iprot.readString();
-                  _val164 = iprot.readString();
-                  struct.tableProperties.put(_key163, _val164);
+                  String _key133; // required
+                  String _val134; // optional
+                  _key133 = iprot.readString();
+                  _val134 = iprot.readString();
+                  struct.tableProperties.put(_key133, _val134);
                 }
                 iprot.readMapEnd();
               }
@@ -1809,15 +1809,15 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
           case 18: // DEFAULT_MISSING_FIELD_PROPS
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map165 = iprot.readMapBegin();
-                struct.defaultMissingFieldProps = new HashMap<String,String>(2*_map165.size);
-                for (int _i166 = 0; _i166 < _map165.size; ++_i166)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map135 = iprot.readMapBegin();
+                struct.defaultMissingFieldProps = new HashMap<String,String>(2*_map135.size);
+                for (int _i136 = 0; _i136 < _map135.size; ++_i136)
                 {
-                  String _key167; // required
-                  String _val168; // optional
-                  _key167 = iprot.readString();
-                  _val168 = iprot.readString();
-                  struct.defaultMissingFieldProps.put(_key167, _val168);
+                  String _key137; // required
+                  String _val138; // optional
+                  _key137 = iprot.readString();
+                  _val138 = iprot.readString();
+                  struct.defaultMissingFieldProps.put(_key137, _val138);
                 }
                 iprot.readMapEnd();
               }
@@ -1874,9 +1874,9 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         oprot.writeFieldBegin(BLOCK_CACHING_FILE_TYPES_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.blockCachingFileTypes.size()));
-          for (String _iter169 : struct.blockCachingFileTypes)
+          for (String _iter139 : struct.blockCachingFileTypes)
           {
-            oprot.writeString(_iter169);
+            oprot.writeString(_iter139);
           }
           oprot.writeSetEnd();
         }
@@ -1894,10 +1894,10 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         oprot.writeFieldBegin(TABLE_PROPERTIES_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.tableProperties.size()));
-          for (Map.Entry<String, String> _iter170 : struct.tableProperties.entrySet())
+          for (Map.Entry<String, String> _iter140 : struct.tableProperties.entrySet())
           {
-            oprot.writeString(_iter170.getKey());
-            oprot.writeString(_iter170.getValue());
+            oprot.writeString(_iter140.getKey());
+            oprot.writeString(_iter140.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -1918,10 +1918,10 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         oprot.writeFieldBegin(DEFAULT_MISSING_FIELD_PROPS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.defaultMissingFieldProps.size()));
-          for (Map.Entry<String, String> _iter171 : struct.defaultMissingFieldProps.entrySet())
+          for (Map.Entry<String, String> _iter141 : struct.defaultMissingFieldProps.entrySet())
           {
-            oprot.writeString(_iter171.getKey());
-            oprot.writeString(_iter171.getValue());
+            oprot.writeString(_iter141.getKey());
+            oprot.writeString(_iter141.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -2015,9 +2015,9 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (struct.isSetBlockCachingFileTypes()) {
         {
           oprot.writeI32(struct.blockCachingFileTypes.size());
-          for (String _iter172 : struct.blockCachingFileTypes)
+          for (String _iter142 : struct.blockCachingFileTypes)
           {
-            oprot.writeString(_iter172);
+            oprot.writeString(_iter142);
           }
         }
       }
@@ -2030,10 +2030,10 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (struct.isSetTableProperties()) {
         {
           oprot.writeI32(struct.tableProperties.size());
-          for (Map.Entry<String, String> _iter173 : struct.tableProperties.entrySet())
+          for (Map.Entry<String, String> _iter143 : struct.tableProperties.entrySet())
           {
-            oprot.writeString(_iter173.getKey());
-            oprot.writeString(_iter173.getValue());
+            oprot.writeString(_iter143.getKey());
+            oprot.writeString(_iter143.getValue());
           }
         }
       }
@@ -2049,10 +2049,10 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (struct.isSetDefaultMissingFieldProps()) {
         {
           oprot.writeI32(struct.defaultMissingFieldProps.size());
-          for (Map.Entry<String, String> _iter174 : struct.defaultMissingFieldProps.entrySet())
+          for (Map.Entry<String, String> _iter144 : struct.defaultMissingFieldProps.entrySet())
           {
-            oprot.writeString(_iter174.getKey());
-            oprot.writeString(_iter174.getValue());
+            oprot.writeString(_iter144.getKey());
+            oprot.writeString(_iter144.getValue());
           }
         }
       }
@@ -2092,13 +2092,13 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       }
       if (incoming.get(7)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set175 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-          struct.blockCachingFileTypes = new HashSet<String>(2*_set175.size);
-          for (int _i176 = 0; _i176 < _set175.size; ++_i176)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set145 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.blockCachingFileTypes = new HashSet<String>(2*_set145.size);
+          for (int _i146 = 0; _i146 < _set145.size; ++_i146)
           {
-            String _elem177; // required
-            _elem177 = iprot.readString();
-            struct.blockCachingFileTypes.add(_elem177);
+            String _elem147; // required
+            _elem147 = iprot.readString();
+            struct.blockCachingFileTypes.add(_elem147);
           }
         }
         struct.setBlockCachingFileTypesIsSet(true);
@@ -2114,15 +2114,15 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       }
       if (incoming.get(10)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map178 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-          struct.tableProperties = new HashMap<String,String>(2*_map178.size);
-          for (int _i179 = 0; _i179 < _map178.size; ++_i179)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map148 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.tableProperties = new HashMap<String,String>(2*_map148.size);
+          for (int _i149 = 0; _i149 < _map148.size; ++_i149)
           {
-            String _key180; // required
-            String _val181; // optional
-            _key180 = iprot.readString();
-            _val181 = iprot.readString();
-            struct.tableProperties.put(_key180, _val181);
+            String _key150; // required
+            String _val151; // optional
+            _key150 = iprot.readString();
+            _val151 = iprot.readString();
+            struct.tableProperties.put(_key150, _val151);
           }
         }
         struct.setTablePropertiesIsSet(true);
@@ -2141,15 +2141,15 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       }
       if (incoming.get(14)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map182 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-          struct.defaultMissingFieldProps = new HashMap<String,String>(2*_map182.size);
-          for (int _i183 = 0; _i183 < _map182.size; ++_i183)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map152 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.defaultMissingFieldProps = new HashMap<String,String>(2*_map152.size);
+          for (int _i153 = 0; _i153 < _map152.size; ++_i153)
           {
-            String _key184; // required
-            String _val185; // optional
-            _key184 = iprot.readString();
-            _val185 = iprot.readString();
-            struct.defaultMissingFieldProps.put(_key184, _val185);
+            String _key154; // required
+            String _val155; // optional
+            _key154 = iprot.readString();
+            _val155 = iprot.readString();
+            struct.defaultMissingFieldProps.put(_key154, _val155);
           }
         }
         struct.setDefaultMissingFieldPropsIsSet(true);

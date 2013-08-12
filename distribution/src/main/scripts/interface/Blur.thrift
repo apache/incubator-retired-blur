@@ -599,57 +599,6 @@ struct Schema {
 /**
  *
  */
-struct AlternateColumnDefinition {
-  /**
-   *
-   */
-  1:string analyzerClassName
-}
-
-/**
- *
- */
-struct ColumnDefinition {
-  1:string analyzerClassName = "org.apache.blur.analysis.NoStopWordStandardAnalyzer",
-  2:bool fullTextIndex,
-  3:map<string,AlternateColumnDefinition> alternateColumnDefinitions
-}
-
-/**
- *
- */
-struct ColumnFamilyDefinition {
-  /**
-   *
-   */
-  1:ColumnDefinition defaultDefinition,
-  /**
-   *
-   */
-  2:map<string,ColumnDefinition> columnDefinitions
-}
-
-/**
- *
- */
-struct AnalyzerDefinition {
-  /**
-   *
-   */
-  1:ColumnDefinition defaultDefinition,
-  /**
-   *
-   */
-  2:string fullTextAnalyzerClassName = "org.apache.blur.analysis.NoStopWordStandardAnalyzer",
-  /**
-   *
-   */
-  3:map<string,ColumnFamilyDefinition> columnFamilyDefinitions
-}
-
-/**
- *
- */
 struct ColumnPreCache {
   /**
    * This map sets what column families and columns to prefetch into block cache on shard open.
@@ -729,6 +678,43 @@ struct Metric {
   2:map<string,string> strMap,
   3:map<string,i64> longMap,
   4:map<string,double> doubleMap
+}
+
+struct ColumnDefinition {
+  /**
+   * Required. The family the this column existing within.
+   */
+  1:string family,
+  /**
+   * Required. The column name.
+   */
+  2:string columnName,
+  /**
+   * If this column definition is for a sub column then provide the sub column name.  Otherwise leave this field null.
+   */
+  3:string subColumnName,
+  /**
+   * If this column should be searchable without having to specify the name of the column in the query.  
+   * NOTE: This will index the column as a full text field in a default field, so that means it's going to be indexed twice.
+   */
+  4:bool fieldLessIndexing,
+  /**
+   * The field type for the column.  The built in types are:
+   * <ul>
+   * <li>text - Full text indexing.</li>
+   * <li>string - Indexed string literal</li>
+   * <li>int - Converted to an integer and indexed numerically.</li>
+   * <li>long - Converted to an long and indexed numerically.</li>
+   * <li>float - Converted to an float and indexed numerically.</li>
+   * <li>double - Converted to an double and indexed numerically.</li>
+   * <li>stored - Not indexed, only stored.</li>
+   * </ul>
+   */
+  5:string fieldType,
+  /**
+   * For any custom field types, you can pass in configuration properties.
+   */
+  6:map<string, string> properties
 }
 
 /**
@@ -846,6 +832,8 @@ service Blur {
   void enableTable(1:string table) throws (1:BlurException ex)
   void disableTable(1:string table) throws (1:BlurException ex)
   void removeTable(1:string table, 2:bool deleteIndexFiles) throws (1:BlurException ex)
+
+  bool addColumnDefinition(1:string table, 2:ColumnDefinition columnDefinition) throws (1:BlurException ex)
 
   void optimize(1:string table, 2:i32 numberOfSegmentsPerShard) throws (1:BlurException ex)
   

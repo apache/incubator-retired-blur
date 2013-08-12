@@ -421,6 +421,22 @@ module Blur
         return
       end
 
+      def addColumnDefinition(table, columnDefinition)
+        send_addColumnDefinition(table, columnDefinition)
+        return recv_addColumnDefinition()
+      end
+
+      def send_addColumnDefinition(table, columnDefinition)
+        send_message('addColumnDefinition', AddColumnDefinition_args, :table => table, :columnDefinition => columnDefinition)
+      end
+
+      def recv_addColumnDefinition()
+        result = receive_message(AddColumnDefinition_result)
+        return result.success unless result.success.nil?
+        raise result.ex unless result.ex.nil?
+        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'addColumnDefinition failed: unknown result')
+      end
+
       def optimize(table, numberOfSegmentsPerShard)
         send_optimize(table, numberOfSegmentsPerShard)
         recv_optimize()
@@ -773,6 +789,17 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'removeTable', seqid)
+      end
+
+      def process_addColumnDefinition(seqid, iprot, oprot)
+        args = read_args(iprot, AddColumnDefinition_args)
+        result = AddColumnDefinition_result.new()
+        begin
+          result.success = @handler.addColumnDefinition(args.table, args.columnDefinition)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'addColumnDefinition', seqid)
       end
 
       def process_optimize(seqid, iprot, oprot)
@@ -1705,6 +1732,42 @@ module Blur
       EX = 1
 
       FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class AddColumnDefinition_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+      COLUMNDEFINITION = 2
+
+      FIELDS = {
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        COLUMNDEFINITION => {:type => ::Thrift::Types::STRUCT, :name => 'columnDefinition', :class => ::Blur::ColumnDefinition}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class AddColumnDefinition_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SUCCESS = 0
+      EX = 1
+
+      FIELDS = {
+        SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
         EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
       }
 

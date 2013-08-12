@@ -49,15 +49,15 @@ import java.util.Arrays;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
-/**
- * 
- */
 public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<ColumnDefinition, ColumnDefinition._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("ColumnDefinition");
 
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ANALYZER_CLASS_NAME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("analyzerClassName", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FULL_TEXT_INDEX_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("fullTextIndex", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)2);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ALTERNATE_COLUMN_DEFINITIONS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("alternateColumnDefinitions", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, (short)3);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FAMILY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("family", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COLUMN_NAME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("columnName", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SUB_COLUMN_NAME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("subColumnName", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)3);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FIELD_LESS_INDEXING_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("fieldLessIndexing", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)4);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FIELD_TYPE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("fieldType", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)5);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField PROPERTIES_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("properties", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -65,15 +65,77 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     schemes.put(TupleScheme.class, new ColumnDefinitionTupleSchemeFactory());
   }
 
-  public String analyzerClassName; // required
-  public boolean fullTextIndex; // required
-  public Map<String,AlternateColumnDefinition> alternateColumnDefinitions; // required
+  /**
+   * Required. The family the this column existing within.
+   */
+  public String family; // required
+  /**
+   * Required. The column name.
+   */
+  public String columnName; // required
+  /**
+   * If this column definition is for a sub column then provide the sub column name.  Otherwise leave this field null.
+   */
+  public String subColumnName; // required
+  /**
+   * If this column should be searchable without having to specify the name of the column in the query.
+   * NOTE: This will index the column as a full text field in a default field, so that means it's going to be indexed twice.
+   */
+  public boolean fieldLessIndexing; // required
+  /**
+   * The field type for the column.  The built in types are:
+   * <ul>
+   * <li>text - Full text indexing.</li>
+   * <li>string - Indexed string literal</li>
+   * <li>int - Converted to an integer and indexed numerically.</li>
+   * <li>long - Converted to an long and indexed numerically.</li>
+   * <li>float - Converted to an float and indexed numerically.</li>
+   * <li>double - Converted to an double and indexed numerically.</li>
+   * <li>stored - Not indexed, only stored.</li>
+   * </ul>
+   */
+  public String fieldType; // required
+  /**
+   * For any custom field types, you can pass in configuration properties.
+   */
+  public Map<String,String> properties; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
-    ANALYZER_CLASS_NAME((short)1, "analyzerClassName"),
-    FULL_TEXT_INDEX((short)2, "fullTextIndex"),
-    ALTERNATE_COLUMN_DEFINITIONS((short)3, "alternateColumnDefinitions");
+    /**
+     * Required. The family the this column existing within.
+     */
+    FAMILY((short)1, "family"),
+    /**
+     * Required. The column name.
+     */
+    COLUMN_NAME((short)2, "columnName"),
+    /**
+     * If this column definition is for a sub column then provide the sub column name.  Otherwise leave this field null.
+     */
+    SUB_COLUMN_NAME((short)3, "subColumnName"),
+    /**
+     * If this column should be searchable without having to specify the name of the column in the query.
+     * NOTE: This will index the column as a full text field in a default field, so that means it's going to be indexed twice.
+     */
+    FIELD_LESS_INDEXING((short)4, "fieldLessIndexing"),
+    /**
+     * The field type for the column.  The built in types are:
+     * <ul>
+     * <li>text - Full text indexing.</li>
+     * <li>string - Indexed string literal</li>
+     * <li>int - Converted to an integer and indexed numerically.</li>
+     * <li>long - Converted to an long and indexed numerically.</li>
+     * <li>float - Converted to an float and indexed numerically.</li>
+     * <li>double - Converted to an double and indexed numerically.</li>
+     * <li>stored - Not indexed, only stored.</li>
+     * </ul>
+     */
+    FIELD_TYPE((short)5, "fieldType"),
+    /**
+     * For any custom field types, you can pass in configuration properties.
+     */
+    PROPERTIES((short)6, "properties");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -88,12 +150,18 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // ANALYZER_CLASS_NAME
-          return ANALYZER_CLASS_NAME;
-        case 2: // FULL_TEXT_INDEX
-          return FULL_TEXT_INDEX;
-        case 3: // ALTERNATE_COLUMN_DEFINITIONS
-          return ALTERNATE_COLUMN_DEFINITIONS;
+        case 1: // FAMILY
+          return FAMILY;
+        case 2: // COLUMN_NAME
+          return COLUMN_NAME;
+        case 3: // SUB_COLUMN_NAME
+          return SUB_COLUMN_NAME;
+        case 4: // FIELD_LESS_INDEXING
+          return FIELD_LESS_INDEXING;
+        case 5: // FIELD_TYPE
+          return FIELD_TYPE;
+        case 6: // PROPERTIES
+          return PROPERTIES;
         default:
           return null;
       }
@@ -134,38 +202,48 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
   }
 
   // isset id assignments
-  private static final int __FULLTEXTINDEX_ISSET_ID = 0;
+  private static final int __FIELDLESSINDEXING_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.ANALYZER_CLASS_NAME, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("analyzerClassName", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.FAMILY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("family", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
-    tmpMap.put(_Fields.FULL_TEXT_INDEX, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("fullTextIndex", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.COLUMN_NAME, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("columnName", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.SUB_COLUMN_NAME, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("subColumnName", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.FIELD_LESS_INDEXING, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("fieldLessIndexing", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.ALTERNATE_COLUMN_DEFINITIONS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("alternateColumnDefinitions", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.FIELD_TYPE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("fieldType", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.PROPERTIES, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("properties", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.MapMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING), 
-            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, AlternateColumnDefinition.class))));
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(ColumnDefinition.class, metaDataMap);
   }
 
   public ColumnDefinition() {
-    this.analyzerClassName = "org.apache.blur.analysis.NoStopWordStandardAnalyzer";
-
   }
 
   public ColumnDefinition(
-    String analyzerClassName,
-    boolean fullTextIndex,
-    Map<String,AlternateColumnDefinition> alternateColumnDefinitions)
+    String family,
+    String columnName,
+    String subColumnName,
+    boolean fieldLessIndexing,
+    String fieldType,
+    Map<String,String> properties)
   {
     this();
-    this.analyzerClassName = analyzerClassName;
-    this.fullTextIndex = fullTextIndex;
-    setFullTextIndexIsSet(true);
-    this.alternateColumnDefinitions = alternateColumnDefinitions;
+    this.family = family;
+    this.columnName = columnName;
+    this.subColumnName = subColumnName;
+    this.fieldLessIndexing = fieldLessIndexing;
+    setFieldLessIndexingIsSet(true);
+    this.fieldType = fieldType;
+    this.properties = properties;
   }
 
   /**
@@ -173,24 +251,33 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
    */
   public ColumnDefinition(ColumnDefinition other) {
     __isset_bitfield = other.__isset_bitfield;
-    if (other.isSetAnalyzerClassName()) {
-      this.analyzerClassName = other.analyzerClassName;
+    if (other.isSetFamily()) {
+      this.family = other.family;
     }
-    this.fullTextIndex = other.fullTextIndex;
-    if (other.isSetAlternateColumnDefinitions()) {
-      Map<String,AlternateColumnDefinition> __this__alternateColumnDefinitions = new HashMap<String,AlternateColumnDefinition>();
-      for (Map.Entry<String, AlternateColumnDefinition> other_element : other.alternateColumnDefinitions.entrySet()) {
+    if (other.isSetColumnName()) {
+      this.columnName = other.columnName;
+    }
+    if (other.isSetSubColumnName()) {
+      this.subColumnName = other.subColumnName;
+    }
+    this.fieldLessIndexing = other.fieldLessIndexing;
+    if (other.isSetFieldType()) {
+      this.fieldType = other.fieldType;
+    }
+    if (other.isSetProperties()) {
+      Map<String,String> __this__properties = new HashMap<String,String>();
+      for (Map.Entry<String, String> other_element : other.properties.entrySet()) {
 
         String other_element_key = other_element.getKey();
-        AlternateColumnDefinition other_element_value = other_element.getValue();
+        String other_element_value = other_element.getValue();
 
-        String __this__alternateColumnDefinitions_copy_key = other_element_key;
+        String __this__properties_copy_key = other_element_key;
 
-        AlternateColumnDefinition __this__alternateColumnDefinitions_copy_value = new AlternateColumnDefinition(other_element_value);
+        String __this__properties_copy_value = other_element_value;
 
-        __this__alternateColumnDefinitions.put(__this__alternateColumnDefinitions_copy_key, __this__alternateColumnDefinitions_copy_value);
+        __this__properties.put(__this__properties_copy_key, __this__properties_copy_value);
       }
-      this.alternateColumnDefinitions = __this__alternateColumnDefinitions;
+      this.properties = __this__properties;
     }
   }
 
@@ -200,118 +287,272 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
 
   @Override
   public void clear() {
-    this.analyzerClassName = "org.apache.blur.analysis.NoStopWordStandardAnalyzer";
-
-    setFullTextIndexIsSet(false);
-    this.fullTextIndex = false;
-    this.alternateColumnDefinitions = null;
+    this.family = null;
+    this.columnName = null;
+    this.subColumnName = null;
+    setFieldLessIndexingIsSet(false);
+    this.fieldLessIndexing = false;
+    this.fieldType = null;
+    this.properties = null;
   }
 
-  public String getAnalyzerClassName() {
-    return this.analyzerClassName;
+  /**
+   * Required. The family the this column existing within.
+   */
+  public String getFamily() {
+    return this.family;
   }
 
-  public ColumnDefinition setAnalyzerClassName(String analyzerClassName) {
-    this.analyzerClassName = analyzerClassName;
+  /**
+   * Required. The family the this column existing within.
+   */
+  public ColumnDefinition setFamily(String family) {
+    this.family = family;
     return this;
   }
 
-  public void unsetAnalyzerClassName() {
-    this.analyzerClassName = null;
+  public void unsetFamily() {
+    this.family = null;
   }
 
-  /** Returns true if field analyzerClassName is set (has been assigned a value) and false otherwise */
-  public boolean isSetAnalyzerClassName() {
-    return this.analyzerClassName != null;
+  /** Returns true if field family is set (has been assigned a value) and false otherwise */
+  public boolean isSetFamily() {
+    return this.family != null;
   }
 
-  public void setAnalyzerClassNameIsSet(boolean value) {
+  public void setFamilyIsSet(boolean value) {
     if (!value) {
-      this.analyzerClassName = null;
+      this.family = null;
     }
   }
 
-  public boolean isFullTextIndex() {
-    return this.fullTextIndex;
+  /**
+   * Required. The column name.
+   */
+  public String getColumnName() {
+    return this.columnName;
   }
 
-  public ColumnDefinition setFullTextIndex(boolean fullTextIndex) {
-    this.fullTextIndex = fullTextIndex;
-    setFullTextIndexIsSet(true);
+  /**
+   * Required. The column name.
+   */
+  public ColumnDefinition setColumnName(String columnName) {
+    this.columnName = columnName;
     return this;
   }
 
-  public void unsetFullTextIndex() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __FULLTEXTINDEX_ISSET_ID);
+  public void unsetColumnName() {
+    this.columnName = null;
   }
 
-  /** Returns true if field fullTextIndex is set (has been assigned a value) and false otherwise */
-  public boolean isSetFullTextIndex() {
-    return EncodingUtils.testBit(__isset_bitfield, __FULLTEXTINDEX_ISSET_ID);
+  /** Returns true if field columnName is set (has been assigned a value) and false otherwise */
+  public boolean isSetColumnName() {
+    return this.columnName != null;
   }
 
-  public void setFullTextIndexIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __FULLTEXTINDEX_ISSET_ID, value);
-  }
-
-  public int getAlternateColumnDefinitionsSize() {
-    return (this.alternateColumnDefinitions == null) ? 0 : this.alternateColumnDefinitions.size();
-  }
-
-  public void putToAlternateColumnDefinitions(String key, AlternateColumnDefinition val) {
-    if (this.alternateColumnDefinitions == null) {
-      this.alternateColumnDefinitions = new HashMap<String,AlternateColumnDefinition>();
-    }
-    this.alternateColumnDefinitions.put(key, val);
-  }
-
-  public Map<String,AlternateColumnDefinition> getAlternateColumnDefinitions() {
-    return this.alternateColumnDefinitions;
-  }
-
-  public ColumnDefinition setAlternateColumnDefinitions(Map<String,AlternateColumnDefinition> alternateColumnDefinitions) {
-    this.alternateColumnDefinitions = alternateColumnDefinitions;
-    return this;
-  }
-
-  public void unsetAlternateColumnDefinitions() {
-    this.alternateColumnDefinitions = null;
-  }
-
-  /** Returns true if field alternateColumnDefinitions is set (has been assigned a value) and false otherwise */
-  public boolean isSetAlternateColumnDefinitions() {
-    return this.alternateColumnDefinitions != null;
-  }
-
-  public void setAlternateColumnDefinitionsIsSet(boolean value) {
+  public void setColumnNameIsSet(boolean value) {
     if (!value) {
-      this.alternateColumnDefinitions = null;
+      this.columnName = null;
+    }
+  }
+
+  /**
+   * If this column definition is for a sub column then provide the sub column name.  Otherwise leave this field null.
+   */
+  public String getSubColumnName() {
+    return this.subColumnName;
+  }
+
+  /**
+   * If this column definition is for a sub column then provide the sub column name.  Otherwise leave this field null.
+   */
+  public ColumnDefinition setSubColumnName(String subColumnName) {
+    this.subColumnName = subColumnName;
+    return this;
+  }
+
+  public void unsetSubColumnName() {
+    this.subColumnName = null;
+  }
+
+  /** Returns true if field subColumnName is set (has been assigned a value) and false otherwise */
+  public boolean isSetSubColumnName() {
+    return this.subColumnName != null;
+  }
+
+  public void setSubColumnNameIsSet(boolean value) {
+    if (!value) {
+      this.subColumnName = null;
+    }
+  }
+
+  /**
+   * If this column should be searchable without having to specify the name of the column in the query.
+   * NOTE: This will index the column as a full text field in a default field, so that means it's going to be indexed twice.
+   */
+  public boolean isFieldLessIndexing() {
+    return this.fieldLessIndexing;
+  }
+
+  /**
+   * If this column should be searchable without having to specify the name of the column in the query.
+   * NOTE: This will index the column as a full text field in a default field, so that means it's going to be indexed twice.
+   */
+  public ColumnDefinition setFieldLessIndexing(boolean fieldLessIndexing) {
+    this.fieldLessIndexing = fieldLessIndexing;
+    setFieldLessIndexingIsSet(true);
+    return this;
+  }
+
+  public void unsetFieldLessIndexing() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __FIELDLESSINDEXING_ISSET_ID);
+  }
+
+  /** Returns true if field fieldLessIndexing is set (has been assigned a value) and false otherwise */
+  public boolean isSetFieldLessIndexing() {
+    return EncodingUtils.testBit(__isset_bitfield, __FIELDLESSINDEXING_ISSET_ID);
+  }
+
+  public void setFieldLessIndexingIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __FIELDLESSINDEXING_ISSET_ID, value);
+  }
+
+  /**
+   * The field type for the column.  The built in types are:
+   * <ul>
+   * <li>text - Full text indexing.</li>
+   * <li>string - Indexed string literal</li>
+   * <li>int - Converted to an integer and indexed numerically.</li>
+   * <li>long - Converted to an long and indexed numerically.</li>
+   * <li>float - Converted to an float and indexed numerically.</li>
+   * <li>double - Converted to an double and indexed numerically.</li>
+   * <li>stored - Not indexed, only stored.</li>
+   * </ul>
+   */
+  public String getFieldType() {
+    return this.fieldType;
+  }
+
+  /**
+   * The field type for the column.  The built in types are:
+   * <ul>
+   * <li>text - Full text indexing.</li>
+   * <li>string - Indexed string literal</li>
+   * <li>int - Converted to an integer and indexed numerically.</li>
+   * <li>long - Converted to an long and indexed numerically.</li>
+   * <li>float - Converted to an float and indexed numerically.</li>
+   * <li>double - Converted to an double and indexed numerically.</li>
+   * <li>stored - Not indexed, only stored.</li>
+   * </ul>
+   */
+  public ColumnDefinition setFieldType(String fieldType) {
+    this.fieldType = fieldType;
+    return this;
+  }
+
+  public void unsetFieldType() {
+    this.fieldType = null;
+  }
+
+  /** Returns true if field fieldType is set (has been assigned a value) and false otherwise */
+  public boolean isSetFieldType() {
+    return this.fieldType != null;
+  }
+
+  public void setFieldTypeIsSet(boolean value) {
+    if (!value) {
+      this.fieldType = null;
+    }
+  }
+
+  public int getPropertiesSize() {
+    return (this.properties == null) ? 0 : this.properties.size();
+  }
+
+  public void putToProperties(String key, String val) {
+    if (this.properties == null) {
+      this.properties = new HashMap<String,String>();
+    }
+    this.properties.put(key, val);
+  }
+
+  /**
+   * For any custom field types, you can pass in configuration properties.
+   */
+  public Map<String,String> getProperties() {
+    return this.properties;
+  }
+
+  /**
+   * For any custom field types, you can pass in configuration properties.
+   */
+  public ColumnDefinition setProperties(Map<String,String> properties) {
+    this.properties = properties;
+    return this;
+  }
+
+  public void unsetProperties() {
+    this.properties = null;
+  }
+
+  /** Returns true if field properties is set (has been assigned a value) and false otherwise */
+  public boolean isSetProperties() {
+    return this.properties != null;
+  }
+
+  public void setPropertiesIsSet(boolean value) {
+    if (!value) {
+      this.properties = null;
     }
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case ANALYZER_CLASS_NAME:
+    case FAMILY:
       if (value == null) {
-        unsetAnalyzerClassName();
+        unsetFamily();
       } else {
-        setAnalyzerClassName((String)value);
+        setFamily((String)value);
       }
       break;
 
-    case FULL_TEXT_INDEX:
+    case COLUMN_NAME:
       if (value == null) {
-        unsetFullTextIndex();
+        unsetColumnName();
       } else {
-        setFullTextIndex((Boolean)value);
+        setColumnName((String)value);
       }
       break;
 
-    case ALTERNATE_COLUMN_DEFINITIONS:
+    case SUB_COLUMN_NAME:
       if (value == null) {
-        unsetAlternateColumnDefinitions();
+        unsetSubColumnName();
       } else {
-        setAlternateColumnDefinitions((Map<String,AlternateColumnDefinition>)value);
+        setSubColumnName((String)value);
+      }
+      break;
+
+    case FIELD_LESS_INDEXING:
+      if (value == null) {
+        unsetFieldLessIndexing();
+      } else {
+        setFieldLessIndexing((Boolean)value);
+      }
+      break;
+
+    case FIELD_TYPE:
+      if (value == null) {
+        unsetFieldType();
+      } else {
+        setFieldType((String)value);
+      }
+      break;
+
+    case PROPERTIES:
+      if (value == null) {
+        unsetProperties();
+      } else {
+        setProperties((Map<String,String>)value);
       }
       break;
 
@@ -320,14 +561,23 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case ANALYZER_CLASS_NAME:
-      return getAnalyzerClassName();
+    case FAMILY:
+      return getFamily();
 
-    case FULL_TEXT_INDEX:
-      return Boolean.valueOf(isFullTextIndex());
+    case COLUMN_NAME:
+      return getColumnName();
 
-    case ALTERNATE_COLUMN_DEFINITIONS:
-      return getAlternateColumnDefinitions();
+    case SUB_COLUMN_NAME:
+      return getSubColumnName();
+
+    case FIELD_LESS_INDEXING:
+      return Boolean.valueOf(isFieldLessIndexing());
+
+    case FIELD_TYPE:
+      return getFieldType();
+
+    case PROPERTIES:
+      return getProperties();
 
     }
     throw new IllegalStateException();
@@ -340,12 +590,18 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     }
 
     switch (field) {
-    case ANALYZER_CLASS_NAME:
-      return isSetAnalyzerClassName();
-    case FULL_TEXT_INDEX:
-      return isSetFullTextIndex();
-    case ALTERNATE_COLUMN_DEFINITIONS:
-      return isSetAlternateColumnDefinitions();
+    case FAMILY:
+      return isSetFamily();
+    case COLUMN_NAME:
+      return isSetColumnName();
+    case SUB_COLUMN_NAME:
+      return isSetSubColumnName();
+    case FIELD_LESS_INDEXING:
+      return isSetFieldLessIndexing();
+    case FIELD_TYPE:
+      return isSetFieldType();
+    case PROPERTIES:
+      return isSetProperties();
     }
     throw new IllegalStateException();
   }
@@ -363,30 +619,57 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     if (that == null)
       return false;
 
-    boolean this_present_analyzerClassName = true && this.isSetAnalyzerClassName();
-    boolean that_present_analyzerClassName = true && that.isSetAnalyzerClassName();
-    if (this_present_analyzerClassName || that_present_analyzerClassName) {
-      if (!(this_present_analyzerClassName && that_present_analyzerClassName))
+    boolean this_present_family = true && this.isSetFamily();
+    boolean that_present_family = true && that.isSetFamily();
+    if (this_present_family || that_present_family) {
+      if (!(this_present_family && that_present_family))
         return false;
-      if (!this.analyzerClassName.equals(that.analyzerClassName))
-        return false;
-    }
-
-    boolean this_present_fullTextIndex = true;
-    boolean that_present_fullTextIndex = true;
-    if (this_present_fullTextIndex || that_present_fullTextIndex) {
-      if (!(this_present_fullTextIndex && that_present_fullTextIndex))
-        return false;
-      if (this.fullTextIndex != that.fullTextIndex)
+      if (!this.family.equals(that.family))
         return false;
     }
 
-    boolean this_present_alternateColumnDefinitions = true && this.isSetAlternateColumnDefinitions();
-    boolean that_present_alternateColumnDefinitions = true && that.isSetAlternateColumnDefinitions();
-    if (this_present_alternateColumnDefinitions || that_present_alternateColumnDefinitions) {
-      if (!(this_present_alternateColumnDefinitions && that_present_alternateColumnDefinitions))
+    boolean this_present_columnName = true && this.isSetColumnName();
+    boolean that_present_columnName = true && that.isSetColumnName();
+    if (this_present_columnName || that_present_columnName) {
+      if (!(this_present_columnName && that_present_columnName))
         return false;
-      if (!this.alternateColumnDefinitions.equals(that.alternateColumnDefinitions))
+      if (!this.columnName.equals(that.columnName))
+        return false;
+    }
+
+    boolean this_present_subColumnName = true && this.isSetSubColumnName();
+    boolean that_present_subColumnName = true && that.isSetSubColumnName();
+    if (this_present_subColumnName || that_present_subColumnName) {
+      if (!(this_present_subColumnName && that_present_subColumnName))
+        return false;
+      if (!this.subColumnName.equals(that.subColumnName))
+        return false;
+    }
+
+    boolean this_present_fieldLessIndexing = true;
+    boolean that_present_fieldLessIndexing = true;
+    if (this_present_fieldLessIndexing || that_present_fieldLessIndexing) {
+      if (!(this_present_fieldLessIndexing && that_present_fieldLessIndexing))
+        return false;
+      if (this.fieldLessIndexing != that.fieldLessIndexing)
+        return false;
+    }
+
+    boolean this_present_fieldType = true && this.isSetFieldType();
+    boolean that_present_fieldType = true && that.isSetFieldType();
+    if (this_present_fieldType || that_present_fieldType) {
+      if (!(this_present_fieldType && that_present_fieldType))
+        return false;
+      if (!this.fieldType.equals(that.fieldType))
+        return false;
+    }
+
+    boolean this_present_properties = true && this.isSetProperties();
+    boolean that_present_properties = true && that.isSetProperties();
+    if (this_present_properties || that_present_properties) {
+      if (!(this_present_properties && that_present_properties))
+        return false;
+      if (!this.properties.equals(that.properties))
         return false;
     }
 
@@ -406,32 +689,62 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     int lastComparison = 0;
     ColumnDefinition typedOther = (ColumnDefinition)other;
 
-    lastComparison = Boolean.valueOf(isSetAnalyzerClassName()).compareTo(typedOther.isSetAnalyzerClassName());
+    lastComparison = Boolean.valueOf(isSetFamily()).compareTo(typedOther.isSetFamily());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetAnalyzerClassName()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.analyzerClassName, typedOther.analyzerClassName);
+    if (isSetFamily()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.family, typedOther.family);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetFullTextIndex()).compareTo(typedOther.isSetFullTextIndex());
+    lastComparison = Boolean.valueOf(isSetColumnName()).compareTo(typedOther.isSetColumnName());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetFullTextIndex()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.fullTextIndex, typedOther.fullTextIndex);
+    if (isSetColumnName()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.columnName, typedOther.columnName);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetAlternateColumnDefinitions()).compareTo(typedOther.isSetAlternateColumnDefinitions());
+    lastComparison = Boolean.valueOf(isSetSubColumnName()).compareTo(typedOther.isSetSubColumnName());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetAlternateColumnDefinitions()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.alternateColumnDefinitions, typedOther.alternateColumnDefinitions);
+    if (isSetSubColumnName()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.subColumnName, typedOther.subColumnName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetFieldLessIndexing()).compareTo(typedOther.isSetFieldLessIndexing());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetFieldLessIndexing()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.fieldLessIndexing, typedOther.fieldLessIndexing);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetFieldType()).compareTo(typedOther.isSetFieldType());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetFieldType()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.fieldType, typedOther.fieldType);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetProperties()).compareTo(typedOther.isSetProperties());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetProperties()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.properties, typedOther.properties);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -456,23 +769,47 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     StringBuilder sb = new StringBuilder("ColumnDefinition(");
     boolean first = true;
 
-    sb.append("analyzerClassName:");
-    if (this.analyzerClassName == null) {
+    sb.append("family:");
+    if (this.family == null) {
       sb.append("null");
     } else {
-      sb.append(this.analyzerClassName);
+      sb.append(this.family);
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("fullTextIndex:");
-    sb.append(this.fullTextIndex);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("alternateColumnDefinitions:");
-    if (this.alternateColumnDefinitions == null) {
+    sb.append("columnName:");
+    if (this.columnName == null) {
       sb.append("null");
     } else {
-      sb.append(this.alternateColumnDefinitions);
+      sb.append(this.columnName);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("subColumnName:");
+    if (this.subColumnName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.subColumnName);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("fieldLessIndexing:");
+    sb.append(this.fieldLessIndexing);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("fieldType:");
+    if (this.fieldType == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.fieldType);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("properties:");
+    if (this.properties == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.properties);
     }
     first = false;
     sb.append(")");
@@ -520,39 +857,62 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
           break;
         }
         switch (schemeField.id) {
-          case 1: // ANALYZER_CLASS_NAME
+          case 1: // FAMILY
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
-              struct.analyzerClassName = iprot.readString();
-              struct.setAnalyzerClassNameIsSet(true);
+              struct.family = iprot.readString();
+              struct.setFamilyIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // FULL_TEXT_INDEX
+          case 2: // COLUMN_NAME
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+              struct.columnName = iprot.readString();
+              struct.setColumnNameIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // SUB_COLUMN_NAME
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+              struct.subColumnName = iprot.readString();
+              struct.setSubColumnNameIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 4: // FIELD_LESS_INDEXING
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
-              struct.fullTextIndex = iprot.readBool();
-              struct.setFullTextIndexIsSet(true);
+              struct.fieldLessIndexing = iprot.readBool();
+              struct.setFieldLessIndexingIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // ALTERNATE_COLUMN_DEFINITIONS
+          case 5: // FIELD_TYPE
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+              struct.fieldType = iprot.readString();
+              struct.setFieldTypeIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 6: // PROPERTIES
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map120 = iprot.readMapBegin();
-                struct.alternateColumnDefinitions = new HashMap<String,AlternateColumnDefinition>(2*_map120.size);
-                for (int _i121 = 0; _i121 < _map120.size; ++_i121)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map186 = iprot.readMapBegin();
+                struct.properties = new HashMap<String,String>(2*_map186.size);
+                for (int _i187 = 0; _i187 < _map186.size; ++_i187)
                 {
-                  String _key122; // required
-                  AlternateColumnDefinition _val123; // optional
-                  _key122 = iprot.readString();
-                  _val123 = new AlternateColumnDefinition();
-                  _val123.read(iprot);
-                  struct.alternateColumnDefinitions.put(_key122, _val123);
+                  String _key188; // required
+                  String _val189; // optional
+                  _key188 = iprot.readString();
+                  _val189 = iprot.readString();
+                  struct.properties.put(_key188, _val189);
                 }
                 iprot.readMapEnd();
               }
-              struct.setAlternateColumnDefinitionsIsSet(true);
+              struct.setPropertiesIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -572,22 +932,37 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.analyzerClassName != null) {
-        oprot.writeFieldBegin(ANALYZER_CLASS_NAME_FIELD_DESC);
-        oprot.writeString(struct.analyzerClassName);
+      if (struct.family != null) {
+        oprot.writeFieldBegin(FAMILY_FIELD_DESC);
+        oprot.writeString(struct.family);
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(FULL_TEXT_INDEX_FIELD_DESC);
-      oprot.writeBool(struct.fullTextIndex);
+      if (struct.columnName != null) {
+        oprot.writeFieldBegin(COLUMN_NAME_FIELD_DESC);
+        oprot.writeString(struct.columnName);
+        oprot.writeFieldEnd();
+      }
+      if (struct.subColumnName != null) {
+        oprot.writeFieldBegin(SUB_COLUMN_NAME_FIELD_DESC);
+        oprot.writeString(struct.subColumnName);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldBegin(FIELD_LESS_INDEXING_FIELD_DESC);
+      oprot.writeBool(struct.fieldLessIndexing);
       oprot.writeFieldEnd();
-      if (struct.alternateColumnDefinitions != null) {
-        oprot.writeFieldBegin(ALTERNATE_COLUMN_DEFINITIONS_FIELD_DESC);
+      if (struct.fieldType != null) {
+        oprot.writeFieldBegin(FIELD_TYPE_FIELD_DESC);
+        oprot.writeString(struct.fieldType);
+        oprot.writeFieldEnd();
+      }
+      if (struct.properties != null) {
+        oprot.writeFieldBegin(PROPERTIES_FIELD_DESC);
         {
-          oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.alternateColumnDefinitions.size()));
-          for (Map.Entry<String, AlternateColumnDefinition> _iter124 : struct.alternateColumnDefinitions.entrySet())
+          oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.properties.size()));
+          for (Map.Entry<String, String> _iter190 : struct.properties.entrySet())
           {
-            oprot.writeString(_iter124.getKey());
-            _iter124.getValue().write(oprot);
+            oprot.writeString(_iter190.getKey());
+            oprot.writeString(_iter190.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -611,29 +986,47 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, ColumnDefinition struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
-      if (struct.isSetAnalyzerClassName()) {
+      if (struct.isSetFamily()) {
         optionals.set(0);
       }
-      if (struct.isSetFullTextIndex()) {
+      if (struct.isSetColumnName()) {
         optionals.set(1);
       }
-      if (struct.isSetAlternateColumnDefinitions()) {
+      if (struct.isSetSubColumnName()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
-      if (struct.isSetAnalyzerClassName()) {
-        oprot.writeString(struct.analyzerClassName);
+      if (struct.isSetFieldLessIndexing()) {
+        optionals.set(3);
       }
-      if (struct.isSetFullTextIndex()) {
-        oprot.writeBool(struct.fullTextIndex);
+      if (struct.isSetFieldType()) {
+        optionals.set(4);
       }
-      if (struct.isSetAlternateColumnDefinitions()) {
+      if (struct.isSetProperties()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
+      if (struct.isSetFamily()) {
+        oprot.writeString(struct.family);
+      }
+      if (struct.isSetColumnName()) {
+        oprot.writeString(struct.columnName);
+      }
+      if (struct.isSetSubColumnName()) {
+        oprot.writeString(struct.subColumnName);
+      }
+      if (struct.isSetFieldLessIndexing()) {
+        oprot.writeBool(struct.fieldLessIndexing);
+      }
+      if (struct.isSetFieldType()) {
+        oprot.writeString(struct.fieldType);
+      }
+      if (struct.isSetProperties()) {
         {
-          oprot.writeI32(struct.alternateColumnDefinitions.size());
-          for (Map.Entry<String, AlternateColumnDefinition> _iter125 : struct.alternateColumnDefinitions.entrySet())
+          oprot.writeI32(struct.properties.size());
+          for (Map.Entry<String, String> _iter191 : struct.properties.entrySet())
           {
-            oprot.writeString(_iter125.getKey());
-            _iter125.getValue().write(oprot);
+            oprot.writeString(_iter191.getKey());
+            oprot.writeString(_iter191.getValue());
           }
         }
       }
@@ -642,30 +1035,41 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, ColumnDefinition struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
-        struct.analyzerClassName = iprot.readString();
-        struct.setAnalyzerClassNameIsSet(true);
+        struct.family = iprot.readString();
+        struct.setFamilyIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.fullTextIndex = iprot.readBool();
-        struct.setFullTextIndexIsSet(true);
+        struct.columnName = iprot.readString();
+        struct.setColumnNameIsSet(true);
       }
       if (incoming.get(2)) {
+        struct.subColumnName = iprot.readString();
+        struct.setSubColumnNameIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.fieldLessIndexing = iprot.readBool();
+        struct.setFieldLessIndexingIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.fieldType = iprot.readString();
+        struct.setFieldTypeIsSet(true);
+      }
+      if (incoming.get(5)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map126 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-          struct.alternateColumnDefinitions = new HashMap<String,AlternateColumnDefinition>(2*_map126.size);
-          for (int _i127 = 0; _i127 < _map126.size; ++_i127)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map192 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.properties = new HashMap<String,String>(2*_map192.size);
+          for (int _i193 = 0; _i193 < _map192.size; ++_i193)
           {
-            String _key128; // required
-            AlternateColumnDefinition _val129; // optional
-            _key128 = iprot.readString();
-            _val129 = new AlternateColumnDefinition();
-            _val129.read(iprot);
-            struct.alternateColumnDefinitions.put(_key128, _val129);
+            String _key194; // required
+            String _val195; // optional
+            _key194 = iprot.readString();
+            _val195 = iprot.readString();
+            struct.properties.put(_key194, _val195);
           }
         }
-        struct.setAlternateColumnDefinitionsIsSet(true);
+        struct.setPropertiesIsSet(true);
       }
     }
   }

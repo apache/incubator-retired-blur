@@ -2555,390 +2555,6 @@ Schema.prototype.write = function(output) {
   return;
 };
 
-AlternateColumnDefinition = function(args) {
-  this.analyzerClassName = null;
-  if (args) {
-    if (args.analyzerClassName !== undefined) {
-      this.analyzerClassName = args.analyzerClassName;
-    }
-  }
-};
-AlternateColumnDefinition.prototype = {};
-AlternateColumnDefinition.prototype.read = function(input) {
-  input.readStructBegin();
-  while (true)
-  {
-    var ret = input.readFieldBegin();
-    var fname = ret.fname;
-    var ftype = ret.ftype;
-    var fid = ret.fid;
-    if (ftype == Thrift.Type.STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 1:
-      if (ftype == Thrift.Type.STRING) {
-        this.analyzerClassName = input.readString().value;
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 0:
-        input.skip(ftype);
-        break;
-      default:
-        input.skip(ftype);
-    }
-    input.readFieldEnd();
-  }
-  input.readStructEnd();
-  return;
-};
-
-AlternateColumnDefinition.prototype.write = function(output) {
-  output.writeStructBegin('AlternateColumnDefinition');
-  if (this.analyzerClassName !== null && this.analyzerClassName !== undefined) {
-    output.writeFieldBegin('analyzerClassName', Thrift.Type.STRING, 1);
-    output.writeString(this.analyzerClassName);
-    output.writeFieldEnd();
-  }
-  output.writeFieldStop();
-  output.writeStructEnd();
-  return;
-};
-
-ColumnDefinition = function(args) {
-  this.analyzerClassName = 'org.apache.blur.analysis.NoStopWordStandardAnalyzer';
-  this.fullTextIndex = null;
-  this.alternateColumnDefinitions = null;
-  if (args) {
-    if (args.analyzerClassName !== undefined) {
-      this.analyzerClassName = args.analyzerClassName;
-    }
-    if (args.fullTextIndex !== undefined) {
-      this.fullTextIndex = args.fullTextIndex;
-    }
-    if (args.alternateColumnDefinitions !== undefined) {
-      this.alternateColumnDefinitions = args.alternateColumnDefinitions;
-    }
-  }
-};
-ColumnDefinition.prototype = {};
-ColumnDefinition.prototype.read = function(input) {
-  input.readStructBegin();
-  while (true)
-  {
-    var ret = input.readFieldBegin();
-    var fname = ret.fname;
-    var ftype = ret.ftype;
-    var fid = ret.fid;
-    if (ftype == Thrift.Type.STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 1:
-      if (ftype == Thrift.Type.STRING) {
-        this.analyzerClassName = input.readString().value;
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 2:
-      if (ftype == Thrift.Type.BOOL) {
-        this.fullTextIndex = input.readBool().value;
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 3:
-      if (ftype == Thrift.Type.MAP) {
-        var _size120 = 0;
-        var _rtmp3124;
-        this.alternateColumnDefinitions = {};
-        var _ktype121 = 0;
-        var _vtype122 = 0;
-        _rtmp3124 = input.readMapBegin();
-        _ktype121 = _rtmp3124.ktype;
-        _vtype122 = _rtmp3124.vtype;
-        _size120 = _rtmp3124.size;
-        for (var _i125 = 0; _i125 < _size120; ++_i125)
-        {
-          if (_i125 > 0 ) {
-            if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
-              input.rstack.pop();
-            }
-          }
-          var key126 = null;
-          var val127 = null;
-          key126 = input.readString().value;
-          val127 = new AlternateColumnDefinition();
-          val127.read(input);
-          this.alternateColumnDefinitions[key126] = val127;
-        }
-        input.readMapEnd();
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      default:
-        input.skip(ftype);
-    }
-    input.readFieldEnd();
-  }
-  input.readStructEnd();
-  return;
-};
-
-ColumnDefinition.prototype.write = function(output) {
-  output.writeStructBegin('ColumnDefinition');
-  if (this.analyzerClassName !== null && this.analyzerClassName !== undefined) {
-    output.writeFieldBegin('analyzerClassName', Thrift.Type.STRING, 1);
-    output.writeString(this.analyzerClassName);
-    output.writeFieldEnd();
-  }
-  if (this.fullTextIndex !== null && this.fullTextIndex !== undefined) {
-    output.writeFieldBegin('fullTextIndex', Thrift.Type.BOOL, 2);
-    output.writeBool(this.fullTextIndex);
-    output.writeFieldEnd();
-  }
-  if (this.alternateColumnDefinitions !== null && this.alternateColumnDefinitions !== undefined) {
-    output.writeFieldBegin('alternateColumnDefinitions', Thrift.Type.MAP, 3);
-    output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRUCT, Thrift.objectLength(this.alternateColumnDefinitions));
-    for (var kiter128 in this.alternateColumnDefinitions)
-    {
-      if (this.alternateColumnDefinitions.hasOwnProperty(kiter128))
-      {
-        var viter129 = this.alternateColumnDefinitions[kiter128];
-        output.writeString(kiter128);
-        viter129.write(output);
-      }
-    }
-    output.writeMapEnd();
-    output.writeFieldEnd();
-  }
-  output.writeFieldStop();
-  output.writeStructEnd();
-  return;
-};
-
-ColumnFamilyDefinition = function(args) {
-  this.defaultDefinition = null;
-  this.columnDefinitions = null;
-  if (args) {
-    if (args.defaultDefinition !== undefined) {
-      this.defaultDefinition = args.defaultDefinition;
-    }
-    if (args.columnDefinitions !== undefined) {
-      this.columnDefinitions = args.columnDefinitions;
-    }
-  }
-};
-ColumnFamilyDefinition.prototype = {};
-ColumnFamilyDefinition.prototype.read = function(input) {
-  input.readStructBegin();
-  while (true)
-  {
-    var ret = input.readFieldBegin();
-    var fname = ret.fname;
-    var ftype = ret.ftype;
-    var fid = ret.fid;
-    if (ftype == Thrift.Type.STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 1:
-      if (ftype == Thrift.Type.STRUCT) {
-        this.defaultDefinition = new ColumnDefinition();
-        this.defaultDefinition.read(input);
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 2:
-      if (ftype == Thrift.Type.MAP) {
-        var _size130 = 0;
-        var _rtmp3134;
-        this.columnDefinitions = {};
-        var _ktype131 = 0;
-        var _vtype132 = 0;
-        _rtmp3134 = input.readMapBegin();
-        _ktype131 = _rtmp3134.ktype;
-        _vtype132 = _rtmp3134.vtype;
-        _size130 = _rtmp3134.size;
-        for (var _i135 = 0; _i135 < _size130; ++_i135)
-        {
-          if (_i135 > 0 ) {
-            if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
-              input.rstack.pop();
-            }
-          }
-          var key136 = null;
-          var val137 = null;
-          key136 = input.readString().value;
-          val137 = new ColumnDefinition();
-          val137.read(input);
-          this.columnDefinitions[key136] = val137;
-        }
-        input.readMapEnd();
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      default:
-        input.skip(ftype);
-    }
-    input.readFieldEnd();
-  }
-  input.readStructEnd();
-  return;
-};
-
-ColumnFamilyDefinition.prototype.write = function(output) {
-  output.writeStructBegin('ColumnFamilyDefinition');
-  if (this.defaultDefinition !== null && this.defaultDefinition !== undefined) {
-    output.writeFieldBegin('defaultDefinition', Thrift.Type.STRUCT, 1);
-    this.defaultDefinition.write(output);
-    output.writeFieldEnd();
-  }
-  if (this.columnDefinitions !== null && this.columnDefinitions !== undefined) {
-    output.writeFieldBegin('columnDefinitions', Thrift.Type.MAP, 2);
-    output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRUCT, Thrift.objectLength(this.columnDefinitions));
-    for (var kiter138 in this.columnDefinitions)
-    {
-      if (this.columnDefinitions.hasOwnProperty(kiter138))
-      {
-        var viter139 = this.columnDefinitions[kiter138];
-        output.writeString(kiter138);
-        viter139.write(output);
-      }
-    }
-    output.writeMapEnd();
-    output.writeFieldEnd();
-  }
-  output.writeFieldStop();
-  output.writeStructEnd();
-  return;
-};
-
-AnalyzerDefinition = function(args) {
-  this.defaultDefinition = null;
-  this.fullTextAnalyzerClassName = 'org.apache.blur.analysis.NoStopWordStandardAnalyzer';
-  this.columnFamilyDefinitions = null;
-  if (args) {
-    if (args.defaultDefinition !== undefined) {
-      this.defaultDefinition = args.defaultDefinition;
-    }
-    if (args.fullTextAnalyzerClassName !== undefined) {
-      this.fullTextAnalyzerClassName = args.fullTextAnalyzerClassName;
-    }
-    if (args.columnFamilyDefinitions !== undefined) {
-      this.columnFamilyDefinitions = args.columnFamilyDefinitions;
-    }
-  }
-};
-AnalyzerDefinition.prototype = {};
-AnalyzerDefinition.prototype.read = function(input) {
-  input.readStructBegin();
-  while (true)
-  {
-    var ret = input.readFieldBegin();
-    var fname = ret.fname;
-    var ftype = ret.ftype;
-    var fid = ret.fid;
-    if (ftype == Thrift.Type.STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 1:
-      if (ftype == Thrift.Type.STRUCT) {
-        this.defaultDefinition = new ColumnDefinition();
-        this.defaultDefinition.read(input);
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 2:
-      if (ftype == Thrift.Type.STRING) {
-        this.fullTextAnalyzerClassName = input.readString().value;
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 3:
-      if (ftype == Thrift.Type.MAP) {
-        var _size140 = 0;
-        var _rtmp3144;
-        this.columnFamilyDefinitions = {};
-        var _ktype141 = 0;
-        var _vtype142 = 0;
-        _rtmp3144 = input.readMapBegin();
-        _ktype141 = _rtmp3144.ktype;
-        _vtype142 = _rtmp3144.vtype;
-        _size140 = _rtmp3144.size;
-        for (var _i145 = 0; _i145 < _size140; ++_i145)
-        {
-          if (_i145 > 0 ) {
-            if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
-              input.rstack.pop();
-            }
-          }
-          var key146 = null;
-          var val147 = null;
-          key146 = input.readString().value;
-          val147 = new ColumnFamilyDefinition();
-          val147.read(input);
-          this.columnFamilyDefinitions[key146] = val147;
-        }
-        input.readMapEnd();
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      default:
-        input.skip(ftype);
-    }
-    input.readFieldEnd();
-  }
-  input.readStructEnd();
-  return;
-};
-
-AnalyzerDefinition.prototype.write = function(output) {
-  output.writeStructBegin('AnalyzerDefinition');
-  if (this.defaultDefinition !== null && this.defaultDefinition !== undefined) {
-    output.writeFieldBegin('defaultDefinition', Thrift.Type.STRUCT, 1);
-    this.defaultDefinition.write(output);
-    output.writeFieldEnd();
-  }
-  if (this.fullTextAnalyzerClassName !== null && this.fullTextAnalyzerClassName !== undefined) {
-    output.writeFieldBegin('fullTextAnalyzerClassName', Thrift.Type.STRING, 2);
-    output.writeString(this.fullTextAnalyzerClassName);
-    output.writeFieldEnd();
-  }
-  if (this.columnFamilyDefinitions !== null && this.columnFamilyDefinitions !== undefined) {
-    output.writeFieldBegin('columnFamilyDefinitions', Thrift.Type.MAP, 3);
-    output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRUCT, Thrift.objectLength(this.columnFamilyDefinitions));
-    for (var kiter148 in this.columnFamilyDefinitions)
-    {
-      if (this.columnFamilyDefinitions.hasOwnProperty(kiter148))
-      {
-        var viter149 = this.columnFamilyDefinitions[kiter148];
-        output.writeString(kiter148);
-        viter149.write(output);
-      }
-    }
-    output.writeMapEnd();
-    output.writeFieldEnd();
-  }
-  output.writeFieldStop();
-  output.writeStructEnd();
-  return;
-};
-
 ColumnPreCache = function(args) {
   this.preCacheCols = null;
   if (args) {
@@ -2963,18 +2579,18 @@ ColumnPreCache.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.LIST) {
-        var _size150 = 0;
-        var _rtmp3154;
+        var _size120 = 0;
+        var _rtmp3124;
         this.preCacheCols = [];
-        var _etype153 = 0;
-        _rtmp3154 = input.readListBegin();
-        _etype153 = _rtmp3154.etype;
-        _size150 = _rtmp3154.size;
-        for (var _i155 = 0; _i155 < _size150; ++_i155)
+        var _etype123 = 0;
+        _rtmp3124 = input.readListBegin();
+        _etype123 = _rtmp3124.etype;
+        _size120 = _rtmp3124.size;
+        for (var _i125 = 0; _i125 < _size120; ++_i125)
         {
-          var elem156 = null;
-          elem156 = input.readString().value;
-          this.preCacheCols.push(elem156);
+          var elem126 = null;
+          elem126 = input.readString().value;
+          this.preCacheCols.push(elem126);
         }
         input.readListEnd();
       } else {
@@ -2998,12 +2614,12 @@ ColumnPreCache.prototype.write = function(output) {
   if (this.preCacheCols !== null && this.preCacheCols !== undefined) {
     output.writeFieldBegin('preCacheCols', Thrift.Type.LIST, 1);
     output.writeListBegin(Thrift.Type.STRING, this.preCacheCols.length);
-    for (var iter157 in this.preCacheCols)
+    for (var iter127 in this.preCacheCols)
     {
-      if (this.preCacheCols.hasOwnProperty(iter157))
+      if (this.preCacheCols.hasOwnProperty(iter127))
       {
-        iter157 = this.preCacheCols[iter157];
-        output.writeString(iter157);
+        iter127 = this.preCacheCols[iter127];
+        output.writeString(iter127);
       }
     }
     output.writeListEnd();
@@ -3143,18 +2759,18 @@ TableDescriptor.prototype.read = function(input) {
       break;
       case 11:
       if (ftype == Thrift.Type.SET) {
-        var _size158 = 0;
-        var _rtmp3162;
+        var _size128 = 0;
+        var _rtmp3132;
         this.blockCachingFileTypes = [];
-        var _etype161 = 0;
-        _rtmp3162 = input.readSetBegin();
-        _etype161 = _rtmp3162.etype;
-        _size158 = _rtmp3162.size;
-        for (var _i163 = 0; _i163 < _size158; ++_i163)
+        var _etype131 = 0;
+        _rtmp3132 = input.readSetBegin();
+        _etype131 = _rtmp3132.etype;
+        _size128 = _rtmp3132.size;
+        for (var _i133 = 0; _i133 < _size128; ++_i133)
         {
-          var elem164 = null;
-          elem164 = input.readString().value;
-          this.blockCachingFileTypes.push(elem164);
+          var elem134 = null;
+          elem134 = input.readString().value;
+          this.blockCachingFileTypes.push(elem134);
         }
         input.readSetEnd();
       } else {
@@ -3178,27 +2794,27 @@ TableDescriptor.prototype.read = function(input) {
       break;
       case 14:
       if (ftype == Thrift.Type.MAP) {
-        var _size165 = 0;
-        var _rtmp3169;
+        var _size135 = 0;
+        var _rtmp3139;
         this.tableProperties = {};
-        var _ktype166 = 0;
-        var _vtype167 = 0;
-        _rtmp3169 = input.readMapBegin();
-        _ktype166 = _rtmp3169.ktype;
-        _vtype167 = _rtmp3169.vtype;
-        _size165 = _rtmp3169.size;
-        for (var _i170 = 0; _i170 < _size165; ++_i170)
+        var _ktype136 = 0;
+        var _vtype137 = 0;
+        _rtmp3139 = input.readMapBegin();
+        _ktype136 = _rtmp3139.ktype;
+        _vtype137 = _rtmp3139.vtype;
+        _size135 = _rtmp3139.size;
+        for (var _i140 = 0; _i140 < _size135; ++_i140)
         {
-          if (_i170 > 0 ) {
+          if (_i140 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key171 = null;
-          var val172 = null;
-          key171 = input.readString().value;
-          val172 = input.readString().value;
-          this.tableProperties[key171] = val172;
+          var key141 = null;
+          var val142 = null;
+          key141 = input.readString().value;
+          val142 = input.readString().value;
+          this.tableProperties[key141] = val142;
         }
         input.readMapEnd();
       } else {
@@ -3228,27 +2844,27 @@ TableDescriptor.prototype.read = function(input) {
       break;
       case 18:
       if (ftype == Thrift.Type.MAP) {
-        var _size173 = 0;
-        var _rtmp3177;
+        var _size143 = 0;
+        var _rtmp3147;
         this.defaultMissingFieldProps = {};
-        var _ktype174 = 0;
-        var _vtype175 = 0;
-        _rtmp3177 = input.readMapBegin();
-        _ktype174 = _rtmp3177.ktype;
-        _vtype175 = _rtmp3177.vtype;
-        _size173 = _rtmp3177.size;
-        for (var _i178 = 0; _i178 < _size173; ++_i178)
+        var _ktype144 = 0;
+        var _vtype145 = 0;
+        _rtmp3147 = input.readMapBegin();
+        _ktype144 = _rtmp3147.ktype;
+        _vtype145 = _rtmp3147.vtype;
+        _size143 = _rtmp3147.size;
+        for (var _i148 = 0; _i148 < _size143; ++_i148)
         {
-          if (_i178 > 0 ) {
+          if (_i148 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key179 = null;
-          var val180 = null;
-          key179 = input.readString().value;
-          val180 = input.readString().value;
-          this.defaultMissingFieldProps[key179] = val180;
+          var key149 = null;
+          var val150 = null;
+          key149 = input.readString().value;
+          val150 = input.readString().value;
+          this.defaultMissingFieldProps[key149] = val150;
         }
         input.readMapEnd();
       } else {
@@ -3304,12 +2920,12 @@ TableDescriptor.prototype.write = function(output) {
   if (this.blockCachingFileTypes !== null && this.blockCachingFileTypes !== undefined) {
     output.writeFieldBegin('blockCachingFileTypes', Thrift.Type.SET, 11);
     output.writeSetBegin(Thrift.Type.STRING, this.blockCachingFileTypes.length);
-    for (var iter181 in this.blockCachingFileTypes)
+    for (var iter151 in this.blockCachingFileTypes)
     {
-      if (this.blockCachingFileTypes.hasOwnProperty(iter181))
+      if (this.blockCachingFileTypes.hasOwnProperty(iter151))
       {
-        iter181 = this.blockCachingFileTypes[iter181];
-        output.writeString(iter181);
+        iter151 = this.blockCachingFileTypes[iter151];
+        output.writeString(iter151);
       }
     }
     output.writeSetEnd();
@@ -3328,13 +2944,13 @@ TableDescriptor.prototype.write = function(output) {
   if (this.tableProperties !== null && this.tableProperties !== undefined) {
     output.writeFieldBegin('tableProperties', Thrift.Type.MAP, 14);
     output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRING, Thrift.objectLength(this.tableProperties));
-    for (var kiter182 in this.tableProperties)
+    for (var kiter152 in this.tableProperties)
     {
-      if (this.tableProperties.hasOwnProperty(kiter182))
+      if (this.tableProperties.hasOwnProperty(kiter152))
       {
-        var viter183 = this.tableProperties[kiter182];
-        output.writeString(kiter182);
-        output.writeString(viter183);
+        var viter153 = this.tableProperties[kiter152];
+        output.writeString(kiter152);
+        output.writeString(viter153);
       }
     }
     output.writeMapEnd();
@@ -3358,13 +2974,13 @@ TableDescriptor.prototype.write = function(output) {
   if (this.defaultMissingFieldProps !== null && this.defaultMissingFieldProps !== undefined) {
     output.writeFieldBegin('defaultMissingFieldProps', Thrift.Type.MAP, 18);
     output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRING, Thrift.objectLength(this.defaultMissingFieldProps));
-    for (var kiter184 in this.defaultMissingFieldProps)
+    for (var kiter154 in this.defaultMissingFieldProps)
     {
-      if (this.defaultMissingFieldProps.hasOwnProperty(kiter184))
+      if (this.defaultMissingFieldProps.hasOwnProperty(kiter154))
       {
-        var viter185 = this.defaultMissingFieldProps[kiter184];
-        output.writeString(kiter184);
-        output.writeString(viter185);
+        var viter155 = this.defaultMissingFieldProps[kiter154];
+        output.writeString(kiter154);
+        output.writeString(viter155);
       }
     }
     output.writeMapEnd();
@@ -3418,27 +3034,27 @@ Metric.prototype.read = function(input) {
       break;
       case 2:
       if (ftype == Thrift.Type.MAP) {
-        var _size186 = 0;
-        var _rtmp3190;
+        var _size156 = 0;
+        var _rtmp3160;
         this.strMap = {};
-        var _ktype187 = 0;
-        var _vtype188 = 0;
-        _rtmp3190 = input.readMapBegin();
-        _ktype187 = _rtmp3190.ktype;
-        _vtype188 = _rtmp3190.vtype;
-        _size186 = _rtmp3190.size;
-        for (var _i191 = 0; _i191 < _size186; ++_i191)
+        var _ktype157 = 0;
+        var _vtype158 = 0;
+        _rtmp3160 = input.readMapBegin();
+        _ktype157 = _rtmp3160.ktype;
+        _vtype158 = _rtmp3160.vtype;
+        _size156 = _rtmp3160.size;
+        for (var _i161 = 0; _i161 < _size156; ++_i161)
         {
-          if (_i191 > 0 ) {
+          if (_i161 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key192 = null;
-          var val193 = null;
-          key192 = input.readString().value;
-          val193 = input.readString().value;
-          this.strMap[key192] = val193;
+          var key162 = null;
+          var val163 = null;
+          key162 = input.readString().value;
+          val163 = input.readString().value;
+          this.strMap[key162] = val163;
         }
         input.readMapEnd();
       } else {
@@ -3447,27 +3063,27 @@ Metric.prototype.read = function(input) {
       break;
       case 3:
       if (ftype == Thrift.Type.MAP) {
-        var _size194 = 0;
-        var _rtmp3198;
+        var _size164 = 0;
+        var _rtmp3168;
         this.longMap = {};
-        var _ktype195 = 0;
-        var _vtype196 = 0;
-        _rtmp3198 = input.readMapBegin();
-        _ktype195 = _rtmp3198.ktype;
-        _vtype196 = _rtmp3198.vtype;
-        _size194 = _rtmp3198.size;
-        for (var _i199 = 0; _i199 < _size194; ++_i199)
+        var _ktype165 = 0;
+        var _vtype166 = 0;
+        _rtmp3168 = input.readMapBegin();
+        _ktype165 = _rtmp3168.ktype;
+        _vtype166 = _rtmp3168.vtype;
+        _size164 = _rtmp3168.size;
+        for (var _i169 = 0; _i169 < _size164; ++_i169)
         {
-          if (_i199 > 0 ) {
+          if (_i169 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key200 = null;
-          var val201 = null;
-          key200 = input.readString().value;
-          val201 = input.readI64().value;
-          this.longMap[key200] = val201;
+          var key170 = null;
+          var val171 = null;
+          key170 = input.readString().value;
+          val171 = input.readI64().value;
+          this.longMap[key170] = val171;
         }
         input.readMapEnd();
       } else {
@@ -3476,27 +3092,27 @@ Metric.prototype.read = function(input) {
       break;
       case 4:
       if (ftype == Thrift.Type.MAP) {
-        var _size202 = 0;
-        var _rtmp3206;
+        var _size172 = 0;
+        var _rtmp3176;
         this.doubleMap = {};
-        var _ktype203 = 0;
-        var _vtype204 = 0;
-        _rtmp3206 = input.readMapBegin();
-        _ktype203 = _rtmp3206.ktype;
-        _vtype204 = _rtmp3206.vtype;
-        _size202 = _rtmp3206.size;
-        for (var _i207 = 0; _i207 < _size202; ++_i207)
+        var _ktype173 = 0;
+        var _vtype174 = 0;
+        _rtmp3176 = input.readMapBegin();
+        _ktype173 = _rtmp3176.ktype;
+        _vtype174 = _rtmp3176.vtype;
+        _size172 = _rtmp3176.size;
+        for (var _i177 = 0; _i177 < _size172; ++_i177)
         {
-          if (_i207 > 0 ) {
+          if (_i177 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key208 = null;
-          var val209 = null;
-          key208 = input.readString().value;
-          val209 = input.readDouble().value;
-          this.doubleMap[key208] = val209;
+          var key178 = null;
+          var val179 = null;
+          key178 = input.readString().value;
+          val179 = input.readDouble().value;
+          this.doubleMap[key178] = val179;
         }
         input.readMapEnd();
       } else {
@@ -3522,13 +3138,13 @@ Metric.prototype.write = function(output) {
   if (this.strMap !== null && this.strMap !== undefined) {
     output.writeFieldBegin('strMap', Thrift.Type.MAP, 2);
     output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRING, Thrift.objectLength(this.strMap));
-    for (var kiter210 in this.strMap)
+    for (var kiter180 in this.strMap)
     {
-      if (this.strMap.hasOwnProperty(kiter210))
+      if (this.strMap.hasOwnProperty(kiter180))
       {
-        var viter211 = this.strMap[kiter210];
-        output.writeString(kiter210);
-        output.writeString(viter211);
+        var viter181 = this.strMap[kiter180];
+        output.writeString(kiter180);
+        output.writeString(viter181);
       }
     }
     output.writeMapEnd();
@@ -3537,13 +3153,13 @@ Metric.prototype.write = function(output) {
   if (this.longMap !== null && this.longMap !== undefined) {
     output.writeFieldBegin('longMap', Thrift.Type.MAP, 3);
     output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.I64, Thrift.objectLength(this.longMap));
-    for (var kiter212 in this.longMap)
+    for (var kiter182 in this.longMap)
     {
-      if (this.longMap.hasOwnProperty(kiter212))
+      if (this.longMap.hasOwnProperty(kiter182))
       {
-        var viter213 = this.longMap[kiter212];
-        output.writeString(kiter212);
-        output.writeI64(viter213);
+        var viter183 = this.longMap[kiter182];
+        output.writeString(kiter182);
+        output.writeI64(viter183);
       }
     }
     output.writeMapEnd();
@@ -3552,13 +3168,175 @@ Metric.prototype.write = function(output) {
   if (this.doubleMap !== null && this.doubleMap !== undefined) {
     output.writeFieldBegin('doubleMap', Thrift.Type.MAP, 4);
     output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.DOUBLE, Thrift.objectLength(this.doubleMap));
-    for (var kiter214 in this.doubleMap)
+    for (var kiter184 in this.doubleMap)
     {
-      if (this.doubleMap.hasOwnProperty(kiter214))
+      if (this.doubleMap.hasOwnProperty(kiter184))
       {
-        var viter215 = this.doubleMap[kiter214];
-        output.writeString(kiter214);
-        output.writeDouble(viter215);
+        var viter185 = this.doubleMap[kiter184];
+        output.writeString(kiter184);
+        output.writeDouble(viter185);
+      }
+    }
+    output.writeMapEnd();
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+ColumnDefinition = function(args) {
+  this.family = null;
+  this.columnName = null;
+  this.subColumnName = null;
+  this.fieldLessIndexing = null;
+  this.fieldType = null;
+  this.properties = null;
+  if (args) {
+    if (args.family !== undefined) {
+      this.family = args.family;
+    }
+    if (args.columnName !== undefined) {
+      this.columnName = args.columnName;
+    }
+    if (args.subColumnName !== undefined) {
+      this.subColumnName = args.subColumnName;
+    }
+    if (args.fieldLessIndexing !== undefined) {
+      this.fieldLessIndexing = args.fieldLessIndexing;
+    }
+    if (args.fieldType !== undefined) {
+      this.fieldType = args.fieldType;
+    }
+    if (args.properties !== undefined) {
+      this.properties = args.properties;
+    }
+  }
+};
+ColumnDefinition.prototype = {};
+ColumnDefinition.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.family = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.STRING) {
+        this.columnName = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 3:
+      if (ftype == Thrift.Type.STRING) {
+        this.subColumnName = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 4:
+      if (ftype == Thrift.Type.BOOL) {
+        this.fieldLessIndexing = input.readBool().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 5:
+      if (ftype == Thrift.Type.STRING) {
+        this.fieldType = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 6:
+      if (ftype == Thrift.Type.MAP) {
+        var _size186 = 0;
+        var _rtmp3190;
+        this.properties = {};
+        var _ktype187 = 0;
+        var _vtype188 = 0;
+        _rtmp3190 = input.readMapBegin();
+        _ktype187 = _rtmp3190.ktype;
+        _vtype188 = _rtmp3190.vtype;
+        _size186 = _rtmp3190.size;
+        for (var _i191 = 0; _i191 < _size186; ++_i191)
+        {
+          if (_i191 > 0 ) {
+            if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
+              input.rstack.pop();
+            }
+          }
+          var key192 = null;
+          var val193 = null;
+          key192 = input.readString().value;
+          val193 = input.readString().value;
+          this.properties[key192] = val193;
+        }
+        input.readMapEnd();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+ColumnDefinition.prototype.write = function(output) {
+  output.writeStructBegin('ColumnDefinition');
+  if (this.family !== null && this.family !== undefined) {
+    output.writeFieldBegin('family', Thrift.Type.STRING, 1);
+    output.writeString(this.family);
+    output.writeFieldEnd();
+  }
+  if (this.columnName !== null && this.columnName !== undefined) {
+    output.writeFieldBegin('columnName', Thrift.Type.STRING, 2);
+    output.writeString(this.columnName);
+    output.writeFieldEnd();
+  }
+  if (this.subColumnName !== null && this.subColumnName !== undefined) {
+    output.writeFieldBegin('subColumnName', Thrift.Type.STRING, 3);
+    output.writeString(this.subColumnName);
+    output.writeFieldEnd();
+  }
+  if (this.fieldLessIndexing !== null && this.fieldLessIndexing !== undefined) {
+    output.writeFieldBegin('fieldLessIndexing', Thrift.Type.BOOL, 4);
+    output.writeBool(this.fieldLessIndexing);
+    output.writeFieldEnd();
+  }
+  if (this.fieldType !== null && this.fieldType !== undefined) {
+    output.writeFieldBegin('fieldType', Thrift.Type.STRING, 5);
+    output.writeString(this.fieldType);
+    output.writeFieldEnd();
+  }
+  if (this.properties !== null && this.properties !== undefined) {
+    output.writeFieldBegin('properties', Thrift.Type.MAP, 6);
+    output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRING, Thrift.objectLength(this.properties));
+    for (var kiter194 in this.properties)
+    {
+      if (this.properties.hasOwnProperty(kiter194))
+      {
+        var viter195 = this.properties[kiter194];
+        output.writeString(kiter194);
+        output.writeString(viter195);
       }
     }
     output.writeMapEnd();

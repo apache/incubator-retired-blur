@@ -354,6 +354,7 @@ public class Main {
     builder.put("parse", new ParseCommand());
     builder.put("loadtestdata", new LoadTestDataCommand());
     builder.put("selector", new SelectorCommand());
+    builder.put("definecolumn", new AddColumnDefinitionCommand());
     commands = builder.build();
 
     CliShellOptions cliShellOptions = getCliShellOptions(args);

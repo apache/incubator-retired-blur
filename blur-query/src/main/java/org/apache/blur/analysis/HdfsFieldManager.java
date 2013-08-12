@@ -105,6 +105,8 @@ public class HdfsFieldManager extends BaseFieldManager {
       properties.store(outputStream, getComments());
       outputStream.close();
       if (_fileSystem.rename(tmpPath, path)) {
+        // @TODO make this configurable
+        _fileSystem.setReplication(path, (short) 10);
         return true;
       } else {
         _fileSystem.delete(tmpPath, false);

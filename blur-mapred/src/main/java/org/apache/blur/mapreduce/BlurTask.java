@@ -177,7 +177,7 @@ public class BlurTask implements Writable {
     return job;
   }
 
-  private void checkTable() {
+  private void checkTable() throws IOException {
     ZookeeperClusterStatus status = new ZookeeperClusterStatus(_zooKeeper);
     // check if table exists
     String cluster = _tableDescriptor.cluster;

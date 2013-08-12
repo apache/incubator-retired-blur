@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
@@ -41,6 +42,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport;
 import org.apache.blur.thrift.generated.ColumnPreCache;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.WatchChildren;
 import org.apache.blur.zookeeper.WatchChildren.OnChange;
@@ -61,31 +63,50 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   private static final Log LOG = LogFactory.getLog(ZookeeperClusterStatus.class);
 
-  private ZooKeeper _zk;
-  private AtomicBoolean _running = new AtomicBoolean();
-  private ConcurrentMap<String, Long> _safeModeMap = new ConcurrentHashMap<String, Long>();
-  private ConcurrentMap<String, List<String>> _onlineShardsNodes = new ConcurrentHashMap<String, List<String>>();
-  private ConcurrentMap<String, Set<String>> _tablesPerCluster = new ConcurrentHashMap<String, Set<String>>();
-  private AtomicReference<Set<String>> _clusters = new AtomicReference<Set<String>>(new HashSet<String>());
-  private ConcurrentMap<String, Boolean> _enabled = new ConcurrentHashMap<String, Boolean>();
-  private ConcurrentMap<String, Boolean> _readOnly = new ConcurrentHashMap<String, Boolean>();
+  private final ZooKeeper _zk;
+  private final BlurConfiguration _configuration;
+  private final AtomicBoolean _running = new AtomicBoolean();
+  private final ConcurrentMap<String, Long> _safeModeMap = new ConcurrentHashMap<String, Long>();
+  private final ConcurrentMap<String, List<String>> _onlineShardsNodes = new ConcurrentHashMap<String, List<String>>();
+  private final ConcurrentMap<String, Set<String>> _tablesPerCluster = new ConcurrentHashMap<String, Set<String>>();
+  private final AtomicReference<Set<String>> _clusters = new AtomicReference<Set<String>>(new HashSet<String>());
+  private final ConcurrentMap<String, Boolean> _enabled = new ConcurrentHashMap<String, Boolean>();
+  private final ConcurrentMap<String, Boolean> _readOnly = new ConcurrentHashMap<String, Boolean>();
 
-  private WatchChildren _clusterWatcher;
-  private ConcurrentMap<String, WatchChildren> _onlineShardsNodesWatchers = new ConcurrentHashMap<String, WatchChildren>();
-  private ConcurrentMap<String, WatchChildren> _tableWatchers = new ConcurrentHashMap<String, WatchChildren>();
-  private Map<String, SafeModeCacheEntry> _clusterToSafeMode = new ConcurrentHashMap<String, ZookeeperClusterStatus.SafeModeCacheEntry>();
-  private ConcurrentMap<String, WatchNodeExistance> _enabledWatchNodeExistance = new ConcurrentHashMap<String, WatchNodeExistance>();
-  private ConcurrentMap<String, WatchNodeExistance> _readOnlyWatchNodeExistance = new ConcurrentHashMap<String, WatchNodeExistance>();
+  private final WatchChildren _clusterWatcher;
+  private final ConcurrentMap<String, WatchChildren> _onlineShardsNodesWatchers = new ConcurrentHashMap<String, WatchChildren>();
+  private final ConcurrentMap<String, WatchChildren> _tableWatchers = new ConcurrentHashMap<String, WatchChildren>();
+  private final Map<String, SafeModeCacheEntry> _clusterToSafeMode = new ConcurrentHashMap<String, ZookeeperClusterStatus.SafeModeCacheEntry>();
+  private final ConcurrentMap<String, WatchNodeExistance> _enabledWatchNodeExistance = new ConcurrentHashMap<String, WatchNodeExistance>();
+  private final ConcurrentMap<String, WatchNodeExistance> _readOnlyWatchNodeExistance = new ConcurrentHashMap<String, WatchNodeExistance>();
 
-  public ZookeeperClusterStatus(ZooKeeper zooKeeper) {
+  public ZookeeperClusterStatus(ZooKeeper zooKeeper, BlurConfiguration configuration) {
     _zk = zooKeeper;
     _running.set(true);
-    watchForClusters();
+    _clusterWatcher = watchForClusters();
+    _configuration = configuration;
     try {
       Thread.sleep(1000);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public ZookeeperClusterStatus(String connectionStr, BlurConfiguration configuration) throws IOException {
+    this(new ZooKeeper(connectionStr, 30000, new Watcher() {
+      @Override
+      public void process(WatchedEvent event) {
+
+      }
+    }), configuration);
+  }
+
+  public ZookeeperClusterStatus(ZooKeeper zooKeeper) throws IOException {
+    this(zooKeeper, new BlurConfiguration());
+  }
+
+  public ZookeeperClusterStatus(String connectionStr) throws IOException {
+    this(connectionStr, new BlurConfiguration());
   }
 
   class Clusters extends OnChange {
@@ -201,17 +222,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     }
   }
 
-  private void watchForClusters() {
-    _clusterWatcher = new WatchChildren(_zk, ZookeeperPathConstants.getClustersPath()).watch(new Clusters());
-  }
-
-  public ZookeeperClusterStatus(String connectionStr) throws IOException {
-    this(new ZooKeeper(connectionStr, 30000, new Watcher() {
-      @Override
-      public void process(WatchedEvent event) {
-
-      }
-    }));
+  private WatchChildren watchForClusters() {
+    return new WatchChildren(_zk, ZookeeperPathConstants.getClustersPath()).watch(new Clusters());
   }
 
   private String getClusterTableKey(String cluster, String table) {
@@ -696,10 +708,10 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       }
       String table = BlurUtil.nullCheck(tableDescriptor.name, "tableDescriptor.name cannot be null.");
       String cluster = BlurUtil.nullCheck(tableDescriptor.cluster, "tableDescriptor.cluster cannot be null.");
+      assignTableUri(tableDescriptor);
       String uri = BlurUtil.nullCheck(tableDescriptor.tableUri, "tableDescriptor.tableUri cannot be null.");
       int shardCount = BlurUtil.zeroCheck(tableDescriptor.shardCount,
           "tableDescriptor.shardCount cannot be less than 1");
-      // @TODO check block size
       Similarity similarity = BlurUtil.getInstance(tableDescriptor.similarityClass, Similarity.class);
       boolean blockCaching = tableDescriptor.blockCaching;
       Set<String> blockCachingFileTypes = tableDescriptor.blockCachingFileTypes;
@@ -738,6 +750,21 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       long e = System.nanoTime();
       LOG.debug("trace createTable took [" + (e - s) / 1000000.0 + " ms]");
     }
+  }
+
+  private void assignTableUri(TableDescriptor tableDescriptor) {
+    if (tableDescriptor.getTableUri() != null) {
+      return;
+    }
+    String cluster = tableDescriptor.getCluster();
+    String defaultTableUriPropertyName = BlurConstants.getDefaultTableUriPropertyName(cluster);
+    String parentPath = _configuration.get(defaultTableUriPropertyName);
+    if (parentPath == null) {
+      return;
+    }
+    String tableUri = parentPath + "/" + tableDescriptor.getName();
+    LOG.info("Setting default table uri for table [{0}] of [{1}]", tableDescriptor.getName(), tableUri);
+    tableDescriptor.setTableUri(tableUri);
   }
 
   @Override

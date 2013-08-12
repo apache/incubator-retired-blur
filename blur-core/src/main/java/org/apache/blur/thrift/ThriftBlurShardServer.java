@@ -176,7 +176,7 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     BlurUtil.setupZookeeper(zooKeeper, configuration.get(BLUR_CLUSTER_NAME));
 
-    final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper);
+    final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration);
 
     final BlurIndexRefresher refresher = new BlurIndexRefresher();
     refresher.init();

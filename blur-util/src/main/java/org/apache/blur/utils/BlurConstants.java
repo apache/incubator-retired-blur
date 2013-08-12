@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.BlurConfiguration;
 
-
 public class BlurConstants {
 
   public static final String CONTROLLER = "controller";
@@ -107,5 +106,9 @@ public class BlurConstants {
     } catch (IOException e) {
       throw new RuntimeException("Unknown error parsing configuration.", e);
     }
+  }
+
+  public static String getDefaultTableUriPropertyName(String cluster) {
+    return "blur.cluster." + cluster + ".table.uri";
   }
 }

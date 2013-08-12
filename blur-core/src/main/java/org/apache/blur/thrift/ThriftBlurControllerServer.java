@@ -98,7 +98,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     //@TODO this is confusing because controllers are in a cluster by default, but they see all the shards clusters.
     BlurUtil.setupZookeeper(zooKeeper, BlurConstants.BLUR_CLUSTER);
 
-    final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper);
+    final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration);
 
     BlurControllerServer.BlurClient client = new BlurControllerServer.BlurClientRemote();
 

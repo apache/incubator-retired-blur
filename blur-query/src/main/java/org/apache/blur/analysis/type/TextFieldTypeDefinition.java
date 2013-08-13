@@ -48,7 +48,7 @@ public class TextFieldTypeDefinition extends FieldTypeDefinition {
   }
 
   @Override
-  public void configure(Map<String, String> properties) {
+  public void configure(String fieldNameForThisInstance, Map<String, String> properties) {
 
   }
 
@@ -106,4 +106,8 @@ public class TextFieldTypeDefinition extends FieldTypeDefinition {
     return false;
   }
 
+  @Override
+  public boolean checkSupportForCustomQuery() {
+    return false;
+  }
 }

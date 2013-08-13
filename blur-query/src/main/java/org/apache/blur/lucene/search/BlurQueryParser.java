@@ -47,13 +47,15 @@ public class BlurQueryParser extends QueryParser {
   protected Query newFuzzyQuery(Term term, float minimumSimilarity, int prefixLength) {
     String field = term.field();
     try {
-      if (!_fieldManager.checkSupportForFuzzyQuery(field)) {
+      Boolean b = _fieldManager.checkSupportForFuzzyQuery(field);
+      if (!(b == null || b)) {
         throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
             + "] which does not support fuzzy queries.");
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+    customQueryCheck(field);
     return addField(super.newFuzzyQuery(term, minimumSimilarity, prefixLength), term.field());
   }
 
@@ -69,7 +71,9 @@ public class BlurQueryParser extends QueryParser {
       public void add(Term[] terms, int position) {
         super.add(terms, position);
         for (Term term : terms) {
-          addField(this, term.field());
+          String field = term.field();
+          customQueryCheck(field);
+          addField(this, field);
         }
       }
     };
@@ -78,31 +82,35 @@ public class BlurQueryParser extends QueryParser {
   @Override
   protected PhraseQuery newPhraseQuery() {
     return new PhraseQuery() {
-
       @Override
       public void add(Term term, int position) {
         super.add(term, position);
-        addField(this, term.field());
+        String field = term.field();
+        customQueryCheck(field);
+        addField(this, field);
       }
     };
   }
-
+  
   @Override
   protected Query newPrefixQuery(Term prefix) {
     String field = prefix.field();
     try {
-      if (!_fieldManager.checkSupportForPrefixQuery(field)) {
+      Boolean b = _fieldManager.checkSupportForPrefixQuery(field);
+      if (!(b == null || b)) {
         throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
             + "] which does not support prefix queries.");
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+    customQueryCheck(field);
     return addField(super.newPrefixQuery(prefix), field);
   }
 
   @Override
   protected Query newRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
+    customQueryCheck(field);
     Query q;
     try {
       q = _fieldManager.getNewRangeQuery(field, part1, part2, startInclusive, endInclusive);
@@ -115,15 +123,36 @@ public class BlurQueryParser extends QueryParser {
     return addField(super.newRangeQuery(field, part1, part2, startInclusive, endInclusive), field);
   }
 
+  private void customQueryCheck(String field) {
+    try {
+      Boolean b = _fieldManager.checkSupportForCustomQuery(field);
+      if (b !=null && b) {
+        throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
+            + "] queries should exist with \" around them.");
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   @Override
   protected Query newTermQuery(Term term) {
     String field = term.field();
+    try {
+      Boolean b = _fieldManager.checkSupportForCustomQuery(field);
+      if (b != null && b) {
+        return _fieldManager.getCustomQuery(field, term.text());
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
     Query q;
     try {
       q = _fieldManager.getTermQueryIfNumeric(field, term.text());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+    
     if (q != null) {
       return addField(q, field);
     }
@@ -137,13 +166,15 @@ public class BlurQueryParser extends QueryParser {
     }
     String field = t.field();
     try {
-      if (!_fieldManager.checkSupportForWildcardQuery(field)) {
+      Boolean b = _fieldManager.checkSupportForWildcardQuery(field);
+      if (!(b == null || b)) {
         throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
             + "] which does not support wildcard queries.");
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+    customQueryCheck(field);
     return addField(super.newWildcardQuery(t), t.field());
   }
 

@@ -23,6 +23,7 @@ import org.apache.blur.thrift.generated.Column;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
+import org.apache.lucene.search.Query;
 
 public abstract class FieldTypeDefinition {
   
@@ -41,7 +42,7 @@ public abstract class FieldTypeDefinition {
    * @param properties
    *          the properties.
    */
-  public abstract void configure(Map<String, String> properties);
+  public abstract void configure(String fieldNameForThisInstance, Map<String, String> properties);
 
   /**
    * Gets the {@link Field}s for indexing from a single Column.
@@ -146,5 +147,11 @@ public abstract class FieldTypeDefinition {
   public abstract boolean checkSupportForPrefixQuery();
 
   public abstract boolean isNumeric();
+
+  public abstract boolean checkSupportForCustomQuery();
+
+  public Query getCustomQuery(String text) {
+    throw new RuntimeException("Not supported.");
+  }
 
 }

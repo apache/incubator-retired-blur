@@ -37,7 +37,7 @@ public class FloatFieldTypeDefinition extends NumericFieldTypeDefinition {
   }
 
   @Override
-  public void configure(Map<String, String> properties) {
+  public void configure(String fieldNameForThisInstance, Map<String, String> properties) {
     String precisionStepStr = properties.get(NUMERIC_PRECISION_STEP);
     if (precisionStepStr != null) {
       _precisionStep = Integer.parseInt(precisionStepStr);

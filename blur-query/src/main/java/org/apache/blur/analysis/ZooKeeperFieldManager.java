@@ -143,7 +143,7 @@ public class ZooKeeperFieldManager extends BaseFieldManager {
     inputStream.close();
     boolean fieldLessIndexing = Boolean.parseBoolean(props.getProperty(FIELD_LESS_INDEXING));
     String fieldType = props.getProperty(FIELD_TYPE);
-    FieldTypeDefinition fieldTypeDefinition = newFieldTypeDefinition(fieldLessIndexing, fieldType, toMap(props));
+    FieldTypeDefinition fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexing, fieldType, toMap(props));
     registerFieldTypeDefinition(fieldName, fieldTypeDefinition);
   }
 

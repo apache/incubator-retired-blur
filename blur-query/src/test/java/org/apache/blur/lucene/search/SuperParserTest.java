@@ -2,6 +2,7 @@ package org.apache.blur.lucene.search;
 
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.util.Map;
 
 import org.apache.blur.analysis.BaseFieldManager;
 import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
+import org.apache.blur.analysis.type.spatial.SpatialArgsParser;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.lucene.analysis.Analyzer;
@@ -23,9 +25,19 @@ import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
+import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
+import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree;
+import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
+import org.apache.lucene.spatial.query.SpatialArgs;
+import org.apache.lucene.spatial.query.SpatialOperation;
 import org.apache.lucene.util.BytesRef;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.spatial4j.core.context.SpatialContext;
+import com.spatial4j.core.distance.DistanceUtils;
+import com.spatial4j.core.io.ShapeReadWriter;
+import com.spatial4j.core.shape.Circle;
 
 public class SuperParserTest {
 
@@ -34,21 +46,6 @@ public class SuperParserTest {
 
   @Before
   public void setup() throws IOException {
-    // AnalyzerDefinition ad = new AnalyzerDefinition();
-    // ad.setDefaultDefinition(new
-    // ColumnDefinition(NoStopWordStandardAnalyzer.class.getName(), true,
-    // null));
-    // ColumnFamilyDefinition cfDef = new ColumnFamilyDefinition();
-    // cfDef.putToColumnDefinitions("id_l", new ColumnDefinition("long", false,
-    // null));
-    // cfDef.putToColumnDefinitions("id_d", new ColumnDefinition("double",
-    // false, null));
-    // cfDef.putToColumnDefinitions("id_f", new ColumnDefinition("float", false,
-    // null));
-    // cfDef.putToColumnDefinitions("id_i", new ColumnDefinition("integer",
-    // false, null));
-    // ad.putToColumnFamilyDefinitions("a", cfDef);
-
     _fieldManager = getFieldManager(new NoStopWordStandardAnalyzer());
     parser = new SuperParser(LUCENE_VERSION, _fieldManager, true, null, ScoreType.SUPER, new Term("_primedoc_"));
   }
@@ -71,6 +68,7 @@ public class SuperParserTest {
     fieldManager.addColumnDefinitionDouble("a", "id_d");
     fieldManager.addColumnDefinitionFloat("a", "id_f");
     fieldManager.addColumnDefinitionLong("a", "id_l");
+    fieldManager.addColumnDefinitionGis("a", "id_gis");
     return fieldManager;
   }
 
@@ -322,6 +320,26 @@ public class SuperParserTest {
     Query q = parseSq("rowid:1");
     Query q1 = sq(tq("rowid", "1"));
     assertQuery(q1, q);
+  }
+
+  @Test
+  public void test28() throws ParseException {
+    SpatialContext ctx = SpatialContext.GEO;
+    ShapeReadWriter<SpatialContext> shapeReadWriter = new ShapeReadWriter<SpatialContext>(ctx);
+    int maxLevels = 11;
+    SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
+    RecursivePrefixTreeStrategy strategy = new RecursivePrefixTreeStrategy(grid, "a.id_gis");
+    Circle circle = ctx.makeCircle(-80.0, 33.0, DistanceUtils.dist2Degrees(200, DistanceUtils.EARTH_MEAN_RADIUS_KM));
+    SpatialArgs args = new SpatialArgs(SpatialOperation.Intersects, circle);
+
+    String writeSpatialArgs = SpatialArgsParser.writeSpatialArgs(args, shapeReadWriter);
+    
+    // This has to be done because of rounding.
+    SpatialArgs spatialArgs = SpatialArgsParser.parse(writeSpatialArgs, shapeReadWriter);
+    Query q1 = sq(strategy.makeQuery(spatialArgs));
+    Query q = parseSq("a.id_gis:\"" + writeSpatialArgs + "\"");
+    boolean equals = q1.equals(q);
+    assertTrue(equals);
   }
 
   public static BooleanClause bc_m(Query q) {

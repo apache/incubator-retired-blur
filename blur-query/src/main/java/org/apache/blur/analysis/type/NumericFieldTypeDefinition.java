@@ -23,9 +23,9 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.util.NumericUtils;
 
 public abstract class NumericFieldTypeDefinition extends FieldTypeDefinition {
-  
+
   protected static final String NUMERIC_PRECISION_STEP = "numericPrecisionStep";
-  
+
   protected int _precisionStep = NumericUtils.PRECISION_STEP_DEFAULT;
 
   @Override
@@ -57,6 +57,11 @@ public abstract class NumericFieldTypeDefinition extends FieldTypeDefinition {
   @Override
   public final boolean isNumeric() {
     return true;
+  }
+
+  @Override
+  public final boolean checkSupportForCustomQuery() {
+    return false;
   }
 
   public abstract Query getNewRangeQuery(String field, String part1, String part2, boolean startInclusive,

@@ -105,30 +105,40 @@ public abstract class FieldManager {
    * 
    * @param field
    *          the field name.
-   * @return boolean
+   * @return Boolean null if unknown.
    * @throws IOException
    */
-  public abstract boolean checkSupportForFuzzyQuery(String field) throws IOException;
+  public abstract Boolean checkSupportForFuzzyQuery(String field) throws IOException;
 
   /**
    * Checks if this field supports prefix queries.
    * 
    * @param field
    *          the field name.
-   * @return boolean
+   * @return Boolean null if unknown.
    * @throws IOException
    */
-  public abstract boolean checkSupportForPrefixQuery(String field) throws IOException;
+  public abstract Boolean checkSupportForPrefixQuery(String field) throws IOException;
 
   /**
    * Checks if this field supports wildcard queries.
    * 
    * @param field
    *          the field name.
-   * @return boolean
+   * @return Boolean null if unknown.
    * @throws IOException
    */
-  public abstract boolean checkSupportForWildcardQuery(String field) throws IOException;
+  public abstract Boolean checkSupportForWildcardQuery(String field) throws IOException;
+
+  /**
+   * Checks to see if the field will deal with creating it's own query objects.
+   * 
+   * @param field
+   *          the field name.
+   * @return Boolean null if unknown.
+   * @throws IOException
+   */
+  public abstract Boolean checkSupportForCustomQuery(String field) throws IOException;
 
   /**
    * Gets a range query, if the method returns null the default term range query
@@ -227,5 +237,17 @@ public abstract class FieldManager {
    * @return boolean
    */
   public abstract boolean isStrict();
+
+  /**
+   * Gets a custom query for the given field and text.
+   * 
+   * @param field
+   *          the field name.
+   * @param text
+   *          the text to create the custom query.
+   * @return the query object.
+   * @throws IOException
+   */
+  public abstract Query getCustomQuery(String field, String text) throws IOException;
 
 }

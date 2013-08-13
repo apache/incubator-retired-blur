@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.blur.analysis.type.DoubleFieldTypeDefinition;
 import org.apache.blur.analysis.type.FieldLessFieldTypeDefinition;
 import org.apache.blur.analysis.type.FloatFieldTypeDefinition;
+import org.apache.blur.analysis.type.SpatialFieldTypeDefinition;
 import org.apache.blur.analysis.type.IntFieldTypeDefinition;
 import org.apache.blur.analysis.type.LongFieldTypeDefinition;
 import org.apache.blur.analysis.type.NumericFieldTypeDefinition;
@@ -96,6 +97,7 @@ public abstract class BaseFieldManager extends FieldManager {
     _typeMap.put(LongFieldTypeDefinition.NAME, LongFieldTypeDefinition.class);
     _typeMap.put(DoubleFieldTypeDefinition.NAME, DoubleFieldTypeDefinition.class);
     _typeMap.put(FloatFieldTypeDefinition.NAME, FloatFieldTypeDefinition.class);
+    _typeMap.put(SpatialFieldTypeDefinition.NAME, SpatialFieldTypeDefinition.class);
     _fieldLessField = fieldLessField;
     _strict = strict;
     _defaultMissingFieldLessIndexing = defaultMissingFieldLessIndexing;
@@ -276,7 +278,7 @@ public abstract class BaseFieldManager extends FieldManager {
     if (!tryToStore(fieldName, fieldLessIndexing, fieldType, props)) {
       return false;
     }
-    fieldTypeDefinition = newFieldTypeDefinition(fieldLessIndexing, fieldType, props);
+    fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexing, fieldType, props);
     registerFieldTypeDefinition(fieldName, fieldTypeDefinition);
     return true;
   }
@@ -309,7 +311,7 @@ public abstract class BaseFieldManager extends FieldManager {
     return fieldName.substring(0, indexOf);
   }
 
-  protected FieldTypeDefinition newFieldTypeDefinition(boolean fieldLessIndexing, String fieldType,
+  protected FieldTypeDefinition newFieldTypeDefinition(String fieldName, boolean fieldLessIndexing, String fieldType,
       Map<String, String> props) {
     if (fieldType == null) {
       throw new IllegalArgumentException("Field type can not be null.");
@@ -329,9 +331,9 @@ public abstract class BaseFieldManager extends FieldManager {
       throw new RuntimeException(e);
     }
     if (props == null) {
-      fieldTypeDefinition.configure(EMPTY_MAP);
+      fieldTypeDefinition.configure(fieldName, EMPTY_MAP);
     } else {
-      fieldTypeDefinition.configure(props);
+      fieldTypeDefinition.configure(fieldName, props);
     }
     fieldTypeDefinition.setFieldLessIndexing(fieldLessIndexing);
     return fieldTypeDefinition;
@@ -372,6 +374,10 @@ public abstract class BaseFieldManager extends FieldManager {
       throw new AnalyzerNotFoundException(fieldName);
     }
     return fieldTypeDefinition.getAnalyzerForQuery();
+  }
+
+  public void addColumnDefinitionGis(String family, String columnName) throws IOException {
+    addColumnDefinition(family, columnName, null, false, SpatialFieldTypeDefinition.NAME, null);
   }
 
   public void addColumnDefinitionInt(String family, String columnName) throws IOException {
@@ -416,36 +422,45 @@ public abstract class BaseFieldManager extends FieldManager {
   public boolean isFieldLessIndexed(String field) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
     if (fieldTypeDefinition == null) {
-      throw new IOException("FieldTypeDefinition for field [" + field + "] is missing.");
+      return false;
     }
     return fieldTypeDefinition.isFieldLessIndexed();
   }
 
   @Override
-  public boolean checkSupportForFuzzyQuery(String field) throws IOException {
+  public Boolean checkSupportForFuzzyQuery(String field) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
     if (fieldTypeDefinition == null) {
-      throw new IOException("FieldTypeDefinition for field [" + field + "] is missing.");
+      return null;
     }
     return fieldTypeDefinition.checkSupportForFuzzyQuery();
   }
 
   @Override
-  public boolean checkSupportForPrefixQuery(String field) throws IOException {
+  public Boolean checkSupportForPrefixQuery(String field) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
     if (fieldTypeDefinition == null) {
-      throw new IOException("FieldTypeDefinition for field [" + field + "] is missing.");
+      return null;
     }
     return fieldTypeDefinition.checkSupportForPrefixQuery();
   }
 
   @Override
-  public boolean checkSupportForWildcardQuery(String field) throws IOException {
+  public Boolean checkSupportForWildcardQuery(String field) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
     if (fieldTypeDefinition == null) {
-      throw new IOException("FieldTypeDefinition for field [" + field + "] is missing.");
+      return null;
     }
     return fieldTypeDefinition.checkSupportForWildcardQuery();
+  }
+
+  @Override
+  public Boolean checkSupportForCustomQuery(String field) throws IOException {
+    FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
+    if (fieldTypeDefinition == null) {
+      return null;
+    }
+    return fieldTypeDefinition.checkSupportForCustomQuery();
   }
 
   @Override
@@ -480,6 +495,15 @@ public abstract class BaseFieldManager extends FieldManager {
       fieldTypeDefinition = _fieldNameToDefMap.get(field);
     }
     return fieldTypeDefinition;
+  }
+
+  @Override
+  public Query getCustomQuery(String field, String text) throws IOException {
+    FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
+    if (fieldTypeDefinition == null) {
+      throw new IOException("Field [" + field + "] is missing.");
+    }
+    return fieldTypeDefinition.getCustomQuery(text);
   }
 
   @Override

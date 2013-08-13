@@ -38,7 +38,7 @@ public class StoredFieldTypeDefinition extends FieldTypeDefinition {
   }
 
   @Override
-  public void configure(Map<String, String> properties) {
+  public void configure(String fieldNameForThisInstance, Map<String, String> properties) {
 
   }
 
@@ -91,6 +91,11 @@ public class StoredFieldTypeDefinition extends FieldTypeDefinition {
 
   @Override
   public boolean isNumeric() {
+    return false;
+  }
+  
+  @Override
+  public boolean checkSupportForCustomQuery() {
     return false;
   }
 

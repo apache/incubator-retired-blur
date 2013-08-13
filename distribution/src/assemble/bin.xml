@@ -43,6 +43,7 @@ under the License.
         <include>com.google.guava:guava</include>
         <include>org.apache.httpcomponents:*</include>
         <include>org.apache.lucene:*</include>
+        <include>com.spatial4j:spatial4j</include>
         <include>commons-cli:commons-cli</include>
         <include>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</include>
         <include>jline:jline</include>
@@ -72,6 +73,7 @@ under the License.
 	  <exclude>com.google.guava:guava</exclude>
 	  <exclude>org.apache.httpcomponents:*</exclude>
 	  <exclude>org.apache.lucene:*</exclude>
+      <exclude>com.spatial4j:spatial4j</exclude>
 	  <exclude>commons-cli:commons-cli</exclude>
 	  <exclude>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</exclude>
 	  <exclude>jline:jline</exclude>

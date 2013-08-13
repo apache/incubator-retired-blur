@@ -34,7 +34,6 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceCounter;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
-import org.apache.blur.lucene.warmup.IndexWarmupIndexDeletionPolicy;
 import org.apache.blur.lucene.warmup.TraceableDirectory;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.IndexSearcherClosableNRT;
@@ -89,7 +88,7 @@ public class BlurNRTIndex extends BlurIndex {
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, analyzer);
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
     conf.setSimilarity(_tableContext.getSimilarity());
-    conf.setIndexDeletionPolicy(new IndexWarmupIndexDeletionPolicy(_tableContext.getIndexDeletionPolicy()));
+    conf.setIndexDeletionPolicy(_tableContext.getIndexDeletionPolicy());
     conf.setMergedSegmentWarmer(new FieldBasedWarmer(shardContext, _isClosed));
 
     TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();

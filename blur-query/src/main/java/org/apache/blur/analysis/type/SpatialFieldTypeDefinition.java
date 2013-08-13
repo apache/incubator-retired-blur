@@ -20,13 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.analysis.type.spatial.SpatialArgsParser;
 import org.apache.blur.thrift.generated.Column;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.spatial.SpatialStrategy;
@@ -39,7 +35,7 @@ import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.io.ShapeReadWriter;
 import com.spatial4j.core.shape.Shape;
 
-public class SpatialFieldTypeDefinition extends FieldTypeDefinition {
+public class SpatialFieldTypeDefinition extends CustomFieldTypeDefinition {
 
   private static final String MAX_LEVELS = "maxLevels";
   public static final String NAME = "spatial";
@@ -47,7 +43,6 @@ public class SpatialFieldTypeDefinition extends FieldTypeDefinition {
   private SpatialStrategy _strategy;
   private SpatialContext _ctx;
   private ShapeReadWriter<SpatialContext> _shapeReadWriter;
-  private final Analyzer _queryAnalyzer = new KeywordAnalyzer();
 
   @Override
   public String getName() {
@@ -82,10 +77,6 @@ public class SpatialFieldTypeDefinition extends FieldTypeDefinition {
     return fields;
   }
 
-  private String cleanup(Shape shape) {
-    return _shapeReadWriter.writeShape(shape);
-  }
-
   @Override
   public Iterable<? extends Field> getFieldsForSubColumn(String family, Column column, String subName) {
     String name = getName(family, column.getName(), subName);
@@ -100,59 +91,18 @@ public class SpatialFieldTypeDefinition extends FieldTypeDefinition {
     return fields;
   }
 
-  private Shape getShape(Column column) {
-    return _shapeReadWriter.readShape(column.getValue());
-  }
-  
   @Override
   public Query getCustomQuery(String text) {
     SpatialArgs args = SpatialArgsParser.parse(text, _shapeReadWriter);
     return _strategy.makeQuery(args);
   }
 
-  @Override
-  public FieldType getStoredFieldType() {
-    throw new RuntimeException("Not supported");
+  private Shape getShape(Column column) {
+    return _shapeReadWriter.readShape(column.getValue());
   }
 
-  @Override
-  public FieldType getNotStoredFieldType() {
-    throw new RuntimeException("Not supported");
+  private String cleanup(Shape shape) {
+    return _shapeReadWriter.writeShape(shape);
   }
 
-  @Override
-  public Analyzer getAnalyzerForIndex() {
-    throw new RuntimeException("Not supported");
-  }
-
-  @Override
-  public Analyzer getAnalyzerForQuery() {
-    return _queryAnalyzer;
-  }
-
-  @Override
-  public boolean checkSupportForFuzzyQuery() {
-    return false;
-  }
-
-  @Override
-  public boolean checkSupportForWildcardQuery() {
-    return false;
-  }
-
-  @Override
-  public boolean checkSupportForPrefixQuery() {
-    return false;
-  }
-
-  @Override
-  public boolean isNumeric() {
-    return false;
-  }
-
-  @Override
-  public boolean checkSupportForCustomQuery() {
-    return true;
-  }
-  
 }

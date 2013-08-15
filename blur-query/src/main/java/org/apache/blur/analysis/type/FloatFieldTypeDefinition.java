@@ -56,24 +56,14 @@ public class FloatFieldTypeDefinition extends NumericFieldTypeDefinition {
   @Override
   public Iterable<? extends Field> getFieldsForColumn(String family, Column column) {
     String name = getName(family, column.getName());
-    FloatField field = new FloatField(name, Float.parseFloat(column.getValue()), getStoredFieldType());
+    FloatField field = new FloatField(name, Float.parseFloat(column.getValue()), _typeStored);
     return makeIterable(field);
   }
 
   @Override
   public Iterable<? extends Field> getFieldsForSubColumn(String family, Column column, String subName) {
     String name = getName(family, column.getName(), subName);
-    return makeIterable(new FloatField(name, Float.parseFloat(column.getValue()), getNotStoredFieldType()));
-  }
-
-  @Override
-  public FieldType getStoredFieldType() {
-    return _typeStored;
-  }
-
-  @Override
-  public FieldType getNotStoredFieldType() {
-    return _typeNotStored;
+    return makeIterable(new FloatField(name, Float.parseFloat(column.getValue()), _typeNotStored));
   }
 
   @Override

@@ -56,24 +56,14 @@ public class DoubleFieldTypeDefinition extends NumericFieldTypeDefinition {
   @Override
   public Iterable<? extends Field> getFieldsForColumn(String family, Column column) {
     String name = getName(family, column.getName());
-    DoubleField field = new DoubleField(name, Double.parseDouble(column.getValue()), getStoredFieldType());
+    DoubleField field = new DoubleField(name, Double.parseDouble(column.getValue()), _typeStored);
     return makeIterable(field);
   }
 
   @Override
   public Iterable<? extends Field> getFieldsForSubColumn(String family, Column column, String subName) {
     String name = getName(family, column.getName(), subName);
-    return makeIterable(new DoubleField(name, Double.parseDouble(column.getValue()), getNotStoredFieldType()));
-  }
-
-  @Override
-  public FieldType getStoredFieldType() {
-    return _typeStored;
-  }
-
-  @Override
-  public FieldType getNotStoredFieldType() {
-    return _typeNotStored;
+    return makeIterable(new DoubleField(name, Double.parseDouble(column.getValue()), _typeNotStored));
   }
 
   @Override

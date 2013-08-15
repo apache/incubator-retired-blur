@@ -250,4 +250,6 @@ public abstract class FieldManager {
    */
   public abstract Query getCustomQuery(String field, String text) throws IOException;
 
+  public abstract void registerType(Class<? extends FieldTypeDefinition> c);
+
 }

@@ -29,13 +29,13 @@ public abstract class NumericFieldTypeDefinition extends FieldTypeDefinition {
   protected int _precisionStep = NumericUtils.PRECISION_STEP_DEFAULT;
 
   @Override
-  public final Analyzer getAnalyzerForIndex() {
+  public final Analyzer getAnalyzerForIndex(String fieldName) {
     // shouldn't be used ever
     return new KeywordAnalyzer();
   }
 
   @Override
-  public final Analyzer getAnalyzerForQuery() {
+  public final Analyzer getAnalyzerForQuery(String fieldName) {
     return new KeywordAnalyzer();
   }
 

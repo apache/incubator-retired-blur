@@ -19,7 +19,6 @@ package org.apache.blur.analysis.type;
 import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
-import org.apache.lucene.document.FieldType;
 
 public abstract class CustomFieldTypeDefinition extends FieldTypeDefinition {
 
@@ -27,22 +26,12 @@ public abstract class CustomFieldTypeDefinition extends FieldTypeDefinition {
   private final Analyzer _queryAnalyzer = new KeywordAnalyzer();
 
   @Override
-  public final FieldType getStoredFieldType() {
+  public Analyzer getAnalyzerForIndex(String fieldName) {
     throw new RuntimeException(NOT_SUPPORTED);
   }
 
   @Override
-  public final FieldType getNotStoredFieldType() {
-    throw new RuntimeException(NOT_SUPPORTED);
-  }
-
-  @Override
-  public final Analyzer getAnalyzerForIndex() {
-    throw new RuntimeException(NOT_SUPPORTED);
-  }
-
-  @Override
-  public final Analyzer getAnalyzerForQuery() {
+  public Analyzer getAnalyzerForQuery(String fieldName) {
     return _queryAnalyzer;
   }
 

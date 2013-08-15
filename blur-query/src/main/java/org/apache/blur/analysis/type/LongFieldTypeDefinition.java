@@ -56,24 +56,14 @@ public class LongFieldTypeDefinition extends NumericFieldTypeDefinition {
   @Override
   public Iterable<? extends Field> getFieldsForColumn(String family, Column column) {
     String name = getName(family, column.getName());
-    LongField field = new LongField(name, Long.parseLong(column.getValue()), getStoredFieldType());
+    LongField field = new LongField(name, Long.parseLong(column.getValue()), _typeStored);
     return makeIterable(field);
   }
 
   @Override
   public Iterable<? extends Field> getFieldsForSubColumn(String family, Column column, String subName) {
     String name = getName(family, column.getName(), subName);
-    return makeIterable(new LongField(name, Long.parseLong(column.getValue()), getNotStoredFieldType()));
-  }
-
-  @Override
-  public FieldType getStoredFieldType() {
-    return _typeStored;
-  }
-
-  @Override
-  public FieldType getNotStoredFieldType() {
-    return _typeNotStored;
+    return makeIterable(new LongField(name, Long.parseLong(column.getValue()), _typeNotStored));
   }
 
   @Override

@@ -23,7 +23,6 @@ import org.apache.blur.thrift.generated.Column;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.StringField;
 
 public class StringFieldTypeDefinition extends FieldTypeDefinition {
@@ -43,35 +42,25 @@ public class StringFieldTypeDefinition extends FieldTypeDefinition {
   @Override
   public Iterable<? extends Field> getFieldsForColumn(String family, Column column) {
     String name = getName(family, column.getName());
-    Field field = new Field(name, column.getValue(), getStoredFieldType());
+    Field field = new Field(name, column.getValue(), StringField.TYPE_STORED);
     return makeIterable(field);
   }
 
   @Override
   public Iterable<? extends Field> getFieldsForSubColumn(String family, Column column, String subName) {
     String name = getName(family, column.getName(), subName);
-    Field field = new Field(name, column.getValue(), getNotStoredFieldType());
+    Field field = new Field(name, column.getValue(), StringField.TYPE_NOT_STORED);
     return makeIterable(field);
   }
 
   @Override
-  public FieldType getStoredFieldType() {
-    return StringField.TYPE_STORED;
-  }
-
-  @Override
-  public FieldType getNotStoredFieldType() {
-    return StringField.TYPE_NOT_STORED;
-  }
-
-  @Override
-  public Analyzer getAnalyzerForIndex() {
+  public Analyzer getAnalyzerForIndex(String fieldName) {
     // shouldn't be used ever
     return new KeywordAnalyzer();
   }
 
   @Override
-  public Analyzer getAnalyzerForQuery() {
+  public Analyzer getAnalyzerForQuery(String fieldName) {
     return new KeywordAnalyzer();
   }
 

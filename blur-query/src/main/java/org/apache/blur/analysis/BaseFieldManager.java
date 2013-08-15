@@ -30,13 +30,16 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.blur.analysis.type.DoubleFieldTypeDefinition;
 import org.apache.blur.analysis.type.FieldLessFieldTypeDefinition;
 import org.apache.blur.analysis.type.FloatFieldTypeDefinition;
-import org.apache.blur.analysis.type.SpatialFieldTypeDefinition;
 import org.apache.blur.analysis.type.IntFieldTypeDefinition;
 import org.apache.blur.analysis.type.LongFieldTypeDefinition;
 import org.apache.blur.analysis.type.NumericFieldTypeDefinition;
 import org.apache.blur.analysis.type.StoredFieldTypeDefinition;
 import org.apache.blur.analysis.type.StringFieldTypeDefinition;
 import org.apache.blur.analysis.type.TextFieldTypeDefinition;
+import org.apache.blur.analysis.type.spatial.BaseSpatialFieldTypeDefinition;
+import org.apache.blur.analysis.type.spatial.SpatialPointVectorStrategyFieldTypeDefinition;
+import org.apache.blur.analysis.type.spatial.SpatialRecursivePrefixTreeStrategyFieldTypeDefinition;
+import org.apache.blur.analysis.type.spatial.SpatialTermQueryPrefixTreeStrategyFieldTypeDefinition;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.Column;
@@ -90,14 +93,16 @@ public abstract class BaseFieldManager extends FieldManager {
   public BaseFieldManager(String fieldLessField, final Analyzer defaultAnalyzerForQuerying, boolean strict,
       String defaultMissingFieldType, boolean defaultMissingFieldLessIndexing,
       Map<String, String> defaultMissingFieldProps) throws IOException {
-    _typeMap.put(TextFieldTypeDefinition.NAME, TextFieldTypeDefinition.class);
-    _typeMap.put(StringFieldTypeDefinition.NAME, StringFieldTypeDefinition.class);
-    _typeMap.put(StoredFieldTypeDefinition.NAME, StoredFieldTypeDefinition.class);
-    _typeMap.put(IntFieldTypeDefinition.NAME, IntFieldTypeDefinition.class);
-    _typeMap.put(LongFieldTypeDefinition.NAME, LongFieldTypeDefinition.class);
-    _typeMap.put(DoubleFieldTypeDefinition.NAME, DoubleFieldTypeDefinition.class);
-    _typeMap.put(FloatFieldTypeDefinition.NAME, FloatFieldTypeDefinition.class);
-    _typeMap.put(SpatialFieldTypeDefinition.NAME, SpatialFieldTypeDefinition.class);
+    registerType(TextFieldTypeDefinition.class);
+    registerType(StringFieldTypeDefinition.class);
+    registerType(StoredFieldTypeDefinition.class);
+    registerType(IntFieldTypeDefinition.class);
+    registerType(LongFieldTypeDefinition.class);
+    registerType(DoubleFieldTypeDefinition.class);
+    registerType(FloatFieldTypeDefinition.class);
+    registerType(SpatialPointVectorStrategyFieldTypeDefinition.class);
+    registerType(SpatialTermQueryPrefixTreeStrategyFieldTypeDefinition.class);
+    registerType(SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.class);
     _fieldLessField = fieldLessField;
     _strict = strict;
     _defaultMissingFieldLessIndexing = defaultMissingFieldLessIndexing;
@@ -118,7 +123,7 @@ public abstract class BaseFieldManager extends FieldManager {
         if (fieldTypeDefinition == null) {
           return defaultAnalyzerForQuerying;
         }
-        return fieldTypeDefinition.getAnalyzerForQuery();
+        return fieldTypeDefinition.getAnalyzerForQuery(fieldName);
       }
 
       @Override
@@ -139,7 +144,7 @@ public abstract class BaseFieldManager extends FieldManager {
         if (fieldTypeDefinition == null) {
           throw new RuntimeException("Field [" + fieldName + "] not found.");
         }
-        return fieldTypeDefinition.getAnalyzerForQuery();
+        return fieldTypeDefinition.getAnalyzerForQuery(fieldName);
       }
 
       @Override
@@ -147,6 +152,22 @@ public abstract class BaseFieldManager extends FieldManager {
         return components;
       }
     };
+  }
+
+  @Override
+  public void registerType(Class<? extends FieldTypeDefinition> c) {
+    try {
+      FieldTypeDefinition fieldTypeDefinition = c.newInstance();
+      String name = fieldTypeDefinition.getName();
+      if (_typeMap.containsKey(name)) {
+        throw new RuntimeException("Type [" + name + "] is already registered.");
+      }
+      _typeMap.put(name, c);
+    } catch (InstantiationException e) {
+      throw new RuntimeException("The default constructor of the class [" + c + "] is missing.", e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException("The scope of the class [" + c + "] is not public.", e);
+    }
   }
 
   @Override
@@ -275,16 +296,28 @@ public abstract class BaseFieldManager extends FieldManager {
     if (fieldTypeDefinition != null) {
       return false;
     }
-    if (!tryToStore(fieldName, fieldLessIndexing, fieldType, props)) {
-      return false;
-    }
     fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexing, fieldType, props);
-    registerFieldTypeDefinition(fieldName, fieldTypeDefinition);
+    synchronized (_fieldNameToDefMap) {
+      for (String alternateFieldName : fieldTypeDefinition.getAlternateFieldNames()) {
+        if (_fieldNameToDefMap.containsKey(alternateFieldName)) {
+          throw new IllegalArgumentException("Alternate fieldName collision of [" + alternateFieldName
+              + "] from field type definition [" + fieldTypeDefinition
+              + "], this field type definition cannot be added.");
+        }
+      }
+      if (!tryToStore(fieldName, fieldLessIndexing, fieldType, props)) {
+        return false;
+      }
+      registerFieldTypeDefinition(fieldName, fieldTypeDefinition);
+    }
     return true;
   }
 
   protected void registerFieldTypeDefinition(String fieldName, FieldTypeDefinition fieldTypeDefinition) {
     _fieldNameToDefMap.put(fieldName, fieldTypeDefinition);
+    for (String alternateFieldName : fieldTypeDefinition.getAlternateFieldNames()) {
+      _fieldNameToDefMap.put(alternateFieldName, fieldTypeDefinition);
+    }
     String baseFieldName = getBaseFieldName(fieldName);
     String subColumnName = getSubColumnName(fieldName);
     if (subColumnName != null) {
@@ -364,7 +397,7 @@ public abstract class BaseFieldManager extends FieldManager {
     if (fieldTypeDefinition == null) {
       throw new AnalyzerNotFoundException(fieldName);
     }
-    return fieldTypeDefinition.getAnalyzerForIndex();
+    return fieldTypeDefinition.getAnalyzerForIndex(fieldName);
   }
 
   @Override
@@ -373,11 +406,18 @@ public abstract class BaseFieldManager extends FieldManager {
     if (fieldTypeDefinition == null) {
       throw new AnalyzerNotFoundException(fieldName);
     }
-    return fieldTypeDefinition.getAnalyzerForQuery();
+    return fieldTypeDefinition.getAnalyzerForQuery(fieldName);
   }
 
-  public void addColumnDefinitionGis(String family, String columnName) throws IOException {
-    addColumnDefinition(family, columnName, null, false, SpatialFieldTypeDefinition.NAME, null);
+  public void addColumnDefinitionGisPointVector(String family, String columnName) throws IOException {
+    addColumnDefinition(family, columnName, null, false, SpatialPointVectorStrategyFieldTypeDefinition.NAME, null);
+  }
+
+  public void addColumnDefinitionGisRecursivePrefixTree(String family, String columnName) throws IOException {
+    Map<String, String> props = new HashMap<String, String>();
+    props.put(BaseSpatialFieldTypeDefinition.SPATIAL_PREFIX_TREE, BaseSpatialFieldTypeDefinition.GEOHASH_PREFIX_TREE);
+    addColumnDefinition(family, columnName, null, false, SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.NAME,
+        props);
   }
 
   public void addColumnDefinitionInt(String family, String columnName) throws IOException {

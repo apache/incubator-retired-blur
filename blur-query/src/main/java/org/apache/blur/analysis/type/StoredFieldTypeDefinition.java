@@ -24,7 +24,6 @@ import org.apache.blur.thrift.generated.Column;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.StoredField;
 
 public class StoredFieldTypeDefinition extends FieldTypeDefinition {
@@ -54,23 +53,13 @@ public class StoredFieldTypeDefinition extends FieldTypeDefinition {
   }
 
   @Override
-  public FieldType getStoredFieldType() {
-    return StoredField.TYPE;
-  }
-
-  @Override
-  public FieldType getNotStoredFieldType() {
-    return StoredField.TYPE;
-  }
-
-  @Override
-  public Analyzer getAnalyzerForIndex() {
+  public Analyzer getAnalyzerForIndex(String fieldName) {
     // shouldn't be used ever
     return new KeywordAnalyzer();
   }
 
   @Override
-  public Analyzer getAnalyzerForQuery() {
+  public Analyzer getAnalyzerForQuery(String fieldName) {
     return new KeywordAnalyzer();
   }
 

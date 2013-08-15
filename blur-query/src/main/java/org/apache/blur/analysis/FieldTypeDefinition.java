@@ -16,17 +16,19 @@ package org.apache.blur.analysis;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.blur.thrift.generated.Column;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldType;
 import org.apache.lucene.search.Query;
 
 public abstract class FieldTypeDefinition {
-  
+
+  protected static final Collection<String> EMPTY_COLLECTION = Arrays.asList(new String[]{});
   protected boolean _fieldLessIndexing;
 
   /**
@@ -35,6 +37,25 @@ public abstract class FieldTypeDefinition {
    * @return the name.
    */
   public abstract String getName();
+
+  /**
+   * Gets the alternate field names for this instance. For example in the
+   * PointVectorStrategy, there are two field that are created with suffixes
+   * from the base field name. For example if the base field name was
+   * "fam1.col1" then the two suffix names would be "fam1.col1__x" and
+   * "fam1.col1__y".
+   * 
+   * <ul>
+   * <li>fam1.col1 - This field is used for storage.</li>
+   * <li>fam1.col1__x - This field is used to index the x component.</li>
+   * <li>fam1.col1__y - This field is used to index the y component.</li>
+   * </ul
+   * 
+   * @return an {@link Iterable} of {@link String}s.
+   */
+  public Collection<String> getAlternateFieldNames() {
+    return EMPTY_COLLECTION;
+  }
 
   /**
    * Configures the field type.
@@ -65,36 +86,28 @@ public abstract class FieldTypeDefinition {
   public abstract Iterable<? extends Field> getFieldsForSubColumn(String family, Column column, String subName);
 
   /**
-   * Gets the {@link FieldType} for stored version. This is the normal Column
-   * for Blur.
-   * 
-   * @return the {@link FieldType}.
-   */
-  public abstract FieldType getStoredFieldType();
-
-  /**
-   * Gets the {@link FieldType} for non-stored version. This is the sub Column
-   * for Blur.
-   * 
-   * @return the {@link FieldType}.
-   */
-  public abstract FieldType getNotStoredFieldType();
-
-  /**
    * Gets the {@link Analyzer} for indexing this should be the same for the
    * querying unless you have a good reason.
    * 
+   * @param fieldName
+   *          the field name to get the analyzer, this could be the base field
+   *          name or the alternative.
+   * 
    * @return the {@link Analyzer}.
    */
-  public abstract Analyzer getAnalyzerForIndex();
+  public abstract Analyzer getAnalyzerForIndex(String fieldName);
 
   /**
    * Gets the {@link Analyzer} for querying this should be the same for the
    * indexing unless you have a good reason.
    * 
+   * @param fieldName
+   *          the field name to get the analyzer, this could be the base field
+   *          name or the alternative.
+   * 
    * @return the {@link Analyzer}.
    */
-  public abstract Analyzer getAnalyzerForQuery();
+  public abstract Analyzer getAnalyzerForQuery(String fieldName);
 
   protected Iterable<? extends Field> makeIterable(final Field field) {
     return new Iterable<Field>() {

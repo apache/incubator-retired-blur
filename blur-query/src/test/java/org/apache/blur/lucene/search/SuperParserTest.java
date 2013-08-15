@@ -68,7 +68,7 @@ public class SuperParserTest {
     fieldManager.addColumnDefinitionDouble("a", "id_d");
     fieldManager.addColumnDefinitionFloat("a", "id_f");
     fieldManager.addColumnDefinitionLong("a", "id_l");
-    fieldManager.addColumnDefinitionGis("a", "id_gis");
+    fieldManager.addColumnDefinitionGisRecursivePrefixTree("a", "id_gis");
     return fieldManager;
   }
 
@@ -329,7 +329,7 @@ public class SuperParserTest {
     int maxLevels = 11;
     SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
     RecursivePrefixTreeStrategy strategy = new RecursivePrefixTreeStrategy(grid, "a.id_gis");
-    Circle circle = ctx.makeCircle(-80.0, 33.0, DistanceUtils.dist2Degrees(200, DistanceUtils.EARTH_MEAN_RADIUS_KM));
+    Circle circle = ctx.makeCircle(-80.0, 33.0, DistanceUtils.dist2Degrees(10, DistanceUtils.EARTH_MEAN_RADIUS_KM));
     SpatialArgs args = new SpatialArgs(SpatialOperation.Intersects, circle);
 
     String writeSpatialArgs = SpatialArgsParser.writeSpatialArgs(args, shapeReadWriter);

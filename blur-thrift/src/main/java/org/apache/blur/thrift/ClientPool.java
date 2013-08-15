@@ -108,8 +108,10 @@ public class ClientPool {
     } else {
       socket = new Socket();
     }
+    int timeout = connection.getTimeout();
     socket.setTcpNoDelay(true);
-    socket.connect(new InetSocketAddress(host, port));
+    socket.setSoTimeout(timeout);
+    socket.connect(new InetSocketAddress(host, port), timeout);
     trans = new TSocket(socket);
 
     TProtocol proto = new TBinaryProtocol(new TFramedTransport(trans));

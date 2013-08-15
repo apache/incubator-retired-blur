@@ -8,7 +8,8 @@ ErrorType = {
 'UNKNOWN' : 0,
 'QUERY_CANCEL' : 1,
 'QUERY_TIMEOUT' : 2,
-'BACK_PRESSURE' : 3
+'BACK_PRESSURE' : 3,
+'REQUEST_TIMEOUT' : 4
 };
 ScoreType = {
 'SUPER' : 0,

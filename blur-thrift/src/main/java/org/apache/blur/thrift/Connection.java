@@ -1,5 +1,7 @@
 package org.apache.blur.thrift;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements. See the NOTICE file distributed with this
@@ -18,11 +20,14 @@ package org.apache.blur.thrift;
  */
 public class Connection {
 
-  private String _host = null;
-  private int _port = -1;
-  private String _proxyHost = null;
-  private int _proxyPort = -1;
-  private boolean _proxy = false;
+  public final static int DEFAULT_TIMEOUT = (int) TimeUnit.SECONDS.toMillis(60);
+
+  private final String _host;
+  private final int _port;
+  private final String _proxyHost;
+  private final int _proxyPort;
+  private final boolean _proxy;
+  private final int _timeout;
 
   public Connection(String connectionStr) {
     int index = connectionStr.indexOf(':');
@@ -38,23 +43,42 @@ public class Connection {
       } else {
         _host = connectionStr.substring(0, index);
         _port = Integer.parseInt(connectionStr.substring(index + 1));
+        _proxyHost = null;
+        _proxyPort = -1;
+        _proxy = false;
       }
+      _timeout = DEFAULT_TIMEOUT;
     } else {
-      throw new RuntimeException("Connection string of [" + connectionStr + "] does not match 'host1:port' or 'host1:port/proxyhost1:proxyport'");
+      throw new RuntimeException("Connection string of [" + connectionStr
+          + "] does not match 'host1:port' or 'host1:port/proxyhost1:proxyport'");
     }
   }
 
+  public Connection(String host, int port, int timeout) {
+    this(host, port, null, -1, timeout);
+  }
+
   public Connection(String host, int port, String proxyHost, int proxyPort) {
+    this(host, port, proxyHost, proxyPort, DEFAULT_TIMEOUT);
+  }
+
+  public Connection(String host, int port, String proxyHost, int proxyPort, int timeout) {
     _port = port;
     _host = host;
-    _proxyHost = proxyHost;
-    _proxyPort = proxyPort;
-    _proxy = true;
+    if (proxyHost == null) {
+      _proxyHost = null;
+      _proxyPort = -1;
+      _proxy = false;
+    } else {
+      _proxyHost = proxyHost;
+      _proxyPort = proxyPort;
+      _proxy = true;
+    }
+    _timeout = timeout;
   }
 
   public Connection(String host, int port) {
-    _port = port;
-    _host = host;
+    this(host, port, null, -1);
   }
 
   public String getHost() {
@@ -75,6 +99,10 @@ public class Connection {
 
   public String getProxyHost() {
     return _proxyHost;
+  }
+
+  public int getTimeout() {
+    return _timeout;
   }
 
   @Override
@@ -119,7 +147,8 @@ public class Connection {
 
   @Override
   public String toString() {
-    return "Connection [_host=" + _host + ", _port=" + _port + ", _proxy=" + _proxy + ", _proxyHost=" + _proxyHost + ", _proxyPort=" + _proxyPort + "]";
+    return "Connection [_host=" + _host + ", _port=" + _port + ", _proxy=" + _proxy + ", _proxyHost=" + _proxyHost
+        + ", _proxyPort=" + _proxyPort + "]";
   }
 
   public Object getConnectionStr() {

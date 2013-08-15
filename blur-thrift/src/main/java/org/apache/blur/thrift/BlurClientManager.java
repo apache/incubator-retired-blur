@@ -17,6 +17,7 @@ package org.apache.blur.thrift;
  * limitations under the License.
  */
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,6 +39,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransportException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.ErrorType;
 
 public class BlurClientManager {
 
@@ -175,6 +177,10 @@ public class BlurClientManager {
           if (cause instanceof TTransportException) {
             TTransportException t = (TTransportException) cause;
             if (handleError(connection, client, retries, command, t, maxRetries, backOffTime, maxBackOffTime)) {
+              Throwable c = t.getCause();
+              if (cause instanceof SocketTimeoutException) {
+                throw new BlurException(c.getMessage(), BException.toString(c), ErrorType.REQUEST_TIMEOUT);
+              }
               throw t;
             }
           } else {
@@ -182,6 +188,10 @@ public class BlurClientManager {
           }
         } catch (TTransportException e) {
           if (handleError(connection, client, retries, command, e, maxRetries, backOffTime, maxBackOffTime)) {
+            Throwable c = e.getCause();
+            if (c instanceof SocketTimeoutException) {
+              throw new BlurException(c.getMessage(), BException.toString(c), ErrorType.REQUEST_TIMEOUT);
+            }
             throw e;
           }
         } finally {

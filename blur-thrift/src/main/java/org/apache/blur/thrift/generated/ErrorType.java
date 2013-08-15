@@ -34,7 +34,8 @@ public enum ErrorType implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
   UNKNOWN(0),
   QUERY_CANCEL(1),
   QUERY_TIMEOUT(2),
-  BACK_PRESSURE(3);
+  BACK_PRESSURE(3),
+  REQUEST_TIMEOUT(4);
 
   private final int value;
 
@@ -63,6 +64,8 @@ public enum ErrorType implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
         return QUERY_TIMEOUT;
       case 3:
         return BACK_PRESSURE;
+      case 4:
+        return REQUEST_TIMEOUT;
       default:
         return null;
     }

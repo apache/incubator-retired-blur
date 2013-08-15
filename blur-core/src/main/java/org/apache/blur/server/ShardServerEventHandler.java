@@ -79,7 +79,7 @@ public class ShardServerEventHandler implements TServerEventHandler {
 
   @Override
   public void deleteContext(ServerContext serverContext, TProtocol input, TProtocol output) {
-    LOG.debug("Client disconnected");
+    LOG.info("Client disconnected");
     ShardServerContext context = (ShardServerContext) serverContext;
     context.close();
     _connections.decrementAndGet();

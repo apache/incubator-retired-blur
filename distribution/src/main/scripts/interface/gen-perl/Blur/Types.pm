@@ -13,6 +13,7 @@ use constant UNKNOWN => 0;
 use constant QUERY_CANCEL => 1;
 use constant QUERY_TIMEOUT => 2;
 use constant BACK_PRESSURE => 3;
+use constant REQUEST_TIMEOUT => 4;
 package Blur::ScoreType;
 use constant SUPER => 0;
 use constant AGGREGATE => 1;

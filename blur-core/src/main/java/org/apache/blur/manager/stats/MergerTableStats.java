@@ -49,7 +49,6 @@ public class MergerTableStats implements Merger<TableStats> {
     s1.bytes = Math.max(s1.bytes, s2.bytes);
     s1.recordCount = s1.recordCount + s2.recordCount;
     s1.rowCount = s1.rowCount + s2.rowCount;
-    s1.queries = Math.max(s1.queries, s2.queries);
     return s1;
   }
 

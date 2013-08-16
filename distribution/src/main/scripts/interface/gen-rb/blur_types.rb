@@ -431,7 +431,7 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  #  
+  # The BlurResult carries the score, the location id and the fetched result (if any) form each query.
   class BlurResult
     include ::Thrift::Struct, ::Thrift::Struct_Union
     LOCATIONID = 1
@@ -441,9 +441,9 @@ module Blur
     FIELDS = {
       # WARNING: This is an internal only attribute and is not intended for use by clients.
       LOCATIONID => {:type => ::Thrift::Types::STRING, :name => 'locationId'},
-      #  
+      # The score for the hit in the query.
       SCORE => {:type => ::Thrift::Types::DOUBLE, :name => 'score'},
-      # 
+      # The fetched result if any.
       FETCHRESULT => {:type => ::Thrift::Types::STRUCT, :name => 'fetchResult', :class => ::Blur::FetchResult}
     }
 
@@ -455,7 +455,7 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  # 
+  # BlurResults holds all information resulting from a query.
   class BlurResults
     include ::Thrift::Struct, ::Thrift::Struct_Union
     TOTALRESULTS = 1
@@ -466,17 +466,17 @@ module Blur
     QUERY = 6
 
     FIELDS = {
-      # 
+      # The total number of hits in the query.
       TOTALRESULTS => {:type => ::Thrift::Types::I64, :name => 'totalResults', :default => 0},
-      # 
+      # Hit counts from each shard in the table.
       SHARDINFO => {:type => ::Thrift::Types::MAP, :name => 'shardInfo', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::I64}},
-      # 
+      # The query results.
       RESULTS => {:type => ::Thrift::Types::LIST, :name => 'results', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::BlurResult}},
-      # 
+      # The faceted count.
       FACETCOUNTS => {:type => ::Thrift::Types::LIST, :name => 'facetCounts', :element => {:type => ::Thrift::Types::I64}},
-      # 
+      # Not currently used, a future feature could allow for partial results with errors.
       EXCEPTIONS => {:type => ::Thrift::Types::LIST, :name => 'exceptions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::BlurException}},
-      # 
+      # The original query.
       QUERY => {:type => ::Thrift::Types::STRUCT, :name => 'query', :class => ::Blur::BlurQuery}
     }
 
@@ -488,16 +488,16 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  # 
+  # The RowMutation defines how the given Record is to be mutated.
   class RecordMutation
     include ::Thrift::Struct, ::Thrift::Struct_Union
     RECORDMUTATIONTYPE = 1
     RECORD = 2
 
     FIELDS = {
-      # 
-      RECORDMUTATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'recordMutationType', :enum_class => ::Blur::RecordMutationType},
-      # 
+      # Define how to mutate the given Record.
+      RECORDMUTATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'recordMutationType', :default =>       1, :enum_class => ::Blur::RecordMutationType},
+      # The Record to mutate.
       RECORD => {:type => ::Thrift::Types::STRUCT, :name => 'record', :class => ::Blur::Record}
     }
 
@@ -512,7 +512,7 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  # 
+  # The RowMutation defines how the given Row is to be mutated.
   class RowMutation
     include ::Thrift::Struct, ::Thrift::Struct_Union
     TABLE = 1
@@ -529,7 +529,9 @@ module Blur
       ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowId'},
       # Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
       WAL => {:type => ::Thrift::Types::BOOL, :name => 'wal', :default => true},
-      ROWMUTATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'rowMutationType', :enum_class => ::Blur::RowMutationType},
+      # The RowMutationType to define how to mutate the given Row.
+      ROWMUTATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'rowMutationType', :default =>       1, :enum_class => ::Blur::RowMutationType},
+      # The RecordMutations if any for this Row.
       RECORDMUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'recordMutations', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::RecordMutation}},
       # On mutate waits for the mutation to be visible to queries and fetch requests.
       WAITTOBEVISIBLE => {:type => ::Thrift::Types::BOOL, :name => 'waitToBeVisible', :default => false}
@@ -615,26 +617,23 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  # 
+  # TableStats holds the statistics for a given table.
   class TableStats
     include ::Thrift::Struct, ::Thrift::Struct_Union
     TABLENAME = 1
     BYTES = 2
     RECORDCOUNT = 3
     ROWCOUNT = 4
-    QUERIES = 5
 
     FIELDS = {
-      # 
+      # The table name.
       TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
-      # 
+      # The size in bytes.
       BYTES => {:type => ::Thrift::Types::I64, :name => 'bytes'},
-      # 
+      # The record count.
       RECORDCOUNT => {:type => ::Thrift::Types::I64, :name => 'recordCount'},
-      # 
-      ROWCOUNT => {:type => ::Thrift::Types::I64, :name => 'rowCount'},
-      # 
-      QUERIES => {:type => ::Thrift::Types::I64, :name => 'queries'}
+      # The row count.
+      ROWCOUNT => {:type => ::Thrift::Types::I64, :name => 'rowCount'}
     }
 
     def struct_fields; FIELDS; end

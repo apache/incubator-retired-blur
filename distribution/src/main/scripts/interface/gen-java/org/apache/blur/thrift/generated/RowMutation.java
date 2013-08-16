@@ -50,7 +50,7 @@ import java.util.Arrays;
 //import org.slf4j.LoggerFactory;
 
 /**
- * 
+ * The RowMutation defines how the given Row is to be mutated.
  */
 public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<RowMutation, RowMutation._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("RowMutation");
@@ -81,10 +81,14 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
    */
   public boolean wal; // required
   /**
+   * The RowMutationType to define how to mutate the given Row.
    * 
    * @see RowMutationType
    */
   public RowMutationType rowMutationType; // required
+  /**
+   * The RecordMutations if any for this Row.
+   */
   public List<RecordMutation> recordMutations; // required
   /**
    * On mutate waits for the mutation to be visible to queries and fetch requests.
@@ -106,10 +110,14 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
      */
     WAL((short)3, "wal"),
     /**
+     * The RowMutationType to define how to mutate the given Row.
      * 
      * @see RowMutationType
      */
     ROW_MUTATION_TYPE((short)4, "rowMutationType"),
+    /**
+     * The RecordMutations if any for this Row.
+     */
     RECORD_MUTATIONS((short)5, "recordMutations"),
     /**
      * On mutate waits for the mutation to be visible to queries and fetch requests.
@@ -207,6 +215,8 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   public RowMutation() {
     this.wal = true;
 
+    this.rowMutationType = org.apache.blur.thrift.generated.RowMutationType.REPLACE_ROW;
+
     this.waitToBeVisible = false;
 
   }
@@ -265,7 +275,8 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     this.rowId = null;
     this.wal = true;
 
-    this.rowMutationType = null;
+    this.rowMutationType = org.apache.blur.thrift.generated.RowMutationType.REPLACE_ROW;
+
     this.recordMutations = null;
     this.waitToBeVisible = false;
 
@@ -361,6 +372,7 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   }
 
   /**
+   * The RowMutationType to define how to mutate the given Row.
    * 
    * @see RowMutationType
    */
@@ -369,6 +381,7 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   }
 
   /**
+   * The RowMutationType to define how to mutate the given Row.
    * 
    * @see RowMutationType
    */
@@ -407,10 +420,16 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     this.recordMutations.add(elem);
   }
 
+  /**
+   * The RecordMutations if any for this Row.
+   */
   public List<RecordMutation> getRecordMutations() {
     return this.recordMutations;
   }
 
+  /**
+   * The RecordMutations if any for this Row.
+   */
   public RowMutation setRecordMutations(List<RecordMutation> recordMutations) {
     this.recordMutations = recordMutations;
     return this;

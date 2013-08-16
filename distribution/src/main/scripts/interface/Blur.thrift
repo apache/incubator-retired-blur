@@ -404,7 +404,7 @@ struct BlurQuery {
 }
 
 /**
- * 
+ * The BlurResult carries the score, the location id and the fetched result (if any) form each query.
  */
 struct BlurResult {
   /**
@@ -412,61 +412,61 @@ struct BlurResult {
    */
   1:string locationId,
   /**
-   * 
+   * The score for the hit in the query.
    */
   2:double score,
   /**
-   *
+   * The fetched result if any.
    */
   3:FetchResult fetchResult
 }
 
 /**
- *
+ * BlurResults holds all information resulting from a query.
  */
 struct BlurResults {
   /**
-   *
+   * The total number of hits in the query.
    */
   1:i64 totalResults = 0,
   /**
-   *
+   * Hit counts from each shard in the table.
    */
   2:map<string,i64> shardInfo,
   /**
-   *
+   * The query results.
    */
   3:list<BlurResult> results,
   /**
-   *
+   * The faceted count.
    */
   4:list<i64> facetCounts,
   /**
-   *
+   * Not currently used, a future feature could allow for partial results with errors.
    */
   5:list<BlurException> exceptions,
   /**
-   *
+   * The original query.
    */
   6:BlurQuery query
 }
 
 /**
- *
+ * The RowMutation defines how the given Record is to be mutated.
  */
 struct RecordMutation {
   /**
-   *
+   * Define how to mutate the given Record.
    */
-  1:RecordMutationType recordMutationType,
+  1:RecordMutationType recordMutationType = RecordMutationType.REPLACE_ENTIRE_RECORD,
   /**
-   *
+   * The Record to mutate.
    */
   2:Record record
 }
 
 /**
- *
+ * The RowMutation defines how the given Row is to be mutated.
  */
 struct RowMutation {
   /**
@@ -481,7 +481,13 @@ struct RowMutation {
    * Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
    */
   3:bool wal = 1,
-  4:RowMutationType rowMutationType,
+  /**
+   * The RowMutationType to define how to mutate the given Row.
+   */
+  4:RowMutationType rowMutationType = RowMutationType.REPLACE_ROW,
+  /**
+   * The RecordMutations if any for this Row.
+   */
   5:list<RecordMutation> recordMutations,
   /**
    * On mutate waits for the mutation to be visible to queries and fetch requests.
@@ -544,29 +550,25 @@ struct BlurQueryStatus {
 }
 
 /**
- *
+ * TableStats holds the statistics for a given table.
  */
 struct TableStats {
   /**
-   *
+   * The table name.
    */
   1:string tableName,
   /**
-   *
+   * The size in bytes.
    */
   2:i64 bytes,
   /**
-   *
+   * The record count.
    */
   3:i64 recordCount,
   /**
-   *
+   * The row count.
    */
-  4:i64 rowCount,
-  /**
-   *
-   */
-  5:i64 queries
+  4:i64 rowCount
 }
 
 /**

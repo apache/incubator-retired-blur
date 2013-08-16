@@ -1871,7 +1871,7 @@ sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{recordMutationType} = undef;
+  $self->{recordMutationType} = 1;
   $self->{record} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{recordMutationType}) {
@@ -1954,7 +1954,7 @@ sub new {
   $self->{table} = undef;
   $self->{rowId} = undef;
   $self->{wal} = 1;
-  $self->{rowMutationType} = undef;
+  $self->{rowMutationType} = 1;
   $self->{recordMutations} = undef;
   $self->{waitToBeVisible} = 0;
   if (UNIVERSAL::isa($vals,'HASH')) {
@@ -2366,7 +2366,7 @@ sub write {
 
 package Blur::TableStats;
 use base qw(Class::Accessor);
-Blur::TableStats->mk_accessors( qw( tableName bytes recordCount rowCount queries ) );
+Blur::TableStats->mk_accessors( qw( tableName bytes recordCount rowCount ) );
 
 sub new {
   my $classname = shift;
@@ -2376,7 +2376,6 @@ sub new {
   $self->{bytes} = undef;
   $self->{recordCount} = undef;
   $self->{rowCount} = undef;
-  $self->{queries} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{tableName}) {
       $self->{tableName} = $vals->{tableName};
@@ -2389,9 +2388,6 @@ sub new {
     }
     if (defined $vals->{rowCount}) {
       $self->{rowCount} = $vals->{rowCount};
-    }
-    if (defined $vals->{queries}) {
-      $self->{queries} = $vals->{queries};
     }
   }
   return bless ($self, $classname);
@@ -2440,12 +2436,6 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^5$/ && do{      if ($ftype == TType::I64) {
-        $xfer += $input->readI64(\$self->{queries});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -2476,11 +2466,6 @@ sub write {
   if (defined $self->{rowCount}) {
     $xfer += $output->writeFieldBegin('rowCount', TType::I64, 4);
     $xfer += $output->writeI64($self->{rowCount});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{queries}) {
-    $xfer += $output->writeFieldBegin('queries', TType::I64, 5);
-    $xfer += $output->writeI64($self->{queries});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

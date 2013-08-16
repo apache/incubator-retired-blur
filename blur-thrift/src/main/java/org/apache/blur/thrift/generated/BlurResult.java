@@ -50,7 +50,7 @@ import java.util.Arrays;
 //import org.slf4j.LoggerFactory;
 
 /**
- *  
+ * The BlurResult carries the score, the location id and the fetched result (if any) form each query.
  */
 public class BlurResult implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<BlurResult, BlurResult._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("BlurResult");
@@ -70,11 +70,11 @@ public class BlurResult implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
    */
   public String locationId; // required
   /**
-   *  
+   * The score for the hit in the query.
    */
   public double score; // required
   /**
-   * 
+   * The fetched result if any.
    */
   public FetchResult fetchResult; // required
 
@@ -85,11 +85,11 @@ public class BlurResult implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
      */
     LOCATION_ID((short)1, "locationId"),
     /**
-     *  
+     * The score for the hit in the query.
      */
     SCORE((short)2, "score"),
     /**
-     * 
+     * The fetched result if any.
      */
     FETCH_RESULT((short)3, "fetchResult");
 
@@ -239,14 +239,14 @@ public class BlurResult implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
   }
 
   /**
-   *  
+   * The score for the hit in the query.
    */
   public double getScore() {
     return this.score;
   }
 
   /**
-   *  
+   * The score for the hit in the query.
    */
   public BlurResult setScore(double score) {
     this.score = score;
@@ -268,14 +268,14 @@ public class BlurResult implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
   }
 
   /**
-   * 
+   * The fetched result if any.
    */
   public FetchResult getFetchResult() {
     return this.fetchResult;
   }
 
   /**
-   * 
+   * The fetched result if any.
    */
   public BlurResult setFetchResult(FetchResult fetchResult) {
     this.fetchResult = fetchResult;

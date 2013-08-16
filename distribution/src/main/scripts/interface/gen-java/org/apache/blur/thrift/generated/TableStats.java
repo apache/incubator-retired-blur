@@ -50,7 +50,7 @@ import java.util.Arrays;
 //import org.slf4j.LoggerFactory;
 
 /**
- * 
+ * TableStats holds the statistics for a given table.
  */
 public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<TableStats, TableStats._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("TableStats");
@@ -59,7 +59,6 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BYTES_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("bytes", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)2);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RECORD_COUNT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("recordCount", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)3);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ROW_COUNT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("rowCount", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)4);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField QUERIES_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("queries", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -68,48 +67,40 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
   }
 
   /**
-   * 
+   * The table name.
    */
   public String tableName; // required
   /**
-   * 
+   * The size in bytes.
    */
   public long bytes; // required
   /**
-   * 
+   * The record count.
    */
   public long recordCount; // required
   /**
-   * 
+   * The row count.
    */
   public long rowCount; // required
-  /**
-   * 
-   */
-  public long queries; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
-     * 
+     * The table name.
      */
     TABLE_NAME((short)1, "tableName"),
     /**
-     * 
+     * The size in bytes.
      */
     BYTES((short)2, "bytes"),
     /**
-     * 
+     * The record count.
      */
     RECORD_COUNT((short)3, "recordCount"),
     /**
-     * 
+     * The row count.
      */
-    ROW_COUNT((short)4, "rowCount"),
-    /**
-     * 
-     */
-    QUERIES((short)5, "queries");
+    ROW_COUNT((short)4, "rowCount");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -132,8 +123,6 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
           return RECORD_COUNT;
         case 4: // ROW_COUNT
           return ROW_COUNT;
-        case 5: // QUERIES
-          return QUERIES;
         default:
           return null;
       }
@@ -177,7 +166,6 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
   private static final int __BYTES_ISSET_ID = 0;
   private static final int __RECORDCOUNT_ISSET_ID = 1;
   private static final int __ROWCOUNT_ISSET_ID = 2;
-  private static final int __QUERIES_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -190,8 +178,6 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
     tmpMap.put(_Fields.ROW_COUNT, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("rowCount", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
-    tmpMap.put(_Fields.QUERIES, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("queries", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(TableStats.class, metaDataMap);
   }
@@ -203,8 +189,7 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
     String tableName,
     long bytes,
     long recordCount,
-    long rowCount,
-    long queries)
+    long rowCount)
   {
     this();
     this.tableName = tableName;
@@ -214,8 +199,6 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
     setRecordCountIsSet(true);
     this.rowCount = rowCount;
     setRowCountIsSet(true);
-    this.queries = queries;
-    setQueriesIsSet(true);
   }
 
   /**
@@ -229,7 +212,6 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
     this.bytes = other.bytes;
     this.recordCount = other.recordCount;
     this.rowCount = other.rowCount;
-    this.queries = other.queries;
   }
 
   public TableStats deepCopy() {
@@ -245,19 +227,17 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
     this.recordCount = 0;
     setRowCountIsSet(false);
     this.rowCount = 0;
-    setQueriesIsSet(false);
-    this.queries = 0;
   }
 
   /**
-   * 
+   * The table name.
    */
   public String getTableName() {
     return this.tableName;
   }
 
   /**
-   * 
+   * The table name.
    */
   public TableStats setTableName(String tableName) {
     this.tableName = tableName;
@@ -280,14 +260,14 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
   }
 
   /**
-   * 
+   * The size in bytes.
    */
   public long getBytes() {
     return this.bytes;
   }
 
   /**
-   * 
+   * The size in bytes.
    */
   public TableStats setBytes(long bytes) {
     this.bytes = bytes;
@@ -309,14 +289,14 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
   }
 
   /**
-   * 
+   * The record count.
    */
   public long getRecordCount() {
     return this.recordCount;
   }
 
   /**
-   * 
+   * The record count.
    */
   public TableStats setRecordCount(long recordCount) {
     this.recordCount = recordCount;
@@ -338,14 +318,14 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
   }
 
   /**
-   * 
+   * The row count.
    */
   public long getRowCount() {
     return this.rowCount;
   }
 
   /**
-   * 
+   * The row count.
    */
   public TableStats setRowCount(long rowCount) {
     this.rowCount = rowCount;
@@ -364,35 +344,6 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
 
   public void setRowCountIsSet(boolean value) {
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ROWCOUNT_ISSET_ID, value);
-  }
-
-  /**
-   * 
-   */
-  public long getQueries() {
-    return this.queries;
-  }
-
-  /**
-   * 
-   */
-  public TableStats setQueries(long queries) {
-    this.queries = queries;
-    setQueriesIsSet(true);
-    return this;
-  }
-
-  public void unsetQueries() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __QUERIES_ISSET_ID);
-  }
-
-  /** Returns true if field queries is set (has been assigned a value) and false otherwise */
-  public boolean isSetQueries() {
-    return EncodingUtils.testBit(__isset_bitfield, __QUERIES_ISSET_ID);
-  }
-
-  public void setQueriesIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __QUERIES_ISSET_ID, value);
   }
 
   public void setFieldValue(_Fields field, Object value) {
@@ -429,14 +380,6 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
       }
       break;
 
-    case QUERIES:
-      if (value == null) {
-        unsetQueries();
-      } else {
-        setQueries((Long)value);
-      }
-      break;
-
     }
   }
 
@@ -453,9 +396,6 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
 
     case ROW_COUNT:
       return Long.valueOf(getRowCount());
-
-    case QUERIES:
-      return Long.valueOf(getQueries());
 
     }
     throw new IllegalStateException();
@@ -476,8 +416,6 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
       return isSetRecordCount();
     case ROW_COUNT:
       return isSetRowCount();
-    case QUERIES:
-      return isSetQueries();
     }
     throw new IllegalStateException();
   }
@@ -528,15 +466,6 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
       if (!(this_present_rowCount && that_present_rowCount))
         return false;
       if (this.rowCount != that.rowCount)
-        return false;
-    }
-
-    boolean this_present_queries = true;
-    boolean that_present_queries = true;
-    if (this_present_queries || that_present_queries) {
-      if (!(this_present_queries && that_present_queries))
-        return false;
-      if (this.queries != that.queries)
         return false;
     }
 
@@ -596,16 +525,6 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetQueries()).compareTo(typedOther.isSetQueries());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetQueries()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.queries, typedOther.queries);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     return 0;
   }
 
@@ -644,10 +563,6 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
     if (!first) sb.append(", ");
     sb.append("rowCount:");
     sb.append(this.rowCount);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("queries:");
-    sb.append(this.queries);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -726,14 +641,6 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // QUERIES
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64) {
-              struct.queries = iprot.readI64();
-              struct.setQueriesIsSet(true);
-            } else { 
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           default:
             org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -762,9 +669,6 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
       oprot.writeFieldEnd();
       oprot.writeFieldBegin(ROW_COUNT_FIELD_DESC);
       oprot.writeI64(struct.rowCount);
-      oprot.writeFieldEnd();
-      oprot.writeFieldBegin(QUERIES_FIELD_DESC);
-      oprot.writeI64(struct.queries);
       oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -796,10 +700,7 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
       if (struct.isSetRowCount()) {
         optionals.set(3);
       }
-      if (struct.isSetQueries()) {
-        optionals.set(4);
-      }
-      oprot.writeBitSet(optionals, 5);
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetTableName()) {
         oprot.writeString(struct.tableName);
       }
@@ -812,15 +713,12 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
       if (struct.isSetRowCount()) {
         oprot.writeI64(struct.rowCount);
       }
-      if (struct.isSetQueries()) {
-        oprot.writeI64(struct.queries);
-      }
     }
 
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, TableStats struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(5);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.tableName = iprot.readString();
         struct.setTableNameIsSet(true);
@@ -836,10 +734,6 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
       if (incoming.get(3)) {
         struct.rowCount = iprot.readI64();
         struct.setRowCountIsSet(true);
-      }
-      if (incoming.get(4)) {
-        struct.queries = iprot.readI64();
-        struct.setQueriesIsSet(true);
       }
     }
   }

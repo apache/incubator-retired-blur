@@ -1742,7 +1742,7 @@ BlurResults.prototype.write = function(output) {
 };
 
 RecordMutation = function(args) {
-  this.recordMutationType = null;
+  this.recordMutationType = 1;
   this.record = null;
   if (args) {
     if (args.recordMutationType !== undefined) {
@@ -1812,7 +1812,7 @@ RowMutation = function(args) {
   this.table = null;
   this.rowId = null;
   this.wal = true;
-  this.rowMutationType = null;
+  this.rowMutationType = 1;
   this.recordMutations = null;
   this.waitToBeVisible = false;
   if (args) {
@@ -2212,7 +2212,6 @@ TableStats = function(args) {
   this.bytes = null;
   this.recordCount = null;
   this.rowCount = null;
-  this.queries = null;
   if (args) {
     if (args.tableName !== undefined) {
       this.tableName = args.tableName;
@@ -2225,9 +2224,6 @@ TableStats = function(args) {
     }
     if (args.rowCount !== undefined) {
       this.rowCount = args.rowCount;
-    }
-    if (args.queries !== undefined) {
-      this.queries = args.queries;
     }
   }
 };
@@ -2273,13 +2269,6 @@ TableStats.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
-      case 5:
-      if (ftype == Thrift.Type.I64) {
-        this.queries = input.readI64().value;
-      } else {
-        input.skip(ftype);
-      }
-      break;
       default:
         input.skip(ftype);
     }
@@ -2309,11 +2298,6 @@ TableStats.prototype.write = function(output) {
   if (this.rowCount !== null && this.rowCount !== undefined) {
     output.writeFieldBegin('rowCount', Thrift.Type.I64, 4);
     output.writeI64(this.rowCount);
-    output.writeFieldEnd();
-  }
-  if (this.queries !== null && this.queries !== undefined) {
-    output.writeFieldBegin('queries', Thrift.Type.I64, 5);
-    output.writeI64(this.queries);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

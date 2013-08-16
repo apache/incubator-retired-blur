@@ -50,7 +50,7 @@ import java.util.Arrays;
 //import org.slf4j.LoggerFactory;
 
 /**
- * 
+ * BlurResults holds all information resulting from a query.
  */
 public class BlurResults implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<BlurResults, BlurResults._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("BlurResults");
@@ -69,54 +69,54 @@ public class BlurResults implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   }
 
   /**
-   * 
+   * The total number of hits in the query.
    */
   public long totalResults; // required
   /**
-   * 
+   * Hit counts from each shard in the table.
    */
   public Map<String,Long> shardInfo; // required
   /**
-   * 
+   * The query results.
    */
   public List<BlurResult> results; // required
   /**
-   * 
+   * The faceted count.
    */
   public List<Long> facetCounts; // required
   /**
-   * 
+   * Not currently used, a future feature could allow for partial results with errors.
    */
   public List<BlurException> exceptions; // required
   /**
-   * 
+   * The original query.
    */
   public BlurQuery query; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
-     * 
+     * The total number of hits in the query.
      */
     TOTAL_RESULTS((short)1, "totalResults"),
     /**
-     * 
+     * Hit counts from each shard in the table.
      */
     SHARD_INFO((short)2, "shardInfo"),
     /**
-     * 
+     * The query results.
      */
     RESULTS((short)3, "results"),
     /**
-     * 
+     * The faceted count.
      */
     FACET_COUNTS((short)4, "facetCounts"),
     /**
-     * 
+     * Not currently used, a future feature could allow for partial results with errors.
      */
     EXCEPTIONS((short)5, "exceptions"),
     /**
-     * 
+     * The original query.
      */
     QUERY((short)6, "query");
 
@@ -297,14 +297,14 @@ public class BlurResults implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   }
 
   /**
-   * 
+   * The total number of hits in the query.
    */
   public long getTotalResults() {
     return this.totalResults;
   }
 
   /**
-   * 
+   * The total number of hits in the query.
    */
   public BlurResults setTotalResults(long totalResults) {
     this.totalResults = totalResults;
@@ -337,14 +337,14 @@ public class BlurResults implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   }
 
   /**
-   * 
+   * Hit counts from each shard in the table.
    */
   public Map<String,Long> getShardInfo() {
     return this.shardInfo;
   }
 
   /**
-   * 
+   * Hit counts from each shard in the table.
    */
   public BlurResults setShardInfo(Map<String,Long> shardInfo) {
     this.shardInfo = shardInfo;
@@ -382,14 +382,14 @@ public class BlurResults implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   }
 
   /**
-   * 
+   * The query results.
    */
   public List<BlurResult> getResults() {
     return this.results;
   }
 
   /**
-   * 
+   * The query results.
    */
   public BlurResults setResults(List<BlurResult> results) {
     this.results = results;
@@ -427,14 +427,14 @@ public class BlurResults implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   }
 
   /**
-   * 
+   * The faceted count.
    */
   public List<Long> getFacetCounts() {
     return this.facetCounts;
   }
 
   /**
-   * 
+   * The faceted count.
    */
   public BlurResults setFacetCounts(List<Long> facetCounts) {
     this.facetCounts = facetCounts;
@@ -472,14 +472,14 @@ public class BlurResults implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   }
 
   /**
-   * 
+   * Not currently used, a future feature could allow for partial results with errors.
    */
   public List<BlurException> getExceptions() {
     return this.exceptions;
   }
 
   /**
-   * 
+   * Not currently used, a future feature could allow for partial results with errors.
    */
   public BlurResults setExceptions(List<BlurException> exceptions) {
     this.exceptions = exceptions;
@@ -502,14 +502,14 @@ public class BlurResults implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   }
 
   /**
-   * 
+   * The original query.
    */
   public BlurQuery getQuery() {
     return this.query;
   }
 
   /**
-   * 
+   * The original query.
    */
   public BlurResults setQuery(BlurQuery query) {
     this.query = query;

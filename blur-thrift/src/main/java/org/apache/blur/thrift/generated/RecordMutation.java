@@ -50,7 +50,7 @@ import java.util.Arrays;
 //import org.slf4j.LoggerFactory;
 
 /**
- * 
+ * The RowMutation defines how the given Record is to be mutated.
  */
 public class RecordMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<RecordMutation, RecordMutation._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("RecordMutation");
@@ -65,26 +65,26 @@ public class RecordMutation implements org.apache.blur.thirdparty.thrift_0_9_0.T
   }
 
   /**
-   * 
+   * Define how to mutate the given Record.
    * 
    * @see RecordMutationType
    */
   public RecordMutationType recordMutationType; // required
   /**
-   * 
+   * The Record to mutate.
    */
   public Record record; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
-     * 
+     * Define how to mutate the given Record.
      * 
      * @see RecordMutationType
      */
     RECORD_MUTATION_TYPE((short)1, "recordMutationType"),
     /**
-     * 
+     * The Record to mutate.
      */
     RECORD((short)2, "record");
 
@@ -157,6 +157,8 @@ public class RecordMutation implements org.apache.blur.thirdparty.thrift_0_9_0.T
   }
 
   public RecordMutation() {
+    this.recordMutationType = org.apache.blur.thrift.generated.RecordMutationType.REPLACE_ENTIRE_RECORD;
+
   }
 
   public RecordMutation(
@@ -186,12 +188,13 @@ public class RecordMutation implements org.apache.blur.thirdparty.thrift_0_9_0.T
 
   @Override
   public void clear() {
-    this.recordMutationType = null;
+    this.recordMutationType = org.apache.blur.thrift.generated.RecordMutationType.REPLACE_ENTIRE_RECORD;
+
     this.record = null;
   }
 
   /**
-   * 
+   * Define how to mutate the given Record.
    * 
    * @see RecordMutationType
    */
@@ -200,7 +203,7 @@ public class RecordMutation implements org.apache.blur.thirdparty.thrift_0_9_0.T
   }
 
   /**
-   * 
+   * Define how to mutate the given Record.
    * 
    * @see RecordMutationType
    */
@@ -225,14 +228,14 @@ public class RecordMutation implements org.apache.blur.thirdparty.thrift_0_9_0.T
   }
 
   /**
-   * 
+   * The Record to mutate.
    */
   public Record getRecord() {
     return this.record;
   }
 
   /**
-   * 
+   * The Record to mutate.
    */
   public RecordMutation setRecord(Record record) {
     this.record = record;

@@ -97,7 +97,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   private Map<String, TableDescriptor> _tableDescriptors = new ConcurrentHashMap<String, TableDescriptor>();
   private Map<String, Similarity> _tableSimilarity = new ConcurrentHashMap<String, Similarity>();
-  private Map<String, DistributedLayoutManager> _layoutManagers = new ConcurrentHashMap<String, DistributedLayoutManager>();
+  private Map<String, DistributedLayout> _layoutManagers = new ConcurrentHashMap<String, DistributedLayout>();
   private Map<String, Set<String>> _layoutCache = new ConcurrentHashMap<String, Set<String>>();
   private ConcurrentHashMap<String, Map<String, BlurIndex>> _indexes = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
   private final ShardStateManager _shardStateManager = new ShardStateManager();
@@ -544,7 +544,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     if (tableStatus == TABLE_STATUS.DISABLED) {
       return new HashSet<String>();
     }
-    DistributedLayoutManager layoutManager = _layoutManagers.get(table);
+    DistributedLayout layoutManager = _layoutManagers.get(table);
     if (layoutManager == null) {
       return setupLayoutManager(table);
     } else {

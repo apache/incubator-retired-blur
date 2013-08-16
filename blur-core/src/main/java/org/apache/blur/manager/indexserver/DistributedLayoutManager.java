@@ -27,7 +27,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
-public class DistributedLayoutManager {
+public class DistributedLayoutManager implements DistributedLayout {
 
   private static final SortedSet<String> EMPTY_SORTED_SET = new TreeSet<String>();
 
@@ -85,6 +85,7 @@ public class DistributedLayoutManager {
     return Math.abs(hash % size);
   }
 
+  @Override
   public Map<String, String> getLayout() {
     return cache;
   }

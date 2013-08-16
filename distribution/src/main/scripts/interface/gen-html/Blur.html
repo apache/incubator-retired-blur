@@ -403,7 +403,7 @@ shards that are complete, etc.
 </table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_TableDescriptor">Struct: TableDescriptor</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>isEnabled</td><td><code>bool</code></td><td>Is the table enabled or not, enabled by default.
+<tr><td>1</td><td>enabled</td><td><code>bool</code></td><td>Is the table enabled or not, enabled by default.
 </td><td>default</td><td>1</td></tr>
 <tr><td>3</td><td>shardCount</td><td><code>i32</code></td><td>The number of shards within the given table.
 </td><td>default</td><td>1</td></tr>
@@ -434,14 +434,19 @@ updates through MapReduce are allowed and in fact they are only allowed if the t
 </td><td>default</td><td>1</td></tr>
 <tr><td>18</td><td>defaultMissingFieldProps</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td>If strict is not enabled, defines the properties to be used in the new field creation.
 </td><td>default</td><td></td></tr>
-</table><br/><p/>
+</table><br/>The table descriptor defines the base structure of the table as well as properties need for setup.
 <br/></div><div class="definition"><h3 id="Struct_Metric">Struct: Metric</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>name</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>strMap</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>longMap</td><td><code>map&lt;<code>string</code>, <code>i64</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>4</td><td>doubleMap</td><td><code>map&lt;<code>string</code>, <code>double</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_ColumnDefinition">Struct: ColumnDefinition</h3>
+<tr><td>1</td><td>name</td><td><code>string</code></td><td>metric name.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>strMap</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td>map of string values emitted by the Metric.
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>longMap</td><td><code>map&lt;<code>string</code>, <code>i64</code>&gt;</code></td><td>map of long values emitted by the Metric.
+</td><td>default</td><td></td></tr>
+<tr><td>4</td><td>doubleMap</td><td><code>map&lt;<code>string</code>, <code>double</code>&gt;</code></td><td>map of double values emitted by the Metric.
+</td><td>default</td><td></td></tr>
+</table><br/>The Metric will hold all the information for a given Metric.
+<br/></div><div class="definition"><h3 id="Struct_ColumnDefinition">Struct: ColumnDefinition</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>family</td><td><code>string</code></td><td>Required. The family the this column existing within.
 </td><td>default</td><td></td></tr>
@@ -465,7 +470,8 @@ NOTE: This will index the column as a full text field in a default field, so tha
 </td><td>default</td><td></td></tr>
 <tr><td>6</td><td>properties</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td>For any custom field types, you can pass in configuration properties.
 </td><td>default</td><td></td></tr>
-</table><br/></div><hr/><h2 id="Services">Services</h2>
+</table><br/>The ColumnDefinition defines how a given Column should be interpreted (indexed/stored)
+<br/></div><hr/><h2 id="Services">Services</h2>
 <h3 id="Svc_Blur">Service: Blur</h3>
 The Blur service API.  This API is the same for both controller servers as well as
 shards servers.  Each of the methods are documented.
@@ -599,40 +605,84 @@ cancel call maybe take some time for the query actually stops executing.
 </table></div><div class="definition"><h4 id="Fn_Blur_schema">Function: Blur.schema</h4>
 <pre><code><a href="Blur.html#Struct_Schema">Schema</a></code> schema(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre><p/>
-<br/></div><div class="definition"><h4 id="Fn_Blur_tableStats">Function: Blur.tableStats</h4>
+</pre>Gets the schema for a given table.
+@return Schema.
+<br/><br/><h4 id="Parameters_Blur_schema">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_tableStats">Function: Blur.tableStats</h4>
 <pre><code><a href="Blur.html#Struct_TableStats">TableStats</a></code> tableStats(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre><p/>
-<br/></div><div class="definition"><h4 id="Fn_Blur_terms">Function: Blur.terms</h4>
+</pre>Gets the table stats for the given table.
+@return TableStats.
+<br/><br/><h4 id="Parameters_Blur_tableStats">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_terms">Function: Blur.terms</h4>
 <pre><code>list&lt;<code>string</code>&gt;</code> terms(<code>string</code> table,
                    <code>string</code> columnFamily,
                    <code>string</code> columnName,
                    <code>string</code> startWith,
                    <code>i16</code> size)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre><p/>
-<br/></div><div class="definition"><h4 id="Fn_Blur_recordFrequency">Function: Blur.recordFrequency</h4>
+</pre>Gets the terms list from the index for the given table, family, column using the
+startWith value to page through the results.  This method only makes sense to use with
+string and text field types.
+@return the list of terms for the given column.
+<br/><br/><h4 id="Parameters_Blur_terms">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
+</td></tr>
+<tr><td>columnFamily</td><td>the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null.
+</td></tr>
+<tr><td>columnName</td><td>the column name.
+</td></tr>
+<tr><td>startWith</td><td>the term to start with assuming that you paging through the term list.
+</td></tr>
+<tr><td>size</td><td>the number to fetch at once.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_recordFrequency">Function: Blur.recordFrequency</h4>
 <pre><code>i64</code> recordFrequency(<code>string</code> table,
                     <code>string</code> columnFamily,
                     <code>string</code> columnName,
                     <code>string</code> value)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre><p/>
-<br/></div><div class="definition"><h4 id="Fn_Blur_fetchRow">Function: Blur.fetchRow</h4>
+</pre>Gets the record frequency for the provided table, family, column and value.
+@return the count for the entire table.
+<br/><br/><h4 id="Parameters_Blur_recordFrequency">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
+</td></tr>
+<tr><td>columnFamily</td><td>the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null.
+</td></tr>
+<tr><td>columnName</td><td>the column name.
+</td></tr>
+<tr><td>value</td><td>the value.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_fetchRow">Function: Blur.fetchRow</h4>
 <pre><code><a href="Blur.html#Struct_FetchResult">FetchResult</a></code> fetchRow(<code>string</code> table,
                      <code><a href="Blur.html#Struct_Selector">Selector</a></code> selector)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre><p/>
-<br/></div><div class="definition"><h4 id="Fn_Blur_mutate">Function: Blur.mutate</h4>
+</pre>Fetches a Row or a Record in the given table with the given Selector.
+@return the FetchResult.
+<br/><br/><h4 id="Parameters_Blur_fetchRow">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
+</td></tr>
+<tr><td>selector</td><td>the Selector to use to fetch the Row or Record.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_mutate">Function: Blur.mutate</h4>
 <pre><code>void</code> mutate(<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code> mutation)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre><p/>
-<br/></div><div class="definition"><h4 id="Fn_Blur_mutateBatch">Function: Blur.mutateBatch</h4>
+</pre>Mutates a Row given the RowMutation the is provided.
+<br/><br/><h4 id="Parameters_Blur_mutate">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>mutation</td><td>the RowMutation.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_mutateBatch">Function: Blur.mutateBatch</h4>
 <pre><code>void</code> mutateBatch(<code>list&lt;<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code>&gt;</code> mutations)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre><p/>
-<br/></div><div class="definition"><h4 id="Fn_Blur_createTable">Function: Blur.createTable</h4>
+</pre>Mutates a group of Rows given the list of RowMutations that are provided.  Note: This is not an atomic operation.
+<br/><br/><h4 id="Parameters_Blur_mutateBatch">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>mutations</td><td>the batch of RowMutations.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_createTable">Function: Blur.createTable</h4>
 <pre><code>void</code> createTable(<code><a href="Blur.html#Struct_TableDescriptor">TableDescriptor</a></code> tableDescriptor)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Creates a table with the given TableDescriptor.
@@ -643,7 +693,6 @@ cancel call maybe take some time for the query actually stops executing.
 <pre><code>void</code> enableTable(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Enables the given table, blocking until all shards are online.
-@param table
 <br/><br/><h4 id="Parameters_Blur_enableTable">Parameters</h4>
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
 </td></tr>
@@ -651,7 +700,6 @@ cancel call maybe take some time for the query actually stops executing.
 <pre><code>void</code> disableTable(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Disables the given table, blocking until all shards are offline.
-@param table the table name.
 <br/><br/><h4 id="Parameters_Blur_disableTable">Parameters</h4>
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
 </td></tr>

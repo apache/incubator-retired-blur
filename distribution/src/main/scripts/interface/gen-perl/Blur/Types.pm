@@ -2615,13 +2615,13 @@ sub write {
 
 package Blur::TableDescriptor;
 use base qw(Class::Accessor);
-Blur::TableDescriptor->mk_accessors( qw( isEnabled shardCount tableUri cluster name similarityClass blockCaching blockCachingFileTypes readOnly preCacheCols tableProperties strictTypes defaultMissingFieldType defaultMissingFieldLessIndexing defaultMissingFieldProps ) );
+Blur::TableDescriptor->mk_accessors( qw( enabled shardCount tableUri cluster name similarityClass blockCaching blockCachingFileTypes readOnly preCacheCols tableProperties strictTypes defaultMissingFieldType defaultMissingFieldLessIndexing defaultMissingFieldProps ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{isEnabled} = 1;
+  $self->{enabled} = 1;
   $self->{shardCount} = 1;
   $self->{tableUri} = undef;
   $self->{cluster} = "default";
@@ -2637,8 +2637,8 @@ sub new {
   $self->{defaultMissingFieldLessIndexing} = 1;
   $self->{defaultMissingFieldProps} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{isEnabled}) {
-      $self->{isEnabled} = $vals->{isEnabled};
+    if (defined $vals->{enabled}) {
+      $self->{enabled} = $vals->{enabled};
     }
     if (defined $vals->{shardCount}) {
       $self->{shardCount} = $vals->{shardCount};
@@ -2706,7 +2706,7 @@ sub read {
     SWITCH: for($fid)
     {
       /^1$/ && do{      if ($ftype == TType::BOOL) {
-        $xfer += $input->readBool(\$self->{isEnabled});
+        $xfer += $input->readBool(\$self->{enabled});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -2861,9 +2861,9 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('TableDescriptor');
-  if (defined $self->{isEnabled}) {
-    $xfer += $output->writeFieldBegin('isEnabled', TType::BOOL, 1);
-    $xfer += $output->writeBool($self->{isEnabled});
+  if (defined $self->{enabled}) {
+    $xfer += $output->writeFieldBegin('enabled', TType::BOOL, 1);
+    $xfer += $output->writeBool($self->{enabled});
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{shardCount}) {

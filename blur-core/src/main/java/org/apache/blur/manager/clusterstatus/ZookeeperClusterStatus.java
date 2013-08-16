@@ -462,7 +462,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   private void updateReadOnlyAndEnabled(boolean useCache, TableDescriptor tableDescriptor, String cluster, String table) {
     if (tableDescriptor != null) {
       tableDescriptor.setReadOnly(isReadOnly(useCache, cluster, table));
-      tableDescriptor.setIsEnabled(isEnabled(useCache, cluster, table));
+      tableDescriptor.setEnabled(isEnabled(useCache, cluster, table));
     }
   }
 

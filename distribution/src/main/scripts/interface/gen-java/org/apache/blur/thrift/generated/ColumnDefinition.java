@@ -49,6 +49,9 @@ import java.util.Arrays;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
+/**
+ * The ColumnDefinition defines how a given Column should be interpreted (indexed/stored)
+ */
 public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<ColumnDefinition, ColumnDefinition._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("ColumnDefinition");
 

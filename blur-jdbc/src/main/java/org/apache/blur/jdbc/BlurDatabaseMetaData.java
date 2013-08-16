@@ -71,7 +71,7 @@ public class BlurDatabaseMetaData extends AbstractBlurDatabaseMetaData {
           tables = client.tableList();
           for (String table : tables) {
             TableDescriptor descriptor = client.describe(table);
-            if (descriptor.isEnabled) {
+            if (descriptor.isEnabled()) {
               schemaMap.put(table, client.schema(table));
             }
           }

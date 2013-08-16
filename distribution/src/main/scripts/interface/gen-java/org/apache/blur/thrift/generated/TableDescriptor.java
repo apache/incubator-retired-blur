@@ -50,12 +50,12 @@ import java.util.Arrays;
 //import org.slf4j.LoggerFactory;
 
 /**
- * 
+ * The table descriptor defines the base structure of the table as well as properties need for setup.
  */
 public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<TableDescriptor, TableDescriptor._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("TableDescriptor");
 
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField IS_ENABLED_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("isEnabled", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ENABLED_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("enabled", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)1);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SHARD_COUNT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("shardCount", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)3);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_URI_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("tableUri", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)4);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField CLUSTER_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("cluster", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)7);
@@ -80,7 +80,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   /**
    * Is the table enabled or not, enabled by default.
    */
-  public boolean isEnabled; // required
+  public boolean enabled; // required
   /**
    * The number of shards within the given table.
    */
@@ -144,7 +144,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     /**
      * Is the table enabled or not, enabled by default.
      */
-    IS_ENABLED((short)1, "isEnabled"),
+    ENABLED((short)1, "enabled"),
     /**
      * The number of shards within the given table.
      */
@@ -216,8 +216,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // IS_ENABLED
-          return IS_ENABLED;
+        case 1: // ENABLED
+          return ENABLED;
         case 3: // SHARD_COUNT
           return SHARD_COUNT;
         case 4: // TABLE_URI
@@ -286,7 +286,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   // isset id assignments
-  private static final int __ISENABLED_ISSET_ID = 0;
+  private static final int __ENABLED_ISSET_ID = 0;
   private static final int __SHARDCOUNT_ISSET_ID = 1;
   private static final int __BLOCKCACHING_ISSET_ID = 2;
   private static final int __READONLY_ISSET_ID = 3;
@@ -296,7 +296,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.IS_ENABLED, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("isEnabled", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.ENABLED, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("enabled", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
     tmpMap.put(_Fields.SHARD_COUNT, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("shardCount", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32)));
@@ -337,7 +337,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   public TableDescriptor() {
-    this.isEnabled = true;
+    this.enabled = true;
 
     this.shardCount = 1;
 
@@ -356,7 +356,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   public TableDescriptor(
-    boolean isEnabled,
+    boolean enabled,
     int shardCount,
     String tableUri,
     String cluster,
@@ -373,8 +373,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     Map<String,String> defaultMissingFieldProps)
   {
     this();
-    this.isEnabled = isEnabled;
-    setIsEnabledIsSet(true);
+    this.enabled = enabled;
+    setEnabledIsSet(true);
     this.shardCount = shardCount;
     setShardCountIsSet(true);
     this.tableUri = tableUri;
@@ -401,7 +401,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
    */
   public TableDescriptor(TableDescriptor other) {
     __isset_bitfield = other.__isset_bitfield;
-    this.isEnabled = other.isEnabled;
+    this.enabled = other.enabled;
     this.shardCount = other.shardCount;
     if (other.isSetTableUri()) {
       this.tableUri = other.tableUri;
@@ -474,7 +474,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
 
   @Override
   public void clear() {
-    this.isEnabled = true;
+    this.enabled = true;
 
     this.shardCount = 1;
 
@@ -502,30 +502,30 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   /**
    * Is the table enabled or not, enabled by default.
    */
-  public boolean isIsEnabled() {
-    return this.isEnabled;
+  public boolean isEnabled() {
+    return this.enabled;
   }
 
   /**
    * Is the table enabled or not, enabled by default.
    */
-  public TableDescriptor setIsEnabled(boolean isEnabled) {
-    this.isEnabled = isEnabled;
-    setIsEnabledIsSet(true);
+  public TableDescriptor setEnabled(boolean enabled) {
+    this.enabled = enabled;
+    setEnabledIsSet(true);
     return this;
   }
 
-  public void unsetIsEnabled() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ISENABLED_ISSET_ID);
+  public void unsetEnabled() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ENABLED_ISSET_ID);
   }
 
-  /** Returns true if field isEnabled is set (has been assigned a value) and false otherwise */
-  public boolean isSetIsEnabled() {
-    return EncodingUtils.testBit(__isset_bitfield, __ISENABLED_ISSET_ID);
+  /** Returns true if field enabled is set (has been assigned a value) and false otherwise */
+  public boolean isSetEnabled() {
+    return EncodingUtils.testBit(__isset_bitfield, __ENABLED_ISSET_ID);
   }
 
-  public void setIsEnabledIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISENABLED_ISSET_ID, value);
+  public void setEnabledIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ENABLED_ISSET_ID, value);
   }
 
   /**
@@ -999,11 +999,11 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case IS_ENABLED:
+    case ENABLED:
       if (value == null) {
-        unsetIsEnabled();
+        unsetEnabled();
       } else {
-        setIsEnabled((Boolean)value);
+        setEnabled((Boolean)value);
       }
       break;
 
@@ -1124,8 +1124,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case IS_ENABLED:
-      return Boolean.valueOf(isIsEnabled());
+    case ENABLED:
+      return Boolean.valueOf(isEnabled());
 
     case SHARD_COUNT:
       return Integer.valueOf(getShardCount());
@@ -1180,8 +1180,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     }
 
     switch (field) {
-    case IS_ENABLED:
-      return isSetIsEnabled();
+    case ENABLED:
+      return isSetEnabled();
     case SHARD_COUNT:
       return isSetShardCount();
     case TABLE_URI:
@@ -1227,12 +1227,12 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     if (that == null)
       return false;
 
-    boolean this_present_isEnabled = true;
-    boolean that_present_isEnabled = true;
-    if (this_present_isEnabled || that_present_isEnabled) {
-      if (!(this_present_isEnabled && that_present_isEnabled))
+    boolean this_present_enabled = true;
+    boolean that_present_enabled = true;
+    if (this_present_enabled || that_present_enabled) {
+      if (!(this_present_enabled && that_present_enabled))
         return false;
-      if (this.isEnabled != that.isEnabled)
+      if (this.enabled != that.enabled)
         return false;
     }
 
@@ -1378,12 +1378,12 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     int lastComparison = 0;
     TableDescriptor typedOther = (TableDescriptor)other;
 
-    lastComparison = Boolean.valueOf(isSetIsEnabled()).compareTo(typedOther.isSetIsEnabled());
+    lastComparison = Boolean.valueOf(isSetEnabled()).compareTo(typedOther.isSetEnabled());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetIsEnabled()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.isEnabled, typedOther.isEnabled);
+    if (isSetEnabled()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.enabled, typedOther.enabled);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1548,8 +1548,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     StringBuilder sb = new StringBuilder("TableDescriptor(");
     boolean first = true;
 
-    sb.append("isEnabled:");
-    sb.append(this.isEnabled);
+    sb.append("enabled:");
+    sb.append(this.enabled);
     first = false;
     if (!first) sb.append(", ");
     sb.append("shardCount:");
@@ -1688,10 +1688,10 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
           break;
         }
         switch (schemeField.id) {
-          case 1: // IS_ENABLED
+          case 1: // ENABLED
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
-              struct.isEnabled = iprot.readBool();
-              struct.setIsEnabledIsSet(true);
+              struct.enabled = iprot.readBool();
+              struct.setEnabledIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1867,8 +1867,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldBegin(IS_ENABLED_FIELD_DESC);
-      oprot.writeBool(struct.isEnabled);
+      oprot.writeFieldBegin(ENABLED_FIELD_DESC);
+      oprot.writeBool(struct.enabled);
       oprot.writeFieldEnd();
       oprot.writeFieldBegin(SHARD_COUNT_FIELD_DESC);
       oprot.writeI32(struct.shardCount);
@@ -1978,7 +1978,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, TableDescriptor struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
-      if (struct.isSetIsEnabled()) {
+      if (struct.isSetEnabled()) {
         optionals.set(0);
       }
       if (struct.isSetShardCount()) {
@@ -2024,8 +2024,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         optionals.set(14);
       }
       oprot.writeBitSet(optionals, 15);
-      if (struct.isSetIsEnabled()) {
-        oprot.writeBool(struct.isEnabled);
+      if (struct.isSetEnabled()) {
+        oprot.writeBool(struct.enabled);
       }
       if (struct.isSetShardCount()) {
         oprot.writeI32(struct.shardCount);
@@ -2102,8 +2102,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(15);
       if (incoming.get(0)) {
-        struct.isEnabled = iprot.readBool();
-        struct.setIsEnabledIsSet(true);
+        struct.enabled = iprot.readBool();
+        struct.setEnabledIsSet(true);
       }
       if (incoming.get(1)) {
         struct.shardCount = iprot.readI32();

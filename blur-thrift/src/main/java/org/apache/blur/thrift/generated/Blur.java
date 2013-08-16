@@ -184,59 +184,74 @@ public class Blur {
     public BlurQueryStatus queryStatusById(String table, long uuid) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
+     * Gets the schema for a given table.
+     * @return Schema.
      * 
-     * 
-     * @param table
+     * @param table the table name.
      */
     public Schema schema(String table) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
+     * Gets the table stats for the given table.
+     * @return TableStats.
      * 
-     * 
-     * @param table
+     * @param table the table name.
      */
     public TableStats tableStats(String table) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
+     * Gets the terms list from the index for the given table, family, column using the
+     * startWith value to page through the results.  This method only makes sense to use with
+     * string and text field types.
+     * @return the list of terms for the given column.
      * 
+     * @param table the table name.
      * 
-     * @param table
-     * @param columnFamily
-     * @param columnName
-     * @param startWith
-     * @param size
+     * @param columnFamily the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null.
+     * 
+     * @param columnName the column name.
+     * 
+     * @param startWith the term to start with assuming that you paging through the term list.
+     * 
+     * @param size the number to fetch at once.
      */
     public List<String> terms(String table, String columnFamily, String columnName, String startWith, short size) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
+     * Gets the record frequency for the provided table, family, column and value.
+     * @return the count for the entire table.
      * 
+     * @param table the table name.
      * 
-     * @param table
-     * @param columnFamily
-     * @param columnName
-     * @param value
+     * @param columnFamily the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null.
+     * 
+     * @param columnName the column name.
+     * 
+     * @param value the value.
      */
     public long recordFrequency(String table, String columnFamily, String columnName, String value) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
+     * Fetches a Row or a Record in the given table with the given Selector.
+     * @return the FetchResult.
      * 
+     * @param table the table name.
      * 
-     * @param table
-     * @param selector
+     * @param selector the Selector to use to fetch the Row or Record.
      */
     public FetchResult fetchRow(String table, Selector selector) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
+     * Mutates a Row given the RowMutation the is provided.
      * 
-     * 
-     * @param mutation
+     * @param mutation the RowMutation.
      */
     public void mutate(RowMutation mutation) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
+     * Mutates a group of Rows given the list of RowMutations that are provided.  Note: This is not an atomic operation.
      * 
-     * 
-     * @param mutations
+     * @param mutations the batch of RowMutations.
      */
     public void mutateBatch(List<RowMutation> mutations) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
@@ -249,7 +264,6 @@ public class Blur {
 
     /**
      * Enables the given table, blocking until all shards are online.
-     * @param table
      * 
      * @param table the table name.
      */
@@ -257,7 +271,6 @@ public class Blur {
 
     /**
      * Disables the given table, blocking until all shards are offline.
-     * @param table the table name.
      * 
      * @param table the table name.
      */
@@ -14058,10 +14071,16 @@ public class Blur {
       schemes.put(TupleScheme.class, new schema_argsTupleSchemeFactory());
     }
 
+    /**
+     * the table name.
+     */
     public String table; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      /**
+       * the table name.
+       */
       TABLE((short)1, "table");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -14156,10 +14175,16 @@ public class Blur {
       this.table = null;
     }
 
+    /**
+     * the table name.
+     */
     public String getTable() {
       return this.table;
     }
 
+    /**
+     * the table name.
+     */
     public schema_args setTable(String table) {
       this.table = table;
       return this;
@@ -14873,10 +14898,16 @@ public class Blur {
       schemes.put(TupleScheme.class, new tableStats_argsTupleSchemeFactory());
     }
 
+    /**
+     * the table name.
+     */
     public String table; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      /**
+       * the table name.
+       */
       TABLE((short)1, "table");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -14971,10 +15002,16 @@ public class Blur {
       this.table = null;
     }
 
+    /**
+     * the table name.
+     */
     public String getTable() {
       return this.table;
     }
 
+    /**
+     * the table name.
+     */
     public tableStats_args setTable(String table) {
       this.table = table;
       return this;
@@ -15692,18 +15729,48 @@ public class Blur {
       schemes.put(TupleScheme.class, new terms_argsTupleSchemeFactory());
     }
 
+    /**
+     * the table name.
+     */
     public String table; // required
+    /**
+     * the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null.
+     */
     public String columnFamily; // required
+    /**
+     * the column name.
+     */
     public String columnName; // required
+    /**
+     * the term to start with assuming that you paging through the term list.
+     */
     public String startWith; // required
+    /**
+     * the number to fetch at once.
+     */
     public short size; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      /**
+       * the table name.
+       */
       TABLE((short)1, "table"),
+      /**
+       * the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null.
+       */
       COLUMN_FAMILY((short)2, "columnFamily"),
+      /**
+       * the column name.
+       */
       COLUMN_NAME((short)3, "columnName"),
+      /**
+       * the term to start with assuming that you paging through the term list.
+       */
       START_WITH((short)4, "startWith"),
+      /**
+       * the number to fetch at once.
+       */
       SIZE((short)5, "size");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -15841,10 +15908,16 @@ public class Blur {
       this.size = 0;
     }
 
+    /**
+     * the table name.
+     */
     public String getTable() {
       return this.table;
     }
 
+    /**
+     * the table name.
+     */
     public terms_args setTable(String table) {
       this.table = table;
       return this;
@@ -15865,10 +15938,16 @@ public class Blur {
       }
     }
 
+    /**
+     * the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null.
+     */
     public String getColumnFamily() {
       return this.columnFamily;
     }
 
+    /**
+     * the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null.
+     */
     public terms_args setColumnFamily(String columnFamily) {
       this.columnFamily = columnFamily;
       return this;
@@ -15889,10 +15968,16 @@ public class Blur {
       }
     }
 
+    /**
+     * the column name.
+     */
     public String getColumnName() {
       return this.columnName;
     }
 
+    /**
+     * the column name.
+     */
     public terms_args setColumnName(String columnName) {
       this.columnName = columnName;
       return this;
@@ -15913,10 +15998,16 @@ public class Blur {
       }
     }
 
+    /**
+     * the term to start with assuming that you paging through the term list.
+     */
     public String getStartWith() {
       return this.startWith;
     }
 
+    /**
+     * the term to start with assuming that you paging through the term list.
+     */
     public terms_args setStartWith(String startWith) {
       this.startWith = startWith;
       return this;
@@ -15937,10 +16028,16 @@ public class Blur {
       }
     }
 
+    /**
+     * the number to fetch at once.
+     */
     public short getSize() {
       return this.size;
     }
 
+    /**
+     * the number to fetch at once.
+     */
     public terms_args setSize(short size) {
       this.size = size;
       setSizeIsSet(true);
@@ -16951,16 +17048,40 @@ public class Blur {
       schemes.put(TupleScheme.class, new recordFrequency_argsTupleSchemeFactory());
     }
 
+    /**
+     * the table name.
+     */
     public String table; // required
+    /**
+     * the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null.
+     */
     public String columnFamily; // required
+    /**
+     * the column name.
+     */
     public String columnName; // required
+    /**
+     * the value.
+     */
     public String value; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      /**
+       * the table name.
+       */
       TABLE((short)1, "table"),
+      /**
+       * the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null.
+       */
       COLUMN_FAMILY((short)2, "columnFamily"),
+      /**
+       * the column name.
+       */
       COLUMN_NAME((short)3, "columnName"),
+      /**
+       * the value.
+       */
       VALUE((short)4, "value");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -17085,10 +17206,16 @@ public class Blur {
       this.value = null;
     }
 
+    /**
+     * the table name.
+     */
     public String getTable() {
       return this.table;
     }
 
+    /**
+     * the table name.
+     */
     public recordFrequency_args setTable(String table) {
       this.table = table;
       return this;
@@ -17109,10 +17236,16 @@ public class Blur {
       }
     }
 
+    /**
+     * the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null.
+     */
     public String getColumnFamily() {
       return this.columnFamily;
     }
 
+    /**
+     * the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null.
+     */
     public recordFrequency_args setColumnFamily(String columnFamily) {
       this.columnFamily = columnFamily;
       return this;
@@ -17133,10 +17266,16 @@ public class Blur {
       }
     }
 
+    /**
+     * the column name.
+     */
     public String getColumnName() {
       return this.columnName;
     }
 
+    /**
+     * the column name.
+     */
     public recordFrequency_args setColumnName(String columnName) {
       this.columnName = columnName;
       return this;
@@ -17157,10 +17296,16 @@ public class Blur {
       }
     }
 
+    /**
+     * the value.
+     */
     public String getValue() {
       return this.value;
     }
 
+    /**
+     * the value.
+     */
     public recordFrequency_args setValue(String value) {
       this.value = value;
       return this;
@@ -18059,12 +18204,24 @@ public class Blur {
       schemes.put(TupleScheme.class, new fetchRow_argsTupleSchemeFactory());
     }
 
+    /**
+     * the table name.
+     */
     public String table; // required
+    /**
+     * the Selector to use to fetch the Row or Record.
+     */
     public Selector selector; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      /**
+       * the table name.
+       */
       TABLE((short)1, "table"),
+      /**
+       * the Selector to use to fetch the Row or Record.
+       */
       SELECTOR((short)2, "selector");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -18169,10 +18326,16 @@ public class Blur {
       this.selector = null;
     }
 
+    /**
+     * the table name.
+     */
     public String getTable() {
       return this.table;
     }
 
+    /**
+     * the table name.
+     */
     public fetchRow_args setTable(String table) {
       this.table = table;
       return this;
@@ -18193,10 +18356,16 @@ public class Blur {
       }
     }
 
+    /**
+     * the Selector to use to fetch the Row or Record.
+     */
     public Selector getSelector() {
       return this.selector;
     }
 
+    /**
+     * the Selector to use to fetch the Row or Record.
+     */
     public fetchRow_args setSelector(Selector selector) {
       this.selector = selector;
       return this;
@@ -18978,10 +19147,16 @@ public class Blur {
       schemes.put(TupleScheme.class, new mutate_argsTupleSchemeFactory());
     }
 
+    /**
+     * the RowMutation.
+     */
     public RowMutation mutation; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      /**
+       * the RowMutation.
+       */
       MUTATION((short)1, "mutation");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -19076,10 +19251,16 @@ public class Blur {
       this.mutation = null;
     }
 
+    /**
+     * the RowMutation.
+     */
     public RowMutation getMutation() {
       return this.mutation;
     }
 
+    /**
+     * the RowMutation.
+     */
     public mutate_args setMutation(RowMutation mutation) {
       this.mutation = mutation;
       return this;
@@ -19693,10 +19874,16 @@ public class Blur {
       schemes.put(TupleScheme.class, new mutateBatch_argsTupleSchemeFactory());
     }
 
+    /**
+     * the batch of RowMutations.
+     */
     public List<RowMutation> mutations; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      /**
+       * the batch of RowMutations.
+       */
       MUTATIONS((short)1, "mutations");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -19811,10 +19998,16 @@ public class Blur {
       this.mutations.add(elem);
     }
 
+    /**
+     * the batch of RowMutations.
+     */
     public List<RowMutation> getMutations() {
       return this.mutations;
     }
 
+    /**
+     * the batch of RowMutations.
+     */
     public mutateBatch_args setMutations(List<RowMutation> mutations) {
       this.mutations = mutations;
       return this;

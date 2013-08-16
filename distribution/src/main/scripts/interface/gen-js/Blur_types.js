@@ -2442,7 +2442,7 @@ Schema.prototype.write = function(output) {
 };
 
 TableDescriptor = function(args) {
-  this.isEnabled = true;
+  this.enabled = true;
   this.shardCount = 1;
   this.tableUri = null;
   this.cluster = 'default';
@@ -2458,8 +2458,8 @@ TableDescriptor = function(args) {
   this.defaultMissingFieldLessIndexing = true;
   this.defaultMissingFieldProps = null;
   if (args) {
-    if (args.isEnabled !== undefined) {
-      this.isEnabled = args.isEnabled;
+    if (args.enabled !== undefined) {
+      this.enabled = args.enabled;
     }
     if (args.shardCount !== undefined) {
       this.shardCount = args.shardCount;
@@ -2521,7 +2521,7 @@ TableDescriptor.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.BOOL) {
-        this.isEnabled = input.readBool().value;
+        this.enabled = input.readBool().value;
       } else {
         input.skip(ftype);
       }
@@ -2705,9 +2705,9 @@ TableDescriptor.prototype.read = function(input) {
 
 TableDescriptor.prototype.write = function(output) {
   output.writeStructBegin('TableDescriptor');
-  if (this.isEnabled !== null && this.isEnabled !== undefined) {
-    output.writeFieldBegin('isEnabled', Thrift.Type.BOOL, 1);
-    output.writeBool(this.isEnabled);
+  if (this.enabled !== null && this.enabled !== undefined) {
+    output.writeFieldBegin('enabled', Thrift.Type.BOOL, 1);
+    output.writeBool(this.enabled);
     output.writeFieldEnd();
   }
   if (this.shardCount !== null && this.shardCount !== undefined) {

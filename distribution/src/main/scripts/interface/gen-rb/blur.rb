@@ -1260,6 +1260,7 @@ module Blur
       TABLE = 1
 
       FIELDS = {
+        # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'}
       }
 
@@ -1294,6 +1295,7 @@ module Blur
       TABLE = 1
 
       FIELDS = {
+        # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'}
       }
 
@@ -1332,10 +1334,15 @@ module Blur
       SIZE = 5
 
       FIELDS = {
+        # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null.
         COLUMNFAMILY => {:type => ::Thrift::Types::STRING, :name => 'columnFamily'},
+        # the column name.
         COLUMNNAME => {:type => ::Thrift::Types::STRING, :name => 'columnName'},
+        # the term to start with assuming that you paging through the term list.
         STARTWITH => {:type => ::Thrift::Types::STRING, :name => 'startWith'},
+        # the number to fetch at once.
         SIZE => {:type => ::Thrift::Types::I16, :name => 'size'}
       }
 
@@ -1373,9 +1380,13 @@ module Blur
       VALUE = 4
 
       FIELDS = {
+        # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null.
         COLUMNFAMILY => {:type => ::Thrift::Types::STRING, :name => 'columnFamily'},
+        # the column name.
         COLUMNNAME => {:type => ::Thrift::Types::STRING, :name => 'columnName'},
+        # the value.
         VALUE => {:type => ::Thrift::Types::STRING, :name => 'value'}
       }
 
@@ -1411,7 +1422,9 @@ module Blur
       SELECTOR = 2
 
       FIELDS = {
+        # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # the Selector to use to fetch the Row or Record.
         SELECTOR => {:type => ::Thrift::Types::STRUCT, :name => 'selector', :class => ::Blur::Selector}
       }
 
@@ -1446,6 +1459,7 @@ module Blur
       MUTATION = 1
 
       FIELDS = {
+        # the RowMutation.
         MUTATION => {:type => ::Thrift::Types::STRUCT, :name => 'mutation', :class => ::Blur::RowMutation}
       }
 
@@ -1478,6 +1492,7 @@ module Blur
       MUTATIONS = 1
 
       FIELDS = {
+        # the batch of RowMutations.
         MUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'mutations', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::RowMutation}}
       }
 

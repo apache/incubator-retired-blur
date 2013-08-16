@@ -40,7 +40,7 @@ public class TruncateTableCommand extends Command {
       return;
     }
     TableDescriptor tableDescriptor = client.describe(tablename);
-    if (tableDescriptor.isIsEnabled()) {
+    if (tableDescriptor.isEnabled()) {
       out.println("Disabling table.");
       out.flush();
       client.disableTable(tablename);

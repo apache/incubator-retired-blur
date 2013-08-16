@@ -111,7 +111,7 @@ public class CreateInsertQueryRepeating {
     // TODO: doc doesnt say required, yet it barfs without it?
     td.cluster = cluster == null ? "default" : cluster;
     // auto enable table
-    td.isEnabled = true;
+    td.enabled = true;
 
     // 1 shard per server :)
     td.shardCount = client.shardServerList(cluster).size();

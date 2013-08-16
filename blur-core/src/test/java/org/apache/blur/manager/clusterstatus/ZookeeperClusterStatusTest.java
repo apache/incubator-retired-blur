@@ -198,7 +198,7 @@ public class ZookeeperClusterStatusTest {
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName(name);
     tableDescriptor.setTableUri("./target/tmp/zk_test_hdfs");
-    tableDescriptor.setIsEnabled(enabled);
+    tableDescriptor.setEnabled(enabled);
     clusterStatus.createTable(tableDescriptor);
     if (enabled) {
       clusterStatus.enableTable(tableDescriptor.getCluster(), name);

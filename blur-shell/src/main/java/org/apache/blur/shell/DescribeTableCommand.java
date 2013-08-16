@@ -37,7 +37,7 @@ public class DescribeTableCommand extends Command {
     TableDescriptor describe = client.describe(tablename);
     out.println("cluster                          : " + describe.cluster);
     out.println("name                             : " + describe.name);
-    out.println("enabled                          : " + describe.isEnabled);
+    out.println("enabled                          : " + describe.enabled);
     out.println("tableUri                         : " + describe.tableUri);
     out.println("shardCount                       : " + describe.shardCount);
     out.println("readOnly                         : " + describe.readOnly);

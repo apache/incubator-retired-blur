@@ -584,13 +584,13 @@ struct Schema {
 }
 
 /**
- *
+ * The table descriptor defines the base structure of the table as well as properties need for setup.
  */
 struct TableDescriptor {
   /**
    * Is the table enabled or not, enabled by default.
    */
-  1:bool isEnabled = 1,
+  1:bool enabled = 1,
   /**
    * The number of shards within the given table.
    */
@@ -650,13 +650,23 @@ struct TableDescriptor {
   18:map<string,string> defaultMissingFieldProps
 }
 
+/**
+ * The Metric will hold all the information for a given Metric.
+ */
 struct Metric {
+  /** metric name. */
   1:string name,
+  /** map of string values emitted by the Metric. */
   2:map<string,string> strMap,
+  /** map of long values emitted by the Metric. */
   3:map<string,i64> longMap,
+  /** map of double values emitted by the Metric. */
   4:map<string,double> doubleMap
 }
 
+/**
+ * The ColumnDefinition defines how a given Column should be interpreted (indexed/stored)
+ */
 struct ColumnDefinition {
   /**
    * Required. The family the this column existing within.
@@ -834,74 +844,81 @@ service Blur {
   ) throws (1:BlurException ex)
 
   /**
-   *
+   * Gets the schema for a given table.
+   * @return Schema.
    */
   Schema schema(
-    /**   */
+    /** the table name. */
     1:string table
   ) throws (1:BlurException ex)
 
   /**
-   *
+   * Gets the table stats for the given table.
+   * @return TableStats.
    */
   TableStats tableStats(
-    /**   */
+    /** the table name. */
     1:string table
   ) throws (1:BlurException ex)
 
   /**
-   *
+   * Gets the terms list from the index for the given table, family, column using the 
+   * startWith value to page through the results.  This method only makes sense to use with 
+   * string and text field types.
+   * @return the list of terms for the given column.
    */
   list<string> terms(
-    /**   */
+    /** the table name. */
     1:string table, 
-    /**   */
+    /** the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null. */
     2:string columnFamily, 
-    /**   */
-    3:string columnName, 
-    /**   */
+    /** the column name. */
+    3:string columnName,
+    /** the term to start with assuming that you paging through the term list. */
     4:string startWith, 
-    /**   */
+    /** the number to fetch at once. */
     5:i16 size
   ) throws (1:BlurException ex)
 
   /**
-   *
+   * Gets the record frequency for the provided table, family, column and value.
+   * @return the count for the entire table.
    */
   i64 recordFrequency(
-    /**   */
+    /** the table name. */
     1:string table, 
-    /**   */
+    /** the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null. */
     2:string columnFamily, 
-    /**   */
+    /** the column name. */
     3:string columnName, 
-    /**   */
+    /** the value. */
     4:string value
   ) throws (1:BlurException ex)
 
   /**
-   *
+   * Fetches a Row or a Record in the given table with the given Selector.
+   * @return the FetchResult.
    */
   FetchResult fetchRow(
-    /**   */
+    /** the table name. */
     1:string table, 
-    /**   */
+    /** the Selector to use to fetch the Row or Record. */
     2:Selector selector
   ) throws (1:BlurException ex)
 
   /**
-   *
+   * Mutates a Row given the RowMutation the is provided.
    */
   void mutate(
-    /**   */
+    /** the RowMutation.*/
     1:RowMutation mutation
   ) throws (1:BlurException ex)
 
   /**
-   *
+   * Mutates a group of Rows given the list of RowMutations that are provided.  Note: This is not an atomic operation.
    */
   void mutateBatch(
-    /**   */
+    /** the batch of RowMutations.*/
     1:list<RowMutation> mutations
   ) throws (1:BlurException ex)
 
@@ -915,7 +932,6 @@ service Blur {
 
   /**
    * Enables the given table, blocking until all shards are online.
-   * @param table 
    */
   void enableTable(
     /** the table name. */
@@ -924,7 +940,6 @@ service Blur {
 
   /**
    * Disables the given table, blocking until all shards are offline.
-   * @param table the table name.
    */
   void disableTable(
     /** the table name. */

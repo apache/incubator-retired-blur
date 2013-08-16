@@ -104,7 +104,7 @@ public abstract class TableAdmin implements Iface {
           tableDescriptor);
       throw new BException(e.getMessage(), e);
     }
-    if (tableDescriptor.isEnabled) {
+    if (tableDescriptor.isEnabled()) {
       enableTable(tableDescriptor.getName());
     }
   }

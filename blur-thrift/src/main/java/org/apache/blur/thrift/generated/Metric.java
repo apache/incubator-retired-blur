@@ -49,6 +49,9 @@ import java.util.Arrays;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
+/**
+ * The Metric will hold all the information for a given Metric.
+ */
 public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Metric, Metric._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("Metric");
 
@@ -63,16 +66,40 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
     schemes.put(TupleScheme.class, new MetricTupleSchemeFactory());
   }
 
+  /**
+   * metric name.
+   */
   public String name; // required
+  /**
+   * map of string values emitted by the Metric.
+   */
   public Map<String,String> strMap; // required
+  /**
+   * map of long values emitted by the Metric.
+   */
   public Map<String,Long> longMap; // required
+  /**
+   * map of double values emitted by the Metric.
+   */
   public Map<String,Double> doubleMap; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+    /**
+     * metric name.
+     */
     NAME((short)1, "name"),
+    /**
+     * map of string values emitted by the Metric.
+     */
     STR_MAP((short)2, "strMap"),
+    /**
+     * map of long values emitted by the Metric.
+     */
     LONG_MAP((short)3, "longMap"),
+    /**
+     * map of double values emitted by the Metric.
+     */
     DOUBLE_MAP((short)4, "doubleMap");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -239,10 +266,16 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
     this.doubleMap = null;
   }
 
+  /**
+   * metric name.
+   */
   public String getName() {
     return this.name;
   }
 
+  /**
+   * metric name.
+   */
   public Metric setName(String name) {
     this.name = name;
     return this;
@@ -274,10 +307,16 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
     this.strMap.put(key, val);
   }
 
+  /**
+   * map of string values emitted by the Metric.
+   */
   public Map<String,String> getStrMap() {
     return this.strMap;
   }
 
+  /**
+   * map of string values emitted by the Metric.
+   */
   public Metric setStrMap(Map<String,String> strMap) {
     this.strMap = strMap;
     return this;
@@ -309,10 +348,16 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
     this.longMap.put(key, val);
   }
 
+  /**
+   * map of long values emitted by the Metric.
+   */
   public Map<String,Long> getLongMap() {
     return this.longMap;
   }
 
+  /**
+   * map of long values emitted by the Metric.
+   */
   public Metric setLongMap(Map<String,Long> longMap) {
     this.longMap = longMap;
     return this;
@@ -344,10 +389,16 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
     this.doubleMap.put(key, val);
   }
 
+  /**
+   * map of double values emitted by the Metric.
+   */
   public Map<String,Double> getDoubleMap() {
     return this.doubleMap;
   }
 
+  /**
+   * map of double values emitted by the Metric.
+   */
   public Metric setDoubleMap(Map<String,Double> doubleMap) {
     this.doubleMap = doubleMap;
     return this;

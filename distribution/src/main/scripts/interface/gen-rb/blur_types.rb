@@ -666,10 +666,10 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  # 
+  # The table descriptor defines the base structure of the table as well as properties need for setup.
   class TableDescriptor
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    ISENABLED = 1
+    ENABLED = 1
     SHARDCOUNT = 3
     TABLEURI = 4
     CLUSTER = 7
@@ -687,7 +687,7 @@ module Blur
 
     FIELDS = {
       # Is the table enabled or not, enabled by default.
-      ISENABLED => {:type => ::Thrift::Types::BOOL, :name => 'isEnabled', :default => true},
+      ENABLED => {:type => ::Thrift::Types::BOOL, :name => 'enabled', :default => true},
       # The number of shards within the given table.
       SHARDCOUNT => {:type => ::Thrift::Types::I32, :name => 'shardCount', :default => 1},
       # The location where the table should be stored this can be "file:///" for a local instance of Blur or "hdfs://" for a distributed installation of Blur.
@@ -727,6 +727,7 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
+  # The Metric will hold all the information for a given Metric.
   class Metric
     include ::Thrift::Struct, ::Thrift::Struct_Union
     NAME = 1
@@ -735,9 +736,13 @@ module Blur
     DOUBLEMAP = 4
 
     FIELDS = {
+      # metric name.
       NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+      # map of string values emitted by the Metric.
       STRMAP => {:type => ::Thrift::Types::MAP, :name => 'strMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+      # map of long values emitted by the Metric.
       LONGMAP => {:type => ::Thrift::Types::MAP, :name => 'longMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::I64}},
+      # map of double values emitted by the Metric.
       DOUBLEMAP => {:type => ::Thrift::Types::MAP, :name => 'doubleMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::DOUBLE}}
     }
 
@@ -749,6 +754,7 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
+  # The ColumnDefinition defines how a given Column should be interpreted (indexed/stored)
   class ColumnDefinition
     include ::Thrift::Struct, ::Thrift::Struct_Union
     FAMILY = 1

@@ -47,16 +47,13 @@ public class QueryCache implements EvictionListener<QueryCacheKey, QueryCacheEnt
     LOG.debug("Cache [" + _name + "] key [" + key + "] value [" + value + "] evicted.");
   }
 
-  @SuppressWarnings("deprecation")
   public static QueryCacheKey getNormalizedBlurQueryKey(String table, BlurQuery blurQuery) {
     BlurQuery newBlurQuery = new BlurQuery(blurQuery);
-    newBlurQuery.allowStaleData = false;
     newBlurQuery.useCacheIfPresent = false;
     newBlurQuery.userContext = null;
     newBlurQuery.maxQueryTime = 0;
     newBlurQuery.uuid = 0;
     newBlurQuery.startTime = 0;
-    newBlurQuery.modifyFileCaches = false;
     return new QueryCacheKey(table, newBlurQuery);
   }
 

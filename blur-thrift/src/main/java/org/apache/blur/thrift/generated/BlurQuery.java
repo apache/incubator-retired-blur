@@ -50,16 +50,15 @@ import java.util.Arrays;
 //import org.slf4j.LoggerFactory;
 
 /**
- * 
+ * The Blur Query object that contains the query that needs to be executed along
+ * with the query options.
  */
 public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<BlurQuery, BlurQuery._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("BlurQuery");
 
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SIMPLE_QUERY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("simpleQuery", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField EXPERT_QUERY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("expertQuery", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)2);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FACETS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("facets", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)3);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SELECTOR_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("selector", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)4);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ALLOW_STALE_DATA_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("allowStaleData", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)5);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField USE_CACHE_IF_PRESENT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("useCacheIfPresent", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)6);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField START_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("start", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)7);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FETCH_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("fetch", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)8);
@@ -69,7 +68,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField USER_CONTEXT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("userContext", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)12);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField CACHE_RESULT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("cacheResult", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)13);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField START_TIME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("startTime", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)14);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField MODIFY_FILE_CACHES_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("modifyFileCaches", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)15);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -78,15 +76,11 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   }
 
   /**
-   * 
+   * The query information.
    */
   public SimpleQuery simpleQuery; // required
   /**
-   * 
-   */
-  public ExpertQuery expertQuery; // required
-  /**
-   * 
+   * A list of Facets to execute with the given query.
    */
   public List<Facet> facets; // required
   /**
@@ -94,62 +88,52 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
    */
   public Selector selector; // required
   /**
-   * @deprecated This value is no longer used.  This allows the query to see the most current data that has been added to the table.
-   */
-  public boolean allowStaleData; // required
-  /**
-   * 
+   * Enabled by default to use a cached result if the query matches a previous run query with the
+   * configured amount of time.
    */
   public boolean useCacheIfPresent; // required
   /**
-   * 
+   * The starting result position, 0 by default.
    */
   public long start; // required
   /**
-   * 
+   * The number of fetched results, 10 by default.
    */
   public int fetch; // required
   /**
-   * 
+   * The minimum number of results to find before returning.
    */
   public long minimumNumberOfResults; // required
   /**
-   * 
+   * The maximum amount of time the query should execute before timing out.
    */
   public long maxQueryTime; // required
   /**
-   * 
+   * Sets the uuid of this query, this is normal set by the client so that the status
+   * of a running query can be found or the query can be canceled.
    */
   public long uuid; // required
   /**
-   * 
+   * Sets a user context, only used for logging at this point.
    */
   public String userContext; // required
   /**
-   * 
+   * Enabled by default to cache this result.  False would not cache the result.
    */
   public boolean cacheResult; // required
   /**
-   * 
+   * Sets the start time, if 0 the controller sets the time.
    */
   public long startTime; // required
-  /**
-   * 
-   */
-  public boolean modifyFileCaches; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
-     * 
+     * The query information.
      */
     SIMPLE_QUERY((short)1, "simpleQuery"),
     /**
-     * 
-     */
-    EXPERT_QUERY((short)2, "expertQuery"),
-    /**
-     * 
+     * A list of Facets to execute with the given query.
      */
     FACETS((short)3, "facets"),
     /**
@@ -157,49 +141,43 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
      */
     SELECTOR((short)4, "selector"),
     /**
-     * @deprecated This value is no longer used.  This allows the query to see the most current data that has been added to the table.
-     */
-    ALLOW_STALE_DATA((short)5, "allowStaleData"),
-    /**
-     * 
+     * Enabled by default to use a cached result if the query matches a previous run query with the
+     * configured amount of time.
      */
     USE_CACHE_IF_PRESENT((short)6, "useCacheIfPresent"),
     /**
-     * 
+     * The starting result position, 0 by default.
      */
     START((short)7, "start"),
     /**
-     * 
+     * The number of fetched results, 10 by default.
      */
     FETCH((short)8, "fetch"),
     /**
-     * 
+     * The minimum number of results to find before returning.
      */
     MINIMUM_NUMBER_OF_RESULTS((short)9, "minimumNumberOfResults"),
     /**
-     * 
+     * The maximum amount of time the query should execute before timing out.
      */
     MAX_QUERY_TIME((short)10, "maxQueryTime"),
     /**
-     * 
+     * Sets the uuid of this query, this is normal set by the client so that the status
+     * of a running query can be found or the query can be canceled.
      */
     UUID((short)11, "uuid"),
     /**
-     * 
+     * Sets a user context, only used for logging at this point.
      */
     USER_CONTEXT((short)12, "userContext"),
     /**
-     * 
+     * Enabled by default to cache this result.  False would not cache the result.
      */
     CACHE_RESULT((short)13, "cacheResult"),
     /**
-     * 
+     * Sets the start time, if 0 the controller sets the time.
      */
-    START_TIME((short)14, "startTime"),
-    /**
-     * 
-     */
-    MODIFY_FILE_CACHES((short)15, "modifyFileCaches");
+    START_TIME((short)14, "startTime");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -216,14 +194,10 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       switch(fieldId) {
         case 1: // SIMPLE_QUERY
           return SIMPLE_QUERY;
-        case 2: // EXPERT_QUERY
-          return EXPERT_QUERY;
         case 3: // FACETS
           return FACETS;
         case 4: // SELECTOR
           return SELECTOR;
-        case 5: // ALLOW_STALE_DATA
-          return ALLOW_STALE_DATA;
         case 6: // USE_CACHE_IF_PRESENT
           return USE_CACHE_IF_PRESENT;
         case 7: // START
@@ -242,8 +216,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
           return CACHE_RESULT;
         case 14: // START_TIME
           return START_TIME;
-        case 15: // MODIFY_FILE_CACHES
-          return MODIFY_FILE_CACHES;
         default:
           return null;
       }
@@ -284,31 +256,25 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   }
 
   // isset id assignments
-  private static final int __ALLOWSTALEDATA_ISSET_ID = 0;
-  private static final int __USECACHEIFPRESENT_ISSET_ID = 1;
-  private static final int __START_ISSET_ID = 2;
-  private static final int __FETCH_ISSET_ID = 3;
-  private static final int __MINIMUMNUMBEROFRESULTS_ISSET_ID = 4;
-  private static final int __MAXQUERYTIME_ISSET_ID = 5;
-  private static final int __UUID_ISSET_ID = 6;
-  private static final int __CACHERESULT_ISSET_ID = 7;
-  private static final int __STARTTIME_ISSET_ID = 8;
-  private static final int __MODIFYFILECACHES_ISSET_ID = 9;
-  private short __isset_bitfield = 0;
+  private static final int __USECACHEIFPRESENT_ISSET_ID = 0;
+  private static final int __START_ISSET_ID = 1;
+  private static final int __FETCH_ISSET_ID = 2;
+  private static final int __MINIMUMNUMBEROFRESULTS_ISSET_ID = 3;
+  private static final int __MAXQUERYTIME_ISSET_ID = 4;
+  private static final int __UUID_ISSET_ID = 5;
+  private static final int __CACHERESULT_ISSET_ID = 6;
+  private static final int __STARTTIME_ISSET_ID = 7;
+  private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.SIMPLE_QUERY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("simpleQuery", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, SimpleQuery.class)));
-    tmpMap.put(_Fields.EXPERT_QUERY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("expertQuery", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, ExpertQuery.class)));
     tmpMap.put(_Fields.FACETS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("facets", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Facet.class))));
     tmpMap.put(_Fields.SELECTOR, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("selector", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Selector.class)));
-    tmpMap.put(_Fields.ALLOW_STALE_DATA, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("allowStaleData", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
     tmpMap.put(_Fields.USE_CACHE_IF_PRESENT, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("useCacheIfPresent", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
     tmpMap.put(_Fields.START, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("start", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
@@ -327,15 +293,11 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
     tmpMap.put(_Fields.START_TIME, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("startTime", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
-    tmpMap.put(_Fields.MODIFY_FILE_CACHES, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("modifyFileCaches", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(BlurQuery.class, metaDataMap);
   }
 
   public BlurQuery() {
-    this.allowStaleData = false;
-
     this.useCacheIfPresent = true;
 
     this.start = 0L;
@@ -350,16 +312,12 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
 
     this.startTime = 0L;
 
-    this.modifyFileCaches = true;
-
   }
 
   public BlurQuery(
     SimpleQuery simpleQuery,
-    ExpertQuery expertQuery,
     List<Facet> facets,
     Selector selector,
-    boolean allowStaleData,
     boolean useCacheIfPresent,
     long start,
     int fetch,
@@ -368,16 +326,12 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     long uuid,
     String userContext,
     boolean cacheResult,
-    long startTime,
-    boolean modifyFileCaches)
+    long startTime)
   {
     this();
     this.simpleQuery = simpleQuery;
-    this.expertQuery = expertQuery;
     this.facets = facets;
     this.selector = selector;
-    this.allowStaleData = allowStaleData;
-    setAllowStaleDataIsSet(true);
     this.useCacheIfPresent = useCacheIfPresent;
     setUseCacheIfPresentIsSet(true);
     this.start = start;
@@ -395,8 +349,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     setCacheResultIsSet(true);
     this.startTime = startTime;
     setStartTimeIsSet(true);
-    this.modifyFileCaches = modifyFileCaches;
-    setModifyFileCachesIsSet(true);
   }
 
   /**
@@ -406,9 +358,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     __isset_bitfield = other.__isset_bitfield;
     if (other.isSetSimpleQuery()) {
       this.simpleQuery = new SimpleQuery(other.simpleQuery);
-    }
-    if (other.isSetExpertQuery()) {
-      this.expertQuery = new ExpertQuery(other.expertQuery);
     }
     if (other.isSetFacets()) {
       List<Facet> __this__facets = new ArrayList<Facet>();
@@ -420,7 +369,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     if (other.isSetSelector()) {
       this.selector = new Selector(other.selector);
     }
-    this.allowStaleData = other.allowStaleData;
     this.useCacheIfPresent = other.useCacheIfPresent;
     this.start = other.start;
     this.fetch = other.fetch;
@@ -432,7 +380,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     }
     this.cacheResult = other.cacheResult;
     this.startTime = other.startTime;
-    this.modifyFileCaches = other.modifyFileCaches;
   }
 
   public BlurQuery deepCopy() {
@@ -442,11 +389,8 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   @Override
   public void clear() {
     this.simpleQuery = null;
-    this.expertQuery = null;
     this.facets = null;
     this.selector = null;
-    this.allowStaleData = false;
-
     this.useCacheIfPresent = true;
 
     this.start = 0L;
@@ -464,19 +408,17 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
 
     this.startTime = 0L;
 
-    this.modifyFileCaches = true;
-
   }
 
   /**
-   * 
+   * The query information.
    */
   public SimpleQuery getSimpleQuery() {
     return this.simpleQuery;
   }
 
   /**
-   * 
+   * The query information.
    */
   public BlurQuery setSimpleQuery(SimpleQuery simpleQuery) {
     this.simpleQuery = simpleQuery;
@@ -498,36 +440,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     }
   }
 
-  /**
-   * 
-   */
-  public ExpertQuery getExpertQuery() {
-    return this.expertQuery;
-  }
-
-  /**
-   * 
-   */
-  public BlurQuery setExpertQuery(ExpertQuery expertQuery) {
-    this.expertQuery = expertQuery;
-    return this;
-  }
-
-  public void unsetExpertQuery() {
-    this.expertQuery = null;
-  }
-
-  /** Returns true if field expertQuery is set (has been assigned a value) and false otherwise */
-  public boolean isSetExpertQuery() {
-    return this.expertQuery != null;
-  }
-
-  public void setExpertQueryIsSet(boolean value) {
-    if (!value) {
-      this.expertQuery = null;
-    }
-  }
-
   public int getFacetsSize() {
     return (this.facets == null) ? 0 : this.facets.size();
   }
@@ -544,14 +456,14 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   }
 
   /**
-   * 
+   * A list of Facets to execute with the given query.
    */
   public List<Facet> getFacets() {
     return this.facets;
   }
 
   /**
-   * 
+   * A list of Facets to execute with the given query.
    */
   public BlurQuery setFacets(List<Facet> facets) {
     this.facets = facets;
@@ -604,43 +516,16 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   }
 
   /**
-   * @deprecated This value is no longer used.  This allows the query to see the most current data that has been added to the table.
-   */
-  public boolean isAllowStaleData() {
-    return this.allowStaleData;
-  }
-
-  /**
-   * @deprecated This value is no longer used.  This allows the query to see the most current data that has been added to the table.
-   */
-  public BlurQuery setAllowStaleData(boolean allowStaleData) {
-    this.allowStaleData = allowStaleData;
-    setAllowStaleDataIsSet(true);
-    return this;
-  }
-
-  public void unsetAllowStaleData() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ALLOWSTALEDATA_ISSET_ID);
-  }
-
-  /** Returns true if field allowStaleData is set (has been assigned a value) and false otherwise */
-  public boolean isSetAllowStaleData() {
-    return EncodingUtils.testBit(__isset_bitfield, __ALLOWSTALEDATA_ISSET_ID);
-  }
-
-  public void setAllowStaleDataIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ALLOWSTALEDATA_ISSET_ID, value);
-  }
-
-  /**
-   * 
+   * Enabled by default to use a cached result if the query matches a previous run query with the
+   * configured amount of time.
    */
   public boolean isUseCacheIfPresent() {
     return this.useCacheIfPresent;
   }
 
   /**
-   * 
+   * Enabled by default to use a cached result if the query matches a previous run query with the
+   * configured amount of time.
    */
   public BlurQuery setUseCacheIfPresent(boolean useCacheIfPresent) {
     this.useCacheIfPresent = useCacheIfPresent;
@@ -662,14 +547,14 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   }
 
   /**
-   * 
+   * The starting result position, 0 by default.
    */
   public long getStart() {
     return this.start;
   }
 
   /**
-   * 
+   * The starting result position, 0 by default.
    */
   public BlurQuery setStart(long start) {
     this.start = start;
@@ -691,14 +576,14 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   }
 
   /**
-   * 
+   * The number of fetched results, 10 by default.
    */
   public int getFetch() {
     return this.fetch;
   }
 
   /**
-   * 
+   * The number of fetched results, 10 by default.
    */
   public BlurQuery setFetch(int fetch) {
     this.fetch = fetch;
@@ -720,14 +605,14 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   }
 
   /**
-   * 
+   * The minimum number of results to find before returning.
    */
   public long getMinimumNumberOfResults() {
     return this.minimumNumberOfResults;
   }
 
   /**
-   * 
+   * The minimum number of results to find before returning.
    */
   public BlurQuery setMinimumNumberOfResults(long minimumNumberOfResults) {
     this.minimumNumberOfResults = minimumNumberOfResults;
@@ -749,14 +634,14 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   }
 
   /**
-   * 
+   * The maximum amount of time the query should execute before timing out.
    */
   public long getMaxQueryTime() {
     return this.maxQueryTime;
   }
 
   /**
-   * 
+   * The maximum amount of time the query should execute before timing out.
    */
   public BlurQuery setMaxQueryTime(long maxQueryTime) {
     this.maxQueryTime = maxQueryTime;
@@ -778,14 +663,16 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   }
 
   /**
-   * 
+   * Sets the uuid of this query, this is normal set by the client so that the status
+   * of a running query can be found or the query can be canceled.
    */
   public long getUuid() {
     return this.uuid;
   }
 
   /**
-   * 
+   * Sets the uuid of this query, this is normal set by the client so that the status
+   * of a running query can be found or the query can be canceled.
    */
   public BlurQuery setUuid(long uuid) {
     this.uuid = uuid;
@@ -807,14 +694,14 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   }
 
   /**
-   * 
+   * Sets a user context, only used for logging at this point.
    */
   public String getUserContext() {
     return this.userContext;
   }
 
   /**
-   * 
+   * Sets a user context, only used for logging at this point.
    */
   public BlurQuery setUserContext(String userContext) {
     this.userContext = userContext;
@@ -837,14 +724,14 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   }
 
   /**
-   * 
+   * Enabled by default to cache this result.  False would not cache the result.
    */
   public boolean isCacheResult() {
     return this.cacheResult;
   }
 
   /**
-   * 
+   * Enabled by default to cache this result.  False would not cache the result.
    */
   public BlurQuery setCacheResult(boolean cacheResult) {
     this.cacheResult = cacheResult;
@@ -866,14 +753,14 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   }
 
   /**
-   * 
+   * Sets the start time, if 0 the controller sets the time.
    */
   public long getStartTime() {
     return this.startTime;
   }
 
   /**
-   * 
+   * Sets the start time, if 0 the controller sets the time.
    */
   public BlurQuery setStartTime(long startTime) {
     this.startTime = startTime;
@@ -894,35 +781,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __STARTTIME_ISSET_ID, value);
   }
 
-  /**
-   * 
-   */
-  public boolean isModifyFileCaches() {
-    return this.modifyFileCaches;
-  }
-
-  /**
-   * 
-   */
-  public BlurQuery setModifyFileCaches(boolean modifyFileCaches) {
-    this.modifyFileCaches = modifyFileCaches;
-    setModifyFileCachesIsSet(true);
-    return this;
-  }
-
-  public void unsetModifyFileCaches() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __MODIFYFILECACHES_ISSET_ID);
-  }
-
-  /** Returns true if field modifyFileCaches is set (has been assigned a value) and false otherwise */
-  public boolean isSetModifyFileCaches() {
-    return EncodingUtils.testBit(__isset_bitfield, __MODIFYFILECACHES_ISSET_ID);
-  }
-
-  public void setModifyFileCachesIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __MODIFYFILECACHES_ISSET_ID, value);
-  }
-
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case SIMPLE_QUERY:
@@ -930,14 +788,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         unsetSimpleQuery();
       } else {
         setSimpleQuery((SimpleQuery)value);
-      }
-      break;
-
-    case EXPERT_QUERY:
-      if (value == null) {
-        unsetExpertQuery();
-      } else {
-        setExpertQuery((ExpertQuery)value);
       }
       break;
 
@@ -954,14 +804,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         unsetSelector();
       } else {
         setSelector((Selector)value);
-      }
-      break;
-
-    case ALLOW_STALE_DATA:
-      if (value == null) {
-        unsetAllowStaleData();
-      } else {
-        setAllowStaleData((Boolean)value);
       }
       break;
 
@@ -1037,14 +879,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       }
       break;
 
-    case MODIFY_FILE_CACHES:
-      if (value == null) {
-        unsetModifyFileCaches();
-      } else {
-        setModifyFileCaches((Boolean)value);
-      }
-      break;
-
     }
   }
 
@@ -1053,17 +887,11 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     case SIMPLE_QUERY:
       return getSimpleQuery();
 
-    case EXPERT_QUERY:
-      return getExpertQuery();
-
     case FACETS:
       return getFacets();
 
     case SELECTOR:
       return getSelector();
-
-    case ALLOW_STALE_DATA:
-      return Boolean.valueOf(isAllowStaleData());
 
     case USE_CACHE_IF_PRESENT:
       return Boolean.valueOf(isUseCacheIfPresent());
@@ -1092,9 +920,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     case START_TIME:
       return Long.valueOf(getStartTime());
 
-    case MODIFY_FILE_CACHES:
-      return Boolean.valueOf(isModifyFileCaches());
-
     }
     throw new IllegalStateException();
   }
@@ -1108,14 +933,10 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     switch (field) {
     case SIMPLE_QUERY:
       return isSetSimpleQuery();
-    case EXPERT_QUERY:
-      return isSetExpertQuery();
     case FACETS:
       return isSetFacets();
     case SELECTOR:
       return isSetSelector();
-    case ALLOW_STALE_DATA:
-      return isSetAllowStaleData();
     case USE_CACHE_IF_PRESENT:
       return isSetUseCacheIfPresent();
     case START:
@@ -1134,8 +955,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       return isSetCacheResult();
     case START_TIME:
       return isSetStartTime();
-    case MODIFY_FILE_CACHES:
-      return isSetModifyFileCaches();
     }
     throw new IllegalStateException();
   }
@@ -1162,15 +981,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         return false;
     }
 
-    boolean this_present_expertQuery = true && this.isSetExpertQuery();
-    boolean that_present_expertQuery = true && that.isSetExpertQuery();
-    if (this_present_expertQuery || that_present_expertQuery) {
-      if (!(this_present_expertQuery && that_present_expertQuery))
-        return false;
-      if (!this.expertQuery.equals(that.expertQuery))
-        return false;
-    }
-
     boolean this_present_facets = true && this.isSetFacets();
     boolean that_present_facets = true && that.isSetFacets();
     if (this_present_facets || that_present_facets) {
@@ -1186,15 +996,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       if (!(this_present_selector && that_present_selector))
         return false;
       if (!this.selector.equals(that.selector))
-        return false;
-    }
-
-    boolean this_present_allowStaleData = true;
-    boolean that_present_allowStaleData = true;
-    if (this_present_allowStaleData || that_present_allowStaleData) {
-      if (!(this_present_allowStaleData && that_present_allowStaleData))
-        return false;
-      if (this.allowStaleData != that.allowStaleData)
         return false;
     }
 
@@ -1279,15 +1080,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         return false;
     }
 
-    boolean this_present_modifyFileCaches = true;
-    boolean that_present_modifyFileCaches = true;
-    if (this_present_modifyFileCaches || that_present_modifyFileCaches) {
-      if (!(this_present_modifyFileCaches && that_present_modifyFileCaches))
-        return false;
-      if (this.modifyFileCaches != that.modifyFileCaches)
-        return false;
-    }
-
     return true;
   }
 
@@ -1314,16 +1106,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetExpertQuery()).compareTo(typedOther.isSetExpertQuery());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetExpertQuery()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.expertQuery, typedOther.expertQuery);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = Boolean.valueOf(isSetFacets()).compareTo(typedOther.isSetFacets());
     if (lastComparison != 0) {
       return lastComparison;
@@ -1340,16 +1122,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     }
     if (isSetSelector()) {
       lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.selector, typedOther.selector);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetAllowStaleData()).compareTo(typedOther.isSetAllowStaleData());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetAllowStaleData()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.allowStaleData, typedOther.allowStaleData);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1444,16 +1216,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetModifyFileCaches()).compareTo(typedOther.isSetModifyFileCaches());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetModifyFileCaches()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.modifyFileCaches, typedOther.modifyFileCaches);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     return 0;
   }
 
@@ -1482,14 +1244,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("expertQuery:");
-    if (this.expertQuery == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.expertQuery);
-    }
-    first = false;
-    if (!first) sb.append(", ");
     sb.append("facets:");
     if (this.facets == null) {
       sb.append("null");
@@ -1504,10 +1258,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     } else {
       sb.append(this.selector);
     }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("allowStaleData:");
-    sb.append(this.allowStaleData);
     first = false;
     if (!first) sb.append(", ");
     sb.append("useCacheIfPresent:");
@@ -1549,10 +1299,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     sb.append("startTime:");
     sb.append(this.startTime);
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("modifyFileCaches:");
-    sb.append(this.modifyFileCaches);
-    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -1562,9 +1308,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     // check for sub-struct validity
     if (simpleQuery != null) {
       simpleQuery.validate();
-    }
-    if (expertQuery != null) {
-      expertQuery.validate();
     }
     if (selector != null) {
       selector.validate();
@@ -1616,15 +1359,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // EXPERT_QUERY
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
-              struct.expertQuery = new ExpertQuery();
-              struct.expertQuery.read(iprot);
-              struct.setExpertQueryIsSet(true);
-            } else { 
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           case 3: // FACETS
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
@@ -1649,14 +1383,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
               struct.selector = new Selector();
               struct.selector.read(iprot);
               struct.setSelectorIsSet(true);
-            } else { 
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 5: // ALLOW_STALE_DATA
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
-              struct.allowStaleData = iprot.readBool();
-              struct.setAllowStaleDataIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1733,14 +1459,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 15: // MODIFY_FILE_CACHES
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
-              struct.modifyFileCaches = iprot.readBool();
-              struct.setModifyFileCachesIsSet(true);
-            } else { 
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           default:
             org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1761,11 +1479,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         struct.simpleQuery.write(oprot);
         oprot.writeFieldEnd();
       }
-      if (struct.expertQuery != null) {
-        oprot.writeFieldBegin(EXPERT_QUERY_FIELD_DESC);
-        struct.expertQuery.write(oprot);
-        oprot.writeFieldEnd();
-      }
       if (struct.facets != null) {
         oprot.writeFieldBegin(FACETS_FIELD_DESC);
         {
@@ -1783,9 +1496,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         struct.selector.write(oprot);
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(ALLOW_STALE_DATA_FIELD_DESC);
-      oprot.writeBool(struct.allowStaleData);
-      oprot.writeFieldEnd();
       oprot.writeFieldBegin(USE_CACHE_IF_PRESENT_FIELD_DESC);
       oprot.writeBool(struct.useCacheIfPresent);
       oprot.writeFieldEnd();
@@ -1815,9 +1525,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       oprot.writeFieldBegin(START_TIME_FIELD_DESC);
       oprot.writeI64(struct.startTime);
       oprot.writeFieldEnd();
-      oprot.writeFieldBegin(MODIFY_FILE_CACHES_FIELD_DESC);
-      oprot.writeBool(struct.modifyFileCaches);
-      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1839,54 +1546,42 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       if (struct.isSetSimpleQuery()) {
         optionals.set(0);
       }
-      if (struct.isSetExpertQuery()) {
+      if (struct.isSetFacets()) {
         optionals.set(1);
       }
-      if (struct.isSetFacets()) {
+      if (struct.isSetSelector()) {
         optionals.set(2);
       }
-      if (struct.isSetSelector()) {
+      if (struct.isSetUseCacheIfPresent()) {
         optionals.set(3);
       }
-      if (struct.isSetAllowStaleData()) {
+      if (struct.isSetStart()) {
         optionals.set(4);
       }
-      if (struct.isSetUseCacheIfPresent()) {
+      if (struct.isSetFetch()) {
         optionals.set(5);
       }
-      if (struct.isSetStart()) {
+      if (struct.isSetMinimumNumberOfResults()) {
         optionals.set(6);
       }
-      if (struct.isSetFetch()) {
+      if (struct.isSetMaxQueryTime()) {
         optionals.set(7);
       }
-      if (struct.isSetMinimumNumberOfResults()) {
+      if (struct.isSetUuid()) {
         optionals.set(8);
       }
-      if (struct.isSetMaxQueryTime()) {
+      if (struct.isSetUserContext()) {
         optionals.set(9);
       }
-      if (struct.isSetUuid()) {
+      if (struct.isSetCacheResult()) {
         optionals.set(10);
       }
-      if (struct.isSetUserContext()) {
+      if (struct.isSetStartTime()) {
         optionals.set(11);
       }
-      if (struct.isSetCacheResult()) {
-        optionals.set(12);
-      }
-      if (struct.isSetStartTime()) {
-        optionals.set(13);
-      }
-      if (struct.isSetModifyFileCaches()) {
-        optionals.set(14);
-      }
-      oprot.writeBitSet(optionals, 15);
+      oprot.writeBitSet(optionals, 12);
       if (struct.isSetSimpleQuery()) {
         struct.simpleQuery.write(oprot);
-      }
-      if (struct.isSetExpertQuery()) {
-        struct.expertQuery.write(oprot);
       }
       if (struct.isSetFacets()) {
         {
@@ -1899,9 +1594,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       }
       if (struct.isSetSelector()) {
         struct.selector.write(oprot);
-      }
-      if (struct.isSetAllowStaleData()) {
-        oprot.writeBool(struct.allowStaleData);
       }
       if (struct.isSetUseCacheIfPresent()) {
         oprot.writeBool(struct.useCacheIfPresent);
@@ -1930,26 +1622,18 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       if (struct.isSetStartTime()) {
         oprot.writeI64(struct.startTime);
       }
-      if (struct.isSetModifyFileCaches()) {
-        oprot.writeBool(struct.modifyFileCaches);
-      }
     }
 
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, BlurQuery struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(15);
+      BitSet incoming = iprot.readBitSet(12);
       if (incoming.get(0)) {
         struct.simpleQuery = new SimpleQuery();
         struct.simpleQuery.read(iprot);
         struct.setSimpleQueryIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.expertQuery = new ExpertQuery();
-        struct.expertQuery.read(iprot);
-        struct.setExpertQueryIsSet(true);
-      }
-      if (incoming.get(2)) {
         {
           org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list47 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
           struct.facets = new ArrayList<Facet>(_list47.size);
@@ -1963,54 +1647,46 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         }
         struct.setFacetsIsSet(true);
       }
-      if (incoming.get(3)) {
+      if (incoming.get(2)) {
         struct.selector = new Selector();
         struct.selector.read(iprot);
         struct.setSelectorIsSet(true);
       }
-      if (incoming.get(4)) {
-        struct.allowStaleData = iprot.readBool();
-        struct.setAllowStaleDataIsSet(true);
-      }
-      if (incoming.get(5)) {
+      if (incoming.get(3)) {
         struct.useCacheIfPresent = iprot.readBool();
         struct.setUseCacheIfPresentIsSet(true);
       }
-      if (incoming.get(6)) {
+      if (incoming.get(4)) {
         struct.start = iprot.readI64();
         struct.setStartIsSet(true);
       }
-      if (incoming.get(7)) {
+      if (incoming.get(5)) {
         struct.fetch = iprot.readI32();
         struct.setFetchIsSet(true);
       }
-      if (incoming.get(8)) {
+      if (incoming.get(6)) {
         struct.minimumNumberOfResults = iprot.readI64();
         struct.setMinimumNumberOfResultsIsSet(true);
       }
-      if (incoming.get(9)) {
+      if (incoming.get(7)) {
         struct.maxQueryTime = iprot.readI64();
         struct.setMaxQueryTimeIsSet(true);
       }
-      if (incoming.get(10)) {
+      if (incoming.get(8)) {
         struct.uuid = iprot.readI64();
         struct.setUuidIsSet(true);
       }
-      if (incoming.get(11)) {
+      if (incoming.get(9)) {
         struct.userContext = iprot.readString();
         struct.setUserContextIsSet(true);
       }
-      if (incoming.get(12)) {
+      if (incoming.get(10)) {
         struct.cacheResult = iprot.readBool();
         struct.setCacheResultIsSet(true);
       }
-      if (incoming.get(13)) {
+      if (incoming.get(11)) {
         struct.startTime = iprot.readI64();
         struct.setStartTimeIsSet(true);
-      }
-      if (incoming.get(14)) {
-        struct.modifyFileCaches = iprot.readBool();
-        struct.setModifyFileCachesIsSet(true);
       }
     }
   }

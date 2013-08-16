@@ -51,7 +51,6 @@ import org.apache.blur.manager.results.BlurResultIterableClient;
 import org.apache.blur.manager.results.LazyBlurResult;
 import org.apache.blur.manager.results.MergerBlurResultIterable;
 import org.apache.blur.manager.stats.MergerTableStats;
-import org.apache.blur.manager.status.MergerQueryStatus;
 import org.apache.blur.manager.status.MergerQueryStatusSingle;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.commands.BlurCommand;
@@ -466,22 +465,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public List<BlurQueryStatus> currentQueries(final String table) throws BlurException, TException {
-    checkTable(table);
-    try {
-      return scatterGather(getCluster(table), new BlurCommand<List<BlurQueryStatus>>() {
-        @Override
-        public List<BlurQueryStatus> call(Client client) throws BlurException, TException {
-          return client.currentQueries(table);
-        }
-      }, new MergerQueryStatus(_defaultParallelCallTimeout));
-    } catch (Exception e) {
-      LOG.error("Unknown error while trying to get current searches [{0}]", e, table);
-      throw new BException("Unknown error while trying to get current searches [{0}]", e, table);
-    }
-  }
-
-  @Override
   public List<Long> queryStatusIdList(final String table) throws BlurException, TException {
     checkTable(table);
     try {
@@ -531,7 +514,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       return scatterGather(getCluster(table), new BlurCommand<TableStats>() {
         @Override
         public TableStats call(Client client) throws BlurException, TException {
-          return client.getTableStats(table);
+          return client.tableStats(table);
         }
       }, new MergerTableStats(_defaultParallelCallTimeout));
     } catch (Exception e) {

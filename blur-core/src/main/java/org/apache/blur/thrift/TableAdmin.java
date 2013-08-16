@@ -37,7 +37,6 @@ import org.apache.blur.thrift.generated.Metric;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
-import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.MemoryReporter;
 import org.apache.zookeeper.ZooKeeper;
@@ -82,11 +81,6 @@ public abstract class TableAdmin implements Iface {
       LOG.error("Unknown error while trying to get metrics [{0}] ", e, metrics);
       throw new BException(e.getMessage(), e);
     }
-  }
-
-  @Override
-  public TableStats getTableStats(String table) throws BlurException, TException {
-    return tableStats(table);
   }
 
   @Override

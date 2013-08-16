@@ -26,7 +26,6 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.warmup.IndexTracerResult;
 import org.apache.blur.lucene.warmup.IndexWarmup;
 import org.apache.blur.server.ShardContext;
-import org.apache.blur.thrift.generated.ColumnPreCache;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexWriter.IndexReaderWarmer;
@@ -45,14 +44,13 @@ public class FieldBasedWarmer extends IndexReaderWarmer {
 
   @Override
   public void warm(AtomicReader reader) throws IOException {
-    ColumnPreCache columnPreCache = shardContext.getTableContext().getDescriptor().getColumnPreCache();
-    List<String> preCacheCols = columnPreCache == null ? null : columnPreCache.getPreCacheCols();
+    List<String> preCacheCols = shardContext.getTableContext().getDescriptor().getPreCacheCols();
     int maxSampleSize = 1000;
     IndexWarmup indexWarmup = new IndexWarmup(isClosed, maxSampleSize);
     String context = shardContext.getTableContext().getTable() + "/" + shardContext.getShard();
     Map<String, List<IndexTracerResult>> sampleIndex = indexWarmup.sampleIndex(reader, context);
     if (preCacheCols != null) {
-      warm(reader, columnPreCache.preCacheCols, indexWarmup, sampleIndex, context, isClosed);
+      warm(reader, preCacheCols, indexWarmup, sampleIndex, context, isClosed);
     } else {
       Fields fields = reader.fields();
       warm(reader, fields, indexWarmup, sampleIndex, context, isClosed);

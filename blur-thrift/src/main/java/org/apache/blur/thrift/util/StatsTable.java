@@ -32,7 +32,7 @@ public class StatsTable {
     final String tableName = args[1];
 
     Iface client = BlurClient.getClient(connectionStr);
-    TableStats tableStats = client.getTableStats(tableName);
+    TableStats tableStats = client.tableStats(tableName);
     System.out.println(tableStats);
   }
 }

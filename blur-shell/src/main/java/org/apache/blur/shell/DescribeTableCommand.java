@@ -41,7 +41,7 @@ public class DescribeTableCommand extends Command {
     out.println("tableUri                         : " + describe.tableUri);
     out.println("shardCount                       : " + describe.shardCount);
     out.println("readOnly                         : " + describe.readOnly);
-    out.println("columnPreCache                   : " + describe.columnPreCache);
+    out.println("columnPreCache                   : " + describe.preCacheCols);
     out.println("blockCaching                     : " + describe.blockCaching);
     out.println("blockCachingFileTypes            : " + describe.blockCachingFileTypes);
     out.println("tableProperties                  : " + describe.tableProperties);

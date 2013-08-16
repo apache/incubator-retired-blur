@@ -1206,85 +1206,6 @@ sub write {
   return $xfer;
 }
 
-package Blur::ExpertQuery;
-use base qw(Class::Accessor);
-Blur::ExpertQuery->mk_accessors( qw( query filter ) );
-
-sub new {
-  my $classname = shift;
-  my $self      = {};
-  my $vals      = shift || {};
-  $self->{query} = undef;
-  $self->{filter} = undef;
-  if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{query}) {
-      $self->{query} = $vals->{query};
-    }
-    if (defined $vals->{filter}) {
-      $self->{filter} = $vals->{filter};
-    }
-  }
-  return bless ($self, $classname);
-}
-
-sub getName {
-  return 'ExpertQuery';
-}
-
-sub read {
-  my ($self, $input) = @_;
-  my $xfer  = 0;
-  my $fname;
-  my $ftype = 0;
-  my $fid   = 0;
-  $xfer += $input->readStructBegin(\$fname);
-  while (1) 
-  {
-    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
-    if ($ftype == TType::STOP) {
-      last;
-    }
-    SWITCH: for($fid)
-    {
-      /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{query});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^2$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{filter});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-        $xfer += $input->skip($ftype);
-    }
-    $xfer += $input->readFieldEnd();
-  }
-  $xfer += $input->readStructEnd();
-  return $xfer;
-}
-
-sub write {
-  my ($self, $output) = @_;
-  my $xfer   = 0;
-  $xfer += $output->writeStructBegin('ExpertQuery');
-  if (defined $self->{query}) {
-    $xfer += $output->writeFieldBegin('query', TType::STRING, 1);
-    $xfer += $output->writeString($self->{query});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{filter}) {
-    $xfer += $output->writeFieldBegin('filter', TType::STRING, 2);
-    $xfer += $output->writeString($self->{filter});
-    $xfer += $output->writeFieldEnd();
-  }
-  $xfer += $output->writeFieldStop();
-  $xfer += $output->writeStructEnd();
-  return $xfer;
-}
-
 package Blur::Facet;
 use base qw(Class::Accessor);
 Blur::Facet->mk_accessors( qw( queryStr minimumNumberOfBlurResults ) );
@@ -1366,17 +1287,15 @@ sub write {
 
 package Blur::BlurQuery;
 use base qw(Class::Accessor);
-Blur::BlurQuery->mk_accessors( qw( simpleQuery expertQuery facets selector allowStaleData useCacheIfPresent start fetch minimumNumberOfResults maxQueryTime uuid userContext cacheResult startTime modifyFileCaches ) );
+Blur::BlurQuery->mk_accessors( qw( simpleQuery facets selector useCacheIfPresent start fetch minimumNumberOfResults maxQueryTime uuid userContext cacheResult startTime ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
   $self->{simpleQuery} = undef;
-  $self->{expertQuery} = undef;
   $self->{facets} = undef;
   $self->{selector} = undef;
-  $self->{allowStaleData} = 0;
   $self->{useCacheIfPresent} = 1;
   $self->{start} = 0;
   $self->{fetch} = 10;
@@ -1386,22 +1305,15 @@ sub new {
   $self->{userContext} = undef;
   $self->{cacheResult} = 1;
   $self->{startTime} = 0;
-  $self->{modifyFileCaches} = 1;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{simpleQuery}) {
       $self->{simpleQuery} = $vals->{simpleQuery};
-    }
-    if (defined $vals->{expertQuery}) {
-      $self->{expertQuery} = $vals->{expertQuery};
     }
     if (defined $vals->{facets}) {
       $self->{facets} = $vals->{facets};
     }
     if (defined $vals->{selector}) {
       $self->{selector} = $vals->{selector};
-    }
-    if (defined $vals->{allowStaleData}) {
-      $self->{allowStaleData} = $vals->{allowStaleData};
     }
     if (defined $vals->{useCacheIfPresent}) {
       $self->{useCacheIfPresent} = $vals->{useCacheIfPresent};
@@ -1429,9 +1341,6 @@ sub new {
     }
     if (defined $vals->{startTime}) {
       $self->{startTime} = $vals->{startTime};
-    }
-    if (defined $vals->{modifyFileCaches}) {
-      $self->{modifyFileCaches} = $vals->{modifyFileCaches};
     }
   }
   return bless ($self, $classname);
@@ -1463,13 +1372,6 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^2$/ && do{      if ($ftype == TType::STRUCT) {
-        $self->{expertQuery} = new Blur::ExpertQuery();
-        $xfer += $self->{expertQuery}->read($input);
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
       /^3$/ && do{      if ($ftype == TType::LIST) {
         {
           my $_size37 = 0;
@@ -1492,12 +1394,6 @@ sub read {
       /^4$/ && do{      if ($ftype == TType::STRUCT) {
         $self->{selector} = new Blur::Selector();
         $xfer += $self->{selector}->read($input);
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^5$/ && do{      if ($ftype == TType::BOOL) {
-        $xfer += $input->readBool(\$self->{allowStaleData});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -1556,12 +1452,6 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^15$/ && do{      if ($ftype == TType::BOOL) {
-        $xfer += $input->readBool(\$self->{modifyFileCaches});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -1577,11 +1467,6 @@ sub write {
   if (defined $self->{simpleQuery}) {
     $xfer += $output->writeFieldBegin('simpleQuery', TType::STRUCT, 1);
     $xfer += $self->{simpleQuery}->write($output);
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{expertQuery}) {
-    $xfer += $output->writeFieldBegin('expertQuery', TType::STRUCT, 2);
-    $xfer += $self->{expertQuery}->write($output);
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{facets}) {
@@ -1601,11 +1486,6 @@ sub write {
   if (defined $self->{selector}) {
     $xfer += $output->writeFieldBegin('selector', TType::STRUCT, 4);
     $xfer += $self->{selector}->write($output);
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{allowStaleData}) {
-    $xfer += $output->writeFieldBegin('allowStaleData', TType::BOOL, 5);
-    $xfer += $output->writeBool($self->{allowStaleData});
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{useCacheIfPresent}) {
@@ -1651,11 +1531,6 @@ sub write {
   if (defined $self->{startTime}) {
     $xfer += $output->writeFieldBegin('startTime', TType::I64, 14);
     $xfer += $output->writeI64($self->{startTime});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{modifyFileCaches}) {
-    $xfer += $output->writeFieldBegin('modifyFileCaches', TType::BOOL, 15);
-    $xfer += $output->writeBool($self->{modifyFileCaches});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -2738,94 +2613,9 @@ sub write {
   return $xfer;
 }
 
-package Blur::ColumnPreCache;
-use base qw(Class::Accessor);
-Blur::ColumnPreCache->mk_accessors( qw( preCacheCols ) );
-
-sub new {
-  my $classname = shift;
-  my $self      = {};
-  my $vals      = shift || {};
-  $self->{preCacheCols} = undef;
-  if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{preCacheCols}) {
-      $self->{preCacheCols} = $vals->{preCacheCols};
-    }
-  }
-  return bless ($self, $classname);
-}
-
-sub getName {
-  return 'ColumnPreCache';
-}
-
-sub read {
-  my ($self, $input) = @_;
-  my $xfer  = 0;
-  my $fname;
-  my $ftype = 0;
-  my $fid   = 0;
-  $xfer += $input->readStructBegin(\$fname);
-  while (1) 
-  {
-    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
-    if ($ftype == TType::STOP) {
-      last;
-    }
-    SWITCH: for($fid)
-    {
-      /^1$/ && do{      if ($ftype == TType::LIST) {
-        {
-          my $_size106 = 0;
-          $self->{preCacheCols} = [];
-          my $_etype109 = 0;
-          $xfer += $input->readListBegin(\$_etype109, \$_size106);
-          for (my $_i110 = 0; $_i110 < $_size106; ++$_i110)
-          {
-            my $elem111 = undef;
-            $xfer += $input->readString(\$elem111);
-            push(@{$self->{preCacheCols}},$elem111);
-          }
-          $xfer += $input->readListEnd();
-        }
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-        $xfer += $input->skip($ftype);
-    }
-    $xfer += $input->readFieldEnd();
-  }
-  $xfer += $input->readStructEnd();
-  return $xfer;
-}
-
-sub write {
-  my ($self, $output) = @_;
-  my $xfer   = 0;
-  $xfer += $output->writeStructBegin('ColumnPreCache');
-  if (defined $self->{preCacheCols}) {
-    $xfer += $output->writeFieldBegin('preCacheCols', TType::LIST, 1);
-    {
-      $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{preCacheCols}}));
-      {
-        foreach my $iter112 (@{$self->{preCacheCols}}) 
-        {
-          $xfer += $output->writeString($iter112);
-        }
-      }
-      $xfer += $output->writeListEnd();
-    }
-    $xfer += $output->writeFieldEnd();
-  }
-  $xfer += $output->writeFieldStop();
-  $xfer += $output->writeStructEnd();
-  return $xfer;
-}
-
 package Blur::TableDescriptor;
 use base qw(Class::Accessor);
-Blur::TableDescriptor->mk_accessors( qw( isEnabled shardCount tableUri cluster name similarityClass blockCaching blockCachingFileTypes readOnly columnPreCache tableProperties strictTypes defaultMissingFieldType defaultMissingFieldLessIndexing defaultMissingFieldProps ) );
+Blur::TableDescriptor->mk_accessors( qw( isEnabled shardCount tableUri cluster name similarityClass blockCaching blockCachingFileTypes readOnly preCacheCols tableProperties strictTypes defaultMissingFieldType defaultMissingFieldLessIndexing defaultMissingFieldProps ) );
 
 sub new {
   my $classname = shift;
@@ -2840,7 +2630,7 @@ sub new {
   $self->{blockCaching} = 1;
   $self->{blockCachingFileTypes} = undef;
   $self->{readOnly} = 0;
-  $self->{columnPreCache} = undef;
+  $self->{preCacheCols} = undef;
   $self->{tableProperties} = undef;
   $self->{strictTypes} = 0;
   $self->{defaultMissingFieldType} = "text";
@@ -2874,8 +2664,8 @@ sub new {
     if (defined $vals->{readOnly}) {
       $self->{readOnly} = $vals->{readOnly};
     }
-    if (defined $vals->{columnPreCache}) {
-      $self->{columnPreCache} = $vals->{columnPreCache};
+    if (defined $vals->{preCacheCols}) {
+      $self->{preCacheCols} = $vals->{preCacheCols};
     }
     if (defined $vals->{tableProperties}) {
       $self->{tableProperties} = $vals->{tableProperties};
@@ -2959,15 +2749,15 @@ sub read {
       last; };
       /^11$/ && do{      if ($ftype == TType::SET) {
         {
-          my $_size113 = 0;
+          my $_size106 = 0;
           $self->{blockCachingFileTypes} = {};
-          my $_etype116 = 0;
-          $xfer += $input->readSetBegin(\$_etype116, \$_size113);
-          for (my $_i117 = 0; $_i117 < $_size113; ++$_i117)
+          my $_etype109 = 0;
+          $xfer += $input->readSetBegin(\$_etype109, \$_size106);
+          for (my $_i110 = 0; $_i110 < $_size106; ++$_i110)
           {
-            my $elem118 = undef;
-            $xfer += $input->readString(\$elem118);
-            $self->{blockCachingFileTypes}->{$elem118} = 1;
+            my $elem111 = undef;
+            $xfer += $input->readString(\$elem111);
+            $self->{blockCachingFileTypes}->{$elem111} = 1;
           }
           $xfer += $input->readSetEnd();
         }
@@ -2981,27 +2771,38 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^13$/ && do{      if ($ftype == TType::STRUCT) {
-        $self->{columnPreCache} = new Blur::ColumnPreCache();
-        $xfer += $self->{columnPreCache}->read($input);
+      /^13$/ && do{      if ($ftype == TType::LIST) {
+        {
+          my $_size112 = 0;
+          $self->{preCacheCols} = [];
+          my $_etype115 = 0;
+          $xfer += $input->readListBegin(\$_etype115, \$_size112);
+          for (my $_i116 = 0; $_i116 < $_size112; ++$_i116)
+          {
+            my $elem117 = undef;
+            $xfer += $input->readString(\$elem117);
+            push(@{$self->{preCacheCols}},$elem117);
+          }
+          $xfer += $input->readListEnd();
+        }
       } else {
         $xfer += $input->skip($ftype);
       }
       last; };
       /^14$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size119 = 0;
+          my $_size118 = 0;
           $self->{tableProperties} = {};
-          my $_ktype120 = 0;
-          my $_vtype121 = 0;
-          $xfer += $input->readMapBegin(\$_ktype120, \$_vtype121, \$_size119);
-          for (my $_i123 = 0; $_i123 < $_size119; ++$_i123)
+          my $_ktype119 = 0;
+          my $_vtype120 = 0;
+          $xfer += $input->readMapBegin(\$_ktype119, \$_vtype120, \$_size118);
+          for (my $_i122 = 0; $_i122 < $_size118; ++$_i122)
           {
-            my $key124 = '';
-            my $val125 = '';
-            $xfer += $input->readString(\$key124);
-            $xfer += $input->readString(\$val125);
-            $self->{tableProperties}->{$key124} = $val125;
+            my $key123 = '';
+            my $val124 = '';
+            $xfer += $input->readString(\$key123);
+            $xfer += $input->readString(\$val124);
+            $self->{tableProperties}->{$key123} = $val124;
           }
           $xfer += $input->readMapEnd();
         }
@@ -3029,18 +2830,18 @@ sub read {
       last; };
       /^18$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size126 = 0;
+          my $_size125 = 0;
           $self->{defaultMissingFieldProps} = {};
-          my $_ktype127 = 0;
-          my $_vtype128 = 0;
-          $xfer += $input->readMapBegin(\$_ktype127, \$_vtype128, \$_size126);
-          for (my $_i130 = 0; $_i130 < $_size126; ++$_i130)
+          my $_ktype126 = 0;
+          my $_vtype127 = 0;
+          $xfer += $input->readMapBegin(\$_ktype126, \$_vtype127, \$_size125);
+          for (my $_i129 = 0; $_i129 < $_size125; ++$_i129)
           {
-            my $key131 = '';
-            my $val132 = '';
-            $xfer += $input->readString(\$key131);
-            $xfer += $input->readString(\$val132);
-            $self->{defaultMissingFieldProps}->{$key131} = $val132;
+            my $key130 = '';
+            my $val131 = '';
+            $xfer += $input->readString(\$key130);
+            $xfer += $input->readString(\$val131);
+            $self->{defaultMissingFieldProps}->{$key130} = $val131;
           }
           $xfer += $input->readMapEnd();
         }
@@ -3100,9 +2901,9 @@ sub write {
     {
       $xfer += $output->writeSetBegin(TType::STRING, scalar(@{$self->{blockCachingFileTypes}}));
       {
-        foreach my $iter133 (@{$self->{blockCachingFileTypes}})
+        foreach my $iter132 (@{$self->{blockCachingFileTypes}})
         {
-          $xfer += $output->writeString($iter133);
+          $xfer += $output->writeString($iter132);
         }
       }
       $xfer += $output->writeSetEnd();
@@ -3114,9 +2915,18 @@ sub write {
     $xfer += $output->writeBool($self->{readOnly});
     $xfer += $output->writeFieldEnd();
   }
-  if (defined $self->{columnPreCache}) {
-    $xfer += $output->writeFieldBegin('columnPreCache', TType::STRUCT, 13);
-    $xfer += $self->{columnPreCache}->write($output);
+  if (defined $self->{preCacheCols}) {
+    $xfer += $output->writeFieldBegin('preCacheCols', TType::LIST, 13);
+    {
+      $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{preCacheCols}}));
+      {
+        foreach my $iter133 (@{$self->{preCacheCols}}) 
+        {
+          $xfer += $output->writeString($iter133);
+        }
+      }
+      $xfer += $output->writeListEnd();
+    }
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{tableProperties}) {

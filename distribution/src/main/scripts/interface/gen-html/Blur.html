@@ -16,12 +16,10 @@
 <li><a href="Blur.html#Fn_Blur_configuration">configuration</a></li>
 <li><a href="Blur.html#Fn_Blur_controllerServerList">controllerServerList</a></li>
 <li><a href="Blur.html#Fn_Blur_createTable">createTable</a></li>
-<li><a href="Blur.html#Fn_Blur_currentQueries">currentQueries</a></li>
 <li><a href="Blur.html#Fn_Blur_describe">describe</a></li>
 <li><a href="Blur.html#Fn_Blur_disableTable">disableTable</a></li>
 <li><a href="Blur.html#Fn_Blur_enableTable">enableTable</a></li>
 <li><a href="Blur.html#Fn_Blur_fetchRow">fetchRow</a></li>
-<li><a href="Blur.html#Fn_Blur_getTableStats">getTableStats</a></li>
 <li><a href="Blur.html#Fn_Blur_isInSafeMode">isInSafeMode</a></li>
 <li><a href="Blur.html#Fn_Blur_metrics">metrics</a></li>
 <li><a href="Blur.html#Fn_Blur_mutate">mutate</a></li>
@@ -51,10 +49,8 @@
 <a href="Blur.html#Struct_BlurResults">BlurResults</a><br/>
 <a href="Blur.html#Struct_Column">Column</a><br/>
 <a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a><br/>
-<a href="Blur.html#Struct_ColumnPreCache">ColumnPreCache</a><br/>
 <a href="Blur.html#Struct_CpuTime">CpuTime</a><br/>
 <a href="Blur.html#Enum_ErrorType">ErrorType</a><br/>
-<a href="Blur.html#Struct_ExpertQuery">ExpertQuery</a><br/>
 <a href="Blur.html#Struct_Facet">Facet</a><br/>
 <a href="Blur.html#Struct_FetchRecordResult">FetchRecordResult</a><br/>
 <a href="Blur.html#Struct_FetchResult">FetchResult</a><br/>
@@ -267,61 +263,59 @@ would be 100.  Used in conjunction with maxRecordsToFetch. By default this will 
 </td><td>default</td><td></td></tr>
 <tr><td>5</td><td>recordResult</td><td><code><a href="Blur.html#Struct_FetchRecordResult">FetchRecordResult</a></code></td><td>The record result if a record was selected form the Selector.
 </td><td>default</td><td></td></tr>
-</table><br/>FetchResult contains the row or record fetch result based if the Selector was going to fetch the entire row or a single record.
-<br/></div><div class="definition"><h3 id="Struct_ExpertQuery">Struct: ExpertQuery</h3>
-<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>query</td><td><code>binary</code></td><td>The serialized query.
-</td><td>default</td><td></td></tr>
-<tr><td>2</td><td>filter</td><td><code>binary</code></td><td>The serialized filter.
-</td><td>default</td><td></td></tr>
-</table><br/>The expert query allows for submission of a serialized query and filter object to be executed against all the queries.
+</table><br/>FetchResult contains the row or record fetch result based if the Selector
+was going to fetch the entire row or a single record.
 <br/></div><div class="definition"><h3 id="Struct_Facet">Struct: Facet</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>queryStr</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>minimumNumberOfBlurResults</td><td><code>i64</code></td><td></td><td>default</td><td>9223372036854775807</td></tr>
+<tr><td>1</td><td>queryStr</td><td><code>string</code></td><td>The facet query.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>minimumNumberOfBlurResults</td><td><code>i64</code></td><td>The minimum number of results before no longer processing the facet.  This
+is a good way to decrease the strain on the system while using many facets. For
+example if you set this attribute to 1000, then the shard server will stop
+processing the facet at the 1000 mark.  However because this is processed at
+the shard server level the controller will likely return more than the minimum
+because it sums the answers from the shard servers.
+</td><td>default</td><td>9223372036854775807</td></tr>
 </table><br/>Blur facet.
 <br/></div><div class="definition"><h3 id="Struct_BlurQuery">Struct: BlurQuery</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>simpleQuery</td><td><code><a href="Blur.html#Struct_SimpleQuery">SimpleQuery</a></code></td><td>
+<tr><td>1</td><td>simpleQuery</td><td><code><a href="Blur.html#Struct_SimpleQuery">SimpleQuery</a></code></td><td>The query information.
 </td><td>default</td><td></td></tr>
-<tr><td>2</td><td>expertQuery</td><td><code><a href="Blur.html#Struct_ExpertQuery">ExpertQuery</a></code></td><td>
-</td><td>default</td><td></td></tr>
-<tr><td>3</td><td>facets</td><td><code>list&lt;<code><a href="Blur.html#Struct_Facet">Facet</a></code>&gt;</code></td><td>
+<tr><td>3</td><td>facets</td><td><code>list&lt;<code><a href="Blur.html#Struct_Facet">Facet</a></code>&gt;</code></td><td>A list of Facets to execute with the given query.
 </td><td>default</td><td></td></tr>
 <tr><td>4</td><td>selector</td><td><code><a href="Blur.html#Struct_Selector">Selector</a></code></td><td>Selector is used to fetch data in the search results, if null only location ids will be fetched.
 </td><td>default</td><td></td></tr>
-<tr><td>5</td><td>allowStaleData</td><td><code>bool</code></td><td>@deprecated This value is no longer used.  This allows the query to see the most current data that has been added to the table.
-</td><td>default</td><td>0</td></tr>
-<tr><td>6</td><td>useCacheIfPresent</td><td><code>bool</code></td><td>
+<tr><td>6</td><td>useCacheIfPresent</td><td><code>bool</code></td><td>Enabled by default to use a cached result if the query matches a previous run query with the
+configured amount of time.
 </td><td>default</td><td>1</td></tr>
-<tr><td>7</td><td>start</td><td><code>i64</code></td><td>
+<tr><td>7</td><td>start</td><td><code>i64</code></td><td>The starting result position, 0 by default.
 </td><td>default</td><td>0</td></tr>
-<tr><td>8</td><td>fetch</td><td><code>i32</code></td><td>
+<tr><td>8</td><td>fetch</td><td><code>i32</code></td><td>The number of fetched results, 10 by default.
 </td><td>default</td><td>10</td></tr>
-<tr><td>9</td><td>minimumNumberOfResults</td><td><code>i64</code></td><td>
+<tr><td>9</td><td>minimumNumberOfResults</td><td><code>i64</code></td><td>The minimum number of results to find before returning.
 </td><td>default</td><td>9223372036854775807</td></tr>
-<tr><td>10</td><td>maxQueryTime</td><td><code>i64</code></td><td>
+<tr><td>10</td><td>maxQueryTime</td><td><code>i64</code></td><td>The maximum amount of time the query should execute before timing out.
 </td><td>default</td><td>9223372036854775807</td></tr>
-<tr><td>11</td><td>uuid</td><td><code>i64</code></td><td>
+<tr><td>11</td><td>uuid</td><td><code>i64</code></td><td>Sets the uuid of this query, this is normal set by the client so that the status
+of a running query can be found or the query can be canceled.
 </td><td>default</td><td></td></tr>
-<tr><td>12</td><td>userContext</td><td><code>string</code></td><td>
+<tr><td>12</td><td>userContext</td><td><code>string</code></td><td>Sets a user context, only used for logging at this point.
 </td><td>default</td><td></td></tr>
-<tr><td>13</td><td>cacheResult</td><td><code>bool</code></td><td>
+<tr><td>13</td><td>cacheResult</td><td><code>bool</code></td><td>Enabled by default to cache this result.  False would not cache the result.
 </td><td>default</td><td>1</td></tr>
-<tr><td>14</td><td>startTime</td><td><code>i64</code></td><td>
+<tr><td>14</td><td>startTime</td><td><code>i64</code></td><td>Sets the start time, if 0 the controller sets the time.
 </td><td>default</td><td>0</td></tr>
-<tr><td>15</td><td>modifyFileCaches</td><td><code>bool</code></td><td>
-</td><td>default</td><td>1</td></tr>
-</table><br/><p/>
+</table><br/>The Blur Query object that contains the query that needs to be executed along
+with the query options.
 <br/></div><div class="definition"><h3 id="Struct_BlurResult">Struct: BlurResult</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>locationId</td><td><code>string</code></td><td>WARNING: This is an internal only attribute and is not intended for use by clients.
 </td><td>default</td><td></td></tr>
-<tr><td>2</td><td>score</td><td><code>double</code></td><td>
+<tr><td>2</td><td>score</td><td><code>double</code></td><td> 
 </td><td>default</td><td></td></tr>
 <tr><td>3</td><td>fetchResult</td><td><code><a href="Blur.html#Struct_FetchResult">FetchResult</a></code></td><td>
 </td><td>default</td><td></td></tr>
-</table><br/><p/>
+</table><br/> 
 <br/></div><div class="definition"><h3 id="Struct_BlurResults">Struct: BlurResults</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>totalResults</td><td><code>i64</code></td><td>
@@ -407,11 +401,6 @@ shards that are complete, etc.
 <tr><td>2</td><td>columnFamilies</td><td><code>map&lt;<code>string</code>, <code>set&lt;<code>string</code>&gt;</code>&gt;</code></td><td>
 </td><td>default</td><td></td></tr>
 </table><br/><p/>
-<br/></div><div class="definition"><h3 id="Struct_ColumnPreCache">Struct: ColumnPreCache</h3>
-<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>preCacheCols</td><td><code>list&lt;<code>string</code>&gt;</code></td><td>This map sets what column families and columns to prefetch into block cache on shard open.
-</td><td>default</td><td></td></tr>
-</table><br/><p/>
 <br/></div><div class="definition"><h3 id="Struct_TableDescriptor">Struct: TableDescriptor</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>isEnabled</td><td><code>bool</code></td><td>Is the table enabled or not, enabled by default.
@@ -433,7 +422,7 @@ shards that are complete, etc.
 <tr><td>12</td><td>readOnly</td><td><code>bool</code></td><td>If a table is set to be readonly, that means that mutates through Thrift are NOT allowed.  However
 updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.
 </td><td>default</td><td>0</td></tr>
-<tr><td>13</td><td>columnPreCache</td><td><code><a href="Blur.html#Struct_ColumnPreCache">ColumnPreCache</a></code></td><td>Sets what column families and columns to prefetch into block cache on shard open.
+<tr><td>13</td><td>preCacheCols</td><td><code>list&lt;<code>string</code>&gt;</code></td><td>This map sets what column families and columns to prefetch into block cache on shard open.
 </td><td>default</td><td></td></tr>
 <tr><td>14</td><td>tableProperties</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td>The table properties that can modify the default behavior of the table.  TODO: Document all options.
 </td><td>default</td><td></td></tr>
@@ -478,20 +467,26 @@ NOTE: This will index the column as a full text field in a default field, so tha
 </td><td>default</td><td></td></tr>
 </table><br/></div><hr/><h2 id="Services">Services</h2>
 <h3 id="Svc_Blur">Service: Blur</h3>
-<p/>
+The Blur service API.  This API is the same for both controller servers as well as
+shards servers.  Each of the methods are documented.
 <br/><div class="definition"><h4 id="Fn_Blur_shardClusterList">Function: Blur.shardClusterList</h4>
 <pre><code>list&lt;<code>string</code>&gt;</code> shardClusterList()
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Returns a list of all the shard clusters.
+@return list of all the shard clusters.
 <br/></div><div class="definition"><h4 id="Fn_Blur_shardServerList">Function: Blur.shardServerList</h4>
 <pre><code>list&lt;<code>string</code>&gt;</code> shardServerList(<code>string</code> cluster)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Returns a list of all the shard servers for the given cluster.
-@param cluster the cluster name.
-<br/></div><div class="definition"><h4 id="Fn_Blur_controllerServerList">Function: Blur.controllerServerList</h4>
+@return list of all the shard servers within the cluster.
+<br/><br/><h4 id="Parameters_Blur_shardServerList">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>cluster</td><td>the cluster name.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_controllerServerList">Function: Blur.controllerServerList</h4>
 <pre><code>list&lt;<code>string</code>&gt;</code> controllerServerList()
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Returns a list of all the controller servers.
+@return list of all the controllers.
 <br/></div><div class="definition"><h4 id="Fn_Blur_shardServerLayout">Function: Blur.shardServerLayout</h4>
 <pre><code>map&lt;<code>string</code>, <code>string</code>&gt;</code> shardServerLayout(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
@@ -507,8 +502,11 @@ matches the correct layout.  Meaning it will block until indexes that should be 
 open and ready for queries.  However indexes are lazily closed, so if a table is being
 disabled then the call will return immediately with an empty map, but the indexes may
 not be close yet.<br><br>
-@param table the table name.
-<br/></div><div class="definition"><h4 id="Fn_Blur_shardServerLayoutState">Function: Blur.shardServerLayoutState</h4>
+@return map of shards in a table to the shard servers.
+<br/><br/><h4 id="Parameters_Blur_shardServerLayout">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_shardServerLayoutState">Function: Blur.shardServerLayoutState</h4>
 <pre><code>map&lt;<code>string</code>, <code>map&lt;<code>string</code>, <code><a href="Blur.html#Enum_ShardState">ShardState</a></code>&gt;</code>&gt;</code> shardServerLayoutState(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Returns a map of the layout of the given table, where the key is the shard name and the
@@ -517,120 +515,196 @@ This method will return immediately with what shards are currently
 open in the shard server.  So if a shard is being moved to another server and is being
 closed by this server it WILL be returned in the map.  The shardServerLayout method would not return
 the shard given the same situation.
-@param table the table name.
-@param layoutOptions the layout options.
-<br/></div><div class="definition"><h4 id="Fn_Blur_tableList">Function: Blur.tableList</h4>
+@return map of shards to a map of shard servers with the state of the shard.
+<br/><br/><h4 id="Parameters_Blur_shardServerLayoutState">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_tableList">Function: Blur.tableList</h4>
 <pre><code>list&lt;<code>string</code>&gt;</code> tableList()
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Returns a list of the table names across all shard clusters.
+@return list of all tables in all shard clusters.
 <br/></div><div class="definition"><h4 id="Fn_Blur_tableListByCluster">Function: Blur.tableListByCluster</h4>
 <pre><code>list&lt;<code>string</code>&gt;</code> tableListByCluster(<code>string</code> cluster)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Returns a list of the table names for the given cluster.
-@param cluster the cluster name.
-<br/></div><div class="definition"><h4 id="Fn_Blur_describe">Function: Blur.describe</h4>
+@return list of all the tables within the given shard cluster.
+<br/><br/><h4 id="Parameters_Blur_tableListByCluster">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>cluster</td><td>the cluster name.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_describe">Function: Blur.describe</h4>
 <pre><code><a href="Blur.html#Struct_TableDescriptor">TableDescriptor</a></code> describe(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Returns a table descriptor for the given table.
-@param table the table name.
-<br/></div><div class="definition"><h4 id="Fn_Blur_query">Function: Blur.query</h4>
+@return the TableDescriptor.
+<br/><br/><h4 id="Parameters_Blur_describe">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_query">Function: Blur.query</h4>
 <pre><code><a href="Blur.html#Struct_BlurResults">BlurResults</a></code> query(<code>string</code> table,
                   <code><a href="Blur.html#Struct_BlurQuery">BlurQuery</a></code> blurQuery)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre>Executes a query against a the given table and returns the results.  If this method is executed against a controller the results will contain the aggregated results from all the shards.  If this method is executed against a shard server the results will only contain aggregated results from the shards of the given table that are being served on the shard server, if any.
-@param table the table name.
-@param blurQuery the query to execute.
-<br/></div><div class="definition"><h4 id="Fn_Blur_parseQuery">Function: Blur.parseQuery</h4>
+</pre>Executes a query against a the given table and returns the results.  If this method is
+executed against a controller the results will contain the aggregated results from all
+the shards.  If this method is executed against a shard server the results will only
+contain aggregated results from the shards of the given table that are being served on
+the shard server, if any.
+@return the BlurResults.
+<br/><br/><h4 id="Parameters_Blur_query">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
+</td></tr>
+<tr><td>blurQuery</td><td>the query to execute.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_parseQuery">Function: Blur.parseQuery</h4>
 <pre><code>string</code> parseQuery(<code>string</code> table,
                   <code><a href="Blur.html#Struct_SimpleQuery">SimpleQuery</a></code> simpleQuery)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Parses the given query and return the string represents the query.
-@param table the table name.
-@param simpleQuery the query to parse.
-<br/></div><div class="definition"><h4 id="Fn_Blur_cancelQuery">Function: Blur.cancelQuery</h4>
+@return string representation of the parsed query.
+<br/><br/><h4 id="Parameters_Blur_parseQuery">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
+</td></tr>
+<tr><td>simpleQuery</td><td>the query to parse.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_cancelQuery">Function: Blur.cancelQuery</h4>
 <pre><code>void</code> cancelQuery(<code>string</code> table,
                  <code>i64</code> uuid)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre>Cancels a query that is executing against the given table with the given uuid.  Note, the cancel call maybe take some time for the query actually stops executing.
-@param table the table name.
-@param uuid the uuid of the query.
-<br/></div><div class="definition"><h4 id="Fn_Blur_currentQueries">Function: Blur.currentQueries</h4>
-<pre><code>list&lt;<code><a href="Blur.html#Struct_BlurQueryStatus">BlurQueryStatus</a></code>&gt;</code> currentQueries(<code>string</code> table)
-    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre>@deprecated This method should avoided, @see #queryStatusIdList and #queryStatusById.
-@param table the table name.
-<br/></div><div class="definition"><h4 id="Fn_Blur_queryStatusIdList">Function: Blur.queryStatusIdList</h4>
+</pre>Cancels a query that is executing against the given table with the given uuid.  Note, the
+cancel call maybe take some time for the query actually stops executing.
+<br/><br/><h4 id="Parameters_Blur_cancelQuery">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
+</td></tr>
+<tr><td>uuid</td><td>the uuid of the query.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_queryStatusIdList">Function: Blur.queryStatusIdList</h4>
 <pre><code>list&lt;<code>i64</code>&gt;</code> queryStatusIdList(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Returns a list of the query ids of queries that have recently been executed for the given table.
-@param table the table name.
-<br/></div><div class="definition"><h4 id="Fn_Blur_queryStatusById">Function: Blur.queryStatusById</h4>
+@return list of all the uuids of the queries uuids.
+<br/><br/><h4 id="Parameters_Blur_queryStatusIdList">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_queryStatusById">Function: Blur.queryStatusById</h4>
 <pre><code><a href="Blur.html#Struct_BlurQueryStatus">BlurQueryStatus</a></code> queryStatusById(<code>string</code> table,
                                 <code>i64</code> uuid)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Returns the query status for the given table and query uuid.
-@param table the table name.
-@param uuid the uuid of the query.
-<br/></div><div class="definition"><h4 id="Fn_Blur_schema">Function: Blur.schema</h4>
+@return fetches the BlurQueryStatus for the given table and uuid.
+<br/><br/><h4 id="Parameters_Blur_queryStatusById">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
+</td></tr>
+<tr><td>uuid</td><td>the uuid of the query.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_schema">Function: Blur.schema</h4>
 <pre><code><a href="Blur.html#Struct_Schema">Schema</a></code> schema(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_getTableStats">Function: Blur.getTableStats</h4>
-<pre><code><a href="Blur.html#Struct_TableStats">TableStats</a></code> getTableStats(<code>string</code> table)
-    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_tableStats">Function: Blur.tableStats</h4>
+</pre><p/>
+<br/></div><div class="definition"><h4 id="Fn_Blur_tableStats">Function: Blur.tableStats</h4>
 <pre><code><a href="Blur.html#Struct_TableStats">TableStats</a></code> tableStats(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_terms">Function: Blur.terms</h4>
+</pre><p/>
+<br/></div><div class="definition"><h4 id="Fn_Blur_terms">Function: Blur.terms</h4>
 <pre><code>list&lt;<code>string</code>&gt;</code> terms(<code>string</code> table,
                    <code>string</code> columnFamily,
                    <code>string</code> columnName,
                    <code>string</code> startWith,
                    <code>i16</code> size)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_recordFrequency">Function: Blur.recordFrequency</h4>
+</pre><p/>
+<br/></div><div class="definition"><h4 id="Fn_Blur_recordFrequency">Function: Blur.recordFrequency</h4>
 <pre><code>i64</code> recordFrequency(<code>string</code> table,
                     <code>string</code> columnFamily,
                     <code>string</code> columnName,
                     <code>string</code> value)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_fetchRow">Function: Blur.fetchRow</h4>
+</pre><p/>
+<br/></div><div class="definition"><h4 id="Fn_Blur_fetchRow">Function: Blur.fetchRow</h4>
 <pre><code><a href="Blur.html#Struct_FetchResult">FetchResult</a></code> fetchRow(<code>string</code> table,
                      <code><a href="Blur.html#Struct_Selector">Selector</a></code> selector)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_mutate">Function: Blur.mutate</h4>
+</pre><p/>
+<br/></div><div class="definition"><h4 id="Fn_Blur_mutate">Function: Blur.mutate</h4>
 <pre><code>void</code> mutate(<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code> mutation)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_mutateBatch">Function: Blur.mutateBatch</h4>
+</pre><p/>
+<br/></div><div class="definition"><h4 id="Fn_Blur_mutateBatch">Function: Blur.mutateBatch</h4>
 <pre><code>void</code> mutateBatch(<code>list&lt;<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code>&gt;</code> mutations)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_createTable">Function: Blur.createTable</h4>
+</pre><p/>
+<br/></div><div class="definition"><h4 id="Fn_Blur_createTable">Function: Blur.createTable</h4>
 <pre><code>void</code> createTable(<code><a href="Blur.html#Struct_TableDescriptor">TableDescriptor</a></code> tableDescriptor)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_enableTable">Function: Blur.enableTable</h4>
+</pre>Creates a table with the given TableDescriptor.
+<br/><br/><h4 id="Parameters_Blur_createTable">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>tableDescriptor</td><td>the TableDescriptor.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_enableTable">Function: Blur.enableTable</h4>
 <pre><code>void</code> enableTable(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_disableTable">Function: Blur.disableTable</h4>
+</pre>Enables the given table, blocking until all shards are online.
+@param table
+<br/><br/><h4 id="Parameters_Blur_enableTable">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_disableTable">Function: Blur.disableTable</h4>
 <pre><code>void</code> disableTable(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_removeTable">Function: Blur.removeTable</h4>
+</pre>Disables the given table, blocking until all shards are offline.
+@param table the table name.
+<br/><br/><h4 id="Parameters_Blur_disableTable">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_removeTable">Function: Blur.removeTable</h4>
 <pre><code>void</code> removeTable(<code>string</code> table,
                  <code>bool</code> deleteIndexFiles)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_addColumnDefinition">Function: Blur.addColumnDefinition</h4>
+</pre>Removes the given table, with an optional to delete the underlying index storage as well.
+<br/><br/><h4 id="Parameters_Blur_removeTable">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
+</td></tr>
+<tr><td>deleteIndexFiles</td><td>true to remove the index storage and false if to preserve.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_addColumnDefinition">Function: Blur.addColumnDefinition</h4>
 <pre><code>bool</code> addColumnDefinition(<code>string</code> table,
                          <code><a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a></code> columnDefinition)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_optimize">Function: Blur.optimize</h4>
+</pre>Attempts to add a column definition to the given table.
+@return true if successfully defined false if not.
+<br/><br/><h4 id="Parameters_Blur_addColumnDefinition">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the name of the table.
+</td></tr>
+<tr><td>columnDefinition</td><td>the ColumnDefinition.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_optimize">Function: Blur.optimize</h4>
 <pre><code>void</code> optimize(<code>string</code> table,
               <code>i32</code> numberOfSegmentsPerShard)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_isInSafeMode">Function: Blur.isInSafeMode</h4>
+</pre>Will perform a forced optimize on the index in the given table.
+<br/><br/><h4 id="Parameters_Blur_optimize">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>table the name of the table.
+</td></tr>
+<tr><td>numberOfSegmentsPerShard</td><td>the maximum of segments per shard index after the operation is completed.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_isInSafeMode">Function: Blur.isInSafeMode</h4>
 <pre><code>bool</code> isInSafeMode(<code>string</code> cluster)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_configuration">Function: Blur.configuration</h4>
+</pre>Checks to see if the given cluster is in safemode.
+@return boolean.
+<br/><br/><h4 id="Parameters_Blur_isInSafeMode">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>cluster</td><td>the name of the cluster.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_configuration">Function: Blur.configuration</h4>
 <pre><code>map&lt;<code>string</code>, <code>string</code>&gt;</code> configuration()
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_metrics">Function: Blur.metrics</h4>
+</pre>Fetches the Blur configuration.
+@return Map of property name to value.
+<br/></div><div class="definition"><h4 id="Fn_Blur_metrics">Function: Blur.metrics</h4>
 <pre><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_Metric">Metric</a></code>&gt;</code> metrics(<code>set&lt;<code>string</code>&gt;</code> metrics)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div></div></body></html>
+</pre>Fetches the Blur metrics by name.  If the metrics parameter is null all the Metrics are returned.
+@return Map of metric name to Metric.
+<br/><br/><h4 id="Parameters_Blur_metrics">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>metrics</td><td>the names of the metrics to return.  If null all are returned.
+</td></tr>
+</table></div></div></body></html>

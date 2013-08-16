@@ -31,7 +31,6 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.warmup.IndexTracerResult;
 import org.apache.blur.lucene.warmup.IndexWarmup;
 import org.apache.blur.manager.indexserver.DistributedIndexServer.ReleaseReader;
-import org.apache.blur.thrift.generated.ColumnPreCache;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
@@ -60,9 +59,9 @@ public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
       IndexWarmup indexWarmup = new IndexWarmup(isClosed, maxSampleSize, _warmupBandwidthThrottleBytesPerSec);
       String context = table.getName() + "/" + shard;
       Map<String, List<IndexTracerResult>> sampleIndex = indexWarmup.sampleIndex(reader, context);
-      ColumnPreCache columnPreCache = table.getColumnPreCache();
-      if (columnPreCache != null) {
-        warm(reader, columnPreCache.preCacheCols, indexWarmup, sampleIndex, context, isClosed, pauseWarmup);
+      List<String> preCacheCols = table.getPreCacheCols();
+      if (preCacheCols != null) {
+        warm(reader, preCacheCols, indexWarmup, sampleIndex, context, isClosed, pauseWarmup);
       } else {
         warm(reader, getFields(reader), indexWarmup, sampleIndex, context, isClosed, pauseWarmup);
       }

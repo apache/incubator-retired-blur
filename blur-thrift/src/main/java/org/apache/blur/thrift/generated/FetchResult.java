@@ -50,7 +50,8 @@ import java.util.Arrays;
 //import org.slf4j.LoggerFactory;
 
 /**
- * FetchResult contains the row or record fetch result based if the Selector was going to fetch the entire row or a single record.
+ * FetchResult contains the row or record fetch result based if the Selector
+ * was going to fetch the entire row or a single record.
  */
 public class FetchResult implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<FetchResult, FetchResult._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("FetchResult");

@@ -50,7 +50,7 @@ import java.util.Arrays;
 //import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *  
  */
 public class BlurResult implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<BlurResult, BlurResult._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("BlurResult");
@@ -70,7 +70,7 @@ public class BlurResult implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
    */
   public String locationId; // required
   /**
-   * 
+   *  
    */
   public double score; // required
   /**
@@ -85,7 +85,7 @@ public class BlurResult implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
      */
     LOCATION_ID((short)1, "locationId"),
     /**
-     * 
+     *  
      */
     SCORE((short)2, "score"),
     /**
@@ -239,14 +239,14 @@ public class BlurResult implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
   }
 
   /**
-   * 
+   *  
    */
   public double getScore() {
     return this.score;
   }
 
   /**
-   * 
+   *  
    */
   public BlurResult setScore(double score) {
     this.score = score;

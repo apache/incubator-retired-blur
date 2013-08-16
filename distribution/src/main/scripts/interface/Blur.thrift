@@ -77,8 +77,8 @@ enum QueryState {
   * FOUND : when UUID is present<br/>
   */
 enum Status {
-    NOT_FOUND,
-    FOUND
+  NOT_FOUND,
+  FOUND
 }
 
 /**
@@ -304,7 +304,8 @@ struct FetchRecordResult {
 }
 
 /**
- * FetchResult contains the row or record fetch result based if the Selector was going to fetch the entire row or a single record.
+ * FetchResult contains the row or record fetch result based if the Selector 
+ * was going to fetch the entire row or a single record.
  */
 struct FetchResult {
   /**
@@ -330,41 +331,32 @@ struct FetchResult {
 }
 
 /**
- * The expert query allows for submission of a serialized query and filter object to be executed against all the queries.
- */
-struct ExpertQuery {
-  /**
-   * The serialized query.
-   */
-  1:binary query,
-  /**
-   * The serialized filter.
-   */
-  2:binary filter
-}
-
-/**
  * Blur facet.
  */
 struct Facet {
+  /** The facet query. */
   1:string queryStr,
+  /** The minimum number of results before no longer processing the facet.  This 
+      is a good way to decrease the strain on the system while using many facets. For 
+      example if you set this attribute to 1000, then the shard server will stop 
+      processing the facet at the 1000 mark.  However because this is processed at 
+      the shard server level the controller will likely return more than the minimum 
+      because it sums the answers from the shard servers.
+   */
   2:i64 minimumNumberOfBlurResults = 9223372036854775807
 }
 
 /**
- *
+ * The Blur Query object that contains the query that needs to be executed along 
+ * with the query options.
  */
 struct BlurQuery {
   /**
-   *
+   * The query information.
    */
   1:SimpleQuery simpleQuery,
   /**
-   *
-   */
-  2:ExpertQuery expertQuery,
-  /**
-   *
+   * A list of Facets to execute with the given query.
    */
   3:list<Facet> facets,
   /**
@@ -372,53 +364,47 @@ struct BlurQuery {
    */
   4:Selector selector,
   /**
-   * @deprecated This value is no longer used.  This allows the query to see the most current data that has been added to the table.
-   */
-  5:bool allowStaleData = 0,
-  /**
-   *
+   * Enabled by default to use a cached result if the query matches a previous run query with the 
+   * configured amount of time.
    */
   6:bool useCacheIfPresent = 1,
   /**
-   *
+   * The starting result position, 0 by default.
    */
   7:i64 start = 0,
   /**
-   *
+   * The number of fetched results, 10 by default.
    */
   8:i32 fetch = 10, 
   /**
-   *
+   * The minimum number of results to find before returning.
    */
   9:i64 minimumNumberOfResults = 9223372036854775807,
   /**
-   *
+   * The maximum amount of time the query should execute before timing out.
    */
   10:i64 maxQueryTime = 9223372036854775807,
   /**
-   *
+   * Sets the uuid of this query, this is normal set by the client so that the status 
+   * of a running query can be found or the query can be canceled.
    */
   11:i64 uuid,
   /**
-   *
+   * Sets a user context, only used for logging at this point.
    */
   12:string userContext,
   /**
-   *
+   * Enabled by default to cache this result.  False would not cache the result.
    */
   13:bool cacheResult = 1,
   /**
-   *
+   * Sets the start time, if 0 the controller sets the time.
    */
-  14:i64 startTime = 0,
-  /**
-   *
-   */
-  15:bool modifyFileCaches = 1
+  14:i64 startTime = 0
 }
 
 /**
- *
+ * 
  */
 struct BlurResult {
   /**
@@ -426,7 +412,7 @@ struct BlurResult {
    */
   1:string locationId,
   /**
-   *
+   * 
    */
   2:double score,
   /**
@@ -600,16 +586,6 @@ struct Schema {
 /**
  *
  */
-struct ColumnPreCache {
-  /**
-   * This map sets what column families and columns to prefetch into block cache on shard open.
-   */
-  1:list<string> preCacheCols
-}
-
-/**
- *
- */
 struct TableDescriptor {
   /**
    * Is the table enabled or not, enabled by default.
@@ -649,9 +625,9 @@ struct TableDescriptor {
    */
   12:bool readOnly = 0,
   /**
-   * Sets what column families and columns to prefetch into block cache on shard open.
+   * This map sets what column families and columns to prefetch into block cache on shard open.
    */
-  13:ColumnPreCache columnPreCache,
+  13:list<string> preCacheCols
   /**
    * The table properties that can modify the default behavior of the table.  TODO: Document all options.
    */
@@ -719,21 +695,27 @@ struct ColumnDefinition {
 }
 
 /**
- *
+ * The Blur service API.  This API is the same for both controller servers as well as 
+ * shards servers.  Each of the methods are documented.
  */
 service Blur {
 
   /**
    * Returns a list of all the shard clusters.
+   * @return list of all the shard clusters.
    */
   list<string> shardClusterList() throws (1:BlurException ex)
   /**
    * Returns a list of all the shard servers for the given cluster.
-   * @param cluster the cluster name.
+   * @return list of all the shard servers within the cluster.
    */
-  list<string> shardServerList(1:string cluster) throws (1:BlurException ex)
+  list<string> shardServerList(
+    /** the cluster name. */
+    1:string cluster
+  ) throws (1:BlurException ex)
   /**
    * Returns a list of all the controller servers.
+   * @return list of all the controllers.
    */
   list<string> controllerServerList() throws (1:BlurException ex)
   /**
@@ -749,9 +731,12 @@ service Blur {
    * open and ready for queries.  However indexes are lazily closed, so if a table is being 
    * disabled then the call will return immediately with an empty map, but the indexes may
    * not be close yet.<br><br>
-   * @param table the table name.
+   * @return map of shards in a table to the shard servers.
    */
-  map<string,string> shardServerLayout(1:string table) throws (1:BlurException ex)
+  map<string,string> shardServerLayout(
+    /** the table name. */
+    1:string table
+  ) throws (1:BlurException ex)
 
   /**
    * Returns a map of the layout of the given table, where the key is the shard name and the 
@@ -760,89 +745,246 @@ service Blur {
    * open in the shard server.  So if a shard is being moved to another server and is being 
    * closed by this server it WILL be returned in the map.  The shardServerLayout method would not return 
    * the shard given the same situation.
-   * @param table the table name.
-   * @param layoutOptions the layout options.
+   * @return map of shards to a map of shard servers with the state of the shard.
    */
-  map<string,map<string,ShardState>> shardServerLayoutState(1:string table) throws (1:BlurException ex)
-  /**
-   * Returns a list of the table names across all shard clusters.
-   */
-  list<string> tableList() throws (1:BlurException ex)
-  /**
-   * Returns a list of the table names for the given cluster.
-   * @param cluster the cluster name.
-   */
-  list<string> tableListByCluster(1:string cluster) throws (1:BlurException ex)
-  /**
-   * Returns a table descriptor for the given table.
-   * @param table the table name.
-   */
-  TableDescriptor describe(1:string table) throws (1:BlurException ex)
+  map<string,map<string,ShardState>> shardServerLayoutState(
+    /** the table name. */
+    1:string table
+  ) throws (1:BlurException ex)
 
   /**
-   * Executes a query against a the given table and returns the results.  If this method is executed against a controller the results will contain the aggregated results from all the shards.  If this method is executed against a shard server the results will only contain aggregated results from the shards of the given table that are being served on the shard server, if any.
-   * @param table the table name.
-   * @param blurQuery the query to execute.
+   * Returns a list of the table names across all shard clusters.
+   * @return list of all tables in all shard clusters.
    */
-  BlurResults query(1:string table, 2:BlurQuery blurQuery) throws (1:BlurException ex)
+  list<string> tableList() throws (1:BlurException ex)
+
+  /**
+   * Returns a list of the table names for the given cluster.
+   * @return list of all the tables within the given shard cluster.
+   */
+  list<string> tableListByCluster(
+    /** the cluster name. */
+    1:string cluster
+  ) throws (1:BlurException ex)
+
+  /**
+   * Returns a table descriptor for the given table.
+   * @return the TableDescriptor.
+   */
+  TableDescriptor describe(
+    /** the table name. */
+    1:string table
+  ) throws (1:BlurException ex)
+
+  /**
+   * Executes a query against a the given table and returns the results.  If this method is 
+   * executed against a controller the results will contain the aggregated results from all 
+   * the shards.  If this method is executed against a shard server the results will only 
+   * contain aggregated results from the shards of the given table that are being served on 
+   * the shard server, if any.
+   * @return the BlurResults.
+   */
+  BlurResults query(
+    /** the table name. */
+    1:string table, 
+    /** the query to execute. */
+    2:BlurQuery blurQuery
+  ) throws (1:BlurException ex)
 
   /**
    * Parses the given query and return the string represents the query.
-   * @param table the table name.
-   * @param simpleQuery the query to parse.
+   * @return string representation of the parsed query.
    */
-  string parseQuery(1:string table, 2:SimpleQuery simpleQuery) throws (1:BlurException ex)
+  string parseQuery(
+    /** the table name. */
+    1:string table, 
+    /** the query to parse. */
+    2:SimpleQuery simpleQuery
+  ) throws (1:BlurException ex)
 
   /**
-   * Cancels a query that is executing against the given table with the given uuid.  Note, the cancel call maybe take some time for the query actually stops executing.
-   * @param table the table name.
-   * @param uuid the uuid of the query.
+   * Cancels a query that is executing against the given table with the given uuid.  Note, the 
+   * cancel call maybe take some time for the query actually stops executing.
    */
-  void cancelQuery(1:string table, 2:i64 uuid) throws (1:BlurException ex)
-
-  /**
-   * @deprecated This method should avoided, @see #queryStatusIdList and #queryStatusById.
-   * @param table the table name.
-   */
-  list<BlurQueryStatus> currentQueries(1:string table) throws (1:BlurException ex)
+  void cancelQuery(
+    /** the table name. */
+    1:string table, 
+    /** the uuid of the query. */
+    2:i64 uuid
+  ) throws (1:BlurException ex)
 
   /**
    * Returns a list of the query ids of queries that have recently been executed for the given table.
-   * @param table the table name.
+   * @return list of all the uuids of the queries uuids.
    */
-  list<i64> queryStatusIdList(1:string table) throws (1:BlurException ex)
+  list<i64> queryStatusIdList(
+    /** the table name. */
+    1:string table
+  ) throws (1:BlurException ex)
+
   /**
    * Returns the query status for the given table and query uuid.
-   * @param table the table name.
-   * @param uuid the uuid of the query.
+   * @return fetches the BlurQueryStatus for the given table and uuid.
    */
-  BlurQueryStatus queryStatusById(1:string table, 2:i64 uuid) throws (1:BlurException ex)
+  BlurQueryStatus queryStatusById(
+    /** the table name. */
+    1:string table, 
+    /** the uuid of the query. */
+    2:i64 uuid
+  ) throws (1:BlurException ex)
 
-  Schema schema(1:string table) throws (1:BlurException ex)
-  TableStats getTableStats(1:string table) throws (1:BlurException ex)
-  TableStats tableStats(1:string table) throws (1:BlurException ex)
-  list<string> terms(1:string table, 2:string columnFamily, 3:string columnName, 4:string startWith, 5:i16 size) throws (1:BlurException ex)
-  i64 recordFrequency(1:string table, 2:string columnFamily, 3:string columnName, 4:string value) throws (1:BlurException ex)
+  /**
+   *
+   */
+  Schema schema(
+    /**   */
+    1:string table
+  ) throws (1:BlurException ex)
 
-  FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException ex)
+  /**
+   *
+   */
+  TableStats tableStats(
+    /**   */
+    1:string table
+  ) throws (1:BlurException ex)
 
-  void mutate(1:RowMutation mutation) throws (1:BlurException ex)
-  void mutateBatch(1:list<RowMutation> mutations) throws (1:BlurException ex)
+  /**
+   *
+   */
+  list<string> terms(
+    /**   */
+    1:string table, 
+    /**   */
+    2:string columnFamily, 
+    /**   */
+    3:string columnName, 
+    /**   */
+    4:string startWith, 
+    /**   */
+    5:i16 size
+  ) throws (1:BlurException ex)
 
-  void createTable(1:TableDescriptor tableDescriptor) throws (1:BlurException ex)
-  void enableTable(1:string table) throws (1:BlurException ex)
-  void disableTable(1:string table) throws (1:BlurException ex)
-  void removeTable(1:string table, 2:bool deleteIndexFiles) throws (1:BlurException ex)
+  /**
+   *
+   */
+  i64 recordFrequency(
+    /**   */
+    1:string table, 
+    /**   */
+    2:string columnFamily, 
+    /**   */
+    3:string columnName, 
+    /**   */
+    4:string value
+  ) throws (1:BlurException ex)
 
-  bool addColumnDefinition(1:string table, 2:ColumnDefinition columnDefinition) throws (1:BlurException ex)
+  /**
+   *
+   */
+  FetchResult fetchRow(
+    /**   */
+    1:string table, 
+    /**   */
+    2:Selector selector
+  ) throws (1:BlurException ex)
 
-  void optimize(1:string table, 2:i32 numberOfSegmentsPerShard) throws (1:BlurException ex)
+  /**
+   *
+   */
+  void mutate(
+    /**   */
+    1:RowMutation mutation
+  ) throws (1:BlurException ex)
+
+  /**
+   *
+   */
+  void mutateBatch(
+    /**   */
+    1:list<RowMutation> mutations
+  ) throws (1:BlurException ex)
+
+  /**
+   * Creates a table with the given TableDescriptor.
+   */
+  void createTable(
+    /** the TableDescriptor.  */
+    1:TableDescriptor tableDescriptor
+  ) throws (1:BlurException ex)
+
+  /**
+   * Enables the given table, blocking until all shards are online.
+   * @param table 
+   */
+  void enableTable(
+    /** the table name. */
+    1:string table
+  ) throws (1:BlurException ex)
+
+  /**
+   * Disables the given table, blocking until all shards are offline.
+   * @param table the table name.
+   */
+  void disableTable(
+    /** the table name. */
+    1:string table
+  ) throws (1:BlurException ex)
+
+  /**
+   * Removes the given table, with an optional to delete the underlying index storage as well.
+   */
+  void removeTable(
+    /** the table name. */
+    1:string table, 
+    /** true to remove the index storage and false if to preserve.*/
+    2:bool deleteIndexFiles
+  ) throws (1:BlurException ex)
+
+  /**
+   * Attempts to add a column definition to the given table.
+   * @return true if successfully defined false if not.
+   */
+  bool addColumnDefinition(
+    /** the name of the table. */
+    1:string table, 
+    /** the ColumnDefinition. */
+    2:ColumnDefinition columnDefinition
+  ) throws (1:BlurException ex)
+
+  /**
+   * Will perform a forced optimize on the index in the given table.
+   */
+  void optimize(
+    /** table the name of the table. */
+    1:string table, 
+    /** the maximum of segments per shard index after the operation is completed. */
+    2:i32 numberOfSegmentsPerShard
+  ) throws (1:BlurException ex)
   
-  bool isInSafeMode(1:string cluster) throws (1:BlurException ex)
+  /**
+   * Checks to see if the given cluster is in safemode.
+   * @return boolean.
+   */
+  bool isInSafeMode(
+    /** the name of the cluster. */
+    1:string cluster
+  ) throws (1:BlurException ex)
 
+  /**
+   * Fetches the Blur configuration.
+   * @return Map of property name to value.
+   */
   map<string,string> configuration() throws (1:BlurException ex)
 
-  map<string,Metric> metrics(1:set<string> metrics) throws (1:BlurException ex)
+  /**
+   * Fetches the Blur metrics by name.  If the metrics parameter is null all the Metrics are returned.
+   * @return Map of metric name to Metric.
+   */
+  map<string,Metric> metrics(
+    /** the names of the metrics to return.  If null all are returned. */
+    1:set<string> metrics
+  ) throws (1:BlurException ex)
 
 }
 

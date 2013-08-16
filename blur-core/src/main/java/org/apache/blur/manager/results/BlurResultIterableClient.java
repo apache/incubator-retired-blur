@@ -70,11 +70,10 @@ public class BlurResultIterableClient implements BlurResultIterable {
   private void performSearch() throws BlurException {
     try {
       long cursor = _remoteFetchCount * _batch;
-      BlurQuery blurQuery = new BlurQuery(_originalQuery.simpleQuery, _originalQuery.expertQuery,
-          _originalQuery.facets, null, false, _originalQuery.useCacheIfPresent, cursor, _remoteFetchCount,
+      BlurQuery blurQuery = new BlurQuery(_originalQuery.simpleQuery, 
+          _originalQuery.facets, null, _originalQuery.useCacheIfPresent, cursor, _remoteFetchCount,
           _originalQuery.minimumNumberOfResults, _originalQuery.maxQueryTime, _originalQuery.uuid,
-          _originalQuery.userContext, _originalQuery.cacheResult, _originalQuery.startTime,
-          _originalQuery.modifyFileCaches);
+          _originalQuery.userContext, _originalQuery.cacheResult, _originalQuery.startTime);
       _results = makeLazy(_client.query(_table, blurQuery));
       addFacets();
       _totalResults = _results.totalResults;

@@ -64,12 +64,34 @@ public class Facet implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Face
     schemes.put(TupleScheme.class, new FacetTupleSchemeFactory());
   }
 
+  /**
+   * The facet query.
+   */
   public String queryStr; // required
+  /**
+   * The minimum number of results before no longer processing the facet.  This
+   * is a good way to decrease the strain on the system while using many facets. For
+   * example if you set this attribute to 1000, then the shard server will stop
+   * processing the facet at the 1000 mark.  However because this is processed at
+   * the shard server level the controller will likely return more than the minimum
+   * because it sums the answers from the shard servers.
+   */
   public long minimumNumberOfBlurResults; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+    /**
+     * The facet query.
+     */
     QUERY_STR((short)1, "queryStr"),
+    /**
+     * The minimum number of results before no longer processing the facet.  This
+     * is a good way to decrease the strain on the system while using many facets. For
+     * example if you set this attribute to 1000, then the shard server will stop
+     * processing the facet at the 1000 mark.  However because this is processed at
+     * the shard server level the controller will likely return more than the minimum
+     * because it sums the answers from the shard servers.
+     */
     MINIMUM_NUMBER_OF_BLUR_RESULTS((short)2, "minimumNumberOfBlurResults");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -179,10 +201,16 @@ public class Facet implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Face
 
   }
 
+  /**
+   * The facet query.
+   */
   public String getQueryStr() {
     return this.queryStr;
   }
 
+  /**
+   * The facet query.
+   */
   public Facet setQueryStr(String queryStr) {
     this.queryStr = queryStr;
     return this;
@@ -203,10 +231,26 @@ public class Facet implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Face
     }
   }
 
+  /**
+   * The minimum number of results before no longer processing the facet.  This
+   * is a good way to decrease the strain on the system while using many facets. For
+   * example if you set this attribute to 1000, then the shard server will stop
+   * processing the facet at the 1000 mark.  However because this is processed at
+   * the shard server level the controller will likely return more than the minimum
+   * because it sums the answers from the shard servers.
+   */
   public long getMinimumNumberOfBlurResults() {
     return this.minimumNumberOfBlurResults;
   }
 
+  /**
+   * The minimum number of results before no longer processing the facet.  This
+   * is a good way to decrease the strain on the system while using many facets. For
+   * example if you set this attribute to 1000, then the shard server will stop
+   * processing the facet at the 1000 mark.  However because this is processed at
+   * the shard server level the controller will likely return more than the minimum
+   * because it sums the answers from the shard servers.
+   */
   public Facet setMinimumNumberOfBlurResults(long minimumNumberOfBlurResults) {
     this.minimumNumberOfBlurResults = minimumNumberOfBlurResults;
     setMinimumNumberOfBlurResultsIsSet(true);

@@ -1110,72 +1110,6 @@ FetchResult.prototype.write = function(output) {
   return;
 };
 
-ExpertQuery = function(args) {
-  this.query = null;
-  this.filter = null;
-  if (args) {
-    if (args.query !== undefined) {
-      this.query = args.query;
-    }
-    if (args.filter !== undefined) {
-      this.filter = args.filter;
-    }
-  }
-};
-ExpertQuery.prototype = {};
-ExpertQuery.prototype.read = function(input) {
-  input.readStructBegin();
-  while (true)
-  {
-    var ret = input.readFieldBegin();
-    var fname = ret.fname;
-    var ftype = ret.ftype;
-    var fid = ret.fid;
-    if (ftype == Thrift.Type.STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 1:
-      if (ftype == Thrift.Type.STRING) {
-        this.query = input.readString().value;
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 2:
-      if (ftype == Thrift.Type.STRING) {
-        this.filter = input.readString().value;
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      default:
-        input.skip(ftype);
-    }
-    input.readFieldEnd();
-  }
-  input.readStructEnd();
-  return;
-};
-
-ExpertQuery.prototype.write = function(output) {
-  output.writeStructBegin('ExpertQuery');
-  if (this.query !== null && this.query !== undefined) {
-    output.writeFieldBegin('query', Thrift.Type.STRING, 1);
-    output.writeString(this.query);
-    output.writeFieldEnd();
-  }
-  if (this.filter !== null && this.filter !== undefined) {
-    output.writeFieldBegin('filter', Thrift.Type.STRING, 2);
-    output.writeString(this.filter);
-    output.writeFieldEnd();
-  }
-  output.writeFieldStop();
-  output.writeStructEnd();
-  return;
-};
-
 Facet = function(args) {
   this.queryStr = null;
   this.minimumNumberOfBlurResults = 9223372036854775807;
@@ -1244,10 +1178,8 @@ Facet.prototype.write = function(output) {
 
 BlurQuery = function(args) {
   this.simpleQuery = null;
-  this.expertQuery = null;
   this.facets = null;
   this.selector = null;
-  this.allowStaleData = false;
   this.useCacheIfPresent = true;
   this.start = 0;
   this.fetch = 10;
@@ -1257,22 +1189,15 @@ BlurQuery = function(args) {
   this.userContext = null;
   this.cacheResult = true;
   this.startTime = 0;
-  this.modifyFileCaches = true;
   if (args) {
     if (args.simpleQuery !== undefined) {
       this.simpleQuery = args.simpleQuery;
-    }
-    if (args.expertQuery !== undefined) {
-      this.expertQuery = args.expertQuery;
     }
     if (args.facets !== undefined) {
       this.facets = args.facets;
     }
     if (args.selector !== undefined) {
       this.selector = args.selector;
-    }
-    if (args.allowStaleData !== undefined) {
-      this.allowStaleData = args.allowStaleData;
     }
     if (args.useCacheIfPresent !== undefined) {
       this.useCacheIfPresent = args.useCacheIfPresent;
@@ -1301,9 +1226,6 @@ BlurQuery = function(args) {
     if (args.startTime !== undefined) {
       this.startTime = args.startTime;
     }
-    if (args.modifyFileCaches !== undefined) {
-      this.modifyFileCaches = args.modifyFileCaches;
-    }
   }
 };
 BlurQuery.prototype = {};
@@ -1324,14 +1246,6 @@ BlurQuery.prototype.read = function(input) {
       if (ftype == Thrift.Type.STRUCT) {
         this.simpleQuery = new SimpleQuery();
         this.simpleQuery.read(input);
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 2:
-      if (ftype == Thrift.Type.STRUCT) {
-        this.expertQuery = new ExpertQuery();
-        this.expertQuery.read(input);
       } else {
         input.skip(ftype);
       }
@@ -1361,13 +1275,6 @@ BlurQuery.prototype.read = function(input) {
       if (ftype == Thrift.Type.STRUCT) {
         this.selector = new Selector();
         this.selector.read(input);
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 5:
-      if (ftype == Thrift.Type.BOOL) {
-        this.allowStaleData = input.readBool().value;
       } else {
         input.skip(ftype);
       }
@@ -1435,13 +1342,6 @@ BlurQuery.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
-      case 15:
-      if (ftype == Thrift.Type.BOOL) {
-        this.modifyFileCaches = input.readBool().value;
-      } else {
-        input.skip(ftype);
-      }
-      break;
       default:
         input.skip(ftype);
     }
@@ -1456,11 +1356,6 @@ BlurQuery.prototype.write = function(output) {
   if (this.simpleQuery !== null && this.simpleQuery !== undefined) {
     output.writeFieldBegin('simpleQuery', Thrift.Type.STRUCT, 1);
     this.simpleQuery.write(output);
-    output.writeFieldEnd();
-  }
-  if (this.expertQuery !== null && this.expertQuery !== undefined) {
-    output.writeFieldBegin('expertQuery', Thrift.Type.STRUCT, 2);
-    this.expertQuery.write(output);
     output.writeFieldEnd();
   }
   if (this.facets !== null && this.facets !== undefined) {
@@ -1480,11 +1375,6 @@ BlurQuery.prototype.write = function(output) {
   if (this.selector !== null && this.selector !== undefined) {
     output.writeFieldBegin('selector', Thrift.Type.STRUCT, 4);
     this.selector.write(output);
-    output.writeFieldEnd();
-  }
-  if (this.allowStaleData !== null && this.allowStaleData !== undefined) {
-    output.writeFieldBegin('allowStaleData', Thrift.Type.BOOL, 5);
-    output.writeBool(this.allowStaleData);
     output.writeFieldEnd();
   }
   if (this.useCacheIfPresent !== null && this.useCacheIfPresent !== undefined) {
@@ -1530,11 +1420,6 @@ BlurQuery.prototype.write = function(output) {
   if (this.startTime !== null && this.startTime !== undefined) {
     output.writeFieldBegin('startTime', Thrift.Type.I64, 14);
     output.writeI64(this.startTime);
-    output.writeFieldEnd();
-  }
-  if (this.modifyFileCaches !== null && this.modifyFileCaches !== undefined) {
-    output.writeFieldBegin('modifyFileCaches', Thrift.Type.BOOL, 15);
-    output.writeBool(this.modifyFileCaches);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
@@ -2556,81 +2441,6 @@ Schema.prototype.write = function(output) {
   return;
 };
 
-ColumnPreCache = function(args) {
-  this.preCacheCols = null;
-  if (args) {
-    if (args.preCacheCols !== undefined) {
-      this.preCacheCols = args.preCacheCols;
-    }
-  }
-};
-ColumnPreCache.prototype = {};
-ColumnPreCache.prototype.read = function(input) {
-  input.readStructBegin();
-  while (true)
-  {
-    var ret = input.readFieldBegin();
-    var fname = ret.fname;
-    var ftype = ret.ftype;
-    var fid = ret.fid;
-    if (ftype == Thrift.Type.STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 1:
-      if (ftype == Thrift.Type.LIST) {
-        var _size120 = 0;
-        var _rtmp3124;
-        this.preCacheCols = [];
-        var _etype123 = 0;
-        _rtmp3124 = input.readListBegin();
-        _etype123 = _rtmp3124.etype;
-        _size120 = _rtmp3124.size;
-        for (var _i125 = 0; _i125 < _size120; ++_i125)
-        {
-          var elem126 = null;
-          elem126 = input.readString().value;
-          this.preCacheCols.push(elem126);
-        }
-        input.readListEnd();
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 0:
-        input.skip(ftype);
-        break;
-      default:
-        input.skip(ftype);
-    }
-    input.readFieldEnd();
-  }
-  input.readStructEnd();
-  return;
-};
-
-ColumnPreCache.prototype.write = function(output) {
-  output.writeStructBegin('ColumnPreCache');
-  if (this.preCacheCols !== null && this.preCacheCols !== undefined) {
-    output.writeFieldBegin('preCacheCols', Thrift.Type.LIST, 1);
-    output.writeListBegin(Thrift.Type.STRING, this.preCacheCols.length);
-    for (var iter127 in this.preCacheCols)
-    {
-      if (this.preCacheCols.hasOwnProperty(iter127))
-      {
-        iter127 = this.preCacheCols[iter127];
-        output.writeString(iter127);
-      }
-    }
-    output.writeListEnd();
-    output.writeFieldEnd();
-  }
-  output.writeFieldStop();
-  output.writeStructEnd();
-  return;
-};
-
 TableDescriptor = function(args) {
   this.isEnabled = true;
   this.shardCount = 1;
@@ -2641,7 +2451,7 @@ TableDescriptor = function(args) {
   this.blockCaching = true;
   this.blockCachingFileTypes = null;
   this.readOnly = false;
-  this.columnPreCache = null;
+  this.preCacheCols = null;
   this.tableProperties = null;
   this.strictTypes = false;
   this.defaultMissingFieldType = 'text';
@@ -2675,8 +2485,8 @@ TableDescriptor = function(args) {
     if (args.readOnly !== undefined) {
       this.readOnly = args.readOnly;
     }
-    if (args.columnPreCache !== undefined) {
-      this.columnPreCache = args.columnPreCache;
+    if (args.preCacheCols !== undefined) {
+      this.preCacheCols = args.preCacheCols;
     }
     if (args.tableProperties !== undefined) {
       this.tableProperties = args.tableProperties;
@@ -2760,18 +2570,18 @@ TableDescriptor.prototype.read = function(input) {
       break;
       case 11:
       if (ftype == Thrift.Type.SET) {
-        var _size128 = 0;
-        var _rtmp3132;
+        var _size120 = 0;
+        var _rtmp3124;
         this.blockCachingFileTypes = [];
-        var _etype131 = 0;
-        _rtmp3132 = input.readSetBegin();
-        _etype131 = _rtmp3132.etype;
-        _size128 = _rtmp3132.size;
-        for (var _i133 = 0; _i133 < _size128; ++_i133)
+        var _etype123 = 0;
+        _rtmp3124 = input.readSetBegin();
+        _etype123 = _rtmp3124.etype;
+        _size120 = _rtmp3124.size;
+        for (var _i125 = 0; _i125 < _size120; ++_i125)
         {
-          var elem134 = null;
-          elem134 = input.readString().value;
-          this.blockCachingFileTypes.push(elem134);
+          var elem126 = null;
+          elem126 = input.readString().value;
+          this.blockCachingFileTypes.push(elem126);
         }
         input.readSetEnd();
       } else {
@@ -2786,36 +2596,48 @@ TableDescriptor.prototype.read = function(input) {
       }
       break;
       case 13:
-      if (ftype == Thrift.Type.STRUCT) {
-        this.columnPreCache = new ColumnPreCache();
-        this.columnPreCache.read(input);
+      if (ftype == Thrift.Type.LIST) {
+        var _size127 = 0;
+        var _rtmp3131;
+        this.preCacheCols = [];
+        var _etype130 = 0;
+        _rtmp3131 = input.readListBegin();
+        _etype130 = _rtmp3131.etype;
+        _size127 = _rtmp3131.size;
+        for (var _i132 = 0; _i132 < _size127; ++_i132)
+        {
+          var elem133 = null;
+          elem133 = input.readString().value;
+          this.preCacheCols.push(elem133);
+        }
+        input.readListEnd();
       } else {
         input.skip(ftype);
       }
       break;
       case 14:
       if (ftype == Thrift.Type.MAP) {
-        var _size135 = 0;
-        var _rtmp3139;
+        var _size134 = 0;
+        var _rtmp3138;
         this.tableProperties = {};
-        var _ktype136 = 0;
-        var _vtype137 = 0;
-        _rtmp3139 = input.readMapBegin();
-        _ktype136 = _rtmp3139.ktype;
-        _vtype137 = _rtmp3139.vtype;
-        _size135 = _rtmp3139.size;
-        for (var _i140 = 0; _i140 < _size135; ++_i140)
+        var _ktype135 = 0;
+        var _vtype136 = 0;
+        _rtmp3138 = input.readMapBegin();
+        _ktype135 = _rtmp3138.ktype;
+        _vtype136 = _rtmp3138.vtype;
+        _size134 = _rtmp3138.size;
+        for (var _i139 = 0; _i139 < _size134; ++_i139)
         {
-          if (_i140 > 0 ) {
+          if (_i139 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key141 = null;
-          var val142 = null;
-          key141 = input.readString().value;
-          val142 = input.readString().value;
-          this.tableProperties[key141] = val142;
+          var key140 = null;
+          var val141 = null;
+          key140 = input.readString().value;
+          val141 = input.readString().value;
+          this.tableProperties[key140] = val141;
         }
         input.readMapEnd();
       } else {
@@ -2845,27 +2667,27 @@ TableDescriptor.prototype.read = function(input) {
       break;
       case 18:
       if (ftype == Thrift.Type.MAP) {
-        var _size143 = 0;
-        var _rtmp3147;
+        var _size142 = 0;
+        var _rtmp3146;
         this.defaultMissingFieldProps = {};
-        var _ktype144 = 0;
-        var _vtype145 = 0;
-        _rtmp3147 = input.readMapBegin();
-        _ktype144 = _rtmp3147.ktype;
-        _vtype145 = _rtmp3147.vtype;
-        _size143 = _rtmp3147.size;
-        for (var _i148 = 0; _i148 < _size143; ++_i148)
+        var _ktype143 = 0;
+        var _vtype144 = 0;
+        _rtmp3146 = input.readMapBegin();
+        _ktype143 = _rtmp3146.ktype;
+        _vtype144 = _rtmp3146.vtype;
+        _size142 = _rtmp3146.size;
+        for (var _i147 = 0; _i147 < _size142; ++_i147)
         {
-          if (_i148 > 0 ) {
+          if (_i147 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key149 = null;
-          var val150 = null;
-          key149 = input.readString().value;
-          val150 = input.readString().value;
-          this.defaultMissingFieldProps[key149] = val150;
+          var key148 = null;
+          var val149 = null;
+          key148 = input.readString().value;
+          val149 = input.readString().value;
+          this.defaultMissingFieldProps[key148] = val149;
         }
         input.readMapEnd();
       } else {
@@ -2921,12 +2743,12 @@ TableDescriptor.prototype.write = function(output) {
   if (this.blockCachingFileTypes !== null && this.blockCachingFileTypes !== undefined) {
     output.writeFieldBegin('blockCachingFileTypes', Thrift.Type.SET, 11);
     output.writeSetBegin(Thrift.Type.STRING, this.blockCachingFileTypes.length);
-    for (var iter151 in this.blockCachingFileTypes)
+    for (var iter150 in this.blockCachingFileTypes)
     {
-      if (this.blockCachingFileTypes.hasOwnProperty(iter151))
+      if (this.blockCachingFileTypes.hasOwnProperty(iter150))
       {
-        iter151 = this.blockCachingFileTypes[iter151];
-        output.writeString(iter151);
+        iter150 = this.blockCachingFileTypes[iter150];
+        output.writeString(iter150);
       }
     }
     output.writeSetEnd();
@@ -2937,9 +2759,18 @@ TableDescriptor.prototype.write = function(output) {
     output.writeBool(this.readOnly);
     output.writeFieldEnd();
   }
-  if (this.columnPreCache !== null && this.columnPreCache !== undefined) {
-    output.writeFieldBegin('columnPreCache', Thrift.Type.STRUCT, 13);
-    this.columnPreCache.write(output);
+  if (this.preCacheCols !== null && this.preCacheCols !== undefined) {
+    output.writeFieldBegin('preCacheCols', Thrift.Type.LIST, 13);
+    output.writeListBegin(Thrift.Type.STRING, this.preCacheCols.length);
+    for (var iter151 in this.preCacheCols)
+    {
+      if (this.preCacheCols.hasOwnProperty(iter151))
+      {
+        iter151 = this.preCacheCols[iter151];
+        output.writeString(iter151);
+      }
+    }
+    output.writeListEnd();
     output.writeFieldEnd();
   }
   if (this.tableProperties !== null && this.tableProperties !== undefined) {

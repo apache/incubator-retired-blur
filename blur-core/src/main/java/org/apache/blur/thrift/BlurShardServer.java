@@ -179,18 +179,6 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public List<BlurQueryStatus> currentQueries(String table) throws BlurException, TException {
-    checkTable(_cluster, table);
-    resetSearchers();
-    try {
-      return _indexManager.currentQueries(table);
-    } catch (Exception e) {
-      LOG.error("Unknown error while trying to get current search status [table={0}]", e, table);
-      throw new BException(e.getMessage(), e);
-    }
-  }
-
-  @Override
   public TableStats tableStats(String table) throws BlurException, TException {
     checkTable(_cluster, table);
     resetSearchers();

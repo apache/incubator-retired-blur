@@ -64,7 +64,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BLOCK_CACHING_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("blockCaching", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)10);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BLOCK_CACHING_FILE_TYPES_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("blockCachingFileTypes", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, (short)11);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField READ_ONLY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("readOnly", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)12);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COLUMN_PRE_CACHE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("columnPreCache", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)13);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField PRE_CACHE_COLS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("preCacheCols", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)13);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_PROPERTIES_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("tableProperties", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, (short)14);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField STRICT_TYPES_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("strictTypes", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)15);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField DEFAULT_MISSING_FIELD_TYPE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("defaultMissingFieldType", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)16);
@@ -115,9 +115,9 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
    */
   public boolean readOnly; // required
   /**
-   * Sets what column families and columns to prefetch into block cache on shard open.
+   * This map sets what column families and columns to prefetch into block cache on shard open.
    */
-  public ColumnPreCache columnPreCache; // required
+  public List<String> preCacheCols; // required
   /**
    * The table properties that can modify the default behavior of the table.  TODO: Document all options.
    */
@@ -179,9 +179,9 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
      */
     READ_ONLY((short)12, "readOnly"),
     /**
-     * Sets what column families and columns to prefetch into block cache on shard open.
+     * This map sets what column families and columns to prefetch into block cache on shard open.
      */
-    COLUMN_PRE_CACHE((short)13, "columnPreCache"),
+    PRE_CACHE_COLS((short)13, "preCacheCols"),
     /**
      * The table properties that can modify the default behavior of the table.  TODO: Document all options.
      */
@@ -234,8 +234,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
           return BLOCK_CACHING_FILE_TYPES;
         case 12: // READ_ONLY
           return READ_ONLY;
-        case 13: // COLUMN_PRE_CACHE
-          return COLUMN_PRE_CACHE;
+        case 13: // PRE_CACHE_COLS
+          return PRE_CACHE_COLS;
         case 14: // TABLE_PROPERTIES
           return TABLE_PROPERTIES;
         case 15: // STRICT_TYPES
@@ -315,8 +315,9 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING))));
     tmpMap.put(_Fields.READ_ONLY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("readOnly", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.COLUMN_PRE_CACHE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("columnPreCache", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, ColumnPreCache.class)));
+    tmpMap.put(_Fields.PRE_CACHE_COLS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("preCacheCols", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING))));
     tmpMap.put(_Fields.TABLE_PROPERTIES, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("tableProperties", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.MapMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING), 
@@ -364,7 +365,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     boolean blockCaching,
     Set<String> blockCachingFileTypes,
     boolean readOnly,
-    ColumnPreCache columnPreCache,
+    List<String> preCacheCols,
     Map<String,String> tableProperties,
     boolean strictTypes,
     String defaultMissingFieldType,
@@ -385,7 +386,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     this.blockCachingFileTypes = blockCachingFileTypes;
     this.readOnly = readOnly;
     setReadOnlyIsSet(true);
-    this.columnPreCache = columnPreCache;
+    this.preCacheCols = preCacheCols;
     this.tableProperties = tableProperties;
     this.strictTypes = strictTypes;
     setStrictTypesIsSet(true);
@@ -423,8 +424,12 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       this.blockCachingFileTypes = __this__blockCachingFileTypes;
     }
     this.readOnly = other.readOnly;
-    if (other.isSetColumnPreCache()) {
-      this.columnPreCache = new ColumnPreCache(other.columnPreCache);
+    if (other.isSetPreCacheCols()) {
+      List<String> __this__preCacheCols = new ArrayList<String>();
+      for (String other_element : other.preCacheCols) {
+        __this__preCacheCols.add(other_element);
+      }
+      this.preCacheCols = __this__preCacheCols;
     }
     if (other.isSetTableProperties()) {
       Map<String,String> __this__tableProperties = new HashMap<String,String>();
@@ -483,7 +488,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     this.blockCachingFileTypes = null;
     this.readOnly = false;
 
-    this.columnPreCache = null;
+    this.preCacheCols = null;
     this.tableProperties = null;
     this.strictTypes = false;
 
@@ -777,33 +782,48 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __READONLY_ISSET_ID, value);
   }
 
-  /**
-   * Sets what column families and columns to prefetch into block cache on shard open.
-   */
-  public ColumnPreCache getColumnPreCache() {
-    return this.columnPreCache;
+  public int getPreCacheColsSize() {
+    return (this.preCacheCols == null) ? 0 : this.preCacheCols.size();
+  }
+
+  public java.util.Iterator<String> getPreCacheColsIterator() {
+    return (this.preCacheCols == null) ? null : this.preCacheCols.iterator();
+  }
+
+  public void addToPreCacheCols(String elem) {
+    if (this.preCacheCols == null) {
+      this.preCacheCols = new ArrayList<String>();
+    }
+    this.preCacheCols.add(elem);
   }
 
   /**
-   * Sets what column families and columns to prefetch into block cache on shard open.
+   * This map sets what column families and columns to prefetch into block cache on shard open.
    */
-  public TableDescriptor setColumnPreCache(ColumnPreCache columnPreCache) {
-    this.columnPreCache = columnPreCache;
+  public List<String> getPreCacheCols() {
+    return this.preCacheCols;
+  }
+
+  /**
+   * This map sets what column families and columns to prefetch into block cache on shard open.
+   */
+  public TableDescriptor setPreCacheCols(List<String> preCacheCols) {
+    this.preCacheCols = preCacheCols;
     return this;
   }
 
-  public void unsetColumnPreCache() {
-    this.columnPreCache = null;
+  public void unsetPreCacheCols() {
+    this.preCacheCols = null;
   }
 
-  /** Returns true if field columnPreCache is set (has been assigned a value) and false otherwise */
-  public boolean isSetColumnPreCache() {
-    return this.columnPreCache != null;
+  /** Returns true if field preCacheCols is set (has been assigned a value) and false otherwise */
+  public boolean isSetPreCacheCols() {
+    return this.preCacheCols != null;
   }
 
-  public void setColumnPreCacheIsSet(boolean value) {
+  public void setPreCacheColsIsSet(boolean value) {
     if (!value) {
-      this.columnPreCache = null;
+      this.preCacheCols = null;
     }
   }
 
@@ -1051,11 +1071,11 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       }
       break;
 
-    case COLUMN_PRE_CACHE:
+    case PRE_CACHE_COLS:
       if (value == null) {
-        unsetColumnPreCache();
+        unsetPreCacheCols();
       } else {
-        setColumnPreCache((ColumnPreCache)value);
+        setPreCacheCols((List<String>)value);
       }
       break;
 
@@ -1131,8 +1151,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     case READ_ONLY:
       return Boolean.valueOf(isReadOnly());
 
-    case COLUMN_PRE_CACHE:
-      return getColumnPreCache();
+    case PRE_CACHE_COLS:
+      return getPreCacheCols();
 
     case TABLE_PROPERTIES:
       return getTableProperties();
@@ -1178,8 +1198,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       return isSetBlockCachingFileTypes();
     case READ_ONLY:
       return isSetReadOnly();
-    case COLUMN_PRE_CACHE:
-      return isSetColumnPreCache();
+    case PRE_CACHE_COLS:
+      return isSetPreCacheCols();
     case TABLE_PROPERTIES:
       return isSetTableProperties();
     case STRICT_TYPES:
@@ -1288,12 +1308,12 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         return false;
     }
 
-    boolean this_present_columnPreCache = true && this.isSetColumnPreCache();
-    boolean that_present_columnPreCache = true && that.isSetColumnPreCache();
-    if (this_present_columnPreCache || that_present_columnPreCache) {
-      if (!(this_present_columnPreCache && that_present_columnPreCache))
+    boolean this_present_preCacheCols = true && this.isSetPreCacheCols();
+    boolean that_present_preCacheCols = true && that.isSetPreCacheCols();
+    if (this_present_preCacheCols || that_present_preCacheCols) {
+      if (!(this_present_preCacheCols && that_present_preCacheCols))
         return false;
-      if (!this.columnPreCache.equals(that.columnPreCache))
+      if (!this.preCacheCols.equals(that.preCacheCols))
         return false;
     }
 
@@ -1448,12 +1468,12 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetColumnPreCache()).compareTo(typedOther.isSetColumnPreCache());
+    lastComparison = Boolean.valueOf(isSetPreCacheCols()).compareTo(typedOther.isSetPreCacheCols());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetColumnPreCache()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.columnPreCache, typedOther.columnPreCache);
+    if (isSetPreCacheCols()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.preCacheCols, typedOther.preCacheCols);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1584,11 +1604,11 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
     sb.append(this.readOnly);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("columnPreCache:");
-    if (this.columnPreCache == null) {
+    sb.append("preCacheCols:");
+    if (this.preCacheCols == null) {
       sb.append("null");
     } else {
-      sb.append(this.columnPreCache);
+      sb.append(this.preCacheCols);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -1630,9 +1650,6 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     // check for required fields
     // check for sub-struct validity
-    if (columnPreCache != null) {
-      columnPreCache.validate();
-    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -1730,13 +1747,13 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
           case 11: // BLOCK_CACHING_FILE_TYPES
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set128 = iprot.readSetBegin();
-                struct.blockCachingFileTypes = new HashSet<String>(2*_set128.size);
-                for (int _i129 = 0; _i129 < _set128.size; ++_i129)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set120 = iprot.readSetBegin();
+                struct.blockCachingFileTypes = new HashSet<String>(2*_set120.size);
+                for (int _i121 = 0; _i121 < _set120.size; ++_i121)
                 {
-                  String _elem130; // required
-                  _elem130 = iprot.readString();
-                  struct.blockCachingFileTypes.add(_elem130);
+                  String _elem122; // required
+                  _elem122 = iprot.readString();
+                  struct.blockCachingFileTypes.add(_elem122);
                 }
                 iprot.readSetEnd();
               }
@@ -1753,11 +1770,20 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 13: // COLUMN_PRE_CACHE
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
-              struct.columnPreCache = new ColumnPreCache();
-              struct.columnPreCache.read(iprot);
-              struct.setColumnPreCacheIsSet(true);
+          case 13: // PRE_CACHE_COLS
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
+              {
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list123 = iprot.readListBegin();
+                struct.preCacheCols = new ArrayList<String>(_list123.size);
+                for (int _i124 = 0; _i124 < _list123.size; ++_i124)
+                {
+                  String _elem125; // required
+                  _elem125 = iprot.readString();
+                  struct.preCacheCols.add(_elem125);
+                }
+                iprot.readListEnd();
+              }
+              struct.setPreCacheColsIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1765,15 +1791,15 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
           case 14: // TABLE_PROPERTIES
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map131 = iprot.readMapBegin();
-                struct.tableProperties = new HashMap<String,String>(2*_map131.size);
-                for (int _i132 = 0; _i132 < _map131.size; ++_i132)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map126 = iprot.readMapBegin();
+                struct.tableProperties = new HashMap<String,String>(2*_map126.size);
+                for (int _i127 = 0; _i127 < _map126.size; ++_i127)
                 {
-                  String _key133; // required
-                  String _val134; // optional
-                  _key133 = iprot.readString();
-                  _val134 = iprot.readString();
-                  struct.tableProperties.put(_key133, _val134);
+                  String _key128; // required
+                  String _val129; // optional
+                  _key128 = iprot.readString();
+                  _val129 = iprot.readString();
+                  struct.tableProperties.put(_key128, _val129);
                 }
                 iprot.readMapEnd();
               }
@@ -1809,15 +1835,15 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
           case 18: // DEFAULT_MISSING_FIELD_PROPS
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map135 = iprot.readMapBegin();
-                struct.defaultMissingFieldProps = new HashMap<String,String>(2*_map135.size);
-                for (int _i136 = 0; _i136 < _map135.size; ++_i136)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map130 = iprot.readMapBegin();
+                struct.defaultMissingFieldProps = new HashMap<String,String>(2*_map130.size);
+                for (int _i131 = 0; _i131 < _map130.size; ++_i131)
                 {
-                  String _key137; // required
-                  String _val138; // optional
-                  _key137 = iprot.readString();
-                  _val138 = iprot.readString();
-                  struct.defaultMissingFieldProps.put(_key137, _val138);
+                  String _key132; // required
+                  String _val133; // optional
+                  _key132 = iprot.readString();
+                  _val133 = iprot.readString();
+                  struct.defaultMissingFieldProps.put(_key132, _val133);
                 }
                 iprot.readMapEnd();
               }
@@ -1874,9 +1900,9 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         oprot.writeFieldBegin(BLOCK_CACHING_FILE_TYPES_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.blockCachingFileTypes.size()));
-          for (String _iter139 : struct.blockCachingFileTypes)
+          for (String _iter134 : struct.blockCachingFileTypes)
           {
-            oprot.writeString(_iter139);
+            oprot.writeString(_iter134);
           }
           oprot.writeSetEnd();
         }
@@ -1885,19 +1911,26 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       oprot.writeFieldBegin(READ_ONLY_FIELD_DESC);
       oprot.writeBool(struct.readOnly);
       oprot.writeFieldEnd();
-      if (struct.columnPreCache != null) {
-        oprot.writeFieldBegin(COLUMN_PRE_CACHE_FIELD_DESC);
-        struct.columnPreCache.write(oprot);
+      if (struct.preCacheCols != null) {
+        oprot.writeFieldBegin(PRE_CACHE_COLS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.preCacheCols.size()));
+          for (String _iter135 : struct.preCacheCols)
+          {
+            oprot.writeString(_iter135);
+          }
+          oprot.writeListEnd();
+        }
         oprot.writeFieldEnd();
       }
       if (struct.tableProperties != null) {
         oprot.writeFieldBegin(TABLE_PROPERTIES_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.tableProperties.size()));
-          for (Map.Entry<String, String> _iter140 : struct.tableProperties.entrySet())
+          for (Map.Entry<String, String> _iter136 : struct.tableProperties.entrySet())
           {
-            oprot.writeString(_iter140.getKey());
-            oprot.writeString(_iter140.getValue());
+            oprot.writeString(_iter136.getKey());
+            oprot.writeString(_iter136.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -1918,10 +1951,10 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         oprot.writeFieldBegin(DEFAULT_MISSING_FIELD_PROPS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.defaultMissingFieldProps.size()));
-          for (Map.Entry<String, String> _iter141 : struct.defaultMissingFieldProps.entrySet())
+          for (Map.Entry<String, String> _iter137 : struct.defaultMissingFieldProps.entrySet())
           {
-            oprot.writeString(_iter141.getKey());
-            oprot.writeString(_iter141.getValue());
+            oprot.writeString(_iter137.getKey());
+            oprot.writeString(_iter137.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -1972,7 +2005,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (struct.isSetReadOnly()) {
         optionals.set(8);
       }
-      if (struct.isSetColumnPreCache()) {
+      if (struct.isSetPreCacheCols()) {
         optionals.set(9);
       }
       if (struct.isSetTableProperties()) {
@@ -2015,25 +2048,31 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (struct.isSetBlockCachingFileTypes()) {
         {
           oprot.writeI32(struct.blockCachingFileTypes.size());
-          for (String _iter142 : struct.blockCachingFileTypes)
+          for (String _iter138 : struct.blockCachingFileTypes)
           {
-            oprot.writeString(_iter142);
+            oprot.writeString(_iter138);
           }
         }
       }
       if (struct.isSetReadOnly()) {
         oprot.writeBool(struct.readOnly);
       }
-      if (struct.isSetColumnPreCache()) {
-        struct.columnPreCache.write(oprot);
+      if (struct.isSetPreCacheCols()) {
+        {
+          oprot.writeI32(struct.preCacheCols.size());
+          for (String _iter139 : struct.preCacheCols)
+          {
+            oprot.writeString(_iter139);
+          }
+        }
       }
       if (struct.isSetTableProperties()) {
         {
           oprot.writeI32(struct.tableProperties.size());
-          for (Map.Entry<String, String> _iter143 : struct.tableProperties.entrySet())
+          for (Map.Entry<String, String> _iter140 : struct.tableProperties.entrySet())
           {
-            oprot.writeString(_iter143.getKey());
-            oprot.writeString(_iter143.getValue());
+            oprot.writeString(_iter140.getKey());
+            oprot.writeString(_iter140.getValue());
           }
         }
       }
@@ -2049,10 +2088,10 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (struct.isSetDefaultMissingFieldProps()) {
         {
           oprot.writeI32(struct.defaultMissingFieldProps.size());
-          for (Map.Entry<String, String> _iter144 : struct.defaultMissingFieldProps.entrySet())
+          for (Map.Entry<String, String> _iter141 : struct.defaultMissingFieldProps.entrySet())
           {
-            oprot.writeString(_iter144.getKey());
-            oprot.writeString(_iter144.getValue());
+            oprot.writeString(_iter141.getKey());
+            oprot.writeString(_iter141.getValue());
           }
         }
       }
@@ -2092,13 +2131,13 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
       }
       if (incoming.get(7)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set145 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-          struct.blockCachingFileTypes = new HashSet<String>(2*_set145.size);
-          for (int _i146 = 0; _i146 < _set145.size; ++_i146)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set142 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.blockCachingFileTypes = new HashSet<String>(2*_set142.size);
+          for (int _i143 = 0; _i143 < _set142.size; ++_i143)
           {
-            String _elem147; // required
-            _elem147 = iprot.readString();
-            struct.blockCachingFileTypes.add(_elem147);
+            String _elem144; // required
+            _elem144 = iprot.readString();
+            struct.blockCachingFileTypes.add(_elem144);
           }
         }
         struct.setBlockCachingFileTypesIsSet(true);
@@ -2108,9 +2147,17 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
         struct.setReadOnlyIsSet(true);
       }
       if (incoming.get(9)) {
-        struct.columnPreCache = new ColumnPreCache();
-        struct.columnPreCache.read(iprot);
-        struct.setColumnPreCacheIsSet(true);
+        {
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list145 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.preCacheCols = new ArrayList<String>(_list145.size);
+          for (int _i146 = 0; _i146 < _list145.size; ++_i146)
+          {
+            String _elem147; // required
+            _elem147 = iprot.readString();
+            struct.preCacheCols.add(_elem147);
+          }
+        }
+        struct.setPreCacheColsIsSet(true);
       }
       if (incoming.get(10)) {
         {

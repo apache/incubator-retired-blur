@@ -36,11 +36,6 @@ import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
-import org.apache.blur.thirdparty.thrift_0_9_0.TBase;
-import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
-import org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport;
-import org.apache.blur.thrift.generated.ColumnPreCache;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
@@ -407,8 +402,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
           tableDescriptor.blockCaching = isBlockCacheEnabled(cluster, table);
           tableDescriptor.blockCachingFileTypes = getBlockCacheFileTypes(cluster, table);
           tableDescriptor.name = table;
-          tableDescriptor.columnPreCache = fromBytes(
-              getData(ZookeeperPathConstants.getTableColumnsToPreCache(cluster, table)), ColumnPreCache.class);
+          tableDescriptor.preCacheCols = toList(getData(ZookeeperPathConstants
+              .getTableColumnsToPreCache(cluster, table)));
           byte[] data = getData(ZookeeperPathConstants.getTableSimilarityPath(cluster, table));
           if (data != null) {
             tableDescriptor.similarityClass = new String(data);
@@ -437,31 +432,37 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     return tableDescriptor;
   }
 
+  private static List<String> toList(byte[] bs) {
+    if (bs == null) {
+      return null;
+    }
+    String str = new String(bs);
+    String[] split = str.split(",");
+    List<String> list = new ArrayList<String>();
+    for (String s : split) {
+      list.add(s.trim());
+    }
+    return list;
+  }
+
+  private static byte[] toBytes(List<String> list) {
+    if (list == null) {
+      return null;
+    }
+    StringBuilder builder = new StringBuilder();
+    for (String s : list) {
+      if (builder.length() != 0) {
+        builder.append(',');
+      }
+      builder.append(s);
+    }
+    return builder.toString().getBytes();
+  }
+
   private void updateReadOnlyAndEnabled(boolean useCache, TableDescriptor tableDescriptor, String cluster, String table) {
     if (tableDescriptor != null) {
       tableDescriptor.setReadOnly(isReadOnly(useCache, cluster, table));
       tableDescriptor.setIsEnabled(isEnabled(useCache, cluster, table));
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  private <T extends TBase<?, ?>> T fromBytes(byte[] data, Class<T> clazz) {
-    try {
-      if (data == null) {
-        return null;
-      }
-      TBase<?, ?> base = clazz.newInstance();
-      TMemoryInputTransport trans = new TMemoryInputTransport(data);
-      TJSONProtocol protocol = new TJSONProtocol(trans);
-      base.read(protocol);
-      trans.close();
-      return (T) base;
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (TException e) {
-      throw new RuntimeException(e);
     }
   }
 
@@ -716,7 +717,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       boolean blockCaching = tableDescriptor.blockCaching;
       Set<String> blockCachingFileTypes = tableDescriptor.blockCachingFileTypes;
       String blurTablePath = ZookeeperPathConstants.getTablePath(cluster, table);
-      ColumnPreCache columnPreCache = tableDescriptor.columnPreCache;
 
       if (_zk.exists(blurTablePath, false) != null) {
         throw new IOException("Table [" + table + "] already exists.");
@@ -724,7 +724,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       BlurUtil.setupFileSystem(uri, shardCount);
       BlurUtil.createPath(_zk, blurTablePath, null);
       BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableColumnsToPreCache(cluster, table),
-          BlurUtil.read(columnPreCache));
+          toBytes(tableDescriptor.preCacheCols));
       BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableUriPath(cluster, table), uri.getBytes());
       BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableShardCountPath(cluster, table),
           Integer.toString(shardCount).getBytes());

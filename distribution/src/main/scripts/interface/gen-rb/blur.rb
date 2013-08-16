@@ -187,22 +187,6 @@ module Blur
         return
       end
 
-      def currentQueries(table)
-        send_currentQueries(table)
-        return recv_currentQueries()
-      end
-
-      def send_currentQueries(table)
-        send_message('currentQueries', CurrentQueries_args, :table => table)
-      end
-
-      def recv_currentQueries()
-        result = receive_message(CurrentQueries_result)
-        return result.success unless result.success.nil?
-        raise result.ex unless result.ex.nil?
-        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'currentQueries failed: unknown result')
-      end
-
       def queryStatusIdList(table)
         send_queryStatusIdList(table)
         return recv_queryStatusIdList()
@@ -249,22 +233,6 @@ module Blur
         return result.success unless result.success.nil?
         raise result.ex unless result.ex.nil?
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'schema failed: unknown result')
-      end
-
-      def getTableStats(table)
-        send_getTableStats(table)
-        return recv_getTableStats()
-      end
-
-      def send_getTableStats(table)
-        send_message('getTableStats', GetTableStats_args, :table => table)
-      end
-
-      def recv_getTableStats()
-        result = receive_message(GetTableStats_result)
-        return result.success unless result.success.nil?
-        raise result.ex unless result.ex.nil?
-        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'getTableStats failed: unknown result')
       end
 
       def tableStats(table)
@@ -626,17 +594,6 @@ module Blur
         write_result(result, oprot, 'cancelQuery', seqid)
       end
 
-      def process_currentQueries(seqid, iprot, oprot)
-        args = read_args(iprot, CurrentQueries_args)
-        result = CurrentQueries_result.new()
-        begin
-          result.success = @handler.currentQueries(args.table)
-        rescue ::Blur::BlurException => ex
-          result.ex = ex
-        end
-        write_result(result, oprot, 'currentQueries', seqid)
-      end
-
       def process_queryStatusIdList(seqid, iprot, oprot)
         args = read_args(iprot, QueryStatusIdList_args)
         result = QueryStatusIdList_result.new()
@@ -668,17 +625,6 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'schema', seqid)
-      end
-
-      def process_getTableStats(seqid, iprot, oprot)
-        args = read_args(iprot, GetTableStats_args)
-        result = GetTableStats_result.new()
-        begin
-          result.success = @handler.getTableStats(args.table)
-        rescue ::Blur::BlurException => ex
-          result.ex = ex
-        end
-        write_result(result, oprot, 'getTableStats', seqid)
       end
 
       def process_tableStats(seqid, iprot, oprot)
@@ -888,6 +834,7 @@ module Blur
       CLUSTER = 1
 
       FIELDS = {
+        # the cluster name.
         CLUSTER => {:type => ::Thrift::Types::STRING, :name => 'cluster'}
       }
 
@@ -955,6 +902,7 @@ module Blur
       TABLE = 1
 
       FIELDS = {
+        # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'}
       }
 
@@ -989,6 +937,7 @@ module Blur
       TABLE = 1
 
       FIELDS = {
+        # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'}
       }
 
@@ -1056,6 +1005,7 @@ module Blur
       CLUSTER = 1
 
       FIELDS = {
+        # the cluster name.
         CLUSTER => {:type => ::Thrift::Types::STRING, :name => 'cluster'}
       }
 
@@ -1090,6 +1040,7 @@ module Blur
       TABLE = 1
 
       FIELDS = {
+        # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'}
       }
 
@@ -1125,7 +1076,9 @@ module Blur
       BLURQUERY = 2
 
       FIELDS = {
+        # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # the query to execute.
         BLURQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'blurQuery', :class => ::Blur::BlurQuery}
       }
 
@@ -1161,7 +1114,9 @@ module Blur
       SIMPLEQUERY = 2
 
       FIELDS = {
+        # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # the query to parse.
         SIMPLEQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'simpleQuery', :class => ::Blur::SimpleQuery}
       }
 
@@ -1197,7 +1152,9 @@ module Blur
       UUID = 2
 
       FIELDS = {
+        # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # the uuid of the query.
         UUID => {:type => ::Thrift::Types::I64, :name => 'uuid'}
       }
 
@@ -1225,45 +1182,12 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
-    class CurrentQueries_args
-      include ::Thrift::Struct, ::Thrift::Struct_Union
-      TABLE = 1
-
-      FIELDS = {
-        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'}
-      }
-
-      def struct_fields; FIELDS; end
-
-      def validate
-      end
-
-      ::Thrift::Struct.generate_accessors self
-    end
-
-    class CurrentQueries_result
-      include ::Thrift::Struct, ::Thrift::Struct_Union
-      SUCCESS = 0
-      EX = 1
-
-      FIELDS = {
-        SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::BlurQueryStatus}},
-        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
-      }
-
-      def struct_fields; FIELDS; end
-
-      def validate
-      end
-
-      ::Thrift::Struct.generate_accessors self
-    end
-
     class QueryStatusIdList_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
       TABLE = 1
 
       FIELDS = {
+        # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'}
       }
 
@@ -1299,7 +1223,9 @@ module Blur
       UUID = 2
 
       FIELDS = {
+        # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # the uuid of the query.
         UUID => {:type => ::Thrift::Types::I64, :name => 'uuid'}
       }
 
@@ -1352,40 +1278,6 @@ module Blur
 
       FIELDS = {
         SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Blur::Schema},
-        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
-      }
-
-      def struct_fields; FIELDS; end
-
-      def validate
-      end
-
-      ::Thrift::Struct.generate_accessors self
-    end
-
-    class GetTableStats_args
-      include ::Thrift::Struct, ::Thrift::Struct_Union
-      TABLE = 1
-
-      FIELDS = {
-        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'}
-      }
-
-      def struct_fields; FIELDS; end
-
-      def validate
-      end
-
-      ::Thrift::Struct.generate_accessors self
-    end
-
-    class GetTableStats_result
-      include ::Thrift::Struct, ::Thrift::Struct_Union
-      SUCCESS = 0
-      EX = 1
-
-      FIELDS = {
-        SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Blur::TableStats},
         EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
       }
 
@@ -1618,6 +1510,7 @@ module Blur
       TABLEDESCRIPTOR = 1
 
       FIELDS = {
+        # the TableDescriptor.
         TABLEDESCRIPTOR => {:type => ::Thrift::Types::STRUCT, :name => 'tableDescriptor', :class => ::Blur::TableDescriptor}
       }
 
@@ -1650,6 +1543,7 @@ module Blur
       TABLE = 1
 
       FIELDS = {
+        # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'}
       }
 
@@ -1682,6 +1576,7 @@ module Blur
       TABLE = 1
 
       FIELDS = {
+        # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'}
       }
 
@@ -1715,7 +1610,9 @@ module Blur
       DELETEINDEXFILES = 2
 
       FIELDS = {
+        # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # true to remove the index storage and false if to preserve.
         DELETEINDEXFILES => {:type => ::Thrift::Types::BOOL, :name => 'deleteIndexFiles'}
       }
 
@@ -1749,7 +1646,9 @@ module Blur
       COLUMNDEFINITION = 2
 
       FIELDS = {
+        # the name of the table.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # the ColumnDefinition.
         COLUMNDEFINITION => {:type => ::Thrift::Types::STRUCT, :name => 'columnDefinition', :class => ::Blur::ColumnDefinition}
       }
 
@@ -1785,7 +1684,9 @@ module Blur
       NUMBEROFSEGMENTSPERSHARD = 2
 
       FIELDS = {
+        # table the name of the table.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # the maximum of segments per shard index after the operation is completed.
         NUMBEROFSEGMENTSPERSHARD => {:type => ::Thrift::Types::I32, :name => 'numberOfSegmentsPerShard'}
       }
 
@@ -1818,6 +1719,7 @@ module Blur
       CLUSTER = 1
 
       FIELDS = {
+        # the name of the cluster.
         CLUSTER => {:type => ::Thrift::Types::STRING, :name => 'cluster'}
       }
 
@@ -1885,6 +1787,7 @@ module Blur
       METRICS = 1
 
       FIELDS = {
+        # the names of the metrics to return.  If null all are returned.
         METRICS => {:type => ::Thrift::Types::SET, :name => 'metrics', :element => {:type => ::Thrift::Types::STRING}}
       }
 

@@ -320,7 +320,8 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  # FetchResult contains the row or record fetch result based if the Selector was going to fetch the entire row or a single record.
+  # FetchResult contains the row or record fetch result based if the Selector
+# was going to fetch the entire row or a single record.
   class FetchResult
     include ::Thrift::Struct, ::Thrift::Struct_Union
     EXISTS = 1
@@ -350,27 +351,6 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  # The expert query allows for submission of a serialized query and filter object to be executed against all the queries.
-  class ExpertQuery
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    QUERY = 1
-    FILTER = 2
-
-    FIELDS = {
-      # The serialized query.
-      QUERY => {:type => ::Thrift::Types::STRING, :name => 'query', :binary => true},
-      # The serialized filter.
-      FILTER => {:type => ::Thrift::Types::STRING, :name => 'filter', :binary => true}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
   # Blur facet.
   class Facet
     include ::Thrift::Struct, ::Thrift::Struct_Union
@@ -378,7 +358,14 @@ module Blur
     MINIMUMNUMBEROFBLURRESULTS = 2
 
     FIELDS = {
+      # The facet query.
       QUERYSTR => {:type => ::Thrift::Types::STRING, :name => 'queryStr'},
+      # The minimum number of results before no longer processing the facet.  This
+# is a good way to decrease the strain on the system while using many facets. For
+# example if you set this attribute to 1000, then the shard server will stop
+# processing the facet at the 1000 mark.  However because this is processed at
+# the shard server level the controller will likely return more than the minimum
+# because it sums the answers from the shard servers.
       MINIMUMNUMBEROFBLURRESULTS => {:type => ::Thrift::Types::I64, :name => 'minimumNumberOfBlurResults', :default => 9223372036854775807}
     }
 
@@ -390,14 +377,13 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  # 
+  # The Blur Query object that contains the query that needs to be executed along
+# with the query options.
   class BlurQuery
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SIMPLEQUERY = 1
-    EXPERTQUERY = 2
     FACETS = 3
     SELECTOR = 4
-    ALLOWSTALEDATA = 5
     USECACHEIFPRESENT = 6
     START = 7
     FETCH = 8
@@ -407,39 +393,34 @@ module Blur
     USERCONTEXT = 12
     CACHERESULT = 13
     STARTTIME = 14
-    MODIFYFILECACHES = 15
 
     FIELDS = {
-      # 
+      # The query information.
       SIMPLEQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'simpleQuery', :class => ::Blur::SimpleQuery},
-      # 
-      EXPERTQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'expertQuery', :class => ::Blur::ExpertQuery},
-      # 
+      # A list of Facets to execute with the given query.
       FACETS => {:type => ::Thrift::Types::LIST, :name => 'facets', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Facet}},
       # Selector is used to fetch data in the search results, if null only location ids will be fetched.
       SELECTOR => {:type => ::Thrift::Types::STRUCT, :name => 'selector', :class => ::Blur::Selector},
-      # @deprecated This value is no longer used.  This allows the query to see the most current data that has been added to the table.
-      ALLOWSTALEDATA => {:type => ::Thrift::Types::BOOL, :name => 'allowStaleData', :default => false},
-      # 
+      # Enabled by default to use a cached result if the query matches a previous run query with the
+# configured amount of time.
       USECACHEIFPRESENT => {:type => ::Thrift::Types::BOOL, :name => 'useCacheIfPresent', :default => true},
-      # 
+      # The starting result position, 0 by default.
       START => {:type => ::Thrift::Types::I64, :name => 'start', :default => 0},
-      # 
+      # The number of fetched results, 10 by default.
       FETCH => {:type => ::Thrift::Types::I32, :name => 'fetch', :default => 10},
-      # 
+      # The minimum number of results to find before returning.
       MINIMUMNUMBEROFRESULTS => {:type => ::Thrift::Types::I64, :name => 'minimumNumberOfResults', :default => 9223372036854775807},
-      # 
+      # The maximum amount of time the query should execute before timing out.
       MAXQUERYTIME => {:type => ::Thrift::Types::I64, :name => 'maxQueryTime', :default => 9223372036854775807},
-      # 
+      # Sets the uuid of this query, this is normal set by the client so that the status
+# of a running query can be found or the query can be canceled.
       UUID => {:type => ::Thrift::Types::I64, :name => 'uuid'},
-      # 
+      # Sets a user context, only used for logging at this point.
       USERCONTEXT => {:type => ::Thrift::Types::STRING, :name => 'userContext'},
-      # 
+      # Enabled by default to cache this result.  False would not cache the result.
       CACHERESULT => {:type => ::Thrift::Types::BOOL, :name => 'cacheResult', :default => true},
-      # 
-      STARTTIME => {:type => ::Thrift::Types::I64, :name => 'startTime', :default => 0},
-      # 
-      MODIFYFILECACHES => {:type => ::Thrift::Types::BOOL, :name => 'modifyFileCaches', :default => true}
+      # Sets the start time, if 0 the controller sets the time.
+      STARTTIME => {:type => ::Thrift::Types::I64, :name => 'startTime', :default => 0}
     }
 
     def struct_fields; FIELDS; end
@@ -450,7 +431,7 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  # 
+  #  
   class BlurResult
     include ::Thrift::Struct, ::Thrift::Struct_Union
     LOCATIONID = 1
@@ -460,7 +441,7 @@ module Blur
     FIELDS = {
       # WARNING: This is an internal only attribute and is not intended for use by clients.
       LOCATIONID => {:type => ::Thrift::Types::STRING, :name => 'locationId'},
-      # 
+      #  
       SCORE => {:type => ::Thrift::Types::DOUBLE, :name => 'score'},
       # 
       FETCHRESULT => {:type => ::Thrift::Types::STRUCT, :name => 'fetchResult', :class => ::Blur::FetchResult}
@@ -686,24 +667,6 @@ module Blur
   end
 
   # 
-  class ColumnPreCache
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    PRECACHECOLS = 1
-
-    FIELDS = {
-      # This map sets what column families and columns to prefetch into block cache on shard open.
-      PRECACHECOLS => {:type => ::Thrift::Types::LIST, :name => 'preCacheCols', :element => {:type => ::Thrift::Types::STRING}}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  # 
   class TableDescriptor
     include ::Thrift::Struct, ::Thrift::Struct_Union
     ISENABLED = 1
@@ -715,7 +678,7 @@ module Blur
     BLOCKCACHING = 10
     BLOCKCACHINGFILETYPES = 11
     READONLY = 12
-    COLUMNPRECACHE = 13
+    PRECACHECOLS = 13
     TABLEPROPERTIES = 14
     STRICTTYPES = 15
     DEFAULTMISSINGFIELDTYPE = 16
@@ -742,8 +705,8 @@ module Blur
       # If a table is set to be readonly, that means that mutates through Thrift are NOT allowed.  However
 # updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.
       READONLY => {:type => ::Thrift::Types::BOOL, :name => 'readOnly', :default => false},
-      # Sets what column families and columns to prefetch into block cache on shard open.
-      COLUMNPRECACHE => {:type => ::Thrift::Types::STRUCT, :name => 'columnPreCache', :class => ::Blur::ColumnPreCache},
+      # This map sets what column families and columns to prefetch into block cache on shard open.
+      PRECACHECOLS => {:type => ::Thrift::Types::LIST, :name => 'preCacheCols', :element => {:type => ::Thrift::Types::STRING}},
       # The table properties that can modify the default behavior of the table.  TODO: Document all options.
       TABLEPROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'tableProperties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
       # Whether strict types are enabled or not (default).  If they are enabled no column can be added without first having it's type defined.

@@ -19,6 +19,14 @@ namespace java org.apache.blur.thrift.generated
 namespace rb blur
 namespace perl Blur
 
+/**
+  * The error type of a BlurException.<br/><br/>
+  * UNKNOWN - Unknown error.<br/><br/>
+  * QUERY_CANCEL - Query has been cancel.<br/><br/>
+  * QUERY_TIMEOUT - Query has timed out.<br/><br/>
+  * BACK_PRESSURE - Server has run out of memory and is trying to prevent a failure.<br/><br/>
+  * REQUEST_TIMEOUT - The TCP connection has timed out.<br/>
+  */
 enum ErrorType {
   UNKNOWN,
   QUERY_CANCEL,
@@ -73,8 +81,8 @@ enum QueryState {
 }
 
 /**
-  * NOT_FOUND : when UUID is not found<br/><br/>
-  * FOUND : when UUID is present<br/>
+  * NOT_FOUND - when UUID is not found<br/><br/>
+  * FOUND - when UUID is present<br/>
   */
 enum Status {
   NOT_FOUND,

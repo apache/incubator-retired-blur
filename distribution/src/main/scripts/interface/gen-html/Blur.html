@@ -77,7 +77,13 @@
 </tr></table>
 <hr/><h2 id="Enumerations">Enumerations</h2>
 <div class="definition"><h3 id="Enum_ErrorType">Enumeration: ErrorType</h3>
-<br/><table class="table-bordered table-striped table-condensed">
+The error type of a BlurException.<br/><br/>
+UNKNOWN - Unknown error.<br/><br/>
+QUERY_CANCEL - Query has been cancel.<br/><br/>
+QUERY_TIMEOUT - Query has timed out.<br/><br/>
+BACK_PRESSURE - Server has run out of memory and is trying to prevent a failure.<br/><br/>
+REQUEST_TIMEOUT - The TCP connection has timed out.<br/>
+<br/><br/><table class="table-bordered table-striped table-condensed">
 <tr><td><code>UNKNOWN</code></td><td><code>0</code></td></tr>
 <tr><td><code>QUERY_CANCEL</code></td><td><code>1</code></td></tr>
 <tr><td><code>QUERY_TIMEOUT</code></td><td><code>2</code></td></tr>
@@ -108,8 +114,8 @@ COMPLETE - Query is complete.<br/>
 <tr><td><code>BACK_PRESSURE_INTERRUPTED</code></td><td><code>3</code></td></tr>
 </table></div>
 <div class="definition"><h3 id="Enum_Status">Enumeration: Status</h3>
-NOT_FOUND : when UUID is not found<br/><br/>
-FOUND : when UUID is present<br/>
+NOT_FOUND - when UUID is not found<br/><br/>
+FOUND - when UUID is present<br/>
 <br/><br/><table class="table-bordered table-striped table-condensed">
 <tr><td><code>NOT_FOUND</code></td><td><code>0</code></td></tr>
 <tr><td><code>FOUND</code></td><td><code>1</code></td></tr>

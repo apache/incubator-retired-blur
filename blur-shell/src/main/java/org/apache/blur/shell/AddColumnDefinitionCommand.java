@@ -51,7 +51,7 @@ public class AddColumnDefinitionCommand extends Command {
       columnDefinition.setColumnName(cmd.getOptionValue("s"));
     }
     if (cmd.hasOption("F")) {
-      columnDefinition.setFieldLessIndexing(true);
+      columnDefinition.setFieldLessIndexed(true);
     }
     if (cmd.hasOption("p")) {
       Option[] options = cmd.getOptions();

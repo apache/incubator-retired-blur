@@ -25,6 +25,7 @@ import java.util.Set;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.Schema;
 
 public class SchemaTableCommand extends Command {
@@ -38,12 +39,14 @@ public class SchemaTableCommand extends Command {
 
     Schema schema = client.schema(tablename);
     out.println(schema.getTable());
-    Map<String, Set<String>> columnFamilies = schema.getColumnFamilies();
-    for (String cf : columnFamilies.keySet()) {
+    Map<String, Map<String, ColumnDefinition>> families = schema.getFamilies();
+    for (String cf : families.keySet()) {
       out.println("family : " + cf);
-      Set<String> columns = columnFamilies.get(cf);
-      for (String c : columns) {
-        out.println("\tcolumn : " + c);
+      Map<String, ColumnDefinition> columns = families.get(cf);
+      for (String c : columns.keySet()) {
+        ColumnDefinition columnDefinition = columns.get(c);
+//        out.println("\tcolumn : " + c);
+        out.println("\tcolumn : " + columnDefinition);
       }
     }
   }

@@ -269,7 +269,7 @@ public abstract class BaseFieldManager extends FieldManager {
   }
 
   @Override
-  public boolean addColumnDefinition(String family, String columnName, String subColumnName, boolean fieldLessIndexing,
+  public boolean addColumnDefinition(String family, String columnName, String subColumnName, boolean fieldLessIndexed,
       String fieldType, Map<String, String> props) throws IOException {
     String baseFieldName = family + "." + columnName;
     String fieldName;
@@ -279,7 +279,7 @@ public abstract class BaseFieldManager extends FieldManager {
         throw new IllegalArgumentException("Base column of [" + baseFieldName
             + "] not found, please add base before adding sub column.");
       }
-      if (fieldLessIndexing) {
+      if (fieldLessIndexed) {
         throw new IllegalArgumentException("Subcolumn of [" + subColumnName + "] from base of [" + baseFieldName
             + "] cannot be added with fieldLessIndexing set to true.");
       }
@@ -287,16 +287,16 @@ public abstract class BaseFieldManager extends FieldManager {
     } else {
       fieldName = baseFieldName;
     }
-    return addFieldTypeDefinition(fieldName, fieldLessIndexing, fieldType, props);
+    return addFieldTypeDefinition(family, columnName, subColumnName, fieldName, fieldLessIndexed, fieldType, props);
   }
 
-  private boolean addFieldTypeDefinition(String fieldName, boolean fieldLessIndexing, String fieldType,
-      Map<String, String> props) throws IOException {
+  private boolean addFieldTypeDefinition(String family, String columnName, String subColumnName, String fieldName,
+      boolean fieldLessIndexed, String fieldType, Map<String, String> props) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(fieldName);
     if (fieldTypeDefinition != null) {
       return false;
     }
-    fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexing, fieldType, props);
+    fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexed, fieldType, props);
     synchronized (_fieldNameToDefMap) {
       for (String alternateFieldName : fieldTypeDefinition.getAlternateFieldNames()) {
         if (_fieldNameToDefMap.containsKey(alternateFieldName)) {
@@ -305,12 +305,23 @@ public abstract class BaseFieldManager extends FieldManager {
               + "], this field type definition cannot be added.");
         }
       }
-      if (!tryToStore(fieldName, fieldLessIndexing, fieldType, props)) {
+      setFields(fieldTypeDefinition, family, columnName, subColumnName, fieldLessIndexed, fieldType, props);
+      if (!tryToStore(fieldTypeDefinition, fieldName)) {
         return false;
       }
       registerFieldTypeDefinition(fieldName, fieldTypeDefinition);
     }
     return true;
+  }
+
+  private void setFields(FieldTypeDefinition fieldTypeDefinition, String family, String columnName,
+      String subColumnName, boolean fieldLessIndexed, String fieldType, Map<String, String> props) {
+    fieldTypeDefinition.setFamily(family);
+    fieldTypeDefinition.setColumnName(columnName);
+    fieldTypeDefinition.setSubColumnName(subColumnName);
+    fieldTypeDefinition.setFieldLessIndexed(fieldLessIndexed);
+    fieldTypeDefinition.setFieldType(fieldType);
+    fieldTypeDefinition.setProperties(props);
   }
 
   protected void registerFieldTypeDefinition(String fieldName, FieldTypeDefinition fieldTypeDefinition) {
@@ -344,7 +355,7 @@ public abstract class BaseFieldManager extends FieldManager {
     return fieldName.substring(0, indexOf);
   }
 
-  protected FieldTypeDefinition newFieldTypeDefinition(String fieldName, boolean fieldLessIndexing, String fieldType,
+  protected FieldTypeDefinition newFieldTypeDefinition(String fieldName, boolean fieldLessIndexed, String fieldType,
       Map<String, String> props) {
     if (fieldType == null) {
       throw new IllegalArgumentException("Field type can not be null.");
@@ -368,12 +379,11 @@ public abstract class BaseFieldManager extends FieldManager {
     } else {
       fieldTypeDefinition.configure(fieldName, props);
     }
-    fieldTypeDefinition.setFieldLessIndexing(fieldLessIndexing);
+    fieldTypeDefinition.setFieldLessIndexed(fieldLessIndexed);
     return fieldTypeDefinition;
   }
 
-  protected abstract boolean tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType,
-      Map<String, String> props) throws IOException;
+  protected abstract boolean tryToStore(FieldTypeDefinition fieldTypeDefinition, String fieldName) throws IOException;
 
   protected abstract void tryToLoad(String fieldName) throws IOException;
 

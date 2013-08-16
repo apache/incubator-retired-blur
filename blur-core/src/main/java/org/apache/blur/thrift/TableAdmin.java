@@ -405,14 +405,14 @@ public abstract class TableAdmin implements Iface {
       throw new BException("ColumnName in ColumnDefinition [{0}] cannot be null.", columnDefinition);
     }
     String subColumnName = columnDefinition.getSubColumnName();
-    boolean fieldLessIndexing = columnDefinition.isFieldLessIndexing();
+    boolean fieldLessIndexed = columnDefinition.isFieldLessIndexed();
     String fieldType = columnDefinition.getFieldType();
     if (fieldType == null) {
       throw new BException("FieldType in ColumnDefinition [{0}] cannot be null.", columnDefinition);
     }
     Map<String, String> props = columnDefinition.getProperties();
     try {
-      return fieldManager.addColumnDefinition(family, columnName, subColumnName, fieldLessIndexing, fieldType, props);
+      return fieldManager.addColumnDefinition(family, columnName, subColumnName, fieldLessIndexed, fieldType, props);
     } catch (IOException e) {
       throw new BException(
           "Unknown error while trying to addColumnDefinition on table [{0}] with columnDefinition [{1}]", e, table,

@@ -28,8 +28,13 @@ import org.apache.lucene.search.Query;
 
 public abstract class FieldTypeDefinition {
 
-  protected static final Collection<String> EMPTY_COLLECTION = Arrays.asList(new String[]{});
-  protected boolean _fieldLessIndexing;
+  protected static final Collection<String> EMPTY_COLLECTION = Arrays.asList(new String[] {});
+  private boolean _fieldLessIndexed;
+  private String _family;
+  private String _columnName;
+  private String _subColumnName;
+  private String _fieldType;
+  private Map<String, String> _properties;
 
   /**
    * Gets the name of the field type.
@@ -146,11 +151,11 @@ public abstract class FieldTypeDefinition {
   }
 
   public boolean isFieldLessIndexed() {
-    return _fieldLessIndexing;
+    return _fieldLessIndexed;
   }
 
-  public void setFieldLessIndexing(boolean fieldLessIndexing) {
-    _fieldLessIndexing = fieldLessIndexing;
+  public void setFieldLessIndexed(boolean fieldLessIndexed) {
+    _fieldLessIndexed = fieldLessIndexed;
   }
 
   public abstract boolean checkSupportForFuzzyQuery();
@@ -167,4 +172,45 @@ public abstract class FieldTypeDefinition {
     throw new RuntimeException("Not supported.");
   }
 
+  public String getFamily() {
+    return _family;
+  }
+
+  public void setFamily(String family) {
+    this._family = family;
+  }
+
+  public String getColumnName() {
+    return _columnName;
+  }
+
+  public void setColumnName(String columnName) {
+    this._columnName = columnName;
+  }
+
+  public String getSubColumnName() {
+    return _subColumnName;
+  }
+
+  public void setSubColumnName(String subColumnName) {
+    this._subColumnName = subColumnName;
+  }
+
+  public String getFieldType() {
+    return _fieldType;
+  }
+
+  public void setFieldType(String fieldType) {
+    this._fieldType = fieldType;
+  }
+
+  public Map<String, String> getProperties() {
+    return _properties;
+  }
+
+  public void setProperties(Map<String, String> properties) {
+    this._properties = properties;
+  }
+
+  
 }

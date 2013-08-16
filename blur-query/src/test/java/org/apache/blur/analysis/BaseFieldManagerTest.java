@@ -22,7 +22,6 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.blur.analysis.type.TextFieldTypeDefinition;
 import org.apache.blur.thrift.generated.Column;
@@ -178,8 +177,7 @@ public class BaseFieldManagerTest {
   protected BaseFieldManager newFieldManager(boolean create) throws IOException {
     return new BaseFieldManager(_fieldLessField, new KeywordAnalyzer()) {
       @Override
-      protected boolean tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType,
-          Map<String, String> props) {
+      protected boolean tryToStore(FieldTypeDefinition fieldTypeDefinition, String fieldName) {
         return true;
       }
 

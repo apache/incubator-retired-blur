@@ -47,7 +47,7 @@ public abstract class FieldManager {
    * @param subColumnName
    *          the sub column name, optional can be null if it's not a sub
    *          column.
-   * @param fieldLessIndexing
+   * @param fieldLessIndexed
    *          indicates whether the field should be added to the default field
    *          for the record for fieldless searching.
    * @param fieldType
@@ -58,7 +58,7 @@ public abstract class FieldManager {
    * @throws IOException
    */
   public abstract boolean addColumnDefinition(String family, String columnName, String subColumnName,
-      boolean fieldLessIndexing, String fieldType, Map<String, String> props) throws IOException;
+      boolean fieldLessIndexed, String fieldType, Map<String, String> props) throws IOException;
 
   /**
    * Gets the analyzer for the indexing process.

@@ -7,9 +7,9 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.blur.analysis.BaseFieldManager;
+import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
 import org.apache.blur.analysis.type.spatial.SpatialArgsParser;
 import org.apache.blur.thrift.generated.ScoreType;
@@ -53,8 +53,7 @@ public class SuperParserTest {
   private BaseFieldManager getFieldManager(Analyzer a) throws IOException {
     BaseFieldManager fieldManager = new BaseFieldManager(BlurConstants.SUPER, a) {
       @Override
-      protected boolean tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType,
-          Map<String, String> props) {
+      protected boolean tryToStore(FieldTypeDefinition fieldTypeDefinition, String fieldName) {
         return true;
       }
 
@@ -333,7 +332,7 @@ public class SuperParserTest {
     SpatialArgs args = new SpatialArgs(SpatialOperation.Intersects, circle);
 
     String writeSpatialArgs = SpatialArgsParser.writeSpatialArgs(args, shapeReadWriter);
-    
+
     // This has to be done because of rounding.
     SpatialArgs spatialArgs = SpatialArgsParser.parse(writeSpatialArgs, shapeReadWriter);
     Query q1 = sq(strategy.makeQuery(spatialArgs));

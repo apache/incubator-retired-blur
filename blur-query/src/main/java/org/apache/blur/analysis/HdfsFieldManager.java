@@ -44,8 +44,13 @@ public class HdfsFieldManager extends BaseFieldManager {
   }
 
   private static final Log LOG = LogFactory.getLog(HdfsFieldManager.class);
-  private static final String FIELD_TYPE = "fieldType";
-  private static final String FIELD_LESS_INDEXING = "fieldLessIndexing";
+
+  private static final String FIELD_TYPE = "_fieldType_";
+  private static final String FIELD_LESS_INDEXING = "_fieldLessIndexing_";
+  private static final String FAMILY = "_family_";
+  private static final String COLUMN_NAME = "_columnName_";
+  private static final String SUB_COLUMN_NAME = "_subColumnName_";
+
   private static Lock _lock = new Lock() {
     private final java.util.concurrent.locks.Lock _javalock = new ReentrantReadWriteLock().writeLock();
 
@@ -80,16 +85,22 @@ public class HdfsFieldManager extends BaseFieldManager {
   }
 
   @Override
-  protected boolean tryToStore(String fieldName, boolean fieldLessIndexing, String fieldType, Map<String, String> props)
-      throws IOException {
+  protected boolean tryToStore(FieldTypeDefinition fieldTypeDefinition, String fieldName) throws IOException {
     // Might want to make this a ZK lock
     _lock.lock();
     try {
+      String fieldType = fieldTypeDefinition.getFieldType();
+      boolean fieldLessIndexed = fieldTypeDefinition.isFieldLessIndexed();
       LOG.info("Attempting to store new field [{0}] with fieldLessIndexing [{1}] with type [{2}] and properties [{3}]",
-          fieldName, fieldLessIndexing, fieldType, props);
+          fieldName, fieldLessIndexed, fieldType, fieldTypeDefinition.getProperties());
       Properties properties = new Properties();
-      properties.setProperty(FIELD_LESS_INDEXING, Boolean.toString(fieldLessIndexing));
-      properties.setProperty(FIELD_TYPE, fieldType);
+      setProperty(properties, FAMILY, fieldTypeDefinition.getFamily());
+      setProperty(properties, FAMILY, fieldTypeDefinition.getFamily());
+      setProperty(properties, COLUMN_NAME, fieldTypeDefinition.getColumnName());
+      setProperty(properties, SUB_COLUMN_NAME, fieldTypeDefinition.getSubColumnName());
+      setProperty(properties, FIELD_LESS_INDEXING, Boolean.toString(fieldLessIndexed));
+      setProperty(properties, FIELD_TYPE, fieldType);
+      Map<String, String> props = fieldTypeDefinition.getProperties();
       if (props != null) {
         for (Entry<String, String> e : props.entrySet()) {
           properties.setProperty(e.getKey(), e.getValue());
@@ -97,7 +108,7 @@ public class HdfsFieldManager extends BaseFieldManager {
       }
       Path path = getFieldPath(fieldName);
       if (_fileSystem.exists(path)) {
-        LOG.info("Field [{0}] already exists.", fieldName, fieldLessIndexing, fieldType, props);
+        LOG.info("Field [{0}] already exists.", fieldName);
         return false;
       }
       Path tmpPath = new Path(path.getParent(), UUID.randomUUID().toString() + ".tmp");
@@ -110,12 +121,19 @@ public class HdfsFieldManager extends BaseFieldManager {
         return true;
       } else {
         _fileSystem.delete(tmpPath, false);
-        LOG.info("Field [{0}] already exists.", fieldName, fieldLessIndexing, fieldType, props);
+        LOG.info("Field [{0}] already exists.", fieldName, fieldLessIndexed, fieldType, props);
         return false;
       }
     } finally {
       _lock.unlock();
     }
+  }
+
+  private void setProperty(Properties properties, String key, String value) {
+    if (value == null) {
+      return;
+    }
+    properties.setProperty(key, value);
   }
 
   private Path getFieldPath(String fieldName) {
@@ -135,12 +153,19 @@ public class HdfsFieldManager extends BaseFieldManager {
         return;
       }
       FSDataInputStream inputStream = _fileSystem.open(path);
-      Properties props = new Properties();
-      props.load(inputStream);
+      Properties properties = new Properties();
+      properties.load(inputStream);
       inputStream.close();
-      boolean fieldLessIndexing = Boolean.parseBoolean(props.getProperty(FIELD_LESS_INDEXING));
-      String fieldType = props.getProperty(FIELD_TYPE);
-      FieldTypeDefinition fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexing, fieldType, toMap(props));
+      boolean fieldLessIndexing = Boolean.parseBoolean(properties.getProperty(FIELD_LESS_INDEXING));
+      String fieldType = properties.getProperty(FIELD_TYPE);
+      Map<String, String> props = toMap(properties);
+      FieldTypeDefinition fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexing, fieldType, props);
+      fieldTypeDefinition.setFamily(properties.getProperty(FAMILY));
+      fieldTypeDefinition.setColumnName(properties.getProperty(COLUMN_NAME));
+      fieldTypeDefinition.setSubColumnName(properties.getProperty(SUB_COLUMN_NAME));
+      fieldTypeDefinition.setFieldLessIndexed(fieldLessIndexing);
+      fieldTypeDefinition.setFieldType(properties.getProperty(FIELD_TYPE));
+      fieldTypeDefinition.setProperties(props);
       registerFieldTypeDefinition(fieldName, fieldTypeDefinition);
     } finally {
       _lock.unlock();
@@ -152,6 +177,11 @@ public class HdfsFieldManager extends BaseFieldManager {
     for (Entry<Object, Object> e : props.entrySet()) {
       result.put(e.getKey().toString(), e.getValue().toString());
     }
+    result.remove(FAMILY);
+    result.remove(COLUMN_NAME);
+    result.remove(SUB_COLUMN_NAME);
+    result.remove(FIELD_TYPE);
+    result.remove(FIELD_LESS_INDEXING);
     return result;
   }
 

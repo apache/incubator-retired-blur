@@ -150,8 +150,8 @@ public class RandomSearchTableContinuously {
     Iface client = BlurClient.getClient(connectionStr);
     Schema schema = client.schema(tableName);
     Set<String> fields = new HashSet<String>();
-    for (String cf : schema.columnFamilies.keySet()) {
-      for (String field : schema.columnFamilies.get(cf)) {
+    for (String cf : schema.families.keySet()) {
+      for (String field : schema.families.get(cf).keySet()) {
         fields.add(cf + "." + field);
       }
     }

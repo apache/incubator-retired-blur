@@ -61,6 +61,7 @@ import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
+import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.HighlightOptions;
 import org.apache.blur.thrift.generated.RowMutation;
@@ -716,15 +717,15 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   public static Schema merge(Schema result, Schema schema) {
-    Map<String, Set<String>> destColumnFamilies = result.columnFamilies;
-    Map<String, Set<String>> srcColumnFamilies = schema.columnFamilies;
+    Map<String, Map<String, ColumnDefinition>> destColumnFamilies = result.getFamilies();
+    Map<String, Map<String, ColumnDefinition>> srcColumnFamilies = schema.getFamilies();
     for (String srcColumnFamily : srcColumnFamilies.keySet()) {
-      Set<String> destColumnNames = destColumnFamilies.get(srcColumnFamily);
-      Set<String> srcColumnNames = srcColumnFamilies.get(srcColumnFamily);
+      Map<String, ColumnDefinition> destColumnNames = destColumnFamilies.get(srcColumnFamily);
+      Map<String, ColumnDefinition> srcColumnNames = srcColumnFamilies.get(srcColumnFamily);
       if (destColumnNames == null) {
         destColumnFamilies.put(srcColumnFamily, srcColumnNames);
       } else {
-        destColumnNames.addAll(srcColumnNames);
+        destColumnNames.putAll(srcColumnNames);
       }
     }
     return result;

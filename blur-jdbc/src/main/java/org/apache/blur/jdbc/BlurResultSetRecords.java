@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 import org.apache.blur.jdbc.abstractimpl.AbstractBlurResultSet;
 import org.apache.blur.jdbc.parser.Parser;
@@ -40,6 +39,7 @@ import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.Column;
+import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.FetchRecordResult;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.Record;
@@ -107,8 +107,8 @@ public class BlurResultSetRecords extends AbstractBlurResultSet {
     selector = new Selector();
     setupSelector(selector, schema, columnNames);
     selector.recordOnly = !blurQuery.simpleQuery.superQueryOn;
-    Map<String, Set<String>> columnFamilies = schema.columnFamilies;
-    Set<String> cfSet = columnFamilies.get(columnFamily);
+    Map<String, Map<String, ColumnDefinition>> columnFamilies = schema.getFamilies();
+    Map<String, ColumnDefinition> cfSet = columnFamilies.get(columnFamily);
     columnFamilies.clear();
     columnFamilies.put(columnFamily, cfSet);
     blurResultSetMetaData = new BlurResultSetMetaData(columnNames, columnFamilies);

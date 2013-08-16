@@ -645,17 +645,60 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  # 
+  # The ColumnDefinition defines how a given Column should be interpreted (indexed/stored)
+  class ColumnDefinition
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    FAMILY = 1
+    COLUMNNAME = 2
+    SUBCOLUMNNAME = 3
+    FIELDLESSINDEXED = 4
+    FIELDTYPE = 5
+    PROPERTIES = 6
+
+    FIELDS = {
+      # Required. The family the this column existing within.
+      FAMILY => {:type => ::Thrift::Types::STRING, :name => 'family'},
+      # Required. The column name.
+      COLUMNNAME => {:type => ::Thrift::Types::STRING, :name => 'columnName'},
+      # If this column definition is for a sub column then provide the sub column name.  Otherwise leave this field null.
+      SUBCOLUMNNAME => {:type => ::Thrift::Types::STRING, :name => 'subColumnName'},
+      # If this column should be searchable without having to specify the name of the column in the query.
+# NOTE: This will index the column as a full text field in a default field, so that means it's going to be indexed twice.
+      FIELDLESSINDEXED => {:type => ::Thrift::Types::BOOL, :name => 'fieldLessIndexed'},
+      # The field type for the column.  The built in types are:
+# <ul>
+# <li>text - Full text indexing.</li>
+# <li>string - Indexed string literal</li>
+# <li>int - Converted to an integer and indexed numerically.</li>
+# <li>long - Converted to an long and indexed numerically.</li>
+# <li>float - Converted to an float and indexed numerically.</li>
+# <li>double - Converted to an double and indexed numerically.</li>
+# <li>stored - Not indexed, only stored.</li>
+# </ul>
+      FIELDTYPE => {:type => ::Thrift::Types::STRING, :name => 'fieldType'},
+      # For any custom field types, you can pass in configuration properties.
+      PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  # The current schema of the table.
   class Schema
     include ::Thrift::Struct, ::Thrift::Struct_Union
     TABLE = 1
-    COLUMNFAMILIES = 2
+    FAMILIES = 2
 
     FIELDS = {
-      # 
+      # The table name.
       TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
-      # 
-      COLUMNFAMILIES => {:type => ::Thrift::Types::MAP, :name => 'columnFamilies', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::SET, :element => {:type => ::Thrift::Types::STRING}}}
+      # Families and the column definitions within them.
+      FAMILIES => {:type => ::Thrift::Types::MAP, :name => 'families', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::MAP, :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::ColumnDefinition}}}
     }
 
     def struct_fields; FIELDS; end
@@ -744,49 +787,6 @@ module Blur
       LONGMAP => {:type => ::Thrift::Types::MAP, :name => 'longMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::I64}},
       # map of double values emitted by the Metric.
       DOUBLEMAP => {:type => ::Thrift::Types::MAP, :name => 'doubleMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::DOUBLE}}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  # The ColumnDefinition defines how a given Column should be interpreted (indexed/stored)
-  class ColumnDefinition
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    FAMILY = 1
-    COLUMNNAME = 2
-    SUBCOLUMNNAME = 3
-    FIELDLESSINDEXING = 4
-    FIELDTYPE = 5
-    PROPERTIES = 6
-
-    FIELDS = {
-      # Required. The family the this column existing within.
-      FAMILY => {:type => ::Thrift::Types::STRING, :name => 'family'},
-      # Required. The column name.
-      COLUMNNAME => {:type => ::Thrift::Types::STRING, :name => 'columnName'},
-      # If this column definition is for a sub column then provide the sub column name.  Otherwise leave this field null.
-      SUBCOLUMNNAME => {:type => ::Thrift::Types::STRING, :name => 'subColumnName'},
-      # If this column should be searchable without having to specify the name of the column in the query.
-# NOTE: This will index the column as a full text field in a default field, so that means it's going to be indexed twice.
-      FIELDLESSINDEXING => {:type => ::Thrift::Types::BOOL, :name => 'fieldLessIndexing'},
-      # The field type for the column.  The built in types are:
-# <ul>
-# <li>text - Full text indexing.</li>
-# <li>string - Indexed string literal</li>
-# <li>int - Converted to an integer and indexed numerically.</li>
-# <li>long - Converted to an long and indexed numerically.</li>
-# <li>float - Converted to an float and indexed numerically.</li>
-# <li>double - Converted to an double and indexed numerically.</li>
-# <li>stored - Not indexed, only stored.</li>
-# </ul>
-      FIELDTYPE => {:type => ::Thrift::Types::STRING, :name => 'fieldType'},
-      # For any custom field types, you can pass in configuration properties.
-      PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
     }
 
     def struct_fields; FIELDS; end

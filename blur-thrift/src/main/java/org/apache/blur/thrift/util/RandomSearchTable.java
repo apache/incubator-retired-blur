@@ -26,12 +26,12 @@ import java.util.Set;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.SimpleQuery;
-import org.apache.blur.thrift.generated.Blur.Iface;
 
 
 public class RandomSearchTable {
@@ -109,8 +109,8 @@ public class RandomSearchTable {
     Iface client = BlurClient.getClient(connectionStr);
     Schema schema = client.schema(tableName);
     Set<String> fields = new HashSet<String>();
-    for (String cf : schema.columnFamilies.keySet()) {
-      for (String field : schema.columnFamilies.get(cf)) {
+    for (String cf : schema.families.keySet()) {
+      for (String field : schema.families.get(cf).keySet()) {
         fields.add(cf + "." + field);
       }
     }

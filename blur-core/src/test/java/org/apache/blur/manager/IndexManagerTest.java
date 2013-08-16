@@ -53,6 +53,7 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.Column;
+import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.Facet;
 import org.apache.blur.thrift.generated.FetchRecordResult;
 import org.apache.blur.thrift.generated.FetchResult;
@@ -610,11 +611,11 @@ public class IndexManagerTest {
   public void testSchema() throws Exception {
     Schema schema = indexManager.schema(TABLE);
     assertEquals(TABLE, schema.table);
-    Map<String, Set<String>> columnFamilies = schema.columnFamilies;
-    assertEquals(new TreeSet<String>(Arrays.asList(FAMILY, FAMILY2)), new TreeSet<String>(columnFamilies.keySet()));
+    Map<String, Map<String, ColumnDefinition>> families = schema.getFamilies();
+    assertEquals(new TreeSet<String>(Arrays.asList(FAMILY, FAMILY2)), new TreeSet<String>(families.keySet()));
     assertEquals(new TreeSet<String>(Arrays.asList("testcol1", "testcol2", "testcol3", "testcol12", "testcol13")),
-        new TreeSet<String>(columnFamilies.get(FAMILY)));
-    assertEquals(new TreeSet<String>(Arrays.asList("testcol18")), new TreeSet<String>(columnFamilies.get(FAMILY2)));
+        new TreeSet<String>(families.get(FAMILY).keySet()));
+    assertEquals(new TreeSet<String>(Arrays.asList("testcol18")), new TreeSet<String>(families.get(FAMILY2).keySet()));
   }
 
   @Test

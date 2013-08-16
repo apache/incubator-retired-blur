@@ -58,7 +58,7 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FAMILY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("family", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COLUMN_NAME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("columnName", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SUB_COLUMN_NAME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("subColumnName", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)3);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FIELD_LESS_INDEXING_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("fieldLessIndexing", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)4);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FIELD_LESS_INDEXED_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("fieldLessIndexed", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)4);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FIELD_TYPE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("fieldType", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)5);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField PROPERTIES_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("properties", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, (short)6);
 
@@ -84,7 +84,7 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
    * If this column should be searchable without having to specify the name of the column in the query.
    * NOTE: This will index the column as a full text field in a default field, so that means it's going to be indexed twice.
    */
-  public boolean fieldLessIndexing; // required
+  public boolean fieldLessIndexed; // required
   /**
    * The field type for the column.  The built in types are:
    * <ul>
@@ -121,7 +121,7 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
      * If this column should be searchable without having to specify the name of the column in the query.
      * NOTE: This will index the column as a full text field in a default field, so that means it's going to be indexed twice.
      */
-    FIELD_LESS_INDEXING((short)4, "fieldLessIndexing"),
+    FIELD_LESS_INDEXED((short)4, "fieldLessIndexed"),
     /**
      * The field type for the column.  The built in types are:
      * <ul>
@@ -159,8 +159,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
           return COLUMN_NAME;
         case 3: // SUB_COLUMN_NAME
           return SUB_COLUMN_NAME;
-        case 4: // FIELD_LESS_INDEXING
-          return FIELD_LESS_INDEXING;
+        case 4: // FIELD_LESS_INDEXED
+          return FIELD_LESS_INDEXED;
         case 5: // FIELD_TYPE
           return FIELD_TYPE;
         case 6: // PROPERTIES
@@ -205,7 +205,7 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
   }
 
   // isset id assignments
-  private static final int __FIELDLESSINDEXING_ISSET_ID = 0;
+  private static final int __FIELDLESSINDEXED_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -216,7 +216,7 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     tmpMap.put(_Fields.SUB_COLUMN_NAME, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("subColumnName", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
-    tmpMap.put(_Fields.FIELD_LESS_INDEXING, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("fieldLessIndexing", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.FIELD_LESS_INDEXED, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("fieldLessIndexed", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
     tmpMap.put(_Fields.FIELD_TYPE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("fieldType", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
@@ -235,7 +235,7 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     String family,
     String columnName,
     String subColumnName,
-    boolean fieldLessIndexing,
+    boolean fieldLessIndexed,
     String fieldType,
     Map<String,String> properties)
   {
@@ -243,8 +243,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     this.family = family;
     this.columnName = columnName;
     this.subColumnName = subColumnName;
-    this.fieldLessIndexing = fieldLessIndexing;
-    setFieldLessIndexingIsSet(true);
+    this.fieldLessIndexed = fieldLessIndexed;
+    setFieldLessIndexedIsSet(true);
     this.fieldType = fieldType;
     this.properties = properties;
   }
@@ -263,7 +263,7 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     if (other.isSetSubColumnName()) {
       this.subColumnName = other.subColumnName;
     }
-    this.fieldLessIndexing = other.fieldLessIndexing;
+    this.fieldLessIndexed = other.fieldLessIndexed;
     if (other.isSetFieldType()) {
       this.fieldType = other.fieldType;
     }
@@ -293,8 +293,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     this.family = null;
     this.columnName = null;
     this.subColumnName = null;
-    setFieldLessIndexingIsSet(false);
-    this.fieldLessIndexing = false;
+    setFieldLessIndexedIsSet(false);
+    this.fieldLessIndexed = false;
     this.fieldType = null;
     this.properties = null;
   }
@@ -393,31 +393,31 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
    * If this column should be searchable without having to specify the name of the column in the query.
    * NOTE: This will index the column as a full text field in a default field, so that means it's going to be indexed twice.
    */
-  public boolean isFieldLessIndexing() {
-    return this.fieldLessIndexing;
+  public boolean isFieldLessIndexed() {
+    return this.fieldLessIndexed;
   }
 
   /**
    * If this column should be searchable without having to specify the name of the column in the query.
    * NOTE: This will index the column as a full text field in a default field, so that means it's going to be indexed twice.
    */
-  public ColumnDefinition setFieldLessIndexing(boolean fieldLessIndexing) {
-    this.fieldLessIndexing = fieldLessIndexing;
-    setFieldLessIndexingIsSet(true);
+  public ColumnDefinition setFieldLessIndexed(boolean fieldLessIndexed) {
+    this.fieldLessIndexed = fieldLessIndexed;
+    setFieldLessIndexedIsSet(true);
     return this;
   }
 
-  public void unsetFieldLessIndexing() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __FIELDLESSINDEXING_ISSET_ID);
+  public void unsetFieldLessIndexed() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __FIELDLESSINDEXED_ISSET_ID);
   }
 
-  /** Returns true if field fieldLessIndexing is set (has been assigned a value) and false otherwise */
-  public boolean isSetFieldLessIndexing() {
-    return EncodingUtils.testBit(__isset_bitfield, __FIELDLESSINDEXING_ISSET_ID);
+  /** Returns true if field fieldLessIndexed is set (has been assigned a value) and false otherwise */
+  public boolean isSetFieldLessIndexed() {
+    return EncodingUtils.testBit(__isset_bitfield, __FIELDLESSINDEXED_ISSET_ID);
   }
 
-  public void setFieldLessIndexingIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __FIELDLESSINDEXING_ISSET_ID, value);
+  public void setFieldLessIndexedIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __FIELDLESSINDEXED_ISSET_ID, value);
   }
 
   /**
@@ -535,11 +535,11 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       }
       break;
 
-    case FIELD_LESS_INDEXING:
+    case FIELD_LESS_INDEXED:
       if (value == null) {
-        unsetFieldLessIndexing();
+        unsetFieldLessIndexed();
       } else {
-        setFieldLessIndexing((Boolean)value);
+        setFieldLessIndexed((Boolean)value);
       }
       break;
 
@@ -573,8 +573,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     case SUB_COLUMN_NAME:
       return getSubColumnName();
 
-    case FIELD_LESS_INDEXING:
-      return Boolean.valueOf(isFieldLessIndexing());
+    case FIELD_LESS_INDEXED:
+      return Boolean.valueOf(isFieldLessIndexed());
 
     case FIELD_TYPE:
       return getFieldType();
@@ -599,8 +599,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       return isSetColumnName();
     case SUB_COLUMN_NAME:
       return isSetSubColumnName();
-    case FIELD_LESS_INDEXING:
-      return isSetFieldLessIndexing();
+    case FIELD_LESS_INDEXED:
+      return isSetFieldLessIndexed();
     case FIELD_TYPE:
       return isSetFieldType();
     case PROPERTIES:
@@ -649,12 +649,12 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
         return false;
     }
 
-    boolean this_present_fieldLessIndexing = true;
-    boolean that_present_fieldLessIndexing = true;
-    if (this_present_fieldLessIndexing || that_present_fieldLessIndexing) {
-      if (!(this_present_fieldLessIndexing && that_present_fieldLessIndexing))
+    boolean this_present_fieldLessIndexed = true;
+    boolean that_present_fieldLessIndexed = true;
+    if (this_present_fieldLessIndexed || that_present_fieldLessIndexed) {
+      if (!(this_present_fieldLessIndexed && that_present_fieldLessIndexed))
         return false;
-      if (this.fieldLessIndexing != that.fieldLessIndexing)
+      if (this.fieldLessIndexed != that.fieldLessIndexed)
         return false;
     }
 
@@ -722,12 +722,12 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetFieldLessIndexing()).compareTo(typedOther.isSetFieldLessIndexing());
+    lastComparison = Boolean.valueOf(isSetFieldLessIndexed()).compareTo(typedOther.isSetFieldLessIndexed());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetFieldLessIndexing()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.fieldLessIndexing, typedOther.fieldLessIndexing);
+    if (isSetFieldLessIndexed()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.fieldLessIndexed, typedOther.fieldLessIndexed);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -796,8 +796,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("fieldLessIndexing:");
-    sb.append(this.fieldLessIndexing);
+    sb.append("fieldLessIndexed:");
+    sb.append(this.fieldLessIndexed);
     first = false;
     if (!first) sb.append(", ");
     sb.append("fieldType:");
@@ -884,10 +884,10 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // FIELD_LESS_INDEXING
+          case 4: // FIELD_LESS_INDEXED
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
-              struct.fieldLessIndexing = iprot.readBool();
-              struct.setFieldLessIndexingIsSet(true);
+              struct.fieldLessIndexed = iprot.readBool();
+              struct.setFieldLessIndexedIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -903,15 +903,15 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
           case 6: // PROPERTIES
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map186 = iprot.readMapBegin();
-                struct.properties = new HashMap<String,String>(2*_map186.size);
-                for (int _i187 = 0; _i187 < _map186.size; ++_i187)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map102 = iprot.readMapBegin();
+                struct.properties = new HashMap<String,String>(2*_map102.size);
+                for (int _i103 = 0; _i103 < _map102.size; ++_i103)
                 {
-                  String _key188; // required
-                  String _val189; // optional
-                  _key188 = iprot.readString();
-                  _val189 = iprot.readString();
-                  struct.properties.put(_key188, _val189);
+                  String _key104; // required
+                  String _val105; // optional
+                  _key104 = iprot.readString();
+                  _val105 = iprot.readString();
+                  struct.properties.put(_key104, _val105);
                 }
                 iprot.readMapEnd();
               }
@@ -950,8 +950,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
         oprot.writeString(struct.subColumnName);
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(FIELD_LESS_INDEXING_FIELD_DESC);
-      oprot.writeBool(struct.fieldLessIndexing);
+      oprot.writeFieldBegin(FIELD_LESS_INDEXED_FIELD_DESC);
+      oprot.writeBool(struct.fieldLessIndexed);
       oprot.writeFieldEnd();
       if (struct.fieldType != null) {
         oprot.writeFieldBegin(FIELD_TYPE_FIELD_DESC);
@@ -962,10 +962,10 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
         oprot.writeFieldBegin(PROPERTIES_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.properties.size()));
-          for (Map.Entry<String, String> _iter190 : struct.properties.entrySet())
+          for (Map.Entry<String, String> _iter106 : struct.properties.entrySet())
           {
-            oprot.writeString(_iter190.getKey());
-            oprot.writeString(_iter190.getValue());
+            oprot.writeString(_iter106.getKey());
+            oprot.writeString(_iter106.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -998,7 +998,7 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       if (struct.isSetSubColumnName()) {
         optionals.set(2);
       }
-      if (struct.isSetFieldLessIndexing()) {
+      if (struct.isSetFieldLessIndexed()) {
         optionals.set(3);
       }
       if (struct.isSetFieldType()) {
@@ -1017,8 +1017,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       if (struct.isSetSubColumnName()) {
         oprot.writeString(struct.subColumnName);
       }
-      if (struct.isSetFieldLessIndexing()) {
-        oprot.writeBool(struct.fieldLessIndexing);
+      if (struct.isSetFieldLessIndexed()) {
+        oprot.writeBool(struct.fieldLessIndexed);
       }
       if (struct.isSetFieldType()) {
         oprot.writeString(struct.fieldType);
@@ -1026,10 +1026,10 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       if (struct.isSetProperties()) {
         {
           oprot.writeI32(struct.properties.size());
-          for (Map.Entry<String, String> _iter191 : struct.properties.entrySet())
+          for (Map.Entry<String, String> _iter107 : struct.properties.entrySet())
           {
-            oprot.writeString(_iter191.getKey());
-            oprot.writeString(_iter191.getValue());
+            oprot.writeString(_iter107.getKey());
+            oprot.writeString(_iter107.getValue());
           }
         }
       }
@@ -1052,8 +1052,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
         struct.setSubColumnNameIsSet(true);
       }
       if (incoming.get(3)) {
-        struct.fieldLessIndexing = iprot.readBool();
-        struct.setFieldLessIndexingIsSet(true);
+        struct.fieldLessIndexed = iprot.readBool();
+        struct.setFieldLessIndexedIsSet(true);
       }
       if (incoming.get(4)) {
         struct.fieldType = iprot.readString();
@@ -1061,15 +1061,15 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       }
       if (incoming.get(5)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map192 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-          struct.properties = new HashMap<String,String>(2*_map192.size);
-          for (int _i193 = 0; _i193 < _map192.size; ++_i193)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map108 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.properties = new HashMap<String,String>(2*_map108.size);
+          for (int _i109 = 0; _i109 < _map108.size; ++_i109)
           {
-            String _key194; // required
-            String _val195; // optional
-            _key194 = iprot.readString();
-            _val195 = iprot.readString();
-            struct.properties.put(_key194, _val195);
+            String _key110; // required
+            String _val111; // optional
+            _key110 = iprot.readString();
+            _val111 = iprot.readString();
+            struct.properties.put(_key110, _val111);
           }
         }
         struct.setPropertiesIsSet(true);

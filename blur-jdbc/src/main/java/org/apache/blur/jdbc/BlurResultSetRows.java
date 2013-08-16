@@ -102,7 +102,7 @@ public class BlurResultSetRows extends AbstractBlurResultSet {
     selector = new Selector();
     setupSelector(selector, schema, columnNames);
     selector.recordOnly = !blurQuery.simpleQuery.superQueryOn;
-    blurResultSetMetaData = new BlurResultSetMetaData(columnNames, schema.columnFamilies);
+    blurResultSetMetaData = new BlurResultSetMetaData(columnNames, schema.getFamilies());
     try {
       results = client.query(tableName, blurQuery);
     } catch (BlurException e) {

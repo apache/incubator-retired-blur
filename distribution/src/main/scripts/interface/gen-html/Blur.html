@@ -394,13 +394,38 @@ shards that are complete, etc.
 <tr><td>5</td><td>queries</td><td><code>i64</code></td><td>
 </td><td>default</td><td></td></tr>
 </table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_ColumnDefinition">Struct: ColumnDefinition</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>family</td><td><code>string</code></td><td>Required. The family the this column existing within.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>columnName</td><td><code>string</code></td><td>Required. The column name.
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>subColumnName</td><td><code>string</code></td><td>If this column definition is for a sub column then provide the sub column name.  Otherwise leave this field null.
+</td><td>default</td><td></td></tr>
+<tr><td>4</td><td>fieldLessIndexed</td><td><code>bool</code></td><td>If this column should be searchable without having to specify the name of the column in the query.
+NOTE: This will index the column as a full text field in a default field, so that means it's going to be indexed twice.
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>fieldType</td><td><code>string</code></td><td>The field type for the column.  The built in types are:
+<ul>
+<li>text - Full text indexing.</li>
+<li>string - Indexed string literal</li>
+<li>int - Converted to an integer and indexed numerically.</li>
+<li>long - Converted to an long and indexed numerically.</li>
+<li>float - Converted to an float and indexed numerically.</li>
+<li>double - Converted to an double and indexed numerically.</li>
+<li>stored - Not indexed, only stored.</li>
+</ul>
+</td><td>default</td><td></td></tr>
+<tr><td>6</td><td>properties</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td>For any custom field types, you can pass in configuration properties.
+</td><td>default</td><td></td></tr>
+</table><br/>The ColumnDefinition defines how a given Column should be interpreted (indexed/stored)
 <br/></div><div class="definition"><h3 id="Struct_Schema">Struct: Schema</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>table</td><td><code>string</code></td><td>
+<tr><td>1</td><td>table</td><td><code>string</code></td><td>The table name.
 </td><td>default</td><td></td></tr>
-<tr><td>2</td><td>columnFamilies</td><td><code>map&lt;<code>string</code>, <code>set&lt;<code>string</code>&gt;</code>&gt;</code></td><td>
+<tr><td>2</td><td>families</td><td><code>map&lt;<code>string</code>, <code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a></code>&gt;</code>&gt;</code></td><td>Families and the column definitions within them.
 </td><td>default</td><td></td></tr>
-</table><br/><p/>
+</table><br/>The current schema of the table.
 <br/></div><div class="definition"><h3 id="Struct_TableDescriptor">Struct: TableDescriptor</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>enabled</td><td><code>bool</code></td><td>Is the table enabled or not, enabled by default.
@@ -446,31 +471,6 @@ updates through MapReduce are allowed and in fact they are only allowed if the t
 <tr><td>4</td><td>doubleMap</td><td><code>map&lt;<code>string</code>, <code>double</code>&gt;</code></td><td>map of double values emitted by the Metric.
 </td><td>default</td><td></td></tr>
 </table><br/>The Metric will hold all the information for a given Metric.
-<br/></div><div class="definition"><h3 id="Struct_ColumnDefinition">Struct: ColumnDefinition</h3>
-<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>family</td><td><code>string</code></td><td>Required. The family the this column existing within.
-</td><td>default</td><td></td></tr>
-<tr><td>2</td><td>columnName</td><td><code>string</code></td><td>Required. The column name.
-</td><td>default</td><td></td></tr>
-<tr><td>3</td><td>subColumnName</td><td><code>string</code></td><td>If this column definition is for a sub column then provide the sub column name.  Otherwise leave this field null.
-</td><td>default</td><td></td></tr>
-<tr><td>4</td><td>fieldLessIndexing</td><td><code>bool</code></td><td>If this column should be searchable without having to specify the name of the column in the query.
-NOTE: This will index the column as a full text field in a default field, so that means it's going to be indexed twice.
-</td><td>default</td><td></td></tr>
-<tr><td>5</td><td>fieldType</td><td><code>string</code></td><td>The field type for the column.  The built in types are:
-<ul>
-<li>text - Full text indexing.</li>
-<li>string - Indexed string literal</li>
-<li>int - Converted to an integer and indexed numerically.</li>
-<li>long - Converted to an long and indexed numerically.</li>
-<li>float - Converted to an float and indexed numerically.</li>
-<li>double - Converted to an double and indexed numerically.</li>
-<li>stored - Not indexed, only stored.</li>
-</ul>
-</td><td>default</td><td></td></tr>
-<tr><td>6</td><td>properties</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td>For any custom field types, you can pass in configuration properties.
-</td><td>default</td><td></td></tr>
-</table><br/>The ColumnDefinition defines how a given Column should be interpreted (indexed/stored)
 <br/></div><hr/><h2 id="Services">Services</h2>
 <h3 id="Svc_Blur">Service: Blur</h3>
 The Blur service API.  This API is the same for both controller servers as well as

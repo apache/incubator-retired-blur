@@ -67,18 +67,18 @@ Blur_shardClusterList_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.LIST) {
-        var _size196 = 0;
-        var _rtmp3200;
+        var _size198 = 0;
+        var _rtmp3202;
         this.success = [];
-        var _etype199 = 0;
-        _rtmp3200 = input.readListBegin();
-        _etype199 = _rtmp3200.etype;
-        _size196 = _rtmp3200.size;
-        for (var _i201 = 0; _i201 < _size196; ++_i201)
+        var _etype201 = 0;
+        _rtmp3202 = input.readListBegin();
+        _etype201 = _rtmp3202.etype;
+        _size198 = _rtmp3202.size;
+        for (var _i203 = 0; _i203 < _size198; ++_i203)
         {
-          var elem202 = null;
-          elem202 = input.readString().value;
-          this.success.push(elem202);
+          var elem204 = null;
+          elem204 = input.readString().value;
+          this.success.push(elem204);
         }
         input.readListEnd();
       } else {
@@ -107,12 +107,12 @@ Blur_shardClusterList_result.prototype.write = function(output) {
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.LIST, 0);
     output.writeListBegin(Thrift.Type.STRING, this.success.length);
-    for (var iter203 in this.success)
+    for (var iter205 in this.success)
     {
-      if (this.success.hasOwnProperty(iter203))
+      if (this.success.hasOwnProperty(iter205))
       {
-        iter203 = this.success[iter203];
-        output.writeString(iter203);
+        iter205 = this.success[iter205];
+        output.writeString(iter205);
       }
     }
     output.writeListEnd();
@@ -213,18 +213,18 @@ Blur_shardServerList_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.LIST) {
-        var _size204 = 0;
-        var _rtmp3208;
+        var _size206 = 0;
+        var _rtmp3210;
         this.success = [];
-        var _etype207 = 0;
-        _rtmp3208 = input.readListBegin();
-        _etype207 = _rtmp3208.etype;
-        _size204 = _rtmp3208.size;
-        for (var _i209 = 0; _i209 < _size204; ++_i209)
+        var _etype209 = 0;
+        _rtmp3210 = input.readListBegin();
+        _etype209 = _rtmp3210.etype;
+        _size206 = _rtmp3210.size;
+        for (var _i211 = 0; _i211 < _size206; ++_i211)
         {
-          var elem210 = null;
-          elem210 = input.readString().value;
-          this.success.push(elem210);
+          var elem212 = null;
+          elem212 = input.readString().value;
+          this.success.push(elem212);
         }
         input.readListEnd();
       } else {
@@ -253,12 +253,12 @@ Blur_shardServerList_result.prototype.write = function(output) {
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.LIST, 0);
     output.writeListBegin(Thrift.Type.STRING, this.success.length);
-    for (var iter211 in this.success)
+    for (var iter213 in this.success)
     {
-      if (this.success.hasOwnProperty(iter211))
+      if (this.success.hasOwnProperty(iter213))
       {
-        iter211 = this.success[iter211];
-        output.writeString(iter211);
+        iter213 = this.success[iter213];
+        output.writeString(iter213);
       }
     }
     output.writeListEnd();
@@ -334,18 +334,18 @@ Blur_controllerServerList_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.LIST) {
-        var _size212 = 0;
-        var _rtmp3216;
+        var _size214 = 0;
+        var _rtmp3218;
         this.success = [];
-        var _etype215 = 0;
-        _rtmp3216 = input.readListBegin();
-        _etype215 = _rtmp3216.etype;
-        _size212 = _rtmp3216.size;
-        for (var _i217 = 0; _i217 < _size212; ++_i217)
+        var _etype217 = 0;
+        _rtmp3218 = input.readListBegin();
+        _etype217 = _rtmp3218.etype;
+        _size214 = _rtmp3218.size;
+        for (var _i219 = 0; _i219 < _size214; ++_i219)
         {
-          var elem218 = null;
-          elem218 = input.readString().value;
-          this.success.push(elem218);
+          var elem220 = null;
+          elem220 = input.readString().value;
+          this.success.push(elem220);
         }
         input.readListEnd();
       } else {
@@ -374,12 +374,12 @@ Blur_controllerServerList_result.prototype.write = function(output) {
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.LIST, 0);
     output.writeListBegin(Thrift.Type.STRING, this.success.length);
-    for (var iter219 in this.success)
+    for (var iter221 in this.success)
     {
-      if (this.success.hasOwnProperty(iter219))
+      if (this.success.hasOwnProperty(iter221))
       {
-        iter219 = this.success[iter219];
-        output.writeString(iter219);
+        iter221 = this.success[iter221];
+        output.writeString(iter221);
       }
     }
     output.writeListEnd();
@@ -480,27 +480,27 @@ Blur_shardServerLayout_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.MAP) {
-        var _size220 = 0;
-        var _rtmp3224;
+        var _size222 = 0;
+        var _rtmp3226;
         this.success = {};
-        var _ktype221 = 0;
-        var _vtype222 = 0;
-        _rtmp3224 = input.readMapBegin();
-        _ktype221 = _rtmp3224.ktype;
-        _vtype222 = _rtmp3224.vtype;
-        _size220 = _rtmp3224.size;
-        for (var _i225 = 0; _i225 < _size220; ++_i225)
+        var _ktype223 = 0;
+        var _vtype224 = 0;
+        _rtmp3226 = input.readMapBegin();
+        _ktype223 = _rtmp3226.ktype;
+        _vtype224 = _rtmp3226.vtype;
+        _size222 = _rtmp3226.size;
+        for (var _i227 = 0; _i227 < _size222; ++_i227)
         {
-          if (_i225 > 0 ) {
+          if (_i227 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key226 = null;
-          var val227 = null;
-          key226 = input.readString().value;
-          val227 = input.readString().value;
-          this.success[key226] = val227;
+          var key228 = null;
+          var val229 = null;
+          key228 = input.readString().value;
+          val229 = input.readString().value;
+          this.success[key228] = val229;
         }
         input.readMapEnd();
       } else {
@@ -529,13 +529,13 @@ Blur_shardServerLayout_result.prototype.write = function(output) {
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.MAP, 0);
     output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRING, Thrift.objectLength(this.success));
-    for (var kiter228 in this.success)
+    for (var kiter230 in this.success)
     {
-      if (this.success.hasOwnProperty(kiter228))
+      if (this.success.hasOwnProperty(kiter230))
       {
-        var viter229 = this.success[kiter228];
-        output.writeString(kiter228);
-        output.writeString(viter229);
+        var viter231 = this.success[kiter230];
+        output.writeString(kiter230);
+        output.writeString(viter231);
       }
     }
     output.writeMapEnd();
@@ -636,49 +636,49 @@ Blur_shardServerLayoutState_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.MAP) {
-        var _size230 = 0;
-        var _rtmp3234;
+        var _size232 = 0;
+        var _rtmp3236;
         this.success = {};
-        var _ktype231 = 0;
-        var _vtype232 = 0;
-        _rtmp3234 = input.readMapBegin();
-        _ktype231 = _rtmp3234.ktype;
-        _vtype232 = _rtmp3234.vtype;
-        _size230 = _rtmp3234.size;
-        for (var _i235 = 0; _i235 < _size230; ++_i235)
+        var _ktype233 = 0;
+        var _vtype234 = 0;
+        _rtmp3236 = input.readMapBegin();
+        _ktype233 = _rtmp3236.ktype;
+        _vtype234 = _rtmp3236.vtype;
+        _size232 = _rtmp3236.size;
+        for (var _i237 = 0; _i237 < _size232; ++_i237)
         {
-          if (_i235 > 0 ) {
+          if (_i237 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key236 = null;
-          var val237 = null;
-          key236 = input.readString().value;
-          var _size238 = 0;
-          var _rtmp3242;
-          val237 = {};
-          var _ktype239 = 0;
-          var _vtype240 = 0;
-          _rtmp3242 = input.readMapBegin();
-          _ktype239 = _rtmp3242.ktype;
-          _vtype240 = _rtmp3242.vtype;
-          _size238 = _rtmp3242.size;
-          for (var _i243 = 0; _i243 < _size238; ++_i243)
+          var key238 = null;
+          var val239 = null;
+          key238 = input.readString().value;
+          var _size240 = 0;
+          var _rtmp3244;
+          val239 = {};
+          var _ktype241 = 0;
+          var _vtype242 = 0;
+          _rtmp3244 = input.readMapBegin();
+          _ktype241 = _rtmp3244.ktype;
+          _vtype242 = _rtmp3244.vtype;
+          _size240 = _rtmp3244.size;
+          for (var _i245 = 0; _i245 < _size240; ++_i245)
           {
-            if (_i243 > 0 ) {
+            if (_i245 > 0 ) {
               if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
                 input.rstack.pop();
               }
             }
-            var key244 = null;
-            var val245 = null;
-            key244 = input.readString().value;
-            val245 = input.readI32().value;
-            val237[key244] = val245;
+            var key246 = null;
+            var val247 = null;
+            key246 = input.readString().value;
+            val247 = input.readI32().value;
+            val239[key246] = val247;
           }
           input.readMapEnd();
-          this.success[key236] = val237;
+          this.success[key238] = val239;
         }
         input.readMapEnd();
       } else {
@@ -707,20 +707,20 @@ Blur_shardServerLayoutState_result.prototype.write = function(output) {
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.MAP, 0);
     output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.MAP, Thrift.objectLength(this.success));
-    for (var kiter246 in this.success)
+    for (var kiter248 in this.success)
     {
-      if (this.success.hasOwnProperty(kiter246))
+      if (this.success.hasOwnProperty(kiter248))
       {
-        var viter247 = this.success[kiter246];
-        output.writeString(kiter246);
-        output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.I32, Thrift.objectLength(viter247));
-        for (var kiter248 in viter247)
+        var viter249 = this.success[kiter248];
+        output.writeString(kiter248);
+        output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.I32, Thrift.objectLength(viter249));
+        for (var kiter250 in viter249)
         {
-          if (viter247.hasOwnProperty(kiter248))
+          if (viter249.hasOwnProperty(kiter250))
           {
-            var viter249 = viter247[kiter248];
-            output.writeString(kiter248);
-            output.writeI32(viter249);
+            var viter251 = viter249[kiter250];
+            output.writeString(kiter250);
+            output.writeI32(viter251);
           }
         }
         output.writeMapEnd();
@@ -799,18 +799,18 @@ Blur_tableList_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.LIST) {
-        var _size250 = 0;
-        var _rtmp3254;
+        var _size252 = 0;
+        var _rtmp3256;
         this.success = [];
-        var _etype253 = 0;
-        _rtmp3254 = input.readListBegin();
-        _etype253 = _rtmp3254.etype;
-        _size250 = _rtmp3254.size;
-        for (var _i255 = 0; _i255 < _size250; ++_i255)
+        var _etype255 = 0;
+        _rtmp3256 = input.readListBegin();
+        _etype255 = _rtmp3256.etype;
+        _size252 = _rtmp3256.size;
+        for (var _i257 = 0; _i257 < _size252; ++_i257)
         {
-          var elem256 = null;
-          elem256 = input.readString().value;
-          this.success.push(elem256);
+          var elem258 = null;
+          elem258 = input.readString().value;
+          this.success.push(elem258);
         }
         input.readListEnd();
       } else {
@@ -839,12 +839,12 @@ Blur_tableList_result.prototype.write = function(output) {
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.LIST, 0);
     output.writeListBegin(Thrift.Type.STRING, this.success.length);
-    for (var iter257 in this.success)
+    for (var iter259 in this.success)
     {
-      if (this.success.hasOwnProperty(iter257))
+      if (this.success.hasOwnProperty(iter259))
       {
-        iter257 = this.success[iter257];
-        output.writeString(iter257);
+        iter259 = this.success[iter259];
+        output.writeString(iter259);
       }
     }
     output.writeListEnd();
@@ -945,18 +945,18 @@ Blur_tableListByCluster_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.LIST) {
-        var _size258 = 0;
-        var _rtmp3262;
+        var _size260 = 0;
+        var _rtmp3264;
         this.success = [];
-        var _etype261 = 0;
-        _rtmp3262 = input.readListBegin();
-        _etype261 = _rtmp3262.etype;
-        _size258 = _rtmp3262.size;
-        for (var _i263 = 0; _i263 < _size258; ++_i263)
+        var _etype263 = 0;
+        _rtmp3264 = input.readListBegin();
+        _etype263 = _rtmp3264.etype;
+        _size260 = _rtmp3264.size;
+        for (var _i265 = 0; _i265 < _size260; ++_i265)
         {
-          var elem264 = null;
-          elem264 = input.readString().value;
-          this.success.push(elem264);
+          var elem266 = null;
+          elem266 = input.readString().value;
+          this.success.push(elem266);
         }
         input.readListEnd();
       } else {
@@ -985,12 +985,12 @@ Blur_tableListByCluster_result.prototype.write = function(output) {
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.LIST, 0);
     output.writeListBegin(Thrift.Type.STRING, this.success.length);
-    for (var iter265 in this.success)
+    for (var iter267 in this.success)
     {
-      if (this.success.hasOwnProperty(iter265))
+      if (this.success.hasOwnProperty(iter267))
       {
-        iter265 = this.success[iter265];
-        output.writeString(iter265);
+        iter267 = this.success[iter267];
+        output.writeString(iter267);
       }
     }
     output.writeListEnd();
@@ -1617,18 +1617,18 @@ Blur_queryStatusIdList_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.LIST) {
-        var _size266 = 0;
-        var _rtmp3270;
+        var _size268 = 0;
+        var _rtmp3272;
         this.success = [];
-        var _etype269 = 0;
-        _rtmp3270 = input.readListBegin();
-        _etype269 = _rtmp3270.etype;
-        _size266 = _rtmp3270.size;
-        for (var _i271 = 0; _i271 < _size266; ++_i271)
+        var _etype271 = 0;
+        _rtmp3272 = input.readListBegin();
+        _etype271 = _rtmp3272.etype;
+        _size268 = _rtmp3272.size;
+        for (var _i273 = 0; _i273 < _size268; ++_i273)
         {
-          var elem272 = null;
-          elem272 = input.readI64().value;
-          this.success.push(elem272);
+          var elem274 = null;
+          elem274 = input.readI64().value;
+          this.success.push(elem274);
         }
         input.readListEnd();
       } else {
@@ -1657,12 +1657,12 @@ Blur_queryStatusIdList_result.prototype.write = function(output) {
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.LIST, 0);
     output.writeListBegin(Thrift.Type.I64, this.success.length);
-    for (var iter273 in this.success)
+    for (var iter275 in this.success)
     {
-      if (this.success.hasOwnProperty(iter273))
+      if (this.success.hasOwnProperty(iter275))
       {
-        iter273 = this.success[iter273];
-        output.writeI64(iter273);
+        iter275 = this.success[iter275];
+        output.writeI64(iter275);
       }
     }
     output.writeListEnd();
@@ -2212,18 +2212,18 @@ Blur_terms_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.LIST) {
-        var _size274 = 0;
-        var _rtmp3278;
+        var _size276 = 0;
+        var _rtmp3280;
         this.success = [];
-        var _etype277 = 0;
-        _rtmp3278 = input.readListBegin();
-        _etype277 = _rtmp3278.etype;
-        _size274 = _rtmp3278.size;
-        for (var _i279 = 0; _i279 < _size274; ++_i279)
+        var _etype279 = 0;
+        _rtmp3280 = input.readListBegin();
+        _etype279 = _rtmp3280.etype;
+        _size276 = _rtmp3280.size;
+        for (var _i281 = 0; _i281 < _size276; ++_i281)
         {
-          var elem280 = null;
-          elem280 = input.readString().value;
-          this.success.push(elem280);
+          var elem282 = null;
+          elem282 = input.readString().value;
+          this.success.push(elem282);
         }
         input.readListEnd();
       } else {
@@ -2252,12 +2252,12 @@ Blur_terms_result.prototype.write = function(output) {
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.LIST, 0);
     output.writeListBegin(Thrift.Type.STRING, this.success.length);
-    for (var iter281 in this.success)
+    for (var iter283 in this.success)
     {
-      if (this.success.hasOwnProperty(iter281))
+      if (this.success.hasOwnProperty(iter283))
       {
-        iter281 = this.success[iter281];
-        output.writeString(iter281);
+        iter283 = this.success[iter283];
+        output.writeString(iter283);
       }
     }
     output.writeListEnd();
@@ -2717,19 +2717,19 @@ Blur_mutateBatch_args.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.LIST) {
-        var _size282 = 0;
-        var _rtmp3286;
+        var _size284 = 0;
+        var _rtmp3288;
         this.mutations = [];
-        var _etype285 = 0;
-        _rtmp3286 = input.readListBegin();
-        _etype285 = _rtmp3286.etype;
-        _size282 = _rtmp3286.size;
-        for (var _i287 = 0; _i287 < _size282; ++_i287)
+        var _etype287 = 0;
+        _rtmp3288 = input.readListBegin();
+        _etype287 = _rtmp3288.etype;
+        _size284 = _rtmp3288.size;
+        for (var _i289 = 0; _i289 < _size284; ++_i289)
         {
-          var elem288 = null;
-          elem288 = new RowMutation();
-          elem288.read(input);
-          this.mutations.push(elem288);
+          var elem290 = null;
+          elem290 = new RowMutation();
+          elem290.read(input);
+          this.mutations.push(elem290);
         }
         input.readListEnd();
       } else {
@@ -2753,12 +2753,12 @@ Blur_mutateBatch_args.prototype.write = function(output) {
   if (this.mutations !== null && this.mutations !== undefined) {
     output.writeFieldBegin('mutations', Thrift.Type.LIST, 1);
     output.writeListBegin(Thrift.Type.STRUCT, this.mutations.length);
-    for (var iter289 in this.mutations)
+    for (var iter291 in this.mutations)
     {
-      if (this.mutations.hasOwnProperty(iter289))
+      if (this.mutations.hasOwnProperty(iter291))
       {
-        iter289 = this.mutations[iter289];
-        iter289.write(output);
+        iter291 = this.mutations[iter291];
+        iter291.write(output);
       }
     }
     output.writeListEnd();
@@ -3731,27 +3731,27 @@ Blur_configuration_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.MAP) {
-        var _size290 = 0;
-        var _rtmp3294;
+        var _size292 = 0;
+        var _rtmp3296;
         this.success = {};
-        var _ktype291 = 0;
-        var _vtype292 = 0;
-        _rtmp3294 = input.readMapBegin();
-        _ktype291 = _rtmp3294.ktype;
-        _vtype292 = _rtmp3294.vtype;
-        _size290 = _rtmp3294.size;
-        for (var _i295 = 0; _i295 < _size290; ++_i295)
+        var _ktype293 = 0;
+        var _vtype294 = 0;
+        _rtmp3296 = input.readMapBegin();
+        _ktype293 = _rtmp3296.ktype;
+        _vtype294 = _rtmp3296.vtype;
+        _size292 = _rtmp3296.size;
+        for (var _i297 = 0; _i297 < _size292; ++_i297)
         {
-          if (_i295 > 0 ) {
+          if (_i297 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key296 = null;
-          var val297 = null;
-          key296 = input.readString().value;
-          val297 = input.readString().value;
-          this.success[key296] = val297;
+          var key298 = null;
+          var val299 = null;
+          key298 = input.readString().value;
+          val299 = input.readString().value;
+          this.success[key298] = val299;
         }
         input.readMapEnd();
       } else {
@@ -3780,13 +3780,13 @@ Blur_configuration_result.prototype.write = function(output) {
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.MAP, 0);
     output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRING, Thrift.objectLength(this.success));
-    for (var kiter298 in this.success)
+    for (var kiter300 in this.success)
     {
-      if (this.success.hasOwnProperty(kiter298))
+      if (this.success.hasOwnProperty(kiter300))
       {
-        var viter299 = this.success[kiter298];
-        output.writeString(kiter298);
-        output.writeString(viter299);
+        var viter301 = this.success[kiter300];
+        output.writeString(kiter300);
+        output.writeString(viter301);
       }
     }
     output.writeMapEnd();
@@ -3826,18 +3826,18 @@ Blur_metrics_args.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.SET) {
-        var _size300 = 0;
-        var _rtmp3304;
+        var _size302 = 0;
+        var _rtmp3306;
         this.metrics = [];
-        var _etype303 = 0;
-        _rtmp3304 = input.readSetBegin();
-        _etype303 = _rtmp3304.etype;
-        _size300 = _rtmp3304.size;
-        for (var _i305 = 0; _i305 < _size300; ++_i305)
+        var _etype305 = 0;
+        _rtmp3306 = input.readSetBegin();
+        _etype305 = _rtmp3306.etype;
+        _size302 = _rtmp3306.size;
+        for (var _i307 = 0; _i307 < _size302; ++_i307)
         {
-          var elem306 = null;
-          elem306 = input.readString().value;
-          this.metrics.push(elem306);
+          var elem308 = null;
+          elem308 = input.readString().value;
+          this.metrics.push(elem308);
         }
         input.readSetEnd();
       } else {
@@ -3861,12 +3861,12 @@ Blur_metrics_args.prototype.write = function(output) {
   if (this.metrics !== null && this.metrics !== undefined) {
     output.writeFieldBegin('metrics', Thrift.Type.SET, 1);
     output.writeSetBegin(Thrift.Type.STRING, this.metrics.length);
-    for (var iter307 in this.metrics)
+    for (var iter309 in this.metrics)
     {
-      if (this.metrics.hasOwnProperty(iter307))
+      if (this.metrics.hasOwnProperty(iter309))
       {
-        iter307 = this.metrics[iter307];
-        output.writeString(iter307);
+        iter309 = this.metrics[iter309];
+        output.writeString(iter309);
       }
     }
     output.writeSetEnd();
@@ -3909,28 +3909,28 @@ Blur_metrics_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.MAP) {
-        var _size308 = 0;
-        var _rtmp3312;
+        var _size310 = 0;
+        var _rtmp3314;
         this.success = {};
-        var _ktype309 = 0;
-        var _vtype310 = 0;
-        _rtmp3312 = input.readMapBegin();
-        _ktype309 = _rtmp3312.ktype;
-        _vtype310 = _rtmp3312.vtype;
-        _size308 = _rtmp3312.size;
-        for (var _i313 = 0; _i313 < _size308; ++_i313)
+        var _ktype311 = 0;
+        var _vtype312 = 0;
+        _rtmp3314 = input.readMapBegin();
+        _ktype311 = _rtmp3314.ktype;
+        _vtype312 = _rtmp3314.vtype;
+        _size310 = _rtmp3314.size;
+        for (var _i315 = 0; _i315 < _size310; ++_i315)
         {
-          if (_i313 > 0 ) {
+          if (_i315 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key314 = null;
-          var val315 = null;
-          key314 = input.readString().value;
-          val315 = new Metric();
-          val315.read(input);
-          this.success[key314] = val315;
+          var key316 = null;
+          var val317 = null;
+          key316 = input.readString().value;
+          val317 = new Metric();
+          val317.read(input);
+          this.success[key316] = val317;
         }
         input.readMapEnd();
       } else {
@@ -3959,13 +3959,13 @@ Blur_metrics_result.prototype.write = function(output) {
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.MAP, 0);
     output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRUCT, Thrift.objectLength(this.success));
-    for (var kiter316 in this.success)
+    for (var kiter318 in this.success)
     {
-      if (this.success.hasOwnProperty(kiter316))
+      if (this.success.hasOwnProperty(kiter318))
       {
-        var viter317 = this.success[kiter316];
-        output.writeString(kiter316);
-        viter317.write(output);
+        var viter319 = this.success[kiter318];
+        output.writeString(kiter318);
+        viter319.write(output);
       }
     }
     output.writeMapEnd();

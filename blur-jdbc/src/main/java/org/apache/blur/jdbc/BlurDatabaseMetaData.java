@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.blur.jdbc.abstractimpl.AbstractBlurDatabaseMetaData;
@@ -36,6 +35,7 @@ import org.apache.blur.thrift.BlurClientManager;
 import org.apache.blur.thrift.commands.BlurCommand;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.TableDescriptor;
 
@@ -107,9 +107,9 @@ public class BlurDatabaseMetaData extends AbstractBlurDatabaseMetaData {
         continue;
       }
       Schema schema = schemaMap.get(table);
-      Map<String, Set<String>> columnFamilies = schema.columnFamilies;
+      Map<String, Map<String, ColumnDefinition>> families = schema.getFamilies();
       addTableRow(data, table, table);
-      for (String columnFamily : columnFamilies.keySet()) {
+      for (String columnFamily : families.keySet()) {
         String tablePlusCf = table + "." + columnFamily;
         if (tableNamePattern != null && !tablePlusCf.equals(tableNamePattern)) {
           continue;

@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -46,6 +45,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.analysis.FieldManager;
+import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.index.ExitableReader;
 import org.apache.blur.index.ExitableReader.ExitingReaderException;
@@ -69,6 +69,7 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.Column;
+import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.FetchRowResult;
@@ -742,25 +743,33 @@ public class IndexManager {
   }
 
   public Schema schema(String table) throws IOException {
+    TableContext tableContext = getTableContext(table);
+    FieldManager fieldManager = tableContext.getFieldManager();
+    
     Schema schema = new Schema().setTable(table);
-    schema.columnFamilies = new TreeMap<String, Set<String>>();
+    schema.setFamilies(new HashMap<String, Map<String,ColumnDefinition>>());
     Map<String, BlurIndex> blurIndexes = _indexServer.getIndexes(table);
     for (BlurIndex blurIndex : blurIndexes.values()) {
       IndexSearcherClosable searcher = blurIndex.getIndexReader();
       try {
         FieldInfos mergedFieldInfos = MultiFields.getMergedFieldInfos(searcher.getIndexReader());
+        INNER:
         for (FieldInfo fieldInfo : mergedFieldInfos) {
           String fieldName = fieldInfo.name;
+          FieldTypeDefinition fieldTypeDefinition = fieldManager.getFieldTypeDefinition(fieldName);
+          if (fieldTypeDefinition == null) {
+            continue INNER;
+          }
           int index = fieldName.indexOf('.');
           if (index > 0) {
             String columnFamily = fieldName.substring(0, index);
             String column = fieldName.substring(index + 1);
-            Set<String> set = schema.columnFamilies.get(columnFamily);
-            if (set == null) {
-              set = new TreeSet<String>();
-              schema.columnFamilies.put(columnFamily, set);
+            Map<String, ColumnDefinition> map = schema.getFamilies().get(columnFamily);
+            if (map == null) {
+              map = new HashMap<String, ColumnDefinition>();
+              schema.putToFamilies(columnFamily, map);
             }
-            set.add(column);
+            map.put(column, getColumnDefinition(fieldTypeDefinition));
           }
         }
       } finally {
@@ -769,6 +778,17 @@ public class IndexManager {
       }
     }
     return schema;
+  }
+
+  private static ColumnDefinition getColumnDefinition(FieldTypeDefinition fieldTypeDefinition) {
+    ColumnDefinition columnDefinition = new ColumnDefinition();
+    columnDefinition.setFamily(fieldTypeDefinition.getFamily());
+    columnDefinition.setColumnName(fieldTypeDefinition.getColumnName());
+    columnDefinition.setSubColumnName(fieldTypeDefinition.getSubColumnName());
+    columnDefinition.setFieldLessIndexed(fieldTypeDefinition.isFieldLessIndexed());
+    columnDefinition.setFieldType(fieldTypeDefinition.getFieldType());
+    columnDefinition.setProperties(fieldTypeDefinition.getProperties());
+    return columnDefinition;
   }
 
   public void setStatusCleanupTimerDelay(long delay) {

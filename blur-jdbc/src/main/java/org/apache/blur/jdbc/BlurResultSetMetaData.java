@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.blur.jdbc.abstractimpl.AbstractBlurResultSetMetaData;
+import org.apache.blur.thrift.generated.ColumnDefinition;
 
 
 public class BlurResultSetMetaData extends AbstractBlurResultSetMetaData {
@@ -45,7 +46,7 @@ public class BlurResultSetMetaData extends AbstractBlurResultSetMetaData {
   public static Collection<String> systemCols;
   private List<String> sqlColumnNames;
   private String tableName;
-  private Map<String, Set<String>> columnFamilies;
+  private Map<String, Map<String, ColumnDefinition>> families;
 
   static {
     systemCols = new HashSet<String>();
@@ -56,8 +57,8 @@ public class BlurResultSetMetaData extends AbstractBlurResultSetMetaData {
     systemCols.add(RECORDID);
   }
 
-  public BlurResultSetMetaData(List<String> queryColumnNames, Map<String, Set<String>> columnFamilies) {
-    this.columnFamilies = columnFamilies;
+  public BlurResultSetMetaData(List<String> queryColumnNames, Map<String, Map<String, ColumnDefinition>> families) {
+    this.families = families;
     this.sqlColumnNames = new ArrayList<String>();
     this.sqlColumnNames.add(null);
     for (String queryColumnName : queryColumnNames) {
@@ -90,7 +91,7 @@ public class BlurResultSetMetaData extends AbstractBlurResultSetMetaData {
   }
 
   private void addColumnFamily(String columnFamily) {
-    Set<String> columns = columnFamilies.get(columnFamily);
+    Set<String> columns = families.get(columnFamily).keySet();
     if (columns == null) {
       throw new RuntimeException("Column family [" + columnFamily + "] not found.");
     }
@@ -112,9 +113,9 @@ public class BlurResultSetMetaData extends AbstractBlurResultSetMetaData {
     sqlColumnNames.add(ROWID);
     sqlColumnNames.add(FAMILY);
     sqlColumnNames.add(RECORDID);
-    Map<String, Set<String>> columnFamilies = new TreeMap<String, Set<String>>(this.columnFamilies);
+    Map<String, Map<String, ColumnDefinition>> columnFamilies = new TreeMap<String, Map<String, ColumnDefinition>>(this.families);
     for (String family : columnFamilies.keySet()) {
-      Set<String> columnNames = columnFamilies.get(family);
+      Set<String> columnNames = columnFamilies.get(family).keySet();
       for (String columnName : columnNames) {
         sqlColumnNames.add(family + "." + columnName);
       }

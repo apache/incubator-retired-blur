@@ -570,17 +570,57 @@ struct TableStats {
 }
 
 /**
- *
+ * The ColumnDefinition defines how a given Column should be interpreted (indexed/stored)
+ */
+struct ColumnDefinition {
+  /**
+   * Required. The family the this column existing within.
+   */
+  1:string family,
+  /**
+   * Required. The column name.
+   */
+  2:string columnName,
+  /**
+   * If this column definition is for a sub column then provide the sub column name.  Otherwise leave this field null.
+   */
+  3:string subColumnName,
+  /**
+   * If this column should be searchable without having to specify the name of the column in the query.  
+   * NOTE: This will index the column as a full text field in a default field, so that means it's going to be indexed twice.
+   */
+  4:bool fieldLessIndexed,
+  /**
+   * The field type for the column.  The built in types are:
+   * <ul>
+   * <li>text - Full text indexing.</li>
+   * <li>string - Indexed string literal</li>
+   * <li>int - Converted to an integer and indexed numerically.</li>
+   * <li>long - Converted to an long and indexed numerically.</li>
+   * <li>float - Converted to an float and indexed numerically.</li>
+   * <li>double - Converted to an double and indexed numerically.</li>
+   * <li>stored - Not indexed, only stored.</li>
+   * </ul>
+   */
+  5:string fieldType,
+  /**
+   * For any custom field types, you can pass in configuration properties.
+   */
+  6:map<string, string> properties
+}
+
+/**
+ * The current schema of the table.
  */
 struct Schema {
   /**
-   *
+   * The table name.
    */
   1:string table,
   /**
-   *
+   * Families and the column definitions within them.
    */
-  2:map<string,set<string>> columnFamilies
+  2:map<string,map<string,ColumnDefinition>> families
 }
 
 /**
@@ -662,46 +702,6 @@ struct Metric {
   3:map<string,i64> longMap,
   /** map of double values emitted by the Metric. */
   4:map<string,double> doubleMap
-}
-
-/**
- * The ColumnDefinition defines how a given Column should be interpreted (indexed/stored)
- */
-struct ColumnDefinition {
-  /**
-   * Required. The family the this column existing within.
-   */
-  1:string family,
-  /**
-   * Required. The column name.
-   */
-  2:string columnName,
-  /**
-   * If this column definition is for a sub column then provide the sub column name.  Otherwise leave this field null.
-   */
-  3:string subColumnName,
-  /**
-   * If this column should be searchable without having to specify the name of the column in the query.  
-   * NOTE: This will index the column as a full text field in a default field, so that means it's going to be indexed twice.
-   */
-  4:bool fieldLessIndexing,
-  /**
-   * The field type for the column.  The built in types are:
-   * <ul>
-   * <li>text - Full text indexing.</li>
-   * <li>string - Indexed string literal</li>
-   * <li>int - Converted to an integer and indexed numerically.</li>
-   * <li>long - Converted to an long and indexed numerically.</li>
-   * <li>float - Converted to an float and indexed numerically.</li>
-   * <li>double - Converted to an double and indexed numerically.</li>
-   * <li>stored - Not indexed, only stored.</li>
-   * </ul>
-   */
-  5:string fieldType,
-  /**
-   * For any custom field types, you can pass in configuration properties.
-   */
-  6:map<string, string> properties
 }
 
 /**

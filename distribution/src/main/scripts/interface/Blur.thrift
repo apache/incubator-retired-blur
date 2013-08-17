@@ -1011,6 +1011,20 @@ service Blur {
     1:set<string> metrics
   ) throws (1:BlurException ex)
 
+  /**
+   * Creates a snapshot for the table with the given name
+   */
+  void createSnapshot(1:string table, 2:string name) throws (1:BlurException ex)
+  
+  /**
+   * Removes a previous snapshot(identified by name) of the table
+   */
+  void removeSnapshot(1:string table, 2:string name) throws (1:BlurException ex)
+  
+  /**
+   * Returns a map where the key is the shard, and the list is the snapshots within that shard
+   */
+  map<string,list<string>> listSnapshots(1:string table) throws (1:BlurException ex)
 }
 
 

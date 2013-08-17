@@ -830,6 +830,74 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       }
     }
   }
+  
+  @Override
+  public void createSnapshot(final String table, final String name) throws BlurException, TException {
+    checkTable(table);
+    try {
+      scatter(getCluster(table), new BlurCommand<Void>() {
+        @Override
+        public Void call(Client client) throws BlurException, TException {
+          client.createSnapshot(table, name);
+          return null;
+        }
+      });
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to create a snapshot of table [{0}] snapshot name", e, table, name);
+      throw new BException("Unknown error while trying to create a snapshot of table [{0}] snapshot name", e, table, name);
+    }
+  }
+  
+  @Override
+  public void removeSnapshot(final String table, final String name) throws BlurException, TException {
+    checkTable(table);
+    try {
+      scatter(getCluster(table), new BlurCommand<Void>() {
+        @Override
+        public Void call(Client client) throws BlurException, TException {
+          client.removeSnapshot(table, name);
+          return null;
+        }
+      });
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to remove a snapshot of table [{0}] snapshot name", e, table, name);
+      throw new BException("Unknown error while trying to remove a snapshot of table [{0}] snapshot name", e, table, name);
+    }
+  }
+  
+  @Override
+  public Map<String, List<String>> listSnapshots(final String table) throws BlurException, TException {
+    checkTable(table);
+    try {
+      return scatterGather(getCluster(table), new BlurCommand<Map<String, List<String>>>() {
+        @Override
+        public Map<String, List<String>> call(Client client) throws BlurException, TException {
+          return client.listSnapshots(table);
+        }
+      }, new Merger<Map<String, List<String>>>() {
+        @Override
+        public Map<String, List<String>> merge(BlurExecutorCompletionService<Map<String, List<String>>> service) throws BlurException {
+          Map<String, List<String>> result = new HashMap<String, List<String>>();
+          while (service.getRemainingCount() > 0) {
+            Future<Map<String, List<String>>> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true);
+            Map<String, List<String>> snapshotsOnAShardServer = service.getResultThrowException(future);
+            for (Entry<String, List<String>> entry : snapshotsOnAShardServer.entrySet()) {
+              List<String> snapshots = result.get(entry.getKey());
+              if (snapshots == null) {
+                snapshots = new ArrayList<String>();
+                result.put(entry.getKey(), snapshots);
+              }
+              snapshots.addAll(entry.getValue());
+            }
+          }
+          return result;
+        }
+      });
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to get the list of snapshots for table [{0}]", e, table);
+      throw new BException("Unknown error while trying to get the list of snapshots for table [{0}]", e, table);
+    }
+  }
 
   public void setNodeName(String nodeName) {
     _nodeName = nodeName;

@@ -19,6 +19,7 @@ package org.apache.blur.manager.writer;
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,6 +30,7 @@ import org.apache.blur.lucene.warmup.TraceableDirectory;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.thrift.BException;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.index.BlurIndexWriter;
@@ -129,5 +131,20 @@ public class BlurIndexReader extends BlurIndex {
   @Override
   public AtomicBoolean isClosed() {
     return _isClosed;
+  }
+
+  @Override
+  public void createSnapshot(String name) throws IOException {
+    throw new RuntimeException("Read-only shard");
+  }
+
+  @Override
+  public void removeSnapshot(String name) throws IOException {
+    throw new RuntimeException("Read-only shard");
+  }
+
+  @Override
+  public List<String> getSnapshots() throws IOException {
+    throw new RuntimeException("Read-only shard");
   }
 }

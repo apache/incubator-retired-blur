@@ -468,6 +468,52 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'metrics failed: unknown result')
       end
 
+      def createSnapshot(table, name)
+        send_createSnapshot(table, name)
+        recv_createSnapshot()
+      end
+
+      def send_createSnapshot(table, name)
+        send_message('createSnapshot', CreateSnapshot_args, :table => table, :name => name)
+      end
+
+      def recv_createSnapshot()
+        result = receive_message(CreateSnapshot_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
+      def removeSnapshot(table, name)
+        send_removeSnapshot(table, name)
+        recv_removeSnapshot()
+      end
+
+      def send_removeSnapshot(table, name)
+        send_message('removeSnapshot', RemoveSnapshot_args, :table => table, :name => name)
+      end
+
+      def recv_removeSnapshot()
+        result = receive_message(RemoveSnapshot_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
+      def listSnapshots(table)
+        send_listSnapshots(table)
+        return recv_listSnapshots()
+      end
+
+      def send_listSnapshots(table)
+        send_message('listSnapshots', ListSnapshots_args, :table => table)
+      end
+
+      def recv_listSnapshots()
+        result = receive_message(ListSnapshots_result)
+        return result.success unless result.success.nil?
+        raise result.ex unless result.ex.nil?
+        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'listSnapshots failed: unknown result')
+      end
+
     end
 
     class Processor
@@ -790,6 +836,39 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'metrics', seqid)
+      end
+
+      def process_createSnapshot(seqid, iprot, oprot)
+        args = read_args(iprot, CreateSnapshot_args)
+        result = CreateSnapshot_result.new()
+        begin
+          @handler.createSnapshot(args.table, args.name)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'createSnapshot', seqid)
+      end
+
+      def process_removeSnapshot(seqid, iprot, oprot)
+        args = read_args(iprot, RemoveSnapshot_args)
+        result = RemoveSnapshot_result.new()
+        begin
+          @handler.removeSnapshot(args.table, args.name)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'removeSnapshot', seqid)
+      end
+
+      def process_listSnapshots(seqid, iprot, oprot)
+        args = read_args(iprot, ListSnapshots_args)
+        result = ListSnapshots_result.new()
+        begin
+          result.success = @handler.listSnapshots(args.table)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'listSnapshots', seqid)
       end
 
     end
@@ -1821,6 +1900,108 @@ module Blur
 
       FIELDS = {
         SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Metric}},
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class CreateSnapshot_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+      NAME = 2
+
+      FIELDS = {
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        NAME => {:type => ::Thrift::Types::STRING, :name => 'name'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class CreateSnapshot_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class RemoveSnapshot_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+      NAME = 2
+
+      FIELDS = {
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        NAME => {:type => ::Thrift::Types::STRING, :name => 'name'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class RemoveSnapshot_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ListSnapshots_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+
+      FIELDS = {
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ListSnapshots_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SUCCESS = 0
+      EX = 1
+
+      FIELDS = {
+        SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRING}}},
         EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
       }
 

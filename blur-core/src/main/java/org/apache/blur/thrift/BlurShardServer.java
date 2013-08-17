@@ -21,12 +21,14 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIMETOLIV
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_DATA_FETCH_THREAD_COUNT;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLongArray;
 
@@ -41,6 +43,8 @@ import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.commands.BlurCommand;
+import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -56,10 +60,12 @@ import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.Status;
 import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.QueryCache;
 import org.apache.blur.utils.QueryCacheEntry;
 import org.apache.blur.utils.QueryCacheKey;
+import org.apache.blur.utils.ForkJoin.Merger;
 
 public class BlurShardServer extends TableAdmin implements Iface {
 
@@ -394,6 +400,63 @@ public class BlurShardServer extends TableAdmin implements Iface {
     } catch (Exception e) {
       LOG.error("Unknown error while trying to optimize [table={0},numberOfSegmentsPerShard={1}]", e, table,
           numberOfSegmentsPerShard);
+      throw new BException(e.getMessage(), e);
+    }
+  }
+  
+  @Override
+  public void createSnapshot(final String table, final String name) throws BlurException, TException {
+    try {
+      Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
+      for (Entry<String, BlurIndex> entry : indexes.entrySet()) {
+        BlurIndex index = entry.getValue();
+        index.createSnapshot(name);
+      }
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to getting indexes for table [" + table + "]", e);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException(e.getMessage(), e);
+    }
+  }
+  
+  @Override
+  public void removeSnapshot(final String table, final String name) throws BlurException, TException {
+    try {
+      Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
+      for (Entry<String, BlurIndex> entry : indexes.entrySet()) {
+        BlurIndex index = entry.getValue();
+        index.removeSnapshot(name);
+      }
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to getting indexes for table [" + table + "]", e);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException(e.getMessage(), e);
+    }
+  }
+  
+  @Override
+  public Map<String, List<String>> listSnapshots(final String table) throws BlurException, TException {
+    Map<String, List<String>> snapshots = new HashMap<String, List<String>>();
+    try {
+      Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
+      for (Entry<String, BlurIndex> entry : indexes.entrySet()) {
+        BlurIndex index = entry.getValue();
+        List<String> shardSnapshots = index.getSnapshots();
+        if (shardSnapshots == null) {
+          shardSnapshots = new ArrayList<String>();
+        }
+        snapshots.put(entry.getKey(), shardSnapshots);
+      }
+      return snapshots;
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to getting indexes for table [" + table + "]", e);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
       throw new BException(e.getMessage(), e);
     }
   }

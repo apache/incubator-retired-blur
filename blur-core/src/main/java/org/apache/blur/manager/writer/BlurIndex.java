@@ -17,6 +17,7 @@ package org.apache.blur.manager.writer;
  * limitations under the License.
  */
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -51,6 +52,12 @@ public abstract class BlurIndex {
   public abstract AtomicBoolean isClosed();
 
   public abstract void optimize(int numberOfSegmentsPerShard) throws IOException;
+  
+  public abstract void createSnapshot(String name) throws IOException;
+  
+  public abstract void removeSnapshot(String name) throws IOException;
+  
+  public abstract List<String> getSnapshots() throws IOException;
 
   public long getRecordCount() throws IOException {
     IndexSearcherClosable searcher = getIndexReader();

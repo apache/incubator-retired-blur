@@ -264,4 +264,20 @@ public class BlurNRTIndex extends BlurIndex {
     }
   }
 
+  @Override
+  public void createSnapshot(String name) throws IOException {
+    // TODO Auto-generated method stub
+  }
+
+  @Override
+  public void removeSnapshot(String name) throws IOException {
+    // TODO Auto-generated method stub
+  }
+
+  @Override
+  public List<String> getSnapshots() throws IOException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }

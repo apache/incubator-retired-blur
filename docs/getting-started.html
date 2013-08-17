@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<!-- 
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+  
+       http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<html>
+  <head>
+    <title>Getting started - Apache Blur (Incubator) Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="resources/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="resources/css/bs-docs.css" rel="stylesheet" media="screen">
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="index.html">Apache Blur (Incubator)</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="getting-started.html">Getting Started</a></li>
+            <li><a href="data-model.html">Data Model</a></li>
+            <li><a href="cluster-setup.html">Cluster Setup</a></li>
+            <li><a href="using-blur.html">Using Blur</a></li>
+            <li><a href="extra.html">Extra</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container bs-docs-container">
+      <div class="row">
+        <div class="col-md-3">
+          <div class="bs-sidebar hidden-print affix" role="complementary">
+            <ul class="nav bs-sidenav">
+              <li><a href="#prerequisites">Prerequisites</a></li>
+              <li><a href="#download">Download</a></li>
+              <li><a href="#compile">Compile</a></li>
+              <li><a href="#install">Install</a></li>
+              <li><a href="#min-config">Minimum Configuration</a></li>
+              <li><a href="#start">Starting Apache Blur</a></li>
+              <li><a href="#shell">Shell</a></li>
+              <li><a href="#shell-example">Simple Shell Example</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-9" role="main">
+          <section>
+            <div class="page-header">
+              <h1 id="prerequisites">Prerequisites</h1>
+            </div>
+            <p class="lead">
+              You will at a minimum need the following:
+            </p>
+            <ul>
+              <li>Java 6 installed (Java 7 has not been tested)</li>
+            </ul>
+            <h3>Setup passphraseless ssh</h3>
+            <p>These instructions are taken from the Hadoop Quick Start Guide.</p>
+            <p>Now check that you can ssh to the localhost without a passphrase:</p>
+            <pre><code class="bash">ssh localhost</code></pre>
+            <p>If you cannot ssh to localhost without a passphrase, execute the following commands:</p>
+            <pre><code class="bash">ssh-keygen -t dsa -P '' -f ~/.ssh/id_dsa
+cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys</code></pre>
+            <div class="bs-callout bs-callout-info"><h4>Heads Up!</h4><p>Also you will need to know the location of the JAVA_HOME directory.</p></div>
+          </section>
+          <section>
+            <div class="page-header">
+              <h1 id="download">Download</h1>
+            </div>
+            <p class="lead">
+              There are a few ways to download Blur depending on how involved you want to be.
+            </p>
+            <h3>Download full source</h3>
+            <p>
+              Until a full release has been made, please download the latest full source code and look in the <code>/distribution</code> folder.
+              <a href="https://git-wip-us.apache.org/repos/asf/incubator-blur.git" class="btn btn-large btn-primary">Download Latest Apache Blur 0.2.0</a>
+            </p>
+          </section>
+          <section>
+            <div class="page-header">
+              <h1 id="compile">Compile</h1>
+            </div>
+            <p class="lead">
+              If building from source, the distribution needs to be compiled before use
+            </p>
+            <p>Clone master</p>
+            <pre><code class="bash">git clone https://git-wip-us.apache.org/repos/asf/incubator-blur.git</code></pre>
+            <p>Build the artifacts (if you want to run the tests remove the "-DskipTests")</p>
+            <pre><code class="bash">cd incubator-blur/
+mvn install -DskipTests -P distribution</code></pre>
+            <p>The binary artifact is located <code>distribution/target/apache-blur-0.2.0-incubating-SNAPSHOT-bin.tar.gz</code>.</p>
+          </section>
+          <section>
+            <div class="page-header">
+              <h1 id="install">Install</h1>
+            </div>
+            <p class="lead">
+              Once a distribution is available, follow the simple steps to install.
+            </p>
+            <p>Extract the contents of the distribution</p>
+            <pre><code class="bash">tar -xzvf apache-blur-*-bin.tar.gz</code></pre>
+            <div class="bs-callout bs-callout-info">While it's not required it is a good idea to set BLUR_HOME in your environment variables.</div>
+            <p>For bash edit .bash_profile and add:</p>
+            <pre><code class="bash">export BLUR_HOME=&lt;directory where Blur was extracted&gt;</code></pre>
+          </section>
+          <section>
+            <div class="page-header">
+              <h1 id="min-config">Minimum Configuration</h1>
+            </div>
+            <p class="lead">
+              There are a few things at a minimum that will need to be configured to start Apache Blur
+            </p>
+            <p>Edit $BLUR_HOME/conf/blur-env.sh and set JAVA_HOME:</p>
+            <pre><code class="bash">export JAVA_HOME=&lt;Java Home Directory&gt;</code></pre>
+            <div class="bs-callout bs-callout-warning"><h4>Caution</h4>If this variable is not set, then the script will attempt to locate JAVA_HOME by using the location of the "java" command.</div>
+          </section>
+          <section>
+            <div class="page-header">
+              <h1 id="start">Starting Apache Blur</h1>
+            </div>
+            <p class="lead">
+              Starting Apache blur is a simple one command step
+            </p>
+            <p>To start Apache Blur run the following command:</p>
+            <pre><code class="bash">$BLUR_HOME/bin/start-all.sh</code></pre>
+            <p>
+              This will start a single Controller server and a single Shard server on your localhost.
+            </p>
+            <p>
+              You should see:
+            </p>
+            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.2.0-incubating/bin/start-all.sh 
+localhost: ZooKeeper starting as process 6650.
+localhost: Shard [0] starting as process 6783.
+localhost: Controller [0] starting as process 6933.</code></pre>
+            <p>If you run the start command again you should see:</p>
+            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.2.0-incubating/bin/stop-all.sh 
+localhost: Stopping Controller [0] server with pid [6933].
+localhost: Stopping Shard [0] server with pid [6783].
+localhost: Stopping ZooKeeper with pid [6650].</code></pre>
+            <p>If you see it starting the servers again, then there is likely some issue with startup. Look in the $BLUR_HOME/logs directory for log and out files.</p>
+          </section>
+          <section>
+            <div class="page-header">
+              <h1 id="shell">Shell</h1>
+            </div>
+            <p class="lead">
+              Once the servers have been started, you can use the shell to interact with Blur.
+            </p>
+            <p>The shell command can be found in the bin directory</p>
+            <p>Auto detect the controller servers from the $BLUR_HOME/conf/controllers file</p>
+            <pre><code class="bash">$BLUR_HOME/bin/blur shell</code></pre>
+            <p>You can also explicitly call out the controller servers.</p>
+            <pre><code class="bash">$BLUR_HOME/bin/blur shell controller1:40010,controller2:40010</code></pre>
+            <p>Once in the shell, tables and be created, enabled, disabled, and removed. Type help to get a list of the commands.</p>
+          </section>
+          <section>
+            <div class="page-header">
+              <h1 id="shell-example">Shell Example</h1>
+            </div>
+            <p class="lead">
+              The below example creates a table and stores the contents of the table in a local directory of /data/testTableName which will only work if you are running blur in a single instance. Normally if you are running a hadoop cluster this will be a hdfs URI for example hdfs://host:port/blur/tables/testTableName.
+            </p>
+            <pre><code class="bash">blur> #Creates a table called testtable in the local directory of /data/testtable with 11 shards
+blur> create testtable file:///data/testtable 11
+blur> 
+blur> #Adds a row to testtable
+blur> mutate testtable 1 1 fam0 col1 value1
+blur> 
+blur> #Runs a query on testtable
+blur> query testtable fam0.col1:value1
+ - Results Summary -
+    total : 1
+    time  : 7.874 ms
+-----------------------------------------------------------------------------------------------------
+      hit : 0
+    score : 1.4142135381698608
+       id : 1
+ recordId : 1
+   family : fam0
+     col1 : value1
+-----------------------------------------------------------------------------------------------------
+ - Results Summary -
+    total : 1
+    time  : 7.874 ms
+blur> 
+blur> #Turns highlighting on
+blur> highlight
+highlight of query command is now on
+blur> 
+blur> #Runs a query on testtable with highlighting on, notice <<<value1>>> is highlighted 
+blur> query testtable2 fam0.col1:value1
+ - Results Summary -
+    total : 1
+    time  : 13.395 ms
+-----------------------------------------------------------------------------------------------------
+      hit : 0
+    score : 1.4142135381698608
+       id : 1
+ recordId : 1
+   family : fam0
+     col1 : <<<value1>>>
+-----------------------------------------------------------------------------------------------------
+ - Results Summary -
+    total : 1
+    time  : 13.395 ms
+blur></code></pre>
+          </section>
+        </div>
+      </div>
+    </div>
+    
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="resources/js/jquery-2.0.3.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="resources/js/bootstrap.min.js"></script>
+    <!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+    <script src="resources/js/respond.min.js"></script>
+    <script src="resources/js/docs.js"></script>
+  </body>
+</html>

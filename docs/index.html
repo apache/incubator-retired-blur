@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<!-- 
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+  
+       http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<html>
+  <head>
+    <title>Apache Blur (Incubator) Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="resources/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="resources/css/bs-docs.css" rel="stylesheet" media="screen">
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="index.html">Apache Blur (Incubator)</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="getting-started.html">Getting Started</a></li>
+            <li><a href="data-model.html">Data Model</a></li>
+            <li><a href="cluster-setup.html">Cluster Setup</a></li>
+            <li><a href="using-blur.html">Using Blur</a></li>
+            <li><a href="extra.html">Extra</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="jumbotron">
+        <h1>Apache Blur (Incubator)</h1>
+        <p>
+          Blur is an open source search platform capable of querying massive amounts of data at incredible speeds. Blur is built on top of Lucene, Hadoop, Thrift, and ZooKeeper. Tables consist of a series of shards (Lucene indexes) that are distributed across a cluster of commodity servers. All index information is stored in HDFS, cluster coordination is handled by Apache ZooKeeper, Apache Thrift is used for the RPC, and Lucene handles all of the indexing and data storage.
+        </p>
+        <a href="getting-started.html" class="btn btn-primary btn-large">Get Started &raquo;</a>
+      </div>
+    </div>
+    
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="resources/js/jquery-2.0.3.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="resources/js/bootstrap.min.js"></script>
+    <!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+    <script src="resources/js/respond.min.js"></script>
+  </body>
+</html>

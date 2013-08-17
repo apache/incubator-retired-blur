@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<!-- 
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+  
+       http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<html>
+  <head>
+    <title>Data Model - Apache Blur (Incubator) Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="resources/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="resources/css/bs-docs.css" rel="stylesheet" media="screen">
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="index.html">Apache Blur (Incubator)</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="getting-started.html">Getting Started</a></li>
+            <li class="active"><a href="data-model.html">Data Model</a></li>
+            <li><a href="cluster-setup.html">Cluster Setup</a></li>
+            <li><a href="using-blur.html">Using Blur</a></li>
+            <li><a href="extra.html">Extra</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container bs-docs-container">
+      <div class="row">
+        <div class="col-md-3">
+          <div class="bs-sidebar hidden-print affix" role="complementary">
+            <ul class="nav bs-sidenav">
+              <li>
+                <a href="#structure">Structure</a>
+                <ul class="nav">
+                  <li><a href="#columns">Columns</a></li>
+                  <li><a href="#records">Records</a></li>
+                  <li><a href="#rows">Rows</a></li>
+                </ul>
+              </li>
+              <li><a href="#querying">Querying</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-9" role="main">
+          <section>
+            <div class="page-header">
+              <h1 id="structure">Data Structure</h1>
+            </div>
+            <p class="lead">
+              Blur is a table based query system. So within a single shard cluster there can be many different tables, each with a different schema, shard size, analyzers, etc. Each table contains Rows. A Row contains a row id (Lucene StringField internally) and many Records. A record has a record id (Lucene StringField internally), a family (Lucene StringField internally), and many Columns. A column contains a name and value, both are Strings in the API but the value can be interpreted as different types. All base Lucene Field types are supported, Text, String, Long, Int, Double, and Float.
+            </p>
+            <p>Starting with the most basic structure and building on it.</p>
+            <h3 id="columns">Columns</h3>
+            <p>
+              Columns contain a name and value, both are strings in the API but can be interpreted as an Integer, Float, Long, Double, String, or Text. All Column types default to Text and will be analyzed during the indexing process.
+            </p>
+            <pre><code class="json">Column {"name" => "value"}</code></pre>
+            <h3 id="records">Records</h3>
+            <p>
+              Record contains a Record Id, Family, and one or more Columns
+            </p>
+            <pre><code class="json">Record {
+  "recordId" => "1234",
+  "family" => "family1",
+  "columns" => [
+    Column {"column1" => "value1"}
+    Column {"column2" => "value2"}
+    Column {"column2" => "value3"}
+    Column {"column3" => "value4"}
+  ]
+}</code></pre>
+            <div class="bs-callout bs-callout-info"><h4>Quick Tip!</h4><p>The column names do not have to be unique within the Record. So you can treat multiple Columns with the same name as an array of values. Also the order of the values will be maintained.</p></div>
+            <h3 id="rows">Rows</h3>
+            <p>
+              Rows contain a row id and a list of Records.
+            </p>
+            <pre><code class="json">Row {
+  "id" => "r-5678",
+  "records" => [
+    Record {
+      "recordId" => "1234",
+      "family" => "family1",
+      "columns" => [
+        Column {"column1" => "value1"}
+        Column {"column2" => "value2"}
+        Column {"column2" => "value3"}
+        Column {"column3" => "value4"}
+      ]
+    },
+    Record {
+      "recordId" => "9012",
+      "family" => "family1",
+      "columns" => [
+        Column {"column1" => "value1"}
+      ]
+    },
+    Record {
+      "recordId" => "4321",
+      "family" => "family2",
+      "columns" => [
+        Column {"column16" => "value1"}
+      ]
+    }
+  ]
+}</code></pre>
+          </section>
+          <section>
+            <div class="page-header">
+              <h1 id="querying">Querying</h1>
+              <p class="lead">TODO</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+    
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="resources/js/jquery-2.0.3.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="resources/js/bootstrap.min.js"></script>
+    <!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+    <script src="resources/js/respond.min.js"></script>
+    <script src="resources/js/docs.js"></script>
+  </body>
+</html>

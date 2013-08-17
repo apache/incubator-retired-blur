@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<!-- 
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+  
+       http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<html>
+  <head>
+    <title>Cluster Setup - Apache Blur (Incubator) Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="resources/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="resources/css/bs-docs.css" rel="stylesheet" media="screen">
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="index.html">Apache Blur (Incubator)</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="getting-started.html">Getting Started</a></li>
+            <li><a href="data-model.html">Data Model</a></li>
+            <li class="active"><a href="cluster-setup.html">Cluster Setup</a></li>
+            <li><a href="using-blur.html">Using Blur</a></li>
+            <li><a href="extra.html">Extra</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container bs-docs-container">
+      <div class="row">
+        <div class="col-md-3">
+          <div class="bs-sidebar hidden-print affix" role="complementary">
+            <ul class="nav bs-sidenav">
+              <li>
+                <a href="#controller">Controller Server Configuration</a>
+                <ul class="nav">
+                  <li><a href="#controller-blur-site">blur-site.properties</a></li>
+                  <li><a href="#controller-blur-env">blur-env.sh</a></li>
+                </ul>
+              </li>
+              <li>
+                <a href="#shard">Shard Server Configuration</a>
+                <ul class="nav">
+                  <li><a href="#shard-blur-site">blur-site.properties</a></li>
+                  <li><a href="#shard-blur-env">blur-env.sh</a></li>
+                  <li><a href="#block-cache">Block Cache Configuration</a></li>
+                </ul>
+              </li>
+              <li>
+                <a href="#metrics">Metrics</a>
+                <ul class="nav">
+                  <li><a href="#shard-mbean">Shard Server - MBean</a></li>
+                  <li><a href="#reporters">Other Reporters</a></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-9" role="main">
+          <section>
+            <div class="page-header">
+              <h1 id="controller">Controller Server Configuration</h1>
+            </div>
+            <h3 id="controller-blur-site">blur-site.properties</h3>
+            <p>
+              These are the default settings for the shard server that can be overridden in the blur-site.properties file. Consider increasing the various thread pool counts (*.thread.count). The blur.controller.server.remote.thread.count is very important to increase for larger clusters, basically one thread is used per shard server per query. Some production cluster have used set this thread pool to 2000 or more threads.
+            </p>
+            <pre><code class="bash">blur.controller.hostname=
+blur.controller.bind.address=0.0.0.0
+blur.controller.bind.port=40010
+blur.controller.server.thrift.thread.count=32
+blur.controller.server.remote.thread.count=64
+blur.controller.remote.fetch.count=100
+
+blur.controller.retry.max.fetch.retries=3
+blur.controller.retry.max.mutate.retries=3
+blur.controller.retry.max.default.retries=3
+blur.controller.retry.fetch.delay=500
+blur.controller.retry.mutate.delay=500
+blur.controller.retry.default.delay=500
+blur.controller.retry.max.fetch.delay=2000
+blur.controller.retry.max.mutate.delay=2000
+blur.controller.retry.max.default.delay=2000
+
+blur.query.max.results.fetch=1000
+blur.query.max.row.fetch=100
+blur.query.max.record.fetch=1000
+
+blur.gui.controller.port=40080
+
+blur.metrics.reporters=</code></pre>
+            <h3 id="controller-blur-env">blur-env.sh</h3>
+            <pre><code class="bash"># JAVA JVM OPTIONS for the controller servers, jvm tuning parameters are placed here.
+# Consider adding the -XX:OnOutOfMemoryError="kill -9 %p" option to kill jvms that are failing due to memory issues.
+export BLUR_CONTROLLER_JVM_OPTIONS="-Xmx1024m -Djava.net.preferIPv4Stack=true "
+
+# Time to sleep between controller server commands.
+export BLUR_CONTROLLER_SLEEP=0.1
+
+# The of controller servers to spawn per machine.
+export BLUR_NUMBER_OF_CONTROLLER_SERVER_INSTANCES_PER_MACHINE=1</code></pre>
+          </section>
+          <section>
+            <div class="page-header">
+              <h1 id="shard">Shard Server Configuration</h1>
+            </div>
+            <h3 id="shard-blur-site">blur-site.properties</h3>
+            <p>
+              These are the default settings for the shard server that can be overridden in the blur-site.properties file. Consider increasing the various thread pool counts (*.thread.count). Also the blur.max.clause.count sets the BooleanQuery max clause count for Lucene queries.
+            </p>
+            <pre><code class="bash">blur.shard.hostname=
+blur.shard.bind.address=0.0.0.0
+blur.shard.bind.port=40020
+blur.shard.data.fetch.thread.count=8
+blur.shard.server.thrift.thread.count=8
+blur.shard.opener.thread.count=8
+blur.shard.cache.max.querycache.elements=128
+blur.shard.cache.max.timetolive=60000
+blur.shard.filter.cache.class=org.apache.blur.manager.DefaultBlurFilterCache
+blur.shard.index.warmup.class=org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup
+blur.shard.blockcache.direct.memory.allocation=true
+blur.shard.blockcache.slab.count=-1
+blur.shard.buffercache.1024=8192
+blur.shard.buffercache.8192=8192
+blur.shard.safemodedelay=5000
+blur.shard.time.between.commits=30000
+blur.shard.time.between.refreshs=3000
+blur.max.clause.count=1024
+blur.indexmanager.search.thread.count=8
+
+blur.query.max.results.fetch=1000
+blur.query.max.row.fetch=100
+blur.query.max.record.fetch=1000
+
+blur.gui.shard.port=40090
+
+blur.metrics.reporters=</code></pre>
+            <h3 id="shard-blur-env">blur-env.sh</h3>
+            <pre><code class="bash"># JAVA JVM OPTIONS for the shard servers, jvm tuning parameters are placed here.
+export BLUR_SHARD_JVM_OPTIONS="-Xmx1024m -Djava.net.preferIPv4Stack=true -XX:MaxDirectMemorySize=256m "
+
+# Time to sleep between shard server commands.
+export BLUR_SHARD_SLEEP=0.1
+
+# The of shard servers to spawn per machine.
+export BLUR_NUMBER_OF_SHARD_SERVER_INSTANCES_PER_MACHINE=1</code></pre>
+
+            <h3 id="block-cache">Block Cache Configuration</h3>
+            <h4>Why</h4>
+            <p>HDFS is a great filesystem for streaming large amounts data across large scale clusters. However the random access latency is typically the same performance you would get in reading from a local drive if the data you are trying to access is not in the operating systems file cache. In other words every access to HDFS is similar to a local read with a cache miss. There have been great performance boosts in HDFS over the past few years but it still can't perform at the level that a search engine needs.</p>
+            <p>Now you might be thinking that Lucene reads from the local hard drive and performs great, so why wouldn't HDFS perform fairly well on it's own? However most of time the Lucene index files are cached by the operating system's file system cache. So Blur has it's own file system cache allows it to perform low latency data look-ups against HDFS.</p>
+            <h4>How</h4>
+            <p>On shard server start-up Blur creates 1 or more block cache slabs blur.shard.blockcache.slab.count that are each 128 MB in size. These slabs can be allocated on or off the heap blur.shard.blockcache.direct.memory.allocation. Each slab is broken up into 16,384 blocks with each block size being 8K. Then on the heap there is a concurrent LRU cache that tracks what blocks of what files are in which slab(s) at what offset. So the more slabs of cache you create the more entries there will be in the LRU thus more heap.</p>
+            <h4>Configuration</h4>
+            <p>Scenario:
+
+            Say the shard server(s) that you are planning to run Blur on have 32G of ram. These machines are probably also running HDFS data nodes as well with very high xcievers (dfs.datanode.max.xcievers in hdfs-site.xml) say 8K. If the data nodes are configured with 1G of heap then they may consume up to 4G of memory due to the high thread count because of the xcievers. Next let's say you configure Blur to 4G of heap as well, and you want to use 12G of off heap cache.</p>
+            <h5>Auto Configuration</h5>
+            <p>In the blur-env.sh file you would need to change BLUR_SHARD_JVM_OPTIONS to include "-XX:MaxDirectMemorySize=12g" and possibly "-XX:+UseLargePages" depending on your Linux setup. If you leave the blur.shard.blockcache.slab.count to the default -1 the shard startup will automatically detect the -XX:MaxDirectMemorySize size and automatically use almost all of the memory. By default the JVm has 64m in reserve for direct memory so by default Blur leaves at least that amount available to the JVM.</p>
+            <h5>Custom Configuration</h5>
+            <p>Again in the blur-env.sh file you would need to change BLUR_SHARD_JVM_OPTIONS to include "-XX:MaxDirectMemorySize=13g" and possibly "-XX:+UseLargePages" depending on your Linux setup. I set the MaxDirectMemorySize to more than 12G to make sure we don't hit the maximum limit and cause a OOM exception, this does not reserve 13G it's a control to not allow more than that. Below is a working example, it also contains GC logging and GC configuration:</p>
+            <pre><code class="bash">export BLUR_SHARD_JVM_OPTIONS="-XX:MaxDirectMemorySize=13g \
+            -XX:+UseLargePages \
+            -Xms4g \
+            -Xmx4g \
+            -Xmn512m \
+            -XX:+UseCompressedOops \
+            -XX:+UseConcMarkSweepGC \
+            -XX:+CMSIncrementalMode \
+            -XX:CMSIncrementalDutyCycleMin=10 \
+            -XX:CMSIncrementalDutyCycle=50 \
+            -XX:ParallelGCThreads=8 \
+            -XX:+UseParNewGC \
+            -XX:MaxGCPauseMillis=200 \
+            -XX:GCTimeRatio=10 \
+            -XX:+DisableExplicitGC \
+            -verbose:gc \
+            -XX:+PrintGCDetails \
+            -XX:+PrintGCDateStamps \
+            -Xloggc:$BLUR_HOME/logs/gc-blur-shard-server_`date +%Y%m%d_%H%M%S`.log"</code></pre>
+            <p>Next you will need to setup blur-site.properties by changing blur.shard.blockcache.slab.count to 96. This is telling blur to allocate 96 128MB slabs of memory at shard server start-up. Note, that the first time you do this that the shard servers may take long time to allocate the memory. This is because the OS could be using most of that memory for it's own filesystem caching and it will need to unload it which may cause some IO due the cache synching to disk.</p>
+            <p>Also the blur.shard.blockcache.direct.memory.allocation is set to true by default, this will tell the JVM to try and allocate the memory off heap. If you want to run the slabs in the heap (which is not recommended) set this value to false.</p>
+          </section>
+          <section>
+            <div class="page-header">
+              <h1 id="metrics">Metrics</h1>
+            </div>
+            <p class="lead">Internally Blur uses the Metrics library from Coda Hale (<a href="http://metrics.codahale.com/">http://metrics.codahale.com/</a>). So by default all metrics are available through JMX here is a screenshot of what is available in the Shard server.</p>
+            <h3 id="shard-mbean">Shard Server - MBean Screenshot</h3>
+            <img src="resources/img/BlurShardServer.png" style="max-width:1000px"/>
+            <h3 id="reporters">Configuring Other Reporters</h3>
+            <p class="lead">New reporters can be added configured in the blur-site.properties. Multiple reporters can be configured.</p>
+            <h4>Example</h4>
+            <pre><code class="bash">blur.metrics.reporters=GangliaReporter
+blur.metrics.reporter.ganglia.period=3
+blur.metrics.reporter.ganglia.unit=SECONDS
+blur.metrics.reporter.ganglia.host=ganglia1
+blur.metrics.reporter.ganglia.port=8649</code></pre>
+            <h4>Reporters to Enable</h4>
+            <pre><code class="bash">blur.metrics.reporters=[ConsoleReporter,CsvReporter,GangliaReporter,GraphiteReporter]</code></pre>
+            <h4>ConsoleReporter</h4>
+            <pre><code class="bash">blur.metrics.reporter.console.period=[5]
+blur.metrics.reporter.console.unit=[NANOSECONDS,MICROSECONDS,MILLISECONDS,SECONDS,MINUTES,HOURS,DAYS]</code></pre>
+            <h4>CsvReporter</h4>
+            <pre><code class="bash">blur.metrics.reporter.csv.period=[5]
+blur.metrics.reporter.csv.unit=[NANOSECONDS,MICROSECONDS,MILLISECONDS,SECONDS,MINUTES,HOURS,DAYS]
+blur.metrics.reporter.csv.outputDir=[.]</code></pre>
+            <h4>GangliaReporter</h4>
+            <pre><code class="bash">blur.metrics.reporter.ganglia.period=[5]
+blur.metrics.reporter.ganglia.unit=[NANOSECONDS,MICROSECONDS,MILLISECONDS,SECONDS,MINUTES,HOURS,DAYS]
+blur.metrics.reporter.ganglia.host=[localhost]
+blur.metrics.reporter.ganglia.port=[-1]
+blur.metrics.reporter.ganglia.prefix=[""]
+blur.metrics.reporter.ganglia.compressPackageNames=[false]</code></pre>
+            <h4>GraphiteReporter</h4>
+            <pre><code class="bash">blur.metrics.reporter.graphite.period=[5]
+blur.metrics.reporter.graphite.unit=[NANOSECONDS,MICROSECONDS,MILLISECONDS,SECONDS,MINUTES,HOURS,DAYS]
+blur.metrics.reporter.graphite.host=[localhost]
+blur.metrics.reporter.graphite.port=[-1]
+blur.metrics.reporter.graphite.prefix=[""]</code></pre>
+          </section>
+        </div>
+      </div>
+    </div>
+    
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="resources/js/jquery-2.0.3.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="resources/js/bootstrap.min.js"></script>
+    <!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+    <script src="resources/js/respond.min.js"></script>
+    <script src="resources/js/docs.js"></script>
+  </body>
+</html>

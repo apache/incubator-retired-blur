@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<!-- 
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+  
+       http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<html>
+  <head>
+    <title>Using Blur - Apache Blur (Incubator) Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="resources/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="resources/css/bs-docs.css" rel="stylesheet" media="screen">
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="index.html">Apache Blur (Incubator)</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="getting-started.html">Getting Started</a></li>
+            <li><a href="data-model.html">Data Model</a></li>
+            <li><a href="cluster-setup.html">Cluster Setup</a></li>
+            <li class="active"><a href="using-blur.html">Using Blur</a></li>
+            <li><a href="extra.html">Extra</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container bs-docs-container">
+      <div class="row">
+        <div class="col-md-3">
+          <div class="bs-sidebar hidden-print affix" role="complementary">
+            <ul class="nav bs-sidenav">
+              <li><a href="#shell">Shell</a></li>
+              <li><a href="#map-reduce">Map Reduce</a></li>
+              <li><a href="#thrift-client">Thrift Client</a></li>
+              <li><a href="#jdbc">JDBC</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-9" role="main">
+          <section>
+            <div class="page-header">
+              <h1 id="shell">Shell</h1>
+            </div>
+            <p class="lead">TODO</p>
+          </section>
+          <section>
+            <div class="page-header">
+              <h1 id="map-reduce">Map Reduce</h1>
+            </div>
+            <p class="lead">Here is an example of the typical usage of the BlurOutputFormat. The Blur table has to be created before the MapReduce job is started. The setupJob method configures the following:</p>
+            <ul>
+              <li>The reducer class to be DefaultBlurReducer</li>
+              <li>The number of reducers to be equal to the number of shards in the table.</li>
+              <li>The output key class to a standard Text writable from the Hadoop library</li>
+              <li>The output value class is a BlurMutate writable from the Blur library</li>
+              <li>The output format to be BlurOutputFormat</li>
+              <li>Sets the TableDescriptor in the Configuration</li>
+              <li>Sets the output path to the TableDescriptor.getTableUri() value</li>
+              <li>Also the job will use the BlurOutputCommitter class to commit or rollback the MapReduce job</li>
+            </ul>
+            <h3>Example Usage</h3>
+            <pre><code class="java">Iface client = BlurClient.getClient("controller1:40010");
+
+TableDescriptor tableDescriptor = client.describe(tableName);
+
+Job job = new Job(jobConf, "blur index");
+job.setJarByClass(BlurOutputFormatTest.class);
+job.setMapperClass(CsvBlurMapper.class);
+job.setInputFormatClass(TextInputFormat.class);
+
+FileInputFormat.addInputPath(job, new Path(input));
+CsvBlurMapper.addColumns(job, "cf1", "col");
+
+BlurOutputFormat.setupJob(job, tableDescriptor);
+BlurOutputFormat.setIndexLocally(job, true);
+BlurOutputFormat.setOptimizeInFlight(job, false);
+
+job.waitForCompletion(true);</code></pre>
+            <h3>Options</h3>
+            <ul>
+              <li>
+                BlurOutputFormat.setIndexLocally(Job,boolean)
+                <ul><li>Enabled by default, this will enable local indexing on the machine where the task is running. Then when the RecordWriter closes the index is copied to the remote destination in HDFS.</li></ul>
+              </li>
+              <li>
+                BlurOutputFormat.setMaxDocumentBufferSize(Job,int)
+                <ul><li>Sets the maximum number of documents that the buffer will hold in memory before overflowing to disk. By default this is 1000 which will probably be very low for most systems.</li></ul>
+              </li>
+              <li>
+                BlurOutputFormat.setOptimizeInFlight(Job,boolean)
+                <ul><li>Enabled by default, this will optimize the index while copying from the local index to the remote destination in HDFS. Used in conjunction with the setIndexLocally.</li></ul>
+              </li>
+              <li>
+                BlurOutputFormat.setReducerMultiplier(Job,int)
+                <ul><li>This will multiple the number of reducers for this job. For example if the table has 256 shards the normal number of reducers is 256. However if the reducer multiplier is set to 4 then the number of reducers will be 1024 and each shard will get 4 new segments instead of the normal 1.</li></ul>
+              </li>
+            </ul>
+          </section>
+          <section>
+            <div class="page-header">
+              <h1 id="thrift-client">Thrift Client</h1>
+            </div>
+            <p class="lead">TODO</p>
+          </section>
+          <section>
+            <div class="page-header">
+              <h1 id="jdbc">JDBC</h1>
+            </div>
+            <p class="lead">TODO</p>
+          </section>
+        </div>
+      </div>
+    </div>
+    
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="resources/js/jquery-2.0.3.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="resources/js/bootstrap.min.js"></script>
+    <!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+    <script src="resources/js/respond.min.js"></script>
+    <script src="resources/js/docs.js"></script>
+  </body>
+</html>

@@ -165,6 +165,32 @@ public class Main {
 
   }
 
+  private static class ResetCommand extends Command {
+
+    @Override
+    public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+        BlurException {
+      ConsoleReader reader = getConsoleReader();
+      if (reader != null) {
+        try {
+          reader.setPrompt("");
+          reader.clearScreen();
+        } catch (IOException e) {
+          if (debug) {
+            e.printStackTrace();
+          }
+          throw new CommandException(e.getMessage());
+        }
+      }
+    }
+
+    @Override
+    public String help() {
+      return "resets the terminal window";
+    }
+
+  }
+
   private static class DebugCommand extends Command {
 
     @Override
@@ -251,7 +277,7 @@ public class Main {
 
       out.println();
       out.println(" - Shell commands - ");
-      String[] shellCommands = { "help", "debug", "timed", "quit" };
+      String[] shellCommands = { "help", "debug", "timed", "quit", "reset" };
       printCommandAndHelp(out, cmds, shellCommands, bufferLength);
 
       if (!cmds.isEmpty()) {
@@ -355,6 +381,7 @@ public class Main {
     builder.put("loadtestdata", new LoadTestDataCommand());
     builder.put("selector", new SelectorCommand());
     builder.put("definecolumn", new AddColumnDefinitionCommand());
+    builder.put("reset", new ResetCommand());
     commands = builder.build();
 
     CliShellOptions cliShellOptions = getCliShellOptions(args);
@@ -450,8 +477,8 @@ public class Main {
     }
   }
 
-  private static void setPrompt(Iface client, ConsoleReader reader, String connectionStr, PrintWriter out) throws BlurException,
-      TException, CommandException, IOException {
+  private static void setPrompt(Iface client, ConsoleReader reader, String connectionStr, PrintWriter out)
+      throws BlurException, TException, CommandException, IOException {
     List<String> shardClusterList;
     try {
       shardClusterList = BlurClientManager.execute(connectionStr, new BlurCommand<List<String>>() {
@@ -467,16 +494,19 @@ public class Main {
         e.printStackTrace(out);
       }
       System.exit(1);
-      throw e; //will never be called
+      throw e; // will never be called
     }
+    String currentPrompt = reader.getPrompt();
+    String prompt;
     if (shardClusterList.size() == 1) {
-      reader.setPrompt("blur (" + getCluster(client) + ")> ");
+      prompt = "blur (" + getCluster(client) + ")> ";
+    } else if (cluster == null) {
+      prompt = PROMPT;
     } else {
-      if (cluster == null) {
-        reader.setPrompt(PROMPT);
-      } else {
-        reader.setPrompt("blur (" + cluster + ")> ");
-      }
+      prompt = "blur (" + cluster + ")> ";
+    }
+    if (currentPrompt == null || !currentPrompt.equals(prompt)) {
+      reader.setPrompt(prompt);
     }
   }
 

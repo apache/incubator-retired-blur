@@ -22,7 +22,6 @@ under the License.
   <id>src</id>
   <formats>
     <format>tar.gz</format>
-    <format>zip</format>
   </formats>
   <includeBaseDirectory>false</includeBaseDirectory>
   <fileSets>

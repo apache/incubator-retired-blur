@@ -22,7 +22,6 @@ under the License.
   <id>bin</id>
   <formats>
     <format>tar.gz</format>
-    <format>zip</format>
   </formats>
   <includeBaseDirectory>false</includeBaseDirectory>
 
@@ -93,6 +92,23 @@ under the License.
       <excludes>
         <exclude>**/.empty</exclude>
       </excludes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.scriptSourceDirectory}/../../../../docs</directory>
+      <outputDirectory>apache-blur-${project.version}/docs</outputDirectory>
+      <excludes>
+        <exclude>**/.empty</exclude>
+      </excludes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.scriptSourceDirectory}/../../../../</directory>
+      <outputDirectory>apache-blur-${project.version}/</outputDirectory>
+      <includes>
+        <include>DISCLAIMER</include>
+        <include>NOTICE</include>
+        <include>LICENSE</include>
+        <include>README</include>
+      </includes>
     </fileSet>
   </fileSets>
 </assembly>

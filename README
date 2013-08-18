@@ -1,0 +1,15 @@
+Blur
+====
+
+Blur is a NoSQL data store built on top of Lucene, Hadoop, Thrift, 
+and Zookeeper.  Tables consist of a series of shards (Lucene indexes)
+that are distributed across a cluster of commodity servers.
+
+Mail List
+----
+blur-user@incubator.apache.org or blur-dev@incubator.apache.org
+
+Documentation
+----
+
+Check out the docs/ directory and use the index.html as a starting point.

@@ -28,4 +28,5 @@ for f in gen-java/org/apache/blur/thrift/generated/*.java; do
   rm $f.new1 $f.new2 $f.new3 $f
   mv $f.new4 $f
 done
+java -cp ../../../../../blur-util/target/blur-util-*.jar org.apache.blur.doc.CreateBlurApiHtmlPage gen-html/Blur.html ../../../../../docs/Blur.html
 cp -r gen-java/* ../../../../../blur-thrift/src/main/java/

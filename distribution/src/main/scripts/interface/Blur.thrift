@@ -20,12 +20,14 @@ namespace rb blur
 namespace perl Blur
 
 /**
-  * The error type of a BlurException.<br/><br/>
-  * UNKNOWN - Unknown error.<br/><br/>
-  * QUERY_CANCEL - Query has been cancel.<br/><br/>
-  * QUERY_TIMEOUT - Query has timed out.<br/><br/>
-  * BACK_PRESSURE - Server has run out of memory and is trying to prevent a failure.<br/><br/>
-  * REQUEST_TIMEOUT - The TCP connection has timed out.<br/>
+  * <table class="table-bordered table-striped table-condensed">
+  * <tr><td colspan="2">The error type of a BlurException.</td></tr>
+  * <tr><td>UNKNOWN</td><td>Unknown error.</td></tr>
+  * <tr><td>QUERY_CANCEL</td><td>Query has been cancel.</td></tr>
+  * <tr><td>QUERY_TIMEOUT</td><td>Query has timed out.</td></tr>
+  * <tr><td>BACK_PRESSURE</td><td>Server has run out of memory and is trying to prevent a failure.</td></tr>
+  * <tr><td>REQUEST_TIMEOUT</td><td>The TCP connection has timed out.</td></tr>
+  * </table>
   */
 enum ErrorType {
   UNKNOWN,
@@ -53,12 +55,14 @@ exception BlurException {
   3:ErrorType errorType
 }
 
-/** 
-  * The scoring type used during a SuperQuery to score multi Record hits within a ColumnFamily.<br/><br/>
-  * SUPER - During a multi Record match, a calculation of the best match Record plus how often it occurs within the match Row produces the score that is used in the scoring of the SuperQuery.<br/><br/>
-  * AGGREGATE - During a multi Record match, the aggregate score of all the Records within a ColumnFamily is used in the scoring of the SuperQuery.<br/><br/>
-  * BEST - During a multi Record match, the best score of all the Records within a ColumnFamily is used in the scoring of the SuperQuery.<br/><br/>
-  * CONSTANT - A constant score of 1 is used in the scoring of the SuperQuery.<br/>
+/**
+  * <table class="table-bordered table-striped table-condensed">
+  * <tr><td colspan="2">The scoring type used during a SuperQuery to score multi Record hits within a ColumnFamily.</td></tr>
+  * <tr><td>SUPER</td><td>During a multi Record match, a calculation of the best match Record plus how often it occurs within the match Row produces the score that is used in the scoring of the SuperQuery.</td></tr>
+  * <tr><td>AGGREGATE</td><td>During a multi Record match, the aggregate score of all the Records within a ColumnFamily is used in the scoring of the SuperQuery.</td></tr>
+  * <tr><td>BEST</td><td>During a multi Record match, the best score of all the Records within a ColumnFamily is used in the scoring of the SuperQuery.</td></tr>
+  * <tr><td>CONSTANT</td><td>A constant score of 1 is used in the scoring of the SuperQuery.</td></tr>
+  * </table>
   */
 enum ScoreType {
   SUPER,
@@ -68,10 +72,12 @@ enum ScoreType {
 }
 
 /**
-  * The state of a query.<br/><br/>
-  * RUNNING - Query is running.<br/><br/>
-  * INTERRUPTED - Query has been interrupted.<br/><br/>
-  * COMPLETE - Query is complete.<br/>
+  * <table class="table-bordered table-striped table-condensed">
+  * <tr><td colspan="2">The state of a query.</td></tr>
+  * <tr><td>RUNNING</td><td>Query is running.</td></tr>
+  * <tr><td>INTERRUPTED</td><td>Query has been interrupted.</td></tr>
+  * <tr><td>COMPLETE</td><td>Query is complete.</td></tr>
+  * </table>
   */
 enum QueryState {
   RUNNING,
@@ -81,8 +87,10 @@ enum QueryState {
 }
 
 /**
-  * NOT_FOUND - when UUID is not found<br/><br/>
-  * FOUND - when UUID is present<br/>
+  * <table class="table-bordered table-striped table-condensed">
+  * <tr><td>NOT_FOUND</td><td>Blur status UUID is not found.</td></tr>
+  * <tr><td>FOUND</td><td>Blur status UUID is present.</td></tr>
+  * </table>
   */
 enum Status {
   NOT_FOUND,
@@ -90,11 +98,13 @@ enum Status {
 }
 
 /**
- * Specifies the type of Row mutation that should occur during a mutation of a given Row.<br/><br/>
- * DELETE_ROW - Indicates that the entire Row is to be deleted.  No changes are made if the specified row does not exist.<br/><br/>
- * REPLACE_ROW - Indicates that the entire Row is to be deleted, and then a new Row with the same id is to be added.  If the specified row does not exist, the new row will still be created.<br/><br/>
- * UPDATE_ROW - Indicates that mutations of the underlying Records will be processed individually.  Mutation will result in a BlurException if the specified row does not exist.<br/>
- */
+  * <table class="table-bordered table-striped table-condensed">
+  * <tr><td colspan="2">Specifies the type of Row mutation that should occur during a mutation of a given Row.</td></tr>
+  * <tr><td>DELETE_ROW</td><td>Indicates that the entire Row is to be deleted.  No changes are made if the specified row does not exist.</td></tr>
+  * <tr><td>REPLACE_ROW</td><td>Indicates that the entire Row is to be deleted, and then a new Row with the same id is to be added.  If the specified row does not exist, the new row will still be created.</td></tr>
+  * <tr><td>UPDATE_ROW</td><td>Indicates that mutations of the underlying Records will be processed individually.  Mutation will result in a BlurException if the specified row does not exist.</td></tr>
+  * </table>
+  */
 enum RowMutationType {
   DELETE_ROW,
   REPLACE_ROW,
@@ -102,12 +112,14 @@ enum RowMutationType {
 }
 
 /**
- * Specifies the type of Record mutation that should occur during a mutation of a given Record.<br/><br/>
- * DELETE_ENTIRE_RECORD -  Indicates the Record with the given recordId in the given Row is to be deleted.  If the target record does not exist, then no changes are made.<br/><br/>
- * REPLACE_ENTIRE_RECORD - Indicates the Record with the given recordId in the given Row is to be deleted, and a new Record with the same id is to be added. If the specified record does not exist the new record is still added.<br/><br/>
- * REPLACE_COLUMNS - Replace the columns that are specified in the Record mutation.  If the target record does not exist then this mutation will result in a BlurException.<br/><br/>
- * APPEND_COLUMN_VALUES - Append the columns in the Record mutation to the Record that could already exist.  If the target record does not exist then this mutation will result in a BlurException.<br/>
- */
+  * <table class="table-bordered table-striped table-condensed">
+  * <tr><td colspan="2">Specifies the type of Record mutation that should occur during a mutation of a given Record.</td></tr>
+  * <tr><td>DELETE_ENTIRE_RECORD</td><td>Indicates the Record with the given recordId in the given Row is to be deleted.  If the target record does not exist, then no changes are made.</td></tr>
+  * <tr><td>REPLACE_ENTIRE_RECORD</td><td>Indicates the Record with the given recordId in the given Row is to be deleted, and a new Record with the same id is to be added. If the specified record does not exist the new record is still added.</td></tr>
+  * <tr><td>REPLACE_COLUMNS</td><td>Replace the columns that are specified in the Record mutation.  If the target record does not exist then this mutation will result in a BlurException.</td></tr>
+  * <tr><td>APPEND_COLUMN_VALUES</td><td>Append the columns in the Record mutation to the Record that could already exist.  If the target record does not exist then this mutation will result in a BlurException.</td></tr>
+  * </table>
+  */
 enum RecordMutationType {
   DELETE_ENTIRE_RECORD,
   REPLACE_ENTIRE_RECORD,
@@ -116,8 +128,16 @@ enum RecordMutationType {
 }
 
 /**
- * See shardServerLayoutOptions method in the Blur service for details.
- */
+  * <table class="table-bordered table-striped table-condensed">
+  * <tr><td colspan="2">The shard state, see shardServerLayoutOptions method in the Blur service for details.</td></tr>
+  * <tr><td>OPENING</td><td>The shard is opening.</td></tr>
+  * <tr><td>OPEN</td><td>The shard is open.</td></tr>
+  * <tr><td>OPENING_ERROR</td><td>An error during the opening of the shard.</td></tr>
+  * <tr><td>CLOSING</td><td>In the process of closing.</td></tr>
+  * <tr><td>CLOSED</td><td>The shard is closed.</td></tr>
+  * <tr><td>CLOSING_ERROR</td><td>An error during the closing of the shard.</td></tr>
+  * </table>
+  */
 enum ShardState {
   OPENING,
   OPEN,
@@ -720,6 +740,242 @@ struct Metric {
  */
 service Blur {
 
+  //Table Commands
+
+  /**
+   * Creates a table with the given TableDescriptor.
+   */
+  void createTable(
+    /** the TableDescriptor.  */
+    1:TableDescriptor tableDescriptor
+  ) throws (1:BlurException ex)
+
+  /**
+   * Enables the given table, blocking until all shards are online.
+   */
+  void enableTable(
+    /** the table name. */
+    1:string table
+  ) throws (1:BlurException ex)
+
+  /**
+   * Disables the given table, blocking until all shards are offline.
+   */
+  void disableTable(
+    /** the table name. */
+    1:string table
+  ) throws (1:BlurException ex)
+
+  /**
+   * Removes the given table, with an optional to delete the underlying index storage as well.
+   */
+  void removeTable(
+    /** the table name. */
+    1:string table, 
+    /** true to remove the index storage and false if to preserve.*/
+    2:bool deleteIndexFiles
+  ) throws (1:BlurException ex)
+
+  /**
+   * Attempts to add a column definition to the given table.
+   * @return true if successfully defined false if not.
+   */
+  bool addColumnDefinition(
+    /** the name of the table. */
+    1:string table, 
+    /** the ColumnDefinition. */
+    2:ColumnDefinition columnDefinition
+  ) throws (1:BlurException ex)
+  
+  /**
+   * Returns a list of the table names across all shard clusters.
+   * @return list of all tables in all shard clusters.
+   */
+  list<string> tableList() throws (1:BlurException ex)
+
+  /**
+   * Returns a list of the table names for the given cluster.
+   * @return list of all the tables within the given shard cluster.
+   */
+  list<string> tableListByCluster(
+    /** the cluster name. */
+    1:string cluster
+  ) throws (1:BlurException ex)
+
+  /**
+   * Returns a table descriptor for the given table.
+   * @return the TableDescriptor.
+   */
+  TableDescriptor describe(
+    /** the table name. */
+    1:string table
+  ) throws (1:BlurException ex)
+
+  /**
+   * Gets the schema for a given table.
+   * @return Schema.
+   */
+  Schema schema(
+    /** the table name. */
+    1:string table
+  ) throws (1:BlurException ex)
+
+  /**
+   * Parses the given query and return the string represents the query.
+   * @return string representation of the parsed query.
+   */
+  string parseQuery(
+    /** the table name. */
+    1:string table, 
+    /** the query to parse. */
+    2:SimpleQuery simpleQuery
+  ) throws (1:BlurException ex)
+
+  /**
+   * Gets the table stats for the given table.
+   * @return TableStats.
+   */
+  TableStats tableStats(
+    /** the table name. */
+    1:string table
+  ) throws (1:BlurException ex)
+
+  /**
+   * Will perform a forced optimize on the index in the given table.
+   */
+  void optimize(
+    /** table the name of the table. */
+    1:string table, 
+    /** the maximum of segments per shard index after the operation is completed. */
+    2:i32 numberOfSegmentsPerShard
+  ) throws (1:BlurException ex)
+
+  /**
+   * Creates a snapshot for the table with the given name
+   */
+  void createSnapshot(1:string table, 2:string name) throws (1:BlurException ex)
+
+  /**
+   * Removes a previous snapshot(identified by name) of the table
+   */
+  void removeSnapshot(1:string table, 2:string name) throws (1:BlurException ex)
+
+  /**
+   * Returns a map where the key is the shard, and the list is the snapshots within that shard
+   */
+  map<string,list<string>> listSnapshots(1:string table) throws (1:BlurException ex)
+
+  // Data Commands
+
+  /**
+   * Executes a query against a the given table and returns the results.  If this method is 
+   * executed against a controller the results will contain the aggregated results from all 
+   * the shards.  If this method is executed against a shard server the results will only 
+   * contain aggregated results from the shards of the given table that are being served on 
+   * the shard server, if any.
+   * @return the BlurResults.
+   */
+  BlurResults query(
+    /** the table name. */
+    1:string table, 
+    /** the query to execute. */
+    2:BlurQuery blurQuery
+  ) throws (1:BlurException ex)
+
+  /**
+   * Fetches a Row or a Record in the given table with the given Selector.
+   * @return the FetchResult.
+   */
+  FetchResult fetchRow(
+    /** the table name. */
+    1:string table, 
+    /** the Selector to use to fetch the Row or Record. */
+    2:Selector selector
+  ) throws (1:BlurException ex)
+
+  /**
+   * Mutates a Row given the RowMutation the is provided.
+   */
+  void mutate(
+    /** the RowMutation.*/
+    1:RowMutation mutation
+  ) throws (1:BlurException ex)
+
+  /**
+   * Mutates a group of Rows given the list of RowMutations that are provided.  Note: This is not an atomic operation.
+   */
+  void mutateBatch(
+    /** the batch of RowMutations.*/
+    1:list<RowMutation> mutations
+  ) throws (1:BlurException ex)
+
+  /**
+   * Cancels a query that is executing against the given table with the given uuid.  Note, the 
+   * cancel call maybe take some time for the query actually stops executing.
+   */
+  void cancelQuery(
+    /** the table name. */
+    1:string table, 
+    /** the uuid of the query. */
+    2:i64 uuid
+  ) throws (1:BlurException ex)
+
+  /**
+   * Returns a list of the query ids of queries that have recently been executed for the given table.
+   * @return list of all the uuids of the queries uuids.
+   */
+  list<i64> queryStatusIdList(
+    /** the table name. */
+    1:string table
+  ) throws (1:BlurException ex)
+
+  /**
+   * Returns the query status for the given table and query uuid.
+   * @return fetches the BlurQueryStatus for the given table and uuid.
+   */
+  BlurQueryStatus queryStatusById(
+    /** the table name. */
+    1:string table, 
+    /** the uuid of the query. */
+    2:i64 uuid
+  ) throws (1:BlurException ex)
+
+  /**
+   * Gets the terms list from the index for the given table, family, column using the 
+   * startWith value to page through the results.  This method only makes sense to use with 
+   * string and text field types.
+   * @return the list of terms for the given column.
+   */
+  list<string> terms(
+    /** the table name. */
+    1:string table, 
+    /** the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null. */
+    2:string columnFamily, 
+    /** the column name. */
+    3:string columnName,
+    /** the term to start with assuming that you paging through the term list. */
+    4:string startWith, 
+    /** the number to fetch at once. */
+    5:i16 size
+  ) throws (1:BlurException ex)
+
+  /**
+   * Gets the record frequency for the provided table, family, column and value.
+   * @return the count for the entire table.
+   */
+  i64 recordFrequency(
+    /** the table name. */
+    1:string table, 
+    /** the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null. */
+    2:string columnFamily, 
+    /** the column name. */
+    3:string columnName, 
+    /** the value. */
+    4:string value
+  ) throws (1:BlurException ex)
+
+  // Cluster methods
+
   /**
    * Returns a list of all the shard clusters.
    * @return list of all the shard clusters.
@@ -771,221 +1027,6 @@ service Blur {
     /** the table name. */
     1:string table
   ) throws (1:BlurException ex)
-
-  /**
-   * Returns a list of the table names across all shard clusters.
-   * @return list of all tables in all shard clusters.
-   */
-  list<string> tableList() throws (1:BlurException ex)
-
-  /**
-   * Returns a list of the table names for the given cluster.
-   * @return list of all the tables within the given shard cluster.
-   */
-  list<string> tableListByCluster(
-    /** the cluster name. */
-    1:string cluster
-  ) throws (1:BlurException ex)
-
-  /**
-   * Returns a table descriptor for the given table.
-   * @return the TableDescriptor.
-   */
-  TableDescriptor describe(
-    /** the table name. */
-    1:string table
-  ) throws (1:BlurException ex)
-
-  /**
-   * Executes a query against a the given table and returns the results.  If this method is 
-   * executed against a controller the results will contain the aggregated results from all 
-   * the shards.  If this method is executed against a shard server the results will only 
-   * contain aggregated results from the shards of the given table that are being served on 
-   * the shard server, if any.
-   * @return the BlurResults.
-   */
-  BlurResults query(
-    /** the table name. */
-    1:string table, 
-    /** the query to execute. */
-    2:BlurQuery blurQuery
-  ) throws (1:BlurException ex)
-
-  /**
-   * Parses the given query and return the string represents the query.
-   * @return string representation of the parsed query.
-   */
-  string parseQuery(
-    /** the table name. */
-    1:string table, 
-    /** the query to parse. */
-    2:SimpleQuery simpleQuery
-  ) throws (1:BlurException ex)
-
-  /**
-   * Cancels a query that is executing against the given table with the given uuid.  Note, the 
-   * cancel call maybe take some time for the query actually stops executing.
-   */
-  void cancelQuery(
-    /** the table name. */
-    1:string table, 
-    /** the uuid of the query. */
-    2:i64 uuid
-  ) throws (1:BlurException ex)
-
-  /**
-   * Returns a list of the query ids of queries that have recently been executed for the given table.
-   * @return list of all the uuids of the queries uuids.
-   */
-  list<i64> queryStatusIdList(
-    /** the table name. */
-    1:string table
-  ) throws (1:BlurException ex)
-
-  /**
-   * Returns the query status for the given table and query uuid.
-   * @return fetches the BlurQueryStatus for the given table and uuid.
-   */
-  BlurQueryStatus queryStatusById(
-    /** the table name. */
-    1:string table, 
-    /** the uuid of the query. */
-    2:i64 uuid
-  ) throws (1:BlurException ex)
-
-  /**
-   * Gets the schema for a given table.
-   * @return Schema.
-   */
-  Schema schema(
-    /** the table name. */
-    1:string table
-  ) throws (1:BlurException ex)
-
-  /**
-   * Gets the table stats for the given table.
-   * @return TableStats.
-   */
-  TableStats tableStats(
-    /** the table name. */
-    1:string table
-  ) throws (1:BlurException ex)
-
-  /**
-   * Gets the terms list from the index for the given table, family, column using the 
-   * startWith value to page through the results.  This method only makes sense to use with 
-   * string and text field types.
-   * @return the list of terms for the given column.
-   */
-  list<string> terms(
-    /** the table name. */
-    1:string table, 
-    /** the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null. */
-    2:string columnFamily, 
-    /** the column name. */
-    3:string columnName,
-    /** the term to start with assuming that you paging through the term list. */
-    4:string startWith, 
-    /** the number to fetch at once. */
-    5:i16 size
-  ) throws (1:BlurException ex)
-
-  /**
-   * Gets the record frequency for the provided table, family, column and value.
-   * @return the count for the entire table.
-   */
-  i64 recordFrequency(
-    /** the table name. */
-    1:string table, 
-    /** the column family. If the frequency requested is a system field like "rowid", "recordid", "family", etc then columnFamily can be null. */
-    2:string columnFamily, 
-    /** the column name. */
-    3:string columnName, 
-    /** the value. */
-    4:string value
-  ) throws (1:BlurException ex)
-
-  /**
-   * Fetches a Row or a Record in the given table with the given Selector.
-   * @return the FetchResult.
-   */
-  FetchResult fetchRow(
-    /** the table name. */
-    1:string table, 
-    /** the Selector to use to fetch the Row or Record. */
-    2:Selector selector
-  ) throws (1:BlurException ex)
-
-  /**
-   * Mutates a Row given the RowMutation the is provided.
-   */
-  void mutate(
-    /** the RowMutation.*/
-    1:RowMutation mutation
-  ) throws (1:BlurException ex)
-
-  /**
-   * Mutates a group of Rows given the list of RowMutations that are provided.  Note: This is not an atomic operation.
-   */
-  void mutateBatch(
-    /** the batch of RowMutations.*/
-    1:list<RowMutation> mutations
-  ) throws (1:BlurException ex)
-
-  /**
-   * Creates a table with the given TableDescriptor.
-   */
-  void createTable(
-    /** the TableDescriptor.  */
-    1:TableDescriptor tableDescriptor
-  ) throws (1:BlurException ex)
-
-  /**
-   * Enables the given table, blocking until all shards are online.
-   */
-  void enableTable(
-    /** the table name. */
-    1:string table
-  ) throws (1:BlurException ex)
-
-  /**
-   * Disables the given table, blocking until all shards are offline.
-   */
-  void disableTable(
-    /** the table name. */
-    1:string table
-  ) throws (1:BlurException ex)
-
-  /**
-   * Removes the given table, with an optional to delete the underlying index storage as well.
-   */
-  void removeTable(
-    /** the table name. */
-    1:string table, 
-    /** true to remove the index storage and false if to preserve.*/
-    2:bool deleteIndexFiles
-  ) throws (1:BlurException ex)
-
-  /**
-   * Attempts to add a column definition to the given table.
-   * @return true if successfully defined false if not.
-   */
-  bool addColumnDefinition(
-    /** the name of the table. */
-    1:string table, 
-    /** the ColumnDefinition. */
-    2:ColumnDefinition columnDefinition
-  ) throws (1:BlurException ex)
-
-  /**
-   * Will perform a forced optimize on the index in the given table.
-   */
-  void optimize(
-    /** table the name of the table. */
-    1:string table, 
-    /** the maximum of segments per shard index after the operation is completed. */
-    2:i32 numberOfSegmentsPerShard
-  ) throws (1:BlurException ex)
   
   /**
    * Checks to see if the given cluster is in safemode.
@@ -1011,20 +1052,6 @@ service Blur {
     1:set<string> metrics
   ) throws (1:BlurException ex)
 
-  /**
-   * Creates a snapshot for the table with the given name
-   */
-  void createSnapshot(1:string table, 2:string name) throws (1:BlurException ex)
-  
-  /**
-   * Removes a previous snapshot(identified by name) of the table
-   */
-  void removeSnapshot(1:string table, 2:string name) throws (1:BlurException ex)
-  
-  /**
-   * Returns a map where the key is the shard, and the list is the snapshots within that shard
-   */
-  map<string,list<string>> listSnapshots(1:string table) throws (1:BlurException ex)
 }
 
 

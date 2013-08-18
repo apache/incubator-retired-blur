@@ -31,8 +31,10 @@ import java.util.HashMap;
 import org.apache.blur.thirdparty.thrift_0_9_0.TEnum;
 
 /**
- * NOT_FOUND - when UUID is not found<br/><br/>
- * FOUND - when UUID is present<br/>
+ * <table class="table-bordered table-striped table-condensed">
+ * <tr><td>NOT_FOUND</td><td>Blur status UUID is not found.</td></tr>
+ * <tr><td>FOUND</td><td>Blur status UUID is present.</td></tr>
+ * </table>
  */
 public enum Status implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
   NOT_FOUND(0),

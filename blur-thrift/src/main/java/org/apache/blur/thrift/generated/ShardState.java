@@ -31,7 +31,15 @@ import java.util.HashMap;
 import org.apache.blur.thirdparty.thrift_0_9_0.TEnum;
 
 /**
- * See shardServerLayoutOptions method in the Blur service for details.
+ * <table class="table-bordered table-striped table-condensed">
+ * <tr><td colspan="2">The shard state, see shardServerLayoutOptions method in the Blur service for details.</td></tr>
+ * <tr><td>OPENING</td><td>The shard is opening.</td></tr>
+ * <tr><td>OPEN</td><td>The shard is open.</td></tr>
+ * <tr><td>OPENING_ERROR</td><td>An error during the opening of the shard.</td></tr>
+ * <tr><td>CLOSING</td><td>In the process of closing.</td></tr>
+ * <tr><td>CLOSED</td><td>The shard is closed.</td></tr>
+ * <tr><td>CLOSING_ERROR</td><td>An error during the closing of the shard.</td></tr>
+ * </table>
  */
 public enum ShardState implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
   OPENING(0),

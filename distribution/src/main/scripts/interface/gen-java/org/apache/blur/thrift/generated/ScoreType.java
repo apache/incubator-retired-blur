@@ -31,11 +31,13 @@ import java.util.HashMap;
 import org.apache.blur.thirdparty.thrift_0_9_0.TEnum;
 
 /**
- * The scoring type used during a SuperQuery to score multi Record hits within a ColumnFamily.<br/><br/>
- * SUPER - During a multi Record match, a calculation of the best match Record plus how often it occurs within the match Row produces the score that is used in the scoring of the SuperQuery.<br/><br/>
- * AGGREGATE - During a multi Record match, the aggregate score of all the Records within a ColumnFamily is used in the scoring of the SuperQuery.<br/><br/>
- * BEST - During a multi Record match, the best score of all the Records within a ColumnFamily is used in the scoring of the SuperQuery.<br/><br/>
- * CONSTANT - A constant score of 1 is used in the scoring of the SuperQuery.<br/>
+ * <table class="table-bordered table-striped table-condensed">
+ * <tr><td colspan="2">The scoring type used during a SuperQuery to score multi Record hits within a ColumnFamily.</td></tr>
+ * <tr><td>SUPER</td><td>During a multi Record match, a calculation of the best match Record plus how often it occurs within the match Row produces the score that is used in the scoring of the SuperQuery.</td></tr>
+ * <tr><td>AGGREGATE</td><td>During a multi Record match, the aggregate score of all the Records within a ColumnFamily is used in the scoring of the SuperQuery.</td></tr>
+ * <tr><td>BEST</td><td>During a multi Record match, the best score of all the Records within a ColumnFamily is used in the scoring of the SuperQuery.</td></tr>
+ * <tr><td>CONSTANT</td><td>A constant score of 1 is used in the scoring of the SuperQuery.</td></tr>
+ * </table>
  */
 public enum ScoreType implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
   SUPER(0),

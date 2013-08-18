@@ -31,10 +31,12 @@ import java.util.HashMap;
 import org.apache.blur.thirdparty.thrift_0_9_0.TEnum;
 
 /**
- * The state of a query.<br/><br/>
- * RUNNING - Query is running.<br/><br/>
- * INTERRUPTED - Query has been interrupted.<br/><br/>
- * COMPLETE - Query is complete.<br/>
+ * <table class="table-bordered table-striped table-condensed">
+ * <tr><td colspan="2">The state of a query.</td></tr>
+ * <tr><td>RUNNING</td><td>Query is running.</td></tr>
+ * <tr><td>INTERRUPTED</td><td>Query has been interrupted.</td></tr>
+ * <tr><td>COMPLETE</td><td>Query is complete.</td></tr>
+ * </table>
  */
 public enum QueryState implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
   RUNNING(0),

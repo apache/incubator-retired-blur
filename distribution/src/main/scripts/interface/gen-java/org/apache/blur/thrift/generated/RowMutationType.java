@@ -31,10 +31,12 @@ import java.util.HashMap;
 import org.apache.blur.thirdparty.thrift_0_9_0.TEnum;
 
 /**
- * Specifies the type of Row mutation that should occur during a mutation of a given Row.<br/><br/>
- * DELETE_ROW - Indicates that the entire Row is to be deleted.  No changes are made if the specified row does not exist.<br/><br/>
- * REPLACE_ROW - Indicates that the entire Row is to be deleted, and then a new Row with the same id is to be added.  If the specified row does not exist, the new row will still be created.<br/><br/>
- * UPDATE_ROW - Indicates that mutations of the underlying Records will be processed individually.  Mutation will result in a BlurException if the specified row does not exist.<br/>
+ * <table class="table-bordered table-striped table-condensed">
+ * <tr><td colspan="2">Specifies the type of Row mutation that should occur during a mutation of a given Row.</td></tr>
+ * <tr><td>DELETE_ROW</td><td>Indicates that the entire Row is to be deleted.  No changes are made if the specified row does not exist.</td></tr>
+ * <tr><td>REPLACE_ROW</td><td>Indicates that the entire Row is to be deleted, and then a new Row with the same id is to be added.  If the specified row does not exist, the new row will still be created.</td></tr>
+ * <tr><td>UPDATE_ROW</td><td>Indicates that mutations of the underlying Records will be processed individually.  Mutation will result in a BlurException if the specified row does not exist.</td></tr>
+ * </table>
  */
 public enum RowMutationType implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
   DELETE_ROW(0),

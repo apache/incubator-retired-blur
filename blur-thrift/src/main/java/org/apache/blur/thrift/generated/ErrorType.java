@@ -31,12 +31,14 @@ import java.util.HashMap;
 import org.apache.blur.thirdparty.thrift_0_9_0.TEnum;
 
 /**
- * The error type of a BlurException.<br/><br/>
- * UNKNOWN - Unknown error.<br/><br/>
- * QUERY_CANCEL - Query has been cancel.<br/><br/>
- * QUERY_TIMEOUT - Query has timed out.<br/><br/>
- * BACK_PRESSURE - Server has run out of memory and is trying to prevent a failure.<br/><br/>
- * REQUEST_TIMEOUT - The TCP connection has timed out.<br/>
+ * <table class="table-bordered table-striped table-condensed">
+ * <tr><td colspan="2">The error type of a BlurException.</td></tr>
+ * <tr><td>UNKNOWN</td><td>Unknown error.</td></tr>
+ * <tr><td>QUERY_CANCEL</td><td>Query has been cancel.</td></tr>
+ * <tr><td>QUERY_TIMEOUT</td><td>Query has timed out.</td></tr>
+ * <tr><td>BACK_PRESSURE</td><td>Server has run out of memory and is trying to prevent a failure.</td></tr>
+ * <tr><td>REQUEST_TIMEOUT</td><td>The TCP connection has timed out.</td></tr>
+ * </table>
  */
 public enum ErrorType implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
   UNKNOWN(0),

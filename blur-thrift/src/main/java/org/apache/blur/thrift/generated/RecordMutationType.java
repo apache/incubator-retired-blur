@@ -31,11 +31,13 @@ import java.util.HashMap;
 import org.apache.blur.thirdparty.thrift_0_9_0.TEnum;
 
 /**
- * Specifies the type of Record mutation that should occur during a mutation of a given Record.<br/><br/>
- * DELETE_ENTIRE_RECORD -  Indicates the Record with the given recordId in the given Row is to be deleted.  If the target record does not exist, then no changes are made.<br/><br/>
- * REPLACE_ENTIRE_RECORD - Indicates the Record with the given recordId in the given Row is to be deleted, and a new Record with the same id is to be added. If the specified record does not exist the new record is still added.<br/><br/>
- * REPLACE_COLUMNS - Replace the columns that are specified in the Record mutation.  If the target record does not exist then this mutation will result in a BlurException.<br/><br/>
- * APPEND_COLUMN_VALUES - Append the columns in the Record mutation to the Record that could already exist.  If the target record does not exist then this mutation will result in a BlurException.<br/>
+ * <table class="table-bordered table-striped table-condensed">
+ * <tr><td colspan="2">Specifies the type of Record mutation that should occur during a mutation of a given Record.</td></tr>
+ * <tr><td>DELETE_ENTIRE_RECORD</td><td>Indicates the Record with the given recordId in the given Row is to be deleted.  If the target record does not exist, then no changes are made.</td></tr>
+ * <tr><td>REPLACE_ENTIRE_RECORD</td><td>Indicates the Record with the given recordId in the given Row is to be deleted, and a new Record with the same id is to be added. If the specified record does not exist the new record is still added.</td></tr>
+ * <tr><td>REPLACE_COLUMNS</td><td>Replace the columns that are specified in the Record mutation.  If the target record does not exist then this mutation will result in a BlurException.</td></tr>
+ * <tr><td>APPEND_COLUMN_VALUES</td><td>Append the columns in the Record mutation to the Record that could already exist.  If the target record does not exist then this mutation will result in a BlurException.</td></tr>
+ * </table>
  */
 public enum RecordMutationType implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
   DELETE_ENTIRE_RECORD(0),

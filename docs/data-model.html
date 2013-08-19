@@ -163,6 +163,7 @@
 				<p>
 				All queries can have boolean logic like:
 				<pre><code class="json">+docs.body:hadoop +docs.author:jon</code></pre>
+                        </p><p>
 				Which is the same as:
 				<pre><code class="json">docs.body:hadoop AND docs.author:jon</code></pre>
 				</p>
@@ -238,34 +239,168 @@ To run a query to find all the rows that contain a column with a starting value 
 <pre><code class="json">docs.id:[12345 TO 54321]</code></pre>
 </p>
               <h3 id="spatial_query">Spatial</h3>
-              <p>TODO</p>
+<p>
+Spatial queries are supported through the Lucene spatial module.  There are currently three 
+different types of stragies:
+<ul>
+<li>Point Vector</li>
+<li>Term Query Prefix Tree</li>
+<li>Recursive Prefix Tree</li>
+</ul>
+Currently all of the built in spatial types are using a GEO spatial context, meaning the assumed
+cooridates are on the planet Earth.  Each of these strategies support different indexing features
+such as the shapes they can index, the shapes they can query with, and the operations they 
+support during the query.  See the type section below to get a list of supported operations and
+shapes per strategy. 
+</p>
+<h4>Examples:</h4>
+<p>
+To run a query to find all the rows that contain a location within 10 km (0.089932 10 km in degrees) of gis coordinate &quot;33.0, -88.0&quot; where the family is &quot;docs&quot; and the column is &quot;location&quot;.
+<pre><code class="json">docs.location:"Intersects(Circle(33.0, -88.0 d=0.089932))"</code></pre>
+</p>
             </div>
           </section>
           <section>
             <div class="page-header">
               <h1 id="types">Types</h1>
               <h3 id="text_type">Text</h3>
-              <p>TODO</p>
+              <p>
+              The Text Type has the type name of:
+<pre><code class="json">text</code></pre>
+              <h5>Property Options:</h5>
+              <ul>
+              <li>None</li>
+              </ul>
+		  </p>
               <h3 id="string_type">String</h3>
-              <p>TODO</p>
+              <p>
+              The String Type has the type name of:
+<pre><code class="json">string</code></pre>
+              <h5>Property Options:</h5>
+              <ul>
+              <li>None</li>
+              </ul>
+		  </p>
               <h3 id="long_type">Long</h3>
-              <p>TODO</p>
+              <p>
+              The Long Type has the type name of:
+<pre><code class="json">long</code></pre>
+              <h5>Property Options:</h5>
+              <ul>
+              <li>&quot;numericPrecisionStep&quot; -Optional- default value is &quot;4&quot;</li>
+              </ul>
+		  </p>
               <h3 id="int_type">Integer</h3>
-              <p>TODO</p>
+              <p>
+              The Integer Type has the type name of:
+<pre><code class="json">int</code></pre>
+              <h5>Property Options:</h5>
+              <ul>
+              <li>&quot;numericPrecisionStep&quot; -Optional- default value is &quot;4&quot;</li>
+              </ul>
+		  </p>
               <h3 id="float_type">Float</h3>
-              <p>TODO</p>
+              <p>
+              The Float Type has the type name of:
+<pre><code class="json">float</code></pre>
+              <h5>Property Options:</h5>
+              <ul>
+              <li>&quot;numericPrecisionStep&quot; -Optional- default value is &quot;4&quot;</li>
+              </ul>
+		  </p>
               <h3 id="double_type">Double</h3>
-              <p>TODO</p>
+              <p>
+              The Double Type has the type name of:
+<pre><code class="json">double</code></pre>
+              <h5>Property Options:</h5>
+              <ul>
+              <li>&quot;numericPrecisionStep&quot; -Optional- default value is &quot;4&quot;</li>
+              </ul>
+		  </p>
               <h3 id="stored_type">Stored</h3>
-              <p>TODO</p>
+              <p>
+              The Stored Type has the type name of:
+<pre><code class="json">stored</code></pre>
+              <h5>Property Options:</h5>
+              <ul>
+              <li>None</li>
+              </ul>
+		  </p>
               <h3 id="spatial_type">Spatial</h3>
-              <p>TODO</p>
+              <p></p>
               <h4 id="spatial_pointvector">Point Vector</h4>
-              <p>TODO</p>
+              <p>
+              The Point Vector Spatial Type has the type name of:
+<pre><code class="json">geo-pointvector</code></pre>
+              <h5>Property Options:</h5>
+              <ul>
+              <li>None</li>
+              </ul>
+              <h5>Supported Indexing Shapes:</h5>
+              <ul>
+              <li>Point</li>
+              </ul>
+              <h5>Supported Querying Shapes:</h5>
+              <ul>
+              <li>Circle</li>
+              <li>Rectangle</li>
+              </ul>
+              <h5>Supported Querying Operations:</h5>
+              <ul>
+              <li>Intersects</li>
+              </ul>
+              </p>
               <h4 id="spatial_termprefix">Term Prefix</h4>
-              <p>TODO</p>
+              <p>
+              The Term Prefix Spatial Type has the type name of:
+<pre><code class="json">geo-termprefix</code></pre>
+              <h5>Property Options:</h5>
+              <ul>
+              <li>&quot;spatialPrefixTree&quot; can either equal to &quot;GeohashPrefixTree&quot; or &quot;QuadPrefixTree&quot;</li>
+              <li>&quot;maxLevels&quot; -Optional- default value is &quot;11&quot;</li>
+              </ul>
+              <h5>Supported Indexing Shapes:</h5>
+              <ul>
+              <li>Point</li>
+              </ul>
+              <h5>Supported Querying Shapes:</h5>
+              <ul>
+              <li>Circle</li>
+              <li>Rectangle</li>
+              </ul>
+              <h5>Supported Querying Operations:</h5>
+              <ul>
+              <li>Intersects</li>
+              </ul>
+              </p>
               <h4 id="spatial_recursiveprefix">Recursive Prefix</h4>
-              <p>TODO</p>
+              <p>
+              The Term Prefix Spatial Type has the type name of:
+<pre><code class="json">geo-recursiveprefix</code></pre>
+              <h5>Property Options:</h5>
+              <ul>
+              <li>&quot;spatialPrefixTree&quot; can either equal to &quot;GeohashPrefixTree&quot; or &quot;QuadPrefixTree&quot;</li>
+              <li>&quot;maxLevels&quot; -Optional- default value is &quot;11&quot;</li>
+              </ul>
+              <h5>Supported Indexing Shapes:</h5>
+              <ul>
+              <li>Point</li>
+              <li>Circle</li>
+              <li>Rectangle</li>
+              </ul>
+              <h5>Supported Querying Shapes:</h5>
+              <ul>
+              <li>Circle</li>
+              <li>Rectangle</li>
+              </ul>
+              <h5>Supported Querying Operations:</h5>
+              <ul>
+              <li>IsDisjointTo</li>
+              <li>Intersects</li>
+              <li>IsWithin</li>
+              <li>Contains</li>
+              </ul>
+              </p>
             </div>
           </section>
         </div>

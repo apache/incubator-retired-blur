@@ -133,7 +133,7 @@ public class BlurClusterTest {
     System.out.println("mutateBatch took [" + (e - s) / 1000000.0 + "]");
     BlurQuery blurQueryRow = new BlurQuery();
     SimpleQuery simpleQueryRow = new SimpleQuery();
-    simpleQueryRow.setQueryStr("test.test:value");
+    simpleQueryRow.setQuery("test.test:value");
     blurQueryRow.setSimpleQuery(simpleQueryRow);
     blurQueryRow.setUseCacheIfPresent(false);
     blurQueryRow.setCacheResult(false);
@@ -143,8 +143,8 @@ public class BlurClusterTest {
 
     BlurQuery blurQueryRecord = new BlurQuery();
     SimpleQuery simpleQueryRecord = new SimpleQuery();
-    simpleQueryRecord.superQueryOn = false;
-    simpleQueryRecord.setQueryStr("test.test:value");
+    simpleQueryRecord.rowQuery = false;
+    simpleQueryRecord.setQuery("test.test:value");
     blurQueryRecord.setSimpleQuery(simpleQueryRecord);
     BlurResults resultsRecord = client.query("test", blurQueryRecord);
     assertRecordResults(resultsRecord);
@@ -160,7 +160,7 @@ public class BlurClusterTest {
     final Iface client = getClient();
     final BlurQuery blurQueryRow = new BlurQuery();
     SimpleQuery simpleQueryRow = new SimpleQuery();
-    simpleQueryRow.setQueryStr("test.test:value");
+    simpleQueryRow.setQuery("test.test:value");
     blurQueryRow.setSimpleQuery(simpleQueryRow);
     blurQueryRow.setUseCacheIfPresent(false);
     blurQueryRow.setCacheResult(false);
@@ -209,7 +209,7 @@ public class BlurClusterTest {
     final Iface client = getClient();
     final BlurQuery blurQueryRow = new BlurQuery();
     SimpleQuery simpleQueryRow = new SimpleQuery();
-    simpleQueryRow.setQueryStr("test.test:value");
+    simpleQueryRow.setQuery("test.test:value");
     blurQueryRow.setSimpleQuery(simpleQueryRow);
     blurQueryRow.setUseCacheIfPresent(false);
     blurQueryRow.setCacheResult(false);
@@ -284,7 +284,7 @@ public class BlurClusterTest {
     BlurQuery blurQuery = new BlurQuery();
     blurQuery.setUseCacheIfPresent(false);
     SimpleQuery simpleQuery = new SimpleQuery();
-    simpleQuery.setQueryStr("test.test:value");
+    simpleQuery.setQuery("test.test:value");
     blurQuery.setSimpleQuery(simpleQuery);
     BlurResults results1 = client.query("test", blurQuery);
     assertEquals(length, results1.getTotalResults());

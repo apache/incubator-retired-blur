@@ -39,7 +39,7 @@ public class SimpleQueryExample {
     final BlurQuery blurQuery = new BlurQuery();
     SimpleQuery simpleQuery = new SimpleQuery();
     blurQuery.setSimpleQuery(simpleQuery);
-    simpleQuery.setQueryStr(query);
+    simpleQuery.setQuery(query);
     BlurResults results = client.query(tableName, blurQuery);
     System.out.println("Total Results: " + results.totalResults);
 

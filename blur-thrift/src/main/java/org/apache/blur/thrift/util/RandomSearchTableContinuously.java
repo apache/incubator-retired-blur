@@ -87,7 +87,7 @@ public class RandomSearchTableContinuously {
       String query = generateQuery(builder, random, sampleOfTerms, numberOfTermsPerQuery);
       final BlurQuery blurQuery = new BlurQuery();
       blurQuery.simpleQuery = new SimpleQuery();
-      blurQuery.simpleQuery.queryStr = query;
+      blurQuery.simpleQuery.query = query;
       blurQuery.cacheResult = false;
       blurQuery.selector = new Selector();
       long qs = System.nanoTime();
@@ -103,8 +103,8 @@ public class RandomSearchTableContinuously {
   private static long getCount(Iface client, String tableName) throws BlurException, TException {
     BlurQuery bq = new BlurQuery();
     bq.simpleQuery = new SimpleQuery();
-    bq.simpleQuery.queryStr = "*";
-    bq.simpleQuery.superQueryOn = false;
+    bq.simpleQuery.query = "*";
+    bq.simpleQuery.rowQuery = false;
     bq.cacheResult = false;
     bq.useCacheIfPresent = false;
     BlurResults results = client.query(tableName, bq);

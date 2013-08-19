@@ -214,17 +214,21 @@ through records of a row, this count will reflect the entire row.
 </table><br/>Rows contain a list of records.
 <br/></div><div class="definition"><h3 id="Struct_SimpleQuery">Struct: SimpleQuery</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>queryStr</td><td><code>string</code></td><td>A Lucene syntax based query.
+<tr><td>1</td><td>query</td><td><code>string</code></td><td>A Lucene syntax based query.
 </td><td>default</td><td></td></tr>
-<tr><td>2</td><td>superQueryOn</td><td><code>bool</code></td><td>If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
+<tr><td>2</td><td>rowQuery</td><td><code>bool</code></td><td>If the Row query is on, meaning the query will be perform against all the
+Records (joining records in some cases) and the result will be Rows (groupings of Record).
 </td><td>default</td><td>1</td></tr>
-<tr><td>3</td><td>type</td><td><code><a href="Blur.html#Enum_ScoreType">ScoreType</a></code></td><td>The scoring type, see the document on ScoreType for explanation of each score type.
+<tr><td>3</td><td>scoreType</td><td><code><a href="Blur.html#Enum_ScoreType">ScoreType</a></code></td><td>The scoring type, see the document on ScoreType for explanation of each score type.
 </td><td>default</td><td>UNKNOWN</td></tr>
-<tr><td>4</td><td>postSuperFilter</td><td><code>string</code></td><td>The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
+<tr><td>4</td><td>rowFilter</td><td><code>string</code></td><td>The Row filter (normal Lucene syntax), is a filter performed
+after the join to filter out entire Rows from the results.
 </td><td>default</td><td></td></tr>
-<tr><td>5</td><td>preSuperFilter</td><td><code>string</code></td><td>The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
+<tr><td>5</td><td>recordFilter</td><td><code>string</code></td><td>The Record filter (normal Lucene syntax), is a filter performed
+before the join to filter out Records from the results.
 </td><td>default</td><td></td></tr>
-</table><br/>The SimpleQuery object holds the query string (normal Lucene syntax), filters and type of scoring (used when super query is on).
+</table><br/>The SimpleQuery object holds the query string (normal Lucene syntax),
+filters and type of scoring (used when super query is on).
 <br/></div><div class="definition"><h3 id="Struct_HighlightOptions">Struct: HighlightOptions</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>simpleQuery</td><td><code><a href="Blur.html#Struct_SimpleQuery">SimpleQuery</a></code></td><td>The original query is required if used in the Blur.fetchRow call.  If

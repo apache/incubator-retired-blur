@@ -44,7 +44,7 @@ public class SimpleAsyncQueryExample {
     final BlurQuery blurQuery = new BlurQuery();
     SimpleQuery simpleQuery = new SimpleQuery();
     blurQuery.setSimpleQuery(simpleQuery);
-    simpleQuery.setQueryStr(query);
+    simpleQuery.setQuery(query);
 
     asyncIface.query(tableName, blurQuery, new AsyncMethodCallback<Blur.AsyncClient.query_call>() {
       @Override

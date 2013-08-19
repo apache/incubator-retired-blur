@@ -280,12 +280,12 @@ public class IndexManager {
     }
 
     TableContext context = getTableContext(table);
-    Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.preSuperFilter, false, fieldManager,
+    Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.recordFilter, false, fieldManager,
         _filterCache, context);
-    Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, fieldManager,
+    Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.rowFilter, true, fieldManager,
         _filterCache, context);
-    return QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, fieldManager, postFilter,
-        preFilter, getScoreType(simpleQuery.type), context);
+    return QueryParserUtil.parseQuery(simpleQuery.query, simpleQuery.rowQuery, fieldManager, postFilter,
+        preFilter, getScoreType(simpleQuery.scoreType), context);
   }
 
   private void populateSelector(String table, Selector selector) throws IOException, BlurException {
@@ -391,12 +391,12 @@ public class IndexManager {
       TableContext context = getTableContext(table);
       FieldManager fieldManager = context.getFieldManager();
       SimpleQuery simpleQuery = blurQuery.simpleQuery;
-      Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.preSuperFilter, false, fieldManager,
+      Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.recordFilter, false, fieldManager,
           _filterCache, context);
-      Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, fieldManager,
+      Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.rowFilter, true, fieldManager,
           _filterCache, context);
-      Query userQuery = QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, fieldManager,
-          postFilter, preFilter, getScoreType(simpleQuery.type), context);
+      Query userQuery = QueryParserUtil.parseQuery(simpleQuery.query, simpleQuery.rowQuery, fieldManager,
+          postFilter, preFilter, getScoreType(simpleQuery.scoreType), context);
       Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, fieldManager, context, postFilter,
           preFilter);
       call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
@@ -434,12 +434,12 @@ public class IndexManager {
   public String parseQuery(String table, SimpleQuery simpleQuery) throws ParseException, BlurException {
     TableContext context = getTableContext(table);
     FieldManager fieldManager = context.getFieldManager();
-    Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.preSuperFilter, false, fieldManager,
+    Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.recordFilter, false, fieldManager,
         _filterCache, context);
-    Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, fieldManager,
+    Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.rowFilter, true, fieldManager,
         _filterCache, context);
-    Query userQuery = QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, fieldManager,
-        postFilter, preFilter, getScoreType(simpleQuery.type), context);
+    Query userQuery = QueryParserUtil.parseQuery(simpleQuery.query, simpleQuery.rowQuery, fieldManager,
+        postFilter, preFilter, getScoreType(simpleQuery.scoreType), context);
     return userQuery.toString();
   }
 
@@ -460,7 +460,7 @@ public class IndexManager {
     int size = blurQuery.facets.size();
     Query[] queries = new Query[size];
     for (int i = 0; i < size; i++) {
-      queries[i] = QueryParserUtil.parseQuery(blurQuery.facets.get(i).queryStr, blurQuery.simpleQuery.superQueryOn,
+      queries[i] = QueryParserUtil.parseQuery(blurQuery.facets.get(i).queryStr, blurQuery.simpleQuery.rowQuery,
           fieldManager, postFilter, preFilter, ScoreType.CONSTANT, context);
     }
     return queries;

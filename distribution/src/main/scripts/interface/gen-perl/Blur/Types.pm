@@ -451,32 +451,32 @@ sub write {
 
 package Blur::SimpleQuery;
 use base qw(Class::Accessor);
-Blur::SimpleQuery->mk_accessors( qw( queryStr superQueryOn type postSuperFilter preSuperFilter ) );
+Blur::SimpleQuery->mk_accessors( qw( query rowQuery scoreType rowFilter recordFilter ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{queryStr} = undef;
-  $self->{superQueryOn} = 1;
-  $self->{type} = 0;
-  $self->{postSuperFilter} = undef;
-  $self->{preSuperFilter} = undef;
+  $self->{query} = undef;
+  $self->{rowQuery} = 1;
+  $self->{scoreType} = 0;
+  $self->{rowFilter} = undef;
+  $self->{recordFilter} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{queryStr}) {
-      $self->{queryStr} = $vals->{queryStr};
+    if (defined $vals->{query}) {
+      $self->{query} = $vals->{query};
     }
-    if (defined $vals->{superQueryOn}) {
-      $self->{superQueryOn} = $vals->{superQueryOn};
+    if (defined $vals->{rowQuery}) {
+      $self->{rowQuery} = $vals->{rowQuery};
     }
-    if (defined $vals->{type}) {
-      $self->{type} = $vals->{type};
+    if (defined $vals->{scoreType}) {
+      $self->{scoreType} = $vals->{scoreType};
     }
-    if (defined $vals->{postSuperFilter}) {
-      $self->{postSuperFilter} = $vals->{postSuperFilter};
+    if (defined $vals->{rowFilter}) {
+      $self->{rowFilter} = $vals->{rowFilter};
     }
-    if (defined $vals->{preSuperFilter}) {
-      $self->{preSuperFilter} = $vals->{preSuperFilter};
+    if (defined $vals->{recordFilter}) {
+      $self->{recordFilter} = $vals->{recordFilter};
     }
   }
   return bless ($self, $classname);
@@ -502,31 +502,31 @@ sub read {
     SWITCH: for($fid)
     {
       /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{queryStr});
+        $xfer += $input->readString(\$self->{query});
       } else {
         $xfer += $input->skip($ftype);
       }
       last; };
       /^2$/ && do{      if ($ftype == TType::BOOL) {
-        $xfer += $input->readBool(\$self->{superQueryOn});
+        $xfer += $input->readBool(\$self->{rowQuery});
       } else {
         $xfer += $input->skip($ftype);
       }
       last; };
       /^3$/ && do{      if ($ftype == TType::I32) {
-        $xfer += $input->readI32(\$self->{type});
+        $xfer += $input->readI32(\$self->{scoreType});
       } else {
         $xfer += $input->skip($ftype);
       }
       last; };
       /^4$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{postSuperFilter});
+        $xfer += $input->readString(\$self->{rowFilter});
       } else {
         $xfer += $input->skip($ftype);
       }
       last; };
       /^5$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{preSuperFilter});
+        $xfer += $input->readString(\$self->{recordFilter});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -543,29 +543,29 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('SimpleQuery');
-  if (defined $self->{queryStr}) {
-    $xfer += $output->writeFieldBegin('queryStr', TType::STRING, 1);
-    $xfer += $output->writeString($self->{queryStr});
+  if (defined $self->{query}) {
+    $xfer += $output->writeFieldBegin('query', TType::STRING, 1);
+    $xfer += $output->writeString($self->{query});
     $xfer += $output->writeFieldEnd();
   }
-  if (defined $self->{superQueryOn}) {
-    $xfer += $output->writeFieldBegin('superQueryOn', TType::BOOL, 2);
-    $xfer += $output->writeBool($self->{superQueryOn});
+  if (defined $self->{rowQuery}) {
+    $xfer += $output->writeFieldBegin('rowQuery', TType::BOOL, 2);
+    $xfer += $output->writeBool($self->{rowQuery});
     $xfer += $output->writeFieldEnd();
   }
-  if (defined $self->{type}) {
-    $xfer += $output->writeFieldBegin('type', TType::I32, 3);
-    $xfer += $output->writeI32($self->{type});
+  if (defined $self->{scoreType}) {
+    $xfer += $output->writeFieldBegin('scoreType', TType::I32, 3);
+    $xfer += $output->writeI32($self->{scoreType});
     $xfer += $output->writeFieldEnd();
   }
-  if (defined $self->{postSuperFilter}) {
-    $xfer += $output->writeFieldBegin('postSuperFilter', TType::STRING, 4);
-    $xfer += $output->writeString($self->{postSuperFilter});
+  if (defined $self->{rowFilter}) {
+    $xfer += $output->writeFieldBegin('rowFilter', TType::STRING, 4);
+    $xfer += $output->writeString($self->{rowFilter});
     $xfer += $output->writeFieldEnd();
   }
-  if (defined $self->{preSuperFilter}) {
-    $xfer += $output->writeFieldBegin('preSuperFilter', TType::STRING, 5);
-    $xfer += $output->writeString($self->{preSuperFilter});
+  if (defined $self->{recordFilter}) {
+    $xfer += $output->writeFieldBegin('recordFilter', TType::STRING, 5);
+    $xfer += $output->writeString($self->{recordFilter});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

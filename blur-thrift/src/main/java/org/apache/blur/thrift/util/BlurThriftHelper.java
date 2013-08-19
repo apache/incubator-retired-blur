@@ -40,7 +40,7 @@ public class BlurThriftHelper {
   public static BlurQuery newSimpleQuery(String query) {
     BlurQuery blurQuery = new BlurQuery();
     SimpleQuery simpleQuery = new SimpleQuery();
-    simpleQuery.setQueryStr(query);
+    simpleQuery.setQuery(query);
     blurQuery.setSimpleQuery(simpleQuery);
     blurQuery.setSelector(new Selector());
     return blurQuery;

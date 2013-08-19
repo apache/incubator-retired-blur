@@ -181,8 +181,8 @@ public class CreateInsertQueryRepeating {
   private static long hits(Iface client, String table, String queryStr, boolean superQuery) throws BlurException, TException {
     BlurQuery bq = new BlurQuery();
     SimpleQuery sq = new SimpleQuery();
-    sq.queryStr = queryStr;
-    sq.superQueryOn = superQuery;
+    sq.query = queryStr;
+    sq.rowQuery = superQuery;
     bq.simpleQuery = sq;
     BlurResults query = client.query(table, bq);
     return query.totalResults;
@@ -195,8 +195,8 @@ public class CreateInsertQueryRepeating {
     bq.fetch = 10;
     for (int i = 1; i <= times; i++) {
       SimpleQuery sq = new SimpleQuery();
-      sq.queryStr = "numberField:" + random.nextInt(1000);
-      sq.superQueryOn = true;
+      sq.query = "numberField:" + random.nextInt(1000);
+      sq.rowQuery = true;
       bq.simpleQuery = sq;
       client.query(table, bq);
       if (i % 1000 == 0) {

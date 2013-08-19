@@ -318,7 +318,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           selector = new Selector();
           selector.setColumnFamiliesToFetch(EMPTY_LIST);
           selector.setColumnsToFetch(EMPTY_MAP);
-          if (!blurQuery.simpleQuery.superQueryOn) {
+          if (!blurQuery.simpleQuery.rowQuery) {
             selector.setRecordOnly(true);
           }
         } else {

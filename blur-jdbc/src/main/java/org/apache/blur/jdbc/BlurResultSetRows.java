@@ -86,8 +86,8 @@ public class BlurResultSetRows extends AbstractBlurResultSet {
     blurQuery.fetch = fetch;
     blurQuery.start = start;
     blurQuery.simpleQuery = new SimpleQuery();
-    blurQuery.simpleQuery.queryStr = parser.getWhere();
-    blurQuery.simpleQuery.superQueryOn = true;
+    blurQuery.simpleQuery.query = parser.getWhere();
+    blurQuery.simpleQuery.rowQuery = true;
 
     try {
       schema = client.schema(tableName);
@@ -101,7 +101,7 @@ public class BlurResultSetRows extends AbstractBlurResultSet {
 
     selector = new Selector();
     setupSelector(selector, schema, columnNames);
-    selector.recordOnly = !blurQuery.simpleQuery.superQueryOn;
+    selector.recordOnly = !blurQuery.simpleQuery.rowQuery;
     blurResultSetMetaData = new BlurResultSetMetaData(columnNames, schema.getFamilies());
     try {
       results = client.query(tableName, blurQuery);

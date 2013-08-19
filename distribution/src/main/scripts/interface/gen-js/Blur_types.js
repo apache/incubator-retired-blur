@@ -406,26 +406,26 @@ Row.prototype.write = function(output) {
 };
 
 SimpleQuery = function(args) {
-  this.queryStr = null;
-  this.superQueryOn = true;
-  this.type = 0;
-  this.postSuperFilter = null;
-  this.preSuperFilter = null;
+  this.query = null;
+  this.rowQuery = true;
+  this.scoreType = 0;
+  this.rowFilter = null;
+  this.recordFilter = null;
   if (args) {
-    if (args.queryStr !== undefined) {
-      this.queryStr = args.queryStr;
+    if (args.query !== undefined) {
+      this.query = args.query;
     }
-    if (args.superQueryOn !== undefined) {
-      this.superQueryOn = args.superQueryOn;
+    if (args.rowQuery !== undefined) {
+      this.rowQuery = args.rowQuery;
     }
-    if (args.type !== undefined) {
-      this.type = args.type;
+    if (args.scoreType !== undefined) {
+      this.scoreType = args.scoreType;
     }
-    if (args.postSuperFilter !== undefined) {
-      this.postSuperFilter = args.postSuperFilter;
+    if (args.rowFilter !== undefined) {
+      this.rowFilter = args.rowFilter;
     }
-    if (args.preSuperFilter !== undefined) {
-      this.preSuperFilter = args.preSuperFilter;
+    if (args.recordFilter !== undefined) {
+      this.recordFilter = args.recordFilter;
     }
   }
 };
@@ -445,35 +445,35 @@ SimpleQuery.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.STRING) {
-        this.queryStr = input.readString().value;
+        this.query = input.readString().value;
       } else {
         input.skip(ftype);
       }
       break;
       case 2:
       if (ftype == Thrift.Type.BOOL) {
-        this.superQueryOn = input.readBool().value;
+        this.rowQuery = input.readBool().value;
       } else {
         input.skip(ftype);
       }
       break;
       case 3:
       if (ftype == Thrift.Type.I32) {
-        this.type = input.readI32().value;
+        this.scoreType = input.readI32().value;
       } else {
         input.skip(ftype);
       }
       break;
       case 4:
       if (ftype == Thrift.Type.STRING) {
-        this.postSuperFilter = input.readString().value;
+        this.rowFilter = input.readString().value;
       } else {
         input.skip(ftype);
       }
       break;
       case 5:
       if (ftype == Thrift.Type.STRING) {
-        this.preSuperFilter = input.readString().value;
+        this.recordFilter = input.readString().value;
       } else {
         input.skip(ftype);
       }
@@ -489,29 +489,29 @@ SimpleQuery.prototype.read = function(input) {
 
 SimpleQuery.prototype.write = function(output) {
   output.writeStructBegin('SimpleQuery');
-  if (this.queryStr !== null && this.queryStr !== undefined) {
-    output.writeFieldBegin('queryStr', Thrift.Type.STRING, 1);
-    output.writeString(this.queryStr);
+  if (this.query !== null && this.query !== undefined) {
+    output.writeFieldBegin('query', Thrift.Type.STRING, 1);
+    output.writeString(this.query);
     output.writeFieldEnd();
   }
-  if (this.superQueryOn !== null && this.superQueryOn !== undefined) {
-    output.writeFieldBegin('superQueryOn', Thrift.Type.BOOL, 2);
-    output.writeBool(this.superQueryOn);
+  if (this.rowQuery !== null && this.rowQuery !== undefined) {
+    output.writeFieldBegin('rowQuery', Thrift.Type.BOOL, 2);
+    output.writeBool(this.rowQuery);
     output.writeFieldEnd();
   }
-  if (this.type !== null && this.type !== undefined) {
-    output.writeFieldBegin('type', Thrift.Type.I32, 3);
-    output.writeI32(this.type);
+  if (this.scoreType !== null && this.scoreType !== undefined) {
+    output.writeFieldBegin('scoreType', Thrift.Type.I32, 3);
+    output.writeI32(this.scoreType);
     output.writeFieldEnd();
   }
-  if (this.postSuperFilter !== null && this.postSuperFilter !== undefined) {
-    output.writeFieldBegin('postSuperFilter', Thrift.Type.STRING, 4);
-    output.writeString(this.postSuperFilter);
+  if (this.rowFilter !== null && this.rowFilter !== undefined) {
+    output.writeFieldBegin('rowFilter', Thrift.Type.STRING, 4);
+    output.writeString(this.rowFilter);
     output.writeFieldEnd();
   }
-  if (this.preSuperFilter !== null && this.preSuperFilter !== undefined) {
-    output.writeFieldBegin('preSuperFilter', Thrift.Type.STRING, 5);
-    output.writeString(this.preSuperFilter);
+  if (this.recordFilter !== null && this.recordFilter !== undefined) {
+    output.writeFieldBegin('recordFilter', Thrift.Type.STRING, 5);
+    output.writeString(this.recordFilter);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

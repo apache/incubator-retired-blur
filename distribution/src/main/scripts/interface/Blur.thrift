@@ -205,29 +205,33 @@ struct Row {
 }
 
 /**
- * The SimpleQuery object holds the query string (normal Lucene syntax), filters and type of scoring (used when super query is on).
+ * The SimpleQuery object holds the query string (normal Lucene syntax), 
+ * filters and type of scoring (used when super query is on).
  */
 struct SimpleQuery {
   /**
    * A Lucene syntax based query.
    */
-  1:string queryStr,
+  1:string query,
   /**
-   * If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
+   * If the Row query is on, meaning the query will be perform against all the 
+   * Records (joining records in some cases) and the result will be Rows (groupings of Record).
    */
-  2:bool superQueryOn = 1,
+  2:bool rowQuery = 1,
   /**
    * The scoring type, see the document on ScoreType for explanation of each score type.
    */
-  3:ScoreType type = ScoreType.SUPER, 
+  3:ScoreType scoreType = ScoreType.SUPER, 
   /**
-   * The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
+   * The Row filter (normal Lucene syntax), is a filter performed 
+   * after the join to filter out entire Rows from the results.
    */
-  4:string postSuperFilter,
+  4:string rowFilter,
   /**
-   * The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
+   * The Record filter (normal Lucene syntax), is a filter performed 
+   * before the join to filter out Records from the results.
    */
-  5:string preSuperFilter
+  5:string recordFilter
 }
 
 /**

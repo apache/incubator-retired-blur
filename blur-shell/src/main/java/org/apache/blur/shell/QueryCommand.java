@@ -64,7 +64,7 @@ public class QueryCommand extends Command {
 
     BlurQuery blurQuery = new BlurQuery();
     SimpleQuery simpleQuery = new SimpleQuery();
-    simpleQuery.setQueryStr(query);
+    simpleQuery.setQuery(query);
     blurQuery.setSimpleQuery(simpleQuery);
     blurQuery.setSelector(Main.selector);
 

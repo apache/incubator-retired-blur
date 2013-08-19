@@ -168,33 +168,37 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  # The SimpleQuery object holds the query string (normal Lucene syntax), filters and type of scoring (used when super query is on).
+  # The SimpleQuery object holds the query string (normal Lucene syntax),
+# filters and type of scoring (used when super query is on).
   class SimpleQuery
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    QUERYSTR = 1
-    SUPERQUERYON = 2
-    TYPE = 3
-    POSTSUPERFILTER = 4
-    PRESUPERFILTER = 5
+    QUERY = 1
+    ROWQUERY = 2
+    SCORETYPE = 3
+    ROWFILTER = 4
+    RECORDFILTER = 5
 
     FIELDS = {
       # A Lucene syntax based query.
-      QUERYSTR => {:type => ::Thrift::Types::STRING, :name => 'queryStr'},
-      # If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
-      SUPERQUERYON => {:type => ::Thrift::Types::BOOL, :name => 'superQueryOn', :default => true},
+      QUERY => {:type => ::Thrift::Types::STRING, :name => 'query'},
+      # If the Row query is on, meaning the query will be perform against all the
+# Records (joining records in some cases) and the result will be Rows (groupings of Record).
+      ROWQUERY => {:type => ::Thrift::Types::BOOL, :name => 'rowQuery', :default => true},
       # The scoring type, see the document on ScoreType for explanation of each score type.
-      TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :default =>       0, :enum_class => ::Blur::ScoreType},
-      # The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
-      POSTSUPERFILTER => {:type => ::Thrift::Types::STRING, :name => 'postSuperFilter'},
-      # The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
-      PRESUPERFILTER => {:type => ::Thrift::Types::STRING, :name => 'preSuperFilter'}
+      SCORETYPE => {:type => ::Thrift::Types::I32, :name => 'scoreType', :default =>       0, :enum_class => ::Blur::ScoreType},
+      # The Row filter (normal Lucene syntax), is a filter performed
+# after the join to filter out entire Rows from the results.
+      ROWFILTER => {:type => ::Thrift::Types::STRING, :name => 'rowFilter'},
+      # The Record filter (normal Lucene syntax), is a filter performed
+# before the join to filter out Records from the results.
+      RECORDFILTER => {:type => ::Thrift::Types::STRING, :name => 'recordFilter'}
     }
 
     def struct_fields; FIELDS; end
 
     def validate
-      unless @type.nil? || ::Blur::ScoreType::VALID_VALUES.include?(@type)
-        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
+      unless @scoreType.nil? || ::Blur::ScoreType::VALID_VALUES.include?(@scoreType)
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field scoreType!')
       end
     end
 

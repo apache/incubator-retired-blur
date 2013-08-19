@@ -60,7 +60,7 @@ public class RandomSearchTable {
       System.out.println(query);
       final BlurQuery blurQuery = new BlurQuery();
       blurQuery.simpleQuery = new SimpleQuery();
-      blurQuery.simpleQuery.queryStr = query;
+      blurQuery.simpleQuery.query = query;
       long start = System.nanoTime();
 
       Iface client = BlurClient.getClient(connectionStr);

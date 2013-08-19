@@ -50,16 +50,17 @@ import java.util.Arrays;
 //import org.slf4j.LoggerFactory;
 
 /**
- * The SimpleQuery object holds the query string (normal Lucene syntax), filters and type of scoring (used when super query is on).
+ * The SimpleQuery object holds the query string (normal Lucene syntax),
+ * filters and type of scoring (used when super query is on).
  */
 public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<SimpleQuery, SimpleQuery._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("SimpleQuery");
 
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField QUERY_STR_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("queryStr", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SUPER_QUERY_ON_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("superQueryOn", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)2);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TYPE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("type", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)3);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField POST_SUPER_FILTER_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("postSuperFilter", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)4);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField PRE_SUPER_FILTER_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("preSuperFilter", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)5);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField QUERY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("query", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ROW_QUERY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("rowQuery", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SCORE_TYPE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("scoreType", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)3);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ROW_FILTER_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("rowFilter", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)4);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RECORD_FILTER_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("recordFilter", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -70,50 +71,56 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   /**
    * A Lucene syntax based query.
    */
-  public String queryStr; // required
+  public String query; // required
   /**
-   * If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
+   * If the Row query is on, meaning the query will be perform against all the
+   * Records (joining records in some cases) and the result will be Rows (groupings of Record).
    */
-  public boolean superQueryOn; // required
+  public boolean rowQuery; // required
   /**
    * The scoring type, see the document on ScoreType for explanation of each score type.
    * 
    * @see ScoreType
    */
-  public ScoreType type; // required
+  public ScoreType scoreType; // required
   /**
-   * The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
+   * The Row filter (normal Lucene syntax), is a filter performed
+   * after the join to filter out entire Rows from the results.
    */
-  public String postSuperFilter; // required
+  public String rowFilter; // required
   /**
-   * The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
+   * The Record filter (normal Lucene syntax), is a filter performed
+   * before the join to filter out Records from the results.
    */
-  public String preSuperFilter; // required
+  public String recordFilter; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
      * A Lucene syntax based query.
      */
-    QUERY_STR((short)1, "queryStr"),
+    QUERY((short)1, "query"),
     /**
-     * If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
+     * If the Row query is on, meaning the query will be perform against all the
+     * Records (joining records in some cases) and the result will be Rows (groupings of Record).
      */
-    SUPER_QUERY_ON((short)2, "superQueryOn"),
+    ROW_QUERY((short)2, "rowQuery"),
     /**
      * The scoring type, see the document on ScoreType for explanation of each score type.
      * 
      * @see ScoreType
      */
-    TYPE((short)3, "type"),
+    SCORE_TYPE((short)3, "scoreType"),
     /**
-     * The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
+     * The Row filter (normal Lucene syntax), is a filter performed
+     * after the join to filter out entire Rows from the results.
      */
-    POST_SUPER_FILTER((short)4, "postSuperFilter"),
+    ROW_FILTER((short)4, "rowFilter"),
     /**
-     * The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
+     * The Record filter (normal Lucene syntax), is a filter performed
+     * before the join to filter out Records from the results.
      */
-    PRE_SUPER_FILTER((short)5, "preSuperFilter");
+    RECORD_FILTER((short)5, "recordFilter");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -128,16 +135,16 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // QUERY_STR
-          return QUERY_STR;
-        case 2: // SUPER_QUERY_ON
-          return SUPER_QUERY_ON;
-        case 3: // TYPE
-          return TYPE;
-        case 4: // POST_SUPER_FILTER
-          return POST_SUPER_FILTER;
-        case 5: // PRE_SUPER_FILTER
-          return PRE_SUPER_FILTER;
+        case 1: // QUERY
+          return QUERY;
+        case 2: // ROW_QUERY
+          return ROW_QUERY;
+        case 3: // SCORE_TYPE
+          return SCORE_TYPE;
+        case 4: // ROW_FILTER
+          return ROW_FILTER;
+        case 5: // RECORD_FILTER
+          return RECORD_FILTER;
         default:
           return null;
       }
@@ -178,46 +185,46 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   }
 
   // isset id assignments
-  private static final int __SUPERQUERYON_ISSET_ID = 0;
+  private static final int __ROWQUERY_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.QUERY_STR, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("queryStr", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.QUERY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("query", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
-    tmpMap.put(_Fields.SUPER_QUERY_ON, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("superQueryOn", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.ROW_QUERY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("rowQuery", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.TYPE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("type", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.SCORE_TYPE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("scoreType", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.EnumMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.ENUM, ScoreType.class)));
-    tmpMap.put(_Fields.POST_SUPER_FILTER, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("postSuperFilter", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.ROW_FILTER, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("rowFilter", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
-    tmpMap.put(_Fields.PRE_SUPER_FILTER, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("preSuperFilter", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.RECORD_FILTER, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("recordFilter", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(SimpleQuery.class, metaDataMap);
   }
 
   public SimpleQuery() {
-    this.superQueryOn = true;
+    this.rowQuery = true;
 
-    this.type = org.apache.blur.thrift.generated.ScoreType.SUPER;
+    this.scoreType = org.apache.blur.thrift.generated.ScoreType.SUPER;
 
   }
 
   public SimpleQuery(
-    String queryStr,
-    boolean superQueryOn,
-    ScoreType type,
-    String postSuperFilter,
-    String preSuperFilter)
+    String query,
+    boolean rowQuery,
+    ScoreType scoreType,
+    String rowFilter,
+    String recordFilter)
   {
     this();
-    this.queryStr = queryStr;
-    this.superQueryOn = superQueryOn;
-    setSuperQueryOnIsSet(true);
-    this.type = type;
-    this.postSuperFilter = postSuperFilter;
-    this.preSuperFilter = preSuperFilter;
+    this.query = query;
+    this.rowQuery = rowQuery;
+    setRowQueryIsSet(true);
+    this.scoreType = scoreType;
+    this.rowFilter = rowFilter;
+    this.recordFilter = recordFilter;
   }
 
   /**
@@ -225,18 +232,18 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
    */
   public SimpleQuery(SimpleQuery other) {
     __isset_bitfield = other.__isset_bitfield;
-    if (other.isSetQueryStr()) {
-      this.queryStr = other.queryStr;
+    if (other.isSetQuery()) {
+      this.query = other.query;
     }
-    this.superQueryOn = other.superQueryOn;
-    if (other.isSetType()) {
-      this.type = other.type;
+    this.rowQuery = other.rowQuery;
+    if (other.isSetScoreType()) {
+      this.scoreType = other.scoreType;
     }
-    if (other.isSetPostSuperFilter()) {
-      this.postSuperFilter = other.postSuperFilter;
+    if (other.isSetRowFilter()) {
+      this.rowFilter = other.rowFilter;
     }
-    if (other.isSetPreSuperFilter()) {
-      this.preSuperFilter = other.preSuperFilter;
+    if (other.isSetRecordFilter()) {
+      this.recordFilter = other.recordFilter;
     }
   }
 
@@ -246,72 +253,74 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
 
   @Override
   public void clear() {
-    this.queryStr = null;
-    this.superQueryOn = true;
+    this.query = null;
+    this.rowQuery = true;
 
-    this.type = org.apache.blur.thrift.generated.ScoreType.SUPER;
+    this.scoreType = org.apache.blur.thrift.generated.ScoreType.SUPER;
 
-    this.postSuperFilter = null;
-    this.preSuperFilter = null;
+    this.rowFilter = null;
+    this.recordFilter = null;
   }
 
   /**
    * A Lucene syntax based query.
    */
-  public String getQueryStr() {
-    return this.queryStr;
+  public String getQuery() {
+    return this.query;
   }
 
   /**
    * A Lucene syntax based query.
    */
-  public SimpleQuery setQueryStr(String queryStr) {
-    this.queryStr = queryStr;
+  public SimpleQuery setQuery(String query) {
+    this.query = query;
     return this;
   }
 
-  public void unsetQueryStr() {
-    this.queryStr = null;
+  public void unsetQuery() {
+    this.query = null;
   }
 
-  /** Returns true if field queryStr is set (has been assigned a value) and false otherwise */
-  public boolean isSetQueryStr() {
-    return this.queryStr != null;
+  /** Returns true if field query is set (has been assigned a value) and false otherwise */
+  public boolean isSetQuery() {
+    return this.query != null;
   }
 
-  public void setQueryStrIsSet(boolean value) {
+  public void setQueryIsSet(boolean value) {
     if (!value) {
-      this.queryStr = null;
+      this.query = null;
     }
   }
 
   /**
-   * If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
+   * If the Row query is on, meaning the query will be perform against all the
+   * Records (joining records in some cases) and the result will be Rows (groupings of Record).
    */
-  public boolean isSuperQueryOn() {
-    return this.superQueryOn;
+  public boolean isRowQuery() {
+    return this.rowQuery;
   }
 
   /**
-   * If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
+   * If the Row query is on, meaning the query will be perform against all the
+   * Records (joining records in some cases) and the result will be Rows (groupings of Record).
    */
-  public SimpleQuery setSuperQueryOn(boolean superQueryOn) {
-    this.superQueryOn = superQueryOn;
-    setSuperQueryOnIsSet(true);
+  public SimpleQuery setRowQuery(boolean rowQuery) {
+    this.rowQuery = rowQuery;
+    setRowQueryIsSet(true);
     return this;
   }
 
-  public void unsetSuperQueryOn() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SUPERQUERYON_ISSET_ID);
+  public void unsetRowQuery() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ROWQUERY_ISSET_ID);
   }
 
-  /** Returns true if field superQueryOn is set (has been assigned a value) and false otherwise */
-  public boolean isSetSuperQueryOn() {
-    return EncodingUtils.testBit(__isset_bitfield, __SUPERQUERYON_ISSET_ID);
+  /** Returns true if field rowQuery is set (has been assigned a value) and false otherwise */
+  public boolean isSetRowQuery() {
+    return EncodingUtils.testBit(__isset_bitfield, __ROWQUERY_ISSET_ID);
   }
 
-  public void setSuperQueryOnIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SUPERQUERYON_ISSET_ID, value);
+  public void setRowQueryIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ROWQUERY_ISSET_ID, value);
   }
 
   /**
@@ -319,8 +328,8 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
    * 
    * @see ScoreType
    */
-  public ScoreType getType() {
-    return this.type;
+  public ScoreType getScoreType() {
+    return this.scoreType;
   }
 
   /**
@@ -328,125 +337,129 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
    * 
    * @see ScoreType
    */
-  public SimpleQuery setType(ScoreType type) {
-    this.type = type;
+  public SimpleQuery setScoreType(ScoreType scoreType) {
+    this.scoreType = scoreType;
     return this;
   }
 
-  public void unsetType() {
-    this.type = null;
+  public void unsetScoreType() {
+    this.scoreType = null;
   }
 
-  /** Returns true if field type is set (has been assigned a value) and false otherwise */
-  public boolean isSetType() {
-    return this.type != null;
+  /** Returns true if field scoreType is set (has been assigned a value) and false otherwise */
+  public boolean isSetScoreType() {
+    return this.scoreType != null;
   }
 
-  public void setTypeIsSet(boolean value) {
+  public void setScoreTypeIsSet(boolean value) {
     if (!value) {
-      this.type = null;
+      this.scoreType = null;
     }
   }
 
   /**
-   * The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
+   * The Row filter (normal Lucene syntax), is a filter performed
+   * after the join to filter out entire Rows from the results.
    */
-  public String getPostSuperFilter() {
-    return this.postSuperFilter;
+  public String getRowFilter() {
+    return this.rowFilter;
   }
 
   /**
-   * The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
+   * The Row filter (normal Lucene syntax), is a filter performed
+   * after the join to filter out entire Rows from the results.
    */
-  public SimpleQuery setPostSuperFilter(String postSuperFilter) {
-    this.postSuperFilter = postSuperFilter;
+  public SimpleQuery setRowFilter(String rowFilter) {
+    this.rowFilter = rowFilter;
     return this;
   }
 
-  public void unsetPostSuperFilter() {
-    this.postSuperFilter = null;
+  public void unsetRowFilter() {
+    this.rowFilter = null;
   }
 
-  /** Returns true if field postSuperFilter is set (has been assigned a value) and false otherwise */
-  public boolean isSetPostSuperFilter() {
-    return this.postSuperFilter != null;
+  /** Returns true if field rowFilter is set (has been assigned a value) and false otherwise */
+  public boolean isSetRowFilter() {
+    return this.rowFilter != null;
   }
 
-  public void setPostSuperFilterIsSet(boolean value) {
+  public void setRowFilterIsSet(boolean value) {
     if (!value) {
-      this.postSuperFilter = null;
+      this.rowFilter = null;
     }
   }
 
   /**
-   * The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
+   * The Record filter (normal Lucene syntax), is a filter performed
+   * before the join to filter out Records from the results.
    */
-  public String getPreSuperFilter() {
-    return this.preSuperFilter;
+  public String getRecordFilter() {
+    return this.recordFilter;
   }
 
   /**
-   * The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
+   * The Record filter (normal Lucene syntax), is a filter performed
+   * before the join to filter out Records from the results.
    */
-  public SimpleQuery setPreSuperFilter(String preSuperFilter) {
-    this.preSuperFilter = preSuperFilter;
+  public SimpleQuery setRecordFilter(String recordFilter) {
+    this.recordFilter = recordFilter;
     return this;
   }
 
-  public void unsetPreSuperFilter() {
-    this.preSuperFilter = null;
+  public void unsetRecordFilter() {
+    this.recordFilter = null;
   }
 
-  /** Returns true if field preSuperFilter is set (has been assigned a value) and false otherwise */
-  public boolean isSetPreSuperFilter() {
-    return this.preSuperFilter != null;
+  /** Returns true if field recordFilter is set (has been assigned a value) and false otherwise */
+  public boolean isSetRecordFilter() {
+    return this.recordFilter != null;
   }
 
-  public void setPreSuperFilterIsSet(boolean value) {
+  public void setRecordFilterIsSet(boolean value) {
     if (!value) {
-      this.preSuperFilter = null;
+      this.recordFilter = null;
     }
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case QUERY_STR:
+    case QUERY:
       if (value == null) {
-        unsetQueryStr();
+        unsetQuery();
       } else {
-        setQueryStr((String)value);
+        setQuery((String)value);
       }
       break;
 
-    case SUPER_QUERY_ON:
+    case ROW_QUERY:
       if (value == null) {
-        unsetSuperQueryOn();
+        unsetRowQuery();
       } else {
-        setSuperQueryOn((Boolean)value);
+        setRowQuery((Boolean)value);
       }
       break;
 
-    case TYPE:
+    case SCORE_TYPE:
       if (value == null) {
-        unsetType();
+        unsetScoreType();
       } else {
-        setType((ScoreType)value);
+        setScoreType((ScoreType)value);
       }
       break;
 
-    case POST_SUPER_FILTER:
+    case ROW_FILTER:
       if (value == null) {
-        unsetPostSuperFilter();
+        unsetRowFilter();
       } else {
-        setPostSuperFilter((String)value);
+        setRowFilter((String)value);
       }
       break;
 
-    case PRE_SUPER_FILTER:
+    case RECORD_FILTER:
       if (value == null) {
-        unsetPreSuperFilter();
+        unsetRecordFilter();
       } else {
-        setPreSuperFilter((String)value);
+        setRecordFilter((String)value);
       }
       break;
 
@@ -455,20 +468,20 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case QUERY_STR:
-      return getQueryStr();
+    case QUERY:
+      return getQuery();
 
-    case SUPER_QUERY_ON:
-      return Boolean.valueOf(isSuperQueryOn());
+    case ROW_QUERY:
+      return Boolean.valueOf(isRowQuery());
 
-    case TYPE:
-      return getType();
+    case SCORE_TYPE:
+      return getScoreType();
 
-    case POST_SUPER_FILTER:
-      return getPostSuperFilter();
+    case ROW_FILTER:
+      return getRowFilter();
 
-    case PRE_SUPER_FILTER:
-      return getPreSuperFilter();
+    case RECORD_FILTER:
+      return getRecordFilter();
 
     }
     throw new IllegalStateException();
@@ -481,16 +494,16 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     }
 
     switch (field) {
-    case QUERY_STR:
-      return isSetQueryStr();
-    case SUPER_QUERY_ON:
-      return isSetSuperQueryOn();
-    case TYPE:
-      return isSetType();
-    case POST_SUPER_FILTER:
-      return isSetPostSuperFilter();
-    case PRE_SUPER_FILTER:
-      return isSetPreSuperFilter();
+    case QUERY:
+      return isSetQuery();
+    case ROW_QUERY:
+      return isSetRowQuery();
+    case SCORE_TYPE:
+      return isSetScoreType();
+    case ROW_FILTER:
+      return isSetRowFilter();
+    case RECORD_FILTER:
+      return isSetRecordFilter();
     }
     throw new IllegalStateException();
   }
@@ -508,48 +521,48 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     if (that == null)
       return false;
 
-    boolean this_present_queryStr = true && this.isSetQueryStr();
-    boolean that_present_queryStr = true && that.isSetQueryStr();
-    if (this_present_queryStr || that_present_queryStr) {
-      if (!(this_present_queryStr && that_present_queryStr))
+    boolean this_present_query = true && this.isSetQuery();
+    boolean that_present_query = true && that.isSetQuery();
+    if (this_present_query || that_present_query) {
+      if (!(this_present_query && that_present_query))
         return false;
-      if (!this.queryStr.equals(that.queryStr))
-        return false;
-    }
-
-    boolean this_present_superQueryOn = true;
-    boolean that_present_superQueryOn = true;
-    if (this_present_superQueryOn || that_present_superQueryOn) {
-      if (!(this_present_superQueryOn && that_present_superQueryOn))
-        return false;
-      if (this.superQueryOn != that.superQueryOn)
+      if (!this.query.equals(that.query))
         return false;
     }
 
-    boolean this_present_type = true && this.isSetType();
-    boolean that_present_type = true && that.isSetType();
-    if (this_present_type || that_present_type) {
-      if (!(this_present_type && that_present_type))
+    boolean this_present_rowQuery = true;
+    boolean that_present_rowQuery = true;
+    if (this_present_rowQuery || that_present_rowQuery) {
+      if (!(this_present_rowQuery && that_present_rowQuery))
         return false;
-      if (!this.type.equals(that.type))
-        return false;
-    }
-
-    boolean this_present_postSuperFilter = true && this.isSetPostSuperFilter();
-    boolean that_present_postSuperFilter = true && that.isSetPostSuperFilter();
-    if (this_present_postSuperFilter || that_present_postSuperFilter) {
-      if (!(this_present_postSuperFilter && that_present_postSuperFilter))
-        return false;
-      if (!this.postSuperFilter.equals(that.postSuperFilter))
+      if (this.rowQuery != that.rowQuery)
         return false;
     }
 
-    boolean this_present_preSuperFilter = true && this.isSetPreSuperFilter();
-    boolean that_present_preSuperFilter = true && that.isSetPreSuperFilter();
-    if (this_present_preSuperFilter || that_present_preSuperFilter) {
-      if (!(this_present_preSuperFilter && that_present_preSuperFilter))
+    boolean this_present_scoreType = true && this.isSetScoreType();
+    boolean that_present_scoreType = true && that.isSetScoreType();
+    if (this_present_scoreType || that_present_scoreType) {
+      if (!(this_present_scoreType && that_present_scoreType))
         return false;
-      if (!this.preSuperFilter.equals(that.preSuperFilter))
+      if (!this.scoreType.equals(that.scoreType))
+        return false;
+    }
+
+    boolean this_present_rowFilter = true && this.isSetRowFilter();
+    boolean that_present_rowFilter = true && that.isSetRowFilter();
+    if (this_present_rowFilter || that_present_rowFilter) {
+      if (!(this_present_rowFilter && that_present_rowFilter))
+        return false;
+      if (!this.rowFilter.equals(that.rowFilter))
+        return false;
+    }
+
+    boolean this_present_recordFilter = true && this.isSetRecordFilter();
+    boolean that_present_recordFilter = true && that.isSetRecordFilter();
+    if (this_present_recordFilter || that_present_recordFilter) {
+      if (!(this_present_recordFilter && that_present_recordFilter))
+        return false;
+      if (!this.recordFilter.equals(that.recordFilter))
         return false;
     }
 
@@ -569,52 +582,52 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     int lastComparison = 0;
     SimpleQuery typedOther = (SimpleQuery)other;
 
-    lastComparison = Boolean.valueOf(isSetQueryStr()).compareTo(typedOther.isSetQueryStr());
+    lastComparison = Boolean.valueOf(isSetQuery()).compareTo(typedOther.isSetQuery());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetQueryStr()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.queryStr, typedOther.queryStr);
+    if (isSetQuery()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.query, typedOther.query);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetSuperQueryOn()).compareTo(typedOther.isSetSuperQueryOn());
+    lastComparison = Boolean.valueOf(isSetRowQuery()).compareTo(typedOther.isSetRowQuery());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetSuperQueryOn()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.superQueryOn, typedOther.superQueryOn);
+    if (isSetRowQuery()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.rowQuery, typedOther.rowQuery);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetType()).compareTo(typedOther.isSetType());
+    lastComparison = Boolean.valueOf(isSetScoreType()).compareTo(typedOther.isSetScoreType());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetType()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.type, typedOther.type);
+    if (isSetScoreType()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.scoreType, typedOther.scoreType);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetPostSuperFilter()).compareTo(typedOther.isSetPostSuperFilter());
+    lastComparison = Boolean.valueOf(isSetRowFilter()).compareTo(typedOther.isSetRowFilter());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetPostSuperFilter()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.postSuperFilter, typedOther.postSuperFilter);
+    if (isSetRowFilter()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.rowFilter, typedOther.rowFilter);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetPreSuperFilter()).compareTo(typedOther.isSetPreSuperFilter());
+    lastComparison = Boolean.valueOf(isSetRecordFilter()).compareTo(typedOther.isSetRecordFilter());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetPreSuperFilter()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.preSuperFilter, typedOther.preSuperFilter);
+    if (isSetRecordFilter()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.recordFilter, typedOther.recordFilter);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -639,39 +652,39 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     StringBuilder sb = new StringBuilder("SimpleQuery(");
     boolean first = true;
 
-    sb.append("queryStr:");
-    if (this.queryStr == null) {
+    sb.append("query:");
+    if (this.query == null) {
       sb.append("null");
     } else {
-      sb.append(this.queryStr);
+      sb.append(this.query);
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("superQueryOn:");
-    sb.append(this.superQueryOn);
+    sb.append("rowQuery:");
+    sb.append(this.rowQuery);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("type:");
-    if (this.type == null) {
+    sb.append("scoreType:");
+    if (this.scoreType == null) {
       sb.append("null");
     } else {
-      sb.append(this.type);
+      sb.append(this.scoreType);
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("postSuperFilter:");
-    if (this.postSuperFilter == null) {
+    sb.append("rowFilter:");
+    if (this.rowFilter == null) {
       sb.append("null");
     } else {
-      sb.append(this.postSuperFilter);
+      sb.append(this.rowFilter);
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("preSuperFilter:");
-    if (this.preSuperFilter == null) {
+    sb.append("recordFilter:");
+    if (this.recordFilter == null) {
       sb.append("null");
     } else {
-      sb.append(this.preSuperFilter);
+      sb.append(this.recordFilter);
     }
     first = false;
     sb.append(")");
@@ -719,42 +732,42 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
           break;
         }
         switch (schemeField.id) {
-          case 1: // QUERY_STR
+          case 1: // QUERY
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
-              struct.queryStr = iprot.readString();
-              struct.setQueryStrIsSet(true);
+              struct.query = iprot.readString();
+              struct.setQueryIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // SUPER_QUERY_ON
+          case 2: // ROW_QUERY
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
-              struct.superQueryOn = iprot.readBool();
-              struct.setSuperQueryOnIsSet(true);
+              struct.rowQuery = iprot.readBool();
+              struct.setRowQueryIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // TYPE
+          case 3: // SCORE_TYPE
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
-              struct.type = ScoreType.findByValue(iprot.readI32());
-              struct.setTypeIsSet(true);
+              struct.scoreType = ScoreType.findByValue(iprot.readI32());
+              struct.setScoreTypeIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // POST_SUPER_FILTER
+          case 4: // ROW_FILTER
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
-              struct.postSuperFilter = iprot.readString();
-              struct.setPostSuperFilterIsSet(true);
+              struct.rowFilter = iprot.readString();
+              struct.setRowFilterIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // PRE_SUPER_FILTER
+          case 5: // RECORD_FILTER
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
-              struct.preSuperFilter = iprot.readString();
-              struct.setPreSuperFilterIsSet(true);
+              struct.recordFilter = iprot.readString();
+              struct.setRecordFilterIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -774,27 +787,27 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.queryStr != null) {
-        oprot.writeFieldBegin(QUERY_STR_FIELD_DESC);
-        oprot.writeString(struct.queryStr);
+      if (struct.query != null) {
+        oprot.writeFieldBegin(QUERY_FIELD_DESC);
+        oprot.writeString(struct.query);
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(SUPER_QUERY_ON_FIELD_DESC);
-      oprot.writeBool(struct.superQueryOn);
+      oprot.writeFieldBegin(ROW_QUERY_FIELD_DESC);
+      oprot.writeBool(struct.rowQuery);
       oprot.writeFieldEnd();
-      if (struct.type != null) {
-        oprot.writeFieldBegin(TYPE_FIELD_DESC);
-        oprot.writeI32(struct.type.getValue());
+      if (struct.scoreType != null) {
+        oprot.writeFieldBegin(SCORE_TYPE_FIELD_DESC);
+        oprot.writeI32(struct.scoreType.getValue());
         oprot.writeFieldEnd();
       }
-      if (struct.postSuperFilter != null) {
-        oprot.writeFieldBegin(POST_SUPER_FILTER_FIELD_DESC);
-        oprot.writeString(struct.postSuperFilter);
+      if (struct.rowFilter != null) {
+        oprot.writeFieldBegin(ROW_FILTER_FIELD_DESC);
+        oprot.writeString(struct.rowFilter);
         oprot.writeFieldEnd();
       }
-      if (struct.preSuperFilter != null) {
-        oprot.writeFieldBegin(PRE_SUPER_FILTER_FIELD_DESC);
-        oprot.writeString(struct.preSuperFilter);
+      if (struct.recordFilter != null) {
+        oprot.writeFieldBegin(RECORD_FILTER_FIELD_DESC);
+        oprot.writeString(struct.recordFilter);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -815,36 +828,36 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, SimpleQuery struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
-      if (struct.isSetQueryStr()) {
+      if (struct.isSetQuery()) {
         optionals.set(0);
       }
-      if (struct.isSetSuperQueryOn()) {
+      if (struct.isSetRowQuery()) {
         optionals.set(1);
       }
-      if (struct.isSetType()) {
+      if (struct.isSetScoreType()) {
         optionals.set(2);
       }
-      if (struct.isSetPostSuperFilter()) {
+      if (struct.isSetRowFilter()) {
         optionals.set(3);
       }
-      if (struct.isSetPreSuperFilter()) {
+      if (struct.isSetRecordFilter()) {
         optionals.set(4);
       }
       oprot.writeBitSet(optionals, 5);
-      if (struct.isSetQueryStr()) {
-        oprot.writeString(struct.queryStr);
+      if (struct.isSetQuery()) {
+        oprot.writeString(struct.query);
       }
-      if (struct.isSetSuperQueryOn()) {
-        oprot.writeBool(struct.superQueryOn);
+      if (struct.isSetRowQuery()) {
+        oprot.writeBool(struct.rowQuery);
       }
-      if (struct.isSetType()) {
-        oprot.writeI32(struct.type.getValue());
+      if (struct.isSetScoreType()) {
+        oprot.writeI32(struct.scoreType.getValue());
       }
-      if (struct.isSetPostSuperFilter()) {
-        oprot.writeString(struct.postSuperFilter);
+      if (struct.isSetRowFilter()) {
+        oprot.writeString(struct.rowFilter);
       }
-      if (struct.isSetPreSuperFilter()) {
-        oprot.writeString(struct.preSuperFilter);
+      if (struct.isSetRecordFilter()) {
+        oprot.writeString(struct.recordFilter);
       }
     }
 
@@ -853,24 +866,24 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
-        struct.queryStr = iprot.readString();
-        struct.setQueryStrIsSet(true);
+        struct.query = iprot.readString();
+        struct.setQueryIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.superQueryOn = iprot.readBool();
-        struct.setSuperQueryOnIsSet(true);
+        struct.rowQuery = iprot.readBool();
+        struct.setRowQueryIsSet(true);
       }
       if (incoming.get(2)) {
-        struct.type = ScoreType.findByValue(iprot.readI32());
-        struct.setTypeIsSet(true);
+        struct.scoreType = ScoreType.findByValue(iprot.readI32());
+        struct.setScoreTypeIsSet(true);
       }
       if (incoming.get(3)) {
-        struct.postSuperFilter = iprot.readString();
-        struct.setPostSuperFilterIsSet(true);
+        struct.rowFilter = iprot.readString();
+        struct.setRowFilterIsSet(true);
       }
       if (incoming.get(4)) {
-        struct.preSuperFilter = iprot.readString();
-        struct.setPreSuperFilterIsSet(true);
+        struct.recordFilter = iprot.readString();
+        struct.setRecordFilterIsSet(true);
       }
     }
   }

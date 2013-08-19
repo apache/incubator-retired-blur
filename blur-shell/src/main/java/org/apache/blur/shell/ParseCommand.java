@@ -39,7 +39,7 @@ public class ParseCommand extends Command {
     }
 
     SimpleQuery simpleQuery = new SimpleQuery();
-    simpleQuery.setQueryStr(queryStr);
+    simpleQuery.setQuery(queryStr);
     String query = client.parseQuery(tablename, simpleQuery);
     out.println(query);
   }

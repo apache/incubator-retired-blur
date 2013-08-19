@@ -26,7 +26,6 @@ import org.apache.lucene.spatial.query.SpatialOperation;
 import org.apache.lucene.spatial.vector.PointVectorStrategy;
 
 import com.spatial4j.core.context.SpatialContext;
-import com.spatial4j.core.io.ShapeReadWriter;
 import com.spatial4j.core.shape.Point;
 
 public class SpatialPointVectorStrategyFieldTypeDefinition extends BaseSpatialFieldTypeDefinition {

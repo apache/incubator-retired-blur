@@ -50,6 +50,13 @@
         <div class="col-md-3">
           <div class="bs-sidebar hidden-print affix" role="complementary">
             <ul class="nav bs-sidenav">
+	          <li>
+                <a href="#general">General Configuration</a>
+                <ul class="nav">
+                  <li><a href="#general-blur-site">blur-site.properties</a></li>
+                  <li><a href="#general-hadoop">Hadoop</a></li>
+                </ul>
+              </li>
               <li>
                 <a href="#controller">Controller Server Configuration</a>
                 <ul class="nav">
@@ -76,6 +83,49 @@
           </div>
         </div>
         <div class="col-md-9" role="main">
+          <section>
+            <div class="page-header">
+              <h1 id="general">General Configuration</h1>
+            </div>
+            <h3 id="general-blur-site">blur-site.properties</h3>
+            <p>
+<pre>
+<code class="bash">	
+# The ZooKeeper connection string, consider adding a root path to the string it
+# can help when upgrading Blur.
+# Example: zknode1:2181,zknode2:2181,zknode3:2181/blur-0.2.0
+#
+# NOTE: If you provide the root path "/blur-0.2.0", that will have to be manually
+# created before Blur will start.
+
+blur.zookeeper.connection=127.0.0.1
+
+# If you are only going to run a single shard cluster then leave this as default.
+
+blur.cluster.name=default
+
+# Sets the default table location in hdfs.  If left null or omitted the table uri property in 
+# the table descriptor will be required for all tables.
+
+blur.cluster.default.table.uri=hdfs://namenode/blur/tables
+
+</code>
+</pre>
+            </p>
+            <h3 id="general-hadoop">Hadoop</h3>
+<p>
+The current version of Blur has Hadoop 1.2.1 embedded in the &quot;apache-blur-*/lib/hadoop-1.2.1&quot; path.  However if 
+you are using a different version of Hadoop or want Blur to use the Hadoop configuration in your installed 
+version you will need to set the &quot;HADOOP_HOME&quot; environment variable in the 
+&quot;blur-env.sh&quot; script found in &quot;apache-blur-*/conf/&quot;.
+<pre>
+<code class="bash">
+# Edit the blur-env.sh
+export HADOOP_HOME=&lt;path to your Hadoop install directory&gt;
+</code>
+</pre>
+</p>
+	      </section>
           <section>
             <div class="page-header">
               <h1 id="controller">Controller Server Configuration</h1>

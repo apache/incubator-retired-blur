@@ -33,7 +33,6 @@ import org.apache.lucene.spatial.query.SpatialArgs;
 import org.apache.lucene.spatial.query.SpatialOperation;
 
 import com.spatial4j.core.context.SpatialContext;
-import com.spatial4j.core.io.ShapeReadWriter;
 import com.spatial4j.core.shape.Shape;
 
 public abstract class BaseSpatialFieldTypeDefinition extends CustomFieldTypeDefinition {

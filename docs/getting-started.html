@@ -57,7 +57,15 @@
               <li><a href="#min-config">Minimum Configuration</a></li>
               <li><a href="#start">Starting Apache Blur</a></li>
               <li><a href="#shell">Shell</a></li>
-              <li><a href="#shell-example">Simple Shell Example</a></li>
+              <li><a href="#shell-example">Simple Shell Example</a>
+	            <ul class="nav">
+					<li><a href="#shell-create">Create Table</a></li>
+					<li><a href="#shell-mutate">Mutate</a></li>
+					<li><a href="#shell-query">Query</a></li>
+					<li><a href="#shell-enable-highlighting">Enable Highlighting</a></li>
+					<li><a href="#shell-query-highlight">Query with Highlights</a></li>
+                </ul>
+	          </li>
             </ul>
           </div>
         </div>
@@ -179,12 +187,22 @@ localhost: Stopping ZooKeeper with pid [6650].</code></pre>
             <p class="lead">
               The below example creates a table and stores the contents of the table in a local directory of /data/testTableName which will only work if you are running blur in a single instance. Normally if you are running a hadoop cluster this will be a hdfs URI for example hdfs://host:port/blur/tables/testTableName.
             </p>
+<h3 id="shell-create">Create Table</h3>
+<p>
             <pre><code class="bash">blur> #Creates a table called testtable in the local directory of /data/testtable with 11 shards
 blur> create testtable file:///data/testtable 11
-blur> 
+</code></pre>
+</p>
+<h3 id="shell-mutate">Mutate</h3>
+<p>
+<pre><code class="bash">
 blur> #Adds a row to testtable
-blur> mutate testtable 1 1 fam0 col1 value1
-blur> 
+blur> mutate testtable rowid1 recordid1 fam0 col1 value1
+</code></pre>
+</p>
+<h3 id="shell-query">Query</h3>
+<p>
+<pre><code class="bash">
 blur> #Runs a query on testtable
 blur> query testtable fam0.col1:value1
  - Results Summary -
@@ -193,19 +211,27 @@ blur> query testtable fam0.col1:value1
 -----------------------------------------------------------------------------------------------------
       hit : 0
     score : 1.4142135381698608
-       id : 1
- recordId : 1
+       id : rowid1
+ recordId : recordid1
    family : fam0
      col1 : value1
 -----------------------------------------------------------------------------------------------------
  - Results Summary -
     total : 1
     time  : 7.874 ms
-blur> 
+</code></pre>
+</p>
+<h3 id="shell-enable-highlighting">Enable Highlighting</h3>
+<p>
+<pre><code class="bash">
 blur> #Turns highlighting on
 blur> highlight
 highlight of query command is now on
-blur> 
+</code></pre>
+</p>
+<h3 id="shell-query-highlight">Query with Highlights</h3>
+<p>
+<pre><code class="bash">
 blur> #Runs a query on testtable with highlighting on, notice &lt;&lt;&lt;value1&gt;&gt;&gt; is highlighted 
 blur> query testtable2 fam0.col1:value1
  - Results Summary -
@@ -214,8 +240,8 @@ blur> query testtable2 fam0.col1:value1
 -----------------------------------------------------------------------------------------------------
       hit : 0
     score : 1.4142135381698608
-       id : 1
- recordId : 1
+       id : rowid1
+ recordId : recordid1
    family : fam0
      col1 : &lt;&lt;&lt;value1&gt;&gt;&gt;
 -----------------------------------------------------------------------------------------------------
@@ -227,6 +253,8 @@ blur></code></pre>
         </div>
       </div>
     </div>
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
     
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="resources/js/jquery-2.0.3.min.js"></script>

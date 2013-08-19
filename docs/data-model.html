@@ -258,6 +258,14 @@ shapes per strategy.
 To run a query to find all the rows that contain a location within 10 km (0.089932 10 km in degrees) of gis coordinate &quot;33.0, -88.0&quot; where the family is &quot;docs&quot; and the column is &quot;location&quot;.
 <pre><code class="json">docs.location:"Intersects(Circle(33.0, -88.0 d=0.089932))"</code></pre>
 </p>
+<p>
+To run a query to find all the rows that contain a location within 10 km of gis coordinate &quot;33.0, -88.0&quot; where the family is &quot;docs&quot; and the column is &quot;location&quot;.
+<pre><code class="json">docs.location:"Intersects(Circle(33.0, -88.0 d=10.0km))"</code></pre>
+</p>
+<p>
+To run a query to find all the rows that contain a location within 10 miles of gis coordinate &quot;33.0, -88.0&quot; where the family is &quot;docs&quot; and the column is &quot;location&quot;.
+<pre><code class="json">docs.location:"Intersects(Circle(33.0, -88.0 d=10.0m))"</code></pre>
+</p>
             </div>
           </section>
           <section>

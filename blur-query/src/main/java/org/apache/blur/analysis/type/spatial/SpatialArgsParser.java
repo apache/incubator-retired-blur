@@ -19,7 +19,6 @@ package org.apache.blur.analysis.type.spatial;
 
 import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.exception.InvalidShapeException;
-import com.spatial4j.core.io.ShapeReadWriter;
 import com.spatial4j.core.shape.Shape;
 
 import java.util.HashMap;

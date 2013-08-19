@@ -11,6 +11,7 @@ import java.util.List;
 import org.apache.blur.analysis.BaseFieldManager;
 import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
+import org.apache.blur.analysis.type.spatial.ShapeReadWriter;
 import org.apache.blur.analysis.type.spatial.SpatialArgsParser;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.utils.BlurConstants;
@@ -36,7 +37,6 @@ import org.junit.Test;
 
 import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.distance.DistanceUtils;
-import com.spatial4j.core.io.ShapeReadWriter;
 import com.spatial4j.core.shape.Circle;
 
 public class SuperParserTest {
@@ -337,6 +337,36 @@ public class SuperParserTest {
     SpatialArgs spatialArgs = SpatialArgsParser.parse(writeSpatialArgs, shapeReadWriter);
     Query q1 = sq(strategy.makeQuery(spatialArgs));
     Query q = parseSq("a.id_gis:\"" + writeSpatialArgs + "\"");
+    boolean equals = q1.equals(q);
+    assertTrue(equals);
+  }
+  
+  @Test
+  public void test29() throws ParseException {
+    SpatialContext ctx = SpatialContext.GEO;
+    int maxLevels = 11;
+    SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
+    RecursivePrefixTreeStrategy strategy = new RecursivePrefixTreeStrategy(grid, "a.id_gis");
+    Circle circle = ctx.makeCircle(-80.0, 33.0, DistanceUtils.dist2Degrees(10, DistanceUtils.EARTH_MEAN_RADIUS_KM));
+    SpatialArgs args = new SpatialArgs(SpatialOperation.Intersects, circle);
+    
+    Query q1 = sq(strategy.makeQuery(args));
+    Query q = parseSq("a.id_gis:\"Intersects(Circle(33.000000,-80.000000 d=10.0km))\"");
+    boolean equals = q1.equals(q);
+    assertTrue(equals);
+  }
+  
+  @Test
+  public void test30() throws ParseException {
+    SpatialContext ctx = SpatialContext.GEO;
+    int maxLevels = 11;
+    SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
+    RecursivePrefixTreeStrategy strategy = new RecursivePrefixTreeStrategy(grid, "a.id_gis");
+    Circle circle = ctx.makeCircle(-80.0, 33.0, DistanceUtils.dist2Degrees(10, DistanceUtils.EARTH_MEAN_RADIUS_MI));
+    SpatialArgs args = new SpatialArgs(SpatialOperation.Intersects, circle);
+    
+    Query q1 = sq(strategy.makeQuery(args));
+    Query q = parseSq("a.id_gis:\"Intersects(Circle(33.000000,-80.000000 d=10.0m))\"");
     boolean equals = q1.equals(q);
     assertTrue(equals);
   }

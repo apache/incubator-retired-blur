@@ -4,7 +4,5 @@ Copyright 2012-2013 The Apache Software Foundation
 This product includes software developed by The Apache Software
 Foundation (http://www.apache.org/).
 
-This project includes:
-  JSON (JavaScript Object Notation) under provided without support or warranty
 
 

@@ -50,11 +50,11 @@ import java.util.Arrays;
 //import org.slf4j.LoggerFactory;
 
 /**
- * The SimpleQuery object holds the query string (normal Lucene syntax),
+ * The Query object holds the query string (normal Lucene syntax),
  * filters and type of scoring (used when super query is on).
  */
-public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<SimpleQuery, SimpleQuery._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("SimpleQuery");
+public class Query implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Query, Query._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("Query");
 
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField QUERY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("query", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ROW_QUERY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("rowQuery", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)2);
@@ -64,8 +64,8 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
-    schemes.put(StandardScheme.class, new SimpleQueryStandardSchemeFactory());
-    schemes.put(TupleScheme.class, new SimpleQueryTupleSchemeFactory());
+    schemes.put(StandardScheme.class, new QueryStandardSchemeFactory());
+    schemes.put(TupleScheme.class, new QueryTupleSchemeFactory());
   }
 
   /**
@@ -85,7 +85,8 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   public ScoreType scoreType; // required
   /**
    * The Row filter (normal Lucene syntax), is a filter performed
-   * after the join to filter out entire Rows from the results.
+   * after the join to filter out entire Rows from the results.  This
+   * field is ignored when rowQuery is false.
    */
   public String rowFilter; // required
   /**
@@ -113,7 +114,8 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     SCORE_TYPE((short)3, "scoreType"),
     /**
      * The Row filter (normal Lucene syntax), is a filter performed
-     * after the join to filter out entire Rows from the results.
+     * after the join to filter out entire Rows from the results.  This
+     * field is ignored when rowQuery is false.
      */
     ROW_FILTER((short)4, "rowFilter"),
     /**
@@ -201,17 +203,17 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     tmpMap.put(_Fields.RECORD_FILTER, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("recordFilter", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(SimpleQuery.class, metaDataMap);
+    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(Query.class, metaDataMap);
   }
 
-  public SimpleQuery() {
+  public Query() {
     this.rowQuery = true;
 
     this.scoreType = org.apache.blur.thrift.generated.ScoreType.SUPER;
 
   }
 
-  public SimpleQuery(
+  public Query(
     String query,
     boolean rowQuery,
     ScoreType scoreType,
@@ -230,7 +232,7 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public SimpleQuery(SimpleQuery other) {
+  public Query(Query other) {
     __isset_bitfield = other.__isset_bitfield;
     if (other.isSetQuery()) {
       this.query = other.query;
@@ -247,8 +249,8 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     }
   }
 
-  public SimpleQuery deepCopy() {
-    return new SimpleQuery(this);
+  public Query deepCopy() {
+    return new Query(this);
   }
 
   @Override
@@ -272,7 +274,7 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   /**
    * A Lucene syntax based query.
    */
-  public SimpleQuery setQuery(String query) {
+  public Query setQuery(String query) {
     this.query = query;
     return this;
   }
@@ -304,7 +306,7 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
    * If the Row query is on, meaning the query will be perform against all the
    * Records (joining records in some cases) and the result will be Rows (groupings of Record).
    */
-  public SimpleQuery setRowQuery(boolean rowQuery) {
+  public Query setRowQuery(boolean rowQuery) {
     this.rowQuery = rowQuery;
     setRowQueryIsSet(true);
     return this;
@@ -337,7 +339,7 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
    * 
    * @see ScoreType
    */
-  public SimpleQuery setScoreType(ScoreType scoreType) {
+  public Query setScoreType(ScoreType scoreType) {
     this.scoreType = scoreType;
     return this;
   }
@@ -359,7 +361,8 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
 
   /**
    * The Row filter (normal Lucene syntax), is a filter performed
-   * after the join to filter out entire Rows from the results.
+   * after the join to filter out entire Rows from the results.  This
+   * field is ignored when rowQuery is false.
    */
   public String getRowFilter() {
     return this.rowFilter;
@@ -367,9 +370,10 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
 
   /**
    * The Row filter (normal Lucene syntax), is a filter performed
-   * after the join to filter out entire Rows from the results.
+   * after the join to filter out entire Rows from the results.  This
+   * field is ignored when rowQuery is false.
    */
-  public SimpleQuery setRowFilter(String rowFilter) {
+  public Query setRowFilter(String rowFilter) {
     this.rowFilter = rowFilter;
     return this;
   }
@@ -401,7 +405,7 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
    * The Record filter (normal Lucene syntax), is a filter performed
    * before the join to filter out Records from the results.
    */
-  public SimpleQuery setRecordFilter(String recordFilter) {
+  public Query setRecordFilter(String recordFilter) {
     this.recordFilter = recordFilter;
     return this;
   }
@@ -512,12 +516,12 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof SimpleQuery)
-      return this.equals((SimpleQuery)that);
+    if (that instanceof Query)
+      return this.equals((Query)that);
     return false;
   }
 
-  public boolean equals(SimpleQuery that) {
+  public boolean equals(Query that) {
     if (that == null)
       return false;
 
@@ -574,13 +578,13 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     return 0;
   }
 
-  public int compareTo(SimpleQuery other) {
+  public int compareTo(Query other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    SimpleQuery typedOther = (SimpleQuery)other;
+    Query typedOther = (Query)other;
 
     lastComparison = Boolean.valueOf(isSetQuery()).compareTo(typedOther.isSetQuery());
     if (lastComparison != 0) {
@@ -649,7 +653,7 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("SimpleQuery(");
+    StringBuilder sb = new StringBuilder("Query(");
     boolean first = true;
 
     sb.append("query:");
@@ -714,15 +718,15 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     }
   }
 
-  private static class SimpleQueryStandardSchemeFactory implements SchemeFactory {
-    public SimpleQueryStandardScheme getScheme() {
-      return new SimpleQueryStandardScheme();
+  private static class QueryStandardSchemeFactory implements SchemeFactory {
+    public QueryStandardScheme getScheme() {
+      return new QueryStandardScheme();
     }
   }
 
-  private static class SimpleQueryStandardScheme extends StandardScheme<SimpleQuery> {
+  private static class QueryStandardScheme extends StandardScheme<Query> {
 
-    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, SimpleQuery struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, Query struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -783,7 +787,7 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
       struct.validate();
     }
 
-    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, SimpleQuery struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, Query struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -816,16 +820,16 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
 
   }
 
-  private static class SimpleQueryTupleSchemeFactory implements SchemeFactory {
-    public SimpleQueryTupleScheme getScheme() {
-      return new SimpleQueryTupleScheme();
+  private static class QueryTupleSchemeFactory implements SchemeFactory {
+    public QueryTupleScheme getScheme() {
+      return new QueryTupleScheme();
     }
   }
 
-  private static class SimpleQueryTupleScheme extends TupleScheme<SimpleQuery> {
+  private static class QueryTupleScheme extends TupleScheme<Query> {
 
     @Override
-    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, SimpleQuery struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, Query struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
       if (struct.isSetQuery()) {
@@ -862,7 +866,7 @@ public class SimpleQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     }
 
     @Override
-    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, SimpleQuery struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, Query struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {

@@ -45,7 +45,7 @@ import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
-import org.apache.blur.thrift.generated.SimpleQuery;
+import org.apache.blur.thrift.generated.Query;
 
 
 public class BlurResultSetRecords extends AbstractBlurResultSet {
@@ -90,9 +90,9 @@ public class BlurResultSetRecords extends AbstractBlurResultSet {
     blurQuery.uuid = new Random().nextLong();
     blurQuery.fetch = fetch;
     blurQuery.start = start;
-    blurQuery.simpleQuery = new SimpleQuery();
-    blurQuery.simpleQuery.query = parser.getWhere();
-    blurQuery.simpleQuery.rowQuery = false;
+    blurQuery.query = new Query();
+    blurQuery.query.query = parser.getWhere();
+    blurQuery.query.rowQuery = false;
 
     try {
       schema = client.schema(tableName);
@@ -106,7 +106,7 @@ public class BlurResultSetRecords extends AbstractBlurResultSet {
 
     selector = new Selector();
     setupSelector(selector, schema, columnNames);
-    selector.recordOnly = !blurQuery.simpleQuery.rowQuery;
+    selector.recordOnly = !blurQuery.query.rowQuery;
     Map<String, Map<String, ColumnDefinition>> columnFamilies = schema.getFamilies();
     Map<String, ColumnDefinition> cfSet = columnFamilies.get(columnFamily);
     columnFamilies.clear();

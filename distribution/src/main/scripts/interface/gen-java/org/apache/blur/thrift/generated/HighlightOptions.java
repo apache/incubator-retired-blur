@@ -55,7 +55,7 @@ import java.util.Arrays;
 public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<HighlightOptions, HighlightOptions._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("HighlightOptions");
 
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SIMPLE_QUERY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("simpleQuery", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField QUERY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("query", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField PRE_TAG_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("preTag", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField POST_TAG_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("postTag", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)3);
 
@@ -67,12 +67,12 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
 
   /**
    * The original query is required if used in the Blur.fetchRow call.  If
-   * the highlightOptions is used in a call to Blur.query then the SimpleQuery
-   * passed into the call via the BlurQuery will be used if this simpleQuery is
+   * the highlightOptions is used in a call to Blur.query then the Query
+   * passed into the call via the BlurQuery will be used if this query is
    * null.  So that means if you use highlighting from the query call you can
    * leave this attribute null and it will default to the normal behavior.
    */
-  public SimpleQuery simpleQuery; // required
+  public Query query; // required
   /**
    * The pre tag is the tag that marks the beginning of the highlighting.
    */
@@ -86,12 +86,12 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
      * The original query is required if used in the Blur.fetchRow call.  If
-     * the highlightOptions is used in a call to Blur.query then the SimpleQuery
-     * passed into the call via the BlurQuery will be used if this simpleQuery is
+     * the highlightOptions is used in a call to Blur.query then the Query
+     * passed into the call via the BlurQuery will be used if this query is
      * null.  So that means if you use highlighting from the query call you can
      * leave this attribute null and it will default to the normal behavior.
      */
-    SIMPLE_QUERY((short)1, "simpleQuery"),
+    QUERY((short)1, "query"),
     /**
      * The pre tag is the tag that marks the beginning of the highlighting.
      */
@@ -114,8 +114,8 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // SIMPLE_QUERY
-          return SIMPLE_QUERY;
+        case 1: // QUERY
+          return QUERY;
         case 2: // PRE_TAG
           return PRE_TAG;
         case 3: // POST_TAG
@@ -163,8 +163,8 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.SIMPLE_QUERY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("simpleQuery", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, SimpleQuery.class)));
+    tmpMap.put(_Fields.QUERY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("query", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Query.class)));
     tmpMap.put(_Fields.PRE_TAG, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("preTag", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     tmpMap.put(_Fields.POST_TAG, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("postTag", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
@@ -181,12 +181,12 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
   }
 
   public HighlightOptions(
-    SimpleQuery simpleQuery,
+    Query query,
     String preTag,
     String postTag)
   {
     this();
-    this.simpleQuery = simpleQuery;
+    this.query = query;
     this.preTag = preTag;
     this.postTag = postTag;
   }
@@ -195,8 +195,8 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
    * Performs a deep copy on <i>other</i>.
    */
   public HighlightOptions(HighlightOptions other) {
-    if (other.isSetSimpleQuery()) {
-      this.simpleQuery = new SimpleQuery(other.simpleQuery);
+    if (other.isSetQuery()) {
+      this.query = new Query(other.query);
     }
     if (other.isSetPreTag()) {
       this.preTag = other.preTag;
@@ -212,7 +212,7 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
 
   @Override
   public void clear() {
-    this.simpleQuery = null;
+    this.query = null;
     this.preTag = "<<<";
 
     this.postTag = ">>>";
@@ -221,39 +221,39 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
 
   /**
    * The original query is required if used in the Blur.fetchRow call.  If
-   * the highlightOptions is used in a call to Blur.query then the SimpleQuery
-   * passed into the call via the BlurQuery will be used if this simpleQuery is
+   * the highlightOptions is used in a call to Blur.query then the Query
+   * passed into the call via the BlurQuery will be used if this query is
    * null.  So that means if you use highlighting from the query call you can
    * leave this attribute null and it will default to the normal behavior.
    */
-  public SimpleQuery getSimpleQuery() {
-    return this.simpleQuery;
+  public Query getQuery() {
+    return this.query;
   }
 
   /**
    * The original query is required if used in the Blur.fetchRow call.  If
-   * the highlightOptions is used in a call to Blur.query then the SimpleQuery
-   * passed into the call via the BlurQuery will be used if this simpleQuery is
+   * the highlightOptions is used in a call to Blur.query then the Query
+   * passed into the call via the BlurQuery will be used if this query is
    * null.  So that means if you use highlighting from the query call you can
    * leave this attribute null and it will default to the normal behavior.
    */
-  public HighlightOptions setSimpleQuery(SimpleQuery simpleQuery) {
-    this.simpleQuery = simpleQuery;
+  public HighlightOptions setQuery(Query query) {
+    this.query = query;
     return this;
   }
 
-  public void unsetSimpleQuery() {
-    this.simpleQuery = null;
+  public void unsetQuery() {
+    this.query = null;
   }
 
-  /** Returns true if field simpleQuery is set (has been assigned a value) and false otherwise */
-  public boolean isSetSimpleQuery() {
-    return this.simpleQuery != null;
+  /** Returns true if field query is set (has been assigned a value) and false otherwise */
+  public boolean isSetQuery() {
+    return this.query != null;
   }
 
-  public void setSimpleQueryIsSet(boolean value) {
+  public void setQueryIsSet(boolean value) {
     if (!value) {
-      this.simpleQuery = null;
+      this.query = null;
     }
   }
 
@@ -319,11 +319,11 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case SIMPLE_QUERY:
+    case QUERY:
       if (value == null) {
-        unsetSimpleQuery();
+        unsetQuery();
       } else {
-        setSimpleQuery((SimpleQuery)value);
+        setQuery((Query)value);
       }
       break;
 
@@ -348,8 +348,8 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case SIMPLE_QUERY:
-      return getSimpleQuery();
+    case QUERY:
+      return getQuery();
 
     case PRE_TAG:
       return getPreTag();
@@ -368,8 +368,8 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
     }
 
     switch (field) {
-    case SIMPLE_QUERY:
-      return isSetSimpleQuery();
+    case QUERY:
+      return isSetQuery();
     case PRE_TAG:
       return isSetPreTag();
     case POST_TAG:
@@ -391,12 +391,12 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
     if (that == null)
       return false;
 
-    boolean this_present_simpleQuery = true && this.isSetSimpleQuery();
-    boolean that_present_simpleQuery = true && that.isSetSimpleQuery();
-    if (this_present_simpleQuery || that_present_simpleQuery) {
-      if (!(this_present_simpleQuery && that_present_simpleQuery))
+    boolean this_present_query = true && this.isSetQuery();
+    boolean that_present_query = true && that.isSetQuery();
+    if (this_present_query || that_present_query) {
+      if (!(this_present_query && that_present_query))
         return false;
-      if (!this.simpleQuery.equals(that.simpleQuery))
+      if (!this.query.equals(that.query))
         return false;
     }
 
@@ -434,12 +434,12 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
     int lastComparison = 0;
     HighlightOptions typedOther = (HighlightOptions)other;
 
-    lastComparison = Boolean.valueOf(isSetSimpleQuery()).compareTo(typedOther.isSetSimpleQuery());
+    lastComparison = Boolean.valueOf(isSetQuery()).compareTo(typedOther.isSetQuery());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetSimpleQuery()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.simpleQuery, typedOther.simpleQuery);
+    if (isSetQuery()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.query, typedOther.query);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -484,11 +484,11 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
     StringBuilder sb = new StringBuilder("HighlightOptions(");
     boolean first = true;
 
-    sb.append("simpleQuery:");
-    if (this.simpleQuery == null) {
+    sb.append("query:");
+    if (this.query == null) {
       sb.append("null");
     } else {
-      sb.append(this.simpleQuery);
+      sb.append(this.query);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -514,8 +514,8 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
   public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     // check for required fields
     // check for sub-struct validity
-    if (simpleQuery != null) {
-      simpleQuery.validate();
+    if (query != null) {
+      query.validate();
     }
   }
 
@@ -553,11 +553,11 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
           break;
         }
         switch (schemeField.id) {
-          case 1: // SIMPLE_QUERY
+          case 1: // QUERY
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
-              struct.simpleQuery = new SimpleQuery();
-              struct.simpleQuery.read(iprot);
-              struct.setSimpleQueryIsSet(true);
+              struct.query = new Query();
+              struct.query.read(iprot);
+              struct.setQueryIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -593,9 +593,9 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.simpleQuery != null) {
-        oprot.writeFieldBegin(SIMPLE_QUERY_FIELD_DESC);
-        struct.simpleQuery.write(oprot);
+      if (struct.query != null) {
+        oprot.writeFieldBegin(QUERY_FIELD_DESC);
+        struct.query.write(oprot);
         oprot.writeFieldEnd();
       }
       if (struct.preTag != null) {
@@ -626,7 +626,7 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
     public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, HighlightOptions struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
-      if (struct.isSetSimpleQuery()) {
+      if (struct.isSetQuery()) {
         optionals.set(0);
       }
       if (struct.isSetPreTag()) {
@@ -636,8 +636,8 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
         optionals.set(2);
       }
       oprot.writeBitSet(optionals, 3);
-      if (struct.isSetSimpleQuery()) {
-        struct.simpleQuery.write(oprot);
+      if (struct.isSetQuery()) {
+        struct.query.write(oprot);
       }
       if (struct.isSetPreTag()) {
         oprot.writeString(struct.preTag);
@@ -652,9 +652,9 @@ public class HighlightOptions implements org.apache.blur.thirdparty.thrift_0_9_0
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
-        struct.simpleQuery = new SimpleQuery();
-        struct.simpleQuery.read(iprot);
-        struct.setSimpleQueryIsSet(true);
+        struct.query = new Query();
+        struct.query.read(iprot);
+        struct.setQueryIsSet(true);
       }
       if (incoming.get(1)) {
         struct.preTag = iprot.readString();

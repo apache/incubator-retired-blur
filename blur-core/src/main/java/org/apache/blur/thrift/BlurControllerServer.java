@@ -64,11 +64,11 @@ import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.HighlightOptions;
+import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
-import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.utils.BlurConstants;
@@ -318,13 +318,13 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           selector = new Selector();
           selector.setColumnFamiliesToFetch(EMPTY_LIST);
           selector.setColumnsToFetch(EMPTY_MAP);
-          if (!blurQuery.simpleQuery.rowQuery) {
+          if (!blurQuery.query.rowQuery) {
             selector.setRecordOnly(true);
           }
         } else {
           HighlightOptions highlightOptions = selector.getHighlightOptions();
-          if (highlightOptions != null && highlightOptions.getSimpleQuery() == null) {
-            highlightOptions.setSimpleQuery(blurQuery.getSimpleQuery());
+          if (highlightOptions != null && highlightOptions.getQuery() == null) {
+            highlightOptions.setQuery(blurQuery.getQuery());
           }
         }
         blurQuery.setSelector(null);
@@ -983,7 +983,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public String parseQuery(final String table, final SimpleQuery simpleQuery) throws BlurException, TException {
+  public String parseQuery(final String table, final Query simpleQuery) throws BlurException, TException {
     checkTable(table);
     String cluster = getCluster(table);
     List<String> onlineShardServers = _clusterStatus.getOnlineShardServers(true, cluster);

@@ -34,7 +34,7 @@ import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.FetchRowResult;
 import org.apache.blur.thrift.generated.HighlightOptions;
 import org.apache.blur.thrift.generated.Row;
-import org.apache.blur.thrift.generated.SimpleQuery;
+import org.apache.blur.thrift.generated.Query;
 
 public class QueryCommand extends Command {
   @Override
@@ -57,15 +57,15 @@ public class QueryCommand extends Command {
   private void doItInternal(Blur.Iface client, String[] args, PagingPrintWriter out) throws FinishedException,
       BlurException, TException {
     String tablename = args[1];
-    String query = "";
+    String queryStr = "";
     for (int i = 2; i < args.length; i++) {
-      query += args[i] + " ";
+      queryStr += args[i] + " ";
     }
 
     BlurQuery blurQuery = new BlurQuery();
-    SimpleQuery simpleQuery = new SimpleQuery();
-    simpleQuery.setQuery(query);
-    blurQuery.setSimpleQuery(simpleQuery);
+    Query query = new Query();
+    query.setQuery(queryStr);
+    blurQuery.setQuery(query);
     blurQuery.setSelector(Main.selector);
 
     if (Main.highlight) {

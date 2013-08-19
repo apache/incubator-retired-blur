@@ -168,9 +168,9 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  # The SimpleQuery object holds the query string (normal Lucene syntax),
+  # The Query object holds the query string (normal Lucene syntax),
 # filters and type of scoring (used when super query is on).
-  class SimpleQuery
+  class Query
     include ::Thrift::Struct, ::Thrift::Struct_Union
     QUERY = 1
     ROWQUERY = 2
@@ -187,7 +187,8 @@ module Blur
       # The scoring type, see the document on ScoreType for explanation of each score type.
       SCORETYPE => {:type => ::Thrift::Types::I32, :name => 'scoreType', :default =>       0, :enum_class => ::Blur::ScoreType},
       # The Row filter (normal Lucene syntax), is a filter performed
-# after the join to filter out entire Rows from the results.
+# after the join to filter out entire Rows from the results.  This
+# field is ignored when rowQuery is false.
       ROWFILTER => {:type => ::Thrift::Types::STRING, :name => 'rowFilter'},
       # The Record filter (normal Lucene syntax), is a filter performed
 # before the join to filter out Records from the results.
@@ -208,17 +209,17 @@ module Blur
   # The HighlightOptions controls how the data is fetched and returned.
   class HighlightOptions
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    SIMPLEQUERY = 1
+    QUERY = 1
     PRETAG = 2
     POSTTAG = 3
 
     FIELDS = {
       # The original query is required if used in the Blur.fetchRow call.  If
-# the highlightOptions is used in a call to Blur.query then the SimpleQuery
-# passed into the call via the BlurQuery will be used if this simpleQuery is
+# the highlightOptions is used in a call to Blur.query then the Query
+# passed into the call via the BlurQuery will be used if this query is
 # null.  So that means if you use highlighting from the query call you can
 # leave this attribute null and it will default to the normal behavior.
-      SIMPLEQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'simpleQuery', :class => ::Blur::SimpleQuery},
+      QUERY => {:type => ::Thrift::Types::STRUCT, :name => 'query', :class => ::Blur::Query},
       # The pre tag is the tag that marks the beginning of the highlighting.
       PRETAG => {:type => ::Thrift::Types::STRING, :name => 'preTag', :default => %q"<<<"},
       # The post tag is the tag that marks the end of the highlighting.
@@ -385,7 +386,7 @@ module Blur
 # with the query options.
   class BlurQuery
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    SIMPLEQUERY = 1
+    QUERY = 1
     FACETS = 3
     SELECTOR = 4
     USECACHEIFPRESENT = 6
@@ -400,7 +401,7 @@ module Blur
 
     FIELDS = {
       # The query information.
-      SIMPLEQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'simpleQuery', :class => ::Blur::SimpleQuery},
+      QUERY => {:type => ::Thrift::Types::STRUCT, :name => 'query', :class => ::Blur::Query},
       # A list of Facets to execute with the given query.
       FACETS => {:type => ::Thrift::Types::LIST, :name => 'facets', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Facet}},
       # Selector is used to fetch data in the search results, if null only location ids will be fetched.

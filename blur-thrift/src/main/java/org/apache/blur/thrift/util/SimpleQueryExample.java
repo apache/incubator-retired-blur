@@ -25,21 +25,21 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
-import org.apache.blur.thrift.generated.SimpleQuery;
+import org.apache.blur.thrift.generated.Query;
 
 public class SimpleQueryExample {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
     String connectionStr = args[0];
     String tableName = args[1];
-    String query = args[2];
+    String queryStr = args[2];
 
     Iface client = BlurClient.getClient(connectionStr);
 
     final BlurQuery blurQuery = new BlurQuery();
-    SimpleQuery simpleQuery = new SimpleQuery();
-    blurQuery.setSimpleQuery(simpleQuery);
-    simpleQuery.setQuery(query);
+    Query query = new Query();
+    blurQuery.setQuery(query);
+    query.setQuery(queryStr);
     BlurResults results = client.query(tableName, blurQuery);
     System.out.println("Total Results: " + results.totalResults);
 

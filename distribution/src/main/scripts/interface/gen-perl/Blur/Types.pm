@@ -449,9 +449,9 @@ sub write {
   return $xfer;
 }
 
-package Blur::SimpleQuery;
+package Blur::Query;
 use base qw(Class::Accessor);
-Blur::SimpleQuery->mk_accessors( qw( query rowQuery scoreType rowFilter recordFilter ) );
+Blur::Query->mk_accessors( qw( query rowQuery scoreType rowFilter recordFilter ) );
 
 sub new {
   my $classname = shift;
@@ -483,7 +483,7 @@ sub new {
 }
 
 sub getName {
-  return 'SimpleQuery';
+  return 'Query';
 }
 
 sub read {
@@ -542,7 +542,7 @@ sub read {
 sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
-  $xfer += $output->writeStructBegin('SimpleQuery');
+  $xfer += $output->writeStructBegin('Query');
   if (defined $self->{query}) {
     $xfer += $output->writeFieldBegin('query', TType::STRING, 1);
     $xfer += $output->writeString($self->{query});
@@ -575,18 +575,18 @@ sub write {
 
 package Blur::HighlightOptions;
 use base qw(Class::Accessor);
-Blur::HighlightOptions->mk_accessors( qw( simpleQuery preTag postTag ) );
+Blur::HighlightOptions->mk_accessors( qw( query preTag postTag ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{simpleQuery} = undef;
+  $self->{query} = undef;
   $self->{preTag} = "<<<";
   $self->{postTag} = ">>>";
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{simpleQuery}) {
-      $self->{simpleQuery} = $vals->{simpleQuery};
+    if (defined $vals->{query}) {
+      $self->{query} = $vals->{query};
     }
     if (defined $vals->{preTag}) {
       $self->{preTag} = $vals->{preTag};
@@ -618,8 +618,8 @@ sub read {
     SWITCH: for($fid)
     {
       /^1$/ && do{      if ($ftype == TType::STRUCT) {
-        $self->{simpleQuery} = new Blur::SimpleQuery();
-        $xfer += $self->{simpleQuery}->read($input);
+        $self->{query} = new Blur::Query();
+        $xfer += $self->{query}->read($input);
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -648,9 +648,9 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('HighlightOptions');
-  if (defined $self->{simpleQuery}) {
-    $xfer += $output->writeFieldBegin('simpleQuery', TType::STRUCT, 1);
-    $xfer += $self->{simpleQuery}->write($output);
+  if (defined $self->{query}) {
+    $xfer += $output->writeFieldBegin('query', TType::STRUCT, 1);
+    $xfer += $self->{query}->write($output);
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{preTag}) {
@@ -1287,13 +1287,13 @@ sub write {
 
 package Blur::BlurQuery;
 use base qw(Class::Accessor);
-Blur::BlurQuery->mk_accessors( qw( simpleQuery facets selector useCacheIfPresent start fetch minimumNumberOfResults maxQueryTime uuid userContext cacheResult startTime ) );
+Blur::BlurQuery->mk_accessors( qw( query facets selector useCacheIfPresent start fetch minimumNumberOfResults maxQueryTime uuid userContext cacheResult startTime ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{simpleQuery} = undef;
+  $self->{query} = undef;
   $self->{facets} = undef;
   $self->{selector} = undef;
   $self->{useCacheIfPresent} = 1;
@@ -1306,8 +1306,8 @@ sub new {
   $self->{cacheResult} = 1;
   $self->{startTime} = 0;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{simpleQuery}) {
-      $self->{simpleQuery} = $vals->{simpleQuery};
+    if (defined $vals->{query}) {
+      $self->{query} = $vals->{query};
     }
     if (defined $vals->{facets}) {
       $self->{facets} = $vals->{facets};
@@ -1366,8 +1366,8 @@ sub read {
     SWITCH: for($fid)
     {
       /^1$/ && do{      if ($ftype == TType::STRUCT) {
-        $self->{simpleQuery} = new Blur::SimpleQuery();
-        $xfer += $self->{simpleQuery}->read($input);
+        $self->{query} = new Blur::Query();
+        $xfer += $self->{query}->read($input);
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -1464,9 +1464,9 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('BlurQuery');
-  if (defined $self->{simpleQuery}) {
-    $xfer += $output->writeFieldBegin('simpleQuery', TType::STRUCT, 1);
-    $xfer += $self->{simpleQuery}->write($output);
+  if (defined $self->{query}) {
+    $xfer += $output->writeFieldBegin('query', TType::STRUCT, 1);
+    $xfer += $self->{query}->write($output);
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{facets}) {

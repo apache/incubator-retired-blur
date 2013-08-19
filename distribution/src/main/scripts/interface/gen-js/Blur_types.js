@@ -405,7 +405,7 @@ Row.prototype.write = function(output) {
   return;
 };
 
-SimpleQuery = function(args) {
+Query = function(args) {
   this.query = null;
   this.rowQuery = true;
   this.scoreType = 0;
@@ -429,8 +429,8 @@ SimpleQuery = function(args) {
     }
   }
 };
-SimpleQuery.prototype = {};
-SimpleQuery.prototype.read = function(input) {
+Query.prototype = {};
+Query.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -487,8 +487,8 @@ SimpleQuery.prototype.read = function(input) {
   return;
 };
 
-SimpleQuery.prototype.write = function(output) {
-  output.writeStructBegin('SimpleQuery');
+Query.prototype.write = function(output) {
+  output.writeStructBegin('Query');
   if (this.query !== null && this.query !== undefined) {
     output.writeFieldBegin('query', Thrift.Type.STRING, 1);
     output.writeString(this.query);
@@ -520,12 +520,12 @@ SimpleQuery.prototype.write = function(output) {
 };
 
 HighlightOptions = function(args) {
-  this.simpleQuery = null;
+  this.query = null;
   this.preTag = '<<<';
   this.postTag = '>>>';
   if (args) {
-    if (args.simpleQuery !== undefined) {
-      this.simpleQuery = args.simpleQuery;
+    if (args.query !== undefined) {
+      this.query = args.query;
     }
     if (args.preTag !== undefined) {
       this.preTag = args.preTag;
@@ -551,8 +551,8 @@ HighlightOptions.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.STRUCT) {
-        this.simpleQuery = new SimpleQuery();
-        this.simpleQuery.read(input);
+        this.query = new Query();
+        this.query.read(input);
       } else {
         input.skip(ftype);
       }
@@ -582,9 +582,9 @@ HighlightOptions.prototype.read = function(input) {
 
 HighlightOptions.prototype.write = function(output) {
   output.writeStructBegin('HighlightOptions');
-  if (this.simpleQuery !== null && this.simpleQuery !== undefined) {
-    output.writeFieldBegin('simpleQuery', Thrift.Type.STRUCT, 1);
-    this.simpleQuery.write(output);
+  if (this.query !== null && this.query !== undefined) {
+    output.writeFieldBegin('query', Thrift.Type.STRUCT, 1);
+    this.query.write(output);
     output.writeFieldEnd();
   }
   if (this.preTag !== null && this.preTag !== undefined) {
@@ -1177,7 +1177,7 @@ Facet.prototype.write = function(output) {
 };
 
 BlurQuery = function(args) {
-  this.simpleQuery = null;
+  this.query = null;
   this.facets = null;
   this.selector = null;
   this.useCacheIfPresent = true;
@@ -1190,8 +1190,8 @@ BlurQuery = function(args) {
   this.cacheResult = true;
   this.startTime = 0;
   if (args) {
-    if (args.simpleQuery !== undefined) {
-      this.simpleQuery = args.simpleQuery;
+    if (args.query !== undefined) {
+      this.query = args.query;
     }
     if (args.facets !== undefined) {
       this.facets = args.facets;
@@ -1244,8 +1244,8 @@ BlurQuery.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.STRUCT) {
-        this.simpleQuery = new SimpleQuery();
-        this.simpleQuery.read(input);
+        this.query = new Query();
+        this.query.read(input);
       } else {
         input.skip(ftype);
       }
@@ -1353,9 +1353,9 @@ BlurQuery.prototype.read = function(input) {
 
 BlurQuery.prototype.write = function(output) {
   output.writeStructBegin('BlurQuery');
-  if (this.simpleQuery !== null && this.simpleQuery !== undefined) {
-    output.writeFieldBegin('simpleQuery', Thrift.Type.STRUCT, 1);
-    this.simpleQuery.write(output);
+  if (this.query !== null && this.query !== undefined) {
+    output.writeFieldBegin('query', Thrift.Type.STRUCT, 1);
+    this.query.write(output);
     output.writeFieldEnd();
   }
   if (this.facets !== null && this.facets !== undefined) {

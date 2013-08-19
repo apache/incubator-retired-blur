@@ -31,7 +31,7 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.Schema;
-import org.apache.blur.thrift.generated.SimpleQuery;
+import org.apache.blur.thrift.generated.Query;
 
 
 public class RandomSearchTable {
@@ -59,8 +59,8 @@ public class RandomSearchTable {
       String query = generateQuery(builder, random, sampleOfTerms, numberOfTermsPerQuery);
       System.out.println(query);
       final BlurQuery blurQuery = new BlurQuery();
-      blurQuery.simpleQuery = new SimpleQuery();
-      blurQuery.simpleQuery.query = query;
+      blurQuery.query = new Query();
+      blurQuery.query.query = query;
       long start = System.nanoTime();
 
       Iface client = BlurClient.getClient(connectionStr);

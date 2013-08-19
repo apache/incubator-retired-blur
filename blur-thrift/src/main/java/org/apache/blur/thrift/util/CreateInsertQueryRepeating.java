@@ -34,7 +34,7 @@ import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
-import org.apache.blur.thrift.generated.SimpleQuery;
+import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.TableDescriptor;
 
 /**
@@ -180,10 +180,10 @@ public class CreateInsertQueryRepeating {
 
   private static long hits(Iface client, String table, String queryStr, boolean superQuery) throws BlurException, TException {
     BlurQuery bq = new BlurQuery();
-    SimpleQuery sq = new SimpleQuery();
+    Query sq = new Query();
     sq.query = queryStr;
     sq.rowQuery = superQuery;
-    bq.simpleQuery = sq;
+    bq.query = sq;
     BlurResults query = client.query(table, bq);
     return query.totalResults;
   }
@@ -194,10 +194,10 @@ public class CreateInsertQueryRepeating {
     BlurQuery bq = new BlurQuery();
     bq.fetch = 10;
     for (int i = 1; i <= times; i++) {
-      SimpleQuery sq = new SimpleQuery();
+      Query sq = new Query();
       sq.query = "numberField:" + random.nextInt(1000);
       sq.rowQuery = true;
-      bq.simpleQuery = sq;
+      bq.query = sq;
       client.query(table, bq);
       if (i % 1000 == 0) {
         System.out.println("queries: " + i + " times " + df.format((i / ((System.currentTimeMillis() - start + 0.0) / 1000))) + " queries/s");

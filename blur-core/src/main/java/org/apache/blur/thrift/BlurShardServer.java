@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLongArray;
 
@@ -43,8 +42,6 @@ import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.commands.BlurCommand;
-import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -52,20 +49,18 @@ import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.HighlightOptions;
+import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
-import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.Status;
 import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.utils.BlurConstants;
-import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.QueryCache;
 import org.apache.blur.utils.QueryCacheEntry;
 import org.apache.blur.utils.QueryCacheKey;
-import org.apache.blur.utils.ForkJoin.Merger;
 
 public class BlurShardServer extends TableAdmin implements Iface {
 
@@ -105,8 +100,8 @@ public class BlurShardServer extends TableAdmin implements Iface {
       Selector selector = original.getSelector();
       if (selector != null) {
         HighlightOptions highlightOptions = selector.getHighlightOptions();
-        if (highlightOptions != null && highlightOptions.getSimpleQuery() == null) {
-          highlightOptions.setSimpleQuery(blurQuery.getSimpleQuery());
+        if (highlightOptions != null && highlightOptions.getQuery() == null) {
+          highlightOptions.setQuery(blurQuery.getQuery());
         }
       }
 
@@ -145,7 +140,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public String parseQuery(String table, SimpleQuery simpleQuery) throws BlurException, TException {
+  public String parseQuery(String table, Query simpleQuery) throws BlurException, TException {
     try {
       return _indexManager.parseQuery(table, simpleQuery);
     } catch (Throwable e) {

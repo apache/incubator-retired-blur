@@ -46,9 +46,9 @@ import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.ErrorType;
+import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RowMutation;
-import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.util.BlurThriftHelper;
 import org.apache.blur.utils.GCWatcher;
@@ -132,9 +132,9 @@ public class BlurClusterTest {
     long e = System.nanoTime();
     System.out.println("mutateBatch took [" + (e - s) / 1000000.0 + "]");
     BlurQuery blurQueryRow = new BlurQuery();
-    SimpleQuery simpleQueryRow = new SimpleQuery();
-    simpleQueryRow.setQuery("test.test:value");
-    blurQueryRow.setSimpleQuery(simpleQueryRow);
+    Query queryRow = new Query();
+    queryRow.setQuery("test.test:value");
+    blurQueryRow.setQuery(queryRow);
     blurQueryRow.setUseCacheIfPresent(false);
     blurQueryRow.setCacheResult(false);
     BlurResults resultsRow = client.query("test", blurQueryRow);
@@ -142,10 +142,10 @@ public class BlurClusterTest {
     assertEquals(length, resultsRow.getTotalResults());
 
     BlurQuery blurQueryRecord = new BlurQuery();
-    SimpleQuery simpleQueryRecord = new SimpleQuery();
-    simpleQueryRecord.rowQuery = false;
-    simpleQueryRecord.setQuery("test.test:value");
-    blurQueryRecord.setSimpleQuery(simpleQueryRecord);
+    Query queryRecord = new Query();
+    queryRecord.rowQuery = false;
+    queryRecord.setQuery("test.test:value");
+    blurQueryRecord.setQuery(queryRecord);
     BlurResults resultsRecord = client.query("test", blurQueryRecord);
     assertRecordResults(resultsRecord);
     assertEquals(length, resultsRecord.getTotalResults());
@@ -159,9 +159,9 @@ public class BlurClusterTest {
 
     final Iface client = getClient();
     final BlurQuery blurQueryRow = new BlurQuery();
-    SimpleQuery simpleQueryRow = new SimpleQuery();
-    simpleQueryRow.setQuery("test.test:value");
-    blurQueryRow.setSimpleQuery(simpleQueryRow);
+    Query queryRow = new Query();
+    queryRow.setQuery("test.test:value");
+    blurQueryRow.setQuery(queryRow);
     blurQueryRow.setUseCacheIfPresent(false);
     blurQueryRow.setCacheResult(false);
     blurQueryRow.setUuid(1234l);
@@ -208,9 +208,9 @@ public class BlurClusterTest {
   private void runBackPressureViaQuery() throws InterruptedException {
     final Iface client = getClient();
     final BlurQuery blurQueryRow = new BlurQuery();
-    SimpleQuery simpleQueryRow = new SimpleQuery();
-    simpleQueryRow.setQuery("test.test:value");
-    blurQueryRow.setSimpleQuery(simpleQueryRow);
+    Query queryRow = new Query();
+    queryRow.setQuery("test.test:value");
+    blurQueryRow.setQuery(queryRow);
     blurQueryRow.setUseCacheIfPresent(false);
     blurQueryRow.setCacheResult(false);
     blurQueryRow.setUuid(1234l);
@@ -283,9 +283,9 @@ public class BlurClusterTest {
     int length = 100;
     BlurQuery blurQuery = new BlurQuery();
     blurQuery.setUseCacheIfPresent(false);
-    SimpleQuery simpleQuery = new SimpleQuery();
-    simpleQuery.setQuery("test.test:value");
-    blurQuery.setSimpleQuery(simpleQuery);
+    Query query = new Query();
+    query.setQuery("test.test:value");
+    blurQuery.setQuery(query);
     BlurResults results1 = client.query("test", blurQuery);
     assertEquals(length, results1.getTotalResults());
     assertRowResults(results1);

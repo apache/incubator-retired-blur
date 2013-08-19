@@ -56,7 +56,7 @@ import java.util.Arrays;
 public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<BlurQuery, BlurQuery._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("BlurQuery");
 
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SIMPLE_QUERY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("simpleQuery", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField QUERY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("query", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FACETS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("facets", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)3);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SELECTOR_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("selector", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)4);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField USE_CACHE_IF_PRESENT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("useCacheIfPresent", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)6);
@@ -78,7 +78,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   /**
    * The query information.
    */
-  public SimpleQuery simpleQuery; // required
+  public Query query; // required
   /**
    * A list of Facets to execute with the given query.
    */
@@ -131,7 +131,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     /**
      * The query information.
      */
-    SIMPLE_QUERY((short)1, "simpleQuery"),
+    QUERY((short)1, "query"),
     /**
      * A list of Facets to execute with the given query.
      */
@@ -192,8 +192,8 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // SIMPLE_QUERY
-          return SIMPLE_QUERY;
+        case 1: // QUERY
+          return QUERY;
         case 3: // FACETS
           return FACETS;
         case 4: // SELECTOR
@@ -268,8 +268,8 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.SIMPLE_QUERY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("simpleQuery", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, SimpleQuery.class)));
+    tmpMap.put(_Fields.QUERY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("query", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Query.class)));
     tmpMap.put(_Fields.FACETS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("facets", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Facet.class))));
@@ -315,7 +315,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   }
 
   public BlurQuery(
-    SimpleQuery simpleQuery,
+    Query query,
     List<Facet> facets,
     Selector selector,
     boolean useCacheIfPresent,
@@ -329,7 +329,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     long startTime)
   {
     this();
-    this.simpleQuery = simpleQuery;
+    this.query = query;
     this.facets = facets;
     this.selector = selector;
     this.useCacheIfPresent = useCacheIfPresent;
@@ -356,8 +356,8 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
    */
   public BlurQuery(BlurQuery other) {
     __isset_bitfield = other.__isset_bitfield;
-    if (other.isSetSimpleQuery()) {
-      this.simpleQuery = new SimpleQuery(other.simpleQuery);
+    if (other.isSetQuery()) {
+      this.query = new Query(other.query);
     }
     if (other.isSetFacets()) {
       List<Facet> __this__facets = new ArrayList<Facet>();
@@ -388,7 +388,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
 
   @Override
   public void clear() {
-    this.simpleQuery = null;
+    this.query = null;
     this.facets = null;
     this.selector = null;
     this.useCacheIfPresent = true;
@@ -413,30 +413,30 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   /**
    * The query information.
    */
-  public SimpleQuery getSimpleQuery() {
-    return this.simpleQuery;
+  public Query getQuery() {
+    return this.query;
   }
 
   /**
    * The query information.
    */
-  public BlurQuery setSimpleQuery(SimpleQuery simpleQuery) {
-    this.simpleQuery = simpleQuery;
+  public BlurQuery setQuery(Query query) {
+    this.query = query;
     return this;
   }
 
-  public void unsetSimpleQuery() {
-    this.simpleQuery = null;
+  public void unsetQuery() {
+    this.query = null;
   }
 
-  /** Returns true if field simpleQuery is set (has been assigned a value) and false otherwise */
-  public boolean isSetSimpleQuery() {
-    return this.simpleQuery != null;
+  /** Returns true if field query is set (has been assigned a value) and false otherwise */
+  public boolean isSetQuery() {
+    return this.query != null;
   }
 
-  public void setSimpleQueryIsSet(boolean value) {
+  public void setQueryIsSet(boolean value) {
     if (!value) {
-      this.simpleQuery = null;
+      this.query = null;
     }
   }
 
@@ -783,11 +783,11 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case SIMPLE_QUERY:
+    case QUERY:
       if (value == null) {
-        unsetSimpleQuery();
+        unsetQuery();
       } else {
-        setSimpleQuery((SimpleQuery)value);
+        setQuery((Query)value);
       }
       break;
 
@@ -884,8 +884,8 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case SIMPLE_QUERY:
-      return getSimpleQuery();
+    case QUERY:
+      return getQuery();
 
     case FACETS:
       return getFacets();
@@ -931,8 +931,8 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     }
 
     switch (field) {
-    case SIMPLE_QUERY:
-      return isSetSimpleQuery();
+    case QUERY:
+      return isSetQuery();
     case FACETS:
       return isSetFacets();
     case SELECTOR:
@@ -972,12 +972,12 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     if (that == null)
       return false;
 
-    boolean this_present_simpleQuery = true && this.isSetSimpleQuery();
-    boolean that_present_simpleQuery = true && that.isSetSimpleQuery();
-    if (this_present_simpleQuery || that_present_simpleQuery) {
-      if (!(this_present_simpleQuery && that_present_simpleQuery))
+    boolean this_present_query = true && this.isSetQuery();
+    boolean that_present_query = true && that.isSetQuery();
+    if (this_present_query || that_present_query) {
+      if (!(this_present_query && that_present_query))
         return false;
-      if (!this.simpleQuery.equals(that.simpleQuery))
+      if (!this.query.equals(that.query))
         return false;
     }
 
@@ -1096,12 +1096,12 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     int lastComparison = 0;
     BlurQuery typedOther = (BlurQuery)other;
 
-    lastComparison = Boolean.valueOf(isSetSimpleQuery()).compareTo(typedOther.isSetSimpleQuery());
+    lastComparison = Boolean.valueOf(isSetQuery()).compareTo(typedOther.isSetQuery());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetSimpleQuery()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.simpleQuery, typedOther.simpleQuery);
+    if (isSetQuery()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.query, typedOther.query);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1236,11 +1236,11 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     StringBuilder sb = new StringBuilder("BlurQuery(");
     boolean first = true;
 
-    sb.append("simpleQuery:");
-    if (this.simpleQuery == null) {
+    sb.append("query:");
+    if (this.query == null) {
       sb.append("null");
     } else {
-      sb.append(this.simpleQuery);
+      sb.append(this.query);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -1306,8 +1306,8 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     // check for required fields
     // check for sub-struct validity
-    if (simpleQuery != null) {
-      simpleQuery.validate();
+    if (query != null) {
+      query.validate();
     }
     if (selector != null) {
       selector.validate();
@@ -1350,11 +1350,11 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
           break;
         }
         switch (schemeField.id) {
-          case 1: // SIMPLE_QUERY
+          case 1: // QUERY
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
-              struct.simpleQuery = new SimpleQuery();
-              struct.simpleQuery.read(iprot);
-              struct.setSimpleQueryIsSet(true);
+              struct.query = new Query();
+              struct.query.read(iprot);
+              struct.setQueryIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1474,9 +1474,9 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.simpleQuery != null) {
-        oprot.writeFieldBegin(SIMPLE_QUERY_FIELD_DESC);
-        struct.simpleQuery.write(oprot);
+      if (struct.query != null) {
+        oprot.writeFieldBegin(QUERY_FIELD_DESC);
+        struct.query.write(oprot);
         oprot.writeFieldEnd();
       }
       if (struct.facets != null) {
@@ -1543,7 +1543,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, BlurQuery struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
-      if (struct.isSetSimpleQuery()) {
+      if (struct.isSetQuery()) {
         optionals.set(0);
       }
       if (struct.isSetFacets()) {
@@ -1580,8 +1580,8 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         optionals.set(11);
       }
       oprot.writeBitSet(optionals, 12);
-      if (struct.isSetSimpleQuery()) {
-        struct.simpleQuery.write(oprot);
+      if (struct.isSetQuery()) {
+        struct.query.write(oprot);
       }
       if (struct.isSetFacets()) {
         {
@@ -1629,9 +1629,9 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(12);
       if (incoming.get(0)) {
-        struct.simpleQuery = new SimpleQuery();
-        struct.simpleQuery.read(iprot);
-        struct.setSimpleQueryIsSet(true);
+        struct.query = new Query();
+        struct.query.read(iprot);
+        struct.setQueryIsSet(true);
       }
       if (incoming.get(1)) {
         {

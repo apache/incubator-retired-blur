@@ -1308,20 +1308,20 @@ sub write {
 
 package Blur::Blur_parseQuery_args;
 use base qw(Class::Accessor);
-Blur::Blur_parseQuery_args->mk_accessors( qw( table simpleQuery ) );
+Blur::Blur_parseQuery_args->mk_accessors( qw( table query ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
   $self->{table} = undef;
-  $self->{simpleQuery} = undef;
+  $self->{query} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{table}) {
       $self->{table} = $vals->{table};
     }
-    if (defined $vals->{simpleQuery}) {
-      $self->{simpleQuery} = $vals->{simpleQuery};
+    if (defined $vals->{query}) {
+      $self->{query} = $vals->{query};
     }
   }
   return bless ($self, $classname);
@@ -1353,8 +1353,8 @@ sub read {
       }
       last; };
       /^2$/ && do{      if ($ftype == TType::STRUCT) {
-        $self->{simpleQuery} = new Blur::SimpleQuery();
-        $xfer += $self->{simpleQuery}->read($input);
+        $self->{query} = new Blur::Query();
+        $xfer += $self->{query}->read($input);
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -1376,9 +1376,9 @@ sub write {
     $xfer += $output->writeString($self->{table});
     $xfer += $output->writeFieldEnd();
   }
-  if (defined $self->{simpleQuery}) {
-    $xfer += $output->writeFieldBegin('simpleQuery', TType::STRUCT, 2);
-    $xfer += $self->{simpleQuery}->write($output);
+  if (defined $self->{query}) {
+    $xfer += $output->writeFieldBegin('query', TType::STRUCT, 2);
+    $xfer += $self->{query}->write($output);
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -5099,7 +5099,7 @@ sub schema{
 sub parseQuery{
   my $self = shift;
   my $table = shift;
-  my $simpleQuery = shift;
+  my $query = shift;
 
   die 'implement interface';
 }
@@ -5349,8 +5349,8 @@ sub parseQuery{
   my ($self, $request) = @_;
 
   my $table = ($request->{'table'}) ? $request->{'table'} : undef;
-  my $simpleQuery = ($request->{'simpleQuery'}) ? $request->{'simpleQuery'} : undef;
-  return $self->{impl}->parseQuery($table, $simpleQuery);
+  my $query = ($request->{'query'}) ? $request->{'query'} : undef;
+  return $self->{impl}->parseQuery($table, $query);
 }
 
 sub tableStats{
@@ -5939,21 +5939,21 @@ sub recv_schema{
 sub parseQuery{
   my $self = shift;
   my $table = shift;
-  my $simpleQuery = shift;
+  my $query = shift;
 
-    $self->send_parseQuery($table, $simpleQuery);
+    $self->send_parseQuery($table, $query);
   return $self->recv_parseQuery();
 }
 
 sub send_parseQuery{
   my $self = shift;
   my $table = shift;
-  my $simpleQuery = shift;
+  my $query = shift;
 
   $self->{output}->writeMessageBegin('parseQuery', TMessageType::CALL, $self->{seqid});
   my $args = new Blur::Blur_parseQuery_args();
   $args->{table} = $table;
-  $args->{simpleQuery} = $simpleQuery;
+  $args->{query} = $query;
   $args->write($self->{output});
   $self->{output}->writeMessageEnd();
   $self->{output}->getTransport()->flush();
@@ -7206,7 +7206,7 @@ sub process_parseQuery {
     $input->readMessageEnd();
     my $result = new Blur::Blur_parseQuery_result();
     eval {
-      $result->{success} = $self->{handler}->parseQuery($args->table, $args->simpleQuery);
+      $result->{success} = $self->{handler}->parseQuery($args->table, $args->query);
     }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
       $result->{ex} = $@;
     }

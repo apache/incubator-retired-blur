@@ -27,7 +27,7 @@ import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.Selector;
-import org.apache.blur.thrift.generated.SimpleQuery;
+import org.apache.blur.thrift.generated.Query;
 
 public class BlurThriftHelper {
 
@@ -37,11 +37,11 @@ public class BlurThriftHelper {
     return selector;
   }
 
-  public static BlurQuery newSimpleQuery(String query) {
+  public static BlurQuery newSimpleQuery(String queryStr) {
     BlurQuery blurQuery = new BlurQuery();
-    SimpleQuery simpleQuery = new SimpleQuery();
-    simpleQuery.setQuery(query);
-    blurQuery.setSimpleQuery(simpleQuery);
+    Query query = new Query();
+    query.setQuery(queryStr);
+    blurQuery.setQuery(query);
     blurQuery.setSelector(new Selector());
     return blurQuery;
   }

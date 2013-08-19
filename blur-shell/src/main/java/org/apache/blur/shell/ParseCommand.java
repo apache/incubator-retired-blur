@@ -23,7 +23,7 @@ import java.io.PrintWriter;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
-import org.apache.blur.thrift.generated.SimpleQuery;
+import org.apache.blur.thrift.generated.Query;
 
 public class ParseCommand extends Command {
   @Override
@@ -38,7 +38,7 @@ public class ParseCommand extends Command {
       queryStr += args[i] + " ";
     }
 
-    SimpleQuery simpleQuery = new SimpleQuery();
+    Query simpleQuery = new Query();
     simpleQuery.setQuery(queryStr);
     String query = client.parseQuery(tablename, simpleQuery);
     out.println(query);

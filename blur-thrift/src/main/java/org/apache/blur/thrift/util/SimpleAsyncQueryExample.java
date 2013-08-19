@@ -28,23 +28,23 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
-import org.apache.blur.thrift.generated.SimpleQuery;
+import org.apache.blur.thrift.generated.Query;
 
 public class SimpleAsyncQueryExample {
 
   public static void main(String[] args) throws BlurException, TException, IOException, InterruptedException {
     String connectionStr = args[0];
     String tableName = args[1];
-    String query = args[2];
+    String queryStr = args[2];
 
     AsyncClientPool pool = new AsyncClientPool(10, 30000);
 
     AsyncIface asyncIface = pool.getClient(Blur.AsyncIface.class, connectionStr);
 
     final BlurQuery blurQuery = new BlurQuery();
-    SimpleQuery simpleQuery = new SimpleQuery();
-    blurQuery.setSimpleQuery(simpleQuery);
-    simpleQuery.setQuery(query);
+    Query query = new Query();
+    query.setQuery(queryStr);
+    blurQuery.setQuery(query);
 
     asyncIface.query(tableName, blurQuery, new AsyncMethodCallback<Blur.AsyncClient.query_call>() {
       @Override

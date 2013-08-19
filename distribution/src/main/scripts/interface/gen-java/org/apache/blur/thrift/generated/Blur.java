@@ -133,9 +133,9 @@ public class Blur {
      * 
      * @param table the table name.
      * 
-     * @param simpleQuery the query to parse.
+     * @param query the query to parse.
      */
-    public String parseQuery(String table, SimpleQuery simpleQuery) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public String parseQuery(String table, Query query) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
      * Gets the table stats for the given table.
@@ -371,7 +371,7 @@ public class Blur {
 
     public void schema(String table, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.schema_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
-    public void parseQuery(String table, SimpleQuery simpleQuery, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.parseQuery_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void parseQuery(String table, Query query, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.parseQuery_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     public void tableStats(String table, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.tableStats_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
@@ -662,17 +662,17 @@ public class Blur {
       throw new org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException(org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException.MISSING_RESULT, "schema failed: unknown result");
     }
 
-    public String parseQuery(String table, SimpleQuery simpleQuery) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public String parseQuery(String table, Query query) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
-      send_parseQuery(table, simpleQuery);
+      send_parseQuery(table, query);
       return recv_parseQuery();
     }
 
-    public void send_parseQuery(String table, SimpleQuery simpleQuery) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void send_parseQuery(String table, Query query) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       parseQuery_args args = new parseQuery_args();
       args.setTable(table);
-      args.setSimpleQuery(simpleQuery);
+      args.setQuery(query);
       sendBase("parseQuery", args);
     }
 
@@ -1563,27 +1563,27 @@ public class Blur {
       }
     }
 
-    public void parseQuery(String table, SimpleQuery simpleQuery, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<parseQuery_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void parseQuery(String table, Query query, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<parseQuery_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       checkReady();
-      parseQuery_call method_call = new parseQuery_call(table, simpleQuery, resultHandler, this, ___protocolFactory, ___transport);
+      parseQuery_call method_call = new parseQuery_call(table, query, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class parseQuery_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
       private String table;
-      private SimpleQuery simpleQuery;
-      public parseQuery_call(String table, SimpleQuery simpleQuery, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<parseQuery_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      private Query query;
+      public parseQuery_call(String table, Query query, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<parseQuery_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.table = table;
-        this.simpleQuery = simpleQuery;
+        this.query = query;
       }
 
       public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("parseQuery", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
         parseQuery_args args = new parseQuery_args();
         args.setTable(table);
-        args.setSimpleQuery(simpleQuery);
+        args.setQuery(query);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -2616,7 +2616,7 @@ public class Blur {
       public parseQuery_result getResult(I iface, parseQuery_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         parseQuery_result result = new parseQuery_result();
         try {
-          result.success = iface.parseQuery(args.table, args.simpleQuery);
+          result.success = iface.parseQuery(args.table, args.query);
         } catch (BlurException ex) {
           result.ex = ex;
         }
@@ -10384,7 +10384,7 @@ public class Blur {
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("parseQuery_args");
 
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("table", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SIMPLE_QUERY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("simpleQuery", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)2);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField QUERY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("query", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -10399,7 +10399,7 @@ public class Blur {
     /**
      * the query to parse.
      */
-    public SimpleQuery simpleQuery; // required
+    public Query query; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
@@ -10410,7 +10410,7 @@ public class Blur {
       /**
        * the query to parse.
        */
-      SIMPLE_QUERY((short)2, "simpleQuery");
+      QUERY((short)2, "query");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -10427,8 +10427,8 @@ public class Blur {
         switch(fieldId) {
           case 1: // TABLE
             return TABLE;
-          case 2: // SIMPLE_QUERY
-            return SIMPLE_QUERY;
+          case 2: // QUERY
+            return QUERY;
           default:
             return null;
         }
@@ -10474,8 +10474,8 @@ public class Blur {
       Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.TABLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("table", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
-      tmpMap.put(_Fields.SIMPLE_QUERY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("simpleQuery", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, SimpleQuery.class)));
+      tmpMap.put(_Fields.QUERY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("query", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Query.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(parseQuery_args.class, metaDataMap);
     }
@@ -10485,11 +10485,11 @@ public class Blur {
 
     public parseQuery_args(
       String table,
-      SimpleQuery simpleQuery)
+      Query query)
     {
       this();
       this.table = table;
-      this.simpleQuery = simpleQuery;
+      this.query = query;
     }
 
     /**
@@ -10499,8 +10499,8 @@ public class Blur {
       if (other.isSetTable()) {
         this.table = other.table;
       }
-      if (other.isSetSimpleQuery()) {
-        this.simpleQuery = new SimpleQuery(other.simpleQuery);
+      if (other.isSetQuery()) {
+        this.query = new Query(other.query);
       }
     }
 
@@ -10511,7 +10511,7 @@ public class Blur {
     @Override
     public void clear() {
       this.table = null;
-      this.simpleQuery = null;
+      this.query = null;
     }
 
     /**
@@ -10547,30 +10547,30 @@ public class Blur {
     /**
      * the query to parse.
      */
-    public SimpleQuery getSimpleQuery() {
-      return this.simpleQuery;
+    public Query getQuery() {
+      return this.query;
     }
 
     /**
      * the query to parse.
      */
-    public parseQuery_args setSimpleQuery(SimpleQuery simpleQuery) {
-      this.simpleQuery = simpleQuery;
+    public parseQuery_args setQuery(Query query) {
+      this.query = query;
       return this;
     }
 
-    public void unsetSimpleQuery() {
-      this.simpleQuery = null;
+    public void unsetQuery() {
+      this.query = null;
     }
 
-    /** Returns true if field simpleQuery is set (has been assigned a value) and false otherwise */
-    public boolean isSetSimpleQuery() {
-      return this.simpleQuery != null;
+    /** Returns true if field query is set (has been assigned a value) and false otherwise */
+    public boolean isSetQuery() {
+      return this.query != null;
     }
 
-    public void setSimpleQueryIsSet(boolean value) {
+    public void setQueryIsSet(boolean value) {
       if (!value) {
-        this.simpleQuery = null;
+        this.query = null;
       }
     }
 
@@ -10584,11 +10584,11 @@ public class Blur {
         }
         break;
 
-      case SIMPLE_QUERY:
+      case QUERY:
         if (value == null) {
-          unsetSimpleQuery();
+          unsetQuery();
         } else {
-          setSimpleQuery((SimpleQuery)value);
+          setQuery((Query)value);
         }
         break;
 
@@ -10600,8 +10600,8 @@ public class Blur {
       case TABLE:
         return getTable();
 
-      case SIMPLE_QUERY:
-        return getSimpleQuery();
+      case QUERY:
+        return getQuery();
 
       }
       throw new IllegalStateException();
@@ -10616,8 +10616,8 @@ public class Blur {
       switch (field) {
       case TABLE:
         return isSetTable();
-      case SIMPLE_QUERY:
-        return isSetSimpleQuery();
+      case QUERY:
+        return isSetQuery();
       }
       throw new IllegalStateException();
     }
@@ -10644,12 +10644,12 @@ public class Blur {
           return false;
       }
 
-      boolean this_present_simpleQuery = true && this.isSetSimpleQuery();
-      boolean that_present_simpleQuery = true && that.isSetSimpleQuery();
-      if (this_present_simpleQuery || that_present_simpleQuery) {
-        if (!(this_present_simpleQuery && that_present_simpleQuery))
+      boolean this_present_query = true && this.isSetQuery();
+      boolean that_present_query = true && that.isSetQuery();
+      if (this_present_query || that_present_query) {
+        if (!(this_present_query && that_present_query))
           return false;
-        if (!this.simpleQuery.equals(that.simpleQuery))
+        if (!this.query.equals(that.query))
           return false;
       }
 
@@ -10679,12 +10679,12 @@ public class Blur {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetSimpleQuery()).compareTo(typedOther.isSetSimpleQuery());
+      lastComparison = Boolean.valueOf(isSetQuery()).compareTo(typedOther.isSetQuery());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSimpleQuery()) {
-        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.simpleQuery, typedOther.simpleQuery);
+      if (isSetQuery()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.query, typedOther.query);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -10717,11 +10717,11 @@ public class Blur {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("simpleQuery:");
-      if (this.simpleQuery == null) {
+      sb.append("query:");
+      if (this.query == null) {
         sb.append("null");
       } else {
-        sb.append(this.simpleQuery);
+        sb.append(this.query);
       }
       first = false;
       sb.append(")");
@@ -10731,8 +10731,8 @@ public class Blur {
     public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       // check for required fields
       // check for sub-struct validity
-      if (simpleQuery != null) {
-        simpleQuery.validate();
+      if (query != null) {
+        query.validate();
       }
     }
 
@@ -10778,11 +10778,11 @@ public class Blur {
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // SIMPLE_QUERY
+            case 2: // QUERY
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
-                struct.simpleQuery = new SimpleQuery();
-                struct.simpleQuery.read(iprot);
-                struct.setSimpleQueryIsSet(true);
+                struct.query = new Query();
+                struct.query.read(iprot);
+                struct.setQueryIsSet(true);
               } else { 
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -10807,9 +10807,9 @@ public class Blur {
           oprot.writeString(struct.table);
           oprot.writeFieldEnd();
         }
-        if (struct.simpleQuery != null) {
-          oprot.writeFieldBegin(SIMPLE_QUERY_FIELD_DESC);
-          struct.simpleQuery.write(oprot);
+        if (struct.query != null) {
+          oprot.writeFieldBegin(QUERY_FIELD_DESC);
+          struct.query.write(oprot);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -10833,15 +10833,15 @@ public class Blur {
         if (struct.isSetTable()) {
           optionals.set(0);
         }
-        if (struct.isSetSimpleQuery()) {
+        if (struct.isSetQuery()) {
           optionals.set(1);
         }
         oprot.writeBitSet(optionals, 2);
         if (struct.isSetTable()) {
           oprot.writeString(struct.table);
         }
-        if (struct.isSetSimpleQuery()) {
-          struct.simpleQuery.write(oprot);
+        if (struct.isSetQuery()) {
+          struct.query.write(oprot);
         }
       }
 
@@ -10854,9 +10854,9 @@ public class Blur {
           struct.setTableIsSet(true);
         }
         if (incoming.get(1)) {
-          struct.simpleQuery = new SimpleQuery();
-          struct.simpleQuery.read(iprot);
-          struct.setSimpleQueryIsSet(true);
+          struct.query = new Query();
+          struct.query.read(iprot);
+          struct.setQueryIsSet(true);
         }
       }
     }

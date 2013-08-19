@@ -61,7 +61,9 @@
               <li>
 				<a href="#querying">Querying</a>
 				<ul class="nav">
-                  <li><a href="#string_query">String / Text</a></li>
+				  <li><a href="#row_query">Row Query</a></li>
+				  <li><a href="#test_query">Text</a></li>
+                  <li><a href="#string_query">String</a></li>
                   <li><a href="#numeric_query">Numeric</a></li>
                   <li><a href="#spatial_query">Spatial</a></li>
                 </ul>
@@ -76,12 +78,13 @@
                   <li><a href="#float_type">Float</a></li>
                   <li><a href="#double_type">Double</a></li>
                   <li><a href="#stored_type">Stored</a></li>
-	  			  <a href="#spatial_type">Spatial</a>
-				  <ul class="nav">
-                    <li><a href="#spatial_pointvector">Point Vector</a></li>
-                    <li><a href="#spatial_termprefix">Term Prefix</a></li>
-                    <li><a href="#spatial_recursiveprefix">Recursive Prefix</a></li>
-                  </ul>
+	  			  <li><a href="#spatial_type">Spatial</a>
+				    <ul class="nav">
+                      <li><a href="#spatial_pointvector">&nbsp;&nbsp;Point Vector</a></li>
+                      <li><a href="#spatial_termprefix">&nbsp;&nbsp;Term Prefix</a></li>
+                      <li><a href="#spatial_recursiveprefix">&nbsp;&nbsp;Recursive Prefix</a></li>
+                    </ul>
+                  </li>
                 </ul>
 			  </li>
             </ul>
@@ -153,7 +156,83 @@
           <section>
             <div class="page-header">
               <h1 id="querying">Querying</h1>
-              <p class="lead">TODO</p>
+				<p>
+				All queries follow the basic Lucene query syntax see (<a href="http://lucene.apache.org/core/4_4_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html">http://lucene.apache.org/core/4_4_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html</a>)
+				for an extensive explanation on the syntax.
+				</p>
+				<p>
+				All queries can have boolean logic like:
+				<pre><code class="json">+docs.body:hadoop +docs.author:jon</code></pre>
+				Which is the same as:
+				<pre><code class="json">docs.body:hadoop AND docs.author:jon</code></pre>
+				</p>
+              <h3 id="row_query">Row Queries</h3>
+
+<p>
+Row queries allow you to execute queries across Records within the same Row.  Row queries are a similar idea to an inner join.
+Let's say you want to find all the Rows that contain a Record with the family &quot;author&quot; and has a &quot;name&quot; Column that has that contains a term &quot;Jon&quot; and another Record with the family &quot;docs&quot; and has a &quot;body&quot; Column with a term of &quot;Hadoop&quot;.
+<pre><code class="json">+&lt;author.name:Jon&gt; +&lt;docs.body:Hadoop&gt;</code></pre>
+</p>
+
+              <h3 id="text_query">Text</h3>
+<p>Text fields are analyzed with Lucene's standard analyzers, which mean that the string is broken down into terms
+and the terms capitalization is removed and well as any special punctuation.  See Lucene's documentation for further explanation.
+</p>
+              <h4>Examples:</h4>
+<p>
+To run a query to find all the rows that contain a column with a term of &quot;hadoop&quot; where the family is &quot;docs&quot; and the column is  &quot;body&quot;.
+<pre><code class="json">docs.body:hadoop</code></pre>
+</p>
+<p>
+To run a query to find all the rows that contain a column with a term of &quot;hadoop&quot; and &quot;awesome&quot; where the family is &quot;docs&quot; and the column is &quot;body&quot;.
+<pre><code class="json">docs.body:(+hadoop +awesome)</code></pre>
+</p>
+<p>
+To run a query to find all the rows that contain a column with a phrase of &quot;hadoop is awesome&quot; where the family is &quot;docs&quot; and the column is &quot;body&quot;.
+<pre><code class="json">docs.body:&quot;hadoop is awesome&quot;</code></pre>
+</p>
+<p>
+To run a query to find all the rows that contain a column with a word of &quot;hadoop&quot; and we want to deal with misspellings (or a Fuzzy query) where the family is &quot;docs&quot; and the column is &quot;body&quot;.
+<pre><code class="json">docs.body:hadoop~</code></pre>
+</p>
+<p>
+To run a query to find all the rows that contain a column with a word that matches a wildcard pattern of &quot;h*d?op&quot; where the family is &quot;docs&quot; and the column is &quot;body&quot;.
+<pre><code class="json">docs.body:h*d?op</code></pre>
+</p>
+
+              <h3 id="string_query">String</h3>
+              <p>TODO</p>
+              <h3 id="numeric_query">Numeric</h3>
+              <p>TODO</p>
+              <h3 id="spatial_query">Spatial</h3>
+              <p>TODO</p>
+            </div>
+          </section>
+          <section>
+            <div class="page-header">
+              <h1 id="types">Types</h1>
+              <h3 id="text_type">Text</h3>
+              <p>TODO</p>
+              <h3 id="string_type">String</h3>
+              <p>TODO</p>
+              <h3 id="long_type">Long</h3>
+              <p>TODO</p>
+              <h3 id="int_type">Integer</h3>
+              <p>TODO</p>
+              <h3 id="float_type">Float</h3>
+              <p>TODO</p>
+              <h3 id="double_type">Double</h3>
+              <p>TODO</p>
+              <h3 id="stored_type">Stored</h3>
+              <p>TODO</p>
+              <h3 id="spatial_type">Spatial</h3>
+              <p>TODO</p>
+              <h4 id="spatial_pointvector">Point Vector</h4>
+              <p>TODO</p>
+              <h4 id="spatial_termprefix">Term Prefix</h4>
+              <p>TODO</p>
+              <h4 id="spatial_recursiveprefix">Recursive Prefix</h4>
+              <p>TODO</p>
             </div>
           </section>
         </div>

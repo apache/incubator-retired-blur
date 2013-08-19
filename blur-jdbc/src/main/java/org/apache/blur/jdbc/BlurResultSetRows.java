@@ -43,7 +43,7 @@ import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
-import org.apache.blur.thrift.generated.SimpleQuery;
+import org.apache.blur.thrift.generated.Query;
 
 
 public class BlurResultSetRows extends AbstractBlurResultSet {
@@ -85,9 +85,9 @@ public class BlurResultSetRows extends AbstractBlurResultSet {
     blurQuery.uuid = new Random().nextLong();
     blurQuery.fetch = fetch;
     blurQuery.start = start;
-    blurQuery.simpleQuery = new SimpleQuery();
-    blurQuery.simpleQuery.query = parser.getWhere();
-    blurQuery.simpleQuery.rowQuery = true;
+    blurQuery.query = new Query();
+    blurQuery.query.query = parser.getWhere();
+    blurQuery.query.rowQuery = true;
 
     try {
       schema = client.schema(tableName);
@@ -101,7 +101,7 @@ public class BlurResultSetRows extends AbstractBlurResultSet {
 
     selector = new Selector();
     setupSelector(selector, schema, columnNames);
-    selector.recordOnly = !blurQuery.simpleQuery.rowQuery;
+    selector.recordOnly = !blurQuery.query.rowQuery;
     blurResultSetMetaData = new BlurResultSetMetaData(columnNames, schema.getFamilies());
     try {
       results = client.query(tableName, blurQuery);

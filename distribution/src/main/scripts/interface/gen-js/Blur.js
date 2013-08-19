@@ -1122,13 +1122,13 @@ Blur_schema_result.prototype.write = function(output) {
 
 Blur_parseQuery_args = function(args) {
   this.table = null;
-  this.simpleQuery = null;
+  this.query = null;
   if (args) {
     if (args.table !== undefined) {
       this.table = args.table;
     }
-    if (args.simpleQuery !== undefined) {
-      this.simpleQuery = args.simpleQuery;
+    if (args.query !== undefined) {
+      this.query = args.query;
     }
   }
 };
@@ -1155,8 +1155,8 @@ Blur_parseQuery_args.prototype.read = function(input) {
       break;
       case 2:
       if (ftype == Thrift.Type.STRUCT) {
-        this.simpleQuery = new SimpleQuery();
-        this.simpleQuery.read(input);
+        this.query = new Query();
+        this.query.read(input);
       } else {
         input.skip(ftype);
       }
@@ -1177,9 +1177,9 @@ Blur_parseQuery_args.prototype.write = function(output) {
     output.writeString(this.table);
     output.writeFieldEnd();
   }
-  if (this.simpleQuery !== null && this.simpleQuery !== undefined) {
-    output.writeFieldBegin('simpleQuery', Thrift.Type.STRUCT, 2);
-    this.simpleQuery.write(output);
+  if (this.query !== null && this.query !== undefined) {
+    output.writeFieldBegin('query', Thrift.Type.STRUCT, 2);
+    this.query.write(output);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
@@ -4735,16 +4735,16 @@ BlurClient.prototype.recv_schema = function() {
   }
   throw 'schema failed: unknown result';
 };
-BlurClient.prototype.parseQuery = function(table, simpleQuery) {
-  this.send_parseQuery(table, simpleQuery);
+BlurClient.prototype.parseQuery = function(table, query) {
+  this.send_parseQuery(table, query);
   return this.recv_parseQuery();
 };
 
-BlurClient.prototype.send_parseQuery = function(table, simpleQuery) {
+BlurClient.prototype.send_parseQuery = function(table, query) {
   this.output.writeMessageBegin('parseQuery', Thrift.MessageType.CALL, this.seqid);
   var args = new Blur_parseQuery_args();
   args.table = table;
-  args.simpleQuery = simpleQuery;
+  args.query = query;
   args.write(this.output);
   this.output.writeMessageEnd();
   return this.output.getTransport().flush();

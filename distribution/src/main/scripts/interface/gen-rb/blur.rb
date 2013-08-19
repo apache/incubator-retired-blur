@@ -152,13 +152,13 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'schema failed: unknown result')
       end
 
-      def parseQuery(table, simpleQuery)
-        send_parseQuery(table, simpleQuery)
+      def parseQuery(table, query)
+        send_parseQuery(table, query)
         return recv_parseQuery()
       end
 
-      def send_parseQuery(table, simpleQuery)
-        send_message('parseQuery', ParseQuery_args, :table => table, :simpleQuery => simpleQuery)
+      def send_parseQuery(table, query)
+        send_message('parseQuery', ParseQuery_args, :table => table, :query => query)
       end
 
       def recv_parseQuery()
@@ -622,7 +622,7 @@ module Blur
         args = read_args(iprot, ParseQuery_args)
         result = ParseQuery_result.new()
         begin
-          result.success = @handler.parseQuery(args.table, args.simpleQuery)
+          result.success = @handler.parseQuery(args.table, args.query)
         rescue ::Blur::BlurException => ex
           result.ex = ex
         end
@@ -1189,13 +1189,13 @@ module Blur
     class ParseQuery_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
       TABLE = 1
-      SIMPLEQUERY = 2
+      QUERY = 2
 
       FIELDS = {
         # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
         # the query to parse.
-        SIMPLEQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'simpleQuery', :class => ::Blur::SimpleQuery}
+        QUERY => {:type => ::Thrift::Types::STRUCT, :name => 'query', :class => ::Blur::Query}
       }
 
       def struct_fields; FIELDS; end

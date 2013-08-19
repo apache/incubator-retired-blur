@@ -84,7 +84,6 @@ import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.Selector;
-import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.BlurExecutorCompletionService.Cancel;
 import org.apache.blur.utils.BlurUtil;
@@ -274,18 +273,18 @@ public class IndexManager {
     if (highlightOptions == null) {
       return null;
     }
-    SimpleQuery simpleQuery = highlightOptions.getSimpleQuery();
-    if (simpleQuery == null) {
+    org.apache.blur.thrift.generated.Query query = highlightOptions.getQuery();
+    if (query == null) {
       return null;
     }
 
     TableContext context = getTableContext(table);
-    Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.recordFilter, false, fieldManager,
+    Filter preFilter = QueryParserUtil.parseFilter(table, query.recordFilter, false, fieldManager,
         _filterCache, context);
-    Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.rowFilter, true, fieldManager,
+    Filter postFilter = QueryParserUtil.parseFilter(table, query.rowFilter, true, fieldManager,
         _filterCache, context);
-    return QueryParserUtil.parseQuery(simpleQuery.query, simpleQuery.rowQuery, fieldManager, postFilter,
-        preFilter, getScoreType(simpleQuery.scoreType), context);
+    return QueryParserUtil.parseQuery(query.query, query.rowQuery, fieldManager, postFilter,
+        preFilter, getScoreType(query.scoreType), context);
   }
 
   private void populateSelector(String table, Selector selector) throws IOException, BlurException {
@@ -390,7 +389,7 @@ public class IndexManager {
       ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> call;
       TableContext context = getTableContext(table);
       FieldManager fieldManager = context.getFieldManager();
-      SimpleQuery simpleQuery = blurQuery.simpleQuery;
+      org.apache.blur.thrift.generated.Query simpleQuery = blurQuery.query;
       Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.recordFilter, false, fieldManager,
           _filterCache, context);
       Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.rowFilter, true, fieldManager,
@@ -431,7 +430,7 @@ public class IndexManager {
     }
   }
 
-  public String parseQuery(String table, SimpleQuery simpleQuery) throws ParseException, BlurException {
+  public String parseQuery(String table, org.apache.blur.thrift.generated.Query simpleQuery) throws ParseException, BlurException {
     TableContext context = getTableContext(table);
     FieldManager fieldManager = context.getFieldManager();
     Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.recordFilter, false, fieldManager,
@@ -460,7 +459,7 @@ public class IndexManager {
     int size = blurQuery.facets.size();
     Query[] queries = new Query[size];
     for (int i = 0; i < size; i++) {
-      queries[i] = QueryParserUtil.parseQuery(blurQuery.facets.get(i).queryStr, blurQuery.simpleQuery.rowQuery,
+      queries[i] = QueryParserUtil.parseQuery(blurQuery.facets.get(i).queryStr, blurQuery.query.rowQuery,
           fieldManager, postFilter, preFilter, ScoreType.CONSTANT, context);
     }
     return queries;

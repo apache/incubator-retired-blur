@@ -205,10 +205,10 @@ struct Row {
 }
 
 /**
- * The SimpleQuery object holds the query string (normal Lucene syntax), 
+ * The Query object holds the query string (normal Lucene syntax), 
  * filters and type of scoring (used when super query is on).
  */
-struct SimpleQuery {
+struct Query {
   /**
    * A Lucene syntax based query.
    */
@@ -224,7 +224,8 @@ struct SimpleQuery {
   3:ScoreType scoreType = ScoreType.SUPER, 
   /**
    * The Row filter (normal Lucene syntax), is a filter performed 
-   * after the join to filter out entire Rows from the results.
+   * after the join to filter out entire Rows from the results.  This
+   * field is ignored when rowQuery is false.
    */
   4:string rowFilter,
   /**
@@ -240,12 +241,12 @@ struct SimpleQuery {
 struct HighlightOptions {
   /**
    * The original query is required if used in the Blur.fetchRow call.  If 
-   * the highlightOptions is used in a call to Blur.query then the SimpleQuery 
-   * passed into the call via the BlurQuery will be used if this simpleQuery is 
+   * the highlightOptions is used in a call to Blur.query then the Query 
+   * passed into the call via the BlurQuery will be used if this query is 
    * null.  So that means if you use highlighting from the query call you can 
    * leave this attribute null and it will default to the normal behavior.
    */
-  1:SimpleQuery simpleQuery,
+  1:Query query,
 
   /**
    * The pre tag is the tag that marks the beginning of the highlighting.
@@ -386,7 +387,7 @@ struct BlurQuery {
   /**
    * The query information.
    */
-  1:SimpleQuery simpleQuery,
+  1:Query query,
   /**
    * A list of Facets to execute with the given query.
    */
@@ -832,7 +833,7 @@ service Blur {
     /** the table name. */
     1:string table, 
     /** the query to parse. */
-    2:SimpleQuery simpleQuery
+    2:Query query
   ) throws (1:BlurException ex)
 
   /**

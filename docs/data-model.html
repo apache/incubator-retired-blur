@@ -178,7 +178,7 @@ Let's say you want to find all the Rows that contain a Record with the family &q
 <p>Text fields are analyzed with Lucene's standard analyzers, which mean that the string is broken down into terms
 and the terms capitalization is removed and well as any special punctuation.  See Lucene's documentation for further explanation.
 </p>
-              <h4>Examples:</h4>
+<h4>Examples:</h4>
 <p>
 To run a query to find all the rows that contain a column with a term of &quot;hadoop&quot; where the family is &quot;docs&quot; and the column is  &quot;body&quot;.
 <pre><code class="json">docs.body:hadoop</code></pre>
@@ -201,9 +201,42 @@ To run a query to find all the rows that contain a column with a word that match
 </p>
 
               <h3 id="string_query">String</h3>
-              <p>TODO</p>
+<p>String fields are indexed Columns that are not analyzed they are indexed as is.  Do not use String fields for 
+large amount of text, this will increase the size of your index and probably not give you the desired behavior.  
+So given the string "Hadoop" and "hadoop", these will be indexed as two different term because the String field 
+is case sensitive.  Also if the string contains "The cow jumps over the moon." the single term that will be placed
+into the index is "The cow jumps over the moon." as a single string.  This field type is normally used for id or
+type lookups.
+</p>
+<h4>Examples:</h4>
+<p>
+To run a query to find all the rows that contain a column with a term of &quot;Hadoop&quot; where the family is &quot;docs&quot; and the column is  &quot;type&quot;.
+<pre><code class="json">docs.type:Hadoop</code></pre>
+</p>
               <h3 id="numeric_query">Numeric</h3>
-              <p>TODO</p>
+<p>The numerics types are:
+<ul>
+<li>int</li>
+<li>long</li>
+<li>float</li>
+<li>double</li>
+</ul>
+All numerics types can perform two types of queries:
+<ul>
+<li>Exact Match</li>
+<li>Range</li>
+</ul>
+</p>
+
+<h4>Examples:</h4>
+<p>
+To run a query to find all the rows that contain a column with a value of &quot;12345&quot; where the family is &quot;docs&quot; and the column is &quot;id&quot;.
+<pre><code class="json">docs.id:12345</code></pre>
+</p>
+<p>
+To run a query to find all the rows that contain a column with a starting value of &quot;12345&quot; and an ending values of &quot;54321&quot; where the family is &quot;docs&quot; and the column is &quot;id&quot;.
+<pre><code class="json">docs.id:[12345 TO 54321]</code></pre>
+</p>
               <h3 id="spatial_query">Spatial</h3>
               <p>TODO</p>
             </div>

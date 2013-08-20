@@ -74,7 +74,17 @@ public class SchemaTableCommand extends Command implements TableFirstArgCommand 
   }
 
   @Override
-  public String help() {
-    return "schema of the named table, args; tablename";
+  public String description() {
+    return "Schema of the named table.";
+  }
+
+  @Override
+  public String usage() {
+    return "<tablename>";
+  }
+
+  @Override
+  public String name() {
+    return "schema";
   }
 }

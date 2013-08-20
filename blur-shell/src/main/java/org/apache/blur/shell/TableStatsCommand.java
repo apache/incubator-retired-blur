@@ -77,7 +77,17 @@ public class TableStatsCommand extends Command implements TableFirstArgCommand {
   }
 
   @Override
-  public String help() {
-    return "print stats for the named table";
+  public String description() {
+    return "Print stats for the named table.";
+  }
+
+  @Override
+  public String usage() {
+    return "<tablename>";
+  }
+
+  @Override
+  public String name() {
+    return "stats";
   }
 }

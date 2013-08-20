@@ -1,86 +1,222 @@
 <!DOCTYPE html>
-<!-- 
-  Licensed to the Apache Software Foundation (ASF) under one or more
-  contributor license agreements.  See the NOTICE file distributed with
-  this work for additional information regarding copyright ownership.
-  The ASF licenses this file to You under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with
-  the License.  You may obtain a copy of the License at
-  
-       http://www.apache.org/licenses/LICENSE-2.0
-  
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 -->
 <html>
-  <head>
-    <title>Using Blur - Apache Blur (Incubator) Documentation</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Bootstrap -->
-    <link href="resources/css/bootstrap.min.css" rel="stylesheet" media="screen">
-    <link href="resources/css/bs-docs.css" rel="stylesheet" media="screen">
-  </head>
-  <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="index.html">Apache Blur (Incubator)</a>
-        </div>
-        <div class="collapse navbar-collapse">
-          <ul class="nav navbar-nav">
-            <li><a href="getting-started.html">Getting Started</a></li>
-            <li><a href="data-model.html">Data Model</a></li>
-            <li><a href="cluster-setup.html">Cluster Setup</a></li>
-            <li class="active"><a href="using-blur.html">Using Blur</a></li>
-            <li><a href="Blur.html">Blur API</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <div class="container bs-docs-container">
-      <div class="row">
-        <div class="col-md-3">
-          <div class="bs-sidebar hidden-print affix" role="complementary">
-            <ul class="nav bs-sidenav">
-              <li><a href="#shell">Shell</a></li>
-              <li><a href="#map-reduce">Map Reduce</a></li>
-              <li><a href="#thrift-client">Thrift Client</a></li>
-              <li><a href="#jdbc">JDBC</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="col-md-9" role="main">
-          <section>
-            <div class="page-header">
-              <h1 id="shell">Shell</h1>
-            </div>
-            <p class="lead">TODO</p>
-          </section>
-          <section>
-            <div class="page-header">
-              <h1 id="map-reduce">Map Reduce</h1>
-            </div>
-            <p class="lead">Here is an example of the typical usage of the BlurOutputFormat. The Blur table has to be created before the MapReduce job is started. The setupJob method configures the following:</p>
-            <ul>
-              <li>The reducer class to be DefaultBlurReducer</li>
-              <li>The number of reducers to be equal to the number of shards in the table.</li>
-              <li>The output key class to a standard Text writable from the Hadoop library</li>
-              <li>The output value class is a BlurMutate writable from the Blur library</li>
-              <li>The output format to be BlurOutputFormat</li>
-              <li>Sets the TableDescriptor in the Configuration</li>
-              <li>Sets the output path to the TableDescriptor.getTableUri() value</li>
-              <li>Also the job will use the BlurOutputCommitter class to commit or rollback the MapReduce job</li>
-            </ul>
-            <h3>Example Usage</h3>
-            <pre><code class="java">Iface client = BlurClient.getClient("controller1:40010");
+<head>
+<title>Using Blur - Apache Blur (Incubator) Documentation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Bootstrap -->
+<link href="resources/css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link href="resources/css/bs-docs.css" rel="stylesheet" media="screen">
+</head>
+<body>
+<div class="navbar navbar-inverse navbar-fixed-top">
+<div class="container">
+<div class="navbar-header">
+<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+</button>
+<a class="navbar-brand" href="index.html">Apache Blur (Incubator)</a>
+</div>
+<div class="collapse navbar-collapse">
+<ul class="nav navbar-nav">
+<li><a href="getting-started.html">Getting Started</a></li>
+<li><a href="data-model.html">Data Model</a></li>
+<li><a href="cluster-setup.html">Cluster Setup</a></li>
+<li class="active"><a href="using-blur.html">Using Blur</a></li>
+<li><a href="Blur.html">Blur API</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="container bs-docs-container">
+<div class="row">
+<div class="col-md-3">
+<div class="bs-sidebar hidden-print affix" role="complementary">
+<ul class="nav bs-sidenav">
+<li><a href="#shell">Shell</a>
+<ul class="nav">
+<li><a href="#shell_table_commands">Table Commands</a>
+<ul class="nav">
+<li><a href="#shell_command_create">&nbsp;&nbsp;create</a></li>
+<li><a href="#shell_command_enable">&nbsp;&nbsp;enable</a></li>
+<li><a href="#shell_command_disable">&nbsp;&nbsp;disable</a></li>
+<li><a href="#shell_command_remove">&nbsp;&nbsp;remove</a></li>
+<li><a href="#shell_command_truncate">&nbsp;&nbsp;truncate</a></li>
+<li><a href="#shell_command_describe">&nbsp;&nbsp;describe</a></li>
+<li><a href="#shell_command_list">&nbsp;&nbsp;list</a></li>
+<li><a href="#shell_command_schema">&nbsp;&nbsp;schema</a></li>
+<li><a href="#shell_command_stats">&nbsp;&nbsp;stats</a></li>
+<li><a href="#shell_command_layout">&nbsp;&nbsp;layout</a></li>
+<li><a href="#shell_command_parse">&nbsp;&nbsp;parse</a></li>
+<li><a href="#shell_command_definecolumn">&nbsp;&nbsp;definecolumn</a></li>
+</ul></li>
+<li><a href="#shell_data_commands">Data Commands</a>
+<ul class="nav">
+<li><a href="#shell_command_query">&nbsp;&nbsp;query</a></li>
+<li><a href="#shell_command_get">&nbsp;&nbsp;get</a></li>
+<li><a href="#shell_command_mutate">&nbsp;&nbsp;mutate</a></li>
+<li><a href="#shell_command_delete">&nbsp;&nbsp;delete</a></li>
+<li><a href="#shell_command_highlight">&nbsp;&nbsp;highlight</a></li>
+<li><a href="#shell_command_selector">&nbsp;&nbsp;selector</a></li>
+</ul></li>
+<li><a href="#shell_cluster_commands">Cluster Commands</a>
+<ul class="nav">
+<li><a href="#shell_command_controllers">&nbsp;&nbsp;controllers</a></li>
+<li><a href="#shell_command_shards">&nbsp;&nbsp;shards</a></li>
+<li><a href="#shell_command_clusterlist">&nbsp;&nbsp;clusterlist</a></li>
+<li><a href="#shell_command_cluster">&nbsp;&nbsp;cluster</a></li>
+<li><a href="#shell_command_safemodewait">&nbsp;&nbsp;safemodewait</a></li>
+<li><a href="#shell_command_top">&nbsp;&nbsp;top</a></li>
+</ul></li>
+<li><a href="#shell_shell_commands">Shell Commands</a>
+<ul class="nav">
+<li><a href="#shell_command_help">&nbsp;&nbsp;help</a></li>
+<li><a href="#shell_command_debug">&nbsp;&nbsp;debug</a></li>
+<li><a href="#shell_command_timed">&nbsp;&nbsp;timed</a></li>
+<li><a href="#shell_command_quit">&nbsp;&nbsp;quit</a></li>
+<li><a href="#shell_command_reset">&nbsp;&nbsp;reset</a></li>
+</ul></li>
+
+</ul>
+</li>
+<li><a href="#map-reduce">Map Reduce</a></li>
+<li><a href="#thrift-client">Thrift Client</a></li>
+<li><a href="#jdbc">JDBC</a></li>
+</ul>
+</div>
+</div>
+<div class="col-md-9" role="main">
+<section>
+<div class="page-header">
+<h1 id="shell">Shell</h1>
+</div>
+<h3 id="shell_table_commands">Table Commands</h3>
+<h4 id="shell_command_create">create</h4>
+<p>Description: Create the named table.<br/>
+<pre><code class="bash">create &lt;tablename&gt; &lt;tableuri&gt; &lt;shardcount&gt;</code></pre></p>
+<h4 id="shell_command_enable">enable</h4>
+<p>Description: Enable the named table.<br/>
+<pre><code class="bash">enable &lt;tablename&gt;</code></pre></p>
+<h4 id="shell_command_disable">disable</h4>
+<p>Description: Disable the named table.<br/>
+<pre><code class="bash">disable &lt;tablename&gt;</code></pre></p>
+<h4 id="shell_command_remove">remove</h4>
+<p>Description: Remove the named table.<br/>
+<pre><code class="bash">remove &lt;tablename&gt;</code></pre></p>
+<h4 id="shell_command_truncate">truncate</h4>
+<p>Description: Truncate the named table.<br/>
+<pre><code class="bash">truncate &lt;tablename&gt;</code></pre></p>
+<h4 id="shell_command_describe">describe</h4>
+<p>Description: Describe the named table.<br/>
+<pre><code class="bash">describe &lt;tablename&gt;</code></pre></p>
+<h4 id="shell_command_list">list</h4>
+<p>Description: List tables.<br/>
+<pre><code class="bash">list </code></pre></p>
+<h4 id="shell_command_schema">schema</h4>
+<p>Description: Schema of the named table.<br/>
+<pre><code class="bash">schema &lt;tablename&gt;</code></pre></p>
+<h4 id="shell_command_stats">stats</h4>
+<p>Description: Print stats for the named table.<br/>
+<pre><code class="bash">stats &lt;tablename&gt;</code></pre></p>
+<h4 id="shell_command_layout">layout</h4>
+<p>Description: List the server layout for a table.<br/>
+<pre><code class="bash">layout &lt;tablename&gt;</code></pre></p>
+<h4 id="shell_command_parse">parse</h4>
+<p>Description: Parse a query and return string representation.<br/>
+<pre><code class="bash">parse &lt;tablename&gt; &lt;query&gt;</code></pre></p>
+<h4 id="shell_command_definecolumn">definecolumn</h4>
+<p>Description: Defines a new column in the named table.<br/>
+<pre><code class="bash">definecolumn &lt;table name&gt; &lt;family&gt; &lt;column name&gt; &lt;type&gt; [-s &lt;sub column name&gt;] [-F] [-p name value]*</code></pre></p>
+<h3 id="shell_data_commands">Data Commands</h3>
+<h4 id="shell_command_query">query</h4>
+<p>Description: Query the named table.<br/>
+<pre><code class="bash">query &lt;tablename&gt; &lt;query&gt;</code></pre></p>
+<h4 id="shell_command_get">get</h4>
+<p>Description: display the specified row<br/>
+<pre><code class="bash">get &lt;tablename&gt; &lt;rowid&gt;</code></pre></p>
+<h4 id="shell_command_mutate">mutate</h4>
+<p>Description: Mutate the specified row.<br/>
+<pre><code class="bash">mutate &lt;tablename&gt; &lt;rowid&gt; &lt;recordid&gt; &lt;columnfamily&gt; &lt;columnname&gt; &lt;value&gt;</code></pre></p>
+<h4 id="shell_command_delete">delete</h4>
+<p>Description: Delete the specified row.<br/>
+<pre><code class="bash">delete &lt;tablename&gt; &lt;rowid&gt;</code></pre></p>
+<h4 id="shell_command_highlight">highlight</h4>
+<p>Description: Toggle highlight of query output on/off.<br/>
+<pre><code class="bash">highlight </code></pre></p>
+<h4 id="shell_command_selector">selector</h4>
+<p>Description: Manage the default selector.<br/>
+<pre><code class="bash">selector reset | add &lt;family&gt; [&lt;columnName&gt;*]</code></pre></p>
+<h3 id="shell_cluster_commands">Cluster Commands</h3>
+<h4 id="shell_command_controllers">controllers</h4>
+<p>Description: List controllers.<br/>
+<pre><code class="bash">controllers </code></pre></p>
+<h4 id="shell_command_shards">shards</h4>
+<p>Description: list shards<br/>
+<pre><code class="bash">shards &lt;clustername&gt;</code></pre></p>
+<h4 id="shell_command_clusterlist">clusterlist</h4>
+<p>Description: List the clusters.<br/>
+<pre><code class="bash">clusterlist </code></pre></p>
+<h4 id="shell_command_cluster">cluster</h4>
+<p>Description: Set the cluster in use.<br/>
+<pre><code class="bash">cluster &lt;clustername&gt;</code></pre></p>
+<h4 id="shell_command_safemodewait">safemodewait</h4>
+<p>Description: Wait for safe mode to exit.<br/>
+<pre><code class="bash">safemodewait [&lt;clustername&gt;]</code></pre></p>
+<h4 id="shell_command_top">top</h4>
+<p>Description: Top for watching shard clusters.<br/>
+<pre><code class="bash">top [&lt;cluster&gt;]</code></pre></p>
+<h3 id="shell_shell_commands">Shell Commands</h3>
+<h4 id="shell_command_help">help</h4>
+<p>Description: Display help.<br/>
+<pre><code class="bash">help </code></pre></p>
+<h4 id="shell_command_debug">debug</h4>
+<p>Description: Toggle debugging on/off.<br/>
+<pre><code class="bash">debug </code></pre></p>
+<h4 id="shell_command_timed">timed</h4>
+<p>Description: Toggle timing of commands on/off.<br/>
+<pre><code class="bash">timed </code></pre></p>
+<h4 id="shell_command_quit">quit</h4>
+<p>Description: Exit the shell.<br/>
+<pre><code class="bash">quit </code></pre></p>
+<h4 id="shell_command_reset">reset</h4>
+<p>Description: Resets the terminal window.<br/>
+<pre><code class="bash">reset </code></pre></p>
+
+</section>
+<section>
+<div class="page-header">
+<h1 id="map-reduce">Map Reduce</h1>
+</div>
+<p class="lead">Here is an example of the typical usage of the BlurOutputFormat. The Blur table has to be created before the MapReduce job is started. The setupJob method configures the following:</p>
+<ul>
+<li>The reducer class to be DefaultBlurReducer</li>
+<li>The number of reducers to be equal to the number of shards in the table.</li>
+<li>The output key class to a standard Text writable from the Hadoop library</li>
+<li>The output value class is a BlurMutate writable from the Blur library</li>
+<li>The output format to be BlurOutputFormat</li>
+<li>Sets the TableDescriptor in the Configuration</li>
+<li>Sets the output path to the TableDescriptor.getTableUri() value</li>
+<li>Also the job will use the BlurOutputCommitter class to commit or rollback the MapReduce job</li>
+</ul>
+<h3>Example Usage</h3>
+<pre><code class="java">Iface client = BlurClient.getClient("controller1:40010");
 
 TableDescriptor tableDescriptor = client.describe(tableName);
 
@@ -97,48 +233,48 @@ BlurOutputFormat.setIndexLocally(job, true);
 BlurOutputFormat.setOptimizeInFlight(job, false);
 
 job.waitForCompletion(true);</code></pre>
-            <h3>Options</h3>
-            <ul>
-              <li>
-                BlurOutputFormat.setIndexLocally(Job,boolean)
-                <ul><li>Enabled by default, this will enable local indexing on the machine where the task is running. Then when the RecordWriter closes the index is copied to the remote destination in HDFS.</li></ul>
-              </li>
-              <li>
-                BlurOutputFormat.setMaxDocumentBufferSize(Job,int)
-                <ul><li>Sets the maximum number of documents that the buffer will hold in memory before overflowing to disk. By default this is 1000 which will probably be very low for most systems.</li></ul>
-              </li>
-              <li>
-                BlurOutputFormat.setOptimizeInFlight(Job,boolean)
-                <ul><li>Enabled by default, this will optimize the index while copying from the local index to the remote destination in HDFS. Used in conjunction with the setIndexLocally.</li></ul>
-              </li>
-              <li>
-                BlurOutputFormat.setReducerMultiplier(Job,int)
-                <ul><li>This will multiple the number of reducers for this job. For example if the table has 256 shards the normal number of reducers is 256. However if the reducer multiplier is set to 4 then the number of reducers will be 1024 and each shard will get 4 new segments instead of the normal 1.</li></ul>
-              </li>
-            </ul>
-          </section>
-          <section>
-            <div class="page-header">
-              <h1 id="thrift-client">Thrift Client</h1>
-            </div>
-            <p class="lead">TODO</p>
-          </section>
-          <section>
-            <div class="page-header">
-              <h1 id="jdbc">JDBC</h1>
-            </div>
-            <p class="lead">TODO</p>
-          </section>
-        </div>
-      </div>
-    </div>
-    
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="resources/js/jquery-2.0.3.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="resources/js/bootstrap.min.js"></script>
-    <!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
-    <script src="resources/js/respond.min.js"></script>
-    <script src="resources/js/docs.js"></script>
-  </body>
+<h3>Options</h3>
+<ul>
+<li>
+BlurOutputFormat.setIndexLocally(Job,boolean)
+<ul><li>Enabled by default, this will enable local indexing on the machine where the task is running. Then when the RecordWriter closes the index is copied to the remote destination in HDFS.</li></ul>
+</li>
+<li>
+BlurOutputFormat.setMaxDocumentBufferSize(Job,int)
+<ul><li>Sets the maximum number of documents that the buffer will hold in memory before overflowing to disk. By default this is 1000 which will probably be very low for most systems.</li></ul>
+</li>
+<li>
+BlurOutputFormat.setOptimizeInFlight(Job,boolean)
+<ul><li>Enabled by default, this will optimize the index while copying from the local index to the remote destination in HDFS. Used in conjunction with the setIndexLocally.</li></ul>
+</li>
+<li>
+BlurOutputFormat.setReducerMultiplier(Job,int)
+<ul><li>This will multiple the number of reducers for this job. For example if the table has 256 shards the normal number of reducers is 256. However if the reducer multiplier is set to 4 then the number of reducers will be 1024 and each shard will get 4 new segments instead of the normal 1.</li></ul>
+</li>
+</ul>
+</section>
+<section>
+<div class="page-header">
+<h1 id="thrift-client">Thrift Client</h1>
+</div>
+<p class="lead">TODO</p>
+</section>
+<section>
+<div class="page-header">
+<h1 id="jdbc">JDBC</h1>
+</div>
+<p class="lead">TODO</p>
+</section>
+</div>
+</div>
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="resources/js/jquery-2.0.3.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="resources/js/bootstrap.min.js"></script>
+<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+<script src="resources/js/respond.min.js"></script>
+<script src="resources/js/docs.js"></script>
+</body>
 </html>

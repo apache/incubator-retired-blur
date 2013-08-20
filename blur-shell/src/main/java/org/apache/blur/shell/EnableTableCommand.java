@@ -24,7 +24,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
 
-public class EnableDisableTableCommand extends Command implements TableFirstArgCommand {
+public class EnableTableCommand extends Command implements TableFirstArgCommand {
   @Override
   public void doit(PrintWriter out, Blur.Iface client, String[] args)
       throws CommandException, TException, BlurException {
@@ -43,7 +43,17 @@ public class EnableDisableTableCommand extends Command implements TableFirstArgC
   }
 
   @Override
-  public String help() {
-    return "change status of the named table, args; tablename";
+  public String description() {
+    return "Enable the named table.";
+  }
+
+  @Override
+  public String usage() {
+    return "<tablename>";
+  }
+
+  @Override
+  public String name() {
+    return "enable";
   }
 }

@@ -96,7 +96,17 @@ public class SelectorCommand extends Command {
   }
 
   @Override
-  public String help() {
-    return "manage the default selector, args; [reset] | [add family [columnName*]]";
+  public String description() {
+    return "Manage the default selector.";
+  }
+
+  @Override
+  public String usage() {
+    return "reset | add <family> [<columnName>*]";
+  }
+
+  @Override
+  public String name() {
+    return "selector";
   }
 }

@@ -66,19 +66,23 @@ public class AddColumnDefinitionCommand extends Command implements TableFirstArg
   }
 
   @Override
-  public String help() {
-    return "define column, args: <table> <family> <column name> <type> [-s <sub column name>] [-F] [-p name value]*";
+  public String description() {
+    return "Defines a new column in the named table.";
   }
 
+  @Override
+  public String usage() {
+    return "<table name> <family> <column name> <type> [-s <sub column name>] [-F] [-p name value]*";
+  }
+
+  @Override
+  public String name() {
+    return "definecolumn";
+  }
+  
   @SuppressWarnings("static-access")
   private static CommandLine parse(String[] otherArgs, Writer out) {
     Options options = new Options();
-    // options.addOption(OptionBuilder.withArgName("family").hasArg().isRequired(true)
-    // .withDescription("* The family of the new column definition.").create("f"));
-    // options.addOption(OptionBuilder.withArgName("family").hasArg().isRequired(true)
-    // .withDescription("* The family of the new column definition.").create("f"));
-    // options.addOption(OptionBuilder.withArgName("column name").hasArg().isRequired(true)
-    // .withDescription("* The column name of the new column definition.").create("c"));
     options.addOption(OptionBuilder.withArgName("sub column name").hasArg()
         .withDescription("The sub column name of the new column definition.").create("s"));
     options.addOption(OptionBuilder.withDescription(

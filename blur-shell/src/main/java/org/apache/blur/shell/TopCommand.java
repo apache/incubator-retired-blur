@@ -437,7 +437,17 @@ public class TopCommand extends Command {
   }
 
   @Override
-  public String help() {
-    return "top arg; cluster";
+  public String description() {
+    return "Top for watching shard clusters.";
+  }
+
+  @Override
+  public String usage() {
+    return "[<cluster>]";
+  }
+
+  @Override
+  public String name() {
+    return "top";
   }
 }

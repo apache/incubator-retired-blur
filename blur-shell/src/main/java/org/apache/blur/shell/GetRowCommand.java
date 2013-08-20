@@ -130,7 +130,17 @@ public class GetRowCommand extends Command implements TableFirstArgCommand {
   }
 
   @Override
-  public String help() {
-    return "display the specified row, args; tablename rowid";
+  public String description() {
+    return "display the specified row";
+  }
+
+  @Override
+  public String usage() {
+    return "<tablename> <rowid>";
+  }
+
+  @Override
+  public String name() {
+    return "get";
   }
 }

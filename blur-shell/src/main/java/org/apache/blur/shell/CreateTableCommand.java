@@ -27,17 +27,17 @@ import org.apache.blur.thrift.generated.TableDescriptor;
 
 public class CreateTableCommand extends Command {
   @Override
-  public void doit(PrintWriter out, Blur.Iface client, String[] args)
-      throws CommandException, TException, BlurException {
+  public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+      BlurException {
     if (args.length != 4) {
       throw new CommandException("Invalid args: " + help());
     }
-    
+
     String tablename = args[1];
     String tableuri = args[2];
     int shardCount = Integer.parseInt(args[3]);
 
-    TableDescriptor td = new TableDescriptor(); 
+    TableDescriptor td = new TableDescriptor();
     td.setTableUri(tableuri);
     td.setCluster(Main.getCluster(client));
     td.setName(tablename);
@@ -52,7 +52,17 @@ public class CreateTableCommand extends Command {
   }
 
   @Override
-  public String help() {
-    return "create the named table, args; tablename tableuri shardcount";
+  public String description() {
+    return "Create the named table.";
+  }
+
+  @Override
+  public String usage() {
+    return "<tablename> <tableuri> <shardcount>";
+  }
+
+  @Override
+  public String name() {
+    return "create";
   }
 }

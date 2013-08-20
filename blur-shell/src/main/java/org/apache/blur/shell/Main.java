@@ -62,7 +62,7 @@ public class Main {
   /** default selector */
   static Selector selector = new Selector();
 
-  private static Map<String, Command> commands;
+  static Map<String, Command> commands;
   static String cluster;
 
   static String getCluster(Iface client) throws BlurException, TException, CommandException {
@@ -157,8 +157,18 @@ public class Main {
     }
 
     @Override
-    public String help() {
-      return "set the cluster in use, args; clustername";
+    public String description() {
+      return "Set the cluster in use.";
+    }
+
+    @Override
+    public String usage() {
+      return "<clustername>";
+    }
+
+    @Override
+    public String name() {
+      return "cluster";
     }
 
   }
@@ -183,8 +193,18 @@ public class Main {
     }
 
     @Override
-    public String help() {
-      return "resets the terminal window";
+    public String description() {
+      return "Resets the terminal window.";
+    }
+
+    @Override
+    public String usage() {
+      return "";
+    }
+
+    @Override
+    public String name() {
+      return "reset";
     }
 
   }
@@ -203,8 +223,18 @@ public class Main {
     }
 
     @Override
-    public String help() {
-      return "toggle debugging on/off";
+    public String description() {
+      return "Toggle debugging on/off.";
+    }
+
+    @Override
+    public String usage() {
+      return "";
+    }
+
+    @Override
+    public String name() {
+      return "debug";
     }
 
   }
@@ -223,8 +253,18 @@ public class Main {
     }
 
     @Override
-    public String help() {
-      return "toggle timing of commands on/off";
+    public String description() {
+      return "Toggle timing of commands on/off.";
+    }
+
+    @Override
+    public String usage() {
+      return "";
+    }
+
+    @Override
+    public String name() {
+      return "timed";
     }
 
   }
@@ -243,11 +283,27 @@ public class Main {
     }
 
     @Override
-    public String help() {
-      return "toggle highlight of query output on/off";
+    public String description() {
+      return "Toggle highlight of query output on/off.";
+    }
+
+    @Override
+    public String usage() {
+      return "";
+    }
+
+    @Override
+    public String name() {
+      return "highlight";
     }
 
   }
+
+  public static String[] tableCommands = { "create", "enable", "disable", "remove", "truncate", "describe", "list",
+      "schema", "stats", "layout", "parse", "definecolumn" };
+  public static String[] dataCommands = { "query", "get", "mutate", "delete", "highlight", "selector" };
+  public static String[] clusterCommands = { "controllers", "shards", "clusterlist", "cluster", "safemodewait", "top" };
+  public static String[] shellCommands = { "help", "debug", "timed", "quit", "reset" };
 
   private static class HelpCommand extends Command {
     @Override
@@ -259,29 +315,26 @@ public class Main {
 
       int bufferLength = getMaxCommandLength(cmds.keySet()) + 2;
       out.println(" - Table commands - ");
-      String[] tableCommands = { "create", "enable", "disable", "remove", "truncate", "describe", "list", "schema",
-          "stats", "layout", "parse" };
+
       printCommandAndHelp(out, cmds, tableCommands, bufferLength);
 
       out.println();
       out.println(" - Data commands - ");
-      String[] dataCommands = { "query", "get", "mutate", "delete", "highlight", "selector" };
+
       printCommandAndHelp(out, cmds, dataCommands, bufferLength);
 
       out.println();
       out.println(" - Cluster commands - ");
-      String[] clusterCommands = { "controllers", "shards", "clusterlist", "cluster", "safemodewait", "top" };
       printCommandAndHelp(out, cmds, clusterCommands, bufferLength);
 
       out.println();
       out.println(" - Shell commands - ");
-      String[] shellCommands = { "help", "debug", "timed", "quit", "reset" };
+      
       printCommandAndHelp(out, cmds, shellCommands, bufferLength);
 
       if (!cmds.isEmpty()) {
         out.println();
         out.println(" - Other operations - ");
-
         for (Entry<String, Command> e : cmds.entrySet()) {
           out.println("  " + buffer(e.getKey(), bufferLength) + " - " + e.getValue().help());
         }
@@ -319,8 +372,18 @@ public class Main {
     }
 
     @Override
-    public String help() {
-      return "display help";
+    public String description() {
+      return "Display help.";
+    }
+
+    @Override
+    public String usage() {
+      return "";
+    }
+
+    @Override
+    public String name() {
+      return "help";
     }
   }
 
@@ -339,8 +402,18 @@ public class Main {
     }
 
     @Override
-    public String help() {
-      return "exit the shell";
+    public String description() {
+      return "Exit the shell.";
+    }
+
+    @Override
+    public String usage() {
+      return "";
+    }
+
+    @Override
+    public String name() {
+      return "quit";
     }
   }
 
@@ -348,39 +421,7 @@ public class Main {
 
     args = removeLeadingShellFromScript(args);
 
-    Builder<String, Command> builder = new ImmutableMap.Builder<String, Command>();
-    builder.put("help", new HelpCommand());
-    builder.put("debug", new DebugCommand());
-    builder.put("timed", new TimedCommand());
-    builder.put("highlight", new HighlightCommand());
-    builder.put("quit", new QuitCommand());
-    builder.put("list", new ListTablesCommand());
-    builder.put("create", new CreateTableCommand());
-    builder.put("enable", new EnableDisableTableCommand());
-    builder.put("disable", new EnableDisableTableCommand());
-    builder.put("remove", new RemoveTableCommand());
-    builder.put("describe", new DescribeTableCommand());
-    builder.put("stats", new TableStatsCommand());
-    builder.put("schema", new SchemaTableCommand());
-    builder.put("query", new QueryCommand());
-    builder.put("get", new GetRowCommand());
-    builder.put("delete", new DeleteRowCommand());
-    builder.put("mutate", new MutateRowCommand());
-    builder.put("indexaccesslog", new IndexAccessLogCommand());
-    builder.put("clusterlist", new ShardClusterListCommand());
-    builder.put("layout", new ShardServerLayoutCommand());
-    builder.put("controllers", new ControllersEchoCommand());
-    builder.put("shards", new ShardsEchoCommand());
-    builder.put("truncate", new TruncateTableCommand());
-    builder.put("cluster", new ClusterCommand());
-    builder.put("safemodewait", new WaitInSafemodeCommand());
-    builder.put("top", new TopCommand());
-    builder.put("parse", new ParseCommand());
-    builder.put("loadtestdata", new LoadTestDataCommand());
-    builder.put("selector", new SelectorCommand());
-    builder.put("definecolumn", new AddColumnDefinitionCommand());
-    builder.put("reset", new ResetCommand());
-    commands = builder.build();
+    setupCommands();
 
     CliShellOptions cliShellOptions = getCliShellOptions(args);
     if (cliShellOptions == null) {
@@ -476,6 +517,46 @@ public class Main {
       t.printStackTrace();
       throw t;
     }
+  }
+
+  public static void setupCommands() {
+    Builder<String, Command> builder = new ImmutableMap.Builder<String, Command>();
+    register(builder, new HelpCommand());
+    register(builder, new DebugCommand());
+    register(builder, new TimedCommand());
+    register(builder, new HighlightCommand());
+    register(builder, new QuitCommand());
+    register(builder, new ListTablesCommand());
+    register(builder, new CreateTableCommand());
+    register(builder, new EnableTableCommand());
+    register(builder, new DisableTableCommand());
+    register(builder, new RemoveTableCommand());
+    register(builder, new DescribeTableCommand());
+    register(builder, new TableStatsCommand());
+    register(builder, new SchemaTableCommand());
+    register(builder, new QueryCommand());
+    register(builder, new GetRowCommand());
+    register(builder, new DeleteRowCommand());
+    register(builder, new MutateRowCommand());
+    register(builder, new IndexAccessLogCommand());
+    register(builder, new ShardClusterListCommand());
+    register(builder, new ShardServerLayoutCommand());
+    register(builder, new ControllersEchoCommand());
+    register(builder, new ShardsEchoCommand());
+    register(builder, new TruncateTableCommand());
+    register(builder, new ClusterCommand());
+    register(builder, new WaitInSafemodeCommand());
+    register(builder, new TopCommand());
+    register(builder, new ParseCommand());
+    register(builder, new LoadTestDataCommand());
+    register(builder, new SelectorCommand());
+    register(builder, new AddColumnDefinitionCommand());
+    register(builder, new ResetCommand());
+    commands = builder.build();
+  }
+
+  private static void register(Builder<String, Command> builder, Command command) {
+    builder.put(command.name(), command);
   }
 
   private static void setPrompt(Iface client, ConsoleReader reader, String connectionStr, PrintWriter out)

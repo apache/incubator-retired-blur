@@ -71,7 +71,17 @@ public class MutateRowCommand extends Command implements TableFirstArgCommand {
   }
 
   @Override
-  public String help() {
-    return "mutate the specified row, args; tablename rowid recordid columnfamily columnname value";
+  public String description() {
+    return "Mutate the specified row.";
+  }
+
+  @Override
+  public String usage() {
+    return "<tablename> <rowid> <recordid> <columnfamily> <columnname> <value>";
+  }
+
+  @Override
+  public String name() {
+    return "mutate";
   }
 }

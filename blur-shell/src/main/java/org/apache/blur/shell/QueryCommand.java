@@ -137,7 +137,17 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
   }
 
   @Override
-  public String help() {
-    return "query the named table, args; tablename query";
+  public String description() {
+    return "Query the named table.";
+  }
+
+  @Override
+  public String usage() {
+    return "<tablename> <query>";
+  }
+
+  @Override
+  public String name() {
+    return "query";
   }
 }

@@ -37,7 +37,17 @@ public class ListTablesCommand extends Command {
   }
 
   @Override
-  public String help() {
-    return "list tables";
+  public String description() {
+    return "List tables.";
+  }
+
+  @Override
+  public String usage() {
+    return "";
+  }
+
+  @Override
+  public String name() {
+    return "list";
   }
 }

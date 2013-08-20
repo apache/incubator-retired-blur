@@ -54,7 +54,17 @@ public class LoadTestDataCommand extends Command implements TableFirstArgCommand
   }
 
   @Override
-  public String help() {
-    return "load test data, args; tablename wal(boolean) rows(int) recordsPerRow(int) families(int) columnsPerRecord(int) wordsPerColumn(int) batchSize(int)";
+  public String description() {
+    return "Load test data.";
+  }
+
+  @Override
+  public String usage() {
+    return "<tablename> <write ahead log (true/false) <rows> <recordsPerRow> <families> <columnsPerRecord> <wordsPerColumn> <batchSize>";
+  }
+
+  @Override
+  public String name() {
+    return "loadtestdata";
   }
 }

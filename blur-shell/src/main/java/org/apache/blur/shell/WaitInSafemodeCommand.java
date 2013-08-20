@@ -57,8 +57,18 @@ public class WaitInSafemodeCommand extends Command {
   }
 
   @Override
-  public String help() {
-    return "wait for safe mode to exit, args; clustername";
+  public String description() {
+    return "Wait for safe mode to exit.";
+  }
+
+  @Override
+  public String usage() {
+    return "[<clustername>]";
+  }
+
+  @Override
+  public String name() {
+    return "safemodewait";
   }
 
 }

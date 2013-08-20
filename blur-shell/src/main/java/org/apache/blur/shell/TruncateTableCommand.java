@@ -54,7 +54,17 @@ public class TruncateTableCommand extends Command implements TableFirstArgComman
   }
 
   @Override
-  public String help() {
-    return "truncate the named table, args; tablename";
+  public String description() {
+    return "Truncate the named table.";
+  }
+
+  @Override
+  public String usage() {
+    return "<tablename>";
+  }
+
+  @Override
+  public String name() {
+    return "truncate";
   }
 }

@@ -39,7 +39,15 @@ public abstract class Command {
   abstract public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
       BlurException;
 
-  abstract public String help();
+  public final String help() {
+    return description() + " " + "Usage: " + name() + " " + usage();
+  }
+
+  abstract public String description();
+
+  abstract public String usage();
+
+  abstract public String name();
 
   public ConsoleReader getConsoleReader() {
     return consoleReader;

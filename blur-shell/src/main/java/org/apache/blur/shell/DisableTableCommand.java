@@ -24,21 +24,20 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
 
-public class RemoveTableCommand extends Command implements TableFirstArgCommand {
+public class DisableTableCommand extends Command implements TableFirstArgCommand {
   @Override
-  public void doit(PrintWriter out, Blur.Iface client, String[] args)
-      throws CommandException, TException, BlurException {
+  public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+      BlurException {
     if (args.length != 2) {
       throw new CommandException("Invalid args: " + help());
     }
     String tablename = args[1];
-
-    client.removeTable(tablename, true);
+    client.disableTable(tablename);
   }
 
   @Override
   public String description() {
-    return "Remove the named table.";
+    return "Disable the named table.";
   }
 
   @Override
@@ -48,6 +47,6 @@ public class RemoveTableCommand extends Command implements TableFirstArgCommand 
 
   @Override
   public String name() {
-    return "remove";
+    return "disable";
   }
 }

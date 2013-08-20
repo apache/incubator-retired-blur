@@ -42,7 +42,17 @@ public class ShardServerLayoutCommand extends Command {
   }
 
   @Override
-  public String help() {
-    return "list the server layout for a table, args: tablename";
+  public String description() {
+    return "List the server layout for a table.";
+  }
+
+  @Override
+  public String usage() {
+    return "<tablename>";
+  }
+
+  @Override
+  public String name() {
+    return "layout";
   }
 }

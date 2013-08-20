@@ -36,7 +36,17 @@ public class ShardClusterListCommand extends Command {
   }
 
   @Override
-  public String help() {
-    return "list the clusters";
+  public String description() {
+    return "List the clusters.";
+  }
+
+  @Override
+  public String usage() {
+    return "";
+  }
+
+  @Override
+  public String name() {
+    return "clusterlist";
   }
 }

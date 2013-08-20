@@ -45,7 +45,17 @@ public class ParseCommand extends Command implements TableFirstArgCommand {
   }
 
   @Override
-  public String help() {
-    return "parse a query and return string representation, args; tablename query";
+  public String description() {
+    return "Parse a query and return string representation.";
+  }
+
+  @Override
+  public String usage() {
+    return "<tablename> <query>";
+  }
+
+  @Override
+  public String name() {
+    return "parse";
   }
 }

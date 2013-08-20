@@ -63,11 +63,6 @@ public class ShardsEchoCommand extends Command {
     return false;
   }
 
-  @Override
-  public String help() {
-    return "list shards, args; clustername";
-  }
-
   public static String getNodeName() {
     try {
       return InetAddress.getLocalHost().getHostName();
@@ -80,6 +75,21 @@ public class ShardsEchoCommand extends Command {
       String nodeName = message.substring(0, index);
       return nodeName;
     }
+  }
+
+  @Override
+  public String description() {
+    return "list shards";
+  }
+
+  @Override
+  public String usage() {
+    return "<clustername>";
+  }
+
+  @Override
+  public String name() {
+    return "shards";
   }
 
 }

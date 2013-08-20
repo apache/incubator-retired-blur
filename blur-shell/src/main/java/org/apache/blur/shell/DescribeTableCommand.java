@@ -52,7 +52,17 @@ public class DescribeTableCommand extends Command implements TableFirstArgComman
   }
 
   @Override
-  public String help() {
-    return "describe the named table, args; tablename";
+  public String description() {
+    return "Describe the named table.";
+  }
+
+  @Override
+  public String usage() {
+    return "<tablename>";
+  }
+
+  @Override
+  public String name() {
+    return "describe";
   }
 }

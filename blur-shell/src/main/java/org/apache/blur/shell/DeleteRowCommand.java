@@ -44,8 +44,18 @@ public class DeleteRowCommand extends Command implements TableFirstArgCommand {
   }
 
   @Override
-  public String help() {
-    return "delete the specified row, args; tablename rowid";
+  public String description() {
+    return "Delete the specified row.";
+  }
+
+  @Override
+  public String usage() {
+    return "<tablename> <rowid>";
+  }
+
+  @Override
+  public String name() {
+    return "delete";
   }
 
 }

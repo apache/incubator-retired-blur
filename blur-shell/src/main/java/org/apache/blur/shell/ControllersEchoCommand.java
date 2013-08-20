@@ -57,11 +57,6 @@ public class ControllersEchoCommand extends Command {
     return false;
   }
 
-  @Override
-  public String help() {
-    return "list controllers";
-  }
-
   public static String getNodeName() {
     try {
       return InetAddress.getLocalHost().getHostName();
@@ -74,6 +69,21 @@ public class ControllersEchoCommand extends Command {
       String nodeName = message.substring(0, index);
       return nodeName;
     }
+  }
+
+  @Override
+  public String description() {
+    return "List controllers.";
+  }
+
+  @Override
+  public String usage() {
+    return "";
+  }
+
+  @Override
+  public String name() {
+    return "controllers";
   }
 
 }

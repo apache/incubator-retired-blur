@@ -113,7 +113,17 @@ public class IndexAccessLogCommand extends Command {
   }
 
   @Override
-  public String help() {
-    return "index an access log, args; file batchsize tablename regex colnames+";
+  public String description() {
+    return "Index an access log.";
+  }
+
+  @Override
+  public String usage() {
+    return "<file> <batchsize> <tablename> <regex> <colnames>*";
+  }
+
+  @Override
+  public String name() {
+    return "indexaccesslog";
   }
 }

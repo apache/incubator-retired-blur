@@ -22,6 +22,7 @@ under the License.
   <id>src</id>
   <formats>
     <format>tar.gz</format>
+    <format>zip</format>
   </formats>
   <includeBaseDirectory>false</includeBaseDirectory>
   <fileSets>
@@ -34,4 +35,17 @@ under the License.
       </excludes>
     </fileSet>
   </fileSets>
+  <files>
+    <file>
+      <source>src/main/resources/NOTICE-src.txt</source>
+      <outputDirectory>apache-blur-${project.version}</outputDirectory>
+      <destName>NOTICE</destName>
+    </file>
+    <file>
+      <source>src/main/resources/LICENSE-src.txt</source>
+      <outputDirectory>apache-blur-${project.version}</outputDirectory> 
+      <destName>LICENSE</destName>
+    </file>
+  </files>    
 </assembly>
+

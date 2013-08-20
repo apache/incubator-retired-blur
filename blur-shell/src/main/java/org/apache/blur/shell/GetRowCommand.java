@@ -35,7 +35,7 @@ import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.Selector;
 
-public class GetRowCommand extends Command {
+public class GetRowCommand extends Command implements TableFirstArgCommand {
 
   @Override
   public void doit(PrintWriter outPw, Blur.Iface client, String[] args) throws CommandException, TException,

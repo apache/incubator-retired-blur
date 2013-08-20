@@ -25,7 +25,7 @@ import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.TableStats;
 
-public class TableStatsCommand extends Command {
+public class TableStatsCommand extends Command implements TableFirstArgCommand {
   private static final double _1KB = 1000;
   private static final double _1MB = _1KB * 1000;
   private static final double _1GB = _1MB * 1000;

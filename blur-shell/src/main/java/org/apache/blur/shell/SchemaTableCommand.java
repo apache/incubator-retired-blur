@@ -20,7 +20,6 @@ package org.apache.blur.shell;
 
 import java.io.PrintWriter;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
@@ -28,7 +27,7 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.Schema;
 
-public class SchemaTableCommand extends Command {
+public class SchemaTableCommand extends Command implements TableFirstArgCommand {
   @Override
   public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
       BlurException {

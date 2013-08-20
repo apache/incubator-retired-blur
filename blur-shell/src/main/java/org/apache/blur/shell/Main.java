@@ -33,8 +33,6 @@ import java.util.concurrent.TimeUnit;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
-import jline.console.completer.FileNameCompleter;
-import jline.console.completer.StringsCompleter;
 
 import org.apache.blur.shell.Command.CommandException;
 import org.apache.blur.shell.Main.QuitCommand.QuitCommandException;
@@ -399,12 +397,15 @@ public class Main {
 
         List<Completer> completors = new LinkedList<Completer>();
 
-        completors.add(new StringsCompleter(commands.keySet()));
-        completors.add(new FileNameCompleter());
+        // completors.add(new StringsCompleter(commands.keySet()));
+        // completors.add(new FileNameCompleter());
+        completors.add(new CommandCompletor(commands, client));
 
         for (Completer c : completors) {
           reader.addCompleter(c);
         }
+
+        reader.setCompletionHandler(new ShowDiffsOnlyCompletionHandler());
 
         String line;
         try {

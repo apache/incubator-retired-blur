@@ -25,7 +25,7 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
 
-public class DeleteRowCommand extends Command {
+public class DeleteRowCommand extends Command implements TableFirstArgCommand {
 
   @Override
   public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,

@@ -33,7 +33,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
-public class AddColumnDefinitionCommand extends Command {
+public class AddColumnDefinitionCommand extends Command implements TableFirstArgCommand {
 
   @Override
   public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
@@ -73,12 +73,12 @@ public class AddColumnDefinitionCommand extends Command {
   @SuppressWarnings("static-access")
   private static CommandLine parse(String[] otherArgs, Writer out) {
     Options options = new Options();
-//    options.addOption(OptionBuilder.withArgName("family").hasArg().isRequired(true)
-//        .withDescription("* The family of the new column definition.").create("f"));
-//    options.addOption(OptionBuilder.withArgName("family").hasArg().isRequired(true)
-//        .withDescription("* The family of the new column definition.").create("f"));
-//    options.addOption(OptionBuilder.withArgName("column name").hasArg().isRequired(true)
-//        .withDescription("* The column name of the new column definition.").create("c"));
+    // options.addOption(OptionBuilder.withArgName("family").hasArg().isRequired(true)
+    // .withDescription("* The family of the new column definition.").create("f"));
+    // options.addOption(OptionBuilder.withArgName("family").hasArg().isRequired(true)
+    // .withDescription("* The family of the new column definition.").create("f"));
+    // options.addOption(OptionBuilder.withArgName("column name").hasArg().isRequired(true)
+    // .withDescription("* The column name of the new column definition.").create("c"));
     options.addOption(OptionBuilder.withArgName("sub column name").hasArg()
         .withDescription("The sub column name of the new column definition.").create("s"));
     options.addOption(OptionBuilder.withDescription(

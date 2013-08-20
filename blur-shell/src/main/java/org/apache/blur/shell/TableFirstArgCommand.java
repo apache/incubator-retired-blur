@@ -15,29 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.blur.shell;
 
-import java.io.PrintWriter;
+public interface TableFirstArgCommand {
 
-import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.generated.Blur;
-import org.apache.blur.thrift.generated.BlurException;
-
-public class RemoveTableCommand extends Command implements TableFirstArgCommand {
-  @Override
-  public void doit(PrintWriter out, Blur.Iface client, String[] args)
-      throws CommandException, TException, BlurException {
-    if (args.length != 2) {
-      throw new CommandException("Invalid args: " + help());
-    }
-    String tablename = args[1];
-
-    client.removeTable(tablename, true);
-  }
-
-  @Override
-  public String help() {
-    return "remove the named table, args; tablename";
-  }
 }

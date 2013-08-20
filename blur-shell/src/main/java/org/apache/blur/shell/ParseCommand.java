@@ -25,7 +25,7 @@ import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Query;
 
-public class ParseCommand extends Command {
+public class ParseCommand extends Command implements TableFirstArgCommand {
   @Override
   public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
       BlurException {

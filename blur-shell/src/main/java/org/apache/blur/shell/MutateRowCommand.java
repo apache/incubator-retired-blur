@@ -32,7 +32,7 @@ import org.apache.blur.thrift.generated.RecordMutationType;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
 
-public class MutateRowCommand extends Command {
+public class MutateRowCommand extends Command implements TableFirstArgCommand {
   @Override
   public void doit(PrintWriter out, Blur.Iface client, String[] args)
       throws CommandException, TException, BlurException {

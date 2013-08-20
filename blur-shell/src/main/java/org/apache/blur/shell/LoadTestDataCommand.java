@@ -25,7 +25,7 @@ import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.util.LoadData;
 
-public class LoadTestDataCommand extends Command {
+public class LoadTestDataCommand extends Command implements TableFirstArgCommand {
 
   @Override
   public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,

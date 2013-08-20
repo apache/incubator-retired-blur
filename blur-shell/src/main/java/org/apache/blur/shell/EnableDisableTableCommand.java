@@ -24,7 +24,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
 
-public class EnableDisableTableCommand extends Command {
+public class EnableDisableTableCommand extends Command implements TableFirstArgCommand {
   @Override
   public void doit(PrintWriter out, Blur.Iface client, String[] args)
       throws CommandException, TException, BlurException {

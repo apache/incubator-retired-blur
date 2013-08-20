@@ -38,6 +38,8 @@ import org.apache.lucene.analysis.Analyzer;
 
 public class HdfsFieldManager extends BaseFieldManager {
 
+  private static final List<String> EMPTY_LIST = new ArrayList<String>();
+
   public static abstract class Lock {
 
     public abstract void lock();
@@ -86,14 +88,20 @@ public class HdfsFieldManager extends BaseFieldManager {
     _configuration = configuration;
     _fileSystem = _storagePath.getFileSystem(_configuration);
   }
-  
+
   @Override
   protected List<String> getFieldNamesToLoad() throws IOException {
+    if (!_fileSystem.exists(_storagePath)) {
+      return EMPTY_LIST;
+    }
     FileStatus[] listStatus = _fileSystem.listStatus(_storagePath);
-    List<String> fieldNames = new ArrayList<String>();
+    if (listStatus == null) {
+      return EMPTY_LIST;
+    }
+    List<String> fieldNames = EMPTY_LIST;
     for (FileStatus fileStatus : listStatus) {
       if (!fileStatus.isDir()) {
-        fieldNames.add(fileStatus.getPath().getName());  
+        fieldNames.add(fileStatus.getPath().getName());
       }
     }
     return fieldNames;

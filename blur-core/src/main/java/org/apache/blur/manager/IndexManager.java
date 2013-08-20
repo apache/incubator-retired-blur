@@ -96,7 +96,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.FieldInfo;
-import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.StoredFieldVisitor;
@@ -279,12 +278,11 @@ public class IndexManager {
     }
 
     TableContext context = getTableContext(table);
-    Filter preFilter = QueryParserUtil.parseFilter(table, query.recordFilter, false, fieldManager,
-        _filterCache, context);
-    Filter postFilter = QueryParserUtil.parseFilter(table, query.rowFilter, true, fieldManager,
-        _filterCache, context);
-    return QueryParserUtil.parseQuery(query.query, query.rowQuery, fieldManager, postFilter,
-        preFilter, getScoreType(query.scoreType), context);
+    Filter preFilter = QueryParserUtil.parseFilter(table, query.recordFilter, false, fieldManager, _filterCache,
+        context);
+    Filter postFilter = QueryParserUtil.parseFilter(table, query.rowFilter, true, fieldManager, _filterCache, context);
+    return QueryParserUtil.parseQuery(query.query, query.rowQuery, fieldManager, postFilter, preFilter,
+        getScoreType(query.scoreType), context);
   }
 
   private void populateSelector(String table, Selector selector) throws IOException, BlurException {
@@ -392,10 +390,10 @@ public class IndexManager {
       org.apache.blur.thrift.generated.Query simpleQuery = blurQuery.query;
       Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.recordFilter, false, fieldManager,
           _filterCache, context);
-      Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.rowFilter, true, fieldManager,
-          _filterCache, context);
-      Query userQuery = QueryParserUtil.parseQuery(simpleQuery.query, simpleQuery.rowQuery, fieldManager,
-          postFilter, preFilter, getScoreType(simpleQuery.scoreType), context);
+      Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.rowFilter, true, fieldManager, _filterCache,
+          context);
+      Query userQuery = QueryParserUtil.parseQuery(simpleQuery.query, simpleQuery.rowQuery, fieldManager, postFilter,
+          preFilter, getScoreType(simpleQuery.scoreType), context);
       Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, fieldManager, context, postFilter,
           preFilter);
       call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
@@ -430,15 +428,16 @@ public class IndexManager {
     }
   }
 
-  public String parseQuery(String table, org.apache.blur.thrift.generated.Query simpleQuery) throws ParseException, BlurException {
+  public String parseQuery(String table, org.apache.blur.thrift.generated.Query simpleQuery) throws ParseException,
+      BlurException {
     TableContext context = getTableContext(table);
     FieldManager fieldManager = context.getFieldManager();
-    Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.recordFilter, false, fieldManager,
-        _filterCache, context);
-    Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.rowFilter, true, fieldManager,
-        _filterCache, context);
-    Query userQuery = QueryParserUtil.parseQuery(simpleQuery.query, simpleQuery.rowQuery, fieldManager,
-        postFilter, preFilter, getScoreType(simpleQuery.scoreType), context);
+    Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.recordFilter, false, fieldManager, _filterCache,
+        context);
+    Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.rowFilter, true, fieldManager, _filterCache,
+        context);
+    Query userQuery = QueryParserUtil.parseQuery(simpleQuery.query, simpleQuery.rowQuery, fieldManager, postFilter,
+        preFilter, getScoreType(simpleQuery.scoreType), context);
     return userQuery.toString();
   }
 
@@ -459,8 +458,8 @@ public class IndexManager {
     int size = blurQuery.facets.size();
     Query[] queries = new Query[size];
     for (int i = 0; i < size; i++) {
-      queries[i] = QueryParserUtil.parseQuery(blurQuery.facets.get(i).queryStr, blurQuery.query.rowQuery,
-          fieldManager, postFilter, preFilter, ScoreType.CONSTANT, context);
+      queries[i] = QueryParserUtil.parseQuery(blurQuery.facets.get(i).queryStr, blurQuery.query.rowQuery, fieldManager,
+          postFilter, preFilter, ScoreType.CONSTANT, context);
     }
     return queries;
   }
@@ -744,36 +743,26 @@ public class IndexManager {
   public Schema schema(String table) throws IOException {
     TableContext tableContext = getTableContext(table);
     FieldManager fieldManager = tableContext.getFieldManager();
-    
     Schema schema = new Schema().setTable(table);
-    schema.setFamilies(new HashMap<String, Map<String,ColumnDefinition>>());
-    Map<String, BlurIndex> blurIndexes = _indexServer.getIndexes(table);
-    for (BlurIndex blurIndex : blurIndexes.values()) {
-      IndexSearcherClosable searcher = blurIndex.getIndexReader();
-      try {
-        FieldInfos mergedFieldInfos = MultiFields.getMergedFieldInfos(searcher.getIndexReader());
-        INNER:
-        for (FieldInfo fieldInfo : mergedFieldInfos) {
-          String fieldName = fieldInfo.name;
-          FieldTypeDefinition fieldTypeDefinition = fieldManager.getFieldTypeDefinition(fieldName);
-          if (fieldTypeDefinition == null) {
-            continue INNER;
-          }
-          int index = fieldName.indexOf('.');
-          if (index > 0) {
-            String columnFamily = fieldName.substring(0, index);
-            String column = fieldName.substring(index + 1);
-            Map<String, ColumnDefinition> map = schema.getFamilies().get(columnFamily);
-            if (map == null) {
-              map = new HashMap<String, ColumnDefinition>();
-              schema.putToFamilies(columnFamily, map);
-            }
-            map.put(column, getColumnDefinition(fieldTypeDefinition));
-          }
-        }
-      } finally {
-        // this will allow for closing of index
-        searcher.close();
+    schema.setFamilies(new HashMap<String, Map<String, ColumnDefinition>>());
+    Set<String> fieldNames = fieldManager.getFieldNames();
+    INNER: for (String fieldName : fieldNames) {
+      FieldTypeDefinition fieldTypeDefinition = fieldManager.getFieldTypeDefinition(fieldName);
+      if (fieldTypeDefinition == null) {
+        continue INNER;
+      }
+      String columnName = fieldTypeDefinition.getColumnName();
+      String columnFamily = fieldTypeDefinition.getFamily();
+      String subColumnName = fieldTypeDefinition.getSubColumnName();
+      Map<String, ColumnDefinition> map = schema.getFamilies().get(columnFamily);
+      if (map == null) {
+        map = new HashMap<String, ColumnDefinition>();
+        schema.putToFamilies(columnFamily, map);
+      }
+      if (subColumnName == null) {
+        map.put(columnName, getColumnDefinition(fieldTypeDefinition));
+      } else {
+        map.put(columnName + "." + subColumnName, getColumnDefinition(fieldTypeDefinition));
       }
     }
     return schema;

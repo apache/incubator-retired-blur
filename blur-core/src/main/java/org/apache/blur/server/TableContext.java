@@ -117,8 +117,10 @@ public class TableContext {
 
     Path storagePath = new Path(tableContext.tablePath, TYPES);
     try {
-      tableContext.fieldManager = new HdfsFieldManager(SUPER, new NoStopWordStandardAnalyzer(), storagePath,
+      HdfsFieldManager hdfsFieldManager = new HdfsFieldManager(SUPER, new NoStopWordStandardAnalyzer(), storagePath,
           configuration, strict, defaultMissingFieldType, defaultMissingFieldLessIndexing, defaultMissingFieldProps);
+      hdfsFieldManager.load();
+      tableContext.fieldManager = hdfsFieldManager;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

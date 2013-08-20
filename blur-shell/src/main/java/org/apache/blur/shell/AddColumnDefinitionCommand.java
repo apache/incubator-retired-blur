@@ -48,7 +48,7 @@ public class AddColumnDefinitionCommand extends Command implements TableFirstArg
     columnDefinition.setColumnName(args[3]);
     columnDefinition.setFieldType(args[4]);
     if (cmd.hasOption("s")) {
-      columnDefinition.setColumnName(cmd.getOptionValue("s"));
+      columnDefinition.setSubColumnName(cmd.getOptionValue("s"));
     }
     if (cmd.hasOption("F")) {
       columnDefinition.setFieldLessIndexed(true);

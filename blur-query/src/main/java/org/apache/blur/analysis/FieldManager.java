@@ -19,6 +19,7 @@ package org.apache.blur.analysis;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.blur.thrift.generated.Record;
 import org.apache.lucene.analysis.Analyzer;
@@ -250,6 +251,12 @@ public abstract class FieldManager {
    */
   public abstract Query getCustomQuery(String field, String text) throws IOException;
 
+  /**
+   * Register a {@link FieldTypeDefinition} into this field manager.
+   * @param c the class.
+   */
   public abstract void registerType(Class<? extends FieldTypeDefinition> c);
+  
+  public abstract Set<String> getFieldNames() throws IOException;
 
 }

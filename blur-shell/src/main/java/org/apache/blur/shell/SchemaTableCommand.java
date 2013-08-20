@@ -20,6 +20,10 @@ package org.apache.blur.shell;
 
 import java.io.PrintWriter;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
@@ -37,15 +41,34 @@ public class SchemaTableCommand extends Command implements TableFirstArgCommand 
     String tablename = args[1];
 
     Schema schema = client.schema(tablename);
+    out.println(schema);
     out.println(schema.getTable());
     Map<String, Map<String, ColumnDefinition>> families = schema.getFamilies();
-    for (String cf : families.keySet()) {
+    Set<String> familyNames = new TreeSet<String>(families.keySet());
+    for (String cf : familyNames) {
       out.println("family : " + cf);
       Map<String, ColumnDefinition> columns = families.get(cf);
-      for (String c : columns.keySet()) {
+      Set<String> columnNames = new TreeSet<String>(columns.keySet());
+      for (String c : columnNames) {
         ColumnDefinition columnDefinition = columns.get(c);
-//        out.println("\tcolumn : " + c);
-        out.println("\tcolumn : " + columnDefinition);
+        out.println("\tcolumn   : " + columnDefinition.getColumnName());
+        String fieldType = columnDefinition.getFieldType();
+        Map<String, String> properties = columnDefinition.getProperties();
+        String subColumnName = columnDefinition.getSubColumnName();
+        if (subColumnName != null) {
+          out.println(  "\t\t\tsubName   : " + subColumnName);
+          out.println(  "\t\t\tfieldType : " + fieldType);
+          Map<String, String> props = new TreeMap<String, String>(properties);
+          for (Entry<String, String> e : props.entrySet()) {
+            out.println("\t\t\tprop      : " + e);
+          }
+        } else {
+          out.println(  "\t\tfieldType : " + fieldType);
+          Map<String, String> props = new TreeMap<String, String>(properties);
+          for (Entry<String, String> e : props.entrySet()) {
+            out.println("\t\tprop      : " + e);
+          }
+        }
       }
     }
   }

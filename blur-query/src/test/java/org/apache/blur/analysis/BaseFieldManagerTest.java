@@ -185,6 +185,11 @@ public class BaseFieldManagerTest {
       protected void tryToLoad(String field) {
 
       }
+      
+      @Override
+      protected List<String> getFieldNamesToLoad() throws IOException {
+        return new ArrayList<String>();
+      }
     };
   }
 

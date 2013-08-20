@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -152,6 +153,18 @@ public abstract class BaseFieldManager extends FieldManager {
         return components;
       }
     };
+  }
+
+  @Override
+  public Set<String> getFieldNames() throws IOException {
+    return new TreeSet<String>(_fieldNameToDefMap.keySet());
+  }
+
+  public void load() throws IOException {
+    List<String> fieldNamesToLoad = getFieldNamesToLoad();
+    for (String fieldName : fieldNamesToLoad) {
+      tryToLoad(fieldName);
+    }
   }
 
   @Override
@@ -386,6 +399,8 @@ public abstract class BaseFieldManager extends FieldManager {
   protected abstract boolean tryToStore(FieldTypeDefinition fieldTypeDefinition, String fieldName) throws IOException;
 
   protected abstract void tryToLoad(String fieldName) throws IOException;
+
+  protected abstract List<String> getFieldNamesToLoad() throws IOException;
 
   private Set<String> getConcurrentSet() {
     return Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());

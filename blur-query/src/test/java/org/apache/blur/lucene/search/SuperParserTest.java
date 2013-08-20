@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.blur.analysis.BaseFieldManager;
@@ -60,6 +61,11 @@ public class SuperParserTest {
       @Override
       protected void tryToLoad(String fieldName) {
 
+      }
+
+      @Override
+      protected List<String> getFieldNamesToLoad() throws IOException {
+        return new ArrayList<String>();
       }
     };
 

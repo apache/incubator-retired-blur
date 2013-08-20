@@ -17,7 +17,9 @@ package org.apache.blur.analysis;
  * limitations under the License.
  */
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -29,6 +31,7 @@ import org.apache.blur.log.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.Analyzer;
@@ -82,6 +85,18 @@ public class HdfsFieldManager extends BaseFieldManager {
     _storagePath = storagePath;
     _configuration = configuration;
     _fileSystem = _storagePath.getFileSystem(_configuration);
+  }
+  
+  @Override
+  protected List<String> getFieldNamesToLoad() throws IOException {
+    FileStatus[] listStatus = _fileSystem.listStatus(_storagePath);
+    List<String> fieldNames = new ArrayList<String>();
+    for (FileStatus fileStatus : listStatus) {
+      if (!fileStatus.isDir()) {
+        fieldNames.add(fileStatus.getPath().getName());  
+      }
+    }
+    return fieldNames;
   }
 
   @Override
@@ -192,4 +207,5 @@ public class HdfsFieldManager extends BaseFieldManager {
   public static void setLock(Lock lock) {
     _lock = lock;
   }
+
 }

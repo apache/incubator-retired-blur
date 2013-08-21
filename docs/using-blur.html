@@ -50,6 +50,15 @@ limitations under the License.
 <div class="col-md-3">
 <div class="bs-sidebar hidden-print affix" role="complementary">
 <ul class="nav bs-sidenav">
+<li><a href="#thrift-client">Thrift Client</a>
+<ul class="nav">
+<li><a href="#simple_query_example">Query Example</a></li>
+<li><a href="#simple_query_example_data">Query Example with Data</a></li>
+<li><a href="#simple_fetch_data">Fetch Data</a></li>
+<li><a href="#simple_mutate_example">Mutate Example</a></li>
+<li><a href="#simple_shortened_mutate_example">Shortened Mutate Example</a></li>
+</ul>
+</li>
 <li><a href="#shell">Shell</a>
 <ul class="nav">
 <li><a href="#shell_table_commands">Table Commands</a>
@@ -97,7 +106,7 @@ limitations under the License.
 </ul>
 </li>
 <li><a href="#map-reduce">Map Reduce</a></li>
-<li><a href="#thrift-client">Thrift Client</a></li>
+
 <li><a href="#jdbc">JDBC</a></li>
 </ul>
 </div>
@@ -105,8 +114,150 @@ limitations under the License.
 <div class="col-md-9" role="main">
 <section>
 <div class="page-header">
+<h1 id="thrift-client">Thrift Client</h1>
+</div>
+<h3 id="simple_query_example">Query Example</h3>
+<p>
+This is a simple example of how to run a query via the Thrift API and get back search results.  By default
+the first 10 results are returned with only row ids to the results.
+</p>
+<pre><code class="java">Iface client = BlurClient.getClient("controller1:40010,controller2:40010");
+
+Query query = new Query();
+query.setQuery(&quot;+docs.body:\&quot;Hadoop is awesome\&quot;&quot;);
+
+BlurQuery blurQuery = new BlurQuery();
+blurQuery.setQuery(query);
+
+BlurResults results = client.query(&quot;table1&quot;, blurQuery);
+System.out.println(&quot;Total Results: &quot; + results.totalResults);
+for (BlurResult result : results.getResults()) {
+&nbsp;&nbsp;System.out.println(result);
+}
+</code></pre>
+<h3 id="simple_query_example_data">Query Example with Data</h3>
+<p>
+This is an example of how to run a query via the Thrift API and get back search results with data. All
+the columns in the "fam0" family are returned for each Record in the Row.
+
+</p>
+<pre><code class="java">Iface client = BlurClient.getClient("controller1:40010,controller2:40010");
+
+Query query = new Query();
+query.setQuery(&quot;+docs.body:\&quot;Hadoop is awesome\&quot;&quot;);
+
+Selector selector = new Selector();
+
+// This will fetch all the columns in family "fam0".
+selector.addToColumnFamiliesToFetch("fam0");
+
+// This will fetch the "col1", "col2" columns in family "fam1".
+Set<String> cols = new HashSet<String>();
+cols.add("col1");
+cols.add("col2");
+selector.putToColumnsToFetch("fam1", cols);
+
+BlurQuery blurQuery = new BlurQuery();
+blurQuery.setQuery(query);
+blurQuery.setSelector(selector);
+
+BlurResults results = client.query(&quot;table1&quot;, blurQuery);
+System.out.println(&quot;Total Results: &quot; + results.totalResults);
+for (BlurResult result : results.getResults()) {
+&nbsp;&nbsp;System.out.println(result);
+}
+</code></pre>
+
+<h3 id="simple_fetch_data">Fetch Data</h3>
+<p>
+This is an example of how to fetch data via the Thrift API.  All the records
+of the Row "rowid1" are returned.  If it is not found then Row would be null.
+</p>
+<pre><code class="java">Iface client = BlurClient.getClient("controller1:40010,controller2:40010");
+
+Selector selector = new Selector();
+selector.setRowId("rowid1");
+
+FetchResult fetchRow = client.fetchRow("table1", selector);
+FetchRowResult rowResult = fetchRow.getRowResult();
+Row row = rowResult.getRow();
+for (Record record : row.getRecords()) {
+System.out.println(record);
+}
+</code></pre>
+
+<h3 id="simple_mutate_example">Mutate Example</h3>
+<p>
+This is an example of how to perform a mutate on a table and either add or replace an existing Row.
+
+</p>
+<pre><code class="java">Iface client = BlurClient.getClient("controller1:40010,controller2:40010");
+
+Record record1 = new Record();
+record1.setRecordId("recordid1");
+record1.setFamily("fam0");
+record1.addToColumns(new Column("col0", "val0"));
+record1.addToColumns(new Column("col1", "val1"));
+
+Record record2 = new Record();
+record2.setRecordId("recordid2");
+record2.setFamily("fam1");
+record2.addToColumns(new Column("col4", "val4"));
+record2.addToColumns(new Column("col5", "val5"));
+
+List<RecordMutation> recordMutations = new ArrayList<RecordMutation>();
+
+recordMutations.add(new RecordMutation(RecordMutationType.REPLACE_ENTIRE_RECORD, record1));
+recordMutations.add(new RecordMutation(RecordMutationType.REPLACE_ENTIRE_RECORD, record2));
+
+// This will replace the exiting Row of "rowid1" (if one exists) in table "table1". It will
+// write the mutate to the write ahead log (WAL) and it will not block waiting for the
+// mutate to become visible.
+RowMutation mutation = new RowMutation("table1", "rowid1", true, RowMutationType.REPLACE_ROW,
+recordMutations, false);
+mutation.setRecordMutations(recordMutations);
+
+client.mutate(mutation);
+</code></pre>
+
+<h3 id="simple_shortened_mutate_example">Shortened Mutate Example</h3>
+<p>
+This is the same example as above but is shorted with a help class.
+</p>
+<pre><code class="java">import static org.apache.blur.thrift.util.BlurThriftHelper.*;
+
+Iface client = BlurClient.getClient("controller1:40010,controller2:40010");
+
+// This will replace the exiting Row of "rowid1" (if one exists) in table "table1". It will
+// write the mutate to the write ahead log (WAL) and it will not block waiting for the
+// mutate to become visible.
+RowMutation mutation = newRowMutation("table1", "rowid1",
+newRecordMutation("fam0", "recordid1", newColumn("col0", "val0"), newColumn("col1", "val2")),
+newRecordMutation("fam1", "recordid2", newColumn("col4", "val4"), newColumn("col5", "val4")));
+
+client.mutate(mutation);
+</code></pre>
+</section>
+<section>
+<div class="page-header">
 <h1 id="shell">Shell</h1>
 </div>
+<p>
+The shell can be invoked by running:
+<pre><code class="bash">$BLUR_HOME/bin/blur shell</code></pre>
+Also any shell command can be invoked as a cli command by running:
+<pre><code class="bash">$BLUR_HOME/bin/blur &lt;command&gt;
+# For example to get help
+$BLUR_HOME/bin/blur help
+</code></pre>
+The following rules are used when interacting with the shell:
+<ul>
+<li>Arguments are denoted by &quot;&lt; &gt;&quot;.</li>
+<li>Optional arguments are denoted by &quot;[ ]&quot;.</li>
+<li>Options are denoted by &quot;-&quot;.</li>
+<li>Multiple options / arguments are denoted by &quot;*&quot;.</li>
+</ul>
+</p>
 <h3 id="shell_table_commands">Table Commands</h3>
 <h4 id="shell_command_create">create</h4>
 <p>Description: Create the named table.<br/>
@@ -204,7 +355,7 @@ limitations under the License.
 <div class="page-header">
 <h1 id="map-reduce">Map Reduce</h1>
 </div>
-<p class="lead">Here is an example of the typical usage of the BlurOutputFormat. The Blur table has to be created before the MapReduce job is started. The setupJob method configures the following:</p>
+<p>Here is an example of the typical usage of the BlurOutputFormat. The Blur table has to be created before the MapReduce job is started. The setupJob method configures the following:</p>
 <ul>
 <li>The reducer class to be DefaultBlurReducer</li>
 <li>The number of reducers to be equal to the number of shards in the table.</li>
@@ -255,15 +406,9 @@ BlurOutputFormat.setReducerMultiplier(Job,int)
 </section>
 <section>
 <div class="page-header">
-<h1 id="thrift-client">Thrift Client</h1>
-</div>
-<p class="lead">TODO</p>
-</section>
-<section>
-<div class="page-header">
 <h1 id="jdbc">JDBC</h1>
 </div>
-<p class="lead">TODO</p>
+<p>TODO</p>
 </section>
 </div>
 </div>

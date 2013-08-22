@@ -18,9 +18,12 @@ package org.apache.blur.manager.writer;
  */
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -36,6 +39,8 @@ import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.FSDirectory;
 import org.junit.After;
@@ -58,6 +63,7 @@ public class BlurNRTIndexTest {
   private DirectoryReferenceFileGC gc;
   private IndexInputCloser closer;
   private SharedMergeScheduler mergeScheduler;
+  private String uuid;
 
   @Before
   public void setup() throws IOException {
@@ -76,10 +82,19 @@ public class BlurNRTIndexTest {
     service = Executors.newThreadPool("test", 10);
   }
 
-  private void setupWriter(Configuration configuration, long refresh) throws IOException {
+  private void setupWriter(Configuration configuration, long refresh, boolean reload) throws IOException {
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName("test-table");
-    String uuid = UUID.randomUUID().toString();
+    /*
+     * if reload is set to true...we create a new writer instance pointing
+     * to the same location as the old one.....
+     * so previous writer instances should be closed
+     */
+    
+    if (!reload && uuid == null) {
+      uuid = UUID.randomUUID().toString();
+    }
+    
     tableDescriptor.setTableUri(new File(base, "table-store-" + uuid).toURI().toString());
     tableDescriptor.putToTableProperties("blur.shard.time.between.refreshs", Long.toString(refresh));
 
@@ -115,7 +130,7 @@ public class BlurNRTIndexTest {
 
   @Test
   public void testBlurIndexWriter() throws IOException {
-    setupWriter(configuration, 5);
+    setupWriter(configuration, 5, false);
     long s = System.nanoTime();
     int total = 0;
     for (int i = 0; i < TEST_NUMBER_WAIT_VISIBLE; i++) {
@@ -138,7 +153,7 @@ public class BlurNRTIndexTest {
 
   @Test
   public void testBlurIndexWriterFaster() throws IOException, InterruptedException {
-    setupWriter(configuration, 100);
+    setupWriter(configuration, 100, false);
     IndexSearcherClosable searcher1 = writer.getIndexReader();
     IndexReader reader1 = searcher1.getIndexReader();
     assertEquals(0, reader1.numDocs());
@@ -180,4 +195,54 @@ public class BlurNRTIndexTest {
     return row;
   }
 
+  @Test
+  public void testCreateSnapshot() throws IOException {
+    setupWriter(configuration, 5, false);
+    writer.createSnapshot("test_snapshot");
+    assertTrue(writer.getSnapshots().contains("test_snapshot"));
+    
+    // check that the file is persisted
+    Path snapshotsDirPath = writer.getSnapshotsDirectoryPath();
+    FileSystem fileSystem = snapshotsDirPath.getFileSystem(new Configuration());
+    Path snapshotFilePath = new Path(snapshotsDirPath, "test_snapshot");
+    assertTrue(fileSystem.exists(snapshotFilePath));
+    
+    // create a new writer instance and test whether the snapshots are loaded properly
+    writer.close();
+    setupWriter(configuration, 5, true);
+    assertTrue(writer.getSnapshots().contains("test_snapshot"));
+  }
+  
+  
+  @Test
+  public void testRemoveSnapshots() throws IOException {
+    setupWriter(configuration, 5, false);
+    Path snapshotsDirPath = writer.getSnapshotsDirectoryPath();
+    FileSystem fileSystem = snapshotsDirPath.getFileSystem(new Configuration());
+    fileSystem.mkdirs(snapshotsDirPath);
+    
+    // create 2 files in snapshots sub-dir
+    Path snapshotFile1 = new Path(snapshotsDirPath, "test_snapshot1");
+    Path snapshotFile2 = new Path(snapshotsDirPath, "test_snapshot2");
+    
+    BufferedWriter br1 = new BufferedWriter(new OutputStreamWriter(fileSystem.create(snapshotFile1, true)));
+    br1.write("segments_1");
+    br1.close();
+    
+    BufferedWriter br2 = new BufferedWriter(new OutputStreamWriter(fileSystem.create(snapshotFile2, true)));
+    br2.write("segments_1");
+    br2.close();
+    
+    // re-load the writer to load the snpshots
+    writer.close();
+    setupWriter(configuration, 5, true);
+    assertEquals(writer.getSnapshots().size(), 2);
+    
+    
+    writer.removeSnapshot("test_snapshot2");
+    assertEquals(writer.getSnapshots().size(), 1);
+    assertTrue(!writer.getSnapshots().contains("test_snapshot2"));
+    assertTrue(!fileSystem.exists(snapshotFile2));
+
+  }
 }

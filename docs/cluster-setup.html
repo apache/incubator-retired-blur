@@ -87,11 +87,23 @@
             <div class="page-header">
               <h1 id="general">General Configuration</h1>
             </div>
+<p>
+The basic cluster setup involves editing the blur-site.properties and the blur-env.sh 
+files in the $BLUR_HOME/conf directory. It is recommended that a standalone ZooKeeper 
+be setup. Also a modern version of Hadoop with append support is required for proper data
+management (the write ahead log requires the sync operation).
+
+<div class="bs-callout bs-callout-warning"><h4>Caution</h4>If you setup a standalone ZooKeeper
+you will need to configure Blur to NOT manage the ZooKeeper.  You will need to edit blur-env.sh
+file:
+<pre><code class="bash">export BLUR_MANAGE_ZK=false</code></pre>
+</div>
+</p>
             <h3 id="general-blur-site">blur-site.properties</h3>
             <p>
+
 <pre>
-<code class="bash">	
-# The ZooKeeper connection string, consider adding a root path to the string it
+<code class="bash"># The ZooKeeper connection string, consider adding a root path to the string it
 # can help when upgrading Blur.
 # Example: zknode1:2181,zknode2:2181,zknode3:2181/blur-0.2.0
 #
@@ -107,9 +119,7 @@ blur.cluster.name=default
 # Sets the default table location in hdfs.  If left null or omitted the table uri property in 
 # the table descriptor will be required for all tables.
 
-blur.cluster.default.table.uri=hdfs://namenode/blur/tables
-
-</code>
+blur.cluster.default.table.uri=hdfs://namenode/blur/tables</code>
 </pre>
             </p>
             <h3 id="general-hadoop">Hadoop</h3>
@@ -119,10 +129,8 @@ you are using a different version of Hadoop or want Blur to use the Hadoop confi
 version you will need to set the &quot;HADOOP_HOME&quot; environment variable in the 
 &quot;blur-env.sh&quot; script found in &quot;apache-blur-*/conf/&quot;.
 <pre>
-<code class="bash">
-# Edit the blur-env.sh
-export HADOOP_HOME=&lt;path to your Hadoop install directory&gt;
-</code>
+<code class="bash"># Edit the blur-env.sh
+export HADOOP_HOME=&lt;path to your Hadoop install directory&gt;</code>
 </pre>
 </p>
 	      </section>
@@ -135,8 +143,7 @@ export HADOOP_HOME=&lt;path to your Hadoop install directory&gt;
               These are the default settings for the shard server that can be overridden in the blur-site.properties file. Consider increasing the various thread pool counts (*.thread.count). The blur.controller.server.remote.thread.count is very important to increase for larger clusters, basically one thread is used per shard server per query. Some production cluster have used set this thread pool to 2000 or more threads.
             </p>
 <pre>
-<code class="bash">
-# Sets the hostname for the controller, if blank the hostname is automatically detected
+<code class="bash"># Sets the hostname for the controller, if blank the hostname is automatically detected
 blur.controller.hostname=
 
 # The binding address of the controller
@@ -192,8 +199,7 @@ blur.controller.retry.max.mutate.delay=2000
 blur.controller.retry.max.default.delay=2000
 
 # The http status page port for the controller server
-blur.gui.controller.port=40080
-</code>
+blur.gui.controller.port=40080</code>
 </pre>
             <h3 id="controller-blur-env">blur-env.sh</h3>
             <pre><code class="bash"># JAVA JVM OPTIONS for the controller servers, jvm tuning parameters are placed here.
@@ -215,8 +221,7 @@ export BLUR_NUMBER_OF_CONTROLLER_SERVER_INSTANCES_PER_MACHINE=1</code></pre>
               These are the default settings for the shard server that can be overridden in the blur-site.properties file. Consider increasing the various thread pool counts (*.thread.count). Also the blur.max.clause.count sets the BooleanQuery max clause count for Lucene queries.
             </p>
 <pre>
-<code class="bash">
-# The hostname for the shard, if blank the hostname is automatically detected
+<code class="bash"># The hostname for the shard, if blank the hostname is automatically detected
 blur.shard.hostname=
 
 # The binding address of the shard
@@ -299,8 +304,7 @@ blur.max.heap.per.row.fetch=10000000
 blur.max.records.per.row.fetch.request=1000
 
 # The http status page port for the shard server
-blur.gui.shard.port=40090
-</code>
+blur.gui.shard.port=40090</code>
 </pre>
             <h3 id="shard-blur-env">blur-env.sh</h3>
             <pre><code class="bash"># JAVA JVM OPTIONS for the shard servers, jvm tuning parameters are placed here.
@@ -323,7 +327,7 @@ export BLUR_NUMBER_OF_SHARD_SERVER_INSTANCES_PER_MACHINE=1</code></pre>
 
             Say the shard server(s) that you are planning to run Blur on have 32G of ram. These machines are probably also running HDFS data nodes as well with very high xcievers (dfs.datanode.max.xcievers in hdfs-site.xml) say 8K. If the data nodes are configured with 1G of heap then they may consume up to 4G of memory due to the high thread count because of the xcievers. Next let's say you configure Blur to 4G of heap as well, and you want to use 12G of off heap cache.</p>
             <h5>Auto Configuration</h5>
-            <p>In the blur-env.sh file you would need to change BLUR_SHARD_JVM_OPTIONS to include "-XX:MaxDirectMemorySize=12g" and possibly "-XX:+UseLargePages" depending on your Linux setup. If you leave the blur.shard.blockcache.slab.count to the default -1 the shard startup will automatically detect the -XX:MaxDirectMemorySize size and automatically use almost all of the memory. By default the JVm has 64m in reserve for direct memory so by default Blur leaves at least that amount available to the JVM.</p>
+            <p>In the blur-env.sh file you would need to change BLUR_SHARD_JVM_OPTIONS to include "-XX:MaxDirectMemorySize=12g" and possibly "-XX:+UseLargePages" depending on your Linux setup. If you leave the blur.shard.blockcache.slab.count to the default -1 the shard startup will automatically detect the -XX:MaxDirectMemorySize size and automatically use almost all of the memory. By default the JVM has 64m in reserve for direct memory so by default Blur leaves at least that amount available to the JVM.</p>
             <h5>Custom Configuration</h5>
             <p>Again in the blur-env.sh file you would need to change BLUR_SHARD_JVM_OPTIONS to include "-XX:MaxDirectMemorySize=13g" and possibly "-XX:+UseLargePages" depending on your Linux setup. I set the MaxDirectMemorySize to more than 12G to make sure we don't hit the maximum limit and cause a OOM exception, this does not reserve 13G it's a control to not allow more than that. Below is a working example, it also contains GC logging and GC configuration:</p>
             <pre><code class="bash">export BLUR_SHARD_JVM_OPTIONS="-XX:MaxDirectMemorySize=13g \

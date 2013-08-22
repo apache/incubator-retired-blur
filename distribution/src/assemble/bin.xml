@@ -46,6 +46,7 @@ under the License.
         <include>commons-cli:commons-cli</include>
         <include>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</include>
         <include>jline:jline</include>
+        <include>com.fasterxml.jackson.core:*</include>
       </includes>
     </dependencySet>
     <dependencySet>
@@ -76,6 +77,7 @@ under the License.
 	  <exclude>commons-cli:commons-cli</exclude>
 	  <exclude>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</exclude>
 	  <exclude>jline:jline</exclude>
+      <exclude>com.fasterxml.jackson.core:*</exclude>
 	</excludes>
     </dependencySet>
   </dependencySets>

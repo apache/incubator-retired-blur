@@ -60,7 +60,7 @@ public class LoadTestDataCommand extends Command implements TableFirstArgCommand
 
   @Override
   public String usage() {
-    return "<tablename> <write ahead log (true/false) <rows> <recordsPerRow> <families> <columnsPerRecord> <wordsPerColumn> <batchSize>";
+    return "<tablename> <write ahead log (true/false)> <rows> <recordsPerRow> <families> <columnsPerRecord> <wordsPerColumn> <batchSize>";
   }
 
   @Override

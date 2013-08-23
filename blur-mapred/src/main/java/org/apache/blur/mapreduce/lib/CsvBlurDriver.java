@@ -55,6 +55,8 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileRecordReader;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
+import com.google.common.base.Splitter;
+
 @SuppressWarnings("static-access")
 public class CsvBlurDriver {
 
@@ -176,7 +178,9 @@ public class CsvBlurDriver {
             return null;
           }
           for (String p : getSubArray(values, 1)) {
-            CsvBlurMapper.addFamilyPath(job, values[0], new Path(p));
+            Path path = new Path(p);
+            CsvBlurMapper.addFamilyPath(job, values[0], path);
+            FileInputFormat.addInputPath(job, path);
           }
         }
       }
@@ -212,6 +216,7 @@ public class CsvBlurDriver {
       }
     }
     BlurOutputFormat.setupJob(job, tableDescriptor);
+    BlurMapReduceUtil.addDependencyJars(job.getConfiguration(), Splitter.class);
     return job;
   }
 
@@ -256,16 +261,18 @@ public class CsvBlurDriver {
         .withDescription("The directory to index. (hdfs://namenode/input/in1)").create("i"));
     options.addOption(OptionBuilder.withArgName("family path*").hasArgs()
         .withDescription("The directory to index with family name. (family hdfs://namenode/input/in1)").create("I"));
-    options.addOption(OptionBuilder
-        .withArgName("auto generate record ids")
-        .withDescription(
-            "No Record Ids - Automatically generate record ids for each record based on a MD5 has of the data within the record.")
-        .create("a"));
-    options.addOption(OptionBuilder
-        .withArgName("auto generate row ids")
-        .withDescription(
-            "No Row Ids - Automatically generate row ids for each record based on a MD5 has of the data within the record.")
-        .create("A"));
+    options
+        .addOption(OptionBuilder
+            .withArgName("auto generate record ids")
+            .withDescription(
+                "No Record Ids - Automatically generate record ids for each record based on a MD5 has of the data within the record.")
+            .create("a"));
+    options
+        .addOption(OptionBuilder
+            .withArgName("auto generate row ids")
+            .withDescription(
+                "No Row Ids - Automatically generate row ids for each record based on a MD5 has of the data within the record.")
+            .create("A"));
     options.addOption(OptionBuilder.withArgName("disable optimize indexes during copy")
         .withDescription("Disable optimize indexes during copy, this has very little overhead. (enabled by default)")
         .create("o"));

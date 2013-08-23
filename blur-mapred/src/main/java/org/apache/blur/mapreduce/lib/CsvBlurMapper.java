@@ -164,7 +164,7 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
    *          boolean.
    */
   public static void setAutoGenerateRowIdAsHashOfData(Job job, boolean autoGenerateRowIdAsHashOfData) {
-    setAutoGenerateRecordIdAsHashOfData(job.getConfiguration(), autoGenerateRowIdAsHashOfData);
+    setAutoGenerateRowIdAsHashOfData(job.getConfiguration(), autoGenerateRowIdAsHashOfData);
   }
 
   /**
@@ -422,23 +422,21 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
       throw new IOException("Family [" + family + "] is missing in the definition.");
     }
     if (list.size() - offset != columnNames.size()) {
-      if (_familyNotInFile) {
-        if (_autoGenerateRecordIdAsHashOfData) {
-          throw new IOException("Record [" + str + "] too short, does not match defined record [rowid,"
-              + getColumnNames(columnNames) + "].");
-        } else {
-          throw new IOException("Record [" + str + "] too short, does not match defined record [rowid,recordid,"
-              + getColumnNames(columnNames) + "].");
-        }
-      } else {
-        if (_autoGenerateRecordIdAsHashOfData) {
-          throw new IOException("Record [" + str + "] too short, does not match defined record [rowid,family"
-              + getColumnNames(columnNames) + "].");
-        } else {
-          throw new IOException("Record [" + str + "] too short, does not match defined record [rowid,recordid,family"
-              + getColumnNames(columnNames) + "].");
-        }
+
+      String options = "";
+
+      if (!_autoGenerateRowIdAsHashOfData) {
+        options += "rowid,";
       }
+      if (!_autoGenerateRecordIdAsHashOfData) {
+        options += "recordid,";
+      }
+      if (!_familyNotInFile) {
+        options += "family,";
+      }
+      String msg = "Record [" + str + "] does not match defined record [" + options + "," + getColumnNames(columnNames)
+          + "].";
+      throw new IOException(msg);
     }
 
     for (int i = 0; i < columnNames.size(); i++) {
@@ -459,7 +457,10 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
   private String getColumnNames(List<String> columnNames) {
     StringBuilder builder = new StringBuilder();
     for (String c : columnNames) {
-      builder.append(',').append(c);
+      if (builder.length() != 0) {
+        builder.append(',');
+      }
+      builder.append(c);
     }
     return builder.toString();
   }

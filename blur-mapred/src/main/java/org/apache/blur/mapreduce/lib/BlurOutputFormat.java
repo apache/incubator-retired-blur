@@ -376,8 +376,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     private ProgressableDirectory _localTmpDir;
     private String _deletedRowId;
 
-    public BlurRecordWriter(Configuration configuration, int attemptId, String tmpDirName)
-        throws IOException {
+    public BlurRecordWriter(Configuration configuration, int attemptId, String tmpDirName) throws IOException {
 
       _indexLocally = BlurOutputFormat.isIndexLocally(configuration);
       _optimizeInFlight = BlurOutputFormat.isOptimizeInFlight(configuration);
@@ -394,11 +393,11 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       _finalDir = new ProgressableDirectory(new HdfsDirectory(configuration, _newIndex),
           BlurOutputFormat.getProgressable());
       _finalDir.setLockFactory(NoLockFactory.getNoLockFactory());
-      
+
       TableContext tableContext = TableContext.create(tableDescriptor);
       _fieldManager = tableContext.getFieldManager();
       Analyzer analyzer = _fieldManager.getAnalyzerForIndex();
-      
+
       _conf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, analyzer);
       TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();
       mergePolicy.setUseCompoundFile(false);
@@ -459,7 +458,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
         return;
       }
       _columnCount.increment(record.getColumns().size());
-      List<Field> document = TransactionRecorder.getDoc(_fieldManager,blurRecord.getRowId(), record);
+      List<Field> document = TransactionRecorder.getDoc(_fieldManager, blurRecord.getRowId(), record);
       List<Field> dup = _documents.put(recordId, document);
       if (dup != null) {
         _recordDuplicateCount.increment(1);
@@ -486,8 +485,9 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
         _localTmpPath = new File(localDirPath, UUID.randomUUID().toString() + ".tmp");
         _localTmpDir = new ProgressableDirectory(FSDirectory.open(_localTmpPath), BlurOutputFormat.getProgressable());
         _localTmpWriter = new IndexWriter(_localTmpDir, _overFlowConf.clone());
-        //The local tmp writer has merging disabled so the first document in is going to be doc 0.
-        //Therefore the first document added is the prime doc
+        // The local tmp writer has merging disabled so the first document in is
+        // going to be doc 0.
+        // Therefore the first document added is the prime doc
         List<List<Field>> docs = new ArrayList<List<Field>>(_documents.values());
         docs.get(0).add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
         _localTmpWriter.addDocuments(docs);
@@ -619,6 +619,8 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     job.setOutputValueClass(BlurMutate.class);
     job.setOutputFormatClass(BlurOutputFormat.class);
     setTableDescriptor(job, tableDescriptor);
+    BlurMapReduceUtil.addDependencyJars(job);
+    BlurMapReduceUtil.addAllJarsInBlurLib(job.getConfiguration());
   }
 
 }

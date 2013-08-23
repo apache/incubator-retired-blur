@@ -18,6 +18,7 @@ package org.apache.blur.analysis;
  */
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,7 @@ import org.apache.lucene.analysis.Analyzer;
 
 public class HdfsFieldManager extends BaseFieldManager {
 
-  private static final List<String> EMPTY_LIST = new ArrayList<String>();
+  private static final List<String> EMPTY_LIST = Arrays.asList(new String[]{});
 
   public static abstract class Lock {
 
@@ -98,7 +99,7 @@ public class HdfsFieldManager extends BaseFieldManager {
     if (listStatus == null) {
       return EMPTY_LIST;
     }
-    List<String> fieldNames = EMPTY_LIST;
+    List<String> fieldNames = new ArrayList<String>();
     for (FileStatus fileStatus : listStatus) {
       if (!fileStatus.isDir()) {
         fieldNames.add(fileStatus.getPath().getName());

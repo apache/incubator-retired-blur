@@ -60,8 +60,17 @@ import com.google.common.base.Splitter;
 @SuppressWarnings("static-access")
 public class CsvBlurDriver {
 
+  public static final String CSVLOADER = "csvloader";
   public static final String MAPRED_COMPRESS_MAP_OUTPUT = "mapred.compress.map.output";
   public static final String MAPRED_MAP_OUTPUT_COMPRESSION_CODEC = "mapred.map.output.compression.codec";
+  public static final int DEFAULT_WIDTH = 100;
+  public static final String HEADER = "The \"" +CSVLOADER +
+  		"\" command is used to load delimited into a Blur table.\nThe required options are \"-c\", \"-t\", \"-d\". The " +
+  		"standard format for the contents of a file is:\"rowid,recordid,family,col1,col2,...\". However there are " +
+  		"several options, such as the rowid and recordid can be generated based on the data in the record via the " +
+  		"\"-A\" and \"-a\" options. The family can assigned based on the path via the \"-I\" option. The column " +
+  		"name order can be mapped via the \"-d\" option. Also you can set the input " +
+  		"format to either sequence files vie the \"-S\" option or leave the default text files.";
 
   enum COMPRESSION {
     SNAPPY(SnappyCodec.class), GZIP(GzipCodec.class), BZIP(BZip2Codec.class), DEFAULT(DefaultCodec.class);
@@ -258,9 +267,9 @@ public class CsvBlurDriver {
                 + "charactors like the default hadoop separator of ASCII value 1, you can use standard "
                 + "java escaping (\\u0001)").create("s"));
     options.addOption(OptionBuilder.withArgName("path*").hasArg()
-        .withDescription("The directory to index. (hdfs://namenode/input/in1)").create("i"));
+        .withDescription("The directory to index, the family name is assumed to BE present in the file contents. (hdfs://namenode/input/in1)").create("i"));
     options.addOption(OptionBuilder.withArgName("family path*").hasArgs()
-        .withDescription("The directory to index with family name. (family hdfs://namenode/input/in1)").create("I"));
+        .withDescription("The directory to index with a family name, the family name is assumed to NOT be present in the file contents. (family hdfs://namenode/input/in1)").create("I"));
     options
         .addOption(OptionBuilder
             .withArgName("auto generate record ids")
@@ -319,7 +328,7 @@ public class CsvBlurDriver {
       System.err.println(e.getMessage());
       HelpFormatter formatter = new HelpFormatter();
       PrintWriter pw = new PrintWriter(System.err, true);
-      formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "csvindexer", null, options, HelpFormatter.DEFAULT_LEFT_PAD,
+      formatter.printHelp(pw, DEFAULT_WIDTH, CSVLOADER, HEADER, options, HelpFormatter.DEFAULT_LEFT_PAD,
           HelpFormatter.DEFAULT_DESC_PAD, null, false);
       return null;
     }
@@ -328,7 +337,7 @@ public class CsvBlurDriver {
       System.err.println("Missing input directory, see options 'i' and 'I'.");
       HelpFormatter formatter = new HelpFormatter();
       PrintWriter pw = new PrintWriter(System.err, true);
-      formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "csvindexer", null, options, HelpFormatter.DEFAULT_LEFT_PAD,
+      formatter.printHelp(pw, DEFAULT_WIDTH, CSVLOADER, HEADER, options, HelpFormatter.DEFAULT_LEFT_PAD,
           HelpFormatter.DEFAULT_DESC_PAD, null, false);
       return null;
     }

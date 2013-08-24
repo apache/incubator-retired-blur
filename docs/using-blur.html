@@ -106,7 +106,7 @@ limitations under the License.
 </ul>
 </li>
 <li><a href="#map-reduce">Map Reduce</a></li>
-
+<li><a href="#csv-loader">CSV Loader</a></li>
 <li><a href="#jdbc">JDBC</a></li>
 </ul>
 </div>
@@ -381,7 +381,7 @@ CsvBlurMapper.addColumns(job, "cf1", "col");
 
 BlurOutputFormat.setupJob(job, tableDescriptor);
 BlurOutputFormat.setIndexLocally(job, true);
-BlurOutputFormat.setOptimizeInFlight(job, false);
+BlurOutputFormat.setOptimizeInFlight(job, true);
 
 job.waitForCompletion(true);</code></pre>
 <h3>Options</h3>
@@ -403,6 +403,56 @@ BlurOutputFormat.setReducerMultiplier(Job,int)
 <ul><li>This will multiple the number of reducers for this job. For example if the table has 256 shards the normal number of reducers is 256. However if the reducer multiplier is set to 4 then the number of reducers will be 1024 and each shard will get 4 new segments instead of the normal 1.</li></ul>
 </li>
 </ul>
+</section>
+<section>
+<div class="page-header">
+<h1 id="csv-loader">CSV Loader</h1>
+</div>
+<p>
+The CSV Loader program can be invoked by running:<pre><code class="bash">$BLUR_HOME/bin/blur csvloader</code></pre>
+<div class="bs-callout bs-callout-warning"><h4>Caution</h4>Also the machine that will execute this command will need to have Hadoop installed and configured locally,
+otherwise the scripts will not work correctly.</div>
+<pre><code class="bash">usage: csvloader
+The "csvloader" command is used to load delimited into a Blur table.
+The required options are "-c", "-t", "-d". The standard format for the contents of a file
+is:"rowid,recordid,family,col1,col2,...". However there are several options, such as the rowid and
+recordid can be generated based on the data in the record via the "-A" and "-a" options. The family
+can assigned based on the path via the "-I" option. The column name order can be mapped via the "-d"
+option. Also you can set the input format to either sequence files vie the "-S" option or leave the
+default text files.
+-A                     No Row Ids - Automatically generate row ids for each record based on a MD5
+has of the data within the record.
+-a                     No Record Ids - Automatically generate record ids for each record based on a
+MD5 has of the data within the record.
+-b &lt;size&gt;              The maximum number of Lucene documents to buffer in the reducer for a single
+row before spilling over to disk. (default 1000)
+-c &lt;controller*&gt;       * Thrift controller connection string. (host1:40010 host2:40010 ...)
+-C &lt;minimum maximum&gt;   Enables a combine file input to help deal with many small files as the
+input. Provide the minimum and maximum size per mapper.  For a minimum of
+1GB and a maximum of 2.5GB: (1000000000 2500000000)
+-d &lt;family column*&gt;    * Define the mapping of fields in the CSV file to column names. (family col1
+col2 col3 ...)
+-I &lt;family path*&gt;      The directory to index with a family name, the family name is assumed to NOT
+be present in the file contents. (family hdfs://namenode/input/in1)
+-i &lt;path*&gt;             The directory to index, the family name is assumed to BE present in the file
+contents. (hdfs://namenode/input/in1)
+-l                     Disable the use storage local on the server that is running the reducing
+task and copy to Blur table once complete. (enabled by default)
+-o                     Disable optimize indexes during copy, this has very little overhead.
+(enabled by default)
+-p &lt;codec&gt;             Sets the compression codec for the map compress output setting.
+(SNAPPY,GZIP,BZIP,DEFAULT, or classname)
+-r &lt;multiplier&gt;        The reducer multipler allows for an increase in the number of reducers per
+shard in the given table.  For example if the table has 128 shards and the
+reducer multiplier is 4 the total number of reducers will be 512, 4 reducers
+per shard. (default 1)
+-s &lt;delimiter&gt;         The file delimiter to be used. (default value ',')  NOTE: For special
+charactors like the default hadoop separator of ASCII value 1, you can use
+standard java escaping (\u0001)
+-S                     The input files are sequence files.
+-t &lt;tablename&gt;         * Blur table name.</code></pre>
+
+</p>
 </section>
 <section>
 <div class="page-header">

@@ -341,9 +341,10 @@ public class Main {
       }
 
       out.println();
-      out.println("  " + buffer("shell", bufferLength) + " - enters into the Blur interactive shell");
+      out.println("  " + buffer("shell", bufferLength) + " - enters into the Blur interactive shell.");
       out.println("  " + buffer("execute", bufferLength)
-          + " - executes a custom class passing all the command line args to the main method");
+          + " - executes a custom class passing all the command line args to the main method.");
+      out.println("  " + buffer("csvloader", bufferLength) + " - runs a MapReduce job to bulk load data into a table.");
     }
 
     private int getMaxCommandLength(Set<String> keySet) {

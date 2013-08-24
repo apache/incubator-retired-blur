@@ -52,7 +52,6 @@ public class GenerateDoc {
     BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(source)));
     String line;
     while ((line = reader.readLine()) != null) {
-      line = line.trim();
       if (line.equals("|||Shell-Menu|||")) {
         writer.println(menuReplacementText);
       } else if (line.equals("|||Shell-Body|||")) {

@@ -314,8 +314,6 @@ The location id of the Record or Row to be fetched.
 </td><td>default</td><td></td></tr>
 <tr><td>6</td><td>columnsToFetch</td><td><code>map&lt;<code>string</code>, <code>set&lt;<code>string</code>&gt;</code>&gt;</code></td><td>The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
 </td><td>default</td><td></td></tr>
-<tr><td>7</td><td>allowStaleData</td><td><code>bool</code></td><td>@deprecated This value is no longer used.  This allows the fetch to see the most current data that has been added to the table.
-</td><td>default</td><td></td></tr>
 <tr><td>8</td><td>startRecord</td><td><code>i32</code></td><td>Only valid for Row fetches, the record in the row to start fetching.  If the row contains 1000
 records and you want the first 100, then this value is 0.  If you want records 300-400 then this
 value would be 300.  If startRecord is beyond the end of the row, the row will be null in the

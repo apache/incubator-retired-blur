@@ -670,7 +670,7 @@ sub write {
 
 package Blur::Selector;
 use base qw(Class::Accessor);
-Blur::Selector->mk_accessors( qw( recordOnly locationId rowId recordId columnFamiliesToFetch columnsToFetch allowStaleData startRecord maxRecordsToFetch highlightOptions ) );
+Blur::Selector->mk_accessors( qw( recordOnly locationId rowId recordId columnFamiliesToFetch columnsToFetch startRecord maxRecordsToFetch highlightOptions ) );
 
 sub new {
   my $classname = shift;
@@ -682,7 +682,6 @@ sub new {
   $self->{recordId} = undef;
   $self->{columnFamiliesToFetch} = undef;
   $self->{columnsToFetch} = undef;
-  $self->{allowStaleData} = undef;
   $self->{startRecord} = 0;
   $self->{maxRecordsToFetch} = 1000;
   $self->{highlightOptions} = undef;
@@ -704,9 +703,6 @@ sub new {
     }
     if (defined $vals->{columnsToFetch}) {
       $self->{columnsToFetch} = $vals->{columnsToFetch};
-    }
-    if (defined $vals->{allowStaleData}) {
-      $self->{allowStaleData} = $vals->{allowStaleData};
     }
     if (defined $vals->{startRecord}) {
       $self->{startRecord} = $vals->{startRecord};
@@ -815,12 +811,6 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^7$/ && do{      if ($ftype == TType::BOOL) {
-        $xfer += $input->readBool(\$self->{allowStaleData});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
       /^8$/ && do{      if ($ftype == TType::I32) {
         $xfer += $input->readI32(\$self->{startRecord});
       } else {
@@ -908,11 +898,6 @@ sub write {
       }
       $xfer += $output->writeMapEnd();
     }
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{allowStaleData}) {
-    $xfer += $output->writeFieldBegin('allowStaleData', TType::BOOL, 7);
-    $xfer += $output->writeBool($self->{allowStaleData});
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{startRecord}) {

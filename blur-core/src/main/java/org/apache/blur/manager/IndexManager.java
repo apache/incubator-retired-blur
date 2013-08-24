@@ -959,7 +959,6 @@ public class IndexManager {
   private void doUpdateRowMutation(RowMutation mutation, BlurIndex blurIndex) throws BlurException, IOException {
     FetchResult fetchResult = new FetchResult();
     Selector selector = new Selector();
-    selector.setAllowStaleDataIsSet(false);
     selector.setRowId(mutation.rowId);
     fetchRow(mutation.table, selector, fetchResult);
     if (fetchResult.exists) {

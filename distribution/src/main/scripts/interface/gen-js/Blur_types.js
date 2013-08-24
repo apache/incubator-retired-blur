@@ -609,7 +609,6 @@ Selector = function(args) {
   this.recordId = null;
   this.columnFamiliesToFetch = null;
   this.columnsToFetch = null;
-  this.allowStaleData = null;
   this.startRecord = 0;
   this.maxRecordsToFetch = 1000;
   this.highlightOptions = null;
@@ -631,9 +630,6 @@ Selector = function(args) {
     }
     if (args.columnsToFetch !== undefined) {
       this.columnsToFetch = args.columnsToFetch;
-    }
-    if (args.allowStaleData !== undefined) {
-      this.allowStaleData = args.allowStaleData;
     }
     if (args.startRecord !== undefined) {
       this.startRecord = args.startRecord;
@@ -750,13 +746,6 @@ Selector.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
-      case 7:
-      if (ftype == Thrift.Type.BOOL) {
-        this.allowStaleData = input.readBool().value;
-      } else {
-        input.skip(ftype);
-      }
-      break;
       case 8:
       if (ftype == Thrift.Type.I32) {
         this.startRecord = input.readI32().value;
@@ -846,11 +835,6 @@ Selector.prototype.write = function(output) {
       }
     }
     output.writeMapEnd();
-    output.writeFieldEnd();
-  }
-  if (this.allowStaleData !== null && this.allowStaleData !== undefined) {
-    output.writeFieldBegin('allowStaleData', Thrift.Type.BOOL, 7);
-    output.writeBool(this.allowStaleData);
     output.writeFieldEnd();
   }
   if (this.startRecord !== null && this.startRecord !== undefined) {

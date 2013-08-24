@@ -61,7 +61,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RECORD_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("recordId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)4);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COLUMN_FAMILIES_TO_FETCH_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("columnFamiliesToFetch", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)5);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COLUMNS_TO_FETCH_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("columnsToFetch", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, (short)6);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ALLOW_STALE_DATA_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("allowStaleData", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)7);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField START_RECORD_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("startRecord", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)8);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField MAX_RECORDS_TO_FETCH_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("maxRecordsToFetch", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)9);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField HIGHLIGHT_OPTIONS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("highlightOptions", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)10);
@@ -97,10 +96,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
    * The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
    */
   public Map<String,Set<String>> columnsToFetch; // required
-  /**
-   * @deprecated This value is no longer used.  This allows the fetch to see the most current data that has been added to the table.
-   */
-  public boolean allowStaleData; // required
   /**
    * Only valid for Row fetches, the record in the row to start fetching.  If the row contains 1000
    * records and you want the first 100, then this value is 0.  If you want records 300-400 then this
@@ -148,10 +143,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
      */
     COLUMNS_TO_FETCH((short)6, "columnsToFetch"),
     /**
-     * @deprecated This value is no longer used.  This allows the fetch to see the most current data that has been added to the table.
-     */
-    ALLOW_STALE_DATA((short)7, "allowStaleData"),
-    /**
      * Only valid for Row fetches, the record in the row to start fetching.  If the row contains 1000
      * records and you want the first 100, then this value is 0.  If you want records 300-400 then this
      * value would be 300.  If startRecord is beyond the end of the row, the row will be null in the
@@ -195,8 +186,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
           return COLUMN_FAMILIES_TO_FETCH;
         case 6: // COLUMNS_TO_FETCH
           return COLUMNS_TO_FETCH;
-        case 7: // ALLOW_STALE_DATA
-          return ALLOW_STALE_DATA;
         case 8: // START_RECORD
           return START_RECORD;
         case 9: // MAX_RECORDS_TO_FETCH
@@ -244,9 +233,8 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
 
   // isset id assignments
   private static final int __RECORDONLY_ISSET_ID = 0;
-  private static final int __ALLOWSTALEDATA_ISSET_ID = 1;
-  private static final int __STARTRECORD_ISSET_ID = 2;
-  private static final int __MAXRECORDSTOFETCH_ISSET_ID = 3;
+  private static final int __STARTRECORD_ISSET_ID = 1;
+  private static final int __MAXRECORDSTOFETCH_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -267,8 +255,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING), 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.SetMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, 
                 new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)))));
-    tmpMap.put(_Fields.ALLOW_STALE_DATA, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("allowStaleData", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
     tmpMap.put(_Fields.START_RECORD, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("startRecord", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32)));
     tmpMap.put(_Fields.MAX_RECORDS_TO_FETCH, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("maxRecordsToFetch", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
@@ -293,7 +279,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
     String recordId,
     List<String> columnFamiliesToFetch,
     Map<String,Set<String>> columnsToFetch,
-    boolean allowStaleData,
     int startRecord,
     int maxRecordsToFetch,
     HighlightOptions highlightOptions)
@@ -306,8 +291,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
     this.recordId = recordId;
     this.columnFamiliesToFetch = columnFamiliesToFetch;
     this.columnsToFetch = columnsToFetch;
-    this.allowStaleData = allowStaleData;
-    setAllowStaleDataIsSet(true);
     this.startRecord = startRecord;
     setStartRecordIsSet(true);
     this.maxRecordsToFetch = maxRecordsToFetch;
@@ -355,7 +338,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       }
       this.columnsToFetch = __this__columnsToFetch;
     }
-    this.allowStaleData = other.allowStaleData;
     this.startRecord = other.startRecord;
     this.maxRecordsToFetch = other.maxRecordsToFetch;
     if (other.isSetHighlightOptions()) {
@@ -376,8 +358,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
     this.recordId = null;
     this.columnFamiliesToFetch = null;
     this.columnsToFetch = null;
-    setAllowStaleDataIsSet(false);
-    this.allowStaleData = false;
     this.startRecord = 0;
 
     this.maxRecordsToFetch = 1000;
@@ -593,35 +573,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
   }
 
   /**
-   * @deprecated This value is no longer used.  This allows the fetch to see the most current data that has been added to the table.
-   */
-  public boolean isAllowStaleData() {
-    return this.allowStaleData;
-  }
-
-  /**
-   * @deprecated This value is no longer used.  This allows the fetch to see the most current data that has been added to the table.
-   */
-  public Selector setAllowStaleData(boolean allowStaleData) {
-    this.allowStaleData = allowStaleData;
-    setAllowStaleDataIsSet(true);
-    return this;
-  }
-
-  public void unsetAllowStaleData() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ALLOWSTALEDATA_ISSET_ID);
-  }
-
-  /** Returns true if field allowStaleData is set (has been assigned a value) and false otherwise */
-  public boolean isSetAllowStaleData() {
-    return EncodingUtils.testBit(__isset_bitfield, __ALLOWSTALEDATA_ISSET_ID);
-  }
-
-  public void setAllowStaleDataIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ALLOWSTALEDATA_ISSET_ID, value);
-  }
-
-  /**
    * Only valid for Row fetches, the record in the row to start fetching.  If the row contains 1000
    * records and you want the first 100, then this value is 0.  If you want records 300-400 then this
    * value would be 300.  If startRecord is beyond the end of the row, the row will be null in the
@@ -771,14 +722,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       }
       break;
 
-    case ALLOW_STALE_DATA:
-      if (value == null) {
-        unsetAllowStaleData();
-      } else {
-        setAllowStaleData((Boolean)value);
-      }
-      break;
-
     case START_RECORD:
       if (value == null) {
         unsetStartRecord();
@@ -826,9 +769,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
     case COLUMNS_TO_FETCH:
       return getColumnsToFetch();
 
-    case ALLOW_STALE_DATA:
-      return Boolean.valueOf(isAllowStaleData());
-
     case START_RECORD:
       return Integer.valueOf(getStartRecord());
 
@@ -861,8 +801,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       return isSetColumnFamiliesToFetch();
     case COLUMNS_TO_FETCH:
       return isSetColumnsToFetch();
-    case ALLOW_STALE_DATA:
-      return isSetAllowStaleData();
     case START_RECORD:
       return isSetStartRecord();
     case MAX_RECORDS_TO_FETCH:
@@ -937,15 +875,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       if (!(this_present_columnsToFetch && that_present_columnsToFetch))
         return false;
       if (!this.columnsToFetch.equals(that.columnsToFetch))
-        return false;
-    }
-
-    boolean this_present_allowStaleData = true;
-    boolean that_present_allowStaleData = true;
-    if (this_present_allowStaleData || that_present_allowStaleData) {
-      if (!(this_present_allowStaleData && that_present_allowStaleData))
-        return false;
-      if (this.allowStaleData != that.allowStaleData)
         return false;
     }
 
@@ -1052,16 +981,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetAllowStaleData()).compareTo(typedOther.isSetAllowStaleData());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetAllowStaleData()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.allowStaleData, typedOther.allowStaleData);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = Boolean.valueOf(isSetStartRecord()).compareTo(typedOther.isSetStartRecord());
     if (lastComparison != 0) {
       return lastComparison;
@@ -1154,10 +1073,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
     } else {
       sb.append(this.columnsToFetch);
     }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("allowStaleData:");
-    sb.append(this.allowStaleData);
     first = false;
     if (!first) sb.append(", ");
     sb.append("startRecord:");
@@ -1303,14 +1218,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 7: // ALLOW_STALE_DATA
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
-              struct.allowStaleData = iprot.readBool();
-              struct.setAllowStaleDataIsSet(true);
-            } else { 
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           case 8: // START_RECORD
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
               struct.startRecord = iprot.readI32();
@@ -1401,9 +1308,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
         }
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(ALLOW_STALE_DATA_FIELD_DESC);
-      oprot.writeBool(struct.allowStaleData);
-      oprot.writeFieldEnd();
       oprot.writeFieldBegin(START_RECORD_FIELD_DESC);
       oprot.writeI32(struct.startRecord);
       oprot.writeFieldEnd();
@@ -1451,19 +1355,16 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
       if (struct.isSetColumnsToFetch()) {
         optionals.set(5);
       }
-      if (struct.isSetAllowStaleData()) {
+      if (struct.isSetStartRecord()) {
         optionals.set(6);
       }
-      if (struct.isSetStartRecord()) {
+      if (struct.isSetMaxRecordsToFetch()) {
         optionals.set(7);
       }
-      if (struct.isSetMaxRecordsToFetch()) {
+      if (struct.isSetHighlightOptions()) {
         optionals.set(8);
       }
-      if (struct.isSetHighlightOptions()) {
-        optionals.set(9);
-      }
-      oprot.writeBitSet(optionals, 10);
+      oprot.writeBitSet(optionals, 9);
       if (struct.isSetRecordOnly()) {
         oprot.writeBool(struct.recordOnly);
       }
@@ -1501,9 +1402,6 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
           }
         }
       }
-      if (struct.isSetAllowStaleData()) {
-        oprot.writeBool(struct.allowStaleData);
-      }
       if (struct.isSetStartRecord()) {
         oprot.writeI32(struct.startRecord);
       }
@@ -1518,7 +1416,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, Selector struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(10);
+      BitSet incoming = iprot.readBitSet(9);
       if (incoming.get(0)) {
         struct.recordOnly = iprot.readBool();
         struct.setRecordOnlyIsSet(true);
@@ -1573,18 +1471,14 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
         struct.setColumnsToFetchIsSet(true);
       }
       if (incoming.get(6)) {
-        struct.allowStaleData = iprot.readBool();
-        struct.setAllowStaleDataIsSet(true);
-      }
-      if (incoming.get(7)) {
         struct.startRecord = iprot.readI32();
         struct.setStartRecordIsSet(true);
       }
-      if (incoming.get(8)) {
+      if (incoming.get(7)) {
         struct.maxRecordsToFetch = iprot.readI32();
         struct.setMaxRecordsToFetchIsSet(true);
       }
-      if (incoming.get(9)) {
+      if (incoming.get(8)) {
         struct.highlightOptions = new HighlightOptions();
         struct.highlightOptions.read(iprot);
         struct.setHighlightOptionsIsSet(true);

@@ -106,7 +106,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
    */
   public boolean blockCaching; // required
   /**
-   * The files extensions that you would like to allow block cache to to cache.  If null (default) everything is cached.
+   * The files extensions that you would like to allow block cache to cache.  If null (default) everything is cached.
    */
   public Set<String> blockCachingFileTypes; // required
   /**
@@ -170,7 +170,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
      */
     BLOCK_CACHING((short)10, "blockCaching"),
     /**
-     * The files extensions that you would like to allow block cache to to cache.  If null (default) everything is cached.
+     * The files extensions that you would like to allow block cache to cache.  If null (default) everything is cached.
      */
     BLOCK_CACHING_FILE_TYPES((short)11, "blockCachingFileTypes"),
     /**
@@ -722,14 +722,14 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * The files extensions that you would like to allow block cache to to cache.  If null (default) everything is cached.
+   * The files extensions that you would like to allow block cache to cache.  If null (default) everything is cached.
    */
   public Set<String> getBlockCachingFileTypes() {
     return this.blockCachingFileTypes;
   }
 
   /**
-   * The files extensions that you would like to allow block cache to to cache.  If null (default) everything is cached.
+   * The files extensions that you would like to allow block cache to cache.  If null (default) everything is cached.
    */
   public TableDescriptor setBlockCachingFileTypes(Set<String> blockCachingFileTypes) {
     this.blockCachingFileTypes = blockCachingFileTypes;

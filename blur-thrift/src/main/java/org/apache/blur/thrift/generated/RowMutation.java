@@ -69,7 +69,7 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   }
 
   /**
-   * The that that the row mutation is to act upon.
+   * The table that the row mutation is to act upon.
    */
   public String table; // required
   /**
@@ -98,7 +98,7 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
-     * The that that the row mutation is to act upon.
+     * The table that the row mutation is to act upon.
      */
     TABLE((short)1, "table"),
     /**
@@ -283,14 +283,14 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   }
 
   /**
-   * The that that the row mutation is to act upon.
+   * The table that the row mutation is to act upon.
    */
   public String getTable() {
     return this.table;
   }
 
   /**
-   * The that that the row mutation is to act upon.
+   * The table that the row mutation is to act upon.
    */
   public RowMutation setTable(String table) {
     this.table = table;

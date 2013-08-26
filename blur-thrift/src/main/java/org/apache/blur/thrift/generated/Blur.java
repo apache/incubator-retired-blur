@@ -128,7 +128,7 @@ public class Blur {
     public Schema schema(String table) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
-     * Parses the given query and return the string represents the query.
+     * Parses the given query and returns the string that represents the query.
      * @return string representation of the parsed query.
      * 
      * @param table the table name.
@@ -202,7 +202,7 @@ public class Blur {
     public FetchResult fetchRow(String table, Selector selector) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
-     * Mutates a Row given the RowMutation the is provided.
+     * Mutates a Row given the RowMutation that is provided.
      * 
      * @param mutation the RowMutation.
      */
@@ -255,7 +255,7 @@ public class Blur {
      * 
      * @param columnName the column name.
      * 
-     * @param startWith the term to start with assuming that you paging through the term list.
+     * @param startWith the term to start with assuming that you are paging through the term list.
      * 
      * @param size the number to fetch at once.
      */
@@ -21569,7 +21569,7 @@ public class Blur {
      */
     public String columnName; // required
     /**
-     * the term to start with assuming that you paging through the term list.
+     * the term to start with assuming that you are paging through the term list.
      */
     public String startWith; // required
     /**
@@ -21592,7 +21592,7 @@ public class Blur {
        */
       COLUMN_NAME((short)3, "columnName"),
       /**
-       * the term to start with assuming that you paging through the term list.
+       * the term to start with assuming that you are paging through the term list.
        */
       START_WITH((short)4, "startWith"),
       /**
@@ -21826,14 +21826,14 @@ public class Blur {
     }
 
     /**
-     * the term to start with assuming that you paging through the term list.
+     * the term to start with assuming that you are paging through the term list.
      */
     public String getStartWith() {
       return this.startWith;
     }
 
     /**
-     * the term to start with assuming that you paging through the term list.
+     * the term to start with assuming that you are paging through the term list.
      */
     public terms_args setStartWith(String startWith) {
       this.startWith = startWith;

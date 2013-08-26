@@ -499,7 +499,7 @@ struct RecordMutation {
  */
 struct RowMutation {
   /**
-   * The that that the row mutation is to act upon.
+   * The table that the row mutation is to act upon.
    */
   1:string table,
   /**
@@ -605,7 +605,7 @@ struct TableStats {
  */
 struct ColumnDefinition {
   /**
-   * Required. The family the this column existing within.
+   * Required. The family that this column exists within.
    */
   1:string family,
   /**
@@ -687,7 +687,7 @@ struct TableDescriptor {
    */
   10:bool blockCaching = 1,
   /**
-   * The files extensions that you would like to allow block cache to to cache.  If null (default) everything is cached.
+   * The files extensions that you would like to allow block cache to cache.  If null (default) everything is cached.
    */
   11:set<string> blockCachingFileTypes,
   /**
@@ -822,7 +822,7 @@ service Blur {
   ) throws (1:BlurException ex)
 
   /**
-   * Parses the given query and return the string represents the query.
+   * Parses the given query and returns the string that represents the query.
    * @return string representation of the parsed query.
    */
   string parseQuery(
@@ -895,7 +895,7 @@ service Blur {
   ) throws (1:BlurException ex)
 
   /**
-   * Mutates a Row given the RowMutation the is provided.
+   * Mutates a Row given the RowMutation that is provided.
    */
   void mutate(
     /** the RowMutation.*/
@@ -954,7 +954,7 @@ service Blur {
     2:string columnFamily, 
     /** the column name. */
     3:string columnName,
-    /** the term to start with assuming that you paging through the term list. */
+    /** the term to start with assuming that you are paging through the term list. */
     4:string startWith, 
     /** the number to fetch at once. */
     5:i16 size

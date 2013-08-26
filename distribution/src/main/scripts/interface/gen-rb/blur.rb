@@ -1663,7 +1663,7 @@ module Blur
         COLUMNFAMILY => {:type => ::Thrift::Types::STRING, :name => 'columnFamily'},
         # the column name.
         COLUMNNAME => {:type => ::Thrift::Types::STRING, :name => 'columnName'},
-        # the term to start with assuming that you paging through the term list.
+        # the term to start with assuming that you are paging through the term list.
         STARTWITH => {:type => ::Thrift::Types::STRING, :name => 'startWith'},
         # the number to fetch at once.
         SIZE => {:type => ::Thrift::Types::I16, :name => 'size'}

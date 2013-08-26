@@ -69,7 +69,7 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
   }
 
   /**
-   * Required. The family the this column existing within.
+   * Required. The family that this column exists within.
    */
   public String family; // required
   /**
@@ -106,7 +106,7 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
-     * Required. The family the this column existing within.
+     * Required. The family that this column exists within.
      */
     FAMILY((short)1, "family"),
     /**
@@ -300,14 +300,14 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
   }
 
   /**
-   * Required. The family the this column existing within.
+   * Required. The family that this column exists within.
    */
   public String getFamily() {
     return this.family;
   }
 
   /**
-   * Required. The family the this column existing within.
+   * Required. The family that this column exists within.
    */
   public ColumnDefinition setFamily(String family) {
     this.family = family;

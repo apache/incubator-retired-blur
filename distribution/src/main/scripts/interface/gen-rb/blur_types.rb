@@ -525,7 +525,7 @@ module Blur
     WAITTOBEVISIBLE = 6
 
     FIELDS = {
-      # The that that the row mutation is to act upon.
+      # The table that the row mutation is to act upon.
       TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
       # The row id that the row mutation is to act upon.
       ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowId'},
@@ -657,7 +657,7 @@ module Blur
     PROPERTIES = 6
 
     FIELDS = {
-      # Required. The family the this column existing within.
+      # Required. The family that this column exists within.
       FAMILY => {:type => ::Thrift::Types::STRING, :name => 'family'},
       # Required. The column name.
       COLUMNNAME => {:type => ::Thrift::Types::STRING, :name => 'columnName'},
@@ -744,7 +744,7 @@ module Blur
       SIMILARITYCLASS => {:type => ::Thrift::Types::STRING, :name => 'similarityClass'},
       # Should block cache be enable or disabled for this table.
       BLOCKCACHING => {:type => ::Thrift::Types::BOOL, :name => 'blockCaching', :default => true},
-      # The files extensions that you would like to allow block cache to to cache.  If null (default) everything is cached.
+      # The files extensions that you would like to allow block cache to cache.  If null (default) everything is cached.
       BLOCKCACHINGFILETYPES => {:type => ::Thrift::Types::SET, :name => 'blockCachingFileTypes', :element => {:type => ::Thrift::Types::STRING}},
       # If a table is set to be readonly, that means that mutates through Thrift are NOT allowed.  However
 # updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.

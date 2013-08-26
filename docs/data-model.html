@@ -177,7 +177,7 @@ Let's say you want to find all the Rows that contain a Record with the family &q
 
               <h3 id="text_query">Text</h3>
 <p>Text fields are analyzed with Lucene's standard analyzers, which mean that the string is broken down into terms
-and the terms capitalization is removed and well as any special punctuation.  See Lucene's documentation for further explanation.
+and the terms capitalization is removed as well as any special punctuation.  See Lucene's documentation for further explanation.
 </p>
 <h4>Examples:</h4>
 <p>
@@ -241,14 +241,14 @@ To run a query to find all the rows that contain a column with a starting value 
               <h3 id="spatial_query">Spatial</h3>
 <p>
 Spatial queries are supported through the Lucene spatial module.  There are currently three 
-different types of stragies:
+different types of strategies:
 <ul>
 <li>Point Vector</li>
 <li>Term Query Prefix Tree</li>
 <li>Recursive Prefix Tree</li>
 </ul>
 Currently all of the built in spatial types are using a GEO spatial context, meaning the assumed
-cooridates are on the planet Earth.  Each of these strategies support different indexing features
+coordinates are on the planet Earth.  Each of these strategies support different indexing features
 such as the shapes they can index, the shapes they can query with, and the operations they 
 support during the query.  See the type section below to get a list of supported operations and
 shapes per strategy. 

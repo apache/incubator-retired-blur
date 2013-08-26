@@ -428,7 +428,7 @@ with the query options.
 </table><br/>The RowMutation defines how the given Record is to be mutated.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_RowMutation">Struct: RowMutation</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>table</td><td><code>string</code></td><td>The that that the row mutation is to act upon.
+<tr><td>1</td><td>table</td><td><code>string</code></td><td>The table that the row mutation is to act upon.
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>rowId</td><td><code>string</code></td><td>The row id that the row mutation is to act upon.
 </td><td>default</td><td></td></tr>
@@ -484,7 +484,7 @@ shards that are complete, etc.
 </table><br/>TableStats holds the statistics for a given table.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_ColumnDefinition">Struct: ColumnDefinition</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>family</td><td><code>string</code></td><td>Required. The family the this column existing within.
+<tr><td>1</td><td>family</td><td><code>string</code></td><td>Required. The family that this column exists within.
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>columnName</td><td><code>string</code></td><td>Required. The column name.
 </td><td>default</td><td></td></tr>
@@ -530,7 +530,7 @@ NOTE: This will index the column as a full text field in a default field, so tha
 </td><td>default</td><td></td></tr>
 <tr><td>10</td><td>blockCaching</td><td><code>bool</code></td><td>Should block cache be enable or disabled for this table.
 </td><td>default</td><td>1</td></tr>
-<tr><td>11</td><td>blockCachingFileTypes</td><td><code>set&lt;<code>string</code>&gt;</code></td><td>The files extensions that you would like to allow block cache to to cache.  If null (default) everything is cached.
+<tr><td>11</td><td>blockCachingFileTypes</td><td><code>set&lt;<code>string</code>&gt;</code></td><td>The files extensions that you would like to allow block cache to cache.  If null (default) everything is cached.
 </td><td>default</td><td></td></tr>
 <tr><td>12</td><td>readOnly</td><td><code>bool</code></td><td>If a table is set to be readonly, that means that mutates through Thrift are NOT allowed.  However
 updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.
@@ -638,7 +638,7 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 <pre><code>string</code> parseQuery(<code>string</code> table,
 <code><a href="Blur.html#Struct_Query">Query</a></code> query)
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre>Parses the given query and return the string represents the query.
+</pre>Parses the given query and returns the string that represents the query.
 @return string representation of the parsed query.
 <br/><br/><h4 id="Parameters_Blur_parseQuery">Parameters</h4>
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
@@ -706,7 +706,7 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </table></p></section><section><div class="page-header"><h4 id="Fn_Blur_mutate">Function: Blur.mutate</h4></div><p class="lead">
 <pre><code>void</code> mutate(<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code> mutation)
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre>Mutates a Row given the RowMutation the is provided.
+</pre>Mutates a Row given the RowMutation that is provided.
 <br/><br/><h4 id="Parameters_Blur_mutate">Parameters</h4>
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>mutation</td><td>the RowMutation.
 </td></tr>
@@ -765,7 +765,7 @@ string and text field types.
 </td></tr>
 <tr><td>columnName</td><td>the column name.
 </td></tr>
-<tr><td>startWith</td><td>the term to start with assuming that you paging through the term list.
+<tr><td>startWith</td><td>the term to start with assuming that you are paging through the term list.
 </td></tr>
 <tr><td>size</td><td>the number to fetch at once.
 </td></tr>

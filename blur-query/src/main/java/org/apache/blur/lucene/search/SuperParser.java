@@ -26,11 +26,6 @@ public class SuperParser extends BlurQueryParser {
     void match(int start, int end) throws ParseException;
   }
 
-  private final String _defaultField = SUPER;
-  // private static final Pattern PATTERN =
-  // Pattern.compile("super\\s*?\\:\\s*?\\<(.*?)\\>");
-  // private static final Pattern CHECK =
-  // Pattern.compile("super\\s*?\\:\\s*?\\<");
   private static final String SEP = ".";
   private final boolean _superSearch;
   private final Filter _queryFilter;

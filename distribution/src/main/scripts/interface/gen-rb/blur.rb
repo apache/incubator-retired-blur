@@ -1548,7 +1548,7 @@ module Blur
         # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
         # the uuid of the query.
-        UUID => {:type => ::Thrift::Types::I64, :name => 'uuid'}
+        UUID => {:type => ::Thrift::Types::STRING, :name => 'uuid'}
       }
 
       def struct_fields; FIELDS; end
@@ -1598,7 +1598,7 @@ module Blur
       EX = 1
 
       FIELDS = {
-        SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::I64}},
+        SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
         EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
       }
 
@@ -1619,7 +1619,7 @@ module Blur
         # the table name.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
         # the uuid of the query.
-        UUID => {:type => ::Thrift::Types::I64, :name => 'uuid'}
+        UUID => {:type => ::Thrift::Types::STRING, :name => 'uuid'}
       }
 
       def struct_fields; FIELDS; end

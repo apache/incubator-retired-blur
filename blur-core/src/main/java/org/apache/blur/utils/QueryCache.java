@@ -52,7 +52,7 @@ public class QueryCache implements EvictionListener<QueryCacheKey, QueryCacheEnt
     newBlurQuery.useCacheIfPresent = false;
     newBlurQuery.userContext = null;
     newBlurQuery.maxQueryTime = 0;
-    newBlurQuery.uuid = 0;
+    newBlurQuery.uuid = null;
     newBlurQuery.startTime = 0;
     return new QueryCacheKey(table, newBlurQuery);
   }

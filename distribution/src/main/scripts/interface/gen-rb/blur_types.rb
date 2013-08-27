@@ -416,7 +416,7 @@ module Blur
       MAXQUERYTIME => {:type => ::Thrift::Types::I64, :name => 'maxQueryTime', :default => 9223372036854775807},
       # Sets the uuid of this query, this is normal set by the client so that the status
 # of a running query can be found or the query can be canceled.
-      UUID => {:type => ::Thrift::Types::I64, :name => 'uuid'},
+      UUID => {:type => ::Thrift::Types::STRING, :name => 'uuid'},
       # Sets a user context, only used for logging at this point.
       USERCONTEXT => {:type => ::Thrift::Types::STRING, :name => 'userContext'},
       # Enabled by default to cache this result.  False would not cache the result.
@@ -600,7 +600,7 @@ module Blur
       # The state of the query.  e.g. RUNNING, INTERRUPTED, COMPLETE
       STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::Blur::QueryState},
       # The uuid of the query.
-      UUID => {:type => ::Thrift::Types::I64, :name => 'uuid'},
+      UUID => {:type => ::Thrift::Types::STRING, :name => 'uuid'},
       # The status of the query NOT_FOUND if uuid is not found else FOUND
       STATUS => {:type => ::Thrift::Types::I32, :name => 'status', :enum_class => ::Blur::Status}
     }

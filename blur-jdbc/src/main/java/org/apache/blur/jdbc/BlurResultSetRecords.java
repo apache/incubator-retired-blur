@@ -28,7 +28,7 @@ import java.sql.SQLWarning;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
+import java.util.UUID;
 
 import org.apache.blur.jdbc.abstractimpl.AbstractBlurResultSet;
 import org.apache.blur.jdbc.parser.Parser;
@@ -42,10 +42,10 @@ import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.FetchRecordResult;
 import org.apache.blur.thrift.generated.FetchResult;
+import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
-import org.apache.blur.thrift.generated.Query;
 
 
 public class BlurResultSetRecords extends AbstractBlurResultSet {
@@ -87,7 +87,7 @@ public class BlurResultSetRecords extends AbstractBlurResultSet {
     BlurQuery blurQuery = new BlurQuery();
     blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
     blurQuery.maxQueryTime = Long.MAX_VALUE;
-    blurQuery.uuid = new Random().nextLong();
+    blurQuery.uuid = UUID.randomUUID().toString();
     blurQuery.fetch = fetch;
     blurQuery.start = start;
     blurQuery.query = new Query();

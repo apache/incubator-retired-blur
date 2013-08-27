@@ -471,7 +471,7 @@ public class IndexManager {
     return type;
   }
 
-  public void cancelQuery(String table, long uuid) {
+  public void cancelQuery(String table, String uuid) {
     _statusManager.cancelQuery(table, uuid);
   }
 
@@ -479,11 +479,11 @@ public class IndexManager {
     return _statusManager.currentQueries(table);
   }
 
-  public BlurQueryStatus queryStatus(String table, long uuid) {
+  public BlurQueryStatus queryStatus(String table, String uuid) {
     return _statusManager.queryStatus(table, uuid);
   }
 
-  public List<Long> queryStatusIdList(String table) {
+  public List<String> queryStatusIdList(String table) {
     return _statusManager.queryStatusIdList(table);
   }
 

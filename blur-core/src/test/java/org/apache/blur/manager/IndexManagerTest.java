@@ -357,7 +357,7 @@ public class IndexManagerTest {
     blurQuery.fetch = 10;
     blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
     blurQuery.maxQueryTime = Long.MAX_VALUE;
-    blurQuery.uuid = 1;
+    blurQuery.uuid = "1";
 
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
     assertEquals(iterable.getTotalResults(), 1);
@@ -382,7 +382,7 @@ public class IndexManagerTest {
     blurQuery.fetch = 10;
     blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
     blurQuery.maxQueryTime = Long.MAX_VALUE;
-    blurQuery.uuid = 1;
+    blurQuery.uuid = "1";
 
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
     assertEquals(iterable.getTotalResults(), 1);
@@ -407,7 +407,7 @@ public class IndexManagerTest {
     blurQuery.fetch = 10;
     blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
     blurQuery.maxQueryTime = Long.MAX_VALUE;
-    blurQuery.uuid = 1;
+    blurQuery.uuid = "1";
 
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
     assertEquals(iterable.getTotalResults(), 1);
@@ -432,7 +432,7 @@ public class IndexManagerTest {
     blurQuery.fetch = 10;
     blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
     blurQuery.maxQueryTime = Long.MAX_VALUE;
-    blurQuery.uuid = 1;
+    blurQuery.uuid = "1";
     blurQuery.facets = Arrays.asList(new Facet("test-family.testcol1:value*", Long.MAX_VALUE), new Facet(
         "test-family.testcol1:value-nohit", Long.MAX_VALUE));
 
@@ -628,7 +628,7 @@ public class IndexManagerTest {
     blurQuery.fetch = 10;
     blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
     blurQuery.maxQueryTime = Long.MAX_VALUE;
-    blurQuery.uuid = 1;
+    blurQuery.uuid = "1";
 
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
     assertEquals(2, iterable.getTotalResults());
@@ -657,7 +657,7 @@ public class IndexManagerTest {
     blurQuery.fetch = 10;
     blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
     blurQuery.maxQueryTime = Long.MAX_VALUE;
-    blurQuery.uuid = 1;
+    blurQuery.uuid = "1";
     blurQuery.selector = new Selector();
 
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
@@ -683,7 +683,7 @@ public class IndexManagerTest {
     blurQuery.fetch = 10;
     blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
     blurQuery.maxQueryTime = Long.MAX_VALUE;
-    blurQuery.uuid = 1;
+    blurQuery.uuid = "1";
 
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
     assertEquals(iterable.getTotalResults(), 2);
@@ -711,7 +711,7 @@ public class IndexManagerTest {
     blurQuery.fetch = 10;
     blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
     blurQuery.maxQueryTime = Long.MAX_VALUE;
-    blurQuery.uuid = 1;
+    blurQuery.uuid = "1";
     blurQuery.selector = new Selector();
     blurQuery.selector.setRecordOnly(true);
 
@@ -774,7 +774,7 @@ public class IndexManagerTest {
     blurQuery.fetch = 10;
     blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
     blurQuery.maxQueryTime = Long.MAX_VALUE;
-    blurQuery.uuid = 1;
+    blurQuery.uuid = "1";
     blurQuery.facets = Arrays.asList(new Facet("test-family.testcol1:value1", Long.MAX_VALUE), new Facet(
         "test-family.testcol1:value-nohit", Long.MAX_VALUE));
 

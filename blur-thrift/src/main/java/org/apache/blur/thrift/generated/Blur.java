@@ -223,7 +223,7 @@ public class Blur {
      * 
      * @param uuid the uuid of the query.
      */
-    public void cancelQuery(String table, long uuid) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void cancelQuery(String table, String uuid) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
      * Returns a list of the query ids of queries that have recently been executed for the given table.
@@ -231,7 +231,7 @@ public class Blur {
      * 
      * @param table the table name.
      */
-    public List<Long> queryStatusIdList(String table) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public List<String> queryStatusIdList(String table) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
      * Returns the query status for the given table and query uuid.
@@ -241,7 +241,7 @@ public class Blur {
      * 
      * @param uuid the uuid of the query.
      */
-    public BlurQueryStatus queryStatusById(String table, long uuid) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public BlurQueryStatus queryStatusById(String table, String uuid) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
      * Gets the terms list from the index for the given table, family, column using the
@@ -391,11 +391,11 @@ public class Blur {
 
     public void mutateBatch(List<RowMutation> mutations, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.mutateBatch_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
-    public void cancelQuery(String table, long uuid, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.cancelQuery_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void cancelQuery(String table, String uuid, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.cancelQuery_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     public void queryStatusIdList(String table, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.queryStatusIdList_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
-    public void queryStatusById(String table, long uuid, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.queryStatusById_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void queryStatusById(String table, String uuid, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.queryStatusById_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     public void terms(String table, String columnFamily, String columnName, String startWith, short size, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.terms_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
@@ -913,13 +913,13 @@ public class Blur {
       return;
     }
 
-    public void cancelQuery(String table, long uuid) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void cancelQuery(String table, String uuid) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       send_cancelQuery(table, uuid);
       recv_cancelQuery();
     }
 
-    public void send_cancelQuery(String table, long uuid) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void send_cancelQuery(String table, String uuid) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       cancelQuery_args args = new cancelQuery_args();
       args.setTable(table);
@@ -937,7 +937,7 @@ public class Blur {
       return;
     }
 
-    public List<Long> queryStatusIdList(String table) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public List<String> queryStatusIdList(String table) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       send_queryStatusIdList(table);
       return recv_queryStatusIdList();
@@ -950,7 +950,7 @@ public class Blur {
       sendBase("queryStatusIdList", args);
     }
 
-    public List<Long> recv_queryStatusIdList() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public List<String> recv_queryStatusIdList() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       queryStatusIdList_result result = new queryStatusIdList_result();
       receiveBase(result, "queryStatusIdList");
@@ -963,13 +963,13 @@ public class Blur {
       throw new org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException(org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException.MISSING_RESULT, "queryStatusIdList failed: unknown result");
     }
 
-    public BlurQueryStatus queryStatusById(String table, long uuid) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public BlurQueryStatus queryStatusById(String table, String uuid) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       send_queryStatusById(table, uuid);
       return recv_queryStatusById();
     }
 
-    public void send_queryStatusById(String table, long uuid) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void send_queryStatusById(String table, String uuid) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       queryStatusById_args args = new queryStatusById_args();
       args.setTable(table);
@@ -1901,7 +1901,7 @@ public class Blur {
       }
     }
 
-    public void cancelQuery(String table, long uuid, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<cancelQuery_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void cancelQuery(String table, String uuid, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<cancelQuery_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       checkReady();
       cancelQuery_call method_call = new cancelQuery_call(table, uuid, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
@@ -1910,8 +1910,8 @@ public class Blur {
 
     public static class cancelQuery_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
       private String table;
-      private long uuid;
-      public cancelQuery_call(String table, long uuid, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<cancelQuery_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      private String uuid;
+      public cancelQuery_call(String table, String uuid, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<cancelQuery_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.table = table;
         this.uuid = uuid;
@@ -1958,7 +1958,7 @@ public class Blur {
         prot.writeMessageEnd();
       }
 
-      public List<Long> getResult() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      public List<String> getResult() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
         if (getState() != org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -1968,7 +1968,7 @@ public class Blur {
       }
     }
 
-    public void queryStatusById(String table, long uuid, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<queryStatusById_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void queryStatusById(String table, String uuid, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<queryStatusById_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       checkReady();
       queryStatusById_call method_call = new queryStatusById_call(table, uuid, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
@@ -1977,8 +1977,8 @@ public class Blur {
 
     public static class queryStatusById_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
       private String table;
-      private long uuid;
-      public queryStatusById_call(String table, long uuid, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<queryStatusById_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      private String uuid;
+      public queryStatusById_call(String table, String uuid, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<queryStatusById_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.table = table;
         this.uuid = uuid;
@@ -18902,7 +18902,7 @@ public class Blur {
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("cancelQuery_args");
 
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("table", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField UUID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("uuid", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)2);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField UUID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("uuid", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -18917,7 +18917,7 @@ public class Blur {
     /**
      * the uuid of the query.
      */
-    public long uuid; // required
+    public String uuid; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
@@ -18987,15 +18987,13 @@ public class Blur {
     }
 
     // isset id assignments
-    private static final int __UUID_ISSET_ID = 0;
-    private byte __isset_bitfield = 0;
     public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.TABLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("table", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       tmpMap.put(_Fields.UUID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("uuid", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(cancelQuery_args.class, metaDataMap);
     }
@@ -19005,23 +19003,23 @@ public class Blur {
 
     public cancelQuery_args(
       String table,
-      long uuid)
+      String uuid)
     {
       this();
       this.table = table;
       this.uuid = uuid;
-      setUuidIsSet(true);
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public cancelQuery_args(cancelQuery_args other) {
-      __isset_bitfield = other.__isset_bitfield;
       if (other.isSetTable()) {
         this.table = other.table;
       }
-      this.uuid = other.uuid;
+      if (other.isSetUuid()) {
+        this.uuid = other.uuid;
+      }
     }
 
     public cancelQuery_args deepCopy() {
@@ -19031,8 +19029,7 @@ public class Blur {
     @Override
     public void clear() {
       this.table = null;
-      setUuidIsSet(false);
-      this.uuid = 0;
+      this.uuid = null;
     }
 
     /**
@@ -19068,30 +19065,31 @@ public class Blur {
     /**
      * the uuid of the query.
      */
-    public long getUuid() {
+    public String getUuid() {
       return this.uuid;
     }
 
     /**
      * the uuid of the query.
      */
-    public cancelQuery_args setUuid(long uuid) {
+    public cancelQuery_args setUuid(String uuid) {
       this.uuid = uuid;
-      setUuidIsSet(true);
       return this;
     }
 
     public void unsetUuid() {
-      __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __UUID_ISSET_ID);
+      this.uuid = null;
     }
 
     /** Returns true if field uuid is set (has been assigned a value) and false otherwise */
     public boolean isSetUuid() {
-      return EncodingUtils.testBit(__isset_bitfield, __UUID_ISSET_ID);
+      return this.uuid != null;
     }
 
     public void setUuidIsSet(boolean value) {
-      __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __UUID_ISSET_ID, value);
+      if (!value) {
+        this.uuid = null;
+      }
     }
 
     public void setFieldValue(_Fields field, Object value) {
@@ -19108,7 +19106,7 @@ public class Blur {
         if (value == null) {
           unsetUuid();
         } else {
-          setUuid((Long)value);
+          setUuid((String)value);
         }
         break;
 
@@ -19121,7 +19119,7 @@ public class Blur {
         return getTable();
 
       case UUID:
-        return Long.valueOf(getUuid());
+        return getUuid();
 
       }
       throw new IllegalStateException();
@@ -19164,12 +19162,12 @@ public class Blur {
           return false;
       }
 
-      boolean this_present_uuid = true;
-      boolean that_present_uuid = true;
+      boolean this_present_uuid = true && this.isSetUuid();
+      boolean that_present_uuid = true && that.isSetUuid();
       if (this_present_uuid || that_present_uuid) {
         if (!(this_present_uuid && that_present_uuid))
           return false;
-        if (this.uuid != that.uuid)
+        if (!this.uuid.equals(that.uuid))
           return false;
       }
 
@@ -19238,7 +19236,11 @@ public class Blur {
       first = false;
       if (!first) sb.append(", ");
       sb.append("uuid:");
-      sb.append(this.uuid);
+      if (this.uuid == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.uuid);
+      }
       first = false;
       sb.append(")");
       return sb.toString();
@@ -19259,8 +19261,6 @@ public class Blur {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bitfield = 0;
         read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
       } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
         throw new java.io.IOException(te);
@@ -19294,8 +19294,8 @@ public class Blur {
               }
               break;
             case 2: // UUID
-              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64) {
-                struct.uuid = iprot.readI64();
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+                struct.uuid = iprot.readString();
                 struct.setUuidIsSet(true);
               } else { 
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -19321,9 +19321,11 @@ public class Blur {
           oprot.writeString(struct.table);
           oprot.writeFieldEnd();
         }
-        oprot.writeFieldBegin(UUID_FIELD_DESC);
-        oprot.writeI64(struct.uuid);
-        oprot.writeFieldEnd();
+        if (struct.uuid != null) {
+          oprot.writeFieldBegin(UUID_FIELD_DESC);
+          oprot.writeString(struct.uuid);
+          oprot.writeFieldEnd();
+        }
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -19353,7 +19355,7 @@ public class Blur {
           oprot.writeString(struct.table);
         }
         if (struct.isSetUuid()) {
-          oprot.writeI64(struct.uuid);
+          oprot.writeString(struct.uuid);
         }
       }
 
@@ -19366,7 +19368,7 @@ public class Blur {
           struct.setTableIsSet(true);
         }
         if (incoming.get(1)) {
-          struct.uuid = iprot.readI64();
+          struct.uuid = iprot.readString();
           struct.setUuidIsSet(true);
         }
       }
@@ -20108,7 +20110,7 @@ public class Blur {
       schemes.put(TupleScheme.class, new queryStatusIdList_resultTupleSchemeFactory());
     }
 
-    public List<Long> success; // required
+    public List<String> success; // required
     public BlurException ex; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -20178,7 +20180,7 @@ public class Blur {
       Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("success", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
-              new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64))));
+              new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING))));
       tmpMap.put(_Fields.EX, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("ex", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -20189,7 +20191,7 @@ public class Blur {
     }
 
     public queryStatusIdList_result(
-      List<Long> success,
+      List<String> success,
       BlurException ex)
     {
       this();
@@ -20202,8 +20204,8 @@ public class Blur {
      */
     public queryStatusIdList_result(queryStatusIdList_result other) {
       if (other.isSetSuccess()) {
-        List<Long> __this__success = new ArrayList<Long>();
-        for (Long other_element : other.success) {
+        List<String> __this__success = new ArrayList<String>();
+        for (String other_element : other.success) {
           __this__success.add(other_element);
         }
         this.success = __this__success;
@@ -20227,22 +20229,22 @@ public class Blur {
       return (this.success == null) ? 0 : this.success.size();
     }
 
-    public java.util.Iterator<Long> getSuccessIterator() {
+    public java.util.Iterator<String> getSuccessIterator() {
       return (this.success == null) ? null : this.success.iterator();
     }
 
-    public void addToSuccess(long elem) {
+    public void addToSuccess(String elem) {
       if (this.success == null) {
-        this.success = new ArrayList<Long>();
+        this.success = new ArrayList<String>();
       }
       this.success.add(elem);
     }
 
-    public List<Long> getSuccess() {
+    public List<String> getSuccess() {
       return this.success;
     }
 
-    public queryStatusIdList_result setSuccess(List<Long> success) {
+    public queryStatusIdList_result setSuccess(List<String> success) {
       this.success = success;
       return this;
     }
@@ -20292,7 +20294,7 @@ public class Blur {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((List<Long>)value);
+          setSuccess((List<String>)value);
         }
         break;
 
@@ -20483,11 +20485,11 @@ public class Blur {
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
                 {
                   org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list240 = iprot.readListBegin();
-                  struct.success = new ArrayList<Long>(_list240.size);
+                  struct.success = new ArrayList<String>(_list240.size);
                   for (int _i241 = 0; _i241 < _list240.size; ++_i241)
                   {
-                    long _elem242; // required
-                    _elem242 = iprot.readI64();
+                    String _elem242; // required
+                    _elem242 = iprot.readString();
                     struct.success.add(_elem242);
                   }
                   iprot.readListEnd();
@@ -20524,10 +20526,10 @@ public class Blur {
         if (struct.success != null) {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
-            oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, struct.success.size()));
-            for (long _iter243 : struct.success)
+            oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.success.size()));
+            for (String _iter243 : struct.success)
             {
-              oprot.writeI64(_iter243);
+              oprot.writeString(_iter243);
             }
             oprot.writeListEnd();
           }
@@ -20566,9 +20568,9 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (long _iter244 : struct.success)
+            for (String _iter244 : struct.success)
             {
-              oprot.writeI64(_iter244);
+              oprot.writeString(_iter244);
             }
           }
         }
@@ -20583,12 +20585,12 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list245 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, iprot.readI32());
-            struct.success = new ArrayList<Long>(_list245.size);
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list245 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+            struct.success = new ArrayList<String>(_list245.size);
             for (int _i246 = 0; _i246 < _list245.size; ++_i246)
             {
-              long _elem247; // required
-              _elem247 = iprot.readI64();
+              String _elem247; // required
+              _elem247 = iprot.readString();
               struct.success.add(_elem247);
             }
           }
@@ -20608,7 +20610,7 @@ public class Blur {
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("queryStatusById_args");
 
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("table", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField UUID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("uuid", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)2);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField UUID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("uuid", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -20623,7 +20625,7 @@ public class Blur {
     /**
      * the uuid of the query.
      */
-    public long uuid; // required
+    public String uuid; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
@@ -20693,15 +20695,13 @@ public class Blur {
     }
 
     // isset id assignments
-    private static final int __UUID_ISSET_ID = 0;
-    private byte __isset_bitfield = 0;
     public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.TABLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("table", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       tmpMap.put(_Fields.UUID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("uuid", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(queryStatusById_args.class, metaDataMap);
     }
@@ -20711,23 +20711,23 @@ public class Blur {
 
     public queryStatusById_args(
       String table,
-      long uuid)
+      String uuid)
     {
       this();
       this.table = table;
       this.uuid = uuid;
-      setUuidIsSet(true);
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public queryStatusById_args(queryStatusById_args other) {
-      __isset_bitfield = other.__isset_bitfield;
       if (other.isSetTable()) {
         this.table = other.table;
       }
-      this.uuid = other.uuid;
+      if (other.isSetUuid()) {
+        this.uuid = other.uuid;
+      }
     }
 
     public queryStatusById_args deepCopy() {
@@ -20737,8 +20737,7 @@ public class Blur {
     @Override
     public void clear() {
       this.table = null;
-      setUuidIsSet(false);
-      this.uuid = 0;
+      this.uuid = null;
     }
 
     /**
@@ -20774,30 +20773,31 @@ public class Blur {
     /**
      * the uuid of the query.
      */
-    public long getUuid() {
+    public String getUuid() {
       return this.uuid;
     }
 
     /**
      * the uuid of the query.
      */
-    public queryStatusById_args setUuid(long uuid) {
+    public queryStatusById_args setUuid(String uuid) {
       this.uuid = uuid;
-      setUuidIsSet(true);
       return this;
     }
 
     public void unsetUuid() {
-      __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __UUID_ISSET_ID);
+      this.uuid = null;
     }
 
     /** Returns true if field uuid is set (has been assigned a value) and false otherwise */
     public boolean isSetUuid() {
-      return EncodingUtils.testBit(__isset_bitfield, __UUID_ISSET_ID);
+      return this.uuid != null;
     }
 
     public void setUuidIsSet(boolean value) {
-      __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __UUID_ISSET_ID, value);
+      if (!value) {
+        this.uuid = null;
+      }
     }
 
     public void setFieldValue(_Fields field, Object value) {
@@ -20814,7 +20814,7 @@ public class Blur {
         if (value == null) {
           unsetUuid();
         } else {
-          setUuid((Long)value);
+          setUuid((String)value);
         }
         break;
 
@@ -20827,7 +20827,7 @@ public class Blur {
         return getTable();
 
       case UUID:
-        return Long.valueOf(getUuid());
+        return getUuid();
 
       }
       throw new IllegalStateException();
@@ -20870,12 +20870,12 @@ public class Blur {
           return false;
       }
 
-      boolean this_present_uuid = true;
-      boolean that_present_uuid = true;
+      boolean this_present_uuid = true && this.isSetUuid();
+      boolean that_present_uuid = true && that.isSetUuid();
       if (this_present_uuid || that_present_uuid) {
         if (!(this_present_uuid && that_present_uuid))
           return false;
-        if (this.uuid != that.uuid)
+        if (!this.uuid.equals(that.uuid))
           return false;
       }
 
@@ -20944,7 +20944,11 @@ public class Blur {
       first = false;
       if (!first) sb.append(", ");
       sb.append("uuid:");
-      sb.append(this.uuid);
+      if (this.uuid == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.uuid);
+      }
       first = false;
       sb.append(")");
       return sb.toString();
@@ -20965,8 +20969,6 @@ public class Blur {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bitfield = 0;
         read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
       } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
         throw new java.io.IOException(te);
@@ -21000,8 +21002,8 @@ public class Blur {
               }
               break;
             case 2: // UUID
-              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64) {
-                struct.uuid = iprot.readI64();
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+                struct.uuid = iprot.readString();
                 struct.setUuidIsSet(true);
               } else { 
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -21027,9 +21029,11 @@ public class Blur {
           oprot.writeString(struct.table);
           oprot.writeFieldEnd();
         }
-        oprot.writeFieldBegin(UUID_FIELD_DESC);
-        oprot.writeI64(struct.uuid);
-        oprot.writeFieldEnd();
+        if (struct.uuid != null) {
+          oprot.writeFieldBegin(UUID_FIELD_DESC);
+          oprot.writeString(struct.uuid);
+          oprot.writeFieldEnd();
+        }
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -21059,7 +21063,7 @@ public class Blur {
           oprot.writeString(struct.table);
         }
         if (struct.isSetUuid()) {
-          oprot.writeI64(struct.uuid);
+          oprot.writeString(struct.uuid);
         }
       }
 
@@ -21072,7 +21076,7 @@ public class Blur {
           struct.setTableIsSet(true);
         }
         if (incoming.get(1)) {
-          struct.uuid = iprot.readI64();
+          struct.uuid = iprot.readString();
           struct.setUuidIsSet(true);
         }
       }

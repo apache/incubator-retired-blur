@@ -449,7 +449,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public void cancelQuery(final String table, final long uuid) throws BlurException, TException {
+  public void cancelQuery(final String table, final String uuid) throws BlurException, TException {
     checkTable(table);
     try {
       scatter(getCluster(table), new BlurCommand<Void>() {
@@ -466,24 +466,24 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public List<Long> queryStatusIdList(final String table) throws BlurException, TException {
+  public List<String> queryStatusIdList(final String table) throws BlurException, TException {
     checkTable(table);
     try {
-      return scatterGather(getCluster(table), new BlurCommand<List<Long>>() {
+      return scatterGather(getCluster(table), new BlurCommand<List<String>>() {
         @Override
-        public List<Long> call(Client client) throws BlurException, TException {
+        public List<String> call(Client client) throws BlurException, TException {
           return client.queryStatusIdList(table);
         }
-      }, new Merger<List<Long>>() {
+      }, new Merger<List<String>>() {
         @Override
-        public List<Long> merge(BlurExecutorCompletionService<List<Long>> service) throws BlurException {
-          Set<Long> result = new HashSet<Long>();
+        public List<String> merge(BlurExecutorCompletionService<List<String>> service) throws BlurException {
+          Set<String> result = new HashSet<String>();
           while (service.getRemainingCount() > 0) {
-            Future<List<Long>> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true);
-            List<Long> ids = service.getResultThrowException(future);
+            Future<List<String>> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true);
+            List<String> ids = service.getResultThrowException(future);
             result.addAll(ids);
           }
-          return new ArrayList<Long>(result);
+          return new ArrayList<String>(result);
         }
       });
     } catch (Exception e) {
@@ -493,7 +493,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public BlurQueryStatus queryStatusById(final String table, final long uuid) throws BlurException, TException {
+  public BlurQueryStatus queryStatusById(final String table, final String uuid) throws BlurException, TException {
     checkTable(table);
     try {
       return scatterGather(getCluster(table), new BlurCommand<BlurQueryStatus>() {

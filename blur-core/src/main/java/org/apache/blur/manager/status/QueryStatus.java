@@ -84,7 +84,7 @@ public class QueryStatus implements Comparable<QueryStatus> {
     return this;
   }
 
-  public long getUserUuid() {
+  public String getUserUuid() {
     return _blurQuery.uuid;
   }
 

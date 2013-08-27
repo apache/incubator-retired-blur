@@ -2882,8 +2882,8 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^2$/ && do{      if ($ftype == TType::I64) {
-        $xfer += $input->readI64(\$self->{uuid});
+      /^2$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{uuid});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -2906,8 +2906,8 @@ sub write {
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{uuid}) {
-    $xfer += $output->writeFieldBegin('uuid', TType::I64, 2);
-    $xfer += $output->writeI64($self->{uuid});
+    $xfer += $output->writeFieldBegin('uuid', TType::STRING, 2);
+    $xfer += $output->writeString($self->{uuid});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -3093,7 +3093,7 @@ sub read {
           for (my $_i217 = 0; $_i217 < $_size213; ++$_i217)
           {
             my $elem218 = undef;
-            $xfer += $input->readI64(\$elem218);
+            $xfer += $input->readString(\$elem218);
             push(@{$self->{success}},$elem218);
           }
           $xfer += $input->readListEnd();
@@ -3124,11 +3124,11 @@ sub write {
   if (defined $self->{success}) {
     $xfer += $output->writeFieldBegin('success', TType::LIST, 0);
     {
-      $xfer += $output->writeListBegin(TType::I64, scalar(@{$self->{success}}));
+      $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
         foreach my $iter219 (@{$self->{success}}) 
         {
-          $xfer += $output->writeI64($iter219);
+          $xfer += $output->writeString($iter219);
         }
       }
       $xfer += $output->writeListEnd();
@@ -3191,8 +3191,8 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^2$/ && do{      if ($ftype == TType::I64) {
-        $xfer += $input->readI64(\$self->{uuid});
+      /^2$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{uuid});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -3215,8 +3215,8 @@ sub write {
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{uuid}) {
-    $xfer += $output->writeFieldBegin('uuid', TType::I64, 2);
-    $xfer += $output->writeI64($self->{uuid});
+    $xfer += $output->writeFieldBegin('uuid', TType::STRING, 2);
+    $xfer += $output->writeString($self->{uuid});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

@@ -328,7 +328,7 @@ configured amount of time.
 </td><td>default</td><td>9223372036854775807</td></tr>
 <tr><td>10</td><td>maxQueryTime</td><td><code>i64</code></td><td>The maximum amount of time the query should execute before timing out.
 </td><td>default</td><td>9223372036854775807</td></tr>
-<tr><td>11</td><td>uuid</td><td><code>i64</code></td><td>Sets the uuid of this query, this is normal set by the client so that the status
+<tr><td>11</td><td>uuid</td><td><code>string</code></td><td>Sets the uuid of this query, this is normal set by the client so that the status
 of a running query can be found or the query can be canceled.
 </td><td>default</td><td></td></tr>
 <tr><td>12</td><td>userContext</td><td><code>string</code></td><td>Sets a user context, only used for logging at this point.
@@ -408,7 +408,7 @@ the controller will aggregate all the shard server totals together.
 </td><td>default</td><td></td></tr>
 <tr><td>5</td><td>state</td><td><code><a href="Blur.html#Enum_QueryState">QueryState</a></code></td><td>The state of the query.  e.g. RUNNING, INTERRUPTED, COMPLETE
 </td><td>default</td><td></td></tr>
-<tr><td>6</td><td>uuid</td><td><code>i64</code></td><td>The uuid of the query.
+<tr><td>6</td><td>uuid</td><td><code>string</code></td><td>The uuid of the query.
 </td><td>default</td><td></td></tr>
 <tr><td>7</td><td>status</td><td><code><a href="Blur.html#Enum_Status">Status</a></code></td><td>The status of the query NOT_FOUND if uuid is not found else FOUND
 </td><td>default</td><td></td></tr>
@@ -663,7 +663,7 @@ the shard server, if any.
 </td></tr>
 </table></div><div class="definition"><h4 id="Fn_Blur_cancelQuery">Function: Blur.cancelQuery</h4>
 <pre><code>void</code> cancelQuery(<code>string</code> table,
-                 <code>i64</code> uuid)
+                 <code>string</code> uuid)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Cancels a query that is executing against the given table with the given uuid.  Note, the
 cancel call maybe take some time for the query actually stops executing.
@@ -673,7 +673,7 @@ cancel call maybe take some time for the query actually stops executing.
 <tr><td>uuid</td><td>the uuid of the query.
 </td></tr>
 </table></div><div class="definition"><h4 id="Fn_Blur_queryStatusIdList">Function: Blur.queryStatusIdList</h4>
-<pre><code>list&lt;<code>i64</code>&gt;</code> queryStatusIdList(<code>string</code> table)
+<pre><code>list&lt;<code>string</code>&gt;</code> queryStatusIdList(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Returns a list of the query ids of queries that have recently been executed for the given table.
 @return list of all the uuids of the queries uuids.
@@ -682,7 +682,7 @@ cancel call maybe take some time for the query actually stops executing.
 </td></tr>
 </table></div><div class="definition"><h4 id="Fn_Blur_queryStatusById">Function: Blur.queryStatusById</h4>
 <pre><code><a href="Blur.html#Struct_BlurQueryStatus">BlurQueryStatus</a></code> queryStatusById(<code>string</code> table,
-                                <code>i64</code> uuid)
+                                <code>string</code> uuid)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Returns the query status for the given table and query uuid.
 @return fetches the BlurQueryStatus for the given table and uuid.

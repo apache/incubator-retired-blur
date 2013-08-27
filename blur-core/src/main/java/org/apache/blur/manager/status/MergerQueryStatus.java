@@ -42,7 +42,7 @@ public class MergerQueryStatus implements Merger<List<BlurQueryStatus>> {
 
   @Override
   public List<BlurQueryStatus> merge(BlurExecutorCompletionService<List<BlurQueryStatus>> service) throws BlurException {
-    Map<Long, BlurQueryStatus> statusMap = new HashMap<Long, BlurQueryStatus>();
+    Map<String, BlurQueryStatus> statusMap = new HashMap<String, BlurQueryStatus>();
     while (service.getRemainingCount() > 0) {
       Future<List<BlurQueryStatus>> future = service.poll(_timeout, TimeUnit.MILLISECONDS, true);
       List<BlurQueryStatus> status = service.getResultThrowException(future);
@@ -51,7 +51,7 @@ public class MergerQueryStatus implements Merger<List<BlurQueryStatus>> {
     return new ArrayList<BlurQueryStatus>(statusMap.values());
   }
 
-  private void addToMap(Map<Long, BlurQueryStatus> statusMap, List<BlurQueryStatus> list) {
+  private void addToMap(Map<String, BlurQueryStatus> statusMap, List<BlurQueryStatus> list) {
     for (BlurQueryStatus status : list) {
       BlurQueryStatus searchQueryStatus = statusMap.get(status.uuid);
       if (searchQueryStatus == null) {

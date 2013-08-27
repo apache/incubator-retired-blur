@@ -1413,8 +1413,8 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^11$/ && do{      if ($ftype == TType::I64) {
-        $xfer += $input->readI64(\$self->{uuid});
+      /^11$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{uuid});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -1499,8 +1499,8 @@ sub write {
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{uuid}) {
-    $xfer += $output->writeFieldBegin('uuid', TType::I64, 11);
-    $xfer += $output->writeI64($self->{uuid});
+    $xfer += $output->writeFieldBegin('uuid', TType::STRING, 11);
+    $xfer += $output->writeString($self->{uuid});
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{userContext}) {
@@ -2275,8 +2275,8 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^6$/ && do{      if ($ftype == TType::I64) {
-        $xfer += $input->readI64(\$self->{uuid});
+      /^6$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{uuid});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -2335,8 +2335,8 @@ sub write {
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{uuid}) {
-    $xfer += $output->writeFieldBegin('uuid', TType::I64, 6);
-    $xfer += $output->writeI64($self->{uuid});
+    $xfer += $output->writeFieldBegin('uuid', TType::STRING, 6);
+    $xfer += $output->writeString($self->{uuid});
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{status}) {

@@ -164,7 +164,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public void cancelQuery(String table, long uuid) throws BlurException, TException {
+  public void cancelQuery(String table, String uuid) throws BlurException, TException {
     checkTable(_cluster, table);
     resetSearchers();
     try {
@@ -355,7 +355,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public BlurQueryStatus queryStatusById(String table, long uuid) throws BlurException, TException {
+  public BlurQueryStatus queryStatusById(String table, String uuid) throws BlurException, TException {
     checkTable(_cluster, table);
     resetSearchers();
     BlurQueryStatus blurQueryStatus;
@@ -375,7 +375,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public List<Long> queryStatusIdList(String table) throws BlurException, TException {
+  public List<String> queryStatusIdList(String table) throws BlurException, TException {
     checkTable(_cluster, table);
     resetSearchers();
     try {

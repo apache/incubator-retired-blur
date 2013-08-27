@@ -417,7 +417,7 @@ struct BlurQuery {
    * Sets the uuid of this query, this is normal set by the client so that the status 
    * of a running query can be found or the query can be canceled.
    */
-  11:i64 uuid,
+  11:string uuid,
   /**
    * Sets a user context, only used for logging at this point.
    */
@@ -571,7 +571,7 @@ struct BlurQueryStatus {
   /**
    * The uuid of the query.
    */
-  6:i64 uuid
+  6:string uuid
   /**
    * The status of the query NOT_FOUND if uuid is not found else FOUND
    */
@@ -918,14 +918,14 @@ service Blur {
     /** the table name. */
     1:string table, 
     /** the uuid of the query. */
-    2:i64 uuid
+    2:string uuid
   ) throws (1:BlurException ex)
 
   /**
    * Returns a list of the query ids of queries that have recently been executed for the given table.
    * @return list of all the uuids of the queries uuids.
    */
-  list<i64> queryStatusIdList(
+  list<string> queryStatusIdList(
     /** the table name. */
     1:string table
   ) throws (1:BlurException ex)
@@ -938,7 +938,7 @@ service Blur {
     /** the table name. */
     1:string table, 
     /** the uuid of the query. */
-    2:i64 uuid
+    2:string uuid
   ) throws (1:BlurException ex)
 
   /**

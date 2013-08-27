@@ -164,7 +164,7 @@ public class BlurClusterTest {
     blurQueryRow.setQuery(queryRow);
     blurQueryRow.setUseCacheIfPresent(false);
     blurQueryRow.setCacheResult(false);
-    blurQueryRow.setUuid(1234l);
+    blurQueryRow.setUuid("1234");
 
     final AtomicReference<BlurException> error = new AtomicReference<BlurException>();
     final AtomicBoolean fail = new AtomicBoolean();
@@ -213,7 +213,7 @@ public class BlurClusterTest {
     blurQueryRow.setQuery(queryRow);
     blurQueryRow.setUseCacheIfPresent(false);
     blurQueryRow.setCacheResult(false);
-    blurQueryRow.setUuid(1234l);
+    blurQueryRow.setUuid("1234");
 
     final AtomicReference<BlurException> error = new AtomicReference<BlurException>();
     final AtomicBoolean fail = new AtomicBoolean();

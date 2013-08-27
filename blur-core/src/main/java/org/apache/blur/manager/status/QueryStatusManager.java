@@ -32,7 +32,6 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.QueryState;
-import org.apache.blur.thrift.generated.Status;
 import org.apache.blur.utils.GCWatcher;
 import org.apache.blur.utils.GCWatcher.Action;
 
@@ -100,9 +99,10 @@ public class QueryStatusManager {
     this.statusCleanupTimerDelay = statusCleanupTimerDelay;
   }
 
-  public void cancelQuery(String table, long uuid) {
+  public void cancelQuery(String table, String uuid) {
     for (QueryStatus status : currentQueryStatusCollection.keySet()) {
-      if (status.getUserUuid() == uuid && status.getTable().equals(table)) {
+      String userUuid = status.getUserUuid();
+      if (userUuid != null && userUuid.equals(uuid) && status.getTable().equals(table)) {
         status.cancelQuery();
       }
     }
@@ -118,23 +118,24 @@ public class QueryStatusManager {
     return result;
   }
 
-  public BlurQueryStatus queryStatus(String table, long uuid) {
+  public BlurQueryStatus queryStatus(String table, String uuid) {
     for (QueryStatus status : currentQueryStatusCollection.keySet()) {
-      if (status.getUserUuid() == uuid && status.getTable().equals(table)) {
+      String userUuid = status.getUserUuid();
+      if (userUuid != null && userUuid.equals(uuid) && status.getTable().equals(table)) {
         return status.getQueryStatus();
       }
     }
     return null;
   }
 
-  public List<Long> queryStatusIdList(String table) {
-    Set<Long> ids = new HashSet<Long>();
+  public List<String> queryStatusIdList(String table) {
+    Set<String> ids = new HashSet<String>();
     for (QueryStatus status : currentQueryStatusCollection.keySet()) {
       if (status.getTable().equals(table)) {
         ids.add(status.getUserUuid());
       }
     }
-    return new ArrayList<Long>(ids);
+    return new ArrayList<String>(ids);
   }
 
   public void stopAllQueriesForBackPressure() {

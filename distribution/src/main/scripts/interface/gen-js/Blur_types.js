@@ -1299,8 +1299,8 @@ BlurQuery.prototype.read = function(input) {
       }
       break;
       case 11:
-      if (ftype == Thrift.Type.I64) {
-        this.uuid = input.readI64().value;
+      if (ftype == Thrift.Type.STRING) {
+        this.uuid = input.readString().value;
       } else {
         input.skip(ftype);
       }
@@ -1387,8 +1387,8 @@ BlurQuery.prototype.write = function(output) {
     output.writeFieldEnd();
   }
   if (this.uuid !== null && this.uuid !== undefined) {
-    output.writeFieldBegin('uuid', Thrift.Type.I64, 11);
-    output.writeI64(this.uuid);
+    output.writeFieldBegin('uuid', Thrift.Type.STRING, 11);
+    output.writeString(this.uuid);
     output.writeFieldEnd();
   }
   if (this.userContext !== null && this.userContext !== undefined) {
@@ -2117,8 +2117,8 @@ BlurQueryStatus.prototype.read = function(input) {
       }
       break;
       case 6:
-      if (ftype == Thrift.Type.I64) {
-        this.uuid = input.readI64().value;
+      if (ftype == Thrift.Type.STRING) {
+        this.uuid = input.readString().value;
       } else {
         input.skip(ftype);
       }
@@ -2177,8 +2177,8 @@ BlurQueryStatus.prototype.write = function(output) {
     output.writeFieldEnd();
   }
   if (this.uuid !== null && this.uuid !== undefined) {
-    output.writeFieldBegin('uuid', Thrift.Type.I64, 6);
-    output.writeI64(this.uuid);
+    output.writeFieldBegin('uuid', Thrift.Type.STRING, 6);
+    output.writeString(this.uuid);
     output.writeFieldEnd();
   }
   if (this.status !== null && this.status !== undefined) {

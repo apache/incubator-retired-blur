@@ -64,7 +64,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FETCH_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("fetch", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)8);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField MINIMUM_NUMBER_OF_RESULTS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("minimumNumberOfResults", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)9);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField MAX_QUERY_TIME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("maxQueryTime", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)10);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField UUID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("uuid", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)11);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField UUID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("uuid", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)11);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField USER_CONTEXT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("userContext", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)12);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField CACHE_RESULT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("cacheResult", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)13);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField START_TIME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("startTime", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)14);
@@ -112,7 +112,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
    * Sets the uuid of this query, this is normal set by the client so that the status
    * of a running query can be found or the query can be canceled.
    */
-  public long uuid; // required
+  public String uuid; // required
   /**
    * Sets a user context, only used for logging at this point.
    */
@@ -261,9 +261,8 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   private static final int __FETCH_ISSET_ID = 2;
   private static final int __MINIMUMNUMBEROFRESULTS_ISSET_ID = 3;
   private static final int __MAXQUERYTIME_ISSET_ID = 4;
-  private static final int __UUID_ISSET_ID = 5;
-  private static final int __CACHERESULT_ISSET_ID = 6;
-  private static final int __STARTTIME_ISSET_ID = 7;
+  private static final int __CACHERESULT_ISSET_ID = 5;
+  private static final int __STARTTIME_ISSET_ID = 6;
   private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -286,7 +285,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     tmpMap.put(_Fields.MAX_QUERY_TIME, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("maxQueryTime", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
     tmpMap.put(_Fields.UUID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("uuid", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     tmpMap.put(_Fields.USER_CONTEXT, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("userContext", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     tmpMap.put(_Fields.CACHE_RESULT, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("cacheResult", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
@@ -323,7 +322,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     int fetch,
     long minimumNumberOfResults,
     long maxQueryTime,
-    long uuid,
+    String uuid,
     String userContext,
     boolean cacheResult,
     long startTime)
@@ -343,7 +342,6 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     this.maxQueryTime = maxQueryTime;
     setMaxQueryTimeIsSet(true);
     this.uuid = uuid;
-    setUuidIsSet(true);
     this.userContext = userContext;
     this.cacheResult = cacheResult;
     setCacheResultIsSet(true);
@@ -374,7 +372,9 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     this.fetch = other.fetch;
     this.minimumNumberOfResults = other.minimumNumberOfResults;
     this.maxQueryTime = other.maxQueryTime;
-    this.uuid = other.uuid;
+    if (other.isSetUuid()) {
+      this.uuid = other.uuid;
+    }
     if (other.isSetUserContext()) {
       this.userContext = other.userContext;
     }
@@ -401,8 +401,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
 
     this.maxQueryTime = 9223372036854775807L;
 
-    setUuidIsSet(false);
-    this.uuid = 0;
+    this.uuid = null;
     this.userContext = null;
     this.cacheResult = true;
 
@@ -666,7 +665,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
    * Sets the uuid of this query, this is normal set by the client so that the status
    * of a running query can be found or the query can be canceled.
    */
-  public long getUuid() {
+  public String getUuid() {
     return this.uuid;
   }
 
@@ -674,23 +673,24 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
    * Sets the uuid of this query, this is normal set by the client so that the status
    * of a running query can be found or the query can be canceled.
    */
-  public BlurQuery setUuid(long uuid) {
+  public BlurQuery setUuid(String uuid) {
     this.uuid = uuid;
-    setUuidIsSet(true);
     return this;
   }
 
   public void unsetUuid() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __UUID_ISSET_ID);
+    this.uuid = null;
   }
 
   /** Returns true if field uuid is set (has been assigned a value) and false otherwise */
   public boolean isSetUuid() {
-    return EncodingUtils.testBit(__isset_bitfield, __UUID_ISSET_ID);
+    return this.uuid != null;
   }
 
   public void setUuidIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __UUID_ISSET_ID, value);
+    if (!value) {
+      this.uuid = null;
+    }
   }
 
   /**
@@ -851,7 +851,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       if (value == null) {
         unsetUuid();
       } else {
-        setUuid((Long)value);
+        setUuid((String)value);
       }
       break;
 
@@ -909,7 +909,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       return Long.valueOf(getMaxQueryTime());
 
     case UUID:
-      return Long.valueOf(getUuid());
+      return getUuid();
 
     case USER_CONTEXT:
       return getUserContext();
@@ -1044,12 +1044,12 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         return false;
     }
 
-    boolean this_present_uuid = true;
-    boolean that_present_uuid = true;
+    boolean this_present_uuid = true && this.isSetUuid();
+    boolean that_present_uuid = true && that.isSetUuid();
     if (this_present_uuid || that_present_uuid) {
       if (!(this_present_uuid && that_present_uuid))
         return false;
-      if (this.uuid != that.uuid)
+      if (!this.uuid.equals(that.uuid))
         return false;
     }
 
@@ -1281,7 +1281,11 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     first = false;
     if (!first) sb.append(", ");
     sb.append("uuid:");
-    sb.append(this.uuid);
+    if (this.uuid == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.uuid);
+    }
     first = false;
     if (!first) sb.append(", ");
     sb.append("userContext:");
@@ -1428,8 +1432,8 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
             }
             break;
           case 11: // UUID
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64) {
-              struct.uuid = iprot.readI64();
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+              struct.uuid = iprot.readString();
               struct.setUuidIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -1511,9 +1515,11 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       oprot.writeFieldBegin(MAX_QUERY_TIME_FIELD_DESC);
       oprot.writeI64(struct.maxQueryTime);
       oprot.writeFieldEnd();
-      oprot.writeFieldBegin(UUID_FIELD_DESC);
-      oprot.writeI64(struct.uuid);
-      oprot.writeFieldEnd();
+      if (struct.uuid != null) {
+        oprot.writeFieldBegin(UUID_FIELD_DESC);
+        oprot.writeString(struct.uuid);
+        oprot.writeFieldEnd();
+      }
       if (struct.userContext != null) {
         oprot.writeFieldBegin(USER_CONTEXT_FIELD_DESC);
         oprot.writeString(struct.userContext);
@@ -1611,7 +1617,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         oprot.writeI64(struct.maxQueryTime);
       }
       if (struct.isSetUuid()) {
-        oprot.writeI64(struct.uuid);
+        oprot.writeString(struct.uuid);
       }
       if (struct.isSetUserContext()) {
         oprot.writeString(struct.userContext);
@@ -1673,7 +1679,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         struct.setMaxQueryTimeIsSet(true);
       }
       if (incoming.get(8)) {
-        struct.uuid = iprot.readI64();
+        struct.uuid = iprot.readString();
         struct.setUuidIsSet(true);
       }
       if (incoming.get(9)) {

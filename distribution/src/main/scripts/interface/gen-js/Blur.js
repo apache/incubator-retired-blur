@@ -2491,8 +2491,8 @@ Blur_cancelQuery_args.prototype.read = function(input) {
       }
       break;
       case 2:
-      if (ftype == Thrift.Type.I64) {
-        this.uuid = input.readI64().value;
+      if (ftype == Thrift.Type.STRING) {
+        this.uuid = input.readString().value;
       } else {
         input.skip(ftype);
       }
@@ -2514,8 +2514,8 @@ Blur_cancelQuery_args.prototype.write = function(output) {
     output.writeFieldEnd();
   }
   if (this.uuid !== null && this.uuid !== undefined) {
-    output.writeFieldBegin('uuid', Thrift.Type.I64, 2);
-    output.writeI64(this.uuid);
+    output.writeFieldBegin('uuid', Thrift.Type.STRING, 2);
+    output.writeString(this.uuid);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
@@ -2676,7 +2676,7 @@ Blur_queryStatusIdList_result.prototype.read = function(input) {
         for (var _i245 = 0; _i245 < _size240; ++_i245)
         {
           var elem246 = null;
-          elem246 = input.readI64().value;
+          elem246 = input.readString().value;
           this.success.push(elem246);
         }
         input.readListEnd();
@@ -2705,13 +2705,13 @@ Blur_queryStatusIdList_result.prototype.write = function(output) {
   output.writeStructBegin('Blur_queryStatusIdList_result');
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.LIST, 0);
-    output.writeListBegin(Thrift.Type.I64, this.success.length);
+    output.writeListBegin(Thrift.Type.STRING, this.success.length);
     for (var iter247 in this.success)
     {
       if (this.success.hasOwnProperty(iter247))
       {
         iter247 = this.success[iter247];
-        output.writeI64(iter247);
+        output.writeString(iter247);
       }
     }
     output.writeListEnd();
@@ -2761,8 +2761,8 @@ Blur_queryStatusById_args.prototype.read = function(input) {
       }
       break;
       case 2:
-      if (ftype == Thrift.Type.I64) {
-        this.uuid = input.readI64().value;
+      if (ftype == Thrift.Type.STRING) {
+        this.uuid = input.readString().value;
       } else {
         input.skip(ftype);
       }
@@ -2784,8 +2784,8 @@ Blur_queryStatusById_args.prototype.write = function(output) {
     output.writeFieldEnd();
   }
   if (this.uuid !== null && this.uuid !== undefined) {
-    output.writeFieldBegin('uuid', Thrift.Type.I64, 2);
-    output.writeI64(this.uuid);
+    output.writeFieldBegin('uuid', Thrift.Type.STRING, 2);
+    output.writeString(this.uuid);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

@@ -714,3 +714,17 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+==========================================================================
+The Apache License, Version 2.0 applies to the following libraries: Bootstrap
+./docs/resources/js/bootstrap.min.js
+==========================================================================
+This product bundles the following, which is available under the MIT License: jQuery
+
+Copyright 2013 jQuery Foundation and other contributors
+http://jquery.com/
+
+==========================================================================
+This product bundles the following, which is available under the MIT License: Respond.js 
+./docs/resources/js/respond.min.js
+Copyright (C) 2012 by Ryan Van Etten

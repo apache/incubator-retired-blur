@@ -906,15 +906,6 @@ public class IndexManagerTest {
     assertEquals("row should have one record", 1, fetchResult.rowResult.row.getRecordsSize());
   }
 
-  @Test(expected = BlurException.class)
-  public void testMutationUpdateMissingRowDeleteRecord() throws Exception {
-    RecordMutation rm = newRecordMutation(DELETE_ENTIRE_RECORD, FAMILY, "record-101");
-
-    RowMutation rowMutation = newRowMutation(UPDATE_ROW, TABLE, "row-101", rm);
-    rowMutation.waitToBeVisible = true;
-    indexManager.mutate(rowMutation);
-  }
-
   @Test
   public void testMutationUpdateRowReplaceExistingRecord() throws Exception {
     Column c1 = newColumn("testcol4", "value104");
@@ -985,17 +976,6 @@ public class IndexManagerTest {
     assertEquals("matching record should be updated", 1, rm1Matches);
     assertEquals("missing record should be added", 1, rm2Matches);
     assertEquals("unmodified record should exist", 1, nonMatches);
-  }
-
-  @Test(expected = BlurException.class)
-  public void testMutationUpdateMissingRowReplaceRecord() throws Exception {
-    Column c1 = newColumn("testcol1", "value104");
-    Column c2 = newColumn("testcol2", "value105");
-    Column c3 = newColumn("testcol3", "value105");
-    String rec = "record-100";
-    RecordMutation rm = newRecordMutation(REPLACE_ENTIRE_RECORD, FAMILY, rec, c1, c2, c3);
-
-    updateAndFetchRecord("row-100", rec, rm);
   }
 
   @Test

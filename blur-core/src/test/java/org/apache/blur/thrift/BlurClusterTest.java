@@ -49,6 +49,7 @@ import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RowMutation;
+import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.util.BlurThriftHelper;
 import org.apache.blur.utils.GCWatcher;
@@ -149,6 +150,9 @@ public class BlurClusterTest {
     BlurResults resultsRecord = client.query("test", blurQueryRecord);
     assertRecordResults(resultsRecord);
     assertEquals(length, resultsRecord.getTotalResults());
+    
+    Schema schema = client.schema("test");
+    assertFalse(schema.getFamilies().isEmpty());
   }
 
   @Test

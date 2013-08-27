@@ -296,6 +296,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
         clearMapOfOldTables(_layoutManagers);
         clearMapOfOldTables(_layoutCache);
         clearMapOfOldTables(_tableSimilarity);
+        boolean closed = false;
         Map<String, Map<String, BlurIndex>> oldIndexesThatNeedToBeClosed = clearMapOfOldTables(_indexes);
         for (String table : oldIndexesThatNeedToBeClosed.keySet()) {
           Map<String, BlurIndex> indexes = oldIndexesThatNeedToBeClosed.get(table);
@@ -308,6 +309,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
               continue;
             }
             close(index, table, shard);
+            closed = true;
           }
         }
         for (String table : _indexes.keySet()) {
@@ -323,8 +325,12 @@ public class DistributedIndexServer extends AbstractIndexServer {
               LOG.info("Closing index for table [{0}] shard [{1}]", table, shard);
               BlurIndex index = shardMap.remove(shard);
               close(index, table, shard);
+              closed = true;
             }
           }
+        }
+        if (closed) {
+          TableContext.clear();
         }
       }
     }, _delay, _delay);

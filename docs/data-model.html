@@ -65,6 +65,7 @@
 				  <li><a href="#text_query">Text</a></li>
                   <li><a href="#string_query">String</a></li>
                   <li><a href="#numeric_query">Numeric</a></li>
+                  <li><a href="#date_query">Date</a></li>
                   <li><a href="#spatial_query">Spatial</a></li>
                 </ul>
 			  </li>
@@ -77,6 +78,7 @@
                   <li><a href="#int_type">Integer</a></li>
                   <li><a href="#float_type">Float</a></li>
                   <li><a href="#double_type">Double</a></li>
+                  <li><a href="#date_type">Date</a></li>
                   <li><a href="#stored_type">Stored</a></li>
 	  			  <li><a href="#spatial_type">Spatial</a>
 				    <ul class="nav">
@@ -238,6 +240,27 @@ To run a query to find all the rows that contain a column with a value of &quot;
 To run a query to find all the rows that contain a column with a starting value of &quot;12345&quot; and an ending values of &quot;54321&quot; where the family is &quot;docs&quot; and the column is &quot;id&quot;.
 <pre><code class="json">docs.id:[12345 TO 54321]</code></pre>
 </p>
+
+<h3 id="date_query">Date</h3>
+<p>Date types are basically a long field type with a date parser built-in.
+
+The date type can perform two types of queries:
+<ul>
+<li>Exact Match</li>
+<li>Range</li>
+</ul>
+</p>
+
+<h4>Examples:</h4>
+<p>
+To run a query to find all the rows that contain a column with a value of &quot;2012-09-11&quot; where the family is &quot;docs&quot; and the column is &quot;published_date&quot;.
+<pre><code class="json">docs.published_date:2013-09-11</code></pre>
+</p>
+<p>
+To run a query to find all the rows that contain a column with a starting value of &quot;2012-09-11&quot; and an ending values of &quot;2013-09-11&quot; where the family is &quot;docs&quot; and the column is &quot;published_date&quot;.
+<pre><code class="json">docs.published_date:[2012-09-11 TO 2013-09-11]</code></pre>
+</p>
+
               <h3 id="spatial_query">Spatial</h3>
 <p>
 Spatial queries are supported through the Lucene spatial module.  There are currently three 
@@ -325,6 +348,18 @@ To run a query to find all the rows that contain a location within 10 miles of g
               <li>&quot;numericPrecisionStep&quot; -Optional- default value is &quot;4&quot;</li>
               </ul>
 		  </p>
+		              <h3 id="date_type">Date</h3>
+		              <p>
+		              The Date Type has the type name of:
+		<pre><code class="json">date</code></pre>
+		              <h5>Property Options:</h5>
+		              <ul>
+		              <li>&quot;dateFormat&quot; -Required- Examples: &quot;yyyy-MM-dd&quot;, &quot;MM/dd/yyyy&quot; or anything that SimpleDateFormat can parse.</li>
+					  <li>&quot;timeUnit&quot; -Optional- Default is SECONDS.  Other options (DAYS, HOURS, MINUTES, SECONDS, MILLISECONDS)</li>
+				      <li>&quot;numericPrecisionStep&quot; -Optional- default value is &quot;4&quot;</li>
+		              </ul>
+				  </p>
+ 
               <h3 id="stored_type">Stored</h3>
               <p>
               The Stored Type has the type name of:

@@ -70,6 +70,7 @@ public class BlurStatement extends AbstractBlurStatement {
       Parser parser = new Parser();
       parser.parse(sql);
       if (isSuperQuery(parser, client)) {
+        System.out.println("super");
         return new BlurResultSetRows(client, parser);
       } else {
         return new BlurResultSetRecords(client, parser);
@@ -88,6 +89,9 @@ public class BlurStatement extends AbstractBlurStatement {
       return true;
     }
     int lastIndexOf = tableName.lastIndexOf('.');
+    if (lastIndexOf < 0) {
+      throw new SQLException("Table [" + tableName + "] does not exist.");  
+    }
     if (tableList.contains(tableName.substring(0, lastIndexOf))) {
       return false;
     }

@@ -927,3 +927,16 @@ body {
   }
 
 }
+
+h1[id] {
+margin-top: -50px;
+padding-top: 80px;
+}
+h3[id] {
+margin-top: -60px;
+padding-top: 80px;
+}
+h4[id] {
+margin-top: -60px;
+padding-top: 80px;
+}

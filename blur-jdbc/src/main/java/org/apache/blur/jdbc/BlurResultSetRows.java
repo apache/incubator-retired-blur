@@ -98,7 +98,7 @@ public class BlurResultSetRows extends AbstractBlurResultSet {
       e.printStackTrace();
       throw new SQLException(e);
     }
-
+System.out.println(schema);
     selector = new Selector();
     setupSelector(selector, schema, columnNames);
     selector.recordOnly = !blurQuery.query.rowQuery;

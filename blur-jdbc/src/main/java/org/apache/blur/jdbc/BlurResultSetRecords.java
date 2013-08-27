@@ -152,7 +152,7 @@ public class BlurResultSetRecords extends AbstractBlurResultSet {
         final BlurResult result = results.results.get(resultPosition);
         try {
           FetchRecordResult recordResult = result.getFetchResult().getRecordResult();
-          selector.setRecordId(recordResult.getRowid());
+          selector.setRowId(recordResult.getRowid());
           selector.setRecordId(recordResult.getRecord().getRecordId());
           fetchResult = client.fetchRow(tableName, selector);
           Record record = fetchResult.recordResult.record;

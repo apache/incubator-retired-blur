@@ -340,7 +340,24 @@ default text files.
             <div class="page-header">
               <h1 id="jdbc">JDBC</h1>
             </div>
-            <p>TODO</p>
+            <p>
+The JDBC driver is very experimental and is currently read-only.  It has a very basic SQL-ish
+language that should allow for most Blur queries.
+
+Basic SQL syntax will work for example:<br/>
+<pre><code class="bash">select * from testtable where fam1.col1 = 'val1'</code></pre>
+
+You may also use Lucene syntax by wrapping the Lucene query in a &quot;query()&quot; function:<br/>
+<pre><code class="bash">select * from testtable where query(fam1.col1:val?)</code></pre>
+
+Here is a screenshot of the JDBC driver in SQuirrel:
+
+<img src="resources/img/SQuirrel.png">
+<br/>
+<br/>
+<br/>
+<br/>
+</p>
           </section>
         </div>
       </div>

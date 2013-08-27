@@ -26,9 +26,7 @@ public class Parser {
 
   private static final String SELECT = "select";
   private static final String WHERE = "where";
-  private static final String NATURAL = "natural";
   private static final String FROM = "from";
-  private static final String JOIN = "join";
   private static final String SEP = new String(new char[] { 1 });
 
   public static void main(String[] args) {
@@ -47,33 +45,14 @@ public class Parser {
   private String where;
   private String tableName;
   private List<String> columnNames;
-  private String joinTable;
+  private String tableNameAlias;
 
   public Parser parse(String query) {
     columnNames = getColumnNames(query);
     tableName = getTableName(query);
+    tableNameAlias = getTableNameAlias(query);
     where = getWhere(query);
-    joinTable = getJoin(query);
     return this;
-  }
-
-  public String getJoinTable() {
-    return joinTable;
-  }
-
-  private String getJoin(String query) {
-    String table = null;
-    StringTokenizer tokenizer = new StringTokenizer(query);
-    while (tokenizer.hasMoreTokens()) {
-      if (NATURAL.equals(tokenizer.nextToken().toLowerCase())) {
-        if (JOIN.equals(tokenizer.nextToken().toLowerCase())) {
-          table = tokenizer.nextToken();
-        } else {
-          throw new RuntimeException();
-        }
-      }
-    }
-    return table;
   }
 
   private String getWhere(String query) {
@@ -159,6 +138,26 @@ public class Parser {
     throw new IllegalArgumentException("Table not found");
   }
 
+  private String getTableNameAlias(String query) {
+    StringTokenizer tokenizer = new StringTokenizer(query);
+    while (tokenizer.hasMoreTokens()) {
+      if (FROM.equals(tokenizer.nextToken().toLowerCase())) {
+        while (tokenizer.hasMoreTokens()) {
+          tokenizer.nextToken();//table
+          if (!tokenizer.hasMoreTokens()) {
+            return null;
+          }
+          String token = tokenizer.nextToken().toLowerCase();
+          if (WHERE.equals(token)) {
+            return null;
+          }
+          return token;
+        }
+      }
+    }
+    return null;
+  }
+
   private List<String> getColumnNames(String query) {
     StringTokenizer tokenizer = new StringTokenizer(query);
     List<String> columnNames = new ArrayList<String>();
@@ -184,11 +183,30 @@ public class Parser {
   }
 
   public String getTableName() {
-    return tableName;
+    return trimLiteralChars(tableName);
+  }
+
+  private static String trimLiteralChars(String s) {
+    if (s.startsWith("'") && s.endsWith("'")) {
+      return s.substring(1, s.length() - 1);
+    }
+    return s;
   }
 
   public List<String> getColumnNames() {
-    return columnNames;
+    return removeTableAliases(columnNames);
+  }
+
+  private List<String> removeTableAliases(List<String> columnNames) {
+    List<String> result = new ArrayList<String>();
+    for (String col : columnNames) {
+      if (col.startsWith(tableNameAlias + ".")) {
+        result.add(col.substring(tableNameAlias.length() + 1));
+      } else {
+        result.add(col);
+      }
+    }
+    return result;
   }
 
   public String getWhere() {
@@ -200,6 +218,6 @@ public class Parser {
 
   @Override
   public String toString() {
-    return "Parser [columnNames=" + columnNames + ", tableName=" + tableName + ", where=" + where + ", joinTable=" + joinTable + "]";
+    return "Parser [columnNames=" + columnNames + ", tableName=" + tableName + ", where=" + where + "]";
   }
 }

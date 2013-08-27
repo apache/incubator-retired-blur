@@ -27,6 +27,7 @@ import org.apache.blur.analysis.type.TextFieldTypeDefinition;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.utils.BlurConstants;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
 import org.junit.Test;
@@ -175,7 +176,7 @@ public class BaseFieldManagerTest {
   }
 
   protected BaseFieldManager newFieldManager(boolean create) throws IOException {
-    return new BaseFieldManager(_fieldLessField, new KeywordAnalyzer()) {
+    return new BaseFieldManager(_fieldLessField, new KeywordAnalyzer(), new Configuration()) {
       @Override
       protected boolean tryToStore(FieldTypeDefinition fieldTypeDefinition, String fieldName) {
         return true;

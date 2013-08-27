@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.spatial.query.SpatialOperation;
@@ -40,7 +41,7 @@ public class SpatialPointVectorStrategyFieldTypeDefinition extends BaseSpatialFi
   }
 
   @Override
-  public void configure(String fieldNameForThisInstance, Map<String, String> properties) {
+  public void configure(String fieldNameForThisInstance, Map<String, String> properties, Configuration configuration) {
     _ctx = SpatialContext.GEO;
     _strategy = new PointVectorStrategy(_ctx, fieldNameForThisInstance);
     _shapeReadWriter = new ShapeReadWriter<SpatialContext>(_ctx);

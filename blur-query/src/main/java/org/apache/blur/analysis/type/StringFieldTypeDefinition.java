@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.thrift.generated.Column;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
@@ -35,7 +36,7 @@ public class StringFieldTypeDefinition extends FieldTypeDefinition {
   }
 
   @Override
-  public void configure(String fieldNameForThisInstance, Map<String, String> properties) {
+  public void configure(String fieldNameForThisInstance, Map<String, String> properties, Configuration configuration) {
 
   }
 

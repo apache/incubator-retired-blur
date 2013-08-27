@@ -47,6 +47,7 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.utils.BlurConstants;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.AnalyzerWrapper;
 import org.apache.lucene.document.Field;
@@ -72,6 +73,7 @@ public abstract class BaseFieldManager extends FieldManager {
   private final boolean _defaultMissingFieldLessIndexing;
   private final boolean _strict;
   private final FieldTypeDefinition _fieldLessFieldTypeDefinition;
+  private final Configuration _configuration;
 
   public static FieldType ID_TYPE;
   static {
@@ -88,13 +90,14 @@ public abstract class BaseFieldManager extends FieldManager {
     SUPER_FIELD_TYPE.setOmitNorms(true);
   }
 
-  public BaseFieldManager(String fieldLessField, final Analyzer defaultAnalyzerForQuerying) throws IOException {
-    this(fieldLessField, defaultAnalyzerForQuerying, true, null, false, null);
+  public BaseFieldManager(String fieldLessField, final Analyzer defaultAnalyzerForQuerying, Configuration configuration)
+      throws IOException {
+    this(fieldLessField, defaultAnalyzerForQuerying, true, null, false, null, configuration);
   }
 
   public BaseFieldManager(String fieldLessField, final Analyzer defaultAnalyzerForQuerying, boolean strict,
       String defaultMissingFieldType, boolean defaultMissingFieldLessIndexing,
-      Map<String, String> defaultMissingFieldProps) throws IOException {
+      Map<String, String> defaultMissingFieldProps, Configuration configuration) throws IOException {
     registerType(TextFieldTypeDefinition.class);
     registerType(StringFieldTypeDefinition.class);
     registerType(StoredFieldTypeDefinition.class);
@@ -111,7 +114,7 @@ public abstract class BaseFieldManager extends FieldManager {
     _defaultMissingFieldLessIndexing = defaultMissingFieldLessIndexing;
     _defaultMissingFieldType = defaultMissingFieldType;
     _defaultMissingFieldProps = defaultMissingFieldProps;
-
+    _configuration = configuration;
     _fieldLessFieldTypeDefinition = new FieldLessFieldTypeDefinition();
 
     _baseAnalyzerForQuery = new AnalyzerWrapper() {
@@ -390,9 +393,9 @@ public abstract class BaseFieldManager extends FieldManager {
       throw new RuntimeException(e);
     }
     if (props == null) {
-      fieldTypeDefinition.configure(fieldName, EMPTY_MAP);
+      fieldTypeDefinition.configure(fieldName, EMPTY_MAP, _configuration);
     } else {
-      fieldTypeDefinition.configure(fieldName, props);
+      fieldTypeDefinition.configure(fieldName, props, _configuration);
     }
     fieldTypeDefinition.setFieldLessIndexed(fieldLessIndexed);
     return fieldTypeDefinition;

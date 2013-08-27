@@ -19,6 +19,7 @@ import org.apache.blur.analysis.type.spatial.ShapeReadWriter;
 import org.apache.blur.analysis.type.spatial.SpatialArgsParser;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.utils.BlurConstants;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.index.Term;
@@ -55,7 +56,7 @@ public class SuperParserTest {
   }
 
   private BaseFieldManager getFieldManager(Analyzer a) throws IOException {
-    BaseFieldManager fieldManager = new BaseFieldManager(BlurConstants.SUPER, a) {
+    BaseFieldManager fieldManager = new BaseFieldManager(BlurConstants.SUPER, a, new Configuration()) {
       @Override
       protected boolean tryToStore(FieldTypeDefinition fieldTypeDefinition, String fieldName) {
         return true;

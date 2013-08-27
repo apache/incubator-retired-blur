@@ -19,6 +19,7 @@ package org.apache.blur.analysis.type;
 import java.util.Map;
 
 import org.apache.blur.thrift.generated.Column;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.IntField;
@@ -37,7 +38,7 @@ public class IntFieldTypeDefinition extends NumericFieldTypeDefinition {
   }
 
   @Override
-  public void configure(String fieldNameForThisInstance, Map<String, String> properties) {
+  public void configure(String fieldNameForThisInstance, Map<String, String> properties, Configuration configuration) {
     String precisionStepStr = properties.get(NUMERIC_PRECISION_STEP);
     if (precisionStepStr != null) {
       _precisionStep = Integer.parseInt(precisionStepStr);

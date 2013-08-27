@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.blur.thrift.generated.Column;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.search.Query;
@@ -68,7 +69,8 @@ public abstract class FieldTypeDefinition {
    * @param properties
    *          the properties.
    */
-  public abstract void configure(String fieldNameForThisInstance, Map<String, String> properties);
+  public abstract void configure(String fieldNameForThisInstance, Map<String, String> properties,
+      Configuration configuration);
 
   /**
    * Gets the {@link Field}s for indexing from a single Column.
@@ -212,5 +214,4 @@ public abstract class FieldTypeDefinition {
     this._properties = properties;
   }
 
-  
 }

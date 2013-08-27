@@ -16,21 +16,32 @@ package org.apache.blur.analysis.type;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Map;
 
 import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
+import org.apache.blur.lucene.LuceneVersionConstant;
 import org.apache.blur.thrift.generated.Column;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.TextField;
 
 public class TextFieldTypeDefinition extends FieldTypeDefinition {
 
+  public static final String STOP_WORD_PATH = "stopWordPath";
   public static final String NAME = "text";
   public static final FieldType TYPE_NOT_STORED;
   public static final FieldType TYPE_STORED;
+
+  private Analyzer _analyzer;
 
   static {
     TYPE_STORED = new FieldType(TextField.TYPE_STORED);
@@ -48,8 +59,21 @@ public class TextFieldTypeDefinition extends FieldTypeDefinition {
   }
 
   @Override
-  public void configure(String fieldNameForThisInstance, Map<String, String> properties) {
-
+  public void configure(String fieldNameForThisInstance, Map<String, String> properties, Configuration configuration) {
+    String stopWordUri = properties.get(STOP_WORD_PATH);
+    if (stopWordUri == null) {
+      _analyzer = new NoStopWordStandardAnalyzer();
+    } else {
+      try {
+        Path path = new Path(stopWordUri);
+        FileSystem fileSystem = path.getFileSystem(configuration);
+        Reader reader = new InputStreamReader(fileSystem.open(path));
+        // Reader closed by analyzer
+        _analyzer = new StandardAnalyzer(LuceneVersionConstant.LUCENE_VERSION, reader);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   @Override
@@ -68,12 +92,12 @@ public class TextFieldTypeDefinition extends FieldTypeDefinition {
 
   @Override
   public Analyzer getAnalyzerForIndex(String fieldName) {
-    return new NoStopWordStandardAnalyzer();
+    return _analyzer;
   }
 
   @Override
   public Analyzer getAnalyzerForQuery(String fieldName) {
-    return new NoStopWordStandardAnalyzer();
+    return _analyzer;
   }
 
   @Override

@@ -18,6 +18,7 @@ package org.apache.blur.analysis.type.spatial;
  */
 import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.spatial.prefix.TermQueryPrefixTreeStrategy;
 import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 import org.apache.lucene.spatial.query.SpatialOperation;
@@ -35,7 +36,7 @@ public class SpatialTermQueryPrefixTreeStrategyFieldTypeDefinition extends BaseS
   }
 
   @Override
-  public void configure(String fieldNameForThisInstance, Map<String, String> properties) {
+  public void configure(String fieldNameForThisInstance, Map<String, String> properties, Configuration configuration) {
     _ctx = SpatialContext.GEO;
     SpatialPrefixTree grid = getSpatialPrefixTree(properties);
     _strategy = new TermQueryPrefixTreeStrategy(grid, fieldNameForThisInstance);

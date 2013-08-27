@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.thrift.generated.Column;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.LongField;
@@ -47,7 +48,7 @@ public class DateFieldTypeDefinition extends NumericFieldTypeDefinition {
   }
 
   @Override
-  public void configure(String fieldNameForThisInstance, Map<String, String> properties) {
+  public void configure(String fieldNameForThisInstance, Map<String, String> properties, Configuration configuration) {
     final String dateFormat = properties.get(DATE_FORMAT);
     if (dateFormat == null) {
       throw new RuntimeException("The property [" + DATE_FORMAT + "] can not be null.");

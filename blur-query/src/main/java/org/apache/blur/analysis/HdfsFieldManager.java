@@ -39,7 +39,7 @@ import org.apache.lucene.analysis.Analyzer;
 
 public class HdfsFieldManager extends BaseFieldManager {
 
-  private static final List<String> EMPTY_LIST = Arrays.asList(new String[]{});
+  private static final List<String> EMPTY_LIST = Arrays.asList(new String[] {});
 
   public static abstract class Lock {
 
@@ -84,7 +84,7 @@ public class HdfsFieldManager extends BaseFieldManager {
       Configuration configuration, boolean strict, String defaultMissingFieldType,
       boolean defaultMissingFieldLessIndexing, Map<String, String> defaultMissingFieldProps) throws IOException {
     super(fieldLessField, defaultAnalyzerForQuerying, strict, defaultMissingFieldType, defaultMissingFieldLessIndexing,
-        defaultMissingFieldProps);
+        defaultMissingFieldProps, configuration);
     _storagePath = storagePath;
     _configuration = configuration;
     _fileSystem = _storagePath.getFileSystem(_configuration);

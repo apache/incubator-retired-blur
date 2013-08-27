@@ -190,7 +190,7 @@ localhost: Stopping ZooKeeper with pid [6650].</code></pre>
 <h3 id="shell-create">Create Table</h3>
 <p>
             <pre><code class="bash">blur> #Creates a table called testtable in the local directory of /data/testtable with 11 shards
-blur> create testtable file:///data/testtable 11
+blur> create -t testtable -c 11 -l file:///data/testtable
 </code></pre>
 </p>
 <h3 id="shell-mutate">Mutate</h3>

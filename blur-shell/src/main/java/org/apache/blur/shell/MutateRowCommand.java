@@ -34,20 +34,24 @@ import org.apache.blur.thrift.generated.RowMutationType;
 
 public class MutateRowCommand extends Command implements TableFirstArgCommand {
   @Override
-  public void doit(PrintWriter out, Blur.Iface client, String[] args)
-      throws CommandException, TException, BlurException {
-    if (args.length != 7) {
+  public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+      BlurException {
+    if (args.length < 6) {
       throw new CommandException("Invalid args: " + help());
     }
     String tablename = args[1];
     String rowid = args[2];
     String recordid = args[3];
     String columnfamily = args[4];
-    String columnname = args[5];
-    String value = args[6];
 
     List<Column> columns = new ArrayList<Column>();
-    columns.add(new Column(columnname, value));
+    for (int i = 5; i < args.length; i++) {
+      String namePlusValue = args[i];
+      int index = namePlusValue.indexOf(":");
+      String name = namePlusValue.substring(0, index);
+      String value = namePlusValue.substring(index + 1);
+      columns.add(new Column(name, value));
+    }
 
     Record record = new Record();
     record.setRecordId(recordid);
@@ -64,7 +68,7 @@ public class MutateRowCommand extends Command implements TableFirstArgCommand {
     RowMutation mutation = new RowMutation();
     mutation.setTable(tablename);
     mutation.setRowId(rowid);
-    mutation.setRowMutationType(RowMutationType.REPLACE_ROW);
+    mutation.setRowMutationType(RowMutationType.UPDATE_ROW);
     mutation.setRecordMutations(recordMutations);
 
     client.mutate(mutation);
@@ -77,7 +81,7 @@ public class MutateRowCommand extends Command implements TableFirstArgCommand {
 
   @Override
   public String usage() {
-    return "<tablename> <rowid> <recordid> <columnfamily> <columnname> <value>";
+    return "<tablename> <rowid> <recordid> <columnfamily> <columnname>:<value>*";
   }
 
   @Override

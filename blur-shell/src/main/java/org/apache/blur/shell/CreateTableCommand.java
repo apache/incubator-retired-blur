@@ -83,7 +83,6 @@ public class CreateTableCommand extends Command {
     }
     if (cmd.hasOption("l")) {
       String tableUri = cmd.getOptionValue("l");
-      td.setReadOnly(true);
       td.setTableUri(tableUri);
     }
     if (cmd.hasOption("P")) {

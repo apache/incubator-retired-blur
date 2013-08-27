@@ -67,6 +67,8 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
     query.setQuery(queryStr);
     blurQuery.setQuery(query);
     blurQuery.setSelector(Main.selector);
+    blurQuery.setCacheResult(false);
+    blurQuery.setUseCacheIfPresent(false);
 
     if (Main.highlight) {
       blurQuery.getSelector().setHighlightOptions(new HighlightOptions());

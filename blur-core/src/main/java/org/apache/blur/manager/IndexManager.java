@@ -961,57 +961,61 @@ public class IndexManager {
     Selector selector = new Selector();
     selector.setRowId(mutation.rowId);
     fetchRow(mutation.table, selector, fetchResult);
+    Row existingRow;
     if (fetchResult.exists) {
       // We will examine the contents of the existing row and add records
       // onto a new replacement row based on the mutation we have been given.
-      Row existingRow = fetchResult.rowResult.row;
-      Row newRow = new Row().setId(existingRow.id);
-
-      // Create a local copy of the mutation we can modify
-      RowMutation mutationCopy = mutation.deepCopy();
-
-      // Match existing records against record mutations. Once a record
-      // mutation has been processed, remove it from our local copy.
-      for (Record existingRecord : existingRow.records) {
-        RecordMutation recordMutation = findRecordMutation(mutationCopy, existingRecord);
-        if (recordMutation != null) {
-          mutationCopy.recordMutations.remove(recordMutation);
-          doUpdateRecordMutation(recordMutation, existingRecord, newRow);
-        } else {
-          // Copy existing records over to the new row unmodified if there
-          // is no matching mutation.
-          newRow.addToRecords(existingRecord);
-        }
-      }
-
-      // Examine all remaining record mutations. For any record replacements
-      // we need to create a new record in the table even though an existing
-      // record did not match. Record deletions are also ok here since the
-      // record is effectively already deleted. Other record mutations are
-      // an error and should generate an exception.
-      for (RecordMutation recordMutation : mutationCopy.recordMutations) {
-        RecordMutationType type = recordMutation.recordMutationType;
-        switch (type) {
-        case DELETE_ENTIRE_RECORD:
-          // do nothing as missing record is already in desired state
-          break;
-        case APPEND_COLUMN_VALUES:
-          throw new BException("Mutation cannot append column values to non-existent record", recordMutation);
-        case REPLACE_ENTIRE_RECORD:
-          newRow.addToRecords(recordMutation.record);
-          break;
-        case REPLACE_COLUMNS:
-          throw new BException("Mutation cannot replace columns in non-existent record", recordMutation);
-        default:
-          throw new RuntimeException("Unsupported record mutation type [" + type + "]");
-        }
-      }
-
-      // Finally, replace the existing row with the new row we have built.
-      blurIndex.replaceRow(mutation.waitToBeVisible, mutation.wal, updateMetrics(newRow));
+      existingRow = fetchResult.rowResult.row;
     } else {
-      throw new BException("Mutation cannot update row that does not exist.", mutation);
+      // The row does not exist, create empty new row.
+      existingRow = new Row().setId(mutation.getRowId());
+      existingRow.records = new ArrayList<Record>();
     }
+    Row newRow = new Row().setId(existingRow.id);
+
+    // Create a local copy of the mutation we can modify
+    RowMutation mutationCopy = mutation.deepCopy();
+
+    // Match existing records against record mutations. Once a record
+    // mutation has been processed, remove it from our local copy.
+    for (Record existingRecord : existingRow.records) {
+      RecordMutation recordMutation = findRecordMutation(mutationCopy, existingRecord);
+      if (recordMutation != null) {
+        mutationCopy.recordMutations.remove(recordMutation);
+        doUpdateRecordMutation(recordMutation, existingRecord, newRow);
+      } else {
+        // Copy existing records over to the new row unmodified if there
+        // is no matching mutation.
+        newRow.addToRecords(existingRecord);
+      }
+    }
+
+    // Examine all remaining record mutations. For any record replacements
+    // we need to create a new record in the table even though an existing
+    // record did not match. Record deletions are also ok here since the
+    // record is effectively already deleted. Other record mutations are
+    // an error and should generate an exception.
+    for (RecordMutation recordMutation : mutationCopy.recordMutations) {
+      RecordMutationType type = recordMutation.recordMutationType;
+      switch (type) {
+      case DELETE_ENTIRE_RECORD:
+        // do nothing as missing record is already in desired state
+        break;
+      case APPEND_COLUMN_VALUES:
+        throw new BException("Mutation cannot append column values to non-existent record", recordMutation);
+      case REPLACE_ENTIRE_RECORD:
+        newRow.addToRecords(recordMutation.record);
+        break;
+      case REPLACE_COLUMNS:
+        throw new BException("Mutation cannot replace columns in non-existent record", recordMutation);
+      default:
+        throw new RuntimeException("Unsupported record mutation type [" + type + "]");
+      }
+    }
+
+    // Finally, replace the existing row with the new row we have built.
+    blurIndex.replaceRow(mutation.waitToBeVisible, mutation.wal, updateMetrics(newRow));
+
   }
 
   private static void doUpdateRecordMutation(RecordMutation recordMutation, Record existingRecord, Row newRow) {

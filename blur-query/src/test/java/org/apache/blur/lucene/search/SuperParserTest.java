@@ -6,8 +6,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.analysis.BaseFieldManager;
 import org.apache.blur.analysis.FieldTypeDefinition;
@@ -73,6 +76,7 @@ public class SuperParserTest {
     fieldManager.addColumnDefinitionDouble("a", "id_d");
     fieldManager.addColumnDefinitionFloat("a", "id_f");
     fieldManager.addColumnDefinitionLong("a", "id_l");
+    fieldManager.addColumnDefinitionDate("a", "id_date","yyyy-MM-dd");
     fieldManager.addColumnDefinitionGisRecursivePrefixTree("a", "id_gis");
     return fieldManager;
   }
@@ -376,6 +380,40 @@ public class SuperParserTest {
     boolean equals = q1.equals(q);
     assertTrue(equals);
   }
+  
+  @Test
+  public void test31() throws ParseException, java.text.ParseException {
+    Query q = parseSq("a.id_date:2013-09-13");
+    Date date = new SimpleDateFormat("yyyy-MM-dd").parse("2013-09-13");
+    long time = date.getTime();
+    long converted = TimeUnit.SECONDS.convert(time, TimeUnit.MILLISECONDS);
+    Query q1 = sq(rq_i("a.id_date", converted, converted));
+    assertQuery(q1, q);
+  }
+  
+  @Test
+  public void test32() throws ParseException, java.text.ParseException {
+    Query q = parseSq("a.id_date:[2013-09-13 TO 2013-11-13]");
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    Date d1 = simpleDateFormat.parse("2013-09-13");
+    Date d2 = simpleDateFormat.parse("2013-11-13");
+    long t1 = TimeUnit.SECONDS.convert(d1.getTime(), TimeUnit.MILLISECONDS);
+    long t2 = TimeUnit.SECONDS.convert(d2.getTime(), TimeUnit.MILLISECONDS);
+    Query q1 = sq(rq_i("a.id_date", t1, t2));
+    assertQuery(q1, q);
+  }
+  
+  @Test
+  public void test33() throws ParseException, java.text.ParseException {
+    Query q = parseSq("a.id_date:{2013-09-13 TO 2013-11-13}");
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    Date d1 = simpleDateFormat.parse("2013-09-13");
+    Date d2 = simpleDateFormat.parse("2013-11-13");
+    long t1 = TimeUnit.SECONDS.convert(d1.getTime(), TimeUnit.MILLISECONDS);
+    long t2 = TimeUnit.SECONDS.convert(d2.getTime(), TimeUnit.MILLISECONDS);
+    Query q1 = sq(rq_e("a.id_date", t1, t2));
+    assertQuery(q1, q);
+  }
 
   public static BooleanClause bc_m(Query q) {
     return new BooleanClause(q, Occur.MUST);
@@ -465,6 +503,10 @@ public class SuperParserTest {
 
   private Query rq_i(String field, long min, long max) {
     return NumericRangeQuery.newLongRange(field, min, max, true, true);
+  }
+  
+  private Query rq_e(String field, long min, long max) {
+    return NumericRangeQuery.newLongRange(field, min, max, false, false);
   }
 
   private BooleanQuery bq(BooleanClause... bcs) {

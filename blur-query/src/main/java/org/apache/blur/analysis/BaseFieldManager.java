@@ -28,6 +28,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.blur.analysis.type.DateFieldTypeDefinition;
 import org.apache.blur.analysis.type.DoubleFieldTypeDefinition;
 import org.apache.blur.analysis.type.FieldLessFieldTypeDefinition;
 import org.apache.blur.analysis.type.FloatFieldTypeDefinition;
@@ -101,6 +102,7 @@ public abstract class BaseFieldManager extends FieldManager {
     registerType(LongFieldTypeDefinition.class);
     registerType(DoubleFieldTypeDefinition.class);
     registerType(FloatFieldTypeDefinition.class);
+    registerType(DateFieldTypeDefinition.class);
     registerType(SpatialPointVectorStrategyFieldTypeDefinition.class);
     registerType(SpatialTermQueryPrefixTreeStrategyFieldTypeDefinition.class);
     registerType(SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.class);
@@ -443,6 +445,12 @@ public abstract class BaseFieldManager extends FieldManager {
     props.put(BaseSpatialFieldTypeDefinition.SPATIAL_PREFIX_TREE, BaseSpatialFieldTypeDefinition.GEOHASH_PREFIX_TREE);
     addColumnDefinition(family, columnName, null, false, SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.NAME,
         props);
+  }
+
+  public void addColumnDefinitionDate(String family, String columnName, String format) throws IOException {
+    Map<String, String> props = new HashMap<String, String>();
+    props.put(DateFieldTypeDefinition.DATE_FORMAT, format);
+    addColumnDefinition(family, columnName, null, false, DateFieldTypeDefinition.NAME, props);
   }
 
   public void addColumnDefinitionInt(String family, String columnName) throws IOException {

@@ -1,0 +1,14 @@
+Surely there's a better way, but here's what's done.  There's a little text file of the jar
+files that shouldn't be included in the binary LICENSE file: /distribution/src/main/resources/license-bin.noinclude
+
+To see all files that should be accounted for in the license file:
+
+From the directory of the exploded binary package:
+
+comm -3 <(find . -name *.jar | sort) <(cat ../../../distribution/src/main/resources/notice-bin.noinclude | sort) 
+
+Now, to see if there are files unaccounted for:
+
+comm -3 <(cat ../../../LICENSE | grep ^./ | sort) <(comm -3 <(find . -name *.jar | sort) <(cat ../../../distribution/src/main/resources/license-bin.noinclude | sort))
+
+

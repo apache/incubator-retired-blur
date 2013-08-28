@@ -71,7 +71,7 @@ public class BlurOutputFormatTest {
     } catch (IOException io) {
       throw new RuntimeException("problem getting local fs", io);
     }
-    mr = new MiniMRCluster(2, "file:///", 3);
+    mr = new MiniMRCluster(1, "file:///", 1);
     jobConf = mr.createJobConf();
     BufferStore.init(128, 128);
   }

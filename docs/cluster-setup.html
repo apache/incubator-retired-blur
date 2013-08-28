@@ -216,6 +216,28 @@ export BLUR_NUMBER_OF_CONTROLLER_SERVER_INSTANCES_PER_MACHINE=1</code></pre>
             <div class="page-header">
               <h1 id="shard">Shard Server Configuration</h1>
             </div>
+<h3>Minimum Settings to Configure</h3>
+<p>
+It is highly recommended that the ulimits are increase on the server specifically:
+<ul>
+<li>open files</li>
+<li>max user processes</li>
+</ul>
+<br/>
+In Hadoop the dfs.datanode.max.xcievers should be increased to at least 4096 if not more.
+<pre>
+<code class="bash">&lt;property&gt;
+    &lt;name&gt;dfs.datanode.max.xcievers&lt;/name&gt;
+    &lt;value&gt;4096&lt;/value&gt;
+&lt;/property&gt;</code></pre>
+<br/>
+In blur-env.sh set the cache memory for the shard processes.  DO NOT over allocate this will 
+likely crash your server.
+<pre><code class="bash">-XX:MaxDirectMemorySize=13g</code></pre>
+<div class="bs-callout bs-callout-warning"><h4>Caution</h4>
+Swap can kill java perform, you may want to consider disabling swap.</div>
+
+</p>
             <h3 id="shard-blur-site">blur-site.properties</h3>
             <p>
               These are the default settings for the shard server that can be overridden in the blur-site.properties file. Consider increasing the various thread pool counts (*.thread.count). Also the blur.max.clause.count sets the BooleanQuery max clause count for Lucene queries.

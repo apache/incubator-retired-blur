@@ -33,11 +33,9 @@ public class Notifier {
 	private static Notifier notifier;
 	
 	private Mailer mailer;
-	private Messenger messenger;
 	
 	private Notifier(Properties props) {
 		mailer = new Mailer(props);
-		messenger = new Messenger(props);
 	}
 	
 	public void notifyZookeeperOffline(String zookeeperName) {
@@ -57,7 +55,6 @@ public class Notifier {
 		String message = MessageFormat.format(MESSAGE, nodeType, StringUtils.join(nodeNames, "\n"));
 		
 		mailer.sendMessage(subject, message);
-		messenger.sendMessage(message);
 	}
 	
 	public static Notifier getNotifier(Properties props, boolean forceNew) {

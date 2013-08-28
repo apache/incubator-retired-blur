@@ -20,7 +20,6 @@
 //= require flot/jquery.flot.selection.min
 //= require flot/jquery.flot.crosshair.min
 //= require jquery.timepicker
-//= require jquery.rangeslider.js
 //= require underscore
 //= require_self
 
@@ -240,7 +239,7 @@ $(document).ready(function(){
   var sync_slider = function(hdfs_id){
     // the range values are stored as slider offsets simply set the slider to those values
     var range_values = [hdfs_data[hdfs_id].min, hdfs_data[hdfs_id].max]
-    $('.graph_instance#' + hdfs_id + ' .slider').dragslider('option', 'values', range_values);
+    //$('.graph_instance#' + hdfs_id + ' .slider').dragslider('option', 'values', range_values);
   };
 
   /*
@@ -347,38 +346,38 @@ $(document).ready(function(){
   /* 
    * Creates the date slider
    */
-  $(".slider").dragslider({
-    range: true,
-    // allows for dragging of the range
-    rangeDrag: true,
-    // Max range
-    min: -1 * 60 * 24 * num_days_back,
-    // Min range (now)
-    max: 0,
-    // Starting selected range is the default
-    values: [-1 * default_range, 0],
-    // A new value has been picked
-    stop: function(event, ui) {
-      // grab the current hdfs_id
-      var hdfs_id = $(this).closest('.graph_instance').attr('id');
-      // set the values for the hdfs
-      hdfs_data[hdfs_id].min = ui.values[0];
-      hdfs_data[hdfs_id].max = ui.values[1];
-      // set the updating to false because a range was selected
-      hdfs_data[hdfs_id].updating = false;
-      // Sync the date fields with the range selected
-      sync_date_fields(hdfs_id);
-      // update the graph for this hdfs
-      update_live_graphs(hdfs_id);
-    },
-    // Update the date values while sliding (feedback for user)
-    slide: function(event, ui){
-      // grab the current hdfs_id
-      var hdfs_id = $(this).closest('.graph_instance').attr('id');
-      // Sync the date fields with the range selected
-      sync_date_fields(hdfs_id, ui.values[0], ui.values[1]);
-    }
-  });
+  // $(".slider").dragslider({
+  //     range: true,
+  //     // allows for dragging of the range
+  //     rangeDrag: true,
+  //     // Max range
+  //     min: -1 * 60 * 24 * num_days_back,
+  //     // Min range (now)
+  //     max: 0,
+  //     // Starting selected range is the default
+  //     values: [-1 * default_range, 0],
+  //     // A new value has been picked
+  //     stop: function(event, ui) {
+  //       // grab the current hdfs_id
+  //       var hdfs_id = $(this).closest('.graph_instance').attr('id');
+  //       // set the values for the hdfs
+  //       hdfs_data[hdfs_id].min = ui.values[0];
+  //       hdfs_data[hdfs_id].max = ui.values[1];
+  //       // set the updating to false because a range was selected
+  //       hdfs_data[hdfs_id].updating = false;
+  //       // Sync the date fields with the range selected
+  //       sync_date_fields(hdfs_id);
+  //       // update the graph for this hdfs
+  //       update_live_graphs(hdfs_id);
+  //     },
+  //     // Update the date values while sliding (feedback for user)
+  //     slide: function(event, ui){
+  //       // grab the current hdfs_id
+  //       var hdfs_id = $(this).closest('.graph_instance').attr('id');
+  //       // Sync the date fields with the range selected
+  //       sync_date_fields(hdfs_id, ui.values[0], ui.values[1]);
+  //     }
+  //   });
 
   $(".min-date").datetimepicker({
     minDate: -1 * num_days_back,

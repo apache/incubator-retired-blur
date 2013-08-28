@@ -123,7 +123,11 @@ public class SharedMergeScheduler implements Runnable, Closeable {
     long e = System.currentTimeMillis();
     double time = (e - s) / 1000.0;
     double rate = (merge.totalBytesSize() / 1024 / 1024) / time;
-    LOG.debug("Merge took [{0} s] to complete at rate of [{1} MB/s]", time, rate);
+    if (time > 10) {
+      LOG.info("Merge took [{0} s] to complete at rate of [{1} MB/s]", time, rate);
+    } else {
+      LOG.debug("Merge took [{0} s] to complete at rate of [{1} MB/s]", time, rate);
+    }
     return true;
   }
 

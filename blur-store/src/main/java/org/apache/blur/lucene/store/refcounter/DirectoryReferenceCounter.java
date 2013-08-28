@@ -36,10 +36,10 @@ import org.apache.lucene.store.LockFactory;
 public class DirectoryReferenceCounter extends Directory implements DirectoryDecorator {
 
   private final static Log LOG = LogFactory.getLog(DirectoryReferenceCounter.class);
-  private Directory directory;
-  private Map<String, AtomicInteger> refCounters = new ConcurrentHashMap<String, AtomicInteger>();
-  private DirectoryReferenceFileGC gc;
-  private IndexInputCloser closer;
+  private final Directory directory;
+  private final Map<String, AtomicInteger> refCounters = new ConcurrentHashMap<String, AtomicInteger>();
+  private final DirectoryReferenceFileGC gc;
+  private final IndexInputCloser closer;
 
   public DirectoryReferenceCounter(Directory directory, DirectoryReferenceFileGC gc, IndexInputCloser closer) {
     this.directory = directory;
@@ -57,8 +57,9 @@ public class DirectoryReferenceCounter extends Directory implements DirectoryDec
   }
 
   public void deleteFile(String name) throws IOException {
+    LOG.debug("deleteFile [{0}] being called", name);
     if (name.equals(IndexFileNames.SEGMENTS_GEN)) {
-      deleteFile(name);
+      directory.deleteFile(name);
       return;
     }
     AtomicInteger counter = refCounters.get(name);

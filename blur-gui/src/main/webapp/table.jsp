@@ -35,7 +35,7 @@
 		DecimalFormat df = new DecimalFormat("#,###,###,###0.00");
 		String ret = "";
 
-		TableStats ts = client.getTableStats(tableName);
+		TableStats ts = client.tableStats(tableName);
 		String size = "";
 		//bytes
 		if(ts.bytes < 1000)
@@ -50,16 +50,11 @@
 		else if(ts.bytes < 1099511627776l)
 			size = df.format(ts.bytes/1000.0/1000/1000/1000) + " TB";
 		ret += row("size", size);
-		ret += row("Queries", ts.queries + "");
 		ret += row("Rows", ts.rowCount + "");
 		ret += row("Records", ts.recordCount + "");
 		TableDescriptor td = client.describe(tableName);
 		ret += row("Block Caching", td.blockCaching + "");
-		ret += row("Compression Block Size", td.compressionBlockSize + "");
-		ret += row("Compression Class", td.compressionClass);
 		ret += row("Read Only", td.readOnly + "");
-	
-		
 		return ret;
 	}
 
@@ -67,37 +62,22 @@
 		String ret = "";
 
 		Schema s = client.schema(tableName);
-		for (String fam : s.columnFamilies.keySet()) {
+		for (String fam : s.families.keySet()) {
 			String tmp = "";
-			for (String c : s.columnFamilies.get(fam))
-				tmp += c + ", ";
-			if (!"".equals(tmp))
-				tmp = tmp.substring(0, tmp.length() - 2);
-			ret += row(fam, tmp);
-		}
-
-		return ret;
-	}
-
-	public String getAD(Iface client, String tableName) throws Exception {
-		String ret = "";
-		TableDescriptor td = client.describe(tableName);
-		AnalyzerDefinition ad = td.analyzerDefinition;
-		Map<String, ColumnFamilyDefinition> cfds = ad.columnFamilyDefinitions;
-		if (cfds != null) {
-			for (String cf : cfds.keySet()) {
-				ColumnFamilyDefinition cfd = cfds.get(cf);
-				if (cfd.defaultDefinition != null) {
-					ret += row(cf, "default", cfd.defaultDefinition.analyzerClassName);
-				}
-				else {
-					ret += row(cf, "default", "none set");
-				}
-				if (cfd.columnDefinitions != null) {
-					for (String col : cfd.columnDefinitions.keySet()) {
-						ret += row("", col, cfd.columnDefinitions.get(col).analyzerClassName);
+			Map<String,ColumnDefinition> columns = s.getFamilies().get(fam);
+			for (String c : columns.keySet()) {
+				ColumnDefinition cd = columns.get(c);
+				StringBuilder sb = new StringBuilder();
+				if (!(cd.getProperties() == null || cd.getProperties().isEmpty())) {
+					for (String key : cd.getProperties().keySet()) {
+						String value = cd.getProperties().get(key);
+						sb.append(key).append(":").append(value).append("<br/>");
 					}
 				}
+				if (cd.getSubColumnName() == null) {
+					cd.setSubColumnName("");
+				}
+				ret += row(fam, cd.getColumnName(), cd.getSubColumnName(), cd.getFieldType(), Boolean.toString(cd.isFieldLessIndexed()), sb.toString());
 			}
 		}
 		return ret;
@@ -151,19 +131,11 @@
 	<%
 			} else {
 	%>
-	
 		<h2>Stats</h2>
-		<%=table(getStats(client, tableName), "Stat",
-								"Value")%>
+		<%=table(getStats(client, tableName), "Stat", "Value")%>
 		<br />
 		<h2>Schema</h2>
-		<%=table(getSchema(client, tableName),
-								"ColumnFamily", "Column")%>
-		<br />
-		<h2>Field Definitions</h2>
-		<%=table(getAD(client, tableName), "ColumnFamily",
-								"Column", "Analyzer")%>
-	
+		<%=table(getSchema(client, tableName), "Family", "Column", "SubColumn", "Type", "FT/Indexed", "Properties")%>
 	<%
 			}
 		}

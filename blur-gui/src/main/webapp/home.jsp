@@ -40,7 +40,7 @@
 			for (String table : tables) {
 				try {
 					TableDescriptor td = client.describe(table);
-					ret += row(cluster, tableLink(table,cluster), td.shardCount+"", td.isEnabled?"yes":"no");
+					ret += row(cluster, tableLink(table,cluster), td.shardCount+"", td.enabled?"yes":"no");
 				} catch (BlurException e) {
 					ret += row(3, "<font color=FF0000>Error describing table: "
 							+ table + "</font>");

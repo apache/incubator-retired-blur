@@ -49,6 +49,7 @@ import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.SimpleTimer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -110,7 +111,6 @@ public class BlurNRTIndex extends BlurIndex {
     if (snapshotsDirectoryExists()) {
       // load existing snapshots
       sdp = new SnapshotDeletionPolicy(_tableContext.getIndexDeletionPolicy(), loadExistingSnapshots());
-      
     } else {
       sdp = new SnapshotDeletionPolicy(_tableContext.getIndexDeletionPolicy());
     }
@@ -124,7 +124,12 @@ public class BlurNRTIndex extends BlurIndex {
     DirectoryReferenceCounter referenceCounter = new DirectoryReferenceCounter(directory, gc, closer);
     // This directory allows for warm up by adding tracing ability.
     TraceableDirectory dir = new TraceableDirectory(referenceCounter);
+    
+    SimpleTimer simpleTimer = new SimpleTimer();
+    simpleTimer.start("writerOpen");
     _writer = new BlurIndexWriter(dir, conf, true);
+    simpleTimer.stop("writerOpen");
+    simpleTimer.start("nrtSetup");
     _recorder = new TransactionRecorder(shardContext);
     _recorder.replay(_writer);
 
@@ -151,6 +156,8 @@ public class BlurNRTIndex extends BlurIndex {
     _refresher.setName("Refresh Thread [" + _tableContext.getTable() + "/" + shardContext.getShard() + "]");
     _refresher.setDaemon(true);
     _refresher.start();
+    simpleTimer.stop("nrtSetup");
+    simpleTimer.log(LOG);
   }
 
   /**

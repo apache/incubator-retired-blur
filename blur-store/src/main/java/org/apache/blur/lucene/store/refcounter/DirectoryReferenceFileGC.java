@@ -36,7 +36,6 @@ import static org.apache.blur.metrics.MetricsConstants.*;
 
 public class DirectoryReferenceFileGC extends TimerTask implements Closeable {
 
-
   private static final Log LOG = LogFactory.getLog(DirectoryReferenceFileGC.class);
 
   private Timer _timer;
@@ -64,8 +63,8 @@ public class DirectoryReferenceFileGC extends TimerTask implements Closeable {
         return true;
       } else {
         LOG.debug("File [{0}] had too many refs [{1}]", name, counter.get());
+        return false;
       }
-      return false;
     }
   }
 

@@ -86,7 +86,58 @@ The following examples are of using the Thrift API directly.  You will need to f
 	<li>log4j-1.2.15.jar</li>
 </ul>
 
+
+
 <div class="bs-callout bs-callout-info"><h4>Note</h4>Other versions of these libraries could work, but these are the versions that Blur currently uses.</div>
+
+</p>
+
+<h3 id="simple_connection_example">Getting A Client Example</h3>
+<p>
+<h4>Connection String</h4>
+The connection string can be parsed or constructed through "Connection" object.  If you are using the 
+parsed version there are some options.  At a minimum you will have to provide hostname and port:
+<pre><code class="bash">host1:40010</code></pre>
+
+You can list multiple hosts:
+<pre><code class="bash">host1:40010,host2:40010</code></pre>
+
+You can add a SOCKS proxy server for each host:
+<pre><code class="bash">host1:40010/proxyhost1:6001</code></pre>
+
+You can also add a timeout on the socket of 90 seconds (the default is 60 seconds):
+<pre><code class="bash">host1:40010/proxyhost1:6001#90000</code></pre>
+
+Multiple hosts with a different timeout:
+<pre><code class="bash">host1:40010,host2:40010,host3:40010#90000</code></pre>
+
+Here is all options together:
+<pre><code class="bash">host1:40010/proxyhost1:6001,host2:40010/proxyhost1:6001#90000</code></pre>
+
+<h4>Thrift Client</h4>
+Client Example 1:
+<pre><code class="java">Iface client = BlurClient.getClient("controller1:40010,controller2:40010");</code></pre>
+
+Client Example 2:
+<pre><code class="java">Connection connection = new Connection("controller1:40010");
+Iface client = BlurClient.getClient(connection);</code></pre>
+
+Client Example 3:
+<pre><code class="java">BlurClientManager.execute("controller1:40010,controller2:40010", new BlurCommand&lt;T&gt;() {
+  @Override
+  public T call(Client client) throws BlurException, TException {
+	// your code here...
+  }
+});</code></pre>
+
+Client Example 4:
+<pre><code class="java">List<Connection> connections = BlurClientManager.getConnections("controller1:40010,controller2:40010");
+BlurClientManager.execute(connections, new BlurCommand&lt;T&gt;() {
+  @Override
+  public T call(Client client) throws BlurException, TException {
+	// your code here...
+  }
+});</code></pre>
 
 </p>
 <h3 id="simple_query_example">Query Example</h3>

@@ -30,6 +30,13 @@ public class Connection {
   private final int _timeout;
 
   public Connection(String connectionStr) {
+    int indexOfTimeout = connectionStr.indexOf("#");
+    if (indexOfTimeout > 0) {
+      _timeout = Integer.parseInt(connectionStr.substring(indexOfTimeout + 1));
+      connectionStr = connectionStr.substring(0,indexOfTimeout);
+    } else {
+      _timeout = DEFAULT_TIMEOUT;
+    }
     int index = connectionStr.indexOf(':');
     if (index >= 0) {
       int slashIndex = connectionStr.indexOf('/');
@@ -47,7 +54,6 @@ public class Connection {
         _proxyPort = -1;
         _proxy = false;
       }
-      _timeout = DEFAULT_TIMEOUT;
     } else {
       throw new RuntimeException("Connection string of [" + connectionStr
           + "] does not match 'host1:port' or 'host1:port/proxyhost1:proxyport'");

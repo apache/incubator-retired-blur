@@ -34,7 +34,7 @@ module ::RakeFileUtils
 end
 
 if Rails.env == 'development' or Rails.env == 'test'
-  require 'ci/reporter/rake/rspec'
+  #require 'ci/reporter/rake/rspec'
 end
 
 BlurAdmin::Application.load_tasks

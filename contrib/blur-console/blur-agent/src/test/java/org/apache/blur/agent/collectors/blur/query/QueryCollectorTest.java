@@ -20,18 +20,24 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.blur.MiniCluster;
 import org.apache.blur.agent.connections.blur.BlurDatabaseConnection;
 import org.apache.blur.agent.test.BlurAgentBaseTestClass;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
+import org.apache.blur.thrift.generated.Column;
+import org.apache.blur.thrift.generated.Query;
+import org.apache.blur.thrift.generated.Record;
+import org.apache.blur.thrift.generated.RecordMutation;
+import org.apache.blur.thrift.generated.RecordMutationType;
+import org.apache.blur.thrift.generated.RowMutation;
+import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.ScoreType;
-import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.junit.Test;
 
@@ -45,15 +51,34 @@ public class QueryCollectorTest extends BlurAgentBaseTestClass {
 
 
 		TableDescriptor td = new TableDescriptor(); 
-		td.setTableUri(MiniCluster.getFileSystemUri() + "/blur-tables/test-table");
-		td.setAnalyzerDefinition(new AnalyzerDefinition());
+		td.setTableUri(MiniCluster.getFileSystemUri() + "/blur-tables/test");
 		td.setName("test");
+		td.setShardCount(1);
 
 		blurConnection.createTable(td);
 		
+//		Record record = new Record();
+//		record.setRecordId("abc");
+//	    record.setFamily("test");
+//	    record.setColumns(Arrays.asList(new Column[]{new Column("col", "blah")}));
+//		
+//		RecordMutation recordMutation = new RecordMutation();
+//		recordMutation.setRecordMutationType(RecordMutationType.REPLACE_ENTIRE_RECORD);
+//		recordMutation.setRecord(record);
+//		
+//		RowMutation row = new RowMutation();
+//		row.setRowId("12345");
+//		row.setTable("test");
+//		row.setRowMutationType(RowMutationType.REPLACE_ROW);
+//		row.setRecordMutations(Arrays.asList(new RecordMutation[]{recordMutation}));
+//		
+//		blurConnection.mutate(row);
+		
 		BlurQuery query = new BlurQuery();
-		query.setSimpleQuery(new SimpleQuery("test.col:*", true, ScoreType.SUPER, null, null));
+		query.setQuery(new Query("test.col:*", true, ScoreType.SUPER, null, null));
 		blurConnection.query("test", query);
+		
+		System.out.println(jdbc.queryForList("select * from blur_queries"));
 		
 		Thread testQueryCollector = new Thread(new QueryCollector(BlurClient.getClient(MiniCluster.getControllerConnectionStr()), "test",
 				1, database), "Query Test Thread");

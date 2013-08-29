@@ -23,6 +23,5 @@ public interface TableDatabaseInterface {
 
 	void updateTableServer(final int tableId, final String server);
 
-	void updateTableStats(final int tableId, final Long tableBytes, final Long tableQueries, final Long tableRecordCount,
-			final Long tableRowCount);
+	void updateTableStats(final int tableId, final Long tableBytes, final Long tableRecordCount, final Long tableRowCount);
 }

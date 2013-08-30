@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
@@ -310,6 +311,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     _queryChecker.checkQuery(blurQuery);
     checkSelectorFetchSize(blurQuery.getSelector());
     int shardCount = _clusterStatus.getShardCount(true, cluster, table);
+    if (blurQuery.getUuid() == null) {
+      blurQuery.setUuid(UUID.randomUUID().toString());
+    }
 
     OUTER: for (int retries = 0; retries < _maxDefaultRetries; retries++) {
       try {

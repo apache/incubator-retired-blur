@@ -30,6 +30,13 @@ public class Connection {
   private final int _timeout;
 
   public Connection(String connectionStr) {
+    int indexOfTimeout = connectionStr.indexOf("#");
+    if (indexOfTimeout > 0) {
+      _timeout = Integer.parseInt(connectionStr.substring(indexOfTimeout + 1));
+      connectionStr = connectionStr.substring(0, indexOfTimeout);
+    } else {
+      _timeout = DEFAULT_TIMEOUT;
+    }
     int index = connectionStr.indexOf(':');
     if (index >= 0) {
       int slashIndex = connectionStr.indexOf('/');
@@ -47,7 +54,6 @@ public class Connection {
         _proxyPort = -1;
         _proxy = false;
       }
-      _timeout = DEFAULT_TIMEOUT;
     } else {
       throw new RuntimeException("Connection string of [" + connectionStr
           + "] does not match 'host1:port' or 'host1:port/proxyhost1:proxyport'");
@@ -114,6 +120,7 @@ public class Connection {
     result = prime * result + (_proxy ? 1231 : 1237);
     result = prime * result + ((_proxyHost == null) ? 0 : _proxyHost.hashCode());
     result = prime * result + _proxyPort;
+    result = prime * result + _timeout;
     return result;
   }
 
@@ -142,19 +149,15 @@ public class Connection {
       return false;
     if (_proxyPort != other._proxyPort)
       return false;
+    if (_timeout != other._timeout)
+      return false;
     return true;
   }
 
-  @Override
-  public String toString() {
-    return "Connection [_host=" + _host + ", _port=" + _port + ", _proxy=" + _proxy + ", _proxyHost=" + _proxyHost
-        + ", _proxyPort=" + _proxyPort + "]";
-  }
-
-  public Object getConnectionStr() {
+  public String getConnectionStr() {
     if (_proxyHost != null) {
-      return _host + ":" + _port + "/" + _proxyHost + ":" + _proxyPort;
+      return _host + ":" + _port + "/" + _proxyHost + ":" + _proxyPort + "#" + _timeout;
     }
-    return _host + ":" + _port;
+    return _host + ":" + _port + "#" + _timeout;
   }
 }

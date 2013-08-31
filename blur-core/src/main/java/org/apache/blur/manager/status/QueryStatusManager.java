@@ -132,7 +132,9 @@ public class QueryStatusManager {
     Set<String> ids = new HashSet<String>();
     for (QueryStatus status : currentQueryStatusCollection.keySet()) {
       if (status.getTable().equals(table)) {
-        ids.add(status.getUserUuid());
+        if (status.getUserUuid() != null) {
+          ids.add(status.getUserUuid());  
+        }
       }
     }
     return new ArrayList<String>(ids);

@@ -31,6 +31,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_RETRY_MAX_MUTA
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_RETRY_MUTATE_DELAY;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_SERVER_REMOTE_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_SERVER_THRIFT_THREAD_COUNT;
+import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_SHARD_CONNECTION_TIMEOUT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST;
@@ -63,7 +64,6 @@ import org.apache.zookeeper.ZooKeeper;
 public class ThriftBlurControllerServer extends ThriftServer {
 
   private static final Log LOG = LogFactory.getLog(ThriftBlurControllerServer.class);
-
 
   public static void main(String[] args) throws Exception {
     int serverIndex = getServerIndex(args);
@@ -100,7 +100,8 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration);
 
-    BlurControllerServer.BlurClient client = new BlurControllerServer.BlurClientRemote();
+    int timeout = configuration.getInt(BLUR_CONTROLLER_SHARD_CONNECTION_TIMEOUT, 60000);
+    BlurControllerServer.BlurClient client = new BlurControllerServer.BlurClientRemote(timeout);
 
     final BlurControllerServer controllerServer = new BlurControllerServer();
     controllerServer.setClient(client);
@@ -142,8 +143,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     final HttpJettyServer httpServer;
     if (baseGuiPort > 0) {
       int webServerPort = baseGuiPort + serverIndex;
-      // TODO: this got ugly, there has to be a better way to handle all these
-      // params
+      // TODO: this got ugly, there has to be a better way to handle all these params
       // without reversing the mvn dependancy and making blur-gui on top.
       httpServer = new HttpJettyServer(bindPort, webServerPort, configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1), configuration.getInt(BLUR_SHARD_BIND_PORT, -1),
           configuration.getInt(BLUR_GUI_CONTROLLER_PORT, -1), configuration.getInt(BLUR_GUI_SHARD_PORT, -1), "controller");

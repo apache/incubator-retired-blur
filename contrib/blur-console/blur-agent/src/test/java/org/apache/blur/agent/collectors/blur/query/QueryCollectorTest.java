@@ -57,25 +57,9 @@ public class QueryCollectorTest extends BlurAgentBaseTestClass {
 
 		blurConnection.createTable(td);
 		
-//		Record record = new Record();
-//		record.setRecordId("abc");
-//	    record.setFamily("test");
-//	    record.setColumns(Arrays.asList(new Column[]{new Column("col", "blah")}));
-//		
-//		RecordMutation recordMutation = new RecordMutation();
-//		recordMutation.setRecordMutationType(RecordMutationType.REPLACE_ENTIRE_RECORD);
-//		recordMutation.setRecord(record);
-//		
-//		RowMutation row = new RowMutation();
-//		row.setRowId("12345");
-//		row.setTable("test");
-//		row.setRowMutationType(RowMutationType.REPLACE_ROW);
-//		row.setRecordMutations(Arrays.asList(new RecordMutation[]{recordMutation}));
-//		
-//		blurConnection.mutate(row);
-		
 		BlurQuery query = new BlurQuery();
 		query.setQuery(new Query("test.col:*", true, ScoreType.SUPER, null, null));
+		query.setUuid("12345");
 		blurConnection.query("test", query);
 		
 		System.out.println(jdbc.queryForList("select * from blur_queries"));

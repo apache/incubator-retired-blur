@@ -30,6 +30,8 @@ under the License.
 	<artifactId>blur-thrift</artifactId>
 	<packaging>jar</packaging>
 	<name>Blur Thrift</name>
+	<description>The Blur thrift module contains all the generated Thrift code, as well as a repackaged version
+		of Thrift (Thrift 0.9.0).  It also contains the thrift client connection managers.</description>
 
 	<dependencies>
 		<dependency>

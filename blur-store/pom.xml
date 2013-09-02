@@ -30,6 +30,7 @@ under the License.
 	<artifactId>blur-store</artifactId>
 	<packaging>jar</packaging>
 	<name>Blur Store</name>
+	<description>The Blur store module contains all the Lucene directories and block cache for Blur.</description>
 
 	<dependencies>
 		<dependency>

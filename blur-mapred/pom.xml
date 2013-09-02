@@ -30,6 +30,8 @@ under the License.
 	<artifactId>blur-mapred</artifactId>
 	<packaging>jar</packaging>
 	<name>Blur Map Reduce</name>
+	<description>The Blur Map Reduce module contains the BlurOutputFormat as well as a CSVLoader
+		program.</description>
 
 	<dependencies>
 		<dependency>

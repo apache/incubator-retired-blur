@@ -30,6 +30,8 @@ under the License.
 	<artifactId>blur-shell</artifactId>
 	<packaging>jar</packaging>
 	<name>Blur Shell</name>
+	<description>The Blur shell module contains a shell for interacting with Blur.  All shell commands
+		can be called as a CLI program as well.</description>
 
     <dependencies>
         <dependency>

@@ -30,6 +30,8 @@ under the License.
 	<artifactId>blur-query</artifactId>
 	<packaging>jar</packaging>
 	<name>Blur Query</name>
+	<description>The Blur query module contains all the analyzers, query object and parsers for Blur.  Also the
+		type system is in the Blur query module.</description>
 
 	<dependencies>
 		<dependency>

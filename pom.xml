@@ -36,14 +36,141 @@ under the License.
 	<description>Blur is a search platform capable of searching massive amounts of data in a cloud computing environment.</description>
 	<url>http://incubator.apache.org/blur/</url>
 	<inceptionYear>2012</inceptionYear>
-	
+
 	<distributionManagement>
 		<site>
 			<id>${project.artifactId}-site</id>
 			<url>http://incubator.apache.org/blur</url>
 		</site>
+		<downloadUrl>http://www.apache.org/dist/incubator/blur</downloadUrl>
 	</distributionManagement>
-	
+
+	<developers>
+		<developer>
+			<id>twilliams</id>
+			<name>Tim Williams</name>
+			<email>twilliams@apache.org</email>
+			<roles>
+				<role>mentor</role>
+				<role>committer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>phunt</id>
+			<name>Patrick Hunt</name>
+			<email>phunt@apache.org</email>
+			<roles>
+				<role>mentor</role>
+				<role>committer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>cutting</id>
+			<name>Doug Cutting</name>
+			<email>cutting@apache.org</email>
+			<roles>
+				<role>mentor</role>
+				<role>committer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>amccurry</id>
+			<name>Aaron McCurry</name>
+			<email>amccurry@apache.org</email>
+			<roles>
+				<role>committer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>sleberkn</id>
+			<name>Scott Leberknight</name>
+			<email>sleberkn@apache.org</email>
+			<roles>
+				<role>committer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>rgimmy</id>
+			<name>Ryan Gimmy</name>
+			<email>rgimmy@apache.org</email>
+			<roles>
+				<role>committer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>gagz</id>
+			<name>Gagan Juneja</name>
+			<email>gagz@apache.org</email>
+			<roles>
+				<role>committer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id></id>
+			<name>Rahul Challapalli</name>
+			<email>@apache.org</email>
+			<roles>
+				<role>committer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id></id>
+			<name>Chris Rohr</name>
+			<email>@apache.org</email>
+			<roles>
+				<role>committer</role>
+			</roles>
+		</developer>
+	</developers>
+
+	<contributors>
+	</contributors>
+
+	<issueManagement>
+		<system>JIRA</system>
+		<url>https://issues.apache.org/jira/browse/BLUR</url>
+	</issueManagement>
+
+	<mailingLists>
+		<mailingList>
+			<name>User</name>
+			<subscribe>blur-user-subscribe@incubator.apache.org</subscribe>
+			<unsubscribe>blur-user-unsubscribe@incubator.apache.org</unsubscribe>
+			<post>blur-user@incubator.apache.org</post>
+			<archive>http://mail-archives.apache.org/mod_mbox/incubator-blur-user/</archive>
+			<otherArchives>
+				<otherArchive>http://markmail.org/browse/org.apache.incubator.blur-user</otherArchive>
+			</otherArchives>
+		</mailingList>
+		<mailingList>
+			<name>Dev</name>
+			<subscribe>blur-dev-subscribe@incubator.apache.org</subscribe>
+			<unsubscribe>blur-dev-unsubscribe@incubator.apache.org</unsubscribe>
+			<post>blur-dev@incubator.apache.org</post>
+			<archive>http://mail-archives.apache.org/mod_mbox/incubator-blur-dev/</archive>
+			<otherArchives>
+				<otherArchive>http://markmail.org/browse/org.apache.incubator.blur-dev</otherArchive>
+			</otherArchives>
+		</mailingList>
+		<mailingList>
+			<name>Commits</name>
+			<subscribe>blur-commits-subscribe@incubator.apache.org</subscribe>
+			<unsubscribe>blur-commits-unsubscribe@incubator.apache.org</unsubscribe>
+			<post>blur-commits@incubator.apache.org</post>
+			<archive>http://mail-archives.apache.org/mod_mbox/incubator-blur-commits/</archive>
+			<otherArchives>
+				<otherArchive>http://markmail.org/browse/org.apache.incubator.blur-commits</otherArchive>
+			</otherArchives>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:http://git-wip-us.apache.org/repos/asf/incubator-blur.git</connection>
+		<developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-blur.git</developerConnection>
+		<!--tag>HEAD</tag -->
+		<url>https://git-wip-us.apache.org/repos/asf?p=incubator-blur.git;a=summary</url>
+	</scm>
+
 	<properties>
 		<zookeeper.version>3.4.5</zookeeper.version>
 		<log4j.version>1.2.15</log4j.version>
@@ -85,19 +212,19 @@ under the License.
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	
+
 	<repositories>
 		<repository>
 			<id>libdir</id>
 			<url>file://${basedir}/../lib</url>
 		</repository>
 		<repository>
-	      <id>cloudera</id>
-	      <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
-	    </repository>
+			<id>cloudera</id>
+			<url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+		</repository>
 	</repositories>
 
-	<build>		
+	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.rat</groupId>
@@ -105,10 +232,8 @@ under the License.
 				<version>0.9</version>
 				<configuration>
 					<excludes>
-						<!--exclude>**/generated/**</exclude>
-						<exclude>**/*min.js</exclude>
-						<exclude>**/input-data/*.txt</exclude>
-						<exclude>**/testsuite/words.txt</exclude-->
+						<!--exclude>**/generated/**</exclude> <exclude>**/*min.js</exclude> 
+							<exclude>**/input-data/*.txt</exclude> <exclude>**/testsuite/words.txt</exclude -->
 						<exclude>**/README.textile</exclude>
 						<exclude>**/.classpath</exclude>
 						<exclude>**/.project</exclude>
@@ -121,25 +246,25 @@ under the License.
 		<pluginManagement>
 			<plugins>
 				<plugin>
-				  <groupId>org.apache.maven.plugins</groupId>
-				  <artifactId>maven-surefire-plugin</artifactId>
-				  <configuration>
-					<argLine>-XX:+UseConcMarkSweepGC</argLine>
-				    <reuseForks>false</reuseForks>
-					<systemPropertyVariables>
-						<blur.tmp.dir>${project.build.directory}/target/tmp</blur.tmp.dir>
-					</systemPropertyVariables>
-				  </configuration>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<configuration>
+						<argLine>-XX:+UseConcMarkSweepGC</argLine>
+						<reuseForks>false</reuseForks>
+						<systemPropertyVariables>
+							<blur.tmp.dir>${project.build.directory}/target/tmp</blur.tmp.dir>
+						</systemPropertyVariables>
+					</configuration>
 				</plugin>
 				<!-- Ignore/Execute plugin execution -->
-		        <plugin>
-		          <artifactId>maven-assembly-plugin</artifactId>
-		          <configuration>
-		            <descriptors>
-		              <descriptor>src/assemble/bin.xml</descriptor>
-		            </descriptors>
-		          </configuration>
-		        </plugin>
+				<plugin>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<configuration>
+						<descriptors>
+							<descriptor>src/assemble/bin.xml</descriptor>
+						</descriptors>
+					</configuration>
+				</plugin>
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -178,7 +303,7 @@ under the License.
 			</plugins>
 		</pluginManagement>
 	</build>
-	
+
 	<profiles>
 		<profile>
 			<id>hadoop-1x</id>
@@ -189,11 +314,11 @@ under the License.
 				<hadoop.version>1.2.1</hadoop.version>
 			</properties>
 		</profile>
-		
+
 		<profile>
 			<id>cdh4-mr1</id>
-            <properties>
-			    <hadoop.version>2.0.0-mr1-cdh4.3.0</hadoop.version>
+			<properties>
+				<hadoop.version>2.0.0-mr1-cdh4.3.0</hadoop.version>
 			</properties>
 		</profile>
 	</profiles>

@@ -24,7 +24,7 @@ under the License.
 	<parent>
 		<groupId>org.apache</groupId>
 		<artifactId>apache</artifactId>
-		<version>11</version>
+		<version>13</version>
 	</parent>
 
 	<groupId>org.apache.blur</groupId>
@@ -36,6 +36,13 @@ under the License.
 	<description>Blur is a search platform capable of searching massive amounts of data in a cloud computing environment.</description>
 	<url>http://incubator.apache.org/blur/</url>
 	<inceptionYear>2012</inceptionYear>
+	
+	<distributionManagement>
+		<site>
+			<id>${project.artifactId}-site</id>
+			<url>http://incubator.apache.org/blur</url>
+		</site>
+	</distributionManagement>
 	
 	<properties>
 		<zookeeper.version>3.4.5</zookeeper.version>

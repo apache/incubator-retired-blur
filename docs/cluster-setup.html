@@ -284,6 +284,9 @@ blur.shard.index.warmup.throttle=30000000
 # By default the block cache using off heap memory
 blur.shard.blockcache.direct.memory.allocation=true
 
+# By default the experimental block cache is off
+blur.shard.experimental.block.cache=false
+
 # The slabs in the blockcache are automatically configured by 
 # default (-1) otherwise 1 slab equals 128MB. The auto config
 # is detected through the MaxDirectoryMemorySize provided to 

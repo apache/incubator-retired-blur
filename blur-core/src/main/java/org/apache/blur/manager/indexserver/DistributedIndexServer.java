@@ -63,8 +63,7 @@ import org.apache.blur.metrics.AtomicLongGauge;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
-import org.apache.blur.store.blockcache.BlockDirectory;
-import org.apache.blur.store.blockcache.Cache;
+import org.apache.blur.store.BlockCacheDirectoryFactory;
 import org.apache.blur.store.hdfs.BlurLockFactory;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.ShardState;
@@ -107,7 +106,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private Configuration _configuration;
   private String _nodeName;
   private int _shardOpenerThreadCount;
-  private Cache _cache;
+  private BlockCacheDirectoryFactory _blockCacheDirectoryFactory;
   private ZooKeeper _zookeeper;
   private String _cluster;
 
@@ -448,7 +447,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     boolean blockCacheEnabled = _clusterStatus.isBlockCacheEnabled(_cluster, table);
     if (blockCacheEnabled) {
       Set<String> blockCacheFileTypes = _clusterStatus.getBlockCacheFileTypes(_cluster, table);
-      dir = new BlockDirectory(table + "_" + shard, directory, _cache, blockCacheFileTypes);
+      dir = _blockCacheDirectoryFactory.newDirectory(table + "_" + shard, directory, blockCacheFileTypes);
     } else {
       dir = directory;
     }
@@ -717,10 +716,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _shardOpenerThreadCount = shardOpenerThreadCount;
   }
 
-  public void setCache(Cache cache) {
-    _cache = cache;
-  }
-
   public void setZookeeper(ZooKeeper zookeeper) {
     _zookeeper = zookeeper;
   }
@@ -751,5 +746,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   public static AtomicLong getPauseWarmup() {
     return _pauseWarmup;
+  }
+  
+  public void setBlockCacheDirectoryFactory(BlockCacheDirectoryFactory blockCacheDirectoryFactory) {
+    _blockCacheDirectoryFactory = blockCacheDirectoryFactory;
   }
 }

@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.apache.blur.MiniCluster;
 import org.apache.blur.agent.connections.blur.BlurDatabaseConnection;
@@ -30,13 +29,7 @@ import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
-import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Query;
-import org.apache.blur.thrift.generated.Record;
-import org.apache.blur.thrift.generated.RecordMutation;
-import org.apache.blur.thrift.generated.RecordMutationType;
-import org.apache.blur.thrift.generated.RowMutation;
-import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.junit.Test;

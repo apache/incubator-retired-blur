@@ -70,10 +70,10 @@ public class HdfsStatsCollector implements Runnable {
 
 				// TODO: Need to figure out how to do hadoop version check for this information.
 				//FsStatus ds = dfs.getStatus();
-				long capacity = -1;//ds.getCapacity();
-				long used = -1;//ds.getUsed();
+				long capacity = dfs.getRawCapacity();//ds.getCapacity();
+				long used = dfs.getRawUsed();//ds.getUsed();
 				long logical_used = used / dfs.getDefaultReplication();
-				long remaining = -1; //ds.getRemaining();
+				long remaining = capacity - used; //ds.getRemaining();
 				long presentCapacity = used + remaining;
 
 				long liveNodes = -1;

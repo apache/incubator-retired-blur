@@ -30,6 +30,7 @@ under the License.
 	<artifactId>blur-util</artifactId>
 	<packaging>jar</packaging>
 	<name>Blur Util</name>
+	<description>The Blur util module contains mostly utility classes used throughout the Blur project.</description>
 
 	<dependencies>
 		<dependency>

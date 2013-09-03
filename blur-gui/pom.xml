@@ -30,6 +30,7 @@ under the License.
 	<artifactId>blur-gui</artifactId>
 	<packaging>war</packaging>
 	<name>Blur GUI</name>
+	<description>The Blur gui module contains the html status pages for each process.</description>
 
 	<properties>
 		<enableAssertions>false</enableAssertions>

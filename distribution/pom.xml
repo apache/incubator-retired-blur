@@ -28,10 +28,9 @@ under the License.
 	</parent>
 
 	<artifactId>apache-blur</artifactId>
-
 	<packaging>pom</packaging>
-
 	<name>Distribution</name>
+	<description>The Blur distribution module builds the source and binary artifacts.</description>
 
 	<dependencies>
 		<dependency>

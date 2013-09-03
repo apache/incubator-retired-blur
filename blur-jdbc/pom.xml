@@ -30,6 +30,8 @@ under the License.
 	<artifactId>blur-jdbc</artifactId>
 	<packaging>jar</packaging>
 	<name>Blur JDBC</name>
+	<description>The Blur jdbc module contains a basic jdbc driver for Blur that interacts with the
+		Thrift RPC servers.</description>
 
 	<dependencies>
 		<dependency>

@@ -144,7 +144,7 @@ public class BaseCache implements Cache {
 
   @Override
   public void put(CacheKey key, CacheValue value) {
-    addToReleaseQueue(_cacheMap.put(key, value));
+    _cacheMap.put(key, value);
   }
 
   @Override

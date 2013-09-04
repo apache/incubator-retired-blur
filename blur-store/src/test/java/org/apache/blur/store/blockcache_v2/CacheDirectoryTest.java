@@ -35,10 +35,13 @@ public class CacheDirectoryTest {
 
   @Before
   public void setup() {
+    int totalNumberOfBytes = 1000000;
+    int fileBufferSize = 127;
+    final int blockSize = 131;
     FileNameBlockSize fileNameBlockSize = new FileNameBlockSize() {
       @Override
       public int getBlockSize(String directoryName, String fileName) {
-        return 131;
+        return blockSize;
       }
     };
     FileNameFilter writeFilter = new FileNameFilter() {
@@ -53,7 +56,8 @@ public class CacheDirectoryTest {
         return true;
       }
     };
-    Cache cache = new BaseCache(10000, 127, fileNameBlockSize, readFilter, writeFilter, STORE.ON_HEAP);
+    Cache cache = new BaseCache(totalNumberOfBytes, fileBufferSize, fileNameBlockSize, readFilter, writeFilter,
+        STORE.ON_HEAP);
     Directory directory = newDirectory();
     BufferStore.init(128, 128);
     _cacheDirectory = new CacheDirectory("test", directory, cache);
@@ -102,24 +106,31 @@ public class CacheDirectoryTest {
 
   @Test
   public void test3() throws IOException, InterruptedException {
-    Thread.sleep(30000);
+    // Thread.sleep(30000);
     IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_43, new KeywordAnalyzer());
     IndexWriter writer = new IndexWriter(_cacheDirectory, conf);
-    int docs = 10000;
+    int docs = 100000;
     for (int i = 0; i < docs; i++) {
+      if (i % 500 == 0) {
+        System.out.println(i);
+      }
       writer.addDocument(newDoc());
-      Thread.sleep(1);
+      // Thread.sleep(1);
     }
     writer.close();
+    System.out.println("done writing");
 
     DirectoryReader reader = DirectoryReader.open(_cacheDirectory);
+    System.out.println("done opening");
     assertEquals(docs, reader.numDocs());
 
     Document document = reader.document(0);
+    System.out.println("done fetching");
     System.out.println(document);
 
     IndexSearcher searcher = new IndexSearcher(reader);
     TopDocs topDocs = searcher.search(new TermQuery(new Term("test", "test")), 10);
+    System.out.println("done searching");
     assertEquals(docs, topDocs.totalHits);
 
     reader.close();

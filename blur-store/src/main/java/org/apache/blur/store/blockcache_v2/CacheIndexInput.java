@@ -38,7 +38,8 @@ public class CacheIndexInput extends IndexInput {
   private long _position;
   private int _blockPosition;
 
-  public CacheIndexInput(CacheDirectory directory, String fileName, IndexInput indexInput, Cache cache) throws IOException {
+  public CacheIndexInput(CacheDirectory directory, String fileName, IndexInput indexInput, Cache cache)
+      throws IOException {
     super(fileName);
     _directory = directory;
     _fileName = fileName;
@@ -98,6 +99,8 @@ public class CacheIndexInput extends IndexInput {
   }
 
   private void fill() throws IOException {
+//    System.out.println("Filling [" + _directory + "/" + _fileName + "] @ [" + getBlockId() + "] length [" + _fileLength
+//        + "]");
     _key.setBlockId(getBlockId());
     _cacheValue = _cache.get(_key);
     if (_cacheValue == null) {

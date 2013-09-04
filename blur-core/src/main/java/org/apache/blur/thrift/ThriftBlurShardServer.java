@@ -69,7 +69,7 @@ public class ThriftBlurShardServer extends ThriftServer {
 
   private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
   private static final boolean enableJsonReporter = false;
-  private static final long _64MB = 0;
+  private static final long _64MB = 64 * 1024 * 1024;
 
   public static void main(String[] args) throws Exception {
     int serverIndex = getServerIndex(args);
@@ -115,6 +115,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     // Alternate BlockCacheDirectoryFactory support currently disabled in 0.2.0,
     // look for it in 0.2.1
     boolean experimentalBlockCache = configuration.getBoolean(BLUR_SHARD_EXPERIMENTAL_BLOCK_CACHE, false);
+    experimentalBlockCache = false;
     if (!experimentalBlockCache) {
       // setup block cache
       // 134,217,728 is the slab size, therefore there are 16,384 blocks

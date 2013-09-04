@@ -46,13 +46,16 @@ public class BlockCacheDirectoryFactoryV2 implements BlockCacheDirectoryFactory 
         if (fileName.endsWith(".fdt") || fileName.endsWith(".fdx")) {
           return false;
         }
-        return false;
+        return true;
       }
     };
     FileNameFilter writeFilter = new FileNameFilter() {
       @Override
       public boolean accept(String directoryName, String fileName) {
-        return false;
+        if (fileName.endsWith(".fdt") || fileName.endsWith(".fdx")) {
+          return false;
+        }
+        return true;
       }
     };
     _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, fileNameBlockSize, readFilter, writeFilter,

@@ -25,16 +25,16 @@ import org.apache.lucene.store.IndexOutput;
 public class CacheIndexOutput extends IndexOutput {
 
   private final IndexOutput _indexOutput;
-  private final int _fileBufferSize;
   private final Cache _cache;
   private final String _fileName;
   private final CacheDirectory _directory;
   private final long _fileId;
+  private final int _fileBufferSize;
+  private final int _cacheBlockSize;
 
   private long _position;
   private byte[] _buffer;
   private int _bufferPosition;
-  private int _cacheBlockSize;
 
   public CacheIndexOutput(CacheDirectory directory, String fileName, IndexOutput indexOutput, Cache cache)
       throws IOException {
@@ -46,6 +46,11 @@ public class CacheIndexOutput extends IndexOutput {
     _fileId = _cache.getFileId(_directory, _fileName);
     _indexOutput = indexOutput;
     _buffer = BufferStore.takeBuffer(_cacheBlockSize);
+  }
+
+  @Override
+  public void setLength(long length) throws IOException {
+    
   }
 
   @Override
@@ -81,23 +86,26 @@ public class CacheIndexOutput extends IndexOutput {
   }
 
   private void flushInternal() throws IOException {
-    CacheValue cacheValue = _cache.newInstance(_directory, _fileName);
-    int length = _cacheBlockSize - (_cacheBlockSize - _bufferPosition);
-    int l = length;
-    int o = 0;
-    while (l > 0) {
-      int il = Math.min(_fileBufferSize, l);
-      _indexOutput.writeBytes(_buffer, o, il);
-      o += il;
-      l -= il;
+    int length = _cacheBlockSize - remaining();
+    if (length == 0) {
+      return;
     }
+    CacheValue cacheValue = _cache.newInstance(_directory, _fileName);
+    writeBufferToOutputStream(length);
     cacheValue.write(0, _buffer, 0, length);
-    _cache.put(new CacheKey(_fileId, getBlockId()), cacheValue);
+    long blockId = (_position - length) / _cacheBlockSize;
+    _cache.put(new CacheKey(_fileId, blockId), cacheValue);
     _bufferPosition = 0;
   }
 
-  private long getBlockId() {
-    return _position / _cacheBlockSize;
+  private void writeBufferToOutputStream(int len) throws IOException {
+    int offset = 0;
+    while (len > 0) {
+      int length = Math.min(_fileBufferSize, len);
+      _indexOutput.writeBytes(_buffer, offset, length);
+      len -= length;
+      offset += length;
+    }
   }
 
   @Override

@@ -62,9 +62,9 @@ public class UnsafeCacheValue extends BaseCacheValue {
   }
 
   private int getCapacity(int length) {
-    if (length < MINIMUM_SIZE) {
-      return MINIMUM_SIZE;
-    }
+//    if (length < MINIMUM_SIZE) {
+//      return MINIMUM_SIZE;
+//    }
     return length;
   }
 
@@ -94,6 +94,7 @@ public class UnsafeCacheValue extends BaseCacheValue {
       _released = true;
     } else {
       System.out.println("released twice?");
+      new Throwable().printStackTrace();
     }
   }
 

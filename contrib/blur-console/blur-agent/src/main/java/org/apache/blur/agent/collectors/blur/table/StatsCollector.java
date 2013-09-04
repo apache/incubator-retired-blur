@@ -44,14 +44,13 @@ public class StatsCollector implements Runnable {
 	@Override
 	public void run() {
 		try {
-			TableStats tableStats = blurConnection.getTableStats(this.tableName);
+			TableStats tableStats = blurConnection.tableStats(this.tableName);
 
 			if (tableStats == null) {
 				throw new NullReturnedException("No table statistics were returned!");
 			}
 
-			this.database.updateTableStats(tableId, tableStats.getBytes(), tableStats.getQueries(), tableStats.getRecordCount(),
-					tableStats.getRowCount());
+			this.database.updateTableStats(tableId, tableStats.getBytes(), tableStats.getRecordCount(),	tableStats.getRowCount());
 		} catch (BlurException e) {
 			log.error("Unable to get table stats for table [" + tableId + "].", e);
 		} catch (DataAccessException e) {

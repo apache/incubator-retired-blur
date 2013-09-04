@@ -22,14 +22,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.blur.thrift.generated.BlurQueryStatus;
-import org.apache.blur.thrift.generated.SimpleQuery;
+import org.apache.blur.thrift.generated.Query;
 
 public interface QueryDatabaseInterface {
-	Map<String, Object> getQuery(int tableId, long UUID);
+	Map<String, Object> getQuery(int tableId, String UUID);
 
 	List<Long> getRunningQueries(Long tableId);
 
-	void createQuery(BlurQueryStatus status, SimpleQuery query, String times, Date startTime, int tableId);
+	void createQuery(BlurQueryStatus status, Query query, String times, Date startTime, int tableId);
 
 	void updateQuery(BlurQueryStatus status, String times, int queryId);
 	

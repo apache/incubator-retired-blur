@@ -26,12 +26,11 @@ import org.apache.blur.agent.connections.blur.BlurDatabaseConnection;
 import org.apache.blur.agent.test.BlurAgentBaseTestClass;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.generated.AnalyzerDefinition;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
+import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.ScoreType;
-import org.apache.blur.thrift.generated.SimpleQuery;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.junit.Test;
 
@@ -45,15 +44,18 @@ public class QueryCollectorTest extends BlurAgentBaseTestClass {
 
 
 		TableDescriptor td = new TableDescriptor(); 
-		td.setTableUri(MiniCluster.getFileSystemUri() + "/blur-tables/test-table");
-		td.setAnalyzerDefinition(new AnalyzerDefinition());
+		td.setTableUri(MiniCluster.getFileSystemUri() + "/blur-tables/test");
 		td.setName("test");
+		td.setShardCount(1);
 
 		blurConnection.createTable(td);
 		
 		BlurQuery query = new BlurQuery();
-		query.setSimpleQuery(new SimpleQuery("test.col:*", true, ScoreType.SUPER, null, null));
+		query.setQuery(new Query("test.col:*", true, ScoreType.SUPER, null, null));
+		query.setUuid("12345");
 		blurConnection.query("test", query);
+		
+		System.out.println(jdbc.queryForList("select * from blur_queries"));
 		
 		Thread testQueryCollector = new Thread(new QueryCollector(BlurClient.getClient(MiniCluster.getControllerConnectionStr()), "test",
 				1, database), "Query Test Thread");

@@ -1,18 +1,3 @@
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements. See the NOTICE file distributed with this
-# work for additional information regarding copyright ownership. The ASF
-# licenses this file to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-# License for the specific language governing permissions and limitations
-# under the License.
-
 # encoding: UTF-8
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
@@ -26,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130505151503) do
+ActiveRecord::Schema.define(:version => 20130829031155) do
 
   create_table "admin_settings", :force => true do |t|
     t.string   "setting",    :null => false
@@ -59,7 +44,7 @@ ActiveRecord::Schema.define(:version => 20130505151503) do
   create_table "blur_queries", :force => true do |t|
     t.text     "query_string",             :limit => 16777215
     t.integer  "complete_shards"
-    t.integer  "uuid",                     :limit => 8
+    t.string   "uuid"
     t.datetime "created_at",                                   :null => false
     t.datetime "updated_at",                                   :null => false
     t.boolean  "super_query_on"

@@ -28,7 +28,7 @@ import org.apache.blur.agent.exceptions.ZookeeperNameCollisionException;
 import org.apache.blur.agent.exceptions.ZookeeperNameMissingException;
 import org.apache.blur.agent.types.TimeHelper;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
-import org.apache.blur.thrift.generated.SimpleQuery;
+import org.apache.blur.thrift.generated.Query;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONValue;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -105,12 +105,12 @@ public class BlurDatabaseConnection implements BlurDatabaseInterface {
 	}
 
 	@Override
-	public void updateTableStats(final int tableId, Long tableBytes, Long tableQueries, Long tableRecordCount, Long tableRowCount) {
-		jdbc.update("update blur_tables set current_size=?, query_usage=?, record_count=?, row_count=? where id=?", new Object[] { tableBytes,
-				tableQueries, tableRecordCount, tableRowCount, tableId });
+	public void updateTableStats(final int tableId, Long tableBytes, Long tableRecordCount, Long tableRowCount) {
+		jdbc.update("update blur_tables set current_size=?, record_count=?, row_count=? where id=?", new Object[] { tableBytes,
+				tableRecordCount, tableRowCount, tableId });
 	}
 
-	public Map<String, Object> getQuery(int tableId, long UUID) {
+	public Map<String, Object> getQuery(int tableId, String UUID) {
 		try {
 			return this.jdbc.queryForMap("select id, complete_shards, times, state from blur_queries where blur_table_id=? and uuid=?", tableId,
 					UUID);
@@ -119,11 +119,11 @@ public class BlurDatabaseConnection implements BlurDatabaseInterface {
 		}
 	}
 
-	public void createQuery(BlurQueryStatus status, SimpleQuery query, String times, Date startTime, int tableId) {
+	public void createQuery(BlurQueryStatus status, Query query, String times, Date startTime, int tableId) {
 		this.jdbc
 				.update(
 						"insert into blur_queries (query_string, times, complete_shards, total_shards, state, uuid, created_at, updated_at, blur_table_id, super_query_on, facets, start, fetch_num, pre_filters, post_filters, selector_column_families, selector_columns, userid, record_only) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-						query.getQueryStr(),
+						query.getQuery(),
 						times,
 						status.getCompleteShards(),
 						status.getTotalShards(),
@@ -132,12 +132,12 @@ public class BlurDatabaseConnection implements BlurDatabaseInterface {
 						startTime,
 						TimeHelper.now().getTime(),
 						tableId,
-						query.isSuperQueryOn(),
+						query.isRowQuery(),
 						StringUtils.join(status.getQuery().getFacets(), ", "),
 						status.getQuery().getStart(),
 						status.getQuery().getFetch(),
-						query.getPreSuperFilter(),
-						query.getPostSuperFilter(),
+						query.getRecordFilter(),
+						query.getRowFilter(),
 						status.getQuery().getSelector() == null ? null : JSONValue.toJSONString(status.getQuery().getSelector()
 								.getColumnFamiliesToFetch()),
 						status.getQuery().getSelector() == null ? null : JSONValue.toJSONString(status.getQuery().getSelector().getColumnsToFetch()),

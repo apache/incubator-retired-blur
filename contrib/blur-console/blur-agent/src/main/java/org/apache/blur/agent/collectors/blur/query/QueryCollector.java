@@ -25,7 +25,7 @@ import org.apache.blur.agent.connections.blur.interfaces.QueryDatabaseInterface;
 import org.apache.blur.agent.types.TimeHelper;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
-import org.apache.blur.thrift.generated.SimpleQuery;
+import org.apache.blur.thrift.generated.Query;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,7 +50,7 @@ public class QueryCollector implements Runnable {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
-		Set<Long> currentQueries = new HashSet<Long>();
+		Set<String> currentQueries = new HashSet<String>();
 		try {
 			currentQueries.addAll(blurConnection.queryStatusIdList(tableName));
 			//currentQueries.addAll(this.database.getRunningQueries());
@@ -63,7 +63,7 @@ public class QueryCollector implements Runnable {
 		this.database.markOrphanedRunningQueriesComplete(CollectionUtils.subtract(this.database.getRunningQueries((long)tableId), currentQueries));
 		
 
-		for (Long queryUUID : currentQueries) {
+		for (String queryUUID : currentQueries) {
 			BlurQueryStatus status;
 			try {
 				status = blurConnection.queryStatusById(tableName, queryUUID);
@@ -83,7 +83,7 @@ public class QueryCollector implements Runnable {
 			}
 
 			if (oldQuery == null) {
-				SimpleQuery query = status.getQuery().getSimpleQuery();
+				Query query = status.getQuery().getQuery();
 				long startTimeLong = status.getQuery().getStartTime();
 
 				// Set the query creation time to now or given start time

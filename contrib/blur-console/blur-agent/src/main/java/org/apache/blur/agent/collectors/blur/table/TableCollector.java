@@ -50,7 +50,7 @@ public class TableCollector implements Runnable {
 			}
 
 			/* spawn the different table info collectors */
-			if (descriptor.isEnabled) {
+			if (descriptor.enabled) {
 				new Thread(new SchemaCollector(this.blurConnection, this.tableName, this.tableId, descriptor, this.database),
 						"Table Schema Collector - " + this.tableName).start();
 			}

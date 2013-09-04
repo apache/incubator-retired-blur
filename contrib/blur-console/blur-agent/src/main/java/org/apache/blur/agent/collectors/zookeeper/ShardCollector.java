@@ -44,7 +44,7 @@ public class ShardCollector implements Runnable {
 	@Override
 	public void run() {
 		try {
-			List<String> shards = this.zookeeper.getChildren("/blur/clusters/" + clusterName + "/online/shard-nodes", false);
+			List<String> shards = this.zookeeper.getChildren("/blur/clusters/" + clusterName + "/online-nodes", false);
 			int recentlyOffline = this.database.markOfflineShards(shards, this.clusterId);
 			if (recentlyOffline > 0) {
 				Notifier.getNotifier().notifyShardOffline(this.database.getRecentOfflineShardNames(recentlyOffline));
@@ -61,7 +61,7 @@ public class ShardCollector implements Runnable {
 		for (String shard : shards) {
 			String blurVersion = "UNKNOWN";
 
-			byte[] b = this.zookeeper.getData("/blur/clusters/" + clusterName + "/online/shard-nodes/" + shard, false, null);
+			byte[] b = this.zookeeper.getData("/blur/clusters/" + clusterName + "/online-nodes/" + shard, false, null);
 			if (b != null && b.length > 0) {
 				blurVersion = new String(b);
 			}

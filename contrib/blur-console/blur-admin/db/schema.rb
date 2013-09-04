@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130829031155) do
+ActiveRecord::Schema.define(:version => 20130904130250) do
 
   create_table "admin_settings", :force => true do |t|
     t.string   "setting",    :null => false
@@ -57,7 +57,7 @@ ActiveRecord::Schema.define(:version => 20130829031155) do
     t.text     "selector_columns"
     t.string   "userid"
     t.integer  "blur_table_id"
-    t.string   "times"
+    t.text     "times"
     t.integer  "total_shards"
     t.integer  "state"
     t.boolean  "record_only"
@@ -158,23 +158,6 @@ ActiveRecord::Schema.define(:version => 20130829031155) do
 
   add_index "searches", ["blur_table_id"], :name => "index_searches_on_blur_table_id"
   add_index "searches", ["user_id"], :name => "index_searches_on_user_id"
-
-  create_table "system_metrics", :force => true do |t|
-    t.string   "name",               :null => false
-    t.datetime "started_at",         :null => false
-    t.string   "transaction_id"
-    t.text     "payload"
-    t.float    "duration",           :null => false
-    t.float    "exclusive_duration", :null => false
-    t.integer  "request_id"
-    t.integer  "parent_id"
-    t.string   "action",             :null => false
-    t.string   "category",           :null => false
-  end
-
-  add_index "system_metrics", ["parent_id"], :name => "index_system_metrics_on_parent_id"
-  add_index "system_metrics", ["request_id"], :name => "index_system_metrics_on_request_id"
-  add_index "system_metrics", ["transaction_id"], :name => "index_system_metrics_on_transaction_id"
 
   create_table "users", :force => true do |t|
     t.string   "username"

@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.store.blockcache.LastModified;
 import org.apache.blur.store.buffer.ReusedBufferedIndexInput;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -51,7 +52,7 @@ import com.yammer.metrics.core.Histogram;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
 
-public class HdfsDirectory extends Directory {
+public class HdfsDirectory extends Directory implements LastModified {
 
   private static final Log LOG = LogFactory.getLog(HdfsDirectory.class);
 

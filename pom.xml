@@ -238,6 +238,9 @@ under the License.
 						<exclude>**/.classpath</exclude>
 						<exclude>**/.project</exclude>
 						<exclude>**/.settings/**</exclude>
+						<exclude>**/site/**</exclude>
+						<exclude>**/*.png</exclude>                                             
+						<exclude>**/*.gif</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

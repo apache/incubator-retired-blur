@@ -21,15 +21,15 @@ class Search < ActiveRecord::Base
   attr_accessor :column_object
 
   def blur_query
-    b = Blur::BlurQuery.new( :simpleQuery  => Blur::SimpleQuery.new(:queryStr => query,
-                      :superQueryOn => super_query?),
+    b = Blur::BlurQuery.new( :query  => Blur::Query.new(:query => query,
+                      :rowQuery => super_query?),
                       :fetch        => fetch,
                       :start        => offset,
-                      :uuid         => Time.now.to_i*1000 + rand(1000),
+                      #:uuid         => Time.now.to_i*1000 + rand(1000),
                       :selector     => selector,
                       :userContext  => User.find(user_id).username)
-    b.simpleQuery.postSuperFilter = post_filter if !post_filter.blank?
-    b.simpleQuery.preSuperFilter = pre_filter if !pre_filter.blank?
+    b.query.rowFilter = post_filter if !post_filter.blank?
+    b.query.recordFilter = pre_filter if !pre_filter.blank?
     b
   end
 
@@ -62,7 +62,9 @@ class Search < ActiveRecord::Base
                         :recordOnly            => record_only?
   end
   def fetch_results(table_name, blur_urls)
-    BlurThriftClient.client(blur_urls).query(table_name, blur_query)
+    ActiveSupport::Notifications.instrument "search.blur", :urls => blur_urls, :table => table_name, :query => blur_query.query.query do
+      BlurThriftClient.client(blur_urls).query(table_name, blur_query)
+    end
   end
 
   def schema(blur_table)

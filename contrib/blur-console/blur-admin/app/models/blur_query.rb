@@ -22,7 +22,9 @@ class BlurQuery < ActiveRecord::Base
 
   def cancel
     begin
-      BlurThriftClient.client(blur_table.zookeeper.blur_urls).cancelQuery self.blur_table.table_name, self.uuid
+      ActiveSupport::Notifications.instrument "cancel.blur", :urls => blur_table.zookeeper.blur_urls, :table => self.blur_table.table_name, :uuid => self.uuid do
+        BlurThriftClient.client(blur_table.zookeeper.blur_urls).cancelQuery self.blur_table.table_name, self.uuid
+      end
       return true
     rescue Exception => e
       logger.error "Exception in BlurQueries.cancel:"

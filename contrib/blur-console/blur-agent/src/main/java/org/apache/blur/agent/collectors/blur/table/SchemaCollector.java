@@ -87,10 +87,10 @@ public class SchemaCollector implements Runnable {
 				for (ColumnDefinition def : schemaEntry.getValue().values()) {
 					Column column = new Column(def.getColumnName());
 					column.setFullText(def.isFieldLessIndexed());
-					//TODO: Is the analyzer available anymore?
-					//TODO: Add field type
+					//TODO: Rename this type
+					column.setAnalyzer(def.getFieldType());
 					//TODO: Do anything with subcolumns?
-					column.setLive(true);
+					
 					family.getColumns().add(column);
 				}
 				columnDefs.add(family);

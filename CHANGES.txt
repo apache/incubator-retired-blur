@@ -1,0 +1,155 @@
+Release 0.2.0 - 2013-09-04
+
+Release Notes - Apache Blur - Version 0.2.0
+
+** Sub-task
+    * [BLUR-101] - Create sessions in the shard servers to store indexreader between calls
+    * [BLUR-102] - Make use of the shard server sessions in the controllers.
+    * [BLUR-125] - Critical Bug - Controller client reuse could cause malformed results, incorrect results, or a variety of other bad things
+    * [BLUR-164] - Modify Blur to use new FieldTypes in Lucene 4
+    * [BLUR-165] - Allow columns to be added dynamically
+
+
+
+** Bug
+    * [BLUR-37] - QueryStatusIdList Returns All Active Queries
+    * [BLUR-66] - Fix the blur http status pages that show live metrics
+    * [BLUR-67] - Add config options for metrics reporters
+    * [BLUR-68] - Print ulimits to log during daemon startup for easier debugging
+    * [BLUR-69] - Change the thrift server implementation from Hsha to a threaded pool
+    * [BLUR-70] - Remove unused bin conf and interface dirs from root
+    * [BLUR-71] - ScoreDoc seems to create a huge amount objects during stress testing
+    * [BLUR-72] - Fetching results during query is too slow.
+    * [BLUR-74] - Make the disabling and enabling of tables blocking calls.
+    * [BLUR-76] - Create index warmup
+    * [BLUR-77] - Fix the readonly version of BlurIndex
+    * [BLUR-78] - Review the blur-shell project and make the commands work
+    * [BLUR-79] - Issue with TThreadPoolServer
+    * [BLUR-80] - Fix Max Records Issue mentioned on mail list
+    * [BLUR-81] - Create Lucene 4.x compatible escapable query rewrite
+    * [BLUR-82] - Upgrade to Lucene 4.3
+    * [BLUR-86] - ZooKeeperClient class in blur-util sessionTimeout issue
+    * [BLUR-88] - Unit test shard failover
+    * [BLUR-89] - Create simple paging for selector so that rows can be paged through
+    * [BLUR-92] - After adding a unit test for killing a shard server in BlurClusterTest, WAL has intermittent issue.
+    * [BLUR-93] - A bug was created in the transaction log reported on mail list
+    * [BLUR-99] - Console agent is marking queries complete incorrectly
+    * [BLUR-103] - Thrift Version incompatible with other projects
+    * [BLUR-106] - Potential issue with the BlurOutputFormat and the BlurPartitioner
+    * [BLUR-107] - Create checkOutputSpecs check in the BlurOutputFormat
+    * [BLUR-109] - Update the genAndReplace script in the distibution project to re-author the generated java class file.
+    * [BLUR-110] - Check all names of table, column names, etc. in the thrift service as well as the map reduce api
+    * [BLUR-116] - Blur Console: Offline status is broken on environment page
+    * [BLUR-117] - Blur Console: Cancel button doesn't display on running queries.
+    * [BLUR-119] - The cpu times on the status object is returning null.
+    * [BLUR-120] - Add an attribute to the BlurQueryStatus object to set when the status is not found instead of throwing an exception.
+    * [BLUR-123] - Add incubating to version of Blur
+    * [BLUR-124] - Create a README file that is up to date
+    * [BLUR-126] - Remove the src directory in the root of the project and let each project exist at the root.
+    * [BLUR-128] - Get the Apache License header on all the Blur-Console files
+    * [BLUR-129] - Notice file additions
+    * [BLUR-133] - Bug in the controller when new tables are coming online.
+    * [BLUR-134] - Ulimits print out in startup of both shard and controller servers is throwing an error in ubuntu linux
+    * [BLUR-138] - Facets doesn't seem to apply the pre-filter
+    * [BLUR-142] - Create IndexReader that can be exited at any time via AtomicBoolean
+    * [BLUR-143] - Field less queries don't work 
+    * [BLUR-154] - Allow the ZooKeeper session timeout to be configurable
+    * [BLUR-155] - Catch all exceptions in the WatchChildren|NodeData|NodeException.Onchange and do not let thread die
+    * [BLUR-167] - Check connection in shell make and create a nice error message
+    * [BLUR-168] - When using the shell create a nice error message when the cluster name is incorrect
+    * [BLUR-169] - SuperParser doesn't support the use of AND and OR keywords
+    * [BLUR-170] - Allow the fetchCount to be configurable in the BlurResultIterableSearcher class.
+    * [BLUR-173] - Full text search is case sensitive
+    * [BLUR-174] - Respect family order from given selector
+    * [BLUR-175] - The NOTICE and LICENSE files are not in the binary distribution
+    * [BLUR-176] - QueryStatus the hashmap needs to be made thread safe
+    * [BLUR-177] - SharedMergeScheduler close method is overloaded
+    * [BLUR-187] - NPE in IndexImporter at line 182
+    * [BLUR-188] - When a MR job is killed the tasks that have been completed are left on the FS
+    * [BLUR-189] - The BlurCsvMapper setups up the splitter before assigning the splitter string.
+    * [BLUR-191] - Change the encoding of the splitter to a base64
+    * [BLUR-192] - NPE errors in the BlurOutputFormat when the counters are not setup.
+    * [BLUR-194] - BlurOutputFormat - Prime document is being misplaced.
+    * [BLUR-195] - IndexImporter
+    * [BLUR-196] - Error during the parsing of the connection string in the Connection class.
+    * [BLUR-200] - Shell Update add connected cluster name to the prompt
+    * [BLUR-202] - Index Sampler used in the index warmup not thread safe.
+    * [BLUR-204] - Build in connection timeout settings into the client
+    * [BLUR-205] - Update the schema thrift call to return the new type system information
+    * [BLUR-217] - Jsp status pages are broken due to thrift API changes
+
+
+
+
+** Improvement
+    * [BLUR-62] - Lucene 4.2 upgrade
+    * [BLUR-63] - Automatic slab configuration
+    * [BLUR-64] - Update to use the new SuperQueryParser
+    * [BLUR-65] - Remove the BlurMetrics object and update to the new Metrics library
+    * [BLUR-83] - Create MapReduce Output Formats
+    * [BLUR-84] - Remove controller query caching.
+    * [BLUR-85] - Kill JVM on OutOfMemory Error
+    * [BLUR-91] - Add a reducer multiplier for the bluroutputformat
+    * [BLUR-94] - Optimize index in flight
+    * [BLUR-95] - IndexImporter class - add a double check on the rowid to validate the index.
+    * [BLUR-98] - Add ability to delete rows during BlurOutputFormat
+    * [BLUR-100] - Remove testsuite project and move the code
+    * [BLUR-104] - Ensure the behavior of the new super parser is the same as the behavior in 0.1.4 and less
+    * [BLUR-108] - IndexImporter class - Optimize the import by skipping the delete process.
+    * [BLUR-111] - Add a command to blur shell to echo the cluster name
+    * [BLUR-112] - Allow for types to be set on blur tables
+    * [BLUR-113] - Index the family as a special field
+    * [BLUR-114] - Optimize the row fetch code in the indexmanager to take advantage on the new family field.
+    * [BLUR-121] - Create build script to package blur source code
+    * [BLUR-147] - IndexImporter - Call tryToMerge on the indexwriter after the import has succeeded
+    * [BLUR-148] - Need to warm up new segments after NRT reloads
+    * [BLUR-149] - Map reduce index builds should fail fast
+    * [BLUR-152] - Disallow index warmup from occuring while indexes are being opened
+    * [BLUR-153] - Create a network throttle for warming up the indexes
+    * [BLUR-157] - Change the index warmup process to be in it's own thread pool
+    * [BLUR-160] - Create a back pressure feature in Blur when GC is too high.
+    * [BLUR-178] - Blur Shell Top Command flashes in a large shard cluster
+    * [BLUR-179] - Make controller batch updates parallel
+    * [BLUR-180] - Whitespace issue in the blur shell
+    * [BLUR-182] - The index memory calculation needs a massive improvement
+    * [BLUR-184] - MapReduce - Add ability to generate recordid as hash of values in record when using the CSVBlurDriver
+    * [BLUR-185] - MapReduce - Change CSVBlurMapper key type to writable instead of long writable
+    * [BLUR-186] - MapReduce - Add combine file input format into CSVBlurDriver
+    * [BLUR-190] - Add multiple inputs to the BlurCsvDriver program
+    * [BLUR-201] - Create a default table path in the blur-site configuration.
+    * [BLUR-203] - Automatically cleanup old sample files for segments that have been deleted.
+    * [BLUR-207] - Add reset command in shell to clear screen
+    * [BLUR-214] - Adds the ability to specify a stop word file for the Text field type.
+    * [BLUR-215] - Change BlurQuery.uuid to a String instead of long
+    * [BLUR-216] - Create a Date type
+
+** New Feature
+    * [BLUR-115] - Support for GIS data types
+    * [BLUR-132] - Create Index Snapshots
+    * [BLUR-144] - Add Stored field type
+    * [BLUR-146] - Add ability to have startup scripts wait for safemode exit
+    * [BLUR-171] - Create request and response log files
+
+
+
+
+
+
+** Task
+    * [BLUR-87] - Merge Blur Console into repo
+    * [BLUR-96] - Upgrade Console Agent to work with 0.1.5 apache version
+    * [BLUR-97] - Re-package blur console
+    * [BLUR-135] - NOTICE file
+    * [BLUR-206] - Add documentation pages to include in the distribution
+    * [BLUR-218] - Remove libraries from Blur Console that weren't being used
+
+
+
+** Test
+    * [BLUR-219] - Need to try Blur Console with 0.2
+
+
+** Wish
+    * [BLUR-127] - Term highlighting for search results
+
+

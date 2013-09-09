@@ -242,7 +242,8 @@ under the License.
 						<exclude>**/.project</exclude>
 						<exclude>**/.settings/**</exclude>
 						
-						<!-- These javascript libs are accounted for in the LICENSE file -->
+						<!-- These javascript libs are accounted for in the 
+						LICENSE-src file in distribution/src/main/resources -->
 						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/d3/**</exclude>
 						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/backbone/**</exclude>
 						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/flot/**</exclude>
@@ -250,18 +251,44 @@ under the License.
 						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/modernizr.js</exclude>
 						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/sorttable.js</exclude>
 						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/underscore.js</exclude>
-						<exclude>docs/resources/js/docs.js</exclude>
-						<exclude>docs/resources/js/jquery-2.0.3.min.js</exclude>
-						<exclude>docs/resources/js/respond.min.js</exclude>
-						
+						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/datatables.fnReloadAjax.js</exclude>
 						
 						<!-- These css libs are accounted for in the LICENSE file -->
 						<exclude>contrib/blur-console/blur-admin/vendor/assets/stylesheets/jquery*.css</exclude>
 						<exclude>contrib/blur-console/blur-admin/vendor/assets/stylesheets/ui.dynatree.css</exclude>
-						<exclude>docs/resources/css/bs-docs.css</exclude>
 						
 						<!-- Ruby gems -->
 						<exclude>contrib/blur-console/blur-admin/vendor/gems/cancan/**</exclude>
+						
+						<!-- Generated during the rail build process in the blur-admin project -->
+						<exclude>contrib/blur-console/blur-admin/Gemfile.lock</exclude>
+						
+						<!-- Contains a list of english words that are used for load testing, adding a header 
+						would make the simple parsers more complex -->
+						<exclude>**/src/main/resources/org/apache/blur/thrift/util/words.txt</exclude>
+						
+						<!-- These javascript libs are accounted for in the 
+						LICENSE file in root of the project -->
+						<exclude>**/src/main/webapp/js/d3.v2.js</exclude>
+						<exclude>**/src/main/webapp/js/d3.v2.min.js</exclude>
+						
+						<!-- License and Notice files for Blur -->
+						<exclude>**/src/main/resources/license-bin.noinclude</exclude>
+						<exclude>**/src/main/resources/license-notes.txt</exclude>
+						<exclude>**/src/main/resources/NOTICE-src.txt</exclude>
+						
+						<!-- Default configuration files used by Blur -->
+						<exclude>**/src/main/scripts/conf/controllers</exclude>
+						<exclude>**/src/main/scripts/conf/default_zoo.cfg</exclude>
+						<exclude>**/src/main/scripts/conf/shards</exclude>
+						<exclude>**/src/main/scripts/conf/zookeepers</exclude>
+						
+						<!-- Generate by Thrift -->
+						<exclude>**/src/main/scripts/interface/gen-html/Blur.html</exclude>
+						<exclude>**/src/main/scripts/interface/gen-html/index.html</exclude>
+						
+						<!-- Used to create empty directories in git -->
+                        <exclude>**/.empty</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

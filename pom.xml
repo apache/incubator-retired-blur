@@ -232,15 +232,36 @@ under the License.
 				<version>0.9</version>
 				<configuration>
 					<excludes>
-						<!--exclude>**/generated/**</exclude> <exclude>**/*min.js</exclude> 
-							<exclude>**/input-data/*.txt</exclude> <exclude>**/testsuite/words.txt</exclude -->
+						<exclude>LICENSE</exclude>
+						<exclude>CHANGES.txt</exclude>
+						<exclude>DISCLAIMER</exclude>
+						<exclude>NOTICE</exclude>
+						<exclude>README</exclude>
 						<exclude>**/README.textile</exclude>
 						<exclude>**/.classpath</exclude>
 						<exclude>**/.project</exclude>
 						<exclude>**/.settings/**</exclude>
-						<exclude>**/site/**</exclude>
-						<exclude>**/*.png</exclude>                                             
-						<exclude>**/*.gif</exclude>
+						
+						<!-- These javascript libs are accounted for in the LICENSE file -->
+						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/d3/**</exclude>
+						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/backbone/**</exclude>
+						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/flot/**</exclude>
+						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/jquery.*.js</exclude>
+						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/modernizr.js</exclude>
+						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/sorttable.js</exclude>
+						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/underscore.js</exclude>
+						<exclude>docs/resources/js/docs.js</exclude>
+						<exclude>docs/resources/js/jquery-2.0.3.min.js</exclude>
+						<exclude>docs/resources/js/respond.min.js</exclude>
+						
+						
+						<!-- These css libs are accounted for in the LICENSE file -->
+						<exclude>contrib/blur-console/blur-admin/vendor/assets/stylesheets/jquery*.css</exclude>
+						<exclude>contrib/blur-console/blur-admin/vendor/assets/stylesheets/ui.dynatree.css</exclude>
+						<exclude>docs/resources/css/bs-docs.css</exclude>
+						
+						<!-- Ruby gems -->
+						<exclude>contrib/blur-console/blur-admin/vendor/gems/cancan/**</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

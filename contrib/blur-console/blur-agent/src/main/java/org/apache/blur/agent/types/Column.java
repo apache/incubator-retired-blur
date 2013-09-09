@@ -59,7 +59,7 @@ public class Column {
 	}
 
 	public boolean isSearchable() {
-		return (this.analyzer != null && this.analyzer != "");
+		return !"stored".equalsIgnoreCase(this.analyzer);
 	}
 
 	@Override

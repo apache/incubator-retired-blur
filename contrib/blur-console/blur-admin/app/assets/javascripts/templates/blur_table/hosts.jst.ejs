@@ -17,20 +17,22 @@
     under the License.
 -->
 <% if (hosts) { %>
-  <div class="hosts table_info_tree">
-    <b>Hosts</b>
-    <ul>
-      <% _.each(hosts, function(shards, host){ %>
-        <li class="host" id="<%= host %>">
-          <a href=""><%= host %></a>
-          <ul>
-            <% _.each(shards, function(shard){ %>
-              <li class="shard"><%= shard %></li>
-            <% }); %>
-          </ul>
-        </li>
-      <% }); %>
-    </ul>
+  <div class="host_wrap">
+    <h4>Hosts</h4>
+    <div class="hosts table_info_tree">
+      <ul>
+        <% _.each(hosts, function(shards, host){ %>
+          <li>
+            <a href=""><%= host %></a>
+            <ul>
+              <% _.each(shards, function(shard){ %>
+                <li><%= shard %></li>
+              <% }); %>
+            </ul>
+          </li>
+        <% }); %>
+      </ul>
+    </div>
   </div>
 <% } else { %>
   <div>Not Available</div>

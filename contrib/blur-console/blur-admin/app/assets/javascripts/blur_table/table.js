@@ -120,7 +120,7 @@ var TableView = Backbone.View.extend({
       url: Routes.hosts_blur_table_path(this.model.get('id'), {format: 'json'}) ,
       success: _.bind(function(data){
         var host_modal = $(JST['templates/blur_table/hosts']({table: this.model, hosts: data}));
-        this.setup_filter_tree(host_modal);
+        this.setup_filter_tree(host_modal.find('.table_info_tree'));
         $().popup({
           title: 'Additional Host/Shard Info',
           titleClass: 'title',

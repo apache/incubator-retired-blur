@@ -80,12 +80,16 @@ class BlurTable < ActiveRecord::Base
   end
 
   def terms(blur_urls,family,column,startWith,size)
-    BlurThriftClient.client(blur_urls).terms(self.table_name, family, column, startWith, size)
+    ActiveSupport::Notifications.instrument "terms.blur", :urls => blur_urls, :family => family, :column => column, :starter => startWith, :size => size do
+      BlurThriftClient.client(blur_urls).terms(self.table_name, family, column, startWith, size)
+    end
   end
 
   def enable(blur_urls)
     begin
-      BlurThriftClient.client(blur_urls).enableTable self.table_name
+      ActiveSupport::Notifications.instrument "enable.blur", :urls => blur_urls, :table => self.table_name do
+        BlurThriftClient.client(blur_urls).enableTable self.table_name
+      end
     ensure
       return self.is_enabled?
     end
@@ -93,7 +97,9 @@ class BlurTable < ActiveRecord::Base
 
   def disable(blur_urls)
     begin
-      BlurThriftClient.client(blur_urls).disableTable self.table_name
+      ActiveSupport::Notifications.instrument "disable.blur", :urls => blur_urls, :table => self.table_name do
+        BlurThriftClient.client(blur_urls).disableTable self.table_name
+      end
     ensure
       return self.is_disabled?
     end
@@ -101,7 +107,9 @@ class BlurTable < ActiveRecord::Base
 
   def blur_destroy(underlying=false, blur_urls)
     begin
-      BlurThriftClient.client(blur_urls).removeTable self.table_name, underlying
+      ActiveSupport::Notifications.instrument "destroy.blur", :urls => blur_urls, :table => self.table_name, :underlying => underlying do
+        BlurThriftClient.client(blur_urls).removeTable self.table_name, underlying
+      end
       return true
     rescue
       return false

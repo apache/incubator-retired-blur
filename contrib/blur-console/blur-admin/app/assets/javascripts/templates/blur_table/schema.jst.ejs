@@ -25,17 +25,16 @@
       <ul>
         <% _.each(schema, function(family){ %>
           <li>
-            <a href="#"><%= family.name + ' (' + table.get('table_analyzer') + ')'%></a>
+            <a href="#"><%= family.name %></a>
             <ul>
               <% _.each(family.columns, function(column){ %>
                 <li>
                   <a href="#"><%= column.name %></a>
                   <ul>
-                    <li><a href="#">Has Data?: <%= column.live %></a></li>
                     <li><a href="#">Searchable?: <%= column.searchable %></a></li>
-                    <li><a href="#">Analyzer: <%= column.analyzer %></a></li>
+                    <li><a href="#">Type: <%= column.analyzer %></a></li>
                     <li><a href="#">Full Text?: <%= column.fullText %></a></li>
-                    <% if(column.live && column.searchable) { %>
+                    <% if(column.searchable) { %>
                       <li data-family_name="<%= family.name%>" data-column_name="<%= column.name %>">
                         <a href="#">
                           <span class="terms" data-family-name="<%= family.name %>" data-column-name="<%= column.name %>">

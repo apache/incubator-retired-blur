@@ -103,6 +103,13 @@ under the License.
       </excludes>
     </fileSet>
     <fileSet>
+      <directory>${project.build.scriptSourceDirectory}/../../../../target/staging</directory>
+      <outputDirectory>apache-blur-${project.version}/docs/site</outputDirectory>
+      <excludes>
+        <exclude>**/.empty</exclude>
+      </excludes>
+    </fileSet>
+    <fileSet>
       <directory>${project.build.scriptSourceDirectory}/../../../../</directory>
       <outputDirectory>apache-blur-${project.version}/</outputDirectory>
       <includes>

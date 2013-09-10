@@ -16,6 +16,10 @@ package org.apache.blur.log;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+/**
+ * 
+ */
 public interface Log extends org.apache.commons.logging.Log {
 
   public void trace(Object message, Object... args);

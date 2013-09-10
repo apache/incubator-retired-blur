@@ -16,6 +16,10 @@ package org.apache.blur.metrics;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+/**
+ * 
+ */
 public class MetricsConstants {
   public static final String LUCENE = "Lucene";
   public static final String BLUR = "Blur";

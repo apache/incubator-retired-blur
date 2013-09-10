@@ -16,6 +16,10 @@ package org.apache.blur.jdbc;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+/**
+ * 
+ */
 public class QueryData {
 
   protected String name;

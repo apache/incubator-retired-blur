@@ -16,6 +16,10 @@ package org.apache.blur.analysis;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+/**
+ * 
+ */
 public class AnalyzerNotFoundException extends RuntimeException {
 
   private static final long serialVersionUID = -1669681684004161773L;

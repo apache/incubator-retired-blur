@@ -16,6 +16,10 @@ package org.apache.blur.log;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+/**
+ * 
+ */
 public class LogFactory {
 
   public static Log getLog(Class<?> c) {

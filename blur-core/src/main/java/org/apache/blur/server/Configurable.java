@@ -16,6 +16,10 @@ package org.apache.blur.server;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+/**
+ * 
+ */
 public interface Configurable {
 
   public void setTableContext(TableContext context);

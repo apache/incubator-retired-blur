@@ -17,6 +17,9 @@ package org.apache.blur.utils;
  * the License.
  */
 
+/**
+ * 
+ */
 public interface BlurIterator<T, E extends Exception> {
 
   public boolean hasNext() throws E;

@@ -30,6 +30,10 @@ import com.yammer.metrics.reporting.GraphiteReporter;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+/**
+ * 
+ */
 public abstract class ReporterSetup {
 
   private static final Log LOG = LogFactory.getLog(ReporterSetup.class);

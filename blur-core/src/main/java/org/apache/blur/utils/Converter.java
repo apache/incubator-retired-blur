@@ -16,6 +16,10 @@ package org.apache.blur.utils;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+/**
+ * 
+ */
 public interface Converter<F, T, E extends Exception> {
   T convert(F from) throws E;
 }

@@ -291,6 +291,14 @@ under the License.
                         <exclude>**/.empty</exclude>
 					</excludes>
 				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 

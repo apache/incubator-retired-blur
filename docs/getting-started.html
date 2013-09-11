@@ -102,7 +102,7 @@ cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys</code></pre>
             <h3>Download full source</h3>
             <p>
               Until a full release has been made, please download the latest full source code and look in the <code>/distribution</code> folder.
-              <a href="https://git-wip-us.apache.org/repos/asf/incubator-blur.git" class="btn btn-large btn-primary">Download Latest Apache Blur 0.3.0</a>
+              <a href="https://git-wip-us.apache.org/repos/asf/incubator-blur.git" class="btn btn-large btn-primary">Download Latest Apache Blur 0.2.0</a>
             </p>
           </section>
           <section>
@@ -117,7 +117,7 @@ cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys</code></pre>
             <p>Build the artifacts (if you want to run the tests remove the "-DskipTests")</p>
             <pre><code class="bash">cd incubator-blur/
 mvn install -DskipTests -P distribution</code></pre>
-            <p>The binary artifact is located <code>distribution/target/apache-blur-0.3.0-incubating-SNAPSHOT-bin.tar.gz</code>.</p>
+            <p>The binary artifact is located <code>distribution/target/apache-blur-0.2.0-incubating-SNAPSHOT-bin.tar.gz</code>.</p>
           </section>
           <section>
             <div class="page-header">
@@ -158,12 +158,12 @@ mvn install -DskipTests -P distribution</code></pre>
             <p>
               You should see:
             </p>
-            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.3.0-incubating/bin/start-all.sh 
+            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.2.0-incubating/bin/start-all.sh 
 localhost: ZooKeeper starting as process 6650.
 localhost: Shard [0] starting as process 6783.
 localhost: Controller [0] starting as process 6933.</code></pre>
             <p>If you run the start command again you should see:</p>
-            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.3.0-incubating/bin/stop-all.sh 
+            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.2.0-incubating/bin/stop-all.sh 
 localhost: Stopping Controller [0] server with pid [6933].
 localhost: Stopping Shard [0] server with pid [6783].
 localhost: Stopping ZooKeeper with pid [6650].</code></pre>

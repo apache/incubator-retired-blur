@@ -22,13 +22,12 @@ under the License.
   <id>src</id>
   <formats>
     <format>tar.gz</format>
-    <format>zip</format>
   </formats>
   <includeBaseDirectory>false</includeBaseDirectory>
   <fileSets>
     <fileSet>
       <directory>${project.parent.basedir}</directory>
-      <outputDirectory>apache-blur-${project.version}</outputDirectory>
+      <outputDirectory>apache-blur-${project.version}-src</outputDirectory>
       <excludes>
         <exclude>**/.empty</exclude>
         <exclude>**/target/**</exclude>
@@ -38,12 +37,12 @@ under the License.
   <files>
     <file>
       <source>src/main/resources/NOTICE-src.txt</source>
-      <outputDirectory>apache-blur-${project.version}</outputDirectory>
+      <outputDirectory>apache-blur-${project.version}-src</outputDirectory>
       <destName>NOTICE</destName>
     </file>
     <file>
       <source>src/main/resources/LICENSE-src.txt</source>
-      <outputDirectory>apache-blur-${project.version}</outputDirectory> 
+      <outputDirectory>apache-blur-${project.version}-src</outputDirectory>
       <destName>LICENSE</destName>
     </file>
   </files>    

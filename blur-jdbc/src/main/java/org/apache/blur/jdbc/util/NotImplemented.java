@@ -16,6 +16,10 @@ package org.apache.blur.jdbc.util;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+/**
+ * 
+ */
 public class NotImplemented extends RuntimeException {
 
   public static final String BLUR_JDBC_DEBUG = "blur.jdbc.debug";

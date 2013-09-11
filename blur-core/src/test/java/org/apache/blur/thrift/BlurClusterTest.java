@@ -150,7 +150,7 @@ public class BlurClusterTest {
     BlurResults resultsRecord = client.query("test", blurQueryRecord);
     assertRecordResults(resultsRecord);
     assertEquals(length, resultsRecord.getTotalResults());
-    
+
     Schema schema = client.schema("test");
     assertFalse(schema.getFamilies().isEmpty());
   }
@@ -304,6 +304,15 @@ public class BlurClusterTest {
 
     assertEquals(length, client.query("test", blurQuery).getTotalResults());
 
+  }
+
+  @Test
+  public void testTermsList() throws BlurException, TException {
+    Iface client = getClient();
+    List<String> terms = client.terms("test", "test", "test", null, (short) 10);
+    List<String> list = new ArrayList<String>();
+    list.add("value");
+    assertEquals(list, terms);
   }
 
   private void assertRowResults(BlurResults results) {

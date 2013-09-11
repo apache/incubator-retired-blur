@@ -17,6 +17,9 @@ package org.apache.blur.utils;
  * the License.
  */
 
+/**
+ * 
+ */
 public class IterableConverter<F, T, E extends Exception> implements BlurIterable<T, E> {
 
   private Converter<F, T, E> converter;

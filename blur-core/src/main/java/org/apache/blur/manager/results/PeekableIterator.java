@@ -20,6 +20,9 @@ import org.apache.blur.utils.BlurIterator;
  * limitations under the License.
  */
 
+/**
+ * 
+ */
 public class PeekableIterator<T, E extends Exception> implements BlurIterator<T, E> {
 
   private final BlurIterator<T, E> _iterator;

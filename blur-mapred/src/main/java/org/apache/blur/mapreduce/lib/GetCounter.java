@@ -18,6 +18,10 @@ import org.apache.hadoop.mapreduce.Counter;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+/**
+ * 
+ */
 public interface GetCounter {
   
   Counter getCounter(Enum<?> counterName);

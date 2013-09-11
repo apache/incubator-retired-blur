@@ -16,6 +16,10 @@ package org.apache.blur.utils;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+/**
+ * 
+ */
 public interface ClassNameFilter {
 
   boolean include(String className);

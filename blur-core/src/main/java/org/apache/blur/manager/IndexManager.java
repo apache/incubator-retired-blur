@@ -715,6 +715,9 @@ public class IndexManager {
 
   public static List<String> terms(IndexReader reader, String columnFamily, String columnName, String startWith,
       short size) throws IOException {
+    if (startWith == null) {
+      startWith = "";
+    }
     Term term = getTerm(columnFamily, columnName, startWith);
     List<String> terms = new ArrayList<String>(size);
     AtomicReader areader = BlurUtil.getAtomicReader(reader);

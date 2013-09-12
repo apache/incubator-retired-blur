@@ -132,7 +132,7 @@ public class TermsDataCommand extends Command implements TableFirstArgCommand {
         .withDescription("The value to start with.").create("s"));
     options.addOption(OptionBuilder.withArgName("size").hasArg()
         .withDescription("The number of terms to return.").create("n"));
-    options.addOption(OptionBuilder.withDescription("The frequency of each term.").create("F"));
+    options.addOption(OptionBuilder.withDescription("Get the frequency of each term.").create("F"));
 
     CommandLineParser parser = new PosixParser();
     CommandLine cmd = null;

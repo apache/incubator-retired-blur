@@ -605,7 +605,10 @@ public class BlurUtil {
   public static boolean createPath(FileSystem fileSystem, Path path) throws IOException {
     if (!fileSystem.exists(path)) {
       LOG.info("Path [{0}] does not exist, creating.", path);
-      fileSystem.mkdirs(path);
+      if (!fileSystem.mkdirs(path)) {
+        LOG.error("Path [{0}] was NOT created, make sure that you have correct permissions.", path);
+        throw new IOException("Path [{0}] was NOT created, make sure that you have correct permissions.");
+      }
       return false;
     }
     return true;

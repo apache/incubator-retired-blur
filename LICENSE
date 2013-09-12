@@ -203,41 +203,68 @@
 
 ==========================================================================
 The Apache License, Version 2.0 applies to the following included libraries:
-ConcurrentLinkedHashMap
-./lib/concurrentlinkedhashmap-lru-1.3.2.jar
-Data Mapper for Jackson
-./lib/hadoop-1.2.1/lib/jackson-mapper-asl-1.8.8.jar
-Guava: Google Core Libraries for Java
-./lib/guava-14.0.jar
-Jackson-annotations
-./lib/jackson-annotations-2.1.1.jar
-Jackson-core 
-./lib/hadoop-1.2.1/lib/jackson-core-asl-1.7.1.jar
-./lib/jackson-core-2.1.1.jar
-jackson-databind
-./lib/jackson-databind-2.1.1.jar
-Jackson-XC
-./lib/hadoop-1.2.1/lib/jackson-xc-1.7.1.jar
-Jackson-jaxrs
-./lib/hadoop-1.2.1/lib/jackson-jaxrs-1.7.1.jar
-Jetty Server
-./lib/hadoop-1.2.1/lib/jetty-6.1.26.jar
-Jetty Utilities
-./lib/hadoop-1.2.1/lib/jetty-util-6.1.26.jar
-Metrics Core Library
-./lib/metrics-core-2.2.0.jar
-Metrics Ganglia Support
-./lib/metrics-ganglia-2.2.0.jar
-Metrics Graphite Support
-./lib/metrics-graphite-2.2.0.jar
-Metrics Servlet
-./lib/metrics-servlet-2.2.0.jar
-The Netty Project
-./lib/hadoop-1.2.1/lib/netty-3.2.2.Final.jar
-Spatial4J
-./lib/spatial4j-0.3.jar
-JetS3t
-./lib/hadoop-1.2.1/lib/jets3t-0.6.1.jar
+
+./lib/blur-core-0.2.0-incubating-SNAPSHOT.jar ALv2
+./lib/blur-gui-0.2.0-incubating-SNAPSHOT.jar ALv2
+./lib/blur-mapred-0.2.0-incubating-SNAPSHOT.jar ALv2
+./lib/blur-query-0.2.0-incubating-SNAPSHOT.jar ALv2
+./lib/blur-shell-0.2.0-incubating-SNAPSHOT.jar ALv2
+./lib/blur-store-0.2.0-incubating-SNAPSHOT.jar ALv2
+./lib/blur-thrift-0.2.0-incubating-SNAPSHOT.jar ALv2
+./lib/blur-util-0.2.0-incubating-SNAPSHOT.jar ALv2
+./lib/commons-cli-1.2.jar ALv2
+./lib/concurrentlinkedhashmap-lru-1.3.2.jar ALv2
+./lib/guava-14.0.jar ALv2
+./lib/hadoop-1.2.1/hadoop-core-1.2.1.jar ALv2
+./lib/hadoop-1.2.1/lib/ant-1.6.5.jar ALv2
+./lib/hadoop-1.2.1/lib/commons-beanutils-1.7.0.jar ALv2
+./lib/hadoop-1.2.1/lib/commons-beanutils-core-1.8.0.jar ALv2
+./lib/hadoop-1.2.1/lib/commons-codec-1.4.jar ALv2
+./lib/hadoop-1.2.1/lib/commons-collections-3.2.1.jar ALv2
+./lib/hadoop-1.2.1/lib/commons-configuration-1.6.jar ALv2
+./lib/hadoop-1.2.1/lib/commons-digester-1.8.jar ALv2
+./lib/hadoop-1.2.1/lib/commons-el-1.0.jar ALv2
+./lib/hadoop-1.2.1/lib/commons-httpclient-3.0.1.jar ALv2
+./lib/hadoop-1.2.1/lib/commons-io-2.1.jar ALv2
+./lib/hadoop-1.2.1/lib/commons-lang-2.4.jar ALv2
+./lib/hadoop-1.2.1/lib/commons-logging-1.1.1.jar ALv2
+./lib/hadoop-1.2.1/lib/commons-math-2.1.jar ALv2
+./lib/hadoop-1.2.1/lib/commons-net-1.4.1.jar ALv2
+./lib/hadoop-1.2.1/lib/core-3.1.1.jar ALv2
+./lib/hadoop-1.2.1/lib/hadoop-core-1.2.1.jar ALv2
+./lib/hadoop-1.2.1/lib/jackson-core-asl-1.7.1.jar ALv2
+./lib/hadoop-1.2.1/lib/jackson-jaxrs-1.7.1.jar ALv2
+./lib/hadoop-1.2.1/lib/jackson-mapper-asl-1.8.8.jar ALv2
+./lib/hadoop-1.2.1/lib/jackson-xc-1.7.1.jar ALv2
+./lib/hadoop-1.2.1/lib/jakarta-regexp-1.4.jar ALv2
+./lib/hadoop-1.2.1/lib/jasper-compiler-5.5.12.jar ALv2
+./lib/hadoop-1.2.1/lib/jasper-runtime-5.5.12.jar ALv2
+./lib/hadoop-1.2.1/lib/jets3t-0.6.1.jar ALv2
+./lib/hadoop-1.2.1/lib/jetty-6.1.26.jar ALv2
+./lib/hadoop-1.2.1/lib/jetty-util-6.1.26.jar ALv2
+./lib/hadoop-1.2.1/lib/netty-3.2.2.Final.jar ALv2
+./lib/hadoop-1.2.1/lib/oro-2.0.8.jar ALv2
+./lib/httpclient-4.1.3.jar ALv2
+./lib/httpcore-4.1.4.jar ALv2
+./lib/jackson-annotations-2.1.1.jar ALv2
+./lib/jackson-core-2.1.1.jar ALv2
+./lib/jackson-databind-2.1.1.jar ALv2
+./lib/log4j-1.2.15.jar ALv2
+./lib/lucene-analyzers-common-4.3.0.jar ALv2
+./lib/lucene-codecs-4.3.0.jar ALv2
+./lib/lucene-core-4.3.0.jar ALv2
+./lib/lucene-highlighter-4.3.0.jar ALv2
+./lib/lucene-memory-4.3.0.jar ALv2
+./lib/lucene-queries-4.3.0.jar ALv2
+./lib/lucene-queryparser-4.3.0.jar ALv2
+./lib/lucene-sandbox-4.3.0.jar ALv2
+./lib/lucene-spatial-4.3.0.jar ALv2
+./lib/metrics-core-2.2.0.jar ALv2
+./lib/metrics-ganglia-2.2.0.jar ALv2
+./lib/metrics-graphite-2.2.0.jar ALv2
+./lib/metrics-servlet-2.2.0.jar ALv2
+./lib/spatial4j-0.3.jar ALv2
+./lib/zookeeper-3.4.5.jar ALv2
 
 ==========================================================================
 The following license applies to the following libraries: 

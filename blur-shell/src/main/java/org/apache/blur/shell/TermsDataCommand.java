@@ -59,69 +59,56 @@ public class TermsDataCommand extends Command implements TableFirstArgCommand {
   }
 
   private void doitInternal(PrintWriter outPw, Blur.Iface client, String[] args) throws FinishedException,
-      BlurException, TException{
-      PagingPrintWriter out = new PagingPrintWriter(outPw);
-      CommandLine cmd = parse(args, outPw);
-      /*
-      #then this starts displaying all the row ids in the system
-      terms testtable rowid
-      #This command starts displaying all the terms for column "col1" in family "fam0"in the system
-      terms testtable fam0.col1
-      #This command starts displaying all the terms for column "col1" in family "fam0"in the system starting at "value1"
-      terms testtable fam0.col1 -s value1
-      #This command starts displaying all the terms for column "col1" in family "fam0"in the system starting at "value1" fetch 100 then exit
-      terms testtable fam0.col1 -s value1 -n 100
-      */
-      String tablename = args[1];
-      String namePlusValue = args[2];
-      String family = null;
-      String column = namePlusValue;
-      String startWith = "";
-      short size = 100;
+    BlurException, TException{
+    PagingPrintWriter out = new PagingPrintWriter(outPw);
+    CommandLine cmd = parse(args, outPw);
+
+    String tablename = args[1];
+    String familyPlusColumn = args[2];
+    String family = null;
+    String column = familyPlusColumn;
+    String startWith = "";
+    short size = 100;
       
         
-      if (namePlusValue.contains(".")){
-        int index = namePlusValue.indexOf(".");
-        family = namePlusValue.substring(0, index);
-        column = namePlusValue.substring(index + 1);
+    if (familyPlusColumn.contains(".")){
+      int index = familyPlusColumn.indexOf(".");
+      family = familyPlusColumn.substring(0, index);
+      column = familyPlusColumn.substring(index + 1);
+    }
+
+    if (cmd.hasOption("n")){
+      size = Short.parseShort(cmd.getOptionValue("n"));
+    }
+
+    if (cmd.hasOption("s")){
+      startWith = cmd.getOptionValue("s");
+    }
+
+    boolean checkFreq = false;
+    if (cmd.hasOption("F")){
+      checkFreq = true;
+    }
+
+    int maxWidth = 100;
+    ConsoleReader reader = getConsoleReader();
+    if (reader != null) {
+      Terminal terminal = reader.getTerminal();
+      maxWidth = terminal.getWidth() - 15;
+      out.setLineLimit(terminal.getHeight() - 2);
+    }
+
+    List<String> terms = client.terms(tablename,family,column,startWith,size);
+    for (int i=0;i<terms.size(); i++){
+      if (checkFreq){
+        out.println(terms.get(i)+"\t"+client.recordFrequency(tablename,family,column,terms.get(i)));
       }
-
-      if (cmd.hasOption("n")){
-        size = Short.parseShort(cmd.getOptionValue("n"));
-      }
-
-      if (cmd.hasOption("s")){
-        startWith = cmd.getOptionValue("s");
-        out.println("startWith:"+startWith);
-      }
-
-      boolean checkFreq = false;
-      if (cmd.hasOption("F")){
-        checkFreq = true;
-      }
-
-      int maxWidth = 100;
-      ConsoleReader reader = getConsoleReader();
-      if (reader != null) {
-        Terminal terminal = reader.getTerminal();
-        maxWidth = terminal.getWidth() - 15;
-        out.setLineLimit(terminal.getHeight() - 2);
-      }
-
-
-
-      //todo print line by line. also break input at certain amount
-      List<String> terms = client.terms(tablename,family,column,startWith,size);
-      for (int i=0;i<terms.size(); i++){
-        if (checkFreq){
-            out.println(terms.get(i)+"\t"+client.recordFrequency(tablename,family,column,terms.get(i)));
-        }
-        else
-        {
-           out.println(terms.get(i));
-        }
+      else
+      {
+        out.println(terms.get(i));
       }
     }
+  }
 
   @Override
   public String description() {

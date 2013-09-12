@@ -63,8 +63,8 @@ public class TermsDataCommand extends Command implements TableFirstArgCommand {
     short size = 100;
     
       
-    if (namePlusValue.contains(":")){
-      int index = namePlusValue.indexOf(":");
+    if (namePlusValue.contains(".")){
+      int index = namePlusValue.indexOf(".");
       family = namePlusValue.substring(0, index);
       column = namePlusValue.substring(index + 1);
     }
@@ -86,9 +86,12 @@ public class TermsDataCommand extends Command implements TableFirstArgCommand {
     //todo print line by line. also break input at certain amount
     List<String> terms = client.terms(tablename,family,column,startWith,size);
     for (int i=0;i<terms.size(); i++){
-      out.println(terms.get(i));
       if (checkFreq){
-          out.println("\t"+client.recordFrequency(tablename,family,column,terms.get(i)));
+          out.println(terms.get(i)+"\t"+client.recordFrequency(tablename,family,column,terms.get(i)));
+      }
+      else
+      {
+         out.println(terms.get(i));
       }
     }
   }
@@ -115,8 +118,7 @@ public class TermsDataCommand extends Command implements TableFirstArgCommand {
         .withDescription("The value to start with.").create("s"));
     options.addOption(OptionBuilder.withArgName("size").hasArg()
         .withDescription("The number of terms to return.").create("n"));
-    options.addOption(OptionBuilder.withArgName("frequency").hasArg()
-        .withDescription("The frequency of each term.").create("F"));
+    options.addOption(OptionBuilder.withDescription("The frequency of each term.").create("F"));
 
     CommandLineParser parser = new PosixParser();
     CommandLine cmd = null;

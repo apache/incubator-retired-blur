@@ -275,6 +275,7 @@ under the License.
 						<!-- License and Notice files for Blur -->
 						<exclude>**/src/main/resources/license-notes.txt</exclude>
 						<exclude>**/src/main/resources/NOTICE-src.txt</exclude>
+						<exclude>**/src/main/resources/NOTICE-bin.txt</exclude>
 						
 						<!-- Default configuration files used by Blur -->
 						<exclude>**/src/main/scripts/conf/controllers</exclude>

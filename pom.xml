@@ -273,7 +273,6 @@ under the License.
 						<exclude>**/src/main/webapp/js/d3.v2.min.js</exclude>
 						
 						<!-- License and Notice files for Blur -->
-						<exclude>**/src/main/resources/license-bin.noinclude</exclude>
 						<exclude>**/src/main/resources/license-notes.txt</exclude>
 						<exclude>**/src/main/resources/NOTICE-src.txt</exclude>
 						

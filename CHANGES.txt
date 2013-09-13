@@ -1,4 +1,4 @@
-Release 0.2.0 - 2013-09-04
+Release 0.2.0 - 2013-09-13
 
 Release Notes - Apache Blur - Version 0.2.0
 
@@ -145,11 +145,8 @@ Release Notes - Apache Blur - Version 0.2.0
 
 
 
-** Test
-    * [BLUR-219] - Need to try Blur Console with 0.2
 
 
 ** Wish
     * [BLUR-127] - Term highlighting for search results
-
 

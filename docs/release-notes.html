@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<!-- 
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+  
+       http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- Header for Release Notes -->
+<html>
+  <head>
+    <title>Apache Blur (Incubator) Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="resources/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="resources/css/bs-docs.css" rel="stylesheet" media="screen">
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="http://incubator.apache.org/blur">Apache Blur (Incubator)</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+	        <li><a href="index.html">Main</a></li>
+            <li><a href="getting-started.html">Getting Started</a></li>
+            <li><a href="data-model.html">Data Model</a></li>
+            <li><a href="cluster-setup.html">Cluster Setup</a></li>
+            <li><a href="using-blur.html">Using Blur</a></li>
+            <li><a href="Blur.html">Blur API</a></li>
+			<li><a href="site/index.html" target="_blank">Maven Site</a></li>
+			<li><a href="site/apidocs/index.html" target="_blank">Javadocs</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="jumbotron">
+        <h1>Apache Blur (Incubator)</h1>
+        <p>
+<!-- Header for Release Notes -->
+
+
+        Release Notes - Apache Blur - Version 0.2.0
+    
+<h2>        Sub-task
+</h2>
+<ul>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-101'>BLUR-101</a>] -         Create sessions in the shard servers to store indexreader between calls
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-102'>BLUR-102</a>] -         Make use of the shard server sessions in the controllers.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-125'>BLUR-125</a>] -         Critical Bug - Controller client reuse could cause malformed results, incorrect results, or a variety of other bad things
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-164'>BLUR-164</a>] -         Modify Blur to use new FieldTypes in Lucene 4
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-165'>BLUR-165</a>] -         Allow columns to be added dynamically
+</li>
+</ul>
+            
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-37'>BLUR-37</a>] -         QueryStatusIdList Returns All Active Queries
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-66'>BLUR-66</a>] -         Fix the blur http status pages that show live metrics
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-67'>BLUR-67</a>] -         Add config options for metrics reporters
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-68'>BLUR-68</a>] -         Print ulimits to log during daemon startup for easier debugging
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-69'>BLUR-69</a>] -         Change the thrift server implementation from Hsha to a threaded pool
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-70'>BLUR-70</a>] -         Remove unused bin conf and interface dirs from root
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-71'>BLUR-71</a>] -         ScoreDoc seems to create a huge amount objects during stress testing
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-72'>BLUR-72</a>] -         Fetching results during query is too slow.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-74'>BLUR-74</a>] -         Make the disabling and enabling of tables blocking calls.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-76'>BLUR-76</a>] -         Create index warmup
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-77'>BLUR-77</a>] -         Fix the readonly version of BlurIndex
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-78'>BLUR-78</a>] -         Review the blur-shell project and make the commands work
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-79'>BLUR-79</a>] -         Issue with TThreadPoolServer
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-80'>BLUR-80</a>] -         Fix Max Records Issue mentioned on mail list
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-81'>BLUR-81</a>] -         Create Lucene 4.x compatible escapable query rewrite
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-82'>BLUR-82</a>] -         Upgrade to Lucene 4.3
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-86'>BLUR-86</a>] -         ZooKeeperClient class in blur-util sessionTimeout issue
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-88'>BLUR-88</a>] -         Unit test shard failover
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-89'>BLUR-89</a>] -         Create simple paging for selector so that rows can be paged through
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-92'>BLUR-92</a>] -         After adding a unit test for killing a shard server in BlurClusterTest, WAL has intermittent issue.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-93'>BLUR-93</a>] -         A bug was created in the transaction log reported on mail list
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-99'>BLUR-99</a>] -         Console agent is marking queries complete incorrectly
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-103'>BLUR-103</a>] -         Thrift Version incompatible with other projects
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-106'>BLUR-106</a>] -         Potential issue with the BlurOutputFormat and the BlurPartitioner
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-107'>BLUR-107</a>] -         Create checkOutputSpecs check in the BlurOutputFormat
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-109'>BLUR-109</a>] -         Update the genAndReplace script in the distibution project to re-author the generated java class file.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-110'>BLUR-110</a>] -         Check all names of table, column names, etc. in the thrift service as well as the map reduce api
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-116'>BLUR-116</a>] -         Blur Console: Offline status is broken on environment page
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-117'>BLUR-117</a>] -         Blur Console: Cancel button doesn&#39;t display on running queries.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-119'>BLUR-119</a>] -         The cpu times on the status object is returning null.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-120'>BLUR-120</a>] -         Add an attribute to the BlurQueryStatus object to set when the status is not found instead of throwing an exception.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-123'>BLUR-123</a>] -         Add incubating to version of Blur
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-124'>BLUR-124</a>] -         Create a README file that is up to date
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-126'>BLUR-126</a>] -         Remove the src directory in the root of the project and let each project exist at the root.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-128'>BLUR-128</a>] -         Get the Apache License header on all the Blur-Console files
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-129'>BLUR-129</a>] -         Notice file additions
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-133'>BLUR-133</a>] -         Bug in the controller when new tables are coming online.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-134'>BLUR-134</a>] -         Ulimits print out in startup of both shard and controller servers is throwing an error in ubuntu linux
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-138'>BLUR-138</a>] -         Facets doesn&#39;t seem to apply the pre-filter
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-142'>BLUR-142</a>] -         Create IndexReader that can be exited at any time via AtomicBoolean
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-143'>BLUR-143</a>] -         Field less queries don&#39;t work 
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-154'>BLUR-154</a>] -         Allow the ZooKeeper session timeout to be configurable
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-155'>BLUR-155</a>] -         Catch all exceptions in the WatchChildren|NodeData|NodeException.Onchange and do not let thread die
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-167'>BLUR-167</a>] -         Check connection in shell make and create a nice error message
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-168'>BLUR-168</a>] -         When using the shell create a nice error message when the cluster name is incorrect
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-169'>BLUR-169</a>] -         SuperParser doesn&#39;t support the use of AND and OR keywords
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-170'>BLUR-170</a>] -         Allow the fetchCount to be configurable in the BlurResultIterableSearcher class.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-173'>BLUR-173</a>] -         Full text search is case sensitive
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-174'>BLUR-174</a>] -         Respect family order from given selector
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-175'>BLUR-175</a>] -         The NOTICE and LICENSE files are not in the binary distribution
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-176'>BLUR-176</a>] -         QueryStatus the hashmap needs to be made thread safe
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-177'>BLUR-177</a>] -         SharedMergeScheduler close method is overloaded
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-187'>BLUR-187</a>] -         NPE in IndexImporter at line 182
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-188'>BLUR-188</a>] -         When a MR job is killed the tasks that have been completed are left on the FS
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-189'>BLUR-189</a>] -         The BlurCsvMapper setups up the splitter before assigning the splitter string.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-191'>BLUR-191</a>] -         Change the encoding of the splitter to a base64
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-192'>BLUR-192</a>] -         NPE errors in the BlurOutputFormat when the counters are not setup.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-194'>BLUR-194</a>] -         BlurOutputFormat - Prime document is being misplaced.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-195'>BLUR-195</a>] -         IndexImporter
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-196'>BLUR-196</a>] -         Error during the parsing of the connection string in the Connection class.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-200'>BLUR-200</a>] -         Shell Update add connected cluster name to the prompt
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-202'>BLUR-202</a>] -         Index Sampler used in the index warmup not thread safe.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-204'>BLUR-204</a>] -         Build in connection timeout settings into the client
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-205'>BLUR-205</a>] -         Update the schema thrift call to return the new type system information
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-217'>BLUR-217</a>] -         Jsp status pages are broken due to thrift API changes
+</li>
+</ul>
+                
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-62'>BLUR-62</a>] -         Lucene 4.2 upgrade
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-63'>BLUR-63</a>] -         Automatic slab configuration
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-64'>BLUR-64</a>] -         Update to use the new SuperQueryParser
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-65'>BLUR-65</a>] -         Remove the BlurMetrics object and update to the new Metrics library
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-83'>BLUR-83</a>] -         Create MapReduce Output Formats
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-84'>BLUR-84</a>] -         Remove controller query caching.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-85'>BLUR-85</a>] -         Kill JVM on OutOfMemory Error
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-91'>BLUR-91</a>] -         Add a reducer multiplier for the bluroutputformat
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-94'>BLUR-94</a>] -         Optimize index in flight
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-95'>BLUR-95</a>] -         IndexImporter class - add a double check on the rowid to validate the index.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-98'>BLUR-98</a>] -         Add ability to delete rows during BlurOutputFormat
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-100'>BLUR-100</a>] -         Remove testsuite project and move the code
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-104'>BLUR-104</a>] -         Ensure the behavior of the new super parser is the same as the behavior in 0.1.4 and less
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-108'>BLUR-108</a>] -         IndexImporter class - Optimize the import by skipping the delete process.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-111'>BLUR-111</a>] -         Add a command to blur shell to echo the cluster name
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-112'>BLUR-112</a>] -         Allow for types to be set on blur tables
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-113'>BLUR-113</a>] -         Index the family as a special field
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-114'>BLUR-114</a>] -         Optimize the row fetch code in the indexmanager to take advantage on the new family field.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-121'>BLUR-121</a>] -         Create build script to package blur source code
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-147'>BLUR-147</a>] -         IndexImporter - Call tryToMerge on the indexwriter after the import has succeeded
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-148'>BLUR-148</a>] -         Need to warm up new segments after NRT reloads
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-149'>BLUR-149</a>] -         Map reduce index builds should fail fast
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-152'>BLUR-152</a>] -         Disallow index warmup from occuring while indexes are being opened
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-153'>BLUR-153</a>] -         Create a network throttle for warming up the indexes
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-157'>BLUR-157</a>] -         Change the index warmup process to be in it&#39;s own thread pool
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-160'>BLUR-160</a>] -         Create a back pressure feature in Blur when GC is too high.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-178'>BLUR-178</a>] -         Blur Shell Top Command flashes in a large shard cluster
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-179'>BLUR-179</a>] -         Make controller batch updates parallel
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-180'>BLUR-180</a>] -         Whitespace issue in the blur shell
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-182'>BLUR-182</a>] -         The index memory calculation needs a massive improvement
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-184'>BLUR-184</a>] -         MapReduce - Add ability to generate recordid as hash of values in record when using the CSVBlurDriver
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-185'>BLUR-185</a>] -         MapReduce - Change CSVBlurMapper key type to writable instead of long writable
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-186'>BLUR-186</a>] -         MapReduce - Add combine file input format into CSVBlurDriver
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-190'>BLUR-190</a>] -         Add multiple inputs to the BlurCsvDriver program
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-201'>BLUR-201</a>] -         Create a default table path in the blur-site configuration.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-203'>BLUR-203</a>] -         Automatically cleanup old sample files for segments that have been deleted.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-207'>BLUR-207</a>] -         Add reset command in shell to clear screen
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-214'>BLUR-214</a>] -         Adds the ability to specify a stop word file for the Text field type.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-215'>BLUR-215</a>] -         Change BlurQuery.uuid to a String instead of long
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-216'>BLUR-216</a>] -         Create a Date type
+</li>
+</ul>
+    
+<h2>        New Feature
+</h2>
+<ul>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-115'>BLUR-115</a>] -         Support for GIS data types
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-132'>BLUR-132</a>] -         Create Index Snapshots
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-144'>BLUR-144</a>] -         Add Stored field type
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-146'>BLUR-146</a>] -         Add ability to have startup scripts wait for safemode exit
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-171'>BLUR-171</a>] -         Create request and response log files
+</li>
+</ul>
+                        
+<h2>        Task
+</h2>
+<ul>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-87'>BLUR-87</a>] -         Merge Blur Console into repo
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-96'>BLUR-96</a>] -         Upgrade Console Agent to work with 0.1.5 apache version
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-97'>BLUR-97</a>] -         Re-package blur console
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-135'>BLUR-135</a>] -         NOTICE file
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-206'>BLUR-206</a>] -         Add documentation pages to include in the distribution
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-218'>BLUR-218</a>] -         Remove libraries from Blur Console that weren&#39;t being used
+</li>
+</ul>
+                    
+<h2>        Wish
+</h2>
+<ul>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-127'>BLUR-127</a>] -         Term highlighting for search results
+</li>
+</ul>
+
+
+<!-- Footer for Release Notes -->
+</p>
+</div>
+</div>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="resources/js/jquery-2.0.3.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="resources/js/bootstrap.min.js"></script>
+<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+<script src="resources/js/respond.min.js"></script>
+</body>
+</html>
+<!-- Footer for Release Notes -->

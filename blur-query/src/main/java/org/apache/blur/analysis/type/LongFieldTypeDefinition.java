@@ -69,9 +69,19 @@ public class LongFieldTypeDefinition extends NumericFieldTypeDefinition {
 
   @Override
   public Query getNewRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
-    long p1 = Long.parseLong(part1);
-    long p2 = Long.parseLong(part2);
+    long p1 = parseLong(part1);
+    long p2 = parseLong(part2);
     return NumericRangeQuery.newLongRange(field, _precisionStep, p1, p2, startInclusive, endInclusive);
+  }
+
+  private long parseLong(String number) {
+    if (number.toLowerCase().equals(MIN)) {
+      return Long.MIN_VALUE;
+    } else if (number.toLowerCase().equals(MAX)) {
+      return Long.MAX_VALUE;
+    } else {
+      return Long.parseLong(number);
+    }
   }
 
 }

@@ -69,9 +69,19 @@ public class DoubleFieldTypeDefinition extends NumericFieldTypeDefinition {
 
   @Override
   public Query getNewRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
-    double p1 = Double.parseDouble(part1);
-    double p2 = Double.parseDouble(part2);
+    double p1 = parseDouble(part1);
+    double p2 = parseDouble(part2);
     return NumericRangeQuery.newDoubleRange(field, _precisionStep, p1, p2, startInclusive, endInclusive);
+  }
+  
+  private double parseDouble(String number) {
+    if (number.toLowerCase().equals(MIN)) {
+      return Double.MIN_VALUE;
+    } else if (number.toLowerCase().equals(MAX)) {
+      return Double.MAX_VALUE;
+    } else {
+      return Double.parseDouble(number);
+    }
   }
 
 }

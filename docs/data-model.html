@@ -244,6 +244,26 @@ To run a query to find all the rows that contain a column with a starting value 
 <pre><code class="json">docs.id:[12345 TO 54321]</code></pre>
 </p>
 
+<p>
+To run a query to find all the rows that contain a column with a value less than &quot;12345&quot; where the family is &quot;docs&quot; and the column is &quot;id&quot;.
+<pre><code class="json">docs.id:[MIN TO 12345}</code></pre>
+</p>
+
+<p>
+To run a query to find all the rows that contain a column with a value less than or equal to &quot;12345&quot; where the family is &quot;docs&quot; and the column is &quot;id&quot;.
+<pre><code class="json">docs.id:[MIN TO 12345]</code></pre>
+</p>
+
+<p>
+To run a query to find all the rows that contain a column with a value great than to &quot;12345&quot; where the family is &quot;docs&quot; and the column is &quot;id&quot;.
+<pre><code class="json">docs.id:{12345 TO MAX]</code></pre>
+</p>
+
+<p>
+To run a query to find all the rows that contain a column with a value great than or equal to &quot;12345&quot; where the family is &quot;docs&quot; and the column is &quot;id&quot;.
+<pre><code class="json">docs.id:[12345 TO MAX]</code></pre>
+</p>
+
 <h3 id="date_query">Date</h3>
 <p>Date types are basically a long field type with a date parser built-in.
 

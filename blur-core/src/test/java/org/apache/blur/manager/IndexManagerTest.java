@@ -1000,6 +1000,28 @@ public class IndexManagerTest {
     }
     assertTrue("column 3 should be unmodified", foundUnmodifiedColumn);
   }
+  
+  @Test
+  public void testMutationUpdateRowReplaceExistingColumnsWhileDeletingAColumn() throws Exception {
+    Column c1 = newColumn("testcol1", "value999");
+    Column c2 = newColumn("testcol2", null);
+    String rec = "record-1";
+    RecordMutation rm = newRecordMutation(REPLACE_COLUMNS, FAMILY, rec, c1, c2);
+
+    Record r = updateAndFetchRecord("row-1", rec, rm);
+
+    assertNotNull("record should exist", r);
+    assertEquals("only 2 columns in record", 2, r.getColumnsSize());
+    assertTrue("column 1 should be in record", r.columns.contains(c1));
+    boolean foundUnmodifiedColumn = false;
+    for (Column column : r.columns) {
+      if (column.name.equals("testcol3") && column.value.equals("value3")) {
+        foundUnmodifiedColumn = true;
+        break;
+      }
+    }
+    assertTrue("column 3 should be unmodified", foundUnmodifiedColumn);
+  }
 
   @Test
   public void testMutationUpdateRowReplaceExistingDuplicateColumns() throws Exception {

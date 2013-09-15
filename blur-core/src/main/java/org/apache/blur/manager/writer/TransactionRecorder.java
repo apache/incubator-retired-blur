@@ -273,6 +273,10 @@ public class TransactionRecorder extends TimerTask implements Closeable {
   }
 
   private static void writeString(DataOutputStream outputStream, String s) throws IOException {
+    if (s == null) {
+      Utils.writeVInt(outputStream, -1);  
+      return;
+    }
     byte[] bs = s.getBytes();
     Utils.writeVInt(outputStream, bs.length);
     outputStream.write(bs);
@@ -280,6 +284,9 @@ public class TransactionRecorder extends TimerTask implements Closeable {
 
   private static String readString(DataInputStream inputStream) throws IOException {
     int length = Utils.readVInt(inputStream);
+    if (length == -1) {
+      return null;
+    }
     byte[] buffer = new byte[length];
     inputStream.readFully(buffer);
     return new String(buffer);

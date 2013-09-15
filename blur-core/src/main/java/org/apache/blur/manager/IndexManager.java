@@ -1027,6 +1027,9 @@ public class IndexManager {
       return;
     case APPEND_COLUMN_VALUES:
       for (Column column : mutationRecord.columns) {
+        if (column.getValue() == null) {
+          continue;
+        }
         existingRecord.addToColumns(column);
       }
       newRow.addToRecords(existingRecord);
@@ -1035,18 +1038,17 @@ public class IndexManager {
       newRow.addToRecords(mutationRecord);
       break;
     case REPLACE_COLUMNS:
-      Set<String> columnNames = new HashSet<String>();
-      for (Column column : mutationRecord.columns) {
-        columnNames.add(column.name);
+      Set<String> removeColumnNames = new HashSet<String>();
+      for (Column column : mutationRecord.getColumns()) {
+        removeColumnNames.add(column.getName());
       }
 
-      LOOP: for (Column column : existingRecord.columns) {
+      for (Column column : existingRecord.getColumns()) {
         // skip columns in existing record that are contained in the mutation
         // record
-        if (columnNames.contains(column.name)) {
-          continue LOOP;
+        if (!removeColumnNames.contains(column.getName())) {
+          mutationRecord.addToColumns(column);
         }
-        mutationRecord.addToColumns(column);
       }
       newRow.addToRecords(mutationRecord);
       break;

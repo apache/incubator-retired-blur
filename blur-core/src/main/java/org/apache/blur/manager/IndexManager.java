@@ -1005,12 +1005,11 @@ public class IndexManager {
         // do nothing as missing record is already in desired state
         break;
       case APPEND_COLUMN_VALUES:
-        throw new BException("Mutation cannot append column values to non-existent record", recordMutation);
       case REPLACE_ENTIRE_RECORD:
+      case REPLACE_COLUMNS:
+        // If record do not exist, create new record in Row
         newRow.addToRecords(recordMutation.record);
         break;
-      case REPLACE_COLUMNS:
-        throw new BException("Mutation cannot replace columns in non-existent record", recordMutation);
       default:
         throw new RuntimeException("Unsupported record mutation type [" + type + "]");
       }
@@ -1055,16 +1054,6 @@ public class IndexManager {
       break;
     }
   }
-
-  // private boolean isSameRecord(Record existingRecord, Record mutationRecord)
-  // {
-  // if (existingRecord.recordId.equals(mutationRecord.recordId)) {
-  // if (existingRecord.family.equals(mutationRecord.family)) {
-  // return true;
-  // }
-  // }
-  // return false;
-  // }
 
   private int getNumberOfShards(String table) {
     return _indexServer.getShardCount(table);

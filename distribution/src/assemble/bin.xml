@@ -120,10 +120,21 @@ under the License.
       <outputDirectory>apache-blur-${project.version}-bin/</outputDirectory>
       <includes>
         <include>DISCLAIMER</include>
-        <include>NOTICE</include>
-        <include>LICENSE</include>
         <include>README</include>
       </includes>
     </fileSet>
   </fileSets>
+
+  <files>
+    <file>
+      <source>${project.build.scriptSourceDirectory}/../resources/NOTICE-bin.txt</source>
+      <outputDirectory>apache-blur-${project.version}-bin</outputDirectory>
+      <destName>NOTICE</destName>
+    </file>
+    <file>
+      <source>${project.build.scriptSourceDirectory}/../resources/LICENSE-bin.txt</source>
+      <outputDirectory>apache-blur-${project.version}-bin</outputDirectory>
+      <destName>LICENSE</destName>
+    </file>
+  </files>
 </assembly>

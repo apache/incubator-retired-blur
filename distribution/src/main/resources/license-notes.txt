@@ -11,7 +11,7 @@ sort <(grep ALv2 LICENSE | awk '{print $1}') <(for f in `find . -name "*.jar"` ;
 
 Update the binary NOTICE file:
 cd ./distribution/src/main/resources/notices
-./generate-notice.sh > ../../../../../NOTICE
+./generate-notice.sh > ../NOTICE-bin.txt
 
 
 

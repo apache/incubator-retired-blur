@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cat ../NOTICE-bin.txt
+cat ../NOTICE-bin.base.txt
 
 for f in `ls *.NOTICE` 
 do

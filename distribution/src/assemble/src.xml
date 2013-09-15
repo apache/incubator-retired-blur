@@ -34,7 +34,7 @@ under the License.
       </excludes>
     </fileSet>
   </fileSets>
-  <files>
+  <!--files>
     <file>
       <source>src/main/resources/NOTICE-src.txt</source>
       <outputDirectory>apache-blur-${project.version}-src</outputDirectory>
@@ -45,6 +45,6 @@ under the License.
       <outputDirectory>apache-blur-${project.version}-src</outputDirectory>
       <destName>LICENSE</destName>
     </file>
-  </files>    
+  </files-->    
 </assembly>
 

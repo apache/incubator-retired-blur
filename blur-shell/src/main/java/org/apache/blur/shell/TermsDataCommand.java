@@ -29,11 +29,9 @@ import org.apache.blur.shell.PagingPrintWriter.FinishedException;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
-import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -48,10 +46,9 @@ public class TermsDataCommand extends Command implements TableFirstArgCommand {
       throw new CommandException("Invalid args: " + help());
     }
 
-    try{
-      doitInternal(outPw,client,args);
-    }
-    catch (FinishedException e) {
+    try {
+      doitInternal(outPw, client, args);
+    } catch (FinishedException e) {
       if (Main.debug) {
         e.printStackTrace();
       }
@@ -59,9 +56,12 @@ public class TermsDataCommand extends Command implements TableFirstArgCommand {
   }
 
   private void doitInternal(PrintWriter outPw, Blur.Iface client, String[] args) throws FinishedException,
-    BlurException, TException{
+      BlurException, TException {
     PagingPrintWriter out = new PagingPrintWriter(outPw);
     CommandLine cmd = parse(args, outPw);
+    if (cmd == null) {
+      return;
+    }
 
     String tablename = args[1];
     String familyPlusColumn = args[2];
@@ -69,24 +69,23 @@ public class TermsDataCommand extends Command implements TableFirstArgCommand {
     String column = familyPlusColumn;
     String startWith = "";
     short size = 100;
-      
-        
-    if (familyPlusColumn.contains(".")){
+
+    if (familyPlusColumn.contains(".")) {
       int index = familyPlusColumn.indexOf(".");
       family = familyPlusColumn.substring(0, index);
       column = familyPlusColumn.substring(index + 1);
     }
 
-    if (cmd.hasOption("n")){
+    if (cmd.hasOption("n")) {
       size = Short.parseShort(cmd.getOptionValue("n"));
     }
 
-    if (cmd.hasOption("s")){
+    if (cmd.hasOption("s")) {
       startWith = cmd.getOptionValue("s");
     }
 
     boolean checkFreq = false;
-    if (cmd.hasOption("F")){
+    if (cmd.hasOption("F")) {
       checkFreq = true;
     }
 
@@ -98,13 +97,11 @@ public class TermsDataCommand extends Command implements TableFirstArgCommand {
       out.setLineLimit(terminal.getHeight() - 2);
     }
 
-    List<String> terms = client.terms(tablename,family,column,startWith,size);
-    for (int i=0;i<terms.size(); i++){
-      if (checkFreq){
-        out.println(terms.get(i)+"\t"+client.recordFrequency(tablename,family,column,terms.get(i)));
-      }
-      else
-      {
+    List<String> terms = client.terms(tablename, family, column, startWith, size);
+    for (int i = 0; i < terms.size(); i++) {
+      if (checkFreq) {
+        out.println(terms.get(i) + "\t" + client.recordFrequency(tablename, family, column, terms.get(i)));
+      } else {
         out.println(terms.get(i));
       }
     }
@@ -128,10 +125,10 @@ public class TermsDataCommand extends Command implements TableFirstArgCommand {
   @SuppressWarnings("static-access")
   private static CommandLine parse(String[] otherArgs, Writer out) {
     Options options = new Options();
-    options.addOption(OptionBuilder.withArgName("startwith").hasArg()
-        .withDescription("The value to start with.").create("s"));
-    options.addOption(OptionBuilder.withArgName("size").hasArg()
-        .withDescription("The number of terms to return.").create("n"));
+    options.addOption(OptionBuilder.withArgName("startwith").hasArg().withDescription("The value to start with.")
+        .create("s"));
+    options.addOption(OptionBuilder.withArgName("size").hasArg().withDescription("The number of terms to return.")
+        .create("n"));
     options.addOption(OptionBuilder.withDescription("Get the frequency of each term.").create("F"));
 
     CommandLineParser parser = new PosixParser();
@@ -141,8 +138,8 @@ public class TermsDataCommand extends Command implements TableFirstArgCommand {
     } catch (ParseException e) {
       HelpFormatter formatter = new HelpFormatter();
       PrintWriter pw = new PrintWriter(out, true);
-      formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "terms", null, options,
-          HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null, false);
+      formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "terms", null, options, HelpFormatter.DEFAULT_LEFT_PAD,
+          HelpFormatter.DEFAULT_DESC_PAD, null, false);
       return null;
     }
     return cmd;

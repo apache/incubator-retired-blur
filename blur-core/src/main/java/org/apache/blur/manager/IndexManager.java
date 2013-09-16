@@ -723,13 +723,15 @@ public class IndexManager {
     AtomicReader areader = BlurUtil.getAtomicReader(reader);
     Terms termsAll = areader.terms(term.field());
     TermsEnum termEnum = termsAll.iterator(null);
-    BytesRef currentTermText;
-    while ((currentTermText = termEnum.next()) != null) {
+    termEnum.seekCeil(term.bytes());
+
+    BytesRef currentTermText = termEnum.term();
+    do {
       terms.add(currentTermText.utf8ToString());
       if (terms.size() >= size) {
         return terms;
       }
-    }
+    } while ((currentTermText = termEnum.next()) != null);
     return terms;
   }
 

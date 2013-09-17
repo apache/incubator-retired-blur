@@ -301,7 +301,7 @@ public class Main {
 
   public static String[] tableCommands = { "create", "enable", "disable", "remove", "truncate", "describe", "list",
       "schema", "stats", "layout", "parse", "definecolumn" };
-  public static String[] dataCommands = { "query", "get", "mutate", "delete", "highlight", "selector", "terms" };
+  public static String[] dataCommands = { "query", "get", "mutate", "delete", "highlight", "selector", "terms", "create-snapshot", "remove-snapshot", "list-snapshots"};
   public static String[] clusterCommands = { "controllers", "shards", "clusterlist", "cluster", "safemodewait", "top" };
   public static String[] shellCommands = { "help", "debug", "timed", "quit", "reset" };
 
@@ -554,6 +554,9 @@ public class Main {
     register(builder, new SelectorCommand());
     register(builder, new AddColumnDefinitionCommand());
     register(builder, new ResetCommand());
+    register(builder, new CreateSnapshotCommand());
+    register(builder, new RemoveSnapshotCommand());
+    register(builder, new ListSnapshotsCommand());
     commands = builder.build();
   }
 

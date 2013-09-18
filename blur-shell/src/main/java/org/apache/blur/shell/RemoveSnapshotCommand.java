@@ -6,7 +6,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Blur.Iface;
 
-public class RemoveSnapshotCommand extends Command {
+public class RemoveSnapshotCommand extends Command implements TableFirstArgCommand {
   @Override
   public void doit(PrintWriter out, Iface client, String[] args)
       throws CommandException, TException, BlurException {

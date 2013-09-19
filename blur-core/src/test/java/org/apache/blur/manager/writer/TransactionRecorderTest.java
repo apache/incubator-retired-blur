@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
@@ -60,7 +61,7 @@ public class TransactionRecorderTest {
 
   @BeforeClass
   public static void setup() {
-    MiniCluster.startDfs("target/transaction-recorder-test");
+    MiniCluster.startDfs(new File("target", "transaction-recorder-test").toURI().toString());
   }
 
   @AfterClass

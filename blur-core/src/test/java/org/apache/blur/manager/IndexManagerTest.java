@@ -806,6 +806,13 @@ public class IndexManagerTest {
   }
 
   @Test
+  public void testTermsNonExistentField() throws Exception {
+    List<String> terms = indexManager.terms(TABLE, FAMILY, "nonexistentfield", "", (short) 100);
+    assertNotNull("Non-existent fields should not return null.", terms);
+    assertEquals("The terms of non-existent fields should be empty.", 0, terms.size());
+  }
+  
+  @Test
   public void testMutationReplaceRow() throws Exception {
     RowMutation mutation = newRowMutation(
         TABLE,

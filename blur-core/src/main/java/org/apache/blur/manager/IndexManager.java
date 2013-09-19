@@ -722,7 +722,13 @@ public class IndexManager {
     List<String> terms = new ArrayList<String>(size);
     AtomicReader areader = BlurUtil.getAtomicReader(reader);
     Terms termsAll = areader.terms(term.field());
+    
+    if(termsAll == null) {
+    	return terms;
+    }
+    
     TermsEnum termEnum = termsAll.iterator(null);
+
     termEnum.seekCeil(term.bytes());
 
     BytesRef currentTermText = termEnum.term();

@@ -853,9 +853,11 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         }
       });
     } catch (Exception e) {
-      LOG.error("Unknown error while trying to create a snapshot of table [{0}] snapshot name", e, table, name);
-      throw new BException("Unknown error while trying to create a snapshot of table [{0}] snapshot name", e, table,
-          name);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      LOG.error("Unknown error while trying to create a snapshot [{0}] of table [{1}]", e, name, table);
+      throw new BException("Unknown error while trying to create a snapshot [{0}] of table [{1}]", e, name, table);
     }
   }
 
@@ -871,9 +873,11 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         }
       });
     } catch (Exception e) {
-      LOG.error("Unknown error while trying to remove a snapshot of table [{0}] snapshot name", e, table, name);
-      throw new BException("Unknown error while trying to remove a snapshot of table [{0}] snapshot name", e, table,
-          name);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      LOG.error("Unknown error while trying to remove a snapshot [{0}] of table [{1}]", e, name, table);
+      throw new BException("Unknown error while trying to remove a snapshot [{0}] of table [{1}]", e, name, table);
     }
   }
 
@@ -908,6 +912,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         }
       });
     } catch (Exception e) {
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
       LOG.error("Unknown error while trying to get the list of snapshots for table [{0}]", e, table);
       throw new BException("Unknown error while trying to get the list of snapshots for table [{0}]", e, table);
     }

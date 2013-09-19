@@ -316,7 +316,7 @@ public class BlurOutputFormatTest {
     job.submit();
 
   }
-  
+
   // @TODO this test to fail sometimes due to issues in the MR MiniCluster
 //  @Test
   public void testBlurOutputFormatCleanupDuringJobKillTest() throws IOException, InterruptedException,

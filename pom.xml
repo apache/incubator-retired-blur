@@ -241,6 +241,7 @@ under the License.
 						<exclude>**/.classpath</exclude>
 						<exclude>**/.project</exclude>
 						<exclude>**/.settings/**</exclude>
+						<exclude>**/target/**</exclude>
 						
 						<!-- These javascript libs are accounted for in the 
 						LICENSE-src file in distribution/src/main/resources -->

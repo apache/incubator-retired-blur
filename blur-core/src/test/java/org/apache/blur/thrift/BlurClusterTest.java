@@ -74,7 +74,7 @@ public class BlurClusterTest {
   public static void startCluster() throws IOException {
     GCWatcher.init(0.80);
     LocalFileSystem localFS = FileSystem.getLocal(new Configuration());
-    File testDirectory = new File(TMPDIR, "blur-cluster-test");
+    File testDirectory = new File(TMPDIR, "blur-cluster-test").getAbsoluteFile();
     testDirectory.mkdirs();
 
     Path directory = new Path(testDirectory.getPath());
@@ -91,7 +91,7 @@ public class BlurClusterTest {
     System.setProperty("dfs.datanode.data.dir.perm", dirPermissionNum);
     testDirectory.delete();
 
-    MiniCluster.startBlurCluster("target/cluster", 2, 3);
+    MiniCluster.startBlurCluster(new File(testDirectory, "cluster").toURI().toString(), 2, 3);
   }
 
   @AfterClass

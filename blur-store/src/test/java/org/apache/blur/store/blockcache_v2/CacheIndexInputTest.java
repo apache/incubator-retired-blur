@@ -72,6 +72,7 @@ public class CacheIndexInputTest {
     cacheInput.close();
 
     assertArrayEquals(bs, buf);
+    directory.close();
   }
 
   @Test
@@ -92,6 +93,7 @@ public class CacheIndexInputTest {
     readRandomData(input, testInput, random, sampleSize, maxBufSize, maxOffset);
     testInput.close();
     input.close();
+    directory.close();
   }
 
   public static void readRandomData(IndexInput baseInput, IndexInput testInput, Random random, int sampleSize,

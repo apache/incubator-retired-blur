@@ -1,5 +1,3 @@
-package org.apache.blur.store;
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,26 +14,22 @@ package org.apache.blur.store;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
 
-import org.apache.blur.store.hdfs.HdfsDirectory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
-import org.junit.Test;
+package org.apache.blur.store.hdfs;
 
-public class HdfsDirectoryTest extends BaseDirectoryTest {
+import com.yammer.metrics.core.Histogram;
+import com.yammer.metrics.core.Meter;
 
-  @Override
-  protected void setupDirectory() throws IOException {
-    URI uri = new File(file, "hdfs").toURI();
-    Path hdfsDirPath = new Path(uri.toString());
-    Configuration conf = new Configuration();
-    directory = new HdfsDirectory(conf, hdfsDirPath);
+public class MetricsGroup {
+  final Histogram readAccess;
+  final Histogram writeAccess;
+  final Meter writeThroughput;
+  final Meter readThroughput;
+
+  MetricsGroup(Histogram readAccess, Histogram writeAccess, Meter readThroughput, Meter writeThroughput) {
+    this.readAccess = readAccess;
+    this.writeAccess = writeAccess;
+    this.readThroughput = readThroughput;
+    this.writeThroughput = writeThroughput;
   }
-
-  @Test
-  public void runsTheTests() {}
-  
 }

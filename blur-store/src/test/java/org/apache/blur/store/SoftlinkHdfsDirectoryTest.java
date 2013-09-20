@@ -20,19 +20,21 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
-import org.apache.blur.store.hdfs.HdfsDirectory;
+import org.apache.blur.store.hdfs.SoftlinkHdfsDirectory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.junit.Test;
 
-public class HdfsDirectoryTest extends BaseDirectoryTest {
+public class SoftlinkHdfsDirectoryTest extends BaseDirectoryTest {
 
   @Override
   protected void setupDirectory() throws IOException {
     URI uri = new File(file, "hdfs").toURI();
     Path hdfsDirPath = new Path(uri.toString());
+    Path store = new Path(hdfsDirPath, "store");
+    Path link = new Path(hdfsDirPath, "link");
     Configuration conf = new Configuration();
-    directory = new HdfsDirectory(conf, hdfsDirPath);
+    directory = new SoftlinkHdfsDirectory(conf, store, link);
   }
 
   @Test

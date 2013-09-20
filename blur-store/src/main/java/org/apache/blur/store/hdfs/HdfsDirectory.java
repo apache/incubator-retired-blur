@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.store.blockcache.LastModified;
-import org.apache.blur.store.buffer.ReusedBufferedIndexInput;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -58,186 +57,91 @@ public class HdfsDirectory extends Directory implements LastModified {
 
   public static AtomicInteger fetchImpl = new AtomicInteger(1);
 
-//  static {
-//    Thread thread = new Thread(new Runnable() {
-//      @Override
-//      public void run() {
-//        while (true) {
-//          File file = new File("/tmp/fetch.impl");
-//          if (file.exists()) {
-//            try {
-//              BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-//              String line = reader.readLine();
-//              String trim = line.trim();
-//              int i = Integer.parseInt(trim);
-//              if (i != fetchImpl.get()) {
-//                LOG.info("Changing fetch impl [" + i + "]");
-//                fetchImpl.set(i);
-//              }
-//              reader.close();
-//            } catch (Exception e) {
-//              LOG.error("Unknown error", e);
-//            }
-//          }
-//          try {
-//            Thread.sleep(5000);
-//          } catch (InterruptedException e) {
-//            return;
-//          }
-//        }
-//      }
-//    });
-//    thread.setDaemon(true);
-//    thread.start();
-//  }
-
-  private final Path path;
-  private final FileSystem fileSystem;
-  private final MetricsGroup metricsGroup;
-
-  static class MetricsGroup {
-    final Histogram readAccess;
-    final Histogram writeAccess;
-    final Meter writeThroughput;
-    final Meter readThroughput;
-
-    MetricsGroup(Histogram readAccess, Histogram writeAccess, Meter readThroughput, Meter writeThroughput) {
-      this.readAccess = readAccess;
-      this.writeAccess = writeAccess;
-      this.readThroughput = readThroughput;
-      this.writeThroughput = writeThroughput;
-    }
-  }
+  // static {
+  // Thread thread = new Thread(new Runnable() {
+  // @Override
+  // public void run() {
+  // while (true) {
+  // File file = new File("/tmp/fetch.impl");
+  // if (file.exists()) {
+  // try {
+  // BufferedReader reader = new BufferedReader(new InputStreamReader(new
+  // FileInputStream(file)));
+  // String line = reader.readLine();
+  // String trim = line.trim();
+  // int i = Integer.parseInt(trim);
+  // if (i != fetchImpl.get()) {
+  // LOG.info("Changing fetch impl [" + i + "]");
+  // fetchImpl.set(i);
+  // }
+  // reader.close();
+  // } catch (Exception e) {
+  // LOG.error("Unknown error", e);
+  // }
+  // }
+  // try {
+  // Thread.sleep(5000);
+  // } catch (InterruptedException e) {
+  // return;
+  // }
+  // }
+  // }
+  // });
+  // thread.setDaemon(true);
+  // thread.start();
+  // }
 
   /**
    * We keep the metrics separate per filesystem.
    */
-  private static Map<URI, MetricsGroup> metricsGroupMap = new WeakHashMap<URI, MetricsGroup>();
+  protected static Map<URI, MetricsGroup> _metricsGroupMap = new WeakHashMap<URI, MetricsGroup>();
+  
+  protected final Path _path;
+  protected final FileSystem _fileSystem;
+  protected final MetricsGroup _metricsGroup;
 
   public HdfsDirectory(Configuration configuration, Path path) throws IOException {
-    this.path = path;
-    fileSystem = path.getFileSystem(configuration);
-    fileSystem.mkdirs(path);
+    this._path = path;
+    _fileSystem = path.getFileSystem(configuration);
+    _fileSystem.mkdirs(path);
     setLockFactory(NoLockFactory.getNoLockFactory());
-    synchronized (metricsGroupMap) {
-      URI uri = fileSystem.getUri();
-      MetricsGroup metricsGroup = metricsGroupMap.get(uri);
+    synchronized (_metricsGroupMap) {
+      URI uri = _fileSystem.getUri();
+      MetricsGroup metricsGroup = _metricsGroupMap.get(uri);
       if (metricsGroup == null) {
         String scope = uri.toString();
-
-        Histogram readAccess = Metrics.newHistogram(new MetricName(ORG_APACHE_BLUR, HDFS, "Read Latency in \u00B5s",
-            scope));
-        Histogram writeAccess = Metrics.newHistogram(new MetricName(ORG_APACHE_BLUR, HDFS, "Write Latency in \u00B5s",
-            scope));
-        Meter readThroughput = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, HDFS, "Read Throughput", scope),
-            "Read Bytes", TimeUnit.SECONDS);
-        Meter writeThroughput = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, HDFS, "Write Throughput", scope),
-            "Write Bytes", TimeUnit.SECONDS);
-        metricsGroup = new MetricsGroup(readAccess, writeAccess, readThroughput, writeThroughput);
-        metricsGroupMap.put(uri, metricsGroup);
+        metricsGroup = createNewMetricsGroup(scope);
+        _metricsGroupMap.put(uri, metricsGroup);
       }
-      this.metricsGroup = metricsGroup;
+      _metricsGroup = metricsGroup;
     }
+  }
+
+  private MetricsGroup createNewMetricsGroup(String scope) {
+    MetricName readAccessName = new MetricName(ORG_APACHE_BLUR, HDFS, "Read Latency in \u00B5s", scope);
+    MetricName writeAcccessName = new MetricName(ORG_APACHE_BLUR, HDFS, "Write Latency in \u00B5s", scope);
+    MetricName readThroughputName = new MetricName(ORG_APACHE_BLUR, HDFS, "Read Throughput", scope);
+    MetricName writeThroughputName = new MetricName(ORG_APACHE_BLUR, HDFS, "Write Throughput", scope);
+    
+    Histogram readAccess = Metrics.newHistogram(readAccessName);
+    Histogram writeAccess = Metrics.newHistogram(writeAcccessName);
+    Meter readThroughput = Metrics.newMeter(readThroughputName, "Read Bytes", TimeUnit.SECONDS);
+    Meter writeThroughput = Metrics.newMeter(writeThroughputName, "Write Bytes", TimeUnit.SECONDS);
+    return new MetricsGroup(readAccess, writeAccess, readThroughput, writeThroughput);
   }
 
   @Override
   public String toString() {
-    return "HdfsDirectory path=[" + path + "]";
-  }
-
-  public static class HdfsIndexInput extends ReusedBufferedIndexInput {
-
-    private final long len;
-    private FSDataInputStream inputStream;
-    private boolean isClone;
-    private final MetricsGroup metricsGroup;
-    private int _readVersion;
-
-    public HdfsIndexInput(FileSystem fileSystem, Path filePath, MetricsGroup metricsGroup) throws IOException {
-      super(filePath.toString());
-      inputStream = fileSystem.open(filePath);
-      FileStatus fileStatus = fileSystem.getFileStatus(filePath);
-      len = fileStatus.getLen();
-      this.metricsGroup = metricsGroup;
-      _readVersion = fetchImpl.get();
-    }
-
-    @Override
-    public long length() {
-      return len;
-    }
-
-    @Override
-    protected void seekInternal(long pos) throws IOException {
-
-    }
-
-    @Override
-    protected void readInternal(byte[] b, int offset, int length) throws IOException {
-      long start = System.nanoTime();
-      long filePointer = getFilePointer();
-      switch (_readVersion) {
-      case 0:
-        synchronized (inputStream) {
-          inputStream.seek(getFilePointer());
-          inputStream.readFully(b, offset, length);
-        }
-        break;
-      case 1:
-        while (length > 0) {
-          int amount;
-          synchronized (inputStream) {
-            inputStream.seek(filePointer);
-            amount = inputStream.read(b, offset, length);
-          }
-          length -= amount;
-          offset += amount;
-          filePointer += amount;
-        }
-        break;
-      case 2:
-        inputStream.readFully(filePointer, b, offset, length);
-        break;
-      case 3:
-        while (length > 0) {
-          int amount;
-          amount = inputStream.read(filePointer, b, offset, length);
-          length -= amount;
-          offset += amount;
-          filePointer += amount;
-        }
-        break;
-      default:
-        break;
-      }
-      long end = System.nanoTime();
-      metricsGroup.readAccess.update((end - start) / 1000);
-      metricsGroup.readThroughput.mark(length);
-    }
-
-    @Override
-    protected void closeInternal() throws IOException {
-      if (!isClone) {
-        inputStream.close();
-      }
-    }
-
-    @Override
-    public ReusedBufferedIndexInput clone() {
-      HdfsIndexInput clone = (HdfsIndexInput) super.clone();
-      clone.isClone = true;
-      clone._readVersion = fetchImpl.get();
-      return clone;
-    }
+    return "HdfsDirectory path=[" + _path + "]";
   }
 
   @Override
   public IndexOutput createOutput(String name, IOContext context) throws IOException {
-    LOG.debug("createOutput [{0}] [{1}] [{2}]", name, context, path);
+    LOG.debug("createOutput [{0}] [{1}] [{2}]", name, context, _path);
     if (fileExists(name)) {
       throw new IOException("File [" + name + "] already exists found.");
     }
-    final FSDataOutputStream outputStream = fileSystem.create(getPath(name));
+    final FSDataOutputStream outputStream = openForOutput(name);
     return new BufferedIndexOutput() {
 
       @Override
@@ -250,8 +154,8 @@ public class HdfsDirectory extends Directory implements LastModified {
         long start = System.nanoTime();
         outputStream.write(b, offset, len);
         long end = System.nanoTime();
-        metricsGroup.writeAccess.update((end - start) / 1000);
-        metricsGroup.writeThroughput.mark(len);
+        _metricsGroup.writeAccess.update((end - start) / 1000);
+        _metricsGroup.writeThroughput.mark(len);
       }
 
       @Override
@@ -267,24 +171,33 @@ public class HdfsDirectory extends Directory implements LastModified {
     };
   }
 
+  protected FSDataOutputStream openForOutput(String name) throws IOException {
+    return _fileSystem.create(getPath(name));
+  }
+
   @Override
   public IndexInput openInput(String name, IOContext context) throws IOException {
-    LOG.debug("openInput [{0}] [{1}] [{2}]", name, context, path);
+    LOG.debug("openInput [{0}] [{1}] [{2}]", name, context, _path);
     if (!fileExists(name)) {
       throw new FileNotFoundException("File [" + name + "] not found.");
     }
-    Path filePath = getPath(name);
-    return new HdfsIndexInput(fileSystem, filePath, metricsGroup);
+    FSDataInputStream inputStream = openForInput(name);
+    long fileLength = fileLength(name);
+    return new HdfsIndexInput(name, inputStream, fileLength, _metricsGroup, fetchImpl.get());
+  }
+
+  protected FSDataInputStream openForInput(String name) throws IOException {
+    return _fileSystem.open(getPath(name));
   }
 
   @Override
   public String[] listAll() throws IOException {
-    LOG.debug("listAll [{0}]", path);
-    FileStatus[] files = fileSystem.listStatus(path, new PathFilter() {
+    LOG.debug("listAll [{0}]", _path);
+    FileStatus[] files = _fileSystem.listStatus(_path, new PathFilter() {
       @Override
       public boolean accept(Path path) {
         try {
-          return fileSystem.isFile(path);
+          return _fileSystem.isFile(path);
         } catch (IOException e) {
           throw new RuntimeException(e);
         }
@@ -299,25 +212,36 @@ public class HdfsDirectory extends Directory implements LastModified {
 
   @Override
   public boolean fileExists(String name) throws IOException {
-    LOG.debug("fileExists [{0}] [{1}]", name, path);
-    return fileSystem.exists(getPath(name));
+    LOG.debug("fileExists [{0}] [{1}]", name, _path);
+    return exists(name);
+  }
+
+  protected boolean exists(String name) throws IOException {
+    return _fileSystem.exists(getPath(name));
   }
 
   @Override
   public void deleteFile(String name) throws IOException {
-    LOG.debug("deleteFile [{0}] [{1}]", name, path);
+    LOG.debug("deleteFile [{0}] [{1}]", name, _path);
     if (fileExists(name)) {
-      fileSystem.delete(getPath(name), true);
+      delete(name);
     } else {
       throw new FileNotFoundException("File [" + name + "] not found");
     }
   }
 
+  protected void delete(String name) throws IOException {
+    _fileSystem.delete(getPath(name), true);
+  }
+
   @Override
   public long fileLength(String name) throws IOException {
-    LOG.debug("fileLength [{0}] [{1}]", name, path);
-    FileStatus fileStatus = fileSystem.getFileStatus(getPath(name));
-    return fileStatus.getLen();
+    LOG.debug("fileLength [{0}] [{1}]", name, _path);
+    return length(name);
+  }
+
+  protected long length(String name) throws IOException {
+    return _fileSystem.getFileStatus(getPath(name)).getLen();
   }
 
   @Override
@@ -331,24 +255,27 @@ public class HdfsDirectory extends Directory implements LastModified {
   }
 
   public Path getPath() {
-    return path;
+    return _path;
   }
 
   private Path getPath(String name) {
-    return new Path(path, name);
+    return new Path(_path, name);
   }
 
   public long getFileModified(String name) throws IOException {
     if (!fileExists(name)) {
       throw new FileNotFoundException("File [" + name + "] not found");
     }
-    Path file = getPath(name);
-    return fileSystem.getFileStatus(file).getModificationTime();
+    return fileModified(name);
+  }
+
+  protected long fileModified(String name) throws IOException {
+    return _fileSystem.getFileStatus(getPath(name)).getModificationTime();
   }
 
   @Override
   public void copy(Directory to, String src, String dest, IOContext context) throws IOException {
-    LOG.debug("copy [{0}] [{1}] [{2}] [{3}] [{4}]", to, src, dest, context, path);
+    LOG.warn("DANGEROUS copy [{0}] [{1}] [{2}] [{3}] [{4}]", to, src, dest, context, _path);
     if (to instanceof DirectoryDecorator) {
       copy(((DirectoryDecorator) to).getOriginalDirectory(), src, dest, context);
     } else if (to instanceof HdfsDirectory) {
@@ -356,8 +283,13 @@ public class HdfsDirectory extends Directory implements LastModified {
         return;
       }
     } else {
-      super.copy(to, src, dest, context);
+      slowCopy(to, src, dest, context);
+      
     }
+  }
+
+  protected void slowCopy(Directory to, String src, String dest, IOContext context) throws IOException {
+    super.copy(to, src, dest, context);
   }
 
   private boolean quickMove(Directory to, String src, String dest, IOContext context) throws IOException {
@@ -365,7 +297,7 @@ public class HdfsDirectory extends Directory implements LastModified {
     if (ifSameCluster(simpleTo, this)) {
       Path newDest = simpleTo.getPath(dest);
       Path oldSrc = getPath(src);
-      return fileSystem.rename(oldSrc, newDest);
+      return _fileSystem.rename(oldSrc, newDest);
     }
     return false;
   }

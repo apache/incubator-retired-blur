@@ -28,9 +28,8 @@ import org.apache.blur.store.blockcache_v2.FileNameFilter;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.junit.Test;
 
-public class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
+public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
 
   @Override
   protected void setupDirectory() throws IOException {
@@ -58,15 +57,13 @@ public class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
     };
 
     Cache cache = new BaseCache(totalNumberOfBytes, fileBufferSize, fileNameBlockSize, readFilter, writeFilter,
-        STORE.ON_HEAP);
+        getStore());
     Directory dir = FSDirectory.open(new File(file, "cache"));
 
     BufferStore.init(128, 128);
     directory = new CacheDirectory("test", wrapLastModified(dir), cache);
   }
 
-  @Test
-  public void runsTheTests() {
-  }
+  protected abstract STORE getStore();
 
 }

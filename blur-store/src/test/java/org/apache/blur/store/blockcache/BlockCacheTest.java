@@ -116,9 +116,10 @@ public class BlockCacheTest {
 
   /**
    * Verify checking of buffer size limits against the cached block size.
+   * @throws IOException 
    */
   @Test
-  public void testLongBuffer() {
+  public void testLongBuffer() throws IOException {
     Random random = new Random();
     int blockSize = BlockCache._8K;
     int slabSize = blockSize * 1024;
@@ -138,6 +139,7 @@ public class BlockCacheTest {
     assertTrue(blockCache.store(blockCacheKey, 1, testData, 0, blockSize - 1));
     assertTrue(blockCache.store(blockCacheKey, 1, testData, blockSize, blockSize - 1));
     assertTrue(blockCache.store(blockCacheKey, 1, testData, blockSize * 2, blockSize - 1));
+    blockCache.close(); 
   }
 
   private static byte[] testData(Random random, int size, byte[] buf) {

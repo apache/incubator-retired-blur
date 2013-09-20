@@ -23,11 +23,13 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
 import org.apache.blur.lucene.LuceneVersionConstant;
+import org.apache.blur.store.blockcache.LastModified;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
@@ -40,15 +42,18 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
+import org.apache.lucene.store.Lock;
+import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.RAMDirectory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public abstract class BaseDirectoryTest {
+public abstract class BaseDirectoryTestSuite {
   protected static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "/tmp"));
 
   protected static final int MAX_NUMBER_OF_WRITES = 10000;
@@ -140,8 +145,8 @@ public abstract class BaseDirectoryTest {
 
   private void testEof(String name, Directory directory, long length) throws IOException {
     IndexInput input = directory.openInput(name, IOContext.DEFAULT);
-    input.seek(length);
     try {
+      input.seek(length);
       input.readByte();
       fail("should throw eof");
     } catch (IOException e) {
@@ -268,6 +273,103 @@ public abstract class BaseDirectoryTest {
       }
     }
     file.delete();
+  }
+
+  public static Directory wrapLastModified(Directory dir) {
+    return new DirectoryLastModified(dir);
+  }
+
+  public static class DirectoryLastModified extends Directory implements LastModified {
+
+    private Directory _directory;
+
+    public DirectoryLastModified(Directory dir) {
+      _directory = dir;
+    }
+
+    @Override
+    public long getFileModified(String name) throws IOException {
+      if (_directory instanceof FSDirectory) {
+        File fileDir = ((FSDirectory) _directory).getDirectory();
+        return new File(fileDir, name).lastModified();
+      }
+      throw new RuntimeException("not impl");
+    }
+
+    @Override
+    public String[] listAll() throws IOException {
+      return _directory.listAll();
+    }
+
+    @Override
+    public void deleteFile(String name) throws IOException {
+      _directory.deleteFile(name);
+    }
+
+    @Override
+    public long fileLength(String name) throws IOException {
+      return _directory.fileLength(name);
+    }
+
+    @Override
+    public IndexOutput createOutput(String name, IOContext context) throws IOException {
+      return _directory.createOutput(name, context);
+    }
+
+    @Override
+    public void sync(Collection<String> names) throws IOException {
+      _directory.sync(names);
+    }
+
+    @Override
+    public IndexInput openInput(String name, IOContext context) throws IOException {
+      return _directory.openInput(name, context);
+    }
+
+    @Override
+    public Lock makeLock(String name) {
+      return _directory.makeLock(name);
+    }
+
+    @Override
+    public void clearLock(String name) throws IOException {
+      _directory.clearLock(name);
+    }
+
+    @Override
+    public void setLockFactory(LockFactory lockFactory) throws IOException {
+      _directory.setLockFactory(lockFactory);
+    }
+
+    @Override
+    public LockFactory getLockFactory() {
+      return _directory.getLockFactory();
+    }
+
+    @Override
+    public String getLockID() {
+      return _directory.getLockID();
+    }
+
+    @Override
+    public void copy(Directory to, String src, String dest, IOContext context) throws IOException {
+      _directory.copy(to, src, dest, context);
+    }
+
+    @Override
+    public IndexInputSlicer createSlicer(String name, IOContext context) throws IOException {
+      return _directory.createSlicer(name, context);
+    }
+
+    @Override
+    public boolean fileExists(String name) throws IOException {
+      return _directory.fileExists(name);
+    }
+
+    @Override
+    public void close() throws IOException {
+      _directory.close();
+    }
   }
 
 }

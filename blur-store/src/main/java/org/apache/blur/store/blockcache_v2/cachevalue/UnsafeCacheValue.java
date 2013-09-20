@@ -24,7 +24,7 @@ import sun.misc.Unsafe;
 @SuppressWarnings("serial")
 public class UnsafeCacheValue extends BaseCacheValue {
 
-  private static final int MINIMUM_SIZE = 1024;
+//  private static final int MINIMUM_SIZE = 1024;
 
   private static final Unsafe _unsafe;
 

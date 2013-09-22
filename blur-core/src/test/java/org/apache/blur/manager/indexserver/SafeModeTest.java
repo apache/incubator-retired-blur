@@ -35,14 +35,15 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class SafeModeTest {
 
   private static String path = "./target/test-zk";
-  private static ZooKeeper zk;
   private static MiniCluster miniCluster;
 
   @BeforeClass
@@ -50,6 +51,17 @@ public class SafeModeTest {
     new File(path).mkdirs();
     miniCluster = new MiniCluster();
     miniCluster.startZooKeeper(path, true);
+  }
+
+  @AfterClass
+  public static void stopZooKeeper() throws InterruptedException {
+    miniCluster.shutdownZooKeeper();
+  }
+  
+  private ZooKeeper zk;
+
+  @Before
+  public void setup() throws IOException {
     zk = new ZooKeeper(miniCluster.getZkConnectionString(), 20000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
@@ -58,10 +70,10 @@ public class SafeModeTest {
     });
   }
 
-  @AfterClass
-  public static void stopZooKeeper() throws InterruptedException {
+  @After
+  public void teardown() throws KeeperException, InterruptedException {
+    rm(zk, "/testing");
     zk.close();
-    miniCluster.shutdownZooKeeper();
   }
 
   @Test
@@ -120,6 +132,10 @@ public class SafeModeTest {
 
       }
     });
+    
+    SafeMode setupSafeMode = new SafeMode(zk, "/testing/safemode", "/testing/nodepath", TimeUnit.SECONDS, 5,
+        TimeUnit.SECONDS, 60);
+    setupSafeMode.registerNode("node1", null);
 
     SafeMode safeMode = new SafeMode(zk, "/testing/safemode", "/testing/nodepath", TimeUnit.SECONDS, 5,
         TimeUnit.SECONDS, 60);
@@ -139,6 +155,10 @@ public class SafeModeTest {
 
       }
     });
+    
+    SafeMode setupSafeMode = new SafeMode(zk, "/testing/safemode", "/testing/nodepath", TimeUnit.SECONDS, 5,
+        TimeUnit.SECONDS, 60);
+    setupSafeMode.registerNode("node10", null);
 
     SafeMode safeMode = new SafeMode(zk, "/testing/safemode", "/testing/nodepath", TimeUnit.SECONDS, 5,
         TimeUnit.SECONDS, 15);
@@ -170,4 +190,11 @@ public class SafeModeTest {
     return thread;
   }
 
+  private static void rm(ZooKeeper zk, String path) throws KeeperException, InterruptedException {
+    List<String> children = zk.getChildren(path, false);
+    for (String c : children) {
+      rm(zk, path + "/" + c);
+    }
+    zk.delete(path, -1);
+  }
 }

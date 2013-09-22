@@ -58,15 +58,17 @@ import org.junit.Test;
 public class TransactionRecorderTest {
 
   private static final Log LOG = LogFactory.getLog(TransactionRecorderTest.class);
+  private static MiniCluster miniCluster;
 
   @BeforeClass
   public static void setup() {
-    MiniCluster.startDfs(new File("target", "transaction-recorder-test").toURI().toString());
+    miniCluster = new MiniCluster();
+    miniCluster.startDfs(new File("target", "transaction-recorder-test").getAbsolutePath());
   }
 
   @AfterClass
   public static void teardown() throws IOException {
-    MiniCluster.shutdownDfs();
+    miniCluster.shutdownDfs();
   }
 
   private Collection<Closeable> closeThis = new HashSet<Closeable>();
@@ -82,7 +84,7 @@ public class TransactionRecorderTest {
   public void testReplaySimpleTest() throws IOException, InterruptedException {
     TableContext.clear();
     Configuration configuration = new Configuration(false);
-    URI fileSystemUri = MiniCluster.getFileSystemUri();
+    URI fileSystemUri = miniCluster.getFileSystemUri();
     Path path = new Path(fileSystemUri.toString() + "/transaction-recorder-test");
     FileSystem fileSystem = path.getFileSystem(configuration);
     fileSystem.delete(path, true);
@@ -123,48 +125,48 @@ public class TransactionRecorderTest {
     System.out.println("assert");
     assertEquals(1, reader.numDocs());
   }
-  
+
   @Test
-  public void testConvertShouldPass(){
+  public void testConvertShouldPass() {
     String rowId = "RowId_123-1";
     Record record = new Record();
     record.setRecordId("RecordId_123-1");
     record.setFamily("Family_123-1");
-    
+
     Column column = new Column();
     column.setName("columnName_123-1");
     record.setColumns(Arrays.asList(column));
-    
+
     BlurUtil.validateRowIdAndRecord(rowId, record);
-    assert(true);
+    assert (true);
   }
-  
-  @Test(expected=IllegalArgumentException.class)
-  public void testConvertWithBadFamilyNameShouldFail(){
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testConvertWithBadFamilyNameShouldFail() {
     String rowId = "RowId_123-1";
     Record record = new Record();
     record.setRecordId("RecordId_123-1");
     record.setFamily("Family_123.1");
-    
+
     Column column = new Column();
     column.setName("columnName_123-1");
     record.setColumns(Arrays.asList(column));
-    
+
     BlurUtil.validateRowIdAndRecord(rowId, record);
     fail();
   }
-  
-  @Test(expected=IllegalArgumentException.class)
-  public void testConvertWithBadColumnNameShouldFail(){
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testConvertWithBadColumnNameShouldFail() {
     String rowId = "RowId_123-1";
     Record record = new Record();
     record.setRecordId("RecordId_123-1");
     record.setFamily("Family_123-1");
-    
+
     Column column = new Column();
     column.setName("columnName_123.1");
     record.setColumns(Arrays.asList(column));
-    
+
     BlurUtil.validateRowIdAndRecord(rowId, record);
     fail();
   }

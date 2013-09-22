@@ -16,7 +16,10 @@ package org.apache.blur.manager.indexserver;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,12 +43,14 @@ public class SafeModeTest {
 
   private static String path = "./target/test-zk";
   private static ZooKeeper zk;
+  private static MiniCluster miniCluster;
 
   @BeforeClass
   public static void startZooKeeper() throws IOException {
     new File(path).mkdirs();
-    MiniCluster.startZooKeeper(path);
-    zk = new ZooKeeper(MiniCluster.getZkConnectionString(), 20000, new Watcher() {
+    miniCluster = new MiniCluster();
+    miniCluster.startZooKeeper(path, true);
+    zk = new ZooKeeper(miniCluster.getZkConnectionString(), 20000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 
@@ -56,7 +61,7 @@ public class SafeModeTest {
   @AfterClass
   public static void stopZooKeeper() throws InterruptedException {
     zk.close();
-    MiniCluster.shutdownZooKeeper();
+    miniCluster.shutdownZooKeeper();
   }
 
   @Test
@@ -73,8 +78,16 @@ public class SafeModeTest {
       Thread.sleep(100);
     }
 
-    for (Thread t : threads) {
-      t.join();
+    boolean alive = true;
+    while (alive) {
+      alive = false;
+      for (Thread t : threads) {
+        t.join(1000);
+        if (t.isAlive()) {
+          System.out.println("Thread [" + t + "] has not finished.");
+          alive = true;
+        }
+      }
     }
 
     for (AtomicReference<Throwable> t : errors) {
@@ -101,7 +114,7 @@ public class SafeModeTest {
 
   @Test
   public void testExtraNodeStartup() throws IOException, InterruptedException, KeeperException {
-    ZooKeeper zk = new ZooKeeper(MiniCluster.getZkConnectionString(), 20000, new Watcher() {
+    ZooKeeper zk = new ZooKeeper(miniCluster.getZkConnectionString(), 20000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 
@@ -120,7 +133,7 @@ public class SafeModeTest {
 
   @Test
   public void testSecondNodeStartup() throws IOException, InterruptedException, KeeperException {
-    ZooKeeper zk = new ZooKeeper(MiniCluster.getZkConnectionString(), 20000, new Watcher() {
+    ZooKeeper zk = new ZooKeeper(miniCluster.getZkConnectionString(), 20000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 

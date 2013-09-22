@@ -480,6 +480,22 @@ public class MiniCluster {
   }
 
   public void startDfs(Configuration conf, boolean format, String path) {
+    Properties properties = System.getProperties();
+
+//    Set<Object> keySet = properties.keySet();
+//    for (Object k : keySet) {
+//      String key = k.toString();
+//      if (key.contains("os")) {
+//        String value = properties.getProperty(key);
+//        System.out.println("Key [" + key + "] Value [" + value + "]");
+//      }
+//    }
+
+    String osName = properties.getProperty("os.name").toLowerCase();
+//    System.out.println("os.name=" + osName);
+    if (osName.contains("linux")) {
+      conf.set("dfs.datanode.data.dir.perm", "775");
+    }
     System.setProperty("test.build.data", path);
     try {
       cluster = new MiniDFSCluster(conf, 1, true, (String[]) null);

@@ -66,7 +66,6 @@ import org.junit.Test;
 
 public class BlurClusterTest {
 
-  private static final int _1MB = 1000 * 1000;
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp_BlurClusterTest"));
   private static MiniCluster miniCluster;
 
@@ -199,7 +198,7 @@ public class BlurClusterTest {
     }).start();
     Thread.sleep(500);
     client.cancelQuery("test", blurQueryRow.getUuid());
-    BlurException blurException = pollForError(error, 10, TimeUnit.SECONDS, null, fail);
+    BlurException blurException = pollForError(error, 10, TimeUnit.SECONDS, null, fail, -1);
     if (fail.get()) {
       fail("Unknown error, failing test.");
     }
@@ -242,7 +241,9 @@ public class BlurClusterTest {
     System.out.println("Limit Heap [" + limit + "]");
     long difference = limit - used;
     int sizeToAllocate = (int) ((int) difference * 0.50);
-    System.out.println("Allocating [" + sizeToAllocate + "] Heap [" + getHeapSize() + "]");
+    System.out.println("Allocating [" + sizeToAllocate + "] Heap [" + getHeapSize() + "] Max [" + getMaxHeapSize()
+        + "]");
+
     byte[] bufferToFillHeap = new byte[sizeToAllocate];
     new Thread(new Runnable() {
       @Override
@@ -261,7 +262,8 @@ public class BlurClusterTest {
     }).start();
     Thread.sleep(500);
     List<byte[]> bufferToPutGcWatcherOverLimitList = new ArrayList<byte[]>();
-    BlurException blurException = pollForError(error, 120, TimeUnit.SECONDS, bufferToPutGcWatcherOverLimitList, fail);
+    BlurException blurException = pollForError(error, 120, TimeUnit.SECONDS, bufferToPutGcWatcherOverLimitList, fail,
+        (int) (difference / 7));
     if (fail.get()) {
       fail("Unknown error, failing test.");
     }
@@ -274,12 +276,13 @@ public class BlurClusterTest {
   }
 
   private BlurException pollForError(AtomicReference<BlurException> error, long period, TimeUnit timeUnit,
-      List<byte[]> bufferToPutGcWatcherOverLimitList, AtomicBoolean fail) throws InterruptedException {
+      List<byte[]> bufferToPutGcWatcherOverLimitList, AtomicBoolean fail, int sizeToAllocate)
+      throws InterruptedException {
     long s = System.nanoTime();
     long totalTime = timeUnit.toNanos(period) + s;
-    int sizeToAllocate = _1MB * 10;
     if (bufferToPutGcWatcherOverLimitList != null) {
-      System.out.println("Allocating [" + sizeToAllocate + "] Heap [" + getHeapSize() + "]");
+      System.out.println("Allocating [" + sizeToAllocate + "] Heap [" + getHeapSize() + "] Max [" + getMaxHeapSize()
+          + "]");
       bufferToPutGcWatcherOverLimitList.add(new byte[sizeToAllocate]);
     }
     while (totalTime > System.nanoTime()) {
@@ -292,7 +295,8 @@ public class BlurClusterTest {
       }
       Thread.sleep(250);
       if (bufferToPutGcWatcherOverLimitList != null) {
-        System.out.println("Allocating [" + sizeToAllocate + "] Heap [" + getHeapSize() + "]");
+        System.out.println("Allocating [" + sizeToAllocate + "] Heap [" + getHeapSize() + "] Max [" + getMaxHeapSize()
+            + "]");
         bufferToPutGcWatcherOverLimitList.add(new byte[sizeToAllocate]);
       }
     }
@@ -301,6 +305,10 @@ public class BlurClusterTest {
 
   private long getHeapSize() {
     return ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
+  }
+
+  private long getMaxHeapSize() {
+    return ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
   }
 
   public void testTestShardFailover() throws BlurException, TException, InterruptedException, IOException,

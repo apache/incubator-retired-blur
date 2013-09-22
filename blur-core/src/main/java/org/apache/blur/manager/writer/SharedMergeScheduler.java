@@ -38,13 +38,13 @@ public class SharedMergeScheduler implements Runnable, Closeable {
 
   private BlockingQueue<IndexWriter> _writers = new LinkedBlockingQueue<IndexWriter>();
   private AtomicBoolean _running = new AtomicBoolean(true);
-  private ExecutorService service;
+  private ExecutorService _service;
 
   public SharedMergeScheduler() {
     int threads = 3;
-    service = Executors.newThreadPool("sharedMergeScheduler", threads, false);
+    _service = Executors.newThreadPool("sharedMergeScheduler", threads, false);
     for (int i = 0; i < threads; i++) {
-      service.submit(this);
+      _service.submit(this);
     }
   }
 
@@ -84,7 +84,7 @@ public class SharedMergeScheduler implements Runnable, Closeable {
   @Override
   public void close() throws IOException {
     _running.set(false);
-    service.shutdownNow();
+    _service.shutdownNow();
   }
 
   @Override

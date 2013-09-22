@@ -34,6 +34,7 @@ import java.lang.management.OperatingSystemMXBean;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 
@@ -64,15 +65,21 @@ public class ThriftServer {
   private Iface _iface;
   private TServer _server;
   private boolean _closed;
-  private BlurConfiguration _configuration;
   private int _threadCount;
-  private int _bindPort;
-  private String _bindAddress;
   private BlurShutdown _shutdown;
   private ExecutorService _executorService;
   private ExecutorService _queryExexutorService;
   private ExecutorService _mutateExecutorService;
   private TServerEventHandler _eventHandler;
+  private TNonblockingServerSocket _serverTransport;
+
+  public TNonblockingServerSocket getServerTransport() {
+    return _serverTransport;
+  }
+
+  public void setServerTransport(TNonblockingServerSocket serverTransport) {
+    _serverTransport = serverTransport;
+  }
 
   public static void printUlimits() throws IOException {
     ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", "ulimit -a");
@@ -181,9 +188,7 @@ public class ThriftServer {
   public void start() throws TTransportException {
     _executorService = Executors.newThreadPool("thrift-processors", _threadCount);
     Blur.Processor<Blur.Iface> processor = new Blur.Processor<Blur.Iface>(_iface);
-
-    TNonblockingServerSocket serverTransport = new TNonblockingServerSocket(getBindInetSocketAddress(_configuration));
-    TThreadedSelectorServer.Args args = new TThreadedSelectorServer.Args(serverTransport);
+    TThreadedSelectorServer.Args args = new TThreadedSelectorServer.Args(_serverTransport);
     args.processor(processor);
     args.executorService(_executorService);
     args.transportFactory(new TFramedTransport.Factory());
@@ -194,8 +199,22 @@ public class ThriftServer {
     _server.serve();
   }
 
-  public InetSocketAddress getBindInetSocketAddress(BlurConfiguration configuration) {
-    return new InetSocketAddress(_bindAddress, _bindPort);
+  public static TNonblockingServerSocket getTNonblockingServerSocket(String bindAddress, int bindPort)
+      throws TTransportException {
+    InetSocketAddress bindInetSocketAddress = getBindInetSocketAddress(bindAddress, bindPort);
+    return new TNonblockingServerSocket(bindInetSocketAddress);
+  }
+
+  public int getLocalPort() {
+    ServerSocket serverSocket = _serverTransport.getServerSocket();
+    if (serverSocket == null) {
+      return 0;
+    }
+    return serverSocket.getLocalPort();
+  }
+
+  public static InetSocketAddress getBindInetSocketAddress(String bindAddress, int bindPort) {
+    return new InetSocketAddress(bindAddress, bindPort);
   }
 
   public static String isEmpty(String str, String name) {
@@ -219,10 +238,6 @@ public class ThriftServer {
 
   public void setNodeName(String nodeName) {
     this._nodeName = nodeName;
-  }
-
-  public void setConfiguration(BlurConfiguration configuration) {
-    this._configuration = configuration;
   }
 
   public static String getNodeName(BlurConfiguration configuration, String hostNameProperty)
@@ -249,16 +264,8 @@ public class ThriftServer {
     return hostName;
   }
 
-  public void setBindPort(int bindPort) {
-    _bindPort = bindPort;
-  }
-
-  public void setBindAddress(String bindAddress) {
-    _bindAddress = bindAddress;
-  }
-
   public void setThreadCount(int threadCount) {
-    this._threadCount = threadCount;
+    _threadCount = threadCount;
   }
 
   public BlurShutdown getShutdown() {
@@ -266,7 +273,7 @@ public class ThriftServer {
   }
 
   public void setShutdown(BlurShutdown shutdown) {
-    this._shutdown = shutdown;
+    _shutdown = shutdown;
   }
 
   public TServerEventHandler getEventHandler() {

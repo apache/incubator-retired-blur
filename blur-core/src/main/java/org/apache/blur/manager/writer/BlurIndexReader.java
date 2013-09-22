@@ -30,7 +30,6 @@ import org.apache.blur.lucene.warmup.TraceableDirectory;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
-import org.apache.blur.thrift.BException;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.index.BlurIndexWriter;

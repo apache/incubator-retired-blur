@@ -23,49 +23,80 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import org.apache.blur.lucene.LuceneVersionConstant;
+import org.apache.blur.store.blockcache.LastModified;
 import org.apache.blur.store.buffer.BufferStore;
-import org.apache.blur.store.hdfs.HdfsDirectory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.IntField;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.NumericRangeQuery;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
+import org.apache.lucene.store.Lock;
+import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.RAMDirectory;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class HdfsDirectoryTest {
-  private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "/tmp"));
+public abstract class BaseDirectoryTestSuite {
+  protected static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "/tmp"));
 
-  private static final int MAX_NUMBER_OF_WRITES = 10000;
-  private static final int MIN_FILE_SIZE = 100;
-  private static final int MAX_FILE_SIZE = 100000;
-  private static final int MIN_BUFFER_SIZE = 1;
-  private static final int MAX_BUFFER_SIZE = 5000;
-  private static final int MAX_NUMBER_OF_READS = 10000;
-  private HdfsDirectory directory;
-  private File file;
-  private long seed;
-  private Random random;
+  protected static final int MAX_NUMBER_OF_WRITES = 10000;
+  protected static final int MIN_FILE_SIZE = 100;
+  protected static final int MAX_FILE_SIZE = 100000;
+  protected static final int MIN_BUFFER_SIZE = 1;
+  protected static final int MAX_BUFFER_SIZE = 5000;
+  protected static final int MAX_NUMBER_OF_READS = 10000;
+  protected Directory directory;
+  protected File file;
+  protected long seed;
+  protected Random random;
 
   @Before
   public void setUp() throws IOException {
     BufferStore.init(128, 128);
     file = new File(TMPDIR, "hdfsdirectorytest");
     rm(file);
-    URI uri = new File(file, "hdfs").toURI();
-    Path hdfsDirPath = new Path(uri.toString());
-    Configuration conf = new Configuration();
-    directory = new HdfsDirectory(conf, hdfsDirPath);
     seed = new Random().nextLong();
     random = new Random(seed);
+    setupDirectory();
   }
+
+  @After
+  public void tearDown() {
+    print(file, "");
+  }
+
+  private void print(File f, String buf) {
+    if (f.isDirectory()) {
+      System.out.println(buf + "\\" + f.getName());
+      for (File fl : f.listFiles()) {
+        if (fl.getName().startsWith(".")) {
+          continue;
+        }
+        print(fl, buf + " ");
+      }
+    } else {
+      System.out.println(buf + f.getName() + " " + f.length());
+    }
+  }
+
+  protected abstract void setupDirectory() throws IOException;
 
   @Test
   public void testWritingAndReadingAFile() throws IOException {
@@ -114,8 +145,8 @@ public class HdfsDirectoryTest {
 
   private void testEof(String name, Directory directory, long length) throws IOException {
     IndexInput input = directory.openInput(name, IOContext.DEFAULT);
-    input.seek(length);
     try {
+      input.seek(length);
       input.readByte();
       fail("should throw eof");
     } catch (IOException e) {
@@ -142,7 +173,48 @@ public class HdfsDirectoryTest {
     }
   }
 
-  private void assertInputsEquals(String name, Directory fsDir, HdfsDirectory hdfs) throws IOException {
+  @Test
+  public void testCreateIndex() throws IOException {
+    IndexWriterConfig conf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, new KeywordAnalyzer());
+    IndexWriter writer = new IndexWriter(directory, conf);
+    int numDocs = 1000;
+    DirectoryReader reader = null;
+    for (int i = 0; i < 100; i++) {
+      if (reader == null) {
+        reader = DirectoryReader.open(writer, true);
+      } else {
+        DirectoryReader old = reader;
+        reader = DirectoryReader.openIfChanged(old, writer, true);
+        if (reader == null) {
+          reader = old;
+        } else {
+          old.close();
+        }
+      }
+      assertEquals(i * numDocs, reader.numDocs());
+      IndexSearcher searcher = new IndexSearcher(reader);
+      NumericRangeQuery<Integer> query = NumericRangeQuery.newIntRange("id", 42, 42, true, true);
+      TopDocs topDocs = searcher.search(query, 10);
+      assertEquals(i, topDocs.totalHits);
+      addDocuments(writer, numDocs);
+    }
+    writer.close(false);
+    reader.close();
+  }
+
+  private void addDocuments(IndexWriter writer, int numDocs) throws IOException {
+    for (int i = 0; i < numDocs; i++) {
+      writer.addDocument(getDoc(i));
+    }
+  }
+
+  private Document getDoc(int i) {
+    Document document = new Document();
+    document.add(new IntField("id", i, Store.YES));
+    return document;
+  }
+
+  private void assertInputsEquals(String name, Directory fsDir, Directory hdfs) throws IOException {
     int reads = random.nextInt(MAX_NUMBER_OF_READS);
     IndexInput fsInput = fsDir.openInput(name, IOContext.DEFAULT);
     IndexInput hdfsInput = hdfs.openInput(name, IOContext.DEFAULT);
@@ -168,7 +240,7 @@ public class HdfsDirectoryTest {
     hdfsInput.close();
   }
 
-  private void createFile(String name, Directory fsDir, HdfsDirectory hdfs) throws IOException {
+  private void createFile(String name, Directory fsDir, Directory hdfs) throws IOException {
     int writes = random.nextInt(MAX_NUMBER_OF_WRITES);
     int fileLength = random.nextInt(MAX_FILE_SIZE - MIN_FILE_SIZE) + MIN_FILE_SIZE;
     IndexOutput fsOutput = fsDir.createOutput(name, IOContext.DEFAULT);
@@ -201,6 +273,103 @@ public class HdfsDirectoryTest {
       }
     }
     file.delete();
+  }
+
+  public static Directory wrapLastModified(Directory dir) {
+    return new DirectoryLastModified(dir);
+  }
+
+  public static class DirectoryLastModified extends Directory implements LastModified {
+
+    private Directory _directory;
+
+    public DirectoryLastModified(Directory dir) {
+      _directory = dir;
+    }
+
+    @Override
+    public long getFileModified(String name) throws IOException {
+      if (_directory instanceof FSDirectory) {
+        File fileDir = ((FSDirectory) _directory).getDirectory();
+        return new File(fileDir, name).lastModified();
+      }
+      throw new RuntimeException("not impl");
+    }
+
+    @Override
+    public String[] listAll() throws IOException {
+      return _directory.listAll();
+    }
+
+    @Override
+    public void deleteFile(String name) throws IOException {
+      _directory.deleteFile(name);
+    }
+
+    @Override
+    public long fileLength(String name) throws IOException {
+      return _directory.fileLength(name);
+    }
+
+    @Override
+    public IndexOutput createOutput(String name, IOContext context) throws IOException {
+      return _directory.createOutput(name, context);
+    }
+
+    @Override
+    public void sync(Collection<String> names) throws IOException {
+      _directory.sync(names);
+    }
+
+    @Override
+    public IndexInput openInput(String name, IOContext context) throws IOException {
+      return _directory.openInput(name, context);
+    }
+
+    @Override
+    public Lock makeLock(String name) {
+      return _directory.makeLock(name);
+    }
+
+    @Override
+    public void clearLock(String name) throws IOException {
+      _directory.clearLock(name);
+    }
+
+    @Override
+    public void setLockFactory(LockFactory lockFactory) throws IOException {
+      _directory.setLockFactory(lockFactory);
+    }
+
+    @Override
+    public LockFactory getLockFactory() {
+      return _directory.getLockFactory();
+    }
+
+    @Override
+    public String getLockID() {
+      return _directory.getLockID();
+    }
+
+    @Override
+    public void copy(Directory to, String src, String dest, IOContext context) throws IOException {
+      _directory.copy(to, src, dest, context);
+    }
+
+    @Override
+    public IndexInputSlicer createSlicer(String name, IOContext context) throws IOException {
+      return _directory.createSlicer(name, context);
+    }
+
+    @Override
+    public boolean fileExists(String name) throws IOException {
+      return _directory.fileExists(name);
+    }
+
+    @Override
+    public void close() throws IOException {
+      _directory.close();
+    }
   }
 
 }

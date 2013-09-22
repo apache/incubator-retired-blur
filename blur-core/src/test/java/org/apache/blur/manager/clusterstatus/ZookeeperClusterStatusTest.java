@@ -49,13 +49,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-
 public class ZookeeperClusterStatusTest {
 
   private static final String TEST = "test";
   private static final String DEFAULT = "default";
 
   private static final Log LOG = LogFactory.getLog(ZookeeperClusterStatusTest.class);
+  private static MiniCluster miniCluster;
   private ZooKeeper zooKeeper;
   private ZookeeperClusterStatus clusterStatus;
 
@@ -68,17 +68,18 @@ public class ZookeeperClusterStatusTest {
 
   @BeforeClass
   public static void setupOnce() throws InterruptedException, IOException, KeeperException {
-    MiniCluster.startZooKeeper("./target/zk_test");
+    miniCluster = new MiniCluster();
+    miniCluster.startZooKeeper("./target/zk_test", true);
   }
 
   @AfterClass
   public static void teardownOnce() {
-    MiniCluster.shutdownZooKeeper();
+    miniCluster.shutdownZooKeeper();
   }
 
   @Before
   public void setup() throws KeeperException, InterruptedException, IOException {
-    zooKeeper = new ZooKeeperClient(MiniCluster.getZkConnectionString(), 30000, new Watcher() {
+    zooKeeper = new ZooKeeperClient(miniCluster.getZkConnectionString(), 30000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 
@@ -101,43 +102,46 @@ public class ZookeeperClusterStatusTest {
     assertEquals(Arrays.asList(DEFAULT), clusterList);
   }
 
-//  @Test
-//  public void testSafeModeNotSet() throws KeeperException, InterruptedException {
-//    LOG.warn("testSafeModeNotSet");
-//    assertFalse(clusterStatus.isInSafeMode(false, DEFAULT));
-//    new WaitForAnswerToBeCorrect(20L) {
-//      @Override
-//      public Object run() {
-//        return clusterStatus.isInSafeMode(true, DEFAULT);
-//      }
-//    }.test(false);
-//  }
-//
-//  @Test
-//  public void testSafeModeSetInPast() throws KeeperException, InterruptedException {
-//    LOG.warn("testSafeModeSetInPast");
-//    setSafeModeInPast();
-//    assertFalse(clusterStatus.isInSafeMode(false, DEFAULT));
-//    new WaitForAnswerToBeCorrect(20L) {
-//      @Override
-//      public Object run() {
-//        return clusterStatus.isInSafeMode(true, DEFAULT);
-//      }
-//    }.test(false);
-//  }
-//
-//  @Test
-//  public void testSafeModeSetInFuture() throws KeeperException, InterruptedException {
-//    LOG.warn("testSafeModeSetInFuture");
-//    setSafeModeInFuture();
-//    assertTrue(clusterStatus.isInSafeMode(false, DEFAULT));
-//    new WaitForAnswerToBeCorrect(20L) {
-//      @Override
-//      public Object run() {
-//        return clusterStatus.isInSafeMode(true, DEFAULT);
-//      }
-//    }.test(true);
-//  }
+  // @Test
+  // public void testSafeModeNotSet() throws KeeperException,
+  // InterruptedException {
+  // LOG.warn("testSafeModeNotSet");
+  // assertFalse(clusterStatus.isInSafeMode(false, DEFAULT));
+  // new WaitForAnswerToBeCorrect(20L) {
+  // @Override
+  // public Object run() {
+  // return clusterStatus.isInSafeMode(true, DEFAULT);
+  // }
+  // }.test(false);
+  // }
+  //
+  // @Test
+  // public void testSafeModeSetInPast() throws KeeperException,
+  // InterruptedException {
+  // LOG.warn("testSafeModeSetInPast");
+  // setSafeModeInPast();
+  // assertFalse(clusterStatus.isInSafeMode(false, DEFAULT));
+  // new WaitForAnswerToBeCorrect(20L) {
+  // @Override
+  // public Object run() {
+  // return clusterStatus.isInSafeMode(true, DEFAULT);
+  // }
+  // }.test(false);
+  // }
+  //
+  // @Test
+  // public void testSafeModeSetInFuture() throws KeeperException,
+  // InterruptedException {
+  // LOG.warn("testSafeModeSetInFuture");
+  // setSafeModeInFuture();
+  // assertTrue(clusterStatus.isInSafeMode(false, DEFAULT));
+  // new WaitForAnswerToBeCorrect(20L) {
+  // @Override
+  // public Object run() {
+  // return clusterStatus.isInSafeMode(true, DEFAULT);
+  // }
+  // }.test(true);
+  // }
 
   @Test
   public void testGetClusterNoTable() {
@@ -181,7 +185,7 @@ public class ZookeeperClusterStatusTest {
   public void testIsEnabledEnabledTable() throws KeeperException, InterruptedException {
     createTable("enabledtable", true);
     assertTrue(clusterStatus.isEnabled(false, DEFAULT, "enabledtable"));
-  
+
     new WaitForAnswerToBeCorrect(20L) {
       @Override
       public Object run() {
@@ -189,7 +193,7 @@ public class ZookeeperClusterStatusTest {
       }
     }.test(true);
   }
-  
+
   private void createTable(String name) throws KeeperException, InterruptedException {
     createTable(name, true);
   }

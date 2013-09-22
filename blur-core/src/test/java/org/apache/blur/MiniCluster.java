@@ -63,7 +63,10 @@ import org.apache.blur.thrift.util.BlurThriftHelper;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.ZooKeeperClient;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -480,22 +483,19 @@ public class MiniCluster {
   }
 
   public void startDfs(Configuration conf, boolean format, String path) {
-    Properties properties = System.getProperties();
-
-//    Set<Object> keySet = properties.keySet();
-//    for (Object k : keySet) {
-//      String key = k.toString();
-//      if (key.contains("os")) {
-//        String value = properties.getProperty(key);
-//        System.out.println("Key [" + key + "] Value [" + value + "]");
-//      }
-//    }
-
-    String osName = properties.getProperty("os.name").toLowerCase();
-//    System.out.println("os.name=" + osName);
-    if (osName.contains("linux")) {
-      conf.set("dfs.datanode.data.dir.perm", "775");
+    String perm;
+    Path p = new Path(new File("./target").getAbsolutePath());
+    try {
+      FileSystem fileSystem = p.getFileSystem(conf);
+      FileStatus fileStatus = fileSystem.getFileStatus(p);
+      FsPermission permission = fileStatus.getPermission();
+      perm = permission.getUserAction().ordinal() + "" + permission.getGroupAction().ordinal() + ""
+          + permission.getOtherAction().ordinal();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+    LOG.info("dfs.datanode.data.dir.perm=" + perm);
+    conf.set("dfs.datanode.data.dir.perm", perm);
     System.setProperty("test.build.data", path);
     try {
       cluster = new MiniDFSCluster(conf, 1, true, (String[]) null);

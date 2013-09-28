@@ -143,6 +143,7 @@ public class IndexManager {
   private Timer _fetchTimer;
   private int _fetchCount = 100;
   private int _maxHeapPerRowFetch = 10000000;
+  private int _mutateThreadCount;
 
   public static AtomicBoolean DEBUG_RUN_SLOW = new AtomicBoolean(false);
 
@@ -164,10 +165,14 @@ public class IndexManager {
         "Internal Queries/s", TimeUnit.SECONDS);
     _fetchTimer = Metrics.newTimer(new MetricName(ORG_APACHE_BLUR, BLUR, "Fetch Timer"), TimeUnit.MICROSECONDS,
         TimeUnit.SECONDS);
-
+    if (_threadCount == 0) {
+      throw new RuntimeException("Thread Count cannot be 0.");
+    }
+    if (_mutateThreadCount == 0) {
+      throw new RuntimeException("Mutate Thread Count cannot be 0.");
+    }
     _executor = Executors.newThreadPool("index-manager", _threadCount);
-    // @TODO give the mutate it's own thread pool
-    _mutateExecutor = Executors.newThreadPool("index-manager-mutate", _threadCount);
+    _mutateExecutor = Executors.newThreadPool("index-manager-mutate", _mutateThreadCount);
     _statusManager.init();
     LOG.info("Init Complete");
 
@@ -722,11 +727,11 @@ public class IndexManager {
     List<String> terms = new ArrayList<String>(size);
     AtomicReader areader = BlurUtil.getAtomicReader(reader);
     Terms termsAll = areader.terms(term.field());
-    
-    if(termsAll == null) {
-    	return terms;
+
+    if (termsAll == null) {
+      return terms;
     }
-    
+
     TermsEnum termEnum = termsAll.iterator(null);
 
     termEnum.seekCeil(term.bytes());
@@ -795,40 +800,17 @@ public class IndexManager {
   }
 
   public void mutate(final RowMutation mutation) throws BlurException, IOException {
-    Future<Void> future = _mutateExecutor.submit(new Callable<Void>() {
-      @Override
-      public Void call() throws Exception {
-        doMutate(mutation);
-        return null;
-      }
-    });
-    try {
-      future.get();
-    } catch (InterruptedException e) {
-      throw new BException("Unknown error during mutation", e);
-    } catch (ExecutionException e) {
-      throw new BException("Unknown error during mutation", e.getCause());
-    }
+    long s = System.nanoTime();
+    doMutate(mutation);
+    long e = System.nanoTime();
+    LOG.debug("doMutate took [{0} ms] to complete", (e - s) / 1000000.0);
   }
 
   public void mutate(final List<RowMutation> mutations) throws BlurException, IOException {
-    Future<Void> future = _mutateExecutor.submit(new Callable<Void>() {
-      @Override
-      public Void call() throws Exception {
-        long s = System.nanoTime();
-        doMutates(mutations);
-        long e = System.nanoTime();
-        LOG.debug("doMutates took [" + (e - s) / 1000000.0 + " ms] to complete");
-        return null;
-      }
-    });
-    try {
-      future.get();
-    } catch (InterruptedException e) {
-      throw new BException("Unknown error during mutation", e);
-    } catch (ExecutionException e) {
-      throw new BException("Unknown error during mutation", e.getCause());
-    }
+    long s = System.nanoTime();
+    doMutates(mutations);
+    long e = System.nanoTime();
+    LOG.debug("doMutates took [{0} ms] to complete", (e - s) / 1000000.0);
   }
 
   private void doMutates(List<RowMutation> mutations) throws BlurException, IOException {
@@ -1149,9 +1131,13 @@ public class IndexManager {
   }
 
   public void setThreadCount(int threadCount) {
-    this._threadCount = threadCount;
+    _threadCount = threadCount;
   }
 
+  public void setMutateThreadCount(int mutateThreadCount) {
+    _mutateThreadCount = mutateThreadCount;
+  }
+  
   public void setFilterCache(BlurFilterCache filterCache) {
     _filterCache = filterCache;
   }

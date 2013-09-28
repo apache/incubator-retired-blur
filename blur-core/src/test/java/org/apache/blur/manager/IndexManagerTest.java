@@ -107,6 +107,7 @@ public class IndexManagerTest {
     indexManager.setStatusCleanupTimerDelay(1000);
     indexManager.setIndexServer(server);
     indexManager.setThreadCount(1);
+    indexManager.setMutateThreadCount(1);
     indexManager.setClusterStatus(new ClusterStatus() {
 
       @Override

@@ -55,7 +55,7 @@ public class HdfsDirectory extends Directory implements LastModified {
 
   private static final Log LOG = LogFactory.getLog(HdfsDirectory.class);
 
-  public static AtomicInteger fetchImpl = new AtomicInteger(4);
+  public static AtomicInteger fetchImpl = new AtomicInteger(3);
 
   // static {
   // Thread thread = new Thread(new Runnable() {

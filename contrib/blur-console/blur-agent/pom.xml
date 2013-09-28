@@ -23,7 +23,7 @@ under the License.
 		<parent>
 		<groupId>org.apache.blur</groupId>
 		<artifactId>blur</artifactId>
-		<version>0.2.0-incubating</version>
+		<version>0.2.1-incubating-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>org.apache.blur</groupId>
@@ -77,12 +77,20 @@ under the License.
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-thrift</artifactId>
+<<<<<<< HEAD
 			<version>0.2.0-incubating</version>
+=======
+			<version>0.3.0-incubating-SNAPSHOT</version>
+>>>>>>> master
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-util</artifactId>
+<<<<<<< HEAD
 			<version>0.2.0-incubating</version>
+=======
+			<version>0.3.0-incubating-SNAPSHOT</version>
+>>>>>>> master
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -128,13 +136,21 @@ under the License.
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-core</artifactId>
+<<<<<<< HEAD
 			<version>0.2.0-incubating</version>
+=======
+			<version>0.3.0-incubating-SNAPSHOT</version>
+>>>>>>> master
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-core</artifactId>
+<<<<<<< HEAD
 			<version>0.2.0-incubating</version>
+=======
+			<version>0.3.0-incubating-SNAPSHOT</version>
+>>>>>>> master
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
@@ -147,7 +163,11 @@ under the License.
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-store</artifactId>
+<<<<<<< HEAD
 			<version>0.2.0-incubating</version>
+=======
+			<version>0.3.0-incubating-SNAPSHOT</version>
+>>>>>>> master
 			<scope>test</scope>
 		</dependency>
 		<dependency>

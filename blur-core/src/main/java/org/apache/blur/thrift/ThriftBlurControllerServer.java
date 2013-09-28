@@ -53,8 +53,8 @@ import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.metrics.ReporterSetup;
 import org.apache.blur.server.ControllerServerEventHandler;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingServerSocket;
 import org.apache.blur.thrift.generated.Blur.Iface;
-import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.MemoryReporter;
 import org.apache.blur.zookeeper.ZkUtils;
@@ -73,17 +73,24 @@ public class ThriftBlurControllerServer extends ThriftServer {
     ReporterSetup.setupReporters(configuration);
     MemoryReporter.enable();
     setupJvmMetrics();
-    ThriftServer server = createServer(serverIndex, configuration);
+    ThriftServer server = createServer(serverIndex, configuration, false);
     server.start();
   }
 
-  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration) throws Exception {
+  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration, boolean randomPort) throws Exception {
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
     String bindAddress = configuration.get(BLUR_CONTROLLER_BIND_ADDRESS);
     int bindPort = configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1);
     bindPort += serverIndex;
+    if (randomPort) {
+      bindPort = 0;
+    }
+    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress, bindPort);
+    if (randomPort) {
+      bindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
+    }
 
-    LOG.info("Shard Server using index [{0}] bind address [{1}]", serverIndex, bindAddress + ":" + bindPort);
+    LOG.info("Controller Server using index [{0}] bind address [{1}] random port assignment [{2}]", serverIndex, bindAddress + ":" + bindPort, randomPort);
 
     String nodeName = ThriftBlurShardServer.getNodeName(configuration, BLUR_CONTROLLER_HOSTNAME);
     nodeName = nodeName + ":" + bindPort;
@@ -95,8 +102,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr, sessionTimeout);
 
-    //@TODO this is confusing because controllers are in a cluster by default, but they see all the shards clusters.
-    BlurUtil.setupZookeeper(zooKeeper, BlurConstants.BLUR_CLUSTER);
+    BlurUtil.setupZookeeper(zooKeeper, null);
 
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration);
 
@@ -132,9 +138,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     final ThriftBlurControllerServer server = new ThriftBlurControllerServer();
     server.setNodeName(nodeName);
-    server.setConfiguration(configuration);
-    server.setBindAddress(bindAddress);
-    server.setBindPort(bindPort);
+    server.setServerTransport(tNonblockingServerSocket);
     server.setThreadCount(threadCount);
     server.setEventHandler(eventHandler);
     server.setIface(iface);

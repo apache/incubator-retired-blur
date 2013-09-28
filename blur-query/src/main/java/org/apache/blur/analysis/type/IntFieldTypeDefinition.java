@@ -69,8 +69,18 @@ public class IntFieldTypeDefinition extends NumericFieldTypeDefinition {
 
   @Override
   public Query getNewRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
-    int p1 = Integer.parseInt(part1);
-    int p2 = Integer.parseInt(part2);
+    int p1 = parseInt(part1);
+    int p2 = parseInt(part2);
     return NumericRangeQuery.newIntRange(field, _precisionStep, p1, p2, startInclusive, endInclusive);
+  }
+  
+  private int parseInt(String number) {
+    if (number.toLowerCase().equals(MIN)) {
+      return Integer.MIN_VALUE;
+    } else if (number.toLowerCase().equals(MAX)) {
+      return Integer.MAX_VALUE;
+    } else {
+      return Integer.parseInt(number);
+    }
   }
 }

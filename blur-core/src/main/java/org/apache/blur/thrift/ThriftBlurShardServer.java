@@ -29,6 +29,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_SLAB_COUNT;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_EXPERIMENTAL_BLOCK_CACHE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_FETCHCOUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
@@ -69,6 +70,7 @@ import org.apache.blur.metrics.ReporterSetup;
 import org.apache.blur.server.ShardServerEventHandler;
 import org.apache.blur.store.BlockCacheDirectoryFactory;
 import org.apache.blur.store.BlockCacheDirectoryFactoryV1;
+import org.apache.blur.store.BlockCacheDirectoryFactoryV2;
 import org.apache.blur.store.blockcache.BlockCache;
 import org.apache.blur.store.blockcache.BlockDirectory;
 import org.apache.blur.store.blockcache.BlockDirectoryCache;
@@ -76,6 +78,7 @@ import org.apache.blur.store.blockcache.Cache;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServlet;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingServerSocket;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.utils.BlurUtil;
@@ -93,7 +96,7 @@ public class ThriftBlurShardServer extends ThriftServer {
 
   private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
   private static final boolean enableJsonReporter = false;
-  private static final long _64MB = 0;
+  private static final long _64MB = 64 * 1024 * 1024;
 
   public static void main(String[] args) throws Exception {
     int serverIndex = getServerIndex(args);
@@ -106,16 +109,24 @@ public class ThriftBlurShardServer extends ThriftServer {
     setupJvmMetrics();
     // make this configurable
     GCWatcher.init(0.75);
-    ThriftServer server = createServer(serverIndex, configuration);
+    ThriftServer server = createServer(serverIndex, configuration, false);
     server.start();
   }
 
-  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration) throws Exception {
+  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration, boolean randomPort)
+      throws Exception {
     Configuration config = new Configuration();
 
     String bindAddress = configuration.get(BLUR_SHARD_BIND_ADDRESS);
     int bindPort = configuration.getInt(BLUR_SHARD_BIND_PORT, -1);
     bindPort += serverIndex;
+    if (randomPort) {
+      bindPort = 0;
+    }
+    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress, bindPort);
+    if (randomPort) {
+      bindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
+    }
 
     int baseGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT));
     final HttpJettyServer httpServer;
@@ -136,46 +147,52 @@ public class ThriftBlurShardServer extends ThriftServer {
     BufferStore.init(_1024Size, _8192Size);
 
     BlockCacheDirectoryFactory blockCacheDirectoryFactory;
-    // Alternate BlockCacheDirectoryFactory support currently disabled in 0.2.0, look for it in 0.2.1
-    //boolean experimentalBlockCache = configuration.getBoolean(BLUR_SHARD_EXPERIMENTAL_BLOCK_CACHE, false);
-    //experimentalBlockCache = false;
-    
-    // setup block cache
-    // 134,217,728 is the slab size, therefore there are 16,384 blocks
-    // in a slab when using a block size of 8,192
-    int numberOfBlocksPerSlab = 16384;
-    int blockSize = BlockDirectory.BLOCK_SIZE;
-    int slabCount = configuration.getInt(BLUR_SHARD_BLOCKCACHE_SLAB_COUNT, -1);
-    slabCount = getSlabCount(slabCount, numberOfBlocksPerSlab, blockSize);
-    Cache cache;
-    if (slabCount >= 1) {
-      BlockCache blockCache;
-      boolean directAllocation = configuration.getBoolean(BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION, true);
+    // Alternate BlockCacheDirectoryFactory support currently disabled in 0.2.0,
+    // look for it in 0.2.1
+    boolean experimentalBlockCache = configuration.getBoolean(BLUR_SHARD_EXPERIMENTAL_BLOCK_CACHE, false);
+    experimentalBlockCache = false;
+    if (!experimentalBlockCache) {
+      // setup block cache
+      // 134,217,728 is the slab size, therefore there are 16,384 blocks
+      // in a slab when using a block size of 8,192
+      int numberOfBlocksPerSlab = 16384;
+      int blockSize = BlockDirectory.BLOCK_SIZE;
+      int slabCount = configuration.getInt(BLUR_SHARD_BLOCKCACHE_SLAB_COUNT, -1);
+      slabCount = getSlabCount(slabCount, numberOfBlocksPerSlab, blockSize);
+      Cache cache;
+      if (slabCount >= 1) {
+        BlockCache blockCache;
+        boolean directAllocation = configuration.getBoolean(BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION, true);
 
-      int slabSize = numberOfBlocksPerSlab * blockSize;
-      LOG.info("Number of slabs of block cache [{0}] with direct memory allocation set to [{1}]", slabCount,
-          directAllocation);
-      LOG.info("Block cache target memory usage, slab size of [{0}] will allocate [{1}] slabs and use ~[{2}] bytes",
-          slabSize, slabCount, ((long) slabCount * (long) slabSize));
+        int slabSize = numberOfBlocksPerSlab * blockSize;
+        LOG.info("Number of slabs of block cache [{0}] with direct memory allocation set to [{1}]", slabCount,
+            directAllocation);
+        LOG.info("Block cache target memory usage, slab size of [{0}] will allocate [{1}] slabs and use ~[{2}] bytes",
+            slabSize, slabCount, ((long) slabCount * (long) slabSize));
 
-      try {
-        long totalMemory = (long) slabCount * (long) numberOfBlocksPerSlab * (long) blockSize;
-        blockCache = new BlockCache(directAllocation, totalMemory, slabSize);
-      } catch (OutOfMemoryError e) {
-        if ("Direct buffer memory".equals(e.getMessage())) {
-          System.err
-              .println("The max direct memory is too low.  Either increase by setting (-XX:MaxDirectMemorySize=<size>g -XX:+UseLargePages) or disable direct allocation by (blur.shard.blockcache.direct.memory.allocation=false) in blur-site.properties");
-          System.exit(1);
+        try {
+          long totalMemory = (long) slabCount * (long) numberOfBlocksPerSlab * (long) blockSize;
+          blockCache = new BlockCache(directAllocation, totalMemory, slabSize);
+        } catch (OutOfMemoryError e) {
+          if ("Direct buffer memory".equals(e.getMessage())) {
+            System.err
+                .println("The max direct memory is too low.  Either increase by setting (-XX:MaxDirectMemorySize=<size>g -XX:+UseLargePages) or disable direct allocation by (blur.shard.blockcache.direct.memory.allocation=false) in blur-site.properties");
+            System.exit(1);
+          }
+          throw e;
         }
-        throw e;
+        cache = new BlockDirectoryCache(blockCache);
+      } else {
+        cache = BlockDirectory.NO_CACHE;
       }
-      cache = new BlockDirectoryCache(blockCache);
+      blockCacheDirectoryFactory = new BlockCacheDirectoryFactoryV1(cache);
     } else {
-      cache = BlockDirectory.NO_CACHE;
+      long totalNumberOfBytes = VM.maxDirectMemory() - _64MB;
+      blockCacheDirectoryFactory = new BlockCacheDirectoryFactoryV2(configuration, totalNumberOfBytes);
     }
-    blockCacheDirectoryFactory = new BlockCacheDirectoryFactoryV1(cache);
 
-    LOG.info("Shard Server using index [{0}] bind address [{1}]", serverIndex, bindAddress + ":" + bindPort);
+    LOG.info("Shard Server using index [{0}] bind address [{1}] random port assignment [{2}]", serverIndex, bindAddress
+        + ":" + bindPort, randomPort);
 
     String nodeNameHostName = getNodeName(configuration, BLUR_SHARD_HOSTNAME);
     String nodeName = nodeNameHostName + ":" + bindPort;
@@ -249,11 +266,9 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     final ThriftBlurShardServer server = new ThriftBlurShardServer();
     server.setNodeName(nodeName);
-    server.setBindAddress(bindAddress);
-    server.setBindPort(bindPort);
+    server.setServerTransport(tNonblockingServerSocket);
     server.setThreadCount(threadCount);
     server.setIface(iface);
-    server.setConfiguration(configuration);
     server.setEventHandler(eventHandler);
 
     // This will shutdown the server when the correct path is set in zk

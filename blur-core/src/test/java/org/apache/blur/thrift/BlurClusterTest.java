@@ -66,15 +66,14 @@ import org.junit.Test;
 
 public class BlurClusterTest {
 
-  private static final int _1MB = 1000 * 1000;
-  private static final int _20MB = 20 * _1MB;
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp_BlurClusterTest"));
+  private static MiniCluster miniCluster;
 
   @BeforeClass
   public static void startCluster() throws IOException {
-    GCWatcher.init(0.80);
+    GCWatcher.init(0.60);
     LocalFileSystem localFS = FileSystem.getLocal(new Configuration());
-    File testDirectory = new File(TMPDIR, "blur-cluster-test");
+    File testDirectory = new File(TMPDIR, "blur-cluster-test").getAbsoluteFile();
     testDirectory.mkdirs();
 
     Path directory = new Path(testDirectory.getPath());
@@ -90,32 +89,42 @@ public class BlurClusterTest {
     String dirPermissionNum = builder.toString();
     System.setProperty("dfs.datanode.data.dir.perm", dirPermissionNum);
     testDirectory.delete();
-
-    MiniCluster.startBlurCluster("target/cluster", 2, 3);
+    miniCluster = new MiniCluster();
+    miniCluster.startBlurCluster(new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true);
   }
 
   @AfterClass
   public static void shutdownCluster() {
-    MiniCluster.shutdownBlurCluster();
+    miniCluster.shutdownBlurCluster();
   }
 
   private Iface getClient() {
-    return BlurClient.getClient(MiniCluster.getControllerConnectionStr());
+    return BlurClient.getClient(miniCluster.getControllerConnectionStr());
   }
 
   @Test
+  public void runClusterIntegrationTests() throws BlurException, TException, IOException, InterruptedException,
+      KeeperException {
+    testCreateTable();
+    testLoadTable();
+    testQueryCancel();
+    testBackPressureViaQuery();
+    testTestShardFailover();
+    testTermsList();
+    testCreateDisableAndRemoveTable();
+  }
+
   public void testCreateTable() throws BlurException, TException, IOException {
     Blur.Iface client = getClient();
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName("test");
     tableDescriptor.setShardCount(5);
-    tableDescriptor.setTableUri(MiniCluster.getFileSystemUri().toString() + "/blur/test");
+    tableDescriptor.setTableUri(miniCluster.getFileSystemUri().toString() + "/blur/test");
     client.createTable(tableDescriptor);
     List<String> tableList = client.tableList();
     assertEquals(Arrays.asList("test"), tableList);
   }
 
-  @Test
   public void testLoadTable() throws BlurException, TException, InterruptedException {
     Iface client = getClient();
     int length = 100;
@@ -155,7 +164,6 @@ public class BlurClusterTest {
     assertFalse(schema.getFamilies().isEmpty());
   }
 
-  @Test
   public void testQueryCancel() throws BlurException, TException, InterruptedException {
     // This will make each collect in the collectors pause 250 ms per collect
     // call
@@ -190,14 +198,13 @@ public class BlurClusterTest {
     }).start();
     Thread.sleep(500);
     client.cancelQuery("test", blurQueryRow.getUuid());
-    BlurException blurException = pollForError(error, 10, TimeUnit.SECONDS, null);
+    BlurException blurException = pollForError(error, 10, TimeUnit.SECONDS, null, fail, -1);
     if (fail.get()) {
       fail("Unknown error, failing test.");
     }
     assertEquals(blurException.getErrorType(), ErrorType.QUERY_CANCEL);
   }
 
-  @Test
   public void testBackPressureViaQuery() throws BlurException, TException, InterruptedException {
     // This will make each collect in the collectors pause 250 ms per collect
     // call
@@ -227,10 +234,17 @@ public class BlurClusterTest {
     MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
     MemoryUsage usage = memoryMXBean.getHeapMemoryUsage();
     long max = usage.getMax();
+    System.out.println("Max Heap [" + max + "]");
     long used = usage.getUsed();
+    System.out.println("Used Heap [" + used + "]");
     long limit = (long) (max * 0.80);
+    System.out.println("Limit Heap [" + limit + "]");
     long difference = limit - used;
-    byte[] bufferToFillHeap = new byte[(int) (difference - _20MB)];
+    int sizeToAllocate = (int) ((int) difference * 0.50);
+    System.out.println("Allocating [" + sizeToAllocate + "] Heap [" + getHeapSize() + "] Max [" + getMaxHeapSize()
+        + "]");
+
+    byte[] bufferToFillHeap = new byte[sizeToAllocate];
     new Thread(new Runnable() {
       @Override
       public void run() {
@@ -248,7 +262,8 @@ public class BlurClusterTest {
     }).start();
     Thread.sleep(500);
     List<byte[]> bufferToPutGcWatcherOverLimitList = new ArrayList<byte[]>();
-    BlurException blurException = pollForError(error, 10, TimeUnit.SECONDS, bufferToPutGcWatcherOverLimitList);
+    BlurException blurException = pollForError(error, 120, TimeUnit.SECONDS, bufferToPutGcWatcherOverLimitList, fail,
+        (int) (difference / 7));
     if (fail.get()) {
       fail("Unknown error, failing test.");
     }
@@ -261,26 +276,41 @@ public class BlurClusterTest {
   }
 
   private BlurException pollForError(AtomicReference<BlurException> error, long period, TimeUnit timeUnit,
-      List<byte[]> bufferToPutGcWatcherOverLimitList) throws InterruptedException {
+      List<byte[]> bufferToPutGcWatcherOverLimitList, AtomicBoolean fail, int sizeToAllocate)
+      throws InterruptedException {
     long s = System.nanoTime();
     long totalTime = timeUnit.toNanos(period) + s;
     if (bufferToPutGcWatcherOverLimitList != null) {
-      bufferToPutGcWatcherOverLimitList.add(new byte[_1MB * 5]);
+      System.out.println("Allocating [" + sizeToAllocate + "] Heap [" + getHeapSize() + "] Max [" + getMaxHeapSize()
+          + "]");
+      bufferToPutGcWatcherOverLimitList.add(new byte[sizeToAllocate]);
     }
     while (totalTime > System.nanoTime()) {
+      if (fail.get()) {
+        fail("The query failed.");
+      }
       BlurException blurException = error.get();
       if (blurException != null) {
         return blurException;
       }
-      Thread.sleep(500);
+      Thread.sleep(250);
       if (bufferToPutGcWatcherOverLimitList != null) {
-        bufferToPutGcWatcherOverLimitList.add(new byte[_1MB * 5]);
+        System.out.println("Allocating [" + sizeToAllocate + "] Heap [" + getHeapSize() + "] Max [" + getMaxHeapSize()
+            + "]");
+        bufferToPutGcWatcherOverLimitList.add(new byte[sizeToAllocate]);
       }
     }
     return null;
   }
 
-  @Test
+  private long getHeapSize() {
+    return ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
+  }
+
+  private long getMaxHeapSize() {
+    return ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
+  }
+
   public void testTestShardFailover() throws BlurException, TException, InterruptedException, IOException,
       KeeperException {
     Iface client = getClient();
@@ -294,7 +324,7 @@ public class BlurClusterTest {
     assertEquals(length, results1.getTotalResults());
     assertRowResults(results1);
 
-    MiniCluster.killShardServer(1);
+    miniCluster.killShardServer(1);
 
     // make sure the WAL syncs
     Thread.sleep(TimeUnit.SECONDS.toMillis(1));
@@ -306,7 +336,6 @@ public class BlurClusterTest {
 
   }
 
-  @Test
   public void testTermsList() throws BlurException, TException {
     Iface client = getClient();
     List<String> terms = client.terms("test", "test", "test", null, (short) 10);
@@ -337,14 +366,13 @@ public class BlurClusterTest {
     }
   }
 
-  @Test
   public void testCreateDisableAndRemoveTable() throws IOException, BlurException, TException {
     Iface client = getClient();
     String tableName = UUID.randomUUID().toString();
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName(tableName);
     tableDescriptor.setShardCount(5);
-    tableDescriptor.setTableUri(MiniCluster.getFileSystemUri().toString() + "/blur/" + tableName);
+    tableDescriptor.setTableUri(miniCluster.getFileSystemUri().toString() + "/blur/" + tableName);
 
     for (int i = 0; i < 3; i++) {
       client.createTable(tableDescriptor);

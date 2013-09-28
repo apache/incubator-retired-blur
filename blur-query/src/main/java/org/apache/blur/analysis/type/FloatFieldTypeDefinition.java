@@ -69,9 +69,18 @@ public class FloatFieldTypeDefinition extends NumericFieldTypeDefinition {
 
   @Override
   public Query getNewRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
-    float p1 = Float.parseFloat(part1);
-    float p2 = Float.parseFloat(part2);
+    float p1 = parseFloat(part1);
+    float p2 = parseFloat(part2);
     return NumericRangeQuery.newFloatRange(field, _precisionStep, p1, p2, startInclusive, endInclusive);
   }
 
+  private float parseFloat(String number) {
+    if (number.toLowerCase().equals(MIN)) {
+      return Float.MIN_VALUE;
+    } else if (number.toLowerCase().equals(MAX)) {
+      return Float.MAX_VALUE;
+    } else {
+      return Float.parseFloat(number);
+    }
+  }
 }

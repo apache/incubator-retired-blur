@@ -145,39 +145,42 @@ public class IndexWarmup {
     long length = endingPosition - startingPosition;
     final long totalLength = length;
     IndexInput input = new ThrottledIndexInput(dir.openInput(fileName, IOContext.READ), _maxBytesPerSec);
-    input.seek(startingPosition);
-    byte[] buf = new byte[8192];
-    long start = System.nanoTime();
-    long bytesReadPerPass = 0;
-    while (length > 0) {
-      long now = System.nanoTime();
-      if (start + _5_SECONDS < now) {
-        double seconds = (now - start) / 1000000000.0;
-        double rateMbPerSec = (bytesReadPerPass / seconds) / 1000 / 1000;
-        double complete = (((double) totalLength - (double) length) / (double) totalLength) * 100.0;
-        LOG.debug("Context [{3}] warming field [{0}] in file [{1}] is [{2}%] complete at rate of [{4} MB/s]",
-            fieldName, fileName, complete, context, rateMbPerSec);
-        start = System.nanoTime();
-        bytesReadPerPass = 0;
-        if (_isClosed.get()) {
-          LOG.info("Context [{0}] index closed", context);
-          return;
+    try {
+      input.seek(startingPosition);
+      byte[] buf = new byte[8192];
+      long start = System.nanoTime();
+      long bytesReadPerPass = 0;
+      while (length > 0) {
+        long now = System.nanoTime();
+        if (start + _5_SECONDS < now) {
+          double seconds = (now - start) / 1000000000.0;
+          double rateMbPerSec = (bytesReadPerPass / seconds) / 1000 / 1000;
+          double complete = (((double) totalLength - (double) length) / (double) totalLength) * 100.0;
+          LOG.debug("Context [{3}] warming field [{0}] in file [{1}] is [{2}%] complete at rate of [{4} MB/s]",
+              fieldName, fileName, complete, context, rateMbPerSec);
+          start = System.nanoTime();
+          bytesReadPerPass = 0;
+          if (_isClosed.get()) {
+            LOG.info("Context [{0}] index closed", context);
+            return;
+          }
         }
+        int len = (int) Math.min(length, buf.length);
+        input.readBytes(buf, 0, len);
+        length -= len;
+        bytesReadPerPass += len;
       }
-      int len = (int) Math.min(length, buf.length);
-      input.readBytes(buf, 0, len);
-      length -= len;
-      bytesReadPerPass += len;
+      long now = System.nanoTime();
+      double seconds = (now - start) / 1000000000.0;
+      if (seconds < 1) {
+        seconds = 1;
+      }
+      double rateMbPerSec = (bytesReadPerPass / seconds) / 1000 / 1000;
+      LOG.debug("Context [{3}] warming field [{0}] in file [{1}] is [{2}%] complete at rate of [{4} MB/s]", fieldName,
+          fileName, 100, context, rateMbPerSec);
+    } finally {
+      input.close();
     }
-    long now = System.nanoTime();
-    double seconds = (now - start) / 1000000000.0;
-    if (seconds < 1) {
-      seconds = 1;
-    }
-    double rateMbPerSec = (bytesReadPerPass / seconds) / 1000 / 1000;
-    LOG.debug("Context [{3}] warming field [{0}] in file [{1}] is [{2}%] complete at rate of [{4} MB/s]", fieldName,
-        fileName, 100, context, rateMbPerSec);
-    input.clone();
   }
 
   private Directory getDirectory(IndexReader reader, String segmentName, String context) {

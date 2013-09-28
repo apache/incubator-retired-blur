@@ -17,7 +17,6 @@
  * under the License.
  */
 
-
 package org.apache.blur.thirdparty.thrift_0_9_0.transport;
 
 import java.io.IOException;
@@ -54,6 +53,8 @@ public class TNonblockingServerSocket extends TNonblockingServerTransport {
    */
   private int clientTimeout_ = 0;
 
+  private InetSocketAddress bindAddr_;
+
   /**
    * Creates just a port listening server socket
    */
@@ -73,6 +74,7 @@ public class TNonblockingServerSocket extends TNonblockingServerTransport {
   }
 
   public TNonblockingServerSocket(InetSocketAddress bindAddr, int clientTimeout) throws TTransportException {
+    bindAddr_ = bindAddr;
     clientTimeout_ = clientTimeout;
     try {
       serverSocketChannel = ServerSocketChannel.open();
@@ -145,6 +147,22 @@ public class TNonblockingServerSocket extends TNonblockingServerTransport {
     // The thread-safeness of this is dubious, but Java documentation suggests
     // that it is safe to do this from a different thread context
     close();
+  }
+
+  public ServerSocketChannel getServerSocketChannel() {
+    return serverSocketChannel;
+  }
+
+  public ServerSocket getServerSocket() {
+    return serverSocket_;
+  }
+
+  public int getClientTimeout() {
+    return clientTimeout_;
+  }
+  
+  public InetSocketAddress getBindAddr() {
+    return bindAddr_;
   }
 
 }

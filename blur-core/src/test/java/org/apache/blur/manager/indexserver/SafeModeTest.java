@@ -16,7 +16,10 @@ package org.apache.blur.manager.indexserver;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,20 +35,34 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class SafeModeTest {
 
   private static String path = "./target/test-zk";
-  private static ZooKeeper zk;
+  private static MiniCluster miniCluster;
 
   @BeforeClass
   public static void startZooKeeper() throws IOException {
     new File(path).mkdirs();
-    MiniCluster.startZooKeeper(path);
-    zk = new ZooKeeper(MiniCluster.getZkConnectionString(), 20000, new Watcher() {
+    miniCluster = new MiniCluster();
+    miniCluster.startZooKeeper(path, true);
+  }
+
+  @AfterClass
+  public static void stopZooKeeper() throws InterruptedException {
+    miniCluster.shutdownZooKeeper();
+  }
+  
+  private ZooKeeper zk;
+
+  @Before
+  public void setup() throws IOException {
+    zk = new ZooKeeper(miniCluster.getZkConnectionString(), 20000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 
@@ -53,10 +70,10 @@ public class SafeModeTest {
     });
   }
 
-  @AfterClass
-  public static void stopZooKeeper() throws InterruptedException {
+  @After
+  public void teardown() throws KeeperException, InterruptedException {
+    rm(zk, "/testing");
     zk.close();
-    MiniCluster.shutdownZooKeeper();
   }
 
   @Test
@@ -73,8 +90,16 @@ public class SafeModeTest {
       Thread.sleep(100);
     }
 
-    for (Thread t : threads) {
-      t.join();
+    boolean alive = true;
+    while (alive) {
+      alive = false;
+      for (Thread t : threads) {
+        t.join(1000);
+        if (t.isAlive()) {
+          System.out.println("Thread [" + t + "] has not finished.");
+          alive = true;
+        }
+      }
     }
 
     for (AtomicReference<Throwable> t : errors) {
@@ -101,12 +126,16 @@ public class SafeModeTest {
 
   @Test
   public void testExtraNodeStartup() throws IOException, InterruptedException, KeeperException {
-    ZooKeeper zk = new ZooKeeper(MiniCluster.getZkConnectionString(), 20000, new Watcher() {
+    ZooKeeper zk = new ZooKeeper(miniCluster.getZkConnectionString(), 20000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 
       }
     });
+    
+    SafeMode setupSafeMode = new SafeMode(zk, "/testing/safemode", "/testing/nodepath", TimeUnit.SECONDS, 5,
+        TimeUnit.SECONDS, 60);
+    setupSafeMode.registerNode("node1", null);
 
     SafeMode safeMode = new SafeMode(zk, "/testing/safemode", "/testing/nodepath", TimeUnit.SECONDS, 5,
         TimeUnit.SECONDS, 60);
@@ -120,12 +149,16 @@ public class SafeModeTest {
 
   @Test
   public void testSecondNodeStartup() throws IOException, InterruptedException, KeeperException {
-    ZooKeeper zk = new ZooKeeper(MiniCluster.getZkConnectionString(), 20000, new Watcher() {
+    ZooKeeper zk = new ZooKeeper(miniCluster.getZkConnectionString(), 20000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 
       }
     });
+    
+    SafeMode setupSafeMode = new SafeMode(zk, "/testing/safemode", "/testing/nodepath", TimeUnit.SECONDS, 5,
+        TimeUnit.SECONDS, 60);
+    setupSafeMode.registerNode("node10", null);
 
     SafeMode safeMode = new SafeMode(zk, "/testing/safemode", "/testing/nodepath", TimeUnit.SECONDS, 5,
         TimeUnit.SECONDS, 15);
@@ -157,4 +190,11 @@ public class SafeModeTest {
     return thread;
   }
 
+  private static void rm(ZooKeeper zk, String path) throws KeeperException, InterruptedException {
+    List<String> children = zk.getChildren(path, false);
+    for (String c : children) {
+      rm(zk, path + "/" + c);
+    }
+    zk.delete(path, -1);
+  }
 }

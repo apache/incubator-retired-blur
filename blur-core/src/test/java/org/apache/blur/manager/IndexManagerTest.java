@@ -806,6 +806,13 @@ public class IndexManagerTest {
   }
 
   @Test
+  public void testTermsNonExistentField() throws Exception {
+    List<String> terms = indexManager.terms(TABLE, FAMILY, "nonexistentfield", "", (short) 100);
+    assertNotNull("Non-existent fields should not return null.", terms);
+    assertEquals("The terms of non-existent fields should be empty.", 0, terms.size());
+  }
+  
+  @Test
   public void testMutationReplaceRow() throws Exception {
     RowMutation mutation = newRowMutation(
         TABLE,
@@ -1000,6 +1007,28 @@ public class IndexManagerTest {
     }
     assertTrue("column 3 should be unmodified", foundUnmodifiedColumn);
   }
+  
+  @Test
+  public void testMutationUpdateRowReplaceExistingColumnsWhileDeletingAColumn() throws Exception {
+    Column c1 = newColumn("testcol1", "value999");
+    Column c2 = newColumn("testcol2", null);
+    String rec = "record-1";
+    RecordMutation rm = newRecordMutation(REPLACE_COLUMNS, FAMILY, rec, c1, c2);
+
+    Record r = updateAndFetchRecord("row-1", rec, rm);
+
+    assertNotNull("record should exist", r);
+    assertEquals("only 2 columns in record", 2, r.getColumnsSize());
+    assertTrue("column 1 should be in record", r.columns.contains(c1));
+    boolean foundUnmodifiedColumn = false;
+    for (Column column : r.columns) {
+      if (column.name.equals("testcol3") && column.value.equals("value3")) {
+        foundUnmodifiedColumn = true;
+        break;
+      }
+    }
+    assertTrue("column 3 should be unmodified", foundUnmodifiedColumn);
+  }
 
   @Test
   public void testMutationUpdateRowReplaceExistingDuplicateColumns() throws Exception {
@@ -1052,24 +1081,32 @@ public class IndexManagerTest {
     assertTrue("column 2 should be in record", r.columns.contains(c2));
   }
 
-  @Test(expected = BlurException.class)
+  @Test
   public void testMutationUpdateRowMissingRecordReplaceColumns() throws Exception {
     Column c1 = newColumn("testcol4", "value999");
     Column c2 = newColumn("testcol5", "value9999");
     String rec = "record-1B";
     RecordMutation rm = newRecordMutation(REPLACE_COLUMNS, FAMILY, rec, c1, c2);
 
-    updateAndFetchRecord("row-1", rec, rm);
+    Record r = updateAndFetchRecord("row-1", rec, rm);
+    assertNotNull("record should exist", r);
+    assertEquals("only 2 columns in record", 2, r.getColumnsSize());
+    assertTrue("column 1 should be in record", r.columns.contains(c1));
+    assertTrue("column 2 should be in record", r.columns.contains(c2));
   }
 
-  @Test(expected = BlurException.class)
+  @Test
   public void testMutationUpdateMissingRowReplaceColumns() throws Exception {
     Column c1 = newColumn("testcol1", "value999");
     Column c2 = newColumn("testcol2", "value9999");
     String rec = "record-6";
     RecordMutation rm = newRecordMutation(REPLACE_COLUMNS, FAMILY, rec, c1, c2);
 
-    updateAndFetchRecord("row-6", rec, rm);
+    Record r = updateAndFetchRecord("row-6", rec, rm);
+    assertNotNull("record should exist", r);
+    assertEquals("only 2 columns in record", 2, r.getColumnsSize());
+    assertTrue("column 1 should be in record", r.columns.contains(c1));
+    assertTrue("column 2 should be in record", r.columns.contains(c2));
   }
 
   @Test
@@ -1112,7 +1149,7 @@ public class IndexManagerTest {
     assertEquals("should not find other columns", 0, others);
   }
 
-  @Test(expected = BlurException.class)
+  @Test
   public void testMutationUpdateRowMissingRecordAppendColumns() throws Exception {
     Column c1 = newColumn("testcol1", "value999");
     Column c2 = newColumn("testcol2", "value9999");
@@ -1120,17 +1157,26 @@ public class IndexManagerTest {
     String rec = "record-1B";
     RecordMutation rm = newRecordMutation(APPEND_COLUMN_VALUES, FAMILY, rec, c1, c2, c3);
 
-    updateAndFetchRecord("row-1", rec, rm);
+    Record r = updateAndFetchRecord("row-1", rec, rm);
+    assertNotNull("record should exist", r);
+    assertEquals("only 3 columns in record", 3, r.getColumnsSize());
+    assertTrue("column 1 should be in record", r.columns.contains(c1));
+    assertTrue("column 2 should be in record", r.columns.contains(c2));
+    assertTrue("column 3 should be in record", r.columns.contains(c3));
   }
 
-  @Test(expected = BlurException.class)
+  @Test
   public void testMutationUpdateMissingRowAppendColumns() throws Exception {
     Column c1 = newColumn("testcol1", "value999");
     Column c2 = newColumn("testcol2", "value9999");
     String rec = "record-6";
     RecordMutation rm = newRecordMutation(APPEND_COLUMN_VALUES, FAMILY, rec, c1, c2);
 
-    updateAndFetchRecord("row-6", rec, rm);
+    Record r = updateAndFetchRecord("row-6", rec, rm);
+    assertNotNull("record should exist", r);
+    assertEquals("only 2 columns in record", 2, r.getColumnsSize());
+    assertTrue("column 1 should be in record", r.columns.contains(c1));
+    assertTrue("column 2 should be in record", r.columns.contains(c2));
   }
 
   private Record updateAndFetchRecord(String rowId, String recordId, RecordMutation... recordMutations)

@@ -17,10 +17,8 @@ package org.apache.blur;
  * limitations under the License.
  */
 
-import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
-import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_SLAB_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
@@ -48,12 +46,9 @@ import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransportException;
 import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.BlurClientManager;
-import org.apache.blur.thrift.Connection;
 import org.apache.blur.thrift.ThriftBlurControllerServer;
 import org.apache.blur.thrift.ThriftBlurShardServer;
 import org.apache.blur.thrift.ThriftServer;
-import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -65,47 +60,38 @@ import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.util.BlurThriftHelper;
 import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.zookeeper.ZkMiniCluster;
 import org.apache.blur.zookeeper.ZooKeeperClient;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.server.ServerConfig;
-import org.apache.zookeeper.server.ZooKeeperServerMain;
-import org.apache.zookeeper.server.quorum.QuorumPeerConfig;
-import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
 
-public abstract class MiniCluster {
+public class MiniCluster {
 
   private static Log LOG = LogFactory.getLog(MiniCluster.class);
-  private static MiniDFSCluster cluster;
-  private static Thread serverThread;
-  private static String zkConnectionString = "localhost:21810";
-  private static ZooKeeperServerMainEmbedded zooKeeperServerMain;
-  private static List<ThriftServer> controllers = new ArrayList<ThriftServer>();
-  private static List<ThriftServer> shards = new ArrayList<ThriftServer>();
-  private static String controllerConnectionStr;
+  private MiniDFSCluster cluster;
+  private ZkMiniCluster zkMiniCluster = new ZkMiniCluster();
+  private List<ThriftServer> controllers = new ArrayList<ThriftServer>();
+  private List<ThriftServer> shards = new ArrayList<ThriftServer>();
 
   public static void main(String[] args) throws IOException, InterruptedException, KeeperException, BlurException,
       TException {
-    startDfs("./tmp/hdfs");
-    startZooKeeper("./tmp/zk");
-    startControllers(1);
-    startShards(1);
-
-    // Run the controllers/shards on custom ports.
-    // BlurConfiguration conf = new BlurConfiguration(false);
-    // conf.setInt(BLUR_CONTROLLER_BIND_PORT, 40001);
-    // conf.setInt(BLUR_SHARD_BIND_PORT, 40002);
-    // startControllers(conf, 1);
-    // startShards(conf, 1);
+    MiniCluster miniCluster = new MiniCluster();
+    miniCluster.startDfs("./tmp/hdfs");
+    miniCluster.startZooKeeper("./tmp/zk");
+    miniCluster.startControllers(1, false);
+    miniCluster.startShards(1, false);
 
     try {
-      Iface client = BlurClient.getClient(getControllerConnectionStr());
-      createTable("test", client);
+      Iface client = BlurClient.getClient(miniCluster.getControllerConnectionStr());
+      miniCluster.createTable("test", client);
       long start = System.nanoTime();
       for (int i = 0; i < 1000; i++) {
         long now = System.nanoTime();
@@ -113,44 +99,48 @@ public abstract class MiniCluster {
           System.out.println("Total [" + i + "]");
           start = now;
         }
-        addRow("test", i, client);
+        miniCluster.addRow("test", i, client);
       }
 
       // This waits for all the data to become visible.
       Thread.sleep(2000);
 
       for (int i = 0; i < 1000; i++) {
-        searchRow("test", i, client);
+        miniCluster.searchRow("test", i, client);
       }
 
     } finally {
-      stopShards();
-      stopControllers();
-      shutdownZooKeeper();
-      shutdownDfs();
+      miniCluster.stopShards();
+      miniCluster.stopControllers();
+      miniCluster.shutdownZooKeeper();
+      miniCluster.shutdownDfs();
     }
   }
 
-  public static void startBlurCluster(String path, int controllerCount, int shardCount) {
-    startDfs(path + "/hdfs");
-    startZooKeeper(path + "/zk");
-    setupBuffers();
-    startControllers(controllerCount);
-    startShards(shardCount);
+  public void startBlurCluster(String path, int controllerCount, int shardCount) {
+    startBlurCluster(path, controllerCount, shardCount, false);
   }
 
-  private static void setupBuffers() {
+  public void startBlurCluster(String path, int controllerCount, int shardCount, boolean randomPort) {
+    startDfs(path + "/hdfs");
+    startZooKeeper(path + "/zk", randomPort);
+    setupBuffers();
+    startControllers(controllerCount, randomPort);
+    startShards(shardCount, randomPort);
+  }
+
+  private void setupBuffers() {
     BufferStore.init(16, 16);
   }
 
-  public static void shutdownBlurCluster() {
+  public void shutdownBlurCluster() {
     stopShards();
     stopControllers();
     shutdownZooKeeper();
     shutdownDfs();
   }
 
-  private static void createTable(String test, Iface client) throws BlurException, TException, IOException {
+  private void createTable(String test, Iface client) throws BlurException, TException, IOException {
     final TableDescriptor descriptor = new TableDescriptor();
     descriptor.setName(test);
     descriptor.setShardCount(7);
@@ -158,11 +148,20 @@ public abstract class MiniCluster {
     client.createTable(descriptor);
   }
 
-  public static String getControllerConnectionStr() {
-    return controllerConnectionStr;
+  public String getControllerConnectionStr() {
+    StringBuilder builder = new StringBuilder();
+    for (ThriftServer server : controllers) {
+      if (builder.length() != 0) {
+        builder.append(',');
+      }
+      String hostName = server.getServerTransport().getBindAddr().getHostName();
+      int localPort = server.getServerTransport().getServerSocket().getLocalPort();
+      builder.append(hostName + ":" + localPort);
+    }
+    return builder.toString();
   }
 
-  private static void addRow(String table, int i, Iface client) throws BlurException, TException {
+  private void addRow(String table, int i, Iface client) throws BlurException, TException {
     Row row = new Row();
     row.setId(Integer.toString(i));
     Record record = new Record();
@@ -175,7 +174,7 @@ public abstract class MiniCluster {
     client.mutate(rowMutation);
   }
 
-  private static void searchRow(String table, int i, Iface client) throws BlurException, TException {
+  private void searchRow(String table, int i, Iface client) throws BlurException, TException {
     BlurQuery blurQuery = BlurThriftHelper.newSimpleQuery("test.test:" + i);
     System.out.println("Running [" + blurQuery + "]");
     BlurResults results = client.query(table, blurQuery);
@@ -184,24 +183,24 @@ public abstract class MiniCluster {
     }
   }
 
-  public static void stopControllers() {
+  public void stopControllers() {
     for (ThriftServer s : controllers) {
       s.close();
     }
   }
 
-  public static void stopShards() {
+  public void stopShards() {
     for (ThriftServer s : shards) {
       s.close();
     }
   }
 
-  public static void startControllers(int num) {
+  public void startControllers(int num, boolean randomPort) {
     BlurConfiguration configuration = getBlurConfiguration();
-    startControllers(configuration, num);
+    startControllers(configuration, num, randomPort);
   }
 
-  private static BlurConfiguration getBlurConfiguration(BlurConfiguration overrides) {
+  private BlurConfiguration getBlurConfiguration(BlurConfiguration overrides) {
     BlurConfiguration conf = getBlurConfiguration();
 
     for (Map.Entry<String, String> over : overrides.getProperties().entrySet()) {
@@ -210,7 +209,7 @@ public abstract class MiniCluster {
     return conf;
   }
 
-  private static BlurConfiguration getBlurConfiguration() {
+  private BlurConfiguration getBlurConfiguration() {
     BlurConfiguration configuration;
     try {
       configuration = new BlurConfiguration();
@@ -228,34 +227,26 @@ public abstract class MiniCluster {
     return configuration;
   }
 
-  public static void startControllers(BlurConfiguration configuration, int num) {
-    StringBuilder builder = new StringBuilder();
+  public void startControllers(BlurConfiguration configuration, int num, boolean randomPort) {
     BlurConfiguration localConf = getBlurConfiguration(configuration);
-    int controllerPort = localConf.getInt(BLUR_CONTROLLER_BIND_PORT, 40010);
     for (int i = 0; i < num; i++) {
       try {
-        ThriftServer server = ThriftBlurControllerServer.createServer(i, localConf);
+        ThriftServer server = ThriftBlurControllerServer.createServer(i, localConf, randomPort);
         controllers.add(server);
-        Connection connection = new Connection("localhost", controllerPort + i);
-        if (builder.length() != 0) {
-          builder.append(',');
-        }
-        builder.append(connection.getConnectionStr());
-        startServer(server, connection);
+        startServer(server);
       } catch (Exception e) {
         LOG.error(e);
         throw new RuntimeException(e);
       }
     }
-    controllerConnectionStr = builder.toString();
   }
 
-  public static void startShards(int num) {
+  public void startShards(int num, boolean randomPort) {
     BlurConfiguration configuration = getBlurConfiguration();
-    startShards(configuration, num);
+    startShards(configuration, num, randomPort);
   }
 
-  public static void startShards(final BlurConfiguration configuration, int num) {
+  public void startShards(final BlurConfiguration configuration, int num, final boolean randomPort) {
     final BlurConfiguration localConf = getBlurConfiguration(configuration);
     ExecutorService executorService = Executors.newFixedThreadPool(num);
     List<Future<ThriftServer>> futures = new ArrayList<Future<ThriftServer>>();
@@ -264,17 +255,15 @@ public abstract class MiniCluster {
       futures.add(executorService.submit(new Callable<ThriftServer>() {
         @Override
         public ThriftServer call() throws Exception {
-          return ThriftBlurShardServer.createServer(index, localConf);
+          return ThriftBlurShardServer.createServer(index, localConf, randomPort);
         }
       }));
     }
-    int shardPort = localConf.getInt(BLUR_SHARD_BIND_PORT, 40020);
     for (int i = 0; i < num; i++) {
       try {
         ThriftServer server = futures.get(i).get();
         shards.add(server);
-        Connection connection = new Connection("localhost", shardPort + i);
-        startServer(server, connection);
+        startServer(server);
       } catch (Exception e) {
         LOG.error(e);
         throw new RuntimeException(e);
@@ -282,16 +271,16 @@ public abstract class MiniCluster {
     }
   }
 
-  public static void killShardServer(int shardServer) throws IOException, InterruptedException, KeeperException {
+  public void killShardServer(int shardServer) throws IOException, InterruptedException, KeeperException {
     killShardServer(getBlurConfiguration(), shardServer);
   }
 
-  public static void killShardServer(final BlurConfiguration configuration, int shardServer) throws IOException,
+  public void killShardServer(final BlurConfiguration configuration, int shardServer) throws IOException,
       InterruptedException, KeeperException {
-    final BlurConfiguration localConf = getBlurConfiguration(configuration);
-    int shardPort = localConf.getInt(BLUR_SHARD_BIND_PORT, 40020);
+    ThriftServer thriftServer = shards.get(shardServer);
+    int shardPort = thriftServer.getServerTransport().getServerSocket().getLocalPort();
     String nodeNameHostname = ThriftServer.getNodeName(configuration, BLUR_SHARD_HOSTNAME);
-    String nodeName = nodeNameHostname + ":" + (shardPort + shardServer);
+    String nodeName = nodeNameHostname + ":" + shardPort;
     ZooKeeper zk = new ZooKeeperClient(getZkConnectionString(), 30000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
@@ -305,7 +294,7 @@ public abstract class MiniCluster {
     zk.close();
   }
 
-  private static void startServer(final ThriftServer server, Connection connection) {
+  private static void startServer(final ThriftServer server) {
     new Thread(new Runnable() {
       @Override
       public void run() {
@@ -323,121 +312,82 @@ public abstract class MiniCluster {
       } catch (InterruptedException e) {
         return;
       }
-      try {
-        Client client = BlurClientManager.newClient(connection);
-        BlurClientManager.close(client);
-        break;
-      } catch (TException e) {
-        throw new RuntimeException(e);
-      } catch (IOException e) {
-        LOG.info("Can not connection to [" + connection + "]");
-      }
-    }
-  }
-
-  public static String getZkConnectionString() {
-    return zkConnectionString;
-  }
-
-  public static void startZooKeeper(String path) {
-    startZooKeeper(true, path);
-  }
-
-  public static void startZooKeeper(boolean format, String path) {
-    Properties properties = new Properties();
-    properties.setProperty("tickTime", "2000");
-    properties.setProperty("initLimit", "10");
-    properties.setProperty("syncLimit", "5");
-
-    properties.setProperty("clientPort", "21810");
-
-    startZooKeeper(properties, format, path);
-  }
-
-  public static void startZooKeeper(Properties properties, String path) {
-    startZooKeeper(properties, true, path);
-  }
-
-  private static class ZooKeeperServerMainEmbedded extends ZooKeeperServerMain {
-    @Override
-    public void shutdown() {
-      super.shutdown();
-    }
-  }
-
-  public static void startZooKeeper(final Properties properties, boolean format, String path) {
-    String realPath = path + "/zk_test";
-    properties.setProperty("dataDir", realPath);
-    final ServerConfig serverConfig = new ServerConfig();
-    QuorumPeerConfig config = new QuorumPeerConfig();
-    try {
-      config.parseProperties(properties);
-    } catch (IOException e) {
-      LOG.error(e);
-      throw new RuntimeException(e);
-    } catch (ConfigException e) {
-      LOG.error(e);
-      throw new RuntimeException(e);
-    }
-    serverConfig.readFrom(config);
-    rm(new File(realPath));
-    serverThread = new Thread(new Runnable() {
-
-      @Override
-      public void run() {
+      int localPort = server.getLocalPort();
+      if (localPort == 0) {
+        continue;
+      } else {
         try {
-          zooKeeperServerMain = new ZooKeeperServerMainEmbedded();
-          zooKeeperServerMain.runFromConfig(serverConfig);
-        } catch (IOException e) {
-          LOG.error(e);
+          Thread.sleep(500);
+        } catch (InterruptedException e) {
+          LOG.error("Unknown error", e);
         }
-      }
-    });
-    serverThread.start();
-    long s = System.nanoTime();
-    while (s + 10000000000L > System.nanoTime()) {
-      try {
-        Thread.sleep(50);
-      } catch (InterruptedException e) {
-        LOG.error(e);
-        throw new RuntimeException(e);
-      }
-      try {
-        ZooKeeper zk = new ZooKeeper(zkConnectionString, 30000, new Watcher() {
-          @Override
-          public void process(WatchedEvent event) {
-
-          }
-        });
-        zk.close();
-        break;
-      } catch (IOException e) {
-        LOG.error(e);
-        throw new RuntimeException(e);
-      } catch (InterruptedException e) {
-        LOG.error(e);
-        throw new RuntimeException(e);
+        return;
       }
     }
   }
 
-  public static URI getFileSystemUri() throws IOException {
+  public String getZkConnectionString() {
+    return zkMiniCluster.getZkConnectionString();
+  }
+
+  public void startZooKeeper(String path) {
+    zkMiniCluster.startZooKeeper(path);
+  }
+
+  public void startZooKeeper(String path, boolean randomPort) {
+    zkMiniCluster.startZooKeeper(path, randomPort);
+  }
+
+  public void startZooKeeper(boolean format, String path) {
+    zkMiniCluster.startZooKeeper(format, path);
+  }
+
+  public void startZooKeeper(boolean format, String path, boolean randomPort) {
+    zkMiniCluster.startZooKeeper(format, path, randomPort);
+  }
+
+  public void startZooKeeper(Properties properties, String path) {
+    zkMiniCluster.startZooKeeper(properties, path);
+  }
+
+  public void startZooKeeper(Properties properties, String path, boolean randomPort) {
+    zkMiniCluster.startZooKeeper(properties, path, randomPort);
+  }
+
+  public void startZooKeeper(final Properties properties, boolean format, String path, final boolean randomPort) {
+    zkMiniCluster.startZooKeeper(properties, format, path, randomPort);
+  }
+
+  public URI getFileSystemUri() throws IOException {
     return cluster.getFileSystem().getUri();
   }
 
-  public static void startDfs(String path) {
+  public void startDfs(String path) {
     startDfs(true, path);
   }
 
-  public static void startDfs(boolean format, String path) {
+  public void startDfs(boolean format, String path) {
     startDfs(new Configuration(), format, path);
   }
 
-  public static void startDfs(Configuration conf, String path) {
+  public void startDfs(Configuration conf, String path) {
     startDfs(conf, true, path);
   }
 
-  public static void startDfs(Configuration conf, boolean format, String path) {
+  public void startDfs(Configuration conf, boolean format, String path) {
+    String perm;
+    Path p = new Path(new File("./target").getAbsolutePath());
+    try {
+      FileSystem fileSystem = p.getFileSystem(conf);
+      FileStatus fileStatus = fileSystem.getFileStatus(p);
+      FsPermission permission = fileStatus.getPermission();
+      perm = permission.getUserAction().ordinal() + "" + permission.getGroupAction().ordinal() + ""
+          + permission.getOtherAction().ordinal();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    LOG.info("dfs.datanode.data.dir.perm=" + perm);
+    conf.set("dfs.datanode.data.dir.perm", perm);
     System.setProperty("test.build.data", path);
     try {
       cluster = new MiniDFSCluster(conf, 1, true, (String[]) null);
@@ -448,11 +398,11 @@ public abstract class MiniCluster {
     }
   }
 
-  public static void shutdownZooKeeper() {
-    zooKeeperServerMain.shutdown();
+  public void shutdownZooKeeper() {
+    zkMiniCluster.shutdownZooKeeper();
   }
 
-  public static void shutdownDfs() {
+  public void shutdownDfs() {
     if (cluster != null) {
       LOG.info("Shutting down Mini DFS ");
       try {
@@ -513,17 +463,4 @@ public abstract class MiniCluster {
       throw new RuntimeException(e);
     }
   }
-
-  private static void rm(File file) {
-    if (!file.exists()) {
-      return;
-    }
-    if (file.isDirectory()) {
-      for (File f : file.listFiles()) {
-        rm(f);
-      }
-    }
-    file.delete();
-  }
-
 }

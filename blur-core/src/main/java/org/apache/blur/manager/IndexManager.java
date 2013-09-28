@@ -722,14 +722,22 @@ public class IndexManager {
     List<String> terms = new ArrayList<String>(size);
     AtomicReader areader = BlurUtil.getAtomicReader(reader);
     Terms termsAll = areader.terms(term.field());
+    
+    if(termsAll == null) {
+    	return terms;
+    }
+    
     TermsEnum termEnum = termsAll.iterator(null);
-    BytesRef currentTermText;
-    while ((currentTermText = termEnum.next()) != null) {
+
+    termEnum.seekCeil(term.bytes());
+
+    BytesRef currentTermText = termEnum.term();
+    do {
       terms.add(currentTermText.utf8ToString());
       if (terms.size() >= size) {
         return terms;
       }
-    }
+    } while ((currentTermText = termEnum.next()) != null);
     return terms;
   }
 
@@ -1005,12 +1013,11 @@ public class IndexManager {
         // do nothing as missing record is already in desired state
         break;
       case APPEND_COLUMN_VALUES:
-        throw new BException("Mutation cannot append column values to non-existent record", recordMutation);
       case REPLACE_ENTIRE_RECORD:
+      case REPLACE_COLUMNS:
+        // If record do not exist, create new record in Row
         newRow.addToRecords(recordMutation.record);
         break;
-      case REPLACE_COLUMNS:
-        throw new BException("Mutation cannot replace columns in non-existent record", recordMutation);
       default:
         throw new RuntimeException("Unsupported record mutation type [" + type + "]");
       }
@@ -1028,6 +1035,9 @@ public class IndexManager {
       return;
     case APPEND_COLUMN_VALUES:
       for (Column column : mutationRecord.columns) {
+        if (column.getValue() == null) {
+          continue;
+        }
         existingRecord.addToColumns(column);
       }
       newRow.addToRecords(existingRecord);
@@ -1036,18 +1046,17 @@ public class IndexManager {
       newRow.addToRecords(mutationRecord);
       break;
     case REPLACE_COLUMNS:
-      Set<String> columnNames = new HashSet<String>();
-      for (Column column : mutationRecord.columns) {
-        columnNames.add(column.name);
+      Set<String> removeColumnNames = new HashSet<String>();
+      for (Column column : mutationRecord.getColumns()) {
+        removeColumnNames.add(column.getName());
       }
 
-      LOOP: for (Column column : existingRecord.columns) {
+      for (Column column : existingRecord.getColumns()) {
         // skip columns in existing record that are contained in the mutation
         // record
-        if (columnNames.contains(column.name)) {
-          continue LOOP;
+        if (!removeColumnNames.contains(column.getName())) {
+          mutationRecord.addToColumns(column);
         }
-        mutationRecord.addToColumns(column);
       }
       newRow.addToRecords(mutationRecord);
       break;
@@ -1055,16 +1064,6 @@ public class IndexManager {
       break;
     }
   }
-
-  // private boolean isSameRecord(Record existingRecord, Record mutationRecord)
-  // {
-  // if (existingRecord.recordId.equals(mutationRecord.recordId)) {
-  // if (existingRecord.family.equals(mutationRecord.family)) {
-  // return true;
-  // }
-  // }
-  // return false;
-  // }
 
   private int getNumberOfShards(String table) {
     return _indexServer.getShardCount(table);

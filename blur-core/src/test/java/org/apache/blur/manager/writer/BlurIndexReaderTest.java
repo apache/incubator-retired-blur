@@ -102,6 +102,7 @@ public class BlurIndexReaderTest {
 
   @After
   public void tearDown() throws IOException {
+    reader.close();
     mergeScheduler.close();
     closer.close();
     gc.close();

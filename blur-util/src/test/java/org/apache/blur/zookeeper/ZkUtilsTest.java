@@ -21,45 +21,44 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import java.io.File;
 import java.io.IOException;
 
-import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.server.quorum.QuorumPeerMain;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-
 public class ZkUtilsTest {
 
   private static final int ANY_VERSION = -1;
-  private static Thread _serverThread;
-  private ZooKeeper _zooKeeper;
+  private static ZkMiniCluster _zkMiniCluster;
 
   @BeforeClass
   public static void setupZookeeper() {
-    _serverThread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        QuorumPeerMain.main(new String[] { "./src/test/resources/zoo.cfg" });
-      }
-    });
-    _serverThread.setDaemon(true);
-    _serverThread.start();
+    _zkMiniCluster = new ZkMiniCluster();
+    _zkMiniCluster.startZooKeeper(new File("target/ZkUtilsTest").getAbsolutePath(), true);
   }
+
+  @AfterClass
+  public static void tearDownZookeeper() {
+    _zkMiniCluster.shutdownZooKeeper();
+  }
+
+  private ZooKeeper _zooKeeper;
 
   @Before
   public void setUp() throws IOException, InterruptedException {
     final Object lock = new Object();
     synchronized (lock) {
-      _zooKeeper = new ZooKeeper("127.0.0.1:10101", 10000, new Watcher() {
+      _zooKeeper = new ZooKeeper(_zkMiniCluster.getZkConnectionString(), 10000, new Watcher() {
         @Override
         public void process(WatchedEvent event) {
           synchronized (lock) {

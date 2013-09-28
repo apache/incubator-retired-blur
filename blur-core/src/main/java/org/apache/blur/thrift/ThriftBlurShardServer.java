@@ -21,6 +21,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER_NAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
+import static org.apache.blur.utils.BlurConstants.BLUR_INDEXMANAGER_MUTATE_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_MAX_CLAUSE_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_MAX_HEAP_PER_ROW_FETCH;
@@ -233,6 +234,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexManager.setIndexServer(indexServer);
     indexManager.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
     indexManager.setThreadCount(configuration.getInt(BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT, 32));
+    indexManager.setMutateThreadCount(configuration.getInt(BLUR_INDEXMANAGER_MUTATE_THREAD_COUNT, 32));
     indexManager.setFilterCache(filterCache);
     indexManager.setClusterStatus(clusterStatus);
     indexManager.setFetchCount(configuration.getInt(BLUR_SHARD_FETCHCOUNT, 100));

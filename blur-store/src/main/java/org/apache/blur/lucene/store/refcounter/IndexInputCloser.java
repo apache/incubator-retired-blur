@@ -21,7 +21,8 @@ import java.io.IOException;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.log.Log;
@@ -36,7 +37,8 @@ public class IndexInputCloser implements Runnable, Closeable {
   private ReferenceQueue<IndexInput> referenceQueue = new ReferenceQueue<IndexInput>();
   private Thread daemon;
   private AtomicBoolean running = new AtomicBoolean();
-  private Collection<IndexInputCloserRef> refs = new HashSet<IndexInputCloserRef>();
+  private Collection<IndexInputCloserRef> refs = Collections
+      .newSetFromMap(new ConcurrentHashMap<IndexInputCloserRef, Boolean>());
 
   static class IndexInputCloserRef extends WeakReference<IndexInput> implements Closeable {
     public IndexInputCloserRef(IndexInput referent, ReferenceQueue<? super IndexInput> q) {
@@ -64,9 +66,7 @@ public class IndexInputCloser implements Runnable, Closeable {
   public void add(IndexInput indexInput) {
     LOG.debug("Adding [{0}]", indexInput);
     IndexInputCloserRef ref = new IndexInputCloserRef(indexInput, referenceQueue);
-    synchronized (refs) {
-      refs.add(ref);
-    }
+    refs.add(ref);
   }
 
   public void close() {
@@ -82,9 +82,7 @@ public class IndexInputCloser implements Runnable, Closeable {
         IndexInputCloserRef ref = (IndexInputCloserRef) referenceQueue.remove();
         LOG.debug("Closing [{0}]", ref);
         IOUtils.closeWhileHandlingException(ref);
-        synchronized (refs) {
-          refs.remove(ref);
-        }
+        refs.remove(ref);
       } catch (InterruptedException e) {
         LOG.debug("Interrupted");
         running.set(false);

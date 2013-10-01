@@ -431,6 +431,27 @@ public class SuperParserTest {
     Query q1 = sq(rq_e("a.id_date", t1, t2));
     assertQuery(q1, q);
   }
+  
+  @Test
+  public void test34() throws ParseException {
+    Query q = parseSq("rowid:123-456");
+    Query q1 = sq(tq("rowid", "123-456"));
+    assertQuery(q1, q);
+  }
+  
+  @Test
+  public void test35() throws ParseException {
+    Query q = parseSq("family:123-456");
+    Query q1 = sq(tq("family", "123-456"));
+    assertQuery(q1, q);
+  }
+  
+  @Test
+  public void test36() throws ParseException {
+    Query q = parseSq("recordid:123-456");
+    Query q1 = sq(tq("recordid", "123-456"));
+    assertQuery(q1, q);
+  }
 
   public static BooleanClause bc_m(Query q) {
     return new BooleanClause(q, Occur.MUST);

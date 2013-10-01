@@ -50,6 +50,7 @@ import org.apache.blur.utils.BlurConstants;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.AnalyzerWrapper;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.TextField;
@@ -74,6 +75,7 @@ public abstract class BaseFieldManager extends FieldManager {
   private final boolean _strict;
   private final FieldTypeDefinition _fieldLessFieldTypeDefinition;
   private final Configuration _configuration;
+  private final KeywordAnalyzer _keywordAnalyzer = new KeywordAnalyzer();
 
   public static FieldType ID_TYPE;
   static {
@@ -120,6 +122,9 @@ public abstract class BaseFieldManager extends FieldManager {
     _baseAnalyzerForQuery = new AnalyzerWrapper() {
       @Override
       protected Analyzer getWrappedAnalyzer(String fieldName) {
+        if (isBuiltInField(fieldName)) {
+          return _keywordAnalyzer;
+        }
         FieldTypeDefinition fieldTypeDefinition;
         try {
           fieldTypeDefinition = getFieldTypeDefinition(fieldName);
@@ -158,6 +163,17 @@ public abstract class BaseFieldManager extends FieldManager {
         return components;
       }
     };
+  }
+
+  protected boolean isBuiltInField(String fieldName) {
+    if (fieldName.equals(BlurConstants.ROW_ID)) {
+      return true;
+    } else if (fieldName.equals(BlurConstants.RECORD_ID)) {
+      return true;
+    } else if (fieldName.equals(BlurConstants.FAMILY)) {
+      return true;
+    }
+    return false;
   }
 
   @Override
@@ -233,9 +249,9 @@ public abstract class BaseFieldManager extends FieldManager {
     String family = record.getFamily();
     String recordId = record.getRecordId();
 
-    validateNotNull(rowId, "rowId");
-    validateNotNull(family, "family");
-    validateNotNull(recordId, "recordId");
+    validateNotNull(rowId, BlurConstants.ROW_ID);
+    validateNotNull(family, BlurConstants.FAMILY);
+    validateNotNull(recordId, BlurConstants.RECORD_ID);
 
     fields.add(new Field(BlurConstants.FAMILY, family, ID_TYPE));
     fields.add(new Field(BlurConstants.ROW_ID, rowId, ID_TYPE));

@@ -37,7 +37,7 @@ public class BaseFieldManagerTest {
   public static final String _fieldLessField = BlurConstants.SUPER;
 
   @Test
-  public void testFiledManager() throws IOException {
+  public void testFieldManager() throws IOException {
     BaseFieldManager memoryFieldManager = newFieldManager(true);
     memoryFieldManager.addColumnDefinition("fam1", "col1", null, true, "text", null);
 
@@ -56,7 +56,7 @@ public class BaseFieldManagerTest {
   }
 
   @Test
-  public void testFiledManagerMultipleColumnsSameName() throws IOException {
+  public void testFieldManagerMultipleColumnsSameName() throws IOException {
     BaseFieldManager memoryFieldManager = newFieldManager(true);
     memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", null);
 
@@ -77,7 +77,7 @@ public class BaseFieldManagerTest {
   }
 
   @Test
-  public void testFiledManagerMultipleColumnsDifferentNames() throws IOException {
+  public void testFieldManagerMultipleColumnsDifferentNames() throws IOException {
     BaseFieldManager memoryFieldManager = newFieldManager(true);
     memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", null);
     memoryFieldManager.addColumnDefinition("fam1", "col2", null, true, "text", null);
@@ -98,7 +98,7 @@ public class BaseFieldManagerTest {
   }
 
   @Test
-  public void testFiledManagerMultipleColumnsDifferentNamesDifferentFamilies() throws IOException {
+  public void testFieldManagerMultipleColumnsDifferentNamesDifferentFamilies() throws IOException {
     BaseFieldManager memoryFieldManager = newFieldManager(true);
     memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", null);
     memoryFieldManager.addColumnDefinition("fam2", "col2", null, false, "text", null);
@@ -127,7 +127,7 @@ public class BaseFieldManagerTest {
   }
 
   @Test
-  public void testFiledManagerSubNameWithMainColumnNameNoParent() throws IOException {
+  public void testFieldManagerSubNameWithMainColumnNameNoParent() throws IOException {
     BaseFieldManager memoryFieldManager = newFieldManager(true);
     try {
       memoryFieldManager.addColumnDefinition("fam1", "col1", "sub1", false, "text", null);
@@ -137,7 +137,7 @@ public class BaseFieldManagerTest {
   }
 
   @Test
-  public void testFiledManagerSubNameWithMainColumnNameNoFieldLess() throws IOException {
+  public void testFieldManagerSubNameWithMainColumnNameNoFieldLess() throws IOException {
     BaseFieldManager memoryFieldManager = newFieldManager(true);
     memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", null);
     try {
@@ -149,9 +149,9 @@ public class BaseFieldManagerTest {
 
   private List<Field> getFields(String family, String rowId, String recordId, Field... fields) {
     List<Field> fieldLst = new ArrayList<Field>();
-    fieldLst.add(new Field("family", family, BaseFieldManager.ID_TYPE));
-    fieldLst.add(new Field("rowid", rowId, BaseFieldManager.ID_TYPE));
-    fieldLst.add(new Field("recordid", recordId, BaseFieldManager.ID_TYPE));
+    fieldLst.add(new Field(BlurConstants.FAMILY, family, BaseFieldManager.ID_TYPE));
+    fieldLst.add(new Field(BlurConstants.ROW_ID, rowId, BaseFieldManager.ID_TYPE));
+    fieldLst.add(new Field(BlurConstants.RECORD_ID, recordId, BaseFieldManager.ID_TYPE));
     for (Field field : fields) {
       fieldLst.add(field);
     }

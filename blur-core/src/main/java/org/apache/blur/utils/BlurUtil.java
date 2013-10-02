@@ -162,10 +162,18 @@ public class BlurUtil {
         String connectionString;
         if (controller) {
           ControllerServerContext controllerServerContext = ControllerServerContext.getShardServerContext();
-          connectionString = controllerServerContext.getConnectionString();
+          if (controllerServerContext == null) {
+            connectionString = "unknown";
+          } else {
+            connectionString = controllerServerContext.getConnectionString();  
+          }
         } else {
           ShardServerContext shardServerContext = ShardServerContext.getShardServerContext();
-          connectionString = shardServerContext.getConnectionString();
+          if (shardServerContext == null) {
+            connectionString = "unknown";
+          } else {
+            connectionString = shardServerContext.getConnectionString();
+          }
         }
         String argsStr = null;
         long start = System.nanoTime();

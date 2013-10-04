@@ -17,7 +17,7 @@ package org.apache.blur.server;
  * limitations under the License.
  */
 import static org.apache.blur.utils.BlurConstants.BLUR_FIELDTYPE;
-import static org.apache.blur.utils.BlurConstants.BLUR_SAHRD_INDEX_SIMILARITY;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_SIMILARITY;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_COMMITS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_REFRESHS;
@@ -166,7 +166,7 @@ public class TableContext {
         KeepOnlyLastCommitDeletionPolicy.class);
     tableContext.indexDeletionPolicy = (IndexDeletionPolicy) configure(ReflectionUtils.newInstance(c1, configuration),
         tableContext);
-    Class<?> c2 = configuration.getClass(BLUR_SAHRD_INDEX_SIMILARITY, DefaultSimilarity.class);
+    Class<?> c2 = configuration.getClass(BLUR_SHARD_INDEX_SIMILARITY, DefaultSimilarity.class);
     tableContext.similarity = (Similarity) configure(ReflectionUtils.newInstance(c2, configuration), tableContext);
 
     cache.put(name, tableContext);

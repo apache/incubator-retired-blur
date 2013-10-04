@@ -98,6 +98,7 @@ public abstract class TableAdmin implements Iface {
     try {
       TableContext.clear();
       BlurUtil.validateTableName(tableDescriptor.getName());
+      assignClusterIfNull(tableDescriptor);
       _clusterStatus.createTable(tableDescriptor);
     } catch (Exception e) {
       LOG.error("Unknown error during create of [table={0}, tableDescriptor={1}]", e, tableDescriptor.name,
@@ -106,6 +107,17 @@ public abstract class TableAdmin implements Iface {
     }
     if (tableDescriptor.isEnabled()) {
       enableTable(tableDescriptor.getName());
+    }
+  }
+
+  private void assignClusterIfNull(TableDescriptor tableDescriptor) throws BlurException, TException {
+    if (tableDescriptor.getCluster() == null) {
+      List<String> shardClusterList = shardClusterList();
+      if (shardClusterList != null && shardClusterList.size() == 1) {
+        String cluster = shardClusterList.get(0);
+        tableDescriptor.setCluster(cluster);
+        LOG.info("Assigning table [{0}] to the single default cluster [{1}]", tableDescriptor.getName(), cluster);
+      }
     }
   }
 

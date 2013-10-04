@@ -538,7 +538,8 @@ NOTE: This will index the column as a full text field in a default field, so tha
 <tr><td>12</td><td>readOnly</td><td><code>bool</code></td><td>If a table is set to be readonly, that means that mutates through Thrift are NOT allowed.  However
 updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.
 </td><td>default</td><td>0</td></tr>
-<tr><td>13</td><td>preCacheCols</td><td><code>list&lt;<code>string</code>&gt;</code></td><td>This map sets what column families and columns to prefetch into block cache on shard open.
+<tr><td>13</td><td>preCacheCols</td><td><code>list&lt;<code>string</code>&gt;</code></td><td>This is a list of fields to prefetch into the blockcache.  The format of the entries should
+be family dot column, "family.column".
 </td><td>default</td><td></td></tr>
 <tr><td>14</td><td>tableProperties</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td>The table properties that can modify the default behavior of the table.  TODO: Document all options.
 </td><td>default</td><td></td></tr>
@@ -964,6 +965,22 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 <br/>
 <br/>
 <br/>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="resources/js/jquery-2.0.3.min.js"></script>
 <!-- Include all compiled plugins (below), or include individual files as needed -->

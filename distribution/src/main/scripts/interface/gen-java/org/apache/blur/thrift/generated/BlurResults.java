@@ -900,8 +900,8 @@ public class BlurResults implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
                 struct.shardInfo = new HashMap<String,Long>(2*_map50.size);
                 for (int _i51 = 0; _i51 < _map50.size; ++_i51)
                 {
-                  String _key52; // required
-                  long _val53; // optional
+                  String _key52; // optional
+                  long _val53; // required
                   _key52 = iprot.readString();
                   _val53 = iprot.readI64();
                   struct.shardInfo.put(_key52, _val53);
@@ -1146,8 +1146,8 @@ public class BlurResults implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
           struct.shardInfo = new HashMap<String,Long>(2*_map71.size);
           for (int _i72 = 0; _i72 < _map71.size; ++_i72)
           {
-            String _key73; // required
-            long _val74; // optional
+            String _key73; // optional
+            long _val74; // required
             _key73 = iprot.readString();
             _val74 = iprot.readI64();
             struct.shardInfo.put(_key73, _val74);

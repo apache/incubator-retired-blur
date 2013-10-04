@@ -15351,8 +15351,8 @@ public class Blur {
                   struct.success = new HashMap<String,List<String>>(2*_map214.size);
                   for (int _i215 = 0; _i215 < _map214.size; ++_i215)
                   {
-                    String _key216; // required
-                    List<String> _val217; // optional
+                    String _key216; // optional
+                    List<String> _val217; // required
                     _key216 = iprot.readString();
                     {
                       org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list218 = iprot.readListBegin();
@@ -15479,8 +15479,8 @@ public class Blur {
             struct.success = new HashMap<String,List<String>>(2*_map225.size);
             for (int _i226 = 0; _i226 < _map225.size; ++_i226)
             {
-              String _key227; // required
-              List<String> _val228; // optional
+              String _key227; // optional
+              List<String> _val228; // required
               _key227 = iprot.readString();
               {
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list229 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
@@ -27166,8 +27166,8 @@ public class Blur {
                   struct.success = new HashMap<String,String>(2*_map280.size);
                   for (int _i281 = 0; _i281 < _map280.size; ++_i281)
                   {
-                    String _key282; // required
-                    String _val283; // optional
+                    String _key282; // optional
+                    String _val283; // required
                     _key282 = iprot.readString();
                     _val283 = iprot.readString();
                     struct.success.put(_key282, _val283);
@@ -27271,8 +27271,8 @@ public class Blur {
             struct.success = new HashMap<String,String>(2*_map286.size);
             for (int _i287 = 0; _i287 < _map286.size; ++_i287)
             {
-              String _key288; // required
-              String _val289; // optional
+              String _key288; // optional
+              String _val289; // required
               _key288 = iprot.readString();
               _val289 = iprot.readString();
               struct.success.put(_key288, _val289);
@@ -28064,16 +28064,16 @@ public class Blur {
                   struct.success = new HashMap<String,Map<String,ShardState>>(2*_map290.size);
                   for (int _i291 = 0; _i291 < _map290.size; ++_i291)
                   {
-                    String _key292; // required
-                    Map<String,ShardState> _val293; // optional
+                    String _key292; // optional
+                    Map<String,ShardState> _val293; // required
                     _key292 = iprot.readString();
                     {
                       org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map294 = iprot.readMapBegin();
                       _val293 = new HashMap<String,ShardState>(2*_map294.size);
                       for (int _i295 = 0; _i295 < _map294.size; ++_i295)
                       {
-                        String _key296; // required
-                        ShardState _val297; // optional
+                        String _key296; // optional
+                        ShardState _val297; // required
                         _key296 = iprot.readString();
                         _val297 = ShardState.findByValue(iprot.readI32());
                         _val293.put(_key296, _val297);
@@ -28196,16 +28196,16 @@ public class Blur {
             struct.success = new HashMap<String,Map<String,ShardState>>(2*_map302.size);
             for (int _i303 = 0; _i303 < _map302.size; ++_i303)
             {
-              String _key304; // required
-              Map<String,ShardState> _val305; // optional
+              String _key304; // optional
+              Map<String,ShardState> _val305; // required
               _key304 = iprot.readString();
               {
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map306 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, iprot.readI32());
                 _val305 = new HashMap<String,ShardState>(2*_map306.size);
                 for (int _i307 = 0; _i307 < _map306.size; ++_i307)
                 {
-                  String _key308; // required
-                  ShardState _val309; // optional
+                  String _key308; // optional
+                  ShardState _val309; // required
                   _key308 = iprot.readString();
                   _val309 = ShardState.findByValue(iprot.readI32());
                   _val305.put(_key308, _val309);
@@ -29689,8 +29689,8 @@ public class Blur {
                   struct.success = new HashMap<String,String>(2*_map310.size);
                   for (int _i311 = 0; _i311 < _map310.size; ++_i311)
                   {
-                    String _key312; // required
-                    String _val313; // optional
+                    String _key312; // optional
+                    String _val313; // required
                     _key312 = iprot.readString();
                     _val313 = iprot.readString();
                     struct.success.put(_key312, _val313);
@@ -29794,8 +29794,8 @@ public class Blur {
             struct.success = new HashMap<String,String>(2*_map316.size);
             for (int _i317 = 0; _i317 < _map316.size; ++_i317)
             {
-              String _key318; // required
-              String _val319; // optional
+              String _key318; // optional
+              String _val319; // required
               _key318 = iprot.readString();
               _val319 = iprot.readString();
               struct.success.put(_key318, _val319);
@@ -30626,8 +30626,8 @@ public class Blur {
                   struct.success = new HashMap<String,Metric>(2*_map328.size);
                   for (int _i329 = 0; _i329 < _map328.size; ++_i329)
                   {
-                    String _key330; // required
-                    Metric _val331; // optional
+                    String _key330; // optional
+                    Metric _val331; // required
                     _key330 = iprot.readString();
                     _val331 = new Metric();
                     _val331.read(iprot);
@@ -30732,8 +30732,8 @@ public class Blur {
             struct.success = new HashMap<String,Metric>(2*_map334.size);
             for (int _i335 = 0; _i335 < _map334.size; ++_i335)
             {
-              String _key336; // required
-              Metric _val337; // optional
+              String _key336; // optional
+              Metric _val337; // required
               _key336 = iprot.readString();
               _val337 = new Metric();
               _val337.read(iprot);

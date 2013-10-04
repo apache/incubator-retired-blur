@@ -15,8 +15,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+cdir=`dirname "$0"`
+cdir=`cd "$cdir"; pwd`
 
-
+cd $cdir
 rm ../../../../../blur-thrift/src/main/java/org/apache/blur/thrift/generated/*
 rm -r gen-java/ gen-perl/ gen-rb/ gen-html/
 thrift --gen html --gen perl --gen java --gen rb --gen js Blur.thrift
@@ -28,5 +30,9 @@ for f in gen-java/org/apache/blur/thrift/generated/*.java; do
   rm $f.new1 $f.new2 $f.new3 $f
   mv $f.new4 $f
 done
-java -cp ../../../../../blur-util/target/blur-util-*.jar org.apache.blur.doc.CreateBlurApiHtmlPage gen-html/Blur.html ../../../../../docs/Blur.html
+GEN_HTML=$cdir/gen-html/Blur.html
+OUTPUT_HTML=$cdir/../../../../../docs/Blur.html
+cd ../../../../../blur-util
+mvn exec:java -Dexec.mainClass="org.apache.blur.doc.CreateBlurApiHtmlPage" -Dexec.args="$GEN_HTML $OUTPUT_HTML"
+cd $cdir
 cp -r gen-java/* ../../../../../blur-thrift/src/main/java/

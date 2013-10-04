@@ -479,7 +479,8 @@ NOTE: This will index the column as a full text field in a default field, so tha
 <tr><td>12</td><td>readOnly</td><td><code>bool</code></td><td>If a table is set to be readonly, that means that mutates through Thrift are NOT allowed.  However
 updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.
 </td><td>default</td><td>0</td></tr>
-<tr><td>13</td><td>preCacheCols</td><td><code>list&lt;<code>string</code>&gt;</code></td><td>This map sets what column families and columns to prefetch into block cache on shard open.
+<tr><td>13</td><td>preCacheCols</td><td><code>list&lt;<code>string</code>&gt;</code></td><td>This is a list of fields to prefetch into the blockcache.  The format of the entries should
+be family dot column, "family.column".
 </td><td>default</td><td></td></tr>
 <tr><td>14</td><td>tableProperties</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td>The table properties that can modify the default behavior of the table.  TODO: Document all options.
 </td><td>default</td><td></td></tr>

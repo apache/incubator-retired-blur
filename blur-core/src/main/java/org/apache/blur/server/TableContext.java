@@ -16,6 +16,7 @@ package org.apache.blur.server;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.utils.BlurConstants.BLUR_FIELDTYPE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SAHRD_INDEX_SIMILARITY;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_COMMITS;
@@ -26,10 +27,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.analysis.FieldManager;
+import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.analysis.HdfsFieldManager;
 import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
 import org.apache.blur.log.Log;
@@ -52,6 +56,10 @@ public class TableContext {
   private static final String LOGS = "logs";
   private static final String TYPES = "types";
 
+  private static ConcurrentHashMap<String, TableContext> cache = new ConcurrentHashMap<String, TableContext>();
+  private static Configuration systemConfiguration;
+  private static BlurConfiguration systemBlurConfiguration;
+
   private Path tablePath;
   private Path walTablePath;
   private String defaultFieldName;
@@ -65,8 +73,7 @@ public class TableContext {
   private ScoreType defaultScoreType;
   private Term defaultPrimeDocTerm;
   private FieldManager fieldManager;
-
-  private static ConcurrentHashMap<String, TableContext> cache = new ConcurrentHashMap<String, TableContext>();
+  private BlurConfiguration blurConfiguration;
 
   protected TableContext() {
 
@@ -76,6 +83,7 @@ public class TableContext {
     cache.clear();
   }
 
+  @SuppressWarnings("unchecked")
   public static TableContext create(TableDescriptor tableDescriptor) {
     if (tableDescriptor == null) {
       throw new NullPointerException("TableDescriptor can not be null.");
@@ -84,22 +92,29 @@ public class TableContext {
     if (name == null) {
       throw new NullPointerException("Table name in the TableDescriptor can not be null.");
     }
+    String tableUri = tableDescriptor.getTableUri();
+    if (tableUri == null) {
+      throw new NullPointerException("Table uri in the TableDescriptor can not be null.");
+    }
     TableContext tableContext = cache.get(name);
     if (tableContext != null) {
       return tableContext;
     }
     LOG.info("Creating table context for table [{0}]", name);
-    Configuration configuration = new Configuration();
+    Configuration configuration = getSystemConfiguration();
+    BlurConfiguration blurConfiguration = getSystemBlurConfiguration();
     Map<String, String> tableProperties = tableDescriptor.getTableProperties();
     if (tableProperties != null) {
       for (Entry<String, String> prop : tableProperties.entrySet()) {
         configuration.set(prop.getKey(), prop.getValue());
+        blurConfiguration.set(prop.getKey(), prop.getValue());
       }
     }
 
     tableContext = new TableContext();
     tableContext.configuration = configuration;
-    tableContext.tablePath = new Path(tableDescriptor.getTableUri());
+    tableContext.blurConfiguration = blurConfiguration;
+    tableContext.tablePath = new Path(tableUri);
     tableContext.walTablePath = new Path(tableContext.tablePath, LOGS);
 
     tableContext.defaultFieldName = SUPER;
@@ -123,6 +138,28 @@ public class TableContext {
       tableContext.fieldManager = hdfsFieldManager;
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+
+    Set<Entry<String, String>> entrySet = blurConfiguration.getProperties().entrySet();
+    for (Entry<String, String> entry : entrySet) {
+      String key = entry.getKey();
+      if (key.startsWith(BLUR_FIELDTYPE)) {
+        String className = entry.getValue();
+        LOG.info("Attempting to load new type [{0}]", className);
+        Class<? extends FieldTypeDefinition> clazz;
+        try {
+          clazz = (Class<? extends FieldTypeDefinition>) Class.forName(className);
+          FieldTypeDefinition fieldTypeDefinition = clazz.newInstance();
+          tableContext.fieldManager.registerType(clazz);
+          LOG.info("Sucessfully loaded new type [{0}] with name [{1}]", className, fieldTypeDefinition.getName());
+        } catch (ClassNotFoundException e) {
+          LOG.error("The field type definition class [{0}] was not found.  Check the classpath.", e, className);
+        } catch (InstantiationException e) {
+          LOG.error("Could not create the field type definition [{0}].", e, className);
+        } catch (IllegalAccessException e) {
+          LOG.error("Unknown exception while trying to load field type definition [{0}].", e, className);
+        }
+      }
     }
 
     Class<?> c1 = configuration.getClass(BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE,
@@ -204,5 +241,35 @@ public class TableContext {
 
   public long getTimeBetweenWALSyncsNanos() {
     return TimeUnit.MILLISECONDS.toNanos(10);
+  }
+
+  public BlurConfiguration getBlurConfiguration() {
+    return blurConfiguration;
+  }
+
+  public static synchronized Configuration getSystemConfiguration() {
+    if (systemConfiguration == null) {
+      systemConfiguration = new Configuration();
+    }
+    return systemConfiguration;
+  }
+
+  public static void setSystemConfiguration(Configuration systemConfiguration) {
+    TableContext.systemConfiguration = systemConfiguration;
+  }
+
+  public static synchronized BlurConfiguration getSystemBlurConfiguration() {
+    if (systemBlurConfiguration == null) {
+      try {
+        systemBlurConfiguration = new BlurConfiguration();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return systemBlurConfiguration;
+  }
+
+  public static void setSystemBlurConfiguration(BlurConfiguration systemBlurConfiguration) {
+    TableContext.systemBlurConfiguration = systemBlurConfiguration;
   }
 }

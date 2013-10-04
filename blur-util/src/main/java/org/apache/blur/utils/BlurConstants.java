@@ -72,6 +72,8 @@ public class BlurConstants {
   public static final String BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE = "blur.shard.index.deletion.policy.maxage";
   public static final String BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE = "blur.zookeeper.system.time.tolerance";
   public static final String BLUR_SAHRD_INDEX_SIMILARITY = "blur.sahrd.index.similarity";
+  
+  public static final String BLUR_FIELDTYPE = "blur.fieldtype.";
 
   public static final String BLUR_SHARD_TIME_BETWEEN_COMMITS = "blur.shard.time.between.commits";
   public static final String BLUR_SHARD_TIME_BETWEEN_REFRESHS = "blur.shard.time.between.refreshs";

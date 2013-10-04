@@ -69,6 +69,7 @@ import org.apache.blur.manager.writer.BlurIndexRefresher;
 import org.apache.blur.metrics.JSONReporter;
 import org.apache.blur.metrics.ReporterSetup;
 import org.apache.blur.server.ShardServerEventHandler;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.store.BlockCacheDirectoryFactory;
 import org.apache.blur.store.BlockCacheDirectoryFactoryV1;
 import org.apache.blur.store.BlockCacheDirectoryFactoryV2;
@@ -117,6 +118,8 @@ public class ThriftBlurShardServer extends ThriftServer {
   public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration, boolean randomPort)
       throws Exception {
     Configuration config = new Configuration();
+    TableContext.setSystemBlurConfiguration(configuration);
+    TableContext.setSystemConfiguration(config);
 
     String bindAddress = configuration.get(BLUR_SHARD_BIND_ADDRESS);
     int bindPort = configuration.getInt(BLUR_SHARD_BIND_PORT, -1);

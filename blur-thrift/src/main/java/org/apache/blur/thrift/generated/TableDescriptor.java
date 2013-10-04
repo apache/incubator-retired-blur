@@ -115,7 +115,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
    */
   public boolean readOnly; // required
   /**
-   * This map sets what column families and columns to prefetch into block cache on shard open.
+   * This is a list of fields to prefetch into the blockcache.  The format of the entries should
+   * be family dot column, "family.column".
    */
   public List<String> preCacheCols; // required
   /**
@@ -179,7 +180,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
      */
     READ_ONLY((short)12, "readOnly"),
     /**
-     * This map sets what column families and columns to prefetch into block cache on shard open.
+     * This is a list of fields to prefetch into the blockcache.  The format of the entries should
+     * be family dot column, "family.column".
      */
     PRE_CACHE_COLS((short)13, "preCacheCols"),
     /**
@@ -798,14 +800,16 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
   /**
-   * This map sets what column families and columns to prefetch into block cache on shard open.
+   * This is a list of fields to prefetch into the blockcache.  The format of the entries should
+   * be family dot column, "family.column".
    */
   public List<String> getPreCacheCols() {
     return this.preCacheCols;
   }
 
   /**
-   * This map sets what column families and columns to prefetch into block cache on shard open.
+   * This is a list of fields to prefetch into the blockcache.  The format of the entries should
+   * be family dot column, "family.column".
    */
   public TableDescriptor setPreCacheCols(List<String> preCacheCols) {
     this.preCacheCols = preCacheCols;
@@ -1795,8 +1799,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
                 struct.tableProperties = new HashMap<String,String>(2*_map138.size);
                 for (int _i139 = 0; _i139 < _map138.size; ++_i139)
                 {
-                  String _key140; // required
-                  String _val141; // optional
+                  String _key140; // optional
+                  String _val141; // required
                   _key140 = iprot.readString();
                   _val141 = iprot.readString();
                   struct.tableProperties.put(_key140, _val141);
@@ -1839,8 +1843,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
                 struct.defaultMissingFieldProps = new HashMap<String,String>(2*_map142.size);
                 for (int _i143 = 0; _i143 < _map142.size; ++_i143)
                 {
-                  String _key144; // required
-                  String _val145; // optional
+                  String _key144; // optional
+                  String _val145; // required
                   _key144 = iprot.readString();
                   _val145 = iprot.readString();
                   struct.defaultMissingFieldProps.put(_key144, _val145);
@@ -2165,8 +2169,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
           struct.tableProperties = new HashMap<String,String>(2*_map160.size);
           for (int _i161 = 0; _i161 < _map160.size; ++_i161)
           {
-            String _key162; // required
-            String _val163; // optional
+            String _key162; // optional
+            String _val163; // required
             _key162 = iprot.readString();
             _val163 = iprot.readString();
             struct.tableProperties.put(_key162, _val163);
@@ -2192,8 +2196,8 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
           struct.defaultMissingFieldProps = new HashMap<String,String>(2*_map164.size);
           for (int _i165 = 0; _i165 < _map164.size; ++_i165)
           {
-            String _key166; // required
-            String _val167; // optional
+            String _key166; // optional
+            String _val167; // required
             _key166 = iprot.readString();
             _val167 = iprot.readString();
             struct.defaultMissingFieldProps.put(_key166, _val167);

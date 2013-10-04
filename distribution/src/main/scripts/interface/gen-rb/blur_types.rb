@@ -749,7 +749,8 @@ module Blur
       # If a table is set to be readonly, that means that mutates through Thrift are NOT allowed.  However
 # updates through MapReduce are allowed and in fact they are only allowed if the table is in readOnly mode.
       READONLY => {:type => ::Thrift::Types::BOOL, :name => 'readOnly', :default => false},
-      # This map sets what column families and columns to prefetch into block cache on shard open.
+      # This is a list of fields to prefetch into the blockcache.  The format of the entries should
+# be family dot column, "family.column".
       PRECACHECOLS => {:type => ::Thrift::Types::LIST, :name => 'preCacheCols', :element => {:type => ::Thrift::Types::STRING}},
       # The table properties that can modify the default behavior of the table.  TODO: Document all options.
       TABLEPROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'tableProperties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},

@@ -1195,8 +1195,8 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
                 struct.columnsToFetch = new HashMap<String,Set<String>>(2*_map19.size);
                 for (int _i20 = 0; _i20 < _map19.size; ++_i20)
                 {
-                  String _key21; // required
-                  Set<String> _val22; // optional
+                  String _key21; // optional
+                  Set<String> _val22; // required
                   _key21 = iprot.readString();
                   {
                     org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set23 = iprot.readSetBegin();
@@ -1452,8 +1452,8 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
           struct.columnsToFetch = new HashMap<String,Set<String>>(2*_map35.size);
           for (int _i36 = 0; _i36 < _map35.size; ++_i36)
           {
-            String _key37; // required
-            Set<String> _val38; // optional
+            String _key37; // optional
+            Set<String> _val38; // required
             _key37 = iprot.readString();
             {
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set39 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());

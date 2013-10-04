@@ -492,16 +492,16 @@ public class Schema implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Sch
                 struct.families = new HashMap<String,Map<String,ColumnDefinition>>(2*_map112.size);
                 for (int _i113 = 0; _i113 < _map112.size; ++_i113)
                 {
-                  String _key114; // required
-                  Map<String,ColumnDefinition> _val115; // optional
+                  String _key114; // optional
+                  Map<String,ColumnDefinition> _val115; // required
                   _key114 = iprot.readString();
                   {
                     org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map116 = iprot.readMapBegin();
                     _val115 = new HashMap<String,ColumnDefinition>(2*_map116.size);
                     for (int _i117 = 0; _i117 < _map116.size; ++_i117)
                     {
-                      String _key118; // required
-                      ColumnDefinition _val119; // optional
+                      String _key118; // optional
+                      ColumnDefinition _val119; // required
                       _key118 = iprot.readString();
                       _val119 = new ColumnDefinition();
                       _val119.read(iprot);
@@ -620,16 +620,16 @@ public class Schema implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Sch
           struct.families = new HashMap<String,Map<String,ColumnDefinition>>(2*_map124.size);
           for (int _i125 = 0; _i125 < _map124.size; ++_i125)
           {
-            String _key126; // required
-            Map<String,ColumnDefinition> _val127; // optional
+            String _key126; // optional
+            Map<String,ColumnDefinition> _val127; // required
             _key126 = iprot.readString();
             {
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map128 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
               _val127 = new HashMap<String,ColumnDefinition>(2*_map128.size);
               for (int _i129 = 0; _i129 < _map128.size; ++_i129)
               {
-                String _key130; // required
-                ColumnDefinition _val131; // optional
+                String _key130; // optional
+                ColumnDefinition _val131; // required
                 _key130 = iprot.readString();
                 _val131 = new ColumnDefinition();
                 _val131.read(iprot);

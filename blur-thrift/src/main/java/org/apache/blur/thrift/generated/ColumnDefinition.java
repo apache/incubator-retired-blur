@@ -907,8 +907,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
                 struct.properties = new HashMap<String,String>(2*_map102.size);
                 for (int _i103 = 0; _i103 < _map102.size; ++_i103)
                 {
-                  String _key104; // required
-                  String _val105; // optional
+                  String _key104; // optional
+                  String _val105; // required
                   _key104 = iprot.readString();
                   _val105 = iprot.readString();
                   struct.properties.put(_key104, _val105);
@@ -1065,8 +1065,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
           struct.properties = new HashMap<String,String>(2*_map108.size);
           for (int _i109 = 0; _i109 < _map108.size; ++_i109)
           {
-            String _key110; // required
-            String _val111; // optional
+            String _key110; // optional
+            String _val111; // required
             _key110 = iprot.readString();
             _val111 = iprot.readString();
             struct.properties.put(_key110, _val111);

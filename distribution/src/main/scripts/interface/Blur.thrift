@@ -696,7 +696,8 @@ struct TableDescriptor {
    */
   12:bool readOnly = 0,
   /**
-   * This map sets what column families and columns to prefetch into block cache on shard open.
+   * This is a list of fields to prefetch into the blockcache.  The format of the entries should 
+   * be family dot column, "family.column".
    */
   13:list<string> preCacheCols
   /**

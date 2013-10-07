@@ -32,8 +32,8 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.QueryState;
+import org.apache.blur.utils.GCAction;
 import org.apache.blur.utils.GCWatcher;
-import org.apache.blur.utils.GCWatcher.Action;
 
 public class QueryStatusManager {
 
@@ -56,7 +56,7 @@ public class QueryStatusManager {
         }
       }
     }, statusCleanupTimerDelay, statusCleanupTimerDelay);
-    GCWatcher.registerAction(new Action() {
+    GCWatcher.registerAction(new GCAction() {
       @Override
       public void takeAction() throws Exception {
         stopAllQueriesForBackPressure();

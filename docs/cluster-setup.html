@@ -165,6 +165,15 @@ blur.controller.server.thrift.thread.count=32
 # the shards server.  This should be a large number.
 blur.controller.server.remote.thread.count=64
 
+# The number of threads used for selector processing inside the thrift server.
+blur.controller.thrift.selector.threads=2
+
+# The maximum number of bytes used for reading requests in the thrift server.
+blur.controller.thrift.max.read.buffer.bytes=9223372036854775807
+
+# The size of the blocking queue per selector thread for passing accepted connections to the selector thread.
+blur.controller.thrift.accept.queue.size.per.thread=4
+
 # The number of hits to fetch per request to the shard servers
 blur.controller.remote.fetch.count=100
 
@@ -263,6 +272,15 @@ blur.shard.data.fetch.thread.count=8
 
 # The number of the thrift threads
 blur.shard.server.thrift.thread.count=8
+
+# The number of threads used for selector processing inside the thrift server.
+blur.shard.thrift.selector.threads=2
+
+# The maximum number of bytes used for reading requests in the thrift server.
+blur.shard.thrift.max.read.buffer.bytes=9223372036854775807
+
+# The size of the blocking queue per selector thread for passing accepted connections to the selector thread.
+blur.shard.thrift.accept.queue.size.per.thread=4
 
 # The number of threads that are used for opening indexes
 blur.shard.opener.thread.count=8

@@ -32,6 +32,9 @@ import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_RETRY_MUTATE_D
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_SERVER_REMOTE_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_SERVER_THRIFT_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_SHARD_CONNECTION_TIMEOUT;
+import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD;
+import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_THRIFT_MAX_READ_BUFFER_BYTES;
+import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_THRIFT_SELECTOR_THREADS;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST;
@@ -142,6 +145,9 @@ public class ThriftBlurControllerServer extends ThriftServer {
     server.setThreadCount(threadCount);
     server.setEventHandler(eventHandler);
     server.setIface(iface);
+    server.setAcceptQueueSizePerThread(configuration.getInt(BLUR_CONTROLLER_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD, 4));
+    server.setMaxReadBufferBytes(configuration.getLong(BLUR_CONTROLLER_THRIFT_MAX_READ_BUFFER_BYTES, Long.MAX_VALUE));
+    server.setSelectorThreads(configuration.getInt(BLUR_CONTROLLER_THRIFT_SELECTOR_THREADS, 2));
 
     int baseGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_CONTROLLER_PORT));
     final HttpJettyServer httpServer;

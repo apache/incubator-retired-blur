@@ -52,6 +52,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransportException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.server.TThreadedSelectorServer;
+import org.apache.blur.thrift.server.TThreadedSelectorServer.Args.AcceptPolicy;
 
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Gauge;
@@ -72,6 +73,9 @@ public class ThriftServer {
   private ExecutorService _mutateExecutorService;
   private TServerEventHandler _eventHandler;
   private TNonblockingServerSocket _serverTransport;
+  private int _acceptQueueSizePerThread = 4;
+  private long _maxReadBufferBytes = Long.MAX_VALUE;
+  private int _selectorThreads = 2;
 
   public TNonblockingServerSocket getServerTransport() {
     return _serverTransport;
@@ -193,6 +197,11 @@ public class ThriftServer {
     args.executorService(_executorService);
     args.transportFactory(new TFramedTransport.Factory());
     args.protocolFactory(new TBinaryProtocol.Factory(true, true));
+    args.selectorThreads = _selectorThreads;
+    args.maxReadBufferBytes = _maxReadBufferBytes;
+    args.acceptQueueSizePerThread(_acceptQueueSizePerThread);
+    args.acceptPolicy(AcceptPolicy.FAIR_ACCEPT);
+
     _server = new TThreadedSelectorServer(args);
     _server.setServerEventHandler(_eventHandler);
     LOG.info("Starting server [{0}]", _nodeName);
@@ -284,4 +293,28 @@ public class ThriftServer {
     _eventHandler = eventHandler;
   }
 
+
+  public int getAcceptQueueSizePerThread() {
+    return _acceptQueueSizePerThread;
+  }
+
+  public void setAcceptQueueSizePerThread(int acceptQueueSizePerThread) {
+    _acceptQueueSizePerThread = acceptQueueSizePerThread;
+  }
+
+  public long getMaxReadBufferBytes() {
+    return _maxReadBufferBytes;
+  }
+
+  public void setMaxReadBufferBytes(long maxReadBufferBytes) {
+    _maxReadBufferBytes = maxReadBufferBytes;
+  }
+
+  public int getSelectorThreads() {
+    return _selectorThreads;
+  }
+
+  public void setSelectorThreads(int selectorThreads) {
+    _selectorThreads = selectorThreads;
+  }
 }

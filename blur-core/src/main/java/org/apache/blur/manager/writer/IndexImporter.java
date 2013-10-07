@@ -38,6 +38,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.io.Text;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
@@ -83,7 +84,15 @@ public class IndexImporter extends TimerTask implements Closeable {
     Configuration configuration = _shardContext.getTableContext().getConfiguration();
     try {
       FileSystem fileSystem = path.getFileSystem(configuration);
-      SortedSet<FileStatus> listStatus = sort(fileSystem.listStatus(path));
+      SortedSet<FileStatus> listStatus = sort(fileSystem.listStatus(path, new PathFilter() {
+        @Override
+        public boolean accept(Path path) {
+          if (path != null && path.getName().endsWith(".commit")) {
+            return true;
+          }
+          return false;
+        }
+      }));
       List<HdfsDirectory> indexesToImport = new ArrayList<HdfsDirectory>();
       for (FileStatus fileStatus : listStatus) {
         Path file = fileStatus.getPath();

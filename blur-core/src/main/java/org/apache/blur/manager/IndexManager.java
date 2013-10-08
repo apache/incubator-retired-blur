@@ -185,7 +185,11 @@ public class IndexManager {
       _statusManager.close();
       _executor.shutdownNow();
       _mutateExecutor.shutdownNow();
-      _indexServer.close();
+      try {
+        _indexServer.close();
+      } catch (IOException e) {
+        LOG.error("Unknown error while trying to close the index server", e);
+      }
     }
   }
 
@@ -402,7 +406,7 @@ public class IndexManager {
           preFilter, getScoreType(simpleQuery.scoreType), context);
       Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, fieldManager, context, postFilter,
           preFilter);
-      call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
+      call = new SimpleQueryParallelCall(running, table, status, facetedQuery, blurQuery.selector,
           _queriesInternalMeter, shardServerContext, runSlow, _fetchCount, _maxHeapPerRowFetch, context.getSimilarity());
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
       return ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
@@ -1056,7 +1060,6 @@ public class IndexManager {
 
     private final String _table;
     private final QueryStatus _status;
-    private final IndexServer _indexServer;
     private final Query _query;
     private final Selector _selector;
     private final AtomicBoolean _running;
@@ -1067,13 +1070,12 @@ public class IndexManager {
     private final int _maxHeapPerRowFetch;
     private final Similarity _similarity;
 
-    public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, IndexServer indexServer,
-        Query query, Selector selector, Meter queriesInternalMeter, ShardServerContext shardServerContext,
-        boolean runSlow, int fetchCount, int maxHeapPerRowFetch, Similarity similarity) {
+    public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, Query query,
+        Selector selector, Meter queriesInternalMeter, ShardServerContext shardServerContext, boolean runSlow,
+        int fetchCount, int maxHeapPerRowFetch, Similarity similarity) {
       _running = running;
       _table = table;
       _status = status;
-      _indexServer = indexServer;
       _query = query;
       _selector = selector;
       _queriesInternalMeter = queriesInternalMeter;

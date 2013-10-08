@@ -16,14 +16,6 @@ package org.apache.blur.manager.indexserver;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.apache.blur.metrics.MetricsConstants.BLUR;
-import static org.apache.blur.metrics.MetricsConstants.INDEX_COUNT;
-import static org.apache.blur.metrics.MetricsConstants.INDEX_MEMORY_USAGE;
-import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
-import static org.apache.blur.metrics.MetricsConstants.SEGMENT_COUNT;
-import static org.apache.blur.metrics.MetricsConstants.TABLE_COUNT;
-import static org.apache.blur.utils.BlurConstants.SHARD_PREFIX;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,6 +30,7 @@ import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -58,7 +51,6 @@ import org.apache.blur.manager.writer.BlurIndexReader;
 import org.apache.blur.manager.writer.BlurIndexRefresher;
 import org.apache.blur.manager.writer.BlurNRTIndex;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
-import org.apache.blur.metrics.AtomicLongGauge;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
@@ -71,82 +63,74 @@ import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.WatchChildren;
 import org.apache.blur.zookeeper.WatchChildren.OnChange;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.ContentSummary;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 
-import com.yammer.metrics.Metrics;
-import com.yammer.metrics.core.MetricName;
-
-public class DistributedIndexServer extends AbstractIndexServer {
+public class DistributedIndexServer extends AbstractDistributedIndexServer {
 
   private static final Log LOG = LogFactory.getLog(DistributedIndexServer.class);
   private static final long _delay = TimeUnit.SECONDS.toMillis(10);
   private static final AtomicLong _pauseWarmup = new AtomicLong();
 
-  private Map<String, TableDescriptor> _tableDescriptors = new ConcurrentHashMap<String, TableDescriptor>();
-  private Map<String, Similarity> _tableSimilarity = new ConcurrentHashMap<String, Similarity>();
-  private Map<String, DistributedLayout> _layoutManagers = new ConcurrentHashMap<String, DistributedLayout>();
-  private Map<String, Set<String>> _layoutCache = new ConcurrentHashMap<String, Set<String>>();
-  private ConcurrentHashMap<String, Map<String, BlurIndex>> _indexes = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
-  private final ShardStateManager _shardStateManager = new ShardStateManager();
+  static class LayoutEntry {
 
-  // set externally
-  private ClusterStatus _clusterStatus;
-  private Configuration _configuration;
-  private String _nodeName;
-  private int _shardOpenerThreadCount;
-  private BlockCacheDirectoryFactory _blockCacheDirectoryFactory;
-  private ZooKeeper _zookeeper;
-  private String _cluster;
+    LayoutEntry(DistributedLayout distributedLayout, Set<String> shards) {
+      _distributedLayout = distributedLayout;
+      _shards = shards;
+    }
 
-  // set internally
-  private Timer _timerCacheFlush;
-  private ExecutorService _openerService;
-  private Timer _timerTableWarmer;
-  private BlurFilterCache _filterCache;
-  private AtomicBoolean _running = new AtomicBoolean();
-  private long _safeModeDelay;
-  private BlurIndexWarmup _warmup = new DefaultBlurIndexWarmup(1000000);
-  private DirectoryReferenceFileGC _gc;
-  private WatchChildren _watchOnlineShards;
-
-  private SharedMergeScheduler _mergeScheduler;
-  private IndexInputCloser _closer = null;
-  private ExecutorService _searchExecutor = null;
-
-  private AtomicLong _tableCount = new AtomicLong();
-  private AtomicLong _indexCount = new AtomicLong();
-  private AtomicLong _segmentCount = new AtomicLong();
-  private AtomicLong _indexMemoryUsage = new AtomicLong();
-  private BlurIndexRefresher _refresher;
-  private BlurIndexCloser _indexCloser;
-  private int _internalSearchThreads;
-  private ExecutorService _warmupExecutor;
-  private int _warmupThreads;
-
-  public static interface ReleaseReader {
-    void release() throws IOException;
+    final DistributedLayout _distributedLayout;
+    final Set<String> _shards;
   }
 
-  public void init() throws KeeperException, InterruptedException, IOException {
-    MetricName tableCount = new MetricName(ORG_APACHE_BLUR, BLUR, TABLE_COUNT, _cluster);
-    MetricName indexCount = new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_COUNT, _cluster);
-    MetricName segmentCount = new MetricName(ORG_APACHE_BLUR, BLUR, SEGMENT_COUNT, _cluster);
-    MetricName indexMemoryUsage = new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_MEMORY_USAGE, _cluster);
+  // set externally
+  private final int _shardOpenerThreadCount;
+  private final BlockCacheDirectoryFactory _blockCacheDirectoryFactory;
+  private final ZooKeeper _zookeeper;
+  private final int _internalSearchThreads;
+  private final int _warmupThreads;
+  private final long _safeModeDelay;
+  private final BlurIndexWarmup _warmup;
+  private final BlurFilterCache _filterCache;
+  private final DistributedLayoutFactory _distributedLayoutFactory;
 
-    Metrics.newGauge(tableCount, new AtomicLongGauge(_tableCount));
-    Metrics.newGauge(indexCount, new AtomicLongGauge(_indexCount));
-    Metrics.newGauge(segmentCount, new AtomicLongGauge(_segmentCount));
-    Metrics.newGauge(indexMemoryUsage, new AtomicLongGauge(_indexMemoryUsage));
+  // set internally
+  private final AtomicBoolean _running = new AtomicBoolean();
+  private final Timer _timerTableWarmer;
+  private final Timer _timerCacheFlush;
+  private final ExecutorService _openerService;
+  private final DirectoryReferenceFileGC _gc;
+  private final WatchChildren _watchOnlineShards;
+  private final SharedMergeScheduler _mergeScheduler;
+  private final IndexInputCloser _closer;
+  private final ExecutorService _searchExecutor;
+  private final BlurIndexRefresher _refresher;
+  private final BlurIndexCloser _indexCloser;
+  private final ExecutorService _warmupExecutor;
+  private final ConcurrentMap<String, LayoutEntry> _layout = new ConcurrentHashMap<String, LayoutEntry>();
+  private final ConcurrentMap<String, Map<String, BlurIndex>> _indexes = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
+  private final ShardStateManager _shardStateManager = new ShardStateManager();
+
+  public DistributedIndexServer(Configuration configuration, ZooKeeper zookeeper, ClusterStatus clusterStatus,
+      BlurIndexWarmup warmup, BlurFilterCache filterCache, BlockCacheDirectoryFactory blockCacheDirectoryFactory,
+      DistributedLayoutFactory distributedLayoutFactory, String cluster, String nodeName, long safeModeDelay,
+      int shardOpenerThreadCount, int internalSearchThreads, int warmupThreads) throws KeeperException,
+      InterruptedException {
+    super(clusterStatus, configuration, nodeName, cluster);
+    _shardOpenerThreadCount = shardOpenerThreadCount;
+    _zookeeper = zookeeper;
+    _filterCache = filterCache;
+    _safeModeDelay = safeModeDelay;
+    _warmup = warmup == null ? new DefaultBlurIndexWarmup(1000000) : warmup;
+    _internalSearchThreads = internalSearchThreads;
+    _warmupThreads = warmupThreads;
+    _blockCacheDirectoryFactory = blockCacheDirectoryFactory;
+    _distributedLayoutFactory = distributedLayoutFactory == null ? getDefaultLayoutFactory() : distributedLayoutFactory;
 
     BlurUtil.setupZookeeper(_zookeeper, _cluster);
     _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
@@ -163,7 +147,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _refresher.init();
     _indexCloser = new BlurIndexCloser();
     _indexCloser.init();
-    setupFlushCacheTimer();
+    _timerCacheFlush = setupFlushCacheTimer();
 
     registerMyselfAsMemberOfCluster();
     String onlineShardsPath = ZookeeperPathConstants.getOnlineShardsPath(_cluster);
@@ -173,43 +157,127 @@ public class DistributedIndexServer extends AbstractIndexServer {
     safeMode.registerNode(getNodeName(), BlurUtil.getVersion().getBytes());
 
     _running.set(true);
-    setupTableWarmer();
-    watchForShardServerChanges();
+    _timerTableWarmer = setupTableWarmer();
+    _watchOnlineShards = watchForShardServerChanges();
   }
 
-  private void watchForShardServerChanges() {
-    ZookeeperPathConstants.getOnlineShardsPath(_cluster);
-    _watchOnlineShards = new WatchChildren(_zookeeper, ZookeeperPathConstants.getOnlineShardsPath(_cluster))
-        .watch(new OnChange() {
-          private List<String> _prevOnlineShards = new ArrayList<String>();
+  private DistributedLayoutFactory getDefaultLayoutFactory() {
+    return new DistributedLayoutFactory() {
 
-          @Override
-          public void action(List<String> onlineShards) {
-            List<String> oldOnlineShards = _prevOnlineShards;
-            _prevOnlineShards = onlineShards;
-            _layoutManagers.clear();
-            _layoutCache.clear();
-            LOG.info("Online shard servers changed, clearing layout managers and cache.");
-            if (oldOnlineShards == null) {
-              oldOnlineShards = new ArrayList<String>();
-            }
-            for (String oldOnlineShard : oldOnlineShards) {
-              if (!onlineShards.contains(oldOnlineShard)) {
-                LOG.info("Node went offline [{0}]", oldOnlineShard);
-              }
-            }
-            for (String onlineShard : onlineShards) {
-              if (!oldOnlineShards.contains(onlineShard)) {
-                LOG.info("Node came online [{0}]", onlineShard);
-              }
-            }
+      @Override
+      public DistributedLayout createDistributedLayout(String table, List<String> shardList,
+          List<String> shardServerList, List<String> offlineShardServers) {
+        DistributedLayoutManager layoutManager = new DistributedLayoutManager();
+        layoutManager.setNodes(shardServerList);
+        layoutManager.setNodesOffline(offlineShardServers);
+        layoutManager.setShards(shardList);
+        layoutManager.init();
+        return layoutManager;
+      }
+    };
+  }
+
+  public static interface ReleaseReader {
+    void release() throws IOException;
+  }
+
+  public static AtomicLong getPauseWarmup() {
+    return _pauseWarmup;
+  }
+
+  @Override
+  public Map<String, ShardState> getShardState(String table) {
+    return _shardStateManager.getShardState(table);
+  }
+
+  @Override
+  public void close() {
+    if (_running.get()) {
+      _shardStateManager.close();
+      _running.set(false);
+      closeAllIndexes();
+      _refresher.close();
+      _indexCloser.close();
+      _watchOnlineShards.close();
+      _timerCacheFlush.purge();
+      _timerCacheFlush.cancel();
+
+      _timerTableWarmer.purge();
+      _timerTableWarmer.cancel();
+      _closer.close();
+      _gc.close();
+      _openerService.shutdownNow();
+      _searchExecutor.shutdownNow();
+      _warmupExecutor.shutdownNow();
+    }
+  }
+
+  @Override
+  public SortedSet<String> getShardListCurrentServerOnly(String table) throws IOException {
+    return new TreeSet<String>(getShardsToServe(table));
+  }
+
+  @Override
+  public Map<String, BlurIndex> getIndexes(String table) throws IOException {
+    checkTable(table);
+
+    Set<String> shardsToServe = getShardsToServe(table);
+    synchronized (_indexes) {
+      if (!_indexes.containsKey(table)) {
+        _indexes.putIfAbsent(table, new ConcurrentHashMap<String, BlurIndex>());
+      }
+    }
+    Map<String, BlurIndex> tableIndexes = _indexes.get(table);
+    Set<String> shardsBeingServed = new HashSet<String>(tableIndexes.keySet());
+    if (shardsBeingServed.containsAll(shardsToServe)) {
+      Map<String, BlurIndex> result = new HashMap<String, BlurIndex>(tableIndexes);
+      shardsBeingServed.removeAll(shardsToServe);
+      for (String shardNotToServe : shardsBeingServed) {
+        result.remove(shardNotToServe);
+      }
+      return result;
+    } else {
+      return openMissingShards(table, shardsToServe, tableIndexes);
+    }
+  }
+
+  private boolean isEnabled(String table) {
+    checkTable(table);
+    return _clusterStatus.isEnabled(true, _cluster, table);
+  }
+
+  private WatchChildren watchForShardServerChanges() {
+    WatchChildren watchOnlineShards = new WatchChildren(_zookeeper,
+        ZookeeperPathConstants.getOnlineShardsPath(_cluster)).watch(new OnChange() {
+      private List<String> _prevOnlineShards = new ArrayList<String>();
+
+      @Override
+      public void action(List<String> onlineShards) {
+        List<String> oldOnlineShards = _prevOnlineShards;
+        _prevOnlineShards = onlineShards;
+        _layout.clear();
+        LOG.info("Online shard servers changed, clearing layout managers and cache.");
+        if (oldOnlineShards == null) {
+          oldOnlineShards = new ArrayList<String>();
+        }
+        for (String oldOnlineShard : oldOnlineShards) {
+          if (!onlineShards.contains(oldOnlineShard)) {
+            LOG.info("Node went offline [{0}]", oldOnlineShard);
           }
-        });
+        }
+        for (String onlineShard : onlineShards) {
+          if (!oldOnlineShards.contains(onlineShard)) {
+            LOG.info("Node came online [{0}]", onlineShard);
+          }
+        }
+      }
+    });
+    return watchOnlineShards;
   }
 
-  private void setupTableWarmer() {
-    _timerTableWarmer = new Timer("Table-Warmer", true);
-    _timerTableWarmer.schedule(new TimerTask() {
+  private Timer setupTableWarmer() {
+    Timer timerTableWarmer = new Timer("Table-Warmer", true);
+    timerTableWarmer.schedule(new TimerTask() {
       @Override
       public void run() {
         try {
@@ -255,6 +323,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
         }
       }
     }, _delay, _delay);
+    return timerTableWarmer;
   }
 
   private void registerMyselfAsMemberOfCluster() {
@@ -271,14 +340,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
     }
   }
 
-  @Override
-  public Map<String, ShardState> getShardState(String table) {
-    return _shardStateManager.getShardState(table);
-  }
-
-  private void setupFlushCacheTimer() {
-    _timerCacheFlush = new Timer("Flush-IndexServer-Caches", true);
-    _timerCacheFlush.schedule(new TimerTask() {
+  private Timer setupFlushCacheTimer() {
+    Timer timerCacheFlush = new Timer("Flush-IndexServer-Caches", true);
+    timerCacheFlush.schedule(new TimerTask() {
       @Override
       public void run() {
         try {
@@ -289,10 +353,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
       }
 
       private void cleanup() {
-        clearMapOfOldTables(_tableDescriptors);
-        clearMapOfOldTables(_layoutManagers);
-        clearMapOfOldTables(_layoutCache);
-        clearMapOfOldTables(_tableSimilarity);
+        clearMapOfOldTables(_layout);
         boolean closed = false;
         Map<String, Map<String, BlurIndex>> oldIndexesThatNeedToBeClosed = clearMapOfOldTables(_indexes);
         for (String table : oldIndexesThatNeedToBeClosed.keySet()) {
@@ -331,6 +392,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
         }
       }
     }, _delay, _delay);
+    return timerCacheFlush;
   }
 
   protected void close(BlurIndex index, String table, String shard) {
@@ -362,28 +424,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
     return removed;
   }
 
-  @Override
-  public void close() {
-    if (_running.get()) {
-      _shardStateManager.close();
-      _running.set(false);
-      closeAllIndexes();
-      _refresher.close();
-      _indexCloser.close();
-      _watchOnlineShards.close();
-      _timerCacheFlush.purge();
-      _timerCacheFlush.cancel();
-
-      _timerTableWarmer.purge();
-      _timerTableWarmer.cancel();
-      _closer.close();
-      _gc.close();
-      _openerService.shutdownNow();
-      _searchExecutor.shutdownNow();
-      _warmupExecutor.shutdownNow();
-    }
-  }
-
   private void closeAllIndexes() {
     for (Entry<String, Map<String, BlurIndex>> tableToShards : _indexes.entrySet()) {
       for (Entry<String, BlurIndex> shard : tableToShards.getValue().entrySet()) {
@@ -398,38 +438,10 @@ public class DistributedIndexServer extends AbstractIndexServer {
     }
   }
 
-  @Override
-  public SortedSet<String> getShardListCurrentServerOnly(String table) throws IOException {
-    return new TreeSet<String>(getShardsToServe(table));
-  }
-
-  @Override
-  public Map<String, BlurIndex> getIndexes(String table) throws IOException {
-    checkTable(table);
-
-    Set<String> shardsToServe = getShardsToServe(table);
-    synchronized (_indexes) {
-      if (!_indexes.containsKey(table)) {
-        _indexes.putIfAbsent(table, new ConcurrentHashMap<String, BlurIndex>());
-      }
-    }
-    Map<String, BlurIndex> tableIndexes = _indexes.get(table);
-    Set<String> shardsBeingServed = new HashSet<String>(tableIndexes.keySet());
-    if (shardsBeingServed.containsAll(shardsToServe)) {
-      Map<String, BlurIndex> result = new HashMap<String, BlurIndex>(tableIndexes);
-      shardsBeingServed.removeAll(shardsToServe);
-      for (String shardNotToServe : shardsBeingServed) {
-        result.remove(shardNotToServe);
-      }
-      return result;
-    } else {
-      return openMissingShards(table, shardsToServe, tableIndexes);
-    }
-  }
-
   private BlurIndex openShard(String table, String shard) throws IOException {
     LOG.info("Opening shard [{0}] for table [{1}]", shard, table);
-    Path tablePath = new Path(getTableDescriptor(table).tableUri);
+    TableContext tableContext = getTableContext(table);
+    Path tablePath = tableContext.getTablePath();
     Path hdfsDirPath = new Path(tablePath, shard);
 
     BlurLockFactory lockFactory = new BlurLockFactory(_configuration, hdfsDirPath, _nodeName, BlurUtil.getPid());
@@ -437,8 +449,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
     Directory directory = new HdfsDirectory(_configuration, hdfsDirPath);
     directory.setLockFactory(lockFactory);
 
-    TableDescriptor descriptor = _clusterStatus.getTableDescriptor(true, _cluster, table);
-    TableContext tableContext = TableContext.create(descriptor);
     ShardContext shardContext = ShardContext.create(tableContext, shard);
 
     Directory dir;
@@ -483,7 +493,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
         }
       }
     });
-
   }
 
   private synchronized Map<String, BlurIndex> openMissingShards(final String table, Set<String> shardsToServe,
@@ -546,31 +555,26 @@ public class DistributedIndexServer extends AbstractIndexServer {
     if (!isEnabled(table)) {
       return new HashSet<String>();
     }
-    DistributedLayout layoutManager = _layoutManagers.get(table);
-    if (layoutManager == null) {
+    LayoutEntry layoutEntry = _layout.get(table);
+    if (layoutEntry == null) {
       return setupLayoutManager(table);
     } else {
-      return _layoutCache.get(table);
+      return layoutEntry._shards;
     }
   }
 
   private synchronized Set<String> setupLayoutManager(String table) {
-    DistributedLayoutManager layoutManager = new DistributedLayoutManager();
-
     String cluster = _clusterStatus.getCluster(false, table);
     if (cluster == null) {
       throw new RuntimeException("Table [" + table + "] is not found.");
     }
-
     List<String> shardServerList = _clusterStatus.getShardServerList(cluster);
     List<String> offlineShardServers = new ArrayList<String>(_clusterStatus.getOfflineShardServers(false, cluster));
     List<String> shardList = getShardList(table);
 
-    layoutManager.setNodes(shardServerList);
-    layoutManager.setNodesOffline(offlineShardServers);
-    layoutManager.setShards(shardList);
-    layoutManager.init();
-
+    DistributedLayout layoutManager = _distributedLayoutFactory.createDistributedLayout(table, shardList,
+        shardServerList, offlineShardServers);
+    
     Map<String, String> layout = layoutManager.getLayout();
     String nodeName = getNodeName();
     Set<String> shardsToServeCache = new TreeSet<String>();
@@ -579,127 +583,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
         shardsToServeCache.add(entry.getKey());
       }
     }
-    _layoutCache.put(table, shardsToServeCache);
-    _layoutManagers.put(table, layoutManager);
+    _layout.put(table, new LayoutEntry(layoutManager, shardsToServeCache));
     return shardsToServeCache;
-  }
-
-  @Override
-  public String getNodeName() {
-    return _nodeName;
-  }
-
-  @Override
-  public List<String> getShardList(String table) {
-    checkTable(table);
-    List<String> result = new ArrayList<String>();
-    try {
-      TableDescriptor descriptor = getTableDescriptor(table);
-      Path tablePath = new Path(descriptor.tableUri);
-      FileSystem fileSystem = FileSystem.get(tablePath.toUri(), _configuration);
-      if (!fileSystem.exists(tablePath)) {
-        LOG.error("Table [{0}] is missing, defined location [{1}]", table, tablePath.toUri());
-        throw new RuntimeException("Table [" + table + "] is missing, defined location [" + tablePath.toUri() + "]");
-      }
-      FileStatus[] listStatus = fileSystem.listStatus(tablePath);
-      for (FileStatus status : listStatus) {
-        if (status.isDir()) {
-          String name = status.getPath().getName();
-          if (name.startsWith(SHARD_PREFIX)) {
-            result.add(name);
-          }
-        }
-      }
-      return result;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private TableContext getTableContext(final String table) {
-    return TableContext.create(_clusterStatus.getTableDescriptor(true, _clusterStatus.getCluster(true, table), table));
-  }
-
-  @Override
-  public long getTableSize(String table) throws IOException {
-    checkTable(table);
-    String tableUri = getTableContext(table).getTablePath().toUri().toString();
-    Path tablePath = new Path(tableUri);
-    FileSystem fileSystem = FileSystem.get(tablePath.toUri(), _configuration);
-    ContentSummary contentSummary = fileSystem.getContentSummary(tablePath);
-    return contentSummary.getLength();
-  }
-
-  public boolean isEnabled(String table) {
-    checkTable(table);
-    return _clusterStatus.isEnabled(true, _cluster, table);
-  }
-
-  private void checkTable(String table) {
-    if (_clusterStatus.exists(true, _cluster, table)) {
-      return;
-    }
-    throw new RuntimeException("Table [" + table + "] does not exist.");
-  }
-
-  private TableDescriptor getTableDescriptor(String table) {
-    TableDescriptor tableDescriptor = _tableDescriptors.get(table);
-    if (tableDescriptor == null) {
-      tableDescriptor = _clusterStatus.getTableDescriptor(true, _cluster, table);
-      _tableDescriptors.put(table, tableDescriptor);
-    }
-    return tableDescriptor;
-  }
-
-  public void setClusterStatus(ClusterStatus clusterStatus) {
-    _clusterStatus = clusterStatus;
-  }
-
-  public void setConfiguration(Configuration configuration) {
-    _configuration = configuration;
-  }
-
-  public void setNodeName(String nodeName) {
-    _nodeName = nodeName;
-  }
-
-  public void setShardOpenerThreadCount(int shardOpenerThreadCount) {
-    _shardOpenerThreadCount = shardOpenerThreadCount;
-  }
-
-  public void setZookeeper(ZooKeeper zookeeper) {
-    _zookeeper = zookeeper;
-  }
-
-  public void setFilterCache(BlurFilterCache filterCache) {
-    _filterCache = filterCache;
-  }
-
-  public void setSafeModeDelay(long safeModeDelay) {
-    _safeModeDelay = safeModeDelay;
-  }
-
-  public void setWarmup(BlurIndexWarmup warmup) {
-    _warmup = warmup;
-  }
-
-  public void setClusterName(String cluster) {
-    _cluster = cluster;
-  }
-
-  public void setInternalSearchThreads(int internalSearchThreads) {
-    _internalSearchThreads = internalSearchThreads;
-  }
-
-  public void setWarmupThreads(int warmupThreads) {
-    _warmupThreads = warmupThreads;
-  }
-
-  public static AtomicLong getPauseWarmup() {
-    return _pauseWarmup;
-  }
-  
-  public void setBlockCacheDirectoryFactory(BlockCacheDirectoryFactory blockCacheDirectoryFactory) {
-    _blockCacheDirectoryFactory = blockCacheDirectoryFactory;
   }
 }

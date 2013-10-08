@@ -62,12 +62,14 @@ import org.apache.blur.manager.BlurFilterCache;
 import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.DefaultBlurFilterCache;
 import org.apache.blur.manager.IndexManager;
+import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup;
 import org.apache.blur.manager.indexserver.DistributedIndexServer;
+import org.apache.blur.manager.indexserver.DistributedLayoutFactory;
 import org.apache.blur.manager.writer.BlurIndexRefresher;
 import org.apache.blur.metrics.JSONReporter;
 import org.apache.blur.metrics.ReporterSetup;
@@ -220,21 +222,18 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     BlurFilterCache filterCache = getFilterCache(configuration);
     BlurIndexWarmup indexWarmup = getIndexWarmup(configuration);
+    //@todo add in read from config
+    DistributedLayoutFactory distributedLayoutFactory = null;
 
-    final DistributedIndexServer indexServer = new DistributedIndexServer();
-    indexServer.setBlockCacheDirectoryFactory(blockCacheDirectoryFactory);
-    indexServer.setClusterStatus(clusterStatus);
-    indexServer.setClusterName(configuration.get(BLUR_CLUSTER_NAME, BLUR_CLUSTER));
-    indexServer.setConfiguration(config);
-    indexServer.setNodeName(nodeName);
-    indexServer.setShardOpenerThreadCount(configuration.getInt(BLUR_SHARD_OPENER_THREAD_COUNT, 16));
-    indexServer.setWarmupThreads(configuration.getInt(BLUR_SHARD_WARMUP_THREAD_COUNT, 16));
-    indexServer.setInternalSearchThreads(configuration.getInt(BLUR_SHARD_INTERNAL_SEARCH_THREAD_COUNT, 16));
-    indexServer.setZookeeper(zooKeeper);
-    indexServer.setFilterCache(filterCache);
-    indexServer.setSafeModeDelay(configuration.getLong(BLUR_SHARD_SAFEMODEDELAY, 60000));
-    indexServer.setWarmup(indexWarmup);
-    indexServer.init();
+    String cluster = configuration.get(BLUR_CLUSTER_NAME, BLUR_CLUSTER);
+    long safeModeDelay = configuration.getLong(BLUR_SHARD_SAFEMODEDELAY, 60000);
+    int shardOpenerThreadCount = configuration.getInt(BLUR_SHARD_OPENER_THREAD_COUNT, 16);
+    int internalSearchThreads = configuration.getInt(BLUR_SHARD_WARMUP_THREAD_COUNT, 16);
+    int warmupThreads = configuration.getInt(BLUR_SHARD_WARMUP_THREAD_COUNT, 16);
+    
+    final DistributedIndexServer indexServer = new DistributedIndexServer(config, zooKeeper, clusterStatus,
+        indexWarmup, filterCache, blockCacheDirectoryFactory, distributedLayoutFactory, cluster, nodeName, safeModeDelay, shardOpenerThreadCount,
+        internalSearchThreads, warmupThreads);
 
     final IndexManager indexManager = new IndexManager();
     indexManager.setIndexServer(indexServer);

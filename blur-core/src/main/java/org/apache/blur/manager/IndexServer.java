@@ -16,6 +16,7 @@ package org.apache.blur.manager;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,7 @@ import org.apache.blur.thrift.generated.ShardState;
  * The {@link IndexServer} interface provides the internal API to interact with
  * the indexes being served in the shard server instance.
  */
-public interface IndexServer {
+public interface IndexServer extends Closeable {
 
   // Server state
 
@@ -106,7 +107,7 @@ public interface IndexServer {
   /**
    * Closes the index server.
    */
-  void close();
+  void close() throws IOException;
 
   /**
    * Get the shard state. Provides access to the as is state of the shards in

@@ -110,6 +110,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
+import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 
@@ -402,7 +403,7 @@ public class IndexManager {
       Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, fieldManager, context, postFilter,
           preFilter);
       call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector,
-          _queriesInternalMeter, shardServerContext, runSlow, _fetchCount, _maxHeapPerRowFetch);
+          _queriesInternalMeter, shardServerContext, runSlow, _fetchCount, _maxHeapPerRowFetch, context.getSimilarity());
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
       return ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
         @Override
@@ -1048,7 +1049,7 @@ public class IndexManager {
   }
 
   private int getNumberOfShards(String table) {
-    return _indexServer.getShardCount(table);
+    return getTableContext(table).getDescriptor().getShardCount();
   }
 
   static class SimpleQueryParallelCall implements ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> {
@@ -1064,10 +1065,11 @@ public class IndexManager {
     private final boolean _runSlow;
     private final int _fetchCount;
     private final int _maxHeapPerRowFetch;
+    private final Similarity _similarity;
 
     public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, IndexServer indexServer,
         Query query, Selector selector, Meter queriesInternalMeter, ShardServerContext shardServerContext,
-        boolean runSlow, int fetchCount, int maxHeapPerRowFetch) {
+        boolean runSlow, int fetchCount, int maxHeapPerRowFetch, Similarity similarity) {
       _running = running;
       _table = table;
       _status = status;
@@ -1079,6 +1081,7 @@ public class IndexManager {
       _runSlow = runSlow;
       _fetchCount = fetchCount;
       _maxHeapPerRowFetch = maxHeapPerRowFetch;
+      _similarity = similarity;
     }
 
     @Override
@@ -1098,7 +1101,7 @@ public class IndexManager {
         if (_shardServerContext != null) {
           _shardServerContext.setIndexSearcherClosable(_table, shard, searcher);
         }
-        searcher.setSimilarity(_indexServer.getSimilarity(_table));
+        searcher.setSimilarity(_similarity);
         Query rewrite;
         try {
           rewrite = searcher.rewrite((Query) _query.clone());
@@ -1137,7 +1140,7 @@ public class IndexManager {
   public void setMutateThreadCount(int mutateThreadCount) {
     _mutateThreadCount = mutateThreadCount;
   }
-  
+
   public void setFilterCache(BlurFilterCache filterCache) {
     _filterCache = filterCache;
   }

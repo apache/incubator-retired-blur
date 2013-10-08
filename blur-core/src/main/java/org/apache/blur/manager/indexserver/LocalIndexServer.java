@@ -34,7 +34,6 @@ import java.util.concurrent.Executors;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.lucene.search.FairSimilarity;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
 import org.apache.blur.manager.writer.BlurIndex;
@@ -52,7 +51,6 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
 
@@ -121,11 +119,6 @@ public class LocalIndexServer extends AbstractIndexServer {
     return tableMap;
   }
 
-  @Override
-  public Similarity getSimilarity(String table) {
-    return new FairSimilarity();
-  }
-
   private void close(Map<String, BlurIndex> map) {
     for (BlurIndex index : map.values()) {
       try {
@@ -165,11 +158,6 @@ public class LocalIndexServer extends AbstractIndexServer {
   }
 
   @Override
-  public TABLE_STATUS getTableStatus(String table) {
-    return TABLE_STATUS.ENABLED;
-  }
-
-  @Override
   public List<String> getShardList(String table) {
     try {
       List<String> result = new ArrayList<String>();
@@ -194,19 +182,9 @@ public class LocalIndexServer extends AbstractIndexServer {
   }
 
   @Override
-  public String getTableUri(String table) {
-    return _tableContext.getTablePath().toUri().toString();
-  }
-
-  @Override
-  public int getShardCount(String table) {
-    return _tableContext.getDescriptor().getShardCount();
-  }
-
-  @Override
   public long getTableSize(String table) throws IOException {
     try {
-      File file = new File(new URI(getTableUri(table)));
+      File file = new File(new URI(_tableContext.getTablePath().toUri().toString()));
       return getFolderSize(file);
     } catch (URISyntaxException e) {
       throw new IOException("bad URI", e);

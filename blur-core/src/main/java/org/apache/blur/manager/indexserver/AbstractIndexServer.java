@@ -24,6 +24,7 @@ import org.apache.blur.manager.writer.BlurIndex;
 
 public abstract class AbstractIndexServer implements IndexServer {
 
+  @Override
   public long getRecordCount(String table) throws IOException {
     long recordCount = 0;
     Map<String, BlurIndex> indexes = getIndexes(table);
@@ -33,6 +34,7 @@ public abstract class AbstractIndexServer implements IndexServer {
     return recordCount;
   }
 
+  @Override
   public long getRowCount(String table) throws IOException {
     long rowCount = 0;
     Map<String, BlurIndex> indexes = getIndexes(table);

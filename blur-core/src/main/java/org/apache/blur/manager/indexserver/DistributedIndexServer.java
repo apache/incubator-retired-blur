@@ -47,7 +47,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.lucene.search.FairSimilarity;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
 import org.apache.blur.manager.BlurFilterCache;
@@ -71,7 +70,6 @@ import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.WatchChildren;
 import org.apache.blur.zookeeper.WatchChildren.OnChange;
-import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
@@ -545,8 +543,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   private Set<String> getShardsToServe(String table) {
-    TABLE_STATUS tableStatus = getTableStatus(table);
-    if (tableStatus == TABLE_STATUS.DISABLED) {
+    if (!isEnabled(table)) {
       return new HashSet<String>();
     }
     DistributedLayout layoutManager = _layoutManagers.get(table);
@@ -593,13 +590,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   @Override
-  public int getShardCount(String table) {
-    checkTable(table);
-    TableDescriptor descriptor = getTableDescriptor(table);
-    return descriptor.shardCount;
-  }
-
-  @Override
   public List<String> getShardList(String table) {
     checkTable(table);
     List<String> result = new ArrayList<String>();
@@ -626,40 +616,23 @@ public class DistributedIndexServer extends AbstractIndexServer {
     }
   }
 
-  @Override
-  public Similarity getSimilarity(String table) {
-    checkTable(table);
-    Similarity similarity = _tableSimilarity.get(table);
-    if (similarity == null) {
-      TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, _cluster, table);
-      String similarityClass = tableDescriptor.similarityClass;
-      if (similarityClass == null) {
-        similarity = new FairSimilarity();
-      } else {
-        similarity = getInstance(similarityClass, Similarity.class);
-      }
-      _tableSimilarity.put(table, similarity);
-    }
-    return similarity;
+  private TableContext getTableContext(final String table) {
+    return TableContext.create(_clusterStatus.getTableDescriptor(true, _clusterStatus.getCluster(true, table), table));
   }
 
   @Override
   public long getTableSize(String table) throws IOException {
     checkTable(table);
-    Path tablePath = new Path(getTableUri(table));
+    String tableUri = getTableContext(table).getTablePath().toUri().toString();
+    Path tablePath = new Path(tableUri);
     FileSystem fileSystem = FileSystem.get(tablePath.toUri(), _configuration);
     ContentSummary contentSummary = fileSystem.getContentSummary(tablePath);
     return contentSummary.getLength();
   }
 
-  @Override
-  public TABLE_STATUS getTableStatus(String table) {
+  public boolean isEnabled(String table) {
     checkTable(table);
-    boolean enabled = _clusterStatus.isEnabled(true, _cluster, table);
-    if (enabled) {
-      return TABLE_STATUS.ENABLED;
-    }
-    return TABLE_STATUS.DISABLED;
+    return _clusterStatus.isEnabled(true, _cluster, table);
   }
 
   private void checkTable(String table) {
@@ -669,13 +642,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
     throw new RuntimeException("Table [" + table + "] does not exist.");
   }
 
-  @Override
-  public String getTableUri(String table) {
-    checkTable(table);
-    TableDescriptor descriptor = getTableDescriptor(table);
-    return descriptor.tableUri;
-  }
-
   private TableDescriptor getTableDescriptor(String table) {
     TableDescriptor tableDescriptor = _tableDescriptors.get(table);
     if (tableDescriptor == null) {
@@ -683,21 +649,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
       _tableDescriptors.put(table, tableDescriptor);
     }
     return tableDescriptor;
-  }
-
-  @SuppressWarnings("unchecked")
-  private <T> T getInstance(String className, Class<T> c) {
-    try {
-      Class<? extends T> clazz = (Class<? extends T>) Class.forName(className);
-      Object object = clazz.newInstance();
-      if (object instanceof Configurable) {
-        Configurable configurable = (Configurable) object;
-        configurable.setConf(_configuration);
-      }
-      return (T) object;
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
   }
 
   public void setClusterStatus(ClusterStatus clusterStatus) {

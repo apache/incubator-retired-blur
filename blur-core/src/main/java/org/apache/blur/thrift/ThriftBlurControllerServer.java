@@ -95,7 +95,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     LOG.info("Controller Server using index [{0}] bind address [{1}] random port assignment [{2}]", serverIndex, bindAddress + ":" + bindPort, randomPort);
 
-    String nodeName = ThriftBlurShardServer.getNodeName(configuration, BLUR_CONTROLLER_HOSTNAME);
+    String nodeName = getNodeName(configuration, BLUR_CONTROLLER_HOSTNAME);
     nodeName = nodeName + ":" + bindPort;
     String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
 

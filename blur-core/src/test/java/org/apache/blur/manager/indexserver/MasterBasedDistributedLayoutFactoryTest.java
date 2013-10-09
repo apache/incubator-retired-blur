@@ -16,6 +16,9 @@
  */
 package org.apache.blur.manager.indexserver;
 
+import static org.junit.Assert.*;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,22 +26,41 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
+import org.apache.blur.MiniCluster;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+@SuppressWarnings("unchecked")
 public class MasterBasedDistributedLayoutFactoryTest {
 
+  private static String path = "./target/test-zk-MasterBasedDistributedLayoutFactoryTest";
+  private static MiniCluster miniCluster;
+
   private ZooKeeper _zooKeeper;
-  private String storagePath = "/proto_layout";
+  private String storagePath = "/MasterBasedDistributedLayoutFactoryTest";
+
+  @BeforeClass
+  public static void startZooKeeper() throws IOException {
+    new File(path).mkdirs();
+    miniCluster = new MiniCluster();
+    miniCluster.startZooKeeper(path, true);
+  }
+
+  @AfterClass
+  public static void stopZooKeeper() throws InterruptedException {
+    miniCluster.shutdownZooKeeper();
+  }
 
   @Before
   public void setup() throws IOException, KeeperException, InterruptedException {
-    _zooKeeper = new ZooKeeper("127.0.0.1", 30000, new Watcher() {
+    _zooKeeper = new ZooKeeper(miniCluster.getZkConnectionString(), 20000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 
@@ -58,22 +80,23 @@ public class MasterBasedDistributedLayoutFactoryTest {
     String table = "t1";
 
     DistributedLayout layout1 = factory.createDistributedLayout(table, shardList, shardServerList, offlineShardServers);
+    Map<String, String> expected1 = map(e("shard-0", "server-0"), e("shard-1", "server-1"), e("shard-2", "server-2"),
+        e("shard-3", "server-3"), e("shard-4", "server-4"), e("shard-5", "server-5"));
 
-    Map<String, String> map1 = new TreeMap<String, String>(layout1.getLayout());
-    for (Entry<String, String> e : map1.entrySet()) {
-      System.out.println(e.getKey() + " " + e.getValue());
-    }
+    Map<String, String> actual1 = new TreeMap<String, String>(layout1.getLayout());
+
+    assertEquals(expected1, actual1);
 
     List<String> newShardServerList = list("server-0", "server-1", "server-2", "server-3");
     List<String> newOfflineShardServers = list("server-4", "server-5");
 
     DistributedLayout layout2 = factory.createDistributedLayout(table, shardList, newShardServerList,
         newOfflineShardServers);
-    System.out.println("================");
-    Map<String, String> map2 = new TreeMap<String, String>(layout2.getLayout());
-    for (Entry<String, String> e : map2.entrySet()) {
-      System.out.println(e.getKey() + " " + e.getValue());
-    }
+
+    Map<String, String> expected2 = map(e("shard-0", "server-0"), e("shard-1", "server-1"), e("shard-2", "server-2"),
+        e("shard-3", "server-3"), e("shard-4", "server-0"), e("shard-5", "server-1"));
+    Map<String, String> actual2 = new TreeMap<String, String>(layout2.getLayout());
+    assertEquals(expected2, actual2);
   }
 
   @Test
@@ -87,22 +110,24 @@ public class MasterBasedDistributedLayoutFactoryTest {
     String table = "t1";
 
     DistributedLayout layout1 = factory.createDistributedLayout(table, shardList, shardServerList, offlineShardServers);
+    Map<String, String> expected1 = map(e("shard-0", "server-0"), e("shard-1", "server-1"), e("shard-2", "server-2"),
+        e("shard-3", "server-3"), e("shard-4", "server-0"), e("shard-5", "server-1"));
 
-    Map<String, String> map1 = new TreeMap<String, String>(layout1.getLayout());
-    for (Entry<String, String> e : map1.entrySet()) {
-      System.out.println(e.getKey() + " " + e.getValue());
-    }
+    Map<String, String> actual1 = new TreeMap<String, String>(layout1.getLayout());
+
+    assertEquals(expected1, actual1);
 
     List<String> newShardServerList = list("server-0", "server-1", "server-2", "server-3", "server-4", "server-5");
     List<String> newOfflineShardServers = list();
 
     DistributedLayout layout2 = factory.createDistributedLayout(table, shardList, newShardServerList,
         newOfflineShardServers);
-    System.out.println("================");
-    Map<String, String> map2 = new TreeMap<String, String>(layout2.getLayout());
-    for (Entry<String, String> e : map2.entrySet()) {
-      System.out.println(e.getKey() + " " + e.getValue());
-    }
+
+    Map<String, String> expected2 = map(e("shard-0", "server-4"), e("shard-1", "server-5"), e("shard-2", "server-2"),
+        e("shard-3", "server-3"), e("shard-4", "server-0"), e("shard-5", "server-1"));
+
+    Map<String, String> actual2 = new TreeMap<String, String>(layout2.getLayout());
+    assertEquals(expected2, actual2);
   }
 
   private void rmr(ZooKeeper zooKeeper, String storagePath) throws KeeperException, InterruptedException {
@@ -123,5 +148,34 @@ public class MasterBasedDistributedLayoutFactoryTest {
       lst.add(s);
     }
     return lst;
+  }
+
+  private static Map<String, String> map(Entry<String, String>... entries) {
+    Map<String, String> map = new TreeMap<String, String>();
+    for (Entry<String, String> e : entries) {
+      map.put(e.getKey(), e.getValue());
+    }
+    return map;
+  }
+
+  private static Entry<String, String> e(final String key, final String value) {
+    return new Entry<String, String>() {
+
+      @Override
+      public String getKey() {
+        return key;
+      }
+
+      @Override
+      public String getValue() {
+        return value;
+      }
+
+      @Override
+      public String setValue(String value) {
+        throw new RuntimeException("Not Supported");
+      }
+
+    };
   }
 }

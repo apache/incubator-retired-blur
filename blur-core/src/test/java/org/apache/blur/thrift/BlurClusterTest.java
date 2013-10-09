@@ -293,11 +293,15 @@ public class BlurClusterTest {
       if (blurException != null) {
         return blurException;
       }
-      Thread.sleep(250);
+      Thread.sleep(100);
       if (bufferToPutGcWatcherOverLimitList != null) {
-        System.out.println("Allocating [" + sizeToAllocate + "] Heap [" + getHeapSize() + "] Max [" + getMaxHeapSize()
-            + "]");
-        bufferToPutGcWatcherOverLimitList.add(new byte[sizeToAllocate]);
+        if (getHeapSize() < (getMaxHeapSize() * 0.8)) {
+          System.out.println("Allocating [" + sizeToAllocate + "] Heap [" + getHeapSize() + "] Max ["
+              + getMaxHeapSize() + "]");
+          bufferToPutGcWatcherOverLimitList.add(new byte[sizeToAllocate]);
+        } else {
+          System.out.println("Already allocated enough Heap [" + getHeapSize() + "] Max [" + getMaxHeapSize() + "]");
+        }
       }
     }
     return null;
@@ -313,6 +317,12 @@ public class BlurClusterTest {
 
   public void testTestShardFailover() throws BlurException, TException, InterruptedException, IOException,
       KeeperException {
+    
+    System.out.println("===========================");
+    System.out.println("===========================");
+    System.out.println("===========================");
+    System.out.println("===========================");
+    
     Iface client = getClient();
     int length = 100;
     BlurQuery blurQuery = new BlurQuery();

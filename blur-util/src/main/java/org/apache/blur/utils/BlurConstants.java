@@ -75,6 +75,7 @@ public class BlurConstants {
   public static final String BLUR_SHARD_THRIFT_SELECTOR_THREADS = "blur.shard.thrift.selector.threads";
   public static final String BLUR_SHARD_THRIFT_MAX_READ_BUFFER_BYTES = "blur.shard.thrift.max.read.buffer.bytes";
   public static final String BLUR_SHARD_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD = "blur.shard.thrift.accept.queue.size.per.thread";
+  public static final String BLUR_SHARD_DISTRIBUTED_LAYOUT_FACTORY_CLASS = "blur.shard.distributed.layout.factory.class";
   
   public static final String BLUR_FIELDTYPE = "blur.fieldtype.";
 

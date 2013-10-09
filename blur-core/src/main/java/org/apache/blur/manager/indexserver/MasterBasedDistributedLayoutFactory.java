@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -72,9 +73,10 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
   public DistributedLayout createDistributedLayout(String table, List<String> shardList, List<String> shardServerList,
       List<String> offlineShardServers) {
     MasterBasedDistributedLayout layout = _cachedLayoutMap.get(table);
-    if (layout == null || layout.isOutOfDate(shardList, shardServerList, offlineShardServers)) {
+    List<String> onlineShardServerList = getOnlineShardServerList(shardServerList, offlineShardServers);
+    if (layout == null || layout.isOutOfDate(shardList, onlineShardServerList)) {
       LOG.info("Layout out of date, recalculating for table [{0}].", table);
-      MasterBasedDistributedLayout newLayout = newLayout(table, shardList, shardServerList, offlineShardServers);
+      MasterBasedDistributedLayout newLayout = newLayout(table, shardList, onlineShardServerList);
       _cachedLayoutMap.put(table, newLayout);
       return newLayout;
     } else {
@@ -82,8 +84,14 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
     }
   }
 
-  private MasterBasedDistributedLayout newLayout(String table, List<String> shardList, List<String> shardServerList,
-      List<String> offlineShardServers) {
+  private List<String> getOnlineShardServerList(List<String> shardServerList, List<String> offlineShardServers) {
+    List<String> list = new ArrayList<String>(shardServerList);
+    list.removeAll(offlineShardServers);
+    return list;
+  }
+
+  private MasterBasedDistributedLayout newLayout(String table, List<String> onlineShardServerList,
+      List<String> shardServerList) {
     try {
       _zooKeeperLockManager.lock(table);
       String storagePath = getStoragePath(table);
@@ -93,7 +101,7 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
         byte[] data = _zooKeeper.getData(storagePath, false, stat);
         if (data != null) {
           MasterBasedDistributedLayout storedLayout = fromBytes(data);
-          if (!storedLayout.isOutOfDate(shardList, shardServerList, offlineShardServers)) {
+          if (!storedLayout.isOutOfDate(onlineShardServerList, shardServerList)) {
             LOG.info("New layout fetched.");
             return storedLayout;
           }
@@ -103,9 +111,10 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
         }
       }
       // recreate
-      Map<String, String> newCalculatedLayout = calculateNewLayout(table, existingLayout, shardList, shardServerList);
-      MasterBasedDistributedLayout layout = new MasterBasedDistributedLayout(newCalculatedLayout, shardList,
+      Map<String, String> newCalculatedLayout = calculateNewLayout(table, existingLayout, onlineShardServerList,
           shardServerList);
+      MasterBasedDistributedLayout layout = new MasterBasedDistributedLayout(newCalculatedLayout,
+          onlineShardServerList, shardServerList);
       if (_zooKeeper.exists(storagePath, false) == null) {
         _zooKeeper.create(storagePath, toBytes(layout), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
       } else {
@@ -127,16 +136,16 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
   }
 
   private Map<String, String> calculateNewLayout(String table, MasterBasedDistributedLayout existingLayout,
-      List<String> shardList, List<String> shardServerList) {
-    Set<String> shardServerSet = new TreeSet<String>(shardServerList);
+      List<String> shardList, List<String> onlineShardServerList) {
+    Set<String> shardServerSet = new TreeSet<String>(onlineShardServerList);
     if (existingLayout == null) {
       // blind setup, basic round robin
       LOG.info("Blind shard layout.");
       Map<String, String> newLayoutMap = new TreeMap<String, String>();
-      Iterator<String> iterator = shardServerList.iterator();
+      Iterator<String> iterator = onlineShardServerList.iterator();
       for (String shard : shardList) {
         if (!iterator.hasNext()) {
-          iterator = shardServerList.iterator();
+          iterator = onlineShardServerList.iterator();
         }
         String server = iterator.next();
         newLayoutMap.put(shard, server);
@@ -159,7 +168,7 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
 
       LOG.info("Adding in new shard servers for table [{0}]", table);
       // Add counts for new shard servers
-      for (String server : shardServerList) {
+      for (String server : onlineShardServerList) {
         if (!onlineServerShardCount.containsKey(server)) {
           LOG.info("New shard server [{0}]", server);
           onlineServerShardCount.put(server, 0);
@@ -179,7 +188,7 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
 
       LOG.info("Leveling any shard hotspots for table [{0}]", table);
       // Level shards
-      MasterBasedLeveler.level(shardList.size(), shardServerList.size(), onlineServerShardCount, newLayoutMap);
+      MasterBasedLeveler.level(shardList.size(), onlineShardServerList.size(), onlineServerShardCount, newLayoutMap);
       return newLayoutMap;
     }
   }
@@ -233,13 +242,13 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
   static class MasterBasedDistributedLayout implements DistributedLayout, Serializable {
 
     private final SortedSet<String> _shardList;
-    private final SortedSet<String> _shardServerList;
+    private final SortedSet<String> _onlineShardServerList;
     private final Map<String, String> _layout;
 
     public MasterBasedDistributedLayout(Map<String, String> layout, Collection<String> shardList,
-        Collection<String> shardServerList) {
+        Collection<String> onlineShardServerList) {
       _shardList = new TreeSet<String>(shardList);
-      _shardServerList = new TreeSet<String>(shardServerList);
+      _onlineShardServerList = new TreeSet<String>(onlineShardServerList);
       _layout = layout;
     }
 
@@ -248,8 +257,8 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
       return _layout;
     }
 
-    public boolean isOutOfDate(List<String> shardList, List<String> shardServerList, List<String> offlineShardServers) {
-      if (!_shardServerList.equals(new TreeSet<String>(shardServerList))) {
+    public boolean isOutOfDate(List<String> shardList, List<String> onlineShardServerList) {
+      if (!_onlineShardServerList.equals(new TreeSet<String>(onlineShardServerList))) {
         return true;
       } else if (!_shardList.equals(new TreeSet<String>(shardList))) {
         return true;

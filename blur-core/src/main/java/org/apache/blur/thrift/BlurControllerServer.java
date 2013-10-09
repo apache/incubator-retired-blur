@@ -24,10 +24,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -46,7 +46,9 @@ import org.apache.blur.manager.BlurPartitioner;
 import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.IndexManager;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
-import org.apache.blur.manager.indexserver.DistributedLayoutManager;
+import org.apache.blur.manager.indexserver.DistributedLayout;
+import org.apache.blur.manager.indexserver.DistributedLayoutFactory;
+import org.apache.blur.manager.indexserver.DistributedLayoutFactoryImpl;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.results.BlurResultIterableClient;
 import org.apache.blur.manager.results.LazyBlurResult;
@@ -125,6 +127,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private int _remoteFetchCount = 100;
   private BlurQueryChecker _queryChecker;
   private AtomicBoolean _running = new AtomicBoolean();
+  private Map<String, DistributedLayoutFactory> _distributedLayoutFactoryMap = new ConcurrentHashMap<String, DistributedLayoutFactory>();
 
   private int _maxFetchRetries = 3;
   private int _maxMutateRetries = 3;
@@ -167,6 +170,11 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     _watchForClusters.watch(new OnChange() {
       @Override
       public void action(List<String> children) {
+        for (String cluster : new HashSet<String>(_distributedLayoutFactoryMap.keySet())) {
+          if (!children.contains(cluster)) {
+            _distributedLayoutFactoryMap.remove(cluster);
+          }
+        }
         for (String cluster : children) {
           try {
             watchForLayoutChanges(cluster);
@@ -233,7 +241,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     List<String> tableList = _clusterStatus.getTableList(false);
     HashMap<String, Map<String, String>> newLayout = new HashMap<String, Map<String, String>>();
     for (String table : tableList) {
-      DistributedLayoutManager layoutManager = new DistributedLayoutManager();
       String cluster = _clusterStatus.getCluster(false, table);
       if (cluster == null) {
         continue;
@@ -241,14 +248,25 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       List<String> shardServerList = _clusterStatus.getShardServerList(cluster);
       List<String> offlineShardServers = _clusterStatus.getOfflineShardServers(false, cluster);
       List<String> shardList = getShardList(cluster, table);
-      layoutManager.setNodes(shardServerList);
-      layoutManager.setNodesOffline(offlineShardServers);
-      layoutManager.setShards(shardList);
-      layoutManager.init();
-      Map<String, String> layout = layoutManager.getLayout();
-      newLayout.put(table, layout);
+
+      DistributedLayoutFactory distributedLayoutFactory = getDistributedLayoutFactory(cluster);
+      DistributedLayout layout = distributedLayoutFactory.createDistributedLayout(table, shardList, shardServerList,
+          offlineShardServers);
+      Map<String, String> map = layout.getLayout();
+      LOG.info("New layout for table [{0}] is [{1}]", table, map);
+      newLayout.put(table, map);
     }
     _shardServerLayout.set(newLayout);
+  }
+
+  private synchronized DistributedLayoutFactory getDistributedLayoutFactory(String cluster) {
+    DistributedLayoutFactory distributedLayoutFactory = _distributedLayoutFactoryMap.get(cluster);
+    if (distributedLayoutFactory == null) {
+      distributedLayoutFactory = DistributedLayoutFactoryImpl.getDistributedLayoutFactory(_configuration, cluster,
+          _zookeeper);
+      _distributedLayoutFactoryMap.put(cluster, distributedLayoutFactory);
+    }
+    return distributedLayoutFactory;
   }
 
   private List<String> getShardList(String cluster, String table) {
@@ -360,6 +378,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           BlurResults results = convertToBlurResults(hitsIterable, blurQuery, facetCounts, _executor, selector, table);
           if (!validResults(results, shardCount, blurQuery)) {
             BlurClientManager.sleep(_defaultDelay, _maxDefaultDelay, retries, _maxDefaultRetries);
+            Map<String, String> map = _shardServerLayout.get().get(table);
+            LOG.info("Current layout for table [{0}] is [{1}]", table, map);
             continue OUTER;
           }
           return results;

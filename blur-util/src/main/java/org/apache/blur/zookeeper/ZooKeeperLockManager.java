@@ -68,7 +68,7 @@ public class ZooKeeperLockManager {
     if (!lockMap.containsKey(name)) {
       throw new RuntimeException("Lock [" + name + "] has not be created.");
     }
-    String lockPath = lockMap.get(name);
+    String lockPath = lockMap.remove(name);
     LOG.debug("Unlocking on path [" + lockPath + "] with name [" + name + "]");
     zooKeeper.delete(lockPath, -1);
   }

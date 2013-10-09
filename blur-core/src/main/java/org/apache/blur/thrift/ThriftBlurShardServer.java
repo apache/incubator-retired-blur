@@ -36,7 +36,6 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WARMUP_CLASS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WARMUP_THROTTLE;
-import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INTERNAL_SEARCH_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT;
@@ -62,7 +61,6 @@ import org.apache.blur.manager.BlurFilterCache;
 import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.DefaultBlurFilterCache;
 import org.apache.blur.manager.IndexManager;
-import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.manager.indexserver.BlurServerShutDown;
@@ -70,6 +68,7 @@ import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup;
 import org.apache.blur.manager.indexserver.DistributedIndexServer;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactory;
+import org.apache.blur.manager.indexserver.DistributedLayoutFactoryImpl;
 import org.apache.blur.manager.writer.BlurIndexRefresher;
 import org.apache.blur.metrics.JSONReporter;
 import org.apache.blur.metrics.ReporterSetup;
@@ -213,7 +212,8 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr, sessionTimeout);
 
-    BlurUtil.setupZookeeper(zooKeeper, configuration.get(BLUR_CLUSTER_NAME));
+    String cluster = configuration.get(BLUR_CLUSTER_NAME, BLUR_CLUSTER);
+    BlurUtil.setupZookeeper(zooKeeper, cluster);
 
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration);
 
@@ -222,18 +222,18 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     BlurFilterCache filterCache = getFilterCache(configuration);
     BlurIndexWarmup indexWarmup = getIndexWarmup(configuration);
-    //@todo add in read from config
-    DistributedLayoutFactory distributedLayoutFactory = null;
 
-    String cluster = configuration.get(BLUR_CLUSTER_NAME, BLUR_CLUSTER);
+    DistributedLayoutFactory distributedLayoutFactory = DistributedLayoutFactoryImpl.getDistributedLayoutFactory(
+        configuration, cluster, zooKeeper);
+
     long safeModeDelay = configuration.getLong(BLUR_SHARD_SAFEMODEDELAY, 60000);
     int shardOpenerThreadCount = configuration.getInt(BLUR_SHARD_OPENER_THREAD_COUNT, 16);
     int internalSearchThreads = configuration.getInt(BLUR_SHARD_WARMUP_THREAD_COUNT, 16);
     int warmupThreads = configuration.getInt(BLUR_SHARD_WARMUP_THREAD_COUNT, 16);
-    
+
     final DistributedIndexServer indexServer = new DistributedIndexServer(config, zooKeeper, clusterStatus,
-        indexWarmup, filterCache, blockCacheDirectoryFactory, distributedLayoutFactory, cluster, nodeName, safeModeDelay, shardOpenerThreadCount,
-        internalSearchThreads, warmupThreads);
+        indexWarmup, filterCache, blockCacheDirectoryFactory, distributedLayoutFactory, cluster, nodeName,
+        safeModeDelay, shardOpenerThreadCount, internalSearchThreads, warmupThreads);
 
     final IndexManager indexManager = new IndexManager();
     indexManager.setIndexServer(indexServer);
@@ -254,6 +254,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.setQueryChecker(queryChecker);
     shardServer.setConfiguration(configuration);
     shardServer.setMaxRecordsPerRowFetchRequest(configuration.getInt(BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST, 1000));
+    shardServer.setConfiguration(configuration);
     shardServer.init();
 
     Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(shardServer, Iface.class, false);
@@ -308,10 +309,10 @@ public class ThriftBlurShardServer extends ThriftServer {
   }
 
   private static BlurFilterCache getFilterCache(BlurConfiguration configuration) {
-    String _blurFilterCacheClass = configuration.get(BLUR_SHARD_FILTER_CACHE_CLASS);
-    if (_blurFilterCacheClass != null) {
+    String blurFilterCacheClass = configuration.get(BLUR_SHARD_FILTER_CACHE_CLASS);
+    if (blurFilterCacheClass != null) {
       try {
-        Class<?> clazz = Class.forName(_blurFilterCacheClass);
+        Class<?> clazz = Class.forName(blurFilterCacheClass);
         return (BlurFilterCache) clazz.newInstance();
       } catch (Exception e) {
         throw new RuntimeException(e);
@@ -321,11 +322,11 @@ public class ThriftBlurShardServer extends ThriftServer {
   }
 
   private static BlurIndexWarmup getIndexWarmup(BlurConfiguration configuration) {
-    String _blurFilterCacheClass = configuration.get(BLUR_SHARD_INDEX_WARMUP_CLASS);
-    if (_blurFilterCacheClass != null && _blurFilterCacheClass.isEmpty()) {
-      if (!_blurFilterCacheClass.equals("org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup")) {
+    String blurFilterCacheClass = configuration.get(BLUR_SHARD_INDEX_WARMUP_CLASS);
+    if (blurFilterCacheClass != null && blurFilterCacheClass.isEmpty()) {
+      if (!blurFilterCacheClass.equals("org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup")) {
         try {
-          Class<?> clazz = Class.forName(_blurFilterCacheClass);
+          Class<?> clazz = Class.forName(blurFilterCacheClass);
           return (BlurIndexWarmup) clazz.newInstance();
         } catch (Exception e) {
           throw new RuntimeException(e);

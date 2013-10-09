@@ -99,4 +99,8 @@ public class ZookeeperPathConstants {
     return getTablePath(cluster, table) + "/precache";
   }
 
+  public static String getShardLayoutPath(String cluster) {
+    return getClusterPath(cluster) + "/layout";
+  }
+
 }

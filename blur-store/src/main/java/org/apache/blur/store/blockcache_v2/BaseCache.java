@@ -25,6 +25,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.blur.store.blockcache_v2.cachevalue.ByteArrayCacheValue;
 import org.apache.blur.store.blockcache_v2.cachevalue.UnsafeCacheValue;
 import org.apache.lucene.store.IOContext;
@@ -34,6 +36,9 @@ import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 import com.googlecode.concurrentlinkedhashmap.Weigher;
 
 public class BaseCache implements Cache {
+
+  private static final Log LOG = LogFactory.getLog(BaseCache.class);
+
   public enum STORE {
     ON_HEAP, OFF_HEAP
   }
@@ -78,7 +83,7 @@ public class BaseCache implements Cache {
         value.release();
         return;
       }
-      // @TODO create clean up queue
+      LOG.debug("CacheValue was not released [{0}]", value);
     }
   }
 

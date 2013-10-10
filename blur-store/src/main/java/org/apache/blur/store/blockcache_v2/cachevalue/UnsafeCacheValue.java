@@ -24,13 +24,12 @@ import sun.misc.Unsafe;
 @SuppressWarnings("serial")
 public class UnsafeCacheValue extends BaseCacheValue {
 
-//  private static final int MINIMUM_SIZE = 1024;
-
+  private static final String JAVA_NIO_BITS = "java.nio.Bits";
   private static final Unsafe _unsafe;
 
   static {
     try {
-      Class<?> clazz = Class.forName("java.nio.Bits");
+      Class<?> clazz = Class.forName(JAVA_NIO_BITS);
       Field field = clazz.getDeclaredField("unsafe");
       field.setAccessible(true);
       _unsafe = (Unsafe) field.get(null);
@@ -62,9 +61,6 @@ public class UnsafeCacheValue extends BaseCacheValue {
   }
 
   private int getCapacity(int length) {
-//    if (length < MINIMUM_SIZE) {
-//      return MINIMUM_SIZE;
-//    }
     return length;
   }
 
@@ -93,7 +89,6 @@ public class UnsafeCacheValue extends BaseCacheValue {
       _unsafe.freeMemory(_address);
       _released = true;
     } else {
-      System.out.println("released twice?");
       new Throwable().printStackTrace();
     }
   }
@@ -102,5 +97,4 @@ public class UnsafeCacheValue extends BaseCacheValue {
   public int size() {
     return _capacity;
   }
-
 }

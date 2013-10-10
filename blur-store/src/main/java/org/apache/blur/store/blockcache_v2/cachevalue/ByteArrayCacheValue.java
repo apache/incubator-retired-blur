@@ -44,12 +44,11 @@ public class ByteArrayCacheValue extends BaseCacheValue {
 
   @Override
   public void release() {
-    // no op
+    _released = true;
   }
 
   @Override
   public int size() {
     return length();
   }
-
 }

@@ -23,16 +23,17 @@ import java.net.URI;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.lucene.store.Directory;
 import org.junit.Test;
 
 public class HdfsDirectoryTestSuite extends BaseDirectoryTestSuite {
 
   @Override
-  protected void setupDirectory() throws IOException {
+  protected Directory setupDirectory() throws IOException {
     URI uri = new File(file, "hdfs").toURI();
     Path hdfsDirPath = new Path(uri.toString());
     Configuration conf = new Configuration();
-    directory = new HdfsDirectory(conf, hdfsDirPath);
+    return new HdfsDirectory(conf, hdfsDirPath);
   }
 
   @Test

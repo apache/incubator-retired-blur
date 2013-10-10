@@ -32,10 +32,10 @@ import org.apache.lucene.store.FSDirectory;
 public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
 
   @Override
-  protected void setupDirectory() throws IOException {
+  protected Directory setupDirectory() throws IOException {
     int totalNumberOfBytes = 1000000;
-    int fileBufferSize = 129;
-    final int blockSize = 137;
+    int fileBufferSize = numberBetween(113, 215);
+    final int blockSize = numberBetween(111, 251);
     FileNameBlockSize fileNameBlockSize = new FileNameBlockSize() {
       @Override
       public int getBlockSize(String directoryName, String fileName) {
@@ -51,8 +51,7 @@ public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
     FileNameFilter readFilter = new FileNameFilter() {
       @Override
       public boolean accept(String directoryName, String fileName) {
-        // @TODO this needs to be enabled and issues resolved...
-        return false;
+        return true;
       }
     };
 
@@ -61,7 +60,7 @@ public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
     Directory dir = FSDirectory.open(new File(file, "cache"));
 
     BufferStore.init(128, 128);
-    directory = new CacheDirectory("test", wrapLastModified(dir), cache);
+    return new CacheDirectory("test", wrapLastModified(dir), cache);
   }
 
   protected abstract STORE getStore();

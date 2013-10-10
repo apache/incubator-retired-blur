@@ -128,7 +128,6 @@ public class CacheIndexInputTest {
     }
   }
 
-
   public static Cache getCache() {
     EvictionListener<CacheKey, CacheValue> listener = new EvictionListener<CacheKey, CacheValue>() {
       @Override
@@ -153,8 +152,8 @@ public class CacheIndexInputTest {
     Cache cacheFactory = new Cache() {
 
       @Override
-      public CacheValue newInstance(CacheDirectory directory, String fileName) {
-        return new ByteArrayCacheValue(getCacheBlockSize(directory, fileName));
+      public CacheValue newInstance(CacheDirectory directory, String fileName, int cacheBlockSize) {
+        return new ByteArrayCacheValue(cacheBlockSize);
       }
 
       @Override
@@ -194,13 +193,14 @@ public class CacheIndexInputTest {
 
       @Override
       public void removeFile(CacheDirectory directory, String fileName) throws IOException {
-        
+
       }
 
       @Override
       public void releaseDirectory(String directoryName) {
-        
+
       }
+
     };
     return cacheFactory;
   }

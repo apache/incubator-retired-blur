@@ -23,8 +23,8 @@ import org.apache.blur.store.blockcache_v2.BaseCache;
 import org.apache.blur.store.blockcache_v2.BaseCache.STORE;
 import org.apache.blur.store.blockcache_v2.Cache;
 import org.apache.blur.store.blockcache_v2.CacheDirectory;
-import org.apache.blur.store.blockcache_v2.FileNameBlockSize;
 import org.apache.blur.store.blockcache_v2.FileNameFilter;
+import org.apache.blur.store.blockcache_v2.Size;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -34,14 +34,23 @@ public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
   @Override
   protected Directory setupDirectory() throws IOException {
     int totalNumberOfBytes = 1000000;
-    int fileBufferSize = numberBetween(113, 215);
-    final int blockSize = numberBetween(111, 251);
-    FileNameBlockSize fileNameBlockSize = new FileNameBlockSize() {
+    final int fileBufferSizeInt = numberBetween(113, 215);
+    final int cacheBlockSizeInt = numberBetween(111, 251);
+    
+    Size fileBufferSize = new Size() {
       @Override
-      public int getBlockSize(String directoryName, String fileName) {
-        return blockSize;
+      public int getSize(String directoryName, String fileName) {
+        return fileBufferSizeInt;
       }
     };
+    
+    Size cacheBlockSize = new Size() {
+      @Override
+      public int getSize(String directoryName, String fileName) {
+        return cacheBlockSizeInt;
+      }
+    };
+    
     FileNameFilter writeFilter = new FileNameFilter() {
       @Override
       public boolean accept(String directoryName, String fileName) {
@@ -55,7 +64,7 @@ public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
       }
     };
 
-    Cache cache = new BaseCache(totalNumberOfBytes, fileBufferSize, fileNameBlockSize, readFilter, writeFilter,
+    Cache cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter,
         getStore());
     Directory dir = FSDirectory.open(new File(file, "cache"));
 

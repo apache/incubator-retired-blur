@@ -24,8 +24,8 @@ import org.apache.blur.store.blockcache_v2.BaseCache;
 import org.apache.blur.store.blockcache_v2.BaseCache.STORE;
 import org.apache.blur.store.blockcache_v2.Cache;
 import org.apache.blur.store.blockcache_v2.CacheDirectory;
-import org.apache.blur.store.blockcache_v2.FileNameBlockSize;
 import org.apache.blur.store.blockcache_v2.FileNameFilter;
+import org.apache.blur.store.blockcache_v2.Size;
 import org.apache.lucene.store.Directory;
 
 public class BlockCacheDirectoryFactoryV2 implements BlockCacheDirectoryFactory {
@@ -33,14 +33,21 @@ public class BlockCacheDirectoryFactoryV2 implements BlockCacheDirectoryFactory 
   private Cache _cache;
 
   public BlockCacheDirectoryFactoryV2(BlurConfiguration configuration, long totalNumberOfBytes) {
-    final int fileBufferSize = 8192;
-    final int blockSize = 8192;
+    final int fileBufferSizeInt = 8192;
+    final int cacheBlockSizeInt = 8192;
     final STORE store = STORE.OFF_HEAP;
     
-    FileNameBlockSize fileNameBlockSize = new FileNameBlockSize() {
+    Size fileBufferSize = new Size() {
       @Override
-      public int getBlockSize(String directoryName, String fileName) {
-        return blockSize;
+      public int getSize(String directoryName, String fileName) {
+        return fileBufferSizeInt;
+      }
+    };
+    
+    Size cacheBlockSize = new Size() {
+      @Override
+      public int getSize(String directoryName, String fileName) {
+        return cacheBlockSizeInt;
       }
     };
     
@@ -64,7 +71,7 @@ public class BlockCacheDirectoryFactoryV2 implements BlockCacheDirectoryFactory 
       }
     };
     
-    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, fileNameBlockSize, readFilter, writeFilter,
+    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter,
         store);
   }
 

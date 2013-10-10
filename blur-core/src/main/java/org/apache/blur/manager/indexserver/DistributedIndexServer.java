@@ -152,8 +152,12 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     registerMyselfAsMemberOfCluster();
     String onlineShardsPath = ZookeeperPathConstants.getOnlineShardsPath(_cluster);
     String safemodePath = ZookeeperPathConstants.getSafemodePath(_cluster);
+
+    //Set the registerNode timeout value to zk sessionTimeout + {4} seconds
+    int registerNodeTimeOut = _zookeeper.getSessionTimeout()/1000 + 4;
+      
     SafeMode safeMode = new SafeMode(_zookeeper, safemodePath, onlineShardsPath, TimeUnit.MILLISECONDS, _safeModeDelay,
-        TimeUnit.SECONDS, 60);
+        TimeUnit.SECONDS, registerNodeTimeOut);
     safeMode.registerNode(getNodeName(), BlurUtil.getVersion().getBytes());
 
     _running.set(true);

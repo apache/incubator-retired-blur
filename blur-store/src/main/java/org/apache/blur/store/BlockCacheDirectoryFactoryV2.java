@@ -33,13 +33,17 @@ public class BlockCacheDirectoryFactoryV2 implements BlockCacheDirectoryFactory 
   private Cache _cache;
 
   public BlockCacheDirectoryFactoryV2(BlurConfiguration configuration, long totalNumberOfBytes) {
-    int fileBufferSize = 8192;
+    final int fileBufferSize = 8192;
+    final int blockSize = 8192;
+    final STORE store = STORE.OFF_HEAP;
+    
     FileNameBlockSize fileNameBlockSize = new FileNameBlockSize() {
       @Override
       public int getBlockSize(String directoryName, String fileName) {
-        return 8192;
+        return blockSize;
       }
     };
+    
     FileNameFilter readFilter = new FileNameFilter() {
       @Override
       public boolean accept(String directoryName, String fileName) {
@@ -49,6 +53,7 @@ public class BlockCacheDirectoryFactoryV2 implements BlockCacheDirectoryFactory 
         return true;
       }
     };
+    
     FileNameFilter writeFilter = new FileNameFilter() {
       @Override
       public boolean accept(String directoryName, String fileName) {
@@ -58,8 +63,9 @@ public class BlockCacheDirectoryFactoryV2 implements BlockCacheDirectoryFactory 
         return true;
       }
     };
+    
     _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, fileNameBlockSize, readFilter, writeFilter,
-        STORE.OFF_HEAP);
+        store);
   }
 
   @Override

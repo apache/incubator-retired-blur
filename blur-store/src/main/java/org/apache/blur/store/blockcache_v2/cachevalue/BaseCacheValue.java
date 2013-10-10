@@ -25,6 +25,7 @@ import org.apache.blur.store.blockcache_v2.CacheValue;
 public abstract class BaseCacheValue extends AtomicLong implements CacheValue {
 
   private final int _length;
+  protected volatile boolean _released = false;
 
   public BaseCacheValue(int length) {
     _length = length;
@@ -80,4 +81,10 @@ public abstract class BaseCacheValue extends AtomicLong implements CacheValue {
     return get();
   }
 
+  @Override
+  protected void finalize() throws Throwable {
+    if (!_released) {
+      release();
+    }
+  }
 }

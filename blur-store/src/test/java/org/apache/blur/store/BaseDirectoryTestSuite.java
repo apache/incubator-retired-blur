@@ -64,6 +64,7 @@ public abstract class BaseDirectoryTestSuite {
   protected static final int MAX_NUMBER_OF_READS = 10000;
   protected Directory directory;
   protected File file;
+  protected File fileControl;
   protected long seed;
   protected Random random;
 
@@ -71,10 +72,12 @@ public abstract class BaseDirectoryTestSuite {
   public void setUp() throws IOException {
     BufferStore.init(128, 128);
     file = new File(TMPDIR, "hdfsdirectorytest");
+    fileControl = new File(TMPDIR, "hdfsdirectorytest-control");
     rm(file);
+    rm(fileControl);
     seed = new Random().nextLong();
     random = new Random(seed);
-    setupDirectory();
+    directory = setupDirectory();
   }
 
   @After
@@ -96,7 +99,7 @@ public abstract class BaseDirectoryTestSuite {
     }
   }
 
-  protected abstract void setupDirectory() throws IOException;
+  protected abstract Directory setupDirectory() throws IOException;
 
   @Test
   public void testWritingAndReadingAFile() throws IOException {
@@ -175,9 +178,14 @@ public abstract class BaseDirectoryTestSuite {
 
   @Test
   public void testCreateIndex() throws IOException {
+    long s = System.nanoTime();
     IndexWriterConfig conf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, new KeywordAnalyzer());
-    IndexWriter writer = new IndexWriter(directory, conf);
-    int numDocs = 1000;
+    FSDirectory control = FSDirectory.open(fileControl);
+    Directory dir = getControlDir(control, directory);
+    // The serial merge scheduler can be useful for debugging.
+    // conf.setMergeScheduler(new SerialMergeScheduler());
+    IndexWriter writer = new IndexWriter(dir, conf);
+    int numDocs = 10000;
     DirectoryReader reader = null;
     for (int i = 0; i < 100; i++) {
       if (reader == null) {
@@ -200,6 +208,8 @@ public abstract class BaseDirectoryTestSuite {
     }
     writer.close(false);
     reader.close();
+    long e = System.nanoTime();
+    System.out.println("Total time [" + (e - s) / 1000000.0 + " ms]");
   }
 
   private void addDocuments(IndexWriter writer, int numDocs) throws IOException {
@@ -372,4 +382,269 @@ public abstract class BaseDirectoryTestSuite {
     }
   }
 
+  private Directory getControlDir(final Directory control, final Directory test) {
+    return new Directory() {
+
+      @Override
+      public Lock makeLock(String name) {
+        return control.makeLock(name);
+      }
+
+      @Override
+      public void clearLock(String name) throws IOException {
+        control.clearLock(name);
+      }
+
+      @Override
+      public void setLockFactory(LockFactory lockFactory) throws IOException {
+        control.setLockFactory(lockFactory);
+      }
+
+      @Override
+      public LockFactory getLockFactory() {
+        return control.getLockFactory();
+      }
+
+      @Override
+      public String getLockID() {
+        return control.getLockID();
+      }
+
+      @Override
+      public void copy(Directory to, String src, String dest, IOContext context) throws IOException {
+        control.copy(to, src, dest, context);
+      }
+
+      @Override
+      public IndexInputSlicer createSlicer(String name, IOContext context) throws IOException {
+        return control.createSlicer(name, context);
+      }
+
+      @Override
+      public IndexOutput createOutput(final String name, IOContext context) throws IOException {
+        final IndexOutput testOutput = test.createOutput(name, context);
+        final IndexOutput controlOutput = control.createOutput(name, context);
+        return new IndexOutput() {
+
+          @Override
+          public void flush() throws IOException {
+            testOutput.flush();
+            controlOutput.flush();
+          }
+
+          @Override
+          public void close() throws IOException {
+            testOutput.close();
+            controlOutput.close();
+          }
+
+          @Override
+          public long getFilePointer() {
+            long filePointer = testOutput.getFilePointer();
+            long controlFilePointer = controlOutput.getFilePointer();
+            if (controlFilePointer != filePointer) {
+              System.err.println("Output Name [" + name + "] with filePointer [" + filePointer
+                  + "] and control filePointer [" + controlFilePointer + "] does not match");
+            }
+            return filePointer;
+          }
+
+          @SuppressWarnings("deprecation")
+          @Override
+          public void seek(long pos) throws IOException {
+            testOutput.seek(pos);
+            controlOutput.seek(pos);
+          }
+
+          @Override
+          public long length() throws IOException {
+            long length = testOutput.length();
+            long controlLength = controlOutput.length();
+            if (controlLength != length) {
+              System.err.println("Ouput Name [" + name + "] with length [" + length + "] and control length ["
+                  + controlLength + "] does not match");
+            }
+            return length;
+          }
+
+          @Override
+          public void writeByte(byte b) throws IOException {
+            testOutput.writeByte(b);
+            controlOutput.writeByte(b);
+          }
+
+          @Override
+          public void writeBytes(byte[] b, int offset, int length) throws IOException {
+            testOutput.writeBytes(b, offset, length);
+            controlOutput.writeBytes(b, offset, length);
+          }
+
+        };
+      }
+
+      @Override
+      public IndexInput openInput(final String name, IOContext context) throws IOException {
+        final IndexInput testInput = test.openInput(name, context);
+        final IndexInput controlInput = control.openInput(name, context);
+        return new IndexInputCompare(name, testInput, controlInput);
+      }
+
+      @Override
+      public String[] listAll() throws IOException {
+        return test.listAll();
+      }
+
+      @Override
+      public boolean fileExists(String name) throws IOException {
+        return test.fileExists(name);
+      }
+
+      @Override
+      public void deleteFile(String name) throws IOException {
+        test.deleteFile(name);
+        control.deleteFile(name);
+      }
+
+      @Override
+      public long fileLength(String name) throws IOException {
+        long fileLength = test.fileLength(name);
+        long controlFileLength = control.fileLength(name);
+        if (controlFileLength != fileLength) {
+          System.err.println("Input Name [" + name + "] with length [" + fileLength + "] and control length ["
+              + controlFileLength + "] does not match");
+        }
+        return fileLength;
+      }
+
+      @Override
+      public void sync(Collection<String> names) throws IOException {
+        test.sync(names);
+        test.sync(names);
+      }
+
+      @Override
+      public void close() throws IOException {
+        test.close();
+        control.close();
+      }
+    };
+  }
+
+  static class IndexInputCompare extends IndexInput {
+
+    IndexInput testInput;
+    IndexInput controlInput;
+    String name;
+
+    protected IndexInputCompare(String name, IndexInput testInput, IndexInput controlInput) {
+      super(name);
+      this.name = name;
+      this.testInput = testInput;
+      this.controlInput = controlInput;
+    }
+
+    @Override
+    public void readBytes(byte[] b, int offset, int len) throws IOException {
+      breakPoint();
+      long filePointer = getFilePointer();
+      testInput.readBytes(b, offset, len);
+      byte[] newbuf = new byte[b.length];
+      controlInput.readBytes(newbuf, offset, len);
+      compare(filePointer, b, newbuf, offset, len);
+      getFilePointer();
+    }
+
+    private void breakPoint() {
+      // if (name.equals("_1e_Lucene41_0.doc")) {
+      // if (controlInput.getFilePointer() > 123435) {
+      // System.out.println("break [" + controlInput.getFilePointer() + "] [" +
+      // controlInput.length() + "]");
+      // }
+      // }
+    }
+
+    @Override
+    public byte readByte() throws IOException {
+      breakPoint();
+      long length = controlInput.length();
+      long filePointer = getFilePointer();
+      byte readByte = testInput.readByte();
+      byte controlReadByte = controlInput.readByte();
+      if (readByte != controlReadByte) {
+        System.err.println("Input Name [" + name + "] at filePointer [" + filePointer + "] byte [" + readByte
+            + "] does not match byte [" + controlReadByte + "] with length [" + length + "]");
+        throw new RuntimeException("Input Name [" + name + "] at filePointer [" + filePointer + "] byte [" + readByte
+            + "] does not match byte [" + controlReadByte + "] with length [" + length + "]");
+      }
+      getFilePointer();
+      return readByte;
+    }
+
+    private void compare(long filePointer, byte[] b1, byte[] b2, int offset, int len) {
+      int length = offset + len;
+      for (int i = offset; i < length; i++) {
+        if (b1[i] != b2[i]) {
+          System.err.println("Input Name [" + name + "] with at filePointer [" + filePointer + "] b1 [" + b1
+              + "] does not match b2 [" + b2 + "]");
+          throw new RuntimeException("Input Name [" + name + "] with at filePointer [" + filePointer + "] b1 [" + b1
+              + "] does not match b2 [" + b2 + "]");
+        }
+      }
+    }
+
+    @Override
+    public void seek(long pos) throws IOException {
+      breakPoint();
+      getFilePointer();
+      testInput.seek(pos);
+      controlInput.seek(pos);
+      getFilePointer();
+    }
+
+    @Override
+    public long length() {
+      breakPoint();
+      long length = testInput.length();
+      long controlLength = controlInput.length();
+      if (length != controlLength) {
+        System.err.println("Input Name [" + name + "] with length [" + length + "] and control length ["
+            + controlLength + "] does not match");
+        throw new RuntimeException("Input Name [" + name + "] with length [" + length + "] and control length ["
+            + controlLength + "] does not match");
+      }
+      return length;
+    }
+
+    @Override
+    public long getFilePointer() {
+      long filePointer = testInput.getFilePointer();
+      long controlFilePointer = controlInput.getFilePointer();
+      if (filePointer != controlFilePointer) {
+        System.err.println("Input Name [" + name + "] with filePointer [" + filePointer + "] and control filePointer ["
+            + controlFilePointer + "] does not match");
+        throw new RuntimeException("Input Name [" + name + "] with filePointer [" + filePointer
+            + "] and control filePointer [" + controlFilePointer + "] does not match");
+      }
+      return filePointer;
+    }
+
+    @Override
+    public void close() throws IOException {
+      controlInput.close();
+      testInput.close();
+    }
+
+    @Override
+    public IndexInput clone() {
+      IndexInputCompare clone = (IndexInputCompare) super.clone();
+      clone.controlInput = controlInput.clone();
+      clone.testInput = testInput.clone();
+      return clone;
+    }
+
+  }
+
+  public int numberBetween(int min, int max) {
+    return random.nextInt(max - min) + min;
+  }
 }

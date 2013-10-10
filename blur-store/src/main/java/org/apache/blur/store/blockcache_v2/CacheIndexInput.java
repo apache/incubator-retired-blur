@@ -30,11 +30,12 @@ public class CacheIndexInput extends IndexInput {
   private final int _bufferSize;
   private final CacheDirectory _directory;
   private final String _fileName;
-  private final IndexInput _indexInput;
   private final Cache _cache;
-  private final CacheKey _key = new CacheKey();
 
+  private IndexInput _indexInput;
+  private CacheKey _key = new CacheKey();
   private CacheValue _cacheValue;
+
   private long _position;
   private int _blockPosition;
 
@@ -99,8 +100,6 @@ public class CacheIndexInput extends IndexInput {
   }
 
   private void fill() throws IOException {
-//    System.out.println("Filling [" + _directory + "/" + _fileName + "] @ [" + getBlockId() + "] length [" + _fileLength
-//        + "]");
     _key.setBlockId(getBlockId());
     _cacheValue = _cache.get(_key);
     if (_cacheValue == null) {
@@ -117,6 +116,7 @@ public class CacheIndexInput extends IndexInput {
         len -= length;
         cachePosition += length;
       }
+      BufferStore.putBuffer(buffer);
     }
     _cache.put(_key.clone(), _cacheValue);
     _cacheValue.incRef();
@@ -143,6 +143,7 @@ public class CacheIndexInput extends IndexInput {
   @Override
   public void close() throws IOException {
     _indexInput.close();
+    releaseCache();
   }
 
   @Override
@@ -155,9 +156,18 @@ public class CacheIndexInput extends IndexInput {
     if (pos >= _fileLength) {
       throw new IOException("Can not seek past end of file [" + pos + "] filelength [" + _fileLength + "]");
     }
+    if (_position == pos) {
+      // Seeking to same position
+      return;
+    }
     long oldBlockId = getBlockId();
+    if (_blockPosition == _cacheBlockSize) {
+      // If we are at the end of the current block, but haven't actually fetched
+      // the next block then we are really on the previous.
+      oldBlockId--;
+    }
     _position = pos;
-    long newBlockId = getBlockId(pos);
+    long newBlockId = getBlockId(_position);
     if (newBlockId == oldBlockId) {
       // need to set new block position
       _blockPosition = getBlockPosition();
@@ -169,6 +179,17 @@ public class CacheIndexInput extends IndexInput {
   @Override
   public long length() {
     return _fileLength;
+  }
+
+  @Override
+  public IndexInput clone() {
+    CacheIndexInput clone = (CacheIndexInput) super.clone();
+    clone._key = _key.clone();
+    clone._indexInput = _indexInput.clone();
+    if (clone._cacheValue != null) {
+      clone._cacheValue.incRef();
+    }
+    return clone;
   }
 
 }

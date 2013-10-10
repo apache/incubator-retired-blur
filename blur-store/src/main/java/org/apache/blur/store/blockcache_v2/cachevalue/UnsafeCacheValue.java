@@ -52,7 +52,6 @@ public class UnsafeCacheValue extends BaseCacheValue {
 
   private final long _address;
   private final int _capacity;
-  private volatile boolean _released = false;
 
   public UnsafeCacheValue(int length) {
     super(length);

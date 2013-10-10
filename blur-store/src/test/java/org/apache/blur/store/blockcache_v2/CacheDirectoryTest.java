@@ -53,12 +53,18 @@ public class CacheDirectoryTest {
   @Before
   public void setup() {
     int totalNumberOfBytes = 1000000;
-    int fileBufferSize = 127;
-    final int blockSize = 131;
-    FileNameBlockSize fileNameBlockSize = new FileNameBlockSize() {
+    final int fileBufferSizeInt = 127;
+    final int cacheBlockSizeInt = 131;
+    Size fileBufferSize = new Size() {
       @Override
-      public int getBlockSize(String directoryName, String fileName) {
-        return blockSize;
+      public int getSize(String directoryName, String fileName) {
+        return fileBufferSizeInt;
+      }
+    };
+    Size cacheBlockSize = new Size() {
+      @Override
+      public int getSize(String directoryName, String fileName) {
+        return cacheBlockSizeInt;
       }
     };
     FileNameFilter writeFilter = new FileNameFilter() {
@@ -73,7 +79,8 @@ public class CacheDirectoryTest {
         return true;
       }
     };
-    Cache cache = new BaseCache(totalNumberOfBytes, fileBufferSize, fileNameBlockSize, readFilter, writeFilter,
+
+    Cache cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter,
         STORE.ON_HEAP);
     Directory directory = newDirectory();
     BufferStore.init(128, 128);

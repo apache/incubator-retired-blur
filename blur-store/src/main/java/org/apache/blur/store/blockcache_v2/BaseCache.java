@@ -35,7 +35,7 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 import com.googlecode.concurrentlinkedhashmap.Weigher;
 
-public class BaseCache implements Cache {
+public class BaseCache extends Cache {
 
   private static final Log LOG = LogFactory.getLog(BaseCache.class);
 
@@ -58,23 +58,23 @@ public class BaseCache implements Cache {
   }
 
   private final ConcurrentLinkedHashMap<CacheKey, CacheValue> _cacheMap;
-  private final int _fileBufferSize;
   private final FileNameFilter _readFilter;
   private final FileNameFilter _writeFilter;
   private final STORE _store;
-  private final FileNameBlockSize _fileNameBlockSize;
+  private final Size _cacheBlockSize;
+  private final Size _fileBufferSize;
   private final Map<FileIdKey, Long> _fileNameToId = new ConcurrentHashMap<FileIdKey, Long>();
   private final AtomicLong _fileId = new AtomicLong();
 
-  public BaseCache(long totalNumberOfBytes, int fileBufferSize, FileNameBlockSize fileNameBlockSize,
-      FileNameFilter readFilter, FileNameFilter writeFilter, STORE store) {
+  public BaseCache(long totalNumberOfBytes, Size fileBufferSize, Size cacheBlockSize, FileNameFilter readFilter,
+      FileNameFilter writeFilter, STORE store) {
     _cacheMap = new ConcurrentLinkedHashMap.Builder<CacheKey, CacheValue>().weigher(new BaseCacheWeigher())
         .maximumWeightedCapacity(totalNumberOfBytes).listener(new BaseCacheEvictionListener()).build();
     _fileBufferSize = fileBufferSize;
     _readFilter = readFilter;
     _writeFilter = writeFilter;
     _store = store;
-    _fileNameBlockSize = fileNameBlockSize;
+    _cacheBlockSize = cacheBlockSize;
   }
 
   private void addToReleaseQueue(CacheValue value) {
@@ -88,12 +88,12 @@ public class BaseCache implements Cache {
   }
 
   @Override
-  public CacheValue newInstance(CacheDirectory directory, String fileName) {
+  public CacheValue newInstance(CacheDirectory directory, String fileName, int cacheBlockSize) {
     switch (_store) {
     case ON_HEAP:
-      return new ByteArrayCacheValue(getCacheBlockSize(directory, fileName));
+      return new ByteArrayCacheValue(cacheBlockSize);
     case OFF_HEAP:
-      return new UnsafeCacheValue(getCacheBlockSize(directory, fileName));
+      return new UnsafeCacheValue(cacheBlockSize);
     default:
       throw new RuntimeException("Unknown type [" + _store + "]");
     }
@@ -124,12 +124,12 @@ public class BaseCache implements Cache {
 
   @Override
   public int getCacheBlockSize(CacheDirectory directory, String fileName) {
-    return _fileNameBlockSize.getBlockSize(directory.getDirectoryName(), fileName);
+    return _cacheBlockSize.getSize(directory.getDirectoryName(), fileName);
   }
 
   @Override
   public int getFileBufferSize(CacheDirectory directory, String fileName) {
-    return _fileBufferSize;
+    return _fileBufferSize.getSize(directory.getDirectoryName(), fileName);
   }
 
   @Override

@@ -21,7 +21,7 @@ import java.io.IOException;
 
 import org.apache.lucene.store.IOContext;
 
-public interface Cache {
+public abstract class Cache {
 
   /**
    * Creates a new instance of CacheValue, the cache capacity should be used for
@@ -33,7 +33,23 @@ public interface Cache {
    *          the file name.
    * @return the new CacheValue instance.
    */
-  CacheValue newInstance(CacheDirectory directory, String fileName);
+  public CacheValue newInstance(CacheDirectory directory, String fileName) {
+    return newInstance(directory, fileName, getCacheBlockSize(directory, fileName));
+  }
+
+  /**
+   * Creates a new instance of CacheValue, the cache capacity should be used for
+   * the given file.
+   * 
+   * @param directory
+   *          the directory.
+   * @param fileName
+   *          the file name.
+   * @param cacheBlockSize
+   *          the length of the {@link CacheValue}.
+   * @return the new CacheValue instance.
+   */
+  public abstract CacheValue newInstance(CacheDirectory directory, String fileName, int cacheBlockSize);
 
   /**
    * Gets unique id for the given file. This is assumed to be unique even if the
@@ -46,7 +62,7 @@ public interface Cache {
    * @return the file id.
    * @throws IOException
    */
-  long getFileId(CacheDirectory directory, String fileName) throws IOException;
+  public abstract long getFileId(CacheDirectory directory, String fileName) throws IOException;
 
   /**
    * Get capacity of each cache entry for the given file.
@@ -57,7 +73,7 @@ public interface Cache {
    *          the file name.
    * @return the capacity.
    */
-  int getCacheBlockSize(CacheDirectory directory, String fileName);
+  public abstract int getCacheBlockSize(CacheDirectory directory, String fileName);
 
   /**
    * Gets buffer size of the buffer used while interacting with the underlying
@@ -69,7 +85,7 @@ public interface Cache {
    *          the file name.
    * @return the buffer size.
    */
-  int getFileBufferSize(CacheDirectory directory, String fileName);
+  public abstract int getFileBufferSize(CacheDirectory directory, String fileName);
 
   /**
    * Checks whether file should be cached or not during reading.
@@ -82,7 +98,7 @@ public interface Cache {
    *          the IOContext from Lucene.
    * @return boolean.
    */
-  boolean cacheFileForReading(CacheDirectory directory, String fileName, IOContext context);
+  public abstract boolean cacheFileForReading(CacheDirectory directory, String fileName, IOContext context);
 
   /**
    * Checks whether file should be cached or not during writing.
@@ -95,7 +111,7 @@ public interface Cache {
    *          the IOContext from Lucene.
    * @return boolean.
    */
-  boolean cacheFileForWriting(CacheDirectory directory, String fileName, IOContext context);
+  public abstract boolean cacheFileForWriting(CacheDirectory directory, String fileName, IOContext context);
 
   /**
    * Gets the cache value for the given key. Null if missing.
@@ -104,7 +120,7 @@ public interface Cache {
    *          the key.
    * @return the cache value or null.
    */
-  CacheValue get(CacheKey key);
+  public abstract CacheValue get(CacheKey key);
 
   /**
    * Puts the cache entry into the cache.
@@ -114,7 +130,7 @@ public interface Cache {
    * @param value
    *          the value.
    */
-  void put(CacheKey key, CacheValue value);
+  public abstract void put(CacheKey key, CacheValue value);
 
   /**
    * Removes the file from the cache.
@@ -125,7 +141,7 @@ public interface Cache {
    *          the file name.
    * @throws IOException
    */
-  void removeFile(CacheDirectory directory, String fileName) throws IOException;
+  public abstract void removeFile(CacheDirectory directory, String fileName) throws IOException;
 
   /**
    * This is called when the CacheDirectory is finalized.
@@ -133,6 +149,6 @@ public interface Cache {
    * @param directoryName
    *          the directory name.
    */
-  void releaseDirectory(String directoryName);
+  public abstract void releaseDirectory(String directoryName);
 
 }

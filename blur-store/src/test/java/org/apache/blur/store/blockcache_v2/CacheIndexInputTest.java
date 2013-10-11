@@ -24,7 +24,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.Random;
 
-import org.apache.blur.store.blockcache_v2.cachevalue.ByteArrayCacheValue;
+import org.apache.blur.store.blockcache_v2.cachevalue.UnsafeCacheValue;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
@@ -198,7 +198,7 @@ public class CacheIndexInputTest {
 
       @Override
       public CacheValue newInstance(CacheDirectory directory, String fileName, int cacheBlockSize) {
-        return new ByteArrayCacheValue(cacheBlockSize);
+        return new UnsafeCacheValue(cacheBlockSize);
       }
 
       @Override

@@ -77,6 +77,39 @@ public class CacheIndexInput extends IndexInput {
     }
   }
 
+  @Override
+  public short readShort() throws IOException {
+    if (_cacheValue != null && remaining() >= 2) {
+      short s = _cacheValue.readShort(_blockPosition);
+      _blockPosition += 2;
+      _position += 2;
+      return s;
+    }
+    return super.readShort();
+  }
+
+  @Override
+  public int readInt() throws IOException {
+    if (_cacheValue != null && remaining() >= 4) {
+      int i = _cacheValue.readInt(_blockPosition);
+      _blockPosition += 4;
+      _position += 4;
+      return i;
+    }
+    return super.readInt();
+  }
+
+  @Override
+  public long readLong() throws IOException {
+    if (_cacheValue != null && remaining() >= 8) {
+      long l = _cacheValue.readLong(_blockPosition);
+      _blockPosition += 8;
+      _position += 8;
+      return l;
+    }
+    return super.readLong();
+  }
+
   private int remaining() {
     return _cacheValue.length() - _blockPosition;
   }

@@ -90,4 +90,10 @@ public interface CacheValue {
    */
   void release();
 
+  short readShort(int position);
+
+  int readInt(int position);
+
+  long readLong(int position);
+
 }

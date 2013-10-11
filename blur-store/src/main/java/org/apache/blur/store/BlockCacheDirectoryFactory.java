@@ -21,8 +21,9 @@ import java.util.Set;
 
 import org.apache.lucene.store.Directory;
 
-public interface BlockCacheDirectoryFactory {
+public abstract class BlockCacheDirectoryFactory {
 
-  Directory newDirectory(String name, Directory directory, Set<String> blockCacheFileTypes) throws IOException;
+  public abstract Directory newDirectory(String name, Directory directory, Set<String> blockCacheFileTypes)
+      throws IOException;
 
 }

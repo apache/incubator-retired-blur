@@ -110,6 +110,8 @@ public class BlurConstants {
   public static final long ZK_WAIT_TIME = TimeUnit.SECONDS.toMillis(5);
   public static final String DELETE_MARKER_VALUE = "delete";
   public static final String DELETE_MARKER = "_deletemarker_";
+  
+  public static final String SHARED_MERGE_SCHEDULER = "sharedMergeScheduler";
 
   static {
     try {

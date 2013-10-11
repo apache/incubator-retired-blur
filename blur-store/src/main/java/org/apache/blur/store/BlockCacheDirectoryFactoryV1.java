@@ -31,7 +31,7 @@ import org.apache.blur.store.blockcache.BlockDirectoryCache;
 import org.apache.blur.store.blockcache.Cache;
 import org.apache.lucene.store.Directory;
 
-public class BlockCacheDirectoryFactoryV1 implements BlockCacheDirectoryFactory {
+public class BlockCacheDirectoryFactoryV1 extends BlockCacheDirectoryFactory {
 
   private static final Log LOG = LogFactory.getLog(BlockCacheDirectoryFactoryV1.class);
 

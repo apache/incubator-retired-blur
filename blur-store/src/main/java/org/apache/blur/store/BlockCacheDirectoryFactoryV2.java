@@ -28,7 +28,7 @@ import org.apache.blur.store.blockcache_v2.FileNameFilter;
 import org.apache.blur.store.blockcache_v2.Size;
 import org.apache.lucene.store.Directory;
 
-public class BlockCacheDirectoryFactoryV2 implements BlockCacheDirectoryFactory {
+public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
 
   private Cache _cache;
 

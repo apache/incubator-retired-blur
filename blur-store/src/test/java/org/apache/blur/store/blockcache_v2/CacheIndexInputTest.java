@@ -91,6 +91,9 @@ public class CacheIndexInputTest {
     IndexInput input = directory.openInput(name, IOContext.DEFAULT);
     IndexInput testInput = new CacheIndexInput(null, name, input.clone(), cache);
     readRandomData(input, testInput, random, sampleSize, maxBufSize, maxOffset);
+    readRandomDataShort(input, testInput, random, sampleSize);
+    readRandomDataInt(input, testInput, random, sampleSize);
+    readRandomDataLong(input, testInput, random, sampleSize);
     testInput.close();
     input.close();
     directory.close();
@@ -114,6 +117,48 @@ public class CacheIndexInputTest {
       testInput.seek(position);
       testInput.readBytes(buf2, offset, len);
       assertArrayEquals("Read [" + i + "] The position is [" + position + "] and bufSize [" + bufSize + "]", buf1, buf2);
+    }
+  }
+
+  public static void readRandomDataInt(IndexInput baseInput, IndexInput testInput, Random random, int sampleSize)
+      throws IOException {
+    assertEquals(baseInput.length(), testInput.length());
+    int fileLength = (int) baseInput.length();
+    for (int i = 0; i < sampleSize; i++) {
+      int position = random.nextInt(fileLength - 4);
+      baseInput.seek(position);
+      int i1 = baseInput.readInt();
+      testInput.seek(position);
+      int i2 = testInput.readInt();
+      assertEquals("Read [" + i + "] The position is [" + position + "]", i1, i2);
+    }
+  }
+
+  public static void readRandomDataShort(IndexInput baseInput, IndexInput testInput, Random random, int sampleSize)
+      throws IOException {
+    assertEquals(baseInput.length(), testInput.length());
+    int fileLength = (int) baseInput.length();
+    for (int i = 0; i < sampleSize; i++) {
+      int position = random.nextInt(fileLength - 2);
+      baseInput.seek(position);
+      short i1 = baseInput.readShort();
+      testInput.seek(position);
+      short i2 = testInput.readShort();
+      assertEquals("Read [" + i + "] The position is [" + position + "]", i1, i2);
+    }
+  }
+
+  public static void readRandomDataLong(IndexInput baseInput, IndexInput testInput, Random random, int sampleSize)
+      throws IOException {
+    assertEquals(baseInput.length(), testInput.length());
+    int fileLength = (int) baseInput.length();
+    for (int i = 0; i < sampleSize; i++) {
+      int position = random.nextInt(fileLength - 8);
+      baseInput.seek(position);
+      long i1 = baseInput.readLong();
+      testInput.seek(position);
+      long i2 = testInput.readLong();
+      assertEquals("Read [" + i + "] The position is [" + position + "]", i1, i2);
     }
   }
 

@@ -60,6 +60,43 @@ public abstract class BaseCacheValue extends AtomicLong implements CacheValue {
     return readInternal(position);
   }
 
+  @Override
+  public short readShort(int position) {
+    if (position + 2 > _length) {
+      throw new ArrayIndexOutOfBoundsException(position + 2);
+    }
+    return readShortInternal(position);
+  }
+
+  protected short readShortInternal(int position) {
+    return (short) (((readInternal(position) & 0xFF) << 8) | (readInternal(position + 1) & 0xFF));
+  }
+
+  @Override
+  public int readInt(int position) {
+    if (position + 4 > _length) {
+      throw new ArrayIndexOutOfBoundsException(position + 4);
+    }
+    return readIntInternal(position);
+  }
+
+  protected int readIntInternal(int position) {
+    return ((readInternal(position) & 0xFF) << 24) | ((readInternal(position + 1) & 0xFF) << 16)
+        | ((readInternal(position + 2) & 0xFF) << 8) | (readInternal(position + 3) & 0xFF);
+  }
+
+  @Override
+  public long readLong(int position) {
+    if (position + 8 > _length) {
+      throw new ArrayIndexOutOfBoundsException(position + 4);
+    }
+    return readLongInternal(position);
+  }
+
+  protected long readLongInternal(int position) {
+    return (((long) readIntInternal(position)) << 32) | (readIntInternal(position + 4) & 0xFFFFFFFFL);
+  }
+
   protected abstract void writeInternal(int position, byte[] buf, int offset, int length);
 
   protected abstract byte readInternal(int position);

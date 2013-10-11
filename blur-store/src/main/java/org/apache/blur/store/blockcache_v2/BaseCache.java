@@ -65,9 +65,10 @@ public class BaseCache extends Cache {
   private final Size _fileBufferSize;
   private final Map<FileIdKey, Long> _fileNameToId = new ConcurrentHashMap<FileIdKey, Long>();
   private final AtomicLong _fileId = new AtomicLong();
+  private final Quiet _quiet;
 
   public BaseCache(long totalNumberOfBytes, Size fileBufferSize, Size cacheBlockSize, FileNameFilter readFilter,
-      FileNameFilter writeFilter, STORE store) {
+      FileNameFilter writeFilter, Quiet quiet, STORE store) {
     _cacheMap = new ConcurrentLinkedHashMap.Builder<CacheKey, CacheValue>().weigher(new BaseCacheWeigher())
         .maximumWeightedCapacity(totalNumberOfBytes).listener(new BaseCacheEvictionListener()).build();
     _fileBufferSize = fileBufferSize;
@@ -75,6 +76,7 @@ public class BaseCache extends Cache {
     _writeFilter = writeFilter;
     _store = store;
     _cacheBlockSize = cacheBlockSize;
+    _quiet = quiet;
   }
 
   private void addToReleaseQueue(CacheValue value) {
@@ -85,6 +87,11 @@ public class BaseCache extends Cache {
       }
       LOG.debug("CacheValue was not released [{0}]", value);
     }
+  }
+  
+  @Override
+  public boolean shouldBeQuiet(CacheDirectory directory, String fileName) {
+    return _quiet.shouldBeQuiet(directory.getDirectoryName(), fileName);
   }
 
   @Override
@@ -145,6 +152,11 @@ public class BaseCache extends Cache {
   @Override
   public CacheValue get(CacheKey key) {
     return _cacheMap.get(key);
+  }
+  
+  @Override
+  public CacheValue getQuietly(CacheKey key) {
+    return _cacheMap.getQuietly(key);
   }
 
   @Override

@@ -16,6 +16,8 @@ package org.apache.blur.manager.writer;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.utils.BlurConstants.SHARED_MERGE_SCHEDULER;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
@@ -33,7 +35,6 @@ import org.apache.lucene.index.MergeScheduler;
 public class SharedMergeScheduler implements Runnable, Closeable {
 
   private static final Log LOG = LogFactory.getLog(SharedMergeScheduler.class);
-
   private static final long ONE_SECOND = 1000;
 
   private BlockingQueue<IndexWriter> _writers = new LinkedBlockingQueue<IndexWriter>();
@@ -42,7 +43,7 @@ public class SharedMergeScheduler implements Runnable, Closeable {
 
   public SharedMergeScheduler() {
     int threads = 3;
-    _service = Executors.newThreadPool("sharedMergeScheduler", threads, false);
+    _service = Executors.newThreadPool(SHARED_MERGE_SCHEDULER, threads, false);
     for (int i = 0; i < threads; i++) {
       _service.submit(this);
     }
@@ -56,7 +57,7 @@ public class SharedMergeScheduler implements Runnable, Closeable {
       }
     }
   }
-  
+
   private void removeWriter(IndexWriter writer) {
     synchronized (_writers) {
       _writers.remove(writer);

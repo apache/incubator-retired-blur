@@ -24,6 +24,7 @@ import org.apache.blur.store.blockcache_v2.BaseCache.STORE;
 import org.apache.blur.store.blockcache_v2.Cache;
 import org.apache.blur.store.blockcache_v2.CacheDirectory;
 import org.apache.blur.store.blockcache_v2.FileNameFilter;
+import org.apache.blur.store.blockcache_v2.Quiet;
 import org.apache.blur.store.blockcache_v2.Size;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.lucene.store.Directory;
@@ -63,8 +64,13 @@ public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
         return true;
       }
     };
-
-    Cache cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter,
+    Quiet quiet = new Quiet() {
+      @Override
+      public boolean shouldBeQuiet(String directoryName, String fileName) {
+        return false;
+      }
+    };
+    Cache cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter,quiet,
         getStore());
     Directory dir = FSDirectory.open(new File(file, "cache"));
 

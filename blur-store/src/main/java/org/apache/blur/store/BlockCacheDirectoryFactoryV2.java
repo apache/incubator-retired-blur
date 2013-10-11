@@ -16,6 +16,8 @@
  */
 package org.apache.blur.store;
 
+import static org.apache.blur.utils.BlurConstants.SHARED_MERGE_SCHEDULER;
+
 import java.io.IOException;
 import java.util.Set;
 
@@ -25,6 +27,7 @@ import org.apache.blur.store.blockcache_v2.BaseCache.STORE;
 import org.apache.blur.store.blockcache_v2.Cache;
 import org.apache.blur.store.blockcache_v2.CacheDirectory;
 import org.apache.blur.store.blockcache_v2.FileNameFilter;
+import org.apache.blur.store.blockcache_v2.Quiet;
 import org.apache.blur.store.blockcache_v2.Size;
 import org.apache.lucene.store.Directory;
 
@@ -36,21 +39,21 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
     final int fileBufferSizeInt = 8192;
     final int cacheBlockSizeInt = 8192;
     final STORE store = STORE.OFF_HEAP;
-    
+
     Size fileBufferSize = new Size() {
       @Override
       public int getSize(String directoryName, String fileName) {
         return fileBufferSizeInt;
       }
     };
-    
+
     Size cacheBlockSize = new Size() {
       @Override
       public int getSize(String directoryName, String fileName) {
         return cacheBlockSizeInt;
       }
     };
-    
+
     FileNameFilter readFilter = new FileNameFilter() {
       @Override
       public boolean accept(String directoryName, String fileName) {
@@ -60,7 +63,7 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
         return true;
       }
     };
-    
+
     FileNameFilter writeFilter = new FileNameFilter() {
       @Override
       public boolean accept(String directoryName, String fileName) {
@@ -70,9 +73,20 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
         return true;
       }
     };
-    
-    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter,
-        store);
+
+    Quiet quiet = new Quiet() {
+      @Override
+      public boolean shouldBeQuiet(String directoryName, String fileName) {
+        Thread thread = Thread.currentThread();
+        String name = thread.getName();
+        if (name.startsWith(SHARED_MERGE_SCHEDULER)) {
+          return true;
+        }
+        return false;
+      }
+    };
+
+    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet, store);
   }
 
   @Override

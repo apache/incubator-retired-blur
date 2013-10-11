@@ -246,6 +246,16 @@ public class CacheIndexInputTest {
 
       }
 
+      @Override
+      public CacheValue getQuietly(CacheKey key) {
+        return cache.getQuietly(key);
+      }
+
+      @Override
+      public boolean shouldBeQuiet(CacheDirectory directory, String fileName) {
+        return false;
+      }
+
     };
     return cacheFactory;
   }

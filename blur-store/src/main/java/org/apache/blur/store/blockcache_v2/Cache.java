@@ -123,6 +123,16 @@ public abstract class Cache {
   public abstract CacheValue get(CacheKey key);
 
   /**
+   * Gets the cache value for the given key. Null if missing. NOTE: This method
+   * will not effect the priority of the cache.
+   * 
+   * @param key
+   *          the key.
+   * @return the cache value or null.
+   */
+  public abstract CacheValue getQuietly(CacheKey key);
+
+  /**
    * Puts the cache entry into the cache.
    * 
    * @param key
@@ -150,5 +160,16 @@ public abstract class Cache {
    *          the directory name.
    */
   public abstract void releaseDirectory(String directoryName);
+
+  /**
+   * Determines if the reader should be quiet or not.
+   * 
+   * @param directory
+   *          the directory.
+   * @param fileName
+   *          the file name.
+   * @return boolean.
+   */
+  public abstract boolean shouldBeQuiet(CacheDirectory directory, String fileName);
 
 }

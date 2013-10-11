@@ -38,6 +38,7 @@ public class CacheIndexInput extends IndexInput {
 
   private long _position;
   private int _blockPosition;
+  private boolean _quiet;
 
   public CacheIndexInput(CacheDirectory directory, String fileName, IndexInput indexInput, Cache cache)
       throws IOException {
@@ -51,6 +52,7 @@ public class CacheIndexInput extends IndexInput {
     _fileId = _cache.getFileId(_directory, _fileName);
     _cacheBlockSize = _cache.getCacheBlockSize(_directory, _fileName);
     _bufferSize = _cache.getFileBufferSize(_directory, _fileName);
+    _quiet = _cache.shouldBeQuiet(_directory, _fileName);
     _key.setFileId(_fileId);
   }
 
@@ -134,7 +136,7 @@ public class CacheIndexInput extends IndexInput {
 
   private void fill() throws IOException {
     _key.setBlockId(getBlockId());
-    _cacheValue = _cache.get(_key);
+    _cacheValue = get(_key);
     if (_cacheValue == null) {
       _cacheValue = _cache.newInstance(_directory, _fileName);
       long filePosition = getFilePosition();
@@ -154,6 +156,13 @@ public class CacheIndexInput extends IndexInput {
     _cache.put(_key.clone(), _cacheValue);
     _cacheValue.incRef();
     _blockPosition = getBlockPosition();
+  }
+
+  private CacheValue get(CacheKey key) {
+    if (_quiet) {
+      return _cache.getQuietly(key);
+    }
+    return _cache.get(key);
   }
 
   private int getBlockPosition() {
@@ -222,6 +231,7 @@ public class CacheIndexInput extends IndexInput {
     if (clone._cacheValue != null) {
       clone._cacheValue.incRef();
     }
+    clone._quiet = _cache.shouldBeQuiet(_directory, _fileName);
     return clone;
   }
 

@@ -79,8 +79,13 @@ public class CacheDirectoryTest {
         return true;
       }
     };
-
-    Cache cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter,
+    Quiet quiet = new Quiet() {
+      @Override
+      public boolean shouldBeQuiet(String directoryName, String fileName) {
+        return false;
+      }
+    };
+    Cache cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet,
         STORE.ON_HEAP);
     Directory directory = newDirectory();
     BufferStore.init(128, 128);

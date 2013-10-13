@@ -166,6 +166,11 @@ public class IndexManagerTest {
       }
 
       @Override
+      public List<String> getOnlineControllerList() {
+        throw new RuntimeException("Not impl");
+      }
+
+      @Override
       public List<String> getControllerServerList() {
         throw new RuntimeException("Not impl");
       }

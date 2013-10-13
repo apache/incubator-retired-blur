@@ -162,6 +162,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private void setupZookeeper() throws KeeperException, InterruptedException {
     BlurUtil.createIfMissing(_zookeeper, "/blur");
     BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getOnlineControllersPath());
+    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getControllersPath());
     BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getClustersPath());
   }
 
@@ -280,14 +281,26 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   private void registerMyself() {
     try {
+      String version = BlurUtil.getVersion();
       String onlineControllerPath = ZookeeperPathConstants.getOnlineControllersPath() + "/" + _nodeName;
       while (_zookeeper.exists(onlineControllerPath, false) != null) {
         LOG.info("Node [{0}] already registered, waiting for path [{1}] to be released", _nodeName,
             onlineControllerPath);
         Thread.sleep(3000);
       }
-      String version = BlurUtil.getVersion();
       _zookeeper.create(onlineControllerPath, version.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+
+    try {
+      String controllerPath = ZookeeperPathConstants.getControllersPath() + "/" + _nodeName;
+      if (_zookeeper.exists(controllerPath, false) == null) {
+        //Don't set the version for the registered nodes but only to the online nodes.
+        _zookeeper.create(controllerPath, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+      }
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {

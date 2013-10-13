@@ -252,11 +252,27 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   @Override
-  public List<String> getControllerServerList() {
+  public List<String> getOnlineControllerList() {
     long s = System.nanoTime();
     try {
       checkIfOpen();
       return _zk.getChildren(ZookeeperPathConstants.getOnlineControllersPath(), false);
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } finally {
+      long e = System.nanoTime();
+      LOG.debug("trace getOnlineControllerList [" + (e - s) / 1000000.0 + " ms]");
+    }
+  }
+
+  @Override
+  public List<String> getControllerServerList() {
+    long s = System.nanoTime();
+    try {
+      checkIfOpen();
+      return _zk.getChildren(ZookeeperPathConstants.getControllersPath(), false);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {

@@ -27,9 +27,11 @@ public abstract class ClusterStatus {
 
   public abstract List<String> getOnlineShardServers(boolean useCache, String cluster);
 
-  public abstract List<String> getControllerServerList();
-
   public abstract List<String> getShardServerList(String cluster);
+
+  public abstract List<String> getOnlineControllerList();
+ 
+  public abstract List<String> getControllerServerList();
 
   public abstract List<String> getClusterList(boolean useCache);
 

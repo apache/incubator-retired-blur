@@ -21,15 +21,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.NRTManager;
+import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.Directory;
 
 public class IndexSearcherClosableNRT extends IndexSearcherClosable {
 
-  private final AtomicReference<NRTManager> _nrtManagerRef;
+  private final AtomicReference<SearcherManager> _nrtManagerRef;
   private final Directory _directory;
 
-  public IndexSearcherClosableNRT(IndexReader r, ExecutorService executor, AtomicReference<NRTManager> nrtManagerRef,
+  public IndexSearcherClosableNRT(IndexReader r, ExecutorService executor, AtomicReference<SearcherManager> nrtManagerRef,
       Directory directory) {
     super(r, executor);
     _nrtManagerRef = nrtManagerRef;

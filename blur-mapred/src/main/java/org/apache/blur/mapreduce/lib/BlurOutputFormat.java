@@ -399,8 +399,6 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       Analyzer analyzer = _fieldManager.getAnalyzerForIndex();
 
       _conf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, analyzer);
-      TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();
-      mergePolicy.setUseCompoundFile(false);
 
       _overFlowConf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, analyzer);
       _overFlowConf.setMergePolicy(NoMergePolicy.NO_COMPOUND_FILES);

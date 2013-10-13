@@ -58,7 +58,7 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.NRTManager.TrackingIndexWriter;
+import org.apache.lucene.index.TrackingIndexWriter;
 
 public class TransactionRecorder extends TimerTask implements Closeable {
 

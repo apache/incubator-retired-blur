@@ -136,7 +136,7 @@ public class BlurIndexReaderTest {
   }
 
   private void doWrite() throws CorruptIndexException, LockObtainFailedException, IOException {
-    IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_43, new KeywordAnalyzer());
+    IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_44, new KeywordAnalyzer());
     BlurIndexWriter writer = new BlurIndexWriter(directory, conf);
     writer.addDocument(getDoc());
     writer.close();

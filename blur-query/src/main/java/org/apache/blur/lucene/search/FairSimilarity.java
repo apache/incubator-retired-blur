@@ -58,4 +58,13 @@ public class FairSimilarity extends TFIDFSimilarity {
 //    return 0;
   }
 
+  @Override
+  public float decodeNormValue(long norm) {
+  	return 1;
+  }
+
+  @Override
+  public long encodeNormValue(float f) {
+  	return 1;
+  }
 }

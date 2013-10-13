@@ -63,12 +63,12 @@ import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.SnapshotDeletionPolicy;
-import org.apache.lucene.index.TieredMergePolicy;
+import org.apache.lucene.index.TrackingIndexWriter;
+import org.apache.lucene.search.ControlledRealTimeReopenThread;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.NRTManager;
-import org.apache.lucene.search.NRTManager.TrackingIndexWriter;
-import org.apache.lucene.search.NRTManagerReopenThread;
+import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.SearcherFactory;
+import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.Directory;
 
 public class BlurNRTIndex extends BlurIndex {
@@ -78,13 +78,13 @@ public class BlurNRTIndex extends BlurIndex {
   private static final String SNAPSHOTS_FOLDER_NAME = "snapshots";
   private static final String SNAPSHOTS_TMPFILE_EXTENSION = ".tmp";
 
-  private final AtomicReference<NRTManager> _nrtManagerRef = new AtomicReference<NRTManager>();
+  private final AtomicReference<SearcherManager> _nrtManagerRef = new AtomicReference<SearcherManager>();
   private final AtomicBoolean _isClosed = new AtomicBoolean();
   private final BlurIndexWriter _writer;
   private final Thread _committer;
   private final SearcherFactory _searcherFactory;
   private final Directory _directory;
-  private final NRTManagerReopenThread _refresher;
+  private final ControlledRealTimeReopenThread<IndexSearcher> _refresher;
   private final TableContext _tableContext;
   private final ShardContext _shardContext;
   private final TransactionRecorder _recorder;
@@ -110,15 +110,13 @@ public class BlurNRTIndex extends BlurIndex {
     SnapshotDeletionPolicy sdp;
     if (snapshotsDirectoryExists()) {
       // load existing snapshots
-      sdp = new SnapshotDeletionPolicy(_tableContext.getIndexDeletionPolicy(), loadExistingSnapshots());
+     sdp = new SnapshotDeletionPolicy(_tableContext.getIndexDeletionPolicy(), loadExistingSnapshots());
     } else {
       sdp = new SnapshotDeletionPolicy(_tableContext.getIndexDeletionPolicy());
-    }
+   }
     conf.setIndexDeletionPolicy(sdp);
     conf.setMergedSegmentWarmer(new FieldBasedWarmer(shardContext, _isClosed));
 
-    TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
-    mergePolicy.setUseCompoundFile(false);
     conf.setMergeScheduler(mergeScheduler.getMergeScheduler());
 
     DirectoryReferenceCounter referenceCounter = new DirectoryReferenceCounter(directory, gc, closer);
@@ -142,7 +140,7 @@ public class BlurNRTIndex extends BlurIndex {
 
     _trackingWriter = new TrackingIndexWriter(_writer);
     _indexImporter = new IndexImporter(_trackingWriter, _lock, _shardContext, TimeUnit.SECONDS, 10);
-    _nrtManagerRef.set(new NRTManager(_trackingWriter, _searcherFactory, APPLY_ALL_DELETES));
+    _nrtManagerRef.set(new SearcherManager(_writer, APPLY_ALL_DELETES,_searcherFactory));
     // start commiter
 
     _committer = new Thread(new Committer());
@@ -152,7 +150,7 @@ public class BlurNRTIndex extends BlurIndex {
 
     // start refresher
     double targetMinStaleSec = _tableContext.getTimeBetweenRefreshs() / 1000.0;
-    _refresher = new NRTManagerReopenThread(getNRTManager(), targetMinStaleSec * 10, targetMinStaleSec);
+    _refresher = new ControlledRealTimeReopenThread<IndexSearcher>(_trackingWriter,getNRTManager(), targetMinStaleSec * 10, targetMinStaleSec);
     _refresher.setName("Refresh Thread [" + _tableContext.getTable() + "/" + shardContext.getShard() + "]");
     _refresher.setDaemon(true);
     _refresher.start();
@@ -187,6 +185,7 @@ public class BlurNRTIndex extends BlurIndex {
         snapshots.put(snapshotName, segmentsFilename);
       }
     }
+    
     return snapshots;
   }
   
@@ -245,7 +244,7 @@ public class BlurNRTIndex extends BlurIndex {
     return indexSearcherClosable;
   }
 
-  private NRTManager getNRTManager() {
+  private ReferenceManager<IndexSearcher> getNRTManager() {
     return _nrtManagerRef.get();
   }
 
@@ -288,7 +287,7 @@ public class BlurNRTIndex extends BlurIndex {
       refresh();
     }
     if (waitToBeVisible && getNRTManager().getCurrentSearchingGen() < generation) {
-      getNRTManager().waitForGeneration(generation);
+    	_refresher.waitForGeneration(generation);
     }
   }
 
@@ -340,12 +339,16 @@ public class BlurNRTIndex extends BlurIndex {
   @Override
   public void createSnapshot(String name) throws IOException {
     SnapshotDeletionPolicy snapshotter = getSnapshotter();
-    Map<String, String> existingSnapshots = snapshotter.getSnapshots();
-    if (existingSnapshots.containsKey(name)) {
-      LOG.error("A Snapshot already exists with the same name [{0}] on [{1}/{2}].", 
-          name, _tableContext.getTable(), _shardContext.getShard());
-      throw new IOException("A Snapshot already exists with the same name [" + name + "] on " +
-      	"["+_tableContext.getTable()+"/"+_shardContext.getShard()+"].");
+    List<IndexCommit> snapshots = snapshotter.getSnapshots();
+    
+//    Map<String, String> existingSnapshots = snapshotter.getSnapshots();
+    for (IndexCommit indexCommit : snapshots) {
+	    if (indexCommit.getSegmentsFileName().equals(name)) {
+	      LOG.error("A Snapshot already exists with the same name [{0}] on [{1}/{2}].", 
+	          name, _tableContext.getTable(), _shardContext.getShard());
+	      throw new IOException("A Snapshot already exists with the same name [" + name + "] on " +
+	      	"["+_tableContext.getTable()+"/"+_shardContext.getShard()+"].");
+	    }
     }
     _writer.commit();
     IndexCommit indexCommit = snapshotter.snapshot(name);

@@ -304,8 +304,6 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
     if (optimize) {
       context.setStatus("Starting Copy-Optimize Phase");
       IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
-      TieredMergePolicy policy = (TieredMergePolicy) conf.getMergePolicy();
-      policy.setUseCompoundFile(false);
       long s = System.currentTimeMillis();
       IndexWriter writer = new IndexWriter(getBiggerBuffers(destDirectory), conf);
       writer.addIndexes(reader);
@@ -461,8 +459,6 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
     IndexWriterConfig config = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
     config.setSimilarity(new FairSimilarity());
     config.setRAMBufferSizeMB(_blurTask.getRamBufferSizeMB());
-    TieredMergePolicy mergePolicy = (TieredMergePolicy) config.getMergePolicy();
-    mergePolicy.setUseCompoundFile(false);
     _writer = new IndexWriter(_directory, config);
   }
 

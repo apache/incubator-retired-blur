@@ -336,7 +336,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final List<String> controllerServerList() throws BlurException, TException {
     try {
-      return _clusterStatus.getControllerServerList();
+      return _clusterStatus.getOnlineControllerList();
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get a controller list.", e);
       throw new BException("Unknown error while trying to get a controller list.", e);

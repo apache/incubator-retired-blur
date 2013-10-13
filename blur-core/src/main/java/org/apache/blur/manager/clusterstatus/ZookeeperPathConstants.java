@@ -35,6 +35,10 @@ public class ZookeeperPathConstants {
     return getBasePath() + "/online-controller-nodes";
   }
 
+  public static String getControllersPath() {
+    return getBasePath() + "/controller-nodes";
+  }
+
   public static String getTableEnabledPath(String cluster, String table) {
     return getTablePath(cluster, table) + "/enabled";
   }

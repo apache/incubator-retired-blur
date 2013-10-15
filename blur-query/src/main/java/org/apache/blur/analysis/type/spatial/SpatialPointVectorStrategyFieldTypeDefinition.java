@@ -21,8 +21,6 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.spatial.query.SpatialOperation;
 import org.apache.lucene.spatial.vector.PointVectorStrategy;
 
@@ -54,13 +52,5 @@ public class SpatialPointVectorStrategyFieldTypeDefinition extends BaseSpatialFi
   @Override
   public Collection<String> getAlternateFieldNames() {
     return _alternateFieldNames;
-  }
-
-  @Override
-  public Analyzer getAnalyzerForIndex(String fieldName) {
-    // This happens because the doubles are tokenized but the analyzer is
-    // fetched from the Field, but the offset is still fetched from the base
-    // analyzer. This seems like a bug.
-    return new KeywordAnalyzer();
   }
 }

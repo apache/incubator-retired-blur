@@ -55,7 +55,7 @@ public class IndexInputCloser implements Runnable, Closeable {
     }
   }
 
-  public void init() {
+  public IndexInputCloser() {
     running.set(true);
     daemon = new Thread(this);
     daemon.setDaemon(true);

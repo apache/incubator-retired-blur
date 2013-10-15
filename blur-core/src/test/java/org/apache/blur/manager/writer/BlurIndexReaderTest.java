@@ -72,9 +72,7 @@ public class BlurIndexReaderTest {
 
     mergeScheduler = new SharedMergeScheduler();
     gc = new DirectoryReferenceFileGC();
-    gc.init();
     closer = new IndexInputCloser();
-    closer.init();
 
     configuration = new Configuration();
     service = Executors.newThreadPool("test", 1);
@@ -95,8 +93,6 @@ public class BlurIndexReaderTest {
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard");
     refresher = new BlurIndexRefresher();
     indexCloser = new BlurIndexCloser();
-    refresher.init();
-    indexCloser.init();
     reader = new BlurIndexReader(shardContext, directory, refresher, indexCloser);
   }
 
@@ -107,6 +103,8 @@ public class BlurIndexReaderTest {
     closer.close();
     gc.close();
     service.shutdownNow();
+    refresher.close();
+    indexCloser.close();
     rm(base);
   }
 

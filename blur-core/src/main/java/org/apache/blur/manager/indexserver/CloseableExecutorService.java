@@ -32,5 +32,9 @@ public class CloseableExecutorService implements Closeable {
   public void close() throws IOException {
     executor.shutdownNow();
   }
+  
+  public static Closeable close(ExecutorService executor) {
+    return new CloseableExecutorService(executor);
+  }
 
 }

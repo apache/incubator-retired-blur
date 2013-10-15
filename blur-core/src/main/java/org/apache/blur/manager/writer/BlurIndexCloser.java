@@ -16,6 +16,7 @@ package org.apache.blur.manager.writer;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.Closeable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
@@ -29,7 +30,7 @@ import org.apache.blur.log.LogFactory;
 import org.apache.lucene.index.IndexReader;
 
 
-public class BlurIndexCloser implements Runnable {
+public class BlurIndexCloser implements Runnable, Closeable {
 
   private static final Log LOG = LogFactory.getLog(BlurIndexCloser.class);
   private static final long PAUSE_TIME = TimeUnit.SECONDS.toMillis(1);
@@ -37,8 +38,8 @@ public class BlurIndexCloser implements Runnable {
   private Collection<IndexReader> readers = new LinkedBlockingQueue<IndexReader>();
   private AtomicBoolean running = new AtomicBoolean();
   private ExecutorService executorService;
-
-  public void init() {
+  
+  public BlurIndexCloser() {
     running.set(true);
     daemon = new Thread(this);
     daemon.setDaemon(true);

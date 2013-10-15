@@ -78,9 +78,7 @@ public class DirectoryReferenceCounterTest {
   public void testDirectoryReferenceCounter() throws CorruptIndexException, LockObtainFailedException, IOException, InterruptedException {
     Directory directory = wrap(new RAMDirectory());
     DirectoryReferenceFileGC gc = new DirectoryReferenceFileGC();
-    gc.init();
     IndexInputCloser closer = new IndexInputCloser();
-    closer.init();
     DirectoryReferenceCounter counter = new DirectoryReferenceCounter(directory, gc, closer);
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
     IndexWriter writer = new IndexWriter(counter, conf);
@@ -117,6 +115,7 @@ public class DirectoryReferenceCounterTest {
     last.close();
     writer.close();
     gc.close();
+    closer.close();
   }
 
   private Document getDoc() {

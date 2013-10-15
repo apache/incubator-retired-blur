@@ -67,8 +67,8 @@ public class DirectoryReferenceFileGC extends TimerTask implements Closeable {
       }
     }
   }
-
-  public void init() {
+  
+  public DirectoryReferenceFileGC() {
     _timer = new Timer("Blur-File-GC", true);
     _timer.scheduleAtFixedRate(this, _delay, _delay);
     _queue = new LinkedBlockingQueue<Value>();

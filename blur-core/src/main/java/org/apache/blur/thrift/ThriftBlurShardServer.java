@@ -179,7 +179,6 @@ public class ThriftBlurShardServer extends ThriftServer {
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration);
 
     final BlurIndexRefresher refresher = new BlurIndexRefresher();
-    refresher.init();
 
     BlurFilterCache filterCache = getFilterCache(configuration);
     BlurIndexWarmup indexWarmup = getIndexWarmup(configuration);

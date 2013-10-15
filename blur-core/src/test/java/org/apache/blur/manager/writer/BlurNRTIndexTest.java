@@ -74,9 +74,7 @@ public class BlurNRTIndexTest {
 
     mergeScheduler = new SharedMergeScheduler();
     gc = new DirectoryReferenceFileGC();
-    gc.init();
     closer = new IndexInputCloser();
-    closer.init();
 
     configuration = new Configuration();
     service = Executors.newThreadPool("test", 10);

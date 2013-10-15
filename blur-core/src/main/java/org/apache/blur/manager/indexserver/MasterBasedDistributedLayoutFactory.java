@@ -153,9 +153,9 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
       return newLayoutMap;
     } else {
       LOG.info("Gather counts for table [{0}]", table);
-      Collection<String> shardsThatAreOffline = new TreeSet<String>();
-      Map<String, Integer> onlineServerShardCount = new TreeMap<String, Integer>();
-      Map<String, String> existingLayoutMap = existingLayout.getLayout();
+      final Collection<String> shardsThatAreOffline = new TreeSet<String>();
+      final Map<String, Integer> onlineServerShardCount = new TreeMap<String, Integer>();
+      final Map<String, String> existingLayoutMap = existingLayout.getLayout();
       for (Entry<String, String> e : existingLayoutMap.entrySet()) {
         String shard = e.getKey();
         String server = e.getValue();
@@ -177,7 +177,7 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
 
       LOG.info("Assigning any missing shards [{1}] for table [{0}]", table, shardsThatAreOffline);
       // Assign missing shards
-      Map<String, String> newLayoutMap = new TreeMap<String, String>(existingLayoutMap);
+      final Map<String, String> newLayoutMap = new TreeMap<String, String>(existingLayoutMap);
       for (String offlineShard : shardsThatAreOffline) {
         // Find lowest shard count.
         String server = getServerWithTheLowest(onlineServerShardCount);

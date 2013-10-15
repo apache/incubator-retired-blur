@@ -131,4 +131,23 @@ under the License.
 			</plugins>
 		</pluginManagement>
 	</build>
+	
+	<profiles>
+		<profile>
+			<id>hadoop-1x</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+		</profile>
+		<profile>
+			<id>cdh4-mr1</id>
+			<dependencies>
+				<dependency>
+				    <groupId>org.mortbay.jetty</groupId>
+				    <artifactId>jetty</artifactId>
+				    <version>6.1.26</version>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
 </project>

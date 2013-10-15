@@ -100,4 +100,28 @@ under the License.
 			</plugin>
 		</plugins>
 	</build>
+	
+	
+
+	
+	<profiles>
+		<profile>
+			<id>hadoop-1x</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+		</profile>
+		<profile>
+			<id>cdh4-mr1</id>
+			<dependencies>
+				<dependency>
+				    <groupId>javax.servlet</groupId>
+				    <artifactId>servlet-api</artifactId>
+				    <version>${servlet-api.version}</version>
+				    <scope>provided</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
+	
 </project>

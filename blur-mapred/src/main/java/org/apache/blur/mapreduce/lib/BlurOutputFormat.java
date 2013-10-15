@@ -359,16 +359,16 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     private final Path _newIndex;
     private final boolean _indexLocally;
     private final boolean _optimizeInFlight;
-    private Counter _columnCount = emptyCounter();
-    private Counter _fieldCount = emptyCounter();
-    private Counter _recordCount = emptyCounter();
-    private Counter _rowCount = emptyCounter();
-    private Counter _recordDuplicateCount = emptyCounter();
-    private Counter _rowOverFlowCount = emptyCounter();
-    private Counter _rowDeleteCount = emptyCounter();
-    private RateCounter _recordRateCounter = new RateCounter(emptyCounter());
-    private RateCounter _rowRateCounter = new RateCounter(emptyCounter());
-    private RateCounter _copyRateCounter = new RateCounter(emptyCounter());
+    private Counter _columnCount;
+    private Counter _fieldCount;
+    private Counter _recordCount;
+    private Counter _rowCount;
+    private Counter _recordDuplicateCount;
+    private Counter _rowOverFlowCount;
+    private Counter _rowDeleteCount;
+    private RateCounter _recordRateCounter;
+    private RateCounter _rowRateCounter;
+    private RateCounter _copyRateCounter;
     private boolean _countersSetup = false;
     private IndexWriter _localTmpWriter;
     private boolean _usingLocalTmpindex;
@@ -417,11 +417,6 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       }
     }
 
-    private Counter emptyCounter() {
-      return new Counter() {
-      };
-    }
-
     @Override
     public void write(Text key, BlurMutate value) throws IOException, InterruptedException {
       if (!_countersSetup) {
@@ -457,14 +452,18 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
         _deletedRowId = blurRecord.getRowId();
         return;
       }
-      _columnCount.increment(record.getColumns().size());
+      if (_countersSetup) {
+        _columnCount.increment(record.getColumns().size());
+      }
       List<Field> document = TransactionRecorder.getDoc(_fieldManager, blurRecord.getRowId(), record);
       List<Field> dup = _documents.put(recordId, document);
-      if (dup != null) {
-        _recordDuplicateCount.increment(1);
-      } else {
-        _fieldCount.increment(document.size());
-        _recordCount.increment(1);
+      if (_countersSetup) {
+        if (dup != null) {
+          _recordDuplicateCount.increment(1);
+        } else {
+          _fieldCount.increment(document.size());
+          _recordCount.increment(1);
+        }
       }
       flushToTmpIndexIfNeeded();
     }
@@ -522,28 +521,38 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
         flushToTmpIndex();
         _localTmpWriter.close(false);
         DirectoryReader reader = DirectoryReader.open(_localTmpDir);
-        _recordRateCounter.mark(reader.numDocs());
+        if (_countersSetup) {
+          _recordRateCounter.mark(reader.numDocs());
+        }
         _writer.addIndexes(reader);
         reader.close();
         resetLocalTmp();
-        _rowOverFlowCount.increment(1);
+        if (_countersSetup) {
+          _rowOverFlowCount.increment(1);
+        }
       } else {
         if (_documents.isEmpty()) {
           if (_deletedRowId != null) {
             _writer.addDocument(getDeleteDoc());
-            _rowDeleteCount.increment(1);
+            if (_countersSetup) {
+              _rowDeleteCount.increment(1);
+            }
           }
         } else {
           List<List<Field>> docs = new ArrayList<List<Field>>(_documents.values());
           docs.get(0).add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
           _writer.addDocuments(docs);
-          _recordRateCounter.mark(_documents.size());
+          if (_countersSetup) {
+            _recordRateCounter.mark(_documents.size());
+          }
           _documents.clear();
         }
       }
       _deletedRowId = null;
-      _rowRateCounter.mark();
-      _rowCount.increment(1);
+      if (_countersSetup) {
+        _rowRateCounter.mark();
+        _rowCount.increment(1);
+      }
     }
 
     private Document getDeleteDoc() {
@@ -557,8 +566,10 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     public void close(TaskAttemptContext context) throws IOException, InterruptedException {
       flush();
       _writer.close();
-      _recordRateCounter.close();
-      _rowRateCounter.close();
+      if (_countersSetup) {
+        _recordRateCounter.close();
+        _rowRateCounter.close();
+      }
       if (_indexLocally) {
         if (_optimizeInFlight) {
           copyAndOptimizeInFlightDir();
@@ -566,7 +577,9 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
           copyDir();
         }
       }
-      _copyRateCounter.close();
+      if (_countersSetup) {
+        _copyRateCounter.close();
+      }
     }
 
     private void copyAndOptimizeInFlightDir() throws IOException {

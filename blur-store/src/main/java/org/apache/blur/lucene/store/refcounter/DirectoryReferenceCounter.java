@@ -36,15 +36,15 @@ import org.apache.lucene.store.LockFactory;
 public class DirectoryReferenceCounter extends Directory implements DirectoryDecorator {
 
   private final static Log LOG = LogFactory.getLog(DirectoryReferenceCounter.class);
-  private final Directory directory;
+  private final Directory _directory;
   private final Map<String, AtomicInteger> refCounters = new ConcurrentHashMap<String, AtomicInteger>();
-  private final DirectoryReferenceFileGC gc;
-  private final IndexInputCloser closer;
+  private final DirectoryReferenceFileGC _gc;
+  private final IndexInputCloser _closer;
 
   public DirectoryReferenceCounter(Directory directory, DirectoryReferenceFileGC gc, IndexInputCloser closer) {
-    this.directory = directory;
-    this.gc = gc;
-    this.closer = closer;
+    _directory = directory;
+    _gc = gc;
+    _closer = closer;
   }
 
   private IndexInput wrap(String name, IndexInput input) {
@@ -53,13 +53,13 @@ public class DirectoryReferenceCounter extends Directory implements DirectoryDec
       counter = new AtomicInteger();
       refCounters.put(name, counter);
     }
-    return new RefIndexInput(input.toString(), input, counter, closer);
+    return new RefIndexInput(input.toString(), input, counter, _closer);
   }
 
   public void deleteFile(String name) throws IOException {
     LOG.debug("deleteFile [{0}] being called", name);
     if (name.equals(IndexFileNames.SEGMENTS_GEN)) {
-      directory.deleteFile(name);
+      _directory.deleteFile(name);
       return;
     }
     AtomicInteger counter = refCounters.get(name);
@@ -67,14 +67,14 @@ public class DirectoryReferenceCounter extends Directory implements DirectoryDec
       addToFileGC(name);
     } else {
       LOG.debug("Delete file [{0}]", name);
-      directory.deleteFile(name);
+      _directory.deleteFile(name);
     }
   }
 
   @Override
   public IndexOutput createOutput(String name, IOContext context) throws IOException {
     if (name.equals(IndexFileNames.SEGMENTS_GEN)) {
-      return directory.createOutput(name, context);
+      return _directory.createOutput(name, context);
     }
     LOG.debug("Create file [{0}]", name);
     AtomicInteger counter = refCounters.get(name);
@@ -83,12 +83,12 @@ public class DirectoryReferenceCounter extends Directory implements DirectoryDec
       throw new IOException("Reference exists [" + name + "]");
     }
     refCounters.put(name, new AtomicInteger(0));
-    return directory.createOutput(name, context);
+    return _directory.createOutput(name, context);
   }
 
   @Override
   public IndexInput openInput(String name, IOContext context) throws IOException {
-    IndexInput input = directory.openInput(name, context);
+    IndexInput input = _directory.openInput(name, context);
     if (name.equals(IndexFileNames.SEGMENTS_GEN)) {
       return input;
     }
@@ -216,74 +216,74 @@ public class DirectoryReferenceCounter extends Directory implements DirectoryDec
 
   @Override
   public void sync(Collection<String> names) throws IOException {
-    directory.sync(names);
+    _directory.sync(names);
   }
 
   @Override
   public void clearLock(String name) throws IOException {
-    directory.clearLock(name);
+    _directory.clearLock(name);
   }
 
   @Override
   public void close() throws IOException {
-    directory.close();
+    _directory.close();
   }
 
   @Override
   public void setLockFactory(LockFactory lockFactory) throws IOException {
-    directory.setLockFactory(lockFactory);
+    _directory.setLockFactory(lockFactory);
   }
 
   @Override
   public String getLockID() {
-    return directory.getLockID();
+    return _directory.getLockID();
   }
 
   @Override
   public void copy(Directory to, String src, String dest, IOContext context) throws IOException {
-    directory.copy(to, src, dest, context);
+    _directory.copy(to, src, dest, context);
   }
 
   @Override
   public boolean fileExists(String name) throws IOException {
-    return directory.fileExists(name);
+    return _directory.fileExists(name);
   }
 
   @Override
   public long fileLength(String name) throws IOException {
-    return directory.fileLength(name);
+    return _directory.fileLength(name);
   }
 
   @Override
   public LockFactory getLockFactory() {
-    return directory.getLockFactory();
+    return _directory.getLockFactory();
   }
 
   @Override
   public String[] listAll() throws IOException {
-    return directory.listAll();
+    return _directory.listAll();
   }
 
   @Override
   public Lock makeLock(String name) {
-    return directory.makeLock(name);
+    return _directory.makeLock(name);
   }
 
   @Override
   public String toString() {
-    return directory.toString();
+    return _directory.toString();
   }
 
   private void addToFileGC(String name) {
-    if (gc != null) {
+    if (_gc != null) {
       LOG.debug("Add file [{0}] to be GCed once refs are closed.", name);
-      gc.add(directory, name, refCounters);
+      _gc.add(_directory, name, refCounters);
     }
   }
 
   @Override
   public Directory getOriginalDirectory() {
-    return directory;
+    return _directory;
   }
 
 }

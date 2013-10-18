@@ -37,7 +37,7 @@ public class DirectoryReferenceCounter extends Directory implements DirectoryDec
 
   private final static Log LOG = LogFactory.getLog(DirectoryReferenceCounter.class);
   private final Directory _directory;
-  private final Map<String, AtomicInteger> refCounters = new ConcurrentHashMap<String, AtomicInteger>();
+  private final Map<String, AtomicInteger> _refCounters = new ConcurrentHashMap<String, AtomicInteger>();
   private final DirectoryReferenceFileGC _gc;
   private final IndexInputCloser _closer;
 
@@ -48,10 +48,10 @@ public class DirectoryReferenceCounter extends Directory implements DirectoryDec
   }
 
   private IndexInput wrap(String name, IndexInput input) {
-    AtomicInteger counter = refCounters.get(name);
+    AtomicInteger counter = _refCounters.get(name);
     if (counter == null) {
       counter = new AtomicInteger();
-      refCounters.put(name, counter);
+      _refCounters.put(name, counter);
     }
     return new RefIndexInput(input.toString(), input, counter, _closer);
   }
@@ -62,7 +62,7 @@ public class DirectoryReferenceCounter extends Directory implements DirectoryDec
       _directory.deleteFile(name);
       return;
     }
-    AtomicInteger counter = refCounters.get(name);
+    AtomicInteger counter = _refCounters.get(name);
     if (counter != null && counter.get() > 0) {
       addToFileGC(name);
     } else {
@@ -77,12 +77,12 @@ public class DirectoryReferenceCounter extends Directory implements DirectoryDec
       return _directory.createOutput(name, context);
     }
     LOG.debug("Create file [{0}]", name);
-    AtomicInteger counter = refCounters.get(name);
+    AtomicInteger counter = _refCounters.get(name);
     if (counter != null) {
       LOG.error("Unknown error while trying to create ref counter for [{0}] reference exists.", name);
       throw new IOException("Reference exists [" + name + "]");
     }
-    refCounters.put(name, new AtomicInteger(0));
+    _refCounters.put(name, new AtomicInteger(0));
     return _directory.createOutput(name, context);
   }
 
@@ -277,7 +277,7 @@ public class DirectoryReferenceCounter extends Directory implements DirectoryDec
   private void addToFileGC(String name) {
     if (_gc != null) {
       LOG.debug("Add file [{0}] to be GCed once refs are closed.", name);
-      _gc.add(_directory, name, refCounters);
+      _gc.add(_directory, name, _refCounters);
     }
   }
 

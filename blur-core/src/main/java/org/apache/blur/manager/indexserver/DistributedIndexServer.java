@@ -41,7 +41,6 @@ import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
-import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
 import org.apache.blur.manager.BlurFilterCache;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
@@ -109,7 +108,6 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   private final DirectoryReferenceFileGC _gc;
   private final WatchChildren _watchOnlineShards;
   private final SharedMergeScheduler _mergeScheduler;
-  private final IndexInputCloser _indexInputCloser;
   private final ExecutorService _searchExecutor;
   private final BlurIndexRefresher _refresher;
   private final BlurIndexCloser _indexCloser;
@@ -153,7 +151,6 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     _mergeScheduler = _closer.register(new SharedMergeScheduler());
     
     
-    _indexInputCloser = _closer.register(new IndexInputCloser());
     _refresher = _closer.register(new BlurIndexRefresher());
     _indexCloser = _closer.register(new BlurIndexCloser());
     _timerCacheFlush = setupFlushCacheTimer();
@@ -470,7 +467,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
       BlurIndexReader reader = new BlurIndexReader(shardContext, dir, _refresher, _indexCloser);
       index = reader;
     } else {
-      BlurNRTIndex writer = new BlurNRTIndex(shardContext, _mergeScheduler, _indexInputCloser, dir, _gc, _searchExecutor);
+      BlurNRTIndex writer = new BlurNRTIndex(shardContext, _mergeScheduler, dir, _gc, _searchExecutor);
       index = writer;
     }
     _filterCache.opening(table, shard, index);

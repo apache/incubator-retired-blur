@@ -39,12 +39,10 @@ public class DirectoryReferenceCounter extends Directory implements DirectoryDec
   private final Directory _directory;
   private final Map<String, AtomicInteger> _refCounters = new ConcurrentHashMap<String, AtomicInteger>();
   private final DirectoryReferenceFileGC _gc;
-  private final IndexInputCloser _closer;
 
-  public DirectoryReferenceCounter(Directory directory, DirectoryReferenceFileGC gc, IndexInputCloser closer) {
+  public DirectoryReferenceCounter(Directory directory, DirectoryReferenceFileGC gc) {
     _directory = directory;
     _gc = gc;
-    _closer = closer;
   }
 
   private IndexInput wrap(String name, IndexInput input) {
@@ -53,7 +51,7 @@ public class DirectoryReferenceCounter extends Directory implements DirectoryDec
       counter = new AtomicInteger();
       _refCounters.put(name, counter);
     }
-    return new RefIndexInput(input.toString(), input, counter, _closer);
+    return new RefIndexInput(input.toString(), input, counter);
   }
 
   public void deleteFile(String name) throws IOException {
@@ -95,51 +93,16 @@ public class DirectoryReferenceCounter extends Directory implements DirectoryDec
     return wrap(name, input);
   }
 
-  public static class RefIndexInput extends IndexInput {
+  public static class RefIndexInput extends IndexInputReference {
 
     private IndexInput input;
     private AtomicInteger ref;
-    private boolean closed = false;
-    private IndexInputCloser closer;
 
-    public RefIndexInput(String resourceDescription, IndexInput input, AtomicInteger ref, IndexInputCloser closer) {
+    public RefIndexInput(String resourceDescription, IndexInput input, AtomicInteger ref) {
       super(resourceDescription);
       this.input = input;
       this.ref = ref;
-      this.closer = closer;
       ref.incrementAndGet();
-      if (closer != null) {
-        closer.add(this);
-      }
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-      // Seems like not all the clones are being closed...
-      if (!closed) {
-        LOG.debug("[{0}] Last resort closing.", input.toString());
-        close();
-      }
-    }
-
-    @Override
-    public RefIndexInput clone() {
-      RefIndexInput refIndexInput = (RefIndexInput) super.clone();
-      if (closer != null) {
-        closer.add(refIndexInput);
-      }
-      refIndexInput.input = (IndexInput) input.clone();
-      refIndexInput.ref.incrementAndGet();
-      return refIndexInput;
-    }
-
-    @Override
-    public void close() throws IOException {
-      if (!closed) {
-        input.close();
-        ref.decrementAndGet();
-        closed = true;
-      }
     }
 
     @Override
@@ -210,6 +173,28 @@ public class DirectoryReferenceCounter extends Directory implements DirectoryDec
     @Override
     public Map<String, String> readStringStringMap() throws IOException {
       return input.readStringStringMap();
+    }
+
+    @Override
+    public RefIndexInput clone() {
+      RefIndexInput refIndexInput = (RefIndexInput) super.clone();
+      refIndexInput.input = (IndexInput) input.clone();
+      refIndexInput.ref.incrementAndGet();
+      return refIndexInput;
+    }
+
+    @Override
+    protected void closeBase() throws IOException {
+      input.close();
+      ref.decrementAndGet();
+      _isClosed = true;
+    }
+
+    @Override
+    protected void closeClone() throws IOException {
+      input.close();
+      ref.decrementAndGet();
+      _isClosed = true;
     }
 
   }

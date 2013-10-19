@@ -62,7 +62,7 @@ public class DirectoryReferenceFileGC extends TimerTask implements Closeable {
         directory.deleteFile(name);
         return true;
       } else {
-        LOG.debug("File [{0}] had too many refs [{1}]", name, counter.get());
+        LOG.info("File [{0}] had too many refs [{1}]", name, counter.get());
         return false;
       }
     }

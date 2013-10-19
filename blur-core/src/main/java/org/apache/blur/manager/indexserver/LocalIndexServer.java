@@ -35,7 +35,6 @@ import java.util.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
-import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurNRTIndex;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
@@ -62,7 +61,6 @@ public class LocalIndexServer extends AbstractIndexServer {
 
   private final Map<String, Map<String, BlurIndex>> _readersMap = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
   private final SharedMergeScheduler _mergeScheduler;
-  private final IndexInputCloser _indexInputCloser;
   private final DirectoryReferenceFileGC _gc;
   private final ExecutorService _searchExecutor;
   private final TableContext _tableContext;
@@ -72,7 +70,6 @@ public class LocalIndexServer extends AbstractIndexServer {
     _closer = Closer.create();
     _tableContext = TableContext.create(tableDescriptor);
     _mergeScheduler = _closer.register(new SharedMergeScheduler());
-    _indexInputCloser = _closer.register(new IndexInputCloser());
     _gc = _closer.register(new DirectoryReferenceFileGC());
     _searchExecutor = Executors.newCachedThreadPool();
     _closer.register(new CloseableExecutorService(_searchExecutor));
@@ -148,7 +145,7 @@ public class LocalIndexServer extends AbstractIndexServer {
 
   private BlurIndex openIndex(String table, String shard, Directory dir) throws CorruptIndexException, IOException {
     ShardContext shardContext = ShardContext.create(_tableContext, shard);
-    BlurNRTIndex index = new BlurNRTIndex(shardContext, _mergeScheduler, _indexInputCloser, dir, _gc, _searchExecutor);
+    BlurNRTIndex index = new BlurNRTIndex(shardContext, _mergeScheduler, dir, _gc, _searchExecutor);
     return index;
   }
 

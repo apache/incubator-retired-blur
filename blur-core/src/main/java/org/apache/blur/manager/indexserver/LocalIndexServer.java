@@ -69,7 +69,7 @@ public class LocalIndexServer extends AbstractIndexServer {
   public LocalIndexServer(TableDescriptor tableDescriptor) throws IOException {
     _closer = Closer.create();
     _tableContext = TableContext.create(tableDescriptor);
-    _mergeScheduler = _closer.register(new SharedMergeScheduler());
+    _mergeScheduler = _closer.register(new SharedMergeScheduler(3));
     _gc = _closer.register(new DirectoryReferenceFileGC());
     _searchExecutor = Executors.newCachedThreadPool();
     _closer.register(new CloseableExecutorService(_searchExecutor));

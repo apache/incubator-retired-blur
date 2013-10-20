@@ -70,7 +70,7 @@ public class BlurNRTIndexTest {
     rm(base);
     base.mkdirs();
 
-    mergeScheduler = new SharedMergeScheduler();
+    mergeScheduler = new SharedMergeScheduler(1);
     gc = new DirectoryReferenceFileGC();
 
     configuration = new Configuration();

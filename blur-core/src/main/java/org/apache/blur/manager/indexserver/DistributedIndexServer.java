@@ -120,7 +120,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   public DistributedIndexServer(Configuration configuration, ZooKeeper zookeeper, ClusterStatus clusterStatus,
       BlurIndexWarmup warmup, BlurFilterCache filterCache, BlockCacheDirectoryFactory blockCacheDirectoryFactory,
       DistributedLayoutFactory distributedLayoutFactory, String cluster, String nodeName, long safeModeDelay,
-      int shardOpenerThreadCount, int internalSearchThreads, int warmupThreads) throws KeeperException,
+      int shardOpenerThreadCount, int internalSearchThreads, int warmupThreads, int maxMergeThreads) throws KeeperException,
       InterruptedException {
     super(clusterStatus, configuration, nodeName, cluster);
     _closer = Closer.create();
@@ -148,8 +148,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     _gc = _closer.register(new DirectoryReferenceFileGC());
 
     // @TODO allow for configuration of these
-    _mergeScheduler = _closer.register(new SharedMergeScheduler());
-    
+    _mergeScheduler = _closer.register(new SharedMergeScheduler(maxMergeThreads));
     
     _refresher = _closer.register(new BlurIndexRefresher());
     _indexCloser = _closer.register(new BlurIndexCloser());

@@ -41,8 +41,7 @@ public class SharedMergeScheduler implements Runnable, Closeable {
   private AtomicBoolean _running = new AtomicBoolean(true);
   private ExecutorService _service;
 
-  public SharedMergeScheduler() {
-    int threads = 3;
+  public SharedMergeScheduler(int threads) {
     _service = Executors.newThreadPool(SHARED_MERGE_SCHEDULER, threads, false);
     for (int i = 0; i < threads; i++) {
       _service.submit(this);

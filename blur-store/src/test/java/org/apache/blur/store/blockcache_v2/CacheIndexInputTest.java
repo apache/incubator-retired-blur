@@ -256,6 +256,11 @@ public class CacheIndexInputTest {
         return false;
       }
 
+      @Override
+      public void close() throws IOException {
+        
+      }
+
     };
     return cacheFactory;
   }

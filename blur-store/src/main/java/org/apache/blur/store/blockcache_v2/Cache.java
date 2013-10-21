@@ -17,11 +17,12 @@
  */
 package org.apache.blur.store.blockcache_v2;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 import org.apache.lucene.store.IOContext;
 
-public abstract class Cache {
+public abstract class Cache implements Closeable {
 
   /**
    * Creates a new instance of CacheValue, the cache capacity should be used for

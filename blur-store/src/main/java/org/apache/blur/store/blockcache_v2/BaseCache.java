@@ -17,12 +17,25 @@
  */
 package org.apache.blur.store.blockcache_v2;
 
+import static org.apache.blur.metrics.MetricsConstants.CACHE;
+import static org.apache.blur.metrics.MetricsConstants.ENTRIES;
+import static org.apache.blur.metrics.MetricsConstants.EVICTION;
+import static org.apache.blur.metrics.MetricsConstants.HIT;
+import static org.apache.blur.metrics.MetricsConstants.MISS;
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
+import static org.apache.blur.metrics.MetricsConstants.REMOVAL;
+import static org.apache.blur.metrics.MetricsConstants.SIZE;
+
+import java.io.Closeable;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.log.Log;
@@ -34,10 +47,15 @@ import org.apache.lucene.store.IOContext;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 import com.googlecode.concurrentlinkedhashmap.Weigher;
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Gauge;
+import com.yammer.metrics.core.Meter;
+import com.yammer.metrics.core.MetricName;
 
-public class BaseCache extends Cache {
+public class BaseCache extends Cache implements Closeable {
 
   private static final Log LOG = LogFactory.getLog(BaseCache.class);
+  private static final long _1_MINUTE = TimeUnit.MINUTES.toMillis(1);
 
   public enum STORE {
     ON_HEAP, OFF_HEAP
@@ -66,6 +84,12 @@ public class BaseCache extends Cache {
   private final Map<FileIdKey, Long> _fileNameToId = new ConcurrentHashMap<FileIdKey, Long>();
   private final AtomicLong _fileId = new AtomicLong();
   private final Quiet _quiet;
+  private final Meter _hits;
+  private final Meter _misses;
+  private final Meter _evictions;
+  private final Meter _removals;
+  private final Thread _daemonThread;
+  private final AtomicBoolean _running = new AtomicBoolean(true);
 
   public BaseCache(long totalNumberOfBytes, Size fileBufferSize, Size cacheBlockSize, FileNameFilter readFilter,
       FileNameFilter writeFilter, Quiet quiet, STORE store) {
@@ -77,18 +101,73 @@ public class BaseCache extends Cache {
     _store = store;
     _cacheBlockSize = cacheBlockSize;
     _quiet = quiet;
+    _hits = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, HIT), HIT, TimeUnit.SECONDS);
+    _misses = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, MISS), MISS, TimeUnit.SECONDS);
+    _evictions = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, EVICTION), EVICTION, TimeUnit.SECONDS);
+    _removals = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, REMOVAL), REMOVAL, TimeUnit.SECONDS);
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, CACHE, ENTRIES), new Gauge<Long>() {
+      @Override
+      public Long value() {
+        return (long) _cacheMap.size();
+      }
+    });
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, CACHE, SIZE), new Gauge<Long>() {
+      @Override
+      public Long value() {
+        return _cacheMap.weightedSize();
+      }
+    });
+    _daemonThread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        while (_running.get()) {
+          cleanupOldFiles();
+          try {
+            Thread.sleep(_1_MINUTE);
+          } catch (InterruptedException e) {
+            return;
+          }
+        }
+      }
+    });
+    _daemonThread.setDaemon(true);
+    _daemonThread.setName("BaseCacheCleanup");
+    _daemonThread.setPriority(Thread.MIN_PRIORITY);
+    _daemonThread.start();
+  }
+
+  protected void cleanupOldFiles() {
+    LOG.info("Cleanup old files from cache.");
+    Set<Long> validFileIds = new HashSet<Long>(_fileNameToId.values());
+    for (CacheKey key : _cacheMap.keySet()) {
+      long fileId = key.getFileId();
+      if (validFileIds.contains(fileId)) {
+        CacheValue remove = _cacheMap.remove(key);
+        if (remove != null) {
+          _removals.mark();
+        }
+      }
+    }
+  }
+
+  @Override
+  public void close() throws IOException {
+    _running.set(false);
+    _cacheMap.clear();
+    _daemonThread.interrupt();
   }
 
   private void addToReleaseQueue(CacheValue value) {
     if (value != null) {
+      _evictions.mark();
       if (value.refCount() == 0) {
         value.release();
         return;
       }
-      LOG.debug("CacheValue was not released [{0}]", value);
+      LOG.info("CacheValue was not released [{0}]", value);
     }
   }
-  
+
   @Override
   public boolean shouldBeQuiet(CacheDirectory directory, String fileName) {
     return _quiet.shouldBeQuiet(directory.getDirectoryName(), fileName);
@@ -151,17 +230,30 @@ public class BaseCache extends Cache {
 
   @Override
   public CacheValue get(CacheKey key) {
-    return _cacheMap.get(key);
+    CacheValue cacheValue = _cacheMap.get(key);
+    if (cacheValue == null) {
+      _misses.mark();
+    } else {
+      _hits.mark();
+    }
+    return cacheValue;
   }
-  
+
   @Override
   public CacheValue getQuietly(CacheKey key) {
-    return _cacheMap.getQuietly(key);
+    CacheValue cacheValue = _cacheMap.getQuietly(key);
+    if (cacheValue != null) {
+      _hits.mark();
+    }
+    return cacheValue;
   }
 
   @Override
   public void put(CacheKey key, CacheValue value) {
-    _cacheMap.put(key, value);
+    CacheValue cacheValue = _cacheMap.put(key, value);
+    if (cacheValue != null) {
+      _evictions.mark();
+    }
   }
 
   @Override
@@ -221,7 +313,6 @@ public class BaseCache extends Cache {
         return false;
       return true;
     }
-
   }
 
 }

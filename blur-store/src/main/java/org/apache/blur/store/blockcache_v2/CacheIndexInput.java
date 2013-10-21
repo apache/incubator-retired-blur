@@ -225,8 +225,8 @@ public class CacheIndexInput extends IndexInput {
         cachePosition += length;
       }
       BufferStore.putBuffer(buffer);
+      _cache.put(_key.clone(), _cacheValue);
     }
-    _cache.put(_key.clone(), _cacheValue);
     _cacheValue.incRef();
     _blockPosition = getBlockPosition();
   }

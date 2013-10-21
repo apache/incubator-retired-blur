@@ -17,15 +17,26 @@
  */
 package org.apache.blur.store.blockcache_v2.cachevalue;
 
+import static org.apache.blur.metrics.MetricsConstants.JVM;
+import static org.apache.blur.metrics.MetricsConstants.OFF_HEAP_MEMORY;
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
+
 import java.lang.reflect.Field;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.blur.metrics.AtomicLongGauge;
 
 import sun.misc.Unsafe;
+
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.MetricName;
 
 @SuppressWarnings("serial")
 public class UnsafeCacheValue extends BaseCacheValue {
 
   private static final String JAVA_NIO_BITS = "java.nio.Bits";
   private static final Unsafe _unsafe;
+  private static final AtomicLong _offHeapMemorySize = new AtomicLong();
 
   static {
     try {
@@ -36,6 +47,7 @@ public class UnsafeCacheValue extends BaseCacheValue {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, JVM, OFF_HEAP_MEMORY), new AtomicLongGauge(_offHeapMemorySize));
   }
 
   private static final int BYTE_ARRAY_BASE_OFFSET = _unsafe.arrayBaseOffset(byte[].class);
@@ -57,6 +69,7 @@ public class UnsafeCacheValue extends BaseCacheValue {
     super(length);
     _capacity = getCapacity(length);
     _address = _unsafe.allocateMemory(_capacity);
+    _offHeapMemorySize.addAndGet(_capacity);
   }
 
   private int getCapacity(int length) {
@@ -87,6 +100,7 @@ public class UnsafeCacheValue extends BaseCacheValue {
     if (!_released) {
       _unsafe.freeMemory(_address);
       _released = true;
+      _offHeapMemorySize.addAndGet(0 - _capacity);
     } else {
       new Throwable().printStackTrace();
     }

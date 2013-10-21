@@ -90,8 +90,9 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
   }
 
   @Override
-  public Directory newDirectory(String name, Directory directory, Set<String> blockCacheFileTypes) throws IOException {
-    return new CacheDirectory(name, directory, _cache);
+  public Directory newDirectory(String table, String shard, Directory directory, Set<String> blockCacheFileTypes)
+      throws IOException {
+    return new CacheDirectory(table, shard, directory, _cache);
   }
 
 }

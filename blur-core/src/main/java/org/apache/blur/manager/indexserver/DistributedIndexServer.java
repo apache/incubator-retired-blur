@@ -120,8 +120,8 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   public DistributedIndexServer(Configuration configuration, ZooKeeper zookeeper, ClusterStatus clusterStatus,
       BlurIndexWarmup warmup, BlurFilterCache filterCache, BlockCacheDirectoryFactory blockCacheDirectoryFactory,
       DistributedLayoutFactory distributedLayoutFactory, String cluster, String nodeName, long safeModeDelay,
-      int shardOpenerThreadCount, int internalSearchThreads, int warmupThreads, int maxMergeThreads) throws KeeperException,
-      InterruptedException {
+      int shardOpenerThreadCount, int internalSearchThreads, int warmupThreads, int maxMergeThreads)
+      throws KeeperException, InterruptedException {
     super(clusterStatus, configuration, nodeName, cluster);
     _closer = Closer.create();
     _shardOpenerThreadCount = shardOpenerThreadCount;
@@ -133,23 +133,23 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     _warmupThreads = warmupThreads;
     _blockCacheDirectoryFactory = blockCacheDirectoryFactory;
     _distributedLayoutFactory = distributedLayoutFactory == null ? getDefaultLayoutFactory() : distributedLayoutFactory;
-    
+
     _closer.register(_shardStateManager);
 
     BlurUtil.setupZookeeper(_zookeeper, _cluster);
     _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
     _searchExecutor = Executors.newThreadPool("internal-search", _internalSearchThreads);
     _warmupExecutor = Executors.newThreadPool("warmup", _warmupThreads);
-    
+
     _closer.register(CloseableExecutorService.close(_openerService));
     _closer.register(CloseableExecutorService.close(_searchExecutor));
     _closer.register(CloseableExecutorService.close(_warmupExecutor));
-    
+
     _gc = _closer.register(new DirectoryReferenceFileGC());
 
     // @TODO allow for configuration of these
     _mergeScheduler = _closer.register(new SharedMergeScheduler(maxMergeThreads));
-    
+
     _refresher = _closer.register(new BlurIndexRefresher());
     _indexCloser = _closer.register(new BlurIndexCloser());
     _timerCacheFlush = setupFlushCacheTimer();
@@ -158,9 +158,9 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     String onlineShardsPath = ZookeeperPathConstants.getOnlineShardsPath(_cluster);
     String safemodePath = ZookeeperPathConstants.getSafemodePath(_cluster);
 
-    //Set the registerNode timeout value to zk sessionTimeout + {4} seconds
-    int registerNodeTimeOut = _zookeeper.getSessionTimeout()/1000 + 4;
-      
+    // Set the registerNode timeout value to zk sessionTimeout + {4} seconds
+    int registerNodeTimeOut = _zookeeper.getSessionTimeout() / 1000 + 4;
+
     SafeMode safeMode = new SafeMode(_zookeeper, safemodePath, onlineShardsPath, TimeUnit.MILLISECONDS, _safeModeDelay,
         TimeUnit.SECONDS, registerNodeTimeOut);
     safeMode.registerNode(getNodeName(), BlurUtil.getVersion().getBytes());
@@ -169,7 +169,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     _timerTableWarmer = setupTableWarmer();
     _watchOnlineShards = watchForShardServerChanges();
   }
-  
+
   @Override
   public void close() throws IOException {
     if (_running.get()) {
@@ -456,7 +456,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     boolean blockCacheEnabled = _clusterStatus.isBlockCacheEnabled(_cluster, table);
     if (blockCacheEnabled) {
       Set<String> blockCacheFileTypes = _clusterStatus.getBlockCacheFileTypes(_cluster, table);
-      dir = _blockCacheDirectoryFactory.newDirectory(table + "_" + shard, directory, blockCacheFileTypes);
+      dir = _blockCacheDirectoryFactory.newDirectory(table, shard, directory, blockCacheFileTypes);
     } else {
       dir = directory;
     }
@@ -575,7 +575,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
 
     DistributedLayout layoutManager = _distributedLayoutFactory.createDistributedLayout(table, shardList,
         shardServerList, offlineShardServers);
-    
+
     Map<String, String> layout = layoutManager.getLayout();
     String nodeName = getNodeName();
     Set<String> shardsToServeCache = new TreeSet<String>();

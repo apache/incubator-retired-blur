@@ -23,7 +23,7 @@ import org.apache.lucene.store.Directory;
 
 public abstract class BlockCacheDirectoryFactory {
 
-  public abstract Directory newDirectory(String name, Directory directory, Set<String> blockCacheFileTypes)
-      throws IOException;
+  public abstract Directory newDirectory(String table, String shard, Directory directory,
+      Set<String> blockCacheFileTypes) throws IOException;
 
 }

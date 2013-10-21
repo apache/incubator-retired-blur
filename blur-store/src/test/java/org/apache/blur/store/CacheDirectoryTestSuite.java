@@ -38,21 +38,21 @@ public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
     int totalNumberOfBytes = 1000000;
     final int fileBufferSizeInt = numberBetween(113, 215);
     final int cacheBlockSizeInt = numberBetween(111, 251);
-    
+
     Size fileBufferSize = new Size() {
       @Override
       public int getSize(String directoryName, String fileName) {
         return fileBufferSizeInt;
       }
     };
-    
+
     Size cacheBlockSize = new Size() {
       @Override
       public int getSize(String directoryName, String fileName) {
         return cacheBlockSizeInt;
       }
     };
-    
+
     FileNameFilter writeFilter = new FileNameFilter() {
       @Override
       public boolean accept(String directoryName, String fileName) {
@@ -71,16 +71,16 @@ public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
         return false;
       }
     };
-    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter,quiet,
+    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet,
         getStore());
     Directory dir = FSDirectory.open(new File(file, "cache"));
 
     BufferStore.init(128, 128);
-    return new CacheDirectory("test", wrapLastModified(dir), _cache);
+    return new CacheDirectory("test", "test", wrapLastModified(dir), _cache);
   }
 
   protected abstract STORE getStore();
-  
+
   public void close() throws IOException {
     _cache.close();
   }

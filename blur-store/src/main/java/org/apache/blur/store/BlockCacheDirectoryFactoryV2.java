@@ -42,21 +42,21 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
 
     Size fileBufferSize = new Size() {
       @Override
-      public int getSize(String directoryName, String fileName) {
+      public int getSize(CacheDirectory directory, String fileName) {
         return fileBufferSizeInt;
       }
     };
 
     Size cacheBlockSize = new Size() {
       @Override
-      public int getSize(String directoryName, String fileName) {
+      public int getSize(CacheDirectory directory, String fileName) {
         return cacheBlockSizeInt;
       }
     };
 
     FileNameFilter readFilter = new FileNameFilter() {
       @Override
-      public boolean accept(String directoryName, String fileName) {
+      public boolean accept(CacheDirectory directory, String fileName) {
         if (fileName.endsWith(".fdt") || fileName.endsWith(".fdx")) {
           return false;
         }
@@ -66,7 +66,7 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
 
     FileNameFilter writeFilter = new FileNameFilter() {
       @Override
-      public boolean accept(String directoryName, String fileName) {
+      public boolean accept(CacheDirectory directory, String fileName) {
         if (fileName.endsWith(".fdt") || fileName.endsWith(".fdx")) {
           return false;
         }
@@ -76,7 +76,7 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
 
     Quiet quiet = new Quiet() {
       @Override
-      public boolean shouldBeQuiet(String directoryName, String fileName) {
+      public boolean shouldBeQuiet(CacheDirectory directory, String fileName) {
         Thread thread = Thread.currentThread();
         String name = thread.getName();
         if (name.startsWith(SHARED_MERGE_SCHEDULER)) {

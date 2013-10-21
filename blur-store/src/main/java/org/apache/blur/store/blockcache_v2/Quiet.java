@@ -17,5 +17,5 @@
 package org.apache.blur.store.blockcache_v2;
 
 public interface Quiet {
-  boolean shouldBeQuiet(String directoryName, String fileName);
+  boolean shouldBeQuiet(CacheDirectory directory, String fileName);
 }

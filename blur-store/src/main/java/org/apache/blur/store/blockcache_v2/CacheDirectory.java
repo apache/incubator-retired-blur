@@ -34,15 +34,27 @@ public class CacheDirectory extends Directory implements DirectoryDecorator, Las
   private final Directory _internal;
   private final String _directoryName;
   private final Cache _cache;
+  private final String _shard;
+  private final String _table;
 
   public CacheDirectory(String table, String shard, Directory directory, Cache cache) {
     if (!(directory instanceof LastModified)) {
       throw new RuntimeException("Directory [" + directory + "] does not implement '" + LastModified.class.toString()
           + "'");
     }
+    _table = table;
+    _shard = shard;
     _directoryName = notNull(table + "_" + shard);
     _internal = notNull(directory);
     _cache = notNull(cache);
+  }
+
+  public String getShard() {
+    return _shard;
+  }
+
+  public String getTable() {
+    return _table;
   }
 
   @Override

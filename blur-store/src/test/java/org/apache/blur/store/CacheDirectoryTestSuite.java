@@ -41,33 +41,33 @@ public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
 
     Size fileBufferSize = new Size() {
       @Override
-      public int getSize(String directoryName, String fileName) {
+      public int getSize(CacheDirectory directory, String fileName) {
         return fileBufferSizeInt;
       }
     };
 
     Size cacheBlockSize = new Size() {
       @Override
-      public int getSize(String directoryName, String fileName) {
+      public int getSize(CacheDirectory directory, String fileName) {
         return cacheBlockSizeInt;
       }
     };
 
     FileNameFilter writeFilter = new FileNameFilter() {
       @Override
-      public boolean accept(String directoryName, String fileName) {
+      public boolean accept(CacheDirectory directory, String fileName) {
         return true;
       }
     };
     FileNameFilter readFilter = new FileNameFilter() {
       @Override
-      public boolean accept(String directoryName, String fileName) {
+      public boolean accept(CacheDirectory directory, String fileName) {
         return true;
       }
     };
     Quiet quiet = new Quiet() {
       @Override
-      public boolean shouldBeQuiet(String directoryName, String fileName) {
+      public boolean shouldBeQuiet(CacheDirectory directory, String fileName) {
         return false;
       }
     };

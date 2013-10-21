@@ -18,5 +18,5 @@
 package org.apache.blur.store.blockcache_v2;
 
 public interface Size {
-  int getSize(String directoryName, String fileName);
+  int getSize(CacheDirectory directory, String fileName);
 }

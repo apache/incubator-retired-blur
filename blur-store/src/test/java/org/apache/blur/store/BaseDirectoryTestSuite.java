@@ -81,9 +81,12 @@ public abstract class BaseDirectoryTestSuite {
   }
 
   @After
-  public void tearDown() {
+  public void tearDown() throws IOException {
     print(file, "");
+    close();
   }
+
+  protected abstract void close() throws IOException;
 
   private void print(File f, String buf) {
     if (f.isDirectory()) {

@@ -43,12 +43,14 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class CacheDirectoryTest {
 
   private CacheDirectory _cacheDirectory;
+  private BaseCache _cache;
 
   @Before
   public void setup() {
@@ -85,11 +87,16 @@ public class CacheDirectoryTest {
         return false;
       }
     };
-    Cache cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet,
+    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet,
         STORE.ON_HEAP);
     Directory directory = newDirectory();
     BufferStore.init(128, 128);
-    _cacheDirectory = new CacheDirectory("test", directory, cache);
+    _cacheDirectory = new CacheDirectory("test", directory, _cache);
+  }
+  
+  @After
+  public void tearDown() throws IOException {
+    _cache.close();
   }
 
   private Directory newDirectory() {

@@ -40,5 +40,10 @@ public class SoftlinkHdfsDirectoryTestSuite extends BaseDirectoryTestSuite {
 
   @Test
   public void runsTheTests() {}
+
+  @Override
+  protected void close() throws IOException {
+    
+  }
   
 }

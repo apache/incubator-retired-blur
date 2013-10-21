@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.apache.blur.store.blockcache_v2.BaseCache;
 import org.apache.blur.store.blockcache_v2.BaseCache.STORE;
-import org.apache.blur.store.blockcache_v2.Cache;
 import org.apache.blur.store.blockcache_v2.CacheDirectory;
 import org.apache.blur.store.blockcache_v2.FileNameFilter;
 import org.apache.blur.store.blockcache_v2.Quiet;
@@ -31,6 +30,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
+
+  private BaseCache _cache;
 
   @Override
   protected Directory setupDirectory() throws IOException {
@@ -70,14 +71,18 @@ public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
         return false;
       }
     };
-    Cache cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter,quiet,
+    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter,quiet,
         getStore());
     Directory dir = FSDirectory.open(new File(file, "cache"));
 
     BufferStore.init(128, 128);
-    return new CacheDirectory("test", wrapLastModified(dir), cache);
+    return new CacheDirectory("test", wrapLastModified(dir), _cache);
   }
 
   protected abstract STORE getStore();
+  
+  public void close() throws IOException {
+    _cache.close();
+  }
 
 }

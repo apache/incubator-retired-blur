@@ -170,7 +170,7 @@ public class BaseCache extends Cache implements Closeable {
 
   @Override
   public boolean shouldBeQuiet(CacheDirectory directory, String fileName) {
-    return _quiet.shouldBeQuiet(directory.getDirectoryName(), fileName);
+    return _quiet.shouldBeQuiet(directory, fileName);
   }
 
   @Override
@@ -210,22 +210,22 @@ public class BaseCache extends Cache implements Closeable {
 
   @Override
   public int getCacheBlockSize(CacheDirectory directory, String fileName) {
-    return _cacheBlockSize.getSize(directory.getDirectoryName(), fileName);
+    return _cacheBlockSize.getSize(directory, fileName);
   }
 
   @Override
   public int getFileBufferSize(CacheDirectory directory, String fileName) {
-    return _fileBufferSize.getSize(directory.getDirectoryName(), fileName);
+    return _fileBufferSize.getSize(directory, fileName);
   }
 
   @Override
   public boolean cacheFileForReading(CacheDirectory directory, String fileName, IOContext context) {
-    return _readFilter.accept(directory.getDirectoryName(), fileName);
+    return _readFilter.accept(directory, fileName);
   }
 
   @Override
   public boolean cacheFileForWriting(CacheDirectory directory, String fileName, IOContext context) {
-    return _writeFilter.accept(directory.getDirectoryName(), fileName);
+    return _writeFilter.accept(directory, fileName);
   }
 
   @Override

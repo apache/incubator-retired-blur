@@ -120,6 +120,7 @@ public abstract class BaseCacheValue extends AtomicLong implements CacheValue {
 
   @Override
   protected void finalize() throws Throwable {
+    // @TODO this may not be needed.
     if (!_released) {
       release();
     }

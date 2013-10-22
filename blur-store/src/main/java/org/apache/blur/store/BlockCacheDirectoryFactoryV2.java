@@ -57,7 +57,7 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
     FileNameFilter readFilter = new FileNameFilter() {
       @Override
       public boolean accept(CacheDirectory directory, String fileName) {
-        if (fileName.endsWith(".fdt") || fileName.endsWith(".fdx")) {
+        if (fileName.endsWith(".fdt")) {
           return false;
         }
         return true;
@@ -67,7 +67,7 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
     FileNameFilter writeFilter = new FileNameFilter() {
       @Override
       public boolean accept(CacheDirectory directory, String fileName) {
-        if (fileName.endsWith(".fdt") || fileName.endsWith(".fdx")) {
+        if (fileName.endsWith(".fdt")) {
           return false;
         }
         return true;

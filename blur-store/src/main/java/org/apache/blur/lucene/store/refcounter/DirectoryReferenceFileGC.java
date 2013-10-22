@@ -17,6 +17,7 @@ package org.apache.blur.lucene.store.refcounter;
  * limitations under the License.
  */
 import java.io.Closeable;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,6 +33,7 @@ import org.apache.lucene.store.Directory;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Gauge;
 import com.yammer.metrics.core.MetricName;
+
 import static org.apache.blur.metrics.MetricsConstants.*;
 
 public class DirectoryReferenceFileGC extends TimerTask implements Closeable {
@@ -67,7 +69,7 @@ public class DirectoryReferenceFileGC extends TimerTask implements Closeable {
       }
     }
   }
-  
+
   public DirectoryReferenceFileGC() {
     _timer = new Timer("Blur-File-GC", true);
     _timer.scheduleAtFixedRate(this, _delay, _delay);
@@ -105,6 +107,9 @@ public class DirectoryReferenceFileGC extends TimerTask implements Closeable {
         } else {
           count++;
         }
+      } catch (FileNotFoundException e) {
+        LOG.error("File [{0}] already deleted.", value);
+        iterator.remove();
       } catch (IOException e) {
         LOG.error("Unknown error", e);
       }

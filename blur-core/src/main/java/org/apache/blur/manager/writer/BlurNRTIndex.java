@@ -114,7 +114,6 @@ public class BlurNRTIndex extends BlurIndex {
       sdp = new SnapshotDeletionPolicy(_tableContext.getIndexDeletionPolicy());
     }
     conf.setIndexDeletionPolicy(sdp);
-//    conf.setMergedSegmentWarmer(new FieldBasedWarmer(shardContext, _isClosed));
 
     TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);

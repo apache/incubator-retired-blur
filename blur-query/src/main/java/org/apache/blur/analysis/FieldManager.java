@@ -268,5 +268,7 @@ public abstract class FieldManager {
   public abstract void registerType(Class<? extends FieldTypeDefinition> c);
   
   public abstract Set<String> getFieldNames() throws IOException;
+  
+  public abstract String resolveField(String field);
 
 }

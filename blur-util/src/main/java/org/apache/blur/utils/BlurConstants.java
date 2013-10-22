@@ -32,6 +32,7 @@ public class BlurConstants {
   public static final String ROW_ID = "rowid";
   public static final String RECORD_ID = "recordid";
   public static final String FAMILY = "family";
+  public static final String DEFAULT_FAMILY = "_default_";
   public static final String SUPER = "super";
   public static final String SEP = ".";
 

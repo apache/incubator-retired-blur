@@ -54,6 +54,24 @@ public class BaseFieldManagerTest {
       assertFieldEquals(fields.get(c++), field);
     }
   }
+  
+  @Test
+  public void testFieldManagerWithNullFamily() throws IOException {
+    BaseFieldManager memoryFieldManager = newFieldManager(true);
+    memoryFieldManager.addColumnDefinition(null, "col1", null, true, "text", null);
+
+    Record record = new Record();
+    record.setRecordId("1213");
+    record.addToColumns(new Column("col1", "value1"));
+
+    List<Field> fields = getFields(null, "1", "1213", newTextField(memoryFieldManager.resolveField("col1"), "value1"),
+        newTextFieldNoStore(_fieldLessField, "value1"));
+
+    int c = 0;
+    for (Field field : memoryFieldManager.getFields("1", record)) {
+      assertFieldEquals(fields.get(c++), field);
+    }
+  }
 
   @Test
   public void testFieldManagerMultipleColumnsSameName() throws IOException {
@@ -125,6 +143,33 @@ public class BaseFieldManagerTest {
       assertFieldEquals(fields2.get(c2++), field);
     }
   }
+  
+  @Test
+  public void testFieldManagerMultipleColumnsDifferentNamesNullFamilies() throws IOException {
+    BaseFieldManager memoryFieldManager = newFieldManager(true);
+    memoryFieldManager.addColumnDefinition(null, "col1", null, false, "text", null);
+    memoryFieldManager.addColumnDefinition(null, "col2", null, false, "text", null);
+
+    Record record1 = new Record();
+    record1.setRecordId("1213");
+    record1.addToColumns(new Column("col1", "value1"));
+
+    List<Field> fields1 = getFields(null, "1", "1213", newTextField(memoryFieldManager.resolveField("col1"), "value1"));
+    int c1 = 0;	
+    for (Field field : memoryFieldManager.getFields("1", record1)) {
+      assertFieldEquals(fields1.get(c1++), field);
+    }
+
+    Record record2 = new Record();
+    record2.setRecordId("1213");
+    record2.addToColumns(new Column("col2", "value1"));
+
+    List<Field> fields2 = getFields(null, "1", "1213", newTextField(memoryFieldManager.resolveField("col2"), "value1"));
+    int c2 = 0;
+    for (Field field : memoryFieldManager.getFields("1", record2)) {
+      assertFieldEquals(fields2.get(c2++), field);
+    }
+  }
 
   @Test
   public void testFieldManagerSubNameWithMainColumnNameNoParent() throws IOException {
@@ -149,7 +194,11 @@ public class BaseFieldManagerTest {
 
   private List<Field> getFields(String family, String rowId, String recordId, Field... fields) {
     List<Field> fieldLst = new ArrayList<Field>();
-    fieldLst.add(new Field(BlurConstants.FAMILY, family, BaseFieldManager.ID_TYPE));
+    if(family != null){
+    	fieldLst.add(new Field(BlurConstants.FAMILY, family, BaseFieldManager.ID_TYPE));
+    }else{
+    	fieldLst.add(new Field(BlurConstants.FAMILY, BlurConstants.DEFAULT_FAMILY, BaseFieldManager.ID_TYPE));
+    }
     fieldLst.add(new Field(BlurConstants.ROW_ID, rowId, BaseFieldManager.ID_TYPE));
     fieldLst.add(new Field(BlurConstants.RECORD_ID, recordId, BaseFieldManager.ID_TYPE));
     for (Field field : fields) {

@@ -28,6 +28,7 @@ import static org.apache.blur.metrics.MetricsConstants.SIZE;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -58,7 +59,7 @@ public class BaseCache extends Cache implements Closeable {
 
   private static final Log LOG = LogFactory.getLog(BaseCache.class);
   private static final long _1_MINUTE = TimeUnit.MINUTES.toMillis(1);
-  protected static final long _1_SECOND = TimeUnit.SECONDS.toMillis(1);
+  protected static final long _10_SECOND = TimeUnit.SECONDS.toMillis(10);
 
   public enum STORE {
     ON_HEAP, OFF_HEAP
@@ -86,7 +87,7 @@ public class BaseCache extends Cache implements Closeable {
 
     @Override
     public String toString() {
-      return "ReleaseEntry [_key=" + _key + ", _value=" + _value + "]";
+      return "ReleaseEntry [_key=" + _key + ", _value=" + _value + ", _createTime=" + _createTime + "]";
     }
 
     public boolean hasLivedToLong(long warningTimeForEntryCleanup) {
@@ -106,6 +107,7 @@ public class BaseCache extends Cache implements Closeable {
   private final Size _cacheBlockSize;
   private final Size _fileBufferSize;
   private final Map<FileIdKey, Long> _fileNameToId = new ConcurrentHashMap<FileIdKey, Long>();
+  private final Map<Long, FileIdKey> _oldFileNameIdMap = new ConcurrentHashMap<Long, FileIdKey>();
   private final AtomicLong _fileId = new AtomicLong();
   private final Quiet _quiet;
   private final Meter _hits;
@@ -116,7 +118,7 @@ public class BaseCache extends Cache implements Closeable {
   private final Thread _oldCacheValueDaemonThread;
   private final AtomicBoolean _running = new AtomicBoolean(true);
   private final BlockingQueue<ReleaseEntry> _releaseQueue;
-  private final long _warningTimeForEntryCleanup = TimeUnit.MINUTES.toMillis(1);
+  private final long _warningTimeForEntryCleanup = TimeUnit.MINUTES.toMillis(60);
 
   public BaseCache(long totalNumberOfBytes, Size fileBufferSize, Size cacheBlockSize, FileNameFilter readFilter,
       FileNameFilter writeFilter, Quiet quiet, STORE store) {
@@ -169,7 +171,7 @@ public class BaseCache extends Cache implements Closeable {
         while (_running.get()) {
           cleanupOldCacheValues();
           try {
-            Thread.sleep(_1_SECOND);
+            Thread.sleep(_10_SECOND);
           } catch (InterruptedException e) {
             return;
           }
@@ -183,8 +185,14 @@ public class BaseCache extends Cache implements Closeable {
 
   protected void cleanupOldCacheValues() {
     Iterator<ReleaseEntry> iterator = _releaseQueue.iterator();
+    Map<Long, FileIdKey> entriesToCleanup = new HashMap<Long, FileIdKey>(_oldFileNameIdMap);
     while (iterator.hasNext()) {
       ReleaseEntry entry = iterator.next();
+      CacheKey key = entry._key;
+      long fileId = key.getFileId();
+      // Still referenced
+      entriesToCleanup.remove(fileId);
+
       CacheValue value = entry._value;
       if (value.refCount() == 0) {
         value.release();
@@ -192,8 +200,13 @@ public class BaseCache extends Cache implements Closeable {
         long capacity = _cacheMap.capacity();
         _cacheMap.setCapacity(capacity + value.size());
       } else if (entry.hasLivedToLong(_warningTimeForEntryCleanup)) {
-        LOG.warn("CacheValue has not been released [{0}] for over [{1} ms]", entry, _warningTimeForEntryCleanup);
+        FileIdKey fileIdKey = _oldFileNameIdMap.get(fileId);
+        LOG.warn("CacheValue has not been released [{0}] for [{1}] for over [{2} ms]", entry, fileIdKey,
+            _warningTimeForEntryCleanup);
       }
+    }
+    for (Long l : entriesToCleanup.keySet()) {
+      _oldFileNameIdMap.remove(l);
     }
   }
 
@@ -236,7 +249,7 @@ public class BaseCache extends Cache implements Closeable {
       releaseEntry._key = key;
       releaseEntry._value = value;
 
-      LOG.info("CacheValue was not released [{0}]", releaseEntry);
+      LOG.debug("CacheValue was not released [{0}]", releaseEntry);
       _releaseQueue.add(releaseEntry);
     }
   }
@@ -267,6 +280,7 @@ public class BaseCache extends Cache implements Closeable {
     }
     long newId = _fileId.incrementAndGet();
     _fileNameToId.put(cachedFileName, newId);
+    _oldFileNameIdMap.put(newId, cachedFileName);
     return newId;
   }
 

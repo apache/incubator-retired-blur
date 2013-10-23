@@ -50,7 +50,7 @@ public class CacheIndexOutput extends IndexOutput {
 
   @Override
   public void setLength(long length) throws IOException {
-    
+
   }
 
   @Override
@@ -94,6 +94,7 @@ public class CacheIndexOutput extends IndexOutput {
     writeBufferToOutputStream(length);
     cacheValue.write(0, _buffer, 0, length);
     long blockId = (_position - length) / _cacheBlockSize;
+    cacheValue = cacheValue.trim(length);
     _cache.put(new CacheKey(_fileId, blockId), cacheValue);
     _bufferPosition = 0;
   }

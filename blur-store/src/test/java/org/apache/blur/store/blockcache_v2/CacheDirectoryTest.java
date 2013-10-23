@@ -91,7 +91,7 @@ public class CacheDirectoryTest {
         STORE.ON_HEAP);
     Directory directory = newDirectory();
     BufferStore.init(128, 128);
-    _cacheDirectory = new CacheDirectory("test", "test", directory, _cache);
+    _cacheDirectory = new CacheDirectory("test", "test", directory, _cache, null);
   }
 
   @After

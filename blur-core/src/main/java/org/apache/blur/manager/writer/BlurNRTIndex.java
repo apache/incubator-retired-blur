@@ -38,6 +38,7 @@ import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.index.ExitableReader;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.lucene.codec.Blur021Codec;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceCounter;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.lucene.warmup.TraceableDirectory;
@@ -104,6 +105,7 @@ public class BlurNRTIndex extends BlurIndex {
     Analyzer analyzer = fieldManager.getAnalyzerForIndex();
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, analyzer);
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
+    conf.setCodec(new Blur021Codec());
     conf.setSimilarity(_tableContext.getSimilarity());
 
     SnapshotDeletionPolicy sdp;

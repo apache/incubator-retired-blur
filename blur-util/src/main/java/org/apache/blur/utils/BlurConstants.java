@@ -78,6 +78,20 @@ public class BlurConstants {
   public static final String BLUR_SHARD_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD = "blur.shard.thrift.accept.queue.size.per.thread";
   public static final String BLUR_SHARD_DISTRIBUTED_LAYOUT_FACTORY_CLASS = "blur.shard.distributed.layout.factory.class";
   
+
+  public static final String BLUR_SHARD_BLOCK_CACHE_V2_READ_CACHE_EXT = "blur.shard.block.cache.v2.read.cache.ext";
+  public static final String BLUR_SHARD_BLOCK_CACHE_V2_READ_NOCACHE_EXT = "blur.shard.block.cache.v2.read.nocache.ext";
+  public static final String DEFAULT_VALUE = "";
+  public static final String BLUR_SHARD_BLOCK_CACHE_V2_WRITE_CACHE_EXT = "blur.shard.block.cache.v2.write.cache.ext";
+  public static final String BLUR_SHARD_BLOCK_CACHE_V2_WRITE_NOCACHE_EXT = "blur.shard.block.cache.v2.write.nocache.ext";
+  public static final String BLUR_SHARD_BLOCK_CACHE_V2_WRITE_DEFAULT = "blur.shard.block.cache.v2.write.default";
+  public static final String BLUR_SHARD_BLOCK_CACHE_V2_READ_DEFAULT = "blur.shard.block.cache.v2.read.default";
+  public static final String OFF_HEAP = "OFF_HEAP";
+  public static final String BLUR_SHARD_BLOCK_CACHE_V2_STORE = "blur.shard.block.cache.v2.store";
+  public static final String BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE_PREFIX = "blur.shard.block.cache.v2.cacheBlockSize.";
+  public static final String BLUR_SHARD_BLOCK_CACHE_V2_FILE_BUFFER_SIZE = "blur.shard.block.cache.v2.fileBufferSize";
+  public static final String BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE = "blur.shard.block.cache.v2.cacheBlockSize";
+  
   public static final String BLUR_FIELDTYPE = "blur.fieldtype.";
 
   public static final String BLUR_SHARD_TIME_BETWEEN_COMMITS = "blur.shard.time.between.commits";

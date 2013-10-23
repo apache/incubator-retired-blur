@@ -60,4 +60,5 @@ public class MetricsConstants {
   public static final String MERGE_THROUGHPUT_BYTES = "Merge Throughput Bytes";
   public static final String GC_TIMES = "GC Times (ms)";
   public static final String OFF_HEAP_MEMORY = "Off Heap Memory";
+  public static final String CACHE_VALUE_FINALIZE = "CacheValue Finalize";
 }

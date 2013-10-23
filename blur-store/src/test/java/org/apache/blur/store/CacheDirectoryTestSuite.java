@@ -76,7 +76,7 @@ public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
     Directory dir = FSDirectory.open(new File(file, "cache"));
 
     BufferStore.init(128, 128);
-    return new CacheDirectory("test", "test", wrapLastModified(dir), _cache);
+    return new CacheDirectory("test", "test", wrapLastModified(dir), _cache, null);
   }
 
   protected abstract STORE getStore();

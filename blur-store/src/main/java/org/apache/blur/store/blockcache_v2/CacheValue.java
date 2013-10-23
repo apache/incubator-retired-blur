@@ -17,6 +17,8 @@
  */
 package org.apache.blur.store.blockcache_v2;
 
+import javax.swing.text.Position;
+
 public interface CacheValue {
 
   /**
@@ -90,10 +92,43 @@ public interface CacheValue {
    */
   void release();
 
+  /**
+   * Reads a short from the given position.
+   * 
+   * @param position
+   *          the {@link Position} to read from.
+   * @return the short.
+   */
   short readShort(int position);
 
+  /**
+   * Reads a int from the given position.
+   * 
+   * @param position
+   *          the {@link Position} to read from.
+   * @return the int.
+   */
   int readInt(int position);
 
+  /**
+   * Reads a long from the given position.
+   * 
+   * @param position
+   *          the {@link Position} to read from.
+   * @return the long.
+   */
   long readLong(int position);
+
+  /**
+   * This method will trim the existing {@link CacheValue} and produce
+   * potentially a new {@link CacheValue} with the same data up to the length
+   * provided. Also if a new {@link CacheValue} is produced then this method is
+   * responsible to calling release on the old {@link CacheValue}.
+   * 
+   * @param length
+   *          the valid amount of data in the {@link CacheValue}.
+   * @return new trim {@link CacheValue} that has been trimmed if needed.
+   */
+  CacheValue trim(int length);
 
 }

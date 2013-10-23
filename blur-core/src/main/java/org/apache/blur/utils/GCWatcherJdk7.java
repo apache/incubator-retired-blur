@@ -16,7 +16,9 @@
  */
 package org.apache.blur.utils;
 
-import static org.apache.blur.metrics.MetricsConstants.*;
+import static org.apache.blur.metrics.MetricsConstants.GC_TIMES;
+import static org.apache.blur.metrics.MetricsConstants.JVM;
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -38,7 +40,6 @@ import org.apache.blur.log.LogFactory;
 
 import com.sun.management.GcInfo;
 import com.yammer.metrics.Metrics;
-import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
 import com.yammer.metrics.core.Timer;
 

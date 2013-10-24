@@ -591,17 +591,17 @@ Below is a simple type that is basically the same as a "string" type, however it
 			 <p>You can either add your custom type to the entire cluster or per table.</p>
 	         <h4 id="custom_types_using_cluster">Cluster Wide</h4>
 	         <p>For cluster wide configuration you will need to add the new field types into the blur-site.properties file on each server.
-<pre><code class="bash">blur.fieldtype.customfield1=org.apache.blur.analysis.type.ExampleType1
-blur.fieldtype.customfield2=org.apache.blur.analysis.type.ExampleType2
+<pre><code class="bash">blur.fieldtype.customtype1=org.apache.blur.analysis.type.ExampleType1
+blur.fieldtype.customtype2=org.apache.blur.analysis.type.ExampleType2
 ...</code></pre>
 
 Please note that the prefix of "blur.fieldtype." is all that is used from the property name because the type gets it's name from the internal method of "getName".  However the property names will need to be unique within the file.
 </p>
 	         <h4 id="custom_types_using_table">Single Table</h4>
 	         <p>For a single table configuration you will need to add the new field types into the tableProperties map in the TableDescriptor as you define the table.
-<pre><code class="java">tableDescriptor.putToTableProperties("blur.fieldtype.customfield1", 
+<pre><code class="java">tableDescriptor.putToTableProperties("blur.fieldtype.customtype1", 
 	"org.apache.blur.analysis.type.ExampleType1");
-tableDescriptor.putToTableProperties("blur.fieldtype.customfield2", 
+tableDescriptor.putToTableProperties("blur.fieldtype.customtype2", 
 	"org.apache.blur.analysis.type.ExampleType2");
 ...</code></pre>
 

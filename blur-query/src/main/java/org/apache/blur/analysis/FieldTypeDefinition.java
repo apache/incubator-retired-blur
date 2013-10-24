@@ -165,6 +165,8 @@ public abstract class FieldTypeDefinition {
   public abstract boolean checkSupportForWildcardQuery();
 
   public abstract boolean checkSupportForPrefixQuery();
+  
+  public abstract boolean checkSupportForRegexQuery();
 
   public abstract boolean isNumeric();
 

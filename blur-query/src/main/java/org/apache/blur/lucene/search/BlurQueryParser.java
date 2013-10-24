@@ -91,7 +91,7 @@ public class BlurQueryParser extends QueryParser {
       }
     };
   }
-  
+
   @Override
   protected Query newPrefixQuery(Term prefix) {
     String field = prefix.field();
@@ -126,7 +126,7 @@ public class BlurQueryParser extends QueryParser {
   private void customQueryCheck(String field) {
     try {
       Boolean b = _fieldManager.checkSupportForCustomQuery(field);
-      if (b !=null && b) {
+      if (b != null && b) {
         throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
             + "] queries should exist with \" around them.");
       }
@@ -152,7 +152,7 @@ public class BlurQueryParser extends QueryParser {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    
+
     if (q != null) {
       return addField(q, field);
     }
@@ -176,6 +176,22 @@ public class BlurQueryParser extends QueryParser {
     }
     customQueryCheck(field);
     return addField(super.newWildcardQuery(t), t.field());
+  }
+
+  @Override
+  protected Query newRegexpQuery(Term t) {
+    String field = t.field();
+    try {
+      Boolean b = _fieldManager.checkSupportForRegexQuery(field);
+      if (!(b == null || b)) {
+        throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
+            + "] which does not support wildcard queries.");
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    customQueryCheck(field);
+    return addField(super.newRegexpQuery(t), t.field());
   }
 
   private Query addField(Query q, String field) {

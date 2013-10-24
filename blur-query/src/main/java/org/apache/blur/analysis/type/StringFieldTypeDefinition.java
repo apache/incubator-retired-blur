@@ -67,17 +67,17 @@ public class StringFieldTypeDefinition extends FieldTypeDefinition {
 
   @Override
   public boolean checkSupportForFuzzyQuery() {
-    return false;
+    return true;
   }
 
   @Override
   public boolean checkSupportForWildcardQuery() {
-    return false;
+    return true;
   }
 
   @Override
   public boolean checkSupportForPrefixQuery() {
-    return false;
+    return true;
   }
 
   @Override
@@ -88,5 +88,10 @@ public class StringFieldTypeDefinition extends FieldTypeDefinition {
   @Override
   public boolean checkSupportForCustomQuery() {
     return false;
+  }
+  
+  @Override
+  public boolean checkSupportForRegexQuery() {
+    return true;
   }
 }

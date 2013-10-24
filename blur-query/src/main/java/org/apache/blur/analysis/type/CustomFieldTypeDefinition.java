@@ -20,6 +20,7 @@ import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.sandbox.queries.regex.RegexQuery;
 import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
@@ -84,6 +85,16 @@ public abstract class CustomFieldTypeDefinition extends FieldTypeDefinition {
    */
   @Override
   public final boolean checkSupportForPrefixQuery() {
+    return false;
+  }
+  
+  /**
+   * Custom query types do not support {@link RegexQuery}.
+   * 
+   * @return false.
+   */
+  @Override
+  public final boolean checkSupportForRegexQuery() {
     return false;
   }
 

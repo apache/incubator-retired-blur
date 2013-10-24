@@ -545,6 +545,16 @@ public abstract class BaseFieldManager extends FieldManager {
     }
     return fieldTypeDefinition.checkSupportForWildcardQuery();
   }
+  
+  @Override
+  public Boolean checkSupportForRegexQuery(String field) throws IOException {
+    FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
+    if (fieldTypeDefinition == null) {
+      return null;
+    }
+    return fieldTypeDefinition.checkSupportForRegexQuery();
+  }
+
 
   @Override
   public Boolean checkSupportForCustomQuery(String field) throws IOException {

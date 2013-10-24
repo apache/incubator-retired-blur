@@ -88,6 +88,11 @@ public class FieldLessFieldTypeDefinition extends FieldTypeDefinition {
   }
 
   @Override
+  public boolean checkSupportForRegexQuery() {
+    return true;
+  }
+
+  @Override
   public boolean isNumeric() {
     return false;
   }

@@ -130,6 +130,16 @@ public abstract class FieldManager {
    * @throws IOException
    */
   public abstract Boolean checkSupportForWildcardQuery(String field) throws IOException;
+  
+  /**
+   * Checks if this field supports regex queries.
+   * 
+   * @param field
+   *          the field name.
+   * @return Boolean null if unknown.
+   * @throws IOException
+   */
+  public abstract Boolean checkSupportForRegexQuery(String field) throws IOException;
 
   /**
    * Checks to see if the field will deal with creating it's own query objects.

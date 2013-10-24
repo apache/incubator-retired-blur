@@ -114,6 +114,11 @@ public class TextFieldTypeDefinition extends FieldTypeDefinition {
   public boolean checkSupportForPrefixQuery() {
     return true;
   }
+  
+  @Override
+  public boolean checkSupportForRegexQuery() {
+    return true;
+  }
 
   @Override
   public boolean isNumeric() {

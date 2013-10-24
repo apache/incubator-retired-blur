@@ -19,6 +19,8 @@ package org.apache.blur.filter;
 import java.io.Closeable;
 import java.io.IOException;
 
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.store.Directory;
@@ -27,6 +29,8 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 
 public class IndexFileBitSet extends DocIdSet implements Closeable {
+
+  private static final Log LOG = LogFactory.getLog(IndexFileBitSet.class);
 
   public static final String EXTENSION = ".filter";
 
@@ -49,7 +53,16 @@ public class IndexFileBitSet extends DocIdSet implements Closeable {
   }
 
   public boolean exists() throws IOException {
-    return _directory.fileExists(getFileName());
+    boolean fileExists = _directory.fileExists(getFileName());
+    if (fileExists) {
+      int words = (_numBits / 64) + 1;
+      int correctLength = words * 8;
+      long length = _indexInput.length();
+      if (correctLength == length) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private String getFileName() {
@@ -70,6 +83,10 @@ public class IndexFileBitSet extends DocIdSet implements Closeable {
 
   public void create(DocIdSetIterator it) throws IOException {
     String fileName = getFileName();
+    if (_directory.fileExists(getFileName())) {
+      LOG.warn("Filter [{0}] in directory [{1}] being recreated due to incorrect size.", fileName, _directory);
+      _directory.deleteFile(fileName);
+    }
     IndexOutput output = _directory.createOutput(fileName, IOContext.READ);
     int index;
     int currentWordNum = 0;
@@ -89,7 +106,7 @@ public class IndexFileBitSet extends DocIdSet implements Closeable {
       wordValue |= bitmask;
     }
     if (_numBits > 0) {
-      int totalWords =  (_numBits / 64) + 1;
+      int totalWords = (_numBits / 64) + 1;
       while (currentWordNum < totalWords) {
         output.writeLong(wordValue);
         currentWordNum++;

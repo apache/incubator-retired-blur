@@ -90,9 +90,18 @@ public class ZookeeperClusterStatusTest {
   }
 
   @After
-  public void teardown() throws InterruptedException {
+  public void teardown() throws InterruptedException, KeeperException {
+    rmr(zooKeeper, "/blur");
     clusterStatus.close();
     zooKeeper.close();
+  }
+
+  private static void rmr(ZooKeeper zooKeeper, String path) throws KeeperException, InterruptedException {
+    List<String> children = zooKeeper.getChildren(path, false);
+    for (String c : children) {
+      rmr(zooKeeper, path + "/" + c);
+    }
+    zooKeeper.delete(path, -1);
   }
 
   @Test
@@ -164,7 +173,8 @@ public class ZookeeperClusterStatusTest {
   }
 
   @Test
-  public void testGetTableList() {
+  public void testGetTableList() throws KeeperException, InterruptedException {
+    testGetClusterTable();
     assertEquals(Arrays.asList(TEST), clusterStatus.getTableList(false));
   }
 

@@ -107,6 +107,7 @@ public class BlurNRTIndex extends BlurIndex {
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
     conf.setCodec(new Blur021Codec());
     conf.setSimilarity(_tableContext.getSimilarity());
+    conf.setMergedSegmentWarmer(new FieldBasedWarmer(shardContext, _isClosed));
 
     SnapshotDeletionPolicy sdp;
     if (snapshotsDirectoryExists()) {

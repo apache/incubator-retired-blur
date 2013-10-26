@@ -89,6 +89,7 @@ public class SuperParserTest {
       }
     };
 
+    fieldManager.addColumnDefinition(null, "bin", null, false, "string", null);
     fieldManager.addColumnDefinitionInt("a", "id_i");
     fieldManager.addColumnDefinitionDouble("a", "id_d");
     fieldManager.addColumnDefinitionFloat("a", "id_f");
@@ -450,6 +451,13 @@ public class SuperParserTest {
   public void test36() throws ParseException {
     Query q = parseSq("recordid:123-456");
     Query q1 = sq(tq("recordid", "123-456"));
+    assertQuery(q1, q);
+  }
+  
+  @Test
+  public void test37() throws ParseException {
+    Query q = parseSq("bin:cool");
+    Query q1 = sq(tq("_default_.bin", "cool"));
     assertQuery(q1, q);
   }
 

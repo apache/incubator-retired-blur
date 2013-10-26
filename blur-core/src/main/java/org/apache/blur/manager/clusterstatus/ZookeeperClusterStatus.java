@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -421,6 +422,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
           tableDescriptor.readOnly = internalGetReadOnly(ZookeeperPathConstants.getTableReadOnlyPath(cluster, table));
           tableDescriptor.preCacheCols = toList(getData(ZookeeperPathConstants
               .getTableColumnsToPreCache(cluster, table)));
+          tableDescriptor.tableProperties = toMap(getData(ZookeeperPathConstants.getTablePropertiesPath(cluster, table)));
           byte[] data = getData(ZookeeperPathConstants.getTableSimilarityPath(cluster, table));
           if (data != null) {
             tableDescriptor.similarityClass = new String(data);
@@ -743,6 +745,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       }
       BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table),
           toBytes(blockCachingFileTypes));
+      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTablePropertiesPath(cluster, table), toBytes(tableDescriptor.getTableProperties()));
     } catch (IOException e) {
       throw new RuntimeException(e);
     } catch (KeeperException e) {
@@ -859,6 +862,38 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       builder.append(type).append(',');
     }
     return builder.substring(0, builder.length() - 1).getBytes();
+  }
+  
+  private static byte[] toBytes(Map<String,String> properties) {
+    if (properties == null || properties.isEmpty()) {
+      return null;
+    }
+    StringBuilder builder = new StringBuilder();
+    Set<Entry<String, String>> entrySet = properties.entrySet();
+    for (Entry<String, String> entry : entrySet) {
+      String key = entry.getKey();
+      String value = entry.getValue();
+      String keyValue = key+"->"+value;
+      builder.append(keyValue).append(',');
+    }
+    
+    return builder.substring(0, builder.length() - 1).getBytes();
+  }
+  
+  private static Map<String,String> toMap(byte[] mapBytes) {
+    Map<String,String> properties = new HashMap<String, String>();
+    
+    if (mapBytes == null) {
+      return null;
+    }
+    String str = new String(mapBytes);
+    String[] keyValuePairs = str.split(",");
+    for (String keyValue : keyValuePairs) {
+      String[] split = keyValue.split("->");
+      properties.put(split[0].trim(), split[1].trim());
+    }
+    
+    return properties;
   }
 
   @Override

@@ -45,6 +45,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.indexserver.LocalIndexServer;
 import org.apache.blur.manager.results.BlurResultIterable;
@@ -103,12 +104,14 @@ public class IndexManagerTest {
     tableDescriptor.setShardCount(1);
     server = new LocalIndexServer(tableDescriptor);
 
-    indexManager = new IndexManager();
-    indexManager.setStatusCleanupTimerDelay(1000);
-    indexManager.setIndexServer(server);
-    indexManager.setThreadCount(1);
-    indexManager.setMutateThreadCount(1);
-    indexManager.setClusterStatus(new ClusterStatus() {
+    BlurFilterCache filterCache = new DefaultBlurFilterCache(new BlurConfiguration());
+    long statusCleanupTimerDelay = 1000;
+    indexManager = new IndexManager(server,getClusterStatus(tableDescriptor),filterCache,10000000,100,1,1,statusCleanupTimerDelay);
+    setupData();
+  }
+
+  private ClusterStatus getClusterStatus(final TableDescriptor tableDescriptor) {
+    return new ClusterStatus() {
 
       @Override
       public void removeTable(String cluster, String table, boolean deleteIndexFiles) {
@@ -209,9 +212,7 @@ public class IndexManagerTest {
       public void createTable(TableDescriptor tableDescriptor) {
         throw new RuntimeException("Not impl");
       }
-    });
-    indexManager.init();
-    setupData();
+    };
   }
 
   @After

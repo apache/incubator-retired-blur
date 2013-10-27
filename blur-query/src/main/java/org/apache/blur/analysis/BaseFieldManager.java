@@ -208,6 +208,9 @@ public abstract class BaseFieldManager extends FieldManager {
   public List<Field> getFields(String rowId, Record record) throws IOException {
     List<Field> fields = new ArrayList<Field>();
     String family = record.getFamily();
+    if(family == null || family.isEmpty()){
+    	family = BlurConstants.DEFAULT_FAMILY;
+    }
     List<Column> columns = record.getColumns();
     addDefaultFields(fields, rowId, record);
     for (Column column : columns) {
@@ -250,10 +253,13 @@ public abstract class BaseFieldManager extends FieldManager {
     String recordId = record.getRecordId();
 
     validateNotNull(rowId, BlurConstants.ROW_ID);
-    validateNotNull(family, BlurConstants.FAMILY);
     validateNotNull(recordId, BlurConstants.RECORD_ID);
-
-    fields.add(new Field(BlurConstants.FAMILY, family, ID_TYPE));
+    
+    if (family == null){
+    	fields.add(new Field(BlurConstants.FAMILY, BlurConstants.DEFAULT_FAMILY, ID_TYPE));
+    }else{
+    	fields.add(new Field(BlurConstants.FAMILY, family, ID_TYPE));
+    }
     fields.add(new Field(BlurConstants.ROW_ID, rowId, ID_TYPE));
     fields.add(new Field(BlurConstants.RECORD_ID, recordId, ID_TYPE));
   }
@@ -305,6 +311,9 @@ public abstract class BaseFieldManager extends FieldManager {
   @Override
   public boolean addColumnDefinition(String family, String columnName, String subColumnName, boolean fieldLessIndexed,
       String fieldType, Map<String, String> props) throws IOException {
+	if(family == null){
+		family = BlurConstants.DEFAULT_FAMILY;
+	}
     String baseFieldName = family + "." + columnName;
     String fieldName;
     if (subColumnName != null) {
@@ -632,5 +641,17 @@ public abstract class BaseFieldManager extends FieldManager {
   public boolean isStrict() {
     return _strict;
   }
+  
+  @Override
+  public String resolveField(String field){
+	  if (_fieldNameToDefMap.get(field) != null || isBuiltInField(field) || field.equals(_fieldLessField)){
+		  return field;
+	  }
 
+	  String newField = BlurConstants.DEFAULT_FAMILY + "." + field;
+	  if (_fieldNameToDefMap.get(newField) != null){
+		  return newField;
+	  }
+	  return field;
+  }
 }

@@ -87,6 +87,7 @@ import org.apache.blur.utils.GCWatcher;
 import org.apache.blur.utils.MemoryReporter;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.zookeeper.ZooKeeper;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.webapp.WebAppContext;
@@ -196,16 +197,16 @@ public class ThriftBlurShardServer extends ThriftServer {
         indexWarmup, filterCache, blockCacheDirectoryFactory, distributedLayoutFactory, cluster, nodeName,
         safeModeDelay, shardOpenerThreadCount, internalSearchThreads, warmupThreads, maxMergeThreads);
 
-    final IndexManager indexManager = new IndexManager();
-    indexManager.setIndexServer(indexServer);
-    indexManager.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
-    indexManager.setThreadCount(configuration.getInt(BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT, 32));
-    indexManager.setMutateThreadCount(configuration.getInt(BLUR_INDEXMANAGER_MUTATE_THREAD_COUNT, 32));
-    indexManager.setFilterCache(filterCache);
-    indexManager.setClusterStatus(clusterStatus);
-    indexManager.setFetchCount(configuration.getInt(BLUR_SHARD_FETCHCOUNT, 100));
-    indexManager.setMaxHeapPerRowFetch(configuration.getInt(BLUR_MAX_HEAP_PER_ROW_FETCH, 10000000));
-    indexManager.init();
+    BooleanQuery.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
+
+    int maxHeapPerRowFetch = configuration.getInt(BLUR_MAX_HEAP_PER_ROW_FETCH, 10000000);
+    int fetchCount = configuration.getInt(BLUR_SHARD_FETCHCOUNT, 100);
+    int indexManagerThreadCount = configuration.getInt(BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT, 32);
+    int mutateThreadCount = configuration.getInt(BLUR_INDEXMANAGER_MUTATE_THREAD_COUNT, 32);
+    long statusCleanupTimerDelay = TimeUnit.SECONDS.toMillis(10);
+    
+    final IndexManager indexManager = new IndexManager(indexServer, clusterStatus, filterCache, maxHeapPerRowFetch,
+        fetchCount, indexManagerThreadCount, mutateThreadCount, statusCleanupTimerDelay);
 
     final BlurShardServer shardServer = new BlurShardServer();
     shardServer.setIndexServer(indexServer);
@@ -267,7 +268,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         throw new RuntimeException(e);
       }
     }
-    return new DefaultBlurFilterCache();
+    return new DefaultBlurFilterCache(configuration);
   }
 
   private static BlurIndexWarmup getIndexWarmup(BlurConfiguration configuration) {

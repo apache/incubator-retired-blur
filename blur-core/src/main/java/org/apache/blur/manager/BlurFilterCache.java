@@ -16,6 +16,7 @@ package org.apache.blur.manager;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.lucene.search.SuperParser;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.thrift.generated.Record;
@@ -28,6 +29,12 @@ import org.apache.lucene.search.Filter;
  * as hooks to for when tables are being enabled and disabled.
  */
 public abstract class BlurFilterCache {
+
+  protected final BlurConfiguration _configuration;
+
+  public BlurFilterCache(BlurConfiguration configuration) {
+    _configuration = configuration;
+  }
 
   /**
    * The fetchPreFilter method fetches the cache pre-filter (or {@link Record}
@@ -68,8 +75,8 @@ public abstract class BlurFilterCache {
 
   /**
    * The storePreFilter method stores the parsed post {@link Filter} (or
-   * {@link Row} Filter) for caching, and should return the {@link Filter} to
-   * be executed.
+   * {@link Row} Filter) for caching, and should return the {@link Filter} to be
+   * executed.
    * 
    * @param table
    *          the table name.
@@ -79,9 +86,28 @@ public abstract class BlurFilterCache {
    */
   public abstract Filter storePostFilter(String table, String filterStr, Filter filter);
 
-
+  /**
+   * Notifies the cache that the index is closing on this shard server.
+   * 
+   * @param table
+   *          the table name.
+   * @param shard
+   *          the shard name.
+   * @param index
+   *          the {@link BlurIndex}.
+   */
   public abstract void closing(String table, String shard, BlurIndex index);
 
+  /**
+   * Notifies the cache that the index is opening on this shard server.
+   * 
+   * @param table
+   *          the table name.
+   * @param shard
+   *          the shard name.
+   * @param index
+   *          the {@link BlurIndex}.
+   */
   public abstract void opening(String table, String shard, BlurIndex index);
 
 }

@@ -16,6 +16,7 @@ package org.apache.blur.manager;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.lucene.search.Filter;
 
@@ -24,6 +25,10 @@ import org.apache.lucene.search.Filter;
  * This implementation on {@link BlurFilterCache} does nothing and it is the default {@link BlurFilterCache}.
  */
 public class DefaultBlurFilterCache extends BlurFilterCache {
+
+  public DefaultBlurFilterCache(BlurConfiguration configuration) {
+    super(configuration);
+  }
 
   @Override
   public Filter storePreFilter(String table, String filterStr, Filter filter) {

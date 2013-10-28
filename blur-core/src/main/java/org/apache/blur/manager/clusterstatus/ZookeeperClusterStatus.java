@@ -37,6 +37,10 @@ import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
+import org.apache.blur.thirdparty.thrift_0_9_0.TDeserializer;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.TSerializer;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TBinaryProtocol;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
@@ -409,6 +413,52 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     TableDescriptor tableDescriptor = new TableDescriptor();
     try {
       checkIfOpen();
+      
+      TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+      String blurTablePath = ZookeeperPathConstants.getTablePath(cluster, table);
+      byte[] bytes = getData(blurTablePath);
+      
+      if (bytes == null || bytes.length == 0) {
+        /*
+         * table descriptor is stored in an older format where we manually
+         * serialized each field into a different zookeeper node
+         * so we fetch it using old code and serialize it again with thrift protocol
+         */
+        getOldTableDescriptor(useCache, cluster, table, tableDescriptor);
+        
+        // store it using thrift protocol
+        byte[] newFormatBytes = serializeTableDescriptor(tableDescriptor);
+        BlurUtil.createPath(_zk, blurTablePath, newFormatBytes);
+        
+        // remove old child nodes
+        List<String> list = _zk.getChildren(blurTablePath, false);
+        for (String p : list) {
+          BlurUtil.removeAll(_zk, blurTablePath + "/" + p);
+        }
+      } else {
+        deserializer.deserialize(tableDescriptor, bytes);
+      }
+      
+      
+    } catch (TException e) { 
+      throw new RuntimeException(e);
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } finally {
+      long e = System.nanoTime();
+      LOG.debug("trace getTableDescriptor took [" + (e - s) / 1000000.0 + " ms]");
+    }
+    tableDescriptor.cluster = cluster;
+    _tableDescriptorCache.put(table, tableDescriptor);
+    return tableDescriptor;
+  }
+
+  private TableDescriptor getOldTableDescriptor(boolean useCache, String cluster, String table, TableDescriptor tableDescriptor) {
+    long s = System.nanoTime();
+    try {
+      
       NullPointerException npe = null;
       LOOP: for (int i = 0; i < 10; i++) {
         npe = null;
@@ -444,13 +494,12 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } finally {
       long e = System.nanoTime();
-      LOG.debug("trace getTableDescriptor took [" + (e - s) / 1000000.0 + " ms]");
+      LOG.debug("trace getOldTableDescriptor took [" + (e - s) / 1000000.0 + " ms]");
     }
-    tableDescriptor.cluster = cluster;
-    _tableDescriptorCache.put(table, tableDescriptor);
+    
     return tableDescriptor;
   }
-
+  
   private boolean internalGetReadOnly(String tableReadOnlyPath) throws KeeperException, InterruptedException {
     Stat stat = _zk.exists(tableReadOnlyPath, false);
     if (stat == null) {
@@ -718,34 +767,14 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       String uri = BlurUtil.nullCheck(tableDescriptor.tableUri, "tableDescriptor.tableUri cannot be null.");
       int shardCount = BlurUtil.zeroCheck(tableDescriptor.shardCount,
           "tableDescriptor.shardCount cannot be less than 1");
-      Similarity similarity = BlurUtil.getInstance(tableDescriptor.similarityClass, Similarity.class);
-      boolean blockCaching = tableDescriptor.blockCaching;
-      Set<String> blockCachingFileTypes = tableDescriptor.blockCachingFileTypes;
       String blurTablePath = ZookeeperPathConstants.getTablePath(cluster, table);
 
       if (_zk.exists(blurTablePath, false) != null) {
         throw new IOException("Table [" + table + "] already exists.");
       }
       BlurUtil.setupFileSystem(uri, shardCount);
-      BlurUtil.createPath(_zk, blurTablePath, null);
-      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableColumnsToPreCache(cluster, table),
-          toBytes(tableDescriptor.preCacheCols));
-      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableUriPath(cluster, table), uri.getBytes());
-      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableShardCountPath(cluster, table),
-          Integer.toString(shardCount).getBytes());
-      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableSimilarityPath(cluster, table), similarity.getClass()
-          .getName().getBytes());
-      BlurUtil.createPath(_zk, ZookeeperPathConstants.getLockPath(cluster, table), null);
-      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableFieldNamesPath(cluster, table), null);
-      if (tableDescriptor.readOnly) {
-        BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableReadOnlyPath(cluster, table), null);
-      }
-      if (blockCaching) {
-        BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableBlockCachingPath(cluster, table), null);
-      }
-      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table),
-          toBytes(blockCachingFileTypes));
-      BlurUtil.createPath(_zk, ZookeeperPathConstants.getTablePropertiesPath(cluster, table), toBytes(tableDescriptor.getTableProperties()));
+      byte[] bytes = serializeTableDescriptor(tableDescriptor); 
+      BlurUtil.createPath(_zk, blurTablePath, bytes);
     } catch (IOException e) {
       throw new RuntimeException(e);
     } catch (KeeperException e) {
@@ -758,6 +787,15 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     }
   }
 
+  private byte[] serializeTableDescriptor(TableDescriptor td) {
+    try{
+      TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
+      return serializer.serialize(td);
+    } catch (TException e) {
+      throw new RuntimeException(e);
+    }
+  }
+  
   private void assignTableUri(TableDescriptor tableDescriptor) {
     if (tableDescriptor.getTableUri() != null) {
       return;

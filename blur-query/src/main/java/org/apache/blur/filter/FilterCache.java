@@ -133,4 +133,8 @@ public class FilterCache extends Filter {
     return _misses.get();
   }
 
+  @Override
+  public String toString() {
+    return "FilterCache(" + _id + "," + _filter + ")";
+  }
 }

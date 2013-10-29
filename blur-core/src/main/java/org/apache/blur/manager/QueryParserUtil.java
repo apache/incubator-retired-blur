@@ -31,15 +31,19 @@ import org.apache.lucene.search.QueryWrapperFilter;
 
 public class QueryParserUtil {
 
-  public static Query parseQuery(String query, boolean superQueryOn, FieldManager fieldManager, Filter postFilter, Filter preFilter, ScoreType scoreType, TableContext tableContext) throws ParseException   {
-    Query result = new SuperParser(LUCENE_VERSION, fieldManager,superQueryOn, preFilter,  scoreType, tableContext.getDefaultPrimeDocTerm()).parse(query);
+  public static Query parseQuery(String query, boolean superQueryOn, FieldManager fieldManager, Filter postFilter,
+      Filter preFilter, ScoreType scoreType, TableContext tableContext) throws ParseException {
+    Query result = new SuperParser(LUCENE_VERSION, fieldManager, superQueryOn, preFilter, scoreType,
+        tableContext.getDefaultPrimeDocTerm()).parse(query);
     if (postFilter == null) {
       return result;
     }
     return new FilteredQuery(result, postFilter);
   }
 
-  public static Filter parseFilter(String table, String filterStr, boolean superQueryOn, FieldManager fieldManager, BlurFilterCache filterCache, TableContext tableContext) throws ParseException, BlurException {
+  public static Filter parseFilter(String table, String filterStr, boolean superQueryOn,
+      final FieldManager fieldManager, BlurFilterCache filterCache, final TableContext tableContext)
+      throws ParseException, BlurException {
     if (filterStr == null) {
       return null;
     }
@@ -53,11 +57,24 @@ public class QueryParserUtil {
       if (filter != null) {
         return filter;
       }
-      filter = new QueryWrapperFilter(new SuperParser(LUCENE_VERSION, fieldManager, superQueryOn, null,  ScoreType.CONSTANT, tableContext.getDefaultPrimeDocTerm()).parse(filterStr));
+      filter = new QueryWrapperFilter(new SuperParser(LUCENE_VERSION, fieldManager, superQueryOn, null,
+          ScoreType.CONSTANT, tableContext.getDefaultPrimeDocTerm()).parse(filterStr));
       if (superQueryOn) {
-        filter = filterCache.storePostFilter(table, filterStr, filter);
+        filter = filterCache.storePostFilter(table, filterStr, filter, new BlurFilterCache.FilterParser() {
+          @Override
+          public Query parse(String query) throws ParseException {
+            return new SuperParser(LUCENE_VERSION, fieldManager, true, null, ScoreType.CONSTANT, tableContext
+                .getDefaultPrimeDocTerm()).parse(query);
+          }
+        });
       } else {
-        filter = filterCache.storePreFilter(table, filterStr, filter);
+        filter = filterCache.storePreFilter(table, filterStr, filter, new BlurFilterCache.FilterParser() {
+          @Override
+          public Query parse(String query) throws ParseException {
+            return new SuperParser(LUCENE_VERSION, fieldManager, false, null, ScoreType.CONSTANT, tableContext
+                .getDefaultPrimeDocTerm()).parse(query);
+          }
+        });
       }
       return filter;
     }

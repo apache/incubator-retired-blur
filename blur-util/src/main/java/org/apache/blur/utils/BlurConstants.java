@@ -130,6 +130,8 @@ public class BlurConstants {
   public static final String DELETE_MARKER = "_deletemarker_";
   
   public static final String SHARED_MERGE_SCHEDULER = "sharedMergeScheduler";
+  
+  public static final String BLUR_FILTER_ALIAS = "blur.filter.alias.";
 
   static {
     try {

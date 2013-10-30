@@ -107,8 +107,4 @@ public class ZookeeperPathConstants {
     return getClusterPath(cluster) + "/layout";
   }
 
-  public static String getTablePropertiesPath(String cluster, String table) {
-    return getTablePath(cluster, table) + "/tableproperties";
-  }
-
 }

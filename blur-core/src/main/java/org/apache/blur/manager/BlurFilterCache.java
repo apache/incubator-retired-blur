@@ -21,7 +21,9 @@ import org.apache.blur.lucene.search.SuperParser;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.Query;
 
 /**
  * The {@link BlurFilterCache} class provides the ability to cache pre and post
@@ -29,6 +31,10 @@ import org.apache.lucene.search.Filter;
  * as hooks to for when tables are being enabled and disabled.
  */
 public abstract class BlurFilterCache {
+
+  public interface FilterParser {
+    Query parse(String query) throws ParseException;
+  }
 
   protected final BlurConfiguration _configuration;
 
@@ -70,8 +76,9 @@ public abstract class BlurFilterCache {
    * @param filterStr
    *          the filter query string, should be used as a key.
    * @return the {@link Filter} that was parsed by the {@link SuperParser}.
+   * @throws ParseException 
    */
-  public abstract Filter storePreFilter(String table, String filterStr, Filter filter);
+  public abstract Filter storePreFilter(String table, String filterStr, Filter filter, FilterParser filterParser) throws ParseException;
 
   /**
    * The storePreFilter method stores the parsed post {@link Filter} (or
@@ -83,8 +90,9 @@ public abstract class BlurFilterCache {
    * @param filterStr
    *          the filter query string, should be used as a key.
    * @return the {@link Filter} that was parsed by the {@link SuperParser}.
+   * @throws ParseException 
    */
-  public abstract Filter storePostFilter(String table, String filterStr, Filter filter);
+  public abstract Filter storePostFilter(String table, String filterStr, Filter filter, FilterParser filterParser) throws ParseException;
 
   /**
    * Notifies the cache that the index is closing on this shard server.

@@ -47,6 +47,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
 import static org.apache.blur.utils.BlurUtil.quietClose;
 
+import java.lang.reflect.Constructor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.BlurConfiguration;
@@ -258,12 +259,15 @@ public class ThriftBlurShardServer extends ThriftServer {
     return server;
   }
 
+  @SuppressWarnings("unchecked")
   private static BlurFilterCache getFilterCache(BlurConfiguration configuration) {
     String blurFilterCacheClass = configuration.get(BLUR_SHARD_FILTER_CACHE_CLASS);
     if (blurFilterCacheClass != null) {
       try {
-        Class<?> clazz = Class.forName(blurFilterCacheClass);
-        return (BlurFilterCache) clazz.newInstance();
+        Class<? extends BlurFilterCache> clazz = (Class<? extends BlurFilterCache>) Class.forName(blurFilterCacheClass);
+        Class<?>[] types = new Class<?>[] {BlurConfiguration.class};
+        Constructor<? extends BlurFilterCache> constructor = clazz.getConstructor(types);
+        return constructor.newInstance(new Object[]{configuration});
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +39,7 @@ import org.apache.blur.lucene.search.FairSimilarity;
 import org.apache.blur.thirdparty.thrift_0_9_0.TDeserializer;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.TSerializer;
-import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TBinaryProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
@@ -50,7 +49,6 @@ import org.apache.blur.zookeeper.WatchNodeData;
 import org.apache.blur.zookeeper.WatchNodeExistance;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.blur.zookeeper.ZooKeeperLockManager;
-import org.apache.lucene.search.similarities.Similarity;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -414,7 +412,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     try {
       checkIfOpen();
       
-      TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
       String blurTablePath = ZookeeperPathConstants.getTablePath(cluster, table);
       byte[] bytes = getData(blurTablePath);
       
@@ -424,22 +421,19 @@ public class ZookeeperClusterStatus extends ClusterStatus {
          * serialized each field into a different zookeeper node
          * so we fetch it using old code and serialize it again with thrift protocol
          */
+        LOG.info("The schema of Table [{0}] was stored in an older format. Now converting it to the new format", table);
         getOldTableDescriptor(useCache, cluster, table, tableDescriptor);
+        
+        BlurUtil.removeAll(_zk, blurTablePath);
         
         // store it using thrift protocol
         byte[] newFormatBytes = serializeTableDescriptor(tableDescriptor);
         BlurUtil.createPath(_zk, blurTablePath, newFormatBytes);
         
-        // remove old child nodes
-        List<String> list = _zk.getChildren(blurTablePath, false);
-        for (String p : list) {
-          BlurUtil.removeAll(_zk, blurTablePath + "/" + p);
-        }
       } else {
+        TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
         deserializer.deserialize(tableDescriptor, bytes);
       }
-      
-      
     } catch (TException e) { 
       throw new RuntimeException(e);
     } catch (KeeperException e) {
@@ -472,7 +466,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
           tableDescriptor.readOnly = internalGetReadOnly(ZookeeperPathConstants.getTableReadOnlyPath(cluster, table));
           tableDescriptor.preCacheCols = toList(getData(ZookeeperPathConstants
               .getTableColumnsToPreCache(cluster, table)));
-          tableDescriptor.tableProperties = toMap(getData(ZookeeperPathConstants.getTablePropertiesPath(cluster, table)));
           byte[] data = getData(ZookeeperPathConstants.getTableSimilarityPath(cluster, table));
           if (data != null) {
             tableDescriptor.similarityClass = new String(data);
@@ -519,20 +512,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       list.add(s.trim());
     }
     return list;
-  }
-
-  private static byte[] toBytes(List<String> list) {
-    if (list == null) {
-      return null;
-    }
-    StringBuilder builder = new StringBuilder();
-    for (String s : list) {
-      if (builder.length() != 0) {
-        builder.append(',');
-      }
-      builder.append(s);
-    }
-    return builder.toString().getBytes();
   }
 
   private void updateEnabled(boolean useCache, TableDescriptor tableDescriptor, String cluster, String table) {
@@ -768,7 +747,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       int shardCount = BlurUtil.zeroCheck(tableDescriptor.shardCount,
           "tableDescriptor.shardCount cannot be less than 1");
       String blurTablePath = ZookeeperPathConstants.getTablePath(cluster, table);
-
       if (_zk.exists(blurTablePath, false) != null) {
         throw new IOException("Table [" + table + "] already exists.");
       }
@@ -789,7 +767,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   private byte[] serializeTableDescriptor(TableDescriptor td) {
     try{
-      TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
+      TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
       return serializer.serialize(td);
     } catch (TException e) {
       throw new RuntimeException(e);
@@ -889,49 +867,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       long e = System.nanoTime();
       LOG.debug("trace removeTable took [" + (e - s) / 1000000.0 + " ms]");
     }
-  }
-
-  private static byte[] toBytes(Set<String> blockCachingFileTypes) {
-    if (blockCachingFileTypes == null || blockCachingFileTypes.isEmpty()) {
-      return null;
-    }
-    StringBuilder builder = new StringBuilder();
-    for (String type : blockCachingFileTypes) {
-      builder.append(type).append(',');
-    }
-    return builder.substring(0, builder.length() - 1).getBytes();
-  }
-  
-  private static byte[] toBytes(Map<String,String> properties) {
-    if (properties == null || properties.isEmpty()) {
-      return null;
-    }
-    StringBuilder builder = new StringBuilder();
-    Set<Entry<String, String>> entrySet = properties.entrySet();
-    for (Entry<String, String> entry : entrySet) {
-      String key = entry.getKey();
-      String value = entry.getValue();
-      String keyValue = key+"->"+value;
-      builder.append(keyValue).append(',');
-    }
-    
-    return builder.substring(0, builder.length() - 1).getBytes();
-  }
-  
-  private static Map<String,String> toMap(byte[] mapBytes) {
-    Map<String,String> properties = new HashMap<String, String>();
-    
-    if (mapBytes == null) {
-      return null;
-    }
-    String str = new String(mapBytes);
-    String[] keyValuePairs = str.split(",");
-    for (String keyValue : keyValuePairs) {
-      String[] split = keyValue.split("->");
-      properties.put(split[0].trim(), split[1].trim());
-    }
-    
-    return properties;
   }
 
   @Override

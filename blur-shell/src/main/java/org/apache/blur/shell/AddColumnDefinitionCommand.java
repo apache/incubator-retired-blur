@@ -62,7 +62,9 @@ public class AddColumnDefinitionCommand extends Command implements TableFirstArg
         }
       }
     }
-    client.addColumnDefinition(args[1], columnDefinition);
+    if (!client.addColumnDefinition(args[1], columnDefinition)) {
+      out.println("Column Definition was not added, check to see if the column has already been added to the table.");
+    }
   }
 
   @Override
@@ -79,7 +81,7 @@ public class AddColumnDefinitionCommand extends Command implements TableFirstArg
   public String name() {
     return "definecolumn";
   }
-  
+
   @SuppressWarnings("static-access")
   private static CommandLine parse(String[] otherArgs, Writer out) {
     Options options = new Options();

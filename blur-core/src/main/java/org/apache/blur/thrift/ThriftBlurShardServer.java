@@ -28,6 +28,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_MAX_HEAP_PER_ROW_FETCH;
 import static org.apache.blur.utils.BlurConstants.BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_TOTAL_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_VERSION;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_FETCHCOUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
@@ -155,7 +156,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     // Alternate BlockCacheDirectoryFactory support currently disabled in 0.2.0,
     // look for it in 0.2.1
     String blockCacheVersion = configuration.get(BLUR_SHARD_BLOCK_CACHE_VERSION, "v2");
-    long totalNumberOfBytes = VM.maxDirectMemory() - _64MB;
+    long totalNumberOfBytes = configuration.getLong(BLUR_SHARD_BLOCK_CACHE_TOTAL_SIZE, VM.maxDirectMemory() - _64MB);
     if (blockCacheVersion.equals("v1")) {
       blockCacheDirectoryFactory = new BlockCacheDirectoryFactoryV1(configuration, totalNumberOfBytes);
     } else if (blockCacheVersion.equals("v2")) {

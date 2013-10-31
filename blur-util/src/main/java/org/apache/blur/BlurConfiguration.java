@@ -25,10 +25,10 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 /**
- * The default constructor, which loads site defaults should nearly
- * always be used.  Instantiating a BlurConfiguration without defaults
- * is rarely necessary and should generally be avoided.
- *
+ * The default constructor, which loads site defaults should nearly always be
+ * used. Instantiating a BlurConfiguration without defaults is rarely necessary
+ * and should generally be avoided.
+ * 
  */
 public class BlurConfiguration {
 
@@ -41,22 +41,23 @@ public class BlurConfiguration {
     System.out.println(configuration.get("test3", "def"));
   }
 
-  /** 
+  /**
    * Create a BlurConfiguration including default properties.
+   * 
    * @throws IOException
    */
   public BlurConfiguration() throws IOException {
     this(true);
   }
-  
+
   /**
    * 
-   * @param loadDefaults -
-   * 		false to load without default properties set. 	
+   * @param loadDefaults
+   *          - false to load without default properties set.
    * @throws IOException
    */
   public BlurConfiguration(boolean loadDefaults) throws IOException {
-    if(loadDefaults == true) {
+    if (loadDefaults == true) {
       init();
     }
   }
@@ -89,7 +90,11 @@ public class BlurConfiguration {
   }
 
   public String get(String name, String defaultValue) {
-    return _properties.getProperty(name, defaultValue);
+    String property = _properties.getProperty(name, defaultValue);
+    if (property == null || property.isEmpty()) {
+      return defaultValue;
+    }
+    return property;
   }
 
   public int getInt(String name, int defaultValue) {

@@ -46,7 +46,7 @@ import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;
-import org.apache.blur.manager.writer.BlurIndexReader;
+import org.apache.blur.manager.writer.BlurIndexReadOnly;
 import org.apache.blur.manager.writer.BlurIndexRefresher;
 import org.apache.blur.manager.writer.BlurNRTIndex;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
@@ -462,11 +462,11 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     }
 
     BlurIndex index;
+    
+    BlurNRTIndex writer = new BlurNRTIndex(shardContext, _mergeScheduler, dir, _gc, _searchExecutor);
     if (_clusterStatus.isReadOnly(true, _cluster, table)) {
-      BlurIndexReader reader = new BlurIndexReader(shardContext, dir, _refresher, _indexCloser);
-      index = reader;
+      index = new BlurIndexReadOnly(writer);
     } else {
-      BlurNRTIndex writer = new BlurNRTIndex(shardContext, _mergeScheduler, dir, _gc, _searchExecutor);
       index = writer;
     }
     _filterCache.opening(table, shard, index);

@@ -179,6 +179,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         if (watchNodeExistance != null) {
           watchNodeExistance.close();  
         }
+        _tableDescriptorCache.remove(table);
       }
       for (String table : newTables) {
         final String clusterTableKey = getClusterTableKey(cluster, table);
@@ -844,6 +845,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     long s = System.nanoTime();
     try {
       checkIfOpen();
+      TableDescriptor tableDescriptor = getTableDescriptor(true, cluster, table);
       String blurTablePath = ZookeeperPathConstants.getTablePath(cluster, table);
       if (_zk.exists(blurTablePath, false) == null) {
         throw new IOException("Table [" + table + "] does not exist.");
@@ -851,8 +853,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       if (_zk.exists(ZookeeperPathConstants.getTableEnabledPath(cluster, table), false) != null) {
         throw new IOException("Table [" + table + "] must be disabled before it can be removed.");
       }
-      byte[] data = getData(ZookeeperPathConstants.getTableUriPath(cluster, table));
-      String uri = new String(data);
+      String uri = tableDescriptor.getTableUri();
       BlurUtil.removeAll(_zk, blurTablePath);
       if (deleteIndexFiles) {
         BlurUtil.removeIndexFiles(uri);

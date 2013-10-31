@@ -123,8 +123,12 @@ blur.cluster.name=default
 # the table descriptor will be required for all tables.
 
 blur.cluster.default.table.uri=hdfs://namenode/blur/tables</code>
-</pre>
-            </p>
+</pre></p>
+			<h4>Default Properties</h4>
+			<table class="table-bordered table-striped table-condensed">
+			<tr><td>Property</td><td>Description</td></tr>
+|||General-Server-Properties|||
+			</table>
             <h3 id="general-hadoop">Hadoop</h3>
 <p>
 The current version of Blur has Hadoop 1.2.1 embedded in the &quot;apache-blur-*/lib/hadoop-1.2.1&quot; path.  However if 
@@ -145,7 +149,7 @@ export HADOOP_HOME=&lt;path to your Hadoop install directory&gt;</code>
             <p>
               These are the default settings for the shard server that can be overridden in the blur-site.properties file. Consider increasing the various thread pool counts (*.thread.count). The blur.controller.server.remote.thread.count is very important to increase for larger clusters, basically one thread is used per shard server per query. Some production clusters have set this thread pool to 2000 or more threads.
             </p>
-<h4>Properties</h4>
+<h4>Default Properties</h4>
 <table class="table-bordered table-striped table-condensed">
 <tr><td>Property</td><td>Description</td></tr>
 |||Controller-Server-Properties|||
@@ -192,7 +196,7 @@ Swap can kill java perform, you may want to consider disabling swap.</div>
               These are the default settings for the shard server that can be overridden in the blur-site.properties file. Consider increasing the various thread pool counts (*.thread.count). Also the blur.max.clause.count sets the BooleanQuery max clause count for Lucene queries.
             </p>
 
-			<h4>Properties</h4>
+			<h4>Default Properties</h4>
 			<table class="table-bordered table-striped table-condensed">
 			<tr><td>Property</td><td>Description</td></tr>
 |||Shard-Server-Properties|||

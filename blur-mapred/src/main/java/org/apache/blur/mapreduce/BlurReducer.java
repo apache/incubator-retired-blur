@@ -71,8 +71,8 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.MergePolicy;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.BufferedIndexInput;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -304,6 +304,8 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
     if (optimize) {
       context.setStatus("Starting Copy-Optimize Phase");
       IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
+      MergePolicy mergePolicy = (MergePolicy) conf.getMergePolicy();
+      mergePolicy.setNoCFSRatio(0.0);
       long s = System.currentTimeMillis();
       IndexWriter writer = new IndexWriter(getBiggerBuffers(destDirectory), conf);
       writer.addIndexes(reader);
@@ -457,6 +459,8 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
     nullCheck(_directory);
     nullCheck(_analyzer);
     IndexWriterConfig config = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
+    MergePolicy mergePolicy = (MergePolicy) config.getMergePolicy();
+    mergePolicy.setNoCFSRatio(0.0);
     config.setSimilarity(new FairSimilarity());
     config.setRAMBufferSizeMB(_blurTask.getRamBufferSizeMB());
     _writer = new IndexWriter(_directory, config);

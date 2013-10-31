@@ -35,7 +35,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.TieredMergePolicy;
+import org.apache.lucene.index.MergePolicy;
 import org.apache.lucene.util.Version;
 import org.junit.Before;
 import org.junit.Test;
@@ -95,6 +95,8 @@ public class TableShardCountCollapserTest {
       throws IOException {
     HdfsDirectory hdfsDirectory = new HdfsDirectory(configuration, path);
     IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_44, new KeywordAnalyzer());
+    MergePolicy mergePolicy = (MergePolicy) conf.getMergePolicy();
+    mergePolicy.setNoCFSRatio(0.0);
     IndexWriter indexWriter = new IndexWriter(hdfsDirectory, conf);
 
     Partitioner<IntWritable, IntWritable> partitioner = new HashPartitioner<IntWritable, IntWritable>();

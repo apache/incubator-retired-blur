@@ -62,6 +62,7 @@ import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.MergePolicy;
 import org.apache.lucene.index.SnapshotDeletionPolicy;
 import org.apache.lucene.index.TrackingIndexWriter;
 import org.apache.lucene.search.ControlledRealTimeReopenThread;
@@ -116,7 +117,9 @@ public class BlurNRTIndex extends BlurIndex {
    }
     conf.setIndexDeletionPolicy(sdp);
     conf.setMergedSegmentWarmer(new FieldBasedWarmer(shardContext, _isClosed));
-
+    MergePolicy mergePolicy = (MergePolicy) conf.getMergePolicy();
+    mergePolicy.setNoCFSRatio(0.0);
+    
     conf.setMergeScheduler(mergeScheduler.getMergeScheduler());
 
     DirectoryReferenceCounter referenceCounter = new DirectoryReferenceCounter(directory, gc, closer);
@@ -166,7 +169,8 @@ public class BlurNRTIndex extends BlurIndex {
    * @throws IOException
    */
   private Map<String, String> loadExistingSnapshots() throws IOException {
-    Map<String, String> snapshots = new HashMap<String, String>();
+	  
+	Map<String, String> snapshots = new HashMap<String, String>();
     
     FileSystem fileSystem = getFileSystem();
     FileStatus[] status = fileSystem.listStatus(getSnapshotsDirectoryPath());
@@ -351,7 +355,7 @@ public class BlurNRTIndex extends BlurIndex {
 	    }
     }
     _writer.commit();
-    IndexCommit indexCommit = snapshotter.snapshot(name);
+    IndexCommit indexCommit = snapshotter.snapshot();
     
     /*
      * Persist the snapshots info into a tmp file under the snapshots sub-folder

@@ -66,8 +66,8 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.MergePolicy;
 import org.apache.lucene.index.NoMergePolicy;
-import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IOContext;
@@ -399,6 +399,8 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       Analyzer analyzer = _fieldManager.getAnalyzerForIndex();
 
       _conf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, analyzer);
+      MergePolicy mergePolicy = (MergePolicy) _conf.getMergePolicy();
+      mergePolicy.setNoCFSRatio(0.0);
 
       _overFlowConf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, analyzer);
       _overFlowConf.setMergePolicy(NoMergePolicy.NO_COMPOUND_FILES);

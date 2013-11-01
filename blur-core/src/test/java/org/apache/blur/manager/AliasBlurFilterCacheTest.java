@@ -44,7 +44,7 @@ import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
 import org.junit.Test;
 
-public class DefaultBlurFilterCacheTest {
+public class AliasBlurFilterCacheTest {
 
   private static final String TABLE = "test";
   private static final String TEST_FILTER = "(abc1 abc2 abc3)";
@@ -52,7 +52,7 @@ public class DefaultBlurFilterCacheTest {
   @Test
   public void testFetchPreFilterEmpty() throws IOException {
     BlurConfiguration configuration = new BlurConfiguration();
-    DefaultBlurFilterCache defaultBlurFilterCache = new DefaultBlurFilterCache(configuration);
+    AliasBlurFilterCache defaultBlurFilterCache = new AliasBlurFilterCache(configuration);
     Filter fetchPreFilter = defaultBlurFilterCache.fetchPreFilter(TABLE, TEST_FILTER);
     assertNull(fetchPreFilter);
   }
@@ -63,7 +63,7 @@ public class DefaultBlurFilterCacheTest {
     configuration.set("blur.filter.alias.test.super:abc1", "(fam1.f1:abc1 fam2.f1:abc1)");
     configuration.set("blur.filter.alias.test.super:abc2", "(fam1.f1:abc2 fam2.f1:abc2)");
     configuration.set("blur.filter.alias.test.super:abc3", "(fam1.f1:abc3 fam2.f1:abc3)");
-    DefaultBlurFilterCache defaultBlurFilterCache = new DefaultBlurFilterCache(configuration);
+    AliasBlurFilterCache defaultBlurFilterCache = new AliasBlurFilterCache(configuration);
 
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName(TABLE);

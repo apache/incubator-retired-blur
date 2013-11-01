@@ -89,7 +89,6 @@ public class WatchChildren implements Closeable {
               }
               _lock.wait();
             } catch (KeeperException e) {
-              LOG.error("Error in instance [{0}]", e, instance);
               if (!_running.get()) {
                 LOG.info("Error [{0}]", e.getMessage());
                 return;

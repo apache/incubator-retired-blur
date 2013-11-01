@@ -46,10 +46,12 @@ import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.ErrorType;
+import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.Schema;
+import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.util.BlurThriftHelper;
 import org.apache.blur.utils.GCWatcher;
@@ -107,6 +109,8 @@ public class BlurClusterTest {
       KeeperException {
     testCreateTable();
     testLoadTable();
+    testQueryWithSelector();
+    testBatchFetch();
     testQueryCancel();
     testBackPressureViaQuery();
     testTestShardFailover();
@@ -162,6 +166,49 @@ public class BlurClusterTest {
 
     Schema schema = client.schema("test");
     assertFalse(schema.getFamilies().isEmpty());
+  }
+  
+  private void testQueryWithSelector() throws BlurException, TException {
+    Iface client = getClient();
+    BlurQuery blurQueryRow = new BlurQuery();
+    Query queryRow = new Query();
+    queryRow.setQuery("test.test:value");
+    blurQueryRow.setQuery(queryRow);
+    blurQueryRow.setUseCacheIfPresent(false);
+    blurQueryRow.setCacheResult(false);
+    blurQueryRow.setSelector(new Selector());
+    
+    BlurResults resultsRow = client.query("test", blurQueryRow);
+//    assertRowResults(resultsRow);
+    assertEquals(100, resultsRow.getTotalResults());
+    
+    for (BlurResult blurResult : resultsRow.getResults()) {
+      System.out.println(blurResult);
+    }
+    
+    System.out.println();
+  }
+
+  public void testBatchFetch() throws BlurException, TException {
+    final Iface client = getClient();
+    List<String> terms = client.terms("test", null, "rowid", "", (short) 100);
+
+    List<Selector> selectors = new ArrayList<Selector>();
+    for (String s : terms) {
+      Selector selector = new Selector();
+      selector.setRowId(s);
+      selectors.add(selector);
+    }
+
+    List<FetchResult> fetchRowBatch = client.fetchRowBatch("test", selectors);
+    assertEquals(100, fetchRowBatch.size());
+
+    int i = 0;
+    for (FetchResult fetchResult : fetchRowBatch) {
+      assertEquals(terms.get(i), fetchResult.getRowResult().getRow().getId());
+      i++;
+    }
+
   }
 
   public void testQueryCancel() throws BlurException, TException, InterruptedException {
@@ -317,12 +364,12 @@ public class BlurClusterTest {
 
   public void testTestShardFailover() throws BlurException, TException, InterruptedException, IOException,
       KeeperException {
-    
+
     System.out.println("===========================");
     System.out.println("===========================");
     System.out.println("===========================");
     System.out.println("===========================");
-    
+
     Iface client = getClient();
     int length = 100;
     BlurQuery blurQuery = new BlurQuery();

@@ -896,6 +896,17 @@ service Blur {
   ) throws (1:BlurException ex)
 
   /**
+   * Fetches a batch of Rows or Records in the given table with the given Selector list.
+   * @return the FetchResult.
+   */
+  list<FetchResult> fetchRowBatch(
+    /** the table name. */
+    1:string table, 
+    /** the Selector to use to fetch the Row or Record. */
+    2:list<Selector> selectors
+  ) throws (1:BlurException ex)
+
+  /**
    * Mutates a Row given the RowMutation that is provided.
    */
   void mutate(

@@ -38,6 +38,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +107,8 @@ public class IndexManagerTest {
 
     BlurFilterCache filterCache = new DefaultBlurFilterCache(new BlurConfiguration());
     long statusCleanupTimerDelay = 1000;
-    indexManager = new IndexManager(server,getClusterStatus(tableDescriptor),filterCache,10000000,100,1,1,statusCleanupTimerDelay);
+    indexManager = new IndexManager(server, getClusterStatus(tableDescriptor), filterCache, 10000000, 100, 1, 1,
+        statusCleanupTimerDelay);
     setupData();
   }
 
@@ -296,7 +298,7 @@ public class IndexManagerTest {
     row.recordCount = 3;
     assertEquals(row, fetchResult.rowResult.row);
   }
-  
+
   @Test
   public void testFetchRowByRowIdHighlightingWithFullText() throws Exception {
     Selector selector = new Selector().setRowId("row-6");
@@ -313,7 +315,7 @@ public class IndexManagerTest {
     row.recordCount = 3;
     assertEquals(row, fetchResult.rowResult.row);
   }
-  
+
   @Test
   public void testFetchRowByRowIdHighlightingWithFullTextWildCard() throws Exception {
     Selector selector = new Selector().setRowId("row-6");
@@ -518,6 +520,33 @@ public class IndexManagerTest {
             newColumn("testcol3", "value3")));
     row.recordCount = 1;
     assertEquals(row, fetchResult.rowResult.row);
+  }
+
+  @Test
+  public void testFetchRowByRowIdBatch() throws Exception {
+    List<Selector> selectors = new ArrayList<Selector>();
+    selectors.add(new Selector().setRowId("row-1"));
+    selectors.add(new Selector().setRowId("row-2"));
+    List<FetchResult> fetchRowBatch = indexManager.fetchRowBatch(TABLE, selectors);
+    assertEquals(2, fetchRowBatch.size());
+    FetchResult fetchResult1 = fetchRowBatch.get(0);
+    assertNotNull(fetchResult1.rowResult.row);
+    Row row1 = newRow(
+        "row-1",
+        newRecord(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"),
+            newColumn("testcol3", "value3")));
+    row1.recordCount = 1;
+    assertEquals(row1, fetchResult1.rowResult.row);
+
+    FetchResult fetchResult2 = fetchRowBatch.get(1);
+    assertNotNull(fetchResult2.rowResult.row);
+    Row row2 = newRow(
+        "row-2",
+        newRecord(FAMILY, "record-2", newColumn("testcol1", "value4"), newColumn("testcol2", "value5"),
+            newColumn("testcol3", "value6")),
+        newRecord(FAMILY, "record-2B", newColumn("testcol2", "value234123"), newColumn("testcol3", "value234123")));
+    row2.recordCount = 2;
+    assertEquals(row2, fetchResult2.rowResult.row);
   }
 
   @Test
@@ -818,7 +847,7 @@ public class IndexManagerTest {
     assertNotNull("Non-existent fields should not return null.", terms);
     assertEquals("The terms of non-existent fields should be empty.", 0, terms.size());
   }
-  
+
   @Test
   public void testMutationReplaceRow() throws Exception {
     RowMutation mutation = newRowMutation(
@@ -1014,7 +1043,7 @@ public class IndexManagerTest {
     }
     assertTrue("column 3 should be unmodified", foundUnmodifiedColumn);
   }
-  
+
   @Test
   public void testMutationUpdateRowReplaceExistingColumnsWhileDeletingAColumn() throws Exception {
     Column c1 = newColumn("testcol1", "value999");

@@ -277,6 +277,22 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'fetchRow failed: unknown result')
       end
 
+      def fetchRowBatch(table, selectors)
+        send_fetchRowBatch(table, selectors)
+        return recv_fetchRowBatch()
+      end
+
+      def send_fetchRowBatch(table, selectors)
+        send_message('fetchRowBatch', FetchRowBatch_args, :table => table, :selectors => selectors)
+      end
+
+      def recv_fetchRowBatch()
+        result = receive_message(FetchRowBatch_result)
+        return result.success unless result.success.nil?
+        raise result.ex unless result.ex.nil?
+        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'fetchRowBatch failed: unknown result')
+      end
+
       def mutate(mutation)
         send_mutate(mutation)
         recv_mutate()
@@ -704,6 +720,17 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'fetchRow', seqid)
+      end
+
+      def process_fetchRowBatch(seqid, iprot, oprot)
+        args = read_args(iprot, FetchRowBatch_args)
+        result = FetchRowBatch_result.new()
+        begin
+          result.success = @handler.fetchRowBatch(args.table, args.selectors)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'fetchRowBatch', seqid)
       end
 
       def process_mutate(seqid, iprot, oprot)
@@ -1462,6 +1489,44 @@ module Blur
 
       FIELDS = {
         SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Blur::FetchResult},
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class FetchRowBatch_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+      SELECTORS = 2
+
+      FIELDS = {
+        # the table name.
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # the Selector to use to fetch the Row or Record.
+        SELECTORS => {:type => ::Thrift::Types::LIST, :name => 'selectors', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Selector}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class FetchRowBatch_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SUCCESS = 0
+      EX = 1
+
+      FIELDS = {
+        SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::FetchResult}},
         EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
       }
 

@@ -203,6 +203,32 @@ public class IndexManager {
     }
   }
 
+  public List<FetchResult> fetchRowBatch(final String table, List<Selector> selectors) throws BlurException {
+    List<Future<FetchResult>> futures = new ArrayList<Future<FetchResult>>();
+    for (Selector s : selectors) {
+      final Selector selector = s;
+      futures.add(_executor.submit(new Callable<FetchResult>() {
+        @Override
+        public FetchResult call() throws Exception {
+          FetchResult fetchResult = new FetchResult();
+          fetchRow(table, selector, fetchResult);
+          return fetchResult;
+        }
+      }));
+    }
+    List<FetchResult> results = new ArrayList<FetchResult>();
+    for (Future<FetchResult> future : futures) {
+      try {
+        results.add(future.get());
+      } catch (InterruptedException e) {
+        throw new BException("Unkown error while fetching batch table [{0}] selectors [{1}].", e, table, selectors);
+      } catch (ExecutionException e) {
+        throw new BException("Unkown error while fetching batch table [{0}] selectors [{1}].", e.getCause(), table, selectors);
+      }
+    }
+    return results;
+  }
+
   public void fetchRow(String table, Selector selector, FetchResult fetchResult) throws BlurException {
     validSelector(selector);
     BlurIndex index;

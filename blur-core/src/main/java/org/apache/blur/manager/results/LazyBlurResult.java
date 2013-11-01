@@ -38,6 +38,10 @@ public class LazyBlurResult extends BlurResult {
     _client = client;
   }
 
+  public Client getClient() {
+    return _client;
+  }
+
   public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException {
     synchronized (_client) {
       return _client.fetchRow(table, selector);

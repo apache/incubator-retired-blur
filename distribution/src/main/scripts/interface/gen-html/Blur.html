@@ -21,6 +21,7 @@
 <li><a href="Blur.html#Fn_Blur_disableTable">disableTable</a></li>
 <li><a href="Blur.html#Fn_Blur_enableTable">enableTable</a></li>
 <li><a href="Blur.html#Fn_Blur_fetchRow">fetchRow</a></li>
+<li><a href="Blur.html#Fn_Blur_fetchRowBatch">fetchRowBatch</a></li>
 <li><a href="Blur.html#Fn_Blur_isInSafeMode">isInSafeMode</a></li>
 <li><a href="Blur.html#Fn_Blur_listSnapshots">listSnapshots</a></li>
 <li><a href="Blur.html#Fn_Blur_metrics">metrics</a></li>
@@ -647,6 +648,17 @@ the shard server, if any.
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
 </td></tr>
 <tr><td>selector</td><td>the Selector to use to fetch the Row or Record.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_fetchRowBatch">Function: Blur.fetchRowBatch</h4>
+<pre><code>list&lt;<code><a href="Blur.html#Struct_FetchResult">FetchResult</a></code>&gt;</code> fetchRowBatch(<code>string</code> table,
+                                <code>list&lt;<code><a href="Blur.html#Struct_Selector">Selector</a></code>&gt;</code> selectors)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Fetches a batch of Rows or Records in the given table with the given Selector list.
+@return the FetchResult.
+<br/><br/><h4 id="Parameters_Blur_fetchRowBatch">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
+</td></tr>
+<tr><td>selectors</td><td>the Selector to use to fetch the Row or Record.
 </td></tr>
 </table></div><div class="definition"><h4 id="Fn_Blur_mutate">Function: Blur.mutate</h4>
 <pre><code>void</code> mutate(<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code> mutation)

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -38,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
@@ -65,6 +67,7 @@ import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.ColumnDefinition;
+import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.HighlightOptions;
 import org.apache.blur.thrift.generated.Query;
@@ -284,7 +287,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     try {
       String controllerPath = ZookeeperPathConstants.getControllersPath() + "/" + _nodeName;
       if (_zookeeper.exists(controllerPath, false) == null) {
-        //Don't set the version for the registered nodes but only to the online nodes.
+        // Don't set the version for the registered nodes but only to the online
+        // nodes.
         _zookeeper.create(controllerPath, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
       }
     } catch (KeeperException e) {
@@ -292,7 +296,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
-    
+
     // Wait for other instances (named the same name) to die
     try {
       String version = BlurUtil.getVersion();
@@ -436,22 +440,56 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       results.facetCounts = BlurUtil.toList(facetCounts);
     }
     if (selector != null) {
-      List<Future<FetchResult>> futures = new ArrayList<Future<FetchResult>>();
+
+      //Gather client objects and build batches for fetching.
+      IdentityHashMap<Client, List<Selector>> map = new IdentityHashMap<Client, List<Selector>>();
+      
+      //Need to maintain original order.
+      final IdentityHashMap<Selector, Integer> indexMap = new IdentityHashMap<Selector, Integer>();
       for (int i = 0; i < results.results.size(); i++) {
         final LazyBlurResult result = (LazyBlurResult) results.results.get(i);
-        final Selector s = new Selector(selector);
+        Client client = result.getClient();
+        Selector s = new Selector(selector);
         s.setLocationId(result.locationId);
-        futures.add(executor.submit(new Callable<FetchResult>() {
+        List<Selector> list = map.get(client);
+        if (list == null) {
+          list = new ArrayList<Selector>();
+          map.put(client, list);
+        }
+        list.add(s);
+        indexMap.put(s, i);
+      }
+
+      //Execute batch fetches
+      List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
+      final AtomicReferenceArray<FetchResult> fetchResults = new AtomicReferenceArray<FetchResult>(
+          results.results.size());
+      for (Entry<Client, List<Selector>> entry : map.entrySet()) {
+        final Client client = entry.getKey();
+        final List<Selector> list = entry.getValue();
+        futures.add(executor.submit(new Callable<Boolean>() {
           @Override
-          public FetchResult call() throws Exception {
-            return result.fetchRow(table, s);
+          public Boolean call() throws Exception {
+            List<FetchResult> fetchRowBatch = client.fetchRowBatch(table, list);
+            for (int i = 0; i < list.size(); i++) {
+              int index = indexMap.get(list.get(i));
+              fetchResults.set(index, fetchRowBatch.get(i));
+            }
+            return Boolean.TRUE;
           }
         }));
       }
-      for (int i = 0; i < results.results.size(); i++) {
-        Future<FetchResult> future = futures.get(i);
+
+      //Wait for all parallel calls to finish.
+      for (Future<Boolean> future : futures) {
+        future.get();
+      }
+
+      //Place fetch results into result object for response.
+      for (int i = 0; i < fetchResults.length(); i++) {
+        FetchResult fetchResult = fetchResults.get(i);
         BlurResult result = results.results.get(i);
-        result.setFetchResult(future.get());
+        result.setFetchResult(fetchResult);
         result.setLocationId(null);
       }
     }
@@ -491,6 +529,74 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       throw new BException("Unknown error during fetch of row from table [{0}] selector [{1}] node [{2}]", e, table,
           selector, clientHostnamePort);
     }
+  }
+
+  @Override
+  public List<FetchResult> fetchRowBatch(final String table, List<Selector> selectors) throws BlurException, TException {
+    checkTable(table);
+    Map<String, List<Selector>> selectorBatches = new HashMap<String, List<Selector>>();
+    final Map<String, List<Integer>> selectorBatchesIndexes = new HashMap<String, List<Integer>>();
+    int i = 0;
+    for (Selector selector : selectors) {
+      checkSelectorFetchSize(selector);
+      IndexManager.validSelector(selector);
+      String clientHostnamePort = getNode(table, selector);
+      List<Selector> list = selectorBatches.get(clientHostnamePort);
+      List<Integer> indexes = selectorBatchesIndexes.get(clientHostnamePort);
+      if (list == null) {
+        if (indexes != null) {
+          throw new BlurException("This should never happen,", null, ErrorType.UNKNOWN);
+        }
+        list = new ArrayList<Selector>();
+        indexes = new ArrayList<Integer>();
+        selectorBatches.put(clientHostnamePort, list);
+        selectorBatchesIndexes.put(clientHostnamePort, indexes);
+      }
+      list.add(selector);
+      indexes.add(i);
+      i++;
+    }
+
+    List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
+    final AtomicReferenceArray<FetchResult> fetchResults = new AtomicReferenceArray<FetchResult>(new FetchResult[i]);
+    for (Entry<String, List<Selector>> batch : selectorBatches.entrySet()) {
+      final String clientHostnamePort = batch.getKey();
+      final List<Selector> list = batch.getValue();
+      futures.add(_executor.submit(new Callable<Boolean>() {
+        @Override
+        public Boolean call() throws Exception {
+          List<FetchResult> fetchResultList = _client.execute(clientHostnamePort, new BlurCommand<List<FetchResult>>() {
+            @Override
+            public List<FetchResult> call(Client client) throws BlurException, TException {
+              return client.fetchRowBatch(table, list);
+            }
+          }, _maxFetchRetries, _fetchDelay, _maxFetchDelay);
+          List<Integer> indexes = selectorBatchesIndexes.get(clientHostnamePort);
+          for (int i = 0; i < fetchResultList.size(); i++) {
+            int index = indexes.get(i);
+            fetchResults.set(index, fetchResultList.get(i));
+          }
+          return Boolean.TRUE;
+        }
+      }));
+    }
+
+    for (Future<Boolean> future : futures) {
+      try {
+        future.get();
+      } catch (InterruptedException e) {
+        throw new BException("Unknown error during fetching of batch", e);
+      } catch (ExecutionException e) {
+        throw new BException("Unknown error during fetching of batch", e.getCause());
+      }
+    }
+
+    List<FetchResult> batchResult = new ArrayList<FetchResult>();
+    for (int c = 0; c < fetchResults.length(); c++) {
+      FetchResult fetchResult = fetchResults.get(c);
+      batchResult.add(fetchResult);
+    }
+    return batchResult;
   }
 
   @Override

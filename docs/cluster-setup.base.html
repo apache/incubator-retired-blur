@@ -72,7 +72,12 @@
                 <ul class="nav">
                   <li><a href="#shard-blur-site">blur-site.properties</a></li>
                   <li><a href="#shard-blur-env">blur-env.sh</a></li>
-                  <li><a href="#block-cache">Block Cache Configuration</a></li>
+				  <li><a href="#block-cache">Block Cache</a>
+                    <ul class="nav">
+                      <li><a href="#block-cache-v2">&nbsp;&nbsp;V2 Block Cache Configuration</a></li>
+                      <li><a href="#block-cache-v1">&nbsp;&nbsp;V1 Block Cache Configuration</a></li>
+                    </ul>
+                  </li>
                 </ul>
               </li>
               <li>
@@ -212,10 +217,58 @@ export BLUR_SHARD_SLEEP=0.1
 # The of shard servers to spawn per machine.
 export BLUR_NUMBER_OF_SHARD_SERVER_INSTANCES_PER_MACHINE=1</code></pre>
 
-            <h3 id="block-cache">Block Cache Configuration</h3>
-            <h4>Why</h4>
-            <p>HDFS is a great filesystem for streaming large amounts data across large scale clusters. However the random access latency is typically the same performance you would get in reading from a local drive if the data you are trying to access is not in the operating systems file cache. In other words every access to HDFS is similar to a local read with a cache miss. There have been great performance boosts in HDFS over the past few years but it still can't perform at the level that a search engine needs.</p>
-            <p>Now you might be thinking that Lucene reads from the local hard drive and performs great, so why wouldn't HDFS perform fairly well on it's own? However most of time the Lucene index files are cached by the operating system's file system cache. So Blur has it's own file system cache allows it to perform low latency data look-ups against HDFS.</p>
+<h3 id="block-cache">Block Cache</h3>
+<h4>Why</h4>
+<p>HDFS is a great filesystem for streaming large amounts data across large scale clusters. However the random access latency is typically the same performance you would get in reading from a local drive if the data you are trying to access is not in the operating systems file cache. In other words every access to HDFS is similar to a local read with a cache miss. There have been great performance boosts in HDFS over the past few years but it still can't perform at the level that a search engine needs.</p>
+<p>Now you might be thinking that Lucene reads from the local hard drive and performs great, so why wouldn't HDFS perform fairly well on it's own? However most of time the Lucene index files are cached by the operating system's file system cache. So Blur has it's own file system cache allows it to perform low latency data look-ups against HDFS.</p>
+
+<h3 id="block-cache-v2">V2 Block Cache Configuration</h3>
+<h4>How</h4>
+<p>The Google <a href="http://code.google.com/p/concurrentlinkedhashmap/">concurrentlinkedhashmap</a> library is at the center of the block cache in the shard servers.  In version 2, which is enabled by default, the slab allocation is no longer used.  <a href="http://mail-archives.apache.org/mod_mbox/incubator-blur-dev/201310.mbox/%3CCAB6tTr0Nr2aDLc4kkHoeqiO-utwzBAhb=Ru==GMhQry4aXPjug@mail.gmail.com%3E">Here</a> is a discussion of the motivations behind the rewrite.</p>
+
+<p>Below are the properties related to V2 of the block cache.</p>
+
+<table class="table-bordered table-striped table-condensed">
+<tr><td nowrap="1">blur.shard.block.cache.total.size</td><td>
+<p>This is used to limit the amount of off heap cache size.  By default the cache is 64MB less than the -XX:MaxDirectMemorySize,
+so if you want the block cache to use less than that amount then set this value.</p></td></tr>
+
+<tr><td nowrap="1">blur.shard.block.cache.v2.fileBufferSize</td><td>
+<p>This is the size of the buffer when accessing hdfs, by default it is set to 8K.  However in most systems this should probably be increased to something closer to 64K.  Use the &quot;fstune&quot; command in the shell to help figure out what the best buffer size should be in your system.</p></td></tr>
+
+<tr><td nowrap="1">blur.shard.block.cache.v2.cacheBlockSize</td><td>
+<p>This is the size of the cache entry for any file that is NOT explicitly defined.  Most of the time you are going to want this value to equal the &quot;blur.shard.block.cache.v2.fileBufferSize&quot; value.</p></td></tr>
+
+<tr><td nowrap="1">blur.shard.block.cache.v2.cacheBlockSize.&lt;ext&gt;</td><td>
+<p>This is the size of the cache entry for any file that has the given extension.  By default &quot;filter&quot; is the only file that has a none default cache block size, it's current value is 32MB.  This means that unless file is larger than 32MB in size, it will be stored as a single value in the cache.  For cached filters this is required for performance during the transversal of the logical bitset stored in the file.</p></td></tr>
+
+<tr><td nowrap="1">blur.shard.block.cache.v2.store</td><td>
+<p>This property defines how the cache will be stored, by default it's off heap.  This means that it is not accounted for in the used heap section that you can find in jconsole or visualvm.  However you can track it's size through the &quot;top&quot; command in the shell, MBeans in jconsole, or the metrics call via the Blur thrift API.<br/><br/>Unless you are using a specialized JVM or are debugging problem this should remain off heap, however if you would like to use the cache as on heap allocated blocks change this value to ON_HEAP.</p></td></tr>
+
+blur.shard.block.cache.v2.write.cache.ext=
+blur.shard.block.cache.v2.write.nocache.ext=fdt
+
+<tr><td nowrap="1">blur.shard.block.cache.v2.read.default</td><td>
+<p>This property defines the default action to cache or not to cache the data during a read operation.  By default this is true.  This will be the action taken if the file extension is not found in either the &quot;blur.shard.block.cache.v2.read.cache.ext&quot; property or the &quot;blur.shard.block.cache.v2.read.nocache.ext&quot; property.</p></td></tr>
+
+<tr><td nowrap="1">blur.shard.block.cache.v2.read.cache.ext</td><td>
+<p>This property defines a comma separated list of file extensions that are to be cached during a read operations.</p></td></tr>
+
+<tr><td nowrap="1">blur.shard.block.cache.v2.read.nocache.ext</td><td>
+<p>This property defines a comma separated list of file extensions that are NOT to be cached during a read operations.  If the file extension is in the &quot;blur.shard.block.cache.v2.read.cache.ext&quot; property, it will have no effect in this list.</p></td></tr>
+
+<tr><td nowrap="1">blur.shard.block.cache.v2.write.default</td><td>
+<p>This property defines the default action to cache or not to cache the data during a write operation.  By default this is true. This will be the action taken if the file extension is not found in either the &quot;blur.shard.block.cache.v2.write.cache.ext&quot; property or the &quot;blur.shard.block.cache.v2.write.nocache.ext&quot; property.</p></td></tr>
+
+<tr><td nowrap="1">blur.shard.block.cache.v2.write.cache.ext</td><td>
+<p>This property defines a comma separated list of file extensions that are to be cached during a write operations.</p></td></tr>
+
+<tr><td nowrap="1">blur.shard.block.cache.v2.write.nocache.ext</td><td>
+<p>This property defines a comma separated list of file extensions that are NOT to be cached during a write operations.  If the file extension is in the &quot;blur.shard.block.cache.v2.write.cache.ext&quot; property, it will have no effect in this list.</p></td></tr>
+
+</table>
+
+            <h3 id="block-cache-v1">V1 Block Cache Configuration</h3>
             <h4>How</h4>
             <p>On shard server start-up Blur creates 1 or more block cache slabs blur.shard.blockcache.slab.count that are each 128 MB in size. These slabs can be allocated on or off the heap blur.shard.blockcache.direct.memory.allocation. Each slab is broken up into 16,384 blocks with each block size being 8K. Then on the heap there is a concurrent LRU cache that tracks what blocks of what files are in which slab(s) at what offset. So the more slabs of cache you create the more entries there will be in the LRU thus more heap.</p>
             <h4>Configuration</h4>

@@ -57,6 +57,7 @@ import org.apache.blur.manager.results.LazyBlurResult;
 import org.apache.blur.manager.results.MergerBlurResultIterable;
 import org.apache.blur.manager.stats.MergerTableStats;
 import org.apache.blur.manager.status.MergerQueryStatusSingle;
+import org.apache.blur.server.ControllerServerContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.commands.BlurCommand;
 import org.apache.blur.thrift.generated.Blur.Client;
@@ -77,6 +78,7 @@ import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
+import org.apache.blur.thrift.generated.User;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.BlurIterator;
@@ -1169,6 +1171,12 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       connections.add(new Connection(c));
     }
     return connections;
+  }
+
+  @Override
+  public void setUser(User user) throws BlurException, TException {
+    ControllerServerContext context = ControllerServerContext.getControllerServerContext();
+    context.setUser(user);
   }
 
 }

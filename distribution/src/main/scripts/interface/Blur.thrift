@@ -737,6 +737,17 @@ struct Metric {
 }
 
 /**
+ * The user object is used to pass user context to server
+ * side session.
+ */
+struct User {
+  /** username. */
+  1:string username,
+  /** map of user attributes. */
+  2:map<string,string> attributes
+}
+
+/**
  * The Blur service API.  This API is the same for both controller servers as well as 
  * shards servers.  Each of the methods are documented.
  */
@@ -868,6 +879,14 @@ service Blur {
   map<string,list<string>> listSnapshots(1:string table) throws (1:BlurException ex)
 
   // Data Commands
+
+  /**
+   * Sets the User for the current session.
+   */
+  void setUser(
+    /** the User object. */
+    1:User user
+  ) throws (1:BlurException ex)
 
   /**
    * Executes a query against a the given table and returns the results.  If this method is 

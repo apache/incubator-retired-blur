@@ -161,7 +161,7 @@ public class BlurUtil {
         String requestId = prefix + "-" + requestNumber;
         String connectionString;
         if (controller) {
-          ControllerServerContext controllerServerContext = ControllerServerContext.getShardServerContext();
+          ControllerServerContext controllerServerContext = ControllerServerContext.getControllerServerContext();
           if (controllerServerContext == null) {
             connectionString = "unknown";
           } else {

@@ -56,6 +56,7 @@ import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.Status;
 import org.apache.blur.thrift.generated.TableStats;
+import org.apache.blur.thrift.generated.User;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.QueryCache;
@@ -480,6 +481,12 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   public void setConfiguration(BlurConfiguration conf) {
     _configuration = conf;
+  }
+  
+  @Override
+  public void setUser(User user) throws BlurException, TException {
+    ShardServerContext context = ShardServerContext.getShardServerContext();
+    context.setUser(user);
   }
 
 }

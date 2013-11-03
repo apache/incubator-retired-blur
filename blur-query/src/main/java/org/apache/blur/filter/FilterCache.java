@@ -38,6 +38,13 @@ public class FilterCache extends Filter {
 
   private static final Log LOG = LogFactory.getLog(FilterCache.class);
 
+  private static final DocIdSet EMPTY_DOCIDSET = new DocIdSet() {
+    @Override
+    public DocIdSetIterator iterator() throws IOException {
+      return DocIdSetIterator.empty();
+    }
+  };
+
   private final Map<Object, DocIdSet> _cache = Collections.synchronizedMap(new WeakHashMap<Object, DocIdSet>());
   private final Map<Object, Object> _lockMap = Collections.synchronizedMap(new WeakHashMap<Object, Object>());
   private final Filter _filter;
@@ -93,7 +100,7 @@ public class FilterCache extends Filter {
       throws IOException {
     if (docIdSet == null) {
       // this is better than returning null, as the nonnull result can be cached
-      return DocIdSet.EMPTY_DOCIDSET;
+      return EMPTY_DOCIDSET;
     } else if (docIdSet.isCacheable()) {
       return docIdSet;
     } else {
@@ -102,7 +109,7 @@ public class FilterCache extends Filter {
       // in this case we wrap with the empty set,
       // which is cacheable.
       if (it == null) {
-        return DocIdSet.EMPTY_DOCIDSET;
+        return EMPTY_DOCIDSET;
       } else {
         final IndexFileBitSet bits = new IndexFileBitSet(reader.maxDoc(), _id, segmentName, directory);
         if (!bits.exists()) {

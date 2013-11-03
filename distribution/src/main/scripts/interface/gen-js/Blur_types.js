@@ -3158,3 +3158,101 @@ Metric.prototype.write = function(output) {
   return;
 };
 
+User = function(args) {
+  this.username = null;
+  this.attributes = null;
+  if (args) {
+    if (args.username !== undefined) {
+      this.username = args.username;
+    }
+    if (args.attributes !== undefined) {
+      this.attributes = args.attributes;
+    }
+  }
+};
+User.prototype = {};
+User.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.username = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.MAP) {
+        var _size198 = 0;
+        var _rtmp3202;
+        this.attributes = {};
+        var _ktype199 = 0;
+        var _vtype200 = 0;
+        _rtmp3202 = input.readMapBegin();
+        _ktype199 = _rtmp3202.ktype;
+        _vtype200 = _rtmp3202.vtype;
+        _size198 = _rtmp3202.size;
+        for (var _i203 = 0; _i203 < _size198; ++_i203)
+        {
+          if (_i203 > 0 ) {
+            if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
+              input.rstack.pop();
+            }
+          }
+          var key204 = null;
+          var val205 = null;
+          key204 = input.readString().value;
+          val205 = input.readString().value;
+          this.attributes[key204] = val205;
+        }
+        input.readMapEnd();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+User.prototype.write = function(output) {
+  output.writeStructBegin('User');
+  if (this.username !== null && this.username !== undefined) {
+    output.writeFieldBegin('username', Thrift.Type.STRING, 1);
+    output.writeString(this.username);
+    output.writeFieldEnd();
+  }
+  if (this.attributes !== null && this.attributes !== undefined) {
+    output.writeFieldBegin('attributes', Thrift.Type.MAP, 2);
+    output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRING, Thrift.objectLength(this.attributes));
+    for (var kiter206 in this.attributes)
+    {
+      if (this.attributes.hasOwnProperty(kiter206))
+      {
+        var viter207 = this.attributes[kiter206];
+        output.writeString(kiter206);
+        output.writeString(viter207);
+      }
+    }
+    output.writeMapEnd();
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+

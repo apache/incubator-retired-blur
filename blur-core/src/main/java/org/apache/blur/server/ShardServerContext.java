@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.ServerContext;
+import org.apache.blur.thrift.generated.User;
 import org.apache.hadoop.io.IOUtils;
 
 /**
@@ -43,6 +44,8 @@ public class ShardServerContext implements ServerContext {
   private final SocketAddress _localSocketAddress;
   private final SocketAddress _remoteSocketAddress;
   private final String _connectionString;
+
+  private User _user;
 
   public ShardServerContext(SocketAddress localSocketAddress, SocketAddress remoteSocketAddress) {
     _localSocketAddress = localSocketAddress;
@@ -151,4 +154,14 @@ public class ShardServerContext implements ServerContext {
   public String getConnectionString() {
     return _connectionString;
   }
+
+  public void setUser(User user) {
+    LOG.info("User [{0}] for context [{1}]", user, this);
+    _user = user;
+  }
+
+  public User getUser() {
+    return _user;
+  }
+
 }

@@ -36,6 +36,7 @@
 <li><a href="Blur.html#Fn_Blur_removeSnapshot">removeSnapshot</a></li>
 <li><a href="Blur.html#Fn_Blur_removeTable">removeTable</a></li>
 <li><a href="Blur.html#Fn_Blur_schema">schema</a></li>
+<li><a href="Blur.html#Fn_Blur_setUser">setUser</a></li>
 <li><a href="Blur.html#Fn_Blur_shardClusterList">shardClusterList</a></li>
 <li><a href="Blur.html#Fn_Blur_shardServerLayout">shardServerLayout</a></li>
 <li><a href="Blur.html#Fn_Blur_shardServerLayoutState">shardServerLayoutState</a></li>
@@ -76,6 +77,7 @@
 <a href="Blur.html#Enum_Status">Status</a><br/>
 <a href="Blur.html#Struct_TableDescriptor">TableDescriptor</a><br/>
 <a href="Blur.html#Struct_TableStats">TableStats</a><br/>
+<a href="Blur.html#Struct_User">User</a><br/>
 </td>
 <td></code></td>
 </tr></table>
@@ -505,6 +507,14 @@ be family dot column, "family.column".
 <tr><td>4</td><td>doubleMap</td><td><code>map&lt;<code>string</code>, <code>double</code>&gt;</code></td><td>map of double values emitted by the Metric.
 </td><td>default</td><td></td></tr>
 </table><br/>The Metric will hold all the information for a given Metric.
+<br/></div><div class="definition"><h3 id="Struct_User">Struct: User</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>username</td><td><code>string</code></td><td>username.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>attributes</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td>map of user attributes.
+</td><td>default</td><td></td></tr>
+</table><br/>The user object is used to pass user context to server
+side session.
 <br/></div><hr/><h2 id="Services">Services</h2>
 <h3 id="Svc_Blur">Service: Blur</h3>
 The Blur service API.  This API is the same for both controller servers as well as
@@ -623,7 +633,14 @@ shards servers.  Each of the methods are documented.
 <pre><code>map&lt;<code>string</code>, <code>list&lt;<code>string</code>&gt;</code>&gt;</code> listSnapshots(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Returns a map where the key is the shard, and the list is the snapshots within that shard
-<br/></div><div class="definition"><h4 id="Fn_Blur_query">Function: Blur.query</h4>
+<br/></div><div class="definition"><h4 id="Fn_Blur_setUser">Function: Blur.setUser</h4>
+<pre><code>void</code> setUser(<code><a href="Blur.html#Struct_User">User</a></code> user)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Sets the User for the current session.
+<br/><br/><h4 id="Parameters_Blur_setUser">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>user</td><td>the User object.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_query">Function: Blur.query</h4>
 <pre><code><a href="Blur.html#Struct_BlurResults">BlurResults</a></code> query(<code>string</code> table,
                   <code><a href="Blur.html#Struct_BlurQuery">BlurQuery</a></code> blurQuery)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>

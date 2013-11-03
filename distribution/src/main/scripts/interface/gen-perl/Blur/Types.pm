@@ -3302,4 +3302,108 @@ sub write {
   return $xfer;
 }
 
+package Blur::User;
+use base qw(Class::Accessor);
+Blur::User->mk_accessors( qw( username attributes ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{username} = undef;
+  $self->{attributes} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{username}) {
+      $self->{username} = $vals->{username};
+    }
+    if (defined $vals->{attributes}) {
+      $self->{attributes} = $vals->{attributes};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'User';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{username});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::MAP) {
+        {
+          my $_size176 = 0;
+          $self->{attributes} = {};
+          my $_ktype177 = 0;
+          my $_vtype178 = 0;
+          $xfer += $input->readMapBegin(\$_ktype177, \$_vtype178, \$_size176);
+          for (my $_i180 = 0; $_i180 < $_size176; ++$_i180)
+          {
+            my $key181 = '';
+            my $val182 = '';
+            $xfer += $input->readString(\$key181);
+            $xfer += $input->readString(\$val182);
+            $self->{attributes}->{$key181} = $val182;
+          }
+          $xfer += $input->readMapEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('User');
+  if (defined $self->{username}) {
+    $xfer += $output->writeFieldBegin('username', TType::STRING, 1);
+    $xfer += $output->writeString($self->{username});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{attributes}) {
+    $xfer += $output->writeFieldBegin('attributes', TType::MAP, 2);
+    {
+      $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{attributes}}));
+      {
+        while( my ($kiter183,$viter184) = each %{$self->{attributes}}) 
+        {
+          $xfer += $output->writeString($kiter183);
+          $xfer += $output->writeString($viter184);
+        }
+      }
+      $xfer += $output->writeMapEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 1;

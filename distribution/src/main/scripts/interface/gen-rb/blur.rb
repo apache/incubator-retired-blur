@@ -245,6 +245,21 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'listSnapshots failed: unknown result')
       end
 
+      def setUser(user)
+        send_setUser(user)
+        recv_setUser()
+      end
+
+      def send_setUser(user)
+        send_message('setUser', SetUser_args, :user => user)
+      end
+
+      def recv_setUser()
+        result = receive_message(SetUser_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
       def query(table, blurQuery)
         send_query(table, blurQuery)
         return recv_query()
@@ -698,6 +713,17 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'listSnapshots', seqid)
+      end
+
+      def process_setUser(seqid, iprot, oprot)
+        args = read_args(iprot, SetUser_args)
+        result = SetUser_result.new()
+        begin
+          @handler.setUser(args.user)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'setUser', seqid)
       end
 
       def process_query(seqid, iprot, oprot)
@@ -1413,6 +1439,39 @@ module Blur
 
       FIELDS = {
         SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRING}}},
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class SetUser_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      USER = 1
+
+      FIELDS = {
+        # the User object.
+        USER => {:type => ::Thrift::Types::STRUCT, :name => 'user', :class => ::Blur::User}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class SetUser_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
         EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
       }
 

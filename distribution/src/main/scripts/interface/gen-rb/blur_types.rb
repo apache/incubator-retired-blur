@@ -799,4 +799,26 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
+  # The user object is used to pass user context to server
+# side session.
+  class User
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    USERNAME = 1
+    ATTRIBUTES = 2
+
+    FIELDS = {
+      # username.
+      USERNAME => {:type => ::Thrift::Types::STRING, :name => 'username'},
+      # map of user attributes.
+      ATTRIBUTES => {:type => ::Thrift::Types::MAP, :name => 'attributes', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
 end

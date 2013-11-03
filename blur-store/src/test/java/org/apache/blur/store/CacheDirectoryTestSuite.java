@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.apache.blur.store.blockcache_v2.BaseCache;
 import org.apache.blur.store.blockcache_v2.BaseCache.STORE;
-import org.apache.blur.store.blockcache_v2.Cache;
 import org.apache.blur.store.blockcache_v2.CacheDirectory;
 import org.apache.blur.store.blockcache_v2.FileNameFilter;
 import org.apache.blur.store.blockcache_v2.Quiet;
@@ -32,52 +31,58 @@ import org.apache.lucene.store.FSDirectory;
 
 public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
 
+  private BaseCache _cache;
+
   @Override
   protected Directory setupDirectory() throws IOException {
     int totalNumberOfBytes = 1000000;
     final int fileBufferSizeInt = numberBetween(113, 215);
     final int cacheBlockSizeInt = numberBetween(111, 251);
-    
+
     Size fileBufferSize = new Size() {
       @Override
-      public int getSize(String directoryName, String fileName) {
+      public int getSize(CacheDirectory directory, String fileName) {
         return fileBufferSizeInt;
       }
     };
-    
+
     Size cacheBlockSize = new Size() {
       @Override
-      public int getSize(String directoryName, String fileName) {
+      public int getSize(CacheDirectory directory, String fileName) {
         return cacheBlockSizeInt;
       }
     };
-    
+
     FileNameFilter writeFilter = new FileNameFilter() {
       @Override
-      public boolean accept(String directoryName, String fileName) {
+      public boolean accept(CacheDirectory directory, String fileName) {
         return true;
       }
     };
     FileNameFilter readFilter = new FileNameFilter() {
       @Override
-      public boolean accept(String directoryName, String fileName) {
+      public boolean accept(CacheDirectory directory, String fileName) {
         return true;
       }
     };
     Quiet quiet = new Quiet() {
       @Override
-      public boolean shouldBeQuiet(String directoryName, String fileName) {
+      public boolean shouldBeQuiet(CacheDirectory directory, String fileName) {
         return false;
       }
     };
-    Cache cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter,quiet,
+    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet,
         getStore());
     Directory dir = FSDirectory.open(new File(file, "cache"));
 
     BufferStore.init(128, 128);
-    return new CacheDirectory("test", wrapLastModified(dir), cache);
+    return new CacheDirectory("test", "test", wrapLastModified(dir), _cache, null);
   }
 
   protected abstract STORE getStore();
+
+  public void close() throws IOException {
+    _cache.close();
+  }
 
 }

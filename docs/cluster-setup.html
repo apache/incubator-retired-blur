@@ -123,8 +123,12 @@ blur.cluster.name=default
 # the table descriptor will be required for all tables.
 
 blur.cluster.default.table.uri=hdfs://namenode/blur/tables</code>
-</pre>
-            </p>
+</pre></p>
+			<h4>Default Properties</h4>
+			<table class="table-bordered table-striped table-condensed">
+			<tr><td>Property</td><td>Description</td></tr>
+<tr><td>blur.zookeeper.timeout (90000)</td><td>The zookeeper session timeout</td></tr><tr><td>blur.query.max.results.fetch (1000)</td><td>The maximum number of results that can be fetched in a single request</td></tr><tr><td>blur.query.max.row.fetch (100)</td><td>The maximum number of rows that can be fetched in a single request</td></tr><tr><td>blur.query.max.record.fetch (1000)</td><td>The maximum number of records that can be fetched in a single request</td></tr><tr><td>blur.metrics.reporters</td><td>Setup metric reporter</td></tr>
+			</table>
             <h3 id="general-hadoop">Hadoop</h3>
 <p>
 The current version of Blur has Hadoop 1.2.1 embedded in the &quot;apache-blur-*/lib/hadoop-1.2.1&quot; path.  However if 
@@ -145,77 +149,11 @@ export HADOOP_HOME=&lt;path to your Hadoop install directory&gt;</code>
             <p>
               These are the default settings for the shard server that can be overridden in the blur-site.properties file. Consider increasing the various thread pool counts (*.thread.count). The blur.controller.server.remote.thread.count is very important to increase for larger clusters, basically one thread is used per shard server per query. Some production clusters have set this thread pool to 2000 or more threads.
             </p>
-<pre>
-<code class="bash"># Sets the hostname for the controller, if blank the hostname is automatically detected
-blur.controller.hostname=
-
-# The binding address of the controller
-blur.controller.bind.address=0.0.0.0
-
-# The default binding port of the controller server
-blur.controller.bind.port=40010
-
-# The connection timeout, NOTE: this will be the maximum amount of time you can wait for a query.
-blur.controller.shard.connection.timeout=60000
-
-# The number of threads used for thrift requests
-blur.controller.server.thrift.thread.count=32
-
-# The number of threads used for remote thrift requests to
-# the shards server.  This should be a large number.
-blur.controller.server.remote.thread.count=64
-
-# The number of threads used for selector processing inside the thrift server.
-blur.controller.thrift.selector.threads=2
-
-# The maximum number of bytes used for reading requests in the thrift server.
-blur.controller.thrift.max.read.buffer.bytes=9223372036854775807
-
-# The size of the blocking queue per selector thread for passing accepted connections to the selector thread.
-blur.controller.thrift.accept.queue.size.per.thread=4
-
-# The number of hits to fetch per request to the shard servers
-blur.controller.remote.fetch.count=100
-
-# The max number of retries to the shard server when there
-# is an error during fetch
-blur.controller.retry.max.fetch.retries=3
-
-# The max number of retries to the shard server when there
-# is an error during mutate
-blur.controller.retry.max.mutate.retries=3
-
-# The max number of retries to the shard server when there
-# is an error during all other request
-blur.controller.retry.max.default.retries=3
-
-# The starting backoff delay for the first retry for a
-# fetch errors
-blur.controller.retry.fetch.delay=500
-
-# The starting backoff delay for the first retry for a
-# mutate errors
-blur.controller.retry.mutate.delay=500
-
-# The starting backoff delay for the first retry for a
-# all other request errors
-blur.controller.retry.default.delay=500
-
-# The ending backoff delay for the last retry for a
-# fetch errors
-blur.controller.retry.max.fetch.delay=2000
-
-# The ending backoff delay for the last retry for a
-# mutate errors
-blur.controller.retry.max.mutate.delay=2000
-
-# The ending backoff delay for the last retry for a
-# all other request errors
-blur.controller.retry.max.default.delay=2000
-
-# The http status page port for the controller server
-blur.gui.controller.port=40080</code>
-</pre>
+<h4>Default Properties</h4>
+<table class="table-bordered table-striped table-condensed">
+<tr><td>Property</td><td>Description</td></tr>
+<tr><td>blur.controller.hostname</td><td>Sets the hostname for the controller, if blank the hostname is automatically detected</td></tr><tr><td>blur.controller.bind.address (0.0.0.0)</td><td>The binding address of the controller</td></tr><tr><td>blur.controller.bind.port (40010)</td><td>The default binding port of the controller server</td></tr><tr><td>blur.controller.shard.connection.timeout (60000)</td><td>The connection timeout, NOTE: this will be the maximum amount of time you can wait for a query.</td></tr><tr><td>blur.controller.server.thrift.thread.count (32)</td><td>The number of threads used for thrift requests</td></tr><tr><td>blur.controller.server.remote.thread.count (64)</td><td>The number of threads used for remote thrift requests to the shards server.  This should be a large number.</td></tr><tr><td>blur.controller.thrift.selector.threads (2)</td><td>The number of threads used for selector processing inside the thrift server.</td></tr><tr><td>blur.controller.thrift.max.read.buffer.bytes (9223372036854775807)</td><td>The maximum number of bytes used for reading requests in the thrift server.</td></tr><tr><td>blur.controller.thrift.accept.queue.size.per.thread (4)</td><td>The size of the blocking queue per selector thread for passing accepted connections to the selector thread.</td></tr><tr><td>blur.controller.remote.fetch.count (100)</td><td>The number of hits to fetch per request to the shard servers</td></tr><tr><td>blur.controller.retry.max.fetch.retries (3)</td><td>The max number of retries to the shard server when there is an error during fetch</td></tr><tr><td>blur.controller.retry.max.mutate.retries (3)</td><td>The max number of retries to the shard server when there is an error during mutate</td></tr><tr><td>blur.controller.retry.max.default.retries (3)</td><td>The max number of retries to the shard server when there is an error during all other request</td></tr><tr><td>blur.controller.retry.fetch.delay (500)</td><td>The starting backoff delay for the first retry for a fetch errors</td></tr><tr><td>blur.controller.retry.mutate.delay (500)</td><td>The starting backoff delay for the first retry for a mutate errors</td></tr><tr><td>blur.controller.retry.default.delay (500)</td><td>The starting backoff delay for the first retry for a all other request errors</td></tr><tr><td>blur.controller.retry.max.fetch.delay (2000)</td><td>The ending backoff delay for the last retry for a fetch errors</td></tr><tr><td>blur.controller.retry.max.mutate.delay (2000)</td><td>The ending backoff delay for the last retry for a mutate errors</td></tr><tr><td>blur.controller.retry.max.default.delay (2000)</td><td>The ending backoff delay for the last retry for a all other request errors</td></tr><tr><td>blur.gui.controller.port (40080)</td><td>The http status page port for the controller server</td></tr>
+</table>
             <h3 id="controller-blur-env">blur-env.sh</h3>
             <pre><code class="bash"># JAVA JVM OPTIONS for the controller servers, jvm tuning parameters are placed here.
 # Consider adding the -XX:OnOutOfMemoryError="kill -9 %p" option to kill jvms that are failing due to memory issues.
@@ -257,105 +195,13 @@ Swap can kill java perform, you may want to consider disabling swap.</div>
             <p>
               These are the default settings for the shard server that can be overridden in the blur-site.properties file. Consider increasing the various thread pool counts (*.thread.count). Also the blur.max.clause.count sets the BooleanQuery max clause count for Lucene queries.
             </p>
-<pre>
-<code class="bash"># The hostname for the shard, if blank the hostname is automatically detected
-blur.shard.hostname=
 
-# The binding address of the shard
-blur.shard.bind.address=0.0.0.0
+			<h4>Default Properties</h4>
+			<table class="table-bordered table-striped table-condensed">
+			<tr><td>Property</td><td>Description</td></tr>
+<tr><td>blur.shard.hostname</td><td>The hostname for the shard, if blank the hostname is automatically detected</td></tr><tr><td>blur.shard.bind.address (0.0.0.0)</td><td>The binding address of the shard</td></tr><tr><td>blur.shard.bind.port (40020)</td><td>The default binding port of the shard server</td></tr><tr><td>blur.shard.data.fetch.thread.count (8)</td><td>The number of fetcher threads</td></tr><tr><td>blur.shard.server.thrift.thread.count (8)</td><td>The number of the thrift threads</td></tr><tr><td>blur.shard.thrift.selector.threads (2)</td><td>The number of threads used for selector processing inside the thrift server.</td></tr><tr><td>blur.shard.thrift.max.read.buffer.bytes (9223372036854775807)</td><td>The maximum number of bytes used for reading requests in the thrift server.</td></tr><tr><td>blur.shard.thrift.accept.queue.size.per.thread (4)</td><td>The size of the blocking queue per selector thread for passing accepted connections to the selector thread.</td></tr><tr><td>blur.shard.opener.thread.count (8)</td><td>The number of threads that are used for opening indexes</td></tr><tr><td>blur.shard.cache.max.querycache.elements (128)</td><td>The number of cached queries</td></tr><tr><td>blur.shard.cache.max.timetolive (60000)</td><td>The time to live for the cache query</td></tr><tr><td>blur.shard.filter.cache.class (org.apache.blur.manager.DefaultBlurFilterCache)</td><td>Default implementation of the blur cache filter, which is a pass through filter that does nothing</td></tr><tr><td>blur.shard.index.warmup.class (org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup)</td><td>Default Blur index warmup class that warms the fields provided in the table descriptor</td></tr><tr><td>blur.shard.index.warmup.throttle (30000000)</td><td>Throttles the warmup to 30MB/s across all the warmup threads</td></tr><tr><td>blur.shard.block.cache.version (v2)</td><td>By default the v2 version of the block cache is enabled</td></tr><tr><td>blur.shard.block.cache.total.size</td><td>By default the total amount of memory block cache will use is -XX:MaxDirectMemorySize - 64 MiB</td></tr><tr><td>blur.shard.blockcache.direct.memory.allocation (true)</td><td>v1 version of block cache only. By default the block cache using off heap memory</td></tr><tr><td>blur.shard.blockcache.slab.count (-1)</td><td>v1 version of block cache only. The slabs in the blockcache are automatically configured by default (-1) otherwise 1 slab equals 128MB.  The auto config is detected through the MaxDirectoryMemorySize provided to the JVM</td></tr><tr><td>blur.shard.block.cache.v2.fileBufferSize (8192)</td><td>v2 version of block cache only. File buffer size, this is the buffer size used to read and write to data to HDFS.  For production this will likely be increased.</td></tr><tr><td>blur.shard.block.cache.v2.cacheBlockSize (8192)</td><td>v2 version of block cache only. The is the size of the blocks in the off heap cache, it is good practice to have this match 'blur.shard.block.cache.v2.fileBufferSize'.  For production this will likely be increased.</td></tr><tr><td>blur.shard.block.cache.v2.cacheBlockSize.filter (33554432)</td><td>blur.shard.block.cache.v2.cacheBlockSize.<ext>=</td></tr><tr><td>blur.shard.block.cache.v2.store (OFF_HEAP)</td><td>v2 version of block cache only. This is used to control if the block are created on or off heap.  Values are OFF_HEAP | ON_HEAP</td></tr><tr><td>blur.shard.block.cache.v2.read.cache.ext</td><td>v2 version of block cache only. This specifies what file types should be cached during reads.  Comma delimited list.</td></tr><tr><td>blur.shard.block.cache.v2.read.nocache.ext (fdt)</td><td>v2 version of block cache only. This specifies what file types should NOT be cached during reads.  Comma delimited list.</td></tr><tr><td>blur.shard.block.cache.v2.read.default (true)</td><td>v2 version of block cache only. This specifies the default behavior if a file type is not specified in the cache or nocache lists during reads.  Values true | false</td></tr><tr><td>blur.shard.block.cache.v2.write.cache.ext</td><td>v2 version of block cache only. This specifies what file types should be cached during writes.  Comma delimited list.</td></tr><tr><td>blur.shard.block.cache.v2.write.nocache.ext (fdt)</td><td>v2 version of block cache only. This specifies what file types should NOT be cached during writes.  Comma delimited list.</td></tr><tr><td>blur.shard.block.cache.v2.write.default (true)</td><td>v2 version of block cache only. This specifies the default behavior if a file type is not specified in the cache or nocache lists during writes.  Values true | false</td></tr><tr><td>blur.shard.buffercache.1024 (8192)</td><td>The number of 1K byte buffers</td></tr><tr><td>blur.shard.buffercache.8192 (8192)</td><td>The number of 8K byte buffers</td></tr><tr><td>blur.shard.safemodedelay (5000)</td><td>The number of milliseconds to wait for the cluster to settle once changes have ceased</td></tr><tr><td>blur.shard.time.between.commits (30000)</td><td>The default time between index commits</td></tr><tr><td>blur.shard.time.between.refreshs (3000)</td><td>The default time between index refreshs</td></tr><tr><td>blur.shard.merge.thread.count (3)</td><td>The max number of threads used during index merges</td></tr><tr><td>blur.max.clause.count (1024)</td><td>The maximum number of clauses in a BooleanQuery</td></tr><tr><td>blur.indexmanager.search.thread.count (8)</td><td>The number of thread used for parallel searching in the index manager</td></tr><tr><td>blur.indexmanager.mutate.thread.count (8)</td><td>The number of thread used for parallel mutating in the index manager</td></tr><tr><td>blur.shard.internal.search.thread.count (8)</td><td>The number of threads used for parallel searching in the index searchers</td></tr><tr><td>blur.shard.warmup.thread.count (8)</td><td>Number of threads used for warming up the index</td></tr><tr><td>blur.shard.fetchcount (100)</td><td>The fetch count per Lucene search, this fetches pointers to hits</td></tr><tr><td>blur.max.heap.per.row.fetch (10000000)</td><td>Heap limit on row fetch, once this limit has been reached the request will return</td></tr><tr><td>blur.max.records.per.row.fetch.request (1000)</td><td>The maximum number of records in a single row fetch</td></tr><tr><td>blur.gui.shard.port (40090)</td><td>The http status page port for the shard server</td></tr>
+			</table>
 
-# The default binding port of the shard server
-blur.shard.bind.port=40020
-
-# The number of fetcher threads
-blur.shard.data.fetch.thread.count=8
-
-# The number of the thrift threads
-blur.shard.server.thrift.thread.count=8
-
-# The number of threads used for selector processing inside the thrift server.
-blur.shard.thrift.selector.threads=2
-
-# The maximum number of bytes used for reading requests in the thrift server.
-blur.shard.thrift.max.read.buffer.bytes=9223372036854775807
-
-# The size of the blocking queue per selector thread for passing accepted connections to the selector thread.
-blur.shard.thrift.accept.queue.size.per.thread=4
-
-# The number of threads that are used for opening indexes
-blur.shard.opener.thread.count=8
-
-# The number of cached queries
-blur.shard.cache.max.querycache.elements=128
-
-# The time to live for the cache query
-blur.shard.cache.max.timetolive=60000
-
-# Default implementation of the blur cache filter, which is 
-# a pass through filter that does nothing
-blur.shard.filter.cache.class=org.apache.blur.manager.DefaultBlurFilterCache
-
-# Default Blur index warmup class that warms the fields provided
-# in the table descriptor
-blur.shard.index.warmup.class=org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup
-
-# Throttles the warmup to 30MB/s across all the warmup threads
-blur.shard.index.warmup.throttle=30000000
-
-# By default the v2 version of the block cache is enabled
-blur.shard.block.cache.version=v2
-
-# v1 version of block cache only. By default the block cache using
-# off heap memory
-blur.shard.blockcache.direct.memory.allocation=true
-
-# v1 version of block cache only. The slabs in the blockcache are 
-# automatically configured by default (-1) otherwise 1 slab equals 
-# 128MB.  The auto config is detected through the MaxDirectoryMemorySize 
-# provided to the JVM
-blur.shard.blockcache.slab.count=-1
-
-# The number of 1K byte buffers
-blur.shard.buffercache.1024=8192
-
-# The number of 8K byte buffers
-blur.shard.buffercache.8192=8192
-
-# The number of milliseconds to wait for the cluster to settle
-# once changes have ceased
-blur.shard.safemodedelay=5000
-
-# The default time between index commits
-blur.shard.time.between.commits=30000
-
-# The default time between index refreshs
-blur.shard.time.between.refreshs=3000
-
-# The maximum number of clauses in a BooleanQuery
-blur.max.clause.count=1024
-
-# The number of thread used for parallel searching in the index manager
-blur.indexmanager.search.thread.count=8
-
-# The number of threads used for parallel searching in the index searchers
-blur.shard.internal.search.thread.count=8
-
-# Number of threads used for warming up the index
-blur.shard.warmup.thread.count=8
-
-# The fetch count per Lucene search, this fetches pointers to hits
-blur.shard.fetchcount=100
-
-# Heap limit on row fetch, once this limit has been reached the
-# request will return
-blur.max.heap.per.row.fetch=10000000
-
-# The maximum number of records in a single row fetch
-blur.max.records.per.row.fetch.request=1000
-
-# The http status page port for the shard server
-blur.gui.shard.port=40090</code>
-</pre>
             <h3 id="shard-blur-env">blur-env.sh</h3>
             <pre><code class="bash"># JAVA JVM OPTIONS for the shard servers, jvm tuning parameters are placed here.
 export BLUR_SHARD_JVM_OPTIONS="-Xmx1024m -Djava.net.preferIPv4Stack=true -XX:MaxDirectMemorySize=256m "

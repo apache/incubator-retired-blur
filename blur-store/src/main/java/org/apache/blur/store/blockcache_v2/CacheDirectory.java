@@ -19,6 +19,7 @@ package org.apache.blur.store.blockcache_v2;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Set;
 
 import org.apache.blur.store.blockcache.LastModified;
 import org.apache.blur.store.hdfs.DirectoryDecorator;
@@ -34,15 +35,30 @@ public class CacheDirectory extends Directory implements DirectoryDecorator, Las
   private final Directory _internal;
   private final String _directoryName;
   private final Cache _cache;
+  private final String _shard;
+  private final String _table;
+  private final Set<String> _tableBlockCacheFileTypes;
 
-  public CacheDirectory(String directoryName, Directory directory, Cache cache) {
+  public CacheDirectory(String table, String shard, Directory directory, Cache cache,
+      Set<String> tableBlockCacheFileTypes) {
     if (!(directory instanceof LastModified)) {
       throw new RuntimeException("Directory [" + directory + "] does not implement '" + LastModified.class.toString()
           + "'");
     }
-    _directoryName = notNull(directoryName);
+    _table = table;
+    _shard = shard;
+    _directoryName = notNull(table + "_" + shard);
     _internal = notNull(directory);
     _cache = notNull(cache);
+    _tableBlockCacheFileTypes = tableBlockCacheFileTypes;
+  }
+
+  public String getShard() {
+    return _shard;
+  }
+
+  public String getTable() {
+    return _table;
   }
 
   @Override
@@ -52,15 +68,29 @@ public class CacheDirectory extends Directory implements DirectoryDecorator, Las
 
   public IndexInput openInput(String name, IOContext context) throws IOException {
     IndexInput indexInput = _internal.openInput(name, context);
-    if (_cache.cacheFileForReading(this, name, context)) {
+    if (_cache.cacheFileForReading(this, name, context) || isCachableFile(name)) {
       return new CacheIndexInput(this, name, indexInput, _cache);
     }
     return indexInput;
   }
 
+  private boolean isCachableFile(String name) {
+    if (_tableBlockCacheFileTypes == null) {
+      return true;
+    } else if (_tableBlockCacheFileTypes.isEmpty()) {
+      return false;
+    }
+    for (String ext : _tableBlockCacheFileTypes) {
+      if (name.endsWith(ext)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public IndexOutput createOutput(String name, IOContext context) throws IOException {
     IndexOutput indexOutput = _internal.createOutput(name, context);
-    if (_cache.cacheFileForWriting(this, name, context)) {
+    if (_cache.cacheFileForWriting(this, name, context) || isCachableFile(name)) {
       return new CacheIndexOutput(this, name, indexOutput, _cache);
     }
     return indexOutput;
@@ -136,7 +166,7 @@ public class CacheDirectory extends Directory implements DirectoryDecorator, Las
   public Directory getOriginalDirectory() {
     return _internal;
   }
-  
+
   private static <T> T notNull(T t) {
     if (t == null) {
       throw new IllegalArgumentException("Cannot be null");

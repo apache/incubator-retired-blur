@@ -58,12 +58,16 @@ public class CopyRateDirectory extends Directory {
 
     public void copyBytes(DataInput input, long numBytes) throws IOException {
       _indexOutput.copyBytes(input, numBytes);
-      _copyRateCounter.mark(numBytes);
+      if (_copyRateCounter != null) {
+        _copyRateCounter.mark(numBytes);
+      }
     }
 
     public void writeByte(byte b) throws IOException {
       _indexOutput.writeByte(b);
-      _copyRateCounter.mark();
+      if (_copyRateCounter != null) {
+        _copyRateCounter.mark();
+      }
     }
 
     public void flush() throws IOException {

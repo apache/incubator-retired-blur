@@ -75,8 +75,9 @@ public class BlockCacheDirectoryFactoryV1 extends BlockCacheDirectoryFactory {
   }
 
   @Override
-  public Directory newDirectory(String name, Directory directory, Set<String> blockCacheFileTypes) throws IOException {
-    return new BlockDirectory(name, directory, _cache, blockCacheFileTypes);
+  public Directory newDirectory(String table, String shard, Directory directory, Set<String> blockCacheFileTypes)
+      throws IOException {
+    return new BlockDirectory(table + "_" + shard, directory, _cache, blockCacheFileTypes);
   }
 
   private static int getSlabCount(int slabCount, int numberOfBlocksPerSlab, int blockSize, long totalNumberOfBytes) {

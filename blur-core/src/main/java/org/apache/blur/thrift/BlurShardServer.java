@@ -164,6 +164,20 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
+  public List<FetchResult> fetchRowBatch(String table, List<Selector> selectors) throws BlurException, TException {
+    checkTable(_cluster, table);
+    for (Selector selector : selectors) {
+      checkSelectorFetchSize(selector);
+    }
+    try {
+      return _indexManager.fetchRowBatch(table, selectors);
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to get fetch row [table={0},selector={1}]", e, table, selectors);
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  @Override
   public void cancelQuery(String table, String uuid) throws BlurException, TException {
     checkTable(_cluster, table);
     resetSearchers();
@@ -398,7 +412,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
       throw new BException(e.getMessage(), e);
     }
   }
-  
+
   @Override
   public void createSnapshot(final String table, final String name) throws BlurException, TException {
     try {
@@ -415,7 +429,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
       throw new BException(e.getMessage(), e);
     }
   }
-  
+
   @Override
   public void removeSnapshot(final String table, final String name) throws BlurException, TException {
     try {
@@ -432,7 +446,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
       throw new BException(e.getMessage(), e);
     }
   }
-  
+
   @Override
   public Map<String, List<String>> listSnapshots(final String table) throws BlurException, TException {
     Map<String, List<String>> snapshots = new HashMap<String, List<String>>();

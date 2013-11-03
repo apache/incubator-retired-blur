@@ -45,18 +45,19 @@ public class BlurQueryParser extends QueryParser {
 
   @Override
   protected Query newFuzzyQuery(Term term, float minimumSimilarity, int prefixLength) {
-    String field = term.field();
+    String resolvedField = _fieldManager.resolveField(term.field());
     try {
-      Boolean b = _fieldManager.checkSupportForFuzzyQuery(field);
+      Boolean b = _fieldManager.checkSupportForFuzzyQuery(resolvedField);
       if (!(b == null || b)) {
-        throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
-            + "] which does not support fuzzy queries.");
+        throw new RuntimeException("Field [" + resolvedField + "] is type ["
+            + _fieldManager.getFieldTypeDefinition(resolvedField) + "] which does not support fuzzy queries.");
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    customQueryCheck(field);
-    return addField(super.newFuzzyQuery(term, minimumSimilarity, prefixLength), term.field());
+    customQueryCheck(resolvedField);
+    return addField(super.newFuzzyQuery(new Term(resolvedField, term.text()), minimumSimilarity, prefixLength),
+        resolvedField);
   }
 
   @Override
@@ -71,9 +72,9 @@ public class BlurQueryParser extends QueryParser {
       public void add(Term[] terms, int position) {
         super.add(terms, position);
         for (Term term : terms) {
-          String field = term.field();
-          customQueryCheck(field);
-          addField(this, field);
+          String resolvedField = _fieldManager.resolveField(term.field());
+          customQueryCheck(resolvedField);
+          addField(this, resolvedField);
         }
       }
     };
@@ -85,48 +86,49 @@ public class BlurQueryParser extends QueryParser {
       @Override
       public void add(Term term, int position) {
         super.add(term, position);
-        String field = term.field();
-        customQueryCheck(field);
-        addField(this, field);
+        String resolvedField = _fieldManager.resolveField(term.field());
+        customQueryCheck(resolvedField);
+        addField(this, resolvedField);
       }
     };
   }
-  
+
   @Override
   protected Query newPrefixQuery(Term prefix) {
-    String field = prefix.field();
+    String resolvedField = _fieldManager.resolveField(prefix.field());
     try {
-      Boolean b = _fieldManager.checkSupportForPrefixQuery(field);
+      Boolean b = _fieldManager.checkSupportForPrefixQuery(resolvedField);
       if (!(b == null || b)) {
-        throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
-            + "] which does not support prefix queries.");
+        throw new RuntimeException("Field [" + resolvedField + "] is type ["
+            + _fieldManager.getFieldTypeDefinition(resolvedField) + "] which does not support prefix queries.");
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    customQueryCheck(field);
-    return addField(super.newPrefixQuery(prefix), field);
+    customQueryCheck(resolvedField);
+    return addField(super.newPrefixQuery(new Term(resolvedField, prefix.text())), resolvedField);
   }
 
   @Override
   protected Query newRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
-    customQueryCheck(field);
+    String resolvedField = _fieldManager.resolveField(field);
+    customQueryCheck(resolvedField);
     Query q;
     try {
-      q = _fieldManager.getNewRangeQuery(field, part1, part2, startInclusive, endInclusive);
+      q = _fieldManager.getNewRangeQuery(resolvedField, part1, part2, startInclusive, endInclusive);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
     if (q != null) {
-      return addField(q, field);
+      return addField(q, resolvedField);
     }
-    return addField(super.newRangeQuery(field, part1, part2, startInclusive, endInclusive), field);
+    return addField(super.newRangeQuery(resolvedField, part1, part2, startInclusive, endInclusive), resolvedField);
   }
 
   private void customQueryCheck(String field) {
     try {
       Boolean b = _fieldManager.checkSupportForCustomQuery(field);
-      if (b !=null && b) {
+      if (b != null && b) {
         throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
             + "] queries should exist with \" around them.");
       }
@@ -137,26 +139,26 @@ public class BlurQueryParser extends QueryParser {
 
   @Override
   protected Query newTermQuery(Term term) {
-    String field = term.field();
+    String resolvedField = _fieldManager.resolveField(term.field());
     try {
-      Boolean b = _fieldManager.checkSupportForCustomQuery(field);
+      Boolean b = _fieldManager.checkSupportForCustomQuery(resolvedField);
       if (b != null && b) {
-        return _fieldManager.getCustomQuery(field, term.text());
+        return _fieldManager.getCustomQuery(resolvedField, term.text());
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
     Query q;
     try {
-      q = _fieldManager.getTermQueryIfNumeric(field, term.text());
+      q = _fieldManager.getTermQueryIfNumeric(resolvedField, term.text());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    
+
     if (q != null) {
-      return addField(q, field);
+      return addField(q, resolvedField);
     }
-    return addField(super.newTermQuery(term), field);
+    return addField(super.newTermQuery(new Term(resolvedField, term.text())), resolvedField);
   }
 
   @Override
@@ -164,18 +166,34 @@ public class BlurQueryParser extends QueryParser {
     if (SUPER.equals(t.field()) && "*".equals(t.text())) {
       return new MatchAllDocsQuery();
     }
-    String field = t.field();
+    String resolvedField = _fieldManager.resolveField(t.field());
     try {
-      Boolean b = _fieldManager.checkSupportForWildcardQuery(field);
+      Boolean b = _fieldManager.checkSupportForWildcardQuery(resolvedField);
       if (!(b == null || b)) {
-        throw new RuntimeException("Field [" + field + "] is type [" + _fieldManager.getFieldTypeDefinition(field)
-            + "] which does not support wildcard queries.");
+        throw new RuntimeException("Field [" + resolvedField + "] is type ["
+            + _fieldManager.getFieldTypeDefinition(resolvedField) + "] which does not support wildcard queries.");
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    customQueryCheck(field);
-    return addField(super.newWildcardQuery(t), t.field());
+    customQueryCheck(resolvedField);
+    return addField(super.newWildcardQuery(new Term(resolvedField, t.text())), resolvedField);
+  }
+
+  @Override
+  protected Query newRegexpQuery(Term t) {
+    String resolvedField = _fieldManager.resolveField(t.field());
+    try {
+      Boolean b = _fieldManager.checkSupportForRegexQuery(resolvedField);
+      if (!(b == null || b)) {
+        throw new RuntimeException("Field [" + resolvedField + "] is type ["
+            + _fieldManager.getFieldTypeDefinition(resolvedField) + "] which does not support wildcard queries.");
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    customQueryCheck(resolvedField);
+    return addField(super.newRegexpQuery(new Term(resolvedField, t.text())), resolvedField);
   }
 
   private Query addField(Query q, String field) {

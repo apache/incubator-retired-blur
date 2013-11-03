@@ -17,12 +17,28 @@
  */
 package org.apache.blur.store.blockcache_v2;
 
+import static org.apache.blur.metrics.MetricsConstants.CACHE;
+import static org.apache.blur.metrics.MetricsConstants.ENTRIES;
+import static org.apache.blur.metrics.MetricsConstants.EVICTION;
+import static org.apache.blur.metrics.MetricsConstants.HIT;
+import static org.apache.blur.metrics.MetricsConstants.MISS;
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
+import static org.apache.blur.metrics.MetricsConstants.REMOVAL;
+import static org.apache.blur.metrics.MetricsConstants.SIZE;
+
+import java.io.Closeable;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.log.Log;
@@ -34,10 +50,16 @@ import org.apache.lucene.store.IOContext;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 import com.googlecode.concurrentlinkedhashmap.Weigher;
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Gauge;
+import com.yammer.metrics.core.Meter;
+import com.yammer.metrics.core.MetricName;
 
-public class BaseCache extends Cache {
+public class BaseCache extends Cache implements Closeable {
 
   private static final Log LOG = LogFactory.getLog(BaseCache.class);
+  private static final long _1_MINUTE = TimeUnit.MINUTES.toMillis(1);
+  protected static final long _10_SECOND = TimeUnit.SECONDS.toMillis(10);
 
   public enum STORE {
     ON_HEAP, OFF_HEAP
@@ -46,7 +68,8 @@ public class BaseCache extends Cache {
   class BaseCacheEvictionListener implements EvictionListener<CacheKey, CacheValue> {
     @Override
     public void onEviction(CacheKey key, CacheValue value) {
-      addToReleaseQueue(value);
+      _evictions.mark();
+      addToReleaseQueue(key, value);
     }
   }
 
@@ -57,6 +80,26 @@ public class BaseCache extends Cache {
     }
   }
 
+  static class ReleaseEntry {
+    CacheKey _key;
+    CacheValue _value;
+    final long _createTime = System.currentTimeMillis();
+
+    @Override
+    public String toString() {
+      return "ReleaseEntry [_key=" + _key + ", _value=" + _value + ", _createTime=" + _createTime + "]";
+    }
+
+    public boolean hasLivedToLong(long warningTimeForEntryCleanup) {
+      long now = System.currentTimeMillis();
+      if (_createTime + warningTimeForEntryCleanup < now) {
+        return true;
+      }
+      return false;
+    }
+
+  }
+
   private final ConcurrentLinkedHashMap<CacheKey, CacheValue> _cacheMap;
   private final FileNameFilter _readFilter;
   private final FileNameFilter _writeFilter;
@@ -64,8 +107,18 @@ public class BaseCache extends Cache {
   private final Size _cacheBlockSize;
   private final Size _fileBufferSize;
   private final Map<FileIdKey, Long> _fileNameToId = new ConcurrentHashMap<FileIdKey, Long>();
+  private final Map<Long, FileIdKey> _oldFileNameIdMap = new ConcurrentHashMap<Long, FileIdKey>();
   private final AtomicLong _fileId = new AtomicLong();
   private final Quiet _quiet;
+  private final Meter _hits;
+  private final Meter _misses;
+  private final Meter _evictions;
+  private final Meter _removals;
+  private final Thread _oldFileDaemonThread;
+  private final Thread _oldCacheValueDaemonThread;
+  private final AtomicBoolean _running = new AtomicBoolean(true);
+  private final BlockingQueue<ReleaseEntry> _releaseQueue;
+  private final long _warningTimeForEntryCleanup = TimeUnit.MINUTES.toMillis(60);
 
   public BaseCache(long totalNumberOfBytes, Size fileBufferSize, Size cacheBlockSize, FileNameFilter readFilter,
       FileNameFilter writeFilter, Quiet quiet, STORE store) {
@@ -77,21 +130,133 @@ public class BaseCache extends Cache {
     _store = store;
     _cacheBlockSize = cacheBlockSize;
     _quiet = quiet;
+    _hits = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, HIT), HIT, TimeUnit.SECONDS);
+    _misses = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, MISS), MISS, TimeUnit.SECONDS);
+    _evictions = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, EVICTION), EVICTION, TimeUnit.SECONDS);
+    _removals = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, REMOVAL), REMOVAL, TimeUnit.SECONDS);
+    _releaseQueue = new LinkedBlockingQueue<ReleaseEntry>();
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, CACHE, ENTRIES), new Gauge<Long>() {
+      @Override
+      public Long value() {
+        return (long) _cacheMap.size();
+      }
+    });
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, CACHE, SIZE), new Gauge<Long>() {
+      @Override
+      public Long value() {
+        return _cacheMap.weightedSize();
+      }
+    });
+    _oldFileDaemonThread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        while (_running.get()) {
+          cleanupOldFiles();
+          try {
+            Thread.sleep(_1_MINUTE);
+          } catch (InterruptedException e) {
+            return;
+          }
+        }
+      }
+    });
+    _oldFileDaemonThread.setDaemon(true);
+    _oldFileDaemonThread.setName("BaseCacheOldFileCleanup");
+    _oldFileDaemonThread.setPriority(Thread.MIN_PRIORITY);
+    _oldFileDaemonThread.start();
+
+    _oldCacheValueDaemonThread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        while (_running.get()) {
+          cleanupOldCacheValues();
+          try {
+            Thread.sleep(_10_SECOND);
+          } catch (InterruptedException e) {
+            return;
+          }
+        }
+      }
+    });
+    _oldCacheValueDaemonThread.setDaemon(true);
+    _oldCacheValueDaemonThread.setName("BaseCacheCleanupCacheValues");
+    _oldCacheValueDaemonThread.start();
   }
 
-  private void addToReleaseQueue(CacheValue value) {
+  protected void cleanupOldCacheValues() {
+    Iterator<ReleaseEntry> iterator = _releaseQueue.iterator();
+    Map<Long, FileIdKey> entriesToCleanup = new HashMap<Long, FileIdKey>(_oldFileNameIdMap);
+    while (iterator.hasNext()) {
+      ReleaseEntry entry = iterator.next();
+      CacheKey key = entry._key;
+      long fileId = key.getFileId();
+      // Still referenced
+      entriesToCleanup.remove(fileId);
+
+      CacheValue value = entry._value;
+      if (value.refCount() == 0) {
+        value.release();
+        iterator.remove();
+        long capacity = _cacheMap.capacity();
+        _cacheMap.setCapacity(capacity + value.size());
+      } else if (entry.hasLivedToLong(_warningTimeForEntryCleanup)) {
+        FileIdKey fileIdKey = _oldFileNameIdMap.get(fileId);
+        LOG.warn("CacheValue has not been released [{0}] for [{1}] for over [{2} ms]", entry, fileIdKey,
+            _warningTimeForEntryCleanup);
+      }
+    }
+    for (Long l : entriesToCleanup.keySet()) {
+      _oldFileNameIdMap.remove(l);
+    }
+  }
+
+  protected void cleanupOldFiles() {
+    LOG.debug("Cleanup old files from cache.");
+    Set<Long> validFileIds = new HashSet<Long>(_fileNameToId.values());
+    for (CacheKey key : _cacheMap.keySet()) {
+      long fileId = key.getFileId();
+      if (validFileIds.contains(fileId)) {
+        CacheValue remove = _cacheMap.remove(key);
+        if (remove != null) {
+          _removals.mark();
+          addToReleaseQueue(key, remove);
+        }
+      }
+    }
+  }
+
+  @Override
+  public void close() throws IOException {
+    _running.set(false);
+    _cacheMap.clear();
+    _oldFileDaemonThread.interrupt();
+    _oldCacheValueDaemonThread.interrupt();
+    for (ReleaseEntry entry : _releaseQueue) {
+      entry._value.release();
+    }
+  }
+
+  private void addToReleaseQueue(CacheKey key, CacheValue value) {
     if (value != null) {
       if (value.refCount() == 0) {
         value.release();
         return;
       }
-      LOG.debug("CacheValue was not released [{0}]", value);
+      long capacity = _cacheMap.capacity();
+      _cacheMap.setCapacity(capacity - value.size());
+
+      ReleaseEntry releaseEntry = new ReleaseEntry();
+      releaseEntry._key = key;
+      releaseEntry._value = value;
+
+      LOG.debug("CacheValue was not released [{0}]", releaseEntry);
+      _releaseQueue.add(releaseEntry);
     }
   }
-  
+
   @Override
   public boolean shouldBeQuiet(CacheDirectory directory, String fileName) {
-    return _quiet.shouldBeQuiet(directory.getDirectoryName(), fileName);
+    return _quiet.shouldBeQuiet(directory, fileName);
   }
 
   @Override
@@ -115,6 +280,7 @@ public class BaseCache extends Cache {
     }
     long newId = _fileId.incrementAndGet();
     _fileNameToId.put(cachedFileName, newId);
+    _oldFileNameIdMap.put(newId, cachedFileName);
     return newId;
   }
 
@@ -131,37 +297,50 @@ public class BaseCache extends Cache {
 
   @Override
   public int getCacheBlockSize(CacheDirectory directory, String fileName) {
-    return _cacheBlockSize.getSize(directory.getDirectoryName(), fileName);
+    return _cacheBlockSize.getSize(directory, fileName);
   }
 
   @Override
   public int getFileBufferSize(CacheDirectory directory, String fileName) {
-    return _fileBufferSize.getSize(directory.getDirectoryName(), fileName);
+    return _fileBufferSize.getSize(directory, fileName);
   }
 
   @Override
   public boolean cacheFileForReading(CacheDirectory directory, String fileName, IOContext context) {
-    return _readFilter.accept(directory.getDirectoryName(), fileName);
+    return _readFilter.accept(directory, fileName);
   }
 
   @Override
   public boolean cacheFileForWriting(CacheDirectory directory, String fileName, IOContext context) {
-    return _writeFilter.accept(directory.getDirectoryName(), fileName);
+    return _writeFilter.accept(directory, fileName);
   }
 
   @Override
   public CacheValue get(CacheKey key) {
-    return _cacheMap.get(key);
+    CacheValue cacheValue = _cacheMap.get(key);
+    if (cacheValue == null) {
+      _misses.mark();
+    } else {
+      _hits.mark();
+    }
+    return cacheValue;
   }
-  
+
   @Override
   public CacheValue getQuietly(CacheKey key) {
-    return _cacheMap.getQuietly(key);
+    CacheValue cacheValue = _cacheMap.getQuietly(key);
+    if (cacheValue != null) {
+      _hits.mark();
+    }
+    return cacheValue;
   }
 
   @Override
   public void put(CacheKey key, CacheValue value) {
-    _cacheMap.put(key, value);
+    CacheValue cacheValue = _cacheMap.put(key, value);
+    if (cacheValue != null) {
+      _evictions.mark();
+    }
   }
 
   @Override
@@ -221,7 +400,6 @@ public class BaseCache extends Cache {
         return false;
       return true;
     }
-
   }
 
 }

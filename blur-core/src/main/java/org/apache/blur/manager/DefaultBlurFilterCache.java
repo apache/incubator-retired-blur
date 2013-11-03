@@ -16,23 +16,19 @@ package org.apache.blur.manager;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.manager.writer.BlurIndex;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Filter;
 
-
 /**
- * This implementation on {@link BlurFilterCache} does nothing and it is the default {@link BlurFilterCache}.
+ * This implementation on {@link BlurFilterCache} does nothing and it is the
+ * default {@link BlurFilterCache}.
  */
 public class DefaultBlurFilterCache extends BlurFilterCache {
 
-  @Override
-  public Filter storePreFilter(String table, String filterStr, Filter filter) {
-    return filter;
-  }
-
-  @Override
-  public Filter storePostFilter(String table, String filterStr, Filter filter) {
-    return filter;
+  public DefaultBlurFilterCache(BlurConfiguration configuration) {
+    super(configuration);
   }
 
   @Override
@@ -46,6 +42,18 @@ public class DefaultBlurFilterCache extends BlurFilterCache {
   }
 
   @Override
+  public Filter storePreFilter(String table, String filterStr, Filter filter, FilterParser filterParser)
+      throws ParseException {
+    return filter;
+  }
+
+  @Override
+  public Filter storePostFilter(String table, String filterStr, Filter filter, FilterParser filterParser)
+      throws ParseException {
+    return filter;
+  }
+
+  @Override
   public void closing(String table, String shard, BlurIndex index) {
 
   }
@@ -54,4 +62,5 @@ public class DefaultBlurFilterCache extends BlurFilterCache {
   public void opening(String table, String shard, BlurIndex index) {
 
   }
+
 }

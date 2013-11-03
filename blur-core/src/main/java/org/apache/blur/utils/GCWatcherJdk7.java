@@ -16,6 +16,10 @@
  */
 package org.apache.blur.utils;
 
+import static org.apache.blur.metrics.MetricsConstants.GC_TIMES;
+import static org.apache.blur.metrics.MetricsConstants.JVM;
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
+
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -25,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.Notification;
 import javax.management.NotificationFilter;
@@ -34,19 +39,28 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 
 import com.sun.management.GcInfo;
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.MetricName;
+import com.yammer.metrics.core.Timer;
 
 public class GCWatcherJdk7 {
 
   private static final Log LOG = LogFactory.getLog(GCWatcherJdk7.class);
   private static final String GET_LAST_GC_INFO = "getLastGcInfo";
+  private static final long _1_SECOND = TimeUnit.SECONDS.toMillis(1);
   private static GCWatcherJdk7 _instance;
 
   private final MemoryMXBean _memoryMXBean;
   private final double _ratio;
   private final List<GCAction> _actions = new ArrayList<GCAction>();
+  private final Timer _gcTimes;
 
   private GCWatcherJdk7(double ratio) {
     _memoryMXBean = ManagementFactory.getMemoryMXBean();
+
+    MetricName gcTimesName = new MetricName(ORG_APACHE_BLUR, JVM, GC_TIMES);
+    _gcTimes = Metrics.newTimer(gcTimesName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+
     List<GarbageCollectorMXBean> garbageCollectorMXBeans = ManagementFactory.getGarbageCollectorMXBeans();
     for (GarbageCollectorMXBean bean : garbageCollectorMXBeans) {
       NotificationListener listener = new NotificationListener() {
@@ -61,8 +75,12 @@ public class GCWatcherJdk7 {
           long usedBefore = getTotal(usageBeforeGc);
           long usedAfter = getTotal(usageAfterGc);
           long totalTime = endTime - startTime;
+          long totalSize = usedBefore - usedAfter;
+          if (totalTime >= _1_SECOND) {
 
-          LOG.info("GC event totalTime spent in GC [{0} ms] collected [{1} bytes]", totalTime, (usedBefore - usedAfter));
+            LOG.info("GC event totalTime spent in GC [{0} ms] collected [{1} bytes]", totalTime, totalSize);
+          }
+          _gcTimes.update(totalTime, TimeUnit.MILLISECONDS);
 
           MemoryUsage heapMemoryUsage = _memoryMXBean.getHeapMemoryUsage();
           long max = heapMemoryUsage.getMax();

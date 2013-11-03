@@ -43,12 +43,14 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class CacheDirectoryTest {
 
   private CacheDirectory _cacheDirectory;
+  private BaseCache _cache;
 
   @Before
   public void setup() {
@@ -57,39 +59,44 @@ public class CacheDirectoryTest {
     final int cacheBlockSizeInt = 131;
     Size fileBufferSize = new Size() {
       @Override
-      public int getSize(String directoryName, String fileName) {
+      public int getSize(CacheDirectory directory, String fileName) {
         return fileBufferSizeInt;
       }
     };
     Size cacheBlockSize = new Size() {
       @Override
-      public int getSize(String directoryName, String fileName) {
+      public int getSize(CacheDirectory directory, String fileName) {
         return cacheBlockSizeInt;
       }
     };
     FileNameFilter writeFilter = new FileNameFilter() {
       @Override
-      public boolean accept(String directoryName, String fileName) {
+      public boolean accept(CacheDirectory directory, String fileName) {
         return true;
       }
     };
     FileNameFilter readFilter = new FileNameFilter() {
       @Override
-      public boolean accept(String directoryName, String fileName) {
+      public boolean accept(CacheDirectory directory, String fileName) {
         return true;
       }
     };
     Quiet quiet = new Quiet() {
       @Override
-      public boolean shouldBeQuiet(String directoryName, String fileName) {
+      public boolean shouldBeQuiet(CacheDirectory directory, String fileName) {
         return false;
       }
     };
-    Cache cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet,
+    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet,
         STORE.ON_HEAP);
     Directory directory = newDirectory();
     BufferStore.init(128, 128);
-    _cacheDirectory = new CacheDirectory("test", directory, cache);
+    _cacheDirectory = new CacheDirectory("test", "test", directory, _cache, null);
+  }
+
+  @After
+  public void tearDown() throws IOException {
+    _cache.close();
   }
 
   private Directory newDirectory() {

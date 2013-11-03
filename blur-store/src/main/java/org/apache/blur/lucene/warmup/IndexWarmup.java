@@ -58,9 +58,8 @@ import org.apache.lucene.store.IndexOutput;
  */
 public class IndexWarmup {
 
-  private static final String SAMPLE_PREFIX = "sample";
   private static final Log LOG = LogFactory.getLog(IndexWarmup.class);
-  private static final String SAMPLE_EXT = ".spl";
+  private static final String SAMPLE_EXT = ".sample";
   private static final long _5_SECONDS = TimeUnit.SECONDS.toNanos(5);
   private static final int DEFAULT_THROTTLE = 2000000;
 
@@ -293,7 +292,7 @@ public class IndexWarmup {
   }
 
   public static String getSampleFileName(String segmentName) {
-    return SAMPLE_PREFIX + segmentName + SAMPLE_EXT;
+    return segmentName + SAMPLE_EXT;
   }
 
   private List<IndexTracerResult> read(IndexInput input) throws IOException {

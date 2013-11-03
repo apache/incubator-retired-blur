@@ -16,11 +16,14 @@ package org.apache.blur.manager;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.lucene.search.SuperParser;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.Query;
 
 /**
  * The {@link BlurFilterCache} class provides the ability to cache pre and post
@@ -28,6 +31,16 @@ import org.apache.lucene.search.Filter;
  * as hooks to for when tables are being enabled and disabled.
  */
 public abstract class BlurFilterCache {
+
+  public interface FilterParser {
+    Query parse(String query) throws ParseException;
+  }
+
+  protected final BlurConfiguration _configuration;
+
+  public BlurFilterCache(BlurConfiguration configuration) {
+    _configuration = configuration;
+  }
 
   /**
    * The fetchPreFilter method fetches the cache pre-filter (or {@link Record}
@@ -63,25 +76,46 @@ public abstract class BlurFilterCache {
    * @param filterStr
    *          the filter query string, should be used as a key.
    * @return the {@link Filter} that was parsed by the {@link SuperParser}.
+   * @throws ParseException 
    */
-  public abstract Filter storePreFilter(String table, String filterStr, Filter filter);
+  public abstract Filter storePreFilter(String table, String filterStr, Filter filter, FilterParser filterParser) throws ParseException;
 
   /**
    * The storePreFilter method stores the parsed post {@link Filter} (or
-   * {@link Row} Filter) for caching, and should return the {@link Filter} to
-   * be executed.
+   * {@link Row} Filter) for caching, and should return the {@link Filter} to be
+   * executed.
    * 
    * @param table
    *          the table name.
    * @param filterStr
    *          the filter query string, should be used as a key.
    * @return the {@link Filter} that was parsed by the {@link SuperParser}.
+   * @throws ParseException 
    */
-  public abstract Filter storePostFilter(String table, String filterStr, Filter filter);
+  public abstract Filter storePostFilter(String table, String filterStr, Filter filter, FilterParser filterParser) throws ParseException;
 
-
+  /**
+   * Notifies the cache that the index is closing on this shard server.
+   * 
+   * @param table
+   *          the table name.
+   * @param shard
+   *          the shard name.
+   * @param index
+   *          the {@link BlurIndex}.
+   */
   public abstract void closing(String table, String shard, BlurIndex index);
 
+  /**
+   * Notifies the cache that the index is opening on this shard server.
+   * 
+   * @param table
+   *          the table name.
+   * @param shard
+   *          the shard name.
+   * @param index
+   *          the {@link BlurIndex}.
+   */
   public abstract void opening(String table, String shard, BlurIndex index);
 
 }

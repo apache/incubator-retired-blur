@@ -30,7 +30,6 @@ import java.util.concurrent.ExecutorService;
 
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
-import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
@@ -61,7 +60,6 @@ public class BlurNRTIndexTest {
   private Configuration configuration;
 
   private DirectoryReferenceFileGC gc;
-  private IndexInputCloser closer;
   private SharedMergeScheduler mergeScheduler;
   private String uuid;
 
@@ -72,11 +70,8 @@ public class BlurNRTIndexTest {
     rm(base);
     base.mkdirs();
 
-    mergeScheduler = new SharedMergeScheduler();
+    mergeScheduler = new SharedMergeScheduler(1);
     gc = new DirectoryReferenceFileGC();
-    gc.init();
-    closer = new IndexInputCloser();
-    closer.init();
 
     configuration = new Configuration();
     service = Executors.newThreadPool("test", 10);
@@ -103,14 +98,13 @@ public class BlurNRTIndexTest {
     path.mkdirs();
     FSDirectory directory = FSDirectory.open(path);
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard-" + uuid);
-    writer = new BlurNRTIndex(shardContext, mergeScheduler, closer, directory, gc, service);
+    writer = new BlurNRTIndex(shardContext, mergeScheduler, directory, gc, service);
   }
 
   @After
   public void tearDown() throws IOException {
     writer.close();
     mergeScheduler.close();
-    closer.close();
     gc.close();
     service.shutdownNow();
     rm(base);

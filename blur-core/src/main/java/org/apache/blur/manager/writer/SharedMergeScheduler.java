@@ -16,6 +16,9 @@ package org.apache.blur.manager.writer;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.metrics.MetricsConstants.LUCENE;
+import static org.apache.blur.metrics.MetricsConstants.MERGE_THROUGHPUT_BYTES;
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 import static org.apache.blur.utils.BlurConstants.SHARED_MERGE_SCHEDULER;
 
 import java.io.Closeable;
@@ -23,6 +26,7 @@ import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.concurrent.Executors;
@@ -32,21 +36,27 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.MergePolicy;
 import org.apache.lucene.index.MergeScheduler;
 
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Meter;
+import com.yammer.metrics.core.MetricName;
+
 public class SharedMergeScheduler implements Runnable, Closeable {
 
   private static final Log LOG = LogFactory.getLog(SharedMergeScheduler.class);
-  private static final long ONE_SECOND = 1000;
+  private static final long ONE_SECOND = TimeUnit.SECONDS.toMillis(1);
 
-  private BlockingQueue<IndexWriter> _writers = new LinkedBlockingQueue<IndexWriter>();
-  private AtomicBoolean _running = new AtomicBoolean(true);
-  private ExecutorService _service;
+  private final BlockingQueue<IndexWriter> _writers = new LinkedBlockingQueue<IndexWriter>();
+  private final AtomicBoolean _running = new AtomicBoolean(true);
+  private final ExecutorService _service;
+  private final Meter _throughputBytes;
 
-  public SharedMergeScheduler() {
-    int threads = 3;
+  public SharedMergeScheduler(int threads) {
     _service = Executors.newThreadPool(SHARED_MERGE_SCHEDULER, threads, false);
     for (int i = 0; i < threads; i++) {
       _service.submit(this);
     }
+    MetricName mergeThoughputBytes = new MetricName(ORG_APACHE_BLUR, LUCENE, MERGE_THROUGHPUT_BYTES);
+    _throughputBytes = Metrics.newMeter(mergeThoughputBytes, MERGE_THROUGHPUT_BYTES, TimeUnit.SECONDS);
   }
 
   private void mergeIndexWriter(IndexWriter writer) {
@@ -129,6 +139,7 @@ public class SharedMergeScheduler implements Runnable, Closeable {
     } else {
       LOG.debug("Merge took [{0} s] to complete at rate of [{1} MB/s]", time, rate);
     }
+    _throughputBytes.mark(merge.totalBytesSize());
     return true;
   }
 

@@ -39,6 +39,7 @@ public class MetricsConstants {
   public static final String HDFS = "HDFS";
   public static final String LOCAL = "local";
   public static final String HIT = "Hit";
+  public static final String REMOVAL = "Removal";
   public static final String MISS = "Miss";
   public static final String CACHE = "Cache";
   public static final String JVM = "JVM";
@@ -56,4 +57,8 @@ public class MetricsConstants {
   public static final String SIZE = "Size";
   public static final String LOAD_AVERAGE = "Load Average";
   public static final String SYSTEM = "System";
+  public static final String MERGE_THROUGHPUT_BYTES = "Merge Throughput Bytes";
+  public static final String GC_TIMES = "GC Times (ms)";
+  public static final String OFF_HEAP_MEMORY = "Off Heap Memory";
+  public static final String CACHE_VALUE_FINALIZE = "CacheValue Finalize";
 }

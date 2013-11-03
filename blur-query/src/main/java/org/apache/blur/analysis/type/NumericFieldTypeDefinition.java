@@ -25,7 +25,7 @@ import org.apache.lucene.util.NumericUtils;
 public abstract class NumericFieldTypeDefinition extends FieldTypeDefinition {
 
   protected static final String NUMERIC_PRECISION_STEP = "numericPrecisionStep";
-  
+
   protected static final String MAX = "max";
   protected static final String MIN = "min";
 
@@ -54,6 +54,11 @@ public abstract class NumericFieldTypeDefinition extends FieldTypeDefinition {
 
   @Override
   public final boolean checkSupportForPrefixQuery() {
+    return false;
+  }
+
+  @Override
+  public final boolean checkSupportForRegexQuery() {
     return false;
   }
 

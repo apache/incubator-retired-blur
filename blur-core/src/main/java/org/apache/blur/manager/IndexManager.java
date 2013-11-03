@@ -125,34 +125,38 @@ public class IndexManager {
   private static final String NOT_FOUND = "NOT_FOUND";
   private static final Log LOG = LogFactory.getLog(IndexManager.class);
 
-  private IndexServer _indexServer;
-  private ClusterStatus _clusterStatus;
-  private ExecutorService _executor;
-  private ExecutorService _mutateExecutor;
-  private int _threadCount;
-  private QueryStatusManager _statusManager = new QueryStatusManager();
-  private boolean _closed;
-  private BlurPartitioner _blurPartitioner = new BlurPartitioner();
-  private BlurFilterCache _filterCache = new DefaultBlurFilterCache();
-  private long _defaultParallelCallTimeout = TimeUnit.MINUTES.toMillis(1);
-  private Meter _readRecordsMeter;
-  private Meter _readRowMeter;
-  private Meter _writeRecordsMeter;
-  private Meter _writeRowMeter;
-  private Meter _queriesExternalMeter;
-  private Meter _queriesInternalMeter;
-  private Timer _fetchTimer;
-  private int _fetchCount = 100;
-  private int _maxHeapPerRowFetch = 10000000;
-  private int _mutateThreadCount;
+  private final Meter _readRecordsMeter;
+  private final Meter _readRowMeter;
+  private final Meter _writeRecordsMeter;
+  private final Meter _writeRowMeter;
+  private final Meter _queriesExternalMeter;
+  private final Meter _queriesInternalMeter;
+
+  private final IndexServer _indexServer;
+  private final ClusterStatus _clusterStatus;
+  private final ExecutorService _executor;
+  private final ExecutorService _mutateExecutor;
+
+  private final QueryStatusManager _statusManager = new QueryStatusManager();
+  private final AtomicBoolean _closed = new AtomicBoolean(false);
+  private final BlurPartitioner _blurPartitioner = new BlurPartitioner();
+  private final BlurFilterCache _filterCache;
+  private final long _defaultParallelCallTimeout = TimeUnit.MINUTES.toMillis(1);
+
+  private final Timer _fetchTimer;
+  private final int _fetchCount;
+  private final int _maxHeapPerRowFetch;
+
+  private final int _threadCount;
+  private final int _mutateThreadCount;
 
   public static AtomicBoolean DEBUG_RUN_SLOW = new AtomicBoolean(false);
 
-  public void setMaxClauseCount(int maxClauseCount) {
-    BooleanQuery.setMaxClauseCount(maxClauseCount);
-  }
-
-  public void init() {
+  public IndexManager(IndexServer indexServer, ClusterStatus clusterStatus, BlurFilterCache filterCache,
+      int maxHeapPerRowFetch, int fetchCount, int threadCount, int mutateThreadCount, long statusCleanupTimerDelay) {
+    _indexServer = indexServer;
+    _clusterStatus = clusterStatus;
+    _filterCache = filterCache;
     _readRecordsMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Read Records/s"), "Records/s",
         TimeUnit.SECONDS);
     _readRowMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Read Row/s"), "Row/s", TimeUnit.SECONDS);
@@ -166,22 +170,28 @@ public class IndexManager {
         "Internal Queries/s", TimeUnit.SECONDS);
     _fetchTimer = Metrics.newTimer(new MetricName(ORG_APACHE_BLUR, BLUR, "Fetch Timer"), TimeUnit.MICROSECONDS,
         TimeUnit.SECONDS);
-    if (_threadCount == 0) {
+    if (threadCount == 0) {
       throw new RuntimeException("Thread Count cannot be 0.");
     }
-    if (_mutateThreadCount == 0) {
+    _threadCount = threadCount;
+    if (mutateThreadCount == 0) {
       throw new RuntimeException("Mutate Thread Count cannot be 0.");
     }
+    _mutateThreadCount = mutateThreadCount;
+    _fetchCount = fetchCount;
+    _maxHeapPerRowFetch = maxHeapPerRowFetch;
+
     _executor = Executors.newThreadPool("index-manager", _threadCount);
     _mutateExecutor = Executors.newThreadPool("index-manager-mutate", _mutateThreadCount);
+    _statusManager.setStatusCleanupTimerDelay(statusCleanupTimerDelay);
     _statusManager.init();
     LOG.info("Init Complete");
 
   }
 
   public synchronized void close() {
-    if (!_closed) {
-      _closed = true;
+    if (!_closed.get()) {
+      _closed.set(true);
       _statusManager.close();
       _executor.shutdownNow();
       _mutateExecutor.shutdownNow();
@@ -191,6 +201,32 @@ public class IndexManager {
         LOG.error("Unknown error while trying to close the index server", e);
       }
     }
+  }
+
+  public List<FetchResult> fetchRowBatch(final String table, List<Selector> selectors) throws BlurException {
+    List<Future<FetchResult>> futures = new ArrayList<Future<FetchResult>>();
+    for (Selector s : selectors) {
+      final Selector selector = s;
+      futures.add(_executor.submit(new Callable<FetchResult>() {
+        @Override
+        public FetchResult call() throws Exception {
+          FetchResult fetchResult = new FetchResult();
+          fetchRow(table, selector, fetchResult);
+          return fetchResult;
+        }
+      }));
+    }
+    List<FetchResult> results = new ArrayList<FetchResult>();
+    for (Future<FetchResult> future : futures) {
+      try {
+        results.add(future.get());
+      } catch (InterruptedException e) {
+        throw new BException("Unkown error while fetching batch table [{0}] selectors [{1}].", e, table, selectors);
+      } catch (ExecutionException e) {
+        throw new BException("Unkown error while fetching batch table [{0}] selectors [{1}].", e.getCause(), table, selectors);
+      }
+    }
+    return results;
   }
 
   public void fetchRow(String table, Selector selector, FetchResult fetchResult) throws BlurException {
@@ -643,10 +679,6 @@ public class IndexManager {
     return _indexServer;
   }
 
-  public void setIndexServer(IndexServer indexServer) {
-    this._indexServer = indexServer;
-  }
-
   public long recordFrequency(final String table, final String columnFamily, final String columnName, final String value)
       throws Exception {
     Map<String, BlurIndex> blurIndexes;
@@ -798,10 +830,6 @@ public class IndexManager {
     columnDefinition.setFieldType(fieldTypeDefinition.getFieldType());
     columnDefinition.setProperties(fieldTypeDefinition.getProperties());
     return columnDefinition;
-  }
-
-  public void setStatusCleanupTimerDelay(long delay) {
-    _statusManager.setStatusCleanupTimerDelay(delay);
   }
 
   public void mutate(final RowMutation mutation) throws BlurException, IOException {
@@ -1135,18 +1163,6 @@ public class IndexManager {
     }
   }
 
-  public void setThreadCount(int threadCount) {
-    _threadCount = threadCount;
-  }
-
-  public void setMutateThreadCount(int mutateThreadCount) {
-    _mutateThreadCount = mutateThreadCount;
-  }
-
-  public void setFilterCache(BlurFilterCache filterCache) {
-    _filterCache = filterCache;
-  }
-
   public void optimize(String table, int numberOfSegmentsPerShard) throws BException {
     Map<String, BlurIndex> blurIndexes;
     try {
@@ -1165,18 +1181,6 @@ public class IndexManager {
         throw new BException(e.getMessage(), e);
       }
     }
-  }
-
-  public void setClusterStatus(ClusterStatus clusterStatus) {
-    _clusterStatus = clusterStatus;
-  }
-
-  public void setFetchCount(int fetchCount) {
-    _fetchCount = fetchCount;
-  }
-
-  public void setMaxHeapPerRowFetch(int maxHeapPerRowFetch) {
-    _maxHeapPerRowFetch = maxHeapPerRowFetch;
   }
 
 }

@@ -296,7 +296,7 @@ public class BlurClientManager {
   }
 
   public static void close(Client client) {
-    _clientPool.close(client);
+    ClientPool.close(client);
   }
 
   public static Client newClient(Connection connection) throws TTransportException, IOException {

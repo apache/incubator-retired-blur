@@ -78,6 +78,11 @@ public class StoredFieldTypeDefinition extends FieldTypeDefinition {
   public boolean checkSupportForPrefixQuery() {
     return false;
   }
+  
+  @Override
+  public boolean checkSupportForRegexQuery() {
+    return false;
+  }
 
   @Override
   public boolean isNumeric() {

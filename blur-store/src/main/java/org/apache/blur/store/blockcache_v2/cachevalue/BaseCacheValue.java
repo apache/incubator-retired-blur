@@ -17,15 +17,30 @@
  */
 package org.apache.blur.store.blockcache_v2.cachevalue;
 
+import static org.apache.blur.metrics.MetricsConstants.CACHE_VALUE_FINALIZE;
+import static org.apache.blur.metrics.MetricsConstants.JVM;
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
+
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.blur.metrics.AtomicLongGauge;
 import org.apache.blur.store.blockcache_v2.CacheValue;
+
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.MetricName;
 
 @SuppressWarnings("serial")
 public abstract class BaseCacheValue extends AtomicLong implements CacheValue {
 
   private final int _length;
   protected volatile boolean _released = false;
+
+  private static final AtomicLong _neededFinalizedCall = new AtomicLong();
+
+  static {
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, JVM, CACHE_VALUE_FINALIZE), new AtomicLongGauge(
+        _neededFinalizedCall));
+  }
 
   public BaseCacheValue(int length) {
     _length = length;
@@ -120,8 +135,10 @@ public abstract class BaseCacheValue extends AtomicLong implements CacheValue {
 
   @Override
   protected void finalize() throws Throwable {
+    // @TODO this may not be needed.
     if (!_released) {
       release();
+      _neededFinalizedCall.incrementAndGet();
     }
   }
 }

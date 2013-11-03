@@ -17,6 +17,7 @@ package org.apache.blur.manager.writer;
  * limitations under the License.
  */
 import java.io.Closeable;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,15 +85,28 @@ public class IndexImporter extends TimerTask implements Closeable {
     Configuration configuration = _shardContext.getTableContext().getConfiguration();
     try {
       FileSystem fileSystem = path.getFileSystem(configuration);
-      SortedSet<FileStatus> listStatus = sort(fileSystem.listStatus(path, new PathFilter() {
-        @Override
-        public boolean accept(Path path) {
-          if (path != null && path.getName().endsWith(".commit")) {
-            return true;
-          }
-          return false;
+      SortedSet<FileStatus> listStatus;
+      while (true) {
+        try {
+          listStatus = sort(fileSystem.listStatus(path, new PathFilter() {
+            @Override
+            public boolean accept(Path path) {
+              if (path != null && path.getName().endsWith(".commit")) {
+                return true;
+              }
+              return false;
+            }
+          }));
+          break;
+        } catch (FileNotFoundException e) {
+          LOG.warn("File not found error, retrying.");
         }
-      }));
+        try {
+          Thread.sleep(100);
+        } catch (InterruptedException e) {
+          return;
+        }
+      }
       List<HdfsDirectory> indexesToImport = new ArrayList<HdfsDirectory>();
       for (FileStatus fileStatus : listStatus) {
         Path file = fileStatus.getPath();

@@ -45,6 +45,7 @@ import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.ChecksumException;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -185,11 +186,20 @@ public class TransactionRecorder extends TimerTask implements Closeable {
       byte[] buffer = new byte[length];
       inputStream.readFully(buffer);
       return buffer;
+    } catch (ChecksumException e) {
+      LOG.warn("End of WAL file found.");
+      if (LOG.isDebugEnabled()) {
+        LOG.error("End of WAL file found.", e);
+      }
+      return null;
     } catch (IOException e) {
       if (e instanceof EOFException) {
+        LOG.warn("End of WAL file found.");
+        if (LOG.isDebugEnabled()) {
+          LOG.error("End of WAL file found.", e);
+        }
         return null;
       }
-      e.printStackTrace();
     }
     return null;
   }
@@ -274,7 +284,7 @@ public class TransactionRecorder extends TimerTask implements Closeable {
 
   private static void writeString(DataOutputStream outputStream, String s) throws IOException {
     if (s == null) {
-      Utils.writeVInt(outputStream, -1);  
+      Utils.writeVInt(outputStream, -1);
       return;
     }
     byte[] bs = s.getBytes();

@@ -557,6 +557,7 @@ public class Main {
     register(builder, new CreateSnapshotCommand());
     register(builder, new RemoveSnapshotCommand());
     register(builder, new ListSnapshotsCommand());
+    register(builder, new DiscoverFileBufferSizeUtil());
     commands = builder.build();
   }
 

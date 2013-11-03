@@ -20,6 +20,7 @@ package org.apache.blur.store.blockcache_v2;
 import java.io.IOException;
 
 import org.apache.blur.store.buffer.BufferStore;
+import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.IndexInput;
 
 public class CacheIndexInput extends IndexInput {
@@ -39,6 +40,7 @@ public class CacheIndexInput extends IndexInput {
   private long _position;
   private int _blockPosition;
   private boolean _quiet;
+  private boolean _isClosed;
 
   public CacheIndexInput(CacheDirectory directory, String fileName, IndexInput indexInput, Cache cache)
       throws IOException {
@@ -54,10 +56,85 @@ public class CacheIndexInput extends IndexInput {
     _bufferSize = _cache.getFileBufferSize(_directory, _fileName);
     _quiet = _cache.shouldBeQuiet(_directory, _fileName);
     _key.setFileId(_fileId);
+    _isClosed = false;
+  }
+
+  @Override
+  public int readVInt() throws IOException {
+    if (_cacheValue != null && remaining() >= 5) {
+      byte b = readByteFromCache();
+      if (b >= 0)
+        return b;
+      int i = b & 0x7F;
+      b = readByteFromCache();
+      i |= (b & 0x7F) << 7;
+      if (b >= 0)
+        return i;
+      b = readByteFromCache();
+      i |= (b & 0x7F) << 14;
+      if (b >= 0)
+        return i;
+      b = readByteFromCache();
+      i |= (b & 0x7F) << 21;
+      if (b >= 0)
+        return i;
+      b = readByteFromCache();
+      // Warning: the next ands use 0x0F / 0xF0 - beware copy/paste errors:
+      i |= (b & 0x0F) << 28;
+      if ((b & 0xF0) == 0)
+        return i;
+      throw new IOException("Invalid vInt detected (too many bits)");
+    }
+    return super.readVInt();
+  }
+
+  @Override
+  public long readVLong() throws IOException {
+    if (_cacheValue != null && remaining() >= 9) {
+      byte b = readByteFromCache();
+      if (b >= 0)
+        return b;
+      long i = b & 0x7FL;
+      b = readByteFromCache();
+      i |= (b & 0x7FL) << 7;
+      if (b >= 0)
+        return i;
+      b = readByteFromCache();
+      i |= (b & 0x7FL) << 14;
+      if (b >= 0)
+        return i;
+      b = readByteFromCache();
+      i |= (b & 0x7FL) << 21;
+      if (b >= 0)
+        return i;
+      b = readByteFromCache();
+      i |= (b & 0x7FL) << 28;
+      if (b >= 0)
+        return i;
+      b = readByteFromCache();
+      i |= (b & 0x7FL) << 35;
+      if (b >= 0)
+        return i;
+      b = readByteFromCache();
+      i |= (b & 0x7FL) << 42;
+      if (b >= 0)
+        return i;
+      b = readByteFromCache();
+      i |= (b & 0x7FL) << 49;
+      if (b >= 0)
+        return i;
+      b = readByteFromCache();
+      i |= (b & 0x7FL) << 56;
+      if (b >= 0)
+        return i;
+      throw new IOException("Invalid vLong detected (negative values disallowed)");
+    }
+    return super.readVLong();
   }
 
   @Override
   public byte readByte() throws IOException {
+    ensureOpen();
     tryToFill();
     byte b = _cacheValue.read(_blockPosition);
     _position++;
@@ -67,6 +144,7 @@ public class CacheIndexInput extends IndexInput {
 
   @Override
   public void readBytes(byte[] b, int offset, int len) throws IOException {
+    ensureOpen();
     while (len > 0) {
       tryToFill();
       int remaining = remaining();
@@ -81,6 +159,7 @@ public class CacheIndexInput extends IndexInput {
 
   @Override
   public short readShort() throws IOException {
+    ensureOpen();
     if (_cacheValue != null && remaining() >= 2) {
       short s = _cacheValue.readShort(_blockPosition);
       _blockPosition += 2;
@@ -92,6 +171,7 @@ public class CacheIndexInput extends IndexInput {
 
   @Override
   public int readInt() throws IOException {
+    ensureOpen();
     if (_cacheValue != null && remaining() >= 4) {
       int i = _cacheValue.readInt(_blockPosition);
       _blockPosition += 4;
@@ -103,6 +183,7 @@ public class CacheIndexInput extends IndexInput {
 
   @Override
   public long readLong() throws IOException {
+    ensureOpen();
     if (_cacheValue != null && remaining() >= 8) {
       long l = _cacheValue.readLong(_blockPosition);
       _blockPosition += 8;
@@ -110,6 +191,78 @@ public class CacheIndexInput extends IndexInput {
       return l;
     }
     return super.readLong();
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (!_isClosed) {
+      _isClosed = true;
+      _indexInput.close();
+      releaseCache();
+    }
+  }
+
+  @Override
+  public long getFilePointer() {
+    ensureOpen();
+    return _position;
+  }
+
+  @Override
+  public void seek(long pos) throws IOException {
+    ensureOpen();
+    if (pos >= _fileLength) {
+      throw new IOException("Can not seek past end of file [" + pos + "] filelength [" + _fileLength + "]");
+    }
+    if (_position == pos) {
+      // Seeking to same position
+      return;
+    }
+    long oldBlockId = getBlockId();
+    if (_blockPosition == _cacheBlockSize) {
+      // If we are at the end of the current block, but haven't actually fetched
+      // the next block then we are really on the previous.
+      oldBlockId--;
+    }
+    _position = pos;
+    long newBlockId = getBlockId(_position);
+    if (newBlockId == oldBlockId) {
+      // need to set new block position
+      _blockPosition = getBlockPosition();
+    } else {
+      releaseCache();
+    }
+  }
+
+  @Override
+  public long length() {
+    ensureOpen();
+    return _fileLength;
+  }
+
+  @Override
+  public IndexInput clone() {
+    ensureOpen();
+    CacheIndexInput clone = (CacheIndexInput) super.clone();
+    clone._key = _key.clone();
+    clone._indexInput = _indexInput.clone();
+    if (clone._cacheValue != null) {
+      clone._cacheValue.incRef();
+    }
+    clone._quiet = _cache.shouldBeQuiet(_directory, _fileName);
+    return clone;
+  }
+
+  @Override
+  protected void finalize() throws Throwable {
+    close();
+  }
+
+  private byte readByteFromCache() {
+    byte b = _cacheValue.read(_blockPosition);
+    _position++;
+    _blockPosition++;
+    return b;
   }
 
   private int remaining() {
@@ -152,8 +305,8 @@ public class CacheIndexInput extends IndexInput {
         cachePosition += length;
       }
       BufferStore.putBuffer(buffer);
+      _cache.put(_key.clone(), _cacheValue);
     }
-    _cache.put(_key.clone(), _cacheValue);
     _cacheValue.incRef();
     _blockPosition = getBlockPosition();
   }
@@ -182,57 +335,10 @@ public class CacheIndexInput extends IndexInput {
     return _position / _cacheBlockSize;
   }
 
-  @Override
-  public void close() throws IOException {
-    _indexInput.close();
-    releaseCache();
-  }
-
-  @Override
-  public long getFilePointer() {
-    return _position;
-  }
-
-  @Override
-  public void seek(long pos) throws IOException {
-    if (pos >= _fileLength) {
-      throw new IOException("Can not seek past end of file [" + pos + "] filelength [" + _fileLength + "]");
+  private void ensureOpen() {
+    if (_isClosed) {
+      throw new AlreadyClosedException("Already closed: " + this);
     }
-    if (_position == pos) {
-      // Seeking to same position
-      return;
-    }
-    long oldBlockId = getBlockId();
-    if (_blockPosition == _cacheBlockSize) {
-      // If we are at the end of the current block, but haven't actually fetched
-      // the next block then we are really on the previous.
-      oldBlockId--;
-    }
-    _position = pos;
-    long newBlockId = getBlockId(_position);
-    if (newBlockId == oldBlockId) {
-      // need to set new block position
-      _blockPosition = getBlockPosition();
-    } else {
-      releaseCache();
-    }
-  }
-
-  @Override
-  public long length() {
-    return _fileLength;
-  }
-
-  @Override
-  public IndexInput clone() {
-    CacheIndexInput clone = (CacheIndexInput) super.clone();
-    clone._key = _key.clone();
-    clone._indexInput = _indexInput.clone();
-    if (clone._cacheValue != null) {
-      clone._cacheValue.incRef();
-    }
-    clone._quiet = _cache.shouldBeQuiet(_directory, _fileName);
-    return clone;
   }
 
 }

@@ -16,6 +16,7 @@ package org.apache.blur.manager.writer;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Timer;
@@ -27,7 +28,7 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.lucene.store.AlreadyClosedException;
 
-public class BlurIndexRefresher extends TimerTask {
+public class BlurIndexRefresher extends TimerTask implements Closeable {
 
   private static final Log LOG = LogFactory.getLog(BlurIndexRefresher.class);
 
@@ -35,6 +36,12 @@ public class BlurIndexRefresher extends TimerTask {
   private long _period = TimeUnit.MINUTES.toMillis(1);
   private long _delay = _period;
   private Collection<BlurIndex> _indexes = new LinkedBlockingQueue<BlurIndex>();
+  
+  public BlurIndexRefresher() {
+    _timer = new Timer("IndexReader-Refresher", true);
+    _timer.schedule(this, _delay, _period);
+    LOG.info("Init Complete");
+  }
 
   public void register(BlurIndex blurIndex) {
     _indexes.add(blurIndex);
@@ -47,12 +54,6 @@ public class BlurIndexRefresher extends TimerTask {
   public void close() {
     _timer.purge();
     _timer.cancel();
-  }
-
-  public void init() {
-    _timer = new Timer("IndexReader-Refresher", true);
-    _timer.schedule(this, _delay, _period);
-    LOG.info("Init Complete");
   }
 
   @Override

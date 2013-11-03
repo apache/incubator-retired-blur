@@ -93,6 +93,10 @@
 <li><a href="#shell_command_delete">&nbsp;&nbsp;delete</a></li>
 <li><a href="#shell_command_highlight">&nbsp;&nbsp;highlight</a></li>
 <li><a href="#shell_command_selector">&nbsp;&nbsp;selector</a></li>
+<li><a href="#shell_command_terms">&nbsp;&nbsp;terms</a></li>
+<li><a href="#shell_command_create-snapshot">&nbsp;&nbsp;create-snapshot</a></li>
+<li><a href="#shell_command_remove-snapshot">&nbsp;&nbsp;remove-snapshot</a></li>
+<li><a href="#shell_command_list-snapshots">&nbsp;&nbsp;list-snapshots</a></li>
 </ul></li>
 <li><a href="#shell_cluster_commands">Cluster Commands</a>
 <ul class="nav">
@@ -389,6 +393,18 @@ The following rules are used when interacting with the shell:
 <h4 id="shell_command_selector">selector</h4>
 <p>Description: Manage the default selector.<br/>
 <pre><code class="bash">selector reset | add &lt;family&gt; [&lt;columnName&gt;*]</code></pre></p>
+<h4 id="shell_command_terms">terms</h4>
+<p>Description: Gets the terms list.<br/>
+<pre><code class="bash">terms &lt;tablename&gt; &lt;field&gt; [-s &lt;startwith&gt;]  [-n &lt;number&gt;] [-F frequency]</code></pre></p>
+<h4 id="shell_command_create-snapshot">create-snapshot</h4>
+<p>Description: Create a named snapshot<br/>
+<pre><code class="bash">create-snapshot &lt;tablename&gt; &lt;snapshotname&gt;</code></pre></p>
+<h4 id="shell_command_remove-snapshot">remove-snapshot</h4>
+<p>Description: Remove a named snapshot<br/>
+<pre><code class="bash">remove-snapshot &lt;tablename&gt; &lt;snapshotname&gt;</code></pre></p>
+<h4 id="shell_command_list-snapshots">list-snapshots</h4>
+<p>Description: List the existing snapshots of a table<br/>
+<pre><code class="bash">list-snapshots &lt;tablename&gt;</code></pre></p>
 <h3 id="shell_cluster_commands">Cluster Commands</h3>
 <h4 id="shell_command_controllers">controllers</h4>
 <p>Description: List controllers.<br/>

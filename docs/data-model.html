@@ -92,6 +92,19 @@
                   </li>
                 </ul>
 			  </li>
+			  <li>
+				<a href="#custom_types">Custom Types</a>
+				<ul class="nav">
+                  <li><a href="#custom_types_creating">Creating</a></li>
+                  <li><a href="#custom_types_distributing">Distributing</a></li>
+                  <li><a href="#custom_types_using">Using</a>
+				    <ul class="nav">
+                      <li><a href="#custom_types_using_cluster">&nbsp;&nbsp;Cluster Wide</a></li>
+                      <li><a href="#custom_types_using_table">&nbsp;&nbsp;Single Table</a></li>	
+                    </ul>
+                  </li>
+                </ul>
+              </li>
             </ul>
           </div>
         </div>
@@ -470,6 +483,130 @@ To run a query to find all the rows that contain a location within 10 miles of g
               </p>
             </div>
           </section>
+          <section>
+	         <div class="page-header">
+                <h1 id="custom_types">Custom Types</h1>
+	         </div>
+	         <p class="lead">Custom types in Blur allow you to create your own types in Lucene
+		     as well as plugging into the query parser so that you can use your custom type.</p>
+	         <h3 id="custom_types_creating">Creating</h3>
+	         <p>		
+You will need to extend the "org.apache.blur.analysis.FieldTypeDefinition" class found in the blur-query module.  If you need to use a different Analyzer than the StandardAnalyzer used in the "text" type just extend the "org.apache.blur.analysis.type.TextFieldTypeDefinition" and make the appropriate changes.
+		     </p>
+<p>
+For types that require custom query parsing	or custom "org.apache.lucene.index.IndexableField" manipulation without the use of an Analyzer.  Please extend "org.apache.blur.analysis.type.CustomFieldTypeDefinition".
+</p>
+<p>
+<h4>Example</h4>
+Below is a simple type that is basically the same as a "string" type, however it's implemented by extending "org.apache.blur.analysis.type.CustomFieldTypeDefinition".<br/><br/>
+<pre><code class="java">public class ExampleType extends CustomFieldTypeDefinition {
+
+  private String _fieldNameForThisInstance;
+
+  /**
+   * Get the name of the type.
+   * 
+   * @return the name.
+   */
+  @Override
+  public String getName() {
+    return "example";
+  }
+
+  /**
+   * Configures this instance for the type.
+   * 
+   * @param fieldNameForThisInstance
+   *          the field name for this instance.
+   * @param properties
+   *          the properties passed into this type definition from the
+   *          {@link Blur.Iface#addColumnDefinition(String, ColumnDefinition)}
+   *          method.
+   */
+  @Override
+  public void configure(String fieldNameForThisInstance, Map<String, String> properties, 
+                        Configuration configuration) {
+    _fieldNameForThisInstance = fieldNameForThisInstance;
+  }
+
+  /**
+   * Create {@link Field}s for the index as well as for storing the original
+   * data for retrieval.
+   * 
+   * @param family
+   *          the family name.
+   * @param column
+   *          the column that holds the name and value.
+   * 
+   * @return the {@link Iterable} of {@link Field}s.
+   */
+  @Override
+  public Iterable&lt;? extends Field&gt; getFieldsForColumn(String family, Column column) {
+    String name = family + "." + column.getName();
+    String value = column.getValue();
+    return makeIterable(new StringField(name, value, Store.YES));
+  }
+
+  /**
+   * Create {@link Field}s for the index do NOT store the data because the is a
+   * sub column.
+   * 
+   * @param family
+   *          the family name.
+   * @param column
+   *          the column that holds the name and value.
+   * @param subName
+   *          the sub column name.
+   * 
+   * @return the {@link Iterable} of {@link Field}s.
+   */
+  @Override
+  public Iterable&lt;? extends Field&gt; getFieldsForSubColumn(String family, Column column, 
+       String subName) {
+    String name = family + "." + column.getName() + "." + subName;
+    String value = column.getValue();
+    return makeIterable(new StringField(name, value, Store.NO));
+  }
+
+  /**
+   * Gets the query from the text provided by the query parser.
+   * 
+   * @param text
+   *          the text provided by the query parser.
+   * @return the {@link Query}.
+   */
+  @Override
+  public Query getCustomQuery(String text) {
+    return new TermQuery(new Term(_fieldNameForThisInstance, text));
+  }
+
+}
+</code></pre>
+	
+</p>
+
+	         <h3 id="custom_types_distributing">Distributing</h3>
+	         <p>Once you have created and tested your custom type you will need to copy the jar file containing your custom type to all the servers in the cluster.  The jar file will need to be located within the $BLUR_HOME/lib directory.  Once there all the servers will need to be restarted to have the jar file be picked up in the classpath.<br/><br/>In a later version of Blur we hope to have this be a dynamic operation that can be performed without restarting the cluster.</p>
+	         <h3 id="custom_types_using">Using</h3>
+			 <p>You can either add your custom type to the entire cluster or per table.</p>
+	         <h4 id="custom_types_using_cluster">Cluster Wide</h4>
+	         <p>For cluster wide configuration you will need to add the new field types into the blur-site.properties file on each server.
+<pre><code class="bash">blur.fieldtype.customtype1=org.apache.blur.analysis.type.ExampleType1
+blur.fieldtype.customtype2=org.apache.blur.analysis.type.ExampleType2
+...</code></pre>
+
+Please note that the prefix of "blur.fieldtype." is all that is used from the property name because the type gets it's name from the internal method of "getName".  However the property names will need to be unique within the file.
+</p>
+	         <h4 id="custom_types_using_table">Single Table</h4>
+	         <p>For a single table configuration you will need to add the new field types into the tableProperties map in the TableDescriptor as you define the table.
+<pre><code class="java">tableDescriptor.putToTableProperties("blur.fieldtype.customtype1", 
+	"org.apache.blur.analysis.type.ExampleType1");
+tableDescriptor.putToTableProperties("blur.fieldtype.customtype2", 
+	"org.apache.blur.analysis.type.ExampleType2");
+...</code></pre>
+
+Please note that the prefix of "blur.fieldtype." is all that is used from the property name because the type gets it's name from the internal method of "getName".  However the property names will need to be unique within the map.</p>
+	      </section>
         </div>
       </div>
     </div>

@@ -17,15 +17,27 @@
  */
 package org.apache.blur.store.blockcache_v2.cachevalue;
 
+import static org.apache.blur.metrics.MetricsConstants.JVM;
+import static org.apache.blur.metrics.MetricsConstants.OFF_HEAP_MEMORY;
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
+
 import java.lang.reflect.Field;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.blur.metrics.AtomicLongGauge;
+import org.apache.blur.store.blockcache_v2.CacheValue;
 
 import sun.misc.Unsafe;
+
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.MetricName;
 
 @SuppressWarnings("serial")
 public class UnsafeCacheValue extends BaseCacheValue {
 
   private static final String JAVA_NIO_BITS = "java.nio.Bits";
   private static final Unsafe _unsafe;
+  private static final AtomicLong _offHeapMemorySize = new AtomicLong();
 
   static {
     try {
@@ -36,6 +48,7 @@ public class UnsafeCacheValue extends BaseCacheValue {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, JVM, OFF_HEAP_MEMORY), new AtomicLongGauge(_offHeapMemorySize));
   }
 
   private static final int BYTE_ARRAY_BASE_OFFSET = _unsafe.arrayBaseOffset(byte[].class);
@@ -55,12 +68,9 @@ public class UnsafeCacheValue extends BaseCacheValue {
 
   public UnsafeCacheValue(int length) {
     super(length);
-    _capacity = getCapacity(length);
+    _capacity = length;
     _address = _unsafe.allocateMemory(_capacity);
-  }
-
-  private int getCapacity(int length) {
-    return length;
+    _offHeapMemorySize.addAndGet(_capacity);
   }
 
   @Override
@@ -87,6 +97,7 @@ public class UnsafeCacheValue extends BaseCacheValue {
     if (!_released) {
       _unsafe.freeMemory(_address);
       _released = true;
+      _offHeapMemorySize.addAndGet(0 - _capacity);
     } else {
       new Throwable().printStackTrace();
     }
@@ -95,5 +106,16 @@ public class UnsafeCacheValue extends BaseCacheValue {
   @Override
   public int size() {
     return _capacity;
+  }
+
+  @Override
+  public CacheValue trim(int length) {
+    if (length == _capacity) {
+      return this;
+    }
+    UnsafeCacheValue unsafeCacheValue = new UnsafeCacheValue(length);
+    _unsafe.copyMemory(_address, unsafeCacheValue._address, length);
+    release();
+    return unsafeCacheValue;
   }
 }

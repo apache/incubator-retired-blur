@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.lucene.codec.Blur021Codec;
 import org.apache.blur.lucene.search.FairSimilarity;
 import org.apache.blur.manager.writer.TransactionRecorder;
 import org.apache.blur.mapreduce.BlurTask.INDEXING_TYPE;
@@ -304,6 +305,7 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
     if (optimize) {
       context.setStatus("Starting Copy-Optimize Phase");
       IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
+      conf.setCodec(new Blur021Codec());
       MergePolicy mergePolicy = (MergePolicy) conf.getMergePolicy();
       mergePolicy.setNoCFSRatio(0.0);
       long s = System.currentTimeMillis();
@@ -459,6 +461,7 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
     nullCheck(_directory);
     nullCheck(_analyzer);
     IndexWriterConfig config = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
+    config.setCodec(new Blur021Codec());
     MergePolicy mergePolicy = (MergePolicy) config.getMergePolicy();
     mergePolicy.setNoCFSRatio(0.0);
     config.setSimilarity(new FairSimilarity());

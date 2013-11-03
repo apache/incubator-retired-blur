@@ -19,6 +19,6 @@ package org.apache.blur.store.blockcache_v2;
 
 public interface FileNameFilter {
 
-  boolean accept(String directoryName, String fileName);
+  boolean accept(CacheDirectory directory, String fileName);
 
 }

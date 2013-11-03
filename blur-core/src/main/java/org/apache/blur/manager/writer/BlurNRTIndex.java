@@ -38,9 +38,9 @@ import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.index.ExitableReader;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.lucene.codec.Blur021Codec;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceCounter;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
-import org.apache.blur.lucene.store.refcounter.IndexInputCloser;
 import org.apache.blur.lucene.warmup.TraceableDirectory;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.IndexSearcherClosableNRT;
@@ -96,36 +96,38 @@ public class BlurNRTIndex extends BlurIndex {
   private final ReadWriteLock _lock = new ReentrantReadWriteLock();
   private long _lastRefresh = 0;
 
-  public BlurNRTIndex(ShardContext shardContext, SharedMergeScheduler mergeScheduler, IndexInputCloser closer,
-      Directory directory, DirectoryReferenceFileGC gc, final ExecutorService searchExecutor) throws IOException {
+  public BlurNRTIndex(ShardContext shardContext, SharedMergeScheduler mergeScheduler, Directory directory,
+      DirectoryReferenceFileGC gc, final ExecutorService searchExecutor) throws IOException {
     _tableContext = shardContext.getTableContext();
     _directory = directory;
     _shardContext = shardContext;
-    
+
     FieldManager fieldManager = _tableContext.getFieldManager();
     Analyzer analyzer = fieldManager.getAnalyzerForIndex();
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, analyzer);
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
+    conf.setCodec(new Blur021Codec());
     conf.setSimilarity(_tableContext.getSimilarity());
-    
+    conf.setMergedSegmentWarmer(new FieldBasedWarmer(shardContext, _isClosed));
+
     SnapshotDeletionPolicy sdp;
     if (snapshotsDirectoryExists()) {
       // load existing snapshots
-     sdp = new SnapshotDeletionPolicy(_tableContext.getIndexDeletionPolicy(), loadExistingSnapshots());
+      sdp = new SnapshotDeletionPolicy(_tableContext.getIndexDeletionPolicy(), loadExistingSnapshots());
     } else {
       sdp = new SnapshotDeletionPolicy(_tableContext.getIndexDeletionPolicy());
-   }
+    }
     conf.setIndexDeletionPolicy(sdp);
     conf.setMergedSegmentWarmer(new FieldBasedWarmer(shardContext, _isClosed));
     MergePolicy mergePolicy = (MergePolicy) conf.getMergePolicy();
     mergePolicy.setNoCFSRatio(0.0);
-    
+
     conf.setMergeScheduler(mergeScheduler.getMergeScheduler());
 
-    DirectoryReferenceCounter referenceCounter = new DirectoryReferenceCounter(directory, gc, closer);
+    DirectoryReferenceCounter referenceCounter = new DirectoryReferenceCounter(directory, gc);
     // This directory allows for warm up by adding tracing ability.
     TraceableDirectory dir = new TraceableDirectory(referenceCounter);
-    
+
     SimpleTimer simpleTimer = new SimpleTimer();
     simpleTimer.start("writerOpen");
     _writer = new BlurIndexWriter(dir, conf, true);
@@ -143,7 +145,7 @@ public class BlurNRTIndex extends BlurIndex {
 
     _trackingWriter = new TrackingIndexWriter(_writer);
     _indexImporter = new IndexImporter(_trackingWriter, _lock, _shardContext, TimeUnit.SECONDS, 10);
-    _nrtManagerRef.set(new SearcherManager(_writer, APPLY_ALL_DELETES,_searcherFactory));
+    _nrtManagerRef.set(new SearcherManager(_writer, APPLY_ALL_DELETES, _searcherFactory));
     // start commiter
 
     _committer = new Thread(new Committer());
@@ -153,7 +155,8 @@ public class BlurNRTIndex extends BlurIndex {
 
     // start refresher
     double targetMinStaleSec = _tableContext.getTimeBetweenRefreshs() / 1000.0;
-    _refresher = new ControlledRealTimeReopenThread<IndexSearcher>(_trackingWriter,getNRTManager(), targetMinStaleSec * 10, targetMinStaleSec);
+    _refresher = new ControlledRealTimeReopenThread<IndexSearcher>(_trackingWriter, getNRTManager(),
+        targetMinStaleSec * 10, targetMinStaleSec);
     _refresher.setName("Refresh Thread [" + _tableContext.getTable() + "/" + shardContext.getShard() + "]");
     _refresher.setDaemon(true);
     _refresher.start();
@@ -162,20 +165,19 @@ public class BlurNRTIndex extends BlurIndex {
   }
 
   /**
-   * The snapshots directory contains a file per snapshot.
-   * Name of the file is the snapshot name and it stores the segments filename
+   * The snapshots directory contains a file per snapshot. Name of the file is
+   * the snapshot name and it stores the segments filename
    * 
    * @return Map<String, String>
    * @throws IOException
    */
   private Map<String, String> loadExistingSnapshots() throws IOException {
-	  
-	Map<String, String> snapshots = new HashMap<String, String>();
-    
+    Map<String, String> snapshots = new HashMap<String, String>();
+
     FileSystem fileSystem = getFileSystem();
     FileStatus[] status = fileSystem.listStatus(getSnapshotsDirectoryPath());
-    
-    for (int i=0;i<status.length;i++){
+
+    for (int i = 0; i < status.length; i++) {
       FileStatus fileStatus = status[i];
       String snapshotName = fileStatus.getPath().getName();
       // cleanup all tmp files
@@ -183,17 +185,17 @@ public class BlurNRTIndex extends BlurIndex {
         fileSystem.delete(fileStatus.getPath(), true);
         continue;
       }
-      BufferedReader br=new BufferedReader(new InputStreamReader(fileSystem.open(fileStatus.getPath())));
-      String segmentsFilename=br.readLine();
-      if (segmentsFilename != null){
+      BufferedReader br = new BufferedReader(new InputStreamReader(fileSystem.open(fileStatus.getPath())));
+      String segmentsFilename = br.readLine();
+      if (segmentsFilename != null) {
         snapshots.put(snapshotName, segmentsFilename);
       }
     }
-    
+
     return snapshots;
   }
-  
-  private boolean snapshotsDirectoryExists() throws IOException{
+
+  private boolean snapshotsDirectoryExists() throws IOException {
     Path shardHdfsDirPath = _shardContext.getHdfsDirPath();
     FileSystem fileSystem = getFileSystem();
     Path shardSnapshotsDirPath = new Path(shardHdfsDirPath, SNAPSHOTS_FOLDER_NAME);
@@ -202,7 +204,7 @@ public class BlurNRTIndex extends BlurIndex {
     }
     return false;
   }
-  
+
   @Override
   public void replaceRow(boolean waitToBeVisible, boolean wal, Row row) throws IOException {
     _lock.readLock().lock();
@@ -291,7 +293,7 @@ public class BlurNRTIndex extends BlurIndex {
       refresh();
     }
     if (waitToBeVisible && getNRTManager().getCurrentSearchingGen() < generation) {
-    	_refresher.waitForGeneration(generation);
+      _refresher.waitForGeneration(generation);
     }
   }
 
@@ -344,42 +346,41 @@ public class BlurNRTIndex extends BlurIndex {
   public void createSnapshot(String name) throws IOException {
     SnapshotDeletionPolicy snapshotter = getSnapshotter();
     List<IndexCommit> snapshots = snapshotter.getSnapshots();
-    
-//    Map<String, String> existingSnapshots = snapshotter.getSnapshots();
+
     for (IndexCommit indexCommit : snapshots) {
-	    if (indexCommit.getSegmentsFileName().equals(name)) {
-	      LOG.error("A Snapshot already exists with the same name [{0}] on [{1}/{2}].", 
-	          name, _tableContext.getTable(), _shardContext.getShard());
-	      throw new IOException("A Snapshot already exists with the same name [" + name + "] on " +
-	      	"["+_tableContext.getTable()+"/"+_shardContext.getShard()+"].");
-	    }
+      if (indexCommit.getSegmentsFileName().equals(name)) {
+        LOG.error("A Snapshot already exists with the same name [{0}] on [{1}/{2}].", name, _tableContext.getTable(),
+            _shardContext.getShard());
+        throw new IOException("A Snapshot already exists with the same name [" + name + "] on " + "["
+            + _tableContext.getTable() + "/" + _shardContext.getShard() + "].");
+      }
     }
     _writer.commit();
     IndexCommit indexCommit = snapshotter.snapshot();
-    
+
     /*
      * Persist the snapshots info into a tmp file under the snapshots sub-folder
-     * and once writing is finished, close the writer.
-     * Now rename the tmp file to an actual snapshots file.
-     * This make the file write an atomic operation
+     * and once writing is finished, close the writer. Now rename the tmp file
+     * to an actual snapshots file. This make the file write an atomic operation
      * 
-     * The name of the file is the snapshot name and its contents specify the segments file name
+     * The name of the file is the snapshot name and its contents specify the
+     * segments file name
      */
     String segmentsFilename = indexCommit.getSegmentsFileName();
     FileSystem fileSystem = getFileSystem();
     Path shardSnapshotsDirPath = getSnapshotsDirectoryPath();
     BlurUtil.createPath(fileSystem, shardSnapshotsDirPath);
     Path newTmpSnapshotFile = new Path(shardSnapshotsDirPath, name + SNAPSHOTS_TMPFILE_EXTENSION);
-    BufferedWriter br=new BufferedWriter(new OutputStreamWriter(fileSystem.create(newTmpSnapshotFile,true)));
+    BufferedWriter br = new BufferedWriter(new OutputStreamWriter(fileSystem.create(newTmpSnapshotFile, true)));
     br.write(segmentsFilename);
     br.close();
-    
+
     // now rename the tmp file
     Path newSnapshotFile = new Path(shardSnapshotsDirPath, name);
     fileSystem.rename(newTmpSnapshotFile, newSnapshotFile);
-    
-    LOG.info("Snapshot [{0}] created successfully on [{1}/{2}].",
-        name, _tableContext.getTable(), _shardContext.getShard());
+
+    LOG.info("Snapshot [{0}] created successfully on [{1}/{2}].", name, _tableContext.getTable(),
+        _shardContext.getShard());
   }
 
   @Override
@@ -388,18 +389,19 @@ public class BlurNRTIndex extends BlurIndex {
     Map<String, String> existingSnapshots = snapshotter.getSnapshots();
     if (existingSnapshots.containsKey(name)) {
       snapshotter.release(name);
-      
-      // now delete the snapshot file stored in the snapshots directory under the shard
+
+      // now delete the snapshot file stored in the snapshots directory under
+      // the shard
       Path snapshotFilePath = new Path(getSnapshotsDirectoryPath(), name);
       getFileSystem().delete(snapshotFilePath, true);
-       
-      LOG.info("Snapshot [{0}] removed successfully from [{1}/{2}].",
-          name, _tableContext.getTable(), _shardContext.getShard());
+
+      LOG.info("Snapshot [{0}] removed successfully from [{1}/{2}].", name, _tableContext.getTable(),
+          _shardContext.getShard());
     } else {
-      LOG.error("No Snapshot exists with the name [{0}] on  [{1}/{2}].", 
-          name, _tableContext.getTable(), _shardContext.getShard());
-      throw new IOException("No Snapshot exists with the name [" + name + "] on " +
-        "["+_tableContext.getTable()+"/"+_shardContext.getShard()+"].");
+      LOG.error("No Snapshot exists with the name [{0}] on  [{1}/{2}].", name, _tableContext.getTable(),
+          _shardContext.getShard());
+      throw new IOException("No Snapshot exists with the name [" + name + "] on " + "[" + _tableContext.getTable()
+          + "/" + _shardContext.getShard() + "].");
     }
   }
 
@@ -416,25 +418,25 @@ public class BlurNRTIndex extends BlurIndex {
    * @return SnapshotDeletionPolicy
    * @throws IOException
    */
-  private SnapshotDeletionPolicy getSnapshotter() throws IOException{
+  private SnapshotDeletionPolicy getSnapshotter() throws IOException {
     IndexDeletionPolicy idp = _writer.getConfig().getIndexDeletionPolicy();
     if (idp instanceof SnapshotDeletionPolicy) {
-      SnapshotDeletionPolicy snapshotter = (SnapshotDeletionPolicy)idp;
+      SnapshotDeletionPolicy snapshotter = (SnapshotDeletionPolicy) idp;
       return snapshotter;
     } else {
-      LOG.error("The index deletion policy for [{0}/{1}] does not support snapshots.", 
-          _tableContext.getTable(), _shardContext.getShard());
-      throw new IOException("The index deletion policy for ["+_tableContext.getTable()+"/"+_shardContext.getShard()+"]" +
-      		" does not support snapshots.");
+      LOG.error("The index deletion policy for [{0}/{1}] does not support snapshots.", _tableContext.getTable(),
+          _shardContext.getShard());
+      throw new IOException("The index deletion policy for [" + _tableContext.getTable() + "/"
+          + _shardContext.getShard() + "]" + " does not support snapshots.");
     }
   }
-  
+
   public Path getSnapshotsDirectoryPath() throws IOException {
     Path shardHdfsDirPath = _shardContext.getHdfsDirPath();
     return new Path(shardHdfsDirPath, SNAPSHOTS_FOLDER_NAME);
   }
-  
-  private FileSystem getFileSystem() throws IOException{
+
+  private FileSystem getFileSystem() throws IOException {
     Path shardHdfsDirPath = _shardContext.getHdfsDirPath();
     Configuration configuration = _shardContext.getTableContext().getConfiguration();
     return shardHdfsDirPath.getFileSystem(configuration);

@@ -16,12 +16,15 @@ package org.apache.blur.utils;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.blur.lucene.codec.Blur021Codec;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -34,8 +37,6 @@ import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.util.Version;
-
 /**
  * This class is used to reduce the total number of shards of a table. The main
  * use would be if during an indexing job the number of reducers were increased
@@ -128,7 +129,8 @@ public class TableShardCountCollapser extends Configured implements Tool {
     int numberOfShardsToMergePerPass = paths.length / newShardCount;
     for (int i = 0; i < newShardCount; i++) {
       System.out.println("Base Index [" + paths[i] + "]");
-      IndexWriterConfig lconf = new IndexWriterConfig(Version.LUCENE_42, new KeywordAnalyzer());
+      IndexWriterConfig lconf = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
+      lconf.setCodec(new Blur021Codec());
       HdfsDirectory dir = new HdfsDirectory(getConf(), paths[i]);
       IndexWriter indexWriter = new IndexWriter(dir, lconf);
       Directory[] dirs = new Directory[numberOfShardsToMergePerPass - 1];

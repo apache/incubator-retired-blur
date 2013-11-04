@@ -482,9 +482,9 @@ public class BlurShardServer extends TableAdmin implements Iface {
   public void setConfiguration(BlurConfiguration conf) {
     _configuration = conf;
   }
-  
+
   @Override
-  public void setUser(User user) throws BlurException, TException {
+  public void setUser(User user) throws TException {
     ShardServerContext context = ShardServerContext.getShardServerContext();
     context.setUser(user);
   }

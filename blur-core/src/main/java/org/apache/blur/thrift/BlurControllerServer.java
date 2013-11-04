@@ -443,10 +443,10 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
     if (selector != null) {
 
-      //Gather client objects and build batches for fetching.
+      // Gather client objects and build batches for fetching.
       IdentityHashMap<Client, List<Selector>> map = new IdentityHashMap<Client, List<Selector>>();
-      
-      //Need to maintain original order.
+
+      // Need to maintain original order.
       final IdentityHashMap<Selector, Integer> indexMap = new IdentityHashMap<Selector, Integer>();
       for (int i = 0; i < results.results.size(); i++) {
         final LazyBlurResult result = (LazyBlurResult) results.results.get(i);
@@ -462,7 +462,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         indexMap.put(s, i);
       }
 
-      //Execute batch fetches
+      // Execute batch fetches
       List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
       final AtomicReferenceArray<FetchResult> fetchResults = new AtomicReferenceArray<FetchResult>(
           results.results.size());
@@ -482,12 +482,12 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         }));
       }
 
-      //Wait for all parallel calls to finish.
+      // Wait for all parallel calls to finish.
       for (Future<Boolean> future : futures) {
         future.get();
       }
 
-      //Place fetch results into result object for response.
+      // Place fetch results into result object for response.
       for (int i = 0; i < fetchResults.length(); i++) {
         FetchResult fetchResult = fetchResults.get(i);
         BlurResult result = results.results.get(i);
@@ -1174,7 +1174,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public void setUser(User user) throws BlurException, TException {
+  public void setUser(User user) throws TException {
     ControllerServerContext context = ControllerServerContext.getControllerServerContext();
     context.setUser(user);
   }

@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.ServerContext;
-import org.apache.blur.thrift.generated.User;
 import org.apache.hadoop.io.IOUtils;
 
 /**
@@ -35,22 +34,15 @@ import org.apache.hadoop.io.IOUtils;
  * that involve the _threadsToContext map where Thread is the key we don't need
  * to clear or reset threads.
  */
-public class ShardServerContext implements ServerContext {
+public class ShardServerContext extends BlurServerContext implements ServerContext {
 
   private static final Log LOG = LogFactory.getLog(ShardServerContext.class);
 
   private final static Map<Thread, ShardServerContext> _threadsToContext = new ConcurrentHashMap<Thread, ShardServerContext>();
   private final Map<String, IndexSearcherClosable> _indexSearcherMap = new HashMap<String, IndexSearcherClosable>();
-  private final SocketAddress _localSocketAddress;
-  private final SocketAddress _remoteSocketAddress;
-  private final String _connectionString;
-
-  private User _user;
 
   public ShardServerContext(SocketAddress localSocketAddress, SocketAddress remoteSocketAddress) {
-    _localSocketAddress = localSocketAddress;
-    _remoteSocketAddress = remoteSocketAddress;
-    _connectionString = _localSocketAddress.toString() + "\t" + _remoteSocketAddress.toString();
+    super(localSocketAddress, remoteSocketAddress);
   }
 
   /**
@@ -141,27 +133,6 @@ public class ShardServerContext implements ServerContext {
 
   private String getKey(String table, String shard) {
     return table + "/" + shard;
-  }
-
-  public SocketAddress getRocalSocketAddress() {
-    return _localSocketAddress;
-  }
-
-  public SocketAddress getRemoteSocketAddress() {
-    return _remoteSocketAddress;
-  }
-
-  public String getConnectionString() {
-    return _connectionString;
-  }
-
-  public void setUser(User user) {
-    LOG.info("User [{0}] for context [{1}]", user, this);
-    _user = user;
-  }
-
-  public User getUser() {
-    return _user;
   }
 
 }

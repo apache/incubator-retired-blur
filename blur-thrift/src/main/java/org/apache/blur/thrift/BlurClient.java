@@ -35,6 +35,7 @@ import org.apache.blur.thrift.generated.User;
 public class BlurClient {
 
   private static final Log LOG = LogFactory.getLog(BlurClient.class);
+  private static final boolean DEFAULT_SET_USER = false;
 
   static class BlurClientInvocationHandler implements InvocationHandler {
 
@@ -47,7 +48,7 @@ public class BlurClient {
     private User user;
 
     public BlurClientInvocationHandler(List<Connection> connections) {
-      this(connections, true);
+      this(connections, DEFAULT_SET_USER);
     }
 
     public BlurClientInvocationHandler(List<Connection> connections, int maxRetries, long backOffTime,
@@ -163,7 +164,7 @@ public class BlurClient {
 
   public static Iface getClient(List<Connection> connections, int maxRetries, long backOffTime, long maxBackOffTime) {
     return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class },
-        new BlurClientInvocationHandler(connections, maxRetries, backOffTime, maxBackOffTime, true));
+        new BlurClientInvocationHandler(connections, maxRetries, backOffTime, maxBackOffTime, DEFAULT_SET_USER));
   }
 
   public static Iface getClient(Connection connection, int maxRetries, long backOffTime, long maxBackOffTime,

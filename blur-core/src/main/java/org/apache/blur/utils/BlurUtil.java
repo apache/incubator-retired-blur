@@ -19,6 +19,8 @@ package org.apache.blur.utils;
 import static org.apache.blur.metrics.MetricsConstants.BLUR;
 import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 import static org.apache.blur.metrics.MetricsConstants.THRIFT_CALLS;
+import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_FILTERED_SERVER_CLASS;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_FILTERED_SERVER_CLASS;
 import static org.apache.blur.utils.BlurConstants.SHARD_PREFIX;
 
 import java.io.ByteArrayInputStream;
@@ -29,6 +31,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -54,6 +57,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.regex.Pattern;
 
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
@@ -62,6 +66,7 @@ import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.results.BlurResultPeekableIteratorComparator;
 import org.apache.blur.manager.results.PeekableIterator;
 import org.apache.blur.server.ControllerServerContext;
+import org.apache.blur.server.FilteredBlurServer;
 import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TBase;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
@@ -165,7 +170,7 @@ public class BlurUtil {
           if (controllerServerContext == null) {
             connectionString = "unknown";
           } else {
-            connectionString = controllerServerContext.getConnectionString();  
+            connectionString = controllerServerContext.getConnectionString();
           }
         } else {
           ShardServerContext shardServerContext = ShardServerContext.getShardServerContext();
@@ -878,5 +883,38 @@ public class BlurUtil {
       throw new IOException("Could not create new filr in [" + path + "] ");
     }
     fileSystem.delete(path, true);
+  }
+
+  @SuppressWarnings("unchecked")
+  public static Iface wrapFilteredBlurServer(BlurConfiguration configuration, Iface iface, boolean shard) {
+    String className;
+    if (!shard) {
+      className = configuration.get(BLUR_CONTROLLER_FILTERED_SERVER_CLASS);
+    } else {
+      className = configuration.get(BLUR_SHARD_FILTERED_SERVER_CLASS);
+    }
+    if (className != null && !className.isEmpty()) {
+      try {
+        Class<? extends FilteredBlurServer> clazz = (Class<? extends FilteredBlurServer>) Class.forName(className);
+        Constructor<? extends FilteredBlurServer> constructor = clazz.getConstructor(new Class[] {
+            BlurConfiguration.class, Iface.class, Boolean.TYPE });
+        return constructor.newInstance(new Object[] { configuration, iface, shard });
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      } catch (NoSuchMethodException e) {
+        throw new RuntimeException(e);
+      } catch (SecurityException e) {
+        throw new RuntimeException(e);
+      } catch (InstantiationException e) {
+        throw new RuntimeException(e);
+      } catch (IllegalAccessException e) {
+        throw new RuntimeException(e);
+      } catch (IllegalArgumentException e) {
+        throw new RuntimeException(e);
+      } catch (InvocationTargetException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return iface;
   }
 }

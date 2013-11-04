@@ -247,19 +247,11 @@ module Blur
 
       def setUser(user)
         send_setUser(user)
-        recv_setUser()
       end
 
       def send_setUser(user)
         send_message('setUser', SetUser_args, :user => user)
       end
-
-      def recv_setUser()
-        result = receive_message(SetUser_result)
-        raise result.ex unless result.ex.nil?
-        return
-      end
-
       def query(table, blurQuery)
         send_query(table, blurQuery)
         return recv_query()
@@ -717,13 +709,8 @@ module Blur
 
       def process_setUser(seqid, iprot, oprot)
         args = read_args(iprot, SetUser_args)
-        result = SetUser_result.new()
-        begin
-          @handler.setUser(args.user)
-        rescue ::Blur::BlurException => ex
-          result.ex = ex
-        end
-        write_result(result, oprot, 'setUser', seqid)
+        @handler.setUser(args.user)
+        return
       end
 
       def process_query(seqid, iprot, oprot)
@@ -1469,10 +1456,9 @@ module Blur
 
     class SetUser_result
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      EX = 1
 
       FIELDS = {
-        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+
       }
 
       def struct_fields; FIELDS; end

@@ -2300,18 +2300,11 @@ sub write {
 
 package Blur::Blur_setUser_result;
 use base qw(Class::Accessor);
-Blur::Blur_setUser_result->mk_accessors( qw( ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{ex} = undef;
-  if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{ex}) {
-      $self->{ex} = $vals->{ex};
-    }
-  }
   return bless ($self, $classname);
 }
 
@@ -2334,13 +2327,6 @@ sub read {
     }
     SWITCH: for($fid)
     {
-      /^1$/ && do{      if ($ftype == TType::STRUCT) {
-        $self->{ex} = new Blur::BlurException();
-        $xfer += $self->{ex}->read($input);
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -2353,11 +2339,6 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('Blur_setUser_result');
-  if (defined $self->{ex}) {
-    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
-    $xfer += $self->{ex}->write($output);
-    $xfer += $output->writeFieldEnd();
-  }
   $xfer += $output->writeFieldStop();
   $xfer += $output->writeStructEnd();
   return $xfer;
@@ -6583,7 +6564,6 @@ sub setUser{
   my $user = shift;
 
     $self->send_setUser($user);
-  $self->recv_setUser();
 }
 
 sub send_setUser{
@@ -6596,30 +6576,6 @@ sub send_setUser{
   $args->write($self->{output});
   $self->{output}->writeMessageEnd();
   $self->{output}->getTransport()->flush();
-}
-
-sub recv_setUser{
-  my $self = shift;
-
-  my $rseqid = 0;
-  my $fname;
-  my $mtype = 0;
-
-  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
-  if ($mtype == TMessageType::EXCEPTION) {
-    my $x = new TApplicationException();
-    $x->read($self->{input});
-    $self->{input}->readMessageEnd();
-    die $x;
-  }
-  my $result = new Blur::Blur_setUser_result();
-  $result->read($self->{input});
-  $self->{input}->readMessageEnd();
-
-  if (defined $result->{ex}) {
-    die $result->{ex};
-  }
-  return;
 }
 sub query{
   my $self = shift;
@@ -7761,18 +7717,9 @@ sub process_setUser {
     my $args = new Blur::Blur_setUser_args();
     $args->read($input);
     $input->readMessageEnd();
-    my $result = new Blur::Blur_setUser_result();
-    eval {
-      $self->{handler}->setUser($args->user);
-    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
-      $result->{ex} = $@;
-    }
-    $output->writeMessageBegin('setUser', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->writeMessageEnd();
-    $output->getTransport()->flush();
+    $self->{handler}->setUser($args->user);
+    return;
 }
-
 sub process_query {
     my ($self, $seqid, $input, $output) = @_;
     my $args = new Blur::Blur_query_args();

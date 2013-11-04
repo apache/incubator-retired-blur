@@ -206,7 +206,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     int indexManagerThreadCount = configuration.getInt(BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT, 32);
     int mutateThreadCount = configuration.getInt(BLUR_INDEXMANAGER_MUTATE_THREAD_COUNT, 32);
     long statusCleanupTimerDelay = TimeUnit.SECONDS.toMillis(10);
-    
+
     final IndexManager indexManager = new IndexManager(indexServer, clusterStatus, filterCache, maxHeapPerRowFetch,
         fetchCount, indexManagerThreadCount, mutateThreadCount, statusCleanupTimerDelay);
 
@@ -221,7 +221,9 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.setConfiguration(configuration);
     shardServer.init();
 
-    Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(shardServer, Iface.class, false);
+    Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, shardServer, true);
+
+    iface = BlurUtil.recordMethodCallsAndAverageTimes(iface, Iface.class, false);
     if (httpServer != null) {
       WebAppContext context = httpServer.getContext();
       context.addServlet(new ServletHolder(new TServlet(new Blur.Processor<Blur.Iface>(iface),
@@ -266,9 +268,9 @@ public class ThriftBlurShardServer extends ThriftServer {
     if (blurFilterCacheClass != null) {
       try {
         Class<? extends BlurFilterCache> clazz = (Class<? extends BlurFilterCache>) Class.forName(blurFilterCacheClass);
-        Class<?>[] types = new Class<?>[] {BlurConfiguration.class};
+        Class<?>[] types = new Class<?>[] { BlurConfiguration.class };
         Constructor<? extends BlurFilterCache> constructor = clazz.getConstructor(types);
-        return constructor.newInstance(new Object[]{configuration});
+        return constructor.newInstance(new Object[] { configuration });
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

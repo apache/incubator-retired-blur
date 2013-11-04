@@ -20,28 +20,17 @@ import java.net.SocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.blur.log.Log;
-import org.apache.blur.log.LogFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.ServerContext;
-import org.apache.blur.thrift.generated.User;
 
 /**
  * The thrift session that holds the connection string of the client.
  */
-public class ControllerServerContext implements ServerContext {
-  
-  private static final Log LOG = LogFactory.getLog(ControllerServerContext.class);
+public class ControllerServerContext extends BlurServerContext implements ServerContext {
 
   private final static Map<Thread, ControllerServerContext> _threadsToContext = new ConcurrentHashMap<Thread, ControllerServerContext>();
-  private final SocketAddress _localSocketAddress;
-  private final SocketAddress _remoteSocketAddress;
-  private final String _connectionString;
-  private User _user;
 
   public ControllerServerContext(SocketAddress localSocketAddress, SocketAddress remoteSocketAddress) {
-    _localSocketAddress = localSocketAddress;
-    _remoteSocketAddress = remoteSocketAddress;
-    _connectionString = _localSocketAddress.toString() + "\t" + _remoteSocketAddress.toString();
+    super(localSocketAddress, remoteSocketAddress);
   }
 
   /**
@@ -63,26 +52,4 @@ public class ControllerServerContext implements ServerContext {
     return _threadsToContext.get(Thread.currentThread());
   }
 
-  public SocketAddress getRocalSocketAddress() {
-    return _localSocketAddress;
-  }
-
-  public SocketAddress getRemoteSocketAddress() {
-    return _remoteSocketAddress;
-  }
-
-  public String getConnectionString() {
-    return _connectionString;
-  }
-
-  public void setUser(User user) {
-    LOG.info("User [{0}] for context [{1}]", user, this);
-    _user = user;
-  }
-
-  public User getUser() {
-    return _user;
-  }
-  
-  
 }

@@ -1988,16 +1988,6 @@ Blur_setUser_args.prototype.write = function(output) {
 };
 
 Blur_setUser_result = function(args) {
-  this.ex = null;
-  if (args instanceof BlurException) {
-    this.ex = args;
-    return;
-  }
-  if (args) {
-    if (args.ex !== undefined) {
-      this.ex = args.ex;
-    }
-  }
 };
 Blur_setUser_result.prototype = {};
 Blur_setUser_result.prototype.read = function(input) {
@@ -2011,22 +2001,7 @@ Blur_setUser_result.prototype.read = function(input) {
     if (ftype == Thrift.Type.STOP) {
       break;
     }
-    switch (fid)
-    {
-      case 1:
-      if (ftype == Thrift.Type.STRUCT) {
-        this.ex = new BlurException();
-        this.ex.read(input);
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 0:
-        input.skip(ftype);
-        break;
-      default:
-        input.skip(ftype);
-    }
+    input.skip(ftype);
     input.readFieldEnd();
   }
   input.readStructEnd();
@@ -2035,11 +2010,6 @@ Blur_setUser_result.prototype.read = function(input) {
 
 Blur_setUser_result.prototype.write = function(output) {
   output.writeStructBegin('Blur_setUser_result');
-  if (this.ex !== null && this.ex !== undefined) {
-    output.writeFieldBegin('ex', Thrift.Type.STRUCT, 1);
-    this.ex.write(output);
-    output.writeFieldEnd();
-  }
   output.writeFieldStop();
   output.writeStructEnd();
   return;
@@ -5249,7 +5219,6 @@ BlurClient.prototype.recv_listSnapshots = function() {
 };
 BlurClient.prototype.setUser = function(user) {
   this.send_setUser(user);
-  this.recv_setUser();
 };
 
 BlurClient.prototype.send_setUser = function(user) {
@@ -5259,27 +5228,6 @@ BlurClient.prototype.send_setUser = function(user) {
   args.write(this.output);
   this.output.writeMessageEnd();
   return this.output.getTransport().flush();
-};
-
-BlurClient.prototype.recv_setUser = function() {
-  var ret = this.input.readMessageBegin();
-  var fname = ret.fname;
-  var mtype = ret.mtype;
-  var rseqid = ret.rseqid;
-  if (mtype == Thrift.MessageType.EXCEPTION) {
-    var x = new Thrift.TApplicationException();
-    x.read(this.input);
-    this.input.readMessageEnd();
-    throw x;
-  }
-  var result = new Blur_setUser_result();
-  result.read(this.input);
-  this.input.readMessageEnd();
-
-  if (null !== result.ex) {
-    throw result.ex;
-  }
-  return;
 };
 BlurClient.prototype.query = function(table, blurQuery) {
   this.send_query(table, blurQuery);

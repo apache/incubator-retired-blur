@@ -119,6 +119,9 @@ public class BlurConstants {
   public static final String BLUR_CLIENTPOOL_CLIENT_CLOSE_THRESHOLD = "blur.clientpool.client.close.threshold";
   public static final String BLUR_CLIENTPOOL_CLIENT_CLEAN_FREQUENCY = "blur.clientpool.client.clean.frequency";
   
+  public static final String BLUR_SHARD_FILTERED_SERVER_CLASS = "blur.shard.filtered.server.class";
+  public static final String BLUR_CONTROLLER_FILTERED_SERVER_CLASS = "blur.controller.filtered.server.class";
+  
   public static final String BLUR_GUI_CONTROLLER_PORT = "blur.gui.controller.port";
   public static final String BLUR_GUI_SHARD_PORT = "blur.gui.shard.port";
 

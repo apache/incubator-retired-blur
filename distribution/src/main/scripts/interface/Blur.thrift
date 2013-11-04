@@ -883,10 +883,10 @@ service Blur {
   /**
    * Sets the User for the current session.
    */
-  void setUser(
+  oneway void setUser(
     /** the User object. */
     1:User user
-  ) throws (1:BlurException ex)
+  )
 
   /**
    * Executes a query against a the given table and returns the results.  If this method is 

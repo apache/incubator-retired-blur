@@ -138,14 +138,17 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
   private Map<String, String> calculateNewLayout(String table, MasterBasedDistributedLayout existingLayout,
       List<String> shardList, List<String> onlineShardServerList) {
     Set<String> shardServerSet = new TreeSet<String>(onlineShardServerList);
+    if (shardServerSet.isEmpty()) {
+      throw new RuntimeException("No online servers.");
+    }
     if (existingLayout == null) {
       // blind setup, basic round robin
       LOG.info("Blind shard layout.");
       Map<String, String> newLayoutMap = new TreeMap<String, String>();
-      Iterator<String> iterator = onlineShardServerList.iterator();
+      Iterator<String> iterator = shardServerSet.iterator();
       for (String shard : shardList) {
         if (!iterator.hasNext()) {
-          iterator = onlineShardServerList.iterator();
+          iterator = shardServerSet.iterator();
         }
         String server = iterator.next();
         newLayoutMap.put(shard, server);
@@ -168,7 +171,7 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
 
       LOG.info("Adding in new shard servers for table [{0}]", table);
       // Add counts for new shard servers
-      for (String server : onlineShardServerList) {
+      for (String server : shardServerSet) {
         if (!onlineServerShardCount.containsKey(server)) {
           LOG.info("New shard server [{0}]", server);
           onlineServerShardCount.put(server, 0);
@@ -188,7 +191,7 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
 
       LOG.info("Leveling any shard hotspots for table [{0}]", table);
       // Level shards
-      MasterBasedLeveler.level(shardList.size(), onlineShardServerList.size(), onlineServerShardCount, newLayoutMap);
+      MasterBasedLeveler.level(shardList.size(), shardServerSet.size(), onlineServerShardCount, newLayoutMap);
       return newLayoutMap;
     }
   }

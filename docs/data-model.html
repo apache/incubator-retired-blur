@@ -338,6 +338,8 @@ To run a query to find all the rows that contain a location within 10 miles of g
               <ul>
               <li>&quot;stopWordPath&quot; -Optional- default value is no stop words.  This should be a HDFS path.
 	<br/>This will load stop words into the StandardAnalyzer for this field, one term per line.</li>
+	
+	          <li>&quot;analyzerClass&quot; -Optional- default value is a standard analyzer with no stop words.<br/>This could be any Analyzer class that has a default constructor or one that takes a Lucene Version enum.</li>
               </ul>
 		  </p>
               <h3 id="string_type">String</h3>

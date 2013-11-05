@@ -19,10 +19,13 @@ package org.apache.blur.analysis.type;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.reflect.Constructor;
 import java.util.Map;
 
 import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.LuceneVersionConstant;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.hadoop.conf.Configuration;
@@ -33,9 +36,13 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.util.Version;
 
 public class TextFieldTypeDefinition extends FieldTypeDefinition {
 
+  private static final Log LOG = LogFactory.getLog(TextFieldTypeDefinition.class);
+
+  public static final String ANALYZER_CLASS = "analyzerClass";
   public static final String STOP_WORD_PATH = "stopWordPath";
   public static final String NAME = "text";
   public static final FieldType TYPE_NOT_STORED;
@@ -61,9 +68,17 @@ public class TextFieldTypeDefinition extends FieldTypeDefinition {
   @Override
   public void configure(String fieldNameForThisInstance, Map<String, String> properties, Configuration configuration) {
     String stopWordUri = properties.get(STOP_WORD_PATH);
+    String className = properties.get(ANALYZER_CLASS);
     if (stopWordUri == null) {
-      _analyzer = new NoStopWordStandardAnalyzer();
+      if (className == null) {
+        _analyzer = new NoStopWordStandardAnalyzer();
+      } else {
+        _analyzer = instance(className);
+      }
     } else {
+      if (className != null) {
+        LOG.warn("Class name [{0}] ignored do due to the [{1}] property being set.", className, STOP_WORD_PATH);
+      }
       try {
         Path path = new Path(stopWordUri);
         FileSystem fileSystem = path.getFileSystem(configuration);
@@ -73,6 +88,34 @@ public class TextFieldTypeDefinition extends FieldTypeDefinition {
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
+    }
+  }
+  
+  private static Analyzer instance(String name) {
+    try {
+
+      Class<?> clazz = Class.forName(name);
+      Constructor<?>[] constructors = clazz.getConstructors();
+      for (Constructor<?> constructor : constructors) {
+        Class<?>[] parameterTypes = constructor.getParameterTypes();
+        if (parameterTypes.length == 0) {
+          return (Analyzer) constructor.newInstance(new Object[] {});
+        }
+      }
+
+      for (Constructor<?> constructor : constructors) {
+        Class<?>[] parameterTypes = constructor.getParameterTypes();
+        if (parameterTypes.length == 1) {
+          Class<?> type = parameterTypes[0];
+          if (type.equals(Version.class)) {
+            return (Analyzer) constructor.newInstance(new Object[] { LuceneVersionConstant.LUCENE_VERSION });
+          }
+        }
+      }
+      throw new RuntimeException("Cannot find a default constructor or a constructor that takes a ["
+          + Version.class.getName() + "]");
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -114,7 +157,7 @@ public class TextFieldTypeDefinition extends FieldTypeDefinition {
   public boolean checkSupportForPrefixQuery() {
     return true;
   }
-  
+
   @Override
   public boolean checkSupportForRegexQuery() {
     return true;

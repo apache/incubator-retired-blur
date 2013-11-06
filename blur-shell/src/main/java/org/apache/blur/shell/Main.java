@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,7 @@ import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Selector;
+import org.apache.blur.thrift.generated.User;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -64,6 +66,8 @@ public class Main {
 
   static Map<String, Command> commands;
   static String cluster;
+
+  static User user;
 
   static String getCluster(Iface client) throws BlurException, TException, CommandException {
     return getCluster(client,
@@ -169,6 +173,66 @@ public class Main {
     @Override
     public String name() {
       return "cluster";
+    }
+
+  }
+
+  private static class WhoAmICommand extends Command {
+    @Override
+    public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+        BlurException {
+      out.println("User [" + user + "]");
+    }
+
+    @Override
+    public String description() {
+      return "Print current user.";
+    }
+
+    @Override
+    public String usage() {
+      return "";
+    }
+
+    @Override
+    public String name() {
+      return "whoami";
+    }
+  }
+
+  private static class UserCommand extends Command {
+
+    @Override
+    public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+        BlurException {
+      if (args.length == 1) {
+        user = null;
+        out.println("User reset.");
+        return;
+      }
+      String username = args[1];
+      Map<String, String> attributes = new HashMap<String, String>();
+      for (int i = 2; i < args.length; i++) {
+        String[] parts = args[i].split("\\=");
+        attributes.put(parts[0], parts[1]);
+      }
+      user = new User(username, attributes);
+      out.println("User set [" + user + "]");
+    }
+
+    @Override
+    public String description() {
+      return "Set the user in use. No args to reset.";
+    }
+
+    @Override
+    public String usage() {
+      return "[<username> [name=value ...]]";
+    }
+
+    @Override
+    public String name() {
+      return "user";
     }
 
   }
@@ -301,9 +365,10 @@ public class Main {
 
   public static String[] tableCommands = { "create", "enable", "disable", "remove", "truncate", "describe", "list",
       "schema", "stats", "layout", "parse", "definecolumn" };
-  public static String[] dataCommands = { "query", "get", "mutate", "delete", "highlight", "selector", "terms", "create-snapshot", "remove-snapshot", "list-snapshots"};
+  public static String[] dataCommands = { "query", "get", "mutate", "delete", "highlight", "selector", "terms",
+      "create-snapshot", "remove-snapshot", "list-snapshots" };
   public static String[] clusterCommands = { "controllers", "shards", "clusterlist", "cluster", "safemodewait", "top" };
-  public static String[] shellCommands = { "help", "debug", "timed", "quit", "reset" };
+  public static String[] shellCommands = { "help", "debug", "timed", "quit", "reset", "user", "whoami" };
 
   private static class HelpCommand extends Command {
     @Override
@@ -329,7 +394,7 @@ public class Main {
 
       out.println();
       out.println(" - Shell commands - ");
-      
+
       printCommandAndHelp(out, cmds, shellCommands, bufferLength);
 
       if (!cmds.isEmpty()) {
@@ -468,6 +533,7 @@ public class Main {
             } else {
               long start = System.nanoTime();
               try {
+                client.setUser(user);
                 command.doit(out, client, commandArgs);
               } catch (QuitCommandException e) {
                 // exit gracefully
@@ -558,6 +624,8 @@ public class Main {
     register(builder, new RemoveSnapshotCommand());
     register(builder, new ListSnapshotsCommand());
     register(builder, new DiscoverFileBufferSizeUtil());
+    register(builder, new WhoAmICommand());
+    register(builder, new UserCommand());
     commands = builder.build();
   }
 

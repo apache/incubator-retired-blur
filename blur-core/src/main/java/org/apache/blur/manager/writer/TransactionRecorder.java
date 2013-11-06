@@ -400,17 +400,6 @@ public class TransactionRecorder extends TimerTask implements Closeable {
     return fields;
   }
 
-  // public static Document convert(String rowId, Record record, Analyzer
-  // analyzer) {
-  // BlurUtil.validateRowIdAndRecord(rowId, record);
-  // Document document = new Document();
-  // document.add(new Field(BlurConstants.ROW_ID, rowId, ID_TYPE));
-  // document.add(new Field(BlurConstants.RECORD_ID, record.recordId, ID_TYPE));
-  // document.add(new Field(BlurConstants.FAMILY, record.family, ID_TYPE));
-  // addColumns(document, analyzer, record.family, record.columns);
-  // return document;
-  // }
-
   private Term createRowId(String id) {
     return new Term(BlurConstants.ROW_ID, id);
   }
@@ -436,36 +425,6 @@ public class TransactionRecorder extends TimerTask implements Closeable {
       }
     }
   }
-
-  // public static boolean addColumns(Document document, Analyzer analyzer,
-  // String columnFamily, Iterable<Column> set) {
-  // if (set == null) {
-  // return false;
-  // }
-  // OUTER: for (Column column : set) {
-  // String name = column.getName();
-  // String value = column.value;
-  // if (value == null || name == null) {
-  // continue OUTER;
-  // }
-  // String fieldName = getFieldName(columnFamily, name);
-  // FieldType fieldType = analyzer.getFieldType(fieldName);
-  // Field field = analyzer.getField(fieldName, value, fieldType);
-  // document.add(field);
-  //
-  // if (analyzer.isFullTextField(fieldName)) {
-  // document.add(new Field(SUPER, value, SUPER_FIELD_TYPE));
-  // }
-  // Set<String> subFieldNames = analyzer.getSubIndexNames(fieldName);
-  // if (subFieldNames != null) {
-  // for (String subFieldName : subFieldNames) {
-  // FieldType subFieldType = analyzer.getFieldType(subFieldName);
-  // document.add(analyzer.getField(subFieldName, value, subFieldType));
-  // }
-  // }
-  // }
-  // return true;
-  // }
 
   public static String getFieldName(String columnFamily, String name) {
     return columnFamily + SEP + name;

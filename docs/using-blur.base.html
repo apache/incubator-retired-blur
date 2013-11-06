@@ -63,6 +63,7 @@
 	            </li>
                 <li><a href="#simple_query_example">Query Example</a></li>
                 <li><a href="#simple_query_example_data">Query Example with Data</a></li>
+                <li><a href="#simple_faceting_example">Faceting Example</a></li>
                 <li><a href="#simple_fetch_data">Fetch Data</a></li>
                 <li><a href="#simple_mutate_example">Mutate Example</a></li>
                 <li><a href="#simple_shortened_mutate_example">Shortened Mutate Example</a></li>
@@ -201,6 +202,36 @@ for (BlurResult result : results.getResults()) {
 &nbsp;&nbsp;System.out.println(result);
 }
 </code></pre>
+
+<h3 id="simple_faceting_example">Faceting Example</h3>
+<p>
+This is an example of how to use the faceting feature in a query.  This API will likely be update in a future version.
+</p>
+<pre><code class="java">Iface client = BlurClient.getClient("controller1:40010,controller2:40010");
+
+Query query = new Query();
+query.setQuery(&quot;+docs.body:\&quot;Hadoop is awesome\&quot;&quot;);
+
+final BlurQuery blurQuery = new BlurQuery();
+blurQuery.setQuery(query);
+// This facet will stop counting once the count has reached 10000.  However this is only counted 
+// on each server, so it is likely you will receive a count larger than your max.
+blurQuery.addToFacets(new Facet("fam1.col1:value1 OR fam1.col1:value2", 10000));
+blurQuery.addToFacets(new Facet("fam1.col1:value100 AND fam1.col1:value200", Long.MAX_VALUE));
+
+BlurResults results = client.query(tableName, blurQuery);
+System.out.println(&quot;Facet Results:&quot;);
+List<Long> facetCounts = results.getFacetCounts();
+List<Facet> facets = blurQuery.getFacets();
+for (int i = 0; i < facets.size(); i++) {
+&nbsp;&nbsp;System.out.println("Facet [" + facets.get(i) + "] got [" + facetCounts.get(i) + "]");
+}
+
+BlurResults results = client.query(&quot;table1&quot;, blurQuery);
+System.out.println(&quot;Total Results: &quot; + results.totalResults);
+for (BlurResult result : results.getResults()) {
+&nbsp;&nbsp;System.out.println(result);
+}</code></pre>
 
 <h3 id="simple_fetch_data">Fetch Data</h3>
 <p>

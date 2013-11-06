@@ -1,3 +1,75 @@
+Release 0.2.1 - 2013-11-06
+
+Release Notes - Apache Blur - Version 0.2.1
+
+** Sub-task
+    * [BLUR-250] - Create system level third party field types
+    * [BLUR-258] - Document how to use BLUR-250
+    * [BLUR-262] - Change Block Cache so that merges do not effect the cache
+    * [BLUR-277] - Create an API to fetch the list of total Controller Servers in the Controller Cluster.
+    * [BLUR-278] - Fix the Blur shell to use the right API to fetch the list of online Controller nodes.
+    * [BLUR-284] - Need to add a closing queue for the CacheValue
+    * [BLUR-285] - Create a file based bitset filter
+    * [BLUR-287] - Configure block cache size in blur-site
+
+
+
+** Bug
+    * [BLUR-118] - Watch Existence and Poll Watch Existence threads are not going away when a table is disabled or dropped
+    * [BLUR-224] - Safemode - registerNode method is hardcoded to 60 second timeout
+    * [BLUR-232] - Fix NPE during use of minicluster on ubuntu
+    * [BLUR-235] - Controller startup log refers to shard server
+    * [BLUR-236] - Cluster initialization in controller for non-default clusters
+    * [BLUR-242] - Special/Internal fields aren't keyword analyzed on the query side.
+    * [BLUR-244] - FileNotFoundException during the index import process
+    * [BLUR-245] - There is a deadlock condition that can occur during mutate batch calls.
+    * [BLUR-252] - During create table cluster issue
+    * [BLUR-253] - Index Importer table readonly
+    * [BLUR-255] - Fix javadocs on TableDescriptor for preCacheCols
+    * [BLUR-257] - Fix misspelling in BlurConstants
+    * [BLUR-279] - Compile Error building Blur-mapred class BlurOutputFormat
+    * [BLUR-282] - All Lucene IndexInputs in Blur need to have the clone method reviewed
+    * [BLUR-283] - Check that strict types on the table descriptor works as expected
+    * [BLUR-286] - The sample files for a given segment need to follow the segment life cycle
+    * [BLUR-288] - Need to add regex query support in the superparser and types
+    * [BLUR-289] - Table Properties are not being persisted to zookeeper
+    * [BLUR-293] - Add user object to Thrift API and session on server side
+
+
+
+
+** Improvement
+    * [BLUR-183] - Auto disconnect clients that have been idle for a period of time
+    * [BLUR-246] - Change the fetch implementation to type 4
+    * [BLUR-249] - Sync performance issue in the IndexInputCloser class
+    * [BLUR-254] - Increase the number of selector threads in the thrift server
+    * [BLUR-256] - Document how to use facets
+    * [BLUR-259] - Add Full Controller list to ZookeeperClusterStatus
+    * [BLUR-260] - Rework shard layout strategy
+    * [BLUR-261] - Unnecessary explicit reference of superclass method by Child class. 
+    * [BLUR-281] - Add metrics into the V2 Block Cache
+    * [BLUR-294] - Allow BufferStore to be configured with different buffer sizes
+
+** New Feature
+    * [BLUR-229] - Make V2 of the Block Cache production ready.
+    * [BLUR-280] - Make the family field optional on the Record object.
+    * [BLUR-291] - Document block cache v2
+
+
+
+
+
+
+
+
+
+** Test
+    * [BLUR-162] - Fix units in ZookeeperClusterStatusTest for safemode call
+
+
+
+
+
 Release 0.2.0 - 2013-09-13
 
 Release Notes - Apache Blur - Version 0.2.0

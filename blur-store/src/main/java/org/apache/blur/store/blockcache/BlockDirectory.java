@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.store.buffer.ReusedBufferedIndexInput;
+import org.apache.blur.store.buffer.Store;
 import org.apache.blur.store.hdfs.DirectoryDecorator;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.lucene.store.Directory;
@@ -132,6 +133,7 @@ public class BlockDirectory extends Directory implements DirectoryDecorator {
     private long _fileLength;
     private String _cacheName;
     private Cache _cache;
+    private final Store _store;
 
     public CachedIndexInput(IndexInput source, int blockSize, String name, String cacheName, Cache cache,
         IOContext context) {
@@ -141,6 +143,7 @@ public class BlockDirectory extends Directory implements DirectoryDecorator {
       _fileLength = source.length();
       _cacheName = cacheName;
       _cache = cache;
+      _store = BufferStore.instance(_blockSize);
     }
 
     @Override
@@ -189,11 +192,11 @@ public class BlockDirectory extends Directory implements DirectoryDecorator {
       int length = (int) Math.min(_blockSize, _fileLength - position);
       _source.seek(position);
 
-      byte[] buf = BufferStore.takeBuffer(_blockSize);
+      byte[] buf = _store.takeBuffer(_blockSize);
       _source.readBytes(buf, 0, length);
       System.arraycopy(buf, blockOffset, b, off, lengthToReadInBlock);
       _cache.update(_cacheName, blockId, 0, buf, 0, _blockSize);
-      BufferStore.putBuffer(buf);
+      _store.putBuffer(buf);
     }
 
     private boolean checkCache(long blockId, int blockOffset, byte[] b, int off, int lengthToReadInBlock) {

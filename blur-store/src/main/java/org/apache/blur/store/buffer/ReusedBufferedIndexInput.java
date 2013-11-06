@@ -31,7 +31,7 @@ public abstract class ReusedBufferedIndexInput extends IndexInput {
   @Override
   public final void close() throws IOException {
     closeInternal();
-    BufferStore.putBuffer(buffer);
+    store.putBuffer(buffer);
     buffer = null;
   }
 
@@ -47,7 +47,7 @@ public abstract class ReusedBufferedIndexInput extends IndexInput {
       throw new EOFException("read past EOF: " + this);
 
     if (buffer == null) {
-      buffer = BufferStore.takeBuffer(bufferSize);
+      buffer = store.takeBuffer(bufferSize);
       seekInternal(bufferStart);
     }
     readInternal(buffer, 0, newLength);
@@ -82,6 +82,8 @@ public abstract class ReusedBufferedIndexInput extends IndexInput {
   private int bufferLength = 0; // end of valid bytes
   private int bufferPosition = 0; // next byte to read
 
+  private Store store;
+
   @Override
   public final byte readByte() throws IOException {
     if (bufferPosition >= bufferLength)
@@ -102,6 +104,7 @@ public abstract class ReusedBufferedIndexInput extends IndexInput {
     super(resourceDesc);
     checkBufferSize(bufferSize);
     this.bufferSize = bufferSize;
+    this.store = BufferStore.instance(bufferSize);
   }
 
   /** Returns buffer size. @see #setBufferSize */

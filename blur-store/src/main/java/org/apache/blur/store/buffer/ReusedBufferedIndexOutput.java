@@ -37,6 +37,8 @@ public abstract class ReusedBufferedIndexOutput extends IndexOutput {
   private int bufferPosition = 0;
   /** total length of the file */
   private long _fileLength = 0;
+
+  private Store store;
   
   public ReusedBufferedIndexOutput() {
     this(BUFFER_SIZE);
@@ -45,7 +47,8 @@ public abstract class ReusedBufferedIndexOutput extends IndexOutput {
   public ReusedBufferedIndexOutput(int bufferSize) {
     checkBufferSize(bufferSize);
     this.bufferSize = bufferSize;
-    buffer = BufferStore.takeBuffer(this.bufferSize);
+    store = BufferStore.instance(bufferSize);
+    buffer = store.takeBuffer(this.bufferSize);
   }
 
   protected long getBufferStart() {
@@ -80,7 +83,7 @@ public abstract class ReusedBufferedIndexOutput extends IndexOutput {
   public void close() throws IOException {
     flushBufferToCache();
     closeInternal();
-    BufferStore.putBuffer(buffer);
+    store.putBuffer(buffer);
     buffer = null;
   }
 

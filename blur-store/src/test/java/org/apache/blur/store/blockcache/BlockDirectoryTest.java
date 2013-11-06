@@ -102,7 +102,8 @@ public class BlockDirectoryTest {
   
   @Before
   public void setUp() throws IOException {
-    BufferStore.init(128, 128);
+    BufferStore.initNewBuffer(1024, 1024 * 128);
+    BufferStore.initNewBuffer(8192, 8192 * 128);
     file = new File(TMPDIR, "blockdirectorytest");
     rm(file);
     file.mkdirs();

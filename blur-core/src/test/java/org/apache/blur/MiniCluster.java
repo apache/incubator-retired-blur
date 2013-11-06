@@ -130,7 +130,7 @@ public class MiniCluster {
   }
 
   private void setupBuffers() {
-    BufferStore.init(16, 16);
+    BufferStore.initNewBuffer(128, 128 * 128);
   }
 
   public void shutdownBlurCluster() {

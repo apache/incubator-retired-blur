@@ -20,6 +20,7 @@ package org.apache.blur.store.blockcache_v2;
 import java.io.IOException;
 
 import org.apache.blur.store.buffer.BufferStore;
+import org.apache.blur.store.buffer.Store;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.IndexInput;
 
@@ -32,6 +33,7 @@ public class CacheIndexInput extends IndexInput {
   private final CacheDirectory _directory;
   private final String _fileName;
   private final Cache _cache;
+  private final Store _store;
 
   private IndexInput _indexInput;
   private CacheKey _key = new CacheKey();
@@ -57,6 +59,7 @@ public class CacheIndexInput extends IndexInput {
     _quiet = _cache.shouldBeQuiet(_directory, _fileName);
     _key.setFileId(_fileId);
     _isClosed = false;
+    _store = BufferStore.instance(_bufferSize);
   }
 
   @Override
@@ -294,7 +297,7 @@ public class CacheIndexInput extends IndexInput {
       _cacheValue = _cache.newInstance(_directory, _fileName);
       long filePosition = getFilePosition();
       _indexInput.seek(filePosition);
-      byte[] buffer = BufferStore.takeBuffer(_bufferSize);
+      byte[] buffer = _store.takeBuffer(_bufferSize);
       int len = (int) Math.min(_cacheBlockSize, _fileLength - filePosition);
       int cachePosition = 0;
       while (len > 0) {
@@ -304,7 +307,7 @@ public class CacheIndexInput extends IndexInput {
         len -= length;
         cachePosition += length;
       }
-      BufferStore.putBuffer(buffer);
+      _store.putBuffer(buffer);
       _cache.put(_key.clone(), _cacheValue);
     }
     _cacheValue.incRef();

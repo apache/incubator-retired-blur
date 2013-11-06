@@ -20,12 +20,12 @@ import static org.apache.blur.metrics.MetricsConstants.INTERNAL_BUFFERS;
 import static org.apache.blur.metrics.MetricsConstants.LOST;
 import static org.apache.blur.metrics.MetricsConstants.LUCENE;
 import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
-import static org.apache.blur.metrics.MetricsConstants.OTHER_SIZES_ALLOCATED;
-import static org.apache.blur.metrics.MetricsConstants._1K_SIZE_ALLOCATED;
-import static org.apache.blur.metrics.MetricsConstants._8K_SIZE_ALLOCATED;
+import static org.apache.blur.metrics.MetricsConstants.SIZE_ALLOCATED;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
@@ -35,31 +35,63 @@ import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
 
-public class BufferStore {
+public class BufferStore implements Store {
 
   private static final Log LOG = LogFactory.getLog(BufferStore.class);
 
-  private static BlockingQueue<byte[]> _1024;
-  private static BlockingQueue<byte[]> _8192;
+  private static final Store EMPTY = new Store() {
 
-  private static Meter _lost;
-  private static Meter _8K;
-  private static Meter _1K;
-  private static Meter _other;
-  private volatile static boolean setup = false;
+    private final Meter _emptyCreated;
+    private final Meter _emptyLost;
 
-  public static void init(int _1KSize, int _8KSize) {
-    if (!setup) {
-      _lost = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, LUCENE, LOST, INTERNAL_BUFFERS), INTERNAL_BUFFERS, TimeUnit.SECONDS);
-      _8K = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, LUCENE, _1K_SIZE_ALLOCATED, INTERNAL_BUFFERS), INTERNAL_BUFFERS, TimeUnit.SECONDS);
-      _1K = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, LUCENE, _8K_SIZE_ALLOCATED, INTERNAL_BUFFERS), INTERNAL_BUFFERS, TimeUnit.SECONDS);
-      _other = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, LUCENE, OTHER_SIZES_ALLOCATED, INTERNAL_BUFFERS), INTERNAL_BUFFERS, TimeUnit.SECONDS);
-      LOG.info("Initializing the 1024 buffers with [{0}] buffers.", _1KSize);
-      _1024 = setupBuffers(1024, _1KSize, _1K);
-      LOG.info("Initializing the 8192 buffers with [{0}] buffers.", _8KSize);
-      _8192 = setupBuffers(8192, _8KSize, _8K);
-      setup = true;
+    {
+      _emptyCreated = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, LUCENE, "Not Configured " + SIZE_ALLOCATED,
+          INTERNAL_BUFFERS), INTERNAL_BUFFERS, TimeUnit.SECONDS);
+      _emptyLost = Metrics.newMeter(
+          new MetricName(ORG_APACHE_BLUR, LUCENE, "Not Configured " + LOST, INTERNAL_BUFFERS), INTERNAL_BUFFERS,
+          TimeUnit.SECONDS);
     }
+
+    @Override
+    public byte[] takeBuffer(int bufferSize) {
+      _emptyCreated.mark();
+      return new byte[bufferSize];
+    }
+
+    @Override
+    public void putBuffer(byte[] buffer) {
+      _emptyLost.mark();
+    }
+  };
+
+  private final static ConcurrentMap<Integer, BufferStore> _bufferStores = new ConcurrentHashMap<Integer, BufferStore>();
+
+  private final BlockingQueue<byte[]> _buffers;
+  private final Meter _created;
+  private final Meter _lost;
+  private final int _bufferSize;
+
+  public synchronized static void initNewBuffer(int bufferSize, long totalAmount) {
+    BufferStore bufferStore = _bufferStores.get(bufferSize);
+    if (bufferStore == null) {
+      long count = totalAmount / bufferSize;
+      if (count > Integer.MAX_VALUE) {
+        count = Integer.MAX_VALUE;
+      }
+      BufferStore store = new BufferStore(bufferSize, (int) count);
+      _bufferStores.put(bufferSize, store);
+    } else {
+      LOG.warn("Buffer store for size [{0}] already setup.", bufferSize);
+    }
+  }
+
+  private BufferStore(int bufferSize, int count) {
+    _bufferSize = bufferSize;
+    _created = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, LUCENE, bufferSize + " " + SIZE_ALLOCATED,
+        INTERNAL_BUFFERS), INTERNAL_BUFFERS, TimeUnit.SECONDS);
+    _lost = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, LUCENE, bufferSize + " " + LOST, INTERNAL_BUFFERS),
+        INTERNAL_BUFFERS, TimeUnit.SECONDS);
+    _buffers = setupBuffers(bufferSize, count, _created);
   }
 
   private static BlockingQueue<byte[]> setupBuffers(int bufferSize, int count, Meter meter) {
@@ -71,56 +103,46 @@ public class BufferStore {
     return queue;
   }
 
-  public static byte[] takeBuffer(int bufferSize) {
-    switch (bufferSize) {
-    case 1024:
-      return newBuffer1024(_1024.poll());
-    case 8192:
-      return newBuffer8192(_8192.poll());
-    default:
-      return newBuffer(bufferSize);
+  public static Store instance(int bufferSize) {
+    BufferStore bufferStore = _bufferStores.get(bufferSize);
+    if (bufferStore == null) {
+      return EMPTY;
     }
+    return bufferStore;
   }
 
-  public static void putBuffer(byte[] buffer) {
+  @Override
+  public byte[] takeBuffer(int bufferSize) {
+    if (bufferSize != _bufferSize) {
+      throw new RuntimeException("Buffer with length [" + bufferSize + "] does not match buffer size of ["
+          + _bufferSize + "]");
+    }
+    return newBuffer(_buffers.poll());
+  }
+
+  @Override
+  public void putBuffer(byte[] buffer) {
     if (buffer == null) {
       return;
     }
-    int bufferSize = buffer.length;
-    switch (bufferSize) {
-    case 1024:
-      checkReturn(_1024.offer(buffer));
-      return;
-    case 8192:
-      checkReturn(_8192.offer(buffer));
-      return;
+    if (buffer.length != _bufferSize) {
+      throw new RuntimeException("Buffer with length [" + buffer.length + "] does not match buffer size of ["
+          + _bufferSize + "]");
     }
+    checkReturn(_buffers.offer(buffer));
   }
 
-  private static void checkReturn(boolean offer) {
+  private void checkReturn(boolean offer) {
     if (!offer) {
       _lost.mark();
     }
   }
 
-  private static byte[] newBuffer1024(byte[] buf) {
+  private byte[] newBuffer(byte[] buf) {
     if (buf != null) {
       return buf;
     }
-    _1K.mark();
-    return new byte[1024];
-  }
-
-  private static byte[] newBuffer8192(byte[] buf) {
-    if (buf != null) {
-      return buf;
-    }
-    _8K.mark();
-    return new byte[8192];
-  }
-
-  private static byte[] newBuffer(int size) {
-    _other.mark();
-    return new byte[size];
+    _created.mark();
+    return new byte[_bufferSize];
   }
 }

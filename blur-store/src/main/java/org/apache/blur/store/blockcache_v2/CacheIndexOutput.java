@@ -20,6 +20,7 @@ package org.apache.blur.store.blockcache_v2;
 import java.io.IOException;
 
 import org.apache.blur.store.buffer.BufferStore;
+import org.apache.blur.store.buffer.Store;
 import org.apache.lucene.store.IndexOutput;
 
 public class CacheIndexOutput extends IndexOutput {
@@ -31,6 +32,7 @@ public class CacheIndexOutput extends IndexOutput {
   private final long _fileId;
   private final int _fileBufferSize;
   private final int _cacheBlockSize;
+  private final Store _store;
 
   private long _position;
   private byte[] _buffer;
@@ -45,7 +47,8 @@ public class CacheIndexOutput extends IndexOutput {
     _cacheBlockSize = _cache.getCacheBlockSize(_directory, _fileName);
     _fileId = _cache.getFileId(_directory, _fileName);
     _indexOutput = indexOutput;
-    _buffer = BufferStore.takeBuffer(_cacheBlockSize);
+    _store = BufferStore.instance(_cacheBlockSize);
+    _buffer = _store.takeBuffer(_cacheBlockSize);
   }
 
   @Override
@@ -119,7 +122,7 @@ public class CacheIndexOutput extends IndexOutput {
     flushInternal();
     _indexOutput.flush();
     _indexOutput.close();
-    BufferStore.putBuffer(_buffer);
+    _store.putBuffer(_buffer);
   }
 
   @Override

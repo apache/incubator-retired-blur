@@ -1,4 +1,5 @@
 package org.apache.blur.utils;
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -48,7 +49,7 @@ public class TableShardCountCollapserTest {
 
   @Before
   public void setup() throws IOException {
-    BufferStore.init(128, 128);
+    BufferStore.initNewBuffer(128, 128 * 128);
     configuration = new Configuration();
     path = new Path("./target/tmp-shards-for-testing");
     FileSystem fileSystem = path.getFileSystem(configuration);

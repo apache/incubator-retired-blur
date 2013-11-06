@@ -41,7 +41,8 @@ public class CacheIndexOutputTest {
 
   @Before
   public void setup() {
-    BufferStore.init(128, 128);
+    BufferStore.initNewBuffer(1024, 1024 * 128);
+    BufferStore.initNewBuffer(8192, 8192 * 128);
     seed = new Random().nextLong();
     System.out.println("Using seed [" + seed + "]");
     // seed = -265282183286396219l;

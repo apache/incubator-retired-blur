@@ -56,17 +56,21 @@ public class SchemaTableCommand extends Command implements TableFirstArgCommand 
         Map<String, String> properties = columnDefinition.getProperties();
         String subColumnName = columnDefinition.getSubColumnName();
         if (subColumnName != null) {
-          out.println(  "\t\t\tsubName   : " + subColumnName);
-          out.println(  "\t\t\tfieldType : " + fieldType);
-          Map<String, String> props = new TreeMap<String, String>(properties);
-          for (Entry<String, String> e : props.entrySet()) {
-            out.println("\t\t\tprop      : " + e);
+          out.println("\t\t\tsubName   : " + subColumnName);
+          out.println("\t\t\tfieldType : " + fieldType);
+          if (properties != null) {
+            Map<String, String> props = new TreeMap<String, String>(properties);
+            for (Entry<String, String> e : props.entrySet()) {
+              out.println("\t\t\tprop      : " + e);
+            }
           }
         } else {
-          out.println(  "\t\tfieldType : " + fieldType);
-          Map<String, String> props = new TreeMap<String, String>(properties);
-          for (Entry<String, String> e : props.entrySet()) {
-            out.println("\t\tprop      : " + e);
+          out.println("\t\tfieldType : " + fieldType);
+          if (properties != null) {
+            Map<String, String> props = new TreeMap<String, String>(properties);
+            for (Entry<String, String> e : props.entrySet()) {
+              out.println("\t\tprop      : " + e);
+            }
           }
         }
       }

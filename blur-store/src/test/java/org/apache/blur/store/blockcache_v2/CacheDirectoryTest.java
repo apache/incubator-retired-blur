@@ -90,7 +90,8 @@ public class CacheDirectoryTest {
     _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet,
         STORE.ON_HEAP);
     Directory directory = newDirectory();
-    BufferStore.init(128, 128);
+    BufferStore.initNewBuffer(1024, 1024 * 128);
+    BufferStore.initNewBuffer(8192, 8192 * 128);
     _cacheDirectory = new CacheDirectory("test", "test", directory, _cache, null);
   }
 

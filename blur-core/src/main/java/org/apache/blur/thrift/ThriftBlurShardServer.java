@@ -49,6 +49,8 @@ import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT
 import static org.apache.blur.utils.BlurUtil.quietClose;
 
 import java.lang.reflect.Constructor;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.BlurConfiguration;
@@ -148,9 +150,16 @@ public class ThriftBlurShardServer extends ThriftServer {
       httpServer = null;
     }
 
-    int _1024Size = configuration.getInt("blur.shard.buffercache.1024", 8192);
-    int _8192Size = configuration.getInt("blur.shard.buffercache.8192", 8192);
-    BufferStore.init(_1024Size, _8192Size);
+    Set<Entry<String, String>> set = configuration.getProperties().entrySet();
+    for (Entry<String, String> e : set) {
+      String key = e.getKey();
+      if (key.startsWith("blur.shard.buffercache.")) {
+        int index = key.lastIndexOf('.');
+        int bufferSize = Integer.parseInt(key.substring(index + 1));
+        long amount = Long.parseLong(e.getValue());
+        BufferStore.initNewBuffer(bufferSize, amount);
+      }
+    }
 
     BlockCacheDirectoryFactory blockCacheDirectoryFactory;
     // Alternate BlockCacheDirectoryFactory support currently disabled in 0.2.0,

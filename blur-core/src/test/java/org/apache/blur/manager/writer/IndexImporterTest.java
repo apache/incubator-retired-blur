@@ -80,10 +80,10 @@ public class IndexImporterTest {
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName("test-table");
     String uuid = UUID.randomUUID().toString();
-    
+
     tableDescriptor.setTableUri(new Path(base, "table-table").toUri().toString());
     tableDescriptor.setShardCount(2);
-    
+
     TableContext tableContext = TableContext.create(tableDescriptor);
     ShardContext shardContext = ShardContext.create(tableContext, "shard-00000000");
     Path tablePath = new Path(base, "table-table");
@@ -98,10 +98,10 @@ public class IndexImporterTest {
     Analyzer analyzerForIndex = _fieldManager.getAnalyzerForIndex();
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, analyzerForIndex);
     commitWriter = new IndexWriter(commitDirectory, conf);
-    
+
     mainWriter = new IndexWriter(mainDirectory, conf);
-    BufferStore.init(128, 128);
-    
+    BufferStore.initNewBuffer(128, 128 * 128);
+
     indexImporter = new IndexImporter(new TrackingIndexWriter(mainWriter), new ReentrantReadWriteLock(), shardContext,
         TimeUnit.MINUTES, 10);
   }
@@ -112,7 +112,6 @@ public class IndexImporterTest {
     indexImporter.close();
     base.getFileSystem(configuration).delete(base, true);
   }
-
 
   @Test
   public void testIndexImporterWithCorrectRowIdShardCombination() throws IOException {
@@ -125,18 +124,18 @@ public class IndexImporterTest {
     assertFalse(fileSystem.exists(badRowIdsPath));
   }
 
-//  private void debug(Path file) throws IOException {
-//    if (!fileSystem.exists(file)) {
-//      return;
-//    }
-//    System.out.println(file);
-//    if (!fileSystem.isFile(file)) {
-//      FileStatus[] listStatus = fileSystem.listStatus(file);
-//      for (FileStatus f : listStatus) {
-//        debug(f.getPath());
-//      }
-//    }
-//  }
+  // private void debug(Path file) throws IOException {
+  // if (!fileSystem.exists(file)) {
+  // return;
+  // }
+  // System.out.println(file);
+  // if (!fileSystem.isFile(file)) {
+  // FileStatus[] listStatus = fileSystem.listStatus(file);
+  // for (FileStatus f : listStatus) {
+  // debug(f.getPath());
+  // }
+  // }
+  // }
 
   @Test
   public void testIndexImporterWithWrongRowIdShardCombination() throws IOException {

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<!-- 
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+  
+       http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- Header for Release Notes -->
+<html>
+  <head>
+    <title>Apache Blur (Incubator) Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="resources/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="resources/css/bs-docs.css" rel="stylesheet" media="screen">
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="http://incubator.apache.org/blur">Apache Blur (Incubator)</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+	        <li><a href="index.html">Main</a></li>
+            <li><a href="getting-started.html">Getting Started</a></li>
+            <li><a href="data-model.html">Data Model</a></li>
+            <li><a href="cluster-setup.html">Cluster Setup</a></li>
+            <li><a href="using-blur.html">Using Blur</a></li>
+            <li><a href="Blur.html">Blur API</a></li>
+			<li><a href="site/index.html" target="_blank">Maven Site</a></li>
+			<li><a href="site/apidocs/index.html" target="_blank">Javadocs</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="jumbotron">
+        <h1>Apache Blur (Incubator)</h1>
+        <p>
+<!-- Header for Release Notes -->
+
+
+        Release Notes - Apache Blur - Version 0.2.1
+    
+<h2>        Sub-task
+</h2>
+<ul>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-250'>BLUR-250</a>] -         Create system level third party field types
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-258'>BLUR-258</a>] -         Document how to use BLUR-250
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-262'>BLUR-262</a>] -         Change Block Cache so that merges do not effect the cache
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-277'>BLUR-277</a>] -         Create an API to fetch the list of total Controller Servers in the Controller Cluster.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-278'>BLUR-278</a>] -         Fix the Blur shell to use the right API to fetch the list of online Controller nodes.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-284'>BLUR-284</a>] -         Need to add a closing queue for the CacheValue
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-285'>BLUR-285</a>] -         Create a file based bitset filter
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-287'>BLUR-287</a>] -         Configure block cache size in blur-site
+</li>
+</ul>
+            
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-118'>BLUR-118</a>] -         Watch Existence and Poll Watch Existence threads are not going away when a table is disabled or dropped
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-224'>BLUR-224</a>] -         Safemode - registerNode method is hardcoded to 60 second timeout
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-232'>BLUR-232</a>] -         Fix NPE during use of minicluster on ubuntu
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-235'>BLUR-235</a>] -         Controller startup log refers to shard server
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-236'>BLUR-236</a>] -         Cluster initialization in controller for non-default clusters
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-242'>BLUR-242</a>] -         Special/Internal fields aren&#39;t keyword analyzed on the query side.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-244'>BLUR-244</a>] -         FileNotFoundException during the index import process
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-245'>BLUR-245</a>] -         There is a deadlock condition that can occur during mutate batch calls.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-252'>BLUR-252</a>] -         During create table cluster issue
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-253'>BLUR-253</a>] -         Index Importer table readonly
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-255'>BLUR-255</a>] -         Fix javadocs on TableDescriptor for preCacheCols
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-257'>BLUR-257</a>] -         Fix misspelling in BlurConstants
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-279'>BLUR-279</a>] -         Compile Error building Blur-mapred class BlurOutputFormat
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-282'>BLUR-282</a>] -         All Lucene IndexInputs in Blur need to have the clone method reviewed
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-283'>BLUR-283</a>] -         Check that strict types on the table descriptor works as expected
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-286'>BLUR-286</a>] -         The sample files for a given segment need to follow the segment life cycle
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-288'>BLUR-288</a>] -         Need to add regex query support in the superparser and types
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-289'>BLUR-289</a>] -         Table Properties are not being persisted to zookeeper
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-293'>BLUR-293</a>] -         Add user object to Thrift API and session on server side
+</li>
+</ul>
+                
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-183'>BLUR-183</a>] -         Auto disconnect clients that have been idle for a period of time
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-246'>BLUR-246</a>] -         Change the fetch implementation to type 4
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-249'>BLUR-249</a>] -         Sync performance issue in the IndexInputCloser class
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-254'>BLUR-254</a>] -         Increase the number of selector threads in the thrift server
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-256'>BLUR-256</a>] -         Document how to use facets
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-259'>BLUR-259</a>] -         Add Full Controller list to ZookeeperClusterStatus
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-260'>BLUR-260</a>] -         Rework shard layout strategy
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-261'>BLUR-261</a>] -         Unnecessary explicit reference of superclass method by Child class. 
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-281'>BLUR-281</a>] -         Add metrics into the V2 Block Cache
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-294'>BLUR-294</a>] -         Allow BufferStore to be configured with different buffer sizes
+</li>
+</ul>
+    
+<h2>        New Feature
+</h2>
+<ul>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-229'>BLUR-229</a>] -         Make V2 of the Block Cache production ready.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-280'>BLUR-280</a>] -         Make the family field optional on the Record object.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-291'>BLUR-291</a>] -         Document block cache v2
+</li>
+</ul>
+                                    
+<h2>        Test
+</h2>
+<ul>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-162'>BLUR-162</a>] -         Fix units in ZookeeperClusterStatusTest for safemode call
+</li>
+</ul>
+
+
+<!-- Footer for Release Notes -->
+</p>
+</div>
+</div>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="resources/js/jquery-2.0.3.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="resources/js/bootstrap.min.js"></script>
+<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+<script src="resources/js/respond.min.js"></script>
+</body>
+</html>
+<!-- Footer for Release Notes -->

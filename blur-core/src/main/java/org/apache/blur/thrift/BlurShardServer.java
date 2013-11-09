@@ -106,6 +106,9 @@ public class BlurShardServer extends TableAdmin implements Iface {
         }
       }
 
+      // Note: Querying the Shard Server directly if query.startTime == 0
+      BlurUtil.setStartTime(blurQuery);
+
       if (blurQuery.useCacheIfPresent) {
         LOG.debug("Using cache for query [{0}] on table [{1}].", blurQuery, table);
         QueryCacheKey key = QueryCache.getNormalizedBlurQueryKey(table, blurQuery);

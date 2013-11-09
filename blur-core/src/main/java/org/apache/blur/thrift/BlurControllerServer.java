@@ -354,14 +354,11 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       blurQuery.setUuid(UUID.randomUUID().toString());
     }
 
+    BlurUtil.setStartTime(blurQuery);
+
     OUTER: for (int retries = 0; retries < _maxDefaultRetries; retries++) {
       try {
         final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
-
-        BlurQuery original = new BlurQuery(blurQuery);
-
-        BlurUtil.setStartTime(original);
-
         Selector selector = blurQuery.getSelector();
         if (selector == null) {
           selector = new Selector();

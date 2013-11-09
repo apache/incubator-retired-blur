@@ -350,15 +350,12 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     BlurUtil.setStartTime(blurQuery);
     trace.done();
 
+    BlurUtil.setStartTime(blurQuery);
+
     OUTER: for (int retries = 0; retries < _maxDefaultRetries; retries++) {
       try {
         Tracer selectorTrace = Trace.trace("selector - setup", Trace.param("retries", retries));
         final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
-
-        BlurQuery original = new BlurQuery(blurQuery);
-
-        BlurUtil.setStartTime(original);
-
         Selector selector = blurQuery.getSelector();
         if (selector == null) {
           selector = new Selector();

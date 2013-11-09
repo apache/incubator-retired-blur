@@ -56,7 +56,7 @@ public class QueryStatus implements Comparable<QueryStatus> {
     _ttl = ttl;
     _table = table;
     _blurQuery = blurQuery;
-    _startingTime = System.currentTimeMillis();
+    _startingTime = blurQuery.getStartTime();
     _running = running;
     _state.set(QueryState.RUNNING);
   }

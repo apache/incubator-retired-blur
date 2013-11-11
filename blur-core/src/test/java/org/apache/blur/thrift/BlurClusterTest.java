@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -167,7 +168,7 @@ public class BlurClusterTest {
     Schema schema = client.schema("test");
     assertFalse(schema.getFamilies().isEmpty());
   }
-  
+
   private void testQueryWithSelector() throws BlurException, TException {
     Iface client = getClient();
     BlurQuery blurQueryRow = new BlurQuery();
@@ -177,16 +178,10 @@ public class BlurClusterTest {
     blurQueryRow.setUseCacheIfPresent(false);
     blurQueryRow.setCacheResult(false);
     blurQueryRow.setSelector(new Selector());
-    
+
     BlurResults resultsRow = client.query("test", blurQueryRow);
-//    assertRowResults(resultsRow);
     assertEquals(100, resultsRow.getTotalResults());
-    
-    for (BlurResult blurResult : resultsRow.getResults()) {
-      System.out.println(blurResult);
-    }
-    
-    System.out.println();
+    assertTrue(0 != resultsRow.getQuery().getStartTime());
   }
 
   public void testBatchFetch() throws BlurException, TException {

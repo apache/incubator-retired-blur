@@ -41,7 +41,7 @@ public class BlurServerContext implements ServerContext {
   }
 
   public void setUser(User user) {
-    LOG.info("User [{0}] for context [{1}]", user, this);
+    LOG.debug("User [{0}] for context [{1}]", user, this);
     _user = user;
   }
 

@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLongArray;
 
@@ -60,6 +59,7 @@ import org.apache.blur.thrift.generated.Facet;
 import org.apache.blur.thrift.generated.FetchRecordResult;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.HighlightOptions;
+import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.Row;
@@ -67,7 +67,6 @@ import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.Selector;
-import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurIterator;
@@ -141,11 +140,6 @@ public class IndexManagerTest {
       }
 
       @Override
-      public boolean isBlockCacheEnabled(String cluster, String table) {
-        throw new RuntimeException("Not impl");
-      }
-
-      @Override
       public List<String> getTableList(boolean useCache, String cluster) {
         throw new RuntimeException("Not impl");
       }
@@ -157,11 +151,6 @@ public class IndexManagerTest {
 
       @Override
       public List<String> getShardServerList(String cluster) {
-        throw new RuntimeException("Not impl");
-      }
-
-      @Override
-      public int getShardCount(boolean useCache, String cluster, String table) {
         throw new RuntimeException("Not impl");
       }
 
@@ -188,11 +177,6 @@ public class IndexManagerTest {
       @Override
       public String getCluster(boolean useCache, String table) {
         return BlurConstants.BLUR_CLUSTER;
-      }
-
-      @Override
-      public Set<String> getBlockCacheFileTypes(String cluster, String table) {
-        throw new RuntimeException("Not impl");
       }
 
       @Override

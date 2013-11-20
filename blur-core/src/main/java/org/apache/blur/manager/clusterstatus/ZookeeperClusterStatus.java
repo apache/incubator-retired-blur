@@ -660,29 +660,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     }
   }
 
-  @Override
-  public int getShardCount(boolean useCache, String cluster, String table) {
-    if (useCache) {
-      TableDescriptor tableDescriptor = getTableDescriptor(true, cluster, table);
-      return tableDescriptor.shardCount;
-    }
-    long s = System.nanoTime();
-    try {
-      return Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableShardCountPath(cluster, table))));
-    } catch (NumberFormatException e) {
-      throw new RuntimeException(e);
-    } catch (KeeperException e) {
-      throw new RuntimeException(e);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    } finally {
-      long e = System.nanoTime();
-      LOG.debug("trace getShardCount took [" + (e - s) / 1000000.0 + " ms]");
-    }
-  }
-
-  @Override
-  public Set<String> getBlockCacheFileTypes(String cluster, String table) {
+  private Set<String> getBlockCacheFileTypes(String cluster, String table) {
     long s = System.nanoTime();
     try {
       byte[] data = getData(ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table));
@@ -708,8 +686,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     }
   }
 
-  @Override
-  public boolean isBlockCacheEnabled(String cluster, String table) {
+  private boolean isBlockCacheEnabled(String cluster, String table) {
     long s = System.nanoTime();
     try {
       checkIfOpen();

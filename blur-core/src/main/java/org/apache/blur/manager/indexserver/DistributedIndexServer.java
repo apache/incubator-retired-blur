@@ -453,9 +453,11 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     ShardContext shardContext = ShardContext.create(tableContext, shard);
 
     Directory dir;
-    boolean blockCacheEnabled = _clusterStatus.isBlockCacheEnabled(_cluster, table);
+    
+    TableDescriptor descriptor = tableContext.getDescriptor();
+    boolean blockCacheEnabled = descriptor.isBlockCaching();
     if (blockCacheEnabled) {
-      Set<String> blockCacheFileTypes = _clusterStatus.getBlockCacheFileTypes(_cluster, table);
+      Set<String> blockCacheFileTypes = descriptor.getBlockCachingFileTypes();
       dir = _blockCacheDirectoryFactory.newDirectory(table, shard, directory, blockCacheFileTypes);
     } else {
       dir = directory;

@@ -349,7 +349,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     String cluster = _clusterStatus.getCluster(true, table);
     _queryChecker.checkQuery(blurQuery);
     checkSelectorFetchSize(blurQuery.getSelector());
-    int shardCount = _clusterStatus.getShardCount(true, cluster, table);
+    TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
+    int shardCount = tableDescriptor.getShardCount();
     if (blurQuery.getUuid() == null) {
       blurQuery.setUuid(UUID.randomUUID().toString());
     }

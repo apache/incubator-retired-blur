@@ -18,7 +18,6 @@ package org.apache.blur.manager.clusterstatus;
  */
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.blur.thrift.generated.TableDescriptor;
 
@@ -58,12 +57,6 @@ public abstract class ClusterStatus {
     shardServerList.removeAll(getOnlineShardServers(useCache, cluster));
     return shardServerList;
   }
-
-  public abstract int getShardCount(boolean useCache, String cluster, String table);
-
-  public abstract boolean isBlockCacheEnabled(String cluster, String table);
-
-  public abstract Set<String> getBlockCacheFileTypes(String cluster, String table);
 
   public abstract List<String> getTableList(boolean useCache, String cluster);
 

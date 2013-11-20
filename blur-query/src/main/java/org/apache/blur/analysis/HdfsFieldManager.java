@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.lucene.analysis.Analyzer;
 
 public class HdfsFieldManager extends BaseFieldManager {
@@ -95,7 +96,15 @@ public class HdfsFieldManager extends BaseFieldManager {
     if (!_fileSystem.exists(_storagePath)) {
       return EMPTY_LIST;
     }
-    FileStatus[] listStatus = _fileSystem.listStatus(_storagePath);
+    FileStatus[] listStatus = _fileSystem.listStatus(_storagePath, new PathFilter() {
+      @Override
+      public boolean accept(Path path) {
+        if (path.getName().endsWith(".tmp")) {
+          return false;
+        }
+        return true;
+      }
+    });
     if (listStatus == null) {
       return EMPTY_LIST;
     }

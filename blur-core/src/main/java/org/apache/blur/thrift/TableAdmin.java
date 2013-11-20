@@ -370,7 +370,9 @@ public abstract class TableAdmin implements Iface {
       if (cluster == null) {
         throw new BException("Table [" + table + "] not found.");
       }
-      return _clusterStatus.getTableDescriptor(true, cluster, table);
+      TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
+      TableContext tableContext = TableContext.create(tableDescriptor);
+      return tableContext.getDescriptor();
     } catch (Exception e) {
       LOG.error("Unknown error while trying to describe a table [" + table + "].", e);
       throw new BException("Unknown error while trying to describe a table [" + table + "].", e);

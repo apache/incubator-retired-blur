@@ -215,7 +215,7 @@ public class BaseCache extends Cache implements Closeable {
     Set<Long> validFileIds = new HashSet<Long>(_fileNameToId.values());
     for (CacheKey key : _cacheMap.keySet()) {
       long fileId = key.getFileId();
-      if (validFileIds.contains(fileId)) {
+      if (!validFileIds.contains(fileId)) {
         CacheValue remove = _cacheMap.remove(key);
         if (remove != null) {
           _removals.mark();

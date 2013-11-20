@@ -19,6 +19,7 @@ package org.apache.blur.mapreduce.lib;
 import java.io.IOException;
 
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -56,7 +57,7 @@ import org.apache.hadoop.mapreduce.Reducer;
  * 
  * 
  */
-public class DefaultBlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
+public class DefaultBlurReducer extends Reducer<Writable, BlurMutate, Writable, BlurMutate> {
 
   @Override
   protected void setup(final Context context) throws IOException, InterruptedException {
@@ -70,10 +71,19 @@ public class DefaultBlurReducer extends Reducer<Text, BlurMutate, Text, BlurMuta
   }
 
   @Override
-  protected void reduce(Text key, Iterable<BlurMutate> values, Context context) throws IOException,
+  protected void reduce(Writable key, Iterable<BlurMutate> values, Context context) throws IOException,
       InterruptedException {
+    Text textKey = getTextKey(key);
     for (BlurMutate value : values) {
-      context.write(key, value);
+      context.write(textKey, value);
     }
+  }
+
+  protected Text getTextKey(Writable key) {
+    if (key instanceof Text) {
+      return (Text) key;
+    }
+    throw new IllegalArgumentException("Key is not of type Text, you will need to "
+        + "override DefaultBlurReducer and implement \"getTextKey\" method.");
   }
 }

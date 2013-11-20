@@ -114,19 +114,19 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
   private static ThreadLocal<Progressable> _progressable = new ThreadLocal<Progressable>();
   private static ThreadLocal<GetCounter> _getCounter = new ThreadLocal<GetCounter>();
 
-  static void setProgressable(Progressable progressable) {
+  public static void setProgressable(Progressable progressable) {
     _progressable.set(progressable);
   }
 
-  static Progressable getProgressable() {
+  public static Progressable getProgressable() {
     return _progressable.get();
   }
 
-  static void setGetCounter(GetCounter getCounter) {
+  public static void setGetCounter(GetCounter getCounter) {
     _getCounter.set(getCounter);
   }
 
-  static GetCounter getGetCounter() {
+  public static GetCounter getGetCounter() {
     return _getCounter.get();
   }
 

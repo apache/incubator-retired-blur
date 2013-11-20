@@ -1,5 +1,3 @@
-package org.apache.blur.thrift.util;
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,24 +14,50 @@ package org.apache.blur.thrift.util;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import java.io.IOException;
+package org.apache.blur.trace;
 
-import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.generated.Blur.Iface;
-import org.apache.blur.thrift.generated.BlurException;
-import org.apache.blur.trace.Trace;
+public class UsingTrace {
 
-public class StatsTable {
+  public static void main(String[] args) {
 
-  public static void main(String[] args) throws BlurException, TException, IOException {
-    String connectionStr = args[0];
-    final String tableName = args[1];
+    // Trace.setupTrace("cool");
 
-    Trace.setupTrace("1234");
-    Iface client = BlurClient.getClient(connectionStr);
-    System.out.println(client.tableStats(tableName));
-    System.out.println(client.tableStats(tableName));
-    Trace.tearDownTrace();
+    Tracer trace = Trace.trace("1");
+    long meth1;
+    try {
+      meth1 = meth1();
+    } finally {
+      trace.done();
+    }
+    System.out.println(meth1);
+
+//    Trace.tearDownTrace();
   }
+
+  private static long meth1() {
+    Tracer trace = Trace.trace("2");
+    try {
+      return meth2();
+    } finally {
+      trace.done();
+    }
+  }
+
+  private static long meth2() {
+    Tracer trace = Trace.trace("3");
+    try {
+      return meth3();
+    } finally {
+      trace.done();
+    }
+  }
+
+  private static long meth3() {
+    long t = 0;
+    for (long i = 0; i < 10000; i++) {
+      t *= i;
+    }
+    return t;
+  }
+
 }

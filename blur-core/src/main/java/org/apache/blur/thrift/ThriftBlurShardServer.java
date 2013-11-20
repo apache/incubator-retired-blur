@@ -86,6 +86,8 @@ import org.apache.blur.thirdparty.thrift_0_9_0.server.TServlet;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingServerSocket;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.trace.LogTraceReporter;
+import org.apache.blur.trace.Trace;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.GCWatcher;
 import org.apache.blur.utils.MemoryReporter;
@@ -229,10 +231,12 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.setMaxRecordsPerRowFetchRequest(configuration.getInt(BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST, 1000));
     shardServer.setConfiguration(configuration);
     shardServer.init();
+    
+    Trace.setReporter(new LogTraceReporter());
 
     Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, shardServer, true);
-
     iface = BlurUtil.recordMethodCallsAndAverageTimes(iface, Iface.class, false);
+    iface = BlurUtil.runTrace(iface, false);
     if (httpServer != null) {
       WebAppContext context = httpServer.getContext();
       context.addServlet(new ServletHolder(new TServlet(new Blur.Processor<Blur.Iface>(iface),

@@ -24,20 +24,22 @@ import org.apache.blur.thirdparty.thrift_0_9_0.server.ServerContext;
 import org.apache.blur.thrift.generated.User;
 
 public class BlurServerContext implements ServerContext {
-  
+
   private static final Log LOG = LogFactory.getLog(BlurServerContext.class);
-  
+
   private User _user;
   private final SocketAddress _localSocketAddress;
   private final SocketAddress _remoteSocketAddress;
   private final String _connectionString;
+
+  private String _traceId;
 
   public BlurServerContext(SocketAddress localSocketAddress, SocketAddress remoteSocketAddress) {
     _localSocketAddress = localSocketAddress;
     _remoteSocketAddress = remoteSocketAddress;
     _connectionString = _localSocketAddress.toString() + "\t" + _remoteSocketAddress.toString();
   }
-  
+
   public void setUser(User user) {
     LOG.info("User [{0}] for context [{1}]", user, this);
     _user = user;
@@ -46,7 +48,15 @@ public class BlurServerContext implements ServerContext {
   public User getUser() {
     return _user;
   }
-  
+
+  public String getTraceId() {
+    return _traceId;
+  }
+
+  public void setTraceId(String traceId) {
+    _traceId = traceId;
+  }
+
   public SocketAddress getRocalSocketAddress() {
     return _localSocketAddress;
   }

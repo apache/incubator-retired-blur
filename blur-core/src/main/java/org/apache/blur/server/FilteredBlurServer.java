@@ -42,6 +42,10 @@ import org.apache.blur.thrift.generated.User;
 public class FilteredBlurServer implements Iface {
   
   protected final Iface _iface;
+  public void startTrace(String traceId) throws TException {
+    _iface.startTrace(traceId);
+  }
+
   protected final boolean _shard;
   protected final BlurConfiguration _configuration;
   

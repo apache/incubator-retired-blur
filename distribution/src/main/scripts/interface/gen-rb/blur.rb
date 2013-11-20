@@ -537,6 +537,13 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'metrics failed: unknown result')
       end
 
+      def startTrace(traceId)
+        send_startTrace(traceId)
+      end
+
+      def send_startTrace(traceId)
+        send_message('startTrace', StartTrace_args, :traceId => traceId)
+      end
     end
 
     class Processor
@@ -909,6 +916,12 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'metrics', seqid)
+      end
+
+      def process_startTrace(seqid, iprot, oprot)
+        args = read_args(iprot, StartTrace_args)
+        @handler.startTrace(args.traceId)
+        return
       end
 
     end
@@ -2113,6 +2126,38 @@ module Blur
       FIELDS = {
         SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Metric}},
         EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class StartTrace_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TRACEID = 1
+
+      FIELDS = {
+        # the trace id.
+        TRACEID => {:type => ::Thrift::Types::STRING, :name => 'traceId'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class StartTrace_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+
+      FIELDS = {
+
       }
 
       def struct_fields; FIELDS; end

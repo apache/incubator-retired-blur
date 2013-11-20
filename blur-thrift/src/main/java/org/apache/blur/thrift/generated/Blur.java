@@ -366,6 +366,13 @@ public class Blur {
      */
     public Map<String,Metric> metrics(Set<String> metrics) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
+    /**
+     * Starts a trace with the given trace id.
+     * 
+     * @param traceId the trace id.
+     */
+    public void startTrace(String traceId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
   }
 
   public interface AsyncIface {
@@ -437,6 +444,8 @@ public class Blur {
     public void configuration(org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.configuration_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     public void metrics(Set<String> metrics, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.metrics_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
+    public void startTrace(String traceId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.startTrace_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
   }
 
@@ -1312,6 +1321,18 @@ public class Blur {
         throw result.ex;
       }
       throw new org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException(org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException.MISSING_RESULT, "metrics failed: unknown result");
+    }
+
+    public void startTrace(String traceId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      send_startTrace(traceId);
+    }
+
+    public void send_startTrace(String traceId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      startTrace_args args = new startTrace_args();
+      args.setTraceId(traceId);
+      sendBase("startTrace", args);
     }
 
   }
@@ -2461,6 +2482,37 @@ public class Blur {
       }
     }
 
+    public void startTrace(String traceId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<startTrace_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      checkReady();
+      startTrace_call method_call = new startTrace_call(traceId, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class startTrace_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
+      private String traceId;
+      public startTrace_call(String traceId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<startTrace_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        super(client, protocolFactory, transport, resultHandler, true);
+        this.traceId = traceId;
+      }
+
+      public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("startTrace", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
+        startTrace_args args = new startTrace_args();
+        args.setTraceId(traceId);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        if (getState() != org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport memoryTransport = new org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+      }
+    }
+
   }
 
   public static class Processor<I extends Iface> extends org.apache.blur.thirdparty.thrift_0_9_0.TBaseProcessor<I> implements org.apache.blur.thirdparty.thrift_0_9_0.TProcessor {
@@ -2508,6 +2560,7 @@ public class Blur {
       processMap.put("isInSafeMode", new isInSafeMode());
       processMap.put("configuration", new configuration());
       processMap.put("metrics", new metrics());
+      processMap.put("startTrace", new startTrace());
       return processMap;
     }
 
@@ -3322,6 +3375,25 @@ public class Blur {
           result.ex = ex;
         }
         return result;
+      }
+    }
+
+    public static class startTrace<I extends Iface> extends org.apache.blur.thirdparty.thrift_0_9_0.ProcessFunction<I, startTrace_args> {
+      public startTrace() {
+        super("startTrace");
+      }
+
+      public startTrace_args getEmptyArgsInstance() {
+        return new startTrace_args();
+      }
+
+      protected boolean isOneway() {
+        return true;
+      }
+
+      public org.apache.blur.thirdparty.thrift_0_9_0.TBase getResult(I iface, startTrace_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        iface.startTrace(args.traceId);
+        return null;
       }
     }
 
@@ -32330,6 +32402,372 @@ public class Blur {
           struct.ex = new BlurException();
           struct.ex.read(iprot);
           struct.setExIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class startTrace_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<startTrace_args, startTrace_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("startTrace_args");
+
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TRACE_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("traceId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new startTrace_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new startTrace_argsTupleSchemeFactory());
+    }
+
+    /**
+     * the trace id.
+     */
+    public String traceId; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      /**
+       * the trace id.
+       */
+      TRACE_ID((short)1, "traceId");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TRACE_ID
+            return TRACE_ID;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TRACE_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("traceId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(startTrace_args.class, metaDataMap);
+    }
+
+    public startTrace_args() {
+    }
+
+    public startTrace_args(
+      String traceId)
+    {
+      this();
+      this.traceId = traceId;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public startTrace_args(startTrace_args other) {
+      if (other.isSetTraceId()) {
+        this.traceId = other.traceId;
+      }
+    }
+
+    public startTrace_args deepCopy() {
+      return new startTrace_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.traceId = null;
+    }
+
+    /**
+     * the trace id.
+     */
+    public String getTraceId() {
+      return this.traceId;
+    }
+
+    /**
+     * the trace id.
+     */
+    public startTrace_args setTraceId(String traceId) {
+      this.traceId = traceId;
+      return this;
+    }
+
+    public void unsetTraceId() {
+      this.traceId = null;
+    }
+
+    /** Returns true if field traceId is set (has been assigned a value) and false otherwise */
+    public boolean isSetTraceId() {
+      return this.traceId != null;
+    }
+
+    public void setTraceIdIsSet(boolean value) {
+      if (!value) {
+        this.traceId = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TRACE_ID:
+        if (value == null) {
+          unsetTraceId();
+        } else {
+          setTraceId((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TRACE_ID:
+        return getTraceId();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case TRACE_ID:
+        return isSetTraceId();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof startTrace_args)
+        return this.equals((startTrace_args)that);
+      return false;
+    }
+
+    public boolean equals(startTrace_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_traceId = true && this.isSetTraceId();
+      boolean that_present_traceId = true && that.isSetTraceId();
+      if (this_present_traceId || that_present_traceId) {
+        if (!(this_present_traceId && that_present_traceId))
+          return false;
+        if (!this.traceId.equals(that.traceId))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(startTrace_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      startTrace_args typedOther = (startTrace_args)other;
+
+      lastComparison = Boolean.valueOf(isSetTraceId()).compareTo(typedOther.isSetTraceId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTraceId()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.traceId, typedOther.traceId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("startTrace_args(");
+      boolean first = true;
+
+      sb.append("traceId:");
+      if (this.traceId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.traceId);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class startTrace_argsStandardSchemeFactory implements SchemeFactory {
+      public startTrace_argsStandardScheme getScheme() {
+        return new startTrace_argsStandardScheme();
+      }
+    }
+
+    private static class startTrace_argsStandardScheme extends StandardScheme<startTrace_args> {
+
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, startTrace_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // TRACE_ID
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+                struct.traceId = iprot.readString();
+                struct.setTraceIdIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, startTrace_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.traceId != null) {
+          oprot.writeFieldBegin(TRACE_ID_FIELD_DESC);
+          oprot.writeString(struct.traceId);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class startTrace_argsTupleSchemeFactory implements SchemeFactory {
+      public startTrace_argsTupleScheme getScheme() {
+        return new startTrace_argsTupleScheme();
+      }
+    }
+
+    private static class startTrace_argsTupleScheme extends TupleScheme<startTrace_args> {
+
+      @Override
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, startTrace_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetTraceId()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetTraceId()) {
+          oprot.writeString(struct.traceId);
+        }
+      }
+
+      @Override
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, startTrace_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.traceId = iprot.readString();
+          struct.setTraceIdIsSet(true);
         }
       }
     }

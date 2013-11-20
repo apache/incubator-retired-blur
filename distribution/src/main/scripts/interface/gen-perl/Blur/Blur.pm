@@ -5341,6 +5341,116 @@ sub write {
   return $xfer;
 }
 
+package Blur::Blur_startTrace_args;
+use base qw(Class::Accessor);
+Blur::Blur_startTrace_args->mk_accessors( qw( traceId ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{traceId} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{traceId}) {
+      $self->{traceId} = $vals->{traceId};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_startTrace_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{traceId});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_startTrace_args');
+  if (defined $self->{traceId}) {
+    $xfer += $output->writeFieldBegin('traceId', TType::STRING, 1);
+    $xfer += $output->writeString($self->{traceId});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_startTrace_result;
+use base qw(Class::Accessor);
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_startTrace_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_startTrace_result');
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 package Blur::BlurIf;
 
 use strict;
@@ -5594,6 +5704,13 @@ sub configuration{
 sub metrics{
   my $self = shift;
   my $metrics = shift;
+
+  die 'implement interface';
+}
+
+sub startTrace{
+  my $self = shift;
+  my $traceId = shift;
 
   die 'implement interface';
 }
@@ -5860,6 +5977,13 @@ sub metrics{
 
   my $metrics = ($request->{'metrics'}) ? $request->{'metrics'} : undef;
   return $self->{impl}->metrics($metrics);
+}
+
+sub startTrace{
+  my ($self, $request) = @_;
+
+  my $traceId = ($request->{'traceId'}) ? $request->{'traceId'} : undef;
+  return $self->{impl}->startTrace($traceId);
 }
 
 package Blur::BlurClient;
@@ -7423,6 +7547,24 @@ sub recv_metrics{
   }
   die "metrics failed: unknown result";
 }
+sub startTrace{
+  my $self = shift;
+  my $traceId = shift;
+
+    $self->send_startTrace($traceId);
+}
+
+sub send_startTrace{
+  my $self = shift;
+  my $traceId = shift;
+
+  $self->{output}->writeMessageBegin('startTrace', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_startTrace_args();
+  $args->{traceId} = $traceId;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
 package Blur::BlurProcessor;
 
 use strict;
@@ -8026,4 +8168,12 @@ sub process_metrics {
     $output->getTransport()->flush();
 }
 
+sub process_startTrace {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_startTrace_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    $self->{handler}->startTrace($args->traceId);
+    return;
+}
 1;

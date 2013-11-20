@@ -4672,6 +4672,87 @@ Blur_metrics_result.prototype.write = function(output) {
   return;
 };
 
+Blur_startTrace_args = function(args) {
+  this.traceId = null;
+  if (args) {
+    if (args.traceId !== undefined) {
+      this.traceId = args.traceId;
+    }
+  }
+};
+Blur_startTrace_args.prototype = {};
+Blur_startTrace_args.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.traceId = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Blur_startTrace_args.prototype.write = function(output) {
+  output.writeStructBegin('Blur_startTrace_args');
+  if (this.traceId !== null && this.traceId !== undefined) {
+    output.writeFieldBegin('traceId', Thrift.Type.STRING, 1);
+    output.writeString(this.traceId);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+Blur_startTrace_result = function(args) {
+};
+Blur_startTrace_result.prototype = {};
+Blur_startTrace_result.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    input.skip(ftype);
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Blur_startTrace_result.prototype.write = function(output) {
+  output.writeStructBegin('Blur_startTrace_result');
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
 BlurClient = function(input, output) {
     this.input = input;
     this.output = (!output) ? input : output;
@@ -5894,4 +5975,16 @@ BlurClient.prototype.recv_metrics = function() {
     return result.success;
   }
   throw 'metrics failed: unknown result';
+};
+BlurClient.prototype.startTrace = function(traceId) {
+  this.send_startTrace(traceId);
+};
+
+BlurClient.prototype.send_startTrace = function(traceId) {
+  this.output.writeMessageBegin('startTrace', Thrift.MessageType.CALL, this.seqid);
+  var args = new Blur_startTrace_args();
+  args.traceId = traceId;
+  args.write(this.output);
+  this.output.writeMessageEnd();
+  return this.output.getTransport().flush();
 };

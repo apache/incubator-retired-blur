@@ -65,6 +65,7 @@ import org.apache.blur.manager.results.BlurResultComparator;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.results.BlurResultPeekableIteratorComparator;
 import org.apache.blur.manager.results.PeekableIterator;
+import org.apache.blur.server.BlurServerContext;
 import org.apache.blur.server.ControllerServerContext;
 import org.apache.blur.server.FilteredBlurServer;
 import org.apache.blur.server.ShardServerContext;
@@ -87,6 +88,7 @@ import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.util.ResetableTMemoryBuffer;
+import org.apache.blur.trace.Trace;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -916,5 +918,41 @@ public class BlurUtil {
       }
     }
     return iface;
+  }
+
+  public static Iface runTrace(final Iface iface, final boolean controller) {
+    InvocationHandler handler = new InvocationHandler() {
+      @Override
+      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        if (method.getName().equals("startTrace")) {
+          try {
+            return method.invoke(iface, args);
+          } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+          }
+        }
+        BlurServerContext context = getServerContext(controller);
+        String traceId = context.getTraceId();
+        if (traceId != null) {
+          Trace.setupTrace(traceId);
+        }
+        try {
+          return method.invoke(iface, args);
+        } catch (InvocationTargetException e) {
+          throw e.getTargetException();
+        } finally {
+          Trace.tearDownTrace();
+          context.setTraceId(null);
+        }
+      }
+
+      private BlurServerContext getServerContext(boolean controller) {
+        if (controller) {
+          return ControllerServerContext.getControllerServerContext();
+        }
+        return ShardServerContext.getShardServerContext();
+      }
+    };
+    return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class }, handler);
   }
 }

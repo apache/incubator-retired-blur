@@ -1084,6 +1084,14 @@ service Blur {
     1:set<string> metrics
   ) throws (1:BlurException ex)
 
+  /**
+   * Starts a trace with the given trace id.
+   */
+  oneway void startTrace(
+    /** the trace id. */
+    1:string traceId
+  )
+
 }
 
 

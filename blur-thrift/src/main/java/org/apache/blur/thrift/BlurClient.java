@@ -31,6 +31,7 @@ import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.User;
+import org.apache.blur.trace.Trace;
 
 public class BlurClient {
 
@@ -78,6 +79,10 @@ public class BlurClient {
             } else {
               if (_setUser) {
                 client.setUser(user);
+              }
+              String traceId = Trace.getTraceId();
+              if (traceId != null) {
+                client.startTrace(traceId);
               }
               return method.invoke(client, args);
             }

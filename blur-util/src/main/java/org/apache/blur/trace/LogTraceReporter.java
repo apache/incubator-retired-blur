@@ -1,5 +1,3 @@
-package org.apache.blur.thrift.util;
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,24 +14,19 @@ package org.apache.blur.thrift.util;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import java.io.IOException;
+package org.apache.blur.trace;
 
-import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.generated.Blur.Iface;
-import org.apache.blur.thrift.generated.BlurException;
-import org.apache.blur.trace.Trace;
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 
-public class StatsTable {
+public class LogTraceReporter implements TraceReporter {
 
-  public static void main(String[] args) throws BlurException, TException, IOException {
-    String connectionStr = args[0];
-    final String tableName = args[1];
+  private static final Log LOG = LogFactory.getLog(LogTraceReporter.class);
 
-    Trace.setupTrace("1234");
-    Iface client = BlurClient.getClient(connectionStr);
-    System.out.println(client.tableStats(tableName));
-    System.out.println(client.tableStats(tableName));
-    Trace.tearDownTrace();
+  @Override
+  public void report(TraceCollector collector) {
+    String json = collector.toJson();
+    LOG.info("Trace Complete [{0}]", json);
   }
+
 }

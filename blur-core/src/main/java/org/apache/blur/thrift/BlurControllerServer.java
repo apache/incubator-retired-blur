@@ -1176,4 +1176,10 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     context.setUser(user);
   }
 
+  @Override
+  public void startTrace(String traceId) throws TException {
+    ControllerServerContext context = ControllerServerContext.getControllerServerContext();
+    context.setTraceId(traceId);
+  }
+
 }

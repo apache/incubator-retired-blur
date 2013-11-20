@@ -32,12 +32,14 @@ import java.lang.management.MemoryUsage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.blur.MiniCluster;
+import org.apache.blur.TestType;
 import org.apache.blur.manager.IndexManager;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
@@ -117,6 +119,26 @@ public class BlurClusterTest {
     testTestShardFailover();
     testTermsList();
     testCreateDisableAndRemoveTable();
+    testCreateTableWithCustomType();
+  }
+
+  private void testCreateTableWithCustomType() throws IOException, BlurException, TException {
+    Blur.Iface client = getClient();
+    TableDescriptor tableDescriptor = new TableDescriptor();
+    tableDescriptor.setName("test_type");
+    tableDescriptor.setShardCount(1);
+    tableDescriptor.setTableUri(miniCluster.getFileSystemUri().toString() + "/blur/test_type");
+    client.createTable(tableDescriptor);
+    List<String> tableList = client.tableList();
+    assertTrue(tableList.contains("test_type"));
+
+    client.disableTable("test_type");
+
+    client.enableTable("test_type");
+
+    TableDescriptor describe = client.describe("test_type");
+    Map<String, String> tableProperties = describe.getTableProperties();
+    assertEquals(TestType.class.getName(), tableProperties.get("blur.fieldtype.customtype1"));
   }
 
   public void testCreateTable() throws BlurException, TException, IOException {

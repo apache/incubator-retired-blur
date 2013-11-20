@@ -223,6 +223,7 @@ public class MiniCluster {
     configuration.setLong(BLUR_SHARD_SAFEMODEDELAY, 5000);
     configuration.setInt(BLUR_GUI_CONTROLLER_PORT, -1);
     configuration.setInt(BLUR_GUI_SHARD_PORT, -1);
+    configuration.set("blur.fieldtype.customtype1", TestType.class.getName());
 
     return configuration;
   }

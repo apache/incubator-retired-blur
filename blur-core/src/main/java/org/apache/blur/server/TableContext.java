@@ -83,7 +83,6 @@ public class TableContext {
     cache.clear();
   }
 
-  @SuppressWarnings("unchecked")
   public static TableContext create(TableDescriptor tableDescriptor) {
     if (tableDescriptor == null) {
       throw new NullPointerException("TableDescriptor can not be null.");
@@ -134,32 +133,11 @@ public class TableContext {
     try {
       HdfsFieldManager hdfsFieldManager = new HdfsFieldManager(SUPER, new NoStopWordStandardAnalyzer(), storagePath,
           configuration, strict, defaultMissingFieldType, defaultMissingFieldLessIndexing, defaultMissingFieldProps);
+      loadCustomTypes(tableContext, blurConfiguration, hdfsFieldManager);
       hdfsFieldManager.load();
       tableContext.fieldManager = hdfsFieldManager;
     } catch (IOException e) {
       throw new RuntimeException(e);
-    }
-
-    Set<Entry<String, String>> entrySet = blurConfiguration.getProperties().entrySet();
-    for (Entry<String, String> entry : entrySet) {
-      String key = entry.getKey();
-      if (key.startsWith(BLUR_FIELDTYPE)) {
-        String className = entry.getValue();
-        LOG.info("Attempting to load new type [{0}]", className);
-        Class<? extends FieldTypeDefinition> clazz;
-        try {
-          clazz = (Class<? extends FieldTypeDefinition>) Class.forName(className);
-          FieldTypeDefinition fieldTypeDefinition = clazz.newInstance();
-          tableContext.fieldManager.registerType(clazz);
-          LOG.info("Sucessfully loaded new type [{0}] with name [{1}]", className, fieldTypeDefinition.getName());
-        } catch (ClassNotFoundException e) {
-          LOG.error("The field type definition class [{0}] was not found.  Check the classpath.", e, className);
-        } catch (InstantiationException e) {
-          LOG.error("Could not create the field type definition [{0}].", e, className);
-        } catch (IllegalAccessException e) {
-          LOG.error("Unknown exception while trying to load field type definition [{0}].", e, className);
-        }
-      }
     }
 
     Class<?> c1 = configuration.getClass(BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE,
@@ -171,6 +149,34 @@ public class TableContext {
 
     cache.put(name, tableContext);
     return tableContext;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static void loadCustomTypes(TableContext tableContext, BlurConfiguration blurConfiguration,
+      FieldManager fieldManager) {
+    Set<Entry<String, String>> entrySet = blurConfiguration.getProperties().entrySet();
+    TableDescriptor descriptor = tableContext.descriptor;
+    for (Entry<String, String> entry : entrySet) {
+      String key = entry.getKey();
+      if (key.startsWith(BLUR_FIELDTYPE)) {
+        String className = entry.getValue();
+        descriptor.putToTableProperties(key, className);
+        LOG.info("Attempting to load new type [{0}]", className);
+        Class<? extends FieldTypeDefinition> clazz;
+        try {
+          clazz = (Class<? extends FieldTypeDefinition>) Class.forName(className);
+          FieldTypeDefinition fieldTypeDefinition = clazz.newInstance();
+          fieldManager.registerType(clazz);
+          LOG.info("Sucessfully loaded new type [{0}] with name [{1}]", className, fieldTypeDefinition.getName());
+        } catch (ClassNotFoundException e) {
+          LOG.error("The field type definition class [{0}] was not found.  Check the classpath.", e, className);
+        } catch (InstantiationException e) {
+          LOG.error("Could not create the field type definition [{0}].", e, className);
+        } catch (IllegalAccessException e) {
+          LOG.error("Unknown exception while trying to load field type definition [{0}].", e, className);
+        }
+      }
+    }
   }
 
   private static Map<String, String> emptyIfNull(Map<String, String> defaultMissingFieldProps) {

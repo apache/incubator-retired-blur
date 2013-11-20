@@ -32,10 +32,15 @@ import com.yammer.metrics.core.MetricName;
 @SuppressWarnings("serial")
 public abstract class BaseCacheValue extends AtomicLong implements CacheValue {
 
+  private static final AtomicLong _neededFinalizedCall = new AtomicLong();
+  
+  public static class Evicted extends RuntimeException {
+    
+  }
+  
   private final int _length;
   protected volatile boolean _released = false;
-
-  private static final AtomicLong _neededFinalizedCall = new AtomicLong();
+  protected volatile boolean _evicted = false;
 
   static {
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, JVM, CACHE_VALUE_FINALIZE), new AtomicLongGauge(
@@ -53,14 +58,22 @@ public abstract class BaseCacheValue extends AtomicLong implements CacheValue {
 
   @Override
   public void write(int position, byte[] buf, int offset, int length) {
+    checkForEviction();
     if (position + length > _length) {
       throw new ArrayIndexOutOfBoundsException(position + length);
     }
     writeInternal(position, buf, offset, length);
   }
 
+  private void checkForEviction() {
+    if (_evicted) {
+      throw new Evicted();
+    }
+  }
+
   @Override
   public void read(int position, byte[] buf, int offset, int length) {
+    checkForEviction();
     if (position + length > _length) {
       throw new ArrayIndexOutOfBoundsException(position + length);
     }
@@ -69,6 +82,7 @@ public abstract class BaseCacheValue extends AtomicLong implements CacheValue {
 
   @Override
   public byte read(int position) {
+    checkForEviction();
     if (position >= _length) {
       throw new ArrayIndexOutOfBoundsException(position);
     }
@@ -77,6 +91,7 @@ public abstract class BaseCacheValue extends AtomicLong implements CacheValue {
 
   @Override
   public short readShort(int position) {
+    checkForEviction();
     if (position + 2 > _length) {
       throw new ArrayIndexOutOfBoundsException(position + 2);
     }
@@ -89,6 +104,7 @@ public abstract class BaseCacheValue extends AtomicLong implements CacheValue {
 
   @Override
   public int readInt(int position) {
+    checkForEviction();
     if (position + 4 > _length) {
       throw new ArrayIndexOutOfBoundsException(position + 4);
     }
@@ -102,6 +118,7 @@ public abstract class BaseCacheValue extends AtomicLong implements CacheValue {
 
   @Override
   public long readLong(int position) {
+    checkForEviction();
     if (position + 8 > _length) {
       throw new ArrayIndexOutOfBoundsException(position + 4);
     }
@@ -140,5 +157,15 @@ public abstract class BaseCacheValue extends AtomicLong implements CacheValue {
       release();
       _neededFinalizedCall.incrementAndGet();
     }
+  }
+  
+  @Override
+  public void evict() {
+    _evicted = true;
+  }
+
+  @Override
+  public boolean isEvicted() {
+    return _evicted;
   }
 }

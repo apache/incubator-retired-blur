@@ -69,6 +69,7 @@ public class BaseCache extends Cache implements Closeable {
     @Override
     public void onEviction(CacheKey key, CacheValue value) {
       _evictions.mark();
+      value.evict();
       addToReleaseQueue(key, value);
     }
   }
@@ -118,7 +119,7 @@ public class BaseCache extends Cache implements Closeable {
   private final Thread _oldCacheValueDaemonThread;
   private final AtomicBoolean _running = new AtomicBoolean(true);
   private final BlockingQueue<ReleaseEntry> _releaseQueue;
-  private final long _warningTimeForEntryCleanup = TimeUnit.MINUTES.toMillis(60);
+  private final long _warningTimeForEntryCleanup = TimeUnit.SECONDS.toMillis(10);
 
   public BaseCache(long totalNumberOfBytes, Size fileBufferSize, Size cacheBlockSize, FileNameFilter readFilter,
       FileNameFilter writeFilter, Quiet quiet, STORE store) {
@@ -194,15 +195,20 @@ public class BaseCache extends Cache implements Closeable {
       entriesToCleanup.remove(fileId);
 
       CacheValue value = entry._value;
+      boolean release = false;
       if (value.refCount() == 0) {
+        release = true;
+      } else if (entry.hasLivedToLong(_warningTimeForEntryCleanup)) {
+        FileIdKey fileIdKey = _oldFileNameIdMap.get(fileId);
+        LOG.warn("CacheValue has not been released [{0}] for [{1}] for over [{2} ms] forcing release.", entry,
+            fileIdKey, _warningTimeForEntryCleanup);
+        release = true;
+      }
+      if (release) {
         value.release();
         iterator.remove();
         long capacity = _cacheMap.capacity();
         _cacheMap.setCapacity(capacity + value.size());
-      } else if (entry.hasLivedToLong(_warningTimeForEntryCleanup)) {
-        FileIdKey fileIdKey = _oldFileNameIdMap.get(fileId);
-        LOG.warn("CacheValue has not been released [{0}] for [{1}] for over [{2} ms]", entry, fileIdKey,
-            _warningTimeForEntryCleanup);
       }
     }
     for (Long l : entriesToCleanup.keySet()) {
@@ -218,6 +224,7 @@ public class BaseCache extends Cache implements Closeable {
       if (!validFileIds.contains(fileId)) {
         CacheValue remove = _cacheMap.remove(key);
         if (remove != null) {
+          remove.evict();
           _removals.mark();
           addToReleaseQueue(key, remove);
         }

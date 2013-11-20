@@ -64,7 +64,7 @@ public class CacheIndexInput extends IndexInput {
 
   @Override
   public int readVInt() throws IOException {
-    if (_cacheValue != null && remaining() >= 5) {
+    if (isCacheValueValid() && remaining() >= 5) {
       byte b = readByteFromCache();
       if (b >= 0)
         return b;
@@ -91,9 +91,16 @@ public class CacheIndexInput extends IndexInput {
     return super.readVInt();
   }
 
+  private boolean isCacheValueValid() {
+    if (_cacheValue != null && !_cacheValue.isEvicted()) {
+      return true;
+    }
+    return false;
+  }
+
   @Override
   public long readVLong() throws IOException {
-    if (_cacheValue != null && remaining() >= 9) {
+    if (isCacheValueValid() && remaining() >= 9) {
       byte b = readByteFromCache();
       if (b >= 0)
         return b;
@@ -163,7 +170,7 @@ public class CacheIndexInput extends IndexInput {
   @Override
   public short readShort() throws IOException {
     ensureOpen();
-    if (_cacheValue != null && remaining() >= 2) {
+    if (isCacheValueValid() && remaining() >= 2) {
       short s = _cacheValue.readShort(_blockPosition);
       _blockPosition += 2;
       _position += 2;
@@ -175,7 +182,7 @@ public class CacheIndexInput extends IndexInput {
   @Override
   public int readInt() throws IOException {
     ensureOpen();
-    if (_cacheValue != null && remaining() >= 4) {
+    if (isCacheValueValid() && remaining() >= 4) {
       int i = _cacheValue.readInt(_blockPosition);
       _blockPosition += 4;
       _position += 4;
@@ -187,7 +194,7 @@ public class CacheIndexInput extends IndexInput {
   @Override
   public long readLong() throws IOException {
     ensureOpen();
-    if (_cacheValue != null && remaining() >= 8) {
+    if (isCacheValueValid() && remaining() >= 8) {
       long l = _cacheValue.readLong(_blockPosition);
       _blockPosition += 8;
       _position += 8;
@@ -249,7 +256,7 @@ public class CacheIndexInput extends IndexInput {
     CacheIndexInput clone = (CacheIndexInput) super.clone();
     clone._key = _key.clone();
     clone._indexInput = _indexInput.clone();
-    if (clone._cacheValue != null) {
+    if (isCacheValueValid()) {
       clone._cacheValue.incRef();
     }
     clone._quiet = _cache.shouldBeQuiet(_directory, _fileName);
@@ -273,9 +280,7 @@ public class CacheIndexInput extends IndexInput {
   }
 
   private void tryToFill() throws IOException {
-    if (_cacheValue == null) {
-      fill();
-    } else if (remaining() == 0) {
+    if (!isCacheValueValid() || remaining() == 0) {
       releaseCache();
       fill();
     } else {

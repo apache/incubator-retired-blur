@@ -171,9 +171,8 @@ public class TopCommand extends Command {
       } else {
         output.append(truncate(String.format(header.toString(), (Object[]) labels)) + "\n");
         lineCount++;
-        SERVER:
-        for (Entry<String, AtomicReference<Client>> e : new TreeMap<String, AtomicReference<Client>>(shardClients)
-            .entrySet()) {
+        SERVER: for (Entry<String, AtomicReference<Client>> e : new TreeMap<String, AtomicReference<Client>>(
+            shardClients).entrySet()) {
           String shardServer = e.getKey();
           AtomicReference<Client> ref = e.getValue();
           Map<String, Metric> metrics = getMetrics(shardServer, ref, keys);
@@ -193,10 +192,18 @@ public class TopCommand extends Command {
             for (int i = 1; i < labels.length; i++) {
               String mn = metricNames.get(labels[i]);
               Metric metric = metrics.get(mn);
-              Map<String, Double> doubleMap = metric.getDoubleMap();
-              Double value = doubleMap.get("oneMinuteRate");
+              Double value;
+              if (metric == null) {
+                value = null;
+              } else {
+                Map<String, Double> doubleMap = metric.getDoubleMap();
+                value = doubleMap.get("oneMinuteRate");
+                if (value == null) {
+                  value = doubleMap.get("value");
+                }
+              }
               if (value == null) {
-                value = doubleMap.get("value");
+                value = 0.0;
               }
               cols[c++] = humanize(value, sizes.contains(mn));
               sb.append(" %10s");

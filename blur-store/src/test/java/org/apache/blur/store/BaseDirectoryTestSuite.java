@@ -72,7 +72,7 @@ public abstract class BaseDirectoryTestSuite {
   public void setUp() throws IOException {
     BufferStore.initNewBuffer(1024, 1024 * 128);
     BufferStore.initNewBuffer(8192, 8192 * 128);
-    
+
     file = new File(TMPDIR, "hdfsdirectorytest");
     fileControl = new File(TMPDIR, "hdfsdirectorytest-control");
     rm(file);

@@ -20,6 +20,17 @@ package org.apache.blur.store.blockcache_v2;
 import javax.swing.text.Position;
 
 public interface CacheValue {
+  
+  /**
+   * Marks value as evicted.
+   */
+  void evict();
+  
+  /**
+   * Gets whether or not value is evicted.
+   * @return
+   */
+  boolean isEvicted();
 
   /**
    * The actual size of the the underlying resource.

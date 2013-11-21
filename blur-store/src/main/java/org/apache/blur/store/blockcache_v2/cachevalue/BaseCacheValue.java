@@ -30,14 +30,14 @@ import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.MetricName;
 
 @SuppressWarnings("serial")
-public abstract class BaseCacheValue extends AtomicLong implements CacheValue {
+public abstract class BaseCacheValue implements CacheValue {
 
   private static final AtomicLong _neededFinalizedCall = new AtomicLong();
-  
+
   public static class Evicted extends RuntimeException {
-    
+
   }
-  
+
   private final int _length;
   protected volatile boolean _released = false;
   protected volatile boolean _evicted = false;
@@ -136,21 +136,6 @@ public abstract class BaseCacheValue extends AtomicLong implements CacheValue {
   protected abstract void readInternal(int position, byte[] buf, int offset, int length);
 
   @Override
-  public final void incRef() {
-    incrementAndGet();
-  }
-
-  @Override
-  public final void decRef() {
-    decrementAndGet();
-  }
-
-  @Override
-  public final long refCount() {
-    return get();
-  }
-
-  @Override
   protected void finalize() throws Throwable {
     // @TODO this may not be needed.
     if (!_released) {
@@ -158,14 +143,14 @@ public abstract class BaseCacheValue extends AtomicLong implements CacheValue {
       _neededFinalizedCall.incrementAndGet();
     }
   }
-  
+
   @Override
-  public void evict() {
-    _evicted = true;
+  public CacheValue trim(int length) {
+    return this;
   }
 
   @Override
-  public boolean isEvicted() {
-    return _evicted;
+  public CacheValue detachFromCache() {
+    throw new RuntimeException("Not implemented.");
   }
 }

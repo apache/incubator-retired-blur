@@ -28,23 +28,19 @@ import static org.apache.blur.metrics.MetricsConstants.SIZE;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.store.blockcache_v2.cachevalue.ByteArrayCacheValue;
-import org.apache.blur.store.blockcache_v2.cachevalue.UnsafeCacheValue;
+import org.apache.blur.store.blockcache_v2.cachevalue.DetachableCacheValue;
 import org.apache.lucene.store.IOContext;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
@@ -69,36 +65,15 @@ public class BaseCache extends Cache implements Closeable {
     @Override
     public void onEviction(CacheKey key, CacheValue value) {
       _evictions.mark();
-      value.evict();
-      addToReleaseQueue(key, value);
+      _cacheValueBufferPool.returnToPool(value.detachFromCache());
     }
   }
 
   class BaseCacheWeigher implements Weigher<CacheValue> {
     @Override
     public int weightOf(CacheValue value) {
-      return value.size();
+      return value.length();
     }
-  }
-
-  static class ReleaseEntry {
-    CacheKey _key;
-    CacheValue _value;
-    final long _createTime = System.currentTimeMillis();
-
-    @Override
-    public String toString() {
-      return "ReleaseEntry [_key=" + _key + ", _value=" + _value + ", _createTime=" + _createTime + "]";
-    }
-
-    public boolean hasLivedToLong(long warningTimeForEntryCleanup) {
-      long now = System.currentTimeMillis();
-      if (_createTime + warningTimeForEntryCleanup < now) {
-        return true;
-      }
-      return false;
-    }
-
   }
 
   private final ConcurrentLinkedHashMap<CacheKey, CacheValue> _cacheMap;
@@ -116,10 +91,8 @@ public class BaseCache extends Cache implements Closeable {
   private final Meter _evictions;
   private final Meter _removals;
   private final Thread _oldFileDaemonThread;
-  private final Thread _oldCacheValueDaemonThread;
   private final AtomicBoolean _running = new AtomicBoolean(true);
-  private final BlockingQueue<ReleaseEntry> _releaseQueue;
-  private final long _warningTimeForEntryCleanup = TimeUnit.SECONDS.toMillis(10);
+  private final CacheValueBufferPool _cacheValueBufferPool;
 
   public BaseCache(long totalNumberOfBytes, Size fileBufferSize, Size cacheBlockSize, FileNameFilter readFilter,
       FileNameFilter writeFilter, Quiet quiet, STORE store) {
@@ -135,7 +108,8 @@ public class BaseCache extends Cache implements Closeable {
     _misses = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, MISS), MISS, TimeUnit.SECONDS);
     _evictions = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, EVICTION), EVICTION, TimeUnit.SECONDS);
     _removals = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, REMOVAL), REMOVAL, TimeUnit.SECONDS);
-    _releaseQueue = new LinkedBlockingQueue<ReleaseEntry>();
+    // @TODO make configurable
+    _cacheValueBufferPool = new CacheValueBufferPool(_store, 1000);
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, CACHE, ENTRIES), new Gauge<Long>() {
       @Override
       public Long value() {
@@ -165,55 +139,6 @@ public class BaseCache extends Cache implements Closeable {
     _oldFileDaemonThread.setName("BaseCacheOldFileCleanup");
     _oldFileDaemonThread.setPriority(Thread.MIN_PRIORITY);
     _oldFileDaemonThread.start();
-
-    _oldCacheValueDaemonThread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        while (_running.get()) {
-          cleanupOldCacheValues();
-          try {
-            Thread.sleep(_10_SECOND);
-          } catch (InterruptedException e) {
-            return;
-          }
-        }
-      }
-    });
-    _oldCacheValueDaemonThread.setDaemon(true);
-    _oldCacheValueDaemonThread.setName("BaseCacheCleanupCacheValues");
-    _oldCacheValueDaemonThread.start();
-  }
-
-  protected void cleanupOldCacheValues() {
-    Iterator<ReleaseEntry> iterator = _releaseQueue.iterator();
-    Map<Long, FileIdKey> entriesToCleanup = new HashMap<Long, FileIdKey>(_oldFileNameIdMap);
-    while (iterator.hasNext()) {
-      ReleaseEntry entry = iterator.next();
-      CacheKey key = entry._key;
-      long fileId = key.getFileId();
-      // Still referenced
-      entriesToCleanup.remove(fileId);
-
-      CacheValue value = entry._value;
-      boolean release = false;
-      if (value.refCount() == 0) {
-        release = true;
-      } else if (entry.hasLivedToLong(_warningTimeForEntryCleanup)) {
-        FileIdKey fileIdKey = _oldFileNameIdMap.get(fileId);
-        LOG.warn("CacheValue has not been released [{0}] for [{1}] for over [{2} ms] forcing release.", entry,
-            fileIdKey, _warningTimeForEntryCleanup);
-        release = true;
-      }
-      if (release) {
-        value.release();
-        iterator.remove();
-        long capacity = _cacheMap.capacity();
-        _cacheMap.setCapacity(capacity + value.size());
-      }
-    }
-    for (Long l : entriesToCleanup.keySet()) {
-      _oldFileNameIdMap.remove(l);
-    }
   }
 
   protected void cleanupOldFiles() {
@@ -224,9 +149,8 @@ public class BaseCache extends Cache implements Closeable {
       if (!validFileIds.contains(fileId)) {
         CacheValue remove = _cacheMap.remove(key);
         if (remove != null) {
-          remove.evict();
           _removals.mark();
-          addToReleaseQueue(key, remove);
+          _cacheValueBufferPool.returnToPool(remove.detachFromCache());
         }
       }
     }
@@ -237,28 +161,7 @@ public class BaseCache extends Cache implements Closeable {
     _running.set(false);
     _cacheMap.clear();
     _oldFileDaemonThread.interrupt();
-    _oldCacheValueDaemonThread.interrupt();
-    for (ReleaseEntry entry : _releaseQueue) {
-      entry._value.release();
-    }
-  }
-
-  private void addToReleaseQueue(CacheKey key, CacheValue value) {
-    if (value != null) {
-      if (value.refCount() == 0) {
-        value.release();
-        return;
-      }
-      long capacity = _cacheMap.capacity();
-      _cacheMap.setCapacity(capacity - value.size());
-
-      ReleaseEntry releaseEntry = new ReleaseEntry();
-      releaseEntry._key = key;
-      releaseEntry._value = value;
-
-      LOG.debug("CacheValue was not released [{0}]", releaseEntry);
-      _releaseQueue.add(releaseEntry);
-    }
+    _cacheValueBufferPool.close();
   }
 
   @Override
@@ -268,14 +171,7 @@ public class BaseCache extends Cache implements Closeable {
 
   @Override
   public CacheValue newInstance(CacheDirectory directory, String fileName, int cacheBlockSize) {
-    switch (_store) {
-    case ON_HEAP:
-      return new ByteArrayCacheValue(cacheBlockSize);
-    case OFF_HEAP:
-      return new UnsafeCacheValue(cacheBlockSize);
-    default:
-      throw new RuntimeException("Unknown type [" + _store + "]");
-    }
+    return new DetachableCacheValue(_cacheValueBufferPool.getCacheValue(cacheBlockSize));
   }
 
   @Override

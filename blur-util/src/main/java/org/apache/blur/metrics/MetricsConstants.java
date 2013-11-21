@@ -21,6 +21,10 @@ package org.apache.blur.metrics;
  * 
  */
 public class MetricsConstants {
+  
+  public static final String CREATED = "Created";
+  public static final String DESTROYED = "Destroyed";
+  public static final String REUSED = "Reused";
   public static final String LUCENE = "Lucene";
   public static final String BLUR = "Blur";
   public static final String ORG_APACHE_BLUR = "org.apache.blur";
@@ -37,9 +41,11 @@ public class MetricsConstants {
   public static final String HDFS = "HDFS";
   public static final String LOCAL = "local";
   public static final String HIT = "Hit";
+  public static final String DETACHES = "Detaches";
   public static final String REMOVAL = "Removal";
   public static final String MISS = "Miss";
   public static final String CACHE = "Cache";
+  public static final String CACHE_POOL = "CachePool";
   public static final String JVM = "JVM";
   public static final String HEAP_USED = "Heap Used";
   public static final String CPU_USED = "Cpu Used";

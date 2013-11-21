@@ -233,7 +233,7 @@ public class BlurNRTIndex extends BlurIndex {
    * responsible for calling close on the searcher.
    */
   @Override
-  public IndexSearcherClosable getIndexReader() throws IOException {
+  public IndexSearcherClosable getIndexSearcher() throws IOException {
     return resetRunning((IndexSearcherClosable) getNRTManager().acquire());
   }
 

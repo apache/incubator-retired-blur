@@ -275,7 +275,7 @@ public class IndexManager {
         searcher = shardServerContext.getIndexSearcherClosable(table, shard);
       }
       if (searcher == null) {
-        searcher = index.getIndexReader();
+        searcher = index.getIndexSearcher();
         usedCache = false;
       }
 
@@ -340,7 +340,7 @@ public class IndexManager {
     if (blurIndex == null) {
       throw new BException("Shard [" + shardName + "] is not being servered by this shardserver.");
     }
-    IndexSearcherClosable searcher = blurIndex.getIndexReader();
+    IndexSearcherClosable searcher = blurIndex.getIndexSearcher();
     try {
       BooleanQuery query = new BooleanQuery();
       if (selector.recordOnly) {
@@ -692,7 +692,7 @@ public class IndexManager {
       @Override
       public Long call(Entry<String, BlurIndex> input) throws Exception {
         BlurIndex index = input.getValue();
-        IndexSearcherClosable searcher = index.getIndexReader();
+        IndexSearcherClosable searcher = index.getIndexSearcher();
         try {
           return recordFrequency(searcher.getIndexReader(), columnFamily, columnName, value);
         } finally {
@@ -728,7 +728,7 @@ public class IndexManager {
           @Override
           public List<String> call(Entry<String, BlurIndex> input) throws Exception {
             BlurIndex index = input.getValue();
-            IndexSearcherClosable searcher = index.getIndexReader();
+            IndexSearcherClosable searcher = index.getIndexSearcher();
             try {
               return terms(searcher.getIndexReader(), columnFamily, columnName, startWith, size);
             } finally {
@@ -1119,7 +1119,7 @@ public class IndexManager {
       String shard = entry.getKey();
       _status.attachThread(shard);
       BlurIndex index = entry.getValue();
-      IndexSearcherClosable searcher = index.getIndexReader();
+      IndexSearcherClosable searcher = index.getIndexSearcher();
       try {
         IndexReader indexReader = searcher.getIndexReader();
         if (indexReader instanceof ExitableReader) {

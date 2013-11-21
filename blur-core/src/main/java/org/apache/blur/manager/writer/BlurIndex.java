@@ -24,8 +24,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.utils.BlurUtil;
-import org.apache.blur.utils.ClassNameFilter;
-import org.apache.blur.utils.RamUsageEstimator;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReaderContext;
 import org.apache.lucene.search.IndexSearcher;
@@ -43,7 +41,7 @@ public abstract class BlurIndex {
 
   public abstract void deleteRow(boolean waitToBeVisible, boolean wal, String rowId) throws IOException;
 
-  public abstract IndexSearcherClosable getIndexReader() throws IOException;
+  public abstract IndexSearcherClosable getIndexSearcher() throws IOException;
 
   public abstract void close() throws IOException;
 
@@ -60,7 +58,7 @@ public abstract class BlurIndex {
   public abstract List<String> getSnapshots() throws IOException;
 
   public long getRecordCount() throws IOException {
-    IndexSearcherClosable searcher = getIndexReader();
+    IndexSearcherClosable searcher = getIndexSearcher();
     try {
       return searcher.getIndexReader().numDocs();
     } finally {
@@ -71,7 +69,7 @@ public abstract class BlurIndex {
   }
 
   public long getRowCount() throws IOException {
-    IndexSearcherClosable searcher = getIndexReader();
+    IndexSearcherClosable searcher = getIndexSearcher();
     try {
       return getRowCount(searcher);
     } finally {
@@ -87,33 +85,34 @@ public abstract class BlurIndex {
   }
 
   public long getIndexMemoryUsage() throws IOException {
-    long now = System.currentTimeMillis();
-    if (_lastMemoryCheck + ONE_MINUTE > now) {
-      return _memoryUsage;
-    }
-    IndexSearcherClosable searcher = getIndexReader();
-    try {
-      IndexReaderContext topReaderContext = searcher.getTopReaderContext();
-      return _memoryUsage = RamUsageEstimator.sizeOf(topReaderContext, new ClassNameFilter() {
-        @Override
-        public boolean include(String className) {
-          if (className.startsWith("org.apache.blur.index.ExitableReader")) {
-            return true;
-          } else if (className.startsWith("org.apache.blur.")) {
-            // System.out.println("className [" + className + "]");
-            return false;
-          }
-          return true;
-        }
-      });
-    } finally {
-      searcher.close();
-      _lastMemoryCheck = System.currentTimeMillis();
-    }
+    return 0;
+//    long now = System.currentTimeMillis();
+//    if (_lastMemoryCheck + ONE_MINUTE > now) {
+//      return _memoryUsage;
+//    }
+//    IndexSearcherClosable searcher = getIndexReader();
+//    try {
+//      IndexReaderContext topReaderContext = searcher.getTopReaderContext();
+//      return _memoryUsage = RamUsageEstimator.sizeOf(topReaderContext, new ClassNameFilter() {
+//        @Override
+//        public boolean include(String className) {
+//          if (className.startsWith("org.apache.blur.index.ExitableReader")) {
+//            return true;
+//          } else if (className.startsWith("org.apache.blur.")) {
+//            // System.out.println("className [" + className + "]");
+//            return false;
+//          }
+//          return true;
+//        }
+//      });
+//    } finally {
+//      searcher.close();
+//      _lastMemoryCheck = System.currentTimeMillis();
+//    }
   }
 
   public long getSegmentCount() throws IOException {
-    IndexSearcherClosable indexSearcherClosable = getIndexReader();
+    IndexSearcherClosable indexSearcherClosable = getIndexSearcher();
     try {
       IndexReader indexReader = indexSearcherClosable.getIndexReader();
       IndexReaderContext context = indexReader.getContext();

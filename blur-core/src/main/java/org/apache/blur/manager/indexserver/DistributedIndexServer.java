@@ -46,6 +46,7 @@ import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;
+import org.apache.blur.manager.writer.BlurIndexNRTSimple;
 import org.apache.blur.manager.writer.BlurIndexReadOnly;
 import org.apache.blur.manager.writer.BlurIndexRefresher;
 import org.apache.blur.manager.writer.BlurNRTIndex;
@@ -453,7 +454,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     ShardContext shardContext = ShardContext.create(tableContext, shard);
 
     Directory dir;
-    
+
     TableDescriptor descriptor = tableContext.getDescriptor();
     boolean blockCacheEnabled = descriptor.isBlockCaching();
     if (blockCacheEnabled) {
@@ -464,8 +465,13 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     }
 
     BlurIndex index;
-    
+
     BlurNRTIndex writer = new BlurNRTIndex(shardContext, _mergeScheduler, dir, _gc, _searchExecutor);
+
+    // BlurIndexNRTSimple writer = new BlurIndexNRTSimple(shardContext,
+    // _mergeScheduler, dir, _gc, _searchExecutor,
+    // _indexCloser, _refresher);
+
     if (_clusterStatus.isReadOnly(true, _cluster, table)) {
       index = new BlurIndexReadOnly(writer);
     } else {
@@ -482,7 +488,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
       @Override
       public void run() {
         try {
-          final IndexSearcherClosable searcher = index.getIndexReader();
+          final IndexSearcherClosable searcher = index.getIndexSearcher();
           IndexReader reader = searcher.getIndexReader();
           _warmup.warmBlurIndex(table, shard, reader, index.isClosed(), new ReleaseReader() {
             @Override

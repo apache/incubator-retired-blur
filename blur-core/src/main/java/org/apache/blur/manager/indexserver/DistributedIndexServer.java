@@ -46,7 +46,6 @@ import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;
-import org.apache.blur.manager.writer.BlurIndexNRTSimple;
 import org.apache.blur.manager.writer.BlurIndexReadOnly;
 import org.apache.blur.manager.writer.BlurIndexRefresher;
 import org.apache.blur.manager.writer.BlurNRTIndex;

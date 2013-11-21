@@ -25,14 +25,12 @@ import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.metrics.AtomicLongGauge;
-import org.apache.blur.store.blockcache_v2.CacheValue;
 
 import sun.misc.Unsafe;
 
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.MetricName;
 
-@SuppressWarnings("serial")
 public class UnsafeCacheValue extends BaseCacheValue {
 
   private static final String JAVA_NIO_BITS = "java.nio.Bits";
@@ -101,21 +99,5 @@ public class UnsafeCacheValue extends BaseCacheValue {
     } else {
       new Throwable().printStackTrace();
     }
-  }
-
-  @Override
-  public int size() {
-    return _capacity;
-  }
-
-  @Override
-  public CacheValue trim(int length) {
-    if (length == _capacity) {
-      return this;
-    }
-    UnsafeCacheValue unsafeCacheValue = new UnsafeCacheValue(length);
-    _unsafe.copyMemory(_address, unsafeCacheValue._address, length);
-    release();
-    return unsafeCacheValue;
   }
 }

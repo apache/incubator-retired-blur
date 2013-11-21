@@ -22,23 +22,11 @@ import javax.swing.text.Position;
 public interface CacheValue {
   
   /**
-   * Marks value as evicted.
+   * Detach from the base cache.
+   * @return old cache value.
    */
-  void evict();
+  CacheValue detachFromCache();
   
-  /**
-   * Gets whether or not value is evicted.
-   * @return
-   */
-  boolean isEvicted();
-
-  /**
-   * The actual size of the the underlying resource.
-   * 
-   * @return the size.
-   */
-  int size();
-
   /**
    * The length of the data in this block.
    * 
@@ -83,20 +71,20 @@ public interface CacheValue {
    */
   byte read(int position);
 
-  /**
-   * Increments the reference.
-   */
-  void incRef();
-
-  /**
-   * Decrements the reference.
-   */
-  void decRef();
-
-  /**
-   * Gets the reference count.
-   */
-  long refCount();
+//  /**
+//   * Increments the reference.
+//   */
+//  void incRef();
+//
+//  /**
+//   * Decrements the reference.
+//   */
+//  void decRef();
+//
+//  /**
+//   * Gets the reference count.
+//   */
+//  long refCount();
 
   /**
    * Releases any underlying resources.
@@ -131,7 +119,7 @@ public interface CacheValue {
   long readLong(int position);
 
   /**
-   * This method will trim the existing {@link CacheValue} and produce
+   * This method <i>may</i> trim the existing {@link CacheValue} and produce
    * potentially a new {@link CacheValue} with the same data up to the length
    * provided. Also if a new {@link CacheValue} is produced then this method is
    * responsible to calling release on the old {@link CacheValue}.

@@ -19,10 +19,9 @@ package org.apache.blur.store.blockcache_v2.cachevalue;
 
 import org.apache.blur.store.blockcache_v2.CacheValue;
 
-@SuppressWarnings("serial")
 public class ByteArrayCacheValue extends BaseCacheValue {
 
-  private final byte[] _buffer;
+  final byte[] _buffer;
 
   public ByteArrayCacheValue(int length) {
     super(length);
@@ -47,11 +46,6 @@ public class ByteArrayCacheValue extends BaseCacheValue {
   @Override
   public void release() {
     _released = true;
-  }
-
-  @Override
-  public int size() {
-    return length();
   }
 
   @Override

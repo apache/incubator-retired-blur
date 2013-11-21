@@ -92,7 +92,7 @@ public class CacheIndexInput extends IndexInput {
   }
 
   private boolean isCacheValueValid() {
-    if (_cacheValue != null && !_cacheValue.isEvicted()) {
+    if (_cacheValue != null) {
       return true;
     }
     return false;
@@ -256,9 +256,6 @@ public class CacheIndexInput extends IndexInput {
     CacheIndexInput clone = (CacheIndexInput) super.clone();
     clone._key = _key.clone();
     clone._indexInput = _indexInput.clone();
-    if (isCacheValueValid()) {
-      clone._cacheValue.incRef();
-    }
     clone._quiet = _cache.shouldBeQuiet(_directory, _fileName);
     return clone;
   }
@@ -290,7 +287,6 @@ public class CacheIndexInput extends IndexInput {
 
   private void releaseCache() {
     if (_cacheValue != null) {
-      _cacheValue.decRef();
       _cacheValue = null;
     }
   }
@@ -315,7 +311,6 @@ public class CacheIndexInput extends IndexInput {
       _store.putBuffer(buffer);
       _cache.put(_key.clone(), _cacheValue);
     }
-    _cacheValue.incRef();
     _blockPosition = getBlockPosition();
   }
 

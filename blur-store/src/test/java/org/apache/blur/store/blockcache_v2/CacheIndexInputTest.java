@@ -19,7 +19,6 @@ package org.apache.blur.store.blockcache_v2;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Random;
@@ -178,12 +177,7 @@ public class CacheIndexInputTest {
     EvictionListener<CacheKey, CacheValue> listener = new EvictionListener<CacheKey, CacheValue>() {
       @Override
       public void onEviction(CacheKey key, CacheValue value) {
-        if (value.refCount() == 0) {
-          value.release();
-        } else {
-          // doing something else...
-          fail();
-        }
+        value.release();
       }
     };
     Weigher<CacheValue> weigher = new Weigher<CacheValue>() {

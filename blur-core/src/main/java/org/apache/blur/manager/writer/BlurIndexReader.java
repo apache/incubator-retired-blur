@@ -112,7 +112,7 @@ public class BlurIndexReader extends BlurIndex {
   }
 
   @Override
-  public IndexSearcherClosable getIndexReader() throws IOException {
+  public IndexSearcherClosable getIndexSearcher() throws IOException {
     final DirectoryReader reader = _indexReaderRef.get();
     reader.incRef();
     return new IndexSearcherClosable(reader, null) {

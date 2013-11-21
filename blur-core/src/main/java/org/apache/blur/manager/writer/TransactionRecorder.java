@@ -400,7 +400,7 @@ public class TransactionRecorder extends TimerTask implements Closeable {
     return fields;
   }
 
-  private Term createRowId(String id) {
+  public static Term createRowId(String id) {
     return new Term(BlurConstants.ROW_ID, id);
   }
 

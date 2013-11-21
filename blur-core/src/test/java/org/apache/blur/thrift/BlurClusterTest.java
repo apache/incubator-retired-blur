@@ -364,6 +364,8 @@ public class BlurClusterTest {
               + getMaxHeapSize() + "]");
           bufferToPutGcWatcherOverLimitList.add(new byte[sizeToAllocate]);
         } else {
+          System.gc();
+          System.gc();
           System.out.println("Already allocated enough Heap [" + getHeapSize() + "] Max [" + getMaxHeapSize() + "]");
         }
       }

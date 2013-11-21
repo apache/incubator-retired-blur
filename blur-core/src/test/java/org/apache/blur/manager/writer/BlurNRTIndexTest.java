@@ -129,7 +129,7 @@ public class BlurNRTIndexTest {
     int total = 0;
     for (int i = 0; i < TEST_NUMBER_WAIT_VISIBLE; i++) {
       writer.replaceRow(true, true, genRow());
-      IndexSearcherClosable searcher = writer.getIndexReader();
+      IndexSearcherClosable searcher = writer.getIndexSearcher();
       IndexReader reader = searcher.getIndexReader();
       assertEquals(i + 1, reader.numDocs());
       searcher.close();
@@ -139,7 +139,7 @@ public class BlurNRTIndexTest {
     double seconds = (e - s) / 1000000000.0;
     double rate = total / seconds;
     System.out.println("Rate " + rate);
-    IndexSearcherClosable searcher = writer.getIndexReader();
+    IndexSearcherClosable searcher = writer.getIndexSearcher();
     IndexReader reader = searcher.getIndexReader();
     assertEquals(TEST_NUMBER_WAIT_VISIBLE, reader.numDocs());
     searcher.close();
@@ -148,7 +148,7 @@ public class BlurNRTIndexTest {
   @Test
   public void testBlurIndexWriterFaster() throws IOException, InterruptedException {
     setupWriter(configuration, 100, false);
-    IndexSearcherClosable searcher1 = writer.getIndexReader();
+    IndexSearcherClosable searcher1 = writer.getIndexSearcher();
     IndexReader reader1 = searcher1.getIndexReader();
     assertEquals(0, reader1.numDocs());
     searcher1.close();
@@ -170,7 +170,7 @@ public class BlurNRTIndexTest {
     // refresh once every 25 ms
     // Thread.sleep(1000);
     writer.refresh();
-    IndexSearcherClosable searcher2 = writer.getIndexReader();
+    IndexSearcherClosable searcher2 = writer.getIndexSearcher();
     IndexReader reader2 = searcher2.getIndexReader();
     assertEquals(TEST_NUMBER, reader2.numDocs());
     searcher2.close();

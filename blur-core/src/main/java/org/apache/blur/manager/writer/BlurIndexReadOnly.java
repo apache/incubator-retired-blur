@@ -39,8 +39,8 @@ public class BlurIndexReadOnly extends BlurIndex {
     throw new IOException("Read Only");
   }
 
-  public IndexSearcherClosable getIndexReader() throws IOException {
-    return _blurIndex.getIndexReader();
+  public IndexSearcherClosable getIndexSearcher() throws IOException {
+    return _blurIndex.getIndexSearcher();
   }
 
   public void close() throws IOException {

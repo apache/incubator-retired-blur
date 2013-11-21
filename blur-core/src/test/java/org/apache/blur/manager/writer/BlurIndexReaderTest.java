@@ -119,12 +119,12 @@ public class BlurIndexReaderTest {
   @Test
   public void testBlurIndexWriter() throws IOException, InterruptedException, URISyntaxException {
     setupWriter(configuration, 1);
-    IndexSearcherClosable indexReader1 = reader.getIndexReader();
+    IndexSearcherClosable indexReader1 = reader.getIndexSearcher();
     doWrite();
     assertEquals(0, indexReader1.getIndexReader().numDocs());
     indexReader1.close();
     reader.refresh();
-    IndexSearcherClosable indexReader2 = reader.getIndexReader();
+    IndexSearcherClosable indexReader2 = reader.getIndexSearcher();
     assertEquals(1, indexReader2.getIndexReader().numDocs());
     indexReader2.close();
   }

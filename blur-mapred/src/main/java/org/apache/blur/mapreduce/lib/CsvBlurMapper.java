@@ -434,7 +434,7 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
       if (!_familyNotInFile) {
         options += "family,";
       }
-      String msg = "Record [" + str + "] does not match defined record [" + options + "," + getColumnNames(columnNames)
+      String msg = "Record [" + str + "] does not match defined record [" + options + getColumnNames(columnNames)
           + "].";
       throw new IOException(msg);
     }

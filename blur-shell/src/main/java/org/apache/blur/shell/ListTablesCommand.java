@@ -19,6 +19,7 @@
 package org.apache.blur.shell;
 
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
@@ -31,6 +32,7 @@ public class ListTablesCommand extends Command {
       BlurException {
     
     List<String> tableList = client.tableListByCluster(Main.getCluster(client));
+    Collections.sort(tableList);
     for (String s : tableList) {
       out.println(s);
     }

@@ -58,6 +58,7 @@ import org.apache.blur.metrics.ReporterSetup;
 import org.apache.blur.server.ControllerServerEventHandler;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingServerSocket;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.trace.Trace;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.MemoryReporter;
 import org.apache.blur.zookeeper.ZkUtils;
@@ -134,10 +135,11 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     controllerServer.init();
     
+    Trace.setReporter(setupTraceReporter(configuration));
+    
     Iface iface= BlurUtil.wrapFilteredBlurServer(configuration, controllerServer, false);
-
     iface = BlurUtil.recordMethodCallsAndAverageTimes(iface, Iface.class, true);
-
+    iface = BlurUtil.runTrace(iface, true);
     int threadCount = configuration.getInt(BLUR_CONTROLLER_SERVER_THRIFT_THREAD_COUNT, 32);
     
     ControllerServerEventHandler eventHandler = new ControllerServerEventHandler();

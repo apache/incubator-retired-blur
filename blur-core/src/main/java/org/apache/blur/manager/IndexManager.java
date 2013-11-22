@@ -84,6 +84,8 @@ import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.Selector;
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
 import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.BlurExecutorCompletionService.Cancel;
 import org.apache.blur.utils.BlurUtil;
@@ -223,7 +225,8 @@ public class IndexManager {
       } catch (InterruptedException e) {
         throw new BException("Unkown error while fetching batch table [{0}] selectors [{1}].", e, table, selectors);
       } catch (ExecutionException e) {
-        throw new BException("Unkown error while fetching batch table [{0}] selectors [{1}].", e.getCause(), table, selectors);
+        throw new BException("Unkown error while fetching batch table [{0}] selectors [{1}].", e.getCause(), table,
+            selectors);
       }
     }
     return results;
@@ -429,6 +432,7 @@ public class IndexManager {
         LOG.error("Unknown error while trying to fetch index readers.", e);
         throw new BException(e.getMessage(), e);
       }
+      Tracer trace = Trace.trace("query setup");
       ShardServerContext shardServerContext = ShardServerContext.getShardServerContext();
       ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> call;
       TableContext context = getTableContext(table);
@@ -444,6 +448,7 @@ public class IndexManager {
           preFilter);
       call = new SimpleQueryParallelCall(running, table, status, facetedQuery, blurQuery.selector,
           _queriesInternalMeter, shardServerContext, runSlow, _fetchCount, _maxHeapPerRowFetch, context.getSimilarity());
+      trace.done();
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
       return ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
         @Override
@@ -1120,6 +1125,7 @@ public class IndexManager {
       _status.attachThread(shard);
       BlurIndex index = entry.getValue();
       IndexSearcherClosable searcher = index.getIndexSearcher();
+      Tracer trace2 = null;
       try {
         IndexReader indexReader = searcher.getIndexReader();
         if (indexReader instanceof ExitableReader) {
@@ -1132,16 +1138,20 @@ public class IndexManager {
           _shardServerContext.setIndexSearcherClosable(_table, shard, searcher);
         }
         searcher.setSimilarity(_similarity);
+        Tracer trace1 = Trace.trace("query rewrite");
         Query rewrite;
         try {
           rewrite = searcher.rewrite((Query) _query.clone());
         } catch (ExitingReaderException e) {
           LOG.info("Query [{0}] has been cancelled during the rewrite phase.", _query);
           throw e;
+        } finally {
+          trace1.done();
         }
 
         // BlurResultIterableSearcher will close searcher, if shard server
         // context is null.
+        trace2 = Trace.trace("query initial search");
         return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector,
             _shardServerContext == null, _runSlow, _fetchCount, _maxHeapPerRowFetch);
       } catch (BlurException e) {
@@ -1157,6 +1167,9 @@ public class IndexManager {
           throw e;
         }
       } finally {
+        if (trace2 != null) {
+          trace2.done();
+        }
         _queriesInternalMeter.mark();
         _status.deattachThread(shard);
       }

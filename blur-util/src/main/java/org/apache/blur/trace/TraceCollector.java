@@ -16,6 +16,7 @@
  */
 package org.apache.blur.trace;
 
+import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
@@ -25,20 +26,14 @@ public class TraceCollector {
   protected final String _id;
   protected final List<TracerImpl> _traces;
   protected final AtomicLong _traceCounter;
-  protected final long _parentThreadId;
+  protected final long _now = System.nanoTime();
+  protected final String _pid;
 
   public TraceCollector(String id) {
     _id = id;
     _traces = new CopyOnWriteArrayList<TracerImpl>();
     _traceCounter = new AtomicLong();
-    _parentThreadId = Long.MAX_VALUE;
-  }
-
-  public TraceCollector(TraceCollector traceCollector) {
-    _id = traceCollector._id;
-    _traces = traceCollector._traces;
-    _traceCounter = traceCollector._traceCounter;
-    _parentThreadId = Thread.currentThread().getId();
+    _pid = ManagementFactory.getRuntimeMXBean().getName();
   }
 
   public void add(TracerImpl tracer) {
@@ -57,7 +52,7 @@ public class TraceCollector {
 
     }
 
-    return "{\n  \"id\"=\"" + _id + "\",\n  \"traces\"=[\n" + builder.toString() + "  ]\n}";
+    return "{\n  \"id\"=\"" + _id + "\"\n  \"pid\"=\"" + _pid + "\"\n  \"created\"=" + _now + ",\n  \"traces\"=[\n" + builder.toString() + "  ]\n}";
   }
 
   public String getId() {
@@ -71,9 +66,4 @@ public class TraceCollector {
   public long getNextId() {
     return _traceCounter.incrementAndGet();
   }
-
-  public long getParentThreadId() {
-    return _parentThreadId;
-  }
-
 }

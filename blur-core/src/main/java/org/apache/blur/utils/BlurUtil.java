@@ -89,6 +89,7 @@ import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.util.ResetableTMemoryBuffer;
 import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -187,6 +188,7 @@ public class BlurUtil {
         String name = method.getName();
         boolean error = false;
         LoggerArgsState loggerArgsState = null;
+        Tracer trace = Trace.trace("thrift - "+method.getName());
         try {
           if (REQUEST_LOG.isInfoEnabled()) {
             if (argsStr == null) {
@@ -200,6 +202,7 @@ public class BlurUtil {
           error = true;
           throw e.getTargetException();
         } finally {
+          trace.done();
           long end = System.nanoTime();
           double ms = (end - start) / 1000000.0;
           if (RESPONSE_LOG.isInfoEnabled()) {

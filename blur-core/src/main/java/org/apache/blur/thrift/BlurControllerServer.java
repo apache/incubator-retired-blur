@@ -79,6 +79,8 @@ import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.thrift.generated.User;
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.BlurIterator;
@@ -111,7 +113,12 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     @Override
     public <T> T execute(String node, BlurCommand<T> command, int maxRetries, long backOffTime, long maxBackOffTime)
         throws BlurException, TException, IOException {
-      return BlurClientManager.execute(node + "#" + _timeout, command, maxRetries, backOffTime, maxBackOffTime);
+      Tracer trace = Trace.trace("remote call - " + node);
+      try {
+        return BlurClientManager.execute(node + "#" + _timeout, command, maxRetries, backOffTime, maxBackOffTime);
+      } finally {
+        trace.done();
+      }
     }
   }
 

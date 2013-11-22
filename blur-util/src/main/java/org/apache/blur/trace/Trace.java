@@ -16,7 +16,16 @@
  */
 package org.apache.blur.trace;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class Trace {
 
@@ -33,6 +42,15 @@ public class Trace {
     TraceCollector collector = new TraceCollector(id);
     _tracer.set(collector);
   }
+  
+  private static void setupTraceOnNewThread(TraceCollector parentCollector) {
+    TraceCollector collector = new TraceCollector(getNewThreadId(parentCollector));
+    _tracer.set(collector);
+  }
+
+  private static String getNewThreadId(TraceCollector parentCollector) {
+    return parentCollector._id + ":" + Thread.currentThread().getName() + "/" + UUID.randomUUID().toString();
+  }
 
   public static void tearDownTrace() {
     TraceCollector collector = _tracer.get();
@@ -47,7 +65,7 @@ public class Trace {
     if (collector == null) {
       return DO_NOTHING;
     }
-    TracerImpl tracer = new TracerImpl(name, collector.getNextId(), collector.getParentThreadId());
+    TracerImpl tracer = new TracerImpl(name, collector.getNextId());
     collector.add(tracer);
     return tracer;
   }
@@ -61,41 +79,51 @@ public class Trace {
   }
 
   public static Runnable getRunnable(final Runnable runnable) {
-    TraceCollector tc = _tracer.get();
+    final TraceCollector tc = _tracer.get();
     if (tc == null) {
       return runnable;
     }
-    final TraceCollector traceCollector = new TraceCollector(tc);
     return new Runnable() {
       @Override
       public void run() {
-        _tracer.set(traceCollector);
+        setupTraceOnNewThread(tc);
         try {
           runnable.run();
         } finally {
-          _tracer.set(null);
+          tearDownTrace();
         }
       }
     };
   }
 
-  public static <V> Callable<V> getRunnable(final Callable<V> callable) {
-    TraceCollector tc = _tracer.get();
+  public static <V> Callable<V> getCallable(final Callable<V> callable) {
+    final TraceCollector tc = _tracer.get();
     if (tc == null) {
       return callable;
     }
-    final TraceCollector traceCollector = new TraceCollector(tc);
     return new Callable<V>() {
       @Override
       public V call() throws Exception {
-        _tracer.set(traceCollector);
+        setupTraceOnNewThread(tc);
         try {
           return callable.call();
         } finally {
-          _tracer.set(null);
+          tearDownTrace();
         }
       }
     };
+  }
+
+  public static <V> Collection<Callable<V>> getCallables(final Collection<Callable<V>> callables) {
+    TraceCollector tc = _tracer.get();
+    if (tc == null) {
+      return callables;
+    }
+    Collection<Callable<V>> list = new ArrayList<Callable<V>>(callables.size());
+    for (Callable<V> c : callables) {
+      list.add(getCallable(c));
+    }
+    return list;
   }
 
   public static String getTraceId() {
@@ -114,4 +142,67 @@ public class Trace {
     return true;
   }
 
+  @SuppressWarnings("unchecked")
+  public static ExecutorService getExecutorService(final ExecutorService service) {
+    return new ExecutorService() {
+      ExecutorService _service = service;
+
+      public void execute(Runnable command) {
+        _service.execute(getRunnable(command));
+      }
+
+      public <T> Future<T> submit(Callable<T> task) {
+        return _service.submit(getCallable(task));
+      }
+
+      public <T> Future<T> submit(Runnable task, T result) {
+        return _service.submit(getRunnable(task), result);
+      }
+
+      public Future<?> submit(Runnable task) {
+        return _service.submit(getRunnable(task));
+      }
+
+      public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
+        return _service.invokeAll((Collection<? extends Callable<T>>) getCallable((Callable<T>) tasks));
+      }
+
+      public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
+          throws InterruptedException {
+        return _service.invokeAll((Collection<? extends Callable<T>>) getCallable((Callable<T>) tasks), timeout, unit);
+      }
+      
+      public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
+        return _service.invokeAny((Collection<? extends Callable<T>>) getCallable((Callable<T>) tasks));
+      }
+
+      public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
+          throws InterruptedException, ExecutionException, TimeoutException {
+        return _service.invokeAny((Collection<? extends Callable<T>>) getCallable((Callable<T>) tasks), timeout, unit);
+      }
+
+      // pass-through
+
+      public void shutdown() {
+        _service.shutdown();
+      }
+
+      public List<Runnable> shutdownNow() {
+        return _service.shutdownNow();
+      }
+
+      public boolean isShutdown() {
+        return _service.isShutdown();
+      }
+
+      public boolean isTerminated() {
+        return _service.isTerminated();
+      }
+
+      public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+        return _service.awaitTermination(timeout, unit);
+      }
+
+    };
+  }
 }

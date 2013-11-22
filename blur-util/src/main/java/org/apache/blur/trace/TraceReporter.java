@@ -16,8 +16,16 @@
  */
 package org.apache.blur.trace;
 
-public interface TraceReporter {
+import org.apache.blur.BlurConfiguration;
 
-  void report(TraceCollector collector);
+public abstract class TraceReporter {
+  
+  protected BlurConfiguration _configuration;
+
+  public TraceReporter(BlurConfiguration configuration) {
+    _configuration = configuration;
+  }
+
+  public abstract void report(TraceCollector collector);
 
 }

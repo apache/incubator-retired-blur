@@ -21,13 +21,15 @@ import java.util.List;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.Op;
 import org.apache.zookeeper.OpResult;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
 
@@ -60,6 +62,12 @@ public class ZooKeeperClient extends ZooKeeper {
   }
 
   static abstract class ZKExecutor<T> {
+    String _name;
+
+    ZKExecutor(String name) {
+      _name = name;
+    }
+
     abstract T execute() throws KeeperException, InterruptedException;
   }
 
@@ -70,6 +78,7 @@ public class ZooKeeperClient extends ZooKeeper {
       sessionTimeout = internalSessionTimeout;
     }
     while (true) {
+      Tracer trace = Trace.trace("remote call - zookeeper - " + executor._name);
       try {
         return executor.execute();
       } catch (KeeperException e) {
@@ -79,6 +88,8 @@ public class ZooKeeperClient extends ZooKeeper {
           continue;
         }
         throw e;
+      } finally {
+        trace.done();
       }
     }
   }
@@ -86,7 +97,7 @@ public class ZooKeeperClient extends ZooKeeper {
   @Override
   public String create(final String path, final byte[] data, final List<ACL> acl, final CreateMode createMode)
       throws KeeperException, InterruptedException {
-    return execute(new ZKExecutor<String>() {
+    return execute(new ZKExecutor<String>("create") {
       @Override
       String execute() throws KeeperException, InterruptedException {
         LOG.debug("ZK Call - create [{0}] [{1}] [{2}] [{3}]", path, data, acl, createMode);
@@ -97,7 +108,7 @@ public class ZooKeeperClient extends ZooKeeper {
 
   @Override
   public void delete(final String path, final int version) throws InterruptedException, KeeperException {
-    execute(new ZKExecutor<Void>() {
+    execute(new ZKExecutor<Void>("delete") {
       @Override
       Void execute() throws KeeperException, InterruptedException {
         LOG.debug("ZK Call - delete [{0}] [{1}]", path, version);
@@ -109,7 +120,7 @@ public class ZooKeeperClient extends ZooKeeper {
 
   @Override
   public List<OpResult> multi(final Iterable<Op> ops) throws InterruptedException, KeeperException {
-    return execute(new ZKExecutor<List<OpResult>>() {
+    return execute(new ZKExecutor<List<OpResult>>("multi") {
       @Override
       List<OpResult> execute() throws KeeperException, InterruptedException {
         return ZooKeeperClient.super.multi(ops);
@@ -119,7 +130,7 @@ public class ZooKeeperClient extends ZooKeeper {
 
   @Override
   public Stat exists(final String path, final Watcher watcher) throws KeeperException, InterruptedException {
-    return execute(new ZKExecutor<Stat>() {
+    return execute(new ZKExecutor<Stat>("exists") {
       @Override
       Stat execute() throws KeeperException, InterruptedException {
         LOG.debug("ZK Call - exists [{0}] [{1}]", path, watcher);
@@ -130,7 +141,7 @@ public class ZooKeeperClient extends ZooKeeper {
 
   @Override
   public Stat exists(final String path, final boolean watch) throws KeeperException, InterruptedException {
-    return execute(new ZKExecutor<Stat>() {
+    return execute(new ZKExecutor<Stat>("exists") {
       @Override
       Stat execute() throws KeeperException, InterruptedException {
         LOG.debug("ZK Call - exists [{0}] [{1}]", path, watch);
@@ -142,7 +153,7 @@ public class ZooKeeperClient extends ZooKeeper {
   @Override
   public byte[] getData(final String path, final Watcher watcher, final Stat stat) throws KeeperException,
       InterruptedException {
-    return execute(new ZKExecutor<byte[]>() {
+    return execute(new ZKExecutor<byte[]>("getData") {
       @Override
       byte[] execute() throws KeeperException, InterruptedException {
         LOG.debug("ZK Call - getData [{0}] [{1}] [{2}]", path, watcher, stat);
@@ -154,7 +165,7 @@ public class ZooKeeperClient extends ZooKeeper {
   @Override
   public byte[] getData(final String path, final boolean watch, final Stat stat) throws KeeperException,
       InterruptedException {
-    return execute(new ZKExecutor<byte[]>() {
+    return execute(new ZKExecutor<byte[]>("getData") {
       @Override
       byte[] execute() throws KeeperException, InterruptedException {
         LOG.debug("ZK Call - getData [{0}] [{1}] [{2}]", path, watch, stat);
@@ -166,7 +177,7 @@ public class ZooKeeperClient extends ZooKeeper {
   @Override
   public Stat setData(final String path, final byte[] data, final int version) throws KeeperException,
       InterruptedException {
-    return execute(new ZKExecutor<Stat>() {
+    return execute(new ZKExecutor<Stat>("setData") {
       @Override
       Stat execute() throws KeeperException, InterruptedException {
         LOG.debug("ZK Call - setData [{0}] [{1}] [{2}]", path, data, version);
@@ -177,7 +188,7 @@ public class ZooKeeperClient extends ZooKeeper {
 
   @Override
   public List<ACL> getACL(final String path, final Stat stat) throws KeeperException, InterruptedException {
-    return execute(new ZKExecutor<List<ACL>>() {
+    return execute(new ZKExecutor<List<ACL>>("getACL") {
       @Override
       List<ACL> execute() throws KeeperException, InterruptedException {
         return ZooKeeperClient.super.getACL(path, stat);
@@ -188,7 +199,7 @@ public class ZooKeeperClient extends ZooKeeper {
   @Override
   public Stat setACL(final String path, final List<ACL> acl, final int version) throws KeeperException,
       InterruptedException {
-    return execute(new ZKExecutor<Stat>() {
+    return execute(new ZKExecutor<Stat>("setACL") {
       @Override
       Stat execute() throws KeeperException, InterruptedException {
         return ZooKeeperClient.super.setACL(path, acl, version);
@@ -199,7 +210,7 @@ public class ZooKeeperClient extends ZooKeeper {
   @Override
   public List<String> getChildren(final String path, final Watcher watcher) throws KeeperException,
       InterruptedException {
-    return execute(new ZKExecutor<List<String>>() {
+    return execute(new ZKExecutor<List<String>>("getChildren") {
       @Override
       List<String> execute() throws KeeperException, InterruptedException {
         LOG.debug("ZK Call - getChildren [{0}] [{1}]", path, watcher);
@@ -210,7 +221,7 @@ public class ZooKeeperClient extends ZooKeeper {
 
   @Override
   public List<String> getChildren(final String path, final boolean watch) throws KeeperException, InterruptedException {
-    return execute(new ZKExecutor<List<String>>() {
+    return execute(new ZKExecutor<List<String>>("getChildren") {
       @Override
       List<String> execute() throws KeeperException, InterruptedException {
         LOG.debug("ZK Call - getChildren [{0}] [{1}]", path, watch);
@@ -222,7 +233,7 @@ public class ZooKeeperClient extends ZooKeeper {
   @Override
   public List<String> getChildren(final String path, final Watcher watcher, final Stat stat) throws KeeperException,
       InterruptedException {
-    return execute(new ZKExecutor<List<String>>() {
+    return execute(new ZKExecutor<List<String>>("getChildren") {
       @Override
       List<String> execute() throws KeeperException, InterruptedException {
         LOG.debug("ZK Call - getChildren [{0}] [{1}] [{2}]", path, watcher, stat);
@@ -234,7 +245,7 @@ public class ZooKeeperClient extends ZooKeeper {
   @Override
   public List<String> getChildren(final String path, final boolean watch, final Stat stat) throws KeeperException,
       InterruptedException {
-    return execute(new ZKExecutor<List<String>>() {
+    return execute(new ZKExecutor<List<String>>("getChildren") {
       @Override
       List<String> execute() throws KeeperException, InterruptedException {
         LOG.debug("ZK Call - getChildren [{0}] [{1}] [{2}]", path, watch, stat);

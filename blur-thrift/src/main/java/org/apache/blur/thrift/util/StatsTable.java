@@ -17,6 +17,7 @@ package org.apache.blur.thrift.util;
  * limitations under the License.
  */
 import java.io.IOException;
+import java.util.UUID;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
@@ -30,9 +31,10 @@ public class StatsTable {
     String connectionStr = args[0];
     final String tableName = args[1];
 
-    Trace.setupTrace("1234");
+    String uuid = UUID.randomUUID().toString();
+    Trace.setupTrace(uuid);
+    System.out.println("Tracing on [" + uuid + "]");
     Iface client = BlurClient.getClient(connectionStr);
-    System.out.println(client.tableStats(tableName));
     System.out.println(client.tableStats(tableName));
     Trace.tearDownTrace();
   }

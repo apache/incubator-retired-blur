@@ -18,13 +18,17 @@ package org.apache.blur.trace;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.blur.BlurConfiguration;
 import org.junit.Test;
 
 public class TraceTest {
 
   @Test
-  public void testTrace() {
-    Trace.setReporter(new TraceReporter() {
+  public void testTrace() throws IOException {
+    Trace.setReporter(new TraceReporter(new BlurConfiguration()) {
       @Override
       public void report(TraceCollector collector) {
         assertEquals("test", collector.getId());
@@ -56,13 +60,21 @@ public class TraceTest {
   }
 
   @Test
-  public void testTraceThreadRunnable() throws InterruptedException {
-    Trace.setReporter(new TraceReporter() {
+  public void testTraceThreadRunnable() throws InterruptedException, IOException {
+    final AtomicLong count = new AtomicLong();
+    Trace.setReporter(new TraceReporter(new BlurConfiguration()) {
       @Override
       public void report(TraceCollector collector) {
         System.out.println(collector.toJson());
-        assertEquals("test", collector.getId());
-        assertEquals(6, collector.getTraces().size());
+        String id = collector.getId();
+        int indexOf = id.indexOf(":");
+        if (indexOf < 0) {
+          assertEquals("test", id);
+        } else {
+          assertEquals("test", id.substring(0,indexOf));
+        }
+        assertEquals(3, collector.getTraces().size());
+        count.addAndGet(collector.getTraces().size());
       }
     });
 
@@ -93,6 +105,8 @@ public class TraceTest {
     System.out.println(meth1);
     thread.join();
     Trace.tearDownTrace();
+    
+    assertEquals(6, count.get());
   }
 
   private static long meth1() {

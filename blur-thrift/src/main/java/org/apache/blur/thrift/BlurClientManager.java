@@ -40,6 +40,7 @@ import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ErrorType;
+import org.apache.blur.trace.Trace;
 
 public class BlurClientManager {
 
@@ -164,6 +165,10 @@ public class BlurClientManager {
           }
         }
         try {
+          String traceId = Trace.getTraceId();
+          if (traceId != null) {
+            client.get().startTrace(traceId);
+          }
           T result = command.call((CLIENT) client.get(), connection);
           allBad = false;
           if (command.isDetachClient()) {

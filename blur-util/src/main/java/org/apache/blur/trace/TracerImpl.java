@@ -23,14 +23,12 @@ public class TracerImpl implements Tracer {
   protected long _ended;
   protected final String _threadName;
   protected final long _id;
-  protected final long _parentThreadId;
 
-  public TracerImpl(String name, long id, long parentThreadId) {
+  public TracerImpl(String name, long id) {
     _name = name;
     _start = System.nanoTime();
     _threadName = Thread.currentThread().getName();
     _id = id;
-    _parentThreadId = parentThreadId;
   }
 
   @Override
@@ -61,8 +59,8 @@ public class TracerImpl implements Tracer {
   }
 
   public String toJson() {
-    return "{\"id\"=" + _id + ", \"parentThread\"=" + _parentThreadId + ", \"name\"=\"" + _name + "\", \"thread\"=\""
-        + _threadName + "\", \"took\"=" + (_ended - _start) + ", \"started\"=" + _start + ", \"ended\"=" + _ended + "}";
+    return "{\"id\"=" + _id + ", \"name\"=\"" + _name + "\", \"thread\"=\"" + _threadName + "\", \"took\"="
+        + (_ended - _start) + ", \"started\"=" + _start + ", \"ended\"=" + _ended + "}";
   }
 
 }

@@ -86,7 +86,6 @@ import org.apache.blur.thirdparty.thrift_0_9_0.server.TServlet;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingServerSocket;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
-import org.apache.blur.trace.LogTraceReporter;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.GCWatcher;
@@ -232,7 +231,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.setConfiguration(configuration);
     shardServer.init();
     
-    Trace.setReporter(new LogTraceReporter());
+    Trace.setReporter(setupTraceReporter(configuration));
 
     Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, shardServer, true);
     iface = BlurUtil.recordMethodCallsAndAverageTimes(iface, Iface.class, false);

@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
@@ -49,6 +50,7 @@ import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.User;
+import org.apache.blur.trace.Trace;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -59,6 +61,8 @@ public class Main {
   static boolean debug = false;
   /** is timing enabled - off by default */
   static boolean timed = false;
+  /** is tracing enabled - off by default */
+  static boolean trace = false;
   /** is highlight enabled - off by default */
   static boolean highlight = false;
   /** default selector */
@@ -333,6 +337,36 @@ public class Main {
 
   }
 
+  private static class TraceCommand extends Command {
+
+    @Override
+    public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+        BlurException {
+      if (trace == true) {
+        trace = false;
+      } else {
+        trace = true;
+      }
+      out.println("tracing of commands is now " + (trace ? "on" : "off"));
+    }
+
+    @Override
+    public String description() {
+      return "Toggle tracing of commands on/off.";
+    }
+
+    @Override
+    public String usage() {
+      return "";
+    }
+
+    @Override
+    public String name() {
+      return "trace";
+    }
+
+  }
+
   private static class HighlightCommand extends Command {
 
     @Override
@@ -534,7 +568,16 @@ public class Main {
               long start = System.nanoTime();
               try {
                 client.setUser(user);
+                String traceId = null;
+                if (trace) {
+                  traceId = UUID.randomUUID().toString();
+                  Trace.setupTrace(traceId);
+                  out.println("Running trace with id: " + traceId);
+                }
                 command.doit(out, client, commandArgs);
+                if (trace) {
+                  Trace.tearDownTrace();
+                }
               } catch (QuitCommandException e) {
                 // exit gracefully
                 System.exit(0);
@@ -626,6 +669,7 @@ public class Main {
     register(builder, new DiscoverFileBufferSizeUtil());
     register(builder, new WhoAmICommand());
     register(builder, new UserCommand());
+    register(builder, new TraceCommand());
     commands = builder.build();
   }
 

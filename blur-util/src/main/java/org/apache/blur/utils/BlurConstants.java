@@ -38,6 +38,7 @@ public class BlurConstants {
 
   public static final String BLUR_TABLE_PATH = "blur.table.path";
   public static final String BLUR_ZOOKEEPER_CONNECTION = "blur.zookeeper.connection";
+  public static final String BLUR_ZOOKEEPER_TRACE_PATH = "blur.zookeeper.trace.path";
   public static final String BLUR_ZOOKEEPER_TIMEOUT = "blur.zookeeper.timeout";
   public static final int BLUR_ZOOKEEPER_TIMEOUT_DEFAULT = 30000;
   public static final String BLUR_SHARD_HOSTNAME = "blur.shard.hostname";

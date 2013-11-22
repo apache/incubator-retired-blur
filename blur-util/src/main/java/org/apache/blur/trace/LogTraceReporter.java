@@ -16,12 +16,17 @@
  */
 package org.apache.blur.trace;
 
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 
-public class LogTraceReporter implements TraceReporter {
+public class LogTraceReporter extends TraceReporter {
 
   private static final Log LOG = LogFactory.getLog(LogTraceReporter.class);
+
+  public LogTraceReporter(BlurConfiguration configuration) {
+    super(configuration);
+  }
 
   @Override
   public void report(TraceCollector collector) {

@@ -22,6 +22,7 @@ import static org.apache.blur.metrics.MetricsConstants.JVM;
 import static org.apache.blur.metrics.MetricsConstants.LOAD_AVERAGE;
 import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 import static org.apache.blur.metrics.MetricsConstants.SYSTEM;
+import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TRACE_PATH;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -53,13 +54,16 @@ import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.server.TThreadedSelectorServer;
 import org.apache.blur.thrift.server.TThreadedSelectorServer.Args.AcceptPolicy;
+import org.apache.blur.trace.LogTraceReporter;
+import org.apache.blur.trace.TraceReporter;
+import org.apache.blur.trace.ZooKeeperTraceReporter;
 
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Gauge;
 import com.yammer.metrics.core.MetricName;
 
 public class ThriftServer {
-
+  
   private static final Log LOG = LogFactory.getLog(ThriftServer.class);
 
   private String _nodeName;
@@ -83,6 +87,14 @@ public class ThriftServer {
 
   public void setServerTransport(TNonblockingServerSocket serverTransport) {
     _serverTransport = serverTransport;
+  }
+
+  public static TraceReporter setupTraceReporter(BlurConfiguration configuration) throws IOException {
+    String path = configuration.get(BLUR_ZOOKEEPER_TRACE_PATH);
+    if (path == null || path.isEmpty()) {
+      return new LogTraceReporter(configuration);
+    }
+    return new ZooKeeperTraceReporter(configuration);
   }
 
   public static void printUlimits() throws IOException {
@@ -292,7 +304,6 @@ public class ThriftServer {
   public void setEventHandler(TServerEventHandler eventHandler) {
     _eventHandler = eventHandler;
   }
-
 
   public int getAcceptQueueSizePerThread() {
     return _acceptQueueSizePerThread;

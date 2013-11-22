@@ -23,6 +23,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.blur.trace.Trace;
+
 public class Executors {
 
   public static ExecutorService newThreadPool(String prefix, int threadCount) {
@@ -33,13 +35,13 @@ public class Executors {
     ThreadPoolExecutor executorService = new ThreadPoolExecutor(threadCount, threadCount, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new BlurThreadFactory(prefix));
     executorService.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
     if (watch) {
-      return ThreadWatcher.instance().watch(executorService);
+      return Trace.getExecutorService(ThreadWatcher.instance().watch(executorService));
     }
-    return executorService;
+    return Trace.getExecutorService(executorService);
   }
 
   public static ExecutorService newSingleThreadExecutor(String prefix) {
-    return java.util.concurrent.Executors.newSingleThreadExecutor(new BlurThreadFactory(prefix));
+    return Trace.getExecutorService(java.util.concurrent.Executors.newSingleThreadExecutor(new BlurThreadFactory(prefix)));
   }
 
   public static class BlurThreadFactory implements ThreadFactory {

@@ -167,20 +167,25 @@ public class BlurUtil {
       public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         long requestNumber = _requestCounter.incrementAndGet();
         String requestId = prefix + "-" + requestNumber;
+        String tracingConnectionString;
         String connectionString;
         if (controller) {
           ControllerServerContext controllerServerContext = ControllerServerContext.getControllerServerContext();
           if (controllerServerContext == null) {
             connectionString = "unknown";
+            tracingConnectionString = "unknown";
           } else {
-            connectionString = controllerServerContext.getConnectionString();
+            connectionString = controllerServerContext.getConnectionString("\t");
+            tracingConnectionString = controllerServerContext.getConnectionString(":");
           }
         } else {
           ShardServerContext shardServerContext = ShardServerContext.getShardServerContext();
           if (shardServerContext == null) {
             connectionString = "unknown";
+            tracingConnectionString = "unknown";
           } else {
-            connectionString = shardServerContext.getConnectionString();
+            connectionString = shardServerContext.getConnectionString("\t");
+            tracingConnectionString = shardServerContext.getConnectionString(":");
           }
         }
         String argsStr = null;
@@ -188,7 +193,8 @@ public class BlurUtil {
         String name = method.getName();
         boolean error = false;
         LoggerArgsState loggerArgsState = null;
-        Tracer trace = Trace.trace("thrift - "+method.getName());
+        Tracer trace = Trace.trace("thrift recv", Trace.param("method", method.getName()),
+            Trace.param("connection", tracingConnectionString));
         try {
           if (REQUEST_LOG.isInfoEnabled()) {
             if (argsStr == null) {

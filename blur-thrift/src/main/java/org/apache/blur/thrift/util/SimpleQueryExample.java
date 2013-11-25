@@ -26,6 +26,8 @@ import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.Query;
+import org.apache.blur.thrift.generated.Selector;
+import org.apache.blur.trace.Trace;
 
 public class SimpleQueryExample {
 
@@ -36,15 +38,19 @@ public class SimpleQueryExample {
 
     Iface client = BlurClient.getClient(connectionStr);
 
+    String uuid = "123456";
+    Trace.setupTrace(uuid);
     final BlurQuery blurQuery = new BlurQuery();
     Query query = new Query();
     blurQuery.setQuery(query);
     query.setQuery(queryStr);
+    blurQuery.setSelector(new Selector());
     BlurResults results = client.query(tableName, blurQuery);
     System.out.println("Total Results: " + results.totalResults);
 
     for (BlurResult result : results.getResults()) {
       System.out.println(result);
     }
+    Trace.tearDownTrace();
   }
 }

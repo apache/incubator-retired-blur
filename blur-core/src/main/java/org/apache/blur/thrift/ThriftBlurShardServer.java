@@ -232,6 +232,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.init();
     
     Trace.setReporter(setupTraceReporter(configuration));
+    Trace.setNodeName(nodeName);
 
     Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, shardServer, true);
     iface = BlurUtil.recordMethodCallsAndAverageTimes(iface, Iface.class, false);

@@ -16,6 +16,7 @@
  */
 package org.apache.blur.trace;
 
+
 public interface Tracer {
   
   void done();

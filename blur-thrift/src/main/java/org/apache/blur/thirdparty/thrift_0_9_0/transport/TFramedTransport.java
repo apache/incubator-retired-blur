@@ -172,4 +172,12 @@ public class TFramedTransport extends TTransport {
       ((buf[2] & 0xff) <<  8) |
       ((buf[3] & 0xff));
   }
+
+  public TTransport getTransport() {
+    return transport_;
+  }
+
+  public void setTransport(TTransport transport) {
+    transport_ = transport;
+  }
 }

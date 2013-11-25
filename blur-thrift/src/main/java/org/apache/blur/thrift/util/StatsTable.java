@@ -31,7 +31,8 @@ public class StatsTable {
     String connectionStr = args[0];
     final String tableName = args[1];
 
-    String uuid = UUID.randomUUID().toString();
+    // String uuid = UUID.randomUUID().toString();
+    String uuid = "123456";
     Trace.setupTrace(uuid);
     System.out.println("Tracing on [" + uuid + "]");
     Iface client = BlurClient.getClient(connectionStr);

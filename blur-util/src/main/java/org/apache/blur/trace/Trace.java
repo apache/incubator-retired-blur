@@ -19,7 +19,6 @@ package org.apache.blur.trace;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -29,6 +28,18 @@ import java.util.concurrent.TimeoutException;
 
 public class Trace {
 
+  public static class Parameter {
+
+    final String _name;
+    final String _value;
+
+    public Parameter(String name, String value) {
+      _name = name;
+      _value = value;
+    }
+
+  }
+
   private static final Tracer DO_NOTHING = new Tracer() {
     @Override
     public void done() {
@@ -37,19 +48,37 @@ public class Trace {
   };
   private static ThreadLocal<TraceCollector> _tracer = new ThreadLocal<TraceCollector>();
   private static TraceReporter _reporter;
+  private static String _nodeName;
+
+  public static String getNodeName() {
+    return _nodeName;
+  }
+
+  public static void setNodeName(String nodeName) {
+    _nodeName = nodeName;
+  }
 
   public static void setupTrace(String id) {
-    TraceCollector collector = new TraceCollector(id);
+    TraceCollector collector = new TraceCollector(_nodeName, id);
     _tracer.set(collector);
   }
   
-  private static void setupTraceOnNewThread(TraceCollector parentCollector) {
-    TraceCollector collector = new TraceCollector(getNewThreadId(parentCollector));
-    _tracer.set(collector);
+  public static Parameter param(Object name, Object value) {
+    if (name == null) {
+      name = "null";
+    }
+    if (value == null) {
+      value = "null";
+    }
+    return new Parameter(name.toString(), value.toString());
   }
 
-  private static String getNewThreadId(TraceCollector parentCollector) {
-    return parentCollector._id + ":" + Thread.currentThread().getName() + "/" + UUID.randomUUID().toString();
+  private static void setupTraceOnNewThread(TraceCollector parentCollector) {
+    _tracer.set(parentCollector);
+  }
+
+  private static void tearDownTraceOnNewThread() {
+    _tracer.set(null);
   }
 
   public static void tearDownTrace() {
@@ -60,12 +89,12 @@ public class Trace {
     }
   }
 
-  public static Tracer trace(String name) {
+  public static Tracer trace(String desc, Parameter... parameters) {
     TraceCollector collector = _tracer.get();
     if (collector == null) {
       return DO_NOTHING;
     }
-    TracerImpl tracer = new TracerImpl(name, collector.getNextId());
+    TracerImpl tracer = new TracerImpl(desc, parameters, collector.getNextId());
     collector.add(tracer);
     return tracer;
   }
@@ -83,17 +112,22 @@ public class Trace {
     if (tc == null) {
       return runnable;
     }
-    return new Runnable() {
-      @Override
-      public void run() {
-        setupTraceOnNewThread(tc);
-        try {
-          runnable.run();
-        } finally {
-          tearDownTrace();
+    Tracer trace = Trace.trace("new runnable");
+    try {
+      return new Runnable() {
+        @Override
+        public void run() {
+          setupTraceOnNewThread(tc);
+          try {
+            runnable.run();
+          } finally {
+            tearDownTraceOnNewThread();
+          }
         }
-      }
-    };
+      };
+    } finally {
+      trace.done();
+    }
   }
 
   public static <V> Callable<V> getCallable(final Callable<V> callable) {
@@ -101,17 +135,22 @@ public class Trace {
     if (tc == null) {
       return callable;
     }
-    return new Callable<V>() {
-      @Override
-      public V call() throws Exception {
-        setupTraceOnNewThread(tc);
-        try {
-          return callable.call();
-        } finally {
-          tearDownTrace();
+    Tracer trace = Trace.trace("new callable");
+    try {
+      return new Callable<V>() {
+        @Override
+        public V call() throws Exception {
+          setupTraceOnNewThread(tc);
+          try {
+            return callable.call();
+          } finally {
+            tearDownTraceOnNewThread();
+          }
         }
-      }
-    };
+      };
+    } finally {
+      trace.done();
+    }
   }
 
   public static <V> Collection<Callable<V>> getCallables(final Collection<Callable<V>> callables) {
@@ -171,7 +210,7 @@ public class Trace {
           throws InterruptedException {
         return _service.invokeAll((Collection<? extends Callable<T>>) getCallable((Callable<T>) tasks), timeout, unit);
       }
-      
+
       public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
         return _service.invokeAny((Collection<? extends Callable<T>>) getCallable((Callable<T>) tasks));
       }
@@ -205,4 +244,5 @@ public class Trace {
 
     };
   }
+
 }

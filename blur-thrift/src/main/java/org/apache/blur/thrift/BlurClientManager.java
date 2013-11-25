@@ -17,6 +17,8 @@ package org.apache.blur.thrift;
  * limitations under the License.
  */
 import java.io.IOException;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,12 +37,16 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TFramedTransport;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TSocket;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransport;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransportException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
 
 public class BlurClientManager {
 
@@ -164,10 +170,12 @@ public class BlurClientManager {
             continue;
           }
         }
+        Tracer trace = null;
         try {
           String traceId = Trace.getTraceId();
           if (traceId != null) {
             client.get().startTrace(traceId);
+            trace = Trace.trace("thrift client", Trace.param("connection", getConnectionStr(client.get())));
           }
           T result = command.call((CLIENT) client.get(), connection);
           allBad = false;
@@ -200,6 +208,9 @@ public class BlurClientManager {
             throw e;
           }
         } finally {
+          if (trace != null) {
+            trace.done();
+          }
           if (client.get() != null) {
             returnClient(connection, client);
           }
@@ -218,6 +229,22 @@ public class BlurClientManager {
         }
       }
     }
+  }
+
+  private static String getConnectionStr(Client client) {
+    TTransport transport = client.getInputProtocol().getTransport();
+    if (transport instanceof TFramedTransport) {
+      TFramedTransport framedTransport = (TFramedTransport) transport;
+      transport = framedTransport.getTransport();
+    }
+    if (transport instanceof TSocket) {
+      TSocket tsocket = (TSocket) transport;
+      Socket socket = tsocket.getSocket();
+      SocketAddress localSocketAddress = socket.getLocalSocketAddress();
+      SocketAddress remoteSocketAddress = socket.getRemoteSocketAddress();
+      return localSocketAddress.toString() + ":" + remoteSocketAddress.toString();
+    }
+    return "unknown";
   }
 
   private static void markBadConnection(Connection connection) {

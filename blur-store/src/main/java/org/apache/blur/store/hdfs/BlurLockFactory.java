@@ -21,6 +21,8 @@ import java.util.Arrays;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -31,7 +33,7 @@ import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 
 public class BlurLockFactory extends LockFactory {
-  
+
   private static final Log LOG = LogFactory.getLog(BlurLockFactory.class);
 
   private final Configuration _configuration;
@@ -50,55 +52,71 @@ public class BlurLockFactory extends LockFactory {
   @Override
   public Lock makeLock(String lockName) {
     final Path lockPath = new Path(_dir, lockName);
+
     return new Lock() {
       private boolean _set;
 
       @Override
       public boolean obtain() throws IOException {
-        if (_set) {
-          throw new IOException("Lock for [" + _baseLockKey + "] can only be set once.");
-        }
+        Tracer trace = Trace.trace("filesystem - obtain", Trace.param("lockPath", lockPath));
         try {
-          _lockKey = (_baseLockKey + "/" + System.currentTimeMillis()).getBytes();
-          FSDataOutputStream outputStream = _fileSystem.create(lockPath, true);
-          outputStream.write(_lockKey);
-          outputStream.close();
+          if (_set) {
+            throw new IOException("Lock for [" + _baseLockKey + "] can only be set once.");
+          }
+          try {
+            _lockKey = (_baseLockKey + "/" + System.currentTimeMillis()).getBytes();
+            FSDataOutputStream outputStream = _fileSystem.create(lockPath, true);
+            outputStream.write(_lockKey);
+            outputStream.close();
+          } finally {
+            _set = true;
+          }
+          return true;
         } finally {
-          _set = true;
+          trace.done();
         }
-        return true;
       }
 
       @Override
       public void release() throws IOException {
-        _fileSystem.delete(lockPath, false);
+        Tracer trace = Trace.trace("filesystem - release",Trace.param("lockPath", lockPath));
+        try {
+          _fileSystem.delete(lockPath, false);
+        } finally {
+          trace.done();
+        }
       }
 
       @Override
       public boolean isLocked() throws IOException {
-        if (!_set) {
-          LOG.info("The lock has NOT been set.");
+        Tracer trace = Trace.trace("filesystem - isLocked", Trace.param("lockPath", lockPath));
+        try {
+          if (!_set) {
+            LOG.info("The lock has NOT been set.");
+            return false;
+          }
+          if (!_fileSystem.exists(lockPath)) {
+            LOG.info("The lock file has been removed.");
+            return false;
+          }
+          FileStatus fileStatus = _fileSystem.getFileStatus(lockPath);
+          long len = fileStatus.getLen();
+          if (len != _lockKey.length) {
+            LOG.info("The lock file length has changed.");
+            return false;
+          }
+          byte[] buf = new byte[_lockKey.length];
+          FSDataInputStream inputStream = _fileSystem.open(lockPath);
+          inputStream.readFully(buf);
+          inputStream.close();
+          if (Arrays.equals(_lockKey, buf)) {
+            return true;
+          }
+          LOG.info("The lock information has been changed.");
           return false;
+        } finally {
+          trace.done();
         }
-        if (!_fileSystem.exists(lockPath)) {
-          LOG.info("The lock file has been removed.");
-          return false;
-        }
-        FileStatus fileStatus = _fileSystem.getFileStatus(lockPath);
-        long len = fileStatus.getLen();
-        if (len != _lockKey.length) {
-          LOG.info("The lock file length has changed.");
-          return false;
-        }
-        byte[] buf = new byte[_lockKey.length];
-        FSDataInputStream inputStream = _fileSystem.open(lockPath);
-        inputStream.readFully(buf);
-        inputStream.close();
-        if (Arrays.equals(_lockKey, buf)) {
-          return true;
-        }
-        LOG.info("The lock information has been changed.");
-        return false;
       }
     };
   }

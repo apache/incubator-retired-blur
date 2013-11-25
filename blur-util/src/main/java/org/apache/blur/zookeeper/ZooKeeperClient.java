@@ -78,7 +78,7 @@ public class ZooKeeperClient extends ZooKeeper {
       sessionTimeout = internalSessionTimeout;
     }
     while (true) {
-      Tracer trace = Trace.trace("remote call - zookeeper - " + executor._name);
+      Tracer trace = Trace.trace("remote call - zookeeper", Trace.param("method", executor._name));
       try {
         return executor.execute();
       } catch (KeeperException e) {

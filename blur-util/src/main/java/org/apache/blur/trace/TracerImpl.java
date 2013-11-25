@@ -16,6 +16,8 @@
  */
 package org.apache.blur.trace;
 
+import org.apache.blur.trace.Trace.Parameter;
+
 public class TracerImpl implements Tracer {
 
   protected final String _name;
@@ -23,12 +25,14 @@ public class TracerImpl implements Tracer {
   protected long _ended;
   protected final String _threadName;
   protected final long _id;
+  protected Parameter[] _parameters;
 
-  public TracerImpl(String name, long id) {
+  public TracerImpl(String name, Parameter[] parameters, long id) {
     _name = name;
     _start = System.nanoTime();
     _threadName = Thread.currentThread().getName();
     _id = id;
+    _parameters = parameters;
   }
 
   @Override
@@ -59,8 +63,25 @@ public class TracerImpl implements Tracer {
   }
 
   public String toJson() {
-    return "{\"id\"=" + _id + ", \"name\"=\"" + _name + "\", \"thread\"=\"" + _threadName + "\", \"took\"="
-        + (_ended - _start) + ", \"started\"=" + _start + ", \"ended\"=" + _ended + "}";
+    if (_parameters == null) {
+      return "{\"id\":" + _id + ", \"name\":\"" + _name + "\", \"thread\":\"" + _threadName + "\", \"took\":"
+          + (_ended - _start) + ", \"started\":" + _start + ", \"ended\":" + _ended + "}";
+    } else {
+      return "{\"id\":" + _id + ", \"name\":\"" + _name + "\", \"thread\":\"" + _threadName + "\", \"took\":"
+          + (_ended - _start) + ", \"started\":" + _start + ", \"ended\":" + _ended + ", \"parameters\":["
+          + getParametersJson() + "]}";
+    }
+  }
+
+  private String getParametersJson() {
+    StringBuilder builder = new StringBuilder();
+    for (Parameter parameter : _parameters) {
+      if (builder.length() != 0) {
+        builder.append(',');
+      }
+      builder.append("\"").append(parameter._name).append("\":\"").append(parameter._value).append("\"");
+    }
+    return builder.toString();
   }
 
 }

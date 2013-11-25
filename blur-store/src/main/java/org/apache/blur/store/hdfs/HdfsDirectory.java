@@ -32,6 +32,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.store.blockcache.LastModified;
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -95,7 +97,7 @@ public class HdfsDirectory extends Directory implements LastModified {
    * We keep the metrics separate per filesystem.
    */
   protected static Map<URI, MetricsGroup> _metricsGroupMap = new WeakHashMap<URI, MetricsGroup>();
-  
+
   protected final Path _path;
   protected final FileSystem _fileSystem;
   protected final MetricsGroup _metricsGroup;
@@ -122,7 +124,7 @@ public class HdfsDirectory extends Directory implements LastModified {
     MetricName writeAcccessName = new MetricName(ORG_APACHE_BLUR, HDFS, "Write Latency in \u00B5s", scope);
     MetricName readThroughputName = new MetricName(ORG_APACHE_BLUR, HDFS, "Read Throughput", scope);
     MetricName writeThroughputName = new MetricName(ORG_APACHE_BLUR, HDFS, "Write Throughput", scope);
-    
+
     Histogram readAccess = Metrics.newHistogram(readAccessName);
     Histogram writeAccess = Metrics.newHistogram(writeAcccessName);
     Meter readThroughput = Metrics.newMeter(readThroughputName, "Read Bytes", TimeUnit.SECONDS);
@@ -172,7 +174,13 @@ public class HdfsDirectory extends Directory implements LastModified {
   }
 
   protected FSDataOutputStream openForOutput(String name) throws IOException {
-    return _fileSystem.create(getPath(name));
+    Path path = getPath(name);
+    Tracer trace = Trace.trace("filesystem - create", Trace.param("path", path));
+    try {
+      return _fileSystem.create(path);
+    } finally {
+      trace.done();
+    }
   }
 
   @Override
@@ -183,31 +191,42 @@ public class HdfsDirectory extends Directory implements LastModified {
     }
     FSDataInputStream inputStream = openForInput(name);
     long fileLength = fileLength(name);
-    return new HdfsIndexInput(name, inputStream, fileLength, _metricsGroup, fetchImpl.get());
+    return new HdfsIndexInput(name, inputStream, fileLength, _metricsGroup, fetchImpl.get(), getPath(name));
   }
 
   protected FSDataInputStream openForInput(String name) throws IOException {
-    return _fileSystem.open(getPath(name));
+    Path path = getPath(name);
+    Tracer trace = Trace.trace("filesystem - open", Trace.param("path", path));
+    try {
+      return _fileSystem.open(path);
+    } finally {
+      trace.done();
+    }
   }
 
   @Override
   public String[] listAll() throws IOException {
     LOG.debug("listAll [{0}]", _path);
-    FileStatus[] files = _fileSystem.listStatus(_path, new PathFilter() {
-      @Override
-      public boolean accept(Path path) {
-        try {
-          return _fileSystem.isFile(path);
-        } catch (IOException e) {
-          throw new RuntimeException(e);
+    Tracer trace = Trace.trace("filesystem - list", Trace.param("path", _path));
+    try {
+      FileStatus[] files = _fileSystem.listStatus(_path, new PathFilter() {
+        @Override
+        public boolean accept(Path path) {
+          try {
+            return _fileSystem.isFile(path);
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
         }
+      });
+      String[] result = new String[files.length];
+      for (int i = 0; i < result.length; i++) {
+        result[i] = files[i].getPath().getName();
       }
-    });
-    String[] result = new String[files.length];
-    for (int i = 0; i < result.length; i++) {
-      result[i] = files[i].getPath().getName();
+      return result;
+    } finally {
+      trace.done();
     }
-    return result;
   }
 
   @Override
@@ -217,7 +236,13 @@ public class HdfsDirectory extends Directory implements LastModified {
   }
 
   protected boolean exists(String name) throws IOException {
-    return _fileSystem.exists(getPath(name));
+    Path path = getPath(name);
+    Tracer trace = Trace.trace("filesystem - exists", Trace.param("path", path));
+    try {
+      return _fileSystem.exists(path);
+    } finally {
+      trace.done();
+    }
   }
 
   @Override
@@ -231,7 +256,13 @@ public class HdfsDirectory extends Directory implements LastModified {
   }
 
   protected void delete(String name) throws IOException {
-    _fileSystem.delete(getPath(name), true);
+    Path path = getPath(name);
+    Tracer trace = Trace.trace("filesystem - delete", Trace.param("path", path));
+    try {
+      _fileSystem.delete(path, true);
+    } finally {
+      trace.done();
+    }
   }
 
   @Override
@@ -241,7 +272,13 @@ public class HdfsDirectory extends Directory implements LastModified {
   }
 
   protected long length(String name) throws IOException {
-    return _fileSystem.getFileStatus(getPath(name)).getLen();
+    Path path = getPath(name);
+    Tracer trace = Trace.trace("filesystem - length", Trace.param("path", path));
+    try {
+      return _fileSystem.getFileStatus(path).getLen();
+    } finally {
+      trace.done();
+    }
   }
 
   @Override
@@ -270,7 +307,13 @@ public class HdfsDirectory extends Directory implements LastModified {
   }
 
   protected long fileModified(String name) throws IOException {
-    return _fileSystem.getFileStatus(getPath(name)).getModificationTime();
+    Path path = getPath(name);
+    Tracer trace = Trace.trace("filesystem - fileModified", Trace.param("path", path));
+    try {
+      return _fileSystem.getFileStatus(path).getModificationTime();
+    } finally {
+      trace.done();
+    }
   }
 
   @Override
@@ -284,7 +327,7 @@ public class HdfsDirectory extends Directory implements LastModified {
       }
     } else {
       slowCopy(to, src, dest, context);
-      
+
     }
   }
 

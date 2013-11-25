@@ -113,7 +113,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     @Override
     public <T> T execute(String node, BlurCommand<T> command, int maxRetries, long backOffTime, long maxBackOffTime)
         throws BlurException, TException, IOException {
-      Tracer trace = Trace.trace("remote call - " + node);
+      Tracer trace = Trace.trace("remote call - thrift", Trace.param("node", node));
       try {
         return BlurClientManager.execute(node + "#" + _timeout, command, maxRetries, backOffTime, maxBackOffTime);
       } finally {
@@ -448,6 +448,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
     if (selector != null) {
 
+      Tracer trace = Trace.trace("fetch data", Trace.param("table", table));
+
       // Gather client objects and build batches for fetching.
       IdentityHashMap<Client, List<Selector>> map = new IdentityHashMap<Client, List<Selector>>();
 
@@ -477,6 +479,10 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         futures.add(executor.submit(new Callable<Boolean>() {
           @Override
           public Boolean call() throws Exception {
+            String traceId = Trace.getTraceId();
+            if (traceId != null) {
+              client.startTrace(traceId);
+            }
             List<FetchResult> fetchRowBatch = client.fetchRowBatch(table, list);
             for (int i = 0; i < list.size(); i++) {
               int index = indexMap.get(list.get(i));
@@ -499,6 +505,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         result.setFetchResult(fetchResult);
         result.setLocationId(null);
       }
+
+      trace.done();
     }
     results.query = query;
     results.query.selector = selector;

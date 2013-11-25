@@ -30,14 +30,15 @@ public class BlurServerContext implements ServerContext {
   private User _user;
   private final SocketAddress _localSocketAddress;
   private final SocketAddress _remoteSocketAddress;
-  private final String _connectionString;
-
+  private final String _localConnectionString;
+  private final String _remoteConnectionString;
   private String _traceId;
 
   public BlurServerContext(SocketAddress localSocketAddress, SocketAddress remoteSocketAddress) {
     _localSocketAddress = localSocketAddress;
     _remoteSocketAddress = remoteSocketAddress;
-    _connectionString = _localSocketAddress.toString() + "\t" + _remoteSocketAddress.toString();
+    _localConnectionString = _localSocketAddress.toString();
+    _remoteConnectionString = _remoteSocketAddress.toString();
   }
 
   public void setUser(User user) {
@@ -65,8 +66,8 @@ public class BlurServerContext implements ServerContext {
     return _remoteSocketAddress;
   }
 
-  public String getConnectionString() {
-    return _connectionString;
+  public String getConnectionString(String sep) {
+    return _localConnectionString + sep + _remoteConnectionString;
   }
 
 }

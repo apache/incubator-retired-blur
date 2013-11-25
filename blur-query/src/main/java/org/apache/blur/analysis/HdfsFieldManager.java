@@ -29,6 +29,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -93,72 +95,83 @@ public class HdfsFieldManager extends BaseFieldManager {
 
   @Override
   protected List<String> getFieldNamesToLoad() throws IOException {
-    if (!_fileSystem.exists(_storagePath)) {
-      return EMPTY_LIST;
-    }
-    FileStatus[] listStatus = _fileSystem.listStatus(_storagePath, new PathFilter() {
-      @Override
-      public boolean accept(Path path) {
-        if (path.getName().endsWith(".tmp")) {
-          return false;
+    Tracer trace = Trace.trace("filesystem - getFieldNamesToLoad",Trace.param("storagePath", _storagePath));
+    try {
+      if (!_fileSystem.exists(_storagePath)) {
+        return EMPTY_LIST;
+      }
+      FileStatus[] listStatus = _fileSystem.listStatus(_storagePath, new PathFilter() {
+        @Override
+        public boolean accept(Path path) {
+          if (path.getName().endsWith(".tmp")) {
+            return false;
+          }
+          return true;
         }
-        return true;
+      });
+      if (listStatus == null) {
+        return EMPTY_LIST;
       }
-    });
-    if (listStatus == null) {
-      return EMPTY_LIST;
-    }
-    List<String> fieldNames = new ArrayList<String>();
-    for (FileStatus fileStatus : listStatus) {
-      if (!fileStatus.isDir()) {
-        fieldNames.add(fileStatus.getPath().getName());
+      List<String> fieldNames = new ArrayList<String>();
+      for (FileStatus fileStatus : listStatus) {
+        if (!fileStatus.isDir()) {
+          fieldNames.add(fileStatus.getPath().getName());
+        }
       }
+      return fieldNames;
+    } finally {
+      trace.done();
     }
-    return fieldNames;
   }
 
   @Override
   protected boolean tryToStore(FieldTypeDefinition fieldTypeDefinition, String fieldName) throws IOException {
-    // Might want to make this a ZK lock
-    _lock.lock();
+    Tracer trace = Trace.trace("filesystem - tryToStore fieldName",Trace.param("fieldName", fieldName),Trace.param("storagePath", _storagePath));
     try {
-      String fieldType = fieldTypeDefinition.getFieldType();
-      boolean fieldLessIndexed = fieldTypeDefinition.isFieldLessIndexed();
-      LOG.info("Attempting to store new field [{0}] with fieldLessIndexing [{1}] with type [{2}] and properties [{3}]",
-          fieldName, fieldLessIndexed, fieldType, fieldTypeDefinition.getProperties());
-      Properties properties = new Properties();
-      setProperty(properties, FAMILY, fieldTypeDefinition.getFamily());
-      setProperty(properties, FAMILY, fieldTypeDefinition.getFamily());
-      setProperty(properties, COLUMN_NAME, fieldTypeDefinition.getColumnName());
-      setProperty(properties, SUB_COLUMN_NAME, fieldTypeDefinition.getSubColumnName());
-      setProperty(properties, FIELD_LESS_INDEXING, Boolean.toString(fieldLessIndexed));
-      setProperty(properties, FIELD_TYPE, fieldType);
-      Map<String, String> props = fieldTypeDefinition.getProperties();
-      if (props != null) {
-        for (Entry<String, String> e : props.entrySet()) {
-          properties.setProperty(e.getKey(), e.getValue());
+      // Might want to make this a ZK lock
+      _lock.lock();
+      try {
+        String fieldType = fieldTypeDefinition.getFieldType();
+        boolean fieldLessIndexed = fieldTypeDefinition.isFieldLessIndexed();
+        LOG.info(
+            "Attempting to store new field [{0}] with fieldLessIndexing [{1}] with type [{2}] and properties [{3}]",
+            fieldName, fieldLessIndexed, fieldType, fieldTypeDefinition.getProperties());
+        Properties properties = new Properties();
+        setProperty(properties, FAMILY, fieldTypeDefinition.getFamily());
+        setProperty(properties, FAMILY, fieldTypeDefinition.getFamily());
+        setProperty(properties, COLUMN_NAME, fieldTypeDefinition.getColumnName());
+        setProperty(properties, SUB_COLUMN_NAME, fieldTypeDefinition.getSubColumnName());
+        setProperty(properties, FIELD_LESS_INDEXING, Boolean.toString(fieldLessIndexed));
+        setProperty(properties, FIELD_TYPE, fieldType);
+        Map<String, String> props = fieldTypeDefinition.getProperties();
+        if (props != null) {
+          for (Entry<String, String> e : props.entrySet()) {
+            properties.setProperty(e.getKey(), e.getValue());
+          }
         }
-      }
-      Path path = getFieldPath(fieldName);
-      if (_fileSystem.exists(path)) {
-        LOG.info("Field [{0}] already exists.", fieldName);
-        return false;
-      }
-      Path tmpPath = new Path(path.getParent(), UUID.randomUUID().toString() + ".tmp");
-      FSDataOutputStream outputStream = _fileSystem.create(tmpPath, false);
-      properties.store(outputStream, getComments());
-      outputStream.close();
-      if (_fileSystem.rename(tmpPath, path)) {
-        // @TODO make this configurable
-        _fileSystem.setReplication(path, (short) 10);
-        return true;
-      } else {
-        _fileSystem.delete(tmpPath, false);
-        LOG.info("Field [{0}] already exists.", fieldName, fieldLessIndexed, fieldType, props);
-        return false;
+        Path path = getFieldPath(fieldName);
+        if (_fileSystem.exists(path)) {
+          LOG.info("Field [{0}] already exists.", fieldName);
+          return false;
+        }
+        Path tmpPath = new Path(path.getParent(), UUID.randomUUID().toString() + ".tmp");
+        FSDataOutputStream outputStream = _fileSystem.create(tmpPath, false);
+        properties.store(outputStream, getComments());
+        outputStream.close();
+        if (_fileSystem.rename(tmpPath, path)) {
+          // @TODO make this configurable
+          _fileSystem.setReplication(path, (short) 10);
+          return true;
+        } else {
+          _fileSystem.delete(tmpPath, false);
+          LOG.info("Field [{0}] already exists.", fieldName, fieldLessIndexed, fieldType, props);
+          return false;
+        }
+      } finally {
+        _lock.unlock();
       }
     } finally {
-      _lock.unlock();
+      trace.done();
     }
   }
 

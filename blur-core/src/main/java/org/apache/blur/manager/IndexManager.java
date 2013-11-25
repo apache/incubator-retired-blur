@@ -236,6 +236,7 @@ public class IndexManager {
     validSelector(selector);
     BlurIndex index;
     String shard;
+    Tracer trace = Trace.trace("manager fetch", Trace.param("table", table));
     try {
       if (selector.getLocationId() == null) {
         // Not looking up by location id so we should resetSearchers.
@@ -302,6 +303,7 @@ public class IndexManager {
       LOG.error("Unknown error while trying to fetch row.", e);
       throw new BException(e.getMessage(), e);
     } finally {
+      trace.done();
       timerContext.stop();
       if (!usedCache && searcher != null) {
         // if the cached search was not used, close the searcher.
@@ -432,7 +434,7 @@ public class IndexManager {
         LOG.error("Unknown error while trying to fetch index readers.", e);
         throw new BException(e.getMessage(), e);
       }
-      Tracer trace = Trace.trace("query setup");
+      Tracer trace = Trace.trace("query setup", Trace.param("table", table));
       ShardServerContext shardServerContext = ShardServerContext.getShardServerContext();
       ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> call;
       TableContext context = getTableContext(table);
@@ -1138,7 +1140,7 @@ public class IndexManager {
           _shardServerContext.setIndexSearcherClosable(_table, shard, searcher);
         }
         searcher.setSimilarity(_similarity);
-        Tracer trace1 = Trace.trace("query rewrite");
+        Tracer trace1 = Trace.trace("query rewrite", Trace.param("table", _table));
         Query rewrite;
         try {
           rewrite = searcher.rewrite((Query) _query.clone());

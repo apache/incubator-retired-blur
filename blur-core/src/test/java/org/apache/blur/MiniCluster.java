@@ -461,7 +461,8 @@ public class MiniCluster {
       field.setAccessible(true);
       return field.get(o);
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      e.printStackTrace();
+      return null;
     }
   }
 }

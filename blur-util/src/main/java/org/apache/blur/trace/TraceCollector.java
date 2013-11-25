@@ -28,12 +28,16 @@ public class TraceCollector {
   protected final AtomicLong _traceCounter;
   protected final long _now = System.nanoTime();
   protected final String _pid;
+  protected final String _threadName;
+  protected final String _nodeName;
 
-  public TraceCollector(String id) {
+  public TraceCollector(String nodeName, String id) {
+    _nodeName = nodeName;
     _id = id;
     _traces = new CopyOnWriteArrayList<TracerImpl>();
     _traceCounter = new AtomicLong();
     _pid = ManagementFactory.getRuntimeMXBean().getName();
+    _threadName = Thread.currentThread().getName();
   }
 
   public void add(TracerImpl tracer) {
@@ -49,10 +53,10 @@ public class TraceCollector {
     StringBuilder builder = new StringBuilder();
     for (TracerImpl t : _traces) {
       builder.append("    ").append(t.toJson()).append(",\n");
-
     }
-
-    return "{\n  \"id\"=\"" + _id + "\"\n  \"pid\"=\"" + _pid + "\"\n  \"created\"=" + _now + ",\n  \"traces\"=[\n" + builder.toString() + "  ]\n}";
+    return "{\n  \"id\":\"" + _id + "\"\n  \"nodeName\":\"" + (_nodeName == null ? "unknown" : _nodeName)
+        + "\"\n  \"pid\":\"" + _pid + "\"\n  \"thread\":\"" + _threadName + "\"\n  \"created\":" + _now
+        + ",\n  \"traces\":[\n" + builder.toString() + "  ]\n}";
   }
 
   public String getId() {

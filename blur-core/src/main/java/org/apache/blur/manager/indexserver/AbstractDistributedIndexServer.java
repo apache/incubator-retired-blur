@@ -35,6 +35,8 @@ import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.metrics.AtomicLongGauge;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
@@ -93,6 +95,7 @@ public abstract class AbstractDistributedIndexServer extends AbstractIndexServer
   @Override
   public final List<String> getShardList(String table) {
     checkTable(table);
+    Tracer trace = Trace.trace("filesystem - getShardList", Trace.param("table", table));
     List<String> result = new ArrayList<String>();
     try {
       TableContext tableContext = getTableContext(table);
@@ -115,6 +118,8 @@ public abstract class AbstractDistributedIndexServer extends AbstractIndexServer
       return result;
     } catch (IOException e) {
       throw new RuntimeException(e);
+    } finally {
+      trace.done();
     }
   }
 

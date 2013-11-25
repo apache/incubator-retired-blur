@@ -19,8 +19,8 @@ package org.apache.blur.trace;
 import org.apache.blur.BlurConfiguration;
 
 public abstract class TraceReporter {
-  
-  protected BlurConfiguration _configuration;
+
+  protected final BlurConfiguration _configuration;
 
   public TraceReporter(BlurConfiguration configuration) {
     _configuration = configuration;

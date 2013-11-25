@@ -73,7 +73,7 @@ public class TraceTest {
         } else {
           assertEquals("test", id.substring(0,indexOf));
         }
-        assertEquals(3, collector.getTraces().size());
+        assertEquals(7, collector.getTraces().size());
         count.addAndGet(collector.getTraces().size());
       }
     });
@@ -106,7 +106,7 @@ public class TraceTest {
     thread.join();
     Trace.tearDownTrace();
     
-    assertEquals(6, count.get());
+    assertEquals(7, count.get());
   }
 
   private static long meth1() {

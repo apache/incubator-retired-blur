@@ -136,6 +136,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     controllerServer.init();
     
     Trace.setReporter(setupTraceReporter(configuration));
+    Trace.setNodeName(nodeName);
     
     Iface iface= BlurUtil.wrapFilteredBlurServer(configuration, controllerServer, false);
     iface = BlurUtil.recordMethodCallsAndAverageTimes(iface, Iface.class, true);

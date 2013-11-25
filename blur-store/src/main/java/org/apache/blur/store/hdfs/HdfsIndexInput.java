@@ -19,7 +19,10 @@ package org.apache.blur.store.hdfs;
 import java.io.IOException;
 
 import org.apache.blur.store.buffer.ReusedBufferedIndexInput;
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.Path;
 
 public class HdfsIndexInput extends ReusedBufferedIndexInput {
 
@@ -28,13 +31,16 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
   private boolean _isClone;
   private final MetricsGroup _metricsGroup;
   private int _readVersion;
+  private final Path _path;
 
-  public HdfsIndexInput(String name, FSDataInputStream inputStream, long length, MetricsGroup metricsGroup, int readVersion) throws IOException {
+  public HdfsIndexInput(String name, FSDataInputStream inputStream, long length, MetricsGroup metricsGroup,
+      int readVersion, Path path) throws IOException {
     super(name);
     _inputStream = inputStream;
     _length = length;
     _metricsGroup = metricsGroup;
     _readVersion = readVersion;
+    _path = path;
   }
 
   @Override
@@ -49,45 +55,50 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
 
   @Override
   protected void readInternal(byte[] b, int offset, int length) throws IOException {
-    long start = System.nanoTime();
-    long filePointer = getFilePointer();
-    switch (_readVersion) {
-    case 0:
-      synchronized (_inputStream) {
-        _inputStream.seek(getFilePointer());
-        _inputStream.readFully(b, offset, length);
-      }
-      break;
-    case 1:
-      while (length > 0) {
-        int amount;
+    Tracer trace = Trace.trace("filesystem - read", Trace.param("file", _path), Trace.param("location", getFilePointer()),Trace.param("length", length));
+    try {
+      long start = System.nanoTime();
+      long filePointer = getFilePointer();
+      switch (_readVersion) {
+      case 0:
         synchronized (_inputStream) {
-          _inputStream.seek(filePointer);
-          amount = _inputStream.read(b, offset, length);
+          _inputStream.seek(getFilePointer());
+          _inputStream.readFully(b, offset, length);
         }
-        length -= amount;
-        offset += amount;
-        filePointer += amount;
+        break;
+      case 1:
+        while (length > 0) {
+          int amount;
+          synchronized (_inputStream) {
+            _inputStream.seek(filePointer);
+            amount = _inputStream.read(b, offset, length);
+          }
+          length -= amount;
+          offset += amount;
+          filePointer += amount;
+        }
+        break;
+      case 2:
+        _inputStream.readFully(filePointer, b, offset, length);
+        break;
+      case 3:
+        while (length > 0) {
+          int amount;
+          amount = _inputStream.read(filePointer, b, offset, length);
+          length -= amount;
+          offset += amount;
+          filePointer += amount;
+        }
+        break;
+      default:
+        break;
       }
-      break;
-    case 2:
-      _inputStream.readFully(filePointer, b, offset, length);
-      break;
-    case 3:
-      while (length > 0) {
-        int amount;
-        amount = _inputStream.read(filePointer, b, offset, length);
-        length -= amount;
-        offset += amount;
-        filePointer += amount;
-      }
-      break;
-    default:
-      break;
+      long end = System.nanoTime();
+      _metricsGroup.readAccess.update((end - start) / 1000);
+      _metricsGroup.readThroughput.mark(length);
+    } finally {
+      trace.done();
     }
-    long end = System.nanoTime();
-    _metricsGroup.readAccess.update((end - start) / 1000);
-    _metricsGroup.readThroughput.mark(length);
   }
 
   @Override

@@ -79,7 +79,7 @@ public class TracerImpl implements Tracer {
       if (builder.length() != 0) {
         builder.append(',');
       }
-      builder.append("\"").append(parameter._name).append("\":\"").append(parameter._value).append("\"");
+      builder.append("{\"").append(parameter._name).append("\":\"").append(parameter._value).append("\"}");
     }
     return builder.toString();
   }

@@ -537,12 +537,12 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'metrics failed: unknown result')
       end
 
-      def startTrace(traceId)
-        send_startTrace(traceId)
+      def startTrace(traceId, requestId)
+        send_startTrace(traceId, requestId)
       end
 
-      def send_startTrace(traceId)
-        send_message('startTrace', StartTrace_args, :traceId => traceId)
+      def send_startTrace(traceId, requestId)
+        send_message('startTrace', StartTrace_args, :traceId => traceId, :requestId => requestId)
       end
     end
 
@@ -920,7 +920,7 @@ module Blur
 
       def process_startTrace(seqid, iprot, oprot)
         args = read_args(iprot, StartTrace_args)
-        @handler.startTrace(args.traceId)
+        @handler.startTrace(args.traceId, args.requestId)
         return
       end
 
@@ -2139,10 +2139,13 @@ module Blur
     class StartTrace_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
       TRACEID = 1
+      REQUESTID = 2
 
       FIELDS = {
         # the trace id.
-        TRACEID => {:type => ::Thrift::Types::STRING, :name => 'traceId'}
+        TRACEID => {:type => ::Thrift::Types::STRING, :name => 'traceId'},
+        # the request id, used to connected remote calls together.  Client can pass null.
+        REQUESTID => {:type => ::Thrift::Types::STRING, :name => 'requestId'}
       }
 
       def struct_fields; FIELDS; end

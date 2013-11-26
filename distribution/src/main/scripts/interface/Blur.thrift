@@ -1089,7 +1089,9 @@ service Blur {
    */
   oneway void startTrace(
     /** the trace id. */
-    1:string traceId
+    1:string traceId,
+    /** the request id, used to connected remote calls together.  Client can pass null. */
+    2:string requestId
   )
 
 }

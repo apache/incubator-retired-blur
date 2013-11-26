@@ -370,8 +370,10 @@ public class Blur {
      * Starts a trace with the given trace id.
      * 
      * @param traceId the trace id.
+     * 
+     * @param requestId the request id, used to connected remote calls together.  Client can pass null.
      */
-    public void startTrace(String traceId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void startTrace(String traceId, String requestId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
   }
 
@@ -445,7 +447,7 @@ public class Blur {
 
     public void metrics(Set<String> metrics, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.metrics_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
-    public void startTrace(String traceId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.startTrace_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void startTrace(String traceId, String requestId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.startTrace_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
   }
 
@@ -1323,15 +1325,16 @@ public class Blur {
       throw new org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException(org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException.MISSING_RESULT, "metrics failed: unknown result");
     }
 
-    public void startTrace(String traceId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void startTrace(String traceId, String requestId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
-      send_startTrace(traceId);
+      send_startTrace(traceId, requestId);
     }
 
-    public void send_startTrace(String traceId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void send_startTrace(String traceId, String requestId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       startTrace_args args = new startTrace_args();
       args.setTraceId(traceId);
+      args.setRequestId(requestId);
       sendBase("startTrace", args);
     }
 
@@ -2482,24 +2485,27 @@ public class Blur {
       }
     }
 
-    public void startTrace(String traceId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<startTrace_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void startTrace(String traceId, String requestId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<startTrace_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       checkReady();
-      startTrace_call method_call = new startTrace_call(traceId, resultHandler, this, ___protocolFactory, ___transport);
+      startTrace_call method_call = new startTrace_call(traceId, requestId, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class startTrace_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
       private String traceId;
-      public startTrace_call(String traceId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<startTrace_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      private String requestId;
+      public startTrace_call(String traceId, String requestId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<startTrace_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         super(client, protocolFactory, transport, resultHandler, true);
         this.traceId = traceId;
+        this.requestId = requestId;
       }
 
       public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("startTrace", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
         startTrace_args args = new startTrace_args();
         args.setTraceId(traceId);
+        args.setRequestId(requestId);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -3392,7 +3398,7 @@ public class Blur {
       }
 
       public org.apache.blur.thirdparty.thrift_0_9_0.TBase getResult(I iface, startTrace_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
-        iface.startTrace(args.traceId);
+        iface.startTrace(args.traceId, args.requestId);
         return null;
       }
     }
@@ -32412,6 +32418,7 @@ public class Blur {
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("startTrace_args");
 
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TRACE_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("traceId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField REQUEST_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("requestId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -32423,13 +32430,21 @@ public class Blur {
      * the trace id.
      */
     public String traceId; // required
+    /**
+     * the request id, used to connected remote calls together.  Client can pass null.
+     */
+    public String requestId; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
       /**
        * the trace id.
        */
-      TRACE_ID((short)1, "traceId");
+      TRACE_ID((short)1, "traceId"),
+      /**
+       * the request id, used to connected remote calls together.  Client can pass null.
+       */
+      REQUEST_ID((short)2, "requestId");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -32446,6 +32461,8 @@ public class Blur {
         switch(fieldId) {
           case 1: // TRACE_ID
             return TRACE_ID;
+          case 2: // REQUEST_ID
+            return REQUEST_ID;
           default:
             return null;
         }
@@ -32491,6 +32508,8 @@ public class Blur {
       Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.TRACE_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("traceId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+      tmpMap.put(_Fields.REQUEST_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("requestId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(startTrace_args.class, metaDataMap);
     }
@@ -32499,10 +32518,12 @@ public class Blur {
     }
 
     public startTrace_args(
-      String traceId)
+      String traceId,
+      String requestId)
     {
       this();
       this.traceId = traceId;
+      this.requestId = requestId;
     }
 
     /**
@@ -32511,6 +32532,9 @@ public class Blur {
     public startTrace_args(startTrace_args other) {
       if (other.isSetTraceId()) {
         this.traceId = other.traceId;
+      }
+      if (other.isSetRequestId()) {
+        this.requestId = other.requestId;
       }
     }
 
@@ -32521,6 +32545,7 @@ public class Blur {
     @Override
     public void clear() {
       this.traceId = null;
+      this.requestId = null;
     }
 
     /**
@@ -32553,6 +32578,36 @@ public class Blur {
       }
     }
 
+    /**
+     * the request id, used to connected remote calls together.  Client can pass null.
+     */
+    public String getRequestId() {
+      return this.requestId;
+    }
+
+    /**
+     * the request id, used to connected remote calls together.  Client can pass null.
+     */
+    public startTrace_args setRequestId(String requestId) {
+      this.requestId = requestId;
+      return this;
+    }
+
+    public void unsetRequestId() {
+      this.requestId = null;
+    }
+
+    /** Returns true if field requestId is set (has been assigned a value) and false otherwise */
+    public boolean isSetRequestId() {
+      return this.requestId != null;
+    }
+
+    public void setRequestIdIsSet(boolean value) {
+      if (!value) {
+        this.requestId = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case TRACE_ID:
@@ -32563,6 +32618,14 @@ public class Blur {
         }
         break;
 
+      case REQUEST_ID:
+        if (value == null) {
+          unsetRequestId();
+        } else {
+          setRequestId((String)value);
+        }
+        break;
+
       }
     }
 
@@ -32570,6 +32633,9 @@ public class Blur {
       switch (field) {
       case TRACE_ID:
         return getTraceId();
+
+      case REQUEST_ID:
+        return getRequestId();
 
       }
       throw new IllegalStateException();
@@ -32584,6 +32650,8 @@ public class Blur {
       switch (field) {
       case TRACE_ID:
         return isSetTraceId();
+      case REQUEST_ID:
+        return isSetRequestId();
       }
       throw new IllegalStateException();
     }
@@ -32607,6 +32675,15 @@ public class Blur {
         if (!(this_present_traceId && that_present_traceId))
           return false;
         if (!this.traceId.equals(that.traceId))
+          return false;
+      }
+
+      boolean this_present_requestId = true && this.isSetRequestId();
+      boolean that_present_requestId = true && that.isSetRequestId();
+      if (this_present_requestId || that_present_requestId) {
+        if (!(this_present_requestId && that_present_requestId))
+          return false;
+        if (!this.requestId.equals(that.requestId))
           return false;
       }
 
@@ -32636,6 +32713,16 @@ public class Blur {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetRequestId()).compareTo(typedOther.isSetRequestId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetRequestId()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.requestId, typedOther.requestId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -32661,6 +32748,14 @@ public class Blur {
         sb.append("null");
       } else {
         sb.append(this.traceId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("requestId:");
+      if (this.requestId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.requestId);
       }
       first = false;
       sb.append(")");
@@ -32714,6 +32809,14 @@ public class Blur {
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
+            case 2: // REQUEST_ID
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+                struct.requestId = iprot.readString();
+                struct.setRequestIdIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -32732,6 +32835,11 @@ public class Blur {
         if (struct.traceId != null) {
           oprot.writeFieldBegin(TRACE_ID_FIELD_DESC);
           oprot.writeString(struct.traceId);
+          oprot.writeFieldEnd();
+        }
+        if (struct.requestId != null) {
+          oprot.writeFieldBegin(REQUEST_ID_FIELD_DESC);
+          oprot.writeString(struct.requestId);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -32755,19 +32863,29 @@ public class Blur {
         if (struct.isSetTraceId()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetRequestId()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
         if (struct.isSetTraceId()) {
           oprot.writeString(struct.traceId);
+        }
+        if (struct.isSetRequestId()) {
+          oprot.writeString(struct.requestId);
         }
       }
 
       @Override
       public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, startTrace_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
+        BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           struct.traceId = iprot.readString();
           struct.setTraceIdIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.requestId = iprot.readString();
+          struct.setRequestIdIsSet(true);
         }
       }
     }

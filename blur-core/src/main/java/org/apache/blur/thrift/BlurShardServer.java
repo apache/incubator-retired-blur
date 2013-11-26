@@ -490,9 +490,10 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public void startTrace(String traceId) throws TException {
+  public void startTrace(String rootId, String requestId) throws TException {
     ShardServerContext context = ShardServerContext.getShardServerContext();
-    context.setTraceId(traceId);
+    context.setTraceRootId(rootId);
+    context.setTraceRequestId(requestId);
   }
 
 }

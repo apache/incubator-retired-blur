@@ -337,6 +337,7 @@ public class IndexManager {
   }
 
   private void populateSelector(String table, Selector selector) throws IOException, BlurException {
+    Tracer trace = Trace.trace("populate selector");
     String rowId = selector.rowId;
     String recordId = selector.recordId;
     String shardName = MutationHelper.getShardName(table, rowId, getNumberOfShards(table), _blurPartitioner);
@@ -372,6 +373,7 @@ public class IndexManager {
     } finally {
       // this will allow for closing of index
       searcher.close();
+      trace.done();
     }
   }
 
@@ -563,7 +565,9 @@ public class IndexManager {
       returnIdsOnly = true;
     }
 
+    Tracer t1 = Trace.trace("fetchRow - live docs");
     Bits liveDocs = MultiFields.getLiveDocs(reader);
+    t1.done();
     ResetableDocumentStoredFieldVisitor fieldVisitor = getFieldSelector(selector);
     if (selector.isRecordOnly()) {
       // select only the row for the given data or location id.
@@ -592,33 +596,44 @@ public class IndexManager {
         return;
       }
     } else {
-      if (liveDocs != null && !liveDocs.get(docId)) {
-        fetchResult.exists = false;
-        fetchResult.deleted = true;
-        return;
-      } else {
-        fetchResult.exists = true;
-        fetchResult.deleted = false;
-        String rowId = getRowId(reader, docId);
-        Term term = new Term(ROW_ID, rowId);
-        if (returnIdsOnly) {
-          int recordCount = BlurUtil.countDocuments(reader, term);
-          fetchResult.rowResult = new FetchRowResult();
-          fetchResult.rowResult.row = new Row(rowId, null, recordCount);
+      Tracer trace = Trace.trace("fetchRow - Row read");
+      try {
+        if (liveDocs != null && !liveDocs.get(docId)) {
+          fetchResult.exists = false;
+          fetchResult.deleted = true;
+          return;
         } else {
-          List<Document> docs;
-          if (highlightQuery != null && fieldManager != null) {
-            HighlightOptions highlightOptions = selector.getHighlightOptions();
-            String preTag = highlightOptions.getPreTag();
-            String postTag = highlightOptions.getPostTag();
-            docs = HighlightHelper.highlightDocuments(reader, term, fieldVisitor, selector, highlightQuery,
-                fieldManager, preTag, postTag);
+          fetchResult.exists = true;
+          fetchResult.deleted = false;
+          String rowId = getRowId(reader, docId);
+          Term term = new Term(ROW_ID, rowId);
+          if (returnIdsOnly) {
+            int recordCount = BlurUtil.countDocuments(reader, term);
+            fetchResult.rowResult = new FetchRowResult();
+            fetchResult.rowResult.row = new Row(rowId, null, recordCount);
           } else {
-            docs = BlurUtil.fetchDocuments(reader, term, fieldVisitor, selector, maxHeap, table + "/" + shard);
+            List<Document> docs;
+            if (highlightQuery != null && fieldManager != null) {
+              HighlightOptions highlightOptions = selector.getHighlightOptions();
+              String preTag = highlightOptions.getPreTag();
+              String postTag = highlightOptions.getPostTag();
+              Tracer docTrace = Trace.trace("fetchRow - Document w/Highlight read");
+              docs = HighlightHelper.highlightDocuments(reader, term, fieldVisitor, selector, highlightQuery,
+                  fieldManager, preTag, postTag);
+              docTrace.done();
+            } else {
+              Tracer docTrace = Trace.trace("fetchRow - Document read");
+              docs = BlurUtil.fetchDocuments(reader, term, fieldVisitor, selector, maxHeap, table + "/" + shard);
+              docTrace.done();
+            }
+            Tracer rowTrace = Trace.trace("fetchRow - Row create");
+            fetchResult.rowResult = new FetchRowResult(getRow(docs));
+            rowTrace.done();
           }
-          fetchResult.rowResult = new FetchRowResult(getRow(docs));
+          return;
         }
-        return;
+      } finally {
+        trace.done();
       }
     }
   }

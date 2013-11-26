@@ -5343,16 +5343,20 @@ sub write {
 
 package Blur::Blur_startTrace_args;
 use base qw(Class::Accessor);
-Blur::Blur_startTrace_args->mk_accessors( qw( traceId ) );
+Blur::Blur_startTrace_args->mk_accessors( qw( traceId requestId ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
   $self->{traceId} = undef;
+  $self->{requestId} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{traceId}) {
       $self->{traceId} = $vals->{traceId};
+    }
+    if (defined $vals->{requestId}) {
+      $self->{requestId} = $vals->{requestId};
     }
   }
   return bless ($self, $classname);
@@ -5383,6 +5387,12 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^2$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{requestId});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -5398,6 +5408,11 @@ sub write {
   if (defined $self->{traceId}) {
     $xfer += $output->writeFieldBegin('traceId', TType::STRING, 1);
     $xfer += $output->writeString($self->{traceId});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{requestId}) {
+    $xfer += $output->writeFieldBegin('requestId', TType::STRING, 2);
+    $xfer += $output->writeString($self->{requestId});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -5711,6 +5726,7 @@ sub metrics{
 sub startTrace{
   my $self = shift;
   my $traceId = shift;
+  my $requestId = shift;
 
   die 'implement interface';
 }
@@ -5983,7 +5999,8 @@ sub startTrace{
   my ($self, $request) = @_;
 
   my $traceId = ($request->{'traceId'}) ? $request->{'traceId'} : undef;
-  return $self->{impl}->startTrace($traceId);
+  my $requestId = ($request->{'requestId'}) ? $request->{'requestId'} : undef;
+  return $self->{impl}->startTrace($traceId, $requestId);
 }
 
 package Blur::BlurClient;
@@ -7550,17 +7567,20 @@ sub recv_metrics{
 sub startTrace{
   my $self = shift;
   my $traceId = shift;
+  my $requestId = shift;
 
-    $self->send_startTrace($traceId);
+    $self->send_startTrace($traceId, $requestId);
 }
 
 sub send_startTrace{
   my $self = shift;
   my $traceId = shift;
+  my $requestId = shift;
 
   $self->{output}->writeMessageBegin('startTrace', TMessageType::CALL, $self->{seqid});
   my $args = new Blur::Blur_startTrace_args();
   $args->{traceId} = $traceId;
+  $args->{requestId} = $requestId;
   $args->write($self->{output});
   $self->{output}->writeMessageEnd();
   $self->{output}->getTransport()->flush();
@@ -8173,7 +8193,7 @@ sub process_startTrace {
     my $args = new Blur::Blur_startTrace_args();
     $args->read($input);
     $input->readMessageEnd();
-    $self->{handler}->startTrace($args->traceId);
+    $self->{handler}->startTrace($args->traceId, $args->requestId);
     return;
 }
 1;

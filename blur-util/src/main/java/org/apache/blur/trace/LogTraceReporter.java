@@ -16,6 +16,8 @@
  */
 package org.apache.blur.trace;
 
+import java.io.IOException;
+
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -32,6 +34,11 @@ public class LogTraceReporter extends TraceReporter {
   public void report(TraceCollector collector) {
     String json = collector.toJson();
     LOG.info("Trace Complete [{0}]", json);
+  }
+
+  @Override
+  public void close() throws IOException {
+    
   }
 
 }

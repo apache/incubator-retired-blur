@@ -59,11 +59,11 @@ import org.apache.blur.server.ControllerServerEventHandler;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingServerSocket;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.TraceReporter;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.MemoryReporter;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.zookeeper.ZooKeeper;
-
 
 public class ThriftBlurControllerServer extends ThriftServer {
 
@@ -81,7 +81,8 @@ public class ThriftBlurControllerServer extends ThriftServer {
     server.start();
   }
 
-  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration, boolean randomPort) throws Exception {
+  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration, boolean randomPort)
+      throws Exception {
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
     String bindAddress = configuration.get(BLUR_CONTROLLER_BIND_ADDRESS);
     int bindPort = configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1);
@@ -94,14 +95,15 @@ public class ThriftBlurControllerServer extends ThriftServer {
       bindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
     }
 
-    LOG.info("Controller Server using index [{0}] bind address [{1}] random port assignment [{2}]", serverIndex, bindAddress + ":" + bindPort, randomPort);
+    LOG.info("Controller Server using index [{0}] bind address [{1}] random port assignment [{2}]", serverIndex,
+        bindAddress + ":" + bindPort, randomPort);
 
     String nodeName = getNodeName(configuration, BLUR_CONTROLLER_HOSTNAME);
     nodeName = nodeName + ":" + bindPort;
     String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
-    
+
     int sessionTimeout = configuration.getInt(BLUR_ZOOKEEPER_TIMEOUT, BLUR_ZOOKEEPER_TIMEOUT_DEFAULT);
 
     final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr, sessionTimeout);
@@ -130,19 +132,21 @@ public class ThriftBlurControllerServer extends ThriftServer {
     controllerServer.setMaxFetchDelay(configuration.getInt(BLUR_CONTROLLER_RETRY_MAX_FETCH_DELAY, 2000));
     controllerServer.setMaxMutateDelay(configuration.getInt(BLUR_CONTROLLER_RETRY_MAX_MUTATE_DELAY, 2000));
     controllerServer.setMaxDefaultDelay(configuration.getInt(BLUR_CONTROLLER_RETRY_MAX_DEFAULT_DELAY, 2000));
-    controllerServer.setMaxRecordsPerRowFetchRequest(configuration.getInt(BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST, 1000));
+    controllerServer
+        .setMaxRecordsPerRowFetchRequest(configuration.getInt(BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST, 1000));
     controllerServer.setConfiguration(configuration);
 
     controllerServer.init();
-    
-    Trace.setReporter(setupTraceReporter(configuration));
+
+    final TraceReporter traceReporter = setupTraceReporter(configuration);
+    Trace.setReporter(traceReporter);
     Trace.setNodeName(nodeName);
-    
-    Iface iface= BlurUtil.wrapFilteredBlurServer(configuration, controllerServer, false);
+
+    Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, controllerServer, false);
     iface = BlurUtil.recordMethodCallsAndAverageTimes(iface, Iface.class, true);
     iface = BlurUtil.runTrace(iface, true);
     int threadCount = configuration.getInt(BLUR_CONTROLLER_SERVER_THRIFT_THREAD_COUNT, 32);
-    
+
     ControllerServerEventHandler eventHandler = new ControllerServerEventHandler();
 
     final ThriftBlurControllerServer server = new ThriftBlurControllerServer();
@@ -159,10 +163,12 @@ public class ThriftBlurControllerServer extends ThriftServer {
     final HttpJettyServer httpServer;
     if (baseGuiPort > 0) {
       int webServerPort = baseGuiPort + serverIndex;
-      // TODO: this got ugly, there has to be a better way to handle all these params
+      // TODO: this got ugly, there has to be a better way to handle all these
+      // params
       // without reversing the mvn dependancy and making blur-gui on top.
-      httpServer = new HttpJettyServer(bindPort, webServerPort, configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1), configuration.getInt(BLUR_SHARD_BIND_PORT, -1),
-          configuration.getInt(BLUR_GUI_CONTROLLER_PORT, -1), configuration.getInt(BLUR_GUI_SHARD_PORT, -1), "controller");
+      httpServer = new HttpJettyServer(bindPort, webServerPort, configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1),
+          configuration.getInt(BLUR_SHARD_BIND_PORT, -1), configuration.getInt(BLUR_GUI_CONTROLLER_PORT, -1),
+          configuration.getInt(BLUR_GUI_SHARD_PORT, -1), "controller");
     } else {
       httpServer = null;
     }
@@ -172,7 +178,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(server, controllerServer, clusterStatus, zooKeeper, threadWatcher, httpServer);
+        quietClose(traceReporter, server, controllerServer, clusterStatus, zooKeeper, threadWatcher, httpServer);
       }
     };
     server.setShutdown(shutdown);

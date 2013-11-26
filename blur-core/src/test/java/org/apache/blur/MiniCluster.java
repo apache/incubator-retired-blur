@@ -436,9 +436,9 @@ public class MiniCluster {
           if (thread.isAlive()) {
             thread.interrupt();
             LOG.info("Stopping ThreadPoolExecutor [" + thread.getName() + "]");
-            Object target = getField(thread, "target");
+            Object target = getField(Thread.class, thread, "target");
             if (target != null) {
-              ThreadPoolExecutor e = (ThreadPoolExecutor) getField(target, "this$0");
+              ThreadPoolExecutor e = (ThreadPoolExecutor) getField(ThreadPoolExecutor.class, target, "this$0");
               if (e != null) {
                 e.shutdownNow();
               }
@@ -455,14 +455,21 @@ public class MiniCluster {
     }
   }
 
-  private static Object getField(Object o, String fieldName) {
+  private static Object getField(Class<?> c, Object o, String fieldName) {
     try {
-      Field field = o.getClass().getDeclaredField(fieldName);
+      Field field = c.getDeclaredField(fieldName);
       field.setAccessible(true);
       return field.get(o);
+    } catch (NoSuchFieldException e) {
+      try {
+        Field field = o.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.get(o);
+      } catch (Exception ex) {
+        throw new RuntimeException(ex);
+      }
     } catch (Exception e) {
-      e.printStackTrace();
-      return null;
+      throw new RuntimeException(e);
     }
   }
 }

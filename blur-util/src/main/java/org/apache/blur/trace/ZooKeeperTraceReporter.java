@@ -27,6 +27,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.trace.Trace.TraceId;
 import org.apache.blur.zookeeper.ZooKeeperClient;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -89,14 +90,8 @@ public class ZooKeeperTraceReporter extends TraceReporter {
   }
 
   private void writeCollector(TraceCollector collector) {
-    String id = collector.getId();
-    int indexOf = id.indexOf(":");
-    String storeId;
-    if (indexOf < 0) {
-      storeId = id;
-    } else {
-      storeId = id.substring(0, indexOf);
-    }
+    TraceId id = collector.getId();
+    String storeId = id.getRootId();
     String storePath = getStorePath(storeId);
     createIfMissing(storePath);
     String json = collector.toJson();
@@ -130,6 +125,15 @@ public class ZooKeeperTraceReporter extends TraceReporter {
 
   private String getStorePath(String storeId) {
     return _storePath + "/" + storeId;
+  }
+
+  @Override
+  public void close() throws IOException {
+    try {
+      _zooKeeperClient.close();
+    } catch (InterruptedException e) {
+      throw new IOException(e);
+    }
   }
 
 }

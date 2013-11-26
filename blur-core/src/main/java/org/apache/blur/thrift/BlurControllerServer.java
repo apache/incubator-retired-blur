@@ -86,6 +86,7 @@ import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.thrift.generated.User;
 import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Trace.TraceId;
 import org.apache.blur.trace.Tracer;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurExecutorCompletionService;
@@ -490,9 +491,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           public Boolean call() throws Exception {
             Tracer trace = Trace.trace("remote call - thrift", Trace.param("node", getNode(client)));
             try {
-              String traceId = Trace.getTraceId();
+              TraceId traceId = Trace.getTraceId();
               if (traceId != null) {
-                client.startTrace(traceId);
+                client.startTrace(traceId.getRootId(), traceId.getRequestId());
               }
               List<FetchResult> fetchRowBatch = client.fetchRowBatch(table, list);
               for (int i = 0; i < list.size(); i++) {
@@ -1223,9 +1224,10 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public void startTrace(String traceId) throws TException {
+  public void startTrace(String rootId, String requestId) throws TException {
     ControllerServerContext context = ControllerServerContext.getControllerServerContext();
-    context.setTraceId(traceId);
+    context.setTraceRootId(rootId);
+    context.setTraceRequestId(requestId);
   }
 
 }

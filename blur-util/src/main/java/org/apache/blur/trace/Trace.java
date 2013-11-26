@@ -29,6 +29,30 @@ import java.util.concurrent.TimeoutException;
 
 public class Trace {
 
+  private static final String REQUEST_ID = "requestId";
+
+  public static class TraceId {
+    final String _rootId;
+    final String _requestId;
+
+    public TraceId(String rootId, String requestId) {
+      _rootId = rootId;
+      _requestId = requestId;
+    }
+
+    public String getRootId() {
+      return _rootId;
+    }
+
+    public String getRequestId() {
+      return _requestId;
+    }
+
+    public String toJson() {
+      return "{\"rootId\":\"" + _rootId + "\",\"requestId\":\"" + _requestId + "\"}";
+    }
+  }
+
   public static class Parameter {
 
     final String _name;
@@ -65,8 +89,13 @@ public class Trace {
     _nodeName = nodeName;
   }
 
-  public static void setupTrace(String id) {
-    TraceCollector collector = new TraceCollector(_nodeName, id);
+  public static void setupTrace(String rootId) {
+    setupTrace(rootId, rootId);
+  }
+
+  public static void setupTrace(String rootId, String requestId) {
+    TraceId traceId = new TraceId(rootId, requestId);
+    TraceCollector collector = new TraceCollector(_nodeName, traceId);
     _tracer.set(collector);
   }
 
@@ -80,8 +109,8 @@ public class Trace {
     return new Parameter(name.toString(), value.toString());
   }
 
-  private static void setupTraceOnNewThread(TraceCollector parentCollector) {
-    _tracer.set(parentCollector);
+  private static void setupTraceOnNewThread(TraceCollector parentCollector, String requestId) {
+    _tracer.set(new TraceCollector(parentCollector, requestId));
   }
 
   private static void tearDownTraceOnNewThread() {
@@ -119,14 +148,14 @@ public class Trace {
     if (tc == null) {
       return runnable;
     }
-    final long threadId = _random.get().nextLong();
-    Tracer trace = Trace.trace("new runnable", Trace.param("thread_trace", threadId));
+    final long requestId = _random.get().nextLong();
+    Tracer trace = Trace.trace("new runnable", Trace.param(REQUEST_ID, requestId));
     try {
       return new Runnable() {
         @Override
         public void run() {
-          setupTraceOnNewThread(tc);
-          Tracer t = Trace.trace("executing runnable", Trace.param("thread_trace", threadId));
+          setupTraceOnNewThread(tc, Long.toString(requestId));
+          Tracer t = Trace.trace("executing runnable", Trace.param(REQUEST_ID, requestId));
           try {
             runnable.run();
           } finally {
@@ -145,14 +174,14 @@ public class Trace {
     if (tc == null) {
       return callable;
     }
-    final long threadId = _random.get().nextLong();
-    Tracer trace = Trace.trace("new callable", Trace.param("thread_trace", threadId));
+    final long requestId = _random.get().nextLong();
+    Tracer trace = Trace.trace("new callable", Trace.param(REQUEST_ID, requestId));
     try {
       return new Callable<V>() {
         @Override
         public V call() throws Exception {
-          setupTraceOnNewThread(tc);
-          Tracer t = Trace.trace("executing callable", Trace.param("thread_trace", threadId));
+          setupTraceOnNewThread(tc, Long.toString(requestId));
+          Tracer t = Trace.trace("executing callable", Trace.param(REQUEST_ID, requestId));
           try {
             return callable.call();
           } finally {
@@ -178,7 +207,7 @@ public class Trace {
     return list;
   }
 
-  public static String getTraceId() {
+  public static TraceId getTraceId() {
     TraceCollector collector = _tracer.get();
     if (collector == null) {
       return null;

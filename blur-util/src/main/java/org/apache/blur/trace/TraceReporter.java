@@ -16,9 +16,11 @@
  */
 package org.apache.blur.trace;
 
+import java.io.Closeable;
+
 import org.apache.blur.BlurConfiguration;
 
-public abstract class TraceReporter {
+public abstract class TraceReporter implements Closeable {
 
   protected final BlurConfiguration _configuration;
 

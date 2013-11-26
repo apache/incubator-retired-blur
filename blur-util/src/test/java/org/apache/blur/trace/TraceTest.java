@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.trace.Trace.TraceId;
 import org.junit.Test;
 
 public class TraceTest {
@@ -31,11 +32,16 @@ public class TraceTest {
     Trace.setReporter(new TraceReporter(new BlurConfiguration()) {
       @Override
       public void report(TraceCollector collector) {
-        assertEquals("test", collector.getId());
+        assertEquals("test", collector.getId().getRootId());
         assertEquals(3, collector.getTraces().size());
       }
+
+      @Override
+      public void close() throws IOException {
+        
+      }
     });
-    Trace.setupTrace("test");
+    Trace.setupTrace("test", null);
     Tracer trace = Trace.trace("1");
     long meth1;
     try {
@@ -66,20 +72,20 @@ public class TraceTest {
       @Override
       public void report(TraceCollector collector) {
         System.out.println(collector.toJson());
-        String id = collector.getId();
-        int indexOf = id.indexOf(":");
-        if (indexOf < 0) {
-          assertEquals("test", id);
-        } else {
-          assertEquals("test", id.substring(0,indexOf));
-        }
-        assertEquals(7, collector.getTraces().size());
+        TraceId id = collector.getId();
+        assertEquals("test", id.getRootId());
+        assertEquals(8, collector.getTraces().size());
         count.addAndGet(collector.getTraces().size());
+      }
+
+      @Override
+      public void close() throws IOException {
+        
       }
     });
 
-    Trace.setupTrace("test");
-    
+    Trace.setupTrace("test", "1");
+
     final Runnable runnable = new Runnable() {
       @Override
       public void run() {
@@ -105,8 +111,8 @@ public class TraceTest {
     System.out.println(meth1);
     thread.join();
     Trace.tearDownTrace();
-    
-    assertEquals(7, count.get());
+
+    assertEquals(8, count.get());
   }
 
   private static long meth1() {

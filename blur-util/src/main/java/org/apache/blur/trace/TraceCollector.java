@@ -21,9 +21,11 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.blur.trace.Trace.TraceId;
+
 public class TraceCollector {
 
-  protected final String _id;
+  protected final TraceId _id;
   protected final List<TracerImpl> _traces;
   protected final AtomicLong _traceCounter;
   protected final long _now = System.nanoTime();
@@ -31,13 +33,22 @@ public class TraceCollector {
   protected final String _threadName;
   protected final String _nodeName;
 
-  public TraceCollector(String nodeName, String id) {
+  public TraceCollector(String nodeName, TraceId id) {
     _nodeName = nodeName;
     _id = id;
     _traces = new CopyOnWriteArrayList<TracerImpl>();
     _traceCounter = new AtomicLong();
     _pid = ManagementFactory.getRuntimeMXBean().getName();
     _threadName = Thread.currentThread().getName();
+  }
+
+  public TraceCollector(TraceCollector parentCollector, String requestId) {
+    _nodeName = parentCollector._nodeName;
+    _id = new TraceId(parentCollector._id.getRootId(), requestId);
+    _traces = parentCollector._traces;
+    _traceCounter = parentCollector._traceCounter;
+    _pid = parentCollector._pid;
+    _threadName = parentCollector._threadName;
   }
 
   public void add(TracerImpl tracer) {
@@ -54,12 +65,12 @@ public class TraceCollector {
     for (TracerImpl t : _traces) {
       builder.append("    ").append(t.toJson()).append(",\n");
     }
-    return "{\n  \"id\":\"" + _id + "\",\n  \"nodeName\":\"" + (_nodeName == null ? "unknown" : _nodeName)
+    return "{\n  \"id\":" + _id.toJson() + ",\n  \"nodeName\":\"" + (_nodeName == null ? "unknown" : _nodeName)
         + "\",\n  \"pid\":\"" + _pid + "\",\n  \"thread\":\"" + _threadName + "\",\n  \"created\":" + _now
         + ",\n  \"traces\":[\n" + builder.toString() + "  ]\n}";
   }
 
-  public String getId() {
+  public TraceId getId() {
     return _id;
   }
 

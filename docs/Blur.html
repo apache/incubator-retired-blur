@@ -891,10 +891,13 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>metrics</td><td>the names of the metrics to return.  If null all are returned.
 </td></tr>
 </table></p></section><section><div class="page-header"><h4 id="Fn_Blur_startTrace">Function: Blur.startTrace</h4></div><p class="lead">
-<pre><code>void</code> startTrace(<code>string</code> traceId)
+<pre><code>void</code> startTrace(<code>string</code> traceId,
+<code>string</code> requestId)
 </pre>Starts a trace with the given trace id.
 <br/><br/><h4 id="Parameters_Blur_startTrace">Parameters</h4>
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>traceId</td><td>the trace id.
+</td></tr>
+<tr><td>requestId</td><td>the request id, used to connected remote calls together.  Client can pass null.
 </td></tr>
 </table></p></section>
 </div>

@@ -16,7 +16,7 @@
  */
 package org.apache.blur.trace;
 
-import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
+import static org.apache.blur.utils.BlurConstants.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,17 +40,24 @@ public class ZooKeeperDumpContents {
       }
     });
 
-    String parentPath = args[0];
-    String id = args[1];
+    String parentPath = configuration.get(BLUR_ZOOKEEPER_TRACE_PATH);
+    String id = args[0];
 
     String path = parentPath + "/" + id;
     List<String> children = zooKeeper.getChildren(path, false);
+    System.out.println("[");
+    boolean first = true;
     for (String c : children) {
+      if (!first) {
+        System.out.println(",");
+      }
       Stat stat = zooKeeper.exists(path + "/" + c, false);
       byte[] data = zooKeeper.getData(path + "/" + c, false, stat);
       String string = new String(data);
       System.out.println(string);
+      first = false;
     }
+    System.out.println("]");
     zooKeeper.close();
   }
 

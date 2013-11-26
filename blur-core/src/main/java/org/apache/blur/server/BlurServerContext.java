@@ -32,7 +32,8 @@ public class BlurServerContext implements ServerContext {
   private final SocketAddress _remoteSocketAddress;
   private final String _localConnectionString;
   private final String _remoteConnectionString;
-  private String _traceId;
+  private String _traceRootId;
+  private String _traceRequestId;
 
   public BlurServerContext(SocketAddress localSocketAddress, SocketAddress remoteSocketAddress) {
     _localSocketAddress = localSocketAddress;
@@ -50,12 +51,20 @@ public class BlurServerContext implements ServerContext {
     return _user;
   }
 
-  public String getTraceId() {
-    return _traceId;
+  public String getTraceRootId() {
+    return _traceRootId;
   }
 
-  public void setTraceId(String traceId) {
-    _traceId = traceId;
+  public String getTraceRequestId() {
+    return _traceRequestId;
+  }
+
+  public void setTraceRootId(String traceRootId) {
+    _traceRootId = traceRootId;
+  }
+
+  public void setTraceRequestId(String traceRequestId) {
+    _traceRequestId = traceRequestId;
   }
 
   public SocketAddress getRocalSocketAddress() {
@@ -68,6 +77,11 @@ public class BlurServerContext implements ServerContext {
 
   public String getConnectionString(String sep) {
     return _localConnectionString + sep + _remoteConnectionString;
+  }
+
+  public void resetTraceIds() {
+    _traceRootId = null;
+    _traceRequestId = null;
   }
 
 }

@@ -40,15 +40,16 @@ import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.thrift.generated.User;
 
 public class FilteredBlurServer implements Iface {
-  
+
   protected final Iface _iface;
-  public void startTrace(String traceId) throws TException {
-    _iface.startTrace(traceId);
+
+  public void startTrace(String rootId, String requestId) throws TException {
+    _iface.startTrace(rootId, requestId);
   }
 
   protected final boolean _shard;
   protected final BlurConfiguration _configuration;
-  
+
   public FilteredBlurServer(BlurConfiguration configuration, Iface iface, boolean shard) {
     _iface = iface;
     _shard = shard;
@@ -58,7 +59,7 @@ public class FilteredBlurServer implements Iface {
   public void setUser(User user) throws TException {
     _iface.setUser(user);
   }
-  
+
   public final BlurServerContext getServerContext() {
     if (_shard) {
       return ShardServerContext.getShardServerContext();

@@ -19,6 +19,7 @@ package org.apache.blur.trace;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -49,6 +50,12 @@ public class Trace {
   private static ThreadLocal<TraceCollector> _tracer = new ThreadLocal<TraceCollector>();
   private static TraceReporter _reporter;
   private static String _nodeName;
+  private static ThreadLocal<Random> _random = new ThreadLocal<Random>() {
+    @Override
+    protected Random initialValue() {
+      return new Random();
+    }
+  };
 
   public static String getNodeName() {
     return _nodeName;
@@ -62,7 +69,7 @@ public class Trace {
     TraceCollector collector = new TraceCollector(_nodeName, id);
     _tracer.set(collector);
   }
-  
+
   public static Parameter param(Object name, Object value) {
     if (name == null) {
       name = "null";
@@ -112,15 +119,18 @@ public class Trace {
     if (tc == null) {
       return runnable;
     }
-    Tracer trace = Trace.trace("new runnable");
+    final long threadId = _random.get().nextLong();
+    Tracer trace = Trace.trace("new runnable", Trace.param("thread_trace", threadId));
     try {
       return new Runnable() {
         @Override
         public void run() {
           setupTraceOnNewThread(tc);
+          Tracer t = Trace.trace("executing runnable", Trace.param("thread_trace", threadId));
           try {
             runnable.run();
           } finally {
+            t.done();
             tearDownTraceOnNewThread();
           }
         }
@@ -135,15 +145,18 @@ public class Trace {
     if (tc == null) {
       return callable;
     }
-    Tracer trace = Trace.trace("new callable");
+    final long threadId = _random.get().nextLong();
+    Tracer trace = Trace.trace("new callable", Trace.param("thread_trace", threadId));
     try {
       return new Callable<V>() {
         @Override
         public V call() throws Exception {
           setupTraceOnNewThread(tc);
+          Tracer t = Trace.trace("executing callable", Trace.param("thread_trace", threadId));
           try {
             return callable.call();
           } finally {
+            t.done();
             tearDownTraceOnNewThread();
           }
         }

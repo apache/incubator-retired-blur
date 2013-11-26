@@ -54,8 +54,8 @@ public class TraceCollector {
     for (TracerImpl t : _traces) {
       builder.append("    ").append(t.toJson()).append(",\n");
     }
-    return "{\n  \"id\":\"" + _id + "\"\n  \"nodeName\":\"" + (_nodeName == null ? "unknown" : _nodeName)
-        + "\"\n  \"pid\":\"" + _pid + "\"\n  \"thread\":\"" + _threadName + "\"\n  \"created\":" + _now
+    return "{\n  \"id\":\"" + _id + "\",\n  \"nodeName\":\"" + (_nodeName == null ? "unknown" : _nodeName)
+        + "\",\n  \"pid\":\"" + _pid + "\",\n  \"thread\":\"" + _threadName + "\",\n  \"created\":" + _now
         + ",\n  \"traces\":[\n" + builder.toString() + "  ]\n}";
   }
 

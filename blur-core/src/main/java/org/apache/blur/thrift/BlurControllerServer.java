@@ -18,6 +18,8 @@ package org.apache.blur.thrift;
  */
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -59,6 +61,10 @@ import org.apache.blur.manager.stats.MergerTableStats;
 import org.apache.blur.manager.status.MergerQueryStatusSingle;
 import org.apache.blur.server.ControllerServerContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TFramedTransport;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TSocket;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransport;
 import org.apache.blur.thrift.commands.BlurCommand;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -479,16 +485,37 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         futures.add(executor.submit(new Callable<Boolean>() {
           @Override
           public Boolean call() throws Exception {
-            String traceId = Trace.getTraceId();
-            if (traceId != null) {
-              client.startTrace(traceId);
+            Tracer trace = Trace.trace("remote call - thrift", Trace.param("node", getNode(client)));
+            try {
+              String traceId = Trace.getTraceId();
+              if (traceId != null) {
+                client.startTrace(traceId);
+              }
+              List<FetchResult> fetchRowBatch = client.fetchRowBatch(table, list);
+              for (int i = 0; i < list.size(); i++) {
+                int index = indexMap.get(list.get(i));
+                fetchResults.set(index, fetchRowBatch.get(i));
+              }
+              return Boolean.TRUE;
+            } finally {
+              trace.done();
             }
-            List<FetchResult> fetchRowBatch = client.fetchRowBatch(table, list);
-            for (int i = 0; i < list.size(); i++) {
-              int index = indexMap.get(list.get(i));
-              fetchResults.set(index, fetchRowBatch.get(i));
+          }
+
+          private String getNode(Client client) {
+            TProtocol inputProtocol = client.getInputProtocol();
+            TTransport transport = inputProtocol.getTransport();
+            if (transport instanceof TFramedTransport) {
+              TFramedTransport framedTransport = (TFramedTransport) transport;
+              transport = framedTransport.getTransport();
             }
-            return Boolean.TRUE;
+            if (transport instanceof TSocket) {
+              TSocket tsocket = (TSocket) transport;
+              Socket socket = tsocket.getSocket();
+              SocketAddress remoteSocketAddress = socket.getRemoteSocketAddress();
+              return remoteSocketAddress.toString();
+            }
+            return "unknown";
           }
         }));
       }

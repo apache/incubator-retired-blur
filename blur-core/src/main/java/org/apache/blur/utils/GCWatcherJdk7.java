@@ -77,7 +77,6 @@ public class GCWatcherJdk7 {
           long totalTime = endTime - startTime;
           long totalSize = usedBefore - usedAfter;
           if (totalTime >= _1_SECOND) {
-
             LOG.info("GC event totalTime spent in GC [{0} ms] collected [{1} bytes]", totalTime, totalSize);
           }
           _gcTimes.update(totalTime, TimeUnit.MILLISECONDS);

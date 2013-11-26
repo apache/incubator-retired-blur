@@ -16,6 +16,8 @@ package org.apache.blur.utils;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.metrics.MetricsConstants.*;
+
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -31,6 +33,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.MetricName;
 
 public class GCWatcherJdk6 extends TimerTask {
 
@@ -49,6 +54,7 @@ public class GCWatcherJdk6 extends TimerTask {
   private final List<GCAction> _actions = new ArrayList<GCAction>();
   private final MemoryMXBean _memoryMXBean;
   private static GCWatcherJdk6 _instance;
+  private final com.yammer.metrics.core.Timer _gcTimes;
 
   private GCWatcherJdk6(double ratio) {
     _memoryMXBean = ManagementFactory.getMemoryMXBean();
@@ -76,6 +82,8 @@ public class GCWatcherJdk6 extends TimerTask {
       _timer = null;
       LOG.warn("GCWatcherJdk6 was NOT setup.");
     }
+    MetricName gcTimesName = new MetricName(ORG_APACHE_BLUR, JVM, GC_TIMES);
+    _gcTimes = Metrics.newTimer(gcTimesName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
   }
 
   public static void registerAction(GCAction action) {
@@ -122,6 +130,7 @@ public class GCWatcherJdk6 extends TimerTask {
         long usedAfter = after.getUsed();
         
         long totalTime = endTime - startTime;
+        _gcTimes.update(totalTime, TimeUnit.MILLISECONDS);
         LOG.info("totalTime spent in GC [{0} ms] collected [{1} bytes]", totalTime, (usedBefore - usedAfter));
         MemoryUsage heapMemoryUsage = _memoryMXBean.getHeapMemoryUsage();
         long max = heapMemoryUsage.getMax();

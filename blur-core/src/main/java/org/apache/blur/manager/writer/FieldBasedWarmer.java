@@ -34,26 +34,28 @@ public class FieldBasedWarmer extends IndexReaderWarmer {
 
   private static final Log LOG = LogFactory.getLog(FieldBasedWarmer.class);
 
-  private ShardContext shardContext;
-  private AtomicBoolean isClosed;
+  private final ShardContext _shardContext;
+  private final AtomicBoolean _isClosed;
+  private final AtomicBoolean _stop;
 
-  public FieldBasedWarmer(ShardContext shardContext, AtomicBoolean isClosed) {
-    this.isClosed = isClosed;
-    this.shardContext = shardContext;
+  public FieldBasedWarmer(ShardContext shardContext, AtomicBoolean isClosed, AtomicBoolean stop) {
+    _isClosed = isClosed;
+    _stop = stop;
+    _shardContext = shardContext;
   }
 
   @Override
   public void warm(AtomicReader reader) throws IOException {
-    List<String> preCacheCols = shardContext.getTableContext().getDescriptor().getPreCacheCols();
+    List<String> preCacheCols = _shardContext.getTableContext().getDescriptor().getPreCacheCols();
     int maxSampleSize = 1000;
-    IndexWarmup indexWarmup = new IndexWarmup(isClosed, maxSampleSize);
-    String context = shardContext.getTableContext().getTable() + "/" + shardContext.getShard();
+    IndexWarmup indexWarmup = new IndexWarmup(_isClosed, _stop, maxSampleSize);
+    String context = _shardContext.getTableContext().getTable() + "/" + _shardContext.getShard();
     Map<String, List<IndexTracerResult>> sampleIndex = indexWarmup.sampleIndex(reader, context);
     if (preCacheCols != null) {
-      warm(reader, preCacheCols, indexWarmup, sampleIndex, context, isClosed);
+      warm(reader, preCacheCols, indexWarmup, sampleIndex, context, _isClosed);
     } else {
       Fields fields = reader.fields();
-      warm(reader, fields, indexWarmup, sampleIndex, context, isClosed);
+      warm(reader, fields, indexWarmup, sampleIndex, context, _isClosed);
     }
   }
 
@@ -64,7 +66,7 @@ public class FieldBasedWarmer extends IndexReaderWarmer {
         indexWarmup.warm(reader, sampleIndex, field, context);
       } catch (IOException e) {
         LOG.error("Context [{0}] unknown error trying to warmup the [{1}] field", e, context, field);
-        LOG.error("Current sampleIndex [{0}]",sampleIndex);
+        LOG.error("Current sampleIndex [{0}]", sampleIndex);
       }
       if (isClosed.get()) {
         LOG.info("Context [{0}] index closed", context);

@@ -66,15 +66,17 @@ public class IndexWarmup {
   private final AtomicBoolean _isClosed;
   private final int _maxSampleSize;
   private final long _maxBytesPerSec;
+  private final AtomicBoolean _stop;
 
-  public IndexWarmup(AtomicBoolean isClosed, int maxSampleSize, long maxBytesPerSec) {
+  public IndexWarmup(AtomicBoolean isClosed, AtomicBoolean stop, int maxSampleSize, long maxBytesPerSec) {
     _isClosed = isClosed;
+    _stop = stop;
     _maxSampleSize = maxSampleSize;
     _maxBytesPerSec = maxBytesPerSec;
   }
 
-  public IndexWarmup(AtomicBoolean isClosed, int maxSampleSize) {
-    this(isClosed, maxSampleSize, DEFAULT_THROTTLE);
+  public IndexWarmup(AtomicBoolean isClosed, AtomicBoolean stop, int maxSampleSize) {
+    this(isClosed, stop, maxSampleSize, DEFAULT_THROTTLE);
   }
 
   private static ThreadLocal<Boolean> runTrace = new ThreadLocal<Boolean>() {
@@ -137,7 +139,7 @@ public class IndexWarmup {
     if (endingPosition == Long.MAX_VALUE) {
       endingPosition = dir.fileLength(fileName) - 1;
     }
-    if (_isClosed.get()) {
+    if (_isClosed.get() || _stop.get()) {
       LOG.info("Context [{0}] index closed", context);
       return;
     }
@@ -187,7 +189,7 @@ public class IndexWarmup {
       return getDirectory((AtomicReader) reader, segmentName, context);
     }
     for (IndexReaderContext ctext : reader.getContext().leaves()) {
-      if (_isClosed.get()) {
+      if (_isClosed.get() || _stop.get()) {
         LOG.info("Context [{0}] index closed", context);
         return null;
       }
@@ -238,7 +240,7 @@ public class IndexWarmup {
   public Map<String, List<IndexTracerResult>> sampleIndex(IndexReader reader, String context) throws IOException {
     Map<String, List<IndexTracerResult>> results = new HashMap<String, List<IndexTracerResult>>();
     for (IndexReaderContext ctext : reader.getContext().leaves()) {
-      if (_isClosed.get()) {
+      if (_isClosed.get() || _stop.get()) {
         LOG.info("Context [{0}] index closed", context);
         return null;
       }
@@ -278,7 +280,7 @@ public class IndexWarmup {
           IndexTracerResult result = tracer.runTrace(terms);
           segmentTraces.add(result);
         }
-        if (_isClosed.get()) {
+        if (_isClosed.get() || _stop.get()) {
           LOG.info("Context [{0}] index closed", context);
           return null;
         }

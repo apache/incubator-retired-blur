@@ -109,8 +109,11 @@ public class Trace {
     return new Parameter(name.toString(), value.toString());
   }
 
-  private static void setupTraceOnNewThread(TraceCollector parentCollector, String requestId) {
-    _tracer.set(new TraceCollector(parentCollector, requestId));
+  private static void setupTraceOnNewThread(TraceCollector parentCollector, String requestId, int traceScope) {
+    TraceCollector traceCollector = new TraceCollector(parentCollector, requestId);
+    TracerImpl tracer = new TracerImpl(traceCollector, parentCollector.getNextId(), traceScope);
+    parentCollector.add(tracer);
+    _tracer.set(traceCollector);
   }
 
   private static void tearDownTraceOnNewThread() {
@@ -130,7 +133,7 @@ public class Trace {
     if (collector == null) {
       return DO_NOTHING;
     }
-    TracerImpl tracer = new TracerImpl(desc, parameters, collector.getNextId());
+    TracerImpl tracer = new TracerImpl(desc, parameters, collector.getNextId(), collector.getScope());
     collector.add(tracer);
     return tracer;
   }
@@ -150,11 +153,13 @@ public class Trace {
     }
     final long requestId = _random.get().nextLong();
     Tracer trace = Trace.trace("new runnable", Trace.param(REQUEST_ID, requestId));
+    TracerImpl impl = (TracerImpl) trace;
+    final int traceScope = impl._traceScope;
     try {
       return new Runnable() {
         @Override
         public void run() {
-          setupTraceOnNewThread(tc, Long.toString(requestId));
+          setupTraceOnNewThread(tc, Long.toString(requestId), traceScope);
           Tracer t = Trace.trace("executing runnable", Trace.param(REQUEST_ID, requestId));
           try {
             runnable.run();
@@ -176,11 +181,13 @@ public class Trace {
     }
     final long requestId = _random.get().nextLong();
     Tracer trace = Trace.trace("new callable", Trace.param(REQUEST_ID, requestId));
+    TracerImpl impl = (TracerImpl) trace;
+    final int traceScope = impl._traceScope;
     try {
       return new Callable<V>() {
         @Override
         public V call() throws Exception {
-          setupTraceOnNewThread(tc, Long.toString(requestId));
+          setupTraceOnNewThread(tc, Long.toString(requestId), traceScope);
           Tracer t = Trace.trace("executing callable", Trace.param(REQUEST_ID, requestId));
           try {
             return callable.call();

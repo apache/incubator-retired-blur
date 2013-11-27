@@ -107,7 +107,8 @@ public class BlurNRTIndex extends BlurIndex {
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
     conf.setCodec(new Blur021Codec());
     conf.setSimilarity(_tableContext.getSimilarity());
-    conf.setMergedSegmentWarmer(new FieldBasedWarmer(shardContext, _isClosed));
+    AtomicBoolean stop = new AtomicBoolean();
+    conf.setMergedSegmentWarmer(new FieldBasedWarmer(shardContext, stop, _isClosed));
 
     SnapshotDeletionPolicy sdp;
     if (snapshotsDirectoryExists()) {
@@ -137,7 +138,8 @@ public class BlurNRTIndex extends BlurIndex {
     _searcherFactory = new SearcherFactory() {
       @Override
       public IndexSearcher newSearcher(IndexReader reader) throws IOException {
-//        return new IndexSearcherClosableNRT(reader, searchExecutor, _nrtManagerRef, _directory);
+        // return new IndexSearcherClosableNRT(reader, searchExecutor,
+        // _nrtManagerRef, _directory);
         return new IndexSearcherClosableNRT(reader, null, _nrtManagerRef, _directory);
       }
     };

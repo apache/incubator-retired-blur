@@ -18,6 +18,8 @@ package org.apache.blur.manager.indexserver;
  */
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +34,8 @@ import org.apache.blur.lucene.warmup.IndexTracerResult;
 import org.apache.blur.lucene.warmup.IndexWarmup;
 import org.apache.blur.manager.indexserver.DistributedIndexServer.ReleaseReader;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.utils.GCAction;
+import org.apache.blur.utils.GCWatcher;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.FilterDirectoryReader;
@@ -41,22 +45,38 @@ import org.apache.lucene.index.SegmentReader;
 
 public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
 
+  private static final Log LOG = LogFactory.getLog(DefaultBlurIndexWarmup.class);
+
+  private Set<AtomicBoolean> _stops = Collections.synchronizedSet(new HashSet<AtomicBoolean>());
+
   public DefaultBlurIndexWarmup(long warmupBandwidthThrottleBytesPerSec) {
     super(warmupBandwidthThrottleBytesPerSec);
+    GCWatcher.registerAction(new GCAction() {
+      @Override
+      public void takeAction() throws Exception {
+        synchronized (_stops) {
+          for (AtomicBoolean stop : _stops) {
+            stop.set(true);
+          }
+        }
+      }
+    });
   }
-
-  private static final Log LOG = LogFactory.getLog(DefaultBlurIndexWarmup.class);
 
   @Override
   public void warmBlurIndex(final TableDescriptor table, final String shard, IndexReader reader,
       AtomicBoolean isClosed, ReleaseReader releaseReader, AtomicLong pauseWarmup) throws IOException {
     LOG.info("Running warmup for reader [{0}]", reader);
+    AtomicBoolean stop = new AtomicBoolean();
     try {
       if (reader instanceof FilterDirectoryReader) {
         reader = getBase((FilterDirectoryReader) reader);
       }
       int maxSampleSize = 1000;
-      IndexWarmup indexWarmup = new IndexWarmup(isClosed, maxSampleSize, _warmupBandwidthThrottleBytesPerSec);
+      synchronized (_stops) {
+        _stops.add(stop);
+      }
+      IndexWarmup indexWarmup = new IndexWarmup(isClosed, stop, maxSampleSize, _warmupBandwidthThrottleBytesPerSec);
       String context = table.getName() + "/" + shard;
       Map<String, List<IndexTracerResult>> sampleIndex = indexWarmup.sampleIndex(reader, context);
       List<String> preCacheCols = table.getPreCacheCols();
@@ -66,6 +86,9 @@ public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
         warm(reader, getFields(reader), indexWarmup, sampleIndex, context, isClosed, pauseWarmup);
       }
     } finally {
+      synchronized (_stops) {
+        _stops.remove(stop);
+      }
       releaseReader.release();
     }
   }

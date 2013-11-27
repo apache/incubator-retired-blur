@@ -89,8 +89,8 @@ public class SafeMode extends ZooKeeperLockManager {
     long startingWaitTime = System.currentTimeMillis();
     List<String> prev = null;
     while (true) {
-      synchronized (lock) {
-        List<String> children = new ArrayList<String>(zooKeeper.getChildren(nodePath, watcher));
+      synchronized (_lock) {
+        List<String> children = new ArrayList<String>(zooKeeper.getChildren(nodePath, _watcher));
         Collections.sort(children);
         if (children.equals(prev)) {
           LOG.info("Clustered has settled.");
@@ -99,7 +99,7 @@ public class SafeMode extends ZooKeeperLockManager {
           prev = children;
           LOG.info("Waiting for cluster to settle, current size [" + children.size() + "] total time waited so far ["
               + (System.currentTimeMillis() - startingWaitTime) + " ms] waiting another [" + waitTime + " ms].");
-          lock.wait(waitTime);
+          _lock.wait(waitTime);
         }
       }
     }

@@ -78,7 +78,8 @@ public class ZooKeeperClient extends ZooKeeper {
       sessionTimeout = internalSessionTimeout;
     }
     while (true) {
-      Tracer trace = Trace.trace("remote call - zookeeper", Trace.param("method", executor._name));
+      Tracer trace = Trace.trace("remote call - zookeeper", Trace.param("method", executor._name),
+          Trace.param("toString", executor.toString()));
       try {
         return executor.execute();
       } catch (KeeperException e) {
@@ -216,6 +217,11 @@ public class ZooKeeperClient extends ZooKeeper {
         LOG.debug("ZK Call - getChildren [{0}] [{1}]", path, watcher);
         return ZooKeeperClient.super.getChildren(path, watcher);
       }
+
+      @Override
+      public String toString() {
+        return "path=" + path + " watcher=" + watcher;
+      }
     });
   }
 
@@ -226,6 +232,11 @@ public class ZooKeeperClient extends ZooKeeper {
       List<String> execute() throws KeeperException, InterruptedException {
         LOG.debug("ZK Call - getChildren [{0}] [{1}]", path, watch);
         return ZooKeeperClient.super.getChildren(path, watch);
+      }
+
+      @Override
+      public String toString() {
+        return "path=" + path + " watch=" + watch;
       }
     });
   }

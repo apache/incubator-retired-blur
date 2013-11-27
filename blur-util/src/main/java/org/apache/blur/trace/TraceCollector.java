@@ -19,6 +19,7 @@ package org.apache.blur.trace;
 import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.trace.Trace.TraceId;
@@ -26,8 +27,9 @@ import org.apache.blur.trace.Trace.TraceId;
 public class TraceCollector {
 
   protected final TraceId _id;
-  protected final List<TracerImpl> _traces;
-  protected final AtomicLong _traceCounter;
+  protected final List<TracerImpl> _traces = new CopyOnWriteArrayList<TracerImpl>();
+  protected final AtomicLong _traceCounter = new AtomicLong();
+  protected final AtomicInteger _scope = new AtomicInteger();
   protected final long _now = System.nanoTime();
   protected final String _pid;
   protected final String _threadName;
@@ -36,8 +38,6 @@ public class TraceCollector {
   public TraceCollector(String nodeName, TraceId id) {
     _nodeName = nodeName;
     _id = id;
-    _traces = new CopyOnWriteArrayList<TracerImpl>();
-    _traceCounter = new AtomicLong();
     _pid = ManagementFactory.getRuntimeMXBean().getName();
     _threadName = Thread.currentThread().getName();
   }
@@ -45,8 +45,6 @@ public class TraceCollector {
   public TraceCollector(TraceCollector parentCollector, String requestId) {
     _nodeName = parentCollector._nodeName;
     _id = new TraceId(parentCollector._id.getRootId(), requestId);
-    _traces = parentCollector._traces;
-    _traceCounter = parentCollector._traceCounter;
     _pid = parentCollector._pid;
     _threadName = parentCollector._threadName;
   }
@@ -80,5 +78,9 @@ public class TraceCollector {
 
   public long getNextId() {
     return _traceCounter.incrementAndGet();
+  }
+
+  public AtomicInteger getScope() {
+    return _scope;
   }
 }

@@ -16,6 +16,8 @@
  */
 package org.apache.blur.trace;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.blur.trace.Trace.Parameter;
 
 public class TracerImpl implements Tracer {
@@ -25,18 +27,37 @@ public class TracerImpl implements Tracer {
   protected long _ended;
   protected final String _threadName;
   protected final long _id;
-  protected Parameter[] _parameters;
+  protected final Parameter[] _parameters;
+  protected final TraceCollector _traceCollector;
+  protected final AtomicInteger _scope;
+  protected final int _traceScope;
 
-  public TracerImpl(String name, Parameter[] parameters, long id) {
+  public TracerImpl(String name, Parameter[] parameters, long id, AtomicInteger scope) {
     _name = name;
     _start = System.nanoTime();
     _threadName = Thread.currentThread().getName();
     _id = id;
     _parameters = parameters;
+    _traceCollector = null;
+    _scope = scope;
+    _traceScope = scope.incrementAndGet();
+  }
+
+  public TracerImpl(TraceCollector traceCollector, long id, int traceScope) {
+    _name = "new thread collector";
+    _start = System.nanoTime();
+    _ended = _start;
+    _threadName = Thread.currentThread().getName();
+    _id = id;
+    _parameters = new Parameter[] { new Parameter("requestId", Long.toString(id)) };
+    _traceCollector = traceCollector;
+    _scope = traceCollector.getScope();
+    _traceScope = traceScope;
   }
 
   @Override
   public void done() {
+    _scope.decrementAndGet();
     _ended = System.nanoTime();
   }
 
@@ -63,14 +84,25 @@ public class TracerImpl implements Tracer {
   }
 
   public String toJson() {
-    if (_parameters == null) {
-      return "{\"id\":" + _id + ", \"name\":\"" + _name + "\", \"thread\":\"" + _threadName + "\", \"took\":"
-          + (_ended - _start) + ", \"started\":" + _start + ", \"ended\":" + _ended + "}";
-    } else {
-      return "{\"id\":" + _id + ", \"name\":\"" + _name + "\", \"thread\":\"" + _threadName + "\", \"took\":"
-          + (_ended - _start) + ", \"started\":" + _start + ", \"ended\":" + _ended + ", \"parameters\":["
-          + getParametersJson() + "]}";
+    StringBuilder builder = new StringBuilder();
+    builder.append("{");
+    builder.append("\"id\":").append(_id).append(",");
+    builder.append("\"scope\":").append(_traceScope).append(",");
+    builder.append("\"name\":\"").append(_name).append("\",");
+    builder.append("\"thread\":\"").append(_threadName).append("\",");
+    builder.append("\"took\":").append((_ended - _start)).append(",");
+    builder.append("\"started\":").append(_start).append(",");
+    builder.append("\"ended\":").append(_ended);
+    if (_parameters != null) {
+      builder.append(",");
+      builder.append("\"parameters\":[").append(getParametersJson()).append("]");
     }
+    if (_traceCollector != null) {
+      builder.append(",");
+      builder.append("\"collector\":\n").append(_traceCollector.toJson()).append("");
+    }
+    builder.append("}");
+    return builder.toString();
   }
 
   private String getParametersJson() {

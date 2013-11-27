@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -35,26 +36,28 @@ public class ZooKeeperLockManager {
 
   private static final Log LOG = LogFactory.getLog(ZooKeeperLockManager.class);
 
-  protected final Map<String, String> lockMap = new HashMap<String, String>();
-  protected final String lockPath;
-  protected final ZooKeeper zooKeeper;
-  protected final Object lock = new Object();
-  protected final Watcher watcher = new Watcher() {
+  protected final Map<String, String> _lockMap = new HashMap<String, String>();
+  protected final String _lockPath;
+  protected final ZooKeeper _zooKeeper;
+  protected final Object _lock = new Object();
+  protected final long _timeout;
+  protected final Watcher _watcher = new Watcher() {
     @Override
     public void process(WatchedEvent event) {
-      synchronized (lock) {
-        lock.notify();
+      synchronized (_lock) {
+        _lock.notify();
       }
     }
   };
 
   public ZooKeeperLockManager(ZooKeeper zooKeeper, String lockPath) {
-    this.zooKeeper = zooKeeper;
-    this.lockPath = lockPath;
+    _zooKeeper = zooKeeper;
+    _lockPath = lockPath;
+    _timeout = TimeUnit.SECONDS.toMillis(1);
   }
 
   public int getNumberOfLockNodesPresent(String name) throws KeeperException, InterruptedException {
-    List<String> children = zooKeeper.getChildren(lockPath, false);
+    List<String> children = _zooKeeper.getChildren(_lockPath, false);
     int count = 0;
     for (String s : children) {
       if (s.startsWith(name + "_")) {
@@ -65,33 +68,33 @@ public class ZooKeeperLockManager {
   }
 
   public void unlock(String name) throws InterruptedException, KeeperException {
-    if (!lockMap.containsKey(name)) {
+    if (!_lockMap.containsKey(name)) {
       throw new RuntimeException("Lock [" + name + "] has not be created.");
     }
-    String lockPath = lockMap.remove(name);
+    String lockPath = _lockMap.remove(name);
     LOG.debug("Unlocking on path [" + lockPath + "] with name [" + name + "]");
-    zooKeeper.delete(lockPath, -1);
+    _zooKeeper.delete(lockPath, -1);
   }
 
   public void lock(String name) throws KeeperException, InterruptedException {
-    if (lockMap.containsKey(name)) {
+    if (_lockMap.containsKey(name)) {
       throw new RuntimeException("Lock [" + name + "] already created.");
     }
-    String newPath = zooKeeper.create(lockPath + "/" + name + "_", null, Ids.OPEN_ACL_UNSAFE,
+    String newPath = _zooKeeper.create(_lockPath + "/" + name + "_", null, Ids.OPEN_ACL_UNSAFE,
         CreateMode.EPHEMERAL_SEQUENTIAL);
-    lockMap.put(name, newPath);
+    _lockMap.put(name, newPath);
     while (true) {
-      synchronized (lock) {
-        List<String> children = getOnlyThisLocksChildren(name, zooKeeper.getChildren(lockPath, watcher));
+      synchronized (_lock) {
+        List<String> children = getOnlyThisLocksChildren(name, _zooKeeper.getChildren(_lockPath, _watcher));
         Collections.sort(children);
         String firstElement = children.get(0);
-        if ((lockPath + "/" + firstElement).equals(newPath)) {
+        if ((_lockPath + "/" + firstElement).equals(newPath)) {
           // yay!, we got the lock
-          LOG.debug("Lock on path [" + lockPath + "] with name [" + name + "]");
+          LOG.debug("Lock on path [" + _lockPath + "] with name [" + name + "]");
           return;
         } else {
-          LOG.debug("Waiting for lock on path [" + lockPath + "] with name [" + name + "]");
-          lock.wait();
+          LOG.debug("Waiting for lock on path [" + _lockPath + "] with name [" + name + "]");
+          _lock.wait(_timeout);
         }
       }
     }

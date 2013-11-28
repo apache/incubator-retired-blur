@@ -42,7 +42,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.BlurConfiguration;
@@ -64,10 +66,14 @@ import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.RowMutation;
+import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.TraceCollector;
+import org.apache.blur.trace.TraceReporter;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
@@ -102,7 +108,7 @@ public class IndexManagerTest {
     tableDescriptor.setTableUri(file.toURI().toString());
     tableDescriptor.putToTableProperties("blur.shard.time.between.refreshs", Long.toString(100));
     tableDescriptor.setShardCount(1);
-    server = new LocalIndexServer(tableDescriptor);
+    server = new LocalIndexServer(tableDescriptor, true);
 
     BlurFilterCache filterCache = new DefaultBlurFilterCache(new BlurConfiguration());
     long statusCleanupTimerDelay = 1000;
@@ -264,6 +270,72 @@ public class IndexManagerTest {
     indexManager.mutate(mutation5);
     indexManager.mutate(mutation6);
     indexManager.mutate(mutation7);
+  }
+
+  @Test
+  public void testMutationReplaceLargeRow() throws Exception {
+    String rowId = "largerow";
+    indexManager.mutate(getLargeRow(rowId));
+    TraceReporter oldReporter = Trace.getReporter();
+    Trace.setReporter(new TraceReporter(new BlurConfiguration()) {
+      
+      @Override
+      public void close() throws IOException {
+        
+      }
+      
+      @Override
+      public void report(TraceCollector collector) {
+        System.out.println(collector.toJson());
+      }
+    });
+    
+    Trace.setupTrace(rowId);
+
+    Selector selector = new Selector().setRowId(rowId);
+    FetchResult fetchResult = new FetchResult();
+    long s = System.nanoTime();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    long e = System.nanoTime();
+    assertNotNull(fetchResult.rowResult.row);
+    Trace.tearDownTrace();
+    System.out.println((e - s) / 1000000.0);
+    
+    Trace.setReporter(oldReporter);
+
+  }
+
+  private RowMutation getLargeRow(String rowId) {
+    RowMutation rowMutation = new RowMutation();
+    rowMutation.setTable(TABLE);
+    rowMutation.setRowId(rowId);
+    rowMutation.setWal(true);
+    rowMutation.setWaitToBeVisible(true);
+    rowMutation.setRecordMutations(getRecordMutations(10000));
+    rowMutation.setRowMutationType(RowMutationType.REPLACE_ROW);
+    return rowMutation;
+  }
+
+  private List<RecordMutation> getRecordMutations(int count) {
+    List<RecordMutation> mutations = new ArrayList<RecordMutation>();
+    for (int i = 0; i < count; i++) {
+      mutations.add(getRecordMutation());
+    }
+    return mutations;
+  }
+
+  private RecordMutation getRecordMutation() {
+    RecordMutation mutation = new RecordMutation();
+    mutation.setRecordMutationType(REPLACE_ENTIRE_RECORD);
+    Record record = new Record();
+    record.setFamily(FAMILY);
+    record.setRecordId(UUID.randomUUID().toString());
+    Random random = new Random();
+    for (int i = 0; i < 10; i++) {
+      record.addToColumns(new Column("col" + i, "value" + random.nextLong()));
+    }
+    mutation.setRecord(record);
+    return mutation;
   }
 
   @Test

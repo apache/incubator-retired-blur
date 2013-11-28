@@ -605,7 +605,10 @@ public class IndexManager {
         } else {
           fetchResult.exists = true;
           fetchResult.deleted = false;
-          String rowId = getRowId(reader, docId);
+          String rowId = selector.getRowId();
+          if (rowId == null) {
+            rowId = getRowId(reader, docId);
+          }
           Term term = new Term(ROW_ID, rowId);
           if (returnIdsOnly) {
             int recordCount = BlurUtil.countDocuments(reader, term);

@@ -52,6 +52,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
+import org.apache.lucene.store.RAMDirectory;
 
 import com.google.common.io.Closer;
 
@@ -65,15 +66,20 @@ public class LocalIndexServer extends AbstractIndexServer {
   private final ExecutorService _searchExecutor;
   private final TableContext _tableContext;
   private final Closer _closer;
+  private final boolean _ramDir;
 
   public LocalIndexServer(TableDescriptor tableDescriptor) throws IOException {
+    this(tableDescriptor, false);
+  }
+
+  public LocalIndexServer(TableDescriptor tableDescriptor, boolean ramDir) throws IOException {
     _closer = Closer.create();
     _tableContext = TableContext.create(tableDescriptor);
     _mergeScheduler = _closer.register(new SharedMergeScheduler(3));
     _gc = _closer.register(new DirectoryReferenceFileGC());
     _searchExecutor = Executors.newCachedThreadPool();
     _closer.register(new CloseableExecutorService(_searchExecutor));
-
+    _ramDir = ramDir;
     getIndexes(_tableContext.getTable());
   }
 
@@ -129,10 +135,15 @@ public class LocalIndexServer extends AbstractIndexServer {
       Map<String, BlurIndex> shards = new ConcurrentHashMap<String, BlurIndex>();
       int shardCount = _tableContext.getDescriptor().getShardCount();
       for (int i = 0; i < shardCount; i++) {
+        Directory directory;
         String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i);
-        File file = new File(tableFile, shardName);
-        file.mkdirs();
-        MMapDirectory directory = new MMapDirectory(file);
+        if (_ramDir) {
+          directory = new RAMDirectory();
+        } else {
+          File file = new File(tableFile, shardName);
+          file.mkdirs();
+          directory = new MMapDirectory(file);
+        }
         if (!DirectoryReader.indexExists(directory)) {
           new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer())).close();
         }

@@ -274,33 +274,47 @@ public class IndexManagerTest {
 
   @Test
   public void testMutationReplaceLargeRow() throws Exception {
-    String rowId = "largerow";
+    final String rowId = "largerow";
     indexManager.mutate(getLargeRow(rowId));
     TraceReporter oldReporter = Trace.getReporter();
     Trace.setReporter(new TraceReporter(new BlurConfiguration()) {
-      
+
       @Override
       public void close() throws IOException {
-        
+
       }
-      
+
       @Override
       public void report(TraceCollector collector) {
         System.out.println(collector.toJson());
       }
     });
-    
+
     Trace.setupTrace(rowId);
 
-    Selector selector = new Selector().setRowId(rowId);
-    FetchResult fetchResult = new FetchResult();
-    long s = System.nanoTime();
-    indexManager.fetchRow(TABLE, selector, fetchResult);
-    long e = System.nanoTime();
-    assertNotNull(fetchResult.rowResult.row);
-    Trace.tearDownTrace();
-    System.out.println((e - s) / 1000000.0);
-    
+    for (int i = 0; i < 1000; i++) {
+      Thread thread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+          Selector selector = new Selector().setRowId(rowId);
+          FetchResult fetchResult = new FetchResult();
+          long s = System.nanoTime();
+          try {
+            indexManager.fetchRow(TABLE, selector, fetchResult);
+          } catch (BlurException e1) {
+            e1.printStackTrace();
+          }
+          long e = System.nanoTime();
+          assertNotNull(fetchResult.rowResult.row);
+          Trace.tearDownTrace();
+          System.out.println((e - s) / 1000000.0);
+        }
+      });
+
+      thread.start();
+      thread.join();
+    }
+
     Trace.setReporter(oldReporter);
 
   }

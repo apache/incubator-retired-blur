@@ -380,9 +380,13 @@ public class BlurUtil {
   }
 
   public static Serializable fromBytes(byte[] bs) {
+    return fromBytes(bs, 0, bs.length);
+  }
+
+  public static Serializable fromBytes(byte[] bs, int offset, int length) {
     ObjectInputStream stream = null;
     try {
-      stream = new ObjectInputStream(new ByteArrayInputStream(bs));
+      stream = new ObjectInputStream(new ByteArrayInputStream(bs, offset, length));
       return (Serializable) stream.readObject();
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -974,4 +978,5 @@ public class BlurUtil {
     };
     return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class }, handler);
   }
+
 }

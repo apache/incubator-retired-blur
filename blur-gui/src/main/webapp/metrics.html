@@ -1,0 +1,93 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<html>
+<head>
+<title>Blur - Metrics</title>
+<meta charset="utf-8">
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/bs-docs.css" rel="stylesheet" media="screen">
+</head>
+
+<script src="js/jquery-1.9.1.min.js"></script>
+<script src="js/thrift.js"></script>
+<script src="js/Blur.js"></script>
+<script src="js/Blur_types.js"></script>
+<script>
+function displayPage() {
+    var transport = new Thrift.Transport("/blur");
+    var protocol  = new Thrift.Protocol(transport);
+    var client    = new BlurClient(protocol);
+        
+    try {
+	  var metrics = client.metrics(null);
+	  var body = $("#page_body");
+	  var keys = Object.keys(metrics).sort();
+	  body.append("<h1>Shard Server</h1>");
+      body.append("<h2>Metrics</h2>");
+      var s = "<table border=1 class=\"table-bordered table-striped table-condensed\"><tr><th>Name</th><th>Value</th></tr>";
+	  for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        var metric = metrics[key];
+        s += "<tr><td>"+key+"</td><td>";
+		s += "<table border=1 class=\"table-bordered table-striped table-condensed\">" + writeValueMap(metrics,key,metric.strMap,false) + "</table>";
+		s += "<table border=1 class=\"table-bordered table-striped table-condensed\">" + writeValueMap(metrics,key,metric.longMap,false) + "</table>";
+		s += "<table border=1 class=\"table-bordered table-striped table-condensed\">" + writeValueMap(metrics,key,metric.doubleMap,true) + "</table>";
+		s += "</td></tr>";
+      }
+      s += "</table>";
+      body.append(s);
+    } catch(ouch){
+alert (ouch);
+    }
+}
+function writeValueMap(metrics,key,map,formatNumber) {
+  if (map) {
+	var s = "<tr>";
+    var keys = Object.keys(map).sort();
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+  	  s += "<th>"+key+"</th>";
+    }
+    s += "</tr><tr>";
+	for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      if (formatNumber) {
+        s += "<td>"+map[key].toPrecision(6)+"</td>";
+      } else {
+        s += "<td>"+map[key]+"</td>";
+      }
+    }
+    s += "</tr>";
+    return s;
+  }
+  return "";
+}
+$(window).bind("load", displayPage);
+</script>
+<body>
+	<table class="table-bordered table-condensed">
+		<tr><th><a href="index.html">Home</a> | 
+			<a href="config.html">Configuration</a> | 
+			<a href="metrics.html">Metrics</a> | 
+			<a href="traces.html">Traces</a></th></tr>
+		<tr><td id="page_body"></td></tr>
+	</table>
+
+</body>
+</html>

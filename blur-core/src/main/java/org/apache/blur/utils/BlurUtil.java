@@ -955,6 +955,13 @@ public class BlurUtil {
           }
         }
         BlurServerContext context = getServerContext(controller);
+        if (context == null) {
+          try {
+            return method.invoke(iface, args);
+          } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+          }
+        }
         String rootTraceId = context.getTraceRootId();
         if (rootTraceId != null) {
           Trace.setupTrace(rootTraceId, context.getTraceRequestId());

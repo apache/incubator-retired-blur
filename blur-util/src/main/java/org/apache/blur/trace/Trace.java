@@ -72,7 +72,7 @@ public class Trace {
     }
   };
   private static ThreadLocal<TraceCollector> _tracer = new ThreadLocal<TraceCollector>();
-  private static TraceReporter _reporter;
+  private static TraceStorage _storage;
   private static String _nodeName;
   private static ThreadLocal<Random> _random = new ThreadLocal<Random>() {
     @Override
@@ -111,7 +111,7 @@ public class Trace {
 
   private static void setupTraceOnNewThread(TraceCollector parentCollector, String requestId, int traceScope) {
     TraceCollector traceCollector = new TraceCollector(parentCollector, requestId);
-    TracerImpl tracer = new TracerImpl(traceCollector, parentCollector.getNextId(), traceScope);
+    TracerImpl tracer = new TracerImpl(traceCollector, parentCollector.getNextId(), traceScope, requestId);
     parentCollector.add(tracer);
     _tracer.set(traceCollector);
   }
@@ -123,8 +123,8 @@ public class Trace {
   public static void tearDownTrace() {
     TraceCollector collector = _tracer.get();
     _tracer.set(null);
-    if (_reporter != null && collector != null) {
-      _reporter.report(collector);
+    if (_storage != null && collector != null) {
+      _storage.store(collector);
     }
   }
 
@@ -138,12 +138,12 @@ public class Trace {
     return tracer;
   }
 
-  public static TraceReporter getReporter() {
-    return _reporter;
+  public static TraceStorage getStorage() {
+    return _storage;
   }
 
-  public static void setReporter(TraceReporter reporter) {
-    _reporter = reporter;
+  public static void setStorage(TraceStorage storage) {
+    _storage = storage;
   }
 
   public static Runnable getRunnable(final Runnable runnable) {

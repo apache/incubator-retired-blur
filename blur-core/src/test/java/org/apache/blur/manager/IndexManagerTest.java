@@ -71,9 +71,10 @@ import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.trace.BaseTraceStorage;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.TraceCollector;
-import org.apache.blur.trace.TraceReporter;
+import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
@@ -276,8 +277,8 @@ public class IndexManagerTest {
   public void testMutationReplaceLargeRow() throws Exception {
     final String rowId = "largerow";
     indexManager.mutate(getLargeRow(rowId));
-    TraceReporter oldReporter = Trace.getReporter();
-    Trace.setReporter(new TraceReporter(new BlurConfiguration()) {
+    TraceStorage oldReporter = Trace.getStorage();
+    Trace.setStorage(new BaseTraceStorage(new BlurConfiguration()) {
 
       @Override
       public void close() throws IOException {
@@ -285,7 +286,7 @@ public class IndexManagerTest {
       }
 
       @Override
-      public void report(TraceCollector collector) {
+      public void store(TraceCollector collector) {
         System.out.println(collector.toJson());
       }
     });
@@ -315,7 +316,7 @@ public class IndexManagerTest {
       thread.join();
     }
 
-    Trace.setReporter(oldReporter);
+    Trace.setStorage(oldReporter);
 
   }
 

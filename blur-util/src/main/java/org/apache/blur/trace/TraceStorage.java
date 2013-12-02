@@ -17,17 +17,27 @@
 package org.apache.blur.trace;
 
 import java.io.Closeable;
+import java.io.IOException;
+import java.util.List;
 
 import org.apache.blur.BlurConfiguration;
 
-public abstract class TraceReporter implements Closeable {
+public abstract class TraceStorage implements Closeable {
 
   protected final BlurConfiguration _configuration;
 
-  public TraceReporter(BlurConfiguration configuration) {
+  public TraceStorage(BlurConfiguration configuration) {
     _configuration = configuration;
   }
 
-  public abstract void report(TraceCollector collector);
+  public abstract void store(TraceCollector collector);
+  
+  public abstract List<String> getTraceIds() throws IOException;
+  
+  public abstract List<String> getRequestIds(String traceId) throws IOException;
+  
+  public abstract String getRequestContentsJson(String traceId, String requestId) throws IOException;
+  
+  public abstract void removeTrace(String traceId) throws IOException;
 
 }

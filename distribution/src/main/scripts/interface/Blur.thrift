@@ -1094,6 +1094,40 @@ service Blur {
     2:string requestId
   )
 
+  /**
+   * Get a list of all the traces.
+   * @return the list of trace ids.
+   */
+  list<string> traceList() throws (1:BlurException ex)
+
+  /**
+   * Gets a request list for the given trace.
+   * @return the list of request ids for the given trace id.
+   */
+  list<string> traceRequestList(
+    /** the trace id. */
+    1:string traceId
+  ) throws (1:BlurException ex)
+
+  /**
+   * Fetches the given trace.
+   * @return the json for the given trace request.
+   */
+  string traceRequestFetch(
+    /** the trace id. */
+    1:string traceId, 
+    /** the request id. */
+    2:string requestId
+  ) throws (1:BlurException ex)
+
+  /**
+   * Remove the trace for the given trace id.
+   */
+  void traceRemove(
+    /** the trace id. */
+    1:string traceId
+  ) throws (1:BlurException ex)
+
 }
 
 

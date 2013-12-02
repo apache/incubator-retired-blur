@@ -38,9 +38,10 @@ function displayPage() {
 	  var metrics = client.metrics(null);
 	  var body = $("#page_body");
 	  var keys = Object.keys(metrics).sort();
-	  body.append("<h1>Shard Server</h1>");
-      body.append("<h2>Metrics</h2>");
-      var s = "<table border=1 class=\"table-bordered table-striped table-condensed\"><tr><th>Name</th><th>Value</th></tr>";
+      var s = "";
+	  s += "<h1>Shard Server</h1>";
+      s += "<h2>Metrics</h2>";
+      s += "<table border=1 class=\"table-bordered table-striped table-condensed\"><tr><th>Name</th><th>Value</th></tr>";
 	  for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
         var metric = metrics[key];
@@ -51,10 +52,11 @@ function displayPage() {
 		s += "</td></tr>";
       }
       s += "</table>";
-      body.append(s);
+      body.html(s);
     } catch(ouch){
-alert (ouch);
+      alert (ouch);
     }
+    setTimeout(displayPage,3000);
 }
 function writeValueMap(metrics,key,map,formatNumber) {
   if (map) {

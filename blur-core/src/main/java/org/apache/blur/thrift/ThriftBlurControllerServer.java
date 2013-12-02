@@ -59,7 +59,7 @@ import org.apache.blur.server.ControllerServerEventHandler;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingServerSocket;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.trace.Trace;
-import org.apache.blur.trace.TraceReporter;
+import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.MemoryReporter;
 import org.apache.blur.zookeeper.ZkUtils;
@@ -138,8 +138,8 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     controllerServer.init();
 
-    final TraceReporter traceReporter = setupTraceReporter(configuration);
-    Trace.setReporter(traceReporter);
+    final TraceStorage traceStorage = setupTraceStorage(configuration);
+    Trace.setStorage(traceStorage);
     Trace.setNodeName(nodeName);
 
     Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, controllerServer, false);
@@ -178,7 +178,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(traceReporter, server, controllerServer, clusterStatus, zooKeeper, threadWatcher, httpServer);
+        quietClose(traceStorage, server, controllerServer, clusterStatus, zooKeeper, threadWatcher, httpServer);
       }
     };
     server.setShutdown(shutdown);

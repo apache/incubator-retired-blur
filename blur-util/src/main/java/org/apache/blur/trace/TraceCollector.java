@@ -60,8 +60,13 @@ public class TraceCollector {
 
   public String toJson() {
     StringBuilder builder = new StringBuilder();
+    boolean first = true;
     for (TracerImpl t : _traces) {
-      builder.append("    ").append(t.toJson()).append(",\n");
+      if (!first) {
+        builder.append(",\n");
+      }
+      builder.append("    ").append(t.toJson());
+      first = false;
     }
     return "{\n  \"id\":" + _id.toJson() + ",\n  \"nodeName\":\"" + (_nodeName == null ? "unknown" : _nodeName)
         + "\",\n  \"pid\":\"" + _pid + "\",\n  \"thread\":\"" + _threadName + "\",\n  \"created\":" + _now

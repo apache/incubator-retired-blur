@@ -16,29 +16,36 @@
  */
 package org.apache.blur.trace;
 
-import java.io.IOException;
+import java.util.List;
 
 import org.apache.blur.BlurConfiguration;
-import org.apache.blur.log.Log;
-import org.apache.blur.log.LogFactory;
 
-public class LogTraceReporter extends TraceReporter {
+public abstract class BaseTraceStorage extends TraceStorage {
 
-  private static final Log LOG = LogFactory.getLog(LogTraceReporter.class);
+  private static final String NOT_SUPPORTED = "Not Supported";
 
-  public LogTraceReporter(BlurConfiguration configuration) {
+  public BaseTraceStorage(BlurConfiguration configuration) {
     super(configuration);
   }
 
   @Override
-  public void report(TraceCollector collector) {
-    String json = collector.toJson();
-    LOG.info("Trace Complete [{0}]", json);
+  public List<String> getTraceIds() {
+    throw new RuntimeException(NOT_SUPPORTED);
   }
 
   @Override
-  public void close() throws IOException {
-    
+  public List<String> getRequestIds(String traceId) {
+    throw new RuntimeException(NOT_SUPPORTED);
+  }
+
+  @Override
+  public String getRequestContentsJson(String traceId, String requestId) {
+    throw new RuntimeException(NOT_SUPPORTED);
+  }
+
+  @Override
+  public void removeTrace(String traceId) {
+    throw new RuntimeException(NOT_SUPPORTED);
   }
 
 }

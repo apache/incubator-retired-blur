@@ -54,9 +54,9 @@ import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.server.TThreadedSelectorServer;
 import org.apache.blur.thrift.server.TThreadedSelectorServer.Args.AcceptPolicy;
-import org.apache.blur.trace.LogTraceReporter;
-import org.apache.blur.trace.TraceReporter;
-import org.apache.blur.trace.ZooKeeperTraceReporter;
+import org.apache.blur.trace.LogTraceStorage;
+import org.apache.blur.trace.TraceStorage;
+import org.apache.blur.trace.ZooKeeperTraceStorage;
 
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Gauge;
@@ -89,12 +89,12 @@ public class ThriftServer {
     _serverTransport = serverTransport;
   }
 
-  public static TraceReporter setupTraceReporter(BlurConfiguration configuration) throws IOException {
+  public static TraceStorage setupTraceStorage(BlurConfiguration configuration) throws IOException {
     String path = configuration.get(BLUR_ZOOKEEPER_TRACE_PATH);
     if (path == null || path.isEmpty()) {
-      return new LogTraceReporter(configuration);
+      return new LogTraceStorage(configuration);
     }
-    return new ZooKeeperTraceReporter(configuration);
+    return new ZooKeeperTraceStorage(configuration);
   }
 
   public static void printUlimits() throws IOException {

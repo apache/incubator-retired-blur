@@ -38,7 +38,6 @@ function displayPage() {
 	  var config = client.configuration();
 	  var body = $("#page_body");
 	  var keys = Object.keys(config).sort();
-	  body.append("<h1>Shard Server</h1>");
       body.append("<h2>Configuration</h2>");
       var s = "<table border=1 class=\"table-bordered table-striped table-condensed\"><tr><th>Name</th><th>Value</th></tr>";
 	  for (var i = 0; i < keys.length; i++) {

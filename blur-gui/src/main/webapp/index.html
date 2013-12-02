@@ -39,8 +39,6 @@ function displayPage() {
 	  var body = $("#page_body");
 	  for (var i = 0; i < clusters.length; i++) {
         var cluster = clusters[i];
-        body.append("<h1>Shard Server</h1>");
-
         body.append("<h2>Tables [" + cluster + "]</h2>");
 	    var tables = client.tableListByCluster(cluster);
 	    tables.sort();
@@ -61,6 +59,17 @@ s += "<tr><th>Name</th><th>Enabled</th><th>Totals Shards</th><th>Online Shards</
 		  s += "</tr>";
 		}
 		body.append(s + "</table>");
+		
+		body.append("<h2>All Controller Servers</h2>");
+        var cservers = client.controllerServerList();
+        cservers.sort();
+        var l = "<ul>";
+	    for (var t = 0; t < cservers.length; t++) {
+		  var server = cservers[t];
+		  var hostname = getHostName(server);
+		  l += "<li><a href=\"http://"+hostname+"\">" + server + "</a></li>";
+		}
+		body.append(l + "</ul>");
 
         body.append("<h2>All Shard Servers in [" + cluster + "]</h2>");
         var servers = client.shardServerList(cluster);

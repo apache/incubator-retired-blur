@@ -48,6 +48,7 @@ import org.apache.blur.BlurConfiguration;
 import org.apache.blur.concurrent.SimpleUncaughtExceptionHandler;
 import org.apache.blur.concurrent.ThreadWatcher;
 import org.apache.blur.gui.HttpJettyServer;
+import org.apache.blur.gui.JSONReporterServlet;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.BlurQueryChecker;
@@ -56,7 +57,10 @@ import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.metrics.ReporterSetup;
 import org.apache.blur.server.ControllerServerEventHandler;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.server.TServlet;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingServerSocket;
+import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.TraceStorage;
@@ -64,6 +68,8 @@ import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.MemoryReporter;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.zookeeper.ZooKeeper;
+import org.mortbay.jetty.servlet.ServletHolder;
+import org.mortbay.jetty.webapp.WebAppContext;
 
 public class ThriftBlurControllerServer extends ThriftServer {
 
@@ -171,6 +177,13 @@ public class ThriftBlurControllerServer extends ThriftServer {
           configuration.getInt(BLUR_GUI_SHARD_PORT, -1), "controller");
     } else {
       httpServer = null;
+    }
+    
+    if (httpServer != null) {
+      WebAppContext context = httpServer.getContext();
+      context.addServlet(new ServletHolder(new TServlet(new Blur.Processor<Blur.Iface>(iface),
+          new TJSONProtocol.Factory())), "/blur");
+      context.addServlet(new ServletHolder(new JSONReporterServlet()), "/livemetrics");
     }
 
     // This will shutdown the server when the correct path is set in zk

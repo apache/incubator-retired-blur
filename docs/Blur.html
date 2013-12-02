@@ -134,6 +134,10 @@ limitations under the License.
 <li><a href="#Fn_Blur_configuration">&nbsp;&nbsp;configuration</a></li>
 <li><a href="#Fn_Blur_metrics">&nbsp;&nbsp;metrics</a></li>
 <li><a href="#Fn_Blur_startTrace">&nbsp;&nbsp;startTrace</a></li>
+<li><a href="#Fn_Blur_traceList">&nbsp;&nbsp;traceList</a></li>
+<li><a href="#Fn_Blur_traceRequestList">&nbsp;&nbsp;traceRequestList</a></li>
+<li><a href="#Fn_Blur_traceRequestFetch">&nbsp;&nbsp;traceRequestFetch</a></li>
+<li><a href="#Fn_Blur_traceRemove">&nbsp;&nbsp;traceRemove</a></li>
 </ul></li>
 </ul>
 </li>
@@ -898,6 +902,37 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>traceId</td><td>the trace id.
 </td></tr>
 <tr><td>requestId</td><td>the request id, used to connected remote calls together.  Client can pass null.
+</td></tr>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_traceList">Function: Blur.traceList</h4></div><p class="lead">
+<pre><code>list&lt;<code>string</code>&gt;</code> traceList()
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Get a list of all the traces.
+@return the list of trace ids.
+<br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_traceRequestList">Function: Blur.traceRequestList</h4></div><p class="lead">
+<pre><code>list&lt;<code>string</code>&gt;</code> traceRequestList(<code>string</code> traceId)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Gets a request list for the given trace.
+@return the list of request ids for the given trace id.
+<br/><br/><h4 id="Parameters_Blur_traceRequestList">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>traceId</td><td>the trace id.
+</td></tr>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_traceRequestFetch">Function: Blur.traceRequestFetch</h4></div><p class="lead">
+<pre><code>string</code> traceRequestFetch(<code>string</code> traceId,
+<code>string</code> requestId)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Fetches the given trace.
+@return the json for the given trace request.
+<br/><br/><h4 id="Parameters_Blur_traceRequestFetch">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>traceId</td><td>the trace id.
+</td></tr>
+<tr><td>requestId</td><td>the request id.
+</td></tr>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_traceRemove">Function: Blur.traceRemove</h4></div><p class="lead">
+<pre><code>void</code> traceRemove(<code>string</code> traceId)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Remove the trace for the given trace id.
+<br/><br/><h4 id="Parameters_Blur_traceRemove">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>traceId</td><td>the trace id.
 </td></tr>
 </table></p></section>
 </div>

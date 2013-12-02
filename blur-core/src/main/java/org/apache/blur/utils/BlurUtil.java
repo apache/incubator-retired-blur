@@ -798,7 +798,6 @@ public class BlurUtil {
     trace.done();
 
     Tracer trace2 = Trace.trace("fetching doc from index");
-    long readTime = 0;
     int totalHeap = 0;
     for (int i = start; i < end; i++) {
       if (i >= totalHits) {
@@ -810,16 +809,12 @@ public class BlurUtil {
         break;
       }
       int doc = scoreDocs.get(i).doc;
-      long s = System.nanoTime();
       indexSearcher.doc(doc, fieldSelector);
-      long e = System.nanoTime();
-      readTime += (e - s);
       docs.add(fieldSelector.getDocument());
       int heapSize = fieldSelector.getSize();
       totalHeap += heapSize;
       fieldSelector.reset();
     }
-    System.out.println("Read time " + readTime);
     trace2.done();
     return docs;
   }

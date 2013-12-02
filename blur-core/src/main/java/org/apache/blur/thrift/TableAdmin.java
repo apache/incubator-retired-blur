@@ -37,6 +37,8 @@ import org.apache.blur.thrift.generated.Metric;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.MemoryReporter;
 import org.apache.zookeeper.ZooKeeper;
@@ -431,6 +433,47 @@ public abstract class TableAdmin implements Iface {
       throw new BException(
           "Unknown error while trying to addColumnDefinition on table [{0}] with columnDefinition [{1}]", e, table,
           columnDefinition);
+    }
+  }
+
+  @Override
+  public List<String> traceList() throws BlurException, TException {
+    TraceStorage storage = Trace.getStorage();
+    try {
+      return storage.getTraceIds();
+    } catch (Exception e) {
+      throw new BException("Unknown error while trying to get traceList", e);
+    }
+  }
+
+  @Override
+  public List<String> traceRequestList(String traceId) throws BlurException, TException {
+    TraceStorage storage = Trace.getStorage();
+    try {
+      return storage.getRequestIds(traceId);
+    } catch (Exception e) {
+      throw new BException("Unknown error while trying to get traceRequestList for traceId [{0}]", e, traceId);
+    }
+  }
+
+  @Override
+  public String traceRequestFetch(String traceId, String requestId) throws BlurException, TException {
+    TraceStorage storage = Trace.getStorage();
+    try {
+      return storage.getRequestContentsJson(traceId, requestId);
+    } catch (Exception e) {
+      throw new BException("Unknown error while trying to get traceRequestList for traceId [{0}] requestId [{1}]", e,
+          traceId, requestId);
+    }
+  }
+
+  @Override
+  public void traceRemove(String traceId) throws BlurException, TException {
+    TraceStorage storage = Trace.getStorage();
+    try {
+      storage.removeTrace(traceId);
+    } catch (Exception e) {
+      throw new BException("Unknown error while trying to get remove trace [{0}]", e, traceId);
     }
   }
 

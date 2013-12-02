@@ -21,6 +21,8 @@ import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TRACE_PATH;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -28,6 +30,7 @@ import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.trace.Trace.TraceId;
+import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.blur.zookeeper.ZooKeeperClient;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -37,9 +40,13 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
 
-public class ZooKeeperTraceReporter extends TraceReporter {
+public class ZooKeeperTraceStorage extends TraceStorage {
 
-  private final static Log LOG = LogFactory.getLog(ZooKeeperTraceReporter.class);
+  private static final String UTF_8 = "UTF-8";
+
+  private static final String TRACE = "trace_";
+
+  private final static Log LOG = LogFactory.getLog(ZooKeeperTraceStorage.class);
 
   private final String _zkConnectionStr;
   private final ZooKeeperClient _zooKeeperClient;
@@ -47,7 +54,7 @@ public class ZooKeeperTraceReporter extends TraceReporter {
   private final BlockingQueue<TraceCollector> _queue = new LinkedBlockingQueue<TraceCollector>();
   private final Thread _daemon;
 
-  public ZooKeeperTraceReporter(BlurConfiguration configuration) throws IOException {
+  public ZooKeeperTraceStorage(BlurConfiguration configuration) throws IOException {
     super(configuration);
     _zkConnectionStr = configuration.get(BLUR_ZOOKEEPER_CONNECTION);
     _storePath = configuration.get(BLUR_ZOOKEEPER_TRACE_PATH);
@@ -76,12 +83,13 @@ public class ZooKeeperTraceReporter extends TraceReporter {
         }
       }
     });
+    _daemon.setDaemon(true);
     _daemon.setName("ZooKeeper Trace Queue Writer");
     _daemon.start();
   }
 
   @Override
-  public void report(TraceCollector collector) {
+  public void store(TraceCollector collector) {
     try {
       _queue.put(collector);
     } catch (InterruptedException e) {
@@ -92,11 +100,19 @@ public class ZooKeeperTraceReporter extends TraceReporter {
   private void writeCollector(TraceCollector collector) {
     TraceId id = collector.getId();
     String storeId = id.getRootId();
+    String requestId = id.getRequestId();
+    if (requestId == null) {
+      requestId = "";
+    }
     String storePath = getStorePath(storeId);
-    createIfMissing(storePath);
     String json = collector.toJson();
+    storeJson(storePath, requestId, json);
+  }
+
+  public void storeJson(String storePath, String requestId, String json) {
     try {
-      _zooKeeperClient.create(storePath + "/trace-", json.getBytes("UTF-8"), Ids.OPEN_ACL_UNSAFE,
+      createIfMissing(storePath);
+      _zooKeeperClient.create(storePath + "/" + TRACE + requestId + "_", json.getBytes(UTF_8), Ids.OPEN_ACL_UNSAFE,
           CreateMode.PERSISTENT_SEQUENTIAL);
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException(e);
@@ -132,6 +148,85 @@ public class ZooKeeperTraceReporter extends TraceReporter {
     try {
       _zooKeeperClient.close();
     } catch (InterruptedException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public List<String> getTraceIds() throws IOException {
+    try {
+      return _zooKeeperClient.getChildren(_storePath, false);
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public List<String> getRequestIds(String traceId) throws IOException {
+    String storePath = getStorePath(traceId);
+    try {
+      Stat stats = _zooKeeperClient.exists(storePath, false);
+      if (stats == null) {
+        throw new IOException("Trace [" + traceId + "] not found.");
+      }
+      List<String> children = _zooKeeperClient.getChildren(storePath, false);
+      List<String> requestIds = new ArrayList<String>();
+      for (String c : children) {
+        String requestId = getRequestId(c);
+        if (requestId != null) {
+          requestIds.add(requestId);
+        }
+      }
+      return requestIds;
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
+  }
+
+  private String getRequestId(String s) {
+    if (s.startsWith(TRACE)) {
+      int lastIndexOf = s.lastIndexOf('_');
+      return s.substring(TRACE.length(), lastIndexOf);
+    }
+    return null;
+  }
+
+  @Override
+  public String getRequestContentsJson(String traceId, String requestId) throws IOException {
+    String storePath = getStorePath(traceId);
+    try {
+      Stat stats = _zooKeeperClient.exists(storePath, false);
+      if (stats == null) {
+        throw new IOException("Trace [" + traceId + "] not found.");
+      }
+      String requestPath = getRequestStorePath(storePath, requestId);
+      if (requestPath == null) {
+        throw new IOException("Request [" + requestId + "] not found.");
+      }
+      Stat dataStat = _zooKeeperClient.exists(requestPath, false);
+      byte[] data = _zooKeeperClient.getData(requestPath, false, dataStat);
+      return new String(data, UTF_8);
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
+  }
+
+  private String getRequestStorePath(String storePath, String requestId) throws KeeperException, InterruptedException {
+    List<String> children = _zooKeeperClient.getChildren(storePath, false);
+    for (String c : children) {
+      if (c.startsWith(TRACE + requestId + "_")) {
+        return storePath + "/" + c;
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public void removeTrace(String traceId) throws IOException {
+    String storePath = getStorePath(traceId);
+    try {
+      ZkUtils.rmr(_zooKeeperClient, storePath);
+    } catch (Exception e) {
       throw new IOException(e);
     }
   }

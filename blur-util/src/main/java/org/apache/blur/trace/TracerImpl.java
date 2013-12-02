@@ -43,13 +43,13 @@ public class TracerImpl implements Tracer {
     _traceScope = scope.incrementAndGet();
   }
 
-  public TracerImpl(TraceCollector traceCollector, long id, int traceScope) {
+  public TracerImpl(TraceCollector traceCollector, long id, int traceScope, String requestId) {
     _name = "new thread collector";
     _start = System.nanoTime();
     _ended = _start;
     _threadName = Thread.currentThread().getName();
     _id = id;
-    _parameters = new Parameter[] { new Parameter("requestId", Long.toString(id)) };
+    _parameters = new Parameter[] { new Parameter("requestId", requestId) };
     _traceCollector = traceCollector;
     _scope = traceCollector.getScope();
     _traceScope = traceScope;

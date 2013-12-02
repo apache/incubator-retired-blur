@@ -5466,6 +5466,606 @@ sub write {
   return $xfer;
 }
 
+package Blur::Blur_traceList_args;
+use base qw(Class::Accessor);
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_traceList_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_traceList_args');
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_traceList_result;
+use base qw(Class::Accessor);
+Blur::Blur_traceList_result->mk_accessors( qw( success ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{success} = undef;
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{success}) {
+      $self->{success} = $vals->{success};
+    }
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_traceList_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^0$/ && do{      if ($ftype == TType::LIST) {
+        {
+          my $_size323 = 0;
+          $self->{success} = [];
+          my $_etype326 = 0;
+          $xfer += $input->readListBegin(\$_etype326, \$_size323);
+          for (my $_i327 = 0; $_i327 < $_size323; ++$_i327)
+          {
+            my $elem328 = undef;
+            $xfer += $input->readString(\$elem328);
+            push(@{$self->{success}},$elem328);
+          }
+          $xfer += $input->readListEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_traceList_result');
+  if (defined $self->{success}) {
+    $xfer += $output->writeFieldBegin('success', TType::LIST, 0);
+    {
+      $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
+      {
+        foreach my $iter329 (@{$self->{success}}) 
+        {
+          $xfer += $output->writeString($iter329);
+        }
+      }
+      $xfer += $output->writeListEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_traceRequestList_args;
+use base qw(Class::Accessor);
+Blur::Blur_traceRequestList_args->mk_accessors( qw( traceId ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{traceId} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{traceId}) {
+      $self->{traceId} = $vals->{traceId};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_traceRequestList_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{traceId});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_traceRequestList_args');
+  if (defined $self->{traceId}) {
+    $xfer += $output->writeFieldBegin('traceId', TType::STRING, 1);
+    $xfer += $output->writeString($self->{traceId});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_traceRequestList_result;
+use base qw(Class::Accessor);
+Blur::Blur_traceRequestList_result->mk_accessors( qw( success ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{success} = undef;
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{success}) {
+      $self->{success} = $vals->{success};
+    }
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_traceRequestList_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^0$/ && do{      if ($ftype == TType::LIST) {
+        {
+          my $_size330 = 0;
+          $self->{success} = [];
+          my $_etype333 = 0;
+          $xfer += $input->readListBegin(\$_etype333, \$_size330);
+          for (my $_i334 = 0; $_i334 < $_size330; ++$_i334)
+          {
+            my $elem335 = undef;
+            $xfer += $input->readString(\$elem335);
+            push(@{$self->{success}},$elem335);
+          }
+          $xfer += $input->readListEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_traceRequestList_result');
+  if (defined $self->{success}) {
+    $xfer += $output->writeFieldBegin('success', TType::LIST, 0);
+    {
+      $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
+      {
+        foreach my $iter336 (@{$self->{success}}) 
+        {
+          $xfer += $output->writeString($iter336);
+        }
+      }
+      $xfer += $output->writeListEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_traceRequestFetch_args;
+use base qw(Class::Accessor);
+Blur::Blur_traceRequestFetch_args->mk_accessors( qw( traceId requestId ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{traceId} = undef;
+  $self->{requestId} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{traceId}) {
+      $self->{traceId} = $vals->{traceId};
+    }
+    if (defined $vals->{requestId}) {
+      $self->{requestId} = $vals->{requestId};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_traceRequestFetch_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{traceId});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{requestId});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_traceRequestFetch_args');
+  if (defined $self->{traceId}) {
+    $xfer += $output->writeFieldBegin('traceId', TType::STRING, 1);
+    $xfer += $output->writeString($self->{traceId});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{requestId}) {
+    $xfer += $output->writeFieldBegin('requestId', TType::STRING, 2);
+    $xfer += $output->writeString($self->{requestId});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_traceRequestFetch_result;
+use base qw(Class::Accessor);
+Blur::Blur_traceRequestFetch_result->mk_accessors( qw( success ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{success} = undef;
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{success}) {
+      $self->{success} = $vals->{success};
+    }
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_traceRequestFetch_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^0$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{success});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_traceRequestFetch_result');
+  if (defined $self->{success}) {
+    $xfer += $output->writeFieldBegin('success', TType::STRING, 0);
+    $xfer += $output->writeString($self->{success});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_traceRemove_args;
+use base qw(Class::Accessor);
+Blur::Blur_traceRemove_args->mk_accessors( qw( traceId ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{traceId} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{traceId}) {
+      $self->{traceId} = $vals->{traceId};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_traceRemove_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{traceId});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_traceRemove_args');
+  if (defined $self->{traceId}) {
+    $xfer += $output->writeFieldBegin('traceId', TType::STRING, 1);
+    $xfer += $output->writeString($self->{traceId});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_traceRemove_result;
+use base qw(Class::Accessor);
+Blur::Blur_traceRemove_result->mk_accessors( qw( ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_traceRemove_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_traceRemove_result');
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 package Blur::BlurIf;
 
 use strict;
@@ -5727,6 +6327,34 @@ sub startTrace{
   my $self = shift;
   my $traceId = shift;
   my $requestId = shift;
+
+  die 'implement interface';
+}
+
+sub traceList{
+  my $self = shift;
+
+  die 'implement interface';
+}
+
+sub traceRequestList{
+  my $self = shift;
+  my $traceId = shift;
+
+  die 'implement interface';
+}
+
+sub traceRequestFetch{
+  my $self = shift;
+  my $traceId = shift;
+  my $requestId = shift;
+
+  die 'implement interface';
+}
+
+sub traceRemove{
+  my $self = shift;
+  my $traceId = shift;
 
   die 'implement interface';
 }
@@ -6001,6 +6629,34 @@ sub startTrace{
   my $traceId = ($request->{'traceId'}) ? $request->{'traceId'} : undef;
   my $requestId = ($request->{'requestId'}) ? $request->{'requestId'} : undef;
   return $self->{impl}->startTrace($traceId, $requestId);
+}
+
+sub traceList{
+  my ($self, $request) = @_;
+
+  return $self->{impl}->traceList();
+}
+
+sub traceRequestList{
+  my ($self, $request) = @_;
+
+  my $traceId = ($request->{'traceId'}) ? $request->{'traceId'} : undef;
+  return $self->{impl}->traceRequestList($traceId);
+}
+
+sub traceRequestFetch{
+  my ($self, $request) = @_;
+
+  my $traceId = ($request->{'traceId'}) ? $request->{'traceId'} : undef;
+  my $requestId = ($request->{'requestId'}) ? $request->{'requestId'} : undef;
+  return $self->{impl}->traceRequestFetch($traceId, $requestId);
+}
+
+sub traceRemove{
+  my ($self, $request) = @_;
+
+  my $traceId = ($request->{'traceId'}) ? $request->{'traceId'} : undef;
+  return $self->{impl}->traceRemove($traceId);
 }
 
 package Blur::BlurClient;
@@ -7585,6 +8241,187 @@ sub send_startTrace{
   $self->{output}->writeMessageEnd();
   $self->{output}->getTransport()->flush();
 }
+sub traceList{
+  my $self = shift;
+
+    $self->send_traceList();
+  return $self->recv_traceList();
+}
+
+sub send_traceList{
+  my $self = shift;
+
+  $self->{output}->writeMessageBegin('traceList', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_traceList_args();
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_traceList{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_traceList_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{success} ) {
+    return $result->{success};
+  }
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  die "traceList failed: unknown result";
+}
+sub traceRequestList{
+  my $self = shift;
+  my $traceId = shift;
+
+    $self->send_traceRequestList($traceId);
+  return $self->recv_traceRequestList();
+}
+
+sub send_traceRequestList{
+  my $self = shift;
+  my $traceId = shift;
+
+  $self->{output}->writeMessageBegin('traceRequestList', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_traceRequestList_args();
+  $args->{traceId} = $traceId;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_traceRequestList{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_traceRequestList_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{success} ) {
+    return $result->{success};
+  }
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  die "traceRequestList failed: unknown result";
+}
+sub traceRequestFetch{
+  my $self = shift;
+  my $traceId = shift;
+  my $requestId = shift;
+
+    $self->send_traceRequestFetch($traceId, $requestId);
+  return $self->recv_traceRequestFetch();
+}
+
+sub send_traceRequestFetch{
+  my $self = shift;
+  my $traceId = shift;
+  my $requestId = shift;
+
+  $self->{output}->writeMessageBegin('traceRequestFetch', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_traceRequestFetch_args();
+  $args->{traceId} = $traceId;
+  $args->{requestId} = $requestId;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_traceRequestFetch{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_traceRequestFetch_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{success} ) {
+    return $result->{success};
+  }
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  die "traceRequestFetch failed: unknown result";
+}
+sub traceRemove{
+  my $self = shift;
+  my $traceId = shift;
+
+    $self->send_traceRemove($traceId);
+  $self->recv_traceRemove();
+}
+
+sub send_traceRemove{
+  my $self = shift;
+  my $traceId = shift;
+
+  $self->{output}->writeMessageBegin('traceRemove', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_traceRemove_args();
+  $args->{traceId} = $traceId;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_traceRemove{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_traceRemove_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  return;
+}
 package Blur::BlurProcessor;
 
 use strict;
@@ -8196,4 +9033,72 @@ sub process_startTrace {
     $self->{handler}->startTrace($args->traceId, $args->requestId);
     return;
 }
+sub process_traceList {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_traceList_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_traceList_result();
+    eval {
+      $result->{success} = $self->{handler}->traceList();
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('traceList', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_traceRequestList {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_traceRequestList_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_traceRequestList_result();
+    eval {
+      $result->{success} = $self->{handler}->traceRequestList($args->traceId);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('traceRequestList', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_traceRequestFetch {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_traceRequestFetch_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_traceRequestFetch_result();
+    eval {
+      $result->{success} = $self->{handler}->traceRequestFetch($args->traceId, $args->requestId);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('traceRequestFetch', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_traceRemove {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_traceRemove_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_traceRemove_result();
+    eval {
+      $self->{handler}->traceRemove($args->traceId);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('traceRemove', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
 1;

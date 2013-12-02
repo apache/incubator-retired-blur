@@ -17,6 +17,7 @@ package org.apache.blur.thrift.util;
  * limitations under the License.
  */
 import java.io.IOException;
+import java.util.UUID;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
@@ -38,7 +39,7 @@ public class SimpleQueryExample {
 
     Iface client = BlurClient.getClient(connectionStr);
 
-    String uuid = "123456";
+    String uuid = UUID.randomUUID().toString();
     Trace.setupTrace(uuid);
     final BlurQuery blurQuery = new BlurQuery();
     Query query = new Query();

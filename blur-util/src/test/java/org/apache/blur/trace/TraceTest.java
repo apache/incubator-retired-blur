@@ -29,9 +29,9 @@ public class TraceTest {
 
   @Test
   public void testTrace() throws IOException {
-    Trace.setReporter(new TraceReporter(new BlurConfiguration()) {
+    Trace.setStorage(new BaseTraceStorage(new BlurConfiguration()) {
       @Override
-      public void report(TraceCollector collector) {
+      public void store(TraceCollector collector) {
         assertEquals("test", collector.getId().getRootId());
         assertEquals(3, collector.getTraces().size());
       }
@@ -68,13 +68,13 @@ public class TraceTest {
   @Test
   public void testTraceThreadRunnable() throws InterruptedException, IOException {
     final AtomicLong count = new AtomicLong();
-    Trace.setReporter(new TraceReporter(new BlurConfiguration()) {
+    Trace.setStorage(new BaseTraceStorage(new BlurConfiguration()) {
       @Override
-      public void report(TraceCollector collector) {
+      public void store(TraceCollector collector) {
         System.out.println(collector.toJson());
         TraceId id = collector.getId();
         assertEquals("test", id.getRootId());
-        assertEquals(8, collector.getTraces().size());
+        assertEquals(5, collector.getTraces().size());
         count.addAndGet(collector.getTraces().size());
       }
 
@@ -112,7 +112,7 @@ public class TraceTest {
     thread.join();
     Trace.tearDownTrace();
 
-    assertEquals(8, count.get());
+    assertEquals(5, count.get());
   }
 
   private static long meth1() {

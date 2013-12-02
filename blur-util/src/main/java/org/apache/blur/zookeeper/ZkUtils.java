@@ -191,4 +191,12 @@ public class ZkUtils {
       throw new RuntimeException(e);
     }
   }
+  
+  public static void rmr(ZooKeeper zooKeeper, String path) throws KeeperException, InterruptedException {
+    List<String> children = zooKeeper.getChildren(path, false);
+    for (String c : children) {
+      rmr(zooKeeper, path + "/" + c);
+    }
+    zooKeeper.delete(path, -1);
+  }
 }

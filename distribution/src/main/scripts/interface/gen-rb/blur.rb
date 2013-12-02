@@ -544,6 +544,69 @@ module Blur
       def send_startTrace(traceId, requestId)
         send_message('startTrace', StartTrace_args, :traceId => traceId, :requestId => requestId)
       end
+      def traceList()
+        send_traceList()
+        return recv_traceList()
+      end
+
+      def send_traceList()
+        send_message('traceList', TraceList_args)
+      end
+
+      def recv_traceList()
+        result = receive_message(TraceList_result)
+        return result.success unless result.success.nil?
+        raise result.ex unless result.ex.nil?
+        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'traceList failed: unknown result')
+      end
+
+      def traceRequestList(traceId)
+        send_traceRequestList(traceId)
+        return recv_traceRequestList()
+      end
+
+      def send_traceRequestList(traceId)
+        send_message('traceRequestList', TraceRequestList_args, :traceId => traceId)
+      end
+
+      def recv_traceRequestList()
+        result = receive_message(TraceRequestList_result)
+        return result.success unless result.success.nil?
+        raise result.ex unless result.ex.nil?
+        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'traceRequestList failed: unknown result')
+      end
+
+      def traceRequestFetch(traceId, requestId)
+        send_traceRequestFetch(traceId, requestId)
+        return recv_traceRequestFetch()
+      end
+
+      def send_traceRequestFetch(traceId, requestId)
+        send_message('traceRequestFetch', TraceRequestFetch_args, :traceId => traceId, :requestId => requestId)
+      end
+
+      def recv_traceRequestFetch()
+        result = receive_message(TraceRequestFetch_result)
+        return result.success unless result.success.nil?
+        raise result.ex unless result.ex.nil?
+        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'traceRequestFetch failed: unknown result')
+      end
+
+      def traceRemove(traceId)
+        send_traceRemove(traceId)
+        recv_traceRemove()
+      end
+
+      def send_traceRemove(traceId)
+        send_message('traceRemove', TraceRemove_args, :traceId => traceId)
+      end
+
+      def recv_traceRemove()
+        result = receive_message(TraceRemove_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
     end
 
     class Processor
@@ -922,6 +985,50 @@ module Blur
         args = read_args(iprot, StartTrace_args)
         @handler.startTrace(args.traceId, args.requestId)
         return
+      end
+
+      def process_traceList(seqid, iprot, oprot)
+        args = read_args(iprot, TraceList_args)
+        result = TraceList_result.new()
+        begin
+          result.success = @handler.traceList()
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'traceList', seqid)
+      end
+
+      def process_traceRequestList(seqid, iprot, oprot)
+        args = read_args(iprot, TraceRequestList_args)
+        result = TraceRequestList_result.new()
+        begin
+          result.success = @handler.traceRequestList(args.traceId)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'traceRequestList', seqid)
+      end
+
+      def process_traceRequestFetch(seqid, iprot, oprot)
+        args = read_args(iprot, TraceRequestFetch_args)
+        result = TraceRequestFetch_result.new()
+        begin
+          result.success = @handler.traceRequestFetch(args.traceId, args.requestId)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'traceRequestFetch', seqid)
+      end
+
+      def process_traceRemove(seqid, iprot, oprot)
+        args = read_args(iprot, TraceRemove_args)
+        result = TraceRemove_result.new()
+        begin
+          @handler.traceRemove(args.traceId)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'traceRemove', seqid)
       end
 
     end
@@ -2161,6 +2268,145 @@ module Blur
 
       FIELDS = {
 
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class TraceList_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+
+      FIELDS = {
+
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class TraceList_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SUCCESS = 0
+      EX = 1
+
+      FIELDS = {
+        SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class TraceRequestList_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TRACEID = 1
+
+      FIELDS = {
+        # the trace id.
+        TRACEID => {:type => ::Thrift::Types::STRING, :name => 'traceId'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class TraceRequestList_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SUCCESS = 0
+      EX = 1
+
+      FIELDS = {
+        SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class TraceRequestFetch_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TRACEID = 1
+      REQUESTID = 2
+
+      FIELDS = {
+        # the trace id.
+        TRACEID => {:type => ::Thrift::Types::STRING, :name => 'traceId'},
+        # the request id.
+        REQUESTID => {:type => ::Thrift::Types::STRING, :name => 'requestId'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class TraceRequestFetch_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SUCCESS = 0
+      EX = 1
+
+      FIELDS = {
+        SUCCESS => {:type => ::Thrift::Types::STRING, :name => 'success'},
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class TraceRemove_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TRACEID = 1
+
+      FIELDS = {
+        # the trace id.
+        TRACEID => {:type => ::Thrift::Types::STRING, :name => 'traceId'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class TraceRemove_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
       }
 
       def struct_fields; FIELDS; end

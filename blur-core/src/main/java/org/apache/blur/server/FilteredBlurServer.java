@@ -202,4 +202,20 @@ public class FilteredBlurServer implements Iface {
     return _iface.metrics(metrics);
   }
 
+  public List<String> traceList() throws BlurException, TException {
+    return _iface.traceList();
+  }
+
+  public List<String> traceRequestList(String traceId) throws BlurException, TException {
+    return _iface.traceRequestList(traceId);
+  }
+
+  public String traceRequestFetch(String traceId, String requestId) throws BlurException, TException {
+    return _iface.traceRequestFetch(traceId, requestId);
+  }
+
+  public void traceRemove(String traceId) throws BlurException, TException {
+    _iface.traceRemove(traceId);
+  }
+
 }

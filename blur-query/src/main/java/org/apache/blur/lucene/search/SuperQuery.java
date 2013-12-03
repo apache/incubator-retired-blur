@@ -204,6 +204,9 @@ public class SuperQuery extends AbstractWrapperQuery {
       case CONSTANT:
         return 1;
       case SUPER:
+        if (aggregateScore < 1.0) {
+          return aggregateScore;
+        }
         double log = Math.log10(aggregateScore) + 1.0;
         double avg = aggregateScore / hitsInEntity;
         double pow = Math.pow(avg, SUPER_POWER_CONSTANT);

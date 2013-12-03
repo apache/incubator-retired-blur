@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.store.BufferedIndexInput;
 import org.apache.lucene.store.DataInput;
@@ -37,17 +39,24 @@ import org.apache.lucene.store.LockFactory;
  */
 public class ProgressableDirectory extends Directory {
 
-  private Directory _directory;
-  private Progressable _progressable;
+  private static final Log LOG = LogFactory.getLog(ProgressableDirectory.class);
+  
+  private final Directory _directory;
+  private final Progressable _progressable;
 
   public ProgressableDirectory(Directory directory, Progressable progressable) {
     _directory = directory;
-    _progressable = progressable == null ? new Progressable() {
-      @Override
-      public void progress() {
+    if (progressable == null) {
+      LOG.warn("Progressable is null.");
+      _progressable = new Progressable() {
+        @Override
+        public void progress() {
 
-      }
-    } : progressable;
+        }
+      };
+    } else {
+      _progressable = progressable;
+    }
   }
 
   @Override

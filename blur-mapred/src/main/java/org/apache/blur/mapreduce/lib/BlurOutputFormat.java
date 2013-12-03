@@ -391,8 +391,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, shardId);
       Path indexPath = new Path(tableOutput, shardName);
       _newIndex = new Path(indexPath, tmpDirName);
-      _finalDir = new ProgressableDirectory(new HdfsDirectory(configuration, _newIndex),
-          BlurOutputFormat.getProgressable());
+      _finalDir = new ProgressableDirectory(new HdfsDirectory(configuration, _newIndex), getProgressable());
       _finalDir.setLockFactory(NoLockFactory.getNoLockFactory());
 
       TableContext tableContext = TableContext.create(tableDescriptor);
@@ -410,13 +409,25 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       if (_indexLocally) {
         String localDirPath = System.getProperty(JAVA_IO_TMPDIR);
         _localPath = new File(localDirPath, UUID.randomUUID().toString() + ".tmp");
-        _localDir = new ProgressableDirectory(FSDirectory.open(_localPath), BlurOutputFormat.getProgressable());
+        _localDir = new ProgressableDirectory(FSDirectory.open(_localPath), getProgressable());
         _writer = new IndexWriter(_localDir, _conf.clone());
       } else {
         _localPath = null;
         _localDir = null;
         _writer = new IndexWriter(_finalDir, _conf.clone());
       }
+    }
+
+    private Progressable getProgressable() {
+      return new Progressable() {
+        @Override
+        public void progress() {
+          Progressable progressable = BlurOutputFormat.getProgressable();
+          if (progressable != null) {
+            progressable.progress();
+          }
+        }
+      };
     }
 
     @Override

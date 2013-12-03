@@ -246,6 +246,7 @@ public class BlurNRTIndex extends BlurIndex {
       ExitableReader er = (ExitableReader) indexReader;
       er.getRunning().set(true);
     }
+    indexSearcherClosable.setSimilarity(_tableContext.getSimilarity());
     return indexSearcherClosable;
   }
 

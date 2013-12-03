@@ -17,6 +17,10 @@ package org.apache.blur.thrift;
  * limitations under the License.
  */
 
+import static org.apache.blur.utils.BlurConstants.BLUR_CLIENTPOOL_CLIENT_CLEAN_FREQUENCY;
+import static org.apache.blur.utils.BlurConstants.BLUR_CLIENTPOOL_CLIENT_CLOSE_THRESHOLD;
+import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -40,15 +44,15 @@ import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TFramedTransport;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TSocket;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransportException;
-import static org.apache.blur.utils.BlurConstants.BLUR_CLIENTPOOL_CLIENT_CLOSE_THRESHOLD;
-import static org.apache.blur.utils.BlurConstants.BLUR_CLIENTPOOL_CLIENT_CLEAN_FREQUENCY;
 import org.apache.blur.thrift.generated.Blur.Client;
 
 public class ClientPool {
 
+  
   private static final Log LOG = LogFactory.getLog(ClientPool.class);
   private static final Map<Connection, BlockingQueue<Client>> _connMap = new ConcurrentHashMap<Connection, BlockingQueue<Client>>();
   private int _maxConnectionsPerHost = Integer.MAX_VALUE;
+  private static final int _maxFrameSize;
   private static AtomicBoolean _running = new AtomicBoolean(true);
   private static long _idleTimeBeforeClosingClient;
   private static long _clientPoolCleanFrequency;
@@ -61,6 +65,7 @@ public class ClientPool {
                       TimeUnit.SECONDS.toMillis(30));
       _clientPoolCleanFrequency = config.getLong(BLUR_CLIENTPOOL_CLIENT_CLEAN_FREQUENCY,
               TimeUnit.SECONDS.toMillis(300)); 
+      _maxFrameSize = config.getInt(BLUR_THRIFT_MAX_FRAME_SIZE, 16384000);
     } catch (Exception e) {
         throw new RuntimeException(e);
     }
@@ -211,7 +216,7 @@ public class ClientPool {
     socket.connect(new InetSocketAddress(host, port), timeout);
     trans = new TSocket(socket);
 
-    TProtocol proto = new TBinaryProtocol(new TFramedTransport(trans));
+    TProtocol proto = new TBinaryProtocol(new TFramedTransport(trans,_maxFrameSize));
     return new WeightedClient(proto);
   }
 

@@ -29,6 +29,7 @@ under the License.
 <script src="js/Blur.js"></script>
 <script src="js/Blur_types.js"></script>
 <script>
+var colors = ["FF0600","FF0C00","FF1200","FF1800","FF1E00","FF2400","FF2A00","FF3000","FF3600","FF3C00","FF4200","FF4800","FF4E00","FF5400","FF5A00","FF6000","FF6600","FF6C00","FF7200","FF7800","FF7E00","FF8400","FF8A00","FF9000","FF9600","FF9C00","FFA200","FFA800","FFAE00","FFB400","FFBA00","FFC000","FFC600","FFCC00","FFD200","FFD800","FFDE00","FFE400","FFEA00","FFF000","FFF600","FFFC00","FFFF00","F9FF00","F3FF00","EDFF00","E7FF00","E1FF00","DBFF00","D5FF00","CFFF00","C9FF00","C3FF00","BDFF00","B7FF00","B1FF00","ABFF00","A5FF00","9FFF00","99FF00","93FF00","8DFF00","87FF00","81FF00","7BFF00","75FF00","6FFF00","69FF00","63FF00","5DFF00","57FF00","51FF00","4BFF00","45FF00","3FFF00","39FF00","33FF00","2DFF00","27FF00","21FF00","1BFF00","15FF00","0FFF00","09FF00","03FF00","00FF00"];
 var transport = new Thrift.Transport("/blur");
 var protocol  = new Thrift.Protocol(transport);
 var client    = new BlurClient(protocol);
@@ -45,7 +46,10 @@ function displayPage() {
       body.html(s + "</table>");
 	  for (var i = 0; i < lst.length; i++) {
 		var traceId = lst[i];
-        $("#traceid_"+traceId).click(function(event){ displayRequestIds(event.target.id); return false; });
+        $("#traceid_"+traceId).click(function(event){
+	      displayRequestIds(event.target.id);
+	      return false; 
+	    });
       }
 
     } catch(ouch){
@@ -72,7 +76,7 @@ function displayRequestIds(traceIdAttr) {
 	  var traceRequestList = client.traceRequestList(traceId);
 	  var rbody = $("#request_id_body");
 	  var lst = traceRequestList.sort();
-      var s = "<table border=1 class=\"table-bordered table-striped table-condensed\"><tr><th nowrap=1>Request Id</th><th nowrap=1>Time Offset (ms)</th></tr>";
+      var s = "<h5>" + traceId + "<h5><table border=1 class=\"table-bordered table-striped table-condensed\"><tr><th nowrap=1>Request Id</th><th nowrap=1>Time Offset (ms)</th></tr>";
       var requestArray = new Array();
 	  for (var i = 0; i < lst.length; i++) {
 		var info = getRequestInfo(client,traceId,lst[i]);
@@ -87,19 +91,16 @@ function displayRequestIds(traceIdAttr) {
 	    }
 	    return 0;
       });
-      var lastTime = 0;
+      var lastTime = requestArray[0].created;
 	  for (var i = 0; i < requestArray.length; i++) {
 		var id = "requestid_"+traceId+"_"+requestArray[i].requestId;
 		if (traceId == requestArray[i].requestId) {
 		  s += "<tr><td nowrap=1><a id=\""+id+"\" href=\"#\">"+requestArray[i].nodeName+" (Root)</a></td>";
-          s += "<td>0</td>";
-		  s += "</tr>";
 		} else {
           s += "<tr><td nowrap=1><a id=\""+id+"\" href=\"#\">"+requestArray[i].nodeName+" (Request "+i+")</a></td>";
-          var diff = requestArray[i].created - lastTime;
-          s += "<td>"+diff / 1000000+"</td>";
-		  s += "</tr>";
         }
+        var diff = requestArray[i].created - lastTime;
+        s += "<td>"+diff / 1000000+"</td></tr>";
 		lastTime = requestArray[i].created;
       }
       rbody.html(s + "</table>");
@@ -133,7 +134,8 @@ function displayTrace(traceIdPlusRequestId) {
   var json = client.traceRequestFetch(traceId,requestId);
   var traceRequest = $.parseJSON(json);
   var ids = new Array();
-  var header = "<table border=1 class=\"table-bordered table-striped table-condensed\">";
+  var header = "<h5>" + traceId + "<h5><h6>"+requestId + "</h6>";
+  header += "<table border=1 class=\"table-bordered table-striped table-condensed\">";
   header += "<tr><th>Node</th><th>Pid</th><th>Main Thread</th><th>Create Time</th></tr>";
   header += "<tr><td>" + traceRequest.nodeName + "</td>";
   header += "<td>" + traceRequest.pid + "</td>";
@@ -188,6 +190,15 @@ function gatherTraceInfo(collector,requestIds,traceId,ids) {
   var traces = collector.traces;
   var s = "<table border=1 class=\"table-bordered table-striped table-condensed\">";
   s += "<tr><th>Trace Name</th><th>Thread</th><th>Scope</th><th>Time (ms)</th></tr>";
+  traces.sort(function(a,b){
+	if (a.id < b.id) {
+      return -1;
+    } else if (a.id > b.id) {
+      return 1;
+    }
+    return 0;
+  })
+  var totalTimeTook = traces[0].took;
   for (var i = 0; i < traces.length; i++) {
     var trace = traces[i];
 
@@ -205,8 +216,13 @@ function gatherTraceInfo(collector,requestIds,traceId,ids) {
         colValue += gatherTraceInfo(trace.collector,requestIds,traceId,ids);
       }
     } else {
+	  var p = (trace.took / totalTimeTook * 100);
 	  colName += trace.id + " - " + trace.name;
-	  colValue += (trace.took / 1000000.0).toPrecision(6);
+	  if (i!=0) {
+	    colValue = "<td valign=top nowrap=1 bgcolor=\"#"+colors[100-Math.round(p)] +"\">" + (trace.took / 1000000.0).toPrecision(6) + " (" + p.toPrecision(3)  + "% of Request)";
+      } else {
+	    colValue += (trace.took / 1000000.0).toPrecision(6);
+      }
     }
     s += "<tr>";
     s += colName + "</td>";

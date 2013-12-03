@@ -649,6 +649,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         _clusterToSafeMode.put(cluster, new SafeModeCacheEntry(false));
         return false;
       }
+      _clusterToSafeMode.put(cluster, new SafeModeCacheEntry(true));
       return true;
     } catch (KeeperException e) {
       throw new RuntimeException(e);

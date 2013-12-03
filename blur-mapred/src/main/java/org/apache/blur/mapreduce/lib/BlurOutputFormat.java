@@ -400,10 +400,11 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
 
       _conf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, analyzer);
       _conf.setCodec(new Blur021Codec());
+      _conf.setSimilarity(tableContext.getSimilarity());
       TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();
       mergePolicy.setUseCompoundFile(false);
 
-      _overFlowConf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, analyzer);
+      _overFlowConf = _conf.clone();
       _overFlowConf.setMergePolicy(NoMergePolicy.NO_COMPOUND_FILES);
 
       if (_indexLocally) {

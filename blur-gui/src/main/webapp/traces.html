@@ -45,7 +45,7 @@ function displayPage() {
       body.html(s + "</table>");
 	  for (var i = 0; i < lst.length; i++) {
 		var traceId = lst[i];
-        $("#traceid_"+traceId).click(function(){ displayRequestIds(event.target.id); return false; });
+        $("#traceid_"+traceId).click(function(event){ displayRequestIds(event.target.id); return false; });
       }
 
     } catch(ouch){

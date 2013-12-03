@@ -30,7 +30,7 @@ public class TraceCollector {
   protected final List<TracerImpl> _traces = new CopyOnWriteArrayList<TracerImpl>();
   protected final AtomicLong _traceCounter = new AtomicLong();
   protected final AtomicInteger _scope = new AtomicInteger();
-  protected final long _now = System.nanoTime();
+  protected final long _now = (System.currentTimeMillis() * 1000000) + (System.nanoTime() % 1000000);
   protected final String _pid;
   protected final String _threadName;
   protected final String _nodeName;

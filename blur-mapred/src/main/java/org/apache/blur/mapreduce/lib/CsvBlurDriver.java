@@ -49,9 +49,11 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.CombineFileRecordReader;
+import org.apache.hadoop.mapreduce.lib.input.CombineFileSplit;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.SequenceFileRecordReader;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
@@ -178,6 +180,10 @@ public class CsvBlurDriver {
     }
     // processing the 'I' option
     if (cmd.hasOption("I")) {
+    	if(cmd.hasOption("C")){
+    		 System.err.println("'I' and 'C' both parameters can not be used together.");
+             return null;
+    	}
       Option[] options = cmd.getOptions();
       for (Option option : options) {
         if (option.getOpt().equals("I")) {
@@ -346,11 +352,58 @@ public class CsvBlurDriver {
 
   public static class CsvBlurCombineSequenceFileInputFormat extends CombineFileInputFormat<Writable, Text> {
 
-    @Override
-    public RecordReader<Writable, Text> createRecordReader(InputSplit split, TaskAttemptContext context)
-        throws IOException {
-      return new SequenceFileRecordReader<Writable, Text>();
-    }
+    
+    private static class SequenceFileRecordReaderWrapper extends RecordReader<Writable, Text>{
+    	
+    	private final RecordReader<Writable,Text> delegate;
+    	private final FileSplit fileSplit;
 
+		@SuppressWarnings("unused")
+		public SequenceFileRecordReaderWrapper(CombineFileSplit split,
+            TaskAttemptContext context, Integer index) throws IOException{
+            fileSplit = new FileSplit(split.getPath(index),
+                      split.getOffset(index), split.getLength(index),
+                      split.getLocations());
+            delegate = new SequenceFileInputFormat<Writable,Text>().createRecordReader(fileSplit, context);
+        }
+
+        @Override public float getProgress() throws IOException, InterruptedException {
+            return delegate.getProgress();
+        }
+
+		@Override
+		public Writable getCurrentKey() throws IOException,
+				InterruptedException {
+			return delegate.getCurrentKey();
+		}
+
+		@Override
+		public Text getCurrentValue() throws IOException, InterruptedException {
+			return delegate.getCurrentValue();
+		}
+
+		@Override
+		public void initialize(InputSplit arg0, TaskAttemptContext context)
+				throws IOException, InterruptedException {
+			delegate.initialize(fileSplit, context);
+		}
+
+		@Override
+		public boolean nextKeyValue() throws IOException, InterruptedException {
+			return delegate.nextKeyValue();
+		}
+		
+		@Override public void close() throws IOException {
+            delegate.close();
+		}
+
+    }
+    	
+    @Override
+	public RecordReader<Writable, Text> createRecordReader(
+			InputSplit split, TaskAttemptContext context) throws IOException {
+		return new CombineFileRecordReader<Writable, Text>((CombineFileSplit) split, context, SequenceFileRecordReaderWrapper.class);
+	}
   }
+
 }

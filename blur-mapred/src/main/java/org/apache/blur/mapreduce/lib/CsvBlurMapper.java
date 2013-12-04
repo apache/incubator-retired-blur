@@ -366,7 +366,7 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
 
   private Path getCurrentFile(Context context) throws IOException {
     InputSplit split = context.getInputSplit();
-    if (split != null) {
+    if (split != null && split instanceof FileSplit) {
       FileSplit inputSplit = (FileSplit) split;
       Path path = inputSplit.getPath();
       return path.makeQualified(path.getFileSystem(context.getConfiguration()));

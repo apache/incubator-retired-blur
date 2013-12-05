@@ -22,6 +22,7 @@ import static org.apache.blur.metrics.MetricsConstants.JVM;
 import static org.apache.blur.metrics.MetricsConstants.LOAD_AVERAGE;
 import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 import static org.apache.blur.metrics.MetricsConstants.SYSTEM;
+import static org.apache.blur.utils.BlurConstants.BLUR_HDFS_TRACE_PATH;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TRACE_PATH;
 
 import java.io.BufferedReader;
@@ -57,6 +58,7 @@ import org.apache.blur.thrift.server.TThreadedSelectorServer.Args.AcceptPolicy;
 import org.apache.blur.trace.LogTraceStorage;
 import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.trace.ZooKeeperTraceStorage;
+import org.apache.blur.trace.hdfs.HdfsTraceStorage;
 
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Gauge;
@@ -99,11 +101,19 @@ public class ThriftServer {
   }
 
   public static TraceStorage setupTraceStorage(BlurConfiguration configuration) throws IOException {
-    String path = configuration.get(BLUR_ZOOKEEPER_TRACE_PATH);
-    if (path == null || path.isEmpty()) {
+    String zKpath = configuration.get(BLUR_ZOOKEEPER_TRACE_PATH);
+    String hdfsPath = configuration.get(BLUR_HDFS_TRACE_PATH);
+    if (zKpath != null && hdfsPath != null) {
+      throw new RuntimeException("Cannot have both [" + BLUR_ZOOKEEPER_TRACE_PATH + "] and [" + BLUR_HDFS_TRACE_PATH
+          + "] set.");
+    }
+    if (zKpath != null) {
+      return new ZooKeeperTraceStorage(configuration);
+    } else if (hdfsPath != null) {
+      return new HdfsTraceStorage(configuration);
+    } else {
       return new LogTraceStorage(configuration);
     }
-    return new ZooKeeperTraceStorage(configuration);
   }
 
   public static void printUlimits() throws IOException {

@@ -131,7 +131,7 @@ public class BlurNRTIndexTest {
       writer.replaceRow(true, true, genRow());
       IndexSearcherClosable searcher = writer.getIndexReader();
       IndexReader reader = searcher.getIndexReader();
-      assertEquals(i + 1, reader.numDocs());
+      assertEquals(i+1, reader.numDocs());
       searcher.close();
       total++;
     }
@@ -198,7 +198,7 @@ public class BlurNRTIndexTest {
     // check that the file is persisted
     Path snapshotsDirPath = writer.getSnapshotsDirectoryPath();
     FileSystem fileSystem = snapshotsDirPath.getFileSystem(new Configuration());
-    Path snapshotFilePath = new Path(snapshotsDirPath, "test_snapshot");
+    Path snapshotFilePath = new Path(snapshotsDirPath, "test_snapshot_1");
     assertTrue(fileSystem.exists(snapshotFilePath));
     
     // create a new writer instance and test whether the snapshots are loaded properly
@@ -216,8 +216,8 @@ public class BlurNRTIndexTest {
     fileSystem.mkdirs(snapshotsDirPath);
     
     // create 2 files in snapshots sub-dir
-    Path snapshotFile1 = new Path(snapshotsDirPath, "test_snapshot1");
-    Path snapshotFile2 = new Path(snapshotsDirPath, "test_snapshot2");
+    Path snapshotFile1 = new Path(snapshotsDirPath, "test_snapshot1_1");
+    Path snapshotFile2 = new Path(snapshotsDirPath, "test_snapshot2_2");
     
     BufferedWriter br1 = new BufferedWriter(new OutputStreamWriter(fileSystem.create(snapshotFile1, true)));
     br1.write("segments_1");

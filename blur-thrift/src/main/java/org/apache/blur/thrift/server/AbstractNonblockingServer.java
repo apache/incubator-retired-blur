@@ -50,7 +50,8 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractNonblockingServer extends TServer {
   protected final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
 
-  public static abstract class AbstractNonblockingServerArgs<T extends AbstractNonblockingServerArgs<T>> extends AbstractServerArgs<T> {
+  public static abstract class AbstractNonblockingServerArgs<T extends AbstractNonblockingServerArgs<T>> extends
+      AbstractServerArgs<T> {
     public long maxReadBufferBytes = Long.MAX_VALUE;
 
     public AbstractNonblockingServerArgs(TNonblockingServerTransport transport) {
@@ -201,17 +202,44 @@ public abstract class AbstractNonblockingServer extends TServer {
      */
     protected void handleRead(SelectionKey key) {
       FrameBuffer buffer = (FrameBuffer) key.attachment();
-      if (!buffer.read()) {
-        cleanupSelectionKey(key);
-        return;
+      ThriftTracer readTracer = ThriftTracer.NOTHING;
+      if (buffer.context_ != null) {
+        ServerContext context = buffer.context_;
+        if (context instanceof ThriftTrace) {
+          ThriftTrace thriftTrace = (ThriftTrace) context;
+          readTracer = thriftTrace.getTracer("thrift - handle read");
+        }
+      }
+      readTracer.start();
+      try {
+        if (!buffer.read()) {
+          cleanupSelectionKey(key);
+          return;
+        }
+      } finally {
+        readTracer.end();
       }
 
       // if the buffer's frame read is complete, invoke the method.
       if (buffer.isFrameFullyRead()) {
-        if (!requestInvoke(buffer)) {
-          cleanupSelectionKey(key);
+        ThriftTracer processTracer = ThriftTracer.NOTHING;
+        if (buffer.context_ != null) {
+          ServerContext context = buffer.context_;
+          if (context instanceof ThriftTrace) {
+            ThriftTrace thriftTrace = (ThriftTrace) context;
+            processTracer = thriftTrace.getTracer("thrift - handle request");
+          }
+        }
+        processTracer.start();
+        try {
+          if (!requestInvoke(buffer)) {
+            cleanupSelectionKey(key);
+          }
+        } finally {
+          processTracer.end();
         }
       }
+
     }
 
     /**
@@ -219,8 +247,21 @@ public abstract class AbstractNonblockingServer extends TServer {
      */
     protected void handleWrite(SelectionKey key) {
       FrameBuffer buffer = (FrameBuffer) key.attachment();
-      if (!buffer.write()) {
-        cleanupSelectionKey(key);
+      ThriftTracer writeTracer = ThriftTracer.NOTHING;
+      if (buffer.context_ != null) {
+        ServerContext context = buffer.context_;
+        if (context instanceof ThriftTrace) {
+          ThriftTrace thriftTrace = (ThriftTrace) context;
+          writeTracer = thriftTrace.getTracer("thrift - handle write");
+        }
+      }
+      writeTracer.start();
+      try {
+        if (!buffer.write()) {
+          cleanupSelectionKey(key);
+        }
+      } finally {
+        writeTracer.end();
       }
     }
 
@@ -284,26 +325,25 @@ public abstract class AbstractNonblockingServer extends TServer {
     private ByteBuffer buffer_;
 
     private final TByteArrayOutputStream response_;
-    
+
     // the frame that the TTransport should wrap.
     private final TMemoryInputTransport frameTrans_;
-    
+
     // the transport that should be used to connect to clients
     private final TTransport inTrans_;
-    
+
     private final TTransport outTrans_;
-    
+
     // the input protocol to use on frames
     private final TProtocol inProt_;
-    
+
     // the output protocol to use on frames
     private final TProtocol outProt_;
-    
+
     // context associated with this connection
     private final ServerContext context_;
 
-    public FrameBuffer(final TNonblockingTransport trans,
-        final SelectionKey selectionKey,
+    public FrameBuffer(final TNonblockingTransport trans, final SelectionKey selectionKey,
         final AbstractSelectThread selectThread) {
       trans_ = trans;
       selectionKey_ = selectionKey;
@@ -320,7 +360,7 @@ public abstract class AbstractNonblockingServer extends TServer {
       if (eventHandler_ != null) {
         context_ = eventHandler_.createContext(inProt_, outProt_, selectionKey);
       } else {
-        context_  = null;
+        context_ = null;
       }
     }
 
@@ -507,7 +547,7 @@ public abstract class AbstractNonblockingServer extends TServer {
     public void invoke() {
       frameTrans_.reset(buffer_.array());
       response_.reset();
-      
+
       try {
         if (eventHandler_ != null) {
           eventHandler_.processContext(context_, inTrans_, outTrans_);

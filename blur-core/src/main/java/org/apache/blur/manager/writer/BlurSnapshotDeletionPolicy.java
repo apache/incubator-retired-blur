@@ -1,5 +1,21 @@
 package org.apache.blur.manager.writer;
 
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,6 +25,10 @@ import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.SnapshotDeletionPolicy;
 import org.apache.lucene.store.Directory;
 
+/**
+ *	This class extends {@link SnapshotDeletionPolicy}. It loads the old snapshots
+ *	and also contain a map of snapshot file name and corresponding generation.
+ */
 public class BlurSnapshotDeletionPolicy extends SnapshotDeletionPolicy {
 
 	public static final String SNAPSHOTS_PREFIX = "_snapshot";
@@ -48,12 +68,6 @@ public class BlurSnapshotDeletionPolicy extends SnapshotDeletionPolicy {
 		mapOfSnapshotNameGen.remove(snapshotName);
 	}
 	
-	/**
-	 * Reads the snapshots information from the given {@link Directory}. This
-	 * method can be used if the snapshots information is needed, however you
-	 * cannot instantiate the deletion policy (because e.g., some other process
-	 * keeps a lock on the snapshots directory).
-	 */
 	private synchronized void loadPriorSnapshots() throws IOException {
 		long genLoaded = -1;
 		for (String file : dir.listAll()) {

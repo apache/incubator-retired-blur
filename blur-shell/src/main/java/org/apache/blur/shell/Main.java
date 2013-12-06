@@ -402,7 +402,8 @@ public class Main {
   public static String[] dataCommands = { "query", "get", "mutate", "delete", "highlight", "selector", "terms",
       "create-snapshot", "remove-snapshot", "list-snapshots" };
   public static String[] clusterCommands = { "controllers", "shards", "clusterlist", "cluster", "safemodewait", "top" };
-  public static String[] shellCommands = { "help", "debug", "timed", "quit", "reset", "user", "whoami" };
+  public static String[] shellCommands = { "help", "debug", "timed", "quit", "reset", "user", "whoami", "trace",
+      "trace-remove", "trace-list" };
 
   private static class HelpCommand extends Command {
     @Override
@@ -670,6 +671,8 @@ public class Main {
     register(builder, new WhoAmICommand());
     register(builder, new UserCommand());
     register(builder, new TraceCommand());
+    register(builder, new TraceList());
+    register(builder, new TraceRemove());
     commands = builder.build();
   }
 

@@ -271,4 +271,6 @@ public abstract class FieldManager {
   
   public abstract String resolveField(String field);
 
+  public abstract void loadFromStorage() throws IOException;
+
 }

@@ -286,14 +286,8 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public Schema schema(String table) throws BlurException, TException {
-    checkTable(_cluster, table);
     resetSearchers();
-    try {
-      return _indexManager.schema(table);
-    } catch (Exception e) {
-      LOG.error("Unknown error while trying to get schema for table [{0}={1}]", e, "table", table);
-      throw new BException(e.getMessage(), e);
-    }
+    return super.schema(table);
   }
 
   @Override

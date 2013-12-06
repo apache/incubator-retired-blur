@@ -58,6 +58,10 @@ public class WatchChildren implements Closeable {
   }
 
   public WatchChildren watch(final OnChange onChange) {
+    return watch(onChange, 0, TimeUnit.SECONDS);
+  }
+
+  public WatchChildren watch(final OnChange onChange, long fireAnywayTime, TimeUnit timeUnit) {
     if (_debug) {
       StringWriter writer = new StringWriter();
       PrintWriter printWriter = new PrintWriter(writer);
@@ -65,6 +69,7 @@ public class WatchChildren implements Closeable {
       printWriter.close();
       _debugStackTrace = writer.toString();
     }
+    final long timeToFireAnywayTime = TimeUnit.MILLISECONDS.convert(fireAnywayTime, timeUnit);
     _watchThread = new Thread(new Runnable() {
       @Override
       public void run() {
@@ -87,7 +92,7 @@ public class WatchChildren implements Closeable {
               } catch (Throwable t) {
                 LOG.error("Unknown error during onchange action [" + this + "].", t);
               }
-              _lock.wait();
+              _lock.wait(timeToFireAnywayTime);
             } catch (KeeperException e) {
               if (!_running.get()) {
                 LOG.info("Error [{0}]", e.getMessage());
@@ -95,7 +100,8 @@ public class WatchChildren implements Closeable {
               }
               if (e.code() == Code.NONODE) {
                 if (_debug) {
-                  LOG.debug("Path for watching not found [{0}], no longer watching, debug [{1}].", _path, _debugStackTrace);
+                  LOG.debug("Path for watching not found [{0}], no longer watching, debug [{1}].", _path,
+                      _debugStackTrace);
                 } else {
                   LOG.debug("Path for watching not found [{0}], no longer watching.", _path);
                 }

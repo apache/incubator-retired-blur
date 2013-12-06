@@ -36,6 +36,7 @@ public class BlurConstants {
   public static final String SUPER = "super";
   public static final String SEP = ".";
 
+  public static final String BLUR_SHARD_BALANCER_PERIOD = "blur.shard.balancer.period";
   public static final String BLUR_TABLE_PATH = "blur.table.path";
   public static final String BLUR_ZOOKEEPER_CONNECTION = "blur.zookeeper.connection";
   public static final String BLUR_ZOOKEEPER_TRACE_PATH = "blur.zookeeper.trace.path";

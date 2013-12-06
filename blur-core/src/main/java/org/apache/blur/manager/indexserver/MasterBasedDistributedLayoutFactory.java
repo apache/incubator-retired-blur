@@ -95,14 +95,17 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
     try {
       _zooKeeperLockManager.lock(table);
       String storagePath = getStoragePath(table);
+      LOG.info("Checking for existing layout for table [{0}]", table);
       Stat stat = _zooKeeper.exists(storagePath, false);
       MasterBasedDistributedLayout existingLayout = null;
       if (stat != null) {
+        LOG.info("Existing layout found for table [{0}]", table);
         byte[] data = _zooKeeper.getData(storagePath, false, stat);
         if (data != null) {
           MasterBasedDistributedLayout storedLayout = fromBytes(data);
+          LOG.info("Checking if layout is out of date for table [{0}]", table);
           if (!storedLayout.isOutOfDate(onlineShardServerList, shardServerList)) {
-            LOG.info("New layout fetched.");
+            LOG.info("Layout is up-to-date for table [{0}]", table);
             return storedLayout;
           }
           // If there was a stored layout, use the stored layout as a
@@ -110,11 +113,13 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
           existingLayout = storedLayout;
         }
       }
+      LOG.info("Calculating new layout for table [{0}]", table);
       // recreate
       Map<String, String> newCalculatedLayout = calculateNewLayout(table, existingLayout, onlineShardServerList,
           shardServerList);
       MasterBasedDistributedLayout layout = new MasterBasedDistributedLayout(newCalculatedLayout,
           onlineShardServerList, shardServerList);
+      LOG.info("New layout created for table [{0}]", table);
       if (_zooKeeper.exists(storagePath, false) == null) {
         _zooKeeper.create(storagePath, toBytes(layout), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
       } else {
@@ -168,12 +173,14 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
           increment(onlineServerShardCount, server);
         }
       }
+      LOG.info("Existing layout counts for table [{0}] are [{1}] and offline shards are [{2}]", table,
+          onlineServerShardCount, shardsThatAreOffline);
 
-      LOG.info("Adding in new shard servers for table [{0}]", table);
+      LOG.info("Adding in new shard servers for table [{0}] current shard servers are [{1}]", table, shardServerSet);
       // Add counts for new shard servers
       for (String server : shardServerSet) {
         if (!onlineServerShardCount.containsKey(server)) {
-          LOG.info("New shard server [{0}]", server);
+          LOG.info("New shard server found [{0}]", server);
           onlineServerShardCount.put(server, 0);
         }
       }
@@ -189,9 +196,9 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
         increment(onlineServerShardCount, server);
       }
 
-      LOG.info("Leveling any shard hotspots for table [{0}]", table);
+      LOG.info("Leveling any shard hotspots for table [{0}] for layout [{1}]", table, newLayoutMap);
       // Level shards
-      MasterBasedLeveler.level(shardList.size(), shardServerSet.size(), onlineServerShardCount, newLayoutMap);
+      MasterBasedLeveler.level(shardList.size(), shardServerSet.size(), onlineServerShardCount, newLayoutMap, table);
       return newLayoutMap;
     }
   }

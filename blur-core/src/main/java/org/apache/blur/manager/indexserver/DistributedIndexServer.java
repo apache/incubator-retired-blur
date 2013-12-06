@@ -116,13 +116,15 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   private final ConcurrentMap<String, Map<String, BlurIndex>> _indexes = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
   private final ShardStateManager _shardStateManager = new ShardStateManager();
   private final Closer _closer;
+  private final long _balancerTime;
 
   public DistributedIndexServer(Configuration configuration, ZooKeeper zookeeper, ClusterStatus clusterStatus,
       BlurIndexWarmup warmup, BlurFilterCache filterCache, BlockCacheDirectoryFactory blockCacheDirectoryFactory,
       DistributedLayoutFactory distributedLayoutFactory, String cluster, String nodeName, long safeModeDelay,
-      int shardOpenerThreadCount, int internalSearchThreads, int warmupThreads, int maxMergeThreads)
+      int shardOpenerThreadCount, int internalSearchThreads, int warmupThreads, int maxMergeThreads, long balancerTime)
       throws KeeperException, InterruptedException {
     super(clusterStatus, configuration, nodeName, cluster);
+    _balancerTime = balancerTime;
     _closer = Closer.create();
     _shardOpenerThreadCount = shardOpenerThreadCount;
     _zookeeper = zookeeper;
@@ -248,6 +250,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   }
 
   private WatchChildren watchForShardServerChanges() {
+    
     WatchChildren watchOnlineShards = new WatchChildren(_zookeeper,
         ZookeeperPathConstants.getOnlineShardsPath(_cluster)).watch(new OnChange() {
       private List<String> _prevOnlineShards = new ArrayList<String>();
@@ -257,22 +260,28 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
         List<String> oldOnlineShards = _prevOnlineShards;
         _prevOnlineShards = onlineShards;
         _layout.clear();
-        LOG.info("Online shard servers changed, clearing layout managers and cache.");
+        LOG.info("Layouts cleared, possible node change or rebalance.");
+        boolean change = false;
         if (oldOnlineShards == null) {
           oldOnlineShards = new ArrayList<String>();
         }
         for (String oldOnlineShard : oldOnlineShards) {
           if (!onlineShards.contains(oldOnlineShard)) {
             LOG.info("Node went offline [{0}]", oldOnlineShard);
+            change = true;
           }
         }
         for (String onlineShard : onlineShards) {
           if (!oldOnlineShards.contains(onlineShard)) {
             LOG.info("Node came online [{0}]", onlineShard);
+            change = true;
           }
         }
+        if (change) {
+          LOG.info("Online shard servers changed, clearing layout managers and cache.");
+        }
       }
-    });
+    }, _balancerTime, TimeUnit.MILLISECONDS);
     return _closer.register(watchOnlineShards);
   }
 

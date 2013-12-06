@@ -36,7 +36,7 @@ public class MasterBasedLeveler {
   private static final Log LOG = LogFactory.getLog(MasterBasedLeveler.class);
 
   public static void level(int totalShards, int totalShardServers, Map<String, Integer> onlineServerShardCount,
-      Map<String, String> newLayoutMap) {
+      Map<String, String> newLayoutMap, String table) {
     List<Entry<String, Integer>> onlineServerShardCountList = new ArrayList<Map.Entry<String, Integer>>(
         onlineServerShardCount.entrySet());
     Collections.sort(onlineServerShardCountList, new Comparator<Entry<String, Integer>>() {
@@ -55,7 +55,7 @@ public class MasterBasedLeveler {
 
     Set<String> overAllocatedSet = new HashSet<String>();
     Set<String> underAllocatedSet = new HashSet<String>();
-    LOG.info("Optimum server shard count [{0}]", opt);
+    LOG.info("Optimum server shard count [{0}] for table [{1}]", opt, table);
     for (Entry<String, Integer> e : onlineServerShardCountList) {
       int countInt = e.getValue();
       float count = countInt;
@@ -86,8 +86,9 @@ public class MasterBasedLeveler {
     while (!underAllocatedSet.isEmpty() && !overAllocatedSet.isEmpty()) {
       String overAllocatedServer = getFirst(overAllocatedSet);
       String underAllocatedServer = getFirst(underAllocatedSet);
+      LOG.info("Over allocated server [{0}] under allocated server [{1}]", overAllocatedServer, underAllocatedServer);
       moveSingleShard(overAllocatedServer, underAllocatedServer, opt, overAllocatedSet, underAllocatedSet,
-          newLayoutMap, onlineServerShardCount, serverToShards);
+          newLayoutMap, onlineServerShardCount, serverToShards, table);
     }
   }
 
@@ -101,7 +102,7 @@ public class MasterBasedLeveler {
 
   private static void moveSingleShard(String srcServer, String distServer, float opt,
       Set<String> overAllocatedServerSet, Set<String> underAllocatedServerSet, Map<String, String> newLayoutMap,
-      Map<String, Integer> onlineServerShardCount, Map<String, SortedSet<String>> serverToShards) {
+      Map<String, Integer> onlineServerShardCount, Map<String, SortedSet<String>> serverToShards, String table) {
 
     SortedSet<String> srcShards = serverToShards.get(srcServer);
     if (srcShards == null) {
@@ -114,17 +115,24 @@ public class MasterBasedLeveler {
       serverToShards.put(distServer, distShards);
     }
 
+    LOG.info("Source server shard list for table [{0}] is [{1}]", table, srcShards);
+    LOG.info("Destination server shard list for table [{0}] is [{1}]", table, distShards);
+
     String srcShard = getFirst(srcShards);
+
+    LOG.info("Moving shard [{0}] from [{1}] to [{2}] for table [{3}]", srcShard, srcServer, distServer, table);
 
     srcShards.remove(srcShard);
     distShards.add(srcShard);
 
     if (!isNotInOptBalance(opt, srcShards.size())) {
+      LOG.info("Source server [{0}] is in balance with size [{1}] optimum size [{2}]", srcServer, srcShards.size(), opt);
       overAllocatedServerSet.remove(srcServer);
       underAllocatedServerSet.remove(srcServer);
     }
 
     if (!isNotInOptBalance(opt, distShards.size())) {
+      LOG.info("Source server [{0}] is in balance with size [{1}] optimum size [{2}]", distServer, distShards.size(), opt);
       overAllocatedServerSet.remove(distServer);
       underAllocatedServerSet.remove(distServer);
     }
@@ -150,7 +158,7 @@ public class MasterBasedLeveler {
     } else {
       int value = i - 1;
       if (value < 0) {
-        value = 0;  
+        value = 0;
       }
       map.put(key, value);
     }

@@ -805,37 +805,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public Schema schema(final String table) throws BlurException, TException {
-    checkTable(table);
-    try {
-      return scatterGather(getCluster(table), new BlurCommand<Schema>() {
-        @Override
-        public Schema call(Client client) throws BlurException, TException {
-          return client.schema(table);
-        }
-      }, new Merger<Schema>() {
-        @Override
-        public Schema merge(BlurExecutorCompletionService<Schema> service) throws BlurException {
-          Schema result = null;
-          while (service.getRemainingCount() > 0) {
-            Future<Schema> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true, table);
-            Schema schema = service.getResultThrowException(future, table);
-            if (result == null) {
-              result = schema;
-            } else {
-              result = BlurControllerServer.merge(result, schema);
-            }
-          }
-          return result;
-        }
-      });
-    } catch (Exception e) {
-      LOG.error("Unknown error while trying to schema table [{0}]", e, table);
-      throw new BException("Unknown error while trying to schema table [{0}]", e, table);
-    }
-  }
-
-  @Override
   public List<String> terms(final String table, final String columnFamily, final String columnName,
       final String startWith, final short size) throws BlurException, TException {
     checkTable(table);

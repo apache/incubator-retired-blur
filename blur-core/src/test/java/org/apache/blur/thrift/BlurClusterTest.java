@@ -40,7 +40,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.blur.MiniCluster;
 import org.apache.blur.TestType;
+import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.manager.IndexManager;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -48,6 +50,7 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
+import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.Query;
@@ -112,6 +115,7 @@ public class BlurClusterTest {
       KeeperException {
     testCreateTable();
     testLoadTable();
+    testForEmptySchema();
     testQueryWithSelector();
     testBatchFetch();
     testQueryCancel();
@@ -120,6 +124,27 @@ public class BlurClusterTest {
     testTermsList();
     testCreateDisableAndRemoveTable();
     testCreateTableWithCustomType();
+  }
+
+  private void testForEmptySchema() throws BlurException, TException, IOException {
+    Blur.Iface client = getClient();
+    Schema schema = client.schema("test");
+    Map<String, Map<String, ColumnDefinition>> families = schema.getFamilies();
+    assertTrue(!families.isEmpty());
+    int size = families.size();
+    System.out.println(size);
+
+    TableContext tableContext = TableContext.create(client.describe("test"));
+    FieldManager fieldManager = tableContext.getFieldManager();
+
+    assertTrue(fieldManager.addColumnDefinition("test-family", "test-column", null, false, "string", null));
+
+    TableContext.clear();
+    Schema newschema = client.schema("test");
+    Map<String, Map<String, ColumnDefinition>> newfamilies = newschema.getFamilies();
+    assertTrue(!newfamilies.isEmpty());
+    int newsize = newfamilies.size();
+    assertEquals(size + 1, newsize);
   }
 
   private void testCreateTableWithCustomType() throws IOException, BlurException, TException {

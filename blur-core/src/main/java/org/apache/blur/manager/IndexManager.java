@@ -45,7 +45,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.analysis.FieldManager;
-import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.index.ExitableReader;
 import org.apache.blur.index.ExitableReader.ExitingReaderException;
@@ -69,7 +68,6 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.Column;
-import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.FetchRowResult;
@@ -81,7 +79,6 @@ import org.apache.blur.thrift.generated.RecordMutationType;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
-import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.trace.Trace;
@@ -816,45 +813,6 @@ public class IndexManager {
       return new Term(columnName, value);
     }
     return new Term(columnFamily + "." + columnName, value);
-  }
-
-  public Schema schema(String table) throws IOException {
-    TableContext tableContext = getTableContext(table);
-    FieldManager fieldManager = tableContext.getFieldManager();
-    Schema schema = new Schema().setTable(table);
-    schema.setFamilies(new HashMap<String, Map<String, ColumnDefinition>>());
-    Set<String> fieldNames = fieldManager.getFieldNames();
-    INNER: for (String fieldName : fieldNames) {
-      FieldTypeDefinition fieldTypeDefinition = fieldManager.getFieldTypeDefinition(fieldName);
-      if (fieldTypeDefinition == null) {
-        continue INNER;
-      }
-      String columnName = fieldTypeDefinition.getColumnName();
-      String columnFamily = fieldTypeDefinition.getFamily();
-      String subColumnName = fieldTypeDefinition.getSubColumnName();
-      Map<String, ColumnDefinition> map = schema.getFamilies().get(columnFamily);
-      if (map == null) {
-        map = new HashMap<String, ColumnDefinition>();
-        schema.putToFamilies(columnFamily, map);
-      }
-      if (subColumnName == null) {
-        map.put(columnName, getColumnDefinition(fieldTypeDefinition));
-      } else {
-        map.put(columnName + "." + subColumnName, getColumnDefinition(fieldTypeDefinition));
-      }
-    }
-    return schema;
-  }
-
-  private static ColumnDefinition getColumnDefinition(FieldTypeDefinition fieldTypeDefinition) {
-    ColumnDefinition columnDefinition = new ColumnDefinition();
-    columnDefinition.setFamily(fieldTypeDefinition.getFamily());
-    columnDefinition.setColumnName(fieldTypeDefinition.getColumnName());
-    columnDefinition.setSubColumnName(fieldTypeDefinition.getSubColumnName());
-    columnDefinition.setFieldLessIndexed(fieldTypeDefinition.isFieldLessIndexed());
-    columnDefinition.setFieldType(fieldTypeDefinition.getFieldType());
-    columnDefinition.setProperties(fieldTypeDefinition.getProperties());
-    return columnDefinition;
   }
 
   public void mutate(final RowMutation mutation) throws BlurException, IOException {

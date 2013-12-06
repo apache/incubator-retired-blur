@@ -181,10 +181,13 @@ public abstract class BaseFieldManager extends FieldManager {
     return new TreeSet<String>(_fieldNameToDefMap.keySet());
   }
 
-  public void load() throws IOException {
+  @Override
+  public void loadFromStorage() throws IOException {
     List<String> fieldNamesToLoad = getFieldNamesToLoad();
     for (String fieldName : fieldNamesToLoad) {
-      tryToLoad(fieldName);
+      if (!_fieldNameToDefMap.containsKey(fieldName)) {
+        tryToLoad(fieldName);  
+      }
     }
   }
 

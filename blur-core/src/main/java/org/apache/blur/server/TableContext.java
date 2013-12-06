@@ -134,7 +134,7 @@ public class TableContext {
       HdfsFieldManager hdfsFieldManager = new HdfsFieldManager(SUPER, new NoStopWordStandardAnalyzer(), storagePath,
           configuration, strict, defaultMissingFieldType, defaultMissingFieldLessIndexing, defaultMissingFieldProps);
       loadCustomTypes(tableContext, blurConfiguration, hdfsFieldManager);
-      hdfsFieldManager.load();
+      hdfsFieldManager.loadFromStorage();
       tableContext.fieldManager = hdfsFieldManager;
     } catch (IOException e) {
       throw new RuntimeException(e);

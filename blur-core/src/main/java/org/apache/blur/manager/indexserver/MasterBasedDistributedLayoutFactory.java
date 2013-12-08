@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -57,6 +58,12 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
   private final ZooKeeperLockManager _zooKeeperLockManager;
   private final String _tableStoragePath;
   private final String _locksStoragePath;
+  private final ThreadLocal<Random> _random = new ThreadLocal<Random>() {
+    @Override
+    protected Random initialValue() {
+      return new Random();
+    }
+  };
 
   public MasterBasedDistributedLayoutFactory(ZooKeeper zooKeeper, String storagePath) {
     _zooKeeper = zooKeeper;
@@ -198,7 +205,8 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
 
       LOG.info("Leveling any shard hotspots for table [{0}] for layout [{1}]", table, newLayoutMap);
       // Level shards
-      MasterBasedLeveler.level(shardList.size(), shardServerSet.size(), onlineServerShardCount, newLayoutMap, table);
+      MasterBasedLeveler.level(shardList.size(), shardServerSet.size(), onlineServerShardCount, newLayoutMap, table,
+          _random.get());
       return newLayoutMap;
     }
   }

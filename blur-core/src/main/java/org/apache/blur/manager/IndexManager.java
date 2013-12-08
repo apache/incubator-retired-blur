@@ -156,19 +156,23 @@ public class IndexManager {
     _indexServer = indexServer;
     _clusterStatus = clusterStatus;
     _filterCache = filterCache;
-    _readRecordsMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Read Records/s"), "Records/s",
-        TimeUnit.SECONDS);
-    _readRowMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Read Row/s"), "Row/s", TimeUnit.SECONDS);
-    _writeRecordsMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Write Records/s"), "Records/s",
-        TimeUnit.SECONDS);
-    _writeRowMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Write Row/s"), "Row/s", TimeUnit.SECONDS);
-
-    _queriesExternalMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "External Queries/s"),
-        "External Queries/s", TimeUnit.SECONDS);
-    _queriesInternalMeter = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, BLUR, "Internal Queries/s"),
-        "Internal Queries/s", TimeUnit.SECONDS);
-    _fetchTimer = Metrics.newTimer(new MetricName(ORG_APACHE_BLUR, BLUR, "Fetch Timer"), TimeUnit.MICROSECONDS,
-        TimeUnit.SECONDS);
+    
+    MetricName metricName1 = new MetricName(ORG_APACHE_BLUR, BLUR, "Read Records/s");
+    MetricName metricName2 = new MetricName(ORG_APACHE_BLUR, BLUR, "Read Row/s");
+    MetricName metricName3 = new MetricName(ORG_APACHE_BLUR, BLUR, "Write Records/s");
+    MetricName metricName4 = new MetricName(ORG_APACHE_BLUR, BLUR, "Write Row/s");
+    MetricName metricName5 = new MetricName(ORG_APACHE_BLUR, BLUR, "External Queries/s");
+    MetricName metricName6 = new MetricName(ORG_APACHE_BLUR, BLUR, "Internal Queries/s");
+    MetricName metricName7 = new MetricName(ORG_APACHE_BLUR, BLUR, "Fetch Timer");
+    
+    _readRecordsMeter = Metrics.newMeter(metricName1, "Records/s", TimeUnit.SECONDS);
+    _readRowMeter = Metrics.newMeter(metricName2, "Row/s", TimeUnit.SECONDS);
+    _writeRecordsMeter = Metrics.newMeter(metricName3, "Records/s", TimeUnit.SECONDS);
+    _writeRowMeter = Metrics.newMeter(metricName4, "Row/s", TimeUnit.SECONDS);
+    _queriesExternalMeter = Metrics.newMeter(metricName5, "External Queries/s", TimeUnit.SECONDS);
+    _queriesInternalMeter = Metrics.newMeter(metricName6, "Internal Queries/s", TimeUnit.SECONDS);
+    _fetchTimer = Metrics.newTimer(metricName7, TimeUnit.MICROSECONDS, TimeUnit.SECONDS);
+    
     if (threadCount == 0) {
       throw new RuntimeException("Thread Count cannot be 0.");
     }

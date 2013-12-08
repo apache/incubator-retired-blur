@@ -26,7 +26,6 @@ import org.apache.lucene.codecs.SegmentInfoFormat;
 import org.apache.lucene.codecs.StoredFieldsFormat;
 import org.apache.lucene.codecs.TermVectorsFormat;
 import org.apache.lucene.codecs.lucene40.Lucene40SegmentInfoFormat;
-import org.apache.lucene.codecs.lucene41.Lucene41StoredFieldsFormat;
 import org.apache.lucene.codecs.lucene42.Lucene42FieldInfosFormat;
 import org.apache.lucene.codecs.lucene42.Lucene42NormsFormat;
 import org.apache.lucene.codecs.lucene42.Lucene42TermVectorsFormat;
@@ -34,7 +33,7 @@ import org.apache.lucene.codecs.perfield.PerFieldDocValuesFormat;
 import org.apache.lucene.codecs.perfield.PerFieldPostingsFormat;
 
 public class Blur021Codec extends Codec {
-  private final StoredFieldsFormat fieldsFormat = new Lucene41StoredFieldsFormat();
+  private final StoredFieldsFormat fieldsFormat = new Blur021StoredFieldsFormat();
   private final TermVectorsFormat vectorsFormat = new Lucene42TermVectorsFormat();
   private final FieldInfosFormat fieldInfosFormat = new Lucene42FieldInfosFormat();
   private final SegmentInfoFormat infosFormat = new Lucene40SegmentInfoFormat();
@@ -46,7 +45,6 @@ public class Blur021Codec extends Codec {
       return Blur021Codec.this.getPostingsFormatForField(field);
     }
   };
-  
   
   private final DocValuesFormat docValuesFormat = new PerFieldDocValuesFormat() {
     @Override

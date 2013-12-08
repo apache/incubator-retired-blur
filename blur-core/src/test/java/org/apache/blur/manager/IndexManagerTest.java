@@ -313,7 +313,7 @@ public class IndexManagerTest {
     }
 
     Trace.setStorage(oldReporter);
-
+    
   }
 
   private RowMutation getLargeRow(String rowId) {

@@ -493,4 +493,9 @@ public class BlurShardServer extends TableAdmin implements Iface {
     context.setTraceRequestId(requestId);
   }
 
+  protected boolean inSafeMode(boolean useCache, String table) throws BlurException {
+    // Shard server cannot be processing requests if it's in safe mode.
+    return false;
+  }
+
 }

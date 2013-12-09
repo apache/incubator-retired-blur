@@ -156,7 +156,7 @@ public class IndexManager {
     _indexServer = indexServer;
     _clusterStatus = clusterStatus;
     _filterCache = filterCache;
-    
+
     MetricName metricName1 = new MetricName(ORG_APACHE_BLUR, BLUR, "Read Records/s");
     MetricName metricName2 = new MetricName(ORG_APACHE_BLUR, BLUR, "Read Row/s");
     MetricName metricName3 = new MetricName(ORG_APACHE_BLUR, BLUR, "Write Records/s");
@@ -164,7 +164,7 @@ public class IndexManager {
     MetricName metricName5 = new MetricName(ORG_APACHE_BLUR, BLUR, "External Queries/s");
     MetricName metricName6 = new MetricName(ORG_APACHE_BLUR, BLUR, "Internal Queries/s");
     MetricName metricName7 = new MetricName(ORG_APACHE_BLUR, BLUR, "Fetch Timer");
-    
+
     _readRecordsMeter = Metrics.newMeter(metricName1, "Records/s", TimeUnit.SECONDS);
     _readRowMeter = Metrics.newMeter(metricName2, "Row/s", TimeUnit.SECONDS);
     _writeRecordsMeter = Metrics.newMeter(metricName3, "Records/s", TimeUnit.SECONDS);
@@ -172,7 +172,7 @@ public class IndexManager {
     _queriesExternalMeter = Metrics.newMeter(metricName5, "External Queries/s", TimeUnit.SECONDS);
     _queriesInternalMeter = Metrics.newMeter(metricName6, "Internal Queries/s", TimeUnit.SECONDS);
     _fetchTimer = Metrics.newTimer(metricName7, TimeUnit.MICROSECONDS, TimeUnit.SECONDS);
-    
+
     if (threadCount == 0) {
       throw new RuntimeException("Thread Count cannot be 0.");
     }
@@ -290,7 +290,7 @@ public class IndexManager {
       Query highlightQuery = getHighlightQuery(selector, table, fieldManager);
 
       fetchRow(searcher.getIndexReader(), table, shard, selector, fetchResult, highlightQuery, fieldManager,
-          _maxHeapPerRowFetch);
+          _maxHeapPerRowFetch, tableContext);
 
       if (fetchResult.rowResult != null) {
         if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
@@ -452,7 +452,8 @@ public class IndexManager {
       Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, fieldManager, context, postFilter,
           preFilter);
       call = new SimpleQueryParallelCall(running, table, status, facetedQuery, blurQuery.selector,
-          _queriesInternalMeter, shardServerContext, runSlow, _fetchCount, _maxHeapPerRowFetch, context.getSimilarity());
+          _queriesInternalMeter, shardServerContext, runSlow, _fetchCount, _maxHeapPerRowFetch,
+          context.getSimilarity(), context);
       trace.done();
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
       return ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
@@ -544,12 +545,13 @@ public class IndexManager {
   }
 
   public static void fetchRow(IndexReader reader, String table, String shard, Selector selector,
-      FetchResult fetchResult, Query highlightQuery, int maxHeap) throws CorruptIndexException, IOException {
-    fetchRow(reader, table, shard, selector, fetchResult, highlightQuery, null, maxHeap);
+      FetchResult fetchResult, Query highlightQuery, int maxHeap, TableContext tableContext)
+      throws CorruptIndexException, IOException {
+    fetchRow(reader, table, shard, selector, fetchResult, highlightQuery, null, maxHeap, tableContext);
   }
 
   public static void fetchRow(IndexReader reader, String table, String shard, Selector selector,
-      FetchResult fetchResult, Query highlightQuery, FieldManager fieldManager, int maxHeap)
+      FetchResult fetchResult, Query highlightQuery, FieldManager fieldManager, int maxHeap, TableContext tableContext)
       throws CorruptIndexException, IOException {
     fetchResult.table = table;
     String locationId = selector.locationId;
@@ -606,18 +608,24 @@ public class IndexManager {
         } else {
           fetchResult.exists = true;
           fetchResult.deleted = false;
-          String rowId = selector.getRowId();
-          if (rowId == null) {
-            rowId = getRowId(reader, docId);
-          }
-          Term term = new Term(ROW_ID, rowId);
+
           if (returnIdsOnly) {
+            String rowId = selector.getRowId();
+            if (rowId == null) {
+              rowId = getRowId(reader, docId);
+            }
+            Term term = new Term(ROW_ID, rowId);
             int recordCount = BlurUtil.countDocuments(reader, term);
             fetchResult.rowResult = new FetchRowResult();
             fetchResult.rowResult.row = new Row(rowId, null, recordCount);
           } else {
             List<Document> docs;
             if (highlightQuery != null && fieldManager != null) {
+              String rowId = selector.getRowId();
+              if (rowId == null) {
+                rowId = getRowId(reader, docId);
+              }
+              Term term = new Term(ROW_ID, rowId);
               HighlightOptions highlightOptions = selector.getHighlightOptions();
               String preTag = highlightOptions.getPreTag();
               String postTag = highlightOptions.getPostTag();
@@ -627,7 +635,8 @@ public class IndexManager {
               docTrace.done();
             } else {
               Tracer docTrace = Trace.trace("fetchRow - Document read");
-              docs = BlurUtil.fetchDocuments(reader, term, fieldVisitor, selector, maxHeap, table + "/" + shard);
+              docs = BlurUtil.fetchDocuments(reader, fieldVisitor, selector, maxHeap, table + "/" + shard,
+                  tableContext.getDefaultPrimeDocTerm());
               docTrace.done();
             }
             Tracer rowTrace = Trace.trace("fetchRow - Row create");
@@ -1084,10 +1093,11 @@ public class IndexManager {
     private final int _fetchCount;
     private final int _maxHeapPerRowFetch;
     private final Similarity _similarity;
+    private final TableContext _context;
 
     public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, Query query,
         Selector selector, Meter queriesInternalMeter, ShardServerContext shardServerContext, boolean runSlow,
-        int fetchCount, int maxHeapPerRowFetch, Similarity similarity) {
+        int fetchCount, int maxHeapPerRowFetch, Similarity similarity, TableContext context) {
       _running = running;
       _table = table;
       _status = status;
@@ -1099,6 +1109,7 @@ public class IndexManager {
       _fetchCount = fetchCount;
       _maxHeapPerRowFetch = maxHeapPerRowFetch;
       _similarity = similarity;
+      _context = context;
     }
 
     @Override
@@ -1135,7 +1146,7 @@ public class IndexManager {
         // context is null.
         trace2 = Trace.trace("query initial search");
         return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector,
-            _shardServerContext == null, _runSlow, _fetchCount, _maxHeapPerRowFetch);
+            _shardServerContext == null, _runSlow, _fetchCount, _maxHeapPerRowFetch, _context);
       } catch (BlurException e) {
         switch (_status.getQueryStatus().getState()) {
         case INTERRUPTED:

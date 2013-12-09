@@ -14,12 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.lucene.codec;
+package org.apache.lucene.index;
 
-import org.apache.lucene.codecs.compressing.CompressingStoredFieldsFormat;
+import java.util.List;
 
-public final class Blur021StoredFieldsFormat extends CompressingStoredFieldsFormat {
-  public Blur021StoredFieldsFormat() {
-    super("Lucene41StoredFields", CachingCompressionMode.CACHING_FAST, 1 << 14);
+public class BaseCompositeReaderUtil {
+
+  public static List<? extends IndexReader> getSequentialSubReaders(BaseCompositeReader<IndexReader> indexReader) {
+    return indexReader.getSequentialSubReaders();
   }
+
+  public static int readerIndex(BaseCompositeReader<IndexReader> indexReader, int docID) {
+    return indexReader.readerIndex(docID);
+  }
+
+  public static int readerBase(BaseCompositeReader<IndexReader> indexReader, int readerIndex) {
+    return indexReader.readerBase(readerIndex);
+  }
+
 }

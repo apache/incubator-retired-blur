@@ -38,14 +38,16 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,8 +60,10 @@ import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.regex.Pattern;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.index.ExitableReader.ExitableFilterAtomicReader;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.lucene.search.PrimeDocCache;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.results.BlurResultComparator;
 import org.apache.blur.manager.results.BlurResultIterable;
@@ -97,16 +101,22 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.BaseCompositeReader;
+import org.apache.lucene.index.BaseCompositeReaderUtil;
+import org.apache.lucene.index.DocsEnum;
+import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.SegmentReader;
 import org.apache.lucene.index.SlowCompositeReaderWrapper;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.util.Bits;
+import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.OpenBitSet;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.Code;
@@ -757,80 +767,190 @@ public class BlurUtil {
    * documents that match the term.
    * 
    * @param selector
+   * @param primeDocTerm
    * 
    * @throws IOException
    */
-  public static List<Document> fetchDocuments(IndexReader reader, Term term,
-      ResetableDocumentStoredFieldVisitor fieldSelector, Selector selector, int maxHeap, String context)
-      throws IOException {
-    Tracer trace = Trace.trace("search for docs to fetch");
-    IndexSearcher indexSearcher = new IndexSearcher(reader);
-    int docFreq = reader.docFreq(term);
-
-    int start = selector.getStartRecord();
-    int end = selector.getMaxRecordsToFetch() + start;
-
-    // remove potential duplicates provided from the client
-    List<String> families = new ArrayList<String>();
-    if (selector.getColumnFamiliesToFetch() != null) {
-      for (String family : selector.getColumnFamiliesToFetch()) {
-        if (!families.contains(family)) {
-          families.add(family);
+  @SuppressWarnings("unchecked")
+  public static List<Document> fetchDocuments(IndexReader reader, ResetableDocumentStoredFieldVisitor fieldSelector,
+      Selector selector, int maxHeap, String context, Term primeDocTerm) throws IOException {
+    if (reader instanceof BaseCompositeReader) {
+      BaseCompositeReader<IndexReader> indexReader = (BaseCompositeReader<IndexReader>) reader;
+      List<? extends IndexReader> sequentialSubReaders = BaseCompositeReaderUtil.getSequentialSubReaders(indexReader);
+      String locationId = selector.getLocationId();
+      int indexOf = locationId.indexOf('/');
+      if (indexOf < 0) {
+        throw new IOException("Location id [" + locationId + "] not valid");
+      }
+      int notAdjustedPrimeDocId = Integer.parseInt(locationId.substring(indexOf + 1));
+      int readerIndex = BaseCompositeReaderUtil.readerIndex(indexReader, notAdjustedPrimeDocId);
+      int readerBase = BaseCompositeReaderUtil.readerBase(indexReader, readerIndex);
+      int primeDocId = notAdjustedPrimeDocId - readerBase;
+      IndexReader orgReader = sequentialSubReaders.get(readerIndex);
+      SegmentReader sReader = getSegmentReader(orgReader);
+      if (sReader != null) {
+        SegmentReader segmentReader = (SegmentReader) sReader;
+        Bits liveDocs = segmentReader.getLiveDocs();
+        OpenBitSet bitSet = PrimeDocCache.getPrimeDocBitSet(primeDocTerm, segmentReader);
+        int nextPrimeDoc = bitSet.nextSetBit(primeDocId + 1);
+        int numberOfDocsInRow;
+        if (nextPrimeDoc == -1) {
+          numberOfDocsInRow = segmentReader.maxDoc() - primeDocId;
+        } else {
+          numberOfDocsInRow = nextPrimeDoc - primeDocId;
         }
+        OpenBitSet docsInRowSpanToFetch = getDocsToFetch(primeDocId, segmentReader, selector, primeDocId,
+            numberOfDocsInRow, liveDocs);
+        int start = selector.getStartRecord();
+        int maxDocsToFetch = selector.getMaxRecordsToFetch();
+        int startingPosition = getStartingPosition(docsInRowSpanToFetch, start);
+        List<Document> docs = new ArrayList<Document>();
+        if (startingPosition < 0) {
+          //nothing to fetch
+          return docs;
+        }
+        int totalHeap = 0;
+        Tracer trace2 = Trace.trace("fetching docs from index");
+        try {
+          for (int i = startingPosition; i < numberOfDocsInRow; i++) {
+            if (maxDocsToFetch <= 0) {
+              return docs;
+            }
+            if (totalHeap >= maxHeap) {
+              LOG.warn("Max heap size exceeded for this request [{0}] max [{1}] for [{2}] and selector [{3}]",
+                  totalHeap, maxHeap, context, selector);
+              return docs;
+            }
+            if (docsInRowSpanToFetch.fastGet(i)) {
+              maxDocsToFetch--;
+              segmentReader.document(primeDocId + i, fieldSelector);
+              docs.add(fieldSelector.getDocument());
+              totalHeap += fieldSelector.getSize();
+              fieldSelector.reset();
+            }
+          }
+        } finally {
+          trace2.done();
+        }
+        return orderDocsBasedOnFamilyOrder(docs, selector);
+      } else {
+        throw new IOException("Expecting a segment reader got a [" + orgReader + "]");
       }
     }
+    throw new IOException("IndexReader [" + reader + "] is not a basecompsitereader");
+  }
 
-    List<Document> docs = new ArrayList<Document>();
-    List<ScoreDoc> scoreDocs = new ArrayList<ScoreDoc>();
-    int count = 0;
-    int totalHits = 0;
-    while (scoreDocs.size() < end) {
-      Query query = getQuery(term, families, count++);
-      if (query == null) {
-        break;
-      }
-      TopDocs topDocs = indexSearcher.search(query, docFreq);
-      totalHits += topDocs.totalHits;
-      scoreDocs.addAll(Arrays.asList(topDocs.scoreDocs));
-      topDocs = null;
+  private static List<Document> orderDocsBasedOnFamilyOrder(List<Document> docs, Selector selector) {
+    List<String> columnFamiliesToFetch = selector.getColumnFamiliesToFetch();
+    if (columnFamiliesToFetch == null || columnFamiliesToFetch.isEmpty()) {
+      return docs;
     }
-
-    trace.done();
-
-    Tracer trace2 = Trace.trace("fetching doc from index");
-    int totalHeap = 0;
-    for (int i = start; i < end; i++) {
-      if (i >= totalHits) {
-        break;
+    final Map<String, Integer> familyOrdering = getFamilyOrdering(columnFamiliesToFetch);
+    Collections.sort(docs, new Comparator<Document>() {
+      @Override
+      public int compare(Document o1, Document o2) {
+        String f1 = o1.get(BlurConstants.FAMILY);
+        String f2 = o2.get(BlurConstants.FAMILY);
+        int order1 = familyOrdering.get(f1);
+        int order2 = familyOrdering.get(f2);
+        return order1 - order2;
       }
-      if (totalHeap >= maxHeap) {
-        LOG.warn("Max heap size exceeded for this request [{0}] max [{1}] for [{2}] and rowid [{3}]", totalHeap,
-            maxHeap, context, term.text());
-        break;
-      }
-      int doc = scoreDocs.get(i).doc;
-      indexSearcher.doc(doc, fieldSelector);
-      docs.add(fieldSelector.getDocument());
-      int heapSize = fieldSelector.getSize();
-      totalHeap += heapSize;
-      fieldSelector.reset();
-    }
-    trace2.done();
+    });
     return docs;
   }
 
-  private static Query getQuery(Term term, List<String> families, int index) {
-    BooleanQuery booleanQuery = null;
-    int familySize = families.size();
-    if (familySize > 0 && index < familySize) {
-      booleanQuery = new BooleanQuery();
-      booleanQuery.add(new TermQuery(term), BooleanClause.Occur.MUST);
-      booleanQuery.add(new TermQuery(new Term(BlurConstants.FAMILY, families.get(index))), BooleanClause.Occur.MUST);
+  private static Map<String, Integer> getFamilyOrdering(List<String> columnFamiliesToFetch) {
+    Map<String, Integer> ordering = new HashMap<String, Integer>();
+    int i = 0;
+    for (String family : columnFamiliesToFetch) {
+      Integer integer = ordering.get(family);
+      if (integer == null) {
+        ordering.put(family, i);
+        i++;
+      }
     }
-    if (booleanQuery == null && index == 0) {
-      return new TermQuery(term);
+    return ordering;
+  }
+
+  private static SegmentReader getSegmentReader(IndexReader indexReader) {
+    if (indexReader instanceof SegmentReader) {
+      return (SegmentReader) indexReader;
     }
-    return booleanQuery;
+    if (indexReader instanceof ExitableFilterAtomicReader) {
+      ExitableFilterAtomicReader exitableFilterAtomicReader = (ExitableFilterAtomicReader) indexReader;
+      AtomicReader originalReader = exitableFilterAtomicReader.getOriginalReader();
+      return getSegmentReader(originalReader);
+    }
+    return null;
+  }
+
+  private static int getStartingPosition(OpenBitSet docsInRowSpanToFetch, int start) {
+    int docStartingPosition = docsInRowSpanToFetch.nextSetBit(0);
+    int offset = 0;
+    while (offset < start) {
+      docStartingPosition = docsInRowSpanToFetch.nextSetBit(docStartingPosition + 1);
+      offset++;
+    }
+    return docStartingPosition;
+  }
+
+  private static OpenBitSet getDocsToFetch(int primeDocId, SegmentReader segmentReader, Selector selector,
+      int primeDocRowId, int numberOfDocsInRow, Bits liveDocs) throws IOException {
+    Set<String> alreadyProcessed = new HashSet<String>();
+    OpenBitSet bits = new OpenBitSet(numberOfDocsInRow);
+    List<String> columnFamiliesToFetch = selector.getColumnFamiliesToFetch();
+    boolean fetchAll = true;
+    if (columnFamiliesToFetch != null) {
+      fetchAll = false;
+      applyFamilies(alreadyProcessed, bits, columnFamiliesToFetch, segmentReader, primeDocRowId, numberOfDocsInRow,
+          liveDocs);
+    }
+    Map<String, Set<String>> columnsToFetch = selector.getColumnsToFetch();
+    if (columnsToFetch != null) {
+      fetchAll = false;
+      applyColumns(alreadyProcessed, bits, columnsToFetch, segmentReader, primeDocRowId, numberOfDocsInRow, liveDocs);
+    }
+    if (fetchAll) {
+      bits.set(0, numberOfDocsInRow);
+    }
+    return bits;
+  }
+
+  private static void applyColumns(Set<String> alreadyProcessed, OpenBitSet bits,
+      Map<String, Set<String>> columnsToFetch, SegmentReader segmentReader, int primeDocRowId, int numberOfDocsInRow,
+      Bits liveDocs) throws IOException {
+    for (String family : columnsToFetch.keySet()) {
+      if (!alreadyProcessed.contains(family)) {
+        applyFamily(bits, family, segmentReader, primeDocRowId, numberOfDocsInRow, liveDocs);
+        alreadyProcessed.add(family);
+      }
+    }
+  }
+
+  private static void applyFamilies(Set<String> alreadyProcessed, OpenBitSet bits, List<String> columnFamiliesToFetch,
+      SegmentReader segmentReader, int primeDocRowId, int numberOfDocsInRow, Bits liveDocs) throws IOException {
+    for (String family : columnFamiliesToFetch) {
+      if (!alreadyProcessed.contains(family)) {
+        applyFamily(bits, family, segmentReader, primeDocRowId, numberOfDocsInRow, liveDocs);
+        alreadyProcessed.add(family);
+      }
+    }
+  }
+
+  private static void applyFamily(OpenBitSet bits, String family, SegmentReader segmentReader, int primeDocRowId,
+      int numberOfDocsInRow, Bits liveDocs) throws IOException {
+    Fields fields = segmentReader.fields();
+    Terms terms = fields.terms(BlurConstants.FAMILY);
+    TermsEnum iterator = terms.iterator(null);
+    BytesRef text = new BytesRef(family);
+    int lastDocId = primeDocRowId + numberOfDocsInRow;
+    if (iterator.seekExact(text, true)) {
+      DocsEnum docs = iterator.docs(liveDocs, null, DocsEnum.FLAG_NONE);
+      int doc = primeDocRowId;
+      while ((doc = docs.advance(doc)) < lastDocId) {
+        bits.set(doc - primeDocRowId);
+      }
+    }
   }
 
   public static AtomicReader getAtomicReader(IndexReader reader) throws IOException {

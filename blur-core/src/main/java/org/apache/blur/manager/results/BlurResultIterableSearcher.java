@@ -26,6 +26,7 @@ import org.apache.blur.lucene.search.IterablePaging.ProgressRef;
 import org.apache.blur.lucene.search.IterablePaging.TotalHitsRef;
 import org.apache.blur.manager.IndexManager;
 import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.ErrorType;
@@ -55,10 +56,11 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
   private final boolean _closeSearcher;
   private final boolean _runSlow;
   private final int _maxHeapPerRowFetch;
+  private final TableContext _context;
 
   public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard,
       IndexSearcherClosable searcher, Selector selector, boolean closeSearcher, boolean runSlow, int fetchCount,
-      int maxHeapPerRowFetch) throws BlurException {
+      int maxHeapPerRowFetch, TableContext context) throws BlurException {
     _running = running;
     _table = table;
     _query = query;
@@ -69,6 +71,7 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
     _runSlow = runSlow;
     _fetchCount = fetchCount;
     _maxHeapPerRowFetch = maxHeapPerRowFetch;
+    _context = context;
     performSearch();
   }
 
@@ -94,9 +97,8 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
     _selector.setLocationId(resolveId);
     IndexManager.validSelector(_selector);
     try {
-
       IndexManager.fetchRow(_searcher.getIndexReader(), _table, _shard, _selector, fetchResult, null,
-          _maxHeapPerRowFetch);
+          _maxHeapPerRowFetch, _context);
     } catch (IOException e) {
       throw new BlurException("Unknown IO error", null, ErrorType.UNKNOWN);
     }

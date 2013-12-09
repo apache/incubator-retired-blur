@@ -70,6 +70,10 @@ public class ExitableReader extends FilterDirectoryReader {
       super(in);
       _running = running;
     }
+    
+    public AtomicReader getOriginalReader() {
+      return in;
+    }
 
     @Override
     public Fields fields() throws IOException {

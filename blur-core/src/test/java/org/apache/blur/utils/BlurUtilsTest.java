@@ -50,42 +50,48 @@ public class BlurUtilsTest {
 
   @Test
   public void testHumanizeTime1() {
-    long time = TimeUnit.HOURS.toMillis(2) + TimeUnit.MINUTES.toMillis(42) + TimeUnit.SECONDS.toMillis(37) + TimeUnit.MILLISECONDS.toMillis(124);
+    long time = TimeUnit.HOURS.toMillis(2) + TimeUnit.MINUTES.toMillis(42) + TimeUnit.SECONDS.toMillis(37)
+        + TimeUnit.MILLISECONDS.toMillis(124);
     String humanizeTime = BlurUtil.humanizeTime(time, TimeUnit.MILLISECONDS);
     assertEquals("2 hours 42 minutes 37 seconds", humanizeTime);
   }
 
   @Test
   public void testHumanizeTime2() {
-    long time = TimeUnit.HOURS.toMillis(0) + TimeUnit.MINUTES.toMillis(42) + TimeUnit.SECONDS.toMillis(37) + TimeUnit.MILLISECONDS.toMillis(124);
+    long time = TimeUnit.HOURS.toMillis(0) + TimeUnit.MINUTES.toMillis(42) + TimeUnit.SECONDS.toMillis(37)
+        + TimeUnit.MILLISECONDS.toMillis(124);
     String humanizeTime = BlurUtil.humanizeTime(time, TimeUnit.MILLISECONDS);
     assertEquals("42 minutes 37 seconds", humanizeTime);
   }
 
   @Test
   public void testHumanizeTime3() {
-    long time = TimeUnit.HOURS.toMillis(2) + TimeUnit.MINUTES.toMillis(0) + TimeUnit.SECONDS.toMillis(37) + TimeUnit.MILLISECONDS.toMillis(124);
+    long time = TimeUnit.HOURS.toMillis(2) + TimeUnit.MINUTES.toMillis(0) + TimeUnit.SECONDS.toMillis(37)
+        + TimeUnit.MILLISECONDS.toMillis(124);
     String humanizeTime = BlurUtil.humanizeTime(time, TimeUnit.MILLISECONDS);
     assertEquals("2 hours 0 minutes 37 seconds", humanizeTime);
   }
 
   @Test
   public void testHumanizeTime4() {
-    long time = TimeUnit.HOURS.toMillis(2) + TimeUnit.MINUTES.toMillis(0) + TimeUnit.SECONDS.toMillis(0) + TimeUnit.MILLISECONDS.toMillis(124);
+    long time = TimeUnit.HOURS.toMillis(2) + TimeUnit.MINUTES.toMillis(0) + TimeUnit.SECONDS.toMillis(0)
+        + TimeUnit.MILLISECONDS.toMillis(124);
     String humanizeTime = BlurUtil.humanizeTime(time, TimeUnit.MILLISECONDS);
     assertEquals("2 hours 0 minutes 0 seconds", humanizeTime);
   }
 
   @Test
   public void testHumanizeTime5() {
-    long time = TimeUnit.HOURS.toMillis(0) + TimeUnit.MINUTES.toMillis(0) + TimeUnit.SECONDS.toMillis(37) + TimeUnit.MILLISECONDS.toMillis(124);
+    long time = TimeUnit.HOURS.toMillis(0) + TimeUnit.MINUTES.toMillis(0) + TimeUnit.SECONDS.toMillis(37)
+        + TimeUnit.MILLISECONDS.toMillis(124);
     String humanizeTime = BlurUtil.humanizeTime(time, TimeUnit.MILLISECONDS);
     assertEquals("37 seconds", humanizeTime);
   }
 
   @Test
   public void testHumanizeTime6() {
-    long time = TimeUnit.HOURS.toMillis(0) + TimeUnit.MINUTES.toMillis(0) + TimeUnit.SECONDS.toMillis(0) + TimeUnit.MILLISECONDS.toMillis(124);
+    long time = TimeUnit.HOURS.toMillis(0) + TimeUnit.MINUTES.toMillis(0) + TimeUnit.SECONDS.toMillis(0)
+        + TimeUnit.MILLISECONDS.toMillis(124);
     String humanizeTime = BlurUtil.humanizeTime(time, TimeUnit.MILLISECONDS);
     assertEquals("0 seconds", humanizeTime);
   }
@@ -134,7 +140,7 @@ public class BlurUtilsTest {
       // Should throw exception
     }
   }
-  
+
   @Test
   public void testValidateShardCountTooMany() throws IOException {
     File file = new File(TMPDIR, "ValidateShardCount-test");
@@ -152,41 +158,52 @@ public class BlurUtilsTest {
       // Should throw exception
     }
   }
-  
+
   @Test
-  public void testFetchDocuments() throws CorruptIndexException, LockObtainFailedException, IOException{
-	  Selector selector = new Selector();
-	  List<String> columnFamiliesToFetch = new ArrayList<String>();
-	  columnFamiliesToFetch.add("f1");
-	  columnFamiliesToFetch.add("f2");
-	  selector.setColumnFamiliesToFetch(columnFamiliesToFetch);
-	  
-	  ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
-	  List<Document> docs = BlurUtil.fetchDocuments(getReader(), new Term("a","b"), resetableDocumentStoredFieldVisitor, selector, 10000000, "test-context");
-	  assertEquals(docs.size(),1);
+  public void testFetchDocuments() throws CorruptIndexException, LockObtainFailedException, IOException {
+    Selector selector = new Selector();
+    selector.setLocationId("shard/0");
+    List<String> columnFamiliesToFetch = new ArrayList<String>();
+    columnFamiliesToFetch.add("f1");
+    columnFamiliesToFetch.add("f2");
+    selector.setColumnFamiliesToFetch(columnFamiliesToFetch);
+
+    ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
+    // List<Document> docs = BlurUtil.fetchDocuments(getReader(), new
+    // Term("a","b"), resetableDocumentStoredFieldVisitor, selector, 10000000,
+    // "test-context", new
+    // Term(BlurConstants.PRIME_DOC,BlurConstants.PRIME_DOC_VALUE));
+    List<Document> docs = BlurUtil.fetchDocuments(getReader(), resetableDocumentStoredFieldVisitor, selector, 10000000,
+        "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE));
+    assertEquals(docs.size(), 1);
   }
-  
+
   @Test
-  public void testFetchDocumentsStrictFamilyOrder() throws CorruptIndexException, LockObtainFailedException, IOException{
-	  Selector selector = new Selector();
-	  List<String> columnFamiliesToFetch = new ArrayList<String>();
-	  columnFamiliesToFetch.add("f1");
-	  columnFamiliesToFetch.add("f2");
-	  selector.setColumnFamiliesToFetch(columnFamiliesToFetch);
-	  
-	  ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
-	  List<Document> docs = BlurUtil.fetchDocuments(getReaderWithDocsHavingFamily(), new Term("a","b"), resetableDocumentStoredFieldVisitor, selector, 10000000, "test-context");
-	  assertEquals(docs.size(),2);
-	  assertEquals(docs.get(0).getField("family").stringValue(),"f1");
-	  assertEquals(docs.get(1).getField("family").stringValue(),"f2");
+  public void testFetchDocumentsStrictFamilyOrder() throws CorruptIndexException, LockObtainFailedException,
+      IOException {
+    Selector selector = new Selector();
+    selector.setLocationId("shard/0");
+    List<String> columnFamiliesToFetch = new ArrayList<String>();
+    columnFamiliesToFetch.add("f1");
+    columnFamiliesToFetch.add("f2");
+    selector.setColumnFamiliesToFetch(columnFamiliesToFetch);
+
+    ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
+    List<Document> docs = BlurUtil.fetchDocuments(getReaderWithDocsHavingFamily(), resetableDocumentStoredFieldVisitor,
+        selector, 10000000, "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE));
+    assertEquals(docs.size(), 2);
+    assertEquals(docs.get(0).getField("family").stringValue(), "f1");
+    assertEquals(docs.get(1).getField("family").stringValue(), "f2");
   }
-  
+
   @Test
-  public void testFetchDocumentsWithoutFamily() throws CorruptIndexException, LockObtainFailedException, IOException{
-	  Selector selector = new Selector();
-	  ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
-	  List<Document> docs = BlurUtil.fetchDocuments(getReader(), new Term("a","b"), resetableDocumentStoredFieldVisitor, selector, 10000000, "test-context");
-	  assertEquals(docs.size(),2);
+  public void testFetchDocumentsWithoutFamily() throws CorruptIndexException, LockObtainFailedException, IOException {
+    Selector selector = new Selector();
+    selector.setLocationId("shard/0");
+    ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
+    List<Document> docs = BlurUtil.fetchDocuments(getReader(), resetableDocumentStoredFieldVisitor, selector, 10000000,
+        "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE));
+    assertEquals(docs.size(), 2);
   }
 
   private void rm(File file) {
@@ -214,7 +231,7 @@ public class BlurUtilsTest {
     Document doc = new Document();
     doc.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     doc.add(new Field("family", "f1", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
-    
+
     Document doc1 = new Document();
     doc1.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     writer.addDocument(doc);
@@ -222,22 +239,23 @@ public class BlurUtilsTest {
     writer.close();
     return IndexReader.open(directory);
   }
-  
-  private IndexReader getReaderWithDocsHavingFamily() throws CorruptIndexException, LockObtainFailedException, IOException {
-	    RAMDirectory directory = new RAMDirectory();
-	    IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
-	    IndexWriter writer = new IndexWriter(directory, conf);
-	    Document doc = new Document();
-	    doc.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
-	    doc.add(new Field("family", "f2", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
-	    
-	    Document doc1 = new Document();
-	    doc1.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
-	    doc1.add(new Field("family", "f1", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
-	    writer.addDocument(doc);
-	    writer.addDocument(doc1);
-	    writer.close();
-	    return IndexReader.open(directory);
-	  }
+
+  private IndexReader getReaderWithDocsHavingFamily() throws CorruptIndexException, LockObtainFailedException,
+      IOException {
+    RAMDirectory directory = new RAMDirectory();
+    IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
+    IndexWriter writer = new IndexWriter(directory, conf);
+    Document doc = new Document();
+    doc.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+    doc.add(new Field("family", "f2", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+
+    Document doc1 = new Document();
+    doc1.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+    doc1.add(new Field("family", "f1", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+    writer.addDocument(doc);
+    writer.addDocument(doc1);
+    writer.close();
+    return IndexReader.open(directory);
+  }
 
 }

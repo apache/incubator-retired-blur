@@ -191,7 +191,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
 
       @Override
       public DistributedLayout createDistributedLayout(String table, List<String> shardList,
-          List<String> shardServerList, List<String> offlineShardServers) {
+          List<String> shardServerList, List<String> offlineShardServers, boolean readOnly) {
         DistributedLayoutManager layoutManager = new DistributedLayoutManager();
         layoutManager.setNodes(shardServerList);
         layoutManager.setNodesOffline(offlineShardServers);
@@ -590,7 +590,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     List<String> shardList = getShardList(table);
 
     DistributedLayout layoutManager = _distributedLayoutFactory.createDistributedLayout(table, shardList,
-        shardServerList, offlineShardServers);
+        shardServerList, offlineShardServers, false);
 
     Map<String, String> layout = layoutManager.getLayout();
     String nodeName = getNodeName();

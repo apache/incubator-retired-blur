@@ -16,11 +16,6 @@
  */
 package org.apache.blur.manager.indexserver;
 
-import java.util.List;
-
-public interface DistributedLayoutFactory {
-
-  DistributedLayout createDistributedLayout(String table, List<String> shardList, List<String> shardServerList,
-      List<String> offlineShardServers, boolean readOnly);
-
+public class LayoutMissingException extends RuntimeException {
+  private static final long serialVersionUID = 3979582465356840074L;
 }

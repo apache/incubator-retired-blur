@@ -69,7 +69,7 @@ public class MasterBasedDistributedLayoutFactoryTest {
     });
     rmr(_zooKeeper, storagePath);
   }
-  
+
   @After
   public void teardown() throws InterruptedException {
     _zooKeeper.close();
@@ -85,7 +85,8 @@ public class MasterBasedDistributedLayoutFactoryTest {
 
     String table = "t1";
 
-    DistributedLayout layout1 = factory.createDistributedLayout(table, shardList, shardServerList, offlineShardServers);
+    DistributedLayout layout1 = factory.createDistributedLayout(table, shardList, shardServerList, offlineShardServers,
+        false);
     Map<String, String> expected1 = map(e("shard-0", "server-0"), e("shard-1", "server-1"), e("shard-2", "server-2"),
         e("shard-3", "server-3"), e("shard-4", "server-4"), e("shard-5", "server-5"));
 
@@ -97,7 +98,7 @@ public class MasterBasedDistributedLayoutFactoryTest {
     List<String> newOfflineShardServers = list("server-4", "server-5");
 
     DistributedLayout layout2 = factory.createDistributedLayout(table, shardList, newShardServerList,
-        newOfflineShardServers);
+        newOfflineShardServers, false);
 
     Map<String, String> expected2 = map(e("shard-0", "server-0"), e("shard-1", "server-1"), e("shard-2", "server-2"),
         e("shard-3", "server-3"), e("shard-4", "server-0"), e("shard-5", "server-1"));
@@ -115,7 +116,8 @@ public class MasterBasedDistributedLayoutFactoryTest {
 
     String table = "t1";
 
-    DistributedLayout layout1 = factory.createDistributedLayout(table, shardList, shardServerList, offlineShardServers);
+    DistributedLayout layout1 = factory.createDistributedLayout(table, shardList, shardServerList, offlineShardServers,
+        false);
     Map<String, String> expected1 = map(e("shard-0", "server-0"), e("shard-1", "server-1"), e("shard-2", "server-2"),
         e("shard-3", "server-3"), e("shard-4", "server-0"), e("shard-5", "server-1"));
 
@@ -127,7 +129,7 @@ public class MasterBasedDistributedLayoutFactoryTest {
     List<String> newOfflineShardServers = list();
 
     DistributedLayout layout2 = factory.createDistributedLayout(table, shardList, newShardServerList,
-        newOfflineShardServers);
+        newOfflineShardServers, false);
 
     Map<String, String> expected2 = map(e("shard-0", "server-4"), e("shard-1", "server-5"), e("shard-2", "server-2"),
         e("shard-3", "server-3"), e("shard-4", "server-0"), e("shard-5", "server-1"));

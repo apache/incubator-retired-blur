@@ -78,12 +78,12 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
 
   @Override
   public DistributedLayout createDistributedLayout(String table, List<String> shardList, List<String> shardServerList,
-      List<String> offlineShardServers) {
+      List<String> offlineShardServers, boolean readOnly) {
     MasterBasedDistributedLayout layout = _cachedLayoutMap.get(table);
     List<String> onlineShardServerList = getOnlineShardServerList(shardServerList, offlineShardServers);
     if (layout == null || layout.isOutOfDate(shardList, onlineShardServerList)) {
       LOG.info("Layout out of date, recalculating for table [{0}].", table);
-      MasterBasedDistributedLayout newLayout = newLayout(table, shardList, onlineShardServerList);
+      MasterBasedDistributedLayout newLayout = newLayout(table, shardList, onlineShardServerList, readOnly);
       _cachedLayoutMap.put(table, newLayout);
       return newLayout;
     } else {
@@ -98,7 +98,7 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
   }
 
   private MasterBasedDistributedLayout newLayout(String table, List<String> onlineShardServerList,
-      List<String> shardServerList) {
+      List<String> shardServerList, boolean readOnly) throws LayoutMissingException {
     try {
       _zooKeeperLockManager.lock(table);
       String storagePath = getStoragePath(table);
@@ -115,10 +115,16 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
             LOG.info("Layout is up-to-date for table [{0}]", table);
             return storedLayout;
           }
+          if (readOnly) {
+            LOG.info("Using stable layout until update for table [{0}]", table);
+            return storedLayout;
+          }
           // If there was a stored layout, use the stored layout as a
           // replacement for the existing layout.
           existingLayout = storedLayout;
         }
+      } else if (readOnly) {
+        throw new LayoutMissingException();
       }
       LOG.info("Calculating new layout for table [{0}]", table);
       // recreate
@@ -133,6 +139,8 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
         _zooKeeper.setData(storagePath, toBytes(layout), -1);
       }
       return layout;
+    } catch (LayoutMissingException e) {
+      throw e;
     } catch (Exception e) {
       LOG.error("Unknown error during layout update.", e);
       throw new RuntimeException(e);

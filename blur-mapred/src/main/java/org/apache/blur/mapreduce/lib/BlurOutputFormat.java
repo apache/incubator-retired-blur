@@ -31,6 +31,7 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.LuceneVersionConstant;
 import org.apache.blur.lucene.codec.Blur021Codec;
+import org.apache.blur.lucene.codec.Blur022Codec;
 import org.apache.blur.manager.writer.TransactionRecorder;
 import org.apache.blur.mapreduce.lib.BlurMutate.MUTATE_TYPE;
 import org.apache.blur.server.TableContext;
@@ -399,7 +400,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       Analyzer analyzer = _fieldManager.getAnalyzerForIndex();
 
       _conf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, analyzer);
-      _conf.setCodec(new Blur021Codec());
+      _conf.setCodec(new Blur022Codec());
       _conf.setSimilarity(tableContext.getSimilarity());
       TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();
       mergePolicy.setUseCompoundFile(false);

@@ -16,17 +16,17 @@
  */
 package org.apache.blur.filter;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.TreeSet;
 
-import org.apache.blur.lucene.codec.Blur021Codec;
+import org.apache.blur.lucene.codec.Blur022Codec;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -112,7 +112,7 @@ public class FilterCacheTest {
 
   private void writeDocs(FilterCache filterCache, RAMDirectory directory) throws IOException {
     IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_43, new KeywordAnalyzer());
-    conf.setCodec(new Blur021Codec());
+    conf.setCodec(new Blur022Codec());
     IndexWriter indexWriter = new IndexWriter(directory, conf);
     int count = 10000;
     addDocs(indexWriter, count);

@@ -26,7 +26,7 @@ import org.apache.lucene.util.BytesRef;
 public class CachedDecompressor extends Decompressor {
 
   static class Entry {
-    IndexInput _indexInput;
+    String _inputName;
     long _position = -1;
     BytesRef _bytesRef = new BytesRef();
   }
@@ -47,13 +47,14 @@ public class CachedDecompressor extends Decompressor {
   public void decompress(DataInput in, int originalLength, int offset, int length, BytesRef bytes) throws IOException {
     if (in instanceof IndexInput) {
       IndexInput indexInput = (IndexInput) in;
+      String name = indexInput.toString();
       Entry entry = _cache.get();
       long filePointer = indexInput.getFilePointer();
       BytesRef cachedRef = entry._bytesRef;
-      if (entry._indexInput != indexInput || entry._position != filePointer) {
+      if (!name.equals(entry._inputName) || entry._position != filePointer) {
         cachedRef.grow(originalLength);
         _decompressor.decompress(in, originalLength, 0, originalLength, cachedRef);
-        entry._indexInput = indexInput;
+        entry._inputName = name;
         entry._position = filePointer;
       }
       bytes.copyBytes(cachedRef);

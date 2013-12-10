@@ -105,7 +105,7 @@ public class BlurNRTIndex extends BlurIndex {
     Analyzer analyzer = fieldManager.getAnalyzerForIndex();
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, analyzer);
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
-    conf.setCodec(new Blur022Codec());
+    conf.setCodec(new Blur022Codec(_tableContext.getBlurConfiguration()));
     conf.setSimilarity(_tableContext.getSimilarity());
     AtomicBoolean stop = new AtomicBoolean();
     conf.setMergedSegmentWarmer(new FieldBasedWarmer(shardContext, stop, _isClosed));

@@ -29,7 +29,7 @@ public class TraceableIndexInput extends IndexInput {
   private boolean _traceOn;
 
   public TraceableIndexInput(TraceableDirectory traceableDirectory, String name, IOContext context, IndexInput input) {
-    super(name);
+    super("TraceableIndexInput(" + input.toString() + ")");
     _traceableDirectory = traceableDirectory;
     _input = input;
     _traceOn = _traceableDirectory.isTrace();

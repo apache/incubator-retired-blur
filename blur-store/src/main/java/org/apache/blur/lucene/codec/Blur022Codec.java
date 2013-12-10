@@ -16,6 +16,13 @@
  */
 package org.apache.blur.lucene.codec;
 
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_CHUNKSIZE;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_COMPRESSIONMODE;
+import static org.apache.blur.utils.BlurConstants.FAST;
+import static org.apache.blur.utils.BlurConstants.FAST_DECOMPRESSION;
+import static org.apache.blur.utils.BlurConstants.HIGH_COMPRESSION;
+
+import org.apache.blur.BlurConfiguration;
 import org.apache.lucene.codecs.Codec;
 import org.apache.lucene.codecs.DocValuesFormat;
 import org.apache.lucene.codecs.FieldInfosFormat;
@@ -33,6 +40,7 @@ import org.apache.lucene.codecs.perfield.PerFieldDocValuesFormat;
 import org.apache.lucene.codecs.perfield.PerFieldPostingsFormat;
 
 public class Blur022Codec extends Codec {
+
   private final StoredFieldsFormat fieldsFormat;
   private final TermVectorsFormat vectorsFormat = new Lucene42TermVectorsFormat();
   private final FieldInfosFormat fieldInfosFormat = new Lucene42FieldInfosFormat();
@@ -61,6 +69,24 @@ public class Blur022Codec extends Codec {
     super("Blur022");
     infosFormat = new Blur022SegmentInfoFormat(chunkSize, compressionMode);
     fieldsFormat = new Blur022StoredFieldsFormat(chunkSize, compressionMode);
+  }
+
+  public Blur022Codec(BlurConfiguration configuration) {
+    this(configuration.getInt(BLUR_SHARD_INDEX_CHUNKSIZE, 1 << 14), getCompressionMode(configuration));
+  }
+
+  private static CompressionMode getCompressionMode(BlurConfiguration configuration) {
+    String type = configuration.get(BLUR_SHARD_INDEX_COMPRESSIONMODE, FAST);
+    if (HIGH_COMPRESSION.equals(type)) {
+      return CompressionMode.HIGH_COMPRESSION;
+    } else if (FAST.equals(type)) {
+      return CompressionMode.FAST;
+    } else if (FAST_DECOMPRESSION.equals(type)) {
+      return CompressionMode.FAST_DECOMPRESSION;
+    } else {
+      throw new IllegalArgumentException("blur.shard.index.compressionmode=" + type
+          + " not supported.  Valid entries are [FAST,FAST_DECOMPRESSION,HIGH_COMPRESSION]");
+    }
   }
 
   @Override

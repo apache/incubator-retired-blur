@@ -40,7 +40,7 @@ import org.apache.lucene.store.LockFactory;
 public class ProgressableDirectory extends Directory {
 
   private static final Log LOG = LogFactory.getLog(ProgressableDirectory.class);
-  
+
   private final Directory _directory;
   private final Progressable _progressable;
 
@@ -248,7 +248,7 @@ public class ProgressableDirectory extends Directory {
     private Progressable _progressable;
 
     ProgressableIndexInput(String name, IndexInput indexInput, int buffer, Progressable progressable) {
-      super(name, buffer);
+      super("ProgressableIndexInput(" + indexInput.toString() + ")", buffer);
       _indexInput = indexInput;
       _length = indexInput.length();
       _progressable = progressable;

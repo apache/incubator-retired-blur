@@ -46,7 +46,7 @@ public class CacheIndexInput extends IndexInput {
 
   public CacheIndexInput(CacheDirectory directory, String fileName, IndexInput indexInput, Cache cache)
       throws IOException {
-    super(fileName);
+    super("CacheIndexInput(" + indexInput.toString() + ")");
     _directory = directory;
     _fileName = fileName;
     _indexInput = indexInput;

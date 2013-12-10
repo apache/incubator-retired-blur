@@ -16,6 +16,10 @@
  */
 package org.apache.blur.lucene.codec;
 
+import static org.apache.blur.utils.BlurConstants.FAST;
+import static org.apache.blur.utils.BlurConstants.FAST_DECOMPRESSION;
+import static org.apache.blur.utils.BlurConstants.HIGH_COMPRESSION;
+
 import java.io.IOException;
 
 import org.apache.lucene.codecs.StoredFieldsFormat;
@@ -30,14 +34,10 @@ import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.SegmentInfo;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
-
 public final class Blur022StoredFieldsFormat extends StoredFieldsFormat {
 
   static final String STORED_FIELDS_FORMAT_CHUNK_SIZE = "StoredFieldsFormat.chunkSize";
   static final String STORED_FIELDS_FORMAT_COMPRESSION_MODE = "StoredFieldsFormat.compressionMode";
-  private static final String FAST_DECOMPRESSION = "FAST_DECOMPRESSION";
-  private static final String FAST = "FAST";
-  private static final String HIGH_COMPRESSION = "HIGH_COMPRESSION";
   private static final String FORMAT_NAME = "Blur022StoredFields";
   private static final String SEGMENT_SUFFIX = "";
   private final int _chunkSize;
@@ -52,7 +52,7 @@ public final class Blur022StoredFieldsFormat extends StoredFieldsFormat {
 
     final CompressionMode _compressionMode;
 
-    CachedCompressionMode(CompressionMode compressionMode) {
+    CachedCompressionMode(CompressionMode compressionMode, Directory directory, SegmentInfo si) {
       _compressionMode = compressionMode;
     }
 
@@ -76,7 +76,7 @@ public final class Blur022StoredFieldsFormat extends StoredFieldsFormat {
   @Override
   public StoredFieldsReader fieldsReader(Directory directory, SegmentInfo si, FieldInfos fn, IOContext context)
       throws IOException {
-    CompressionMode compressionMode = new CachedCompressionMode(getCompressionMode(si));
+    CompressionMode compressionMode = new CachedCompressionMode(getCompressionMode(si), directory, si);
     return new CompressingStoredFieldsReader(directory, si, SEGMENT_SUFFIX, fn, context, FORMAT_NAME, compressionMode);
   }
 

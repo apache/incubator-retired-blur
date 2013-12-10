@@ -35,7 +35,7 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
 
   public HdfsIndexInput(String name, FSDataInputStream inputStream, long length, MetricsGroup metricsGroup,
       int readVersion, Path path) throws IOException {
-    super(name);
+    super("HdfsIndexInput(" + path.toString() + ")");
     _inputStream = inputStream;
     _length = length;
     _metricsGroup = metricsGroup;
@@ -55,7 +55,8 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
 
   @Override
   protected void readInternal(byte[] b, int offset, int length) throws IOException {
-    Tracer trace = Trace.trace("filesystem - read", Trace.param("file", _path), Trace.param("location", getFilePointer()),Trace.param("length", length));
+    Tracer trace = Trace.trace("filesystem - read", Trace.param("file", _path),
+        Trace.param("location", getFilePointer()), Trace.param("length", length));
     try {
       long start = System.nanoTime();
       long filePointer = getFilePointer();

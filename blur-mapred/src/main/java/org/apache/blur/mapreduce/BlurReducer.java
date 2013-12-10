@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.lucene.codec.Blur021Codec;
+import org.apache.blur.lucene.codec.Blur022Codec;
 import org.apache.blur.lucene.search.FairSimilarity;
 import org.apache.blur.manager.writer.TransactionRecorder;
 import org.apache.blur.mapreduce.BlurTask.INDEXING_TYPE;
@@ -306,7 +306,7 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
     if (optimize) {
       context.setStatus("Starting Copy-Optimize Phase");
       IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
-      conf.setCodec(new Blur021Codec());
+      conf.setCodec(new Blur022Codec());
       TieredMergePolicy policy = (TieredMergePolicy) conf.getMergePolicy();
       policy.setUseCompoundFile(false);
       long s = System.currentTimeMillis();
@@ -462,7 +462,7 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
     nullCheck(_directory);
     nullCheck(_analyzer);
     IndexWriterConfig config = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
-    config.setCodec(new Blur021Codec());
+    config.setCodec(new Blur022Codec());
     config.setSimilarity(new FairSimilarity());
     config.setRAMBufferSizeMB(_blurTask.getRamBufferSizeMB());
     TieredMergePolicy mergePolicy = (TieredMergePolicy) config.getMergePolicy();

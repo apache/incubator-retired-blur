@@ -269,7 +269,7 @@ public class IndexManagerTest {
     indexManager.mutate(mutation7);
   }
 
-//  @Test
+  @Test
   public void testMutationReplaceLargeRow() throws Exception {
     final String rowId = "largerow";
     indexManager.mutate(getLargeRow(rowId));
@@ -293,7 +293,7 @@ public class IndexManagerTest {
       Thread thread = new Thread(new Runnable() {
         @Override
         public void run() {
-          Trace.setupTrace(rowId);
+//          Trace.setupTrace(rowId);
           Selector selector = new Selector().setRowId(rowId);
           FetchResult fetchResult = new FetchResult();
           long s = System.nanoTime();
@@ -304,7 +304,7 @@ public class IndexManagerTest {
           }
           long e = System.nanoTime();
           assertNotNull(fetchResult.rowResult.row);
-          Trace.tearDownTrace();
+//          Trace.tearDownTrace();
           System.out.println((e - s) / 1000000.0);
         }
       });

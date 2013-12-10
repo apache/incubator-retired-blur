@@ -25,6 +25,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.blur.lucene.codec.Blur021Codec;
+import org.apache.blur.lucene.codec.Blur022Codec;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -130,7 +131,7 @@ public class TableShardCountCollapser extends Configured implements Tool {
     for (int i = 0; i < newShardCount; i++) {
       System.out.println("Base Index [" + paths[i] + "]");
       IndexWriterConfig lconf = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
-      lconf.setCodec(new Blur021Codec());
+      lconf.setCodec(new Blur022Codec());
       HdfsDirectory dir = new HdfsDirectory(getConf(), paths[i]);
       IndexWriter indexWriter = new IndexWriter(dir, lconf);
       Directory[] dirs = new Directory[numberOfShardsToMergePerPass - 1];

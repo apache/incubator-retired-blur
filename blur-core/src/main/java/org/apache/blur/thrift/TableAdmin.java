@@ -479,7 +479,7 @@ public abstract class TableAdmin implements Iface {
     }
   }
 
-  private boolean inSafeMode(boolean useCache, String table) throws BlurException {
+  protected boolean inSafeMode(boolean useCache, String table) throws BlurException {
     String cluster = _clusterStatus.getCluster(useCache, table);
     if (cluster == null) {
       throw new BException("Table [" + table + "] not found.");

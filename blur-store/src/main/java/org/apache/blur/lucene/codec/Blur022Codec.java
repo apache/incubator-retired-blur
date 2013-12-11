@@ -16,6 +16,13 @@
  */
 package org.apache.blur.lucene.codec;
 
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_CHUNKSIZE;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_COMPRESSIONMODE;
+import static org.apache.blur.utils.BlurConstants.FAST;
+import static org.apache.blur.utils.BlurConstants.FAST_DECOMPRESSION;
+import static org.apache.blur.utils.BlurConstants.HIGH_COMPRESSION;
+
+import org.apache.blur.BlurConfiguration;
 import org.apache.lucene.codecs.Codec;
 import org.apache.lucene.codecs.DocValuesFormat;
 import org.apache.lucene.codecs.FieldInfosFormat;
@@ -25,45 +32,68 @@ import org.apache.lucene.codecs.PostingsFormat;
 import org.apache.lucene.codecs.SegmentInfoFormat;
 import org.apache.lucene.codecs.StoredFieldsFormat;
 import org.apache.lucene.codecs.TermVectorsFormat;
-import org.apache.lucene.codecs.lucene40.Lucene40SegmentInfoFormat;
-import org.apache.lucene.codecs.lucene41.Lucene41StoredFieldsFormat;
+import org.apache.lucene.codecs.compressing.CompressionMode;
 import org.apache.lucene.codecs.lucene42.Lucene42FieldInfosFormat;
 import org.apache.lucene.codecs.lucene42.Lucene42NormsFormat;
 import org.apache.lucene.codecs.lucene42.Lucene42TermVectorsFormat;
 import org.apache.lucene.codecs.perfield.PerFieldDocValuesFormat;
 import org.apache.lucene.codecs.perfield.PerFieldPostingsFormat;
 
-public class Blur021Codec extends Codec {
-  private final StoredFieldsFormat fieldsFormat = new Lucene41StoredFieldsFormat();
+public class Blur022Codec extends Codec {
+
+  private final StoredFieldsFormat fieldsFormat;
   private final TermVectorsFormat vectorsFormat = new Lucene42TermVectorsFormat();
   private final FieldInfosFormat fieldInfosFormat = new Lucene42FieldInfosFormat();
-  private final SegmentInfoFormat infosFormat = new Lucene40SegmentInfoFormat();
+  private final SegmentInfoFormat infosFormat;
   private final LiveDocsFormat liveDocsFormat = new Blur021LiveDocsFormat();
-  
+
   private final PostingsFormat postingsFormat = new PerFieldPostingsFormat() {
     @Override
     public PostingsFormat getPostingsFormatForField(String field) {
-      return Blur021Codec.this.getPostingsFormatForField(field);
-    }
-  };
-  
-  private final DocValuesFormat docValuesFormat = new PerFieldDocValuesFormat() {
-    @Override
-    public DocValuesFormat getDocValuesFormatForField(String field) {
-      return Blur021Codec.this.getDocValuesFormatForField(field);
+      return Blur022Codec.this.getPostingsFormatForField(field);
     }
   };
 
-  /** Sole constructor. */
-  public Blur021Codec() {
-    super("Blur021");
+  private final DocValuesFormat docValuesFormat = new PerFieldDocValuesFormat() {
+    @Override
+    public DocValuesFormat getDocValuesFormatForField(String field) {
+      return Blur022Codec.this.getDocValuesFormatForField(field);
+    }
+  };
+
+  public Blur022Codec() {
+    this(1 << 14, CompressionMode.FAST);
   }
-  
+
+  public Blur022Codec(int chunkSize, CompressionMode compressionMode) {
+    super("Blur022");
+    infosFormat = new Blur022SegmentInfoFormat(chunkSize, compressionMode);
+    fieldsFormat = new Blur022StoredFieldsFormat(chunkSize, compressionMode);
+  }
+
+  public Blur022Codec(BlurConfiguration configuration) {
+    this(configuration.getInt(BLUR_SHARD_INDEX_CHUNKSIZE, 1 << 14), getCompressionMode(configuration));
+  }
+
+  private static CompressionMode getCompressionMode(BlurConfiguration configuration) {
+    String type = configuration.get(BLUR_SHARD_INDEX_COMPRESSIONMODE, FAST);
+    if (HIGH_COMPRESSION.equals(type)) {
+      return CompressionMode.HIGH_COMPRESSION;
+    } else if (FAST.equals(type)) {
+      return CompressionMode.FAST;
+    } else if (FAST_DECOMPRESSION.equals(type)) {
+      return CompressionMode.FAST_DECOMPRESSION;
+    } else {
+      throw new IllegalArgumentException("blur.shard.index.compressionmode=" + type
+          + " not supported.  Valid entries are [FAST,FAST_DECOMPRESSION,HIGH_COMPRESSION]");
+    }
+  }
+
   @Override
   public final StoredFieldsFormat storedFieldsFormat() {
     return fieldsFormat;
   }
-  
+
   @Override
   public final TermVectorsFormat termVectorsFormat() {
     return vectorsFormat;
@@ -73,40 +103,42 @@ public class Blur021Codec extends Codec {
   public final PostingsFormat postingsFormat() {
     return postingsFormat;
   }
-  
+
   @Override
   public final FieldInfosFormat fieldInfosFormat() {
     return fieldInfosFormat;
   }
-  
+
   @Override
   public final SegmentInfoFormat segmentInfoFormat() {
     return infosFormat;
   }
-  
+
   @Override
   public final LiveDocsFormat liveDocsFormat() {
     return liveDocsFormat;
   }
 
-  /** Returns the postings format that should be used for writing 
-   *  new segments of <code>field</code>.
-   *  
-   *  The default implementation always returns "Lucene41"
+  /**
+   * Returns the postings format that should be used for writing new segments of
+   * <code>field</code>.
+   * 
+   * The default implementation always returns "Lucene41"
    */
   public PostingsFormat getPostingsFormatForField(String field) {
     return defaultFormat;
   }
-  
-  /** Returns the docvalues format that should be used for writing 
-   *  new segments of <code>field</code>.
-   *  
-   *  The default implementation always returns "Lucene42"
+
+  /**
+   * Returns the docvalues format that should be used for writing new segments
+   * of <code>field</code>.
+   * 
+   * The default implementation always returns "Lucene42"
    */
   public DocValuesFormat getDocValuesFormatForField(String field) {
     return defaultDVFormat;
   }
-  
+
   @Override
   public final DocValuesFormat docValuesFormat() {
     return docValuesFormat;

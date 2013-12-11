@@ -53,6 +53,7 @@ import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.indexserver.DistributedLayout;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactory;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactoryImpl;
+import org.apache.blur.manager.indexserver.LayoutMissingException;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.results.BlurResultIterableClient;
 import org.apache.blur.manager.results.LazyBlurResult;
@@ -270,11 +271,16 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       List<String> shardList = getShardList(cluster, table);
 
       DistributedLayoutFactory distributedLayoutFactory = getDistributedLayoutFactory(cluster);
-      DistributedLayout layout = distributedLayoutFactory.createDistributedLayout(table, shardList, shardServerList,
-          offlineShardServers);
-      Map<String, String> map = layout.getLayout();
-      LOG.info("New layout for table [{0}] is [{1}]", table, map);
-      newLayout.put(table, map);
+      try {
+        DistributedLayout layout = distributedLayoutFactory.createDistributedLayout(table, shardList, shardServerList,
+            offlineShardServers, true);
+        Map<String, String> map = layout.getLayout();
+        LOG.info("New layout for table [{0}] is [{1}]", table, map);
+        newLayout.put(table, map);
+      } catch (LayoutMissingException e) {
+        LOG.info("Layout missing for table [{0}]", table);
+        continue;
+      }
     }
     _shardServerLayout.set(newLayout);
   }

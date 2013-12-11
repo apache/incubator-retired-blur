@@ -14,24 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.lucene.codec;
+package org.apache.blur.manager.indexserver;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-public class Testing {
-  
-  static final Pattern CODEC_FILE_PATTERN = Pattern.compile("_[a-z0-9]+(_.*)?\\..*");
-
-  public static void main(String[] args) {
-    String t = "_0_filter1.filter";
-    Matcher matcher = CODEC_FILE_PATTERN.matcher("");
-    matcher.reset(t);
-    
-    if (matcher.matches()) {
-      System.out.println("yay!");
-    }
-
-  }
-
+public class LayoutMissingException extends RuntimeException {
+  private static final long serialVersionUID = 3979582465356840074L;
 }

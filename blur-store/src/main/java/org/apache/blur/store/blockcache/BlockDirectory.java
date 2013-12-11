@@ -137,7 +137,7 @@ public class BlockDirectory extends Directory implements DirectoryDecorator {
 
     public CachedIndexInput(IndexInput source, int blockSize, String name, String cacheName, Cache cache,
         IOContext context) {
-      super(name, context);
+      super("CachedIndexInput(" + source.toString() + ")", context);
       _source = source;
       _blockSize = blockSize;
       _fileLength = source.length();

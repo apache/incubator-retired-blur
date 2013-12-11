@@ -51,7 +51,7 @@ public class DirectoryReferenceCounter extends Directory implements DirectoryDec
       counter = new AtomicInteger();
       _refCounters.put(name, counter);
     }
-    return new RefIndexInput(input.toString(), input, counter);
+    return new RefIndexInput(input, counter);
   }
 
   public void deleteFile(String name) throws IOException {
@@ -98,8 +98,8 @@ public class DirectoryReferenceCounter extends Directory implements DirectoryDec
     private IndexInput input;
     private AtomicInteger ref;
 
-    public RefIndexInput(String resourceDescription, IndexInput input, AtomicInteger ref) {
-      super(resourceDescription);
+    public RefIndexInput(IndexInput input, AtomicInteger ref) {
+      super("RefIndexInput(" + input.toString() + ")");
       this.input = input;
       this.ref = ref;
       ref.incrementAndGet();

@@ -14,13 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.manager.indexserver;
+package org.apache.lucene.index;
 
 import java.util.List;
 
-public interface DistributedLayoutFactory {
+public class BaseCompositeReaderUtil {
 
-  DistributedLayout createDistributedLayout(String table, List<String> shardList, List<String> shardServerList,
-      List<String> offlineShardServers, boolean readOnly);
+  public static List<? extends IndexReader> getSequentialSubReaders(BaseCompositeReader<IndexReader> indexReader) {
+    return indexReader.getSequentialSubReaders();
+  }
+
+  public static int readerIndex(BaseCompositeReader<IndexReader> indexReader, int docID) {
+    return indexReader.readerIndex(docID);
+  }
+
+  public static int readerBase(BaseCompositeReader<IndexReader> indexReader, int readerIndex) {
+    return indexReader.readerBase(readerIndex);
+  }
 
 }

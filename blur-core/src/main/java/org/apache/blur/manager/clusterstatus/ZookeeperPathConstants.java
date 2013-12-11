@@ -66,6 +66,10 @@ public class ZookeeperPathConstants {
   public static String getSafemodePath(String cluster) {
     return getClusterPath(cluster) + "/safemode";
   }
+  
+  public static String getShutdownPath(String cluster) {
+    return getClusterPath(cluster) + "/shutdown";
+  }
 
   public static String getRegisteredShardsPath(String cluster) {
     return getClusterPath(cluster) + "/registered-nodes";

@@ -69,6 +69,7 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.data.Stat;
 
 import com.google.common.io.Closer;
 
@@ -77,6 +78,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   private static final Log LOG = LogFactory.getLog(DistributedIndexServer.class);
   private static final long _delay = TimeUnit.SECONDS.toMillis(10);
   private static final AtomicLong _pauseWarmup = new AtomicLong();
+  private static final Set<String> EMPTY = new HashSet<String>();
 
   static class LayoutEntry {
 
@@ -250,7 +252,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   }
 
   private WatchChildren watchForShardServerChanges() {
-    
+
     WatchChildren watchOnlineShards = new WatchChildren(_zookeeper,
         ZookeeperPathConstants.getOnlineShardsPath(_cluster)).watch(new OnChange() {
       private List<String> _prevOnlineShards = new ArrayList<String>();
@@ -570,7 +572,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
 
   private Set<String> getShardsToServe(String table) {
     if (!isEnabled(table)) {
-      return new HashSet<String>();
+      return EMPTY;
     }
     LayoutEntry layoutEntry = _layout.get(table);
     if (layoutEntry == null) {
@@ -589,6 +591,12 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     List<String> offlineShardServers = new ArrayList<String>(_clusterStatus.getOfflineShardServers(false, cluster));
     List<String> shardList = getShardList(table);
 
+    String shutdownPath = ZookeeperPathConstants.getShutdownPath(cluster);
+    if (isShuttingDown(shutdownPath)) {
+      LOG.info("Cluster shutting down, return empty layout.");
+      return EMPTY;
+    }
+
     DistributedLayout layoutManager = _distributedLayoutFactory.createDistributedLayout(table, shardList,
         shardServerList, offlineShardServers, false);
 
@@ -602,5 +610,19 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     }
     _layout.put(table, new LayoutEntry(layoutManager, shardsToServeCache));
     return shardsToServeCache;
+  }
+
+  private boolean isShuttingDown(String shutdownPath) {
+    try {
+      Stat stat = _zookeeper.exists(shutdownPath, false);
+      if (stat == null) {
+        return false;
+      }
+      return true;
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

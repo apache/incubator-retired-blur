@@ -38,6 +38,7 @@ import org.apache.blur.analysis.HdfsFieldManager;
 import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.lucene.search.FairSimilarity;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.conf.Configuration;
@@ -144,7 +145,7 @@ public class TableContext {
         KeepOnlyLastCommitDeletionPolicy.class);
     tableContext.indexDeletionPolicy = (IndexDeletionPolicy) configure(ReflectionUtils.newInstance(c1, configuration),
         tableContext);
-    Class<?> c2 = configuration.getClass(BLUR_SHARD_INDEX_SIMILARITY, DefaultSimilarity.class);
+    Class<?> c2 = configuration.getClass(BLUR_SHARD_INDEX_SIMILARITY, FairSimilarity.class);
     tableContext.similarity = (Similarity) configure(ReflectionUtils.newInstance(c2, configuration), tableContext);
 
     cache.put(name, tableContext);

@@ -17,8 +17,8 @@ package org.apache.blur.server;
  * limitations under the License.
  */
 import static org.apache.blur.utils.BlurConstants.BLUR_FIELDTYPE;
-import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_SIMILARITY;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_SIMILARITY;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_COMMITS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_REFRESHS;
 import static org.apache.blur.utils.BlurConstants.SUPER;
@@ -41,13 +41,13 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.utils.BlurConstants;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.similarities.DefaultSimilarity;
 import org.apache.lucene.search.similarities.Similarity;
 
 public class TableContext {
@@ -122,7 +122,7 @@ public class TableContext {
     tableContext.descriptor = tableDescriptor;
     tableContext.timeBetweenCommits = configuration.getLong(BLUR_SHARD_TIME_BETWEEN_COMMITS, 60000);
     tableContext.timeBetweenRefreshs = configuration.getLong(BLUR_SHARD_TIME_BETWEEN_REFRESHS, 5000);
-    tableContext.defaultPrimeDocTerm = new Term("_prime_", "true");
+    tableContext.defaultPrimeDocTerm = new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE);
     tableContext.defaultScoreType = ScoreType.SUPER;
 
     boolean strict = tableDescriptor.isStrictTypes();

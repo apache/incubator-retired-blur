@@ -72,6 +72,9 @@ public class BufferStore implements Store {
   private final int _bufferSize;
 
   public synchronized static void initNewBuffer(int bufferSize, long totalAmount) {
+    if (totalAmount == 0) {
+      return;
+    }
     BufferStore bufferStore = _bufferStores.get(bufferSize);
     if (bufferStore == null) {
       long count = totalAmount / bufferSize;

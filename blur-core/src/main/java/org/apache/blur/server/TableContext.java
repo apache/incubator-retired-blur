@@ -68,31 +68,31 @@ public class TableContext {
   private static final String LOGS = "logs";
   private static final String TYPES = "types";
 
-  private static ConcurrentHashMap<String, TableContext> cache = new ConcurrentHashMap<String, TableContext>();
-  private static Configuration systemConfiguration;
-  private static BlurConfiguration systemBlurConfiguration;
+  private static ConcurrentHashMap<String, TableContext> _cache = new ConcurrentHashMap<String, TableContext>();
+  private static Configuration _systemConfiguration;
+  private static BlurConfiguration _systemBlurConfiguration;
 
-  private Path tablePath;
-  private Path walTablePath;
-  private String defaultFieldName;
-  private String table;
-  private IndexDeletionPolicy indexDeletionPolicy;
-  private Similarity similarity;
-  private Configuration configuration;
-  private TableDescriptor descriptor;
-  private long timeBetweenCommits;
-  private long timeBetweenRefreshs;
-  private ScoreType defaultScoreType;
-  private Term defaultPrimeDocTerm;
-  private FieldManager fieldManager;
-  private BlurConfiguration blurConfiguration;
+  private Path _tablePath;
+  private Path _walTablePath;
+  private String _defaultFieldName;
+  private String _table;
+  private IndexDeletionPolicy _indexDeletionPolicy;
+  private Similarity _similarity;
+  private Configuration _configuration;
+  private TableDescriptor _descriptor;
+  private long _timeBetweenCommits;
+  private long _timeBetweenRefreshs;
+  private ScoreType _defaultScoreType;
+  private Term _defaultPrimeDocTerm;
+  private FieldManager _fieldManager;
+  private BlurConfiguration _blurConfiguration;
 
   protected TableContext() {
 
   }
 
   public static void clear() {
-    cache.clear();
+    _cache.clear();
   }
 
   public static TableContext create(TableDescriptor tableDescriptor) {
@@ -107,7 +107,7 @@ public class TableContext {
     if (tableUri == null) {
       throw new NullPointerException("Table uri in the TableDescriptor can not be null.");
     }
-    TableContext tableContext = cache.get(name);
+    TableContext tableContext = _cache.get(name);
     if (tableContext != null) {
       return tableContext;
     }
@@ -123,43 +123,43 @@ public class TableContext {
     }
 
     tableContext = new TableContext();
-    tableContext.configuration = configuration;
-    tableContext.blurConfiguration = blurConfiguration;
-    tableContext.tablePath = new Path(tableUri);
-    tableContext.walTablePath = new Path(tableContext.tablePath, LOGS);
+    tableContext._configuration = configuration;
+    tableContext._blurConfiguration = blurConfiguration;
+    tableContext._tablePath = new Path(tableUri);
+    tableContext._walTablePath = new Path(tableContext._tablePath, LOGS);
 
-    tableContext.defaultFieldName = SUPER;
-    tableContext.table = name;
-    tableContext.descriptor = tableDescriptor;
-    tableContext.timeBetweenCommits = configuration.getLong(BLUR_SHARD_TIME_BETWEEN_COMMITS, 60000);
-    tableContext.timeBetweenRefreshs = configuration.getLong(BLUR_SHARD_TIME_BETWEEN_REFRESHS, 5000);
-    tableContext.defaultPrimeDocTerm = new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE);
-    tableContext.defaultScoreType = ScoreType.SUPER;
+    tableContext._defaultFieldName = SUPER;
+    tableContext._table = name;
+    tableContext._descriptor = tableDescriptor;
+    tableContext._timeBetweenCommits = configuration.getLong(BLUR_SHARD_TIME_BETWEEN_COMMITS, 60000);
+    tableContext._timeBetweenRefreshs = configuration.getLong(BLUR_SHARD_TIME_BETWEEN_REFRESHS, 5000);
+    tableContext._defaultPrimeDocTerm = new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE);
+    tableContext._defaultScoreType = ScoreType.SUPER;
 
     boolean strict = tableDescriptor.isStrictTypes();
     String defaultMissingFieldType = tableDescriptor.getDefaultMissingFieldType();
     boolean defaultMissingFieldLessIndexing = tableDescriptor.isDefaultMissingFieldLessIndexing();
     Map<String, String> defaultMissingFieldProps = emptyIfNull(tableDescriptor.getDefaultMissingFieldProps());
 
-    Path storagePath = new Path(tableContext.tablePath, TYPES);
+    Path storagePath = new Path(tableContext._tablePath, TYPES);
     try {
       HdfsFieldManager hdfsFieldManager = new HdfsFieldManager(SUPER, new NoStopWordStandardAnalyzer(), storagePath,
           configuration, strict, defaultMissingFieldType, defaultMissingFieldLessIndexing, defaultMissingFieldProps);
       loadCustomTypes(tableContext, blurConfiguration, hdfsFieldManager);
       hdfsFieldManager.loadFromStorage();
-      tableContext.fieldManager = hdfsFieldManager;
+      tableContext._fieldManager = hdfsFieldManager;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
 
     Class<?> c1 = configuration.getClass(BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE,
         KeepOnlyLastCommitDeletionPolicy.class);
-    tableContext.indexDeletionPolicy = (IndexDeletionPolicy) configure(ReflectionUtils.newInstance(c1, configuration),
+    tableContext._indexDeletionPolicy = (IndexDeletionPolicy) configure(ReflectionUtils.newInstance(c1, configuration),
         tableContext);
     Class<?> c2 = configuration.getClass(BLUR_SHARD_INDEX_SIMILARITY, FairSimilarity.class);
-    tableContext.similarity = (Similarity) configure(ReflectionUtils.newInstance(c2, configuration), tableContext);
+    tableContext._similarity = (Similarity) configure(ReflectionUtils.newInstance(c2, configuration), tableContext);
 
-    cache.put(name, tableContext);
+    _cache.put(name, tableContext);
     return tableContext;
   }
 
@@ -167,7 +167,7 @@ public class TableContext {
   private static void loadCustomTypes(TableContext tableContext, BlurConfiguration blurConfiguration,
       FieldManager fieldManager) {
     Set<Entry<String, String>> entrySet = blurConfiguration.getProperties().entrySet();
-    TableDescriptor descriptor = tableContext.descriptor;
+    TableDescriptor descriptor = tableContext._descriptor;
     for (Entry<String, String> entry : entrySet) {
       String key = entry.getKey();
       if (key.startsWith(BLUR_FIELDTYPE)) {
@@ -206,55 +206,55 @@ public class TableContext {
   }
 
   public IndexDeletionPolicy getIndexDeletionPolicy() {
-    return indexDeletionPolicy;
+    return _indexDeletionPolicy;
   }
 
   public Similarity getSimilarity() {
-    return similarity;
+    return _similarity;
   }
 
   public long getTimeBetweenCommits() {
-    return timeBetweenCommits;
+    return _timeBetweenCommits;
   }
 
   public long getTimeBetweenRefreshs() {
-    return timeBetweenRefreshs;
+    return _timeBetweenRefreshs;
   }
 
   public FieldManager getFieldManager() {
-    return fieldManager;
+    return _fieldManager;
   }
 
   public String getTable() {
-    return table;
+    return _table;
   }
 
   public Configuration getConfiguration() {
-    return configuration;
+    return _configuration;
   }
 
   public TableDescriptor getDescriptor() {
-    return descriptor;
+    return _descriptor;
   }
 
   public Path getTablePath() {
-    return tablePath;
+    return _tablePath;
   }
 
   public Path getWalTablePath() {
-    return walTablePath;
+    return _walTablePath;
   }
 
   public String getDefaultFieldName() {
-    return defaultFieldName;
+    return _defaultFieldName;
   }
 
   public Term getDefaultPrimeDocTerm() {
-    return defaultPrimeDocTerm;
+    return _defaultPrimeDocTerm;
   }
 
   public ScoreType getDefaultScoreType() {
-    return defaultScoreType;
+    return _defaultScoreType;
   }
 
   public long getTimeBetweenWALSyncsNanos() {
@@ -262,33 +262,33 @@ public class TableContext {
   }
 
   public BlurConfiguration getBlurConfiguration() {
-    return blurConfiguration;
+    return _blurConfiguration;
   }
 
   public static synchronized Configuration getSystemConfiguration() {
-    if (systemConfiguration == null) {
-      systemConfiguration = new Configuration();
+    if (_systemConfiguration == null) {
+      _systemConfiguration = new Configuration();
     }
-    return systemConfiguration;
+    return new Configuration(_systemConfiguration);
   }
 
   public static void setSystemConfiguration(Configuration systemConfiguration) {
-    TableContext.systemConfiguration = systemConfiguration;
+    TableContext._systemConfiguration = systemConfiguration;
   }
 
   public static synchronized BlurConfiguration getSystemBlurConfiguration() {
-    if (systemBlurConfiguration == null) {
+    if (_systemBlurConfiguration == null) {
       try {
-        systemBlurConfiguration = new BlurConfiguration();
+        _systemBlurConfiguration = new BlurConfiguration();
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
     }
-    return systemBlurConfiguration;
+    return _systemBlurConfiguration.clone();
   }
 
   public static void setSystemBlurConfiguration(BlurConfiguration systemBlurConfiguration) {
-    TableContext.systemBlurConfiguration = systemBlurConfiguration;
+    TableContext._systemBlurConfiguration = systemBlurConfiguration;
   }
 
   @SuppressWarnings("unchecked")
@@ -296,7 +296,7 @@ public class TableContext {
       DirectoryReferenceFileGC gc, ExecutorService searchExecutor, BlurIndexCloser indexCloser,
       BlurIndexRefresher refresher) throws IOException {
 
-    String className = blurConfiguration.get(BLUR_SHARD_BLURINDEX_CLASS, BlurNRTIndex.class.getName());
+    String className = _blurConfiguration.get(BLUR_SHARD_BLURINDEX_CLASS, BlurNRTIndex.class.getName());
 
     Class<? extends BlurIndex> clazz;
     try {

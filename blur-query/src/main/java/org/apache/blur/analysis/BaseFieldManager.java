@@ -155,7 +155,7 @@ public abstract class BaseFieldManager extends FieldManager {
         if (fieldTypeDefinition == null) {
           throw new RuntimeException("Field [" + fieldName + "] not found.");
         }
-        return fieldTypeDefinition.getAnalyzerForQuery(fieldName);
+        return fieldTypeDefinition.getAnalyzerForIndex(fieldName);
       }
 
       @Override

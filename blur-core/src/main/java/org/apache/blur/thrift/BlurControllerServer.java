@@ -53,7 +53,6 @@ import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.indexserver.DistributedLayout;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactory;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactoryImpl;
-import org.apache.blur.manager.indexserver.LayoutMissingException;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.results.BlurResultIterableClient;
 import org.apache.blur.manager.results.LazyBlurResult;
@@ -89,7 +88,6 @@ import org.apache.blur.thrift.generated.User;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Trace.TraceId;
 import org.apache.blur.trace.Tracer;
-import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
@@ -99,6 +97,7 @@ import org.apache.blur.utils.ForkJoin.ParallelCall;
 import org.apache.blur.zookeeper.WatchChildren;
 import org.apache.blur.zookeeper.WatchChildren.OnChange;
 import org.apache.blur.zookeeper.WatchNodeExistance;
+import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -213,44 +212,32 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   private void watchForLayoutChanges(final String cluster) throws KeeperException, InterruptedException {
     WatchNodeExistance we1 = new WatchNodeExistance(_zookeeper, ZookeeperPathConstants.getTablesPath(cluster));
+    final String shardLayoutPathTableLayoutPath = ZookeeperPathConstants.getShardLayoutPathTableLayout(cluster);
+    ZkUtils.mkNodesStr(_zookeeper, shardLayoutPathTableLayoutPath);
     we1.watch(new WatchNodeExistance.OnChange() {
       @Override
       public void action(Stat stat) {
         if (stat != null) {
-          watch(cluster, ZookeeperPathConstants.getTablesPath(cluster), _watchForTablesPerCluster);
+          watch(cluster, shardLayoutPathTableLayoutPath, _watchForTablesPerCluster);
         }
       }
     });
     if (_watchForTablesPerClusterExistance.putIfAbsent(cluster, we1) != null) {
       we1.close();
     }
-
-    WatchNodeExistance we2 = new WatchNodeExistance(_zookeeper, ZookeeperPathConstants.getTablesPath(cluster));
-    we2.watch(new WatchNodeExistance.OnChange() {
-      @Override
-      public void action(Stat stat) {
-        if (stat != null) {
-          watch(cluster, ZookeeperPathConstants.getOnlineShardsPath(cluster), _watchForOnlineShardsPerCluster);
-        }
-      }
-    });
-    if (_watchForOnlineShardsPerClusterExistance.putIfAbsent(cluster, we2) != null) {
-      we2.close();
-    }
   }
 
-  private void watch(String cluster, String path, ConcurrentMap<String, WatchChildren> map) {
-    WatchChildren watchForTables = new WatchChildren(_zookeeper, path);
-    watchForTables.watch(new OnChange() {
+  private void watch(final String cluster, String path, ConcurrentMap<String, WatchChildren> map) {
+    WatchChildren watchForTableLayoutChanges = new WatchChildren(_zookeeper, path);
+    watchForTableLayoutChanges.watch(new OnChange() {
       @Override
       public void action(List<String> children) {
-        LOG.info("Layout change.");
+        LOG.info("Layout change for cluster [{0}].", cluster);
         updateLayout();
       }
     });
-
-    if (map.putIfAbsent(cluster, watchForTables) != null) {
-      watchForTables.close();
+    if (map.putIfAbsent(cluster, watchForTableLayoutChanges) != null) {
+      watchForTableLayoutChanges.close();
     }
   }
 
@@ -266,20 +253,14 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       if (cluster == null) {
         continue;
       }
-      List<String> shardServerList = _clusterStatus.getShardServerList(cluster);
-      List<String> offlineShardServers = _clusterStatus.getOfflineShardServers(false, cluster);
-      List<String> shardList = getShardList(cluster, table);
-
       DistributedLayoutFactory distributedLayoutFactory = getDistributedLayoutFactory(cluster);
-      try {
-        DistributedLayout layout = distributedLayoutFactory.createDistributedLayout(table, shardList, shardServerList,
-            offlineShardServers, true);
+      DistributedLayout layout = distributedLayoutFactory.readCurrentLayout(table);
+      if (layout != null) {
         Map<String, String> map = layout.getLayout();
         LOG.info("New layout for table [{0}] is [{1}]", table, map);
         newLayout.put(table, map);
-      } catch (LayoutMissingException e) {
+      } else {
         LOG.info("Layout missing for table [{0}]", table);
-        continue;
       }
     }
     _shardServerLayout.set(newLayout);
@@ -293,15 +274,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       _distributedLayoutFactoryMap.put(cluster, distributedLayoutFactory);
     }
     return distributedLayoutFactory;
-  }
-
-  private List<String> getShardList(String cluster, String table) {
-    List<String> shards = new ArrayList<String>();
-    TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
-    for (int i = 0; i < tableDescriptor.shardCount; i++) {
-      shards.add(BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i));
-    }
-    return shards;
   }
 
   private void registerMyself() {
@@ -957,7 +929,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
       int numberOfShards = getShardCount(table);
       Map<String, String> tableLayout = _shardServerLayout.get().get(table);
-      if (tableLayout.size() != numberOfShards) {
+      if (tableLayout == null || tableLayout.size() != numberOfShards) {
         throw new BException("Cannot update data while shard is missing");
       }
 

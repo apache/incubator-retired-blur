@@ -38,6 +38,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -127,6 +128,38 @@ public class MiniCluster {
     setupBuffers();
     startControllers(controllerCount, randomPort);
     startShards(shardCount, randomPort);
+    try {
+      waitForSafeModeToExit();
+    } catch (BlurException e) {
+      throw new RuntimeException(e);
+    } catch (TException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void waitForSafeModeToExit() throws BlurException, TException {
+    String controllerConnectionStr = getControllerConnectionStr();
+    Iface client = BlurClient.getClient(controllerConnectionStr);
+    String clusterName = "default";
+    boolean inSafeMode;
+    boolean isNoLonger = false;
+    do {
+      inSafeMode = client.isInSafeMode(clusterName);
+      if (!inSafeMode) {
+        if (isNoLonger) {
+          System.out.println("Cluster " + cluster + " is no longer in safemode.");
+        } else {
+          System.out.println("Cluster " + cluster + " is not in safemode.");
+        }
+        return;
+      }
+      isNoLonger = true;
+      try {
+        Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    } while (inSafeMode);
   }
 
   private void setupBuffers() {

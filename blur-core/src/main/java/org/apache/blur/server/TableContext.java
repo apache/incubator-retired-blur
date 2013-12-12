@@ -17,6 +17,7 @@ package org.apache.blur.server;
  * limitations under the License.
  */
 import static org.apache.blur.utils.BlurConstants.BLUR_FIELDTYPE;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLURINDEX_CLASS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_SIMILARITY;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_COMMITS;
@@ -24,11 +25,14 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_REFRES
 import static org.apache.blur.utils.BlurConstants.SUPER;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.BlurConfiguration;
@@ -39,6 +43,12 @@ import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
+import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
+import org.apache.blur.manager.writer.BlurIndex;
+import org.apache.blur.manager.writer.BlurIndexCloser;
+import org.apache.blur.manager.writer.BlurIndexRefresher;
+import org.apache.blur.manager.writer.BlurNRTIndex;
+import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
@@ -49,6 +59,7 @@ import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.similarities.Similarity;
+import org.apache.lucene.store.Directory;
 
 public class TableContext {
 
@@ -278,5 +289,43 @@ public class TableContext {
 
   public static void setSystemBlurConfiguration(BlurConfiguration systemBlurConfiguration) {
     TableContext.systemBlurConfiguration = systemBlurConfiguration;
+  }
+
+  @SuppressWarnings("unchecked")
+  public BlurIndex newInstanceBlurIndex(ShardContext shardContext, Directory dir, SharedMergeScheduler mergeScheduler,
+      DirectoryReferenceFileGC gc, ExecutorService searchExecutor, BlurIndexCloser indexCloser,
+      BlurIndexRefresher refresher) throws IOException {
+
+    String className = blurConfiguration.get(BLUR_SHARD_BLURINDEX_CLASS, BlurNRTIndex.class.getName());
+
+    Class<? extends BlurIndex> clazz;
+    try {
+      clazz = (Class<? extends BlurIndex>) Class.forName(className);
+    } catch (ClassNotFoundException e) {
+      throw new IOException(e);
+    }
+    Constructor<? extends BlurIndex> constructor = findConstructor(clazz);
+    try {
+      return constructor.newInstance(shardContext, dir, mergeScheduler, gc, searchExecutor, indexCloser, refresher);
+    } catch (InstantiationException e) {
+      throw new IOException(e);
+    } catch (IllegalAccessException e) {
+      throw new IOException(e);
+    } catch (IllegalArgumentException e) {
+      throw new IOException(e);
+    } catch (InvocationTargetException e) {
+      throw new IOException(e);
+    }
+  }
+
+  private Constructor<? extends BlurIndex> findConstructor(Class<? extends BlurIndex> clazz) throws IOException {
+    try {
+      return clazz.getConstructor(new Class[] { ShardContext.class, Directory.class, SharedMergeScheduler.class,
+          DirectoryReferenceFileGC.class, ExecutorService.class, BlurIndexCloser.class, BlurIndexRefresher.class });
+    } catch (NoSuchMethodException e) {
+      throw new IOException(e);
+    } catch (SecurityException e) {
+      throw new IOException(e);
+    }
   }
 }

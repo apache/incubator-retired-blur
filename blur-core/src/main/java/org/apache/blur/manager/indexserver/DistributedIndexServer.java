@@ -48,7 +48,6 @@ import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;
 import org.apache.blur.manager.writer.BlurIndexReadOnly;
 import org.apache.blur.manager.writer.BlurIndexRefresher;
-import org.apache.blur.manager.writer.BlurNRTIndex;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
@@ -193,13 +192,18 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
 
       @Override
       public DistributedLayout createDistributedLayout(String table, List<String> shardList,
-          List<String> shardServerList, List<String> offlineShardServers, boolean readOnly) {
+          List<String> shardServerList, List<String> offlineShardServers) {
         DistributedLayoutManager layoutManager = new DistributedLayoutManager();
         layoutManager.setNodes(shardServerList);
         layoutManager.setNodesOffline(offlineShardServers);
         layoutManager.setShards(shardList);
         layoutManager.init();
         return layoutManager;
+      }
+
+      @Override
+      public DistributedLayout readCurrentLayout(String table) {
+        throw new RuntimeException("Not implemented");
       }
     };
   }
@@ -474,18 +478,11 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
       dir = directory;
     }
 
-    BlurIndex index;
-
-    BlurNRTIndex writer = new BlurNRTIndex(shardContext, _mergeScheduler, dir, _gc, _searchExecutor);
-
-    // BlurIndexNRTSimple writer = new BlurIndexNRTSimple(shardContext,
-    // _mergeScheduler, dir, _gc, _searchExecutor,
-    // _indexCloser, _refresher);
+    BlurIndex index = tableContext.newInstanceBlurIndex(shardContext, dir, _mergeScheduler, _gc, _searchExecutor,
+        _indexCloser, _refresher);
 
     if (_clusterStatus.isReadOnly(true, _cluster, table)) {
-      index = new BlurIndexReadOnly(writer);
-    } else {
-      index = writer;
+      index = new BlurIndexReadOnly(index);
     }
     _filterCache.opening(table, shard, index);
     TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, _cluster, table);
@@ -598,7 +595,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     }
 
     DistributedLayout layoutManager = _distributedLayoutFactory.createDistributedLayout(table, shardList,
-        shardServerList, offlineShardServers, false);
+        shardServerList, offlineShardServers);
 
     Map<String, String> layout = layoutManager.getLayout();
     String nodeName = getNodeName();

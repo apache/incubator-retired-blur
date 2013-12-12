@@ -90,7 +90,7 @@ public class BlurIndexReaderTest {
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard");
     refresher = new BlurIndexRefresher();
     indexCloser = new BlurIndexCloser();
-    reader = new BlurIndexReader(shardContext, directory, refresher, indexCloser);
+    reader = new BlurIndexReader(shardContext, directory, null, null, null, indexCloser, refresher);
   }
 
   @After

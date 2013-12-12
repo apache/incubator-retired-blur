@@ -21,6 +21,8 @@ import java.util.List;
 public interface DistributedLayoutFactory {
 
   DistributedLayout createDistributedLayout(String table, List<String> shardList, List<String> shardServerList,
-      List<String> offlineShardServers, boolean readOnly);
+      List<String> offlineShardServers);
+  
+  DistributedLayout readCurrentLayout(String table);
 
 }

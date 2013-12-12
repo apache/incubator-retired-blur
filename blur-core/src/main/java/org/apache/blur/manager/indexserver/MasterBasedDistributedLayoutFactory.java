@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.blur.zookeeper.ZooKeeperLockManager;
 import org.apache.zookeeper.CreateMode;
@@ -48,8 +49,7 @@ import org.apache.zookeeper.data.Stat;
 
 public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFactory {
 
-  private static final String TABLE_LAYOUT = "table_layout";
-  private static final String LOCKS = "locks";
+  private static final String SEP = "_";
   private static final Log LOG = LogFactory.getLog(MasterBasedDistributedLayoutFactory.class);
 
   private final ConcurrentMap<String, MasterBasedDistributedLayout> _cachedLayoutMap = new ConcurrentHashMap<String, MasterBasedDistributedLayout>();
@@ -65,25 +65,48 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
     }
   };
 
-  public MasterBasedDistributedLayoutFactory(ZooKeeper zooKeeper, String storagePath) {
+  public MasterBasedDistributedLayoutFactory(ZooKeeper zooKeeper, String cluster) {
     _zooKeeper = zooKeeper;
-    _storagePath = storagePath;
-    ZkUtils.mkNodes(_zooKeeper, _storagePath);
-    ZkUtils.mkNodes(_zooKeeper, _storagePath, LOCKS);
-    ZkUtils.mkNodes(_zooKeeper, _storagePath, TABLE_LAYOUT);
-    _tableStoragePath = _storagePath + "/" + TABLE_LAYOUT;
-    _locksStoragePath = _storagePath + "/" + LOCKS;
+    _storagePath = ZookeeperPathConstants.getShardLayoutPath(cluster);
+    _tableStoragePath = ZookeeperPathConstants.getShardLayoutPathTableLayout(cluster);
+    _locksStoragePath = ZookeeperPathConstants.getShardLayoutPathLocks(cluster);
+    ZkUtils.mkNodesStr(_zooKeeper, _storagePath);
+    ZkUtils.mkNodesStr(_zooKeeper, _tableStoragePath);
+    ZkUtils.mkNodesStr(_zooKeeper, _locksStoragePath);
     _zooKeeperLockManager = new ZooKeeperLockManager(_zooKeeper, _locksStoragePath);
   }
 
   @Override
+  public DistributedLayout readCurrentLayout(String table) {
+    LOG.info("Checking for existing layout for table [{0}]", table);
+    try {
+      String existingStoragePath = findExistingStoragePath(table);
+      if (existingStoragePath == null) {
+        return null;
+      }
+      Stat stat = _zooKeeper.exists(existingStoragePath, false);
+      if (stat != null) {
+        LOG.info("Existing layout found for table [{0}]", table);
+        byte[] data = _zooKeeper.getData(existingStoragePath, false, stat);
+        if (data != null) {
+          return fromBytes(data);
+        }
+      }
+      return null;
+    } catch (Exception e) {
+      LOG.error("Unknown error during layout read.", e);
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
   public DistributedLayout createDistributedLayout(String table, List<String> shardList, List<String> shardServerList,
-      List<String> offlineShardServers, boolean readOnly) {
+      List<String> offlineShardServers) {
     MasterBasedDistributedLayout layout = _cachedLayoutMap.get(table);
     List<String> onlineShardServerList = getOnlineShardServerList(shardServerList, offlineShardServers);
     if (layout == null || layout.isOutOfDate(shardList, onlineShardServerList)) {
       LOG.info("Layout out of date, recalculating for table [{0}].", table);
-      MasterBasedDistributedLayout newLayout = newLayout(table, shardList, onlineShardServerList, readOnly);
+      MasterBasedDistributedLayout newLayout = newLayout(table, shardList, onlineShardServerList);
       _cachedLayoutMap.put(table, newLayout);
       return newLayout;
     } else {
@@ -98,16 +121,21 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
   }
 
   private MasterBasedDistributedLayout newLayout(String table, List<String> onlineShardServerList,
-      List<String> shardServerList, boolean readOnly) throws LayoutMissingException {
+      List<String> shardServerList) {
     try {
       _zooKeeperLockManager.lock(table);
-      String storagePath = getStoragePath(table);
       LOG.info("Checking for existing layout for table [{0}]", table);
-      Stat stat = _zooKeeper.exists(storagePath, false);
+      String existingStoragePath = findExistingStoragePath(table);
+      Stat stat;
+      if (existingStoragePath == null) {
+        stat = null;
+      } else {
+        stat = _zooKeeper.exists(existingStoragePath, false);
+      }
       MasterBasedDistributedLayout existingLayout = null;
       if (stat != null) {
         LOG.info("Existing layout found for table [{0}]", table);
-        byte[] data = _zooKeeper.getData(storagePath, false, stat);
+        byte[] data = _zooKeeper.getData(existingStoragePath, false, stat);
         if (data != null) {
           MasterBasedDistributedLayout storedLayout = fromBytes(data);
           LOG.info("Checking if layout is out of date for table [{0}]", table);
@@ -115,16 +143,10 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
             LOG.info("Layout is up-to-date for table [{0}]", table);
             return storedLayout;
           }
-          if (readOnly) {
-            LOG.info("Using stable layout until update for table [{0}]", table);
-            return storedLayout;
-          }
           // If there was a stored layout, use the stored layout as a
           // replacement for the existing layout.
           existingLayout = storedLayout;
         }
-      } else if (readOnly) {
-        throw new LayoutMissingException();
       }
       LOG.info("Calculating new layout for table [{0}]", table);
       // recreate
@@ -133,11 +155,9 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
       MasterBasedDistributedLayout layout = new MasterBasedDistributedLayout(newCalculatedLayout,
           onlineShardServerList, shardServerList);
       LOG.info("New layout created for table [{0}]", table);
-      if (_zooKeeper.exists(storagePath, false) == null) {
-        _zooKeeper.create(storagePath, toBytes(layout), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-      } else {
-        _zooKeeper.setData(storagePath, toBytes(layout), -1);
-      }
+      String newPath = _zooKeeper.create(getStoragePath(table) + SEP, toBytes(layout), Ids.OPEN_ACL_UNSAFE,
+          CreateMode.PERSISTENT_SEQUENTIAL);
+      cleanupOldTableLayouts(table, newPath);
       return layout;
     } catch (LayoutMissingException e) {
       throw e;
@@ -153,6 +173,38 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
         LOG.error("Unknown error during unlock.", e);
       }
     }
+  }
+
+  private void cleanupOldTableLayouts(String table, String newPath) throws KeeperException, InterruptedException {
+    List<String> children = new ArrayList<String>(_zooKeeper.getChildren(_tableStoragePath, false));
+    for (String child : children) {
+      int index = child.lastIndexOf(SEP);
+      if (index >= 0) {
+        if (child.substring(0, index).equals(table)) {
+          String oldPath = _tableStoragePath + "/" + child;
+          if (!oldPath.equals(newPath)) {
+            LOG.info("Cleaning up old layouts for table [{0}]", table);
+            _zooKeeper.delete(oldPath, -1);
+          }
+        }
+      }
+    }
+  }
+
+  private String findExistingStoragePath(String table) throws KeeperException, InterruptedException {
+    List<String> children = new ArrayList<String>(_zooKeeper.getChildren(_tableStoragePath, false));
+    String path = null;
+    for (String child : children) {
+      int index = child.lastIndexOf(SEP);
+      if (index >= 0) {
+        if (child.substring(0, index).equals(table)) {
+          if (path == null || child.compareTo(path) > 0) {
+            path = child;
+          }
+        }
+      }
+    }
+    return _tableStoragePath + "/" + path;
   }
 
   private Map<String, String> calculateNewLayout(String table, MasterBasedDistributedLayout existingLayout,
@@ -292,4 +344,5 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
       return false;
     }
   }
+
 }

@@ -101,6 +101,7 @@ public class BlurConstants {
   public static final String BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE_PREFIX = "blur.shard.block.cache.v2.cacheBlockSize.";
   public static final String BLUR_SHARD_BLOCK_CACHE_V2_FILE_BUFFER_SIZE = "blur.shard.block.cache.v2.fileBufferSize";
   public static final String BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE = "blur.shard.block.cache.v2.cacheBlockSize";
+  public static final String BLUR_SHARD_BLURINDEX_CLASS = "blur.shard.blurindex.class";
   
   public static final String BLUR_FIELDTYPE = "blur.fieldtype.";
 

@@ -20,6 +20,7 @@ import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -27,6 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.codec.Blur022Codec;
+import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.lucene.warmup.TraceableDirectory;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
@@ -50,15 +52,17 @@ public class BlurIndexReader extends BlurIndex {
   private BlurIndexRefresher _refresher;
   private final TableContext _tableContext;
   private final ShardContext _shardContext;
-
-  public BlurIndexReader(ShardContext shardContext, Directory directory, BlurIndexRefresher refresher,
-      BlurIndexCloser closer) throws IOException {
+  
+  public BlurIndexReader(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
+      DirectoryReferenceFileGC gc, final ExecutorService searchExecutor, BlurIndexCloser indexCloser,
+      BlurIndexRefresher refresher) throws IOException {
+    super(shardContext, directory, mergeScheduler, gc, searchExecutor, indexCloser, refresher);
     _tableContext = shardContext.getTableContext();
     // This directory allows for warm up by adding tracing ability.
     _directory = new TraceableDirectory(directory);
     _shardContext = shardContext;
     _refresher = refresher;
-    _closer = closer;
+    _closer = indexCloser;
 
     _open.set(true);
 

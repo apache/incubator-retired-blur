@@ -156,7 +156,7 @@ public class LocalIndexServer extends AbstractIndexServer {
 
   private BlurIndex openIndex(String table, String shard, Directory dir) throws CorruptIndexException, IOException {
     ShardContext shardContext = ShardContext.create(_tableContext, shard);
-    BlurNRTIndex index = new BlurNRTIndex(shardContext, _mergeScheduler, dir, _gc, _searchExecutor);
+    BlurNRTIndex index = new BlurNRTIndex(shardContext, dir, _mergeScheduler, _gc, _searchExecutor, null, null);
     return index;
   }
 

@@ -95,8 +95,10 @@ public class BlurNRTIndex extends BlurIndex {
   private final ReadWriteLock _lock = new ReentrantReadWriteLock();
   private long _lastRefresh = 0;
 
-  public BlurNRTIndex(ShardContext shardContext, SharedMergeScheduler mergeScheduler, Directory directory,
-      DirectoryReferenceFileGC gc, final ExecutorService searchExecutor) throws IOException {
+  public BlurNRTIndex(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
+      DirectoryReferenceFileGC gc, final ExecutorService searchExecutor, BlurIndexCloser indexCloser,
+      BlurIndexRefresher refresher) throws IOException {
+    super(shardContext, directory, mergeScheduler, gc, searchExecutor, indexCloser, refresher);
     _tableContext = shardContext.getTableContext();
     _directory = directory;
     _shardContext = shardContext;

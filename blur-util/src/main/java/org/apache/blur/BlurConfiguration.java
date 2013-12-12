@@ -30,7 +30,7 @@ import java.util.Properties;
  * and should generally be avoided.
  * 
  */
-public class BlurConfiguration {
+public class BlurConfiguration implements Cloneable {
 
   private Properties _properties = new Properties();
 
@@ -135,6 +135,19 @@ public class BlurConfiguration {
 
   public double getDouble(String name, double defaultValue) {
     return Double.parseDouble(get(name, Double.toString(defaultValue)));
+  }
+
+  @Override
+  public BlurConfiguration clone() {
+    BlurConfiguration clone;
+    try {
+      clone = (BlurConfiguration) super.clone();
+    } catch (CloneNotSupportedException e) {
+      // should never happen
+      throw new RuntimeException(e);
+    }
+    clone._properties = (Properties) _properties.clone();
+    return clone;
   }
 
 }

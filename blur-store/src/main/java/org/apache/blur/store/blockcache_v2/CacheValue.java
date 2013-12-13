@@ -130,4 +130,8 @@ public interface CacheValue {
    */
   CacheValue trim(int length);
 
+  void decRef();
+
+  void incRef();
+  
 }

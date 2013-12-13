@@ -21,6 +21,7 @@ import static org.apache.blur.metrics.MetricsConstants.DETACHES;
 import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.blur.store.blockcache_v2.CacheValue;
 
@@ -28,29 +29,44 @@ import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
 
-public class DetachableCacheValue implements CacheValue {
+@SuppressWarnings("serial")
+public class DetachableCacheValue extends AtomicInteger implements CacheValue {
 
   private static final Meter _detaches;
 
   static {
     _detaches = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, DETACHES), DETACHES, TimeUnit.SECONDS);
   }
-  
+
   private volatile CacheValue _baseCacheValue;
-  
+
   public DetachableCacheValue(CacheValue cacheValue) {
     _baseCacheValue = cacheValue;
   }
 
   @Override
   public CacheValue detachFromCache() {
-    _detaches.mark();
-    CacheValue result = _baseCacheValue;
-    int length = _baseCacheValue.length();
-    ByteArrayCacheValue byteArrayCacheValue = new ByteArrayCacheValue(length);
-    _baseCacheValue.read(0, byteArrayCacheValue._buffer, 0, length);
-    _baseCacheValue = byteArrayCacheValue;
-    return result;
+    if (_baseCacheValue instanceof ByteArrayCacheValue) {
+      // already detached
+      return null;
+    } else if (_baseCacheValue instanceof UnsafeCacheValue) {
+      final CacheValue result = _baseCacheValue;
+      if (get() == 0) {
+        // No one is using this so don't copy
+        // NULL out reference so just in case there can't be a seg fault.
+        _baseCacheValue = null;
+      } else {
+        // Copy data, because someone might access at some point
+        _detaches.mark();
+        int length = _baseCacheValue.length();
+        ByteArrayCacheValue byteArrayCacheValue = new ByteArrayCacheValue(length);
+        _baseCacheValue.read(0, byteArrayCacheValue._buffer, 0, length);
+        _baseCacheValue = byteArrayCacheValue;
+      }
+      return result;
+    } else {
+      throw new RuntimeException("Unsupported type of [" + _baseCacheValue + "]");
+    }
   }
 
   @Override
@@ -96,6 +112,16 @@ public class DetachableCacheValue implements CacheValue {
   @Override
   public CacheValue trim(int length) {
     return this;
+  }
+
+  @Override
+  public void decRef() {
+    decrementAndGet();
+  }
+
+  @Override
+  public void incRef() {
+    incrementAndGet();
   }
 
 }

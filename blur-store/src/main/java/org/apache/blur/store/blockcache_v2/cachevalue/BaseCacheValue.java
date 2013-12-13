@@ -153,4 +153,15 @@ public abstract class BaseCacheValue implements CacheValue {
   public CacheValue detachFromCache() {
     throw new RuntimeException("Not implemented.");
   }
+
+  @Override
+  public void decRef() {
+
+  }
+
+  @Override
+  public void incRef() {
+
+  }
+
 }

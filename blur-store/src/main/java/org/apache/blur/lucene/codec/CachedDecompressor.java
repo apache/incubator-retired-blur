@@ -19,45 +19,47 @@ package org.apache.blur.lucene.codec;
 import java.io.IOException;
 
 import org.apache.lucene.codecs.compressing.Decompressor;
+import org.apache.lucene.index.SegmentInfo;
 import org.apache.lucene.store.DataInput;
 import org.apache.lucene.store.IndexInput;
+import org.apache.lucene.util.ArrayUtil;
 import org.apache.lucene.util.BytesRef;
+
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 public class CachedDecompressor extends Decompressor {
 
-  static class Entry {
-    String _inputName;
-    long _position = -1;
-    BytesRef _bytesRef = new BytesRef();
-  }
-
   private final Decompressor _decompressor;
-  private final ThreadLocal<Entry> _cache = new ThreadLocal<Entry>() {
-    @Override
-    protected Entry initialValue() {
-      return new Entry();
-    }
-  };
+  private final ConcurrentLinkedHashMap<CachedKey, BytesRef> _cache;
+  private final SegmentInfo _si;
 
-  public CachedDecompressor(Decompressor decompressor) {
+  public CachedDecompressor(Decompressor decompressor, SegmentInfo si,
+      ConcurrentLinkedHashMap<CachedKey, BytesRef> cache) {
+    _si = si;
     _decompressor = decompressor;
+    _cache = cache;
   }
 
   @Override
-  public void decompress(DataInput in, int originalLength, int offset, int length, BytesRef bytes) throws IOException {
+  public void decompress(final DataInput in, final int originalLength, final int offset, final int length,
+      final BytesRef bytes) throws IOException {
     if (in instanceof IndexInput) {
       IndexInput indexInput = (IndexInput) in;
       String name = indexInput.toString();
-      Entry entry = _cache.get();
       long filePointer = indexInput.getFilePointer();
-      BytesRef cachedRef = entry._bytesRef;
-      if (!name.equals(entry._inputName) || entry._position != filePointer) {
-        cachedRef.grow(originalLength);
-        _decompressor.decompress(in, originalLength, 0, originalLength, cachedRef);
-        entry._inputName = name;
-        entry._position = filePointer;
+      CachedKey key = new CachedKey(name, filePointer, _si);
+      BytesRef cachedRef = _cache.get(key);
+      if (cachedRef == null) {
+        cachedRef = new BytesRef(originalLength + 7);
+        _decompressor.decompress(indexInput, originalLength, 0, originalLength, cachedRef);
+        _cache.put(key, cachedRef);
+        cachedRef.length = originalLength;
+        cachedRef.offset = 0;
       }
-      bytes.copyBytes(cachedRef);
+      if (bytes.bytes.length < originalLength + 7) {
+        bytes.bytes = new byte[ArrayUtil.oversize(originalLength + 7, 1)];
+      }
+      System.arraycopy(cachedRef.bytes, cachedRef.offset, bytes.bytes, 0, length + offset);
       bytes.offset = offset;
       bytes.length = length;
     } else {

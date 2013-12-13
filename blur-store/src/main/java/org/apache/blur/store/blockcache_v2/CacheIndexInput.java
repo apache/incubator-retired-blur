@@ -257,6 +257,9 @@ public class CacheIndexInput extends IndexInput {
     clone._key = _key.clone();
     clone._indexInput = _indexInput.clone();
     clone._quiet = _cache.shouldBeQuiet(_directory, _fileName);
+    if (clone._cacheValue != null) {
+      clone._cacheValue.incRef();
+    }
     return clone;
   }
 
@@ -287,6 +290,7 @@ public class CacheIndexInput extends IndexInput {
 
   private void releaseCache() {
     if (_cacheValue != null) {
+      _cacheValue.decRef();
       _cacheValue = null;
     }
   }
@@ -296,6 +300,7 @@ public class CacheIndexInput extends IndexInput {
     _cacheValue = get(_key);
     if (_cacheValue == null) {
       _cacheValue = _cache.newInstance(_directory, _fileName);
+      _cacheValue.incRef();
       long filePosition = getFilePosition();
       _indexInput.seek(filePosition);
       byte[] buffer = _store.takeBuffer(_bufferSize);
@@ -310,6 +315,8 @@ public class CacheIndexInput extends IndexInput {
       }
       _store.putBuffer(buffer);
       _cache.put(_key.clone(), _cacheValue);
+    } else {
+      _cacheValue.incRef();
     }
     _blockPosition = getBlockPosition();
   }

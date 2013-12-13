@@ -34,6 +34,11 @@ import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.SegmentInfo;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
+import org.apache.lucene.util.BytesRef;
+
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.googlecode.concurrentlinkedhashmap.Weigher;
+
 public final class Blur022StoredFieldsFormat extends StoredFieldsFormat {
 
   static final String STORED_FIELDS_FORMAT_CHUNK_SIZE = "StoredFieldsFormat.chunkSize";
@@ -42,18 +47,31 @@ public final class Blur022StoredFieldsFormat extends StoredFieldsFormat {
   private static final String SEGMENT_SUFFIX = "";
   private final int _chunkSize;
   private final CompressionMode _compressionMode;
+  private final ConcurrentLinkedHashMap<CachedKey, BytesRef> _cache;
+  private final int capacity = 16 * 1024 * 1024;
 
   public Blur022StoredFieldsFormat(int chunkSize, CompressionMode compressionMode) {
     _chunkSize = chunkSize;
     _compressionMode = compressionMode;
+    _cache = new ConcurrentLinkedHashMap.Builder<CachedKey, BytesRef>().weigher(new Weigher<BytesRef>() {
+      @Override
+      public int weightOf(BytesRef value) {
+        return value.bytes.length;
+      }
+    }).maximumWeightedCapacity(capacity).build();
   }
 
   static class CachedCompressionMode extends CompressionMode {
 
     final CompressionMode _compressionMode;
+    final SegmentInfo _si;
+    final ConcurrentLinkedHashMap<CachedKey, BytesRef> _cache;
 
-    CachedCompressionMode(CompressionMode compressionMode, Directory directory, SegmentInfo si) {
+    CachedCompressionMode(CompressionMode compressionMode, SegmentInfo si,
+        ConcurrentLinkedHashMap<CachedKey, BytesRef> cache) {
       _compressionMode = compressionMode;
+      _si = si;
+      _cache = cache;
     }
 
     @Override
@@ -63,7 +81,7 @@ public final class Blur022StoredFieldsFormat extends StoredFieldsFormat {
 
     @Override
     public Decompressor newDecompressor() {
-      return new CachedDecompressor(_compressionMode.newDecompressor());
+      return new CachedDecompressor(_compressionMode.newDecompressor(), _si, _cache);
     }
 
     @Override
@@ -76,7 +94,7 @@ public final class Blur022StoredFieldsFormat extends StoredFieldsFormat {
   @Override
   public StoredFieldsReader fieldsReader(Directory directory, SegmentInfo si, FieldInfos fn, IOContext context)
       throws IOException {
-    CompressionMode compressionMode = new CachedCompressionMode(getCompressionMode(si), directory, si);
+    CompressionMode compressionMode = new CachedCompressionMode(getCompressionMode(si), si, _cache);
     return new CompressingStoredFieldsReader(directory, si, SEGMENT_SUFFIX, fn, context, FORMAT_NAME, compressionMode);
   }
 

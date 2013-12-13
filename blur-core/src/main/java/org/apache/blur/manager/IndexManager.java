@@ -235,14 +235,18 @@ public class IndexManager {
 
   public void fetchRow(String table, Selector selector, FetchResult fetchResult) throws BlurException {
     validSelector(selector);
-    BlurIndex index;
-    String shard;
+    BlurIndex index = null;
+    String shard = null;
     Tracer trace = Trace.trace("manager fetch", Trace.param("table", table));
+    IndexSearcherClosable searcher = null;
     try {
       if (selector.getLocationId() == null) {
         // Not looking up by location id so we should resetSearchers.
         ShardServerContext.resetSearchers();
-        populateSelector(table, selector);
+        shard = MutationHelper.getShardName(table, selector.rowId, getNumberOfShards(table), _blurPartitioner);
+        index = getBlurIndex(table,shard);
+        searcher = index.getIndexSearcher();
+        populateSelector(searcher, shard, table, selector);
       }
       String locationId = selector.getLocationId();
       if (locationId.equals(NOT_FOUND)) {
@@ -250,20 +254,11 @@ public class IndexManager {
         fetchResult.setExists(false);
         return;
       }
-      shard = getShard(locationId);
-      Map<String, BlurIndex> blurIndexes = _indexServer.getIndexes(table);
-      if (blurIndexes == null) {
-        LOG.error("Table [{0}] not found", table);
-        // @TODO probably should make a enum for not found on this server so the
-        // controller knows to try another server.
-        throw new BException("Table [" + table + "] not found");
+      if (shard == null) {
+        shard = getShard(locationId);
       }
-      index = blurIndexes.get(shard);
       if (index == null) {
-        LOG.error("Shard [{0}] not found in table [{1}]", shard, table);
-        // @TODO probably should make a enum for not found on this server so the
-        // controller knows to try another server.
-        throw new BException("Shard [" + shard + "] not found in table [" + table + "]");
+        index = getBlurIndex(table,shard);
       }
     } catch (BlurException e) {
       throw e;
@@ -271,7 +266,6 @@ public class IndexManager {
       LOG.error("Unknown error while trying to get the correct index reader for selector [{0}].", e, selector);
       throw new BException(e.getMessage(), e);
     }
-    IndexSearcherClosable searcher = null;
     TimerContext timerContext = _fetchTimer.time();
     boolean usedCache = true;
     try {
@@ -280,10 +274,10 @@ public class IndexManager {
         searcher = shardServerContext.getIndexSearcherClosable(table, shard);
       }
       if (searcher == null) {
+        // Was not pulled from cache, get a fresh one from the index.
         searcher = index.getIndexSearcher();
         usedCache = false;
       }
-
       TableContext tableContext = getTableContext(table);
       FieldManager fieldManager = tableContext.getFieldManager();
 
@@ -318,6 +312,24 @@ public class IndexManager {
     }
   }
 
+  private BlurIndex getBlurIndex(String table, String shard) throws BException, IOException {
+    Map<String, BlurIndex> blurIndexes = _indexServer.getIndexes(table);
+    if (blurIndexes == null) {
+      LOG.error("Table [{0}] not found", table);
+      // @TODO probably should make a enum for not found on this server so the
+      // controller knows to try another server.
+      throw new BException("Table [" + table + "] not found");
+    }
+    BlurIndex index = blurIndexes.get(shard);
+    if (index == null) {
+      LOG.error("Shard [{0}] not found in table [{1}]", shard, table);
+      // @TODO probably should make a enum for not found on this server so the
+      // controller knows to try another server.
+      throw new BException("Shard [" + shard + "] not found in table [" + table + "]");
+    }
+    return index;
+  }
+
   private Query getHighlightQuery(Selector selector, String table, FieldManager fieldManager) throws ParseException,
       BlurException {
     HighlightOptions highlightOptions = selector.getHighlightOptions();
@@ -337,17 +349,11 @@ public class IndexManager {
         getScoreType(query.scoreType), context);
   }
 
-  private void populateSelector(String table, Selector selector) throws IOException, BlurException {
+  private void populateSelector(IndexSearcherClosable searcher, String shardName, String table, Selector selector)
+      throws IOException, BlurException {
     Tracer trace = Trace.trace("populate selector");
     String rowId = selector.rowId;
     String recordId = selector.recordId;
-    String shardName = MutationHelper.getShardName(table, rowId, getNumberOfShards(table), _blurPartitioner);
-    Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
-    BlurIndex blurIndex = indexes.get(shardName);
-    if (blurIndex == null) {
-      throw new BException("Shard [" + shardName + "] is not being servered by this shardserver.");
-    }
-    IndexSearcherClosable searcher = blurIndex.getIndexSearcher();
     try {
       BooleanQuery query = new BooleanQuery();
       if (selector.recordOnly) {
@@ -372,8 +378,6 @@ public class IndexManager {
         selector.setLocationId(NOT_FOUND);
       }
     } finally {
-      // this will allow for closing of index
-      searcher.close();
       trace.done();
     }
   }

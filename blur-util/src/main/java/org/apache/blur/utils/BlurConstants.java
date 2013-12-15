@@ -41,7 +41,6 @@ public class BlurConstants {
   public static final String HIGH_COMPRESSION = "HIGH_COMPRESSION";
   public static final String BLUR_SHARD_INDEX_CHUNKSIZE = "blur.shard.index.chunksize";
   public static final String BLUR_SHARD_INDEX_COMPRESSIONMODE = "blur.shard.index.compressionmode";
-  public static final String BLUR_SHARD_BALANCER_PERIOD = "blur.shard.balancer.period";
   public static final String BLUR_TABLE_PATH = "blur.table.path";
   public static final String BLUR_ZOOKEEPER_CONNECTION = "blur.zookeeper.connection";
   public static final String BLUR_ZOOKEEPER_TRACE_PATH = "blur.zookeeper.trace.path";

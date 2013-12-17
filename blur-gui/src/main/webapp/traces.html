@@ -76,7 +76,7 @@ function displayRequestIds(traceIdAttr) {
 	  var traceRequestList = client.traceRequestList(traceId);
 	  var rbody = $("#request_id_body");
 	  var lst = traceRequestList.sort();
-      var s = "<h5>" + traceId + "<h5><table border=1 class=\"table-bordered table-striped table-condensed\"><tr><th nowrap=1>Request Id</th><th nowrap=1>Time Offset (ms)</th></tr>";
+      var s = "<h5>" + traceId + "<h5><table border=1 class=\"table-bordered table-striped table-condensed\"><tr><th nowrap=1>Request Id</th><th nowrap=1>Time Offset (ms)</th><th nowrap=1>Total Time (ms)</th></tr>";
       var requestArray = new Array();
 	  for (var i = 0; i < lst.length; i++) {
 		var info = getRequestInfo(client,traceId,lst[i]);
@@ -100,7 +100,7 @@ function displayRequestIds(traceIdAttr) {
           s += "<tr><td nowrap=1><a id=\""+id+"\" href=\"#\">"+requestArray[i].nodeName+" (Request "+i+")</a></td>";
         }
         var diff = requestArray[i].created - lastTime;
-        s += "<td>"+diff / 1000000+"</td></tr>";
+        s += "<td>"+diff / 1000000+"</td><td>" + requestArray[i].totalTime / 1000000 + "</td></tr>";
 		lastTime = requestArray[i].created;
       }
       rbody.html(s + "</table>");
@@ -121,6 +121,7 @@ function getRequestInfo(client,traceId,requestId) {
   var traceRequest = $.parseJSON(json);
   var result = {};
   result.created = traceRequest.created;
+  result.totalTime = traceRequest.totalTime;
   result.nodeName = traceRequest.nodeName;
   return result;
 }
@@ -136,13 +137,14 @@ function displayTrace(traceIdPlusRequestId) {
   var ids = new Array();
   var header = "<h5>" + traceId + "<h5><h6>"+requestId + "</h6>";
   header += "<table border=1 class=\"table-bordered table-striped table-condensed\">";
-  header += "<tr><th>Node</th><th>Pid</th><th>Main Thread</th><th>Create Time</th></tr>";
+  header += "<tr><th>Node</th><th>Pid</th><th>Main Thread</th><th>Create Time</th><th>Total Time</th></tr>";
   header += "<tr><td>" + traceRequest.nodeName + "</td>";
   header += "<td>" + traceRequest.pid + "</td>";
   header += "<td>" + traceRequest.thread + "</td>";
-  header += "<td>" + formatTime(traceRequest.created) + "</td></tr>";
+  header += "<td>" + formatTime(traceRequest.created) + "</td>";
+  header += "<td>" + traceRequest.totalTime / 1000000 + " ms</td></tr>";
   header += "</table><br/>";
-  var s = gatherTraceInfo(traceRequest,requestIds,traceId,ids);
+  var s = gatherTraceInfo(traceRequest,requestIds,traceId,ids,traceRequest.totalTime,true);
   $("#trace_contents").html(header + s);
   for (var i = 0; i < ids.length; i++) {
     $("#"+ids[i]).click(
@@ -186,7 +188,7 @@ function bufDigits(num,len) {
   }
   return num;
 }
-function gatherTraceInfo(collector,requestIds,traceId,ids) {
+function gatherTraceInfo(collector,requestIds,traceId,ids,totalRequestTime,parent) {
   var traces = collector.traces;
   var s = "<table border=1 class=\"table-bordered table-striped table-condensed\">";
   s += "<tr><th>Trace Name</th><th>Thread</th><th>Scope</th><th>Time (ms)</th></tr>";
@@ -198,7 +200,7 @@ function gatherTraceInfo(collector,requestIds,traceId,ids) {
     }
     return 0;
   })
-  var totalTimeTook = traces[0].took;
+
   for (var i = 0; i < traces.length; i++) {
     var trace = traces[i];
 
@@ -210,15 +212,15 @@ function gatherTraceInfo(collector,requestIds,traceId,ids) {
         var id = "requestid_"+traceId+"_"+requestIdInAnotherProcess + "_2";
         ids.push(id);
         colName += "<a href=\"#\" id=\""+id+"\">" + trace.id + " - " + trace.name + "</a>";
-        colValue += gatherTraceInfo(trace.collector,requestIds,traceId,ids);
+        colValue += gatherTraceInfo(trace.collector,requestIds,traceId,ids,totalRequestTime,false);
       } else {
         colName += trace.id + " - " + trace.name + "</td>";
-        colValue += gatherTraceInfo(trace.collector,requestIds,traceId,ids);
+        colValue += gatherTraceInfo(trace.collector,requestIds,traceId,ids,totalRequestTime,false);
       }
     } else {
-	  var p = (trace.took / totalTimeTook * 100);
+	  var p = (trace.took / totalRequestTime * 100);
 	  colName += trace.id + " - " + trace.name;
-	  if (i!=0) {
+	  if (i!=0 || !parent) {
 	    colValue = "<td valign=top nowrap=1 bgcolor=\"#"+colors[100-Math.round(p)] +"\">" + (trace.took / 1000000.0).toPrecision(6) + " (" + p.toPrecision(3)  + "% of Request)";
       } else {
 	    colValue += (trace.took / 1000000.0).toPrecision(6);

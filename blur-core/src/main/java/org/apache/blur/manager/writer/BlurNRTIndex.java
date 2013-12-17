@@ -147,7 +147,7 @@ public class BlurNRTIndex extends BlurIndex {
     };
 
     _trackingWriter = new TrackingIndexWriter(_writer);
-    _indexImporter = new IndexImporter(_trackingWriter, _lock, _shardContext, TimeUnit.SECONDS, 10);
+    _indexImporter = new IndexImporter(_trackingWriter.getIndexWriter(), _lock, _shardContext, TimeUnit.SECONDS, 10);
     _nrtManagerRef.set(new NRTManager(_trackingWriter, _searcherFactory, APPLY_ALL_DELETES));
     // start commiter
 

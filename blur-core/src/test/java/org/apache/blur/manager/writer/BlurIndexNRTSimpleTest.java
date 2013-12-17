@@ -25,6 +25,7 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.server.IndexSearcherClosable;
@@ -34,6 +35,10 @@ import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.trace.BaseTraceStorage;
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.TraceCollector;
+import org.apache.blur.trace.TraceStorage;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.FSDirectory;
@@ -48,7 +53,7 @@ public class BlurIndexNRTSimpleTest {
 
   private static final File TMPDIR = new File("./target/tmp");
 
-  private BlurIndexNRTSimple writer;
+  private BlurIndexSimpleWriter writer;
   private Random random = new Random();
   private ExecutorService service;
   private File base;
@@ -97,7 +102,7 @@ public class BlurIndexNRTSimpleTest {
     path.mkdirs();
     FSDirectory directory = FSDirectory.open(path);
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard-" + uuid);
-    writer = new BlurIndexNRTSimple(shardContext, directory, mergeScheduler, gc, service, _closer, _refresher);
+    writer = new BlurIndexSimpleWriter(shardContext, directory, mergeScheduler, gc, service, _closer, _refresher);
   }
 
   @After
@@ -127,6 +132,18 @@ public class BlurIndexNRTSimpleTest {
     setupWriter(configuration, 5, false);
     long s = System.nanoTime();
     int total = 0;
+    TraceStorage oldStorage = Trace.getStorage();
+    Trace.setStorage(new BaseTraceStorage(new BlurConfiguration()) {
+      @Override
+      public void close() throws IOException {
+        
+      }
+      @Override
+      public void store(TraceCollector collector) {
+        System.out.println(collector.toJson());
+      }
+    });
+    Trace.setupTrace("test");
     for (int i = 0; i < TEST_NUMBER_WAIT_VISIBLE; i++) {
       writer.replaceRow(true, true, genRow());
       IndexSearcherClosable searcher = writer.getIndexSearcher();
@@ -135,6 +152,7 @@ public class BlurIndexNRTSimpleTest {
       searcher.close();
       total++;
     }
+    Trace.tearDownTrace();
     long e = System.nanoTime();
     double seconds = (e - s) / 1000000000.0;
     double rate = total / seconds;
@@ -143,6 +161,7 @@ public class BlurIndexNRTSimpleTest {
     IndexReader reader = searcher.getIndexReader();
     assertEquals(TEST_NUMBER_WAIT_VISIBLE, reader.numDocs());
     searcher.close();
+    Trace.setStorage(oldStorage);
   }
 
   @Test

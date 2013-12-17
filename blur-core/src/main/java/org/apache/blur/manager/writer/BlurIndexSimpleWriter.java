@@ -24,6 +24,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.index.ExitableReader;
@@ -47,9 +50,9 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.Directory;
 
-public class BlurIndexNRTSimple extends BlurIndex {
+public class BlurIndexSimpleWriter extends BlurIndex {
 
-  private static final Log LOG = LogFactory.getLog(BlurIndexNRTSimple.class);
+  private static final Log LOG = LogFactory.getLog(BlurIndexSimpleWriter.class);
 
   private final AtomicBoolean _isClosed = new AtomicBoolean();
   private final BlurIndexCloser _indexCloser;
@@ -64,8 +67,11 @@ public class BlurIndexNRTSimple extends BlurIndex {
   private final ShardContext _shardContext;
   private final AtomicReference<BlurIndexWriter> _writer = new AtomicReference<BlurIndexWriter>();
   private final boolean _makeReaderExitable = true;
+  private IndexImporter _indexImporter;
+  private final ReadWriteLock _lock = new ReentrantReadWriteLock();
+  private final Lock _readLock = _lock.readLock();
 
-  public BlurIndexNRTSimple(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
+  public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       DirectoryReferenceFileGC gc, final ExecutorService searchExecutor, BlurIndexCloser indexCloser,
       BlurIndexRefresher refresher) throws IOException {
     super(shardContext, directory, mergeScheduler, gc, searchExecutor, indexCloser, refresher);
@@ -119,6 +125,7 @@ public class BlurIndexNRTSimple extends BlurIndex {
           synchronized (_writer) {
             _writer.notify();
           }
+          _indexImporter = new IndexImporter(_writer.get(), _lock, _shardContext, TimeUnit.SECONDS, 10);
         } catch (IOException e) {
           LOG.error("Unknown error on index writer open.", e);
         }
@@ -151,19 +158,29 @@ public class BlurIndexNRTSimple extends BlurIndex {
 
   @Override
   public void replaceRow(boolean waitToBeVisible, boolean wal, Row row) throws IOException {
-    waitUntilNotNull(_writer);
-    BlurIndexWriter writer = _writer.get();
-    List<List<Field>> docs = TransactionRecorder.getDocs(row, _fieldManager);
-    writer.updateDocuments(TransactionRecorder.createRowId(row.getId()), docs);
-    waitToBeVisible(waitToBeVisible);
+    _readLock.lock();
+    try {
+      waitUntilNotNull(_writer);
+      BlurIndexWriter writer = _writer.get();
+      List<List<Field>> docs = TransactionRecorder.getDocs(row, _fieldManager);
+      writer.updateDocuments(TransactionRecorder.createRowId(row.getId()), docs);
+      waitToBeVisible(waitToBeVisible);
+    } finally {
+      _readLock.unlock();
+    }
   }
 
   @Override
   public void deleteRow(boolean waitToBeVisible, boolean wal, String rowId) throws IOException {
-    waitUntilNotNull(_writer);
-    BlurIndexWriter writer = _writer.get();
-    writer.deleteDocuments(TransactionRecorder.createRowId(rowId));
-    waitToBeVisible(waitToBeVisible);
+    _readLock.lock();
+    try {
+      waitUntilNotNull(_writer);
+      BlurIndexWriter writer = _writer.get();
+      writer.deleteDocuments(TransactionRecorder.createRowId(rowId));
+      waitToBeVisible(waitToBeVisible);
+    } finally {
+      _readLock.unlock();
+    }
   }
 
   private void waitUntilNotNull(AtomicReference<?> ref) {
@@ -185,8 +202,7 @@ public class BlurIndexNRTSimple extends BlurIndex {
   @Override
   public void close() throws IOException {
     _isClosed.set(true);
-    IOUtils.cleanup(LOG, _writer.get());
-    IOUtils.cleanup(LOG, _indexReader.get());
+    IOUtils.cleanup(LOG, _indexImporter, _writer.get(), _indexReader.get());
   }
 
   @Override
@@ -194,7 +210,7 @@ public class BlurIndexNRTSimple extends BlurIndex {
     DirectoryReader currentReader = _indexReader.get();
     DirectoryReader newReader = DirectoryReader.openIfChanged(currentReader);
     if (newReader != null) {
-      LOG.info("Refreshing index for table [{0}] shard [{1}].", _tableContext.getTable(), _shardContext.getShard());
+      LOG.debug("Refreshing index for table [{0}] shard [{1}].", _tableContext.getTable(), _shardContext.getShard());
       _indexReader.set(wrap(newReader));
       _indexCloser.close(currentReader);
     }

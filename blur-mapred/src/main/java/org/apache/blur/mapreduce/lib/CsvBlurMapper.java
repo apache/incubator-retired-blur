@@ -56,14 +56,14 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
   public static final String BLUR_CSV_FAMILY_COLUMN_PREFIX = "blur.csv.family.";
   public static final String BLUR_CSV_FAMILIES = "blur.csv.families";
 
-  private Map<String, List<String>> _columnNameMap;
-  private String _separator = Base64.encodeBase64String(",".getBytes());
-  private Splitter _splitter;
-  private boolean _familyNotInFile;
-  private String _familyFromPath;
-  private boolean _autoGenerateRecordIdAsHashOfData;
-  private MessageDigest _digest;
-  private boolean _autoGenerateRowIdAsHashOfData;
+  protected Map<String, List<String>> _columnNameMap;
+  protected String _separator = Base64.encodeBase64String(",".getBytes());
+  protected Splitter _splitter;
+  protected boolean _familyNotInFile;
+  protected String _familyFromPath;
+  protected boolean _autoGenerateRecordIdAsHashOfData;
+  protected MessageDigest _digest;
+  protected boolean _autoGenerateRowIdAsHashOfData;
 
   /**
    * Add a mapping for a family to a path. This is to be used when an entire
@@ -106,7 +106,7 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
     append(configuration, BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILY_PREFIX + family, path.toString());
   }
 
-  private static void append(Configuration configuration, String name, String value) {
+  protected static void append(Configuration configuration, String name, String value) {
     Collection<String> set = configuration.getStringCollection(name);
     if (set == null) {
       set = new TreeSet<String>();
@@ -244,7 +244,7 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
     }
   }
 
-  private static void throwMalformedDefinition(String strDefinition) {
+  protected static void throwMalformedDefinition(String strDefinition) {
     throw new RuntimeException("Family and column definition string not valid [" + strDefinition
         + "] should look like \"family1:colname1,colname2|family2:colname1,colname2,colname3\"");
   }
@@ -354,7 +354,7 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
     }
   }
 
-  private boolean isParent(Path possibleParent, Path child) {
+  protected boolean isParent(Path possibleParent, Path child) {
     if (child == null) {
       return false;
     }
@@ -364,7 +364,7 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
     return isParent(possibleParent, child.getParent());
   }
 
-  private Path getCurrentFile(Context context) throws IOException {
+  protected Path getCurrentFile(Context context) throws IOException {
     InputSplit split = context.getInputSplit();
     if (split != null && split instanceof FileSplit) {
       FileSplit inputSplit = (FileSplit) split;
@@ -454,7 +454,7 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
     this._familyFromPath = familyFromPath;
   }
 
-  private String getColumnNames(List<String> columnNames) {
+  protected String getColumnNames(List<String> columnNames) {
     StringBuilder builder = new StringBuilder();
     for (String c : columnNames) {
       if (builder.length() != 0) {
@@ -465,7 +465,7 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
     return builder.toString();
   }
 
-  private List<String> toList(Iterable<String> split) {
+  protected List<String> toList(Iterable<String> split) {
     List<String> lst = new ArrayList<String>();
     for (String s : split) {
       lst.add(s);

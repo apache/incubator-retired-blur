@@ -31,9 +31,11 @@ public class TraceCollector {
   protected final AtomicLong _traceCounter = new AtomicLong();
   protected final AtomicInteger _scope = new AtomicInteger();
   protected final long _now = (System.currentTimeMillis() * 1000000) + (System.nanoTime() % 1000000);
+  protected final long _started = System.nanoTime();
   protected final String _pid;
   protected final String _threadName;
   protected final String _nodeName;
+  protected long _finished;
 
   public TraceCollector(String nodeName, TraceId id) {
     _nodeName = nodeName;
@@ -70,7 +72,7 @@ public class TraceCollector {
     }
     return "{\n  \"id\":" + _id.toJson() + ",\n  \"nodeName\":\"" + (_nodeName == null ? "unknown" : _nodeName)
         + "\",\n  \"pid\":\"" + _pid + "\",\n  \"thread\":\"" + _threadName + "\",\n  \"created\":" + _now
-        + ",\n  \"traces\":[\n" + builder.toString() + "  ]\n}";
+        + ",\n  \"totalTime\":" + (_finished - _started) + ",\n  \"traces\":[\n" + builder.toString() + "  ]\n}";
   }
 
   public TraceId getId() {
@@ -87,5 +89,9 @@ public class TraceCollector {
 
   public AtomicInteger getScope() {
     return _scope;
+  }
+
+  public void finished() {
+    _finished = System.nanoTime();
   }
 }

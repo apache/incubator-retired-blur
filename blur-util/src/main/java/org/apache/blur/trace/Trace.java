@@ -55,10 +55,10 @@ public class Trace {
 
   public static class Parameter {
 
-    final String _name;
-    final String _value;
+    final Object _name;
+    final Object _value;
 
-    public Parameter(String name, String value) {
+    public Parameter(Object name, Object value) {
       _name = name;
       _value = value;
     }
@@ -106,7 +106,7 @@ public class Trace {
     if (value == null) {
       value = "null";
     }
-    return new Parameter(name.toString(), value.toString());
+    return new Parameter(name, value);
   }
 
   private static void setupTraceOnNewThread(TraceCollector parentCollector, String requestId, int traceScope) {
@@ -117,13 +117,18 @@ public class Trace {
   }
 
   private static void tearDownTraceOnNewThread() {
+    TraceCollector collector = _tracer.get();
     _tracer.set(null);
+    if (collector != null) {
+      collector.finished();
+    }
   }
 
   public static void tearDownTrace() {
     TraceCollector collector = _tracer.get();
     _tracer.set(null);
     if (_storage != null && collector != null) {
+      collector.finished();
       _storage.store(collector);
     }
   }

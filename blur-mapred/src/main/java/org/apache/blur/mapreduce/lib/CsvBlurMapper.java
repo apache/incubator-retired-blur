@@ -47,7 +47,7 @@ import com.google.common.base.Splitter;
  */
 public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
 
-  private static final String UTF_8 = "UTF-8";
+  public static final String UTF_8 = "UTF-8";
   public static final String BLUR_CSV_AUTO_GENERATE_RECORD_ID_AS_HASH_OF_DATA = "blur.csv.auto.generate.record.id.as.hash.of.data";
   public static final String BLUR_CSV_AUTO_GENERATE_ROW_ID_AS_HASH_OF_DATA = "blur.csv.auto.generate.row.id.as.hash.of.data";
   public static final String BLUR_CSV_FAMILY_PATH_MAPPINGS_FAMILIES = "blur.csv.family.path.mappings.families";
@@ -55,6 +55,7 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
   public static final String BLUR_CSV_SEPARATOR_BASE64 = "blur.csv.separator.base64";
   public static final String BLUR_CSV_FAMILY_COLUMN_PREFIX = "blur.csv.family.";
   public static final String BLUR_CSV_FAMILIES = "blur.csv.families";
+  public static final String HIVE_NULL = "\\N";
 
   protected Map<String, List<String>> _columnNameMap;
   protected String _separator = Base64.encodeBase64String(",".getBytes());
@@ -440,14 +441,24 @@ public class CsvBlurMapper extends BaseBlurMapper<Writable, Text> {
     }
 
     for (int i = 0; i < columnNames.size(); i++) {
-      record.addColumn(columnNames.get(i), list.get(i + offset));
-      _columnCounter.increment(1);
+      String val = handleHiveNulls(list.get(i + offset));
+      if (val != null) {
+        record.addColumn(columnNames.get(i), val);
+        _columnCounter.increment(1);
+      }
     }
     _key.set(record.getRowId());
     _mutate.setMutateType(MUTATE_TYPE.REPLACE);
     context.write(_key, _mutate);
     _recordCounter.increment(1);
     context.progress();
+  }
+
+  protected String handleHiveNulls(String value) {
+    if (value.equals(HIVE_NULL)) {
+      return null;
+    }
+    return value;
   }
 
   public void setFamilyFromPath(String familyFromPath) {

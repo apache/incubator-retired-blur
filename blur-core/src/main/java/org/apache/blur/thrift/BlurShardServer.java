@@ -106,7 +106,8 @@ public class BlurShardServer extends TableAdmin implements Iface {
         }
       }
 
-      if (blurQuery.useCacheIfPresent) {
+      if (blurQuery.useCacheIfPresent && selector == null) {
+        // Selector has to be null because we might cache data if it's not.
         LOG.debug("Using cache for query [{0}] on table [{1}].", blurQuery, table);
         QueryCacheKey key = QueryCache.getNormalizedBlurQueryKey(table, blurQuery);
         QueryCacheEntry queryCacheEntry = _queryCache.get(key);
@@ -122,8 +123,12 @@ public class BlurShardServer extends TableAdmin implements Iface {
       try {
         AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
         hitsIterable = _indexManager.query(table, blurQuery, facetCounts);
-        return _queryCache.cache(table, original,
-            BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _dataFetch, blurQuery.selector, this, table));
+        BlurResults blurResults = BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _dataFetch,
+            blurQuery.selector, this, table);
+        if (selector != null) {
+          return blurResults;
+        }
+        return _queryCache.cache(table, original, blurResults);
       } catch (BlurException e) {
         throw e;
       } catch (Exception e) {

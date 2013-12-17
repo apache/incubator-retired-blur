@@ -50,21 +50,20 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.search.NRTManager.TrackingIndexWriter;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.BytesRef;
 
 public class IndexImporter extends TimerTask implements Closeable {
   private final static Log LOG = LogFactory.getLog(IndexImporter.class);
 
-  private final TrackingIndexWriter _trackingWriter;
+  private final IndexWriter _indexWriter;
   private final ReadWriteLock _lock;
   private final ShardContext _shardContext;
   private final Timer _timer;
 
-  public IndexImporter(TrackingIndexWriter trackingWriter, ReadWriteLock lock, ShardContext shardContext,
+  public IndexImporter(IndexWriter indexWriter, ReadWriteLock lock, ShardContext shardContext,
       TimeUnit refreshUnit, long refreshAmount) {
-    _trackingWriter = trackingWriter;
+    _indexWriter = indexWriter;
     _lock = lock;
     _shardContext = shardContext;
     _timer = new Timer("IndexImporter [" + shardContext.getShard() + "/" + shardContext.getTableContext().getTable()
@@ -130,15 +129,14 @@ public class IndexImporter extends TimerTask implements Closeable {
       LOG.info("Obtaining lock on [{0}/{1}]", shard, table);
       _lock.writeLock().lock();
       try {
-        IndexWriter indexWriter = _trackingWriter.getIndexWriter();
         for (HdfsDirectory directory : indexesToImport) {
           LOG.info("Starting import [{0}], commiting on [{1}/{2}]", directory, shard, table);
-          indexWriter.commit();
+          _indexWriter.commit();
           boolean isSuccess = true;
           boolean isRollbackDueToException = false;
-          boolean emitDeletes = indexWriter.numDocs() != 0;
+          boolean emitDeletes = _indexWriter.numDocs() != 0;
           try {
-            isSuccess = applyDeletes(directory, indexWriter, shard, emitDeletes);
+            isSuccess = applyDeletes(directory, _indexWriter, shard, emitDeletes);
           } catch (IOException e) {
             LOG.error("Some issue with deleting the old index on [{0}/{1}]", e, shard, table);
             isSuccess = false;
@@ -147,12 +145,12 @@ public class IndexImporter extends TimerTask implements Closeable {
           Path dirPath = directory.getPath();
           if (isSuccess) {
             LOG.info("Add index [{0}] [{1}/{2}]", directory, shard, table);
-            indexWriter.addIndexes(directory);
+            _indexWriter.addIndexes(directory);
             LOG.info("Removing delete markers [{0}] on [{1}/{2}]", directory, shard, table);
-            indexWriter.deleteDocuments(new Term(BlurConstants.DELETE_MARKER, BlurConstants.DELETE_MARKER_VALUE));
+            _indexWriter.deleteDocuments(new Term(BlurConstants.DELETE_MARKER, BlurConstants.DELETE_MARKER_VALUE));
             LOG.info("Finishing import [{0}], commiting on [{1}/{2}]", directory, shard, table);
-            indexWriter.commit();
-            indexWriter.maybeMerge();
+            _indexWriter.commit();
+            _indexWriter.maybeMerge();
             LOG.info("Cleaning up old directory [{0}] for [{1}/{2}]", dirPath, shard, table);
             fileSystem.delete(dirPath, true);
             LOG.info("Import complete on [{0}/{1}]", shard, table);
@@ -163,7 +161,7 @@ public class IndexImporter extends TimerTask implements Closeable {
                   shard, table, directory);
             }
             LOG.info("Starting rollback on [{0}/{1}]", shard, table);
-            indexWriter.rollback();
+            _indexWriter.rollback();
             LOG.info("Finished rollback on [{0}/{1}]", shard, table);
             String name = dirPath.getName();
             int lastIndexOf = name.lastIndexOf('.');

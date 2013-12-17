@@ -43,7 +43,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.search.NRTManager.TrackingIndexWriter;
 import org.apache.lucene.store.Directory;
 import org.junit.After;
 import org.junit.Before;
@@ -102,8 +101,7 @@ public class IndexImporterTest {
     mainWriter = new IndexWriter(mainDirectory, conf);
     BufferStore.initNewBuffer(128, 128 * 128);
 
-    indexImporter = new IndexImporter(new TrackingIndexWriter(mainWriter), new ReentrantReadWriteLock(), shardContext,
-        TimeUnit.MINUTES, 10);
+    indexImporter = new IndexImporter(mainWriter, new ReentrantReadWriteLock(), shardContext, TimeUnit.MINUTES, 10);
   }
 
   @After

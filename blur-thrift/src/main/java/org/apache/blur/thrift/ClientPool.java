@@ -48,7 +48,6 @@ import org.apache.blur.thrift.generated.Blur.Client;
 
 public class ClientPool {
 
-  
   private static final Log LOG = LogFactory.getLog(ClientPool.class);
   private static final Map<Connection, BlockingQueue<Client>> _connMap = new ConcurrentHashMap<Connection, BlockingQueue<Client>>();
   private int _maxConnectionsPerHost = Integer.MAX_VALUE;
@@ -62,95 +61,106 @@ public class ClientPool {
     try {
       BlurConfiguration config = new BlurConfiguration();
       _idleTimeBeforeClosingClient = config.getLong(BLUR_CLIENTPOOL_CLIENT_CLOSE_THRESHOLD,
-                      TimeUnit.SECONDS.toMillis(30));
-      _clientPoolCleanFrequency = config.getLong(BLUR_CLIENTPOOL_CLIENT_CLEAN_FREQUENCY,
-              TimeUnit.SECONDS.toMillis(300)); 
+          TimeUnit.SECONDS.toMillis(30));
+      _clientPoolCleanFrequency = config
+          .getLong(BLUR_CLIENTPOOL_CLIENT_CLEAN_FREQUENCY, TimeUnit.SECONDS.toMillis(300));
       _maxFrameSize = config.getInt(BLUR_THRIFT_MAX_FRAME_SIZE, 16384000);
     } catch (Exception e) {
-        throw new RuntimeException(e);
+      throw new RuntimeException(e);
     }
     checkAndRemoveStaleClients();
   }
-  
+
   private static void checkAndRemoveStaleClients() {
     _master = new Thread(new Runnable() {
-    @Override
-    public void run() {
-      while (_running.get()) {
-        try {
-          Thread.sleep(getClientPoolCleanFrequency());
-          List<Thread> workers = new ArrayList<Thread>();
-          int num = 0;
-          for (Connection connection : _connMap.keySet()) {
-            Thread thread = new poolWorker(connection);
-            thread.setName("client-cleaner_" + ++num);
-            thread.start();
-            workers.add(thread);
-          }
-          for(Thread t : workers) {
-            t.join();
-          }
-        } catch (InterruptedException e) {
+      @Override
+      public void run() {
+        while (_running.get()) {
+          try {
+            Thread.sleep(getClientPoolCleanFrequency());
+            List<Thread> workers = new ArrayList<Thread>();
+            int num = 0;
+            for (Connection connection : _connMap.keySet()) {
+              Thread thread = new PoolWorker(connection);
+              thread.setName("client-cleaner_" + ++num);
+              thread.start();
+              workers.add(thread);
+            }
+            for (Thread t : workers) {
+              t.join();
+            }
+          } catch (InterruptedException e) {
             throw new RuntimeException(e);
+          }
         }
       }
-    }
     });
     _master.setDaemon(true);
     _master.setName("Blur-Client-Connection-Cleaner");
     _master.start();
   }
-  
-  private static class poolWorker extends Thread {
-	private final Connection connection;
-	public poolWorker(Connection conn) {
-	  this.connection = conn;
-	}
-	@Override
-	public void run() {
-	  BlockingQueue<Client> bq = _connMap.get(connection);
-	  synchronized(connection) {
-	    if (!_connMap.get(connection).isEmpty()) {
-	      Iterator<Client> it = bq.iterator();
-	      try {
-	        while (it.hasNext()) {
-		      Client client = it.next();
-		      if (((WeightedClient)client).isStale()) {
-		    	close(client);
-		        bq.take();
-		      } else break;
-		    }
-	      } catch (InterruptedException e) {
-	          throw new RuntimeException(e);
+
+  private static class PoolWorker extends Thread {
+    private final Connection _connection;
+
+    public PoolWorker(Connection conn) {
+      _connection = conn;
+    }
+
+    @Override
+    public void run() {
+      BlockingQueue<Client> bq = _connMap.get(_connection);
+      synchronized (_connection) {
+        if (!_connMap.get(_connection).isEmpty()) {
+          Iterator<Client> it = bq.iterator();
+          try {
+            while (it.hasNext()) {
+              Client client = it.next();
+              if (((WeightedClient) client).isStale()) {
+                close(client);
+                bq.take();
+              } else
+                break;
+            }
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
           }
-	    }
-	  }
-	}
+        }
+      }
+    }
   }
 
   private class WeightedClient extends Client {
-	private long _enqueueTime;
-	public WeightedClient(TProtocol prot) {
-	  super(prot);
-	}
-	public void setEnqueTime(long _currentTime) {
-	  this._enqueueTime = _currentTime;
-	}
-	public boolean isStale() {
-	  long diff = System.currentTimeMillis() - _enqueueTime;
-   	  return diff >= getClientIdleTimeThreshold();
-	}
+    private long _enqueueTime;
+
+    public WeightedClient(TProtocol prot) {
+      super(prot);
+    }
+
+    public void setEnqueTime(long _currentTime) {
+      _enqueueTime = _currentTime;
+    }
+
+    public boolean isStale() {
+      long diff = System.currentTimeMillis() - _enqueueTime;
+      return diff >= getClientIdleTimeThreshold();
+    }
   }
 
-  private static long getClientIdleTimeThreshold() { return _idleTimeBeforeClosingClient; }
-  private static long getClientPoolCleanFrequency() { return _clientPoolCleanFrequency; }
+  private static long getClientIdleTimeThreshold() {
+    return _idleTimeBeforeClosingClient;
+  }
+
+  private static long getClientPoolCleanFrequency() {
+    return _clientPoolCleanFrequency;
+  }
 
   public void returnClient(Connection connection, Client client) {
     try {
-      ((WeightedClient) client).setEnqueTime(System.currentTimeMillis());	
+      ((WeightedClient) client).setEnqueTime(System.currentTimeMillis());
       getQueue(connection).put(client);
     } catch (InterruptedException e) {
-        throw new RuntimeException(e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -173,10 +183,9 @@ public class ClientPool {
       try {
         blockingQueue.put(client);
       } catch (InterruptedException e) {
-          throw new RuntimeException(e);
+        throw new RuntimeException(e);
       }
     }
-
     LOG.info("Trashing client for connections [{0}]", connection);
     for (Client c : blockingQueue) {
       close(c);
@@ -216,7 +225,7 @@ public class ClientPool {
     socket.connect(new InetSocketAddress(host, port), timeout);
     trans = new TSocket(socket);
 
-    TProtocol proto = new TBinaryProtocol(new TFramedTransport(trans,_maxFrameSize));
+    TProtocol proto = new TBinaryProtocol(new TFramedTransport(trans, _maxFrameSize));
     return new WeightedClient(proto);
   }
 

@@ -338,6 +338,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   @Override
   public BlurResults query(final String table, final BlurQuery blurQuery) throws BlurException, TException {
     checkTable(table);
+    Tracer trace = Trace.trace("query - setup", Trace.param("table", table), Trace.param("blurQuery", blurQuery));
     String cluster = _clusterStatus.getCluster(true, table);
     _queryChecker.checkQuery(blurQuery);
     checkSelectorFetchSize(blurQuery.getSelector());
@@ -346,9 +347,12 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     if (blurQuery.getUuid() == null) {
       blurQuery.setUuid(UUID.randomUUID().toString());
     }
+    BlurUtil.setStartTime(blurQuery);
+    trace.done();
 
     OUTER: for (int retries = 0; retries < _maxDefaultRetries; retries++) {
       try {
+        Tracer selectorTrace = Trace.trace("selector - setup", Trace.param("retries", retries));
         final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
 
         BlurQuery original = new BlurQuery(blurQuery);
@@ -370,6 +374,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           }
         }
         blurQuery.setSelector(null);
+        selectorTrace.done();
 
         BlurCommand<BlurResultIterable> command = new BlurCommand<BlurResultIterable>() {
           @Override
@@ -388,8 +393,19 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
         BlurResultIterable hitsIterable = null;
         try {
-          hitsIterable = scatterGather(getCluster(table), command, merger);
-          BlurResults results = convertToBlurResults(hitsIterable, blurQuery, facetCounts, _executor, selector, table);
+          Tracer scatterGatherTrace = Trace.trace("query - satterGather", Trace.param("retries", retries));
+          try {
+            hitsIterable = scatterGather(getCluster(table), command, merger);
+          } finally {
+            scatterGatherTrace.done();
+          }
+          BlurResults results;
+          Tracer convertToBlurResults = Trace.trace("query - convertToBlurResults", Trace.param("retries", retries));
+          try {
+            results = convertToBlurResults(hitsIterable, blurQuery, facetCounts, _executor, selector, table);
+          } finally {
+            convertToBlurResults.done();
+          }
           if (!validResults(results, shardCount, blurQuery)) {
             BlurClientManager.sleep(_defaultDelay, _maxDefaultDelay, retries, _maxDefaultRetries);
             Map<String, String> map = _shardServerLayout.get().get(table);

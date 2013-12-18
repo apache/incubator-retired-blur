@@ -569,4 +569,9 @@ public abstract class TableAdmin implements Iface {
   private TableContext getTableContext(final String table) {
     return TableContext.create(_clusterStatus.getTableDescriptor(true, _clusterStatus.getCluster(true, table), table));
   }
+
+  @Override
+  public void ping() throws TException {
+
+  }
 }

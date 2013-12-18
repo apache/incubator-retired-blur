@@ -6066,6 +6066,98 @@ sub write {
   return $xfer;
 }
 
+package Blur::Blur_ping_args;
+use base qw(Class::Accessor);
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_ping_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_ping_args');
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_ping_result;
+use base qw(Class::Accessor);
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_ping_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_ping_result');
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 package Blur::BlurIf;
 
 use strict;
@@ -6355,6 +6447,12 @@ sub traceRequestFetch{
 sub traceRemove{
   my $self = shift;
   my $traceId = shift;
+
+  die 'implement interface';
+}
+
+sub ping{
+  my $self = shift;
 
   die 'implement interface';
 }
@@ -6657,6 +6755,12 @@ sub traceRemove{
 
   my $traceId = ($request->{'traceId'}) ? $request->{'traceId'} : undef;
   return $self->{impl}->traceRemove($traceId);
+}
+
+sub ping{
+  my ($self, $request) = @_;
+
+  return $self->{impl}->ping();
 }
 
 package Blur::BlurClient;
@@ -8422,6 +8526,43 @@ sub recv_traceRemove{
   }
   return;
 }
+sub ping{
+  my $self = shift;
+
+    $self->send_ping();
+  $self->recv_ping();
+}
+
+sub send_ping{
+  my $self = shift;
+
+  $self->{output}->writeMessageBegin('ping', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_ping_args();
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_ping{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_ping_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  return;
+}
 package Blur::BlurProcessor;
 
 use strict;
@@ -9096,6 +9237,19 @@ sub process_traceRemove {
       $result->{ex} = $@;
     }
     $output->writeMessageBegin('traceRemove', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_ping {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_ping_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_ping_result();
+    $self->{handler}->ping();
+    $output->writeMessageBegin('ping', TMessageType::REPLY, $seqid);
     $result->write($output);
     $output->writeMessageEnd();
     $output->getTransport()->flush();

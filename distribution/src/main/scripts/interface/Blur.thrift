@@ -1128,6 +1128,10 @@ service Blur {
     1:string traceId
   ) throws (1:BlurException ex)
 
+  /** 
+   * A way to ping a server to make sure the connection is still valid.
+   */
+  void ping()
 }
 
 

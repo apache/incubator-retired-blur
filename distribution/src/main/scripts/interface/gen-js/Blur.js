@@ -5281,6 +5281,62 @@ Blur_traceRemove_result.prototype.write = function(output) {
   return;
 };
 
+Blur_ping_args = function(args) {
+};
+Blur_ping_args.prototype = {};
+Blur_ping_args.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    input.skip(ftype);
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Blur_ping_args.prototype.write = function(output) {
+  output.writeStructBegin('Blur_ping_args');
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+Blur_ping_result = function(args) {
+};
+Blur_ping_result.prototype = {};
+Blur_ping_result.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    input.skip(ftype);
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Blur_ping_result.prototype.write = function(output) {
+  output.writeStructBegin('Blur_ping_result');
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
 BlurClient = function(input, output) {
     this.input = input;
     this.output = (!output) ? input : output;
@@ -6660,5 +6716,35 @@ BlurClient.prototype.recv_traceRemove = function() {
   if (null !== result.ex) {
     throw result.ex;
   }
+  return;
+};
+BlurClient.prototype.ping = function() {
+  this.send_ping();
+  this.recv_ping();
+};
+
+BlurClient.prototype.send_ping = function() {
+  this.output.writeMessageBegin('ping', Thrift.MessageType.CALL, this.seqid);
+  var args = new Blur_ping_args();
+  args.write(this.output);
+  this.output.writeMessageEnd();
+  return this.output.getTransport().flush();
+};
+
+BlurClient.prototype.recv_ping = function() {
+  var ret = this.input.readMessageBegin();
+  var fname = ret.fname;
+  var mtype = ret.mtype;
+  var rseqid = ret.rseqid;
+  if (mtype == Thrift.MessageType.EXCEPTION) {
+    var x = new Thrift.TApplicationException();
+    x.read(this.input);
+    this.input.readMessageEnd();
+    throw x;
+  }
+  var result = new Blur_ping_result();
+  result.read(this.input);
+  this.input.readMessageEnd();
+
   return;
 };

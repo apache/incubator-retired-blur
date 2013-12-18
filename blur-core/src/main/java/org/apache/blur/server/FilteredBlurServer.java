@@ -218,4 +218,9 @@ public class FilteredBlurServer implements Iface {
     _iface.traceRemove(traceId);
   }
 
+  @Override
+  public void ping() throws TException {
+    _iface.ping();
+  }
+
 }

@@ -45,6 +45,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.transport.TFramedTransport;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TSocket;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransportException;
 import org.apache.blur.thrift.generated.Blur.Client;
+import org.apache.blur.thrift.generated.SafeClientGen;
 
 public class ClientPool {
 
@@ -130,7 +131,7 @@ public class ClientPool {
     }
   }
 
-  private class WeightedClient extends Client {
+  private class WeightedClient extends SafeClientGen {
     private long _enqueueTime;
 
     public WeightedClient(TProtocol prot) {

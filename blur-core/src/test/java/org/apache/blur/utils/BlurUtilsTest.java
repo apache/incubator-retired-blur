@@ -174,7 +174,7 @@ public class BlurUtilsTest {
     // "test-context", new
     // Term(BlurConstants.PRIME_DOC,BlurConstants.PRIME_DOC_VALUE));
     List<Document> docs = BlurUtil.fetchDocuments(getReader(), resetableDocumentStoredFieldVisitor, selector, 10000000,
-        "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE));
+        "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE), null);
     assertEquals(docs.size(), 1);
   }
 
@@ -190,7 +190,7 @@ public class BlurUtilsTest {
 
     ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
     List<Document> docs = BlurUtil.fetchDocuments(getReaderWithDocsHavingFamily(), resetableDocumentStoredFieldVisitor,
-        selector, 10000000, "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE));
+        selector, 10000000, "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE), null);
     assertEquals(docs.size(), 2);
     assertEquals(docs.get(0).getField("family").stringValue(), "f1");
     assertEquals(docs.get(1).getField("family").stringValue(), "f2");
@@ -202,7 +202,7 @@ public class BlurUtilsTest {
     selector.setLocationId("shard/0");
     ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
     List<Document> docs = BlurUtil.fetchDocuments(getReader(), resetableDocumentStoredFieldVisitor, selector, 10000000,
-        "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE));
+        "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE), null);
     assertEquals(docs.size(), 2);
   }
 

@@ -64,6 +64,7 @@ public class BlurConstants {
   public static final String BLUR_SHARD_FETCHCOUNT = "blur.shard.fetchcount";
   public static final String BLUR_MAX_HEAP_PER_ROW_FETCH = "blur.max.heap.per.row.fetch";
   public static final String BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST = "blur.max.records.per.row.fetch.request";
+  public static final String BLUR_SHARD_READ_INTERCEPTOR = "blur.shard.read.interceptor";
 
   public static final String BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT = "blur.shard.server.thrift.thread.count";
   public static final String BLUR_SHARD_CACHE_MAX_TIMETOLIVE = "blur.shard.cache.max.timetolive";

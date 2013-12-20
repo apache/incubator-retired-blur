@@ -232,7 +232,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.setMaxRecordsPerRowFetchRequest(configuration.getInt(BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST, 1000));
     shardServer.setConfiguration(configuration);
     shardServer.init();
-    
+
     final TraceStorage traceStorage = setupTraceStorage(configuration);
     Trace.setStorage(traceStorage);
     Trace.setNodeName(nodeName);
@@ -253,7 +253,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     int threadCount = configuration.getInt(BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT, 32);
 
     ShardServerEventHandler eventHandler = new ShardServerEventHandler();
-    
+
     final ThriftBlurShardServer server = new ThriftBlurShardServer();
     server.setNodeName(nodeName);
     server.setServerTransport(tNonblockingServerSocket);
@@ -270,8 +270,8 @@ public class ThriftBlurShardServer extends ThriftServer {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(traceStorage, refresher, server, shardServer, indexManager, indexServer, threadWatcher, clusterStatus, zooKeeper,
-            httpServer);
+        quietClose(traceStorage, refresher, server, shardServer, indexManager, indexServer, threadWatcher,
+            clusterStatus, zooKeeper, httpServer);
       }
     };
     server.setShutdown(shutdown);

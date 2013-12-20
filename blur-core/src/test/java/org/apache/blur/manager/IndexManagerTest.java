@@ -74,6 +74,10 @@ import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.QueryWrapperFilter;
+import org.apache.lucene.search.TermQuery;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,7 +92,6 @@ public class IndexManagerTest {
   private static final String FAMILY2 = "test-family2";
   private LocalIndexServer server;
   private IndexManager indexManager;
-
   private File base;
 
   @Before
@@ -100,11 +103,15 @@ public class IndexManagerTest {
     File file = new File(base, TABLE);
     file.mkdirs();
 
+    IndexManagerTestReadInterceptor.interceptor = null;
+
     final TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName(TABLE);
     tableDescriptor.setTableUri(file.toURI().toString());
     tableDescriptor.putToTableProperties("blur.shard.time.between.refreshs", Long.toString(100));
     tableDescriptor.setShardCount(1);
+    tableDescriptor.putToTableProperties(BlurConstants.BLUR_SHARD_READ_INTERCEPTOR,
+        IndexManagerTestReadInterceptor.class.getName());
     server = new LocalIndexServer(tableDescriptor, true);
 
     BlurFilterCache filterCache = new DefaultBlurFilterCache(new BlurConfiguration());
@@ -287,13 +294,11 @@ public class IndexManagerTest {
       }
     });
 
-    
-
     for (int i = 0; i < 1000; i++) {
       Thread thread = new Thread(new Runnable() {
         @Override
         public void run() {
-//          Trace.setupTrace(rowId);
+          // Trace.setupTrace(rowId);
           Selector selector = new Selector().setRowId(rowId);
           FetchResult fetchResult = new FetchResult();
           long s = System.nanoTime();
@@ -304,7 +309,7 @@ public class IndexManagerTest {
           }
           long e = System.nanoTime();
           assertNotNull(fetchResult.rowResult.row);
-//          Trace.tearDownTrace();
+          // Trace.tearDownTrace();
           System.out.println((e - s) / 1000000.0);
         }
       });
@@ -314,7 +319,7 @@ public class IndexManagerTest {
     }
 
     Trace.setStorage(oldReporter);
-    
+
   }
 
   private RowMutation getLargeRow(String rowId) {
@@ -591,6 +596,40 @@ public class IndexManagerTest {
   }
 
   @Test
+  public void testFetchRowByRowIdWithFilter() throws Exception {
+    IndexManagerTestReadInterceptor.interceptor = new ReadInterceptor(null) {
+      @Override
+      public Filter getFilter() {
+        return new QueryWrapperFilter(new TermQuery(new Term(FAMILY + ".testcol12", "value110")));
+      }
+    };
+    Selector selector = new Selector().setRowId("row-6");
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNotNull(fetchResult.rowResult.row);
+    Row row = newRow("row-6",
+        newRecord(FAMILY, "record-6A", newColumn("testcol12", "value110"), newColumn("testcol13", "value102")));
+    row.recordCount = 1;
+    assertEquals(row, fetchResult.rowResult.row);
+  }
+
+  @Test
+  public void testFetchRowByRowIdWithFilterNoRow() throws Exception {
+    IndexManagerTestReadInterceptor.interceptor = new ReadInterceptor(null) {
+      @Override
+      public Filter getFilter() {
+        return new QueryWrapperFilter(new TermQuery(new Term(FAMILY + ".testcol12", "NOROW-1")));
+      }
+    };
+    Selector selector = new Selector().setRowId("row-6");
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertTrue(fetchResult.exists);
+    assertFalse(fetchResult.deleted);
+    assertNull(fetchResult.rowResult.row);
+  }
+
+  @Test
   public void testFetchRowByRowIdBatch() throws Exception {
     List<Selector> selectors = new ArrayList<Selector>();
     selectors.add(new Selector().setRowId("row-1"));
@@ -622,12 +661,12 @@ public class IndexManagerTest {
     Selector selector = new Selector().setRowId("row-6");
     FetchResult fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
-    
+
     List<Record> records = fetchResult.rowResult.row.getRecords();
-    for (Record record :records){
+    for (Record record : records) {
       System.out.println(record);
     }
-    
+
     selector = new Selector().setRowId("row-6").setStartRecord(0).setMaxRecordsToFetch(1);
     fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
@@ -715,6 +754,51 @@ public class IndexManagerTest {
   }
 
   @Test
+  public void testFetchRowByRecordIdWithFilterHit() throws Exception {
+    IndexManagerTestReadInterceptor.interceptor = new ReadInterceptor(null) {
+      @Override
+      public Filter getFilter() {
+        return new QueryWrapperFilter(new TermQuery(new Term(FAMILY + ".testcol1", "value1")));
+      }
+    };
+    Selector selector = new Selector().setRowId("row-1").setRecordId("record-1").setRecordOnly(true);
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertFalse(fetchResult.deleted);
+    assertTrue(fetchResult.exists);
+    assertEquals(TABLE, fetchResult.table);
+    assertNull(fetchResult.rowResult);
+    assertNotNull(fetchResult.recordResult);
+    FetchRecordResult recordResult = fetchResult.recordResult;
+    assertEquals(FAMILY, recordResult.record.family);
+    assertEquals("record-1", recordResult.record.recordId);
+    assertEquals("row-1", recordResult.rowid);
+
+    Record record = newRecord(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"),
+        newColumn("testcol3", "value3"));
+    assertEquals(record, recordResult.record);
+
+  }
+
+  @Test
+  public void testFetchRowByRecordIdWithFilterNoHit() throws Exception {
+    IndexManagerTestReadInterceptor.interceptor = new ReadInterceptor(null) {
+      @Override
+      public Filter getFilter() {
+        return new QueryWrapperFilter(new TermQuery(new Term(FAMILY + ".testcol1", "NOHIT")));
+      }
+    };
+    Selector selector = new Selector().setRowId("row-1").setRecordId("record-1").setRecordOnly(true);
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertFalse(fetchResult.deleted);
+    assertFalse(fetchResult.exists);
+    assertEquals(TABLE, fetchResult.table);
+    assertNull(fetchResult.rowResult);
+    assertNull(fetchResult.recordResult);
+  }
+
+  @Test
   public void testRecordFrequency() throws Exception {
     assertEquals(2, indexManager.recordFrequency(TABLE, FAMILY, "testcol1", "value1"));
     assertEquals(0, indexManager.recordFrequency(TABLE, FAMILY, "testcol1", "NO VALUE"));
@@ -734,6 +818,41 @@ public class IndexManagerTest {
 
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
     assertEquals(2, iterable.getTotalResults());
+    BlurIterator<BlurResult, BlurException> iterator = iterable.iterator();
+    while (iterator.hasNext()) {
+      BlurResult result = iterator.next();
+      Selector selector = new Selector().setLocationId(result.getLocationId());
+      FetchResult fetchResult = new FetchResult();
+      indexManager.fetchRow(TABLE, selector, fetchResult);
+      assertNotNull(fetchResult.rowResult);
+      assertNull(fetchResult.recordResult);
+    }
+
+    assertFalse(indexManager.currentQueries(TABLE).isEmpty());
+    Thread.sleep(2000);// wait for cleanup to fire
+    assertTrue(indexManager.currentQueries(TABLE).isEmpty());
+  }
+
+  @Test
+  public void testQuerySuperQueryTrueWithFilter() throws Exception {
+    IndexManagerTestReadInterceptor.interceptor = new ReadInterceptor(null) {
+      @Override
+      public Filter getFilter() {
+        return new QueryWrapperFilter(new TermQuery(new Term(FAMILY + ".testcol2", "value2")));
+      }
+    };
+    BlurQuery blurQuery = new BlurQuery();
+    blurQuery.query = new Query();
+    blurQuery.query.query = "test-family.testcol1:value1";
+    blurQuery.query.rowQuery = true;
+    blurQuery.query.scoreType = ScoreType.SUPER;
+    blurQuery.fetch = 10;
+    blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
+    blurQuery.maxQueryTime = Long.MAX_VALUE;
+    blurQuery.uuid = "1";
+
+    BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
+    assertEquals(1, iterable.getTotalResults());
     BlurIterator<BlurResult, BlurException> iterator = iterable.iterator();
     while (iterator.hasNext()) {
       BlurResult result = iterator.next();

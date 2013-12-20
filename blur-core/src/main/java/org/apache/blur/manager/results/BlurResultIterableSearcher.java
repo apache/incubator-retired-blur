@@ -35,6 +35,7 @@ import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.Converter;
 import org.apache.blur.utils.IteratorConverter;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 
@@ -57,10 +58,11 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
   private final boolean _runSlow;
   private final int _maxHeapPerRowFetch;
   private final TableContext _context;
+  private final Filter _filter;
 
   public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard,
       IndexSearcherClosable searcher, Selector selector, boolean closeSearcher, boolean runSlow, int fetchCount,
-      int maxHeapPerRowFetch, TableContext context) throws BlurException {
+      int maxHeapPerRowFetch, TableContext context, Filter filter) throws BlurException {
     _running = running;
     _table = table;
     _query = query;
@@ -72,12 +74,13 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
     _fetchCount = fetchCount;
     _maxHeapPerRowFetch = maxHeapPerRowFetch;
     _context = context;
+    _filter = filter;
     performSearch();
   }
 
   private void performSearch() throws BlurException {
     IterablePaging iterablePaging = new IterablePaging(_running, _searcher, _query, _fetchCount, _totalHitsRef,
-        _progressRef, _runSlow);
+        _progressRef, _runSlow, _filter);
     _iterator = new IteratorConverter<ScoreDoc, BlurResult, BlurException>(iterablePaging.iterator(),
         new Converter<ScoreDoc, BlurResult, BlurException>() {
           @Override
@@ -98,7 +101,7 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
     IndexManager.validSelector(_selector);
     try {
       IndexManager.fetchRow(_searcher.getIndexReader(), _table, _shard, _selector, fetchResult, null,
-          _maxHeapPerRowFetch, _context);
+          _maxHeapPerRowFetch, _context, _filter);
     } catch (IOException e) {
       throw new BlurException("Unknown IO error", null, ErrorType.UNKNOWN);
     }

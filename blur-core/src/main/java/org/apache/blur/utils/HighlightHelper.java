@@ -37,6 +37,7 @@ import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.NumericRangeQuery;
@@ -71,7 +72,7 @@ public class HighlightHelper {
 
   public static List<Document> highlightDocuments(IndexReader reader, Term term,
       ResetableDocumentStoredFieldVisitor fieldSelector, Selector selector, Query highlightQuery,
-      FieldManager fieldManager, String preTag, String postTag) throws IOException {
+      FieldManager fieldManager, String preTag, String postTag, Filter filter) throws IOException {
     IndexSearcher indexSearcher = new IndexSearcher(reader);
     int docFreq = reader.docFreq(term);
     BooleanQuery booleanQueryForFamily = null;
@@ -87,7 +88,7 @@ public class HighlightHelper {
       booleanQuery.add(booleanQueryForFamily, BooleanClause.Occur.MUST);
     }
     Query query = booleanQuery == null ? new TermQuery(term) : booleanQuery;
-    TopDocs topDocs = indexSearcher.search(query, docFreq);
+    TopDocs topDocs = indexSearcher.search(query, filter, docFreq);
     int totalHits = topDocs.totalHits;
     List<Document> docs = new ArrayList<Document>();
 

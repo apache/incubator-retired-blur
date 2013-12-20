@@ -111,6 +111,9 @@ import org.apache.lucene.index.SlowCompositeReaderWrapper;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.search.DocIdSet;
+import org.apache.lucene.search.DocIdSetIterator;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
@@ -768,12 +771,13 @@ public class BlurUtil {
    * 
    * @param selector
    * @param primeDocTerm
+   * @param filter
    * 
    * @throws IOException
    */
   @SuppressWarnings("unchecked")
   public static List<Document> fetchDocuments(IndexReader reader, ResetableDocumentStoredFieldVisitor fieldSelector,
-      Selector selector, int maxHeap, String context, Term primeDocTerm) throws IOException {
+      Selector selector, int maxHeap, String context, Term primeDocTerm, Filter filter) throws IOException {
     if (reader instanceof BaseCompositeReader) {
       BaseCompositeReader<IndexReader> indexReader = (BaseCompositeReader<IndexReader>) reader;
       List<? extends IndexReader> sequentialSubReaders = BaseCompositeReaderUtil.getSequentialSubReaders(indexReader);
@@ -791,6 +795,7 @@ public class BlurUtil {
       if (sReader != null) {
         SegmentReader segmentReader = (SegmentReader) sReader;
         Bits liveDocs = segmentReader.getLiveDocs();
+
         OpenBitSet bitSet = PrimeDocCache.getPrimeDocBitSet(primeDocTerm, segmentReader);
         int nextPrimeDoc = bitSet.nextSetBit(primeDocId + 1);
         int numberOfDocsInRow;
@@ -799,14 +804,14 @@ public class BlurUtil {
         } else {
           numberOfDocsInRow = nextPrimeDoc - primeDocId;
         }
-        OpenBitSet docsInRowSpanToFetch = getDocsToFetch(primeDocId, segmentReader, selector, primeDocId,
-            numberOfDocsInRow, liveDocs);
+        OpenBitSet docsInRowSpanToFetch = getDocsToFetch(segmentReader, selector, primeDocId, numberOfDocsInRow,
+            liveDocs, filter);
         int start = selector.getStartRecord();
         int maxDocsToFetch = selector.getMaxRecordsToFetch();
         int startingPosition = getStartingPosition(docsInRowSpanToFetch, start);
         List<Document> docs = new ArrayList<Document>();
         if (startingPosition < 0) {
-          //nothing to fetch
+          // nothing to fetch
           return docs;
         }
         int totalHeap = 0;
@@ -872,7 +877,7 @@ public class BlurUtil {
     return ordering;
   }
 
-  private static SegmentReader getSegmentReader(IndexReader indexReader) {
+  public static SegmentReader getSegmentReader(IndexReader indexReader) {
     if (indexReader instanceof SegmentReader) {
       return (SegmentReader) indexReader;
     }
@@ -894,10 +899,15 @@ public class BlurUtil {
     return docStartingPosition;
   }
 
-  private static OpenBitSet getDocsToFetch(int primeDocId, SegmentReader segmentReader, Selector selector,
-      int primeDocRowId, int numberOfDocsInRow, Bits liveDocs) throws IOException {
+  private static OpenBitSet getDocsToFetch(SegmentReader segmentReader, Selector selector, int primeDocRowId,
+      int numberOfDocsInRow, Bits liveDocs, Filter filter) throws IOException {
     Set<String> alreadyProcessed = new HashSet<String>();
     OpenBitSet bits = new OpenBitSet(numberOfDocsInRow);
+    OpenBitSet mask = null;
+    if (filter != null) {
+      DocIdSet docIdSet = filter.getDocIdSet(segmentReader.getContext(), liveDocs);
+      mask = getMask(docIdSet, primeDocRowId, numberOfDocsInRow);
+    }
     List<String> columnFamiliesToFetch = selector.getColumnFamiliesToFetch();
     boolean fetchAll = true;
     if (columnFamiliesToFetch != null) {
@@ -913,7 +923,25 @@ public class BlurUtil {
     if (fetchAll) {
       bits.set(0, numberOfDocsInRow);
     }
+    if (mask != null) {
+      bits.intersect(mask);
+    }
     return bits;
+  }
+
+  private static OpenBitSet getMask(DocIdSet docIdSet, int primeDocRowId, int numberOfDocsInRow) throws IOException {
+    OpenBitSet mask = new OpenBitSet(numberOfDocsInRow);
+    DocIdSetIterator iterator = docIdSet.iterator();
+    if (iterator == null) {
+      return mask;
+    }
+    int docId = iterator.advance(primeDocRowId);
+    int end = numberOfDocsInRow + primeDocRowId;
+    while (docId < end) {
+      mask.set(docId - primeDocRowId);
+      docId = iterator.nextDoc();
+    }
+    return mask;
   }
 
   private static void applyColumns(Set<String> alreadyProcessed, OpenBitSet bits,

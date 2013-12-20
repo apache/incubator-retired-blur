@@ -20,6 +20,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_FIELDTYPE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLURINDEX_CLASS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_SIMILARITY;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_READ_INTERCEPTOR;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_COMMITS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_REFRESHS;
 import static org.apache.blur.utils.BlurConstants.SUPER;
@@ -44,6 +45,7 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
+import org.apache.blur.manager.ReadInterceptor;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;
 import org.apache.blur.manager.writer.BlurIndexRefresher;
@@ -58,6 +60,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
 
@@ -71,6 +74,18 @@ public class TableContext {
   private static ConcurrentHashMap<String, TableContext> _cache = new ConcurrentHashMap<String, TableContext>();
   private static Configuration _systemConfiguration;
   private static BlurConfiguration _systemBlurConfiguration;
+
+  private static final ReadInterceptor DEFAULT_INTERCEPTOR = new ReadInterceptor(null) {
+    @Override
+    public Filter getFilterForMutation() {
+      return null;
+    }
+
+    @Override
+    public Filter getFilter() {
+      return null;
+    }
+  };
 
   private Path _tablePath;
   private Path _walTablePath;
@@ -86,6 +101,7 @@ public class TableContext {
   private Term _defaultPrimeDocTerm;
   private FieldManager _fieldManager;
   private BlurConfiguration _blurConfiguration;
+  private ReadInterceptor _readInterceptor;
 
   protected TableContext() {
 
@@ -158,6 +174,23 @@ public class TableContext {
         tableContext);
     Class<?> c2 = configuration.getClass(BLUR_SHARD_INDEX_SIMILARITY, FairSimilarity.class);
     tableContext._similarity = (Similarity) configure(ReflectionUtils.newInstance(c2, configuration), tableContext);
+
+    String readInterceptorClass = blurConfiguration.get(BLUR_SHARD_READ_INTERCEPTOR);
+    if (readInterceptorClass == null || readInterceptorClass.trim().isEmpty()) {
+      tableContext._readInterceptor = DEFAULT_INTERCEPTOR;
+    } else {
+      try {
+        @SuppressWarnings("unchecked")
+        Class<? extends ReadInterceptor> clazz = (Class<? extends ReadInterceptor>) Class.forName(readInterceptorClass);
+        Constructor<? extends ReadInterceptor> constructor = clazz
+            .getConstructor(new Class[] { BlurConfiguration.class });
+        tableContext._readInterceptor = constructor.newInstance(blurConfiguration);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+    tableContext._similarity = (Similarity) configure(ReflectionUtils.newInstance(c2, configuration), tableContext);
+    // DEFAULT_INTERCEPTOR
 
     _cache.put(name, tableContext);
     return tableContext;
@@ -327,5 +360,9 @@ public class TableContext {
     } catch (SecurityException e) {
       throw new IOException(e);
     }
+  }
+
+  public ReadInterceptor getReadInterceptor() {
+    return _readInterceptor;
   }
 }

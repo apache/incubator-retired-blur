@@ -29,6 +29,7 @@ import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.utils.BlurIterable;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -40,29 +41,31 @@ import org.apache.lucene.search.TopScoreDocCollector;
  */
 public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
 
-  private final IndexSearcher searcher;
-  private final Query query;
-  private final AtomicBoolean running;
-  private final int numHitsToCollect;
+  private final IndexSearcher _searcher;
+  private final Query _query;
+  private final AtomicBoolean _running;
+  private final int _numHitsToCollect;
   private final boolean _runSlow;
+  private final Filter _filter;
 
-  private TotalHitsRef totalHitsRef;
-  private ProgressRef progressRef;
+  private TotalHitsRef _totalHitsRef;
+  private ProgressRef _progressRef;
   private int skipTo;
   private int gather = -1;
 
   public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query, int numHitsToCollect,
-      TotalHitsRef totalHitsRef, ProgressRef progressRef, boolean runSlow) throws BlurException {
-    this.running = running;
+      TotalHitsRef totalHitsRef, ProgressRef progressRef, boolean runSlow, Filter filter) throws BlurException {
+    _running = running;
+    _filter = filter;
     try {
-      this.query = searcher.rewrite(query);
+      _query = searcher.rewrite(query);
     } catch (IOException e) {
       throw new BException("Unknown error during rewrite", e);
     }
-    this.searcher = searcher;
-    this.numHitsToCollect = numHitsToCollect;
-    this.totalHitsRef = totalHitsRef == null ? new TotalHitsRef() : totalHitsRef;
-    this.progressRef = progressRef == null ? new ProgressRef() : progressRef;
+    _searcher = searcher;
+    _numHitsToCollect = numHitsToCollect;
+    _totalHitsRef = totalHitsRef == null ? new TotalHitsRef() : totalHitsRef;
+    _progressRef = progressRef == null ? new ProgressRef() : progressRef;
     _runSlow = runSlow;
   }
 
@@ -107,7 +110,7 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
    * @return the total hits.
    */
   public int getTotalHits() {
-    return totalHitsRef.totalHits();
+    return _totalHitsRef.totalHits();
   }
 
   /**
@@ -118,7 +121,7 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
    * @return this.
    */
   public IterablePaging totalHits(TotalHitsRef ref) {
-    totalHitsRef = ref;
+    _totalHitsRef = ref;
     return this;
   }
 
@@ -154,7 +157,7 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
    * @return this.
    */
   public IterablePaging progress(ProgressRef ref) {
-    this.progressRef = ref;
+    this._progressRef = ref;
     return this;
   }
 
@@ -182,15 +185,15 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
 
     void search() throws BlurException {
       long s = System.currentTimeMillis();
-      progressRef.searchesPerformed.incrementAndGet();
+      _progressRef.searchesPerformed.incrementAndGet();
       try {
-        TopScoreDocCollector collector = TopScoreDocCollector.create(numHitsToCollect, lastScoreDoc, true);
-        Collector col = new StopExecutionCollector(collector, running);
+        TopScoreDocCollector collector = TopScoreDocCollector.create(_numHitsToCollect, lastScoreDoc, true);
+        Collector col = new StopExecutionCollector(collector, _running);
         if (_runSlow) {
           col = new SlowCollector(col);
         }
-        searcher.search(query, col);
-        totalHitsRef.totalHits.set(collector.getTotalHits());
+        _searcher.search(_query, _filter, col);
+        _totalHitsRef.totalHits.set(collector.getTotalHits());
         TopDocs topDocs = collector.topDocs();
         scoreDocs = topDocs.scoreDocs;
       } catch (StopExecutionCollectorException e) {
@@ -206,12 +209,12 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
         lastScoreDoc = null;
       }
       long e = System.currentTimeMillis();
-      progressRef.queryTime.addAndGet(e - s);
+      _progressRef.queryTime.addAndGet(e - s);
     }
 
     @Override
     public boolean hasNext() {
-      return counter < totalHitsRef.totalHits() && counter < endPosition ? true : false;
+      return counter < _totalHitsRef.totalHits() && counter < endPosition ? true : false;
     }
 
     @Override
@@ -220,7 +223,7 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
         search();
         offset = 0;
       }
-      progressRef.currentHitPosition.set(counter);
+      _progressRef.currentHitPosition.set(counter);
       counter++;
       return scoreDocs[offset++];
     }
@@ -232,10 +235,10 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
 
   private BlurIterator<ScoreDoc, BlurException> skipHits(BlurIterator<ScoreDoc, BlurException> iterator)
       throws BlurException {
-    progressRef.skipTo.set(skipTo);
+    _progressRef.skipTo.set(skipTo);
     for (int i = 0; i < skipTo && iterator.hasNext(); i++) {
       // eats the hits, and moves the iterator to the desired skip to position.
-      progressRef.currentHitPosition.set(i);
+      _progressRef.currentHitPosition.set(i);
       iterator.next();
     }
     return iterator;

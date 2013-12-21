@@ -50,6 +50,7 @@ import org.apache.blur.index.ExitableReader;
 import org.apache.blur.index.ExitableReader.ExitingReaderException;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.lucene.search.FacetExecutor;
 import org.apache.blur.lucene.search.FacetQuery;
 import org.apache.blur.lucene.search.StopExecutionCollector.StopExecutionCollectorException;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
@@ -69,6 +70,7 @@ import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.ErrorType;
+import org.apache.blur.thrift.generated.Facet;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.FetchRowResult;
 import org.apache.blur.thrift.generated.HighlightOptions;
@@ -469,20 +471,35 @@ public class IndexManager {
           context);
       Query userQuery = QueryParserUtil.parseQuery(simpleQuery.query, simpleQuery.rowQuery, fieldManager, postFilter,
           preFilter, getScoreType(simpleQuery.scoreType), context);
-      Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, fieldManager, context, postFilter,
-          preFilter);
+
+      Query facetedQuery;
+      FacetExecutor executor = null;
+      if (blurQuery.facets != null) {
+        long[] facetMinimums = getFacetMinimums(blurQuery.facets);
+        executor = new FacetExecutor(blurQuery.facets.size(), facetMinimums, facetedCounts);
+        facetedQuery = new FacetQuery(userQuery, getFacetQueries(blurQuery, fieldManager, context, postFilter,
+            preFilter), executor);
+      } else {
+        facetedQuery = userQuery;
+      }
+
       ReadInterceptor interceptor = context.getReadInterceptor();
       call = new SimpleQueryParallelCall(running, table, status, facetedQuery, interceptor.getFilter(),
           blurQuery.selector, _queriesInternalMeter, shardServerContext, runSlow, _fetchCount, _maxHeapPerRowFetch,
           context.getSimilarity(), context);
       trace.done();
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
-      return ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
+      BlurResultIterable merge = ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
         @Override
         public void cancel() {
           running.set(false);
         }
       }).merge(merger);
+
+      if (executor != null) {
+        executor.processFacets(null);
+      }
+      return merge;
     } catch (StopExecutionCollectorException e) {
       BlurQueryStatus queryStatus = status.getQueryStatus();
       QueryState state = queryStatus.getState();
@@ -506,6 +523,25 @@ public class IndexManager {
     }
   }
 
+  private long[] getFacetMinimums(List<Facet> facets) {
+    long[] mins = new long[facets.size()];
+    boolean smallerThanMaxLong = false;
+    for (int i = 0; i < facets.size(); i++) {
+      Facet facet = facets.get(i);
+      if (facet != null) {
+        long minimumNumberOfBlurResults = facet.getMinimumNumberOfBlurResults();
+        mins[i] = minimumNumberOfBlurResults;
+        if (minimumNumberOfBlurResults < Long.MAX_VALUE) {
+          smallerThanMaxLong = true;
+        }
+      }
+    }
+    if (smallerThanMaxLong) {
+      return mins;
+    }
+    return null;
+  }
+
   public String parseQuery(String table, org.apache.blur.thrift.generated.Query simpleQuery) throws ParseException,
       BlurException {
     TableContext context = getTableContext(table);
@@ -521,14 +557,6 @@ public class IndexManager {
 
   private TableContext getTableContext(final String table) {
     return TableContext.create(_clusterStatus.getTableDescriptor(true, _clusterStatus.getCluster(true, table), table));
-  }
-
-  private Query getFacetedQuery(BlurQuery blurQuery, Query userQuery, AtomicLongArray counts,
-      FieldManager fieldManager, TableContext context, Filter postFilter, Filter preFilter) throws ParseException {
-    if (blurQuery.facets == null) {
-      return userQuery;
-    }
-    return new FacetQuery(userQuery, getFacetQueries(blurQuery, fieldManager, context, postFilter, preFilter), counts);
   }
 
   private Query[] getFacetQueries(BlurQuery blurQuery, FieldManager fieldManager, TableContext context,

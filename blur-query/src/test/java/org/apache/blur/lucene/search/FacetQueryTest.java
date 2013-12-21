@@ -18,9 +18,14 @@ package org.apache.blur.lucene.search;
  */
 
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicLongArray;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
@@ -37,29 +42,17 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-
 
 public class FacetQueryTest {
 
-  private IndexReader reader;
-
-  @Before
-  public void setup() throws CorruptIndexException, LockObtainFailedException, IOException {
-    reader = createIndex();
-  }
-
-  @After
-  public void tearDown() {
-
-  }
-
   @Test
-  public void testFacetQueryNoSuper() throws IOException {
+  public void testFacetQueryNoSuper() throws IOException, InterruptedException {
+    IndexReader reader = createIndex(10, 0, true);
     BooleanQuery bq = new BooleanQuery();
     bq.add(new TermQuery(new Term("f1", "value")), Occur.SHOULD);
     bq.add(new TermQuery(new Term("f2", "v3")), Occur.SHOULD);
@@ -72,35 +65,153 @@ public class FacetQueryTest {
 
     Query[] facets = new Query[] { f1, f2 };
 
-    AtomicLongArray counts = new AtomicLongArray(facets.length);
-    FacetQuery facetQuery = new FacetQuery(bq, facets, counts);
+    FacetExecutor facetExecutor = new FacetExecutor(facets.length);
+    FacetQuery facetQuery = new FacetQuery(bq, facets, facetExecutor);
 
     IndexSearcher indexSearcher = new IndexSearcher(reader);
     indexSearcher.search(facetQuery, 10);
 
-    //@TODO add actual assertion
-    for (int i = 0; i < counts.length(); i++) {
-      System.out.println(counts.get(i));
+    ExecutorService executor = Executors.newCachedThreadPool();
+    facetExecutor.processFacets(executor);
+    executor.shutdown();
+    executor.awaitTermination(10, TimeUnit.SECONDS);
+
+    for (int i = 0; i < facetExecutor.length(); i++) {
+      assertEquals(1L, facetExecutor.get(i));
     }
   }
 
-  private IndexReader createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {
-    RAMDirectory directory = new RAMDirectory();
+  @Test
+  public void testFacetQueryPerformance() throws IOException, InterruptedException {
+    int facetCount = 200;
+    int docCount = 1000000;
+    IndexReader reader = createIndex(docCount, facetCount, false);
+
+    Query[] facets = new Query[facetCount];
+    for (int i = 0; i < facetCount; i++) {
+      facets[i] = new TermQuery(new Term("facet" + i, "value"));
+    }
+
+    ExecutorService executor = null;
+    try {
+      for (int t = 0; t < 5; t++) {
+        executor = Executors.newCachedThreadPool();
+        IndexSearcher indexSearcher = new IndexSearcher(reader, executor);
+        FacetExecutor facetExecutor = new FacetExecutor(facets.length);
+        FacetQuery facetQuery = new FacetQuery(new TermQuery(new Term("f1", "value")), facets, facetExecutor);
+        long t1 = System.nanoTime();
+        indexSearcher.search(facetQuery, 10);
+        facetExecutor.processFacets(executor);
+        executor.shutdown();
+        executor.awaitTermination(10, TimeUnit.SECONDS);
+        long t2 = System.nanoTime();
+        System.out.println((t2 - t1) / 1000000.0);
+
+        for (int i = 0; i < facetExecutor.length(); i++) {
+          assertEquals((long) docCount, facetExecutor.get(i));
+        }
+      }
+    } finally {
+      executor.shutdownNow();
+    }
+  }
+
+  @Test
+  public void testFacetQueryPerformanceWithMins() throws IOException, InterruptedException {
+    int facetCount = 200;
+    int docCount = 1000000;
+    IndexReader reader = createIndex(docCount, facetCount, false);
+
+    Query[] facets = new Query[facetCount];
+    for (int i = 0; i < facetCount; i++) {
+      facets[i] = new TermQuery(new Term("facet" + i, "value"));
+    }
+
+    long min = 1000;
+    long[] minimumsBeforeReturning = new long[facets.length];
+    for (int i = 0; i < minimumsBeforeReturning.length; i++) {
+      minimumsBeforeReturning[i] = min;
+    }
+
+    ExecutorService executor = null;
+    try {
+      for (int t = 0; t < 5; t++) {
+        executor = Executors.newCachedThreadPool();
+        IndexSearcher indexSearcher = new IndexSearcher(reader, executor);
+        FacetExecutor facetExecutor = new FacetExecutor(facets.length, minimumsBeforeReturning);
+        FacetQuery facetQuery = new FacetQuery(new TermQuery(new Term("f1", "value")), facets, facetExecutor);
+        long t1 = System.nanoTime();
+        indexSearcher.search(facetQuery, 10);
+        facetExecutor.processFacets(executor);
+        executor.shutdown();
+        executor.awaitTermination(10, TimeUnit.SECONDS);
+        long t2 = System.nanoTime();
+        System.out.println((t2 - t1) / 1000000.0);
+
+        for (int i = 0; i < facetExecutor.length(); i++) {
+          
+          assertTrue(facetExecutor.get(i) >= min);
+        }
+      }
+    } finally {
+      executor.shutdownNow();
+    }
+  }
+
+  private IndexReader createIndex(int docCount, int facetFields, boolean ram) throws CorruptIndexException,
+      LockObtainFailedException, IOException {
+    Directory directory;
+    if (ram) {
+      directory = new RAMDirectory();
+    } else {
+      File dir = new File("./target/tmp/facet_tmp");
+      if (dir.exists()) {
+        directory = FSDirectory.open(dir);
+        DirectoryReader reader = DirectoryReader.open(directory);
+        if (reader.numDocs() == docCount) {
+          return reader;
+        }
+        reader.close();
+        directory.close();
+      }
+      rmr(dir);
+      directory = FSDirectory.open(dir);
+    }
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
     IndexWriter writer = new IndexWriter(directory, conf);
     FieldType fieldType = new FieldType();
     fieldType.setStored(true);
     fieldType.setIndexed(true);
     fieldType.setOmitNorms(true);
-    for (int i = 0; i < 10; i++) {
+    long start = System.nanoTime();
+    for (int i = 0; i < docCount; i++) {
+      long now = System.nanoTime();
+      if (start + TimeUnit.SECONDS.toNanos(5) < now) {
+        System.out.println("Indexing doc " + i + " of " + docCount);
+        start = System.nanoTime();
+      }
       Document document = new Document();
-      
       document.add(new Field("f1", "value", fieldType));
       document.add(new Field("f2", "v" + i, fieldType));
+      for (int f = 0; f < facetFields; f++) {
+        document.add(new Field("facet" + f, "value", fieldType));
+      }
       writer.addDocument(document);
     }
     writer.close();
     return DirectoryReader.open(directory);
+  }
+
+  private void rmr(File file) {
+    if (!file.exists()) {
+      return;
+    }
+    if (file.isDirectory()) {
+      for (File f : file.listFiles()) {
+        rmr(f);
+      }
+    }
+    file.delete();
   }
 
 }

@@ -17,7 +17,6 @@ package org.apache.blur.lucene.search;
  * limitations under the License.
  */
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.IndexReader;
@@ -27,22 +26,23 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.Bits;
+import org.apache.lucene.util.OpenBitSet;
 
 public class FacetQuery extends AbstractWrapperQuery {
 
-  private Query[] facets;
-  private AtomicLongArray counts;
+  private final Query[] _facets;
+  private final FacetExecutor _executor;
 
-  public FacetQuery(Query query, Query[] facets, AtomicLongArray counts) {
+  public FacetQuery(Query query, Query[] facets, FacetExecutor executor) {
     super(query, false);
-    this.facets = facets;
-    this.counts = counts;
+    _facets = facets;
+    _executor = executor;
   }
 
-  public FacetQuery(Query query, Query[] facets, AtomicLongArray counts, boolean rewritten) {
+  public FacetQuery(Query query, Query[] facets, FacetExecutor executor, boolean rewritten) {
     super(query, rewritten);
-    this.facets = facets;
-    this.counts = counts;
+    _facets = facets;
+    _executor = executor;
   }
 
   public String toString() {
@@ -55,7 +55,7 @@ public class FacetQuery extends AbstractWrapperQuery {
 
   @Override
   public Query clone() {
-    return new FacetQuery((Query) _query.clone(), facets, counts, _rewritten);
+    return new FacetQuery((Query) _query.clone(), _facets, _executor, _rewritten);
   }
 
   @Override
@@ -63,143 +63,127 @@ public class FacetQuery extends AbstractWrapperQuery {
     if (_rewritten) {
       return this;
     }
-    for (int i = 0; i < facets.length; i++) {
-      facets[i] = facets[i].rewrite(reader);
+    for (int i = 0; i < _facets.length; i++) {
+      _facets[i] = _facets[i].rewrite(reader);
     }
-    return new FacetQuery(_query.rewrite(reader), facets, counts, true);
+    return new FacetQuery(_query.rewrite(reader), _facets, _executor, true);
   }
 
   @Override
   public Weight createWeight(IndexSearcher searcher) throws IOException {
     Weight weight = _query.createWeight(searcher);
-    return new FacetWeight(weight, getWeights(searcher), counts);
+    return new FacetWeight(weight, getWeights(searcher), _executor);
   }
 
   private Weight[] getWeights(IndexSearcher searcher) throws IOException {
-    Weight[] weights = new Weight[facets.length];
+    Weight[] weights = new Weight[_facets.length];
     for (int i = 0; i < weights.length; i++) {
-      weights[i] = facets[i].createWeight(searcher);
+      weights[i] = _facets[i].createWeight(searcher);
     }
     return weights;
   }
 
   public static class FacetWeight extends Weight {
 
-    private Weight weight;
-    private Weight[] facets;
-    private AtomicLongArray counts;
+    private final Weight _weight;
+    private final Weight[] _facets;
+    private FacetExecutor _executor;
 
-    public FacetWeight(Weight weight, Weight[] facets, AtomicLongArray counts) {
-      this.weight = weight;
-      this.facets = facets;
-      this.counts = counts;
+    public FacetWeight(Weight weight, Weight[] facets, FacetExecutor executor) {
+      _weight = weight;
+      _facets = facets;
+      _executor = executor;
     }
 
     @Override
     public Explanation explain(AtomicReaderContext reader, int doc) throws IOException {
-      return weight.explain(reader, doc);
+      return _weight.explain(reader, doc);
     }
 
     @Override
     public Query getQuery() {
-      return weight.getQuery();
+      return _weight.getQuery();
     }
 
     @Override
     public void normalize(float norm, float topLevelBoost) {
-      weight.normalize(norm, topLevelBoost);
+      _weight.normalize(norm, topLevelBoost);
     }
 
     @Override
-    public Scorer scorer(AtomicReaderContext context, boolean scoreDocsInOrder, boolean topScorer, Bits acceptDocs) throws IOException {
-      Scorer scorer = weight.scorer(context, true, topScorer, acceptDocs);
+    public Scorer scorer(AtomicReaderContext context, boolean scoreDocsInOrder, boolean topScorer, Bits acceptDocs)
+        throws IOException {
+      Scorer scorer = _weight.scorer(context, true, topScorer, acceptDocs);
       if (scorer == null) {
         return null;
       }
-      return new FacetScorer(scorer, getScorers(context, true, topScorer, acceptDocs), counts);
+      Scorer[] scorers = getScorers(context, true, topScorer, acceptDocs);
+      _executor.addScorers(context, scorers);
+      return new FacetScorer(scorer, _executor, context);
     }
 
-    private Scorer[] getScorers(AtomicReaderContext context, boolean scoreDocsInOrder, boolean topScorer, Bits acceptDocs) throws IOException {
-      Scorer[] scorers = new Scorer[facets.length];
+    private Scorer[] getScorers(AtomicReaderContext context, boolean scoreDocsInOrder, boolean topScorer,
+        Bits acceptDocs) throws IOException {
+      Scorer[] scorers = new Scorer[_facets.length];
       for (int i = 0; i < scorers.length; i++) {
-        scorers[i] = facets[i].scorer(context, scoreDocsInOrder, topScorer, acceptDocs);
+        scorers[i] = _facets[i].scorer(context, scoreDocsInOrder, topScorer, acceptDocs);
       }
       return scorers;
     }
 
     @Override
     public float getValueForNormalization() throws IOException {
-      return weight.getValueForNormalization();
+      return _weight.getValueForNormalization();
     }
   }
 
   public static class FacetScorer extends Scorer {
 
-    private Scorer baseScorer;
-    private Scorer[] facets;
-    private AtomicLongArray counts;
-    private int facetLength;
+    private final Scorer _baseScorer;
+    private final OpenBitSet _hit;
 
-    public FacetScorer(Scorer scorer, Scorer[] facets, AtomicLongArray counts) {
+    public FacetScorer(Scorer scorer, FacetExecutor executor, AtomicReaderContext context) throws IOException {
       super(scorer.getWeight());
-      this.baseScorer = scorer;
-      this.facets = facets;
-      this.counts = counts;
-      this.facetLength = facets.length;
+      _baseScorer = scorer;
+      _hit = executor.getBitSet(context);
     }
 
     private int processFacets(int doc) throws IOException {
       if (doc == NO_MORE_DOCS) {
         return doc;
       }
-      for (int i = 0; i < facetLength; i++) {
-        Scorer facet = facets[i];
-        if (facet == null) {
-          continue;
-        }
-        int docID = facet.docID();
-        if (docID == NO_MORE_DOCS) {
-          continue;
-        }
-        if (docID == doc) {
-          counts.incrementAndGet(i);
-        } else if (docID < doc) {
-          if (facet.advance(doc) == doc) {
-            counts.incrementAndGet(i);
-          }
-        }
-      }
+      _hit.fastSet(doc);
       return doc;
     }
 
     @Override
     public float score() throws IOException {
-      return baseScorer.score();
+      return _baseScorer.score();
     }
 
     @Override
     public int advance(int target) throws IOException {
-      return processFacets(baseScorer.advance(target));
+      return processFacets(_baseScorer.advance(target));
     }
 
     @Override
     public int docID() {
-      return baseScorer.docID();
+      return _baseScorer.docID();
     }
 
     @Override
     public int nextDoc() throws IOException {
-      return processFacets(baseScorer.nextDoc());
+      return processFacets(_baseScorer.nextDoc());
     }
 
     @Override
     public int freq() throws IOException {
-      return baseScorer.freq();
+      return _baseScorer.freq();
     }
 
     @Override
     public long cost() {
-      return baseScorer.cost();
+      return _baseScorer.cost();
     }
   }
 }

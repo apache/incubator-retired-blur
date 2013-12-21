@@ -23,7 +23,6 @@ import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -141,8 +140,9 @@ public class SuperQueryTest {
     f1.add(new TermQuery(new Term(PERSON_NAME, NAME2)), Occur.MUST);
 
     Query[] facets = new Query[] { new SuperQuery(f1, ScoreType.CONSTANT, new Term(PRIME_DOC, PRIME_DOC_VALUE)) };
-    AtomicLongArray counts = new AtomicLongArray(facets.length);
-    FacetQuery query = new FacetQuery(booleanQuery, facets, counts);
+    FacetExecutor executor = new FacetExecutor(facets.length);
+    FacetQuery query = new FacetQuery(booleanQuery, facets, executor);
+    executor.processFacets(null);
 
     TopDocs topDocs = searcher.search(query, 10);
     assertEquals(3, topDocs.totalHits);

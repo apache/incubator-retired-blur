@@ -41,7 +41,7 @@ public abstract class CustomFieldTypeDefinition extends FieldTypeDefinition {
    * @throws @{@link RuntimeException}.
    */
   @Override
-  public final Analyzer getAnalyzerForIndex(String fieldName) {
+  public Analyzer getAnalyzerForIndex(String fieldName) {
     throw new RuntimeException(NOT_SUPPORTED);
   }
 

@@ -42,7 +42,7 @@ public abstract class CustomFieldTypeDefinition extends FieldTypeDefinition {
    */
   @Override
   public Analyzer getAnalyzerForIndex(String fieldName) {
-    throw new RuntimeException(NOT_SUPPORTED);
+    throw new RuntimeException(NOT_SUPPORTED + " for field [" + fieldName + "]");
   }
 
   /**

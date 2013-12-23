@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.spatial.query.SpatialOperation;
 import org.apache.lucene.spatial.vector.PointVectorStrategy;
 
@@ -31,7 +33,10 @@ public class SpatialPointVectorStrategyFieldTypeDefinition extends BaseSpatialFi
 
   public static final String NAME = "geo-pointvector";
 
+  private final Analyzer _keywordAnalyzer = new KeywordAnalyzer();
+  
   private Collection<String> _alternateFieldNames;
+  
 
   @Override
   public String getName() {
@@ -52,5 +57,10 @@ public class SpatialPointVectorStrategyFieldTypeDefinition extends BaseSpatialFi
   @Override
   public Collection<String> getAlternateFieldNames() {
     return _alternateFieldNames;
+  }
+  
+  @Override
+  public Analyzer getAnalyzerForIndex(String fieldName) {
+    return _keywordAnalyzer;
   }
 }

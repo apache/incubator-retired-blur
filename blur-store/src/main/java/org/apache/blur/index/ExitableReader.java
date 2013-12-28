@@ -70,7 +70,7 @@ public class ExitableReader extends FilterDirectoryReader {
       super(in);
       _running = running;
     }
-    
+
     public AtomicReader getOriginalReader() {
       return in;
     }
@@ -84,6 +84,15 @@ public class ExitableReader extends FilterDirectoryReader {
       return new ExitableFields(fields, _running);
     }
 
+    @Override
+    public Object getCoreCacheKey() {
+      return in.getCoreCacheKey();
+    }
+
+    @Override
+    public Object getCombinedCoreAndDeletesKey() {
+      return in.getCombinedCoreAndDeletesKey();
+    }
   }
 
   public static class ExitableFields extends Fields {

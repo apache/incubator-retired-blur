@@ -36,6 +36,7 @@ import org.apache.blur.lucene.codec.Blur022Codec;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceCounter;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.lucene.warmup.TraceableDirectory;
+import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
@@ -73,8 +74,8 @@ public class BlurIndexSimpleWriter extends BlurIndex {
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       DirectoryReferenceFileGC gc, final ExecutorService searchExecutor, BlurIndexCloser indexCloser,
-      BlurIndexRefresher refresher) throws IOException {
-    super(shardContext, directory, mergeScheduler, gc, searchExecutor, indexCloser, refresher);
+      BlurIndexRefresher refresher, BlurIndexWarmup indexWarmup) throws IOException {
+    super(shardContext, directory, mergeScheduler, gc, searchExecutor, indexCloser, refresher, indexWarmup);
     _searchThreadPool = searchExecutor;
     _shardContext = shardContext;
     _tableContext = _shardContext.getTableContext();
@@ -84,8 +85,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
     _conf.setCodec(new Blur022Codec(_tableContext.getBlurConfiguration()));
     _conf.setSimilarity(_tableContext.getSimilarity());
-    AtomicBoolean stop = new AtomicBoolean();
-    _conf.setMergedSegmentWarmer(new FieldBasedWarmer(shardContext, stop, _isClosed));
+    _conf.setMergedSegmentWarmer(new BlurIndexReaderWarmer(shardContext, _isClosed, indexWarmup));
     TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     _conf.setMergeScheduler(mergeScheduler.getMergeScheduler());

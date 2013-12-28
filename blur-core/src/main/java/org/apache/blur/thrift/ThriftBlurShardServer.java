@@ -33,8 +33,6 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_VERSION
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_FETCHCOUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
-import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WARMUP_CLASS;
-import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WARMUP_THROTTLE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_MERGE_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
@@ -69,7 +67,6 @@ import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
-import org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup;
 import org.apache.blur.manager.indexserver.DistributedIndexServer;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactory;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactoryImpl;
@@ -197,7 +194,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     final BlurIndexRefresher refresher = new BlurIndexRefresher();
 
     BlurFilterCache filterCache = getFilterCache(configuration);
-    BlurIndexWarmup indexWarmup = getIndexWarmup(configuration);
+    BlurIndexWarmup indexWarmup = BlurIndexWarmup.getIndexWarmup(configuration);
 
     DistributedLayoutFactory distributedLayoutFactory = DistributedLayoutFactoryImpl.getDistributedLayoutFactory(
         configuration, cluster, zooKeeper);
@@ -295,25 +292,4 @@ public class ThriftBlurShardServer extends ThriftServer {
     return new DefaultBlurFilterCache(configuration);
   }
 
-  private static BlurIndexWarmup getIndexWarmup(BlurConfiguration configuration) {
-    String blurFilterCacheClass = configuration.get(BLUR_SHARD_INDEX_WARMUP_CLASS);
-    if (blurFilterCacheClass != null && blurFilterCacheClass.isEmpty()) {
-      if (!blurFilterCacheClass.equals("org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup")) {
-        try {
-          Class<?> clazz = Class.forName(blurFilterCacheClass);
-          return (BlurIndexWarmup) clazz.newInstance();
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-    }
-    long totalThrottle = configuration.getLong(BLUR_SHARD_INDEX_WARMUP_THROTTLE, 30000000);
-    int totalThreadCount = configuration.getInt(BLUR_SHARD_WARMUP_THREAD_COUNT, 30000000);
-    long warmupBandwidthThrottleBytesPerSec = totalThrottle / totalThreadCount;
-    if (warmupBandwidthThrottleBytesPerSec <= 0) {
-      LOG.warn("Invalid values of either [{0} = {1}] or [{2} = {3}], needs to be greater then 0",
-          BLUR_SHARD_INDEX_WARMUP_THROTTLE, totalThrottle, BLUR_SHARD_WARMUP_THREAD_COUNT, totalThreadCount);
-    }
-    return new DefaultBlurIndexWarmup(warmupBandwidthThrottleBytesPerSec);
-  }
 }

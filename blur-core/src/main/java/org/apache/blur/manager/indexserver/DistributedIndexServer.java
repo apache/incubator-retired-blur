@@ -477,7 +477,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     }
 
     BlurIndex index = tableContext.newInstanceBlurIndex(shardContext, dir, _mergeScheduler, _gc, _searchExecutor,
-        _indexCloser, _refresher);
+        _indexCloser, _refresher, _warmup);
 
     if (_clusterStatus.isReadOnly(true, _cluster, table)) {
       index = new BlurIndexReadOnly(index);

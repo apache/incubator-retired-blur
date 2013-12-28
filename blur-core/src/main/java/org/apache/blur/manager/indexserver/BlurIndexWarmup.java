@@ -16,20 +16,54 @@ package org.apache.blur.manager.indexserver;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WARMUP_CLASS;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WARMUP_THROTTLE;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_WARMUP_THREAD_COUNT;
+
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.blur.BlurConfiguration;
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.indexserver.DistributedIndexServer.ReleaseReader;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.lucene.index.IndexReader;
 
 public abstract class BlurIndexWarmup {
 
+  private static final Log LOG = LogFactory.getLog(BlurIndexWarmup.class);
+
   protected long _warmupBandwidthThrottleBytesPerSec;
 
   public BlurIndexWarmup(long warmupBandwidthThrottleBytesPerSec) {
     _warmupBandwidthThrottleBytesPerSec = warmupBandwidthThrottleBytesPerSec;
+  }
+
+  public static BlurIndexWarmup getIndexWarmup(BlurConfiguration configuration) {
+    long totalThrottle = configuration.getLong(BLUR_SHARD_INDEX_WARMUP_THROTTLE, 30000000);
+    int totalThreadCount = configuration.getInt(BLUR_SHARD_WARMUP_THREAD_COUNT, 30000000);
+    long warmupBandwidthThrottleBytesPerSec = totalThrottle / totalThreadCount;
+    if (warmupBandwidthThrottleBytesPerSec <= 0) {
+      LOG.warn("Invalid values of either [{0} = {1}] or [{2} = {3}], needs to be greater then 0",
+          BLUR_SHARD_INDEX_WARMUP_THROTTLE, totalThrottle, BLUR_SHARD_WARMUP_THREAD_COUNT, totalThreadCount);
+    }
+    
+    String blurFilterCacheClass = configuration.get(BLUR_SHARD_INDEX_WARMUP_CLASS);
+    if (blurFilterCacheClass != null && blurFilterCacheClass.isEmpty()) {
+      if (!blurFilterCacheClass.equals("org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup")) {
+        try {
+          Class<?> clazz = Class.forName(blurFilterCacheClass);
+          Constructor<?> constructor = clazz.getConstructor(new Class[]{Long.TYPE});
+          return (BlurIndexWarmup) constructor.newInstance(warmupBandwidthThrottleBytesPerSec);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+    return new DefaultBlurIndexWarmup(warmupBandwidthThrottleBytesPerSec);
   }
 
   /**

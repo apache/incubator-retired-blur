@@ -30,6 +30,7 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.codec.Blur022Codec;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.lucene.warmup.TraceableDirectory;
+import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
@@ -52,11 +53,11 @@ public class BlurIndexReader extends BlurIndex {
   private BlurIndexRefresher _refresher;
   private final TableContext _tableContext;
   private final ShardContext _shardContext;
-  
+
   public BlurIndexReader(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       DirectoryReferenceFileGC gc, final ExecutorService searchExecutor, BlurIndexCloser indexCloser,
-      BlurIndexRefresher refresher) throws IOException {
-    super(shardContext, directory, mergeScheduler, gc, searchExecutor, indexCloser, refresher);
+      BlurIndexRefresher refresher, BlurIndexWarmup indexWarmup) throws IOException {
+    super(shardContext, directory, mergeScheduler, gc, searchExecutor, indexCloser, refresher, indexWarmup);
     _tableContext = shardContext.getTableContext();
     // This directory allows for warm up by adding tracing ability.
     _directory = new TraceableDirectory(directory);

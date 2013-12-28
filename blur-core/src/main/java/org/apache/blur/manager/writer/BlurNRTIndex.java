@@ -42,6 +42,7 @@ import org.apache.blur.lucene.codec.Blur022Codec;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceCounter;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.lucene.warmup.TraceableDirectory;
+import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.IndexSearcherClosableNRT;
 import org.apache.blur.server.ShardContext;
@@ -97,8 +98,8 @@ public class BlurNRTIndex extends BlurIndex {
 
   public BlurNRTIndex(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       DirectoryReferenceFileGC gc, final ExecutorService searchExecutor, BlurIndexCloser indexCloser,
-      BlurIndexRefresher refresher) throws IOException {
-    super(shardContext, directory, mergeScheduler, gc, searchExecutor, indexCloser, refresher);
+      BlurIndexRefresher refresher, BlurIndexWarmup indexWarmup) throws IOException {
+    super(shardContext, directory, mergeScheduler, gc, searchExecutor, indexCloser, refresher, indexWarmup);
     _tableContext = shardContext.getTableContext();
     _directory = directory;
     _shardContext = shardContext;
@@ -109,8 +110,7 @@ public class BlurNRTIndex extends BlurIndex {
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
     conf.setCodec(new Blur022Codec(_tableContext.getBlurConfiguration()));
     conf.setSimilarity(_tableContext.getSimilarity());
-    AtomicBoolean stop = new AtomicBoolean();
-    conf.setMergedSegmentWarmer(new FieldBasedWarmer(shardContext, stop, _isClosed));
+    conf.setMergedSegmentWarmer(new BlurIndexReaderWarmer(shardContext, _isClosed, indexWarmup));
 
     SnapshotDeletionPolicy sdp;
     if (snapshotsDirectoryExists()) {

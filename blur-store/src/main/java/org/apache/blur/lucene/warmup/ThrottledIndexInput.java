@@ -34,11 +34,11 @@ import org.apache.lucene.store.IndexInput;
  */
 public class ThrottledIndexInput extends IndexInput {
 
-  private static final long SLEEP_DURATION_MS = 50;
+  private static final long SLEEP_DURATION_MS = 1;
 
   private final IndexInput _rawStream;
   private final double _maxBytesPerSec;
-  private final long _startTime = System.nanoTime();
+  private final long _startTime;
 
   private long _bytesRead = 0;
   private long _totalSleepTime = 0;
@@ -47,6 +47,17 @@ public class ThrottledIndexInput extends IndexInput {
     super("ThrottledIndexInput(" + rawStream.toString() + ")");
     _rawStream = rawStream;
     _maxBytesPerSec = maxBytesPerSec;
+    _startTime = System.nanoTime();
+  }
+
+  public ThrottledIndexInput(IndexInput rawStream, long maxBytesPerSec, long bytesRead, long totalSleepTime,
+      long startTime) {
+    super("ThrottledIndexInput(" + rawStream.toString() + ")");
+    _rawStream = rawStream;
+    _maxBytesPerSec = maxBytesPerSec;
+    _bytesRead = bytesRead;
+    _totalSleepTime = totalSleepTime;
+    _startTime = startTime;
   }
 
   /** @inheritDoc */
@@ -144,6 +155,10 @@ public class ThrottledIndexInput extends IndexInput {
   public String toString() {
     return "ThrottledIndexInput{" + "bytesRead=" + _bytesRead + ", maxBytesPerSec=" + _maxBytesPerSec
         + ", bytesPerSec=" + getBytesPerSec() + ", totalSleepTime=" + _totalSleepTime + '}';
+  }
+
+  public long getStartTime() {
+    return _startTime;
   }
 
 }

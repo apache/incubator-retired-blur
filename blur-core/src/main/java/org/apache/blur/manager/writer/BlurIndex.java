@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
+import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.thrift.generated.Row;
@@ -37,13 +38,12 @@ import org.apache.lucene.store.Directory;
 public abstract class BlurIndex {
 
   private static final long ONE_MINUTE = TimeUnit.MINUTES.toMillis(1);
-
   private long _lastMemoryCheck = 0;
   private long _memoryUsage = 0;
 
   public BlurIndex(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       DirectoryReferenceFileGC gc, ExecutorService searchExecutor, BlurIndexCloser indexCloser,
-      BlurIndexRefresher refresher) throws IOException {
+      BlurIndexRefresher refresher, BlurIndexWarmup indexWarmup) throws IOException {
 
   }
 

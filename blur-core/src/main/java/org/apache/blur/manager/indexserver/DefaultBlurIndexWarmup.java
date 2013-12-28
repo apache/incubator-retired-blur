@@ -19,6 +19,7 @@ package org.apache.blur.manager.indexserver;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import org.apache.lucene.index.FilterDirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReaderContext;
 import org.apache.lucene.index.SegmentReader;
+import org.apache.lucene.util.OpenBitSet;
 
 public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
 
@@ -67,6 +69,7 @@ public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
   public void warmBlurIndex(final TableDescriptor table, final String shard, IndexReader reader,
       AtomicBoolean isClosed, ReleaseReader releaseReader, AtomicLong pauseWarmup) throws IOException {
     LOG.info("Running warmup for reader [{0}]", reader);
+    long s = System.nanoTime();
     AtomicBoolean stop = new AtomicBoolean();
     try {
       if (reader instanceof FilterDirectoryReader) {
@@ -79,17 +82,31 @@ public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
       IndexWarmup indexWarmup = new IndexWarmup(isClosed, stop, maxSampleSize, _warmupBandwidthThrottleBytesPerSec);
       String context = table.getName() + "/" + shard;
       Map<String, List<IndexTracerResult>> sampleIndex = indexWarmup.sampleIndex(reader, context);
-      List<String> preCacheCols = table.getPreCacheCols();
-      if (preCacheCols != null) {
+      Iterable<String> preCacheCols = table.getPreCacheCols();
+      if (preCacheCols == null) {
+        // All fields.
+        preCacheCols = getFields(reader);
+      }
+      boolean _oldWay = false;
+      if (_oldWay) {
         warm(reader, preCacheCols, indexWarmup, sampleIndex, context, isClosed, pauseWarmup);
       } else {
-        warm(reader, getFields(reader), indexWarmup, sampleIndex, context, isClosed, pauseWarmup);
+        int blockSize = 8192;// @TODO
+        int bufferSize = 1024 * 1024;// @TODO
+        Map<String, OpenBitSet> filePartsToWarm = new HashMap<String, OpenBitSet>();
+        for (String fieldName : preCacheCols) {
+          indexWarmup.getFilePositionsToWarm(reader, sampleIndex, fieldName, context, filePartsToWarm, blockSize);
+        }
+        indexWarmup.warmFile(reader, filePartsToWarm, context, blockSize, bufferSize);
       }
+
     } finally {
       synchronized (_stops) {
         _stops.remove(stop);
       }
       releaseReader.release();
+      long e = System.nanoTime();
+      LOG.info("Warmup completed for table [{0}] shard [{1}] in [{2} ms]", table.name, shard, (e - s) / 1000000.0);
     }
   }
 
@@ -123,7 +140,7 @@ public class DefaultBlurIndexWarmup extends BlurIndexWarmup {
     for (String field : preCacheCols) {
       maybePause(pauseWarmup);
       try {
-        indexWarmup.warm(reader, sampleIndex, field, context);
+        indexWarmup.warmFile(reader, sampleIndex, field, context);
       } catch (IOException e) {
         LOG.error("Context [{0}] unknown error trying to warmup the [{1}] field", e, context, field);
       }

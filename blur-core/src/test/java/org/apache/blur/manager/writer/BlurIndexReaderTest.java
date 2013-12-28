@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
+import org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
@@ -60,6 +61,7 @@ public class BlurIndexReaderTest {
   private BlurIndexRefresher refresher;
   private BlurIndexCloser indexCloser;
   private FSDirectory directory;
+  private DefaultBlurIndexWarmup indexWarmup;
 
   @Before
   public void setup() throws IOException {
@@ -73,6 +75,7 @@ public class BlurIndexReaderTest {
 
     configuration = new Configuration();
     service = Executors.newThreadPool("test", 1);
+    indexWarmup = new DefaultBlurIndexWarmup(1000000);
 
   }
 
@@ -90,7 +93,7 @@ public class BlurIndexReaderTest {
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard");
     refresher = new BlurIndexRefresher();
     indexCloser = new BlurIndexCloser();
-    reader = new BlurIndexReader(shardContext, directory, null, null, null, indexCloser, refresher);
+    reader = new BlurIndexReader(shardContext, directory, null, null, null, indexCloser, refresher, indexWarmup);
   }
 
   @After

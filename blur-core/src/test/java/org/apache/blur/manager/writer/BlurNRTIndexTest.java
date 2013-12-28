@@ -30,6 +30,8 @@ import java.util.concurrent.ExecutorService;
 
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
+import org.apache.blur.manager.indexserver.BlurIndexWarmup;
+import org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
@@ -62,6 +64,7 @@ public class BlurNRTIndexTest {
   private DirectoryReferenceFileGC gc;
   private SharedMergeScheduler mergeScheduler;
   private String uuid;
+  private BlurIndexWarmup indexWarmup;
 
   @Before
   public void setup() throws IOException {
@@ -75,6 +78,7 @@ public class BlurNRTIndexTest {
 
     configuration = new Configuration();
     service = Executors.newThreadPool("test", 10);
+    indexWarmup = new DefaultBlurIndexWarmup(1000000);
   }
 
   private void setupWriter(Configuration configuration, long refresh, boolean reload) throws IOException {
@@ -98,7 +102,7 @@ public class BlurNRTIndexTest {
     path.mkdirs();
     FSDirectory directory = FSDirectory.open(path);
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard-" + uuid);
-    writer = new BlurNRTIndex(shardContext, directory, mergeScheduler, gc, service, null, null);
+    writer = new BlurNRTIndex(shardContext, directory, mergeScheduler, gc, service, null, null, indexWarmup);
   }
 
   @After

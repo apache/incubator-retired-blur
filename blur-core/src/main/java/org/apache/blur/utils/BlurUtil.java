@@ -77,6 +77,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TBase;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryBuffer;
+import org.apache.blur.thrift.UserConverter;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -94,6 +95,7 @@ import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.util.ResetableTMemoryBuffer;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
+import org.apache.blur.user.UserContext;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -1084,6 +1086,45 @@ public class BlurUtil {
       }
     }
     return iface;
+  }
+
+  public static Iface runWithUser(final Iface iface, final boolean controller) {
+    InvocationHandler handler = new InvocationHandler() {
+      @Override
+      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        if (method.getName().equals("setUser")) {
+          try {
+            return method.invoke(iface, args);
+          } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+          }
+        }
+        BlurServerContext context = getServerContext(controller);
+        if (context == null) {
+          try {
+            return method.invoke(iface, args);
+          } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+          }
+        }
+        UserContext.setUser(UserConverter.toUserFromThrift(context.getUser()));
+        try {
+          return method.invoke(iface, args);
+        } catch (InvocationTargetException e) {
+          throw e.getTargetException();
+        } finally {
+          UserContext.reset();
+        }
+      }
+
+      private BlurServerContext getServerContext(boolean controller) {
+        if (controller) {
+          return ControllerServerContext.getControllerServerContext();
+        }
+        return ShardServerContext.getShardServerContext();
+      }
+    };
+    return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class }, handler);
   }
 
   public static Iface runTrace(final Iface iface, final boolean controller) {

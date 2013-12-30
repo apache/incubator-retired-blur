@@ -151,6 +151,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, controllerServer, false);
     iface = BlurUtil.recordMethodCallsAndAverageTimes(iface, Iface.class, true);
+    iface = BlurUtil.runWithUser(iface, true);
     iface = BlurUtil.runTrace(iface, true);
     int threadCount = configuration.getInt(BLUR_CONTROLLER_SERVER_THRIFT_THREAD_COUNT, 32);
 

@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.blur.trace.Trace;
+import org.apache.blur.user.UserThreadBoundaryProcessor;
 
 public class Executors {
 
@@ -32,8 +33,9 @@ public class Executors {
   }
 
   public static ExecutorService newThreadPool(String prefix, int threadCount, boolean watch) {
-    ThreadPoolExecutor executorService = new ThreadPoolExecutor(threadCount, threadCount, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new BlurThreadFactory(prefix));
+    BlurThreadPoolExecutor executorService = new BlurThreadPoolExecutor(threadCount, threadCount, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new BlurThreadFactory(prefix));
     executorService.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+    executorService.add(new UserThreadBoundaryProcessor());
     if (watch) {
       return Trace.getExecutorService(ThreadWatcher.instance().watch(executorService));
     }

@@ -23,46 +23,32 @@ import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.blur.log.Log;
-import org.apache.blur.log.LogFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.commands.BlurCommand;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
-import org.apache.blur.thrift.generated.User;
 
 public class BlurClient {
 
-  private static final Log LOG = LogFactory.getLog(BlurClient.class);
-  private static final boolean DEFAULT_SET_USER = false;
-
   static class BlurClientInvocationHandler implements InvocationHandler {
 
-    private static final String SET_USER = "setUser";
     private final List<Connection> _connections;
     private final int _maxRetries;
     private final long _backOffTime;
     private final long _maxBackOffTime;
-    private final boolean _setUser;
-    private User user;
-
-    public BlurClientInvocationHandler(List<Connection> connections) {
-      this(connections, DEFAULT_SET_USER);
-    }
 
     public BlurClientInvocationHandler(List<Connection> connections, int maxRetries, long backOffTime,
-        long maxBackOffTime, boolean setUser) {
+        long maxBackOffTime) {
       _connections = connections;
       _maxRetries = maxRetries;
       _backOffTime = backOffTime;
       _maxBackOffTime = maxBackOffTime;
-      _setUser = setUser;
     }
 
-    public BlurClientInvocationHandler(List<Connection> connections, boolean setUser) {
+    public BlurClientInvocationHandler(List<Connection> connections) {
       this(connections, BlurClientManager.MAX_RETRIES, BlurClientManager.BACK_OFF_TIME,
-          BlurClientManager.MAX_BACK_OFF_TIME, setUser);
+          BlurClientManager.MAX_BACK_OFF_TIME);
     }
 
     @Override
@@ -71,16 +57,7 @@ public class BlurClient {
         @Override
         public Object call(Client client) throws BlurException, TException {
           try {
-            if (_setUser && method.getName().equals(SET_USER)) {
-              user = (User) args[0];
-              LOG.info("Setting the user [{0}] for this client.", user);
-              return null;
-            } else {
-              if (_setUser) {
-                client.setUser(user);
-              }
-              return method.invoke(client, args);
-            }
+            return method.invoke(client, args);
           } catch (IllegalArgumentException e) {
             throw new RuntimeException(e);
           } catch (IllegalAccessException e) {
@@ -129,17 +106,6 @@ public class BlurClient {
     return getClient(connections, maxRetries, backOffTime, maxBackOffTime);
   }
 
-  public static Iface getClient(String connectionStr, boolean setUser) {
-    List<Connection> connections = BlurClientManager.getConnections(connectionStr);
-    return getClient(connections, setUser);
-  }
-
-  public static Iface getClient(String connectionStr, int maxRetries, long backOffTime, long maxBackOffTime,
-      boolean setUser) {
-    List<Connection> connections = BlurClientManager.getConnections(connectionStr);
-    return getClient(connections, maxRetries, backOffTime, maxBackOffTime, setUser);
-  }
-
   public static Iface getClient(Connection connection) {
     return getClient(Arrays.asList(connection));
   }
@@ -149,33 +115,13 @@ public class BlurClient {
         new BlurClientInvocationHandler(connections));
   }
 
-  public static Iface getClient(Connection connection, boolean setUser) {
-    return getClient(Arrays.asList(connection), setUser);
-  }
-
-  public static Iface getClient(List<Connection> connections, boolean setUser) {
-    return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class },
-        new BlurClientInvocationHandler(connections, setUser));
-  }
-
   public static Iface getClient(Connection connection, int maxRetries, long backOffTime, long maxBackOffTime) {
     return getClient(Arrays.asList(connection), maxRetries, backOffTime, maxBackOffTime);
   }
 
   public static Iface getClient(List<Connection> connections, int maxRetries, long backOffTime, long maxBackOffTime) {
     return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class },
-        new BlurClientInvocationHandler(connections, maxRetries, backOffTime, maxBackOffTime, DEFAULT_SET_USER));
-  }
-
-  public static Iface getClient(Connection connection, int maxRetries, long backOffTime, long maxBackOffTime,
-      boolean setUser) {
-    return getClient(Arrays.asList(connection), maxRetries, backOffTime, maxBackOffTime, setUser);
-  }
-
-  public static Iface getClient(List<Connection> connections, int maxRetries, long backOffTime, long maxBackOffTime,
-      boolean setUser) {
-    return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class },
-        new BlurClientInvocationHandler(connections, maxRetries, backOffTime, maxBackOffTime, setUser));
+        new BlurClientInvocationHandler(connections, maxRetries, backOffTime, maxBackOffTime));
   }
 
 }

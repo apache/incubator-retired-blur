@@ -49,8 +49,9 @@ import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Selector;
-import org.apache.blur.thrift.generated.User;
 import org.apache.blur.trace.Trace;
+import org.apache.blur.user.User;
+import org.apache.blur.user.UserContext;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -70,8 +71,6 @@ public class Main {
 
   static Map<String, Command> commands;
   static String cluster;
-
-  static User user;
 
   static String getCluster(Iface client) throws BlurException, TException, CommandException {
     return getCluster(client,
@@ -185,7 +184,7 @@ public class Main {
     @Override
     public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
         BlurException {
-      out.println("User [" + user + "]");
+      out.println("User [" + UserContext.getUser() + "]");
     }
 
     @Override
@@ -210,7 +209,7 @@ public class Main {
     public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
         BlurException {
       if (args.length == 1) {
-        user = null;
+        UserContext.reset();
         out.println("User reset.");
         return;
       }
@@ -220,8 +219,8 @@ public class Main {
         String[] parts = args[i].split("\\=");
         attributes.put(parts[0], parts[1]);
       }
-      user = new User(username, attributes);
-      out.println("User set [" + user + "]");
+      UserContext.setUser(new User(username, attributes));
+      out.println("User set [" + UserContext.getUser() + "]");
     }
 
     @Override
@@ -568,7 +567,6 @@ public class Main {
             } else {
               long start = System.nanoTime();
               try {
-                client.setUser(user);
                 String traceId = null;
                 if (trace) {
                   traceId = UUID.randomUUID().toString();

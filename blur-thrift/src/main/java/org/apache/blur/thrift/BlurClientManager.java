@@ -45,9 +45,11 @@ import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ErrorType;
+import org.apache.blur.thrift.generated.User;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Trace.TraceId;
 import org.apache.blur.trace.Tracer;
+import org.apache.blur.user.UserContext;
 
 public class BlurClientManager {
 
@@ -185,6 +187,8 @@ public class BlurClientManager {
             client.get().startTrace(traceId.getRootId(), traceId.getRequestId());
             trace = Trace.trace("thrift client", Trace.param("connection", getConnectionStr(client.get())));
           }
+          User user = UserConverter.toThriftUser(UserContext.getUser());
+          client.get().setUser(user);
           T result = command.call((CLIENT) client.get(), connection);
           allBad = false;
           if (command.isDetachClient()) {

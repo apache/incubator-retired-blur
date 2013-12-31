@@ -83,6 +83,11 @@ public class FacetExecutor {
     final Scorer[] _scorers;
     final AtomicReader _reader;
 
+    @Override
+    public String toString() {
+      return "Info scorers length [" + _scorers.length + "] reader[" + _reader + "]";
+    }
+
     Info(AtomicReaderContext context, Scorer[] scorers) {
       AtomicReader reader = context.reader();
       _bitSet = new OpenBitSet(reader.maxDoc());
@@ -97,7 +102,7 @@ public class FacetExecutor {
           Scorer scorer = _scorers[i];
           if (scorer != null) {
             scorer.score(col);
-            counts.addAndGet(i, col._hits);  
+            counts.addAndGet(i, col._hits);
           }
           col._hits = 0;
         }
@@ -109,7 +114,7 @@ public class FacetExecutor {
             Scorer scorer = _scorers[i];
             if (scorer != null) {
               scorer.score(col);
-              counts.addAndGet(i, col._hits);  
+              counts.addAndGet(i, col._hits);
             }
             counts.addAndGet(i, col._hits);
             col._hits = 0;
@@ -149,7 +154,9 @@ public class FacetExecutor {
       info = new Info(context, scorers);
       _infoMap.put(key, info);
     } else {
-      throw new IOException("Info about reader context [" + context + "] alread created.");
+      AtomicReader reader = context.reader();
+      throw new IOException("Info about reader context [" + context + "] alread created, existing Info [" + info
+          + "] current reader [" + reader + "].");
     }
   }
 

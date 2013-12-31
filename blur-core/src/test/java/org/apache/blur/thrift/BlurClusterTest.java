@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -52,6 +53,7 @@ import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.ErrorType;
+import org.apache.blur.thrift.generated.Facet;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.RecordMutation;
@@ -117,6 +119,7 @@ public class BlurClusterTest {
     testLoadTable();
     testForEmptySchema();
     testQueryWithSelector();
+    testQueryWithFacets();
     testBatchFetch();
     testQueryCancel();
     testBackPressureViaQuery();
@@ -179,12 +182,15 @@ public class BlurClusterTest {
 
   public void testLoadTable() throws BlurException, TException, InterruptedException {
     Iface client = getClient();
-    int length = 100;
+    int length = 250;
+    int maxFacetValue = 100;
     List<RowMutation> mutations = new ArrayList<RowMutation>();
+    Random random = new Random(1);
     for (int i = 0; i < length; i++) {
       String rowId = UUID.randomUUID().toString();
       RecordMutation mutation = BlurThriftHelper.newRecordMutation("test", rowId,
-          BlurThriftHelper.newColumn("test", "value"));
+          BlurThriftHelper.newColumn("test", "value"),
+          BlurThriftHelper.newColumn("facet", Integer.toString(random.nextInt(maxFacetValue))));
       RowMutation rowMutation = BlurThriftHelper.newRowMutation("test", rowId, mutation);
       rowMutation.setWaitToBeVisible(true);
       mutations.add(rowMutation);
@@ -227,8 +233,38 @@ public class BlurClusterTest {
     blurQueryRow.setSelector(new Selector());
 
     BlurResults resultsRow = client.query("test", blurQueryRow);
-    assertEquals(100, resultsRow.getTotalResults());
     assertTrue(0 != resultsRow.getQuery().getStartTime());
+    // assertRowResults(resultsRow);
+    assertEquals(250, resultsRow.getTotalResults());
+
+    for (BlurResult blurResult : resultsRow.getResults()) {
+      System.out.println(blurResult);
+    }
+
+  }
+
+  private void testQueryWithFacets() throws BlurException, TException {
+    Iface client = getClient();
+    BlurQuery blurQueryRow = new BlurQuery();
+    Query queryRow = new Query();
+    // queryRow.setQuery("test.test:value");
+    queryRow.setQuery("*");
+    blurQueryRow.setQuery(queryRow);
+    blurQueryRow.setUseCacheIfPresent(false);
+    blurQueryRow.setCacheResult(false);
+    blurQueryRow.setSelector(new Selector());
+    for (int i = 0; i < 250; i++) {
+      blurQueryRow.addToFacets(new Facet("test.facet:" + i, Long.MAX_VALUE));
+    }
+
+    BlurResults resultsRow = client.query("test", blurQueryRow);
+    // assertRowResults(resultsRow);
+    assertEquals(250, resultsRow.getTotalResults());
+
+    System.out.println(resultsRow.getFacetCounts());
+
+    System.out.println();
+
   }
 
   public void testBatchFetch() throws BlurException, TException {
@@ -415,7 +451,7 @@ public class BlurClusterTest {
     System.out.println("===========================");
 
     Iface client = getClient();
-    int length = 100;
+    int length = 250;
     BlurQuery blurQuery = new BlurQuery();
     blurQuery.setUseCacheIfPresent(false);
     Query query = new Query();

@@ -72,6 +72,8 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final ReadWriteLock _lock = new ReentrantReadWriteLock();
   private final Lock _readLock = _lock.readLock();
 
+  private Thread _optimizeThread;
+
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       DirectoryReferenceFileGC gc, final ExecutorService searchExecutor, BlurIndexCloser indexCloser,
       BlurIndexRefresher refresher, BlurIndexWarmup indexWarmup) throws IOException {
@@ -222,8 +224,29 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   }
 
   @Override
-  public void optimize(int numberOfSegmentsPerShard) throws IOException {
-    throw new RuntimeException("not impl");
+  public synchronized void optimize(final int numberOfSegmentsPerShard) throws IOException {
+    final String table = _tableContext.getTable();
+    final String shard = _shardContext.getShard();
+    if (_optimizeThread != null || _optimizeThread.isAlive()) {
+      LOG.info("Already running an optimize on table [{0}] shard [{1}]", table, shard);
+      return;
+    }
+    _optimizeThread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          waitUntilNotNull(_writer);
+          BlurIndexWriter writer = _writer.get();
+          writer.forceMerge(numberOfSegmentsPerShard, true);
+          writer.commit();
+        } catch (Exception e) {
+          LOG.error("Unknown error during optimize on table [{0}] shard [{1}]", e, table, shard);
+        }
+      }
+    });
+    _optimizeThread.setDaemon(true);
+    _optimizeThread.setName("Optimize table [" + table + "] shard [" + shard + "]");
+    _optimizeThread.start();
   }
 
   @Override

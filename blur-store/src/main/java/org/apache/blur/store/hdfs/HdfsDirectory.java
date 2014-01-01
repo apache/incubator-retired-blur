@@ -59,40 +59,6 @@ public class HdfsDirectory extends Directory implements LastModified {
 
   public static AtomicInteger fetchImpl = new AtomicInteger(3);
 
-  // static {
-  // Thread thread = new Thread(new Runnable() {
-  // @Override
-  // public void run() {
-  // while (true) {
-  // File file = new File("/tmp/fetch.impl");
-  // if (file.exists()) {
-  // try {
-  // BufferedReader reader = new BufferedReader(new InputStreamReader(new
-  // FileInputStream(file)));
-  // String line = reader.readLine();
-  // String trim = line.trim();
-  // int i = Integer.parseInt(trim);
-  // if (i != fetchImpl.get()) {
-  // LOG.info("Changing fetch impl [" + i + "]");
-  // fetchImpl.set(i);
-  // }
-  // reader.close();
-  // } catch (Exception e) {
-  // LOG.error("Unknown error", e);
-  // }
-  // }
-  // try {
-  // Thread.sleep(5000);
-  // } catch (InterruptedException e) {
-  // return;
-  // }
-  // }
-  // }
-  // });
-  // thread.setDaemon(true);
-  // thread.start();
-  // }
-
   /**
    * We keep the metrics separate per filesystem.
    */
@@ -318,7 +284,6 @@ public class HdfsDirectory extends Directory implements LastModified {
 
   @Override
   public void copy(Directory to, String src, String dest, IOContext context) throws IOException {
-    LOG.warn("DANGEROUS copy [{0}] [{1}] [{2}] [{3}] [{4}]", to, src, dest, context, _path);
     if (to instanceof DirectoryDecorator) {
       copy(((DirectoryDecorator) to).getOriginalDirectory(), src, dest, context);
     } else if (to instanceof HdfsDirectory) {
@@ -327,7 +292,6 @@ public class HdfsDirectory extends Directory implements LastModified {
       }
     } else {
       slowCopy(to, src, dest, context);
-
     }
   }
 
@@ -336,6 +300,7 @@ public class HdfsDirectory extends Directory implements LastModified {
   }
 
   private boolean quickMove(Directory to, String src, String dest, IOContext context) throws IOException {
+    LOG.warn("DANGEROUS copy [{0}] [{1}] [{2}] [{3}] [{4}]", to, src, dest, context, _path);
     HdfsDirectory simpleTo = (HdfsDirectory) to;
     if (ifSameCluster(simpleTo, this)) {
       Path newDest = simpleTo.getPath(dest);

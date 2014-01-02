@@ -17,6 +17,8 @@
 package org.apache.blur.manager.writer;
 
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_COMMITS;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_REFRESHS;
 
 import java.io.IOException;
 import java.util.List;
@@ -64,14 +66,18 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final IndexWriterConfig _conf;
   private final TableContext _tableContext;
   private final FieldManager _fieldManager;
-  private final BlurIndexRefresher _refresher;
   private final ShardContext _shardContext;
   private final AtomicReference<BlurIndexWriter> _writer = new AtomicReference<BlurIndexWriter>();
   private final boolean _makeReaderExitable = true;
   private IndexImporter _indexImporter;
   private final ReadWriteLock _lock = new ReentrantReadWriteLock();
   private final Lock _readLock = _lock.readLock();
+  private final Thread _refresherThread;
+  private final Thread _commitThread;
+  private final long _commitTime;
+  private final long _refreshTime;
 
+  private volatile boolean _dirty;
   private Thread _optimizeThread;
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
@@ -82,6 +88,8 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _shardContext = shardContext;
     _tableContext = _shardContext.getTableContext();
     _fieldManager = _tableContext.getFieldManager();
+    _commitTime = _tableContext.getBlurConfiguration().getLong(BLUR_SHARD_TIME_BETWEEN_COMMITS, 30000);
+    _refreshTime = _tableContext.getBlurConfiguration().getLong(BLUR_SHARD_TIME_BETWEEN_REFRESHS, 1000);
     Analyzer analyzer = _fieldManager.getAnalyzerForIndex();
     _conf = new IndexWriterConfig(LUCENE_VERSION, analyzer);
     _conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
@@ -100,15 +108,77 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     TraceableDirectory dir = new TraceableDirectory(referenceCounter);
     _directory = dir;
 
-    // _directory = directory;
-
     _indexCloser = indexCloser;
     _indexReader.set(wrap(DirectoryReader.open(_directory)));
-    _refresher = refresher;
 
     _writerOpener = getWriterOpener(shardContext);
     _writerOpener.start();
-    _refresher.register(this);
+    
+    _refresherThread = getRefresherThread();
+    _refresherThread.start();
+
+    _commitThread = getCommitThread();
+    _commitThread.start();
+  }
+
+  private Thread getCommitThread() {
+    String table = _tableContext.getTable();
+    String shard = _shardContext.getShard();
+    Thread thread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        long pause = _commitTime;
+        while (!_isClosed.get()) {
+          synchronized (this) {
+            try {
+              wait(pause);
+            } catch (InterruptedException e) {
+              return;
+            }
+          }
+          try {
+            _writer.get().commit();
+            pause = _commitTime;
+          } catch (IOException e) {
+            LOG.error("Unknown error during commit/refresh.", e);
+            pause = Math.min(pause * 10, TimeUnit.MINUTES.toMillis(1));
+          }
+        }
+      }
+    });
+    thread.setName("Commiter for table [" + table + "] shard [" + shard + "]");
+    thread.setDaemon(true);
+    return thread;
+  }
+
+  private Thread getRefresherThread() {
+    String table = _tableContext.getTable();
+    String shard = _shardContext.getShard();
+    Thread thread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        long pause = _refreshTime;
+        while (!_isClosed.get()) {
+          synchronized (this) {
+            try {
+              wait(pause);
+            } catch (InterruptedException e) {
+              return;
+            }
+          }
+          try {
+            waitToBeVisible(true);
+            pause = _refreshTime;
+          } catch (IOException e) {
+            LOG.error("Unknown error during refresh.", e);
+            pause = Math.min(pause * 10, TimeUnit.MINUTES.toMillis(1));
+          }
+        }
+      }
+    });
+    thread.setName("Refresh for table [" + table + "] shard [" + shard + "]");
+    thread.setDaemon(true);
+    return thread;
   }
 
   private DirectoryReader wrap(DirectoryReader reader) {
@@ -166,6 +236,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       BlurIndexWriter writer = _writer.get();
       List<List<Field>> docs = TransactionRecorder.getDocs(row, _fieldManager);
       writer.updateDocuments(TransactionRecorder.createRowId(row.getId()), docs);
+      _dirty = true;
       waitToBeVisible(waitToBeVisible);
     } finally {
       _readLock.unlock();
@@ -179,6 +250,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       waitUntilNotNull(_writer);
       BlurIndexWriter writer = _writer.get();
       writer.deleteDocuments(TransactionRecorder.createRowId(rowId));
+      _dirty = true;
       waitToBeVisible(waitToBeVisible);
     } finally {
       _readLock.unlock();
@@ -208,13 +280,14 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   }
 
   @Override
-  public void refresh() throws IOException {
-    DirectoryReader currentReader = _indexReader.get();
-    DirectoryReader newReader = DirectoryReader.openIfChanged(currentReader);
-    if (newReader != null) {
+  public synchronized void refresh() throws IOException {
+    if (_dirty) {
+      DirectoryReader currentReader = _indexReader.get();
+      DirectoryReader newReader = DirectoryReader.open(_writer.get(), true);
       LOG.debug("Refreshing index for table [{0}] shard [{1}].", _tableContext.getTable(), _shardContext.getShard());
       _indexReader.set(wrap(newReader));
       _indexCloser.close(currentReader);
+      _dirty = false;
     }
   }
 
@@ -267,8 +340,6 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private void waitToBeVisible(boolean waitToBeVisible) throws IOException {
     if (waitToBeVisible) {
       waitUntilNotNull(_writer);
-      BlurIndexWriter writer = _writer.get();
-      writer.commit();
       refresh();
     }
   }

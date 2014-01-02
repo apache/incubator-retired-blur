@@ -47,7 +47,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class BlurIndexNRTSimpleTest {
+public class BlurIndexSimpleWriterTest {
 
   private static final int TEST_NUMBER_WAIT_VISIBLE = 500;
   private static final int TEST_NUMBER = 50000;
@@ -192,7 +192,7 @@ public class BlurIndexNRTSimpleTest {
     System.out.println("Rate " + rate);
     // //wait one second for the data to become visible the test is set to
     // refresh once every 25 ms
-    // Thread.sleep(1000);
+    Thread.sleep(1000);// Hack for now
     writer.refresh();
     IndexSearcherClosable searcher2 = writer.getIndexSearcher();
     IndexReader reader2 = searcher2.getIndexReader();

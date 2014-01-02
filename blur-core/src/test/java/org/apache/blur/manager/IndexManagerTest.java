@@ -117,7 +117,7 @@ public class IndexManagerTest {
     BlurFilterCache filterCache = new DefaultBlurFilterCache(new BlurConfiguration());
     long statusCleanupTimerDelay = 1000;
     indexManager = new IndexManager(server, getClusterStatus(tableDescriptor), filterCache, 10000000, 100, 1, 1,
-        statusCleanupTimerDelay);
+        statusCleanupTimerDelay, 0);
     setupData();
   }
 

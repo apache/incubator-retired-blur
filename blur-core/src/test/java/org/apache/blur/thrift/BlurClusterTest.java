@@ -78,7 +78,7 @@ public class BlurClusterTest {
 
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp_BlurClusterTest"));
   private static MiniCluster miniCluster;
-  
+
   private int numberOfDocs = 1000;
 
   @BeforeClass
@@ -117,18 +117,37 @@ public class BlurClusterTest {
   @Test
   public void runClusterIntegrationTests() throws BlurException, TException, IOException, InterruptedException,
       KeeperException {
+    start("testCreateTable");
     testCreateTable();
+    start("testLoadTable");
     testLoadTable();
+    start("testForEmptySchema");
     testForEmptySchema();
+    start("testQueryWithSelector");
     testQueryWithSelector();
+    start("testQueryWithFacets");
     testQueryWithFacets();
+    start("testBatchFetch");
     testBatchFetch();
+    start("testLoadTable");
     testQueryCancel();
+    start("testBackPressureViaQuery");
     testBackPressureViaQuery();
+    start("testTestShardFailover");
     testTestShardFailover();
+    start("testTermsList");
     testTermsList();
+    start("testCreateDisableAndRemoveTable");
     testCreateDisableAndRemoveTable();
+    start("testCreateTableWithCustomType");
     testCreateTableWithCustomType();
+  }
+
+  private void start(String name) {
+    System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+    System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+    System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+    System.out.println("Staring [" + name + "]");
   }
 
   private void testForEmptySchema() throws BlurException, TException, IOException {
@@ -378,6 +397,13 @@ public class BlurClusterTest {
           client.query("test", blurQueryRow);
           fail.set(true);
         } catch (BlurException e) {
+          System.out.println("-------------------");
+          System.out.println("-------------------");
+          System.out.println("-------------------");
+          e.printStackTrace();
+          System.out.println("-------------------");
+          System.out.println("-------------------");
+          System.out.println("-------------------");
           error.set(e);
         } catch (TException e) {
           e.printStackTrace();
@@ -444,11 +470,6 @@ public class BlurClusterTest {
 
   public void testTestShardFailover() throws BlurException, TException, InterruptedException, IOException,
       KeeperException {
-
-    System.out.println("===========================");
-    System.out.println("===========================");
-    System.out.println("===========================");
-    System.out.println("===========================");
 
     Iface client = getClient();
     BlurQuery blurQuery = new BlurQuery();

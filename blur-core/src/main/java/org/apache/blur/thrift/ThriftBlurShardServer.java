@@ -19,6 +19,7 @@ package org.apache.blur.thrift;
 import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER;
 import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER_NAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_PORT;
+import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_REMOTE_FETCH_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_INDEXMANAGER_FACET_THREAD_COUNT;
@@ -212,7 +213,12 @@ public class ThriftBlurShardServer extends ThriftServer {
     BooleanQuery.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
 
     int maxHeapPerRowFetch = configuration.getInt(BLUR_MAX_HEAP_PER_ROW_FETCH, 10000000);
-    int fetchCount = configuration.getInt(BLUR_SHARD_FETCHCOUNT, 100);
+    int remoteFetchCount = configuration.getInt(BLUR_CONTROLLER_REMOTE_FETCH_COUNT, 100);
+    int fetchCount = configuration.getInt(BLUR_SHARD_FETCHCOUNT, 110);
+    if (fetchCount + 1 <= remoteFetchCount) {
+      LOG.warn("[" + BLUR_SHARD_FETCHCOUNT + "] [" + fetchCount + "] is equal to or less than ["
+          + BLUR_CONTROLLER_REMOTE_FETCH_COUNT + "] [" + remoteFetchCount + "], should be at least 1 greater.");
+    }
     int indexManagerThreadCount = configuration.getInt(BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT, 32);
     int mutateThreadCount = configuration.getInt(BLUR_INDEXMANAGER_MUTATE_THREAD_COUNT, 32);
     int facetThreadCount = configuration.getInt(BLUR_INDEXMANAGER_FACET_THREAD_COUNT, 16);

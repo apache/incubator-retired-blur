@@ -443,11 +443,9 @@ public class BlurUtil {
     results.setShardInfo(hitsIterable.getShardInfo());
     if (query.minimumNumberOfResults > 0) {
       hitsIterable.skipTo(query.start);
-      int count = 0;
       BlurIterator<BlurResult, BlurException> iterator = hitsIterable.iterator();
-      while (iterator.hasNext() && count < query.fetch) {
+      for (int count = 0; count < query.fetch && iterator.hasNext(); count++) {
         results.addToResults(iterator.next());
-        count++;
       }
     }
     if (results.results == null) {

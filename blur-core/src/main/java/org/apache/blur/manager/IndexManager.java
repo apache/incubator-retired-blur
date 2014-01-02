@@ -142,6 +142,7 @@ public class IndexManager {
   private final ClusterStatus _clusterStatus;
   private final ExecutorService _executor;
   private final ExecutorService _mutateExecutor;
+  private final ExecutorService _facetExecutor;
 
   private final QueryStatusManager _statusManager = new QueryStatusManager();
   private final AtomicBoolean _closed = new AtomicBoolean(false);
@@ -159,7 +160,8 @@ public class IndexManager {
   public static AtomicBoolean DEBUG_RUN_SLOW = new AtomicBoolean(false);
 
   public IndexManager(IndexServer indexServer, ClusterStatus clusterStatus, BlurFilterCache filterCache,
-      int maxHeapPerRowFetch, int fetchCount, int threadCount, int mutateThreadCount, long statusCleanupTimerDelay) {
+      int maxHeapPerRowFetch, int fetchCount, int threadCount, int mutateThreadCount, long statusCleanupTimerDelay,
+      int facetThreadCount) {
     _indexServer = indexServer;
     _clusterStatus = clusterStatus;
     _filterCache = filterCache;
@@ -193,6 +195,12 @@ public class IndexManager {
 
     _executor = Executors.newThreadPool("index-manager", _threadCount);
     _mutateExecutor = Executors.newThreadPool("index-manager-mutate", _mutateThreadCount);
+    if (facetThreadCount < 1) {
+      _facetExecutor = null;
+    } else {
+      _facetExecutor = Executors.newThreadPool("facet-execution", facetThreadCount);
+    }
+
     _statusManager.setStatusCleanupTimerDelay(statusCleanupTimerDelay);
     _statusManager.init();
     LOG.info("Init Complete");
@@ -205,6 +213,9 @@ public class IndexManager {
       _statusManager.close();
       _executor.shutdownNow();
       _mutateExecutor.shutdownNow();
+      if (_facetExecutor != null) {
+        _facetExecutor.shutdownNow();
+      }
       try {
         _indexServer.close();
       } catch (IOException e) {
@@ -497,7 +508,7 @@ public class IndexManager {
       }).merge(merger);
 
       if (executor != null) {
-        executor.processFacets(null);
+        executor.processFacets(_facetExecutor);
       }
       return merge;
     } catch (StopExecutionCollectorException e) {

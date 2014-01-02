@@ -20,6 +20,7 @@ import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_COMMITS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_REFRESHS;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -113,7 +114,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
 
     _writerOpener = getWriterOpener(shardContext);
     _writerOpener.start();
-    
+
     _refresherThread = getRefresherThread();
     _refresherThread.start();
 
@@ -276,7 +277,17 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   @Override
   public void close() throws IOException {
     _isClosed.set(true);
-    IOUtils.cleanup(LOG, _indexImporter, _writer.get(), _indexReader.get());
+    IOUtils.cleanup(LOG, closeable(_commitThread), closeable(_refresherThread), _indexImporter, _writer.get(),
+        _indexReader.get());
+  }
+
+  private Closeable closeable(final Thread thread) {
+    return new Closeable() {
+      @Override
+      public void close() throws IOException {
+        thread.interrupt();
+      }
+    };
   }
 
   @Override

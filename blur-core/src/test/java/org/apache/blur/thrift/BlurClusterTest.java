@@ -78,6 +78,8 @@ public class BlurClusterTest {
 
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp_BlurClusterTest"));
   private static MiniCluster miniCluster;
+  
+  private int numberOfDocs = 1000;
 
   @BeforeClass
   public static void startCluster() throws IOException {
@@ -182,11 +184,10 @@ public class BlurClusterTest {
 
   public void testLoadTable() throws BlurException, TException, InterruptedException {
     Iface client = getClient();
-    int length = 250;
     int maxFacetValue = 100;
     List<RowMutation> mutations = new ArrayList<RowMutation>();
     Random random = new Random(1);
-    for (int i = 0; i < length; i++) {
+    for (int i = 0; i < numberOfDocs; i++) {
       String rowId = UUID.randomUUID().toString();
       RecordMutation mutation = BlurThriftHelper.newRecordMutation("test", rowId,
           BlurThriftHelper.newColumn("test", "value"),
@@ -207,7 +208,7 @@ public class BlurClusterTest {
     blurQueryRow.setCacheResult(false);
     BlurResults resultsRow = client.query("test", blurQueryRow);
     assertRowResults(resultsRow);
-    assertEquals(length, resultsRow.getTotalResults());
+    assertEquals(numberOfDocs, resultsRow.getTotalResults());
 
     BlurQuery blurQueryRecord = new BlurQuery();
     Query queryRecord = new Query();
@@ -216,7 +217,7 @@ public class BlurClusterTest {
     blurQueryRecord.setQuery(queryRecord);
     BlurResults resultsRecord = client.query("test", blurQueryRecord);
     assertRecordResults(resultsRecord);
-    assertEquals(length, resultsRecord.getTotalResults());
+    assertEquals(numberOfDocs, resultsRecord.getTotalResults());
 
     Schema schema = client.schema("test");
     assertFalse(schema.getFamilies().isEmpty());
@@ -234,7 +235,7 @@ public class BlurClusterTest {
 
     BlurResults resultsRow = client.query("test", blurQueryRow);
     // assertRowResults(resultsRow);
-    assertEquals(250, resultsRow.getTotalResults());
+    assertEquals(numberOfDocs, resultsRow.getTotalResults());
 
     for (BlurResult blurResult : resultsRow.getResults()) {
       System.out.println(blurResult);
@@ -258,7 +259,7 @@ public class BlurClusterTest {
 
     BlurResults resultsRow = client.query("test", blurQueryRow);
     // assertRowResults(resultsRow);
-    assertEquals(250, resultsRow.getTotalResults());
+    assertEquals(numberOfDocs, resultsRow.getTotalResults());
 
     System.out.println(resultsRow.getFacetCounts());
 
@@ -450,14 +451,13 @@ public class BlurClusterTest {
     System.out.println("===========================");
 
     Iface client = getClient();
-    int length = 250;
     BlurQuery blurQuery = new BlurQuery();
     blurQuery.setUseCacheIfPresent(false);
     Query query = new Query();
     query.setQuery("test.test:value");
     blurQuery.setQuery(query);
     BlurResults results1 = client.query("test", blurQuery);
-    assertEquals(length, results1.getTotalResults());
+    assertEquals(numberOfDocs, results1.getTotalResults());
     assertRowResults(results1);
 
     miniCluster.killShardServer(1);
@@ -468,7 +468,7 @@ public class BlurClusterTest {
     // This should block until shards have failed over
     client.shardServerLayout("test");
 
-    assertEquals(length, client.query("test", blurQuery).getTotalResults());
+    assertEquals(numberOfDocs, client.query("test", blurQuery).getTotalResults());
 
   }
 

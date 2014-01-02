@@ -28,6 +28,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.search.Collector;
@@ -35,6 +37,8 @@ import org.apache.lucene.search.Scorer;
 import org.apache.lucene.util.OpenBitSet;
 
 public class FacetExecutor {
+
+  private final Log LOG = LogFactory.getLog(FacetExecutor.class);
 
   static Comparator<Entry<Object, Info>> COMPARATOR = new Comparator<Entry<Object, Info>>() {
     @Override
@@ -155,8 +159,8 @@ public class FacetExecutor {
       _infoMap.put(key, info);
     } else {
       AtomicReader reader = context.reader();
-      throw new IOException("Info about reader context [" + context + "] alread created, existing Info [" + info
-          + "] current reader [" + reader + "].");
+      LOG.info("Info about reader context [{0}] alread created, existing Info [{1}] current reader [{2}].", context,
+          info, reader);
     }
   }
 

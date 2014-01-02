@@ -48,7 +48,7 @@ public class BlurIndexReaderWarmer extends IndexReaderWarmer {
 
   @Override
   public void warm(AtomicReader reader) throws IOException {
-    LOG.info("Warming reader [{0}]", reader);
+    LOG.debug("Warming reader [{0}]", reader);
     ReleaseReader releaseReader = new ReleaseReader() {
       @Override
       public void release() throws IOException {

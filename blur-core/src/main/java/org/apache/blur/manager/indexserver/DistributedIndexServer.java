@@ -17,6 +17,7 @@ package org.apache.blur.manager.indexserver;
  * limitations under the License.
  */
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,6 +56,8 @@ import org.apache.blur.server.TableContext;
 import org.apache.blur.store.BlockCacheDirectoryFactory;
 import org.apache.blur.store.hdfs.BlurLockFactory;
 import org.apache.blur.store.hdfs.HdfsDirectory;
+import org.apache.blur.store.hdfs_v2.FastHdfsKeyValueDirectory;
+import org.apache.blur.store.hdfs_v2.JoinDirectory;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
@@ -460,8 +463,20 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
 
     BlurLockFactory lockFactory = new BlurLockFactory(_configuration, hdfsDirPath, _nodeName, BlurUtil.getPid());
 
-    Directory directory = new HdfsDirectory(_configuration, hdfsDirPath);
-    directory.setLockFactory(lockFactory);
+    HdfsDirectory longTermStorage = new HdfsDirectory(_configuration, hdfsDirPath);
+    longTermStorage.setLockFactory(lockFactory);
+
+    Directory directory;
+    URI uri = hdfsDirPath.toUri();
+    String scheme = uri.getScheme();
+    if (scheme != null && scheme.equals("hdfs")) {
+      LOG.info("Using Fast HDFS directory implementation on shard [{0}] for table [{1}]", shard, table);
+      FastHdfsKeyValueDirectory shortTermStorage = new FastHdfsKeyValueDirectory(_configuration, new Path(hdfsDirPath,
+          "fast"));
+      directory = new JoinDirectory(longTermStorage, shortTermStorage);
+    } else {
+      directory = longTermStorage;
+    }
 
     ShardContext shardContext = ShardContext.create(tableContext, shard);
 

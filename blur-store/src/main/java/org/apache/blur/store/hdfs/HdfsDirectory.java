@@ -24,8 +24,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -67,6 +70,8 @@ public class HdfsDirectory extends Directory implements LastModified {
   protected final Path _path;
   protected final FileSystem _fileSystem;
   protected final MetricsGroup _metricsGroup;
+  protected final Map<String, Long> _fileMap = new ConcurrentHashMap<String, Long>();
+  protected final boolean _useCache = true;
 
   public HdfsDirectory(Configuration configuration, Path path) throws IOException {
     this._path = path;
@@ -82,6 +87,14 @@ public class HdfsDirectory extends Directory implements LastModified {
         _metricsGroupMap.put(uri, metricsGroup);
       }
       _metricsGroup = metricsGroup;
+    }
+    if (_useCache) {
+      FileStatus[] listStatus = _fileSystem.listStatus(_path);
+      for (FileStatus fileStatus : listStatus) {
+        if (!fileStatus.isDir()) {
+          _fileMap.put(fileStatus.getPath().getName(), fileStatus.getLen());
+        }
+      }
     }
   }
 
@@ -104,11 +117,12 @@ public class HdfsDirectory extends Directory implements LastModified {
   }
 
   @Override
-  public IndexOutput createOutput(String name, IOContext context) throws IOException {
+  public IndexOutput createOutput(final String name, IOContext context) throws IOException {
     LOG.debug("createOutput [{0}] [{1}] [{2}]", name, context, _path);
     if (fileExists(name)) {
       throw new IOException("File [" + name + "] already exists found.");
     }
+    _fileMap.put(name, 0L);
     final FSDataOutputStream outputStream = openForOutput(name);
     return new BufferedIndexOutput() {
 
@@ -129,6 +143,7 @@ public class HdfsDirectory extends Directory implements LastModified {
       @Override
       public void close() throws IOException {
         super.close();
+        _fileMap.put(name, outputStream.getPos());
         outputStream.close();
       }
 
@@ -173,6 +188,12 @@ public class HdfsDirectory extends Directory implements LastModified {
   @Override
   public String[] listAll() throws IOException {
     LOG.debug("listAll [{0}]", _path);
+    
+    if (_useCache) {
+      Set<String> names = new HashSet<String>(_fileMap.keySet());
+      return names.toArray(new String[names.size()]);
+    }
+    
     Tracer trace = Trace.trace("filesystem - list", Trace.param("path", _path));
     try {
       FileStatus[] files = _fileSystem.listStatus(_path, new PathFilter() {
@@ -198,6 +219,9 @@ public class HdfsDirectory extends Directory implements LastModified {
   @Override
   public boolean fileExists(String name) throws IOException {
     LOG.debug("fileExists [{0}] [{1}]", name, _path);
+    if (_useCache) {
+      return _fileMap.containsKey(name);
+    }
     return exists(name);
   }
 
@@ -215,6 +239,9 @@ public class HdfsDirectory extends Directory implements LastModified {
   public void deleteFile(String name) throws IOException {
     LOG.debug("deleteFile [{0}] [{1}]", name, _path);
     if (fileExists(name)) {
+      if (_useCache) {
+        _fileMap.remove(name);
+      }
       delete(name);
     } else {
       throw new FileNotFoundException("File [" + name + "] not found");
@@ -234,6 +261,14 @@ public class HdfsDirectory extends Directory implements LastModified {
   @Override
   public long fileLength(String name) throws IOException {
     LOG.debug("fileLength [{0}] [{1}]", name, _path);
+    if (_useCache) {
+      Long length = _fileMap.get(name);
+      if (length == null) {
+        throw new FileNotFoundException(name);
+      }
+      return length;
+    }
+    
     return length(name);
   }
 

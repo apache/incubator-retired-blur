@@ -17,10 +17,7 @@
 package org.apache.blur.manager.writer;
 
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
-import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_COMMITS;
-import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_REFRESHS;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -44,6 +41,8 @@ import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.Row;
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
@@ -73,12 +72,6 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private IndexImporter _indexImporter;
   private final ReadWriteLock _lock = new ReentrantReadWriteLock();
   private final Lock _readLock = _lock.readLock();
-  private final Thread _refresherThread;
-  private final Thread _commitThread;
-  private final long _commitTime;
-  private final long _refreshTime;
-
-  private volatile boolean _dirty;
   private Thread _optimizeThread;
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
@@ -89,8 +82,6 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _shardContext = shardContext;
     _tableContext = _shardContext.getTableContext();
     _fieldManager = _tableContext.getFieldManager();
-    _commitTime = _tableContext.getBlurConfiguration().getLong(BLUR_SHARD_TIME_BETWEEN_COMMITS, 30000);
-    _refreshTime = _tableContext.getBlurConfiguration().getLong(BLUR_SHARD_TIME_BETWEEN_REFRESHS, 1000);
     Analyzer analyzer = _fieldManager.getAnalyzerForIndex();
     _conf = new IndexWriterConfig(LUCENE_VERSION, analyzer);
     _conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
@@ -114,72 +105,6 @@ public class BlurIndexSimpleWriter extends BlurIndex {
 
     _writerOpener = getWriterOpener(shardContext);
     _writerOpener.start();
-
-    _refresherThread = getRefresherThread();
-    _refresherThread.start();
-
-    _commitThread = getCommitThread();
-    _commitThread.start();
-  }
-
-  private Thread getCommitThread() {
-    String table = _tableContext.getTable();
-    String shard = _shardContext.getShard();
-    Thread thread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        long pause = _commitTime;
-        while (!_isClosed.get()) {
-          synchronized (this) {
-            try {
-              wait(pause);
-            } catch (InterruptedException e) {
-              return;
-            }
-          }
-          try {
-            _writer.get().commit();
-            pause = _commitTime;
-          } catch (IOException e) {
-            LOG.error("Unknown error during commit/refresh.", e);
-            pause = Math.min(pause * 10, TimeUnit.MINUTES.toMillis(1));
-          }
-        }
-      }
-    });
-    thread.setName("Commiter for table [" + table + "] shard [" + shard + "]");
-    thread.setDaemon(true);
-    return thread;
-  }
-
-  private Thread getRefresherThread() {
-    String table = _tableContext.getTable();
-    String shard = _shardContext.getShard();
-    Thread thread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        long pause = _refreshTime;
-        while (!_isClosed.get()) {
-          synchronized (this) {
-            try {
-              wait(pause);
-            } catch (InterruptedException e) {
-              return;
-            }
-          }
-          try {
-            waitToBeVisible(true);
-            pause = _refreshTime;
-          } catch (IOException e) {
-            LOG.error("Unknown error during refresh.", e);
-            pause = Math.min(pause * 10, TimeUnit.MINUTES.toMillis(1));
-          }
-        }
-      }
-    });
-    thread.setName("Refresh for table [" + table + "] shard [" + shard + "]");
-    thread.setDaemon(true);
-    return thread;
   }
 
   private DirectoryReader wrap(DirectoryReader reader) {
@@ -232,14 +157,15 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   @Override
   public void replaceRow(boolean waitToBeVisible, boolean wal, Row row) throws IOException {
     _readLock.lock();
+    Tracer trace = Trace.trace("replaceRow");
     try {
       waitUntilNotNull(_writer);
       BlurIndexWriter writer = _writer.get();
       List<List<Field>> docs = TransactionRecorder.getDocs(row, _fieldManager);
       writer.updateDocuments(TransactionRecorder.createRowId(row.getId()), docs);
-      _dirty = true;
-      waitToBeVisible(waitToBeVisible);
+      commit(true);
     } finally {
+      trace.done();
       _readLock.unlock();
     }
   }
@@ -251,8 +177,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       waitUntilNotNull(_writer);
       BlurIndexWriter writer = _writer.get();
       writer.deleteDocuments(TransactionRecorder.createRowId(rowId));
-      _dirty = true;
-      waitToBeVisible(waitToBeVisible);
+      commit(true);
     } finally {
       _readLock.unlock();
     }
@@ -277,29 +202,12 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   @Override
   public void close() throws IOException {
     _isClosed.set(true);
-    IOUtils.cleanup(LOG, closeable(_commitThread), closeable(_refresherThread), _indexImporter, _writer.get(),
-        _indexReader.get());
-  }
-
-  private Closeable closeable(final Thread thread) {
-    return new Closeable() {
-      @Override
-      public void close() throws IOException {
-        thread.interrupt();
-      }
-    };
+    IOUtils.cleanup(LOG, _indexImporter, _writer.get(), _indexReader.get());
   }
 
   @Override
   public synchronized void refresh() throws IOException {
-    if (_dirty) {
-      DirectoryReader currentReader = _indexReader.get();
-      DirectoryReader newReader = DirectoryReader.open(_writer.get(), true);
-      LOG.debug("Refreshing index for table [{0}] shard [{1}].", _tableContext.getTable(), _shardContext.getShard());
-      _indexReader.set(wrap(newReader));
-      _indexCloser.close(currentReader);
-      _dirty = false;
-    }
+
   }
 
   @Override
@@ -348,10 +256,24 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     throw new RuntimeException("not impl");
   }
 
-  private void waitToBeVisible(boolean waitToBeVisible) throws IOException {
+  private synchronized void commit(boolean waitToBeVisible) throws IOException {
     if (waitToBeVisible) {
+      Tracer trace1 = Trace.trace("commit");
       waitUntilNotNull(_writer);
-      refresh();
+      BlurIndexWriter writer = _writer.get();
+      writer.commit();
+      trace1.done();
+
+      Tracer trace2 = Trace.trace("commit");
+      DirectoryReader currentReader = _indexReader.get();
+      DirectoryReader newReader = DirectoryReader.openIfChanged(currentReader);
+      if (newReader == null) {
+        LOG.error("Reader should be new after commit for table [{0}] shard [{1}].", _tableContext.getTable(),
+            _shardContext.getShard());
+      }
+      _indexReader.set(wrap(newReader));
+      _indexCloser.close(currentReader);
+      trace2.done();
     }
   }
 

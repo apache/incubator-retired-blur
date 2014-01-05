@@ -71,7 +71,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final boolean _makeReaderExitable = true;
   private IndexImporter _indexImporter;
   private final ReadWriteLock _lock = new ReentrantReadWriteLock();
-  private final Lock _readLock = _lock.readLock();
+  private final Lock _writeLock = _lock.writeLock();
   private Thread _optimizeThread;
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
@@ -156,7 +156,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
 
   @Override
   public void replaceRow(boolean waitToBeVisible, boolean wal, Row row) throws IOException {
-    _readLock.lock();
+    _writeLock.lock();
     Tracer trace = Trace.trace("replaceRow");
     try {
       waitUntilNotNull(_writer);
@@ -166,20 +166,20 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       commit();
     } finally {
       trace.done();
-      _readLock.unlock();
+      _writeLock.unlock();
     }
   }
 
   @Override
   public void deleteRow(boolean waitToBeVisible, boolean wal, String rowId) throws IOException {
-    _readLock.lock();
+    _writeLock.lock();
     try {
       waitUntilNotNull(_writer);
       BlurIndexWriter writer = _writer.get();
       writer.deleteDocuments(TransactionRecorder.createRowId(rowId));
       commit();
     } finally {
-      _readLock.unlock();
+      _writeLock.unlock();
     }
   }
 
@@ -256,14 +256,18 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     throw new RuntimeException("not impl");
   }
 
-  private synchronized void commit() throws IOException {
-    Tracer trace1 = Trace.trace("commit");
+  private void commit() throws IOException {
+    Tracer trace1 = Trace.trace("prepareCommit");
     waitUntilNotNull(_writer);
     BlurIndexWriter writer = _writer.get();
-    writer.commit();
+    writer.prepareCommit();
     trace1.done();
 
-    Tracer trace2 = Trace.trace("index refresh");
+    Tracer trace2 = Trace.trace("commit");
+    writer.commit();
+    trace2.done();
+
+    Tracer trace3 = Trace.trace("index refresh");
     DirectoryReader currentReader = _indexReader.get();
     DirectoryReader newReader = DirectoryReader.openIfChanged(currentReader);
     if (newReader == null) {
@@ -272,7 +276,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     }
     _indexReader.set(wrap(newReader));
     _indexCloser.close(currentReader);
-    trace2.done();
+    trace3.done();
   }
 
 }

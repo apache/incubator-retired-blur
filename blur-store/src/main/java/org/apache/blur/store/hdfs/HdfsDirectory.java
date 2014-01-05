@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -60,8 +59,6 @@ public class HdfsDirectory extends Directory implements LastModified {
 
   private static final Log LOG = LogFactory.getLog(HdfsDirectory.class);
 
-  public static AtomicInteger fetchImpl = new AtomicInteger(3);
-
   /**
    * We keep the metrics separate per filesystem.
    */
@@ -71,6 +68,7 @@ public class HdfsDirectory extends Directory implements LastModified {
   protected final FileSystem _fileSystem;
   protected final MetricsGroup _metricsGroup;
   protected final Map<String, Long> _fileMap = new ConcurrentHashMap<String, Long>();
+  protected final Map<Path, FSDataInputStream> _inputMap = new ConcurrentHashMap<Path, FSDataInputStream>();
   protected final boolean _useCache = true;
 
   public HdfsDirectory(Configuration configuration, Path path) throws IOException {
@@ -145,6 +143,7 @@ public class HdfsDirectory extends Directory implements LastModified {
         super.close();
         _fileMap.put(name, outputStream.getPos());
         outputStream.close();
+        openForInput(name);
       }
 
       @Override
@@ -172,14 +171,20 @@ public class HdfsDirectory extends Directory implements LastModified {
     }
     FSDataInputStream inputStream = openForInput(name);
     long fileLength = fileLength(name);
-    return new HdfsIndexInput(name, inputStream, fileLength, _metricsGroup, fetchImpl.get(), getPath(name));
+    return new HdfsIndexInput(name, inputStream, fileLength, _metricsGroup, getPath(name));
   }
 
-  protected FSDataInputStream openForInput(String name) throws IOException {
+  protected synchronized FSDataInputStream openForInput(String name) throws IOException {
     Path path = getPath(name);
+    FSDataInputStream inputStream = _inputMap.get(path);
+    if (inputStream != null) {
+      return inputStream;
+    }
     Tracer trace = Trace.trace("filesystem - open", Trace.param("path", path));
     try {
-      return _fileSystem.open(path);
+      inputStream = _fileSystem.open(path);
+      _inputMap.put(path, inputStream);
+      return inputStream;
     } finally {
       trace.done();
     }
@@ -188,12 +193,12 @@ public class HdfsDirectory extends Directory implements LastModified {
   @Override
   public String[] listAll() throws IOException {
     LOG.debug("listAll [{0}]", _path);
-    
+
     if (_useCache) {
       Set<String> names = new HashSet<String>(_fileMap.keySet());
       return names.toArray(new String[names.size()]);
     }
-    
+
     Tracer trace = Trace.trace("filesystem - list", Trace.param("path", _path));
     try {
       FileStatus[] files = _fileSystem.listStatus(_path, new PathFilter() {
@@ -250,7 +255,11 @@ public class HdfsDirectory extends Directory implements LastModified {
 
   protected void delete(String name) throws IOException {
     Path path = getPath(name);
+    FSDataInputStream inputStream = _inputMap.remove(path);
     Tracer trace = Trace.trace("filesystem - delete", Trace.param("path", path));
+    if (inputStream != null) {
+      inputStream.close();
+    }
     try {
       _fileSystem.delete(path, true);
     } finally {
@@ -268,7 +277,7 @@ public class HdfsDirectory extends Directory implements LastModified {
       }
       return length;
     }
-    
+
     return length(name);
   }
 

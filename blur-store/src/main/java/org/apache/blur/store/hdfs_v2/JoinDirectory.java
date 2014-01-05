@@ -24,9 +24,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.blur.store.blockcache.LastModified;
+import org.apache.blur.utils.BlurConstants;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
-import org.apache.lucene.store.IOContext.Context;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 
@@ -91,7 +91,7 @@ public class JoinDirectory extends Directory implements LastModified {
 
   @Override
   public IndexOutput createOutput(String name, IOContext context) throws IOException {
-    if (context.context == Context.MERGE) {
+    if (Thread.currentThread().getName().startsWith(BlurConstants.SHARED_MERGE_SCHEDULER)) {
       addLongTermSyncFile(name);
       return _longTermStorage.createOutput(name, context);
     }
@@ -124,12 +124,12 @@ public class JoinDirectory extends Directory implements LastModified {
     }
 
     if (!shortNames.isEmpty()) {
-//      System.out.println("Sync short [" + shortNames + "]");
+      // System.out.println("Sync short [" + shortNames + "]");
       _shortTermStorage.sync(shortNames);
     }
 
     if (!longNames.isEmpty()) {
-//      System.out.println("Sync long [" + longNames + "]");
+      // System.out.println("Sync long [" + longNames + "]");
       _longTermStorage.sync(longNames);
     }
   }
@@ -151,10 +151,10 @@ public class JoinDirectory extends Directory implements LastModified {
   @Override
   public long getFileModified(String name) throws IOException {
     return 0;
-//    if (_shortTermStorage.fileExists(name)) {
-//      return ((LastModified) _shortTermStorage).getFileModified(name);
-//    }
-//    return ((LastModified) _longTermStorage).getFileModified(name);
+    // if (_shortTermStorage.fileExists(name)) {
+    // return ((LastModified) _shortTermStorage).getFileModified(name);
+    // }
+    // return ((LastModified) _longTermStorage).getFileModified(name);
   }
 
 }

@@ -23,7 +23,9 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentNavigableMap;
@@ -34,6 +36,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -48,7 +52,8 @@ import org.apache.lucene.util.BytesRef;
 
 public class HdfsKeyValueStore implements Store {
 
-  // private final Log LOG = LogFactory.getLog(HdfsKeyValueStore.class);
+  private static final int DEFAULT_MAX = 64 * 1024 * 1024;
+  private final Log LOG = LogFactory.getLog(HdfsKeyValueStore.class);
 
   static enum OperationType {
     PUT, DELETE
@@ -101,8 +106,17 @@ public class HdfsKeyValueStore implements Store {
     }
   };
 
-  private final ConcurrentNavigableMap<BytesRef, BytesRef> _pointers = new ConcurrentSkipListMap<BytesRef, BytesRef>(
-      COMP);
+  static class Value {
+    Value(BytesRef bytesRef, Path path) {
+      _bytesRef = bytesRef;
+      _path = path;
+    }
+
+    BytesRef _bytesRef;
+    Path _path;
+  }
+
+  private final ConcurrentNavigableMap<BytesRef, Value> _pointers = new ConcurrentSkipListMap<BytesRef, Value>(COMP);
   private final Configuration _configuration;
   private final Path _path;
   private final ReentrantReadWriteLock _readWriteLock;
@@ -113,9 +127,15 @@ public class HdfsKeyValueStore implements Store {
   private final ReadLock _readLock;
   private FSDataOutputStream _output;
   private Path _outputPath;
+  private final long _maxAmountAllowedPerFile;
   private boolean _isClosed;
 
   public HdfsKeyValueStore(Configuration configuration, Path path) throws IOException {
+    this(configuration, path, DEFAULT_MAX);
+  }
+
+  public HdfsKeyValueStore(Configuration configuration, Path path, long maxAmountAllowedPerFile) throws IOException {
+    _maxAmountAllowedPerFile = maxAmountAllowedPerFile;
     _configuration = configuration;
     _path = path;
     _configuration.setBoolean("fs.hdfs.impl.disable.cache", true);
@@ -159,15 +179,48 @@ public class HdfsKeyValueStore implements Store {
     _writeLock.lock();
     try {
       Operation op = getPutOperation(OperationType.PUT, key, value);
-      write(op);
-      _pointers.put(BytesRef.deepCopyOf(key), BytesRef.deepCopyOf(value));
+      Path path = write(op);
+      _pointers.put(BytesRef.deepCopyOf(key), new Value(BytesRef.deepCopyOf(value), path));
+      if (!path.equals(_outputPath)) {
+        cleanupOldFiles();
+      }
     } finally {
       _writeLock.unlock();
     }
   }
 
-  private void write(Operation op) throws IOException {
+  private Path write(Operation op) throws IOException {
     op.write(_output);
+    Path p = _outputPath;
+    if (_output.getPos() >= _maxAmountAllowedPerFile) {
+      rollFile();
+    }
+    return p;
+  }
+
+  private void rollFile() throws IOException {
+    LOG.info("Rolling file [" + _outputPath + "]");
+    _output.close();
+    openWriter();
+  }
+
+  public void cleanupOldFiles() throws IOException {
+    FileStatus[] listStatus = _fileSystem.listStatus(_path);
+    Set<Path> existingFiles = new HashSet<Path>();
+    for (FileStatus fileStatus : listStatus) {
+      existingFiles.add(fileStatus.getPath());
+    }
+    Set<Entry<BytesRef, Value>> entrySet = _pointers.entrySet();
+    existingFiles.remove(_outputPath);
+    for (Entry<BytesRef, Value> e : entrySet) {
+      Path p = e.getValue()._path;
+      existingFiles.remove(p);
+    }
+
+    for (Path p : existingFiles) {
+      LOG.info("Removing file no longer referenced [{0}]", p);
+      _fileSystem.delete(p, false);
+    }
   }
 
   private Operation getPutOperation(OperationType put, BytesRef key, BytesRef value) {
@@ -190,11 +243,11 @@ public class HdfsKeyValueStore implements Store {
     ensureOpen();
     _readLock.lock();
     try {
-      BytesRef internalValue = _pointers.get(key);
+      Value internalValue = _pointers.get(key);
       if (internalValue == null) {
         return false;
       }
-      value.copyBytes(internalValue);
+      value.copyBytes(internalValue._bytesRef);
       return true;
     } finally {
       _readLock.unlock();
@@ -280,17 +333,18 @@ public class HdfsKeyValueStore implements Store {
           // End of sync point found
           return;
         }
-        loadIndex(operation);
+        loadIndex(path, operation);
       }
     } finally {
       inputStream.close();
     }
   }
 
-  private void loadIndex(Operation operation) {
+  private void loadIndex(Path path, Operation operation) {
     switch (operation.type) {
     case PUT:
-      _pointers.put(BytesRef.deepCopyOf(getKey(operation.key)), BytesRef.deepCopyOf(getKey(operation.value)));
+      _pointers.put(BytesRef.deepCopyOf(getKey(operation.key)), new Value(BytesRef.deepCopyOf(getKey(operation.value)),
+          path));
       return;
     case DELETE:
       _pointers.remove(getKey(operation.key));

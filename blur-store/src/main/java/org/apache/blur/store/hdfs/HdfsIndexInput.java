@@ -28,18 +28,15 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
 
   private final long _length;
   private FSDataInputStream _inputStream;
-  private boolean _isClone;
   private final MetricsGroup _metricsGroup;
-  private int _readVersion;
   private final Path _path;
 
-  public HdfsIndexInput(String name, FSDataInputStream inputStream, long length, MetricsGroup metricsGroup,
-      int readVersion, Path path) throws IOException {
+  public HdfsIndexInput(String name, FSDataInputStream inputStream, long length, MetricsGroup metricsGroup, Path path)
+      throws IOException {
     super("HdfsIndexInput(" + path.toString() + ")");
     _inputStream = inputStream;
     _length = length;
     _metricsGroup = metricsGroup;
-    _readVersion = readVersion;
     _path = path;
   }
 
@@ -60,39 +57,12 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
     try {
       long start = System.nanoTime();
       long filePointer = getFilePointer();
-      switch (_readVersion) {
-      case 0:
-        synchronized (_inputStream) {
-          _inputStream.seek(getFilePointer());
-          _inputStream.readFully(b, offset, length);
-        }
-        break;
-      case 1:
-        while (length > 0) {
-          int amount;
-          synchronized (_inputStream) {
-            _inputStream.seek(filePointer);
-            amount = _inputStream.read(b, offset, length);
-          }
-          length -= amount;
-          offset += amount;
-          filePointer += amount;
-        }
-        break;
-      case 2:
-        _inputStream.readFully(filePointer, b, offset, length);
-        break;
-      case 3:
-        while (length > 0) {
-          int amount;
-          amount = _inputStream.read(filePointer, b, offset, length);
-          length -= amount;
-          offset += amount;
-          filePointer += amount;
-        }
-        break;
-      default:
-        break;
+      while (length > 0) {
+        int amount;
+        amount = _inputStream.read(filePointer, b, offset, length);
+        length -= amount;
+        offset += amount;
+        filePointer += amount;
       }
       long end = System.nanoTime();
       _metricsGroup.readAccess.update((end - start) / 1000);
@@ -103,17 +73,13 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
   }
 
   @Override
-  protected void closeInternal() throws IOException {
-    if (!_isClone) {
-      _inputStream.close();
-    }
+  public ReusedBufferedIndexInput clone() {
+    HdfsIndexInput clone = (HdfsIndexInput) super.clone();
+    return clone;
   }
 
   @Override
-  public ReusedBufferedIndexInput clone() {
-    HdfsIndexInput clone = (HdfsIndexInput) super.clone();
-    clone._isClone = true;
-    clone._readVersion = HdfsDirectory.fetchImpl.get();
-    return clone;
+  protected void closeInternal() throws IOException {
+
   }
 }

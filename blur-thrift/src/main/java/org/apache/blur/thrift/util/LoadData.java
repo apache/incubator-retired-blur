@@ -102,7 +102,9 @@ public class LoadData {
       }
       countRow++;
     }
-    client.mutateBatch(mutations);
+    if (!mutations.isEmpty()) {
+      client.mutateBatch(mutations);
+    }
     printPerformance(out, countRow, countRecord, start, s, numberRows);
   }
 
@@ -112,8 +114,7 @@ public class LoadData {
     double recordRate = countRecord / seconds;
     double rowRate = countRow / seconds;
     double avgRowRate = i / totalSeconds;
-    out.printf("Rows indexed [%d] at Avg Rows [%f/s] Rows [%f/s] Records [%f/s]%n", i, avgRowRate, rowRate,
-        recordRate);
+    out.printf("Rows indexed [%d] at Avg Rows [%f/s] Rows [%f/s] Records [%f/s]%n", i, avgRowRate, rowRate, recordRate);
     out.flush();
   }
 

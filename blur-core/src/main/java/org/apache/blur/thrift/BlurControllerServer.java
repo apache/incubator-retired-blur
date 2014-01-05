@@ -118,13 +118,29 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
 
     @Override
-    public <T> T execute(String node, BlurCommand<T> command, int maxRetries, long backOffTime, long maxBackOffTime)
-        throws BlurException, TException, IOException {
-      Tracer trace = Trace.trace("remote call - thrift", Trace.param("node", node));
+    public <T> T execute(final String node, final BlurCommand<T> command, final int maxRetries, final long backOffTime,
+        final long maxBackOffTime) throws BlurException, TException, IOException {
+      Callable<T> callable = Trace.getCallable(new Callable<T>() {
+        @Override
+        public T call() throws Exception {
+          Tracer trace = Trace.trace("remote call - thrift", Trace.param("node", node));
+          try {
+            return BlurClientManager.execute(node + "#" + _timeout, command, maxRetries, backOffTime, maxBackOffTime);
+          } finally {
+            trace.done();
+          }
+        }
+      });
       try {
-        return BlurClientManager.execute(node + "#" + _timeout, command, maxRetries, backOffTime, maxBackOffTime);
-      } finally {
-        trace.done();
+        return callable.call();
+      } catch (BlurException e) {
+        throw e;
+      } catch (TException e) {
+        throw e;
+      } catch (IOException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new BException("Unknown error during remote call to node [" + node + "]", e);
       }
     }
   }

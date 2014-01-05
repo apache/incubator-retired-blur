@@ -109,16 +109,18 @@ public class Trace {
     return new Parameter(name, value);
   }
 
-  private static void setupTraceOnNewThread(TraceCollector parentCollector, String requestId, int traceScope) {
+  private static TraceCollector setupTraceOnNewThread(TraceCollector parentCollector, String requestId, int traceScope) {
+    TraceCollector existing = _tracer.get();
     TraceCollector traceCollector = new TraceCollector(parentCollector, requestId);
     TracerImpl tracer = new TracerImpl(traceCollector, parentCollector.getNextId(), traceScope, requestId);
     parentCollector.add(tracer);
     _tracer.set(traceCollector);
+    return existing;
   }
 
-  private static void tearDownTraceOnNewThread() {
+  private static void tearDownTraceOnNewThread(TraceCollector old) {
     TraceCollector collector = _tracer.get();
-    _tracer.set(null);
+    _tracer.set(old);
     if (collector != null) {
       collector.finished();
     }
@@ -164,13 +166,13 @@ public class Trace {
       return new Runnable() {
         @Override
         public void run() {
-          setupTraceOnNewThread(tc, Long.toString(requestId), traceScope);
+          TraceCollector existing = setupTraceOnNewThread(tc, Long.toString(requestId), traceScope);
           Tracer t = Trace.trace("executing runnable", Trace.param(REQUEST_ID, requestId));
           try {
             runnable.run();
           } finally {
             t.done();
-            tearDownTraceOnNewThread();
+            tearDownTraceOnNewThread(existing);
           }
         }
       };
@@ -192,13 +194,13 @@ public class Trace {
       return new Callable<V>() {
         @Override
         public V call() throws Exception {
-          setupTraceOnNewThread(tc, Long.toString(requestId), traceScope);
+          TraceCollector existing = setupTraceOnNewThread(tc, Long.toString(requestId), traceScope);
           Tracer t = Trace.trace("executing callable", Trace.param(REQUEST_ID, requestId));
           try {
             return callable.call();
           } finally {
             t.done();
-            tearDownTraceOnNewThread();
+            tearDownTraceOnNewThread(existing);
           }
         }
       };

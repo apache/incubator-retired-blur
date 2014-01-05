@@ -163,7 +163,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       BlurIndexWriter writer = _writer.get();
       List<List<Field>> docs = TransactionRecorder.getDocs(row, _fieldManager);
       writer.updateDocuments(TransactionRecorder.createRowId(row.getId()), docs);
-      commit(true);
+      commit();
     } finally {
       trace.done();
       _readLock.unlock();
@@ -177,7 +177,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       waitUntilNotNull(_writer);
       BlurIndexWriter writer = _writer.get();
       writer.deleteDocuments(TransactionRecorder.createRowId(rowId));
-      commit(true);
+      commit();
     } finally {
       _readLock.unlock();
     }
@@ -206,7 +206,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   }
 
   @Override
-  public synchronized void refresh() throws IOException {
+  public void refresh() throws IOException {
 
   }
 
@@ -256,25 +256,23 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     throw new RuntimeException("not impl");
   }
 
-  private synchronized void commit(boolean waitToBeVisible) throws IOException {
-    if (waitToBeVisible) {
-      Tracer trace1 = Trace.trace("commit");
-      waitUntilNotNull(_writer);
-      BlurIndexWriter writer = _writer.get();
-      writer.commit();
-      trace1.done();
+  private synchronized void commit() throws IOException {
+    Tracer trace1 = Trace.trace("commit");
+    waitUntilNotNull(_writer);
+    BlurIndexWriter writer = _writer.get();
+    writer.commit();
+    trace1.done();
 
-      Tracer trace2 = Trace.trace("commit");
-      DirectoryReader currentReader = _indexReader.get();
-      DirectoryReader newReader = DirectoryReader.openIfChanged(currentReader);
-      if (newReader == null) {
-        LOG.error("Reader should be new after commit for table [{0}] shard [{1}].", _tableContext.getTable(),
-            _shardContext.getShard());
-      }
-      _indexReader.set(wrap(newReader));
-      _indexCloser.close(currentReader);
-      trace2.done();
+    Tracer trace2 = Trace.trace("index refresh");
+    DirectoryReader currentReader = _indexReader.get();
+    DirectoryReader newReader = DirectoryReader.openIfChanged(currentReader);
+    if (newReader == null) {
+      LOG.error("Reader should be new after commit for table [{0}] shard [{1}].", _tableContext.getTable(),
+          _shardContext.getShard());
     }
+    _indexReader.set(wrap(newReader));
+    _indexCloser.close(currentReader);
+    trace2.done();
   }
 
 }

@@ -27,15 +27,16 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.shell.Command.CommandException;
 import org.apache.blur.shell.Main.QuitCommand.QuitCommandException;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
@@ -49,6 +50,7 @@ import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Selector;
+import org.apache.blur.trace.LogTraceStorage;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.user.User;
 import org.apache.blur.user.UserContext;
@@ -518,6 +520,8 @@ public class Main {
   }
 
   public static void main(String[] args) throws Throwable {
+    
+    Trace.setStorage(new LogTraceStorage(new BlurConfiguration()));
 
     args = removeLeadingShellFromScript(args);
 

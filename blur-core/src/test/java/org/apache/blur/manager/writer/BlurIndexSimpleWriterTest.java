@@ -169,8 +169,9 @@ public class BlurIndexSimpleWriterTest {
     Trace.setStorage(oldStorage);
   }
 
-  @Test
+//  @Test
   public void testBlurIndexWriterFaster() throws IOException, InterruptedException {
+    // This test doesn't make any sense anymore, because it's no different than the first test.
     setupWriter(configuration, 100, false);
     IndexSearcherClosable searcher1 = writer.getIndexSearcher();
     IndexReader reader1 = searcher1.getIndexReader();

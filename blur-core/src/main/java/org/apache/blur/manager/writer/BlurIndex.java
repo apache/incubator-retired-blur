@@ -40,11 +40,12 @@ public abstract class BlurIndex {
   private static final long ONE_MINUTE = TimeUnit.MINUTES.toMillis(1);
   private long _lastMemoryCheck = 0;
   private long _memoryUsage = 0;
+  protected ShardContext _shardContext;
 
   public BlurIndex(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       DirectoryReferenceFileGC gc, ExecutorService searchExecutor, BlurIndexCloser indexCloser,
       BlurIndexRefresher refresher, BlurIndexWarmup indexWarmup) throws IOException {
-
+    _shardContext = shardContext;
   }
 
   public abstract void replaceRow(boolean waitToBeVisible, boolean wal, Row row) throws IOException;
@@ -132,5 +133,11 @@ public abstract class BlurIndex {
       indexSearcherClosable.close();
     }
   }
+
+  public ShardContext getShardContext() {
+    return _shardContext;
+  }
+
+  public abstract void process(MutatableAction mutatableAction) throws IOException;
 
 }

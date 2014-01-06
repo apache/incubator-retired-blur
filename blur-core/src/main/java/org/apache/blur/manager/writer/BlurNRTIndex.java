@@ -440,4 +440,9 @@ public class BlurNRTIndex extends BlurIndex {
     Configuration configuration = _shardContext.getTableContext().getConfiguration();
     return shardHdfsDirPath.getFileSystem(configuration);
   }
+
+  @Override
+  public void process(MutatableAction mutatableAction) {
+    throw new RuntimeException("Not supported.");
+  }
 }

@@ -18,7 +18,6 @@ package org.apache.blur.manager;
  */
 import static org.apache.blur.metrics.MetricsConstants.BLUR;
 import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
-import static org.apache.blur.thrift.util.BlurThriftHelper.findRecordMutation;
 import static org.apache.blur.utils.BlurConstants.FAMILY;
 import static org.apache.blur.utils.BlurConstants.PRIME_DOC;
 import static org.apache.blur.utils.BlurConstants.RECORD_ID;
@@ -28,9 +27,9 @@ import static org.apache.blur.utils.RowDocumentUtil.getRow;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,7 +59,9 @@ import org.apache.blur.manager.results.MergerBlurResultIterable;
 import org.apache.blur.manager.status.QueryStatus;
 import org.apache.blur.manager.status.QueryStatusManager;
 import org.apache.blur.manager.writer.BlurIndex;
+import org.apache.blur.manager.writer.MutatableAction;
 import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.BException;
@@ -68,7 +69,6 @@ import org.apache.blur.thrift.MutationHelper;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
-import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.Facet;
 import org.apache.blur.thrift.generated.FetchResult;
@@ -141,8 +141,8 @@ public class IndexManager {
   private final IndexServer _indexServer;
   private final ClusterStatus _clusterStatus;
   private final ExecutorService _executor;
-  private final ExecutorService _mutateExecutor;
   private final ExecutorService _facetExecutor;
+  private final ExecutorService _mutateExecutor;
 
   private final QueryStatusManager _statusManager = new QueryStatusManager();
   private final AtomicBoolean _closed = new AtomicBoolean(false);
@@ -924,7 +924,7 @@ public class IndexManager {
 
   public void mutate(final RowMutation mutation) throws BlurException, IOException {
     long s = System.nanoTime();
-    doMutate(mutation);
+    doMutates(Arrays.asList(mutation));
     long e = System.nanoTime();
     LOG.debug("doMutate took [{0} ms] to complete", (e - s) / 1000000.0);
   }
@@ -964,13 +964,7 @@ public class IndexManager {
     for (Entry<String, List<RowMutation>> entry : mutationsByShard.entrySet()) {
       final String shard = entry.getKey();
       final List<RowMutation> value = entry.getValue();
-      futures.add(_mutateExecutor.submit(new Callable<Void>() {
-        @Override
-        public Void call() throws Exception {
-          executeMutates(table, shard, indexes, value);
-          return null;
-        }
-      }));
+      futures.add(executeMutates(table, shard, indexes, value));
     }
 
     for (Future<Void> future : futures) {
@@ -984,42 +978,46 @@ public class IndexManager {
     }
   }
 
-  private void executeMutates(String table, String shard, Map<String, BlurIndex> indexes, List<RowMutation> mutations)
-      throws BlurException, IOException {
+  private Future<Void> executeMutates(String table, String shard, Map<String, BlurIndex> indexes,
+      List<RowMutation> mutations) throws BlurException, IOException {
     long s = System.nanoTime();
-    boolean waitToBeVisible = false;
-    for (int i = 0; i < mutations.size(); i++) {
-      RowMutation mutation = mutations.get(i);
-      if (mutation.waitToBeVisible) {
-        waitToBeVisible = true;
-      }
-      BlurIndex blurIndex = indexes.get(shard);
+    try {
+      final BlurIndex blurIndex = indexes.get(shard);
       if (blurIndex == null) {
         throw new BException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.");
       }
+      ShardContext shardContext = blurIndex.getShardContext();
+      final MutatableAction mutatableAction = new MutatableAction(shardContext);
+      for (int i = 0; i < mutations.size(); i++) {
+        RowMutation mutation = mutations.get(i);
+        RowMutationType type = mutation.rowMutationType;
+        switch (type) {
+        case REPLACE_ROW:
+          Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);
+          mutatableAction.replaceRow(updateMetrics(row));
+          break;
+        case UPDATE_ROW:
+          doUpdateRowMutation(mutation, mutatableAction);
+          break;
+        case DELETE_ROW:
+          mutatableAction.deleteRow(mutation.rowId);
+          break;
+        default:
+          throw new RuntimeException("Not supported [" + type + "]");
+        }
+      }
 
-      boolean waitVisiblity = false;
-      if (i + 1 == mutations.size()) {
-        waitVisiblity = waitToBeVisible;
-      }
-      RowMutationType type = mutation.rowMutationType;
-      switch (type) {
-      case REPLACE_ROW:
-        Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);
-        blurIndex.replaceRow(waitVisiblity, mutation.wal, updateMetrics(row));
-        break;
-      case UPDATE_ROW:
-        doUpdateRowMutation(mutation, blurIndex);
-        break;
-      case DELETE_ROW:
-        blurIndex.deleteRow(waitVisiblity, mutation.wal, mutation.rowId);
-        break;
-      default:
-        throw new RuntimeException("Not supported [" + type + "]");
-      }
+      return _mutateExecutor.submit(new Callable<Void>() {
+        @Override
+        public Void call() throws Exception {
+          blurIndex.process(mutatableAction);
+          return null;
+        }
+      });
+    } finally {
+      long e = System.nanoTime();
+      LOG.debug("executeMutates took [{0} ms] to complete", (e - s) / 1000000.0);
     }
-    long e = System.nanoTime();
-    LOG.debug("executeMutates took [" + (e - s) / 1000000.0 + " ms] to complete");
   }
 
   private Map<String, List<RowMutation>> getMutatesPerTable(List<RowMutation> mutations) {
@@ -1036,33 +1034,6 @@ public class IndexManager {
     return map;
   }
 
-  private void doMutate(RowMutation mutation) throws BlurException, IOException {
-    String table = mutation.table;
-    Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
-    MutationHelper.validateMutation(mutation);
-    String shard = MutationHelper.getShardName(table, mutation.rowId, getNumberOfShards(table), _blurPartitioner);
-    BlurIndex blurIndex = indexes.get(shard);
-    if (blurIndex == null) {
-      throw new BException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.");
-    }
-
-    RowMutationType type = mutation.rowMutationType;
-    switch (type) {
-    case REPLACE_ROW:
-      Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);
-      blurIndex.replaceRow(mutation.waitToBeVisible, mutation.wal, updateMetrics(row));
-      break;
-    case UPDATE_ROW:
-      doUpdateRowMutation(mutation, blurIndex);
-      break;
-    case DELETE_ROW:
-      blurIndex.deleteRow(mutation.waitToBeVisible, mutation.wal, mutation.rowId);
-      break;
-    default:
-      throw new RuntimeException("Not supported [" + type + "]");
-    }
-  }
-
   private Row updateMetrics(Row row) {
     _writeRowMeter.mark();
     List<Record> records = row.getRecords();
@@ -1072,101 +1043,29 @@ public class IndexManager {
     return row;
   }
 
-  private void doUpdateRowMutation(RowMutation mutation, BlurIndex blurIndex) throws BlurException, IOException {
-    FetchResult fetchResult = new FetchResult();
-    Selector selector = new Selector();
-    selector.setRowId(mutation.rowId);
-    fetchRow(mutation.table, selector, fetchResult, true);
-    Row existingRow;
-    if (fetchResult.exists) {
-      // We will examine the contents of the existing row and add records
-      // onto a new replacement row based on the mutation we have been given.
-      existingRow = fetchResult.rowResult.row;
-    } else {
-      // The row does not exist, create empty new row.
-      existingRow = new Row().setId(mutation.getRowId());
-      existingRow.records = new ArrayList<Record>();
-    }
-    Row newRow = new Row().setId(existingRow.id);
+  private void doUpdateRowMutation(RowMutation mutation, MutatableAction mutatableAction) throws BlurException,
+      IOException {
+    String rowId = mutation.getRowId();
 
-    // Create a local copy of the mutation we can modify
-    RowMutation mutationCopy = mutation.deepCopy();
-
-    // Match existing records against record mutations. Once a record
-    // mutation has been processed, remove it from our local copy.
-    for (Record existingRecord : existingRow.records) {
-      RecordMutation recordMutation = findRecordMutation(mutationCopy, existingRecord);
-      if (recordMutation != null) {
-        mutationCopy.recordMutations.remove(recordMutation);
-        doUpdateRecordMutation(recordMutation, existingRecord, newRow);
-      } else {
-        // Copy existing records over to the new row unmodified if there
-        // is no matching mutation.
-        newRow.addToRecords(existingRecord);
-      }
-    }
-
-    // Examine all remaining record mutations. For any record replacements
-    // we need to create a new record in the table even though an existing
-    // record did not match. Record deletions are also ok here since the
-    // record is effectively already deleted. Other record mutations are
-    // an error and should generate an exception.
-    for (RecordMutation recordMutation : mutationCopy.recordMutations) {
+    for (RecordMutation recordMutation : mutation.getRecordMutations()) {
       RecordMutationType type = recordMutation.recordMutationType;
+      Record record = recordMutation.getRecord();
       switch (type) {
       case DELETE_ENTIRE_RECORD:
-        // do nothing as missing record is already in desired state
+        mutatableAction.deleteRecord(rowId, record.getRecordId());
         break;
       case APPEND_COLUMN_VALUES:
+        mutatableAction.appendColumns(rowId, record);
+        break;
       case REPLACE_ENTIRE_RECORD:
+        mutatableAction.replaceRecord(rowId, record);
+        break;
       case REPLACE_COLUMNS:
-        // If record do not exist, create new record in Row
-        newRow.addToRecords(recordMutation.record);
+        mutatableAction.replaceColumns(rowId, record);
         break;
       default:
         throw new RuntimeException("Unsupported record mutation type [" + type + "]");
       }
-    }
-
-    // Finally, replace the existing row with the new row we have built.
-    blurIndex.replaceRow(mutation.waitToBeVisible, mutation.wal, updateMetrics(newRow));
-
-  }
-
-  private static void doUpdateRecordMutation(RecordMutation recordMutation, Record existingRecord, Row newRow) {
-    Record mutationRecord = recordMutation.record;
-    switch (recordMutation.recordMutationType) {
-    case DELETE_ENTIRE_RECORD:
-      return;
-    case APPEND_COLUMN_VALUES:
-      for (Column column : mutationRecord.columns) {
-        if (column.getValue() == null) {
-          continue;
-        }
-        existingRecord.addToColumns(column);
-      }
-      newRow.addToRecords(existingRecord);
-      break;
-    case REPLACE_ENTIRE_RECORD:
-      newRow.addToRecords(mutationRecord);
-      break;
-    case REPLACE_COLUMNS:
-      Set<String> removeColumnNames = new HashSet<String>();
-      for (Column column : mutationRecord.getColumns()) {
-        removeColumnNames.add(column.getName());
-      }
-
-      for (Column column : existingRecord.getColumns()) {
-        // skip columns in existing record that are contained in the mutation
-        // record
-        if (!removeColumnNames.contains(column.getName())) {
-          mutationRecord.addToColumns(column);
-        }
-      }
-      newRow.addToRecords(mutationRecord);
-      break;
-    default:
-      break;
     }
   }
 

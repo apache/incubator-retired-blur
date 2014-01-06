@@ -153,4 +153,9 @@ public class BlurIndexReader extends BlurIndex {
   public List<String> getSnapshots() throws IOException {
     throw new RuntimeException("Read-only shard");
   }
+
+  @Override
+  public void process(MutatableAction mutatableAction) {
+    throw new RuntimeException("Read-only shard");
+  }
 }

@@ -349,6 +349,14 @@ public class HdfsDirectory extends Directory implements LastModified {
     if (ifSameCluster(simpleTo, this)) {
       Path newDest = simpleTo.getPath(dest);
       Path oldSrc = getPath(src);
+      if (_useCache) {
+        simpleTo._fileMap.put(dest, _fileMap.get(src));
+        _fileMap.remove(src);
+        FSDataInputStream inputStream = _inputMap.get(src);
+        if (inputStream != null) {
+          inputStream.close();
+        }
+      }
       return _fileSystem.rename(oldSrc, newDest);
     }
     return false;

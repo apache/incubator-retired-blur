@@ -72,4 +72,9 @@ public class BlurIndexReadOnly extends BlurIndex {
     return _blurIndex.getSnapshots();
   }
 
+  @Override
+  public void process(MutatableAction mutatableAction) {
+    throw new RuntimeException("Read-only shard");
+  }
+
 }

@@ -279,4 +279,17 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     trace3.done();
   }
 
+  @Override
+  public void process(MutatableAction mutatableAction) throws IOException {
+    _writeLock.lock();
+    try {
+      waitUntilNotNull(_writer);
+      BlurIndexWriter writer = _writer.get();
+      mutatableAction.performMutate(_indexReader.get(), writer);
+      commit();
+    } finally {
+      _writeLock.unlock();
+    }
+  }
+
 }

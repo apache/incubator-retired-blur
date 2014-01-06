@@ -36,6 +36,7 @@ import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -43,6 +44,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.NoMergePolicy;
 import org.apache.lucene.store.Directory;
 import org.junit.After;
 import org.junit.Before;
@@ -52,15 +54,15 @@ public class IndexImporterTest {
 
   private static final Path TMPDIR = new Path("target/tmp");
 
-  private Path base;
+  private Path _base;
   private Configuration configuration;
-  private IndexWriter commitWriter;
-  private IndexImporter indexImporter;
-  private Random random = new Random();
-  private Path path;
-  private Path badRowIdsPath;
-  private IndexWriter mainWriter;
-  private FileSystem fileSystem;
+  private IndexWriter _commitWriter;
+  private IndexImporter _indexImporter;
+  private Random _random = new Random();
+  private Path _path;
+  private Path _badRowIdsPath;
+  private IndexWriter _mainWriter;
+  private FileSystem _fileSystem;
 
   private FieldManager _fieldManager;
 
@@ -68,10 +70,10 @@ public class IndexImporterTest {
   public void setup() throws IOException {
     TableContext.clear();
     configuration = new Configuration();
-    base = new Path(TMPDIR, "blur-index-importer-test");
-    fileSystem = base.getFileSystem(configuration);
-    fileSystem.delete(base, true);
-    fileSystem.mkdirs(base);
+    _base = new Path(TMPDIR, "blur-index-importer-test");
+    _fileSystem = _base.getFileSystem(configuration);
+    _fileSystem.delete(_base, true);
+    _fileSystem.mkdirs(_base);
     setupWriter(configuration);
   }
 
@@ -80,71 +82,59 @@ public class IndexImporterTest {
     tableDescriptor.setName("test-table");
     String uuid = UUID.randomUUID().toString();
 
-    tableDescriptor.setTableUri(new Path(base, "table-table").toUri().toString());
+    tableDescriptor.setTableUri(new Path(_base, "table-table").toUri().toString());
     tableDescriptor.setShardCount(2);
 
     TableContext tableContext = TableContext.create(tableDescriptor);
     ShardContext shardContext = ShardContext.create(tableContext, "shard-00000000");
-    Path tablePath = new Path(base, "table-table");
+    Path tablePath = new Path(_base, "table-table");
     Path shardPath = new Path(tablePath, "shard-00000000");
     String indexDirName = "index_" + uuid;
-    path = new Path(shardPath, indexDirName + ".commit");
-    fileSystem.mkdirs(path);
-    badRowIdsPath = new Path(shardPath, indexDirName + ".bad_rowids");
-    Directory commitDirectory = new HdfsDirectory(configuration, path);
+    _path = new Path(shardPath, indexDirName + ".commit");
+    _fileSystem.mkdirs(_path);
+    _badRowIdsPath = new Path(shardPath, indexDirName + ".bad_rowids");
+    Directory commitDirectory = new HdfsDirectory(configuration, _path);
     Directory mainDirectory = new HdfsDirectory(configuration, shardPath);
     _fieldManager = tableContext.getFieldManager();
     Analyzer analyzerForIndex = _fieldManager.getAnalyzerForIndex();
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, analyzerForIndex);
-    commitWriter = new IndexWriter(commitDirectory, conf);
+    conf.setMergePolicy(NoMergePolicy.NO_COMPOUND_FILES);
+    _commitWriter = new IndexWriter(commitDirectory, conf.clone());
 
-    mainWriter = new IndexWriter(mainDirectory, conf);
+    _mainWriter = new IndexWriter(mainDirectory, conf.clone());
     BufferStore.initNewBuffer(128, 128 * 128);
 
-    indexImporter = new IndexImporter(mainWriter, new ReentrantReadWriteLock(), shardContext, TimeUnit.MINUTES, 10);
+    _indexImporter = new IndexImporter(_mainWriter, new ReentrantReadWriteLock(), shardContext, TimeUnit.MINUTES, 10);
   }
 
   @After
   public void tearDown() throws IOException {
-    mainWriter.close();
-    indexImporter.close();
-    base.getFileSystem(configuration).delete(base, true);
+    IOUtils.closeQuietly(_mainWriter);
+    IOUtils.closeQuietly(_indexImporter);
+    _base.getFileSystem(configuration).delete(_base, true);
   }
 
   @Test
   public void testIndexImporterWithCorrectRowIdShardCombination() throws IOException {
     List<Field> document = _fieldManager.getFields("1", genRecord("1"));
-    commitWriter.addDocument(document);
-    commitWriter.commit();
-    commitWriter.close();
-    indexImporter.run();
-    assertFalse(fileSystem.exists(path));
-    assertFalse(fileSystem.exists(badRowIdsPath));
+    _commitWriter.addDocument(document);
+    _commitWriter.commit();
+    _commitWriter.close();
+    _indexImporter.run();
+    assertFalse(_fileSystem.exists(_path));
+    assertFalse(_fileSystem.exists(_badRowIdsPath));
   }
-
-  // private void debug(Path file) throws IOException {
-  // if (!fileSystem.exists(file)) {
-  // return;
-  // }
-  // System.out.println(file);
-  // if (!fileSystem.isFile(file)) {
-  // FileStatus[] listStatus = fileSystem.listStatus(file);
-  // for (FileStatus f : listStatus) {
-  // debug(f.getPath());
-  // }
-  // }
-  // }
 
   @Test
   public void testIndexImporterWithWrongRowIdShardCombination() throws IOException {
     setupWriter(configuration);
     List<Field> document = _fieldManager.getFields("2", genRecord("1"));
-    commitWriter.addDocument(document);
-    commitWriter.commit();
-    commitWriter.close();
-    indexImporter.run();
-    assertFalse(fileSystem.exists(path));
-    assertTrue(fileSystem.exists(badRowIdsPath));
+    _commitWriter.addDocument(document);
+    _commitWriter.commit();
+    _commitWriter.close();
+    _indexImporter.run();
+    assertFalse(_fileSystem.exists(_path));
+    assertTrue(_fileSystem.exists(_badRowIdsPath));
   }
 
   private Record genRecord(String recordId) {
@@ -152,7 +142,7 @@ public class IndexImporterTest {
     record.setFamily("testing");
     record.setRecordId(recordId);
     for (int i = 0; i < 10; i++) {
-      record.addToColumns(new Column("col" + i, Long.toString(random.nextLong())));
+      record.addToColumns(new Column("col" + i, Long.toString(_random.nextLong())));
     }
     return record;
   }

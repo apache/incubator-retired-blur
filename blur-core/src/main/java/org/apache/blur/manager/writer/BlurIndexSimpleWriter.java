@@ -282,11 +282,14 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   @Override
   public void process(MutatableAction mutatableAction) throws IOException {
     _writeLock.lock();
+    waitUntilNotNull(_writer);
+    BlurIndexWriter writer = _writer.get();
     try {
-      waitUntilNotNull(_writer);
-      BlurIndexWriter writer = _writer.get();
       mutatableAction.performMutate(_indexReader.get(), writer);
       commit();
+    } catch (Exception e) {
+      writer.rollback();
+      throw new IOException("Unknown error during mutation", e);
     } finally {
       _writeLock.unlock();
     }

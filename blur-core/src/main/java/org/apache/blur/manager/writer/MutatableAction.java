@@ -359,10 +359,13 @@ public class MutatableAction {
   }
 
   void performMutate(IndexReader reader, IndexWriter writer) throws IOException {
-    for (InternalAction internalAction : _actions) {
-      internalAction.performAction(reader, writer);
+    try {
+      for (InternalAction internalAction : _actions) {
+        internalAction.performAction(reader, writer);
+      }
+    } finally {
+      _actions.clear();
     }
-    _actions.clear();
   }
 
   public static Term createRowId(String id) {

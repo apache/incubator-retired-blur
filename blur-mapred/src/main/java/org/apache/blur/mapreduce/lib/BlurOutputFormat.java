@@ -30,9 +30,7 @@ import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.LuceneVersionConstant;
-import org.apache.blur.lucene.codec.Blur021Codec;
 import org.apache.blur.lucene.codec.Blur022Codec;
-import org.apache.blur.manager.writer.TransactionRecorder;
 import org.apache.blur.mapreduce.lib.BlurMutate.MUTATE_TYPE;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.store.hdfs.HdfsDirectory;
@@ -46,6 +44,7 @@ import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.RowDocumentUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -470,7 +469,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
       if (_countersSetup) {
         _columnCount.increment(record.getColumns().size());
       }
-      List<Field> document = TransactionRecorder.getDoc(_fieldManager, blurRecord.getRowId(), record);
+      List<Field> document = RowDocumentUtil.getDoc(_fieldManager, blurRecord.getRowId(), record);
       List<Field> dup = _documents.put(recordId, document);
       if (_countersSetup) {
         if (dup != null) {

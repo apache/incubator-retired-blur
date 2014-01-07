@@ -17,7 +17,7 @@ package org.apache.blur.manager.writer;
  * limitations under the License.
  */
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,44 +49,45 @@ import org.junit.Test;
 
 public class BlurIndexSimpleWriterTest {
 
+  private static final String TEST_TABLE = "test-table";
   private static final int TEST_NUMBER_WAIT_VISIBLE = 500;
   private static final int TEST_NUMBER = 50000;
 
   private static final File TMPDIR = new File("./target/tmp");
 
-  private BlurIndexSimpleWriter writer;
+  private BlurIndexSimpleWriter _writer;
   private Random random = new Random();
-  private ExecutorService service;
-  private File base;
-  private Configuration configuration;
+  private ExecutorService _service;
+  private File _base;
+  private Configuration _configuration;
 
-  private DirectoryReferenceFileGC gc;
-  private SharedMergeScheduler mergeScheduler;
+  private DirectoryReferenceFileGC _gc;
+  private SharedMergeScheduler _mergeScheduler;
   private String uuid;
   private BlurIndexRefresher _refresher;
   private BlurIndexCloser _closer;
-  private DefaultBlurIndexWarmup indexWarmup;
+  private DefaultBlurIndexWarmup _indexWarmup;
 
   @Before
   public void setup() throws IOException {
     TableContext.clear();
-    base = new File(TMPDIR, "blur-index-writer-test");
-    rm(base);
-    base.mkdirs();
+    _base = new File(TMPDIR, "blur-index-writer-test");
+    rmr(_base);
+    _base.mkdirs();
 
-    mergeScheduler = new SharedMergeScheduler(1);
-    gc = new DirectoryReferenceFileGC();
+    _mergeScheduler = new SharedMergeScheduler(1);
+    _gc = new DirectoryReferenceFileGC();
 
-    configuration = new Configuration();
-    service = Executors.newThreadPool("test", 10);
+    _configuration = new Configuration();
+    _service = Executors.newThreadPool("test", 10);
     _refresher = new BlurIndexRefresher();
     _closer = new BlurIndexCloser();
-    indexWarmup = new DefaultBlurIndexWarmup(1000000);
+    _indexWarmup = new DefaultBlurIndexWarmup(1000000);
   }
 
   private void setupWriter(Configuration configuration, long refresh, boolean reload) throws IOException {
     TableDescriptor tableDescriptor = new TableDescriptor();
-    tableDescriptor.setName("test-table");
+    tableDescriptor.setName(TEST_TABLE);
     /*
      * if reload is set to true...we create a new writer instance pointing to
      * the same location as the old one..... so previous writer instances should
@@ -97,43 +98,77 @@ public class BlurIndexSimpleWriterTest {
       uuid = UUID.randomUUID().toString();
     }
 
-    tableDescriptor.setTableUri(new File(base, "table-store-" + uuid).toURI().toString());
-    tableDescriptor.putToTableProperties("blur.shard.time.between.refreshs", Long.toString(refresh));
-
+    tableDescriptor.setTableUri(new File(_base, "table-store-" + uuid).toURI().toString());
     TableContext tableContext = TableContext.create(tableDescriptor);
-    File path = new File(base, "index_" + uuid);
+    File path = new File(_base, "index_" + uuid);
     path.mkdirs();
     FSDirectory directory = FSDirectory.open(path);
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard-" + uuid);
-    writer = new BlurIndexSimpleWriter(shardContext, directory, mergeScheduler, gc, service, _closer, _refresher,
-        indexWarmup);
+    _writer = new BlurIndexSimpleWriter(shardContext, directory, _mergeScheduler, _gc, _service, _closer, _refresher,
+        _indexWarmup);
   }
 
   @After
   public void tearDown() throws IOException {
     _refresher.close();
-    writer.close();
-    mergeScheduler.close();
-    gc.close();
-    service.shutdownNow();
-    rm(base);
+    _writer.close();
+    _mergeScheduler.close();
+    _gc.close();
+    _service.shutdownNow();
+    rmr(_base);
   }
 
-  private void rm(File file) {
+  private void rmr(File file) {
     if (!file.exists()) {
       return;
     }
     if (file.isDirectory()) {
       for (File f : file.listFiles()) {
-        rm(f);
+        rmr(f);
       }
     }
     file.delete();
   }
 
   @Test
+  public void testRollbackAndReopen() throws IOException {
+    setupWriter(_configuration, 5, false);
+    {
+      IndexSearcherClosable searcher = _writer.getIndexSearcher();
+      IndexReader reader = searcher.getIndexReader();
+      assertEquals(0, reader.numDocs());
+      searcher.close();
+    }
+
+    MutatableAction action = new MutatableAction(_writer.getShardContext());
+    action.replaceRow(new Row());
+    try {
+      _writer.process(action);
+      fail("should throw exception");
+    } catch (IOException e) {
+      // do nothing
+    }
+    {
+      IndexSearcherClosable searcher = _writer.getIndexSearcher();
+      IndexReader reader = searcher.getIndexReader();
+      assertEquals(0, reader.numDocs());
+      searcher.close();
+    }
+
+    action.replaceRow(genRow());
+    _writer.process(action);
+
+    {
+      IndexSearcherClosable searcher = _writer.getIndexSearcher();
+      IndexReader reader = searcher.getIndexReader();
+      assertEquals(1, reader.numDocs());
+      searcher.close();
+    }
+  }
+
+  @Test
   public void testBlurIndexWriter() throws IOException {
-    setupWriter(configuration, 5, false);
+    setupWriter(_configuration, 5, false);
     long s = System.nanoTime();
     int total = 0;
     TraceStorage oldStorage = Trace.getStorage();
@@ -150,8 +185,10 @@ public class BlurIndexSimpleWriterTest {
     });
     Trace.setupTrace("test");
     for (int i = 0; i < TEST_NUMBER_WAIT_VISIBLE; i++) {
-      writer.replaceRow(true, true, genRow());
-      IndexSearcherClosable searcher = writer.getIndexSearcher();
+      MutatableAction action = new MutatableAction(_writer.getShardContext());
+      action.replaceRow(genRow());
+      _writer.process(action);
+      IndexSearcherClosable searcher = _writer.getIndexSearcher();
       IndexReader reader = searcher.getIndexReader();
       assertEquals(i + 1, reader.numDocs());
       searcher.close();
@@ -162,31 +199,28 @@ public class BlurIndexSimpleWriterTest {
     double seconds = (e - s) / 1000000000.0;
     double rate = total / seconds;
     System.out.println("Rate " + rate);
-    IndexSearcherClosable searcher = writer.getIndexSearcher();
+    IndexSearcherClosable searcher = _writer.getIndexSearcher();
     IndexReader reader = searcher.getIndexReader();
     assertEquals(TEST_NUMBER_WAIT_VISIBLE, reader.numDocs());
     searcher.close();
     Trace.setStorage(oldStorage);
   }
 
-//  @Test
+  @Test
   public void testBlurIndexWriterFaster() throws IOException, InterruptedException {
-    // This test doesn't make any sense anymore, because it's no different than the first test.
-    setupWriter(configuration, 100, false);
-    IndexSearcherClosable searcher1 = writer.getIndexSearcher();
+    setupWriter(_configuration, 100, false);
+    IndexSearcherClosable searcher1 = _writer.getIndexSearcher();
     IndexReader reader1 = searcher1.getIndexReader();
     assertEquals(0, reader1.numDocs());
     searcher1.close();
     long s = System.nanoTime();
     int total = 0;
+    MutatableAction action = new MutatableAction(_writer.getShardContext());
     for (int i = 0; i < TEST_NUMBER; i++) {
-      if (i == TEST_NUMBER - 1) {
-        writer.replaceRow(true, true, genRow());
-      } else {
-        writer.replaceRow(false, true, genRow());
-      }
+      action.replaceRow(genRow());
       total++;
     }
+    _writer.process(action);
     long e = System.nanoTime();
     double seconds = (e - s) / 1000000000.0;
     double rate = total / seconds;
@@ -194,8 +228,8 @@ public class BlurIndexSimpleWriterTest {
     // //wait one second for the data to become visible the test is set to
     // refresh once every 25 ms
     Thread.sleep(1000);// Hack for now
-    writer.refresh();
-    IndexSearcherClosable searcher2 = writer.getIndexSearcher();
+    _writer.refresh();
+    IndexSearcherClosable searcher2 = _writer.getIndexSearcher();
     IndexReader reader2 = searcher2.getIndexReader();
     assertEquals(TEST_NUMBER, reader2.numDocs());
     searcher2.close();

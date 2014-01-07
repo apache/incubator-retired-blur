@@ -38,6 +38,7 @@ public class CacheIndexInput extends IndexInput {
   private IndexInput _indexInput;
   private CacheKey _key = new CacheKey();
   private CacheValue _cacheValue;
+  private CacheValue _cacheValueQuietRef;
 
   private long _position;
   private int _blockPosition;
@@ -210,6 +211,11 @@ public class CacheIndexInput extends IndexInput {
       _indexInput.close();
       releaseCache();
     }
+    if (_cacheValueQuietRef != null) {
+      CacheValue ref = _cacheValueQuietRef;
+      _cacheValueQuietRef = null;
+      ref.release();
+    }
   }
 
   @Override
@@ -260,6 +266,7 @@ public class CacheIndexInput extends IndexInput {
     if (clone._cacheValue != null) {
       clone._cacheValue.incRef();
     }
+    clone._cacheValueQuietRef = null;
     return clone;
   }
 
@@ -295,9 +302,37 @@ public class CacheIndexInput extends IndexInput {
     }
   }
 
-  private void fill() throws IOException {
+  private void fillQuietly() throws IOException {
     _key.setBlockId(getBlockId());
-    _cacheValue = get(_key);
+    _cacheValue = _cache.getQuietly(_key);
+    if (_cacheValue == null) {
+      if (_cacheValueQuietRef == null) {
+        _cacheValueQuietRef = _cache.newInstance(_directory, _fileName);
+      }
+      _cacheValue = _cacheValueQuietRef;
+      _cacheValue.incRef();
+      long filePosition = getFilePosition();
+      _indexInput.seek(filePosition);
+      byte[] buffer = _store.takeBuffer(_bufferSize);
+      int len = (int) Math.min(_cacheBlockSize, _fileLength - filePosition);
+      int cachePosition = 0;
+      while (len > 0) {
+        int length = Math.min(_bufferSize, len);
+        _indexInput.readBytes(buffer, 0, length);
+        _cacheValue.write(cachePosition, buffer, 0, length);
+        len -= length;
+        cachePosition += length;
+      }
+      _store.putBuffer(buffer);
+    } else {
+      _cacheValue.incRef();
+    }
+    _blockPosition = getBlockPosition();
+  }
+
+  private void fillNormally() throws IOException {
+    _key.setBlockId(getBlockId());
+    _cacheValue = _cache.get(_key);
     if (_cacheValue == null) {
       _cacheValue = _cache.newInstance(_directory, _fileName);
       _cacheValue.incRef();
@@ -321,11 +356,12 @@ public class CacheIndexInput extends IndexInput {
     _blockPosition = getBlockPosition();
   }
 
-  private CacheValue get(CacheKey key) {
+  private void fill() throws IOException {
     if (_quiet) {
-      return _cache.getQuietly(key);
+      fillQuietly();
+    } else {
+      fillNormally();
     }
-    return _cache.get(key);
   }
 
   private int getBlockPosition() {

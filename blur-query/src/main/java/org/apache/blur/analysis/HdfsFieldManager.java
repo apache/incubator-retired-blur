@@ -187,7 +187,7 @@ public class HdfsFieldManager extends BaseFieldManager {
   }
 
   private String getComments() {
-    return "This file is generated from Apache Blur to store meta data about field types.  DO NOT MODIFIY!";
+    return "This file is generated from Apache Blur to store meta data about field types.  DO NOT MODIFY!";
   }
 
   @Override

@@ -33,6 +33,7 @@ public class CacheIndexOutput extends IndexOutput {
   private final int _fileBufferSize;
   private final int _cacheBlockSize;
   private final Store _store;
+  private final boolean _shouldBeQuiet;
 
   private long _position;
   private byte[] _buffer;
@@ -49,6 +50,7 @@ public class CacheIndexOutput extends IndexOutput {
     _indexOutput = indexOutput;
     _store = BufferStore.instance(_cacheBlockSize);
     _buffer = _store.takeBuffer(_cacheBlockSize);
+    _shouldBeQuiet = _cache.shouldBeQuiet(directory, fileName);
   }
 
   @Override
@@ -89,19 +91,21 @@ public class CacheIndexOutput extends IndexOutput {
   }
 
   private void flushInternal() throws IOException {
-    int length = _cacheBlockSize - remaining();
+    final int length = _cacheBlockSize - remaining();
     if (length == 0) {
       return;
     }
-    CacheValue cacheValue = _cache.newInstance(_directory, _fileName);
-    cacheValue.incRef();
-    writeBufferToOutputStream(length);
-    cacheValue.write(0, _buffer, 0, length);
-    long blockId = (_position - length) / _cacheBlockSize;
-    cacheValue = cacheValue.trim(length);
-    _cache.put(new CacheKey(_fileId, blockId), cacheValue);
-    cacheValue.decRef();
+    if (!_shouldBeQuiet) {
+      CacheValue cacheValue = _cache.newInstance(_directory, _fileName);
+      cacheValue.incRef();
+      cacheValue.write(0, _buffer, 0, length);
+      long blockId = (_position - length) / _cacheBlockSize;
+      cacheValue = cacheValue.trim(length);
+      _cache.put(new CacheKey(_fileId, blockId), cacheValue);
+      cacheValue.decRef();
+    }
     _bufferPosition = 0;
+    writeBufferToOutputStream(length);
   }
 
   private void writeBufferToOutputStream(int len) throws IOException {

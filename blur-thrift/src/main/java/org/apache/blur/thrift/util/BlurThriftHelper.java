@@ -17,6 +17,7 @@ package org.apache.blur.thrift.util;
  * limitations under the License.
  */
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.Column;
@@ -116,6 +117,18 @@ public class BlurThriftHelper {
 
   public static boolean match(Record left, Record right) {
     return left.recordId.equals(right.recordId) && left.family.equals(right.family);
+  }
+
+  public static RowMutation newRowMutation(String table, Row row) {
+    RowMutation rowMutation = new RowMutation();
+    rowMutation.setTable(table);
+    rowMutation.setRowMutationType(RowMutationType.REPLACE_ROW);
+    rowMutation.setRowId(row.getId());
+    List<Record> records = row.getRecords();
+    for (Record record : records) {
+      rowMutation.addToRecordMutations(new RecordMutation(RecordMutationType.REPLACE_ENTIRE_RECORD, record));
+    }
+    return rowMutation;
   }
 
 }

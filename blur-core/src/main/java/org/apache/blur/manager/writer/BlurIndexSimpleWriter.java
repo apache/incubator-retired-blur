@@ -40,12 +40,10 @@ import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
-import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -62,7 +60,6 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final AtomicReference<DirectoryReader> _indexReader = new AtomicReference<DirectoryReader>();
   private final ExecutorService _searchThreadPool;
   private final Directory _directory;
-  private final Thread _writerOpener;
   private final IndexWriterConfig _conf;
   private final TableContext _tableContext;
   private final FieldManager _fieldManager;
@@ -73,6 +70,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final ReadWriteLock _lock = new ReentrantReadWriteLock();
   private final Lock _writeLock = _lock.writeLock();
   private Thread _optimizeThread;
+  private Thread _writerOpener;
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       DirectoryReferenceFileGC gc, final ExecutorService searchExecutor, BlurIndexCloser indexCloser,
@@ -103,7 +101,21 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _indexCloser = indexCloser;
     _indexReader.set(wrap(DirectoryReader.open(_directory)));
 
-    _writerOpener = getWriterOpener(shardContext);
+    openWriter();
+  }
+
+  private synchronized void openWriter() {
+    BlurIndexWriter writer = _writer.get();
+    if (writer != null) {
+      try {
+        writer.close(false);
+      } catch (IOException e) {
+        LOG.error("Unknown error while trying to close the writer, [" + _shardContext.getTableContext().getTable()
+            + "] Shard [" + _shardContext.getShard() + "]", e);
+      }
+      _writer.set(null);
+    }
+    _writerOpener = getWriterOpener(_shardContext);
     _writerOpener.start();
   }
 
@@ -152,35 +164,6 @@ public class BlurIndexSimpleWriter extends BlurIndex {
         indexReader.decRef();
       }
     };
-  }
-
-  @Override
-  public void replaceRow(boolean waitToBeVisible, boolean wal, Row row) throws IOException {
-    _writeLock.lock();
-    Tracer trace = Trace.trace("replaceRow");
-    try {
-      waitUntilNotNull(_writer);
-      BlurIndexWriter writer = _writer.get();
-      List<List<Field>> docs = TransactionRecorder.getDocs(row, _fieldManager);
-      writer.updateDocuments(TransactionRecorder.createRowId(row.getId()), docs);
-      commit();
-    } finally {
-      trace.done();
-      _writeLock.unlock();
-    }
-  }
-
-  @Override
-  public void deleteRow(boolean waitToBeVisible, boolean wal, String rowId) throws IOException {
-    _writeLock.lock();
-    try {
-      waitUntilNotNull(_writer);
-      BlurIndexWriter writer = _writer.get();
-      writer.deleteDocuments(TransactionRecorder.createRowId(rowId));
-      commit();
-    } finally {
-      _writeLock.unlock();
-    }
   }
 
   private void waitUntilNotNull(AtomicReference<?> ref) {
@@ -289,6 +272,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       commit();
     } catch (Exception e) {
       writer.rollback();
+      openWriter();
       throw new IOException("Unknown error during mutation", e);
     } finally {
       _writeLock.unlock();

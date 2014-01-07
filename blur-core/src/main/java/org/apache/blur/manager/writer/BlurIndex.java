@@ -48,10 +48,6 @@ public abstract class BlurIndex {
     _shardContext = shardContext;
   }
 
-  public abstract void replaceRow(boolean waitToBeVisible, boolean wal, Row row) throws IOException;
-
-  public abstract void deleteRow(boolean waitToBeVisible, boolean wal, String rowId) throws IOException;
-
   public abstract IndexSearcherClosable getIndexSearcher() throws IOException;
 
   public abstract void close() throws IOException;

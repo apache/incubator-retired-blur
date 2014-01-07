@@ -85,7 +85,7 @@ public class MutatableAction {
     _actions.add(new InternalAction() {
       @Override
       void performAction(IndexReader reader, IndexWriter writer) throws IOException {
-        List<List<Field>> docs = TransactionRecorder.getDocs(row, _fieldManager);
+        List<List<Field>> docs = RowDocumentUtil.getDocs(row, _fieldManager);
         Term rowId = createRowId(row.getId());
         writer.updateDocuments(rowId, docs);
       }
@@ -128,7 +128,7 @@ public class MutatableAction {
               writer.deleteDocuments(rowIdTerm);
             } else {
               Row row = new Row(rowId, toRecords(docs), docs.size());
-              List<List<Field>> docsToUpdate = TransactionRecorder.getDocs(row, _fieldManager);
+              List<List<Field>> docsToUpdate = RowDocumentUtil.getDocs(row, _fieldManager);
               writer.updateDocuments(rowIdTerm, docsToUpdate);
             }
           }
@@ -152,7 +152,7 @@ public class MutatableAction {
         TopDocs topDocs = searcher.search(query, 1);
         if (topDocs.totalHits == 0) {
           // just add
-          List<Field> doc = TransactionRecorder.getDoc(_fieldManager, rowId, record);
+          List<Field> doc = RowDocumentUtil.getDoc(_fieldManager, rowId, record);
           doc.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
           writer.addDocument(doc);
         } else if (topDocs.totalHits == 1) {
@@ -163,7 +163,7 @@ public class MutatableAction {
           ResetableDocumentStoredFieldVisitor fieldVisitor = IndexManager.getFieldSelector(selector);
           List<Document> docs = new ArrayList<Document>(BlurUtil.fetchDocuments(reader, fieldVisitor, selector,
               _maxHeap, _table + "/" + _shard, _primeDocTerm, null));
-          List<Field> doc = TransactionRecorder.getDoc(_fieldManager, rowId, record);
+          List<Field> doc = RowDocumentUtil.getDoc(_fieldManager, rowId, record);
 
           for (int i = 0; i < docs.size(); i++) {
             Document document = docs.get(i);
@@ -174,7 +174,7 @@ public class MutatableAction {
           }
           docs.add(toDocument(doc));
           Row row = new Row(rowId, toRecords(docs), docs.size());
-          List<List<Field>> docsToUpdate = TransactionRecorder.getDocs(row, _fieldManager);
+          List<List<Field>> docsToUpdate = RowDocumentUtil.getDocs(row, _fieldManager);
           writer.updateDocuments(rowIdTerm, docsToUpdate);
         } else {
           throw new IOException("RowId [" + rowId + "] found more than one row primedoc.");
@@ -206,7 +206,7 @@ public class MutatableAction {
         TopDocs topDocs = searcher.search(query, 1);
         if (topDocs.totalHits == 0) {
           // just add
-          List<Field> doc = TransactionRecorder.getDoc(_fieldManager, rowId, record);
+          List<Field> doc = RowDocumentUtil.getDoc(_fieldManager, rowId, record);
           doc.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
           writer.addDocument(doc);
         } else if (topDocs.totalHits == 1) {
@@ -245,11 +245,11 @@ public class MutatableAction {
             existingRecord.addToColumns(column);
           }
 
-          List<Field> doc = TransactionRecorder.getDoc(_fieldManager, rowId, existingRecord);
+          List<Field> doc = RowDocumentUtil.getDoc(_fieldManager, rowId, existingRecord);
           docs.add(toDocument(doc));
 
           Row row = new Row(rowId, toRecords(docs), docs.size());
-          List<List<Field>> docsToUpdate = TransactionRecorder.getDocs(row, _fieldManager);
+          List<List<Field>> docsToUpdate = RowDocumentUtil.getDocs(row, _fieldManager);
 
           writer.updateDocuments(rowIdTerm, docsToUpdate);
         } else {
@@ -272,7 +272,7 @@ public class MutatableAction {
         TopDocs topDocs = searcher.search(query, 1);
         if (topDocs.totalHits == 0) {
           // just add
-          List<Field> doc = TransactionRecorder.getDoc(_fieldManager, rowId, record);
+          List<Field> doc = RowDocumentUtil.getDoc(_fieldManager, rowId, record);
           doc.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
           writer.addDocument(doc);
         } else if (topDocs.totalHits == 1) {
@@ -337,11 +337,11 @@ public class MutatableAction {
             processedColumns.add(name);
           }
 
-          List<Field> doc = TransactionRecorder.getDoc(_fieldManager, rowId, newRecord);
+          List<Field> doc = RowDocumentUtil.getDoc(_fieldManager, rowId, newRecord);
           docs.add(toDocument(doc));
 
           Row row = new Row(rowId, toRecords(docs), docs.size());
-          List<List<Field>> docsToUpdate = TransactionRecorder.getDocs(row, _fieldManager);
+          List<List<Field>> docsToUpdate = RowDocumentUtil.getDocs(row, _fieldManager);
           writer.updateDocuments(rowIdTerm, docsToUpdate);
         } else {
           throw new IOException("RowId [" + rowId + "] found more than one row primedoc.");

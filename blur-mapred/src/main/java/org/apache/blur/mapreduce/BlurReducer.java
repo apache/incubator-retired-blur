@@ -37,7 +37,6 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.codec.Blur022Codec;
 import org.apache.blur.lucene.search.FairSimilarity;
-import org.apache.blur.manager.writer.TransactionRecorder;
 import org.apache.blur.mapreduce.BlurTask.INDEXING_TYPE;
 import org.apache.blur.mapreduce.lib.BlurColumn;
 import org.apache.blur.mapreduce.lib.BlurMutate;
@@ -55,6 +54,7 @@ import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.ResetableDocumentStoredFieldVisitor;
+import org.apache.blur.utils.RowDocumentUtil;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -478,10 +478,10 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
 
   protected Document toDocument(BlurRecord record) throws IOException {
     Document document = new Document();
-    document.add(new Field(BlurConstants.ROW_ID, record.getRowId(), TransactionRecorder.ID_TYPE));
-    document.add(new Field(BlurConstants.RECORD_ID, record.getRecordId(), TransactionRecorder.ID_TYPE));
+    document.add(new Field(BlurConstants.ROW_ID, record.getRowId(), RowDocumentUtil.ID_TYPE));
+    document.add(new Field(BlurConstants.RECORD_ID, record.getRecordId(), RowDocumentUtil.ID_TYPE));
 
-    List<Field> doc = TransactionRecorder.getDoc(_fieldManager, record.getRowId(), toRecord(record));
+    List<Field> doc = RowDocumentUtil.getDoc(_fieldManager, record.getRowId(), toRecord(record));
     for (Field field : doc) {
       document.add(field);
     }

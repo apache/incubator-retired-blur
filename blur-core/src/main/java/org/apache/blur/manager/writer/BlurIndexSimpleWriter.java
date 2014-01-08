@@ -150,9 +150,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   @Override
   public IndexSearcherClosable getIndexSearcher() throws IOException {
     final IndexReader indexReader = _indexReader.get();
-    while (!indexReader.tryIncRef()) {
-      // keep trying to increment the ref
-    }
+    indexReader.incRef();
     return new IndexSearcherClosable(indexReader, _searchThreadPool) {
       @Override
       public Directory getDirectory() {

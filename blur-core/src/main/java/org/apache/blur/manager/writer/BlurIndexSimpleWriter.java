@@ -213,7 +213,12 @@ public class BlurIndexSimpleWriter extends BlurIndex {
           waitUntilNotNull(_writer);
           BlurIndexWriter writer = _writer.get();
           writer.forceMerge(numberOfSegmentsPerShard, true);
-          writer.commit();
+          _writeLock.lock();
+          try {
+            commit();
+          } finally {
+            _writeLock.unlock();
+          }
         } catch (Exception e) {
           LOG.error("Unknown error during optimize on table [{0}] shard [{1}]", e, table, shard);
         }

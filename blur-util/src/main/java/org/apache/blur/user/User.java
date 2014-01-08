@@ -36,4 +36,9 @@ public class User {
     return _attributes;
   }
 
+  @Override
+  public String toString() {
+    return "User [username=" + _username + ", attributes=" + _attributes + "]";
+  }
+
 }

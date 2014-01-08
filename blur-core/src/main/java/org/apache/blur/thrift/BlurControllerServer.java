@@ -533,7 +533,16 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
       // Wait for all parallel calls to finish.
       for (Future<Boolean> future : futures) {
-        future.get();
+        try {
+          future.get();
+        } catch (ExecutionException e) {
+          Throwable throwable = e.getCause();
+          if (throwable instanceof BlurException) {
+            throw (BlurException) throwable;
+          } else {
+            throw new BException("Unknown error during fetch", throwable);
+          }
+        }
       }
 
       // Place fetch results into result object for response.

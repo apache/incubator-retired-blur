@@ -79,11 +79,6 @@ public class TableContext {
 
   private static final ReadInterceptor DEFAULT_INTERCEPTOR = new ReadInterceptor(null) {
     @Override
-    public Filter getFilterForMutation() {
-      return null;
-    }
-
-    @Override
     public Filter getFilter() {
       return null;
     }

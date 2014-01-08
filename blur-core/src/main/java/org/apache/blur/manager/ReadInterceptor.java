@@ -27,8 +27,4 @@ public abstract class ReadInterceptor {
 
   public abstract Filter getFilter();
 
-  public Filter getFilterForMutation() {
-    return null;
-  }
-
 }

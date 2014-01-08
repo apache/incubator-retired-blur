@@ -106,6 +106,7 @@ import org.apache.lucene.index.StoredFieldVisitor;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.queries.BooleanFilter;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
@@ -232,7 +233,7 @@ public class IndexManager {
         @Override
         public FetchResult call() throws Exception {
           FetchResult fetchResult = new FetchResult();
-          fetchRow(table, selector, fetchResult, false);
+          fetchRow(table, selector, fetchResult);
           return fetchResult;
         }
       }));
@@ -252,19 +253,10 @@ public class IndexManager {
   }
 
   public void fetchRow(String table, Selector selector, FetchResult fetchResult) throws BlurException {
-    fetchRow(table, selector, fetchResult, false);
-  }
-
-  public void fetchRow(String table, Selector selector, FetchResult fetchResult, boolean mutation) throws BlurException {
     validSelector(selector);
     TableContext tableContext = getTableContext(table);
     ReadInterceptor interceptor = tableContext.getReadInterceptor();
-    Filter filter;
-    if (mutation) {
-      filter = interceptor.getFilterForMutation();
-    } else {
-      filter = interceptor.getFilter();
-    }
+    Filter filter = interceptor.getFilter();
     BlurIndex index = null;
     String shard = null;
     Tracer trace = Trace.trace("manager fetch", Trace.param("table", table));
@@ -476,27 +468,41 @@ public class IndexManager {
       TableContext context = getTableContext(table);
       FieldManager fieldManager = context.getFieldManager();
       org.apache.blur.thrift.generated.Query simpleQuery = blurQuery.query;
-      Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.recordFilter, false, fieldManager,
+      ReadInterceptor interceptor = context.getReadInterceptor();
+      Filter readFilter = interceptor.getFilter();
+      Filter recordFilterForSearch = QueryParserUtil.parseFilter(table, simpleQuery.recordFilter, false, fieldManager,
           _filterCache, context);
-      Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.rowFilter, true, fieldManager, _filterCache,
-          context);
-      Query userQuery = QueryParserUtil.parseQuery(simpleQuery.query, simpleQuery.rowQuery, fieldManager, postFilter,
-          preFilter, getScoreType(simpleQuery.scoreType), context);
+      Filter rowFilterForSearch = QueryParserUtil.parseFilter(table, simpleQuery.rowFilter, true, fieldManager,
+          _filterCache, context);
+      Filter docFilter;
+      if (recordFilterForSearch == null && readFilter != null) {
+        docFilter = readFilter;
+      } else if (recordFilterForSearch != null && readFilter == null) {
+        docFilter = recordFilterForSearch;
+      } else if (recordFilterForSearch != null && readFilter != null) {
+        BooleanFilter booleanFilter = new BooleanFilter();
+        booleanFilter.add(recordFilterForSearch, Occur.MUST);
+        booleanFilter.add(readFilter, Occur.MUST);
+        docFilter = booleanFilter;
+      } else {
+        docFilter = null;
+      }
+      Query userQuery = QueryParserUtil.parseQuery(simpleQuery.query, simpleQuery.rowQuery, fieldManager,
+          rowFilterForSearch, docFilter, getScoreType(simpleQuery.scoreType), context);
 
       Query facetedQuery;
       FacetExecutor executor = null;
       if (blurQuery.facets != null) {
         long[] facetMinimums = getFacetMinimums(blurQuery.facets);
         executor = new FacetExecutor(blurQuery.facets.size(), facetMinimums, facetedCounts);
-        facetedQuery = new FacetQuery(userQuery, getFacetQueries(blurQuery, fieldManager, context, postFilter,
-            preFilter), executor);
+        facetedQuery = new FacetQuery(userQuery, getFacetQueries(blurQuery, fieldManager, context, rowFilterForSearch,
+            recordFilterForSearch), executor);
       } else {
         facetedQuery = userQuery;
       }
 
-      ReadInterceptor interceptor = context.getReadInterceptor();
-      call = new SimpleQueryParallelCall(running, table, status, facetedQuery, interceptor.getFilter(),
-          blurQuery.selector, _queriesInternalMeter, shardServerContext, runSlow, _fetchCount, _maxHeapPerRowFetch,
+      call = new SimpleQueryParallelCall(running, table, status, facetedQuery, readFilter, blurQuery.selector,
+          _queriesInternalMeter, shardServerContext, runSlow, _fetchCount, _maxHeapPerRowFetch,
           context.getSimilarity(), context);
       trace.done();
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);

@@ -28,14 +28,6 @@ public class IndexManagerTestReadInterceptor extends ReadInterceptor {
   }
 
   @Override
-  public Filter getFilterForMutation() {
-    if (interceptor == null) {
-      return null;
-    }
-    return interceptor.getFilterForMutation();
-  }
-
-  @Override
   public Filter getFilter() {
     if (interceptor == null) {
       return null;

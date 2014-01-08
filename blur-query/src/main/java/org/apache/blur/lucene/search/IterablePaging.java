@@ -29,7 +29,6 @@ import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.utils.BlurIterable;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -46,7 +45,6 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
   private final AtomicBoolean _running;
   private final int _numHitsToCollect;
   private final boolean _runSlow;
-  private final Filter _filter;
 
   private TotalHitsRef _totalHitsRef;
   private ProgressRef _progressRef;
@@ -54,9 +52,8 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
   private int gather = -1;
 
   public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query, int numHitsToCollect,
-      TotalHitsRef totalHitsRef, ProgressRef progressRef, boolean runSlow, Filter filter) throws BlurException {
+      TotalHitsRef totalHitsRef, ProgressRef progressRef, boolean runSlow) throws BlurException {
     _running = running;
-    _filter = filter;
     try {
       _query = searcher.rewrite(query);
     } catch (IOException e) {
@@ -192,7 +189,7 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
         if (_runSlow) {
           col = new SlowCollector(col);
         }
-        _searcher.search(_query, _filter, col);
+        _searcher.search(_query, col);
         _totalHitsRef.totalHits.set(collector.getTotalHits());
         TopDocs topDocs = collector.topDocs();
         scoreDocs = topDocs.scoreDocs;

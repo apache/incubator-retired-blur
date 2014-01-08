@@ -80,7 +80,7 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
 
   private void performSearch() throws BlurException {
     IterablePaging iterablePaging = new IterablePaging(_running, _searcher, _query, _fetchCount, _totalHitsRef,
-        _progressRef, _runSlow, _filter);
+        _progressRef, _runSlow);
     _iterator = new IteratorConverter<ScoreDoc, BlurResult, BlurException>(iterablePaging.iterator(),
         new Converter<ScoreDoc, BlurResult, BlurException>() {
           @Override

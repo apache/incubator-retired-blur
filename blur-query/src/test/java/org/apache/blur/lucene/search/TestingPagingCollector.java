@@ -59,7 +59,7 @@ public class TestingPagingCollector {
     ProgressRef progressRef = new ProgressRef();
 
     TermQuery query = new TermQuery(new Term("f1", "value"));
-    IterablePaging paging = new IterablePaging(new AtomicBoolean(true), searcher, query, 100, null, null, false, null);
+    IterablePaging paging = new IterablePaging(new AtomicBoolean(true), searcher, query, 100, null, null, false);
     IterablePaging itPaging = paging.skipTo(90).gather(20).totalHits(totalHitsRef).progress(progressRef);
     BlurIterator<ScoreDoc, BlurException> iterator = itPaging.iterator();
     while (iterator.hasNext()) {

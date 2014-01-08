@@ -152,7 +152,7 @@ public class SuperParser extends BlurQueryParser {
     if (_queryFilter == null) {
       return query;
     }
-    return new FilteredQuery(query, _queryFilter);
+    return new FilteredQuery(query, _queryFilter, FilteredQuery.LEAP_FROG_QUERY_FIRST_STRATEGY);
   }
 
   private Query replaceRealQueries(Query query, Map<String, Query> subQueries) {
@@ -180,7 +180,7 @@ public class SuperParser extends BlurQueryParser {
   }
 
   private QueryParser getNewParser() {
-    return new BlurQueryParser(_matchVersion, SUPER, _fieldNames,_fieldManager);
+    return new BlurQueryParser(_matchVersion, SUPER, _fieldNames, _fieldManager);
   }
 
   private Query reprocess(Query query) {

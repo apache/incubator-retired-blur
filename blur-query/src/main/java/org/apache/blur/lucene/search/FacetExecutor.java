@@ -30,6 +30,8 @@ import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.search.Collector;
@@ -86,6 +88,8 @@ public class FacetExecutor {
     final OpenBitSet _bitSet;
     final Scorer[] _scorers;
     final AtomicReader _reader;
+    final String _readerStr;
+    final int _maxDoc;
 
     @Override
     public String toString() {
@@ -97,33 +101,46 @@ public class FacetExecutor {
       _bitSet = new OpenBitSet(reader.maxDoc());
       _scorers = scorers;
       _reader = reader;
+      _readerStr = _reader.toString();
+      _maxDoc = _reader.maxDoc();
     }
 
     void process(AtomicLongArray counts, long[] minimumsBeforeReturning) throws IOException {
       SimpleCollector col = new SimpleCollector(_bitSet);
       if (minimumsBeforeReturning == null) {
-        for (int i = 0; i < _scorers.length; i++) {
-          Scorer scorer = _scorers[i];
-          if (scorer != null) {
-            scorer.score(col);
-            counts.addAndGet(i, col._hits);
+        Tracer trace = Trace.trace("processing facet - segment", Trace.param("reader", _readerStr),
+            Trace.param("maxDoc", _maxDoc), Trace.param("minimums", "NONE"), Trace.param("scorers", _scorers.length));
+        try {
+          for (int i = 0; i < _scorers.length; i++) {
+            runFacet(counts, col, i);
           }
-          col._hits = 0;
+        } finally {
+          trace.done();
         }
       } else {
         for (int i = 0; i < _scorers.length; i++) {
           long min = minimumsBeforeReturning[i];
           long currentCount = counts.get(i);
           if (currentCount < min) {
-            Scorer scorer = _scorers[i];
-            if (scorer != null) {
-              scorer.score(col);
-              counts.addAndGet(i, col._hits);
-            }
-            col._hits = 0;
+            runFacet(counts, col, i);
           }
         }
       }
+    }
+
+    private void runFacet(AtomicLongArray counts, SimpleCollector col, int i) throws IOException {
+      Scorer scorer = _scorers[i];
+      if (scorer != null) {
+        Tracer traceInner = Trace.trace("processing facet - segment - scorer", Trace.param("scorer", scorer),
+            Trace.param("scorer.cost", scorer.cost()));
+        try {
+          scorer.score(col);
+        } finally {
+          traceInner.done();
+        }
+        counts.addAndGet(i, col._hits);
+      }
+      col._hits = 0;
     }
   }
 
@@ -188,7 +205,12 @@ public class FacetExecutor {
 
   public void processFacets(ExecutorService executor) throws IOException {
     if (!_processed) {
-      processInternal(executor);
+      Tracer trace = Trace.trace("processing facets");
+      try {
+        processInternal(executor);
+      } finally {
+        trace.done();
+      }
       _processed = true;
     }
   }

@@ -24,9 +24,11 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.blur.concurrent.Executors;
+import org.apache.blur.trace.LogTraceStorage;
+import org.apache.blur.trace.Trace;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -71,7 +73,7 @@ public class FacetQueryTest {
     IndexSearcher indexSearcher = new IndexSearcher(reader);
     indexSearcher.search(facetQuery, 10);
 
-    ExecutorService executor = Executors.newCachedThreadPool();
+    ExecutorService executor = getThreadPool();
     facetExecutor.processFacets(executor);
     executor.shutdown();
     executor.awaitTermination(10, TimeUnit.SECONDS);
@@ -83,6 +85,7 @@ public class FacetQueryTest {
 
   @Test
   public void testFacetQueryPerformance() throws IOException, InterruptedException {
+    Trace.setStorage(new LogTraceStorage(null));
     int facetCount = 200;
     int docCount = 1000000;
     IndexReader reader = createIndex(docCount, facetCount, false);
@@ -95,13 +98,19 @@ public class FacetQueryTest {
     ExecutorService executor = null;
     try {
       for (int t = 0; t < 5; t++) {
-        executor = Executors.newCachedThreadPool();
+        executor = getThreadPool();
         IndexSearcher indexSearcher = new IndexSearcher(reader, executor);
         FacetExecutor facetExecutor = new FacetExecutor(facets.length);
         FacetQuery facetQuery = new FacetQuery(new TermQuery(new Term("f1", "value")), facets, facetExecutor);
         long t1 = System.nanoTime();
         indexSearcher.search(facetQuery, 10);
+        if (t == 4) {
+          Trace.setupTrace("unittest");
+        }
         facetExecutor.processFacets(executor);
+        if (t == 4) {
+          Trace.tearDownTrace();
+        }
         executor.shutdown();
         executor.awaitTermination(10, TimeUnit.SECONDS);
         long t2 = System.nanoTime();
@@ -136,7 +145,7 @@ public class FacetQueryTest {
     ExecutorService executor = null;
     try {
       for (int t = 0; t < 5; t++) {
-        executor = Executors.newCachedThreadPool();
+        executor = getThreadPool();
         IndexSearcher indexSearcher = new IndexSearcher(reader, executor);
         FacetExecutor facetExecutor = new FacetExecutor(facets.length, minimumsBeforeReturning);
         FacetQuery facetQuery = new FacetQuery(new TermQuery(new Term("f1", "value")), facets, facetExecutor);
@@ -156,6 +165,10 @@ public class FacetQueryTest {
     } finally {
       executor.shutdownNow();
     }
+  }
+
+  private ExecutorService getThreadPool() {
+    return Executors.newThreadPool("unittest-facets", 10);
   }
 
   private IndexReader createIndex(int docCount, int facetFields, boolean ram) throws CorruptIndexException,

@@ -21,8 +21,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.netty.util.internal.ConcurrentHashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 

@@ -120,7 +120,6 @@ public class FacetExecutor {
               scorer.score(col);
               counts.addAndGet(i, col._hits);
             }
-            counts.addAndGet(i, col._hits);
             col._hits = 0;
           }
         }

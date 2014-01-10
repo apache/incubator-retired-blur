@@ -209,7 +209,7 @@ public class Trace {
     }
   }
 
-  public static <V> Collection<Callable<V>> getCallables(final Collection<Callable<V>> callables) {
+  public static <V> Collection<? extends Callable<V>> getCallables(final Collection<? extends Callable<V>> callables) {
     TraceCollector tc = _tracer.get();
     if (tc == null) {
       return callables;
@@ -237,7 +237,6 @@ public class Trace {
     return true;
   }
 
-  @SuppressWarnings("unchecked")
   public static ExecutorService getExecutorService(final ExecutorService service) {
     return new ExecutorService() {
       ExecutorService _service = service;
@@ -259,21 +258,21 @@ public class Trace {
       }
 
       public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
-        return _service.invokeAll((Collection<? extends Callable<T>>) getCallable((Callable<T>) tasks));
+        return _service.invokeAll(getCallables(tasks));
       }
 
       public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
           throws InterruptedException {
-        return _service.invokeAll((Collection<? extends Callable<T>>) getCallable((Callable<T>) tasks), timeout, unit);
+        return _service.invokeAll(getCallables(tasks), timeout, unit);
       }
 
       public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
-        return _service.invokeAny((Collection<? extends Callable<T>>) getCallable((Callable<T>) tasks));
+        return _service.invokeAny(getCallables(tasks));
       }
 
       public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
           throws InterruptedException, ExecutionException, TimeoutException {
-        return _service.invokeAny((Collection<? extends Callable<T>>) getCallable((Callable<T>) tasks), timeout, unit);
+        return _service.invokeAny(getCallables(tasks), timeout, unit);
       }
 
       // pass-through

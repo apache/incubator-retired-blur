@@ -671,6 +671,9 @@ public class IndexManagerTest {
     fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
     assertNotNull(fetchResult.rowResult.row);
+    assertTrue(fetchResult.rowResult.moreRecordsToFetch);
+    assertEquals(0, fetchResult.rowResult.startRecord);
+    assertEquals(1, fetchResult.rowResult.maxRecordsToFetch);
 
     Row row1 = newRow("row-6",
         newRecord(FAMILY, "record-6A", newColumn("testcol12", "value110"), newColumn("testcol13", "value102")));
@@ -681,6 +684,9 @@ public class IndexManagerTest {
     fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
     assertNotNull(fetchResult.rowResult.row);
+    assertTrue(fetchResult.rowResult.moreRecordsToFetch);
+    assertEquals(1, fetchResult.rowResult.startRecord);
+    assertEquals(1, fetchResult.rowResult.maxRecordsToFetch);
 
     Row row2 = newRow("row-6",
         newRecord(FAMILY, "record-6B", newColumn("testcol12", "value101"), newColumn("testcol13", "value104")));
@@ -691,6 +697,9 @@ public class IndexManagerTest {
     fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
     assertNotNull(fetchResult.rowResult.row);
+    assertFalse(fetchResult.rowResult.moreRecordsToFetch);
+    assertEquals(2, fetchResult.rowResult.startRecord);
+    assertEquals(1, fetchResult.rowResult.maxRecordsToFetch);
 
     Row row3 = newRow("row-6", newRecord(FAMILY2, "record-6C", newColumn("testcol18", "value501")));
     row3.recordCount = 1;

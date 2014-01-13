@@ -298,7 +298,7 @@ struct Selector {
   /**
    * Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records 
    * and you want the first 100, then this value is 100.  If you want records 300-400 then this value 
-   * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch the first 
+   * would be 100.  Used in conjunction with startRecord. By default this will fetch the first 
    * 1000 records of the row.
    */
   9:i32 maxRecordsToFetch = 1000,
@@ -315,7 +315,19 @@ struct FetchRowResult {
   /**
    * The row fetched.
    */
-  1:Row row
+  1:Row row,
+  /**
+   * See Selector startRecord.
+   */
+  2:i32 startRecord = -1,
+  /**
+   * See Selector maxRecordsToFetch.
+   */
+  3:i32 maxRecordsToFetch = -1,
+  /**
+   * Are there more Records to fetch based on the Selector provided.
+   */
+  4:bool moreRecordsToFetch = 0
 }
 
 /**

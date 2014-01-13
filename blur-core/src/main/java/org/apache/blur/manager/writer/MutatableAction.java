@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.manager.IndexManager;
@@ -111,9 +112,12 @@ public class MutatableAction {
           selector.setMaxRecordsToFetch(Integer.MAX_VALUE);
           selector.setLocationId(_shard + "/" + topDocs.scoreDocs[0].doc);
           ResetableDocumentStoredFieldVisitor fieldVisitor = IndexManager.getFieldSelector(selector);
+          AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
           List<Document> docs = new ArrayList<Document>(BlurUtil.fetchDocuments(reader, fieldVisitor, selector,
-              _maxHeap, _table + "/" + _shard, _primeDocTerm, null));
-
+              _maxHeap, _table + "/" + _shard, _primeDocTerm, null, moreDocsToFetch));
+          if (moreDocsToFetch.get()) {
+            throw new IOException("Row too large to update.");
+          }
           boolean found = false;
           for (int i = 0; i < docs.size(); i++) {
             Document document = docs.get(i);
@@ -161,8 +165,12 @@ public class MutatableAction {
           selector.setMaxRecordsToFetch(Integer.MAX_VALUE);
           selector.setLocationId(_shard + "/" + topDocs.scoreDocs[0].doc);
           ResetableDocumentStoredFieldVisitor fieldVisitor = IndexManager.getFieldSelector(selector);
+          AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
           List<Document> docs = new ArrayList<Document>(BlurUtil.fetchDocuments(reader, fieldVisitor, selector,
-              _maxHeap, _table + "/" + _shard, _primeDocTerm, null));
+              _maxHeap, _table + "/" + _shard, _primeDocTerm, null, moreDocsToFetch));
+          if (moreDocsToFetch.get()) {
+            throw new IOException("Row too large to update.");
+          }
           List<Field> doc = RowDocumentUtil.getDoc(_fieldManager, rowId, record);
 
           for (int i = 0; i < docs.size(); i++) {
@@ -215,8 +223,12 @@ public class MutatableAction {
           selector.setMaxRecordsToFetch(Integer.MAX_VALUE);
           selector.setLocationId(_shard + "/" + topDocs.scoreDocs[0].doc);
           ResetableDocumentStoredFieldVisitor fieldVisitor = IndexManager.getFieldSelector(selector);
+          AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
           List<Document> docs = new ArrayList<Document>(BlurUtil.fetchDocuments(reader, fieldVisitor, selector,
-              _maxHeap, _table + "/" + _shard, _primeDocTerm, null));
+              _maxHeap, _table + "/" + _shard, _primeDocTerm, null, moreDocsToFetch));
+          if (moreDocsToFetch.get()) {
+            throw new IOException("Row too large to update.");
+          }
           BlurThriftRecord existingRecord = new BlurThriftRecord();
           for (int i = 0; i < docs.size(); i++) {
             Document document = docs.get(i);
@@ -281,8 +293,12 @@ public class MutatableAction {
           selector.setMaxRecordsToFetch(Integer.MAX_VALUE);
           selector.setLocationId(_shard + "/" + topDocs.scoreDocs[0].doc);
           ResetableDocumentStoredFieldVisitor fieldVisitor = IndexManager.getFieldSelector(selector);
+          AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
           List<Document> docs = new ArrayList<Document>(BlurUtil.fetchDocuments(reader, fieldVisitor, selector,
-              _maxHeap, _table + "/" + _shard, _primeDocTerm, null));
+              _maxHeap, _table + "/" + _shard, _primeDocTerm, null, moreDocsToFetch));
+          if (moreDocsToFetch.get()) {
+            throw new IOException("Row too large to update.");
+          }
           BlurThriftRecord existingRecord = new BlurThriftRecord();
           for (int i = 0; i < docs.size(); i++) {
             Document document = docs.get(i);

@@ -106,7 +106,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
   /**
    * Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
    * and you want the first 100, then this value is 100.  If you want records 300-400 then this value
-   * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch the first
+   * would be 100.  Used in conjunction with startRecord. By default this will fetch the first
    * 1000 records of the row.
    */
   public int maxRecordsToFetch; // required
@@ -152,7 +152,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
     /**
      * Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
      * and you want the first 100, then this value is 100.  If you want records 300-400 then this value
-     * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch the first
+     * would be 100.  Used in conjunction with startRecord. By default this will fetch the first
      * 1000 records of the row.
      */
     MAX_RECORDS_TO_FETCH((short)9, "maxRecordsToFetch"),
@@ -610,7 +610,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
   /**
    * Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
    * and you want the first 100, then this value is 100.  If you want records 300-400 then this value
-   * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch the first
+   * would be 100.  Used in conjunction with startRecord. By default this will fetch the first
    * 1000 records of the row.
    */
   public int getMaxRecordsToFetch() {
@@ -620,7 +620,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
   /**
    * Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
    * and you want the first 100, then this value is 100.  If you want records 300-400 then this value
-   * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch the first
+   * would be 100.  Used in conjunction with startRecord. By default this will fetch the first
    * 1000 records of the row.
    */
   public Selector setMaxRecordsToFetch(int maxRecordsToFetch) {

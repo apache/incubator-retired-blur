@@ -689,6 +689,7 @@ public class IndexManager {
             fetchResult.rowResult.row = new Row(rowId, null, recordCount);
           } else {
             List<Document> docs;
+            AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
             if (highlightQuery != null && fieldManager != null) {
               String rowId = selector.getRowId();
               if (rowId == null) {
@@ -705,11 +706,12 @@ public class IndexManager {
             } else {
               Tracer docTrace = Trace.trace("fetchRow - Document read");
               docs = BlurUtil.fetchDocuments(reader, fieldVisitor, selector, maxHeap, table + "/" + shard,
-                  tableContext.getDefaultPrimeDocTerm(), filter);
+                  tableContext.getDefaultPrimeDocTerm(), filter, moreDocsToFetch);
               docTrace.done();
             }
             Tracer rowTrace = Trace.trace("fetchRow - Row create");
-            fetchResult.rowResult = new FetchRowResult(getRow(docs));
+            fetchResult.rowResult = new FetchRowResult(getRow(docs), selector.getStartRecord(),
+                selector.getMaxRecordsToFetch(), moreDocsToFetch.get());
             rowTrace.done();
           }
           return;

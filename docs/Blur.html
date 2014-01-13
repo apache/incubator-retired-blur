@@ -333,7 +333,7 @@ FetchResult.  Used in conjunction with maxRecordsToFetch.
 </td><td>default</td><td>0</td></tr>
 <tr><td>9</td><td>maxRecordsToFetch</td><td><code>i32</code></td><td>Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
 and you want the first 100, then this value is 100.  If you want records 300-400 then this value
-would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch the first
+would be 100.  Used in conjunction with startRecord. By default this will fetch the first
 1000 records of the row.
 </td><td>default</td><td>1000</td></tr>
 <tr><td>10</td><td>highlightOptions</td><td><code><a href="Blur.html#Struct_HighlightOptions">HighlightOptions</a></code></td><td>The HighlightOptions object controls how the data is highlighted.  If null no highlighting will occur.
@@ -343,6 +343,12 @@ would be 100.  Used in conjunction with maxRecordsToFetch. By default this will 
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>row</td><td><code><a href="Blur.html#Struct_Row">Row</a></code></td><td>The row fetched.
 </td><td>default</td><td></td></tr>
+<tr><td>2</td><td>startRecord</td><td><code>i32</code></td><td>See Selector startRecord.
+</td><td>default</td><td>-1</td></tr>
+<tr><td>3</td><td>maxRecordsToFetch</td><td><code>i32</code></td><td>See Selector maxRecordsToFetch.
+</td><td>default</td><td>-1</td></tr>
+<tr><td>4</td><td>moreRecordsToFetch</td><td><code>bool</code></td><td>Are there more Records to fetch based on the Selector provided.
+</td><td>default</td><td>0</td></tr>
 </table><br/>FetchRowResult contains row result from a fetch.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_FetchRecordResult">Struct: FetchRecordResult</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>

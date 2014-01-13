@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import org.apache.blur.thrift.ClientLock;
 import org.apache.blur.thrift.generated.Blur;
@@ -66,6 +68,20 @@ public class GenerateSafeClient {
     writer.println();
 
     Method[] methods = Blur.Client.class.getDeclaredMethods();
+    Arrays.sort(methods, new Comparator<Method>() {
+      @Override
+      public int compare(Method o1, Method o2) {
+        String name1 = o1.getName();
+        String name2 = o2.getName();
+        int compareTo = name1.compareTo(name2);
+        if (compareTo == 0) {
+          String p1 = getArgs(o1.getParameterTypes());
+          String p2 = getArgs(o2.getParameterTypes());
+          return p1.compareTo(p2);
+        }
+        return compareTo;
+      }
+    });
     for (Method method : methods) {
       Class<?>[] exceptionTypes = method.getExceptionTypes();
       Class<?>[] parameterTypes = method.getParameterTypes();

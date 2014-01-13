@@ -55,6 +55,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.regex.Pattern;
@@ -777,7 +778,8 @@ public class BlurUtil {
    */
   @SuppressWarnings("unchecked")
   public static List<Document> fetchDocuments(IndexReader reader, ResetableDocumentStoredFieldVisitor fieldSelector,
-      Selector selector, int maxHeap, String context, Term primeDocTerm, Filter filter) throws IOException {
+      Selector selector, int maxHeap, String context, Term primeDocTerm, Filter filter, AtomicBoolean moreToFetch)
+      throws IOException {
     if (reader instanceof BaseCompositeReader) {
       BaseCompositeReader<IndexReader> indexReader = (BaseCompositeReader<IndexReader>) reader;
       List<? extends IndexReader> sequentialSubReaders = BaseCompositeReaderUtil.getSequentialSubReaders(indexReader);
@@ -816,8 +818,9 @@ public class BlurUtil {
         }
         int totalHeap = 0;
         Tracer trace2 = Trace.trace("fetching docs from index");
+        int cursor = 0;
         try {
-          for (int i = startingPosition; i < numberOfDocsInRow; i++) {
+          for (cursor = startingPosition; cursor < numberOfDocsInRow; cursor++) {
             if (maxDocsToFetch <= 0) {
               return docs;
             }
@@ -826,15 +829,18 @@ public class BlurUtil {
                   totalHeap, maxHeap, context, selector);
               return docs;
             }
-            if (docsInRowSpanToFetch.fastGet(i)) {
+            if (docsInRowSpanToFetch.fastGet(cursor)) {
               maxDocsToFetch--;
-              segmentReader.document(primeDocId + i, fieldSelector);
+              segmentReader.document(primeDocId + cursor, fieldSelector);
               docs.add(fieldSelector.getDocument());
               totalHeap += fieldSelector.getSize();
               fieldSelector.reset();
             }
           }
         } finally {
+          if (docsInRowSpanToFetch.nextSetBit(cursor) != -1) {
+            moreToFetch.set(true);
+          }
           trace2.done();
         }
         return orderDocsBasedOnFamilyOrder(docs, selector);

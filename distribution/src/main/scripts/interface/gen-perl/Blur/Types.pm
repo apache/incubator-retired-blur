@@ -922,16 +922,28 @@ sub write {
 
 package Blur::FetchRowResult;
 use base qw(Class::Accessor);
-Blur::FetchRowResult->mk_accessors( qw( row ) );
+Blur::FetchRowResult->mk_accessors( qw( row startRecord maxRecordsToFetch moreRecordsToFetch ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
   $self->{row} = undef;
+  $self->{startRecord} = -1;
+  $self->{maxRecordsToFetch} = -1;
+  $self->{moreRecordsToFetch} = 0;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{row}) {
       $self->{row} = $vals->{row};
+    }
+    if (defined $vals->{startRecord}) {
+      $self->{startRecord} = $vals->{startRecord};
+    }
+    if (defined $vals->{maxRecordsToFetch}) {
+      $self->{maxRecordsToFetch} = $vals->{maxRecordsToFetch};
+    }
+    if (defined $vals->{moreRecordsToFetch}) {
+      $self->{moreRecordsToFetch} = $vals->{moreRecordsToFetch};
     }
   }
   return bless ($self, $classname);
@@ -963,6 +975,24 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^2$/ && do{      if ($ftype == TType::I32) {
+        $xfer += $input->readI32(\$self->{startRecord});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^3$/ && do{      if ($ftype == TType::I32) {
+        $xfer += $input->readI32(\$self->{maxRecordsToFetch});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^4$/ && do{      if ($ftype == TType::BOOL) {
+        $xfer += $input->readBool(\$self->{moreRecordsToFetch});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -978,6 +1008,21 @@ sub write {
   if (defined $self->{row}) {
     $xfer += $output->writeFieldBegin('row', TType::STRUCT, 1);
     $xfer += $self->{row}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{startRecord}) {
+    $xfer += $output->writeFieldBegin('startRecord', TType::I32, 2);
+    $xfer += $output->writeI32($self->{startRecord});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{maxRecordsToFetch}) {
+    $xfer += $output->writeFieldBegin('maxRecordsToFetch', TType::I32, 3);
+    $xfer += $output->writeI32($self->{maxRecordsToFetch});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{moreRecordsToFetch}) {
+    $xfer += $output->writeFieldBegin('moreRecordsToFetch', TType::BOOL, 4);
+    $xfer += $output->writeBool($self->{moreRecordsToFetch});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

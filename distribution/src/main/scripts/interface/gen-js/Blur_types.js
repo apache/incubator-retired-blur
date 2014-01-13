@@ -859,9 +859,21 @@ Selector.prototype.write = function(output) {
 
 FetchRowResult = function(args) {
   this.row = null;
+  this.startRecord = -1;
+  this.maxRecordsToFetch = -1;
+  this.moreRecordsToFetch = false;
   if (args) {
     if (args.row !== undefined) {
       this.row = args.row;
+    }
+    if (args.startRecord !== undefined) {
+      this.startRecord = args.startRecord;
+    }
+    if (args.maxRecordsToFetch !== undefined) {
+      this.maxRecordsToFetch = args.maxRecordsToFetch;
+    }
+    if (args.moreRecordsToFetch !== undefined) {
+      this.moreRecordsToFetch = args.moreRecordsToFetch;
     }
   }
 };
@@ -887,9 +899,27 @@ FetchRowResult.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
-      case 0:
+      case 2:
+      if (ftype == Thrift.Type.I32) {
+        this.startRecord = input.readI32().value;
+      } else {
         input.skip(ftype);
-        break;
+      }
+      break;
+      case 3:
+      if (ftype == Thrift.Type.I32) {
+        this.maxRecordsToFetch = input.readI32().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 4:
+      if (ftype == Thrift.Type.BOOL) {
+        this.moreRecordsToFetch = input.readBool().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -904,6 +934,21 @@ FetchRowResult.prototype.write = function(output) {
   if (this.row !== null && this.row !== undefined) {
     output.writeFieldBegin('row', Thrift.Type.STRUCT, 1);
     this.row.write(output);
+    output.writeFieldEnd();
+  }
+  if (this.startRecord !== null && this.startRecord !== undefined) {
+    output.writeFieldBegin('startRecord', Thrift.Type.I32, 2);
+    output.writeI32(this.startRecord);
+    output.writeFieldEnd();
+  }
+  if (this.maxRecordsToFetch !== null && this.maxRecordsToFetch !== undefined) {
+    output.writeFieldBegin('maxRecordsToFetch', Thrift.Type.I32, 3);
+    output.writeI32(this.maxRecordsToFetch);
+    output.writeFieldEnd();
+  }
+  if (this.moreRecordsToFetch !== null && this.moreRecordsToFetch !== undefined) {
+    output.writeFieldBegin('moreRecordsToFetch', Thrift.Type.BOOL, 4);
+    output.writeBool(this.moreRecordsToFetch);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

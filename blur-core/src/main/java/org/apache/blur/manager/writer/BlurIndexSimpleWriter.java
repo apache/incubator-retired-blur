@@ -152,14 +152,22 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     final IndexReader indexReader = _indexReader.get();
     indexReader.incRef();
     return new IndexSearcherClosable(indexReader, _searchThreadPool) {
+
+      private boolean _closed;
+
       @Override
       public Directory getDirectory() {
         return _directory;
       }
 
       @Override
-      public void close() throws IOException {
-        indexReader.decRef();
+      public synchronized void close() throws IOException {
+        if (!_closed) {
+          indexReader.decRef();
+          _closed = true;
+        } else {
+          LOG.error("Searcher already closed [{0}].", new Throwable(), this);
+        }
       }
     };
   }

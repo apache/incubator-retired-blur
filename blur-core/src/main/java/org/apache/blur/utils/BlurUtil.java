@@ -856,6 +856,10 @@ public class BlurUtil {
     if (columnFamiliesToFetch == null || columnFamiliesToFetch.isEmpty()) {
       return docs;
     }
+    Map<String, Set<String>> columnsToFetch = selector.getColumnsToFetch();
+    if (columnsToFetch != null) {
+      columnFamiliesToFetch.addAll(columnsToFetch.keySet());
+    }
     final Map<String, Integer> familyOrdering = getFamilyOrdering(columnFamiliesToFetch);
     Collections.sort(docs, new Comparator<Document>() {
       @Override

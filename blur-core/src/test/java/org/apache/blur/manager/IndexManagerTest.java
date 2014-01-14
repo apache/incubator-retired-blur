@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -592,6 +593,48 @@ public class IndexManagerTest {
         newRecord(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"),
             newColumn("testcol3", "value3")));
     row.recordCount = 1;
+    assertEquals(row, fetchResult.rowResult.row);
+  }
+
+  @Test
+  public void testFetchRowByRowIdWithFamilySet() throws Exception {
+    Selector selector = new Selector().setRowId("row-6");
+    selector.addToColumnFamiliesToFetch(FAMILY2);
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNotNull(fetchResult.rowResult.row);
+    Row row = newRow("row-6", newRecord(FAMILY2, "record-6C", newColumn("testcol18", "value501")));
+    row.recordCount = 1;
+    assertEquals(row, fetchResult.rowResult.row);
+  }
+
+  @Test
+  public void testFetchRowByRowIdWithColumnSet() throws Exception {
+    Selector selector = new Selector().setRowId("row-6");
+    selector.putToColumnsToFetch(FAMILY, new HashSet<String>(Arrays.asList("testcol12")));
+
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNotNull(fetchResult.rowResult.row);
+    Row row = newRow("row-6", newRecord(FAMILY, "record-6A", newColumn("testcol12", "value110")),
+        newRecord(FAMILY, "record-6B", newColumn("testcol12", "value101")));
+    row.recordCount = 2;
+    assertEquals(row, fetchResult.rowResult.row);
+  }
+
+  @Test
+  public void testFetchRowByRowIdWithFamilyAndColumnSet() throws Exception {
+    Selector selector = new Selector().setRowId("row-6");
+    selector.addToColumnFamiliesToFetch(FAMILY2);
+    selector.putToColumnsToFetch(FAMILY, new HashSet<String>(Arrays.asList("testcol12")));
+
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNotNull(fetchResult.rowResult.row);
+    Row row = newRow("row-6", newRecord(FAMILY2, "record-6C", newColumn("testcol18", "value501")),
+        newRecord(FAMILY, "record-6A", newColumn("testcol12", "value110")),
+        newRecord(FAMILY, "record-6B", newColumn("testcol12", "value101")));
+    row.recordCount = 3;
     assertEquals(row, fetchResult.rowResult.row);
   }
 

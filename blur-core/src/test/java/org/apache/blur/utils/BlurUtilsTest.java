@@ -181,7 +181,7 @@ public class BlurUtilsTest {
     AtomicInteger totalRecords = new AtomicInteger();
     List<Document> docs = BlurUtil.fetchDocuments(getReader(), resetableDocumentStoredFieldVisitor, selector, 10000000,
         "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE), null, moreDocsToFetch,
-        totalRecords);
+        totalRecords, null);
     assertEquals(docs.size(), 1);
     assertFalse(moreDocsToFetch.get());
     assertEquals(1, totalRecords.get());
@@ -196,13 +196,15 @@ public class BlurUtilsTest {
     columnFamiliesToFetch.add("f1");
     columnFamiliesToFetch.add("f2");
     selector.setColumnFamiliesToFetch(columnFamiliesToFetch);
+    selector.addToOrderOfFamiliesToFetch("f1");
+    selector.addToOrderOfFamiliesToFetch("f2");
 
     ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
     AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
     AtomicInteger totalRecords = new AtomicInteger();
     List<Document> docs = BlurUtil.fetchDocuments(getReaderWithDocsHavingFamily(), resetableDocumentStoredFieldVisitor,
         selector, 10000000, "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE), null,
-        moreDocsToFetch, totalRecords);
+        moreDocsToFetch, totalRecords, null);
     assertEquals(docs.size(), 2);
     assertEquals(docs.get(0).getField("family").stringValue(), "f1");
     assertEquals(docs.get(1).getField("family").stringValue(), "f2");
@@ -219,7 +221,7 @@ public class BlurUtilsTest {
     AtomicInteger totalRecords = new AtomicInteger();
     List<Document> docs = BlurUtil.fetchDocuments(getReader(), resetableDocumentStoredFieldVisitor, selector, 10000000,
         "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE), null, moreDocsToFetch,
-        totalRecords);
+        totalRecords, null);
     assertEquals(docs.size(), 2);
     assertFalse(moreDocsToFetch.get());
     assertEquals(2, totalRecords.get());

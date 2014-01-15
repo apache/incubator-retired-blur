@@ -116,7 +116,7 @@ public class MutatableAction {
           AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
           AtomicInteger totalRecords = new AtomicInteger();
           List<Document> docs = new ArrayList<Document>(BlurUtil.fetchDocuments(reader, fieldVisitor, selector,
-              _maxHeap, _table + "/" + _shard, _primeDocTerm, null, moreDocsToFetch, totalRecords));
+              _maxHeap, _table + "/" + _shard, _primeDocTerm, null, moreDocsToFetch, totalRecords, null));
           if (moreDocsToFetch.get()) {
             throw new IOException("Row too large to update.");
           }
@@ -170,7 +170,7 @@ public class MutatableAction {
           AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
           AtomicInteger totalRecords = new AtomicInteger();
           List<Document> docs = new ArrayList<Document>(BlurUtil.fetchDocuments(reader, fieldVisitor, selector,
-              _maxHeap, _table + "/" + _shard, _primeDocTerm, null, moreDocsToFetch, totalRecords));
+              _maxHeap, _table + "/" + _shard, _primeDocTerm, null, moreDocsToFetch, totalRecords, null));
           if (moreDocsToFetch.get()) {
             throw new IOException("Row too large to update.");
           }
@@ -229,7 +229,7 @@ public class MutatableAction {
           AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
           AtomicInteger totalRecords = new AtomicInteger();
           List<Document> docs = new ArrayList<Document>(BlurUtil.fetchDocuments(reader, fieldVisitor, selector,
-              _maxHeap, _table + "/" + _shard, _primeDocTerm, null, moreDocsToFetch, totalRecords));
+              _maxHeap, _table + "/" + _shard, _primeDocTerm, null, moreDocsToFetch, totalRecords, null));
           if (moreDocsToFetch.get()) {
             throw new IOException("Row too large to update.");
           }
@@ -300,7 +300,7 @@ public class MutatableAction {
           AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
           AtomicInteger totalRecords = new AtomicInteger();
           List<Document> docs = new ArrayList<Document>(BlurUtil.fetchDocuments(reader, fieldVisitor, selector,
-              _maxHeap, _table + "/" + _shard, _primeDocTerm, null, moreDocsToFetch, totalRecords));
+              _maxHeap, _table + "/" + _shard, _primeDocTerm, null, moreDocsToFetch, totalRecords, null));
           if (moreDocsToFetch.get()) {
             throw new IOException("Row too large to update.");
           }

@@ -255,7 +255,7 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
     AtomicInteger totalRecords = new AtomicInteger();
     List<Document> docs = BlurUtil.fetchDocuments(_reader, new ResetableDocumentStoredFieldVisitor(), new Selector()
         .setRowId(_rowIdTerm.text()), Integer.MAX_VALUE, "reducer-context", new Term(BlurConstants.PRIME_DOC,
-        BlurConstants.PRIME_DOC_VALUE), null, moreDocsToFetch, totalRecords);
+        BlurConstants.PRIME_DOC_VALUE), null, moreDocsToFetch, totalRecords, null);
     if (moreDocsToFetch.get()) {
       throw new IOException("Row too large to update.");
     }

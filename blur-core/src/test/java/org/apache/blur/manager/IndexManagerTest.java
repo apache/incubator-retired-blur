@@ -653,6 +653,8 @@ public class IndexManagerTest {
     Selector selector = new Selector().setRowId("row-6");
     selector.addToColumnFamiliesToFetch(FAMILY2);
     selector.putToColumnsToFetch(FAMILY, new HashSet<String>(Arrays.asList("testcol12")));
+    selector.addToOrderOfFamiliesToFetch(FAMILY2);
+    selector.addToOrderOfFamiliesToFetch(FAMILY);
 
     FetchResult fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);

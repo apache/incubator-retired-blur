@@ -799,14 +799,14 @@ public class BlurUtil {
    * @param selector
    * @param primeDocTerm
    * @param filter
-   * @param totalRecords 
+   * @param totalRecords
    * 
    * @throws IOException
    */
   @SuppressWarnings("unchecked")
   public static List<Document> fetchDocuments(IndexReader reader, ResetableDocumentStoredFieldVisitor fieldSelector,
-      Selector selector, int maxHeap, String context, Term primeDocTerm, Filter filter, AtomicBoolean moreToFetch, AtomicInteger totalRecords)
-      throws IOException {
+      Selector selector, int maxHeap, String context, Term primeDocTerm, Filter filter, AtomicBoolean moreToFetch,
+      AtomicInteger totalRecords) throws IOException {
     if (reader instanceof BaseCompositeReader) {
       BaseCompositeReader<IndexReader> indexReader = (BaseCompositeReader<IndexReader>) reader;
       List<? extends IndexReader> sequentialSubReaders = BaseCompositeReaderUtil.getSequentialSubReaders(indexReader);
@@ -879,16 +879,19 @@ public class BlurUtil {
   }
 
   private static List<Document> orderDocsBasedOnFamilyOrder(List<Document> docs, Selector selector) {
-    List<String> columnFamiliesToFetch = selector.getColumnFamiliesToFetch() == null ? null : new ArrayList<String>(
-        selector.getColumnFamiliesToFetch());
-    if (columnFamiliesToFetch == null || columnFamiliesToFetch.isEmpty()) {
+    List<String> orderOfFamiliesToFetch = selector.getOrderOfFamiliesToFetch();
+    if (orderOfFamiliesToFetch == null || orderOfFamiliesToFetch.isEmpty()) {
       return docs;
+    }
+    Set<String> columnFamiliesToFetch = selector.getColumnFamiliesToFetch();
+    if (columnFamiliesToFetch != null) {
+      orderOfFamiliesToFetch.addAll(columnFamiliesToFetch);
     }
     Map<String, Set<String>> columnsToFetch = selector.getColumnsToFetch();
     if (columnsToFetch != null) {
-      columnFamiliesToFetch.addAll(columnsToFetch.keySet());
+      orderOfFamiliesToFetch.addAll(columnsToFetch.keySet());
     }
-    final Map<String, Integer> familyOrdering = getFamilyOrdering(columnFamiliesToFetch);
+    final Map<String, Integer> familyOrdering = getFamilyOrdering(orderOfFamiliesToFetch);
     Collections.sort(docs, new Comparator<Document>() {
       @Override
       public int compare(Document o1, Document o2) {
@@ -946,8 +949,7 @@ public class BlurUtil {
       DocIdSet docIdSet = filter.getDocIdSet(segmentReader.getContext(), liveDocs);
       mask = getMask(docIdSet, primeDocRowId, numberOfDocsInRow);
     }
-    List<String> columnFamiliesToFetch = selector.getColumnFamiliesToFetch() == null ? null : new ArrayList<String>(
-        selector.getColumnFamiliesToFetch());
+    Set<String> columnFamiliesToFetch = selector.getColumnFamiliesToFetch();
     boolean fetchAll = true;
     if (columnFamiliesToFetch != null) {
       fetchAll = false;
@@ -995,7 +997,7 @@ public class BlurUtil {
     }
   }
 
-  private static void applyFamilies(Set<String> alreadyProcessed, OpenBitSet bits, List<String> columnFamiliesToFetch,
+  private static void applyFamilies(Set<String> alreadyProcessed, OpenBitSet bits, Set<String> columnFamiliesToFetch,
       SegmentReader segmentReader, int primeDocRowId, int numberOfDocsInRow, Bits liveDocs) throws IOException {
     for (String family : columnFamiliesToFetch) {
       if (!alreadyProcessed.contains(family)) {

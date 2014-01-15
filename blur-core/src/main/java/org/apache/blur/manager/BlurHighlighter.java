@@ -40,7 +40,13 @@ public class BlurHighlighter {
     if (highlightOptions != null) {
       _preTag = highlightOptions.getPreTag();
       _postTag = highlightOptions.getPostTag();
+      if (highlightQuery == null) {
+        throw new RuntimeException("Highlight query cannot be null.");
+      }
       _highlightQuery = highlightQuery;
+      if (fieldManager == null) {
+        throw new RuntimeException("FieldManager query cannot be null.");
+      }
       _fieldManager = fieldManager;
       _shouldHighlight = true;
     } else {

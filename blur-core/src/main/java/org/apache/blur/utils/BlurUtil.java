@@ -56,6 +56,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.regex.Pattern;
@@ -798,12 +799,13 @@ public class BlurUtil {
    * @param selector
    * @param primeDocTerm
    * @param filter
+   * @param totalRecords 
    * 
    * @throws IOException
    */
   @SuppressWarnings("unchecked")
   public static List<Document> fetchDocuments(IndexReader reader, ResetableDocumentStoredFieldVisitor fieldSelector,
-      Selector selector, int maxHeap, String context, Term primeDocTerm, Filter filter, AtomicBoolean moreToFetch)
+      Selector selector, int maxHeap, String context, Term primeDocTerm, Filter filter, AtomicBoolean moreToFetch, AtomicInteger totalRecords)
       throws IOException {
     if (reader instanceof BaseCompositeReader) {
       BaseCompositeReader<IndexReader> indexReader = (BaseCompositeReader<IndexReader>) reader;
@@ -832,7 +834,7 @@ public class BlurUtil {
           numberOfDocsInRow = nextPrimeDoc - primeDocId;
         }
         OpenBitSet docsInRowSpanToFetch = getDocsToFetch(segmentReader, selector, primeDocId, numberOfDocsInRow,
-            liveDocs, filter);
+            liveDocs, filter, totalRecords);
         int start = selector.getStartRecord();
         int maxDocsToFetch = selector.getMaxRecordsToFetch();
         int startingPosition = getStartingPosition(docsInRowSpanToFetch, start);
@@ -877,7 +879,8 @@ public class BlurUtil {
   }
 
   private static List<Document> orderDocsBasedOnFamilyOrder(List<Document> docs, Selector selector) {
-    List<String> columnFamiliesToFetch = selector.getColumnFamiliesToFetch();
+    List<String> columnFamiliesToFetch = selector.getColumnFamiliesToFetch() == null ? null : new ArrayList<String>(
+        selector.getColumnFamiliesToFetch());
     if (columnFamiliesToFetch == null || columnFamiliesToFetch.isEmpty()) {
       return docs;
     }
@@ -935,7 +938,7 @@ public class BlurUtil {
   }
 
   private static OpenBitSet getDocsToFetch(SegmentReader segmentReader, Selector selector, int primeDocRowId,
-      int numberOfDocsInRow, Bits liveDocs, Filter filter) throws IOException {
+      int numberOfDocsInRow, Bits liveDocs, Filter filter, AtomicInteger totalRecords) throws IOException {
     Set<String> alreadyProcessed = new HashSet<String>();
     OpenBitSet bits = new OpenBitSet(numberOfDocsInRow);
     OpenBitSet mask = null;
@@ -943,7 +946,8 @@ public class BlurUtil {
       DocIdSet docIdSet = filter.getDocIdSet(segmentReader.getContext(), liveDocs);
       mask = getMask(docIdSet, primeDocRowId, numberOfDocsInRow);
     }
-    List<String> columnFamiliesToFetch = selector.getColumnFamiliesToFetch();
+    List<String> columnFamiliesToFetch = selector.getColumnFamiliesToFetch() == null ? null : new ArrayList<String>(
+        selector.getColumnFamiliesToFetch());
     boolean fetchAll = true;
     if (columnFamiliesToFetch != null) {
       fetchAll = false;
@@ -961,6 +965,7 @@ public class BlurUtil {
     if (mask != null) {
       bits.intersect(mask);
     }
+    totalRecords.set((int) bits.cardinality());
     return bits;
   }
 

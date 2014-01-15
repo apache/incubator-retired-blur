@@ -96,7 +96,6 @@ public class LoadDataContinuously {
       mutation.setTable(table);
       String rowId = getRowId();
       mutation.setRowId(rowId);
-      mutation.setWal(wal);
       mutation.setRowMutationType(RowMutationType.REPLACE_ROW);
       for (int j = 0; j < numberRecordsPerRow; j++) {
         mutation.addToRecordMutations(getRecordMutation(numberOfColumns, numberOfFamilies, numberOfWords));

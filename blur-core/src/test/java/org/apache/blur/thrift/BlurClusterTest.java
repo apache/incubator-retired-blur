@@ -212,7 +212,6 @@ public class BlurClusterTest {
           BlurThriftHelper.newColumn("test", "value"),
           BlurThriftHelper.newColumn("facet", Integer.toString(random.nextInt(maxFacetValue))));
       RowMutation rowMutation = BlurThriftHelper.newRowMutation("test", rowId, mutation);
-      rowMutation.setWaitToBeVisible(true);
       mutations.add(rowMutation);
     }
     long s = System.nanoTime();

@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.log.Log;
@@ -251,9 +252,10 @@ public class BlurReducer extends Reducer<Text, BlurMutate, Text, BlurMutate> {
 
   protected void fetchOldRecords() throws IOException {
     AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
+    AtomicInteger totalRecords = new AtomicInteger();
     List<Document> docs = BlurUtil.fetchDocuments(_reader, new ResetableDocumentStoredFieldVisitor(), new Selector()
         .setRowId(_rowIdTerm.text()), Integer.MAX_VALUE, "reducer-context", new Term(BlurConstants.PRIME_DOC,
-        BlurConstants.PRIME_DOC_VALUE), null, moreDocsToFetch);
+        BlurConstants.PRIME_DOC_VALUE), null, moreDocsToFetch, totalRecords);
     if (moreDocsToFetch.get()) {
       throw new IOException("Row too large to update.");
     }

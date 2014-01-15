@@ -44,7 +44,6 @@ public class LoadData {
   private static List<String> words = new ArrayList<String>();
 
   public static void main(String[] args) throws BlurException, TException, IOException {
-    final boolean wal = true;
     final int numberOfColumns = 3;
     int numberRows = 100000;
     final int numberRecordsPerRow = 3;
@@ -54,11 +53,11 @@ public class LoadData {
     String connectionString = args[0];
     String table = args[1];
     Iface client = BlurClient.getClient(connectionString);
-    runLoad(client, table, wal, numberRows, numberRecordsPerRow, numberOfFamilies, numberOfColumns, numberOfWords,
+    runLoad(client, table, numberRows, numberRecordsPerRow, numberOfFamilies, numberOfColumns, numberOfWords,
         batch, new PrintWriter(System.out));
   }
 
-  public static void runLoad(Iface client, String table, boolean wal, int numberRows, int numberRecordsPerRow,
+  public static void runLoad(Iface client, String table, int numberRows, int numberRecordsPerRow,
       int numberOfFamilies, int numberOfColumns, int numberOfWords, int batch, PrintWriter out) throws IOException,
       BlurException, TException {
     loadWords();
@@ -85,7 +84,6 @@ public class LoadData {
       mutation.setTable(table);
       String rowId = getRowId();
       mutation.setRowId(rowId);
-      mutation.setWal(wal);
       mutation.setRowMutationType(RowMutationType.REPLACE_ROW);
       for (int j = 0; j < numberRecordsPerRow; j++) {
         mutation.addToRecordMutations(getRecordMutation(numberOfColumns, numberOfFamilies, numberOfWords));

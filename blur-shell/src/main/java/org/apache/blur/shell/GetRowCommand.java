@@ -43,9 +43,9 @@ public class GetRowCommand extends Command implements TableFirstArgCommand {
     if (args.length != 3) {
       throw new CommandException("Invalid args: " + help());
     }
-    
+
     PagingPrintWriter out = new PagingPrintWriter(outPw);
-    
+
     try {
       doItInternal(client, args, out);
     } catch (FinishedException e) {
@@ -80,15 +80,18 @@ public class GetRowCommand extends Command implements TableFirstArgCommand {
       maxWidth = terminal.getWidth() - 15;
       out.setLineLimit(terminal.getHeight() - 2);
     }
-    format(out, row, maxWidth);
+    format(out, rowResult, maxWidth);
   }
 
-  public static void format(PagingPrintWriter out, Row row, int maxWidth) throws FinishedException {
+  public static void format(PagingPrintWriter out, FetchRowResult rowResult, int maxWidth) throws FinishedException {
+    Row row = rowResult.getRow();
+    if (row == null) {
+      return;
+    }
     String id = row.getId();
-    int recordCount = row.getRecordCount();
     out.println("       id : " + id);
     if (Main.debug) {
-      out.println("recordCount : " + recordCount);
+      out.println("totalRecords : " + rowResult.getTotalRecords());
     }
     List<Record> records = row.getRecords();
     for (Record record : records) {

@@ -71,7 +71,6 @@ public class RowDocumentUtil {
       if (row.id == null) {
         row.setId(rowId);
       }
-      row.recordCount++;
     }
     if (empty) {
       return null;

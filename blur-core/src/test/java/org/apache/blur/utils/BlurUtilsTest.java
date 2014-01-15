@@ -24,10 +24,12 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.hadoop.conf.Configuration;
@@ -165,7 +167,7 @@ public class BlurUtilsTest {
   public void testFetchDocuments() throws CorruptIndexException, LockObtainFailedException, IOException {
     Selector selector = new Selector();
     selector.setLocationId("shard/0");
-    List<String> columnFamiliesToFetch = new ArrayList<String>();
+    Set<String> columnFamiliesToFetch = new HashSet<String>();
     columnFamiliesToFetch.add("f1");
     columnFamiliesToFetch.add("f2");
     selector.setColumnFamiliesToFetch(columnFamiliesToFetch);
@@ -176,10 +178,13 @@ public class BlurUtilsTest {
     // "test-context", new
     // Term(BlurConstants.PRIME_DOC,BlurConstants.PRIME_DOC_VALUE));
     AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
+    AtomicInteger totalRecords = new AtomicInteger();
     List<Document> docs = BlurUtil.fetchDocuments(getReader(), resetableDocumentStoredFieldVisitor, selector, 10000000,
-        "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE), null, moreDocsToFetch);
+        "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE), null, moreDocsToFetch,
+        totalRecords);
     assertEquals(docs.size(), 1);
     assertFalse(moreDocsToFetch.get());
+    assertEquals(1, totalRecords.get());
   }
 
   @Test
@@ -187,20 +192,22 @@ public class BlurUtilsTest {
       IOException {
     Selector selector = new Selector();
     selector.setLocationId("shard/0");
-    List<String> columnFamiliesToFetch = new ArrayList<String>();
+    Set<String> columnFamiliesToFetch = new HashSet<String>();
     columnFamiliesToFetch.add("f1");
     columnFamiliesToFetch.add("f2");
     selector.setColumnFamiliesToFetch(columnFamiliesToFetch);
 
     ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
     AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
+    AtomicInteger totalRecords = new AtomicInteger();
     List<Document> docs = BlurUtil.fetchDocuments(getReaderWithDocsHavingFamily(), resetableDocumentStoredFieldVisitor,
         selector, 10000000, "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE), null,
-        moreDocsToFetch);
+        moreDocsToFetch, totalRecords);
     assertEquals(docs.size(), 2);
     assertEquals(docs.get(0).getField("family").stringValue(), "f1");
     assertEquals(docs.get(1).getField("family").stringValue(), "f2");
     assertFalse(moreDocsToFetch.get());
+    assertEquals(2, totalRecords.get());
   }
 
   @Test
@@ -209,10 +216,13 @@ public class BlurUtilsTest {
     selector.setLocationId("shard/0");
     ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
     AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
+    AtomicInteger totalRecords = new AtomicInteger();
     List<Document> docs = BlurUtil.fetchDocuments(getReader(), resetableDocumentStoredFieldVisitor, selector, 10000000,
-        "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE), null, moreDocsToFetch);
+        "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE), null, moreDocsToFetch,
+        totalRecords);
     assertEquals(docs.size(), 2);
     assertFalse(moreDocsToFetch.get());
+    assertEquals(2, totalRecords.get());
   }
 
   private void rm(File file) {

@@ -58,7 +58,7 @@ public class DirectoryReferenceFileGC extends TimerTask implements Closeable {
 
     public boolean tryToDelete() throws IOException {
       AtomicInteger counter = refs.get(name);
-      if (counter.get() <= 0) {
+      if (counter == null || counter.get() <= 0) {
         refs.remove(name);
         LOG.debug("Removing file [{0}]", name);
         directory.deleteFile(name);

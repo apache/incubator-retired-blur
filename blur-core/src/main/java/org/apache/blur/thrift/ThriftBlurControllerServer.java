@@ -153,6 +153,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     iface = BlurUtil.recordMethodCallsAndAverageTimes(iface, Iface.class, true);
     iface = BlurUtil.runWithUser(iface, true);
     iface = BlurUtil.runTrace(iface, true);
+    iface = BlurUtil.lastChanceErrorHandling(iface, Iface.class);
     int threadCount = configuration.getInt(BLUR_CONTROLLER_SERVER_THRIFT_THREAD_COUNT, 32);
 
     ControllerServerEventHandler eventHandler = new ControllerServerEventHandler();

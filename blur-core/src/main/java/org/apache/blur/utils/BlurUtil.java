@@ -78,6 +78,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TBase;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryBuffer;
+import org.apache.blur.thrift.BException;
 import org.apache.blur.thrift.UserConverter;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
@@ -159,6 +160,30 @@ public class BlurUtil {
     TJSONProtocol _tjsonProtocol;
     ResetableTMemoryBuffer _buffer;
     StringBuilder _builder = new StringBuilder();
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T extends Iface> T lastChanceErrorHandling(final T t, Class<T> clazz) {
+    InvocationHandler handler = new InvocationHandler() {
+      @Override
+      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        try {
+          return method.invoke(t, args);
+        } catch (InvocationTargetException e) {
+          Throwable targetException = e.getTargetException();
+          if (targetException instanceof BlurException) {
+            throw targetException;
+          } else if (targetException instanceof TException) {
+            throw targetException;
+          } else {
+            throw new BException(
+                "Unknown error during call on method [{0}], this means that the method is handling exceptions correctly.",
+                targetException, method.getName());
+          }
+        }
+      }
+    };
+    return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[] { clazz }, handler);
   }
 
   @SuppressWarnings("unchecked")

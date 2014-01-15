@@ -246,6 +246,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     iface = BlurUtil.recordMethodCallsAndAverageTimes(iface, Iface.class, false);
     iface = BlurUtil.runWithUser(iface, false);
     iface = BlurUtil.runTrace(iface, false);
+    iface = BlurUtil.lastChanceErrorHandling(iface, Iface.class);
     if (httpServer != null) {
       WebAppContext context = httpServer.getContext();
       context.addServlet(new ServletHolder(new TServlet(new Blur.Processor<Blur.Iface>(iface),

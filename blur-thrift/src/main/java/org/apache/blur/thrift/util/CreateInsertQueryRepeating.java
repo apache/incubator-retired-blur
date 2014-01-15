@@ -160,7 +160,6 @@ public class CreateInsertQueryRepeating {
   private void testJoin() throws BlurException, TException {
     RowMutation mutation = new RowMutation();
     mutation.table = table;
-    mutation.waitToBeVisible = true;
     mutation.rowId = "row1";
     mutation.addToRecordMutations(newRecordMutation("cf1", "recordid1", newColumn("col1", "value1")));
     mutation.addToRecordMutations(newRecordMutation("cf1", "recordid2", newColumn("col2", "value2")));
@@ -218,7 +217,6 @@ public class CreateInsertQueryRepeating {
       long buildStart = System.currentTimeMillis();
       mutation.clear();
       mutation.table = table;
-      mutation.waitToBeVisible = false;
       mutation.rowId = UUID.randomUUID().toString();
       mutation.addToRecordMutations(newRecordMutation("test", "test-" + i, newColumn("uuidField", UUID.randomUUID().toString()), newColumn("numberField", i + ""),
           newColumn("fatTextField", randomString(1000))));

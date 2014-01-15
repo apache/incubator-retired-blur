@@ -113,7 +113,7 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
       if (rowResult != null) {
         Row row = rowResult.getRow();
         if (row != null) {
-          GetRowCommand.format(out, row, maxWidth);
+          GetRowCommand.format(out, rowResult, maxWidth);
         }
       }
       lineBreak(out, maxWidth);

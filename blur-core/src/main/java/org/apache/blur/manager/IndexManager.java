@@ -41,6 +41,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.analysis.FieldManager;
@@ -683,13 +684,12 @@ public class IndexManager {
             if (rowId == null) {
               rowId = getRowId(reader, docId);
             }
-            Term term = new Term(ROW_ID, rowId);
-            int recordCount = BlurUtil.countDocuments(reader, term);
             fetchResult.rowResult = new FetchRowResult();
-            fetchResult.rowResult.row = new Row(rowId, null, recordCount);
+            fetchResult.rowResult.row = new Row(rowId, null);
           } else {
             List<Document> docs;
             AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
+            AtomicInteger totalRecords = new AtomicInteger();
             if (highlightQuery != null && fieldManager != null) {
               String rowId = selector.getRowId();
               if (rowId == null) {
@@ -706,12 +706,20 @@ public class IndexManager {
             } else {
               Tracer docTrace = Trace.trace("fetchRow - Document read");
               docs = BlurUtil.fetchDocuments(reader, fieldVisitor, selector, maxHeap, table + "/" + shard,
-                  tableContext.getDefaultPrimeDocTerm(), filter, moreDocsToFetch);
+                  tableContext.getDefaultPrimeDocTerm(), filter, moreDocsToFetch, totalRecords);
               docTrace.done();
             }
             Tracer rowTrace = Trace.trace("fetchRow - Row create");
-            fetchResult.rowResult = new FetchRowResult(getRow(docs), selector.getStartRecord(),
-                selector.getMaxRecordsToFetch(), moreDocsToFetch.get());
+            Row row = getRow(docs);
+            if (row == null) {
+              String rowId = selector.getRowId();
+              if (rowId == null) {
+                rowId = getRowId(reader, docId);
+              }
+              row = new Row(rowId, null);
+            }
+            fetchResult.rowResult = new FetchRowResult(row, selector.getStartRecord(), selector.getMaxRecordsToFetch(),
+                moreDocsToFetch.get(), totalRecords.get());
             rowTrace.done();
           }
           return;

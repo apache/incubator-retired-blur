@@ -28,6 +28,8 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback;
 import org.apache.blur.thrift.AsyncClientPool;
 import org.apache.blur.thrift.generated.Blur;
+import org.apache.blur.thrift.generated.Blur.AsyncClient.mutate_call;
+import org.apache.blur.thrift.generated.Blur.AsyncIface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
@@ -35,8 +37,6 @@ import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RecordMutationType;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
-import org.apache.blur.thrift.generated.Blur.AsyncIface;
-import org.apache.blur.thrift.generated.Blur.AsyncClient.mutate_call;
 
 
 public class LoadDataAsync {
@@ -46,7 +46,6 @@ public class LoadDataAsync {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
     loadWords();
-    final boolean wal = false;
     final int numberOfColumns = 3;
     int numberRows = 100000;
     final int numberRecordsPerRow = 2;
@@ -65,7 +64,7 @@ public class LoadDataAsync {
         System.out.println("Rows indexed [" + i + "] at [" + rate + "/s]");
         count = 0;
       }
-      client.mutate(getRowMutation(table, wal, numberRecordsPerRow, numberOfColumns, numberOfFamilies, numberOfWords), new AsyncMethodCallback<Blur.AsyncClient.mutate_call>() {
+      client.mutate(getRowMutation(table, numberRecordsPerRow, numberOfColumns, numberOfFamilies, numberOfWords), new AsyncMethodCallback<Blur.AsyncClient.mutate_call>() {
         @Override
         public void onError(Exception exception) {
 
@@ -80,12 +79,11 @@ public class LoadDataAsync {
     }
   }
 
-  private static RowMutation getRowMutation(String table, boolean wal, int numberRecordsPerRow, int numberOfColumns, int numberOfFamilies, int numberOfWords) {
+  private static RowMutation getRowMutation(String table, int numberRecordsPerRow, int numberOfColumns, int numberOfFamilies, int numberOfWords) {
     RowMutation mutation = new RowMutation();
     mutation.setTable(table);
     String rowId = getRowId();
     mutation.setRowId(rowId);
-    mutation.setWal(wal);
     mutation.setRowMutationType(RowMutationType.REPLACE_ROW);
     for (int j = 0; j < numberRecordsPerRow; j++) {
       mutation.addToRecordMutations(getRecordMutation(numberOfColumns, numberOfFamilies, numberOfWords));

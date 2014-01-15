@@ -203,7 +203,6 @@ public class MiniCluster {
     record.addToColumns(new Column("test", Integer.toString(i)));
     row.addToRecords(record);
     RowMutation rowMutation = BlurUtil.toRowMutation(table, row);
-    rowMutation.setWal(false);
     client.mutate(rowMutation);
   }
 

@@ -93,7 +93,6 @@ public class LoadDataAsyncContinuously {
     RowMutation mutation = new RowMutation();
     mutation.setTable(table);
     mutation.setRowId(Integer.toString(rowid));
-    mutation.setWal(wal);
     mutation.setRowMutationType(RowMutationType.REPLACE_ROW);
     for (int j = 0; j < numberRecordsPerRow; j++) {
       mutation.addToRecordMutations(getRecordMutation(numberOfColumns, numberOfFamilies, numberOfWords));

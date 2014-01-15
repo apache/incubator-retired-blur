@@ -30,14 +30,38 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 public class CachedDecompressor extends Decompressor {
 
   private final Decompressor _decompressor;
-  private final ConcurrentLinkedHashMap<CachedKey, BytesRef> _cache;
-  private final SegmentInfo _si;
+
+  private final ThreadLocal<Entry> _entry = new ThreadLocal<Entry>();
+
+  static class Entry {
+    final IndexInput _indexInput;
+    final String _name;
+    final long _filePointer;
+    BytesRef _cache;
+
+    Entry(IndexInput indexInput, String name, long filePointer) {
+      _indexInput = indexInput;
+      _name = name;
+      _filePointer = filePointer;
+    }
+
+    boolean isValid(IndexInput indexInput, String name, long filePointer) {
+      if (_indexInput != indexInput) {
+        return false;
+      }
+      if (!_name.equals(name)) {
+        return false;
+      }
+      if (_filePointer != filePointer) {
+        return false;
+      }
+      return true;
+    }
+  }
 
   public CachedDecompressor(Decompressor decompressor, SegmentInfo si,
       ConcurrentLinkedHashMap<CachedKey, BytesRef> cache) {
-    _si = si;
     _decompressor = decompressor;
-    _cache = cache;
   }
 
   @Override
@@ -47,19 +71,20 @@ public class CachedDecompressor extends Decompressor {
       IndexInput indexInput = (IndexInput) in;
       String name = indexInput.toString();
       long filePointer = indexInput.getFilePointer();
-      CachedKey key = new CachedKey(name, filePointer, _si);
-      BytesRef cachedRef = _cache.get(key);
-      if (cachedRef == null) {
-        cachedRef = new BytesRef(originalLength + 7);
-        _decompressor.decompress(indexInput, originalLength, 0, originalLength, cachedRef);
-        _cache.put(key, cachedRef);
-        cachedRef.length = originalLength;
-        cachedRef.offset = 0;
+
+      Entry entry = _entry.get();
+      if (entry == null || !entry.isValid(indexInput, name, filePointer)) {
+        entry = new Entry(indexInput, name, filePointer);
+        entry._cache = new BytesRef(originalLength + 7);
+        _decompressor.decompress(indexInput, originalLength, 0, originalLength, entry._cache);
+        entry._cache.length = originalLength;
+        entry._cache.offset = 0;
+        _entry.set(entry);
       }
       if (bytes.bytes.length < originalLength + 7) {
         bytes.bytes = new byte[ArrayUtil.oversize(originalLength + 7, 1)];
       }
-      System.arraycopy(cachedRef.bytes, cachedRef.offset, bytes.bytes, 0, length + offset);
+      System.arraycopy(entry._cache.bytes, entry._cache.offset, bytes.bytes, 0, length + offset);
       bytes.offset = offset;
       bytes.length = length;
     } else {

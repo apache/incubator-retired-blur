@@ -276,9 +276,6 @@ trace (if any).
 <tr><td>2</td><td>records</td><td><code>list&lt;<code><a href="Blur.html#Struct_Record">Record</a></code>&gt;</code></td><td>The list records within the row.  If paging is used this list will only
 reflect the paged records from the selector.
 </td><td>default</td><td></td></tr>
-<tr><td>3</td><td>recordCount</td><td><code>i32</code></td><td>The total record count for the row.  If paging is used in a selector to page
-through records of a row, this count will reflect the entire row.
-</td><td>default</td><td></td></tr>
 </table><br/>Rows contain a list of records.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_Query">Struct: Query</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
@@ -322,9 +319,9 @@ The location id of the Record or Row to be fetched.
 </td><td>default</td><td></td></tr>
 <tr><td>4</td><td>recordId</td><td><code>string</code></td><td>The record id of the Record to be fetched, not to be used with location id.  However the row id needs to be provided to locate the correct Row with the requested Record.
 </td><td>default</td><td></td></tr>
-<tr><td>5</td><td>columnFamiliesToFetch</td><td><code>list&lt;<code>string</code>&gt;</code></td><td>The column families to fetch.  If null, fetch all.  If empty, fetch none.
+<tr><td>5</td><td>columnFamiliesToFetch</td><td><code>set&lt;<code>string</code>&gt;</code></td><td>The column families to fetch. If null, fetch all. If empty, fetch none.
 </td><td>default</td><td></td></tr>
-<tr><td>6</td><td>columnsToFetch</td><td><code>map&lt;<code>string</code>, <code>set&lt;<code>string</code>&gt;</code>&gt;</code></td><td>The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
+<tr><td>6</td><td>columnsToFetch</td><td><code>map&lt;<code>string</code>, <code>set&lt;<code>string</code>&gt;</code>&gt;</code></td><td>The columns in the families to fetch. If null, fetch all. If empty, fetch none.
 </td><td>default</td><td></td></tr>
 <tr><td>8</td><td>startRecord</td><td><code>i32</code></td><td>Only valid for Row fetches, the record in the row to start fetching.  If the row contains 1000
 records and you want the first 100, then this value is 0.  If you want records 300-400 then this
@@ -338,6 +335,8 @@ would be 100.  Used in conjunction with startRecord. By default this will fetch 
 </td><td>default</td><td>1000</td></tr>
 <tr><td>10</td><td>highlightOptions</td><td><code><a href="Blur.html#Struct_HighlightOptions">HighlightOptions</a></code></td><td>The HighlightOptions object controls how the data is highlighted.  If null no highlighting will occur.
 </td><td>default</td><td></td></tr>
+<tr><td>11</td><td>orderOfFamiliesToFetch</td><td><code>list&lt;<code>string</code>&gt;</code></td><td>Can be null, if provided the provided family order will be the order in which the families are returned.
+</td><td>default</td><td></td></tr>
 </table><br/>Select carries the request for information to be retrieved from the stored columns.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_FetchRowResult">Struct: FetchRowResult</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
@@ -349,6 +348,8 @@ would be 100.  Used in conjunction with startRecord. By default this will fetch 
 </td><td>default</td><td>-1</td></tr>
 <tr><td>4</td><td>moreRecordsToFetch</td><td><code>bool</code></td><td>Are there more Records to fetch based on the Selector provided.
 </td><td>default</td><td>0</td></tr>
+<tr><td>5</td><td>totalRecords</td><td><code>i32</code></td><td>The total number of records the Selector found.
+</td><td>default</td><td></td></tr>
 </table><br/>FetchRowResult contains row result from a fetch.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_FetchRecordResult">Struct: FetchRecordResult</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
@@ -450,14 +451,10 @@ with the query options.
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>rowId</td><td><code>string</code></td><td>The row id that the row mutation is to act upon.
 </td><td>default</td><td></td></tr>
-<tr><td>3</td><td>wal</td><td><code>bool</code></td><td>Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
-</td><td>default</td><td>1</td></tr>
 <tr><td>4</td><td>rowMutationType</td><td><code><a href="Blur.html#Enum_RowMutationType">RowMutationType</a></code></td><td>The RowMutationType to define how to mutate the given Row.
 </td><td>default</td><td>UNKNOWN</td></tr>
 <tr><td>5</td><td>recordMutations</td><td><code>list&lt;<code><a href="Blur.html#Struct_RecordMutation">RecordMutation</a></code>&gt;</code></td><td>The RecordMutations if any for this Row.
 </td><td>default</td><td></td></tr>
-<tr><td>6</td><td>waitToBeVisible</td><td><code>bool</code></td><td>On mutate waits for the mutation to be visible to queries and fetch requests.
-</td><td>default</td><td>0</td></tr>
 </table><br/>The RowMutation defines how the given Row is to be mutated.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_CpuTime">Struct: CpuTime</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>

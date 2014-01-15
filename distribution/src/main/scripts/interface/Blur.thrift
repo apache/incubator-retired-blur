@@ -201,7 +201,7 @@ struct Row {
    * The total record count for the row.  If paging is used in a selector to page 
    * through records of a row, this count will reflect the entire row.
    */
-  3:i32 recordCount
+//  3:i32 recordCount
 }
 
 /**
@@ -281,11 +281,11 @@ struct Selector {
    */
   4:string recordId,
   /**
-   * The column families to fetch.  If null, fetch all.  If empty, fetch none.
+   * The column families to fetch. If null, fetch all. If empty, fetch none.
    */
-  5:list<string> columnFamiliesToFetch,
+  5:set<string> columnFamiliesToFetch,
   /**
-   * The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
+   * The columns in the families to fetch. If null, fetch all. If empty, fetch none.
    */
   6:map<string,set<string>> columnsToFetch,
   /**
@@ -305,7 +305,11 @@ struct Selector {
   /**
    * The HighlightOptions object controls how the data is highlighted.  If null no highlighting will occur.
    */
-  10:HighlightOptions highlightOptions
+  10:HighlightOptions highlightOptions,
+  /**
+   * Can be null, if provided the provided family order will be the order in which the families are returned.
+   */
+  11:list<string> orderOfFamiliesToFetch
 }
 
 /**
@@ -327,7 +331,11 @@ struct FetchRowResult {
   /**
    * Are there more Records to fetch based on the Selector provided.
    */
-  4:bool moreRecordsToFetch = 0
+  4:bool moreRecordsToFetch = 0,
+  /**
+   * The total number of records the Selector found.
+   */
+  5:i32 totalRecords
 }
 
 /**
@@ -519,21 +527,13 @@ struct RowMutation {
    */
   2:string rowId,
   /**
-   * Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
-   */
-  3:bool wal = 1,
-  /**
    * The RowMutationType to define how to mutate the given Row.
    */
   4:RowMutationType rowMutationType = RowMutationType.REPLACE_ROW,
   /**
    * The RecordMutations if any for this Row.
    */
-  5:list<RecordMutation> recordMutations,
-  /**
-   * On mutate waits for the mutation to be visible to queries and fetch requests.
-   */
-  6:bool waitToBeVisible = 0
+  5:list<RecordMutation> recordMutations
 }
 
 /**

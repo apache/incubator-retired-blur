@@ -57,7 +57,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
 
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("id", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RECORDS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("records", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)2);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RECORD_COUNT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("recordCount", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -74,11 +73,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
    * reflect the paged records from the selector.
    */
   public List<Record> records; // required
-  /**
-   * The total record count for the row.  If paging is used in a selector to page
-   * through records of a row, this count will reflect the entire row.
-   */
-  public int recordCount; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
@@ -90,12 +84,7 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
      * The list records within the row.  If paging is used this list will only
      * reflect the paged records from the selector.
      */
-    RECORDS((short)2, "records"),
-    /**
-     * The total record count for the row.  If paging is used in a selector to page
-     * through records of a row, this count will reflect the entire row.
-     */
-    RECORD_COUNT((short)3, "recordCount");
+    RECORDS((short)2, "records");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -114,8 +103,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
           return ID;
         case 2: // RECORDS
           return RECORDS;
-        case 3: // RECORD_COUNT
-          return RECORD_COUNT;
         default:
           return null;
       }
@@ -156,8 +143,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
   }
 
   // isset id assignments
-  private static final int __RECORDCOUNT_ISSET_ID = 0;
-  private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
@@ -166,8 +151,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
     tmpMap.put(_Fields.RECORDS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("records", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Record.class))));
-    tmpMap.put(_Fields.RECORD_COUNT, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("recordCount", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(Row.class, metaDataMap);
   }
@@ -177,21 +160,17 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
 
   public Row(
     String id,
-    List<Record> records,
-    int recordCount)
+    List<Record> records)
   {
     this();
     this.id = id;
     this.records = records;
-    this.recordCount = recordCount;
-    setRecordCountIsSet(true);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public Row(Row other) {
-    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetId()) {
       this.id = other.id;
     }
@@ -202,7 +181,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
       }
       this.records = __this__records;
     }
-    this.recordCount = other.recordCount;
   }
 
   public Row deepCopy() {
@@ -213,8 +191,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
   public void clear() {
     this.id = null;
     this.records = null;
-    setRecordCountIsSet(false);
-    this.recordCount = 0;
   }
 
   /**
@@ -294,37 +270,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
     }
   }
 
-  /**
-   * The total record count for the row.  If paging is used in a selector to page
-   * through records of a row, this count will reflect the entire row.
-   */
-  public int getRecordCount() {
-    return this.recordCount;
-  }
-
-  /**
-   * The total record count for the row.  If paging is used in a selector to page
-   * through records of a row, this count will reflect the entire row.
-   */
-  public Row setRecordCount(int recordCount) {
-    this.recordCount = recordCount;
-    setRecordCountIsSet(true);
-    return this;
-  }
-
-  public void unsetRecordCount() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __RECORDCOUNT_ISSET_ID);
-  }
-
-  /** Returns true if field recordCount is set (has been assigned a value) and false otherwise */
-  public boolean isSetRecordCount() {
-    return EncodingUtils.testBit(__isset_bitfield, __RECORDCOUNT_ISSET_ID);
-  }
-
-  public void setRecordCountIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __RECORDCOUNT_ISSET_ID, value);
-  }
-
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case ID:
@@ -343,14 +288,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
       }
       break;
 
-    case RECORD_COUNT:
-      if (value == null) {
-        unsetRecordCount();
-      } else {
-        setRecordCount((Integer)value);
-      }
-      break;
-
     }
   }
 
@@ -361,9 +298,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
 
     case RECORDS:
       return getRecords();
-
-    case RECORD_COUNT:
-      return Integer.valueOf(getRecordCount());
 
     }
     throw new IllegalStateException();
@@ -380,8 +314,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
       return isSetId();
     case RECORDS:
       return isSetRecords();
-    case RECORD_COUNT:
-      return isSetRecordCount();
     }
     throw new IllegalStateException();
   }
@@ -414,15 +346,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
       if (!(this_present_records && that_present_records))
         return false;
       if (!this.records.equals(that.records))
-        return false;
-    }
-
-    boolean this_present_recordCount = true;
-    boolean that_present_recordCount = true;
-    if (this_present_recordCount || that_present_recordCount) {
-      if (!(this_present_recordCount && that_present_recordCount))
-        return false;
-      if (this.recordCount != that.recordCount)
         return false;
     }
 
@@ -462,16 +385,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetRecordCount()).compareTo(typedOther.isSetRecordCount());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetRecordCount()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.recordCount, typedOther.recordCount);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     return 0;
   }
 
@@ -507,10 +420,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
       sb.append(this.records);
     }
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("recordCount:");
-    sb.append(this.recordCount);
-    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -530,8 +439,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
-      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-      __isset_bitfield = 0;
       read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
     } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
@@ -583,14 +490,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // RECORD_COUNT
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
-              struct.recordCount = iprot.readI32();
-              struct.setRecordCountIsSet(true);
-            } else { 
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           default:
             org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -623,9 +522,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
         }
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(RECORD_COUNT_FIELD_DESC);
-      oprot.writeI32(struct.recordCount);
-      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -650,10 +546,7 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
       if (struct.isSetRecords()) {
         optionals.set(1);
       }
-      if (struct.isSetRecordCount()) {
-        optionals.set(2);
-      }
-      oprot.writeBitSet(optionals, 3);
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetId()) {
         oprot.writeString(struct.id);
       }
@@ -666,15 +559,12 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
           }
         }
       }
-      if (struct.isSetRecordCount()) {
-        oprot.writeI32(struct.recordCount);
-      }
     }
 
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, Row struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         struct.id = iprot.readString();
         struct.setIdIsSet(true);
@@ -692,10 +582,6 @@ public class Row implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Row, R
           }
         }
         struct.setRecordsIsSet(true);
-      }
-      if (incoming.get(2)) {
-        struct.recordCount = iprot.readI32();
-        struct.setRecordCountIsSet(true);
       }
     }
   }

@@ -147,17 +147,13 @@ module Blur
     include ::Thrift::Struct, ::Thrift::Struct_Union
     ID = 1
     RECORDS = 2
-    RECORDCOUNT = 3
 
     FIELDS = {
       # The row id.
       ID => {:type => ::Thrift::Types::STRING, :name => 'id'},
       # The list records within the row.  If paging is used this list will only
 # reflect the paged records from the selector.
-      RECORDS => {:type => ::Thrift::Types::LIST, :name => 'records', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Record}},
-      # The total record count for the row.  If paging is used in a selector to page
-# through records of a row, this count will reflect the entire row.
-      RECORDCOUNT => {:type => ::Thrift::Types::I32, :name => 'recordCount'}
+      RECORDS => {:type => ::Thrift::Types::LIST, :name => 'records', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Record}}
     }
 
     def struct_fields; FIELDS; end
@@ -246,6 +242,7 @@ module Blur
     STARTRECORD = 8
     MAXRECORDSTOFETCH = 9
     HIGHLIGHTOPTIONS = 10
+    ORDEROFFAMILIESTOFETCH = 11
 
     FIELDS = {
       # Fetch the Record only, not the entire Row.
@@ -257,9 +254,9 @@ module Blur
       ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowId'},
       # The record id of the Record to be fetched, not to be used with location id.  However the row id needs to be provided to locate the correct Row with the requested Record.
       RECORDID => {:type => ::Thrift::Types::STRING, :name => 'recordId'},
-      # The column families to fetch.  If null, fetch all.  If empty, fetch none.
-      COLUMNFAMILIESTOFETCH => {:type => ::Thrift::Types::LIST, :name => 'columnFamiliesToFetch', :element => {:type => ::Thrift::Types::STRING}},
-      # The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
+      # The column families to fetch. If null, fetch all. If empty, fetch none.
+      COLUMNFAMILIESTOFETCH => {:type => ::Thrift::Types::SET, :name => 'columnFamiliesToFetch', :element => {:type => ::Thrift::Types::STRING}},
+      # The columns in the families to fetch. If null, fetch all. If empty, fetch none.
       COLUMNSTOFETCH => {:type => ::Thrift::Types::MAP, :name => 'columnsToFetch', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::SET, :element => {:type => ::Thrift::Types::STRING}}},
       # Only valid for Row fetches, the record in the row to start fetching.  If the row contains 1000
 # records and you want the first 100, then this value is 0.  If you want records 300-400 then this
@@ -272,7 +269,9 @@ module Blur
 # 1000 records of the row.
       MAXRECORDSTOFETCH => {:type => ::Thrift::Types::I32, :name => 'maxRecordsToFetch', :default => 1000},
       # The HighlightOptions object controls how the data is highlighted.  If null no highlighting will occur.
-      HIGHLIGHTOPTIONS => {:type => ::Thrift::Types::STRUCT, :name => 'highlightOptions', :class => ::Blur::HighlightOptions}
+      HIGHLIGHTOPTIONS => {:type => ::Thrift::Types::STRUCT, :name => 'highlightOptions', :class => ::Blur::HighlightOptions},
+      # Can be null, if provided the provided family order will be the order in which the families are returned.
+      ORDEROFFAMILIESTOFETCH => {:type => ::Thrift::Types::LIST, :name => 'orderOfFamiliesToFetch', :element => {:type => ::Thrift::Types::STRING}}
     }
 
     def struct_fields; FIELDS; end
@@ -290,6 +289,7 @@ module Blur
     STARTRECORD = 2
     MAXRECORDSTOFETCH = 3
     MORERECORDSTOFETCH = 4
+    TOTALRECORDS = 5
 
     FIELDS = {
       # The row fetched.
@@ -299,7 +299,9 @@ module Blur
       # See Selector maxRecordsToFetch.
       MAXRECORDSTOFETCH => {:type => ::Thrift::Types::I32, :name => 'maxRecordsToFetch', :default => -1},
       # Are there more Records to fetch based on the Selector provided.
-      MORERECORDSTOFETCH => {:type => ::Thrift::Types::BOOL, :name => 'moreRecordsToFetch', :default => false}
+      MORERECORDSTOFETCH => {:type => ::Thrift::Types::BOOL, :name => 'moreRecordsToFetch', :default => false},
+      # The total number of records the Selector found.
+      TOTALRECORDS => {:type => ::Thrift::Types::I32, :name => 'totalRecords'}
     }
 
     def struct_fields; FIELDS; end
@@ -528,24 +530,18 @@ module Blur
     include ::Thrift::Struct, ::Thrift::Struct_Union
     TABLE = 1
     ROWID = 2
-    WAL = 3
     ROWMUTATIONTYPE = 4
     RECORDMUTATIONS = 5
-    WAITTOBEVISIBLE = 6
 
     FIELDS = {
       # The table that the row mutation is to act upon.
       TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
       # The row id that the row mutation is to act upon.
       ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowId'},
-      # Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
-      WAL => {:type => ::Thrift::Types::BOOL, :name => 'wal', :default => true},
       # The RowMutationType to define how to mutate the given Row.
       ROWMUTATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'rowMutationType', :default =>       1, :enum_class => ::Blur::RowMutationType},
       # The RecordMutations if any for this Row.
-      RECORDMUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'recordMutations', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::RecordMutation}},
-      # On mutate waits for the mutation to be visible to queries and fetch requests.
-      WAITTOBEVISIBLE => {:type => ::Thrift::Types::BOOL, :name => 'waitToBeVisible', :default => false}
+      RECORDMUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'recordMutations', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::RecordMutation}}
     }
 
     def struct_fields; FIELDS; end

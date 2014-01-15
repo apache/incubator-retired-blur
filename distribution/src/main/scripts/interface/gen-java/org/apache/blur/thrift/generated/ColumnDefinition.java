@@ -903,15 +903,15 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
           case 6: // PROPERTIES
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map102 = iprot.readMapBegin();
-                struct.properties = new HashMap<String,String>(2*_map102.size);
-                for (int _i103 = 0; _i103 < _map102.size; ++_i103)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map110 = iprot.readMapBegin();
+                struct.properties = new HashMap<String,String>(2*_map110.size);
+                for (int _i111 = 0; _i111 < _map110.size; ++_i111)
                 {
-                  String _key104; // optional
-                  String _val105; // required
-                  _key104 = iprot.readString();
-                  _val105 = iprot.readString();
-                  struct.properties.put(_key104, _val105);
+                  String _key112; // optional
+                  String _val113; // required
+                  _key112 = iprot.readString();
+                  _val113 = iprot.readString();
+                  struct.properties.put(_key112, _val113);
                 }
                 iprot.readMapEnd();
               }
@@ -962,10 +962,10 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
         oprot.writeFieldBegin(PROPERTIES_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.properties.size()));
-          for (Map.Entry<String, String> _iter106 : struct.properties.entrySet())
+          for (Map.Entry<String, String> _iter114 : struct.properties.entrySet())
           {
-            oprot.writeString(_iter106.getKey());
-            oprot.writeString(_iter106.getValue());
+            oprot.writeString(_iter114.getKey());
+            oprot.writeString(_iter114.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -1026,10 +1026,10 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       if (struct.isSetProperties()) {
         {
           oprot.writeI32(struct.properties.size());
-          for (Map.Entry<String, String> _iter107 : struct.properties.entrySet())
+          for (Map.Entry<String, String> _iter115 : struct.properties.entrySet())
           {
-            oprot.writeString(_iter107.getKey());
-            oprot.writeString(_iter107.getValue());
+            oprot.writeString(_iter115.getKey());
+            oprot.writeString(_iter115.getValue());
           }
         }
       }
@@ -1061,15 +1061,15 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       }
       if (incoming.get(5)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map108 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-          struct.properties = new HashMap<String,String>(2*_map108.size);
-          for (int _i109 = 0; _i109 < _map108.size; ++_i109)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map116 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.properties = new HashMap<String,String>(2*_map116.size);
+          for (int _i117 = 0; _i117 < _map116.size; ++_i117)
           {
-            String _key110; // optional
-            String _val111; // required
-            _key110 = iprot.readString();
-            _val111 = iprot.readString();
-            struct.properties.put(_key110, _val111);
+            String _key118; // optional
+            String _val119; // required
+            _key118 = iprot.readString();
+            _val119 = iprot.readString();
+            struct.properties.put(_key118, _val119);
           }
         }
         struct.setPropertiesIsSet(true);

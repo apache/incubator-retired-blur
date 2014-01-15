@@ -1366,14 +1366,14 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
           case 3: // FACETS
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list42 = iprot.readListBegin();
-                struct.facets = new ArrayList<Facet>(_list42.size);
-                for (int _i43 = 0; _i43 < _list42.size; ++_i43)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list50 = iprot.readListBegin();
+                struct.facets = new ArrayList<Facet>(_list50.size);
+                for (int _i51 = 0; _i51 < _list50.size; ++_i51)
                 {
-                  Facet _elem44; // required
-                  _elem44 = new Facet();
-                  _elem44.read(iprot);
-                  struct.facets.add(_elem44);
+                  Facet _elem52; // required
+                  _elem52 = new Facet();
+                  _elem52.read(iprot);
+                  struct.facets.add(_elem52);
                 }
                 iprot.readListEnd();
               }
@@ -1487,9 +1487,9 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         oprot.writeFieldBegin(FACETS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.facets.size()));
-          for (Facet _iter45 : struct.facets)
+          for (Facet _iter53 : struct.facets)
           {
-            _iter45.write(oprot);
+            _iter53.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1592,9 +1592,9 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       if (struct.isSetFacets()) {
         {
           oprot.writeI32(struct.facets.size());
-          for (Facet _iter46 : struct.facets)
+          for (Facet _iter54 : struct.facets)
           {
-            _iter46.write(oprot);
+            _iter54.write(oprot);
           }
         }
       }
@@ -1641,14 +1641,14 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       }
       if (incoming.get(1)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list47 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-          struct.facets = new ArrayList<Facet>(_list47.size);
-          for (int _i48 = 0; _i48 < _list47.size; ++_i48)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list55 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+          struct.facets = new ArrayList<Facet>(_list55.size);
+          for (int _i56 = 0; _i56 < _list55.size; ++_i56)
           {
-            Facet _elem49; // required
-            _elem49 = new Facet();
-            _elem49.read(iprot);
-            struct.facets.add(_elem49);
+            Facet _elem57; // required
+            _elem57 = new Facet();
+            _elem57.read(iprot);
+            struct.facets.add(_elem57);
           }
         }
         struct.setFacetsIsSet(true);

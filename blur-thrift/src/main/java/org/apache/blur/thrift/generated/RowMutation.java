@@ -57,10 +57,8 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
 
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("table", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ROW_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("rowId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField WAL_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("wal", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)3);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ROW_MUTATION_TYPE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("rowMutationType", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)4);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RECORD_MUTATIONS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("recordMutations", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)5);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField WAIT_TO_BE_VISIBLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("waitToBeVisible", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -77,10 +75,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
    */
   public String rowId; // required
   /**
-   * Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
-   */
-  public boolean wal; // required
-  /**
    * The RowMutationType to define how to mutate the given Row.
    * 
    * @see RowMutationType
@@ -90,10 +84,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
    * The RecordMutations if any for this Row.
    */
   public List<RecordMutation> recordMutations; // required
-  /**
-   * On mutate waits for the mutation to be visible to queries and fetch requests.
-   */
-  public boolean waitToBeVisible; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
@@ -106,10 +96,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
      */
     ROW_ID((short)2, "rowId"),
     /**
-     * Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
-     */
-    WAL((short)3, "wal"),
-    /**
      * The RowMutationType to define how to mutate the given Row.
      * 
      * @see RowMutationType
@@ -118,11 +104,7 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     /**
      * The RecordMutations if any for this Row.
      */
-    RECORD_MUTATIONS((short)5, "recordMutations"),
-    /**
-     * On mutate waits for the mutation to be visible to queries and fetch requests.
-     */
-    WAIT_TO_BE_VISIBLE((short)6, "waitToBeVisible");
+    RECORD_MUTATIONS((short)5, "recordMutations");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -141,14 +123,10 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
           return TABLE;
         case 2: // ROW_ID
           return ROW_ID;
-        case 3: // WAL
-          return WAL;
         case 4: // ROW_MUTATION_TYPE
           return ROW_MUTATION_TYPE;
         case 5: // RECORD_MUTATIONS
           return RECORD_MUTATIONS;
-        case 6: // WAIT_TO_BE_VISIBLE
-          return WAIT_TO_BE_VISIBLE;
         default:
           return null;
       }
@@ -189,9 +167,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   }
 
   // isset id assignments
-  private static final int __WAL_ISSET_ID = 0;
-  private static final int __WAITTOBEVISIBLE_ISSET_ID = 1;
-  private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
@@ -199,59 +174,43 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     tmpMap.put(_Fields.ROW_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("rowId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
-    tmpMap.put(_Fields.WAL, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("wal", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
     tmpMap.put(_Fields.ROW_MUTATION_TYPE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("rowMutationType", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.EnumMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.ENUM, RowMutationType.class)));
     tmpMap.put(_Fields.RECORD_MUTATIONS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("recordMutations", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, RecordMutation.class))));
-    tmpMap.put(_Fields.WAIT_TO_BE_VISIBLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("waitToBeVisible", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(RowMutation.class, metaDataMap);
   }
 
   public RowMutation() {
-    this.wal = true;
-
     this.rowMutationType = org.apache.blur.thrift.generated.RowMutationType.REPLACE_ROW;
-
-    this.waitToBeVisible = false;
 
   }
 
   public RowMutation(
     String table,
     String rowId,
-    boolean wal,
     RowMutationType rowMutationType,
-    List<RecordMutation> recordMutations,
-    boolean waitToBeVisible)
+    List<RecordMutation> recordMutations)
   {
     this();
     this.table = table;
     this.rowId = rowId;
-    this.wal = wal;
-    setWalIsSet(true);
     this.rowMutationType = rowMutationType;
     this.recordMutations = recordMutations;
-    this.waitToBeVisible = waitToBeVisible;
-    setWaitToBeVisibleIsSet(true);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public RowMutation(RowMutation other) {
-    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetTable()) {
       this.table = other.table;
     }
     if (other.isSetRowId()) {
       this.rowId = other.rowId;
     }
-    this.wal = other.wal;
     if (other.isSetRowMutationType()) {
       this.rowMutationType = other.rowMutationType;
     }
@@ -262,7 +221,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
       }
       this.recordMutations = __this__recordMutations;
     }
-    this.waitToBeVisible = other.waitToBeVisible;
   }
 
   public RowMutation deepCopy() {
@@ -273,13 +231,9 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
   public void clear() {
     this.table = null;
     this.rowId = null;
-    this.wal = true;
-
     this.rowMutationType = org.apache.blur.thrift.generated.RowMutationType.REPLACE_ROW;
 
     this.recordMutations = null;
-    this.waitToBeVisible = false;
-
   }
 
   /**
@@ -340,35 +294,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     if (!value) {
       this.rowId = null;
     }
-  }
-
-  /**
-   * Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
-   */
-  public boolean isWal() {
-    return this.wal;
-  }
-
-  /**
-   * Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
-   */
-  public RowMutation setWal(boolean wal) {
-    this.wal = wal;
-    setWalIsSet(true);
-    return this;
-  }
-
-  public void unsetWal() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __WAL_ISSET_ID);
-  }
-
-  /** Returns true if field wal is set (has been assigned a value) and false otherwise */
-  public boolean isSetWal() {
-    return EncodingUtils.testBit(__isset_bitfield, __WAL_ISSET_ID);
-  }
-
-  public void setWalIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __WAL_ISSET_ID, value);
   }
 
   /**
@@ -450,35 +375,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     }
   }
 
-  /**
-   * On mutate waits for the mutation to be visible to queries and fetch requests.
-   */
-  public boolean isWaitToBeVisible() {
-    return this.waitToBeVisible;
-  }
-
-  /**
-   * On mutate waits for the mutation to be visible to queries and fetch requests.
-   */
-  public RowMutation setWaitToBeVisible(boolean waitToBeVisible) {
-    this.waitToBeVisible = waitToBeVisible;
-    setWaitToBeVisibleIsSet(true);
-    return this;
-  }
-
-  public void unsetWaitToBeVisible() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __WAITTOBEVISIBLE_ISSET_ID);
-  }
-
-  /** Returns true if field waitToBeVisible is set (has been assigned a value) and false otherwise */
-  public boolean isSetWaitToBeVisible() {
-    return EncodingUtils.testBit(__isset_bitfield, __WAITTOBEVISIBLE_ISSET_ID);
-  }
-
-  public void setWaitToBeVisibleIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __WAITTOBEVISIBLE_ISSET_ID, value);
-  }
-
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TABLE:
@@ -494,14 +390,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
         unsetRowId();
       } else {
         setRowId((String)value);
-      }
-      break;
-
-    case WAL:
-      if (value == null) {
-        unsetWal();
-      } else {
-        setWal((Boolean)value);
       }
       break;
 
@@ -521,14 +409,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
       }
       break;
 
-    case WAIT_TO_BE_VISIBLE:
-      if (value == null) {
-        unsetWaitToBeVisible();
-      } else {
-        setWaitToBeVisible((Boolean)value);
-      }
-      break;
-
     }
   }
 
@@ -540,17 +420,11 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     case ROW_ID:
       return getRowId();
 
-    case WAL:
-      return Boolean.valueOf(isWal());
-
     case ROW_MUTATION_TYPE:
       return getRowMutationType();
 
     case RECORD_MUTATIONS:
       return getRecordMutations();
-
-    case WAIT_TO_BE_VISIBLE:
-      return Boolean.valueOf(isWaitToBeVisible());
 
     }
     throw new IllegalStateException();
@@ -567,14 +441,10 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
       return isSetTable();
     case ROW_ID:
       return isSetRowId();
-    case WAL:
-      return isSetWal();
     case ROW_MUTATION_TYPE:
       return isSetRowMutationType();
     case RECORD_MUTATIONS:
       return isSetRecordMutations();
-    case WAIT_TO_BE_VISIBLE:
-      return isSetWaitToBeVisible();
     }
     throw new IllegalStateException();
   }
@@ -610,15 +480,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
         return false;
     }
 
-    boolean this_present_wal = true;
-    boolean that_present_wal = true;
-    if (this_present_wal || that_present_wal) {
-      if (!(this_present_wal && that_present_wal))
-        return false;
-      if (this.wal != that.wal)
-        return false;
-    }
-
     boolean this_present_rowMutationType = true && this.isSetRowMutationType();
     boolean that_present_rowMutationType = true && that.isSetRowMutationType();
     if (this_present_rowMutationType || that_present_rowMutationType) {
@@ -634,15 +495,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
       if (!(this_present_recordMutations && that_present_recordMutations))
         return false;
       if (!this.recordMutations.equals(that.recordMutations))
-        return false;
-    }
-
-    boolean this_present_waitToBeVisible = true;
-    boolean that_present_waitToBeVisible = true;
-    if (this_present_waitToBeVisible || that_present_waitToBeVisible) {
-      if (!(this_present_waitToBeVisible && that_present_waitToBeVisible))
-        return false;
-      if (this.waitToBeVisible != that.waitToBeVisible)
         return false;
     }
 
@@ -682,16 +534,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetWal()).compareTo(typedOther.isSetWal());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetWal()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.wal, typedOther.wal);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = Boolean.valueOf(isSetRowMutationType()).compareTo(typedOther.isSetRowMutationType());
     if (lastComparison != 0) {
       return lastComparison;
@@ -708,16 +550,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     }
     if (isSetRecordMutations()) {
       lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.recordMutations, typedOther.recordMutations);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetWaitToBeVisible()).compareTo(typedOther.isSetWaitToBeVisible());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetWaitToBeVisible()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.waitToBeVisible, typedOther.waitToBeVisible);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -758,10 +590,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("wal:");
-    sb.append(this.wal);
-    first = false;
-    if (!first) sb.append(", ");
     sb.append("rowMutationType:");
     if (this.rowMutationType == null) {
       sb.append("null");
@@ -776,10 +604,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
     } else {
       sb.append(this.recordMutations);
     }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("waitToBeVisible:");
-    sb.append(this.waitToBeVisible);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -800,8 +624,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
-      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-      __isset_bitfield = 0;
       read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
     } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
@@ -842,14 +664,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // WAL
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
-              struct.wal = iprot.readBool();
-              struct.setWalIsSet(true);
-            } else { 
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           case 4: // ROW_MUTATION_TYPE
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
               struct.rowMutationType = RowMutationType.findByValue(iprot.readI32());
@@ -861,26 +675,18 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
           case 5: // RECORD_MUTATIONS
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list84 = iprot.readListBegin();
-                struct.recordMutations = new ArrayList<RecordMutation>(_list84.size);
-                for (int _i85 = 0; _i85 < _list84.size; ++_i85)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list92 = iprot.readListBegin();
+                struct.recordMutations = new ArrayList<RecordMutation>(_list92.size);
+                for (int _i93 = 0; _i93 < _list92.size; ++_i93)
                 {
-                  RecordMutation _elem86; // required
-                  _elem86 = new RecordMutation();
-                  _elem86.read(iprot);
-                  struct.recordMutations.add(_elem86);
+                  RecordMutation _elem94; // required
+                  _elem94 = new RecordMutation();
+                  _elem94.read(iprot);
+                  struct.recordMutations.add(_elem94);
                 }
                 iprot.readListEnd();
               }
               struct.setRecordMutationsIsSet(true);
-            } else { 
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 6: // WAIT_TO_BE_VISIBLE
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
-              struct.waitToBeVisible = iprot.readBool();
-              struct.setWaitToBeVisibleIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -910,9 +716,6 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
         oprot.writeString(struct.rowId);
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(WAL_FIELD_DESC);
-      oprot.writeBool(struct.wal);
-      oprot.writeFieldEnd();
       if (struct.rowMutationType != null) {
         oprot.writeFieldBegin(ROW_MUTATION_TYPE_FIELD_DESC);
         oprot.writeI32(struct.rowMutationType.getValue());
@@ -922,17 +725,14 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
         oprot.writeFieldBegin(RECORD_MUTATIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.recordMutations.size()));
-          for (RecordMutation _iter87 : struct.recordMutations)
+          for (RecordMutation _iter95 : struct.recordMutations)
           {
-            _iter87.write(oprot);
+            _iter95.write(oprot);
           }
           oprot.writeListEnd();
         }
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(WAIT_TO_BE_VISIBLE_FIELD_DESC);
-      oprot.writeBool(struct.waitToBeVisible);
-      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -957,27 +757,18 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
       if (struct.isSetRowId()) {
         optionals.set(1);
       }
-      if (struct.isSetWal()) {
+      if (struct.isSetRowMutationType()) {
         optionals.set(2);
       }
-      if (struct.isSetRowMutationType()) {
+      if (struct.isSetRecordMutations()) {
         optionals.set(3);
       }
-      if (struct.isSetRecordMutations()) {
-        optionals.set(4);
-      }
-      if (struct.isSetWaitToBeVisible()) {
-        optionals.set(5);
-      }
-      oprot.writeBitSet(optionals, 6);
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetTable()) {
         oprot.writeString(struct.table);
       }
       if (struct.isSetRowId()) {
         oprot.writeString(struct.rowId);
-      }
-      if (struct.isSetWal()) {
-        oprot.writeBool(struct.wal);
       }
       if (struct.isSetRowMutationType()) {
         oprot.writeI32(struct.rowMutationType.getValue());
@@ -985,21 +776,18 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
       if (struct.isSetRecordMutations()) {
         {
           oprot.writeI32(struct.recordMutations.size());
-          for (RecordMutation _iter88 : struct.recordMutations)
+          for (RecordMutation _iter96 : struct.recordMutations)
           {
-            _iter88.write(oprot);
+            _iter96.write(oprot);
           }
         }
-      }
-      if (struct.isSetWaitToBeVisible()) {
-        oprot.writeBool(struct.waitToBeVisible);
       }
     }
 
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, RowMutation struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(6);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.table = iprot.readString();
         struct.setTableIsSet(true);
@@ -1009,30 +797,22 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
         struct.setRowIdIsSet(true);
       }
       if (incoming.get(2)) {
-        struct.wal = iprot.readBool();
-        struct.setWalIsSet(true);
-      }
-      if (incoming.get(3)) {
         struct.rowMutationType = RowMutationType.findByValue(iprot.readI32());
         struct.setRowMutationTypeIsSet(true);
       }
-      if (incoming.get(4)) {
+      if (incoming.get(3)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list89 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-          struct.recordMutations = new ArrayList<RecordMutation>(_list89.size);
-          for (int _i90 = 0; _i90 < _list89.size; ++_i90)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list97 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+          struct.recordMutations = new ArrayList<RecordMutation>(_list97.size);
+          for (int _i98 = 0; _i98 < _list97.size; ++_i98)
           {
-            RecordMutation _elem91; // required
-            _elem91 = new RecordMutation();
-            _elem91.read(iprot);
-            struct.recordMutations.add(_elem91);
+            RecordMutation _elem99; // required
+            _elem99 = new RecordMutation();
+            _elem99.read(iprot);
+            struct.recordMutations.add(_elem99);
           }
         }
         struct.setRecordMutationsIsSet(true);
-      }
-      if (incoming.get(5)) {
-        struct.waitToBeVisible = iprot.readBool();
-        struct.setWaitToBeVisibleIsSet(true);
       }
     }
   }

@@ -690,25 +690,11 @@ public class IndexManager {
             List<Document> docs;
             AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
             AtomicInteger totalRecords = new AtomicInteger();
-            if (highlightQuery != null && fieldManager != null) {
-              String rowId = selector.getRowId();
-              if (rowId == null) {
-                rowId = getRowId(reader, docId);
-              }
-              Term term = new Term(ROW_ID, rowId);
-              HighlightOptions highlightOptions = selector.getHighlightOptions();
-              String preTag = highlightOptions.getPreTag();
-              String postTag = highlightOptions.getPostTag();
-              Tracer docTrace = Trace.trace("fetchRow - Document w/Highlight read");
-              docs = HighlightHelper.highlightDocuments(reader, term, fieldVisitor, selector, highlightQuery,
-                  fieldManager, preTag, postTag, filter);
-              docTrace.done();
-            } else {
-              Tracer docTrace = Trace.trace("fetchRow - Document read");
-              docs = BlurUtil.fetchDocuments(reader, fieldVisitor, selector, maxHeap, table + "/" + shard,
-                  tableContext.getDefaultPrimeDocTerm(), filter, moreDocsToFetch, totalRecords);
-              docTrace.done();
-            }
+            BlurHighlighter highlighter = new BlurHighlighter(highlightQuery, fieldManager, selector);
+            Tracer docTrace = Trace.trace("fetchRow - Document read");
+            docs = BlurUtil.fetchDocuments(reader, fieldVisitor, selector, maxHeap, table + "/" + shard,
+                tableContext.getDefaultPrimeDocTerm(), filter, moreDocsToFetch, totalRecords, highlighter);
+            docTrace.done();
             Tracer rowTrace = Trace.trace("fetchRow - Row create");
             Row row = getRow(docs);
             if (row == null) {

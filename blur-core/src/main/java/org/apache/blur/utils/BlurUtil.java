@@ -66,6 +66,7 @@ import org.apache.blur.index.ExitableReader.ExitableFilterAtomicReader;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.PrimeDocCache;
+import org.apache.blur.manager.BlurHighlighter;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.results.BlurResultComparator;
 import org.apache.blur.manager.results.BlurResultIterable;
@@ -800,13 +801,17 @@ public class BlurUtil {
    * @param primeDocTerm
    * @param filter
    * @param totalRecords
+   * @param highlighter
    * 
    * @throws IOException
    */
   @SuppressWarnings("unchecked")
   public static List<Document> fetchDocuments(IndexReader reader, ResetableDocumentStoredFieldVisitor fieldSelector,
       Selector selector, int maxHeap, String context, Term primeDocTerm, Filter filter, AtomicBoolean moreToFetch,
-      AtomicInteger totalRecords) throws IOException {
+      AtomicInteger totalRecords, BlurHighlighter highlighter) throws IOException {
+    if (highlighter == null) {
+      highlighter = new BlurHighlighter();
+    }
     if (reader instanceof BaseCompositeReader) {
       BaseCompositeReader<IndexReader> indexReader = (BaseCompositeReader<IndexReader>) reader;
       List<? extends IndexReader> sequentialSubReaders = BaseCompositeReaderUtil.getSequentialSubReaders(indexReader);
@@ -858,8 +863,14 @@ public class BlurUtil {
             }
             if (docsInRowSpanToFetch.fastGet(cursor)) {
               maxDocsToFetch--;
-              segmentReader.document(primeDocId + cursor, fieldSelector);
-              docs.add(fieldSelector.getDocument());
+              int docID = primeDocId + cursor;
+              segmentReader.document(docID, fieldSelector);
+              Document document = fieldSelector.getDocument();
+              if (highlighter.shouldHighlight()) {
+                docs.add(highlighter.highlight(docID, document, segmentReader));
+              } else {
+                docs.add(document);
+              }
               totalHeap += fieldSelector.getSize();
               fieldSelector.reset();
             }

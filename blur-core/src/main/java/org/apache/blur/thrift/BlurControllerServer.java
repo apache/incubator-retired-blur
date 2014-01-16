@@ -28,8 +28,10 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimerTask;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Timer;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -182,6 +184,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private ConcurrentMap<String, WatchNodeExistance> _watchForOnlineShardsPerClusterExistance = new ConcurrentHashMap<String, WatchNodeExistance>();
   private ConcurrentMap<String, WatchChildren> _watchForTablesPerCluster = new ConcurrentHashMap<String, WatchChildren>();
   private ConcurrentMap<String, WatchChildren> _watchForOnlineShardsPerCluster = new ConcurrentHashMap<String, WatchChildren>();
+  private Timer _preconnectTimer;
 
   public void init() throws KeeperException, InterruptedException {
     setupZookeeper();
@@ -194,6 +197,43 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       watchForLayoutChanges(cluster);
     }
     updateLayout();
+    startPreconnectTimer();
+  }
+
+  private void startPreconnectTimer() {
+    _preconnectTimer = new Timer("controller preconnect clients", true);
+    _preconnectTimer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        try {
+          preconnectClients();
+        } catch (Exception e) {
+          LOG.error("Unknown error while trying to preconnect to shard servers.", e);
+        }
+      }
+    }, TimeUnit.SECONDS.toMillis(5), TimeUnit.SECONDS.toMillis(5));
+  }
+
+  private void preconnectClients() {
+    if (_clusterStatus != null) {
+      List<String> clusterList = _clusterStatus.getClusterList(true);
+      for (String cluster : clusterList) {
+        List<String> onlineShardServers = _clusterStatus.getOnlineShardServers(true, cluster);
+        for (String shardServer : onlineShardServers) {
+          preconnectClients(shardServer);
+        }
+      }
+    }
+  }
+
+  private void preconnectClients(String shardServer) {
+    try {
+      Iface client = org.apache.blur.thrift.BlurClient.getClient(shardServer);
+      client.ping();
+      LOG.debug("Pinging shard server [{0}]", shardServer);
+    } catch (Exception e) {
+      LOG.error("Error while trying to ping shard server [{0}]", shardServer);
+    }
   }
 
   private void setupZookeeper() throws KeeperException, InterruptedException {

@@ -18,66 +18,255 @@ package org.apache.blur.manager.writer;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.TreeMap;
 
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.manager.IndexManager;
+import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.Column;
+import org.apache.blur.thrift.generated.FetchResult;
+import org.apache.blur.thrift.generated.FetchRowResult;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.utils.BlurConstants;
-import org.apache.blur.utils.BlurThriftRecord;
-import org.apache.blur.utils.BlurUtil;
-import org.apache.blur.utils.ResetableDocumentStoredFieldVisitor;
 import org.apache.blur.utils.RowDocumentUtil;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
 
 public class MutatableAction {
 
+  static class UpdateRow extends InternalAction {
+
+    static abstract class UpdateRowAction {
+      abstract Row performAction(Row row);
+    }
+
+    private final List<UpdateRowAction> _actions = new ArrayList<UpdateRowAction>();
+    private final String _rowId;
+    private final String _table;
+    private final String _shard;
+    private final int _maxHeap;
+    private final TableContext _tableContext;
+    private final FieldManager _fieldManager;
+
+    UpdateRow(String rowId, String table, String shard, int maxHeap, TableContext tableContext) {
+      _rowId = rowId;
+      _table = table;
+      _shard = shard;
+      _maxHeap = maxHeap;
+      _tableContext = tableContext;
+      _fieldManager = _tableContext.getFieldManager();
+    }
+
+    void deleteRecord(final String recordId) {
+      _actions.add(new UpdateRowAction() {
+        @Override
+        Row performAction(Row row) {
+          if (row == null) {
+            return null;
+          } else {
+            if (row.getRecords() == null) {
+              return row;
+            }
+            Row result = new Row();
+            result.setId(row.getId());
+            for (Record record : row.getRecords()) {
+              if (!record.getRecordId().equals(recordId)) {
+                result.addToRecords(record);
+              }
+            }
+            return result;
+          }
+        }
+      });
+    }
+
+    void appendColumns(final Record record) {
+      _actions.add(new UpdateRowAction() {
+        @Override
+        Row performAction(Row row) {
+          if (row == null) {
+            row = new Row(_rowId, null);
+            row.addToRecords(record);
+            return row;
+          } else {
+            Row result = new Row();
+            result.setId(row.getId());
+            String recordId = record.getRecordId();
+            boolean found = false;
+            if (row.getRecords() != null) {
+              for (Record r : row.getRecords()) {
+                if (!r.getRecordId().equals(recordId)) {
+                  result.addToRecords(r);
+                } else {
+                  found = true;
+                  // Append columns
+                  r.getColumns().addAll(record.getColumns());
+                  result.addToRecords(r);
+                }
+              }
+            }
+            if (!found) {
+              result.addToRecords(record);
+            }
+            return result;
+          }
+        }
+      });
+    }
+
+    void replaceColumns(final Record record) {
+      _actions.add(new UpdateRowAction() {
+        @Override
+        Row performAction(Row row) {
+          if (row == null) {
+            row = new Row(_rowId, null);
+            row.addToRecords(record);
+            return row;
+          } else {
+            Row result = new Row();
+            result.setId(row.getId());
+            String recordId = record.getRecordId();
+            boolean found = false;
+            if (row.getRecords() != null) {
+              for (Record r : row.getRecords()) {
+                if (!r.getRecordId().equals(recordId)) {
+                  result.addToRecords(r);
+                } else {
+                  found = true;
+                  // Replace columns
+                  result.addToRecords(replaceColumns(r, record));
+                }
+              }
+            }
+            if (!found) {
+              result.addToRecords(record);
+            }
+            return result;
+          }
+        }
+      });
+    }
+
+    protected Record replaceColumns(Record existing, Record newRecord) {
+      Map<String, List<Column>> existingColumns = getColumnMap(existing.getColumns());
+      Map<String, List<Column>> newColumns = getColumnMap(newRecord.getColumns());
+      existingColumns.putAll(newColumns);
+      Record record = new Record();
+      record.setFamily(existing.getFamily());
+      record.setRecordId(existing.getRecordId());
+      record.setColumns(toList(existingColumns.values()));
+      return record;
+    }
+
+    private List<Column> toList(Collection<List<Column>> values) {
+      ArrayList<Column> list = new ArrayList<Column>();
+      for (List<Column> v : values) {
+        list.addAll(v);
+      }
+      return list;
+    }
+
+    private Map<String, List<Column>> getColumnMap(List<Column> columns) {
+      Map<String, List<Column>> columnMap = new TreeMap<String, List<Column>>();
+      for (Column column : columns) {
+        String name = column.getName();
+        List<Column> list = columnMap.get(name);
+        if (list == null) {
+          list = new ArrayList<Column>();
+          columnMap.put(name, list);
+        }
+        list.add(column);
+      }
+      return columnMap;
+    }
+
+    void replaceRecord(final Record record) {
+      _actions.add(new UpdateRowAction() {
+        @Override
+        Row performAction(Row row) {
+          if (row == null) {
+            row = new Row(_rowId, null);
+            row.addToRecords(record);
+            return row;
+          } else {
+            Row result = new Row();
+            result.setId(row.getId());
+            String recordId = record.getRecordId();
+            if (row.getRecords() != null) {
+              for (Record r : row.getRecords()) {
+                if (!r.getRecordId().equals(recordId)) {
+                  result.addToRecords(r);
+                }
+              }
+            }
+            // Add replacement
+            result.addToRecords(record);
+            return result;
+          }
+        }
+      });
+    }
+
+    @Override
+    void performAction(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
+      Selector selector = new Selector();
+      selector.setRowId(_rowId);
+      IndexManager.populateSelector(searcher, _shard, _table, selector);
+      Row row = null;
+      if (!selector.getLocationId().equals(IndexManager.NOT_FOUND)) {
+        FetchResult fetchResult = new FetchResult();
+        IndexManager.fetchRow(searcher.getIndexReader(), _table, _shard, selector, fetchResult, null, null, _maxHeap, _tableContext, null);
+        FetchRowResult rowResult = fetchResult.getRowResult();
+        if (rowResult != null) {
+          row = rowResult.getRow();
+        }
+      }
+      for (UpdateRowAction action : _actions) {
+        row = action.performAction(row);
+      }
+      Term term = createRowId(_rowId);
+      if (row != null && row.getRecords() != null && row.getRecords().size() > 0) {
+        List<List<Field>> docsToUpdate = RowDocumentUtil.getDocs(row, _fieldManager);
+        writer.updateDocuments(term, docsToUpdate);
+      } else {
+        writer.deleteDocuments(term);
+      }
+    }
+
+  }
+
   static abstract class InternalAction {
-    abstract void performAction(IndexReader reader, IndexWriter writer) throws IOException;
+    abstract void performAction(IndexSearcherClosable searcher, IndexWriter writer) throws IOException;
   }
 
   private final List<InternalAction> _actions = new ArrayList<InternalAction>();
+  private final Map<String, UpdateRow> _rowUpdates = new HashMap<String, UpdateRow>();
   private final FieldManager _fieldManager;
   private final String _shard;
   private final String _table;
-  private final Term _primeDocTerm;
   private final int _maxHeap = Integer.MAX_VALUE;
+  private TableContext _tableContext;
 
   public MutatableAction(ShardContext context) {
-    TableContext tableContext = context.getTableContext();
+    _tableContext = context.getTableContext();
     _shard = context.getShard();
-    _table = tableContext.getTable();
-    _fieldManager = tableContext.getFieldManager();
-    _primeDocTerm = tableContext.getDefaultPrimeDocTerm();
+    _table = _tableContext.getTable();
+    _fieldManager = _tableContext.getFieldManager();
   }
 
   public void deleteRow(final String rowId) {
     _actions.add(new InternalAction() {
       @Override
-      void performAction(IndexReader reader, IndexWriter writer) throws IOException {
+      void performAction(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
         writer.deleteDocuments(createRowId(rowId));
       }
     });
@@ -86,7 +275,7 @@ public class MutatableAction {
   public void replaceRow(final Row row) {
     _actions.add(new InternalAction() {
       @Override
-      void performAction(IndexReader reader, IndexWriter writer) throws IOException {
+      void performAction(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
         List<List<Field>> docs = RowDocumentUtil.getDocs(row, _fieldManager);
         Term rowId = createRowId(row.getId());
         writer.updateDocuments(rowId, docs);
@@ -95,294 +284,29 @@ public class MutatableAction {
   }
 
   public void deleteRecord(final String rowId, final String recordId) {
-    _actions.add(new InternalAction() {
-      @Override
-      void performAction(IndexReader reader, IndexWriter writer) throws IOException {
-        Term rowIdTerm = createRowId(rowId);
-        BooleanQuery query = new BooleanQuery();
-        query.add(new TermQuery(rowIdTerm), Occur.MUST);
-        query.add(new TermQuery(BlurUtil.PRIME_DOC_TERM), Occur.MUST);
-
-        IndexSearcher searcher = new IndexSearcher(reader);
-        TopDocs topDocs = searcher.search(query, 1);
-        if (topDocs.totalHits == 0) {
-          // do nothing
-        } else if (topDocs.totalHits == 1) {
-          Selector selector = new Selector();
-          selector.setStartRecord(0);
-          selector.setMaxRecordsToFetch(Integer.MAX_VALUE);
-          selector.setLocationId(_shard + "/" + topDocs.scoreDocs[0].doc);
-          ResetableDocumentStoredFieldVisitor fieldVisitor = IndexManager.getFieldSelector(selector);
-          AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
-          AtomicInteger totalRecords = new AtomicInteger();
-          List<Document> docs = new ArrayList<Document>(BlurUtil.fetchDocuments(reader, fieldVisitor, selector,
-              _maxHeap, _table + "/" + _shard, _primeDocTerm, null, moreDocsToFetch, totalRecords, null));
-          if (moreDocsToFetch.get()) {
-            throw new IOException("Row too large to update.");
-          }
-          boolean found = false;
-          for (int i = 0; i < docs.size(); i++) {
-            Document document = docs.get(i);
-            if (document.get(BlurConstants.RECORD_ID).equals(recordId)) {
-              docs.remove(i);
-              found = true;
-              break;
-            }
-          }
-          if (found) {
-            if (docs.size() == 0) {
-              writer.deleteDocuments(rowIdTerm);
-            } else {
-              Row row = new Row(rowId, toRecords(docs));
-              List<List<Field>> docsToUpdate = RowDocumentUtil.getDocs(row, _fieldManager);
-              writer.updateDocuments(rowIdTerm, docsToUpdate);
-            }
-          }
-        } else {
-          throw new IOException("RowId [" + rowId + "] found more than one row primedoc.");
-        }
-      }
-    });
+    UpdateRow updateRow = getUpdateRow(rowId);
+    updateRow.deleteRecord(recordId);
   }
 
   public void replaceRecord(final String rowId, final Record record) {
-    _actions.add(new InternalAction() {
-      @Override
-      void performAction(IndexReader reader, IndexWriter writer) throws IOException {
-        Term rowIdTerm = createRowId(rowId);
-        BooleanQuery query = new BooleanQuery();
-        query.add(new TermQuery(rowIdTerm), Occur.MUST);
-        query.add(new TermQuery(BlurUtil.PRIME_DOC_TERM), Occur.MUST);
-
-        IndexSearcher searcher = new IndexSearcher(reader);
-        TopDocs topDocs = searcher.search(query, 1);
-        if (topDocs.totalHits == 0) {
-          // just add
-          List<Field> doc = RowDocumentUtil.getDoc(_fieldManager, rowId, record);
-          doc.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
-          writer.addDocument(doc);
-        } else if (topDocs.totalHits == 1) {
-          Selector selector = new Selector();
-          selector.setStartRecord(0);
-          selector.setMaxRecordsToFetch(Integer.MAX_VALUE);
-          selector.setLocationId(_shard + "/" + topDocs.scoreDocs[0].doc);
-          ResetableDocumentStoredFieldVisitor fieldVisitor = IndexManager.getFieldSelector(selector);
-          AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
-          AtomicInteger totalRecords = new AtomicInteger();
-          List<Document> docs = new ArrayList<Document>(BlurUtil.fetchDocuments(reader, fieldVisitor, selector,
-              _maxHeap, _table + "/" + _shard, _primeDocTerm, null, moreDocsToFetch, totalRecords, null));
-          if (moreDocsToFetch.get()) {
-            throw new IOException("Row too large to update.");
-          }
-          List<Field> doc = RowDocumentUtil.getDoc(_fieldManager, rowId, record);
-
-          for (int i = 0; i < docs.size(); i++) {
-            Document document = docs.get(i);
-            if (document.get(BlurConstants.RECORD_ID).equals(record.getRecordId())) {
-              docs.remove(i);
-              break;
-            }
-          }
-          docs.add(toDocument(doc));
-          Row row = new Row(rowId, toRecords(docs));
-          List<List<Field>> docsToUpdate = RowDocumentUtil.getDocs(row, _fieldManager);
-          writer.updateDocuments(rowIdTerm, docsToUpdate);
-        } else {
-          throw new IOException("RowId [" + rowId + "] found more than one row primedoc.");
-        }
-      }
-    });
-  }
-
-  private List<Record> toRecords(List<Document> docs) {
-    List<Record> records = new ArrayList<Record>();
-    for (Document document : docs) {
-      BlurThriftRecord existingRecord = new BlurThriftRecord();
-      RowDocumentUtil.readRecord(document, existingRecord);
-      records.add(existingRecord);
-    }
-    return records;
+    UpdateRow updateRow = getUpdateRow(rowId);
+    updateRow.replaceRecord(record);
   }
 
   public void appendColumns(final String rowId, final Record record) {
-    _actions.add(new InternalAction() {
-      @Override
-      void performAction(IndexReader reader, IndexWriter writer) throws IOException {
-        Term rowIdTerm = createRowId(rowId);
-        BooleanQuery query = new BooleanQuery();
-        query.add(new TermQuery(rowIdTerm), Occur.MUST);
-        query.add(new TermQuery(BlurUtil.PRIME_DOC_TERM), Occur.MUST);
-
-        IndexSearcher searcher = new IndexSearcher(reader);
-        TopDocs topDocs = searcher.search(query, 1);
-        if (topDocs.totalHits == 0) {
-          // just add
-          List<Field> doc = RowDocumentUtil.getDoc(_fieldManager, rowId, record);
-          doc.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
-          writer.addDocument(doc);
-        } else if (topDocs.totalHits == 1) {
-          Selector selector = new Selector();
-          selector.setStartRecord(0);
-          selector.setMaxRecordsToFetch(Integer.MAX_VALUE);
-          selector.setLocationId(_shard + "/" + topDocs.scoreDocs[0].doc);
-          ResetableDocumentStoredFieldVisitor fieldVisitor = IndexManager.getFieldSelector(selector);
-          AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
-          AtomicInteger totalRecords = new AtomicInteger();
-          List<Document> docs = new ArrayList<Document>(BlurUtil.fetchDocuments(reader, fieldVisitor, selector,
-              _maxHeap, _table + "/" + _shard, _primeDocTerm, null, moreDocsToFetch, totalRecords, null));
-          if (moreDocsToFetch.get()) {
-            throw new IOException("Row too large to update.");
-          }
-          BlurThriftRecord existingRecord = new BlurThriftRecord();
-          for (int i = 0; i < docs.size(); i++) {
-            Document document = docs.get(i);
-            if (document.get(BlurConstants.RECORD_ID).equals(record.getRecordId())) {
-              Document doc = docs.remove(i);
-              RowDocumentUtil.readRecord(doc, existingRecord);
-              break;
-            }
-          }
-
-          String recordId = existingRecord.getRecordId();
-          if (recordId == null) {
-            existingRecord.setRecordId(record.getRecordId());
-          } else if (!recordId.equals(record.getRecordId())) {
-            throw new IOException("Record ids do not match.");
-          }
-
-          String family = existingRecord.getFamily();
-          if (family == null) {
-            existingRecord.setFamily(record.getFamily());
-          } else if (!family.equals(record.getFamily())) {
-            throw new IOException("Record family do not match.");
-          }
-
-          for (Column column : record.getColumns()) {
-            existingRecord.addToColumns(column);
-          }
-
-          List<Field> doc = RowDocumentUtil.getDoc(_fieldManager, rowId, existingRecord);
-          docs.add(toDocument(doc));
-
-          Row row = new Row(rowId, toRecords(docs));
-          List<List<Field>> docsToUpdate = RowDocumentUtil.getDocs(row, _fieldManager);
-
-          writer.updateDocuments(rowIdTerm, docsToUpdate);
-        } else {
-          throw new IOException("RowId [" + rowId + "] found more than one row primedoc.");
-        }
-      }
-    });
+    UpdateRow updateRow = getUpdateRow(rowId);
+    updateRow.appendColumns(record);
   }
 
   public void replaceColumns(final String rowId, final Record record) {
-    _actions.add(new InternalAction() {
-      @Override
-      void performAction(IndexReader reader, IndexWriter writer) throws IOException {
-        Term rowIdTerm = createRowId(rowId);
-        BooleanQuery query = new BooleanQuery();
-        query.add(new TermQuery(rowIdTerm), Occur.MUST);
-        query.add(new TermQuery(BlurUtil.PRIME_DOC_TERM), Occur.MUST);
-
-        IndexSearcher searcher = new IndexSearcher(reader);
-        TopDocs topDocs = searcher.search(query, 1);
-        if (topDocs.totalHits == 0) {
-          // just add
-          List<Field> doc = RowDocumentUtil.getDoc(_fieldManager, rowId, record);
-          doc.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
-          writer.addDocument(doc);
-        } else if (topDocs.totalHits == 1) {
-          Selector selector = new Selector();
-          selector.setStartRecord(0);
-          selector.setMaxRecordsToFetch(Integer.MAX_VALUE);
-          selector.setLocationId(_shard + "/" + topDocs.scoreDocs[0].doc);
-          ResetableDocumentStoredFieldVisitor fieldVisitor = IndexManager.getFieldSelector(selector);
-          AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
-          AtomicInteger totalRecords = new AtomicInteger();
-          List<Document> docs = new ArrayList<Document>(BlurUtil.fetchDocuments(reader, fieldVisitor, selector,
-              _maxHeap, _table + "/" + _shard, _primeDocTerm, null, moreDocsToFetch, totalRecords, null));
-          if (moreDocsToFetch.get()) {
-            throw new IOException("Row too large to update.");
-          }
-          BlurThriftRecord existingRecord = new BlurThriftRecord();
-          for (int i = 0; i < docs.size(); i++) {
-            Document document = docs.get(i);
-            if (document.get(BlurConstants.RECORD_ID).equals(record.getRecordId())) {
-              Document doc = docs.remove(i);
-              RowDocumentUtil.readRecord(doc, existingRecord);
-              break;
-            }
-          }
-
-          Map<String, List<Column>> map = new HashMap<String, List<Column>>();
-          for (Column column : record.getColumns()) {
-            String name = column.getName();
-            List<Column> list = map.get(name);
-            if (list == null) {
-              list = new ArrayList<Column>();
-              map.put(name, list);
-            }
-            list.add(column);
-          }
-
-          Record newRecord = new Record(record.getRecordId(), record.getFamily(), null);
-          Set<String> processedColumns = new HashSet<String>();
-          List<Column> columns = existingRecord.getColumns();
-          if (columns != null) {
-            for (Column column : columns) {
-              String name = column.getName();
-              if (processedColumns.contains(name)) {
-                continue;
-              }
-              List<Column> newColumns = map.get(name);
-              if (newColumns != null) {
-                for (Column c : newColumns) {
-                  newRecord.addToColumns(c);
-                }
-                processedColumns.add(name);
-              } else {
-                newRecord.addToColumns(column);
-              }
-            }
-          }
-
-          for (Entry<String, List<Column>> e : map.entrySet()) {
-            String name = e.getKey();
-            if (processedColumns.contains(name)) {
-              continue;
-            }
-            List<Column> newColumns = e.getValue();
-            for (Column c : newColumns) {
-              newRecord.addToColumns(c);
-            }
-            processedColumns.add(name);
-          }
-
-          List<Field> doc = RowDocumentUtil.getDoc(_fieldManager, rowId, newRecord);
-          docs.add(toDocument(doc));
-
-          Row row = new Row(rowId, toRecords(docs));
-          List<List<Field>> docsToUpdate = RowDocumentUtil.getDocs(row, _fieldManager);
-          writer.updateDocuments(rowIdTerm, docsToUpdate);
-        } else {
-          throw new IOException("RowId [" + rowId + "] found more than one row primedoc.");
-        }
-      }
-    });
+    UpdateRow updateRow = getUpdateRow(rowId);
+    updateRow.replaceColumns(record);
   }
 
-  private Document toDocument(List<Field> doc) {
-    Document document = new Document();
-    for (Field f : doc) {
-      document.add(f);
-    }
-    return document;
-  }
-
-  void performMutate(IndexReader reader, IndexWriter writer) throws IOException {
+  void performMutate(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
     try {
       for (InternalAction internalAction : _actions) {
-        internalAction.performAction(reader, writer);
+        internalAction.performAction(searcher, writer);
       }
     } finally {
       _actions.clear();
@@ -395,6 +319,16 @@ public class MutatableAction {
 
   public static Term createRecordId(String id) {
     return new Term(BlurConstants.RECORD_ID, id);
+  }
+
+  private synchronized UpdateRow getUpdateRow(String rowId) {
+    UpdateRow updateRow = _rowUpdates.get(rowId);
+    if (updateRow == null) {
+      updateRow = new UpdateRow(rowId, _table, _shard, _maxHeap, _tableContext);
+      _rowUpdates.put(rowId, updateRow);
+      _actions.add(updateRow);
+    }
+    return updateRow;
   }
 
 }

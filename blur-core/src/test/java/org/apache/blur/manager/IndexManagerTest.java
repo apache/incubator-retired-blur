@@ -1149,6 +1149,38 @@ public class IndexManagerTest {
   }
 
   @Test
+  public void testMultipleMutationReplaceRecordWithInSameBatch() throws Exception {
+    RowMutation mutation1 = newRowMutation(
+        TABLE,
+        "row-4000",
+        newRecordMutation(FAMILY, "record-4a", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"),
+            newColumn("testcol3", "value4")));
+
+    RowMutation mutation2 = newRowMutation(
+        TABLE,
+        "row-4000",
+        newRecordMutation(FAMILY, "record-4b", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"),
+            newColumn("testcol3", "value4")));
+    mutation1.setRowMutationType(RowMutationType.UPDATE_ROW);
+    mutation2.setRowMutationType(RowMutationType.UPDATE_ROW);
+    indexManager.mutate(Arrays.asList(mutation1, mutation2));
+    Selector selector = new Selector().setRowId("row-4000");
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNotNull(fetchResult.rowResult.row);
+    Row row = newRow(
+        "row-4000",
+        newRecord(FAMILY, "record-4a", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"),
+            newColumn("testcol3", "value4")),
+        newRecord(FAMILY, "record-4b", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"),
+            newColumn("testcol3", "value4")));
+
+    FetchRowResult rowResult = fetchResult.getRowResult();
+    assertEquals(row, rowResult.getRow());
+    assertEquals(2, rowResult.getTotalRecords());
+  }
+
+  @Test
   public void testMutationReplaceMissingRow() throws Exception {
     Column c1 = newColumn("testcol1", "value20");
     Column c2 = newColumn("testcol2", "value21");

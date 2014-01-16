@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -130,7 +131,7 @@ import com.yammer.metrics.core.TimerContext;
 
 public class IndexManager {
 
-  private static final String NOT_FOUND = "NOT_FOUND";
+  public static final String NOT_FOUND = "NOT_FOUND";
   private static final Log LOG = LogFactory.getLog(IndexManager.class);
 
   private final Meter _readRecordsMeter;
@@ -371,8 +372,8 @@ public class IndexManager {
         getScoreType(query.scoreType), context);
   }
 
-  private void populateSelector(IndexSearcherClosable searcher, String shardName, String table, Selector selector)
-      throws IOException, BlurException {
+  public static void populateSelector(IndexSearcherClosable searcher, String shardName, String table, Selector selector)
+      throws IOException {
     Tracer trace = Trace.trace("populate selector");
     String rowId = selector.rowId;
     String recordId = selector.recordId;
@@ -939,10 +940,119 @@ public class IndexManager {
   }
 
   private void doMutates(List<RowMutation> mutations) throws BlurException, IOException {
+    mutations = reduceMutates(mutations);
     Map<String, List<RowMutation>> map = getMutatesPerTable(mutations);
     for (Entry<String, List<RowMutation>> entry : map.entrySet()) {
       doMutates(entry.getKey(), entry.getValue());
     }
+  }
+
+  private List<RowMutation> reduceMutates(List<RowMutation> mutations) throws BlurException {
+    Map<String, RowMutation> mutateMap = new TreeMap<String, RowMutation>();
+    for (RowMutation mutation : mutations) {
+      RowMutation rowMutation = mutateMap.get(mutation.getRowId());
+      if (rowMutation != null) {
+        mutateMap.put(mutation.getRowId(), merge(rowMutation, mutation));
+      } else {
+        mutateMap.put(mutation.getRowId(), mutation);
+      }
+    }
+    return new ArrayList<RowMutation>(mutateMap.values());
+  }
+
+  private RowMutation merge(RowMutation mutation1, RowMutation mutation2) throws BlurException {
+    RowMutationType rowMutationType1 = mutation1.getRowMutationType();
+    RowMutationType rowMutationType2 = mutation2.getRowMutationType();
+    if (!rowMutationType1.equals(rowMutationType2)) {
+      throw new BException(
+          "RowMutation conflict, cannot perform 2 different operations on the same row in the same batch. [{0}] [{1}]",
+          mutation1, mutation2);
+    }
+    if (rowMutationType1.equals(RowMutationType.DELETE_ROW)) {
+      // Since both are trying to delete the same row, just pick one and move
+      // on.
+      return mutation1;
+    } else if (rowMutationType1.equals(RowMutationType.REPLACE_ROW)) {
+      throw new BException(
+          "RowMutation conflict, cannot perform 2 different REPLACE_ROW mutations on the same row in the same batch. [{0}] [{1}]",
+          mutation1, mutation2);
+    } else {
+      // Now this is a row update, so try to merge the record mutations
+      List<RecordMutation> recordMutations1 = mutation1.getRecordMutations();
+      List<RecordMutation> recordMutations2 = mutation2.getRecordMutations();
+      List<RecordMutation> mergedRecordMutations = merge(recordMutations1, recordMutations2);
+      mutation1.setRecordMutations(mergedRecordMutations);
+      return mutation1;
+    }
+  }
+
+  private List<RecordMutation> merge(List<RecordMutation> recordMutations1, List<RecordMutation> recordMutations2)
+      throws BException {
+    Map<String, RecordMutation> recordMutationMap = new TreeMap<String, RecordMutation>();
+    merge(recordMutations1, recordMutationMap);
+    merge(recordMutations2, recordMutationMap);
+    return new ArrayList<RecordMutation>(recordMutationMap.values());
+  }
+
+  private void merge(List<RecordMutation> recordMutations, Map<String, RecordMutation> recordMutationMap)
+      throws BException {
+    for (RecordMutation recordMutation : recordMutations) {
+      Record record = recordMutation.getRecord();
+      String recordId = record.getRecordId();
+      RecordMutation existing = recordMutationMap.get(recordId);
+      if (existing != null) {
+        recordMutationMap.put(recordId, merge(recordMutation, existing));
+      } else {
+        recordMutationMap.put(recordId, recordMutation);
+      }
+    }
+  }
+
+  private RecordMutation merge(RecordMutation recordMutation1, RecordMutation recordMutation2) throws BException {
+    RecordMutationType recordMutationType1 = recordMutation1.getRecordMutationType();
+    RecordMutationType recordMutationType2 = recordMutation2.getRecordMutationType();
+    if (!recordMutationType1.equals(recordMutationType2)) {
+      throw new BException(
+          "RecordMutation conflict, cannot perform 2 different operations on the same record in the same row in the same batch. [{0}] [{1}]",
+          recordMutation1, recordMutation2);
+    }
+
+    if (recordMutationType1.equals(RecordMutationType.DELETE_ENTIRE_RECORD)) {
+      // Since both are trying to delete the same record, just pick one and move
+      // on.
+      return recordMutation1;
+    } else if (recordMutationType1.equals(RecordMutationType.REPLACE_ENTIRE_RECORD)) {
+      throw new BException(
+          "RecordMutation conflict, cannot perform 2 different replace record operations on the same record in the same row in the same batch. [{0}] [{1}]",
+          recordMutation1, recordMutation2);
+    } else if (recordMutationType1.equals(RecordMutationType.REPLACE_COLUMNS)) {
+      throw new BException(
+          "RecordMutation conflict, cannot perform 2 different replace columns operations on the same record in the same row in the same batch. [{0}] [{1}]",
+          recordMutation1, recordMutation2);
+    } else {
+      Record record1 = recordMutation1.getRecord();
+      Record record2 = recordMutation2.getRecord();
+      String family1 = record1.getFamily();
+      String family2 = record2.getFamily();
+
+      if (isSameFamily(family1, family2)) {
+        record1.getColumns().addAll(record2.getColumns());
+        return recordMutation1;
+      } else {
+        throw new BException("RecordMutation conflict, cannot merge records with different family. [{0}] [{1}]",
+            recordMutation1, recordMutation2);
+      }
+    }
+  }
+
+  private boolean isSameFamily(String family1, String family2) {
+    if (family1 == null && family2 == null) {
+      return true;
+    }
+    if (family1 != null && family1.equals(family2)) {
+      return true;
+    }
+    return false;
   }
 
   private void doMutates(final String table, List<RowMutation> mutations) throws IOException, BlurException {

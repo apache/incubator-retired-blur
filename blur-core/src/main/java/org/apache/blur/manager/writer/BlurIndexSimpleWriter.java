@@ -267,9 +267,10 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     if (newReader == null) {
       LOG.error("Reader should be new after commit for table [{0}] shard [{1}].", _tableContext.getTable(),
           _shardContext.getShard());
+    } else {
+      _indexReader.set(wrap(newReader));
+      _indexCloser.close(currentReader);
     }
-    _indexReader.set(wrap(newReader));
-    _indexCloser.close(currentReader);
     trace3.done();
   }
 
@@ -278,14 +279,19 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _writeLock.lock();
     waitUntilNotNull(_writer);
     BlurIndexWriter writer = _writer.get();
+    IndexSearcherClosable indexSearcher = null;
     try {
-      mutatableAction.performMutate(_indexReader.get(), writer);
+      indexSearcher = getIndexSearcher();
+      mutatableAction.performMutate(indexSearcher, writer);
       commit();
     } catch (Exception e) {
       writer.rollback();
       openWriter();
       throw new IOException("Unknown error during mutation", e);
     } finally {
+      if (indexSearcher != null) {
+        indexSearcher.close();
+      }
       _writeLock.unlock();
     }
   }

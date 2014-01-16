@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.Column;
@@ -41,6 +42,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 import org.junit.Before;
@@ -96,7 +98,7 @@ public class MutatableActionTest {
 
     Row row = genRow();
     _action.replaceRow(row);
-    _action.performMutate(reader, writer);
+    _action.performMutate(getSearcher(reader, directory), writer);
     reader = commitAndReopen(reader, writer);
     assertEquals(1, reader.numDocs());
 
@@ -106,9 +108,24 @@ public class MutatableActionTest {
     row2.addToRecords(new Record("1", "fam", cols));
 
     _action.replaceRow(row2);
-    _action.performMutate(reader, writer);
+    _action.performMutate(getSearcher(reader, directory), writer);
     reader = commitAndReopen(reader, writer);
     assertEquals(2, reader.numDocs());
+  }
+
+  private IndexSearcherClosable getSearcher(DirectoryReader reader, final Directory directory) {
+    return new IndexSearcherClosable(reader, null) {
+
+      @Override
+      public Directory getDirectory() {
+        return directory;
+      }
+
+      @Override
+      public void close() throws IOException {
+
+      }
+    };
   }
 
   @Test
@@ -124,12 +141,12 @@ public class MutatableActionTest {
     row.addToRecords(new Record("1", "fam", cols));
 
     _action.replaceRow(row);
-    _action.performMutate(reader, writer);
+    _action.performMutate(getSearcher(reader, directory), writer);
     reader = commitAndReopen(reader, writer);
     assertEquals(2, reader.numDocs());
 
     _action.deleteRecord(row.getId(), "1");
-    _action.performMutate(reader, writer);
+    _action.performMutate(getSearcher(reader, directory), writer);
     reader = commitAndReopen(reader, writer);
     assertEquals(1, reader.numDocs());
   }
@@ -143,12 +160,12 @@ public class MutatableActionTest {
 
     Row row = genRow();
     _action.replaceRow(row);
-    _action.performMutate(reader, writer);
+    _action.performMutate(getSearcher(reader, directory), writer);
     reader = commitAndReopen(reader, writer);
     assertEquals(1, reader.numDocs());
 
     _action.deleteRow(row.getId());
-    _action.performMutate(reader, writer);
+    _action.performMutate(getSearcher(reader, directory), writer);
     reader = commitAndReopen(reader, writer);
     assertEquals(0, reader.numDocs());
   }
@@ -166,14 +183,14 @@ public class MutatableActionTest {
     row.addToRecords(new Record("1", "fam", cols));
 
     _action.replaceRow(row);
-    _action.performMutate(reader, writer);
+    _action.performMutate(getSearcher(reader, directory), writer);
     reader = commitAndReopen(reader, writer);
     assertEquals(2, reader.numDocs());
 
     cols.add(new Column("n2", "v2"));
     Record record = new Record("1", "fam", cols);
     _action.replaceRecord(row.getId(), record);
-    _action.performMutate(reader, writer);
+    _action.performMutate(getSearcher(reader, directory), writer);
     reader = commitAndReopen(reader, writer);
     assertEquals(2, reader.numDocs());
 
@@ -199,7 +216,7 @@ public class MutatableActionTest {
     row.addToRecords(new Record("1", "fam", cols));
 
     _action.replaceRow(row);
-    _action.performMutate(reader, writer);
+    _action.performMutate(getSearcher(reader, directory), writer);
     reader = commitAndReopen(reader, writer);
     assertEquals(2, reader.numDocs());
 
@@ -207,7 +224,7 @@ public class MutatableActionTest {
     cols.add(new Column("n2", "v2"));
     Record record = new Record("1", "fam", cols);
     _action.appendColumns(row.getId(), record);
-    _action.performMutate(reader, writer);
+    _action.performMutate(getSearcher(reader, directory), writer);
     reader = commitAndReopen(reader, writer);
     assertEquals(2, reader.numDocs());
 
@@ -234,7 +251,7 @@ public class MutatableActionTest {
     row.addToRecords(new Record("1", "fam", cols));
 
     _action.replaceRow(row);
-    _action.performMutate(reader, writer);
+    _action.performMutate(getSearcher(reader, directory), writer);
     reader = commitAndReopen(reader, writer);
     assertEquals(2, reader.numDocs());
 
@@ -242,7 +259,7 @@ public class MutatableActionTest {
     cols.add(new Column("n1", "v2"));
     Record record = new Record("1", "fam", cols);
     _action.replaceColumns(row.getId(), record);
-    _action.performMutate(reader, writer);
+    _action.performMutate(getSearcher(reader, directory), writer);
     reader = commitAndReopen(reader, writer);
     assertEquals(2, reader.numDocs());
 

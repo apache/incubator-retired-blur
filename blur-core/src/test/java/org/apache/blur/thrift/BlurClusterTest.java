@@ -60,8 +60,10 @@ import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
+import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.util.BlurThriftHelper;
+import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.GCWatcher;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -123,6 +125,8 @@ public class BlurClusterTest {
     testLoadTable();
     start("testForEmptySchema");
     testForEmptySchema();
+    start("testAdminCalls");
+    testAdminCalls();
     start("testQueryWithSelector");
     testQueryWithSelector();
     start("testQueryWithFacets");
@@ -141,6 +145,22 @@ public class BlurClusterTest {
     testCreateDisableAndRemoveTable();
     start("testCreateTableWithCustomType");
     testCreateTableWithCustomType();
+  }
+
+  private void testAdminCalls() throws BlurException, TException {
+    Blur.Iface client = getClient();
+    List<String> shardClusterList = client.shardClusterList();
+    assertEquals(1, shardClusterList.size());
+    assertEquals(BlurConstants.DEFAULT, shardClusterList.get(0));
+    
+    Map<String, String> shardServerLayout = client.shardServerLayout("test");
+    assertEquals(5, shardServerLayout.size());
+    
+    Map<String, Map<String, ShardState>> shardServerLayoutState = client.shardServerLayoutState("test");
+    assertEquals(5, shardServerLayoutState.size());
+    
+    List<String> shardServerList = client.shardServerList(BlurConstants.DEFAULT);
+    assertEquals(3, shardServerList.size());
   }
 
   private void start(String name) {

@@ -120,13 +120,15 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   private final ConcurrentMap<String, Map<String, BlurIndex>> _indexes = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
   private final ShardStateManager _shardStateManager = new ShardStateManager();
   private final Closer _closer;
+  private final boolean _warmupDisabled;
 
   public DistributedIndexServer(Configuration configuration, ZooKeeper zookeeper, ClusterStatus clusterStatus,
       BlurIndexWarmup warmup, BlurFilterCache filterCache, BlockCacheDirectoryFactory blockCacheDirectoryFactory,
       DistributedLayoutFactory distributedLayoutFactory, String cluster, String nodeName, long safeModeDelay,
-      int shardOpenerThreadCount, int internalSearchThreads, int warmupThreads, int maxMergeThreads)
-      throws KeeperException, InterruptedException {
+      int shardOpenerThreadCount, int internalSearchThreads, int warmupThreads, int maxMergeThreads,
+      boolean warmupDisabled) throws KeeperException, InterruptedException {
     super(clusterStatus, configuration, nodeName, cluster);
+    _warmupDisabled = warmupDisabled;
     _closer = Closer.create();
     _shardOpenerThreadCount = shardOpenerThreadCount;
     _zookeeper = zookeeper;
@@ -504,6 +506,9 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   }
 
   private void warmUp(final BlurIndex index, final TableDescriptor table, final String shard) throws IOException {
+    if (_warmupDisabled) {
+      return;
+    }
     _warmupExecutor.submit(new Runnable() {
       @Override
       public void run() {

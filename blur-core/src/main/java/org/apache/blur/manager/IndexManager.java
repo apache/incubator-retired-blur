@@ -134,10 +134,16 @@ public class IndexManager {
   public static final String NOT_FOUND = "NOT_FOUND";
   private static final Log LOG = LogFactory.getLog(IndexManager.class);
 
-  private final Meter _readRecordsMeter;
-  private final Meter _readRowMeter;
-  private final Meter _writeRecordsMeter;
-  private final Meter _writeRowMeter;
+  private static final Meter _readRecordsMeter;
+  private static final Meter _readRowMeter;
+
+  static {
+    MetricName metricName1 = new MetricName(ORG_APACHE_BLUR, BLUR, "Read Records/s");
+    MetricName metricName2 = new MetricName(ORG_APACHE_BLUR, BLUR, "Read Row/s");
+    _readRecordsMeter = Metrics.newMeter(metricName1, "Records/s", TimeUnit.SECONDS);
+    _readRowMeter = Metrics.newMeter(metricName2, "Row/s", TimeUnit.SECONDS);
+  }
+
   private final Meter _queriesExternalMeter;
   private final Meter _queriesInternalMeter;
 
@@ -169,21 +175,13 @@ public class IndexManager {
     _clusterStatus = clusterStatus;
     _filterCache = filterCache;
 
-    MetricName metricName1 = new MetricName(ORG_APACHE_BLUR, BLUR, "Read Records/s");
-    MetricName metricName2 = new MetricName(ORG_APACHE_BLUR, BLUR, "Read Row/s");
-    MetricName metricName3 = new MetricName(ORG_APACHE_BLUR, BLUR, "Write Records/s");
-    MetricName metricName4 = new MetricName(ORG_APACHE_BLUR, BLUR, "Write Row/s");
-    MetricName metricName5 = new MetricName(ORG_APACHE_BLUR, BLUR, "External Queries/s");
-    MetricName metricName6 = new MetricName(ORG_APACHE_BLUR, BLUR, "Internal Queries/s");
-    MetricName metricName7 = new MetricName(ORG_APACHE_BLUR, BLUR, "Fetch Timer");
+    MetricName metricName1 = new MetricName(ORG_APACHE_BLUR, BLUR, "External Queries/s");
+    MetricName metricName2 = new MetricName(ORG_APACHE_BLUR, BLUR, "Internal Queries/s");
+    MetricName metricName3 = new MetricName(ORG_APACHE_BLUR, BLUR, "Fetch Timer");
 
-    _readRecordsMeter = Metrics.newMeter(metricName1, "Records/s", TimeUnit.SECONDS);
-    _readRowMeter = Metrics.newMeter(metricName2, "Row/s", TimeUnit.SECONDS);
-    _writeRecordsMeter = Metrics.newMeter(metricName3, "Records/s", TimeUnit.SECONDS);
-    _writeRowMeter = Metrics.newMeter(metricName4, "Row/s", TimeUnit.SECONDS);
-    _queriesExternalMeter = Metrics.newMeter(metricName5, "External Queries/s", TimeUnit.SECONDS);
-    _queriesInternalMeter = Metrics.newMeter(metricName6, "Internal Queries/s", TimeUnit.SECONDS);
-    _fetchTimer = Metrics.newTimer(metricName7, TimeUnit.MICROSECONDS, TimeUnit.SECONDS);
+    _queriesExternalMeter = Metrics.newMeter(metricName1, "External Queries/s", TimeUnit.SECONDS);
+    _queriesInternalMeter = Metrics.newMeter(metricName2, "Internal Queries/s", TimeUnit.SECONDS);
+    _fetchTimer = Metrics.newTimer(metricName3, TimeUnit.MICROSECONDS, TimeUnit.SECONDS);
 
     if (threadCount == 0) {
       throw new RuntimeException("Thread Count cannot be 0.");
@@ -308,15 +306,6 @@ public class IndexManager {
 
       fetchRow(searcher.getIndexReader(), table, shard, selector, fetchResult, highlightQuery, fieldManager,
           _maxHeapPerRowFetch, tableContext, filter);
-
-      if (fetchResult.rowResult != null) {
-        if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
-          _readRecordsMeter.mark(fetchResult.rowResult.row.records.size());
-        }
-        _readRowMeter.mark();
-      } else if (fetchResult.recordResult != null) {
-        _readRecordsMeter.mark();
-      }
     } catch (Exception e) {
       LOG.error("Unknown error while trying to fetch row.", e);
       throw new BException(e.getMessage(), e);
@@ -621,98 +610,109 @@ public class IndexManager {
   public static void fetchRow(IndexReader reader, String table, String shard, Selector selector,
       FetchResult fetchResult, Query highlightQuery, FieldManager fieldManager, int maxHeap, TableContext tableContext,
       Filter filter) throws CorruptIndexException, IOException {
-    fetchResult.table = table;
-    String locationId = selector.locationId;
-    int lastSlash = locationId.lastIndexOf('/');
-    int docId = Integer.parseInt(locationId.substring(lastSlash + 1));
-    if (docId >= reader.maxDoc()) {
-      throw new RuntimeException("Location id [" + locationId + "] with docId [" + docId + "] is not valid.");
-    }
-
-    boolean returnIdsOnly = false;
-    if (selector.columnFamiliesToFetch != null && selector.columnsToFetch != null
-        && selector.columnFamiliesToFetch.isEmpty() && selector.columnsToFetch.isEmpty()) {
-      // exit early
-      returnIdsOnly = true;
-    }
-
-    Tracer t1 = Trace.trace("fetchRow - live docs");
-    Bits liveDocs = MultiFields.getLiveDocs(reader);
-    t1.done();
-    ResetableDocumentStoredFieldVisitor fieldVisitor = getFieldSelector(selector);
-    if (selector.isRecordOnly()) {
-      // select only the row for the given data or location id.
-      if (isFiltered(docId, reader, filter)) {
-        fetchResult.exists = false;
-        fetchResult.deleted = false;
-        return;
-      } else if (liveDocs != null && !liveDocs.get(docId)) {
-        fetchResult.exists = false;
-        fetchResult.deleted = true;
-        return;
-      } else {
-        fetchResult.exists = true;
-        fetchResult.deleted = false;
-        reader.document(docId, fieldVisitor);
-        Document document = fieldVisitor.getDocument();
-        if (highlightQuery != null && fieldManager != null) {
-          HighlightOptions highlightOptions = selector.getHighlightOptions();
-          String preTag = highlightOptions.getPreTag();
-          String postTag = highlightOptions.getPostTag();
-          try {
-            document = HighlightHelper
-                .highlight(docId, document, highlightQuery, fieldManager, reader, preTag, postTag);
-          } catch (InvalidTokenOffsetsException e) {
-            LOG.error("Unknown error while tring to highlight", e);
-          }
-        }
-        fieldVisitor.reset();
-        fetchResult.recordResult = getRecord(document);
-        return;
+    try {
+      fetchResult.table = table;
+      String locationId = selector.locationId;
+      int lastSlash = locationId.lastIndexOf('/');
+      int docId = Integer.parseInt(locationId.substring(lastSlash + 1));
+      if (docId >= reader.maxDoc()) {
+        throw new RuntimeException("Location id [" + locationId + "] with docId [" + docId + "] is not valid.");
       }
-    } else {
-      Tracer trace = Trace.trace("fetchRow - Row read");
-      try {
-        if (liveDocs != null && !liveDocs.get(docId)) {
+
+      boolean returnIdsOnly = false;
+      if (selector.columnFamiliesToFetch != null && selector.columnsToFetch != null
+          && selector.columnFamiliesToFetch.isEmpty() && selector.columnsToFetch.isEmpty()) {
+        // exit early
+        returnIdsOnly = true;
+      }
+
+      Tracer t1 = Trace.trace("fetchRow - live docs");
+      Bits liveDocs = MultiFields.getLiveDocs(reader);
+      t1.done();
+      ResetableDocumentStoredFieldVisitor fieldVisitor = getFieldSelector(selector);
+      if (selector.isRecordOnly()) {
+        // select only the row for the given data or location id.
+        if (isFiltered(docId, reader, filter)) {
+          fetchResult.exists = false;
+          fetchResult.deleted = false;
+          return;
+        } else if (liveDocs != null && !liveDocs.get(docId)) {
           fetchResult.exists = false;
           fetchResult.deleted = true;
           return;
         } else {
           fetchResult.exists = true;
           fetchResult.deleted = false;
-          if (returnIdsOnly) {
-            String rowId = selector.getRowId();
-            if (rowId == null) {
-              rowId = getRowId(reader, docId);
+          reader.document(docId, fieldVisitor);
+          Document document = fieldVisitor.getDocument();
+          if (highlightQuery != null && fieldManager != null) {
+            HighlightOptions highlightOptions = selector.getHighlightOptions();
+            String preTag = highlightOptions.getPreTag();
+            String postTag = highlightOptions.getPostTag();
+            try {
+              document = HighlightHelper.highlight(docId, document, highlightQuery, fieldManager, reader, preTag,
+                  postTag);
+            } catch (InvalidTokenOffsetsException e) {
+              LOG.error("Unknown error while tring to highlight", e);
             }
-            fetchResult.rowResult = new FetchRowResult();
-            fetchResult.rowResult.row = new Row(rowId, null);
+          }
+          fieldVisitor.reset();
+          fetchResult.recordResult = getRecord(document);
+          return;
+        }
+      } else {
+        Tracer trace = Trace.trace("fetchRow - Row read");
+        try {
+          if (liveDocs != null && !liveDocs.get(docId)) {
+            fetchResult.exists = false;
+            fetchResult.deleted = true;
+            return;
           } else {
-            List<Document> docs;
-            AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
-            AtomicInteger totalRecords = new AtomicInteger();
-            BlurHighlighter highlighter = new BlurHighlighter(highlightQuery, fieldManager, selector);
-            Tracer docTrace = Trace.trace("fetchRow - Document read");
-            docs = BlurUtil.fetchDocuments(reader, fieldVisitor, selector, maxHeap, table + "/" + shard,
-                tableContext.getDefaultPrimeDocTerm(), filter, moreDocsToFetch, totalRecords, highlighter);
-            docTrace.done();
-            Tracer rowTrace = Trace.trace("fetchRow - Row create");
-            Row row = getRow(docs);
-            if (row == null) {
+            fetchResult.exists = true;
+            fetchResult.deleted = false;
+            if (returnIdsOnly) {
               String rowId = selector.getRowId();
               if (rowId == null) {
                 rowId = getRowId(reader, docId);
               }
-              row = new Row(rowId, null);
+              fetchResult.rowResult = new FetchRowResult();
+              fetchResult.rowResult.row = new Row(rowId, null);
+            } else {
+              List<Document> docs;
+              AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
+              AtomicInteger totalRecords = new AtomicInteger();
+              BlurHighlighter highlighter = new BlurHighlighter(highlightQuery, fieldManager, selector);
+              Tracer docTrace = Trace.trace("fetchRow - Document read");
+              docs = BlurUtil.fetchDocuments(reader, fieldVisitor, selector, maxHeap, table + "/" + shard,
+                  tableContext.getDefaultPrimeDocTerm(), filter, moreDocsToFetch, totalRecords, highlighter);
+              docTrace.done();
+              Tracer rowTrace = Trace.trace("fetchRow - Row create");
+              Row row = getRow(docs);
+              if (row == null) {
+                String rowId = selector.getRowId();
+                if (rowId == null) {
+                  rowId = getRowId(reader, docId);
+                }
+                row = new Row(rowId, null);
+              }
+              fetchResult.rowResult = new FetchRowResult(row, selector.getStartRecord(),
+                  selector.getMaxRecordsToFetch(), moreDocsToFetch.get(), totalRecords.get());
+              rowTrace.done();
             }
-            fetchResult.rowResult = new FetchRowResult(row, selector.getStartRecord(), selector.getMaxRecordsToFetch(),
-                moreDocsToFetch.get(), totalRecords.get());
-            rowTrace.done();
+            return;
           }
-          return;
+        } finally {
+          trace.done();
         }
-      } finally {
-        trace.done();
+      }
+    } finally {
+      if (fetchResult.rowResult != null) {
+        if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
+          _readRecordsMeter.mark(fetchResult.rowResult.row.records.size());
+        }
+        _readRowMeter.mark();
+      } else if (fetchResult.recordResult != null) {
+        _readRecordsMeter.mark();
       }
     }
   }
@@ -1106,7 +1106,7 @@ public class IndexManager {
         switch (type) {
         case REPLACE_ROW:
           Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);
-          mutatableAction.replaceRow(updateMetrics(row));
+          mutatableAction.replaceRow(row);
           break;
         case UPDATE_ROW:
           doUpdateRowMutation(mutation, mutatableAction);
@@ -1144,15 +1144,6 @@ public class IndexManager {
       list.add(mutation);
     }
     return map;
-  }
-
-  private Row updateMetrics(Row row) {
-    _writeRowMeter.mark();
-    List<Record> records = row.getRecords();
-    if (records != null) {
-      _writeRecordsMeter.mark(records.size());
-    }
-    return row;
   }
 
   private void doUpdateRowMutation(RowMutation mutation, MutatableAction mutatableAction) throws BlurException,

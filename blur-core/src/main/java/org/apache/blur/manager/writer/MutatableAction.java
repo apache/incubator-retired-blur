@@ -16,6 +16,9 @@
  */
 package org.apache.blur.manager.writer;
 
+import static org.apache.blur.metrics.MetricsConstants.BLUR;
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.manager.IndexManager;
@@ -41,7 +45,21 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Meter;
+import com.yammer.metrics.core.MetricName;
+
 public class MutatableAction {
+
+  private static final Meter _writeRecordsMeter;
+  private static final Meter _writeRowMeter;
+
+  static {
+    MetricName metricName1 = new MetricName(ORG_APACHE_BLUR, BLUR, "Write Records/s");
+    MetricName metricName2 = new MetricName(ORG_APACHE_BLUR, BLUR, "Write Row/s");
+    _writeRecordsMeter = Metrics.newMeter(metricName1, "Records/s", TimeUnit.SECONDS);
+    _writeRowMeter = Metrics.newMeter(metricName2, "Row/s", TimeUnit.SECONDS);
+  }
 
   static class UpdateRow extends InternalAction {
 
@@ -224,7 +242,8 @@ public class MutatableAction {
       Row row = null;
       if (!selector.getLocationId().equals(IndexManager.NOT_FOUND)) {
         FetchResult fetchResult = new FetchResult();
-        IndexManager.fetchRow(searcher.getIndexReader(), _table, _shard, selector, fetchResult, null, null, _maxHeap, _tableContext, null);
+        IndexManager.fetchRow(searcher.getIndexReader(), _table, _shard, selector, fetchResult, null, null, _maxHeap,
+            _tableContext, null);
         FetchRowResult rowResult = fetchResult.getRowResult();
         if (rowResult != null) {
           row = rowResult.getRow();
@@ -237,9 +256,11 @@ public class MutatableAction {
       if (row != null && row.getRecords() != null && row.getRecords().size() > 0) {
         List<List<Field>> docsToUpdate = RowDocumentUtil.getDocs(row, _fieldManager);
         writer.updateDocuments(term, docsToUpdate);
+        _writeRecordsMeter.mark(docsToUpdate.size());
       } else {
         writer.deleteDocuments(term);
       }
+      _writeRowMeter.mark();
     }
 
   }
@@ -268,6 +289,7 @@ public class MutatableAction {
       @Override
       void performAction(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
         writer.deleteDocuments(createRowId(rowId));
+        _writeRowMeter.mark();
       }
     });
   }
@@ -279,6 +301,8 @@ public class MutatableAction {
         List<List<Field>> docs = RowDocumentUtil.getDocs(row, _fieldManager);
         Term rowId = createRowId(row.getId());
         writer.updateDocuments(rowId, docs);
+        _writeRecordsMeter.mark(docs.size());
+        _writeRowMeter.mark();
       }
     });
   }

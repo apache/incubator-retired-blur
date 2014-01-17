@@ -16,6 +16,7 @@ package org.apache.blur.lucene.warmup;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -400,14 +401,17 @@ public class IndexWarmup {
     long s = System.nanoTime();
     double _targetThrouhput = _maxBytesPerSec / 1000.0 / 1000.0;
     for (Entry<String, OpenBitSet> e : filePartsToWarm.entrySet()) {
-      input = warmFile(directory, e.getKey(), e.getValue(), blockSize, context, bufferSize, input);
-      if (input != null) {
-        long end = System.nanoTime();
-        double seconds = (end - s) / 1000000000.0;
-        double rateMbPerSec = (input.getTotalBytesRead() / seconds) / 1000 / 1000;
-        LOG.debug(
-            "Context [{0}] warming file [{1}] is [{2}%] complete " + "at rate of [{3} MB/s] target was [{4} MB/s]",
-            context, e.getKey(), 100, rateMbPerSec, _targetThrouhput);
+      try {
+        input = warmFile(directory, e.getKey(), e.getValue(), blockSize, context, bufferSize, input);
+        if (input != null) {
+          long end = System.nanoTime();
+          double seconds = (end - s) / 1000000000.0;
+          double rateMbPerSec = (input.getTotalBytesRead() / seconds) / 1000 / 1000;
+          LOG.debug("Context [{0}] warming file [{1}] is [{2}%] complete "
+              + "at rate of [{3} MB/s] target was [{4} MB/s]", context, e.getKey(), 100, rateMbPerSec, _targetThrouhput);
+        }
+      } catch (FileNotFoundException ex) {
+        LOG.debug("File [{0}] no longer exists.", e.getKey());
       }
     }
     if (input != null) {

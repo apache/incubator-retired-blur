@@ -19,48 +19,22 @@ package org.apache.blur.lucene.codec;
 import java.io.IOException;
 
 import org.apache.lucene.codecs.compressing.Decompressor;
-import org.apache.lucene.index.SegmentInfo;
 import org.apache.lucene.store.DataInput;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.util.ArrayUtil;
 import org.apache.lucene.util.BytesRef;
 
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-
 public class CachedDecompressor extends Decompressor {
 
   private final Decompressor _decompressor;
-
-  private final ThreadLocal<Entry> _entry = new ThreadLocal<Entry>();
-
-  static class Entry {
-    final IndexInput _indexInput;
-    final String _name;
-    final long _filePointer;
-    BytesRef _cache;
-
-    Entry(IndexInput indexInput, String name, long filePointer) {
-      _indexInput = indexInput;
-      _name = name;
-      _filePointer = filePointer;
+  private final ThreadLocal<Entry> _entry = new ThreadLocal<Entry>() {
+    @Override
+    protected Entry initialValue() {
+      return new Entry();
     }
+  };
 
-    boolean isValid(IndexInput indexInput, String name, long filePointer) {
-      if (_indexInput != indexInput) {
-        return false;
-      }
-      if (!_name.equals(name)) {
-        return false;
-      }
-      if (_filePointer != filePointer) {
-        return false;
-      }
-      return true;
-    }
-  }
-
-  public CachedDecompressor(Decompressor decompressor, SegmentInfo si,
-      ConcurrentLinkedHashMap<CachedKey, BytesRef> cache) {
+  public CachedDecompressor(Decompressor decompressor) {
     _decompressor = decompressor;
   }
 
@@ -73,9 +47,9 @@ public class CachedDecompressor extends Decompressor {
       long filePointer = indexInput.getFilePointer();
 
       Entry entry = _entry.get();
-      if (entry == null || !entry.isValid(indexInput, name, filePointer)) {
-        entry = new Entry(indexInput, name, filePointer);
-        entry._cache = new BytesRef(originalLength + 7);
+      if (!entry.isValid(indexInput, name, filePointer)) {
+        entry.setup(indexInput, name, filePointer);
+        entry._cache.grow(originalLength + 7);
         _decompressor.decompress(indexInput, originalLength, 0, originalLength, entry._cache);
         entry._cache.length = originalLength;
         entry._cache.offset = 0;
@@ -94,6 +68,32 @@ public class CachedDecompressor extends Decompressor {
 
   @Override
   public Decompressor clone() {
-    return this;
+    return new CachedDecompressor(_decompressor.clone());
+  }
+
+  static class Entry {
+    IndexInput _indexInput;
+    String _name;
+    long _filePointer = -1;
+    BytesRef _cache = new BytesRef();
+
+    void setup(IndexInput indexInput, String name, long filePointer) {
+      _indexInput = indexInput;
+      _name = name;
+      _filePointer = filePointer;
+    }
+
+    boolean isValid(IndexInput indexInput, String name, long filePointer) {
+      if (_indexInput != indexInput) {
+        return false;
+      }
+      if (!name.equals(_name)) {
+        return false;
+      }
+      if (_filePointer != filePointer) {
+        return false;
+      }
+      return true;
+    }
   }
 }

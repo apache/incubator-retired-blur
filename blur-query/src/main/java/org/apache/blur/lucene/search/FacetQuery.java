@@ -53,6 +53,10 @@ public class FacetQuery extends AbstractWrapperQuery {
     return "facet:{" + _query.toString(field) + "}";
   }
 
+  public Query[] getFacets() {
+    return _facets;
+  }
+
   @Override
   public Query clone() {
     return new FacetQuery((Query) _query.clone(), _facets, _executor, _rewritten);

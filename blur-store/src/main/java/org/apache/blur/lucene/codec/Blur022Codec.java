@@ -145,7 +145,7 @@ public class Blur022Codec extends Codec {
   }
 
   private final PostingsFormat defaultFormat = PostingsFormat.forName("Lucene41");
-  private final DocValuesFormat defaultDVFormat = DocValuesFormat.forName("Lucene42");
+  private final DocValuesFormat defaultDVFormat = DocValuesFormat.forName("Disk");
 
   private final NormsFormat normsFormat = new Lucene42NormsFormat();
 

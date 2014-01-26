@@ -71,6 +71,7 @@ import org.apache.blur.thrift.MutationHelper;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
+import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.Facet;
 import org.apache.blur.thrift.generated.FetchResult;
@@ -89,6 +90,7 @@ import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
 import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.BlurExecutorCompletionService.Cancel;
+import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.ForkJoin;
 import org.apache.blur.utils.ForkJoin.Merger;
@@ -507,7 +509,7 @@ public class IndexManager {
       if (executor != null) {
         executor.processFacets(_facetExecutor);
       }
-      return merge;
+      return fetchDataIfNeeded(merge, table, blurQuery.getSelector());
     } catch (StopExecutionCollectorException e) {
       BlurQueryStatus queryStatus = status.getQueryStatus();
       QueryState state = queryStatus.getState();
@@ -529,6 +531,58 @@ public class IndexManager {
     } finally {
       _statusManager.removeStatus(status);
     }
+  }
+
+  private BlurResultIterable fetchDataIfNeeded(final BlurResultIterable iterable, final String table, final Selector selector) {
+    if (selector == null) {
+      return iterable;
+    }
+    return new BlurResultIterable() {
+
+      @Override
+      public BlurIterator<BlurResult, BlurException> iterator() throws BlurException {
+        final BlurIterator<BlurResult, BlurException> iterator = iterable.iterator();
+        return new BlurIterator<BlurResult, BlurException>() {
+          
+          @Override
+          public BlurResult next() throws BlurException {
+            BlurResult result = iterator.next();
+            String locationId = result.getLocationId();
+            FetchResult fetchResult = new FetchResult();
+            Selector s = new Selector(selector);
+            s.setLocationId(locationId);
+            fetchRow(table, s, fetchResult);
+            result.setFetchResult(fetchResult);
+            return result;
+          }
+          
+          @Override
+          public boolean hasNext() throws BlurException {
+            return iterator.hasNext();
+          }
+        };
+      }
+
+      @Override
+      public void close() throws IOException {
+        iterable.close();
+      }
+
+      @Override
+      public void skipTo(long skipTo) {
+        iterable.skipTo(skipTo);
+      }
+
+      @Override
+      public long getTotalResults() {
+        return iterable.getTotalResults();
+      }
+
+      @Override
+      public Map<String, Long> getShardInfo() {
+        return iterable.getShardInfo();
+      }
+    };
   }
 
   private long[] getFacetMinimums(List<Facet> facets) {

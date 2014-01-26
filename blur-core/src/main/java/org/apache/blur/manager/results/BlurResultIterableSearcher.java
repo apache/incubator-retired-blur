@@ -24,13 +24,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.blur.lucene.search.IterablePaging;
 import org.apache.blur.lucene.search.IterablePaging.ProgressRef;
 import org.apache.blur.lucene.search.IterablePaging.TotalHitsRef;
-import org.apache.blur.manager.IndexManager;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
-import org.apache.blur.thrift.generated.ErrorType;
-import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.Converter;
@@ -41,71 +38,42 @@ import org.apache.lucene.search.ScoreDoc;
 
 public class BlurResultIterableSearcher implements BlurResultIterable {
 
-  private Map<String, Long> _shardInfo = new TreeMap<String, Long>();
-  private String _shard;
-  private long _skipTo;
-  private String _table;
+  private final Map<String, Long> _shardInfo = new TreeMap<String, Long>();
+  private final String _shard;
   private final int _fetchCount;
-
-  private IteratorConverter<ScoreDoc, BlurResult, BlurException> _iterator;
-  private final Selector _selector;
+  private final IteratorConverter<ScoreDoc, BlurResult, BlurException> _iteratorConverter;
   private final Query _query;
-  private IndexSearcherClosable _searcher;
   private final TotalHitsRef _totalHitsRef = new TotalHitsRef();
   private final ProgressRef _progressRef = new ProgressRef();
   private final AtomicBoolean _running;
   private final boolean _closeSearcher;
   private final boolean _runSlow;
-  private final int _maxHeapPerRowFetch;
-  private final TableContext _context;
-  private final Filter _filter;
+  private final IterablePaging _iterablePaging;
+
+  private IndexSearcherClosable _searcher;
+  private long _skipTo;
 
   public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard,
       IndexSearcherClosable searcher, Selector selector, boolean closeSearcher, boolean runSlow, int fetchCount,
       int maxHeapPerRowFetch, TableContext context, Filter filter) throws BlurException {
     _running = running;
-    _table = table;
     _query = query;
     _shard = shard;
     _searcher = searcher;
-    _selector = selector;
     _closeSearcher = closeSearcher;
     _runSlow = runSlow;
     _fetchCount = fetchCount;
-    _maxHeapPerRowFetch = maxHeapPerRowFetch;
-    _context = context;
-    _filter = filter;
-    performSearch();
-  }
-
-  private void performSearch() throws BlurException {
-    IterablePaging iterablePaging = new IterablePaging(_running, _searcher, _query, _fetchCount, _totalHitsRef,
-        _progressRef, _runSlow);
-    _iterator = new IteratorConverter<ScoreDoc, BlurResult, BlurException>(iterablePaging.iterator(),
+    _iterablePaging = new IterablePaging(_running, _searcher, _query, _fetchCount, _totalHitsRef, _progressRef,
+        _runSlow);
+    _iteratorConverter = new IteratorConverter<ScoreDoc, BlurResult, BlurException>(_iterablePaging.iterator(),
         new Converter<ScoreDoc, BlurResult, BlurException>() {
           @Override
           public BlurResult convert(ScoreDoc scoreDoc) throws BlurException {
-            String resolveId = resolveId(scoreDoc.doc);
-            return new BlurResult(resolveId, scoreDoc.score, getFetchResult(resolveId));
+            String resolveId = resolveId(scoreDoc);
+            return new BlurResult(resolveId, scoreDoc.score, null);
           }
         });
     _shardInfo.put(_shard, (long) _totalHitsRef.totalHits());
-  }
-
-  private FetchResult getFetchResult(String resolveId) throws BlurException {
-    if (_selector == null) {
-      return null;
-    }
-    FetchResult fetchResult = new FetchResult();
-    _selector.setLocationId(resolveId);
-    IndexManager.validSelector(_selector);
-    try {
-      IndexManager.fetchRow(_searcher.getIndexReader(), _table, _shard, _selector, fetchResult, null,
-          _maxHeapPerRowFetch, _context, _filter);
-    } catch (IOException e) {
-      throw new BlurException("Unknown IO error", null, ErrorType.UNKNOWN);
-    }
-    return fetchResult;
   }
 
   @Override
@@ -125,16 +93,12 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
 
   @Override
   public BlurIterator<BlurResult, BlurException> iterator() throws BlurException {
-    long start = 0;
-    while (_iterator.hasNext() && start < _skipTo) {
-      _iterator.next();
-      start++;
-    }
-    return _iterator;
+    _iterablePaging.skipTo((int) _skipTo);
+    return _iteratorConverter;
   }
 
-  private String resolveId(int docId) {
-    return _shard + "/" + docId;
+  private String resolveId(ScoreDoc scoreDoc) {
+    return _shard + "/" + scoreDoc.doc;
   }
 
   @Override

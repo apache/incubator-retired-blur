@@ -125,8 +125,9 @@ public class BlurShardServer extends TableAdmin implements Iface {
       try {
         AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
         hitsIterable = _indexManager.query(table, blurQuery, facetCounts);
-        BlurResults blurResults = BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _dataFetch,
-            blurQuery.selector, this, table);
+        // Data will be fetch by IndexManager if selector is provided.
+        // This should only happen if the Shard server is accessed directly.
+        BlurResults blurResults = BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, null, null, this, table);
         if (selector != null) {
           return blurResults;
         }

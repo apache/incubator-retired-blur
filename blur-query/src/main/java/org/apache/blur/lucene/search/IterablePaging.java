@@ -29,10 +29,14 @@ import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.utils.BlurIterable;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.FieldDoc;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TopDocsCollector;
+import org.apache.lucene.search.TopFieldCollector;
 import org.apache.lucene.search.TopScoreDocCollector;
 
 /**
@@ -45,6 +49,7 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
   private final AtomicBoolean _running;
   private final int _numHitsToCollect;
   private final boolean _runSlow;
+  private final Sort _sort;
 
   private TotalHitsRef _totalHitsRef;
   private ProgressRef _progressRef;
@@ -53,7 +58,13 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
 
   public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query, int numHitsToCollect,
       TotalHitsRef totalHitsRef, ProgressRef progressRef, boolean runSlow) throws BlurException {
+    this(running, searcher, query, numHitsToCollect, totalHitsRef, progressRef, runSlow, null);
+  }
+
+  public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query, int numHitsToCollect,
+      TotalHitsRef totalHitsRef, ProgressRef progressRef, boolean runSlow, Sort sort) throws BlurException {
     _running = running;
+    _sort = sort;
     try {
       _query = searcher.rewrite(query);
     } catch (IOException e) {
@@ -184,7 +195,13 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
       long s = System.currentTimeMillis();
       _progressRef.searchesPerformed.incrementAndGet();
       try {
-        TopScoreDocCollector collector = TopScoreDocCollector.create(_numHitsToCollect, lastScoreDoc, true);
+        TopDocsCollector<?> collector;
+        if (_sort == null) {
+          collector = TopScoreDocCollector.create(_numHitsToCollect, lastScoreDoc, true);
+        } else {
+          collector = TopFieldCollector.create(_sort, _numHitsToCollect, (FieldDoc) lastScoreDoc, true, true, false,
+              true);
+        }
         Collector col = new StopExecutionCollector(collector, _running);
         if (_runSlow) {
           col = new SlowCollector(col);
@@ -230,7 +247,7 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
     }
   }
 
-  private BlurIterator<ScoreDoc, BlurException> skipHits(BlurIterator<ScoreDoc, BlurException> iterator)
+  private BlurIterator<ScoreDoc, BlurException> skipHits(PagingIterator iterator)
       throws BlurException {
     _progressRef.skipTo.set(skipTo);
     for (int i = 0; i < skipTo && iterator.hasNext(); i++) {

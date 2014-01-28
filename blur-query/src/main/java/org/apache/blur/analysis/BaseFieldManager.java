@@ -52,7 +52,9 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.AnalyzerWrapper;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.search.Query;
 
@@ -186,7 +188,7 @@ public abstract class BaseFieldManager extends FieldManager {
     List<String> fieldNamesToLoad = getFieldNamesToLoad();
     for (String fieldName : fieldNamesToLoad) {
       if (!_fieldNameToDefMap.containsKey(fieldName)) {
-        tryToLoad(fieldName);  
+        tryToLoad(fieldName);
       }
     }
   }
@@ -211,11 +213,12 @@ public abstract class BaseFieldManager extends FieldManager {
   public List<Field> getFields(String rowId, Record record) throws IOException {
     List<Field> fields = new ArrayList<Field>();
     String family = record.getFamily();
-    if(family == null || family.isEmpty()){
-    	family = BlurConstants.DEFAULT_FAMILY;
+    if (family == null || family.isEmpty()) {
+      family = BlurConstants.DEFAULT_FAMILY;
     }
     List<Column> columns = record.getColumns();
     addDefaultFields(fields, rowId, record);
+    addFieldExistance(fields, record);
     for (Column column : columns) {
       String name = column.getName();
       String value = column.getValue();
@@ -244,6 +247,21 @@ public abstract class BaseFieldManager extends FieldManager {
     return fields;
   }
 
+  private void addFieldExistance(List<Field> fields, Record record) {
+    String family = record.getFamily();
+    if (family == null) {
+      family = BlurConstants.DEFAULT_FAMILY;
+    }
+    for (Column column : record.getColumns()) {
+      String name = column.getName();
+      String value = column.getValue();
+      if (value == null || name == null) {
+        continue;
+      }
+      fields.add(new StringField(BlurConstants.FIELDS, family + "." + name, Store.NO));
+    }
+  }
+
   private void getAndAddFields(List<Field> fields, String family, Column column, String subName,
       FieldTypeDefinition fieldTypeDefinition) {
     for (Field field : fieldTypeDefinition.getFieldsForSubColumn(family, column, subName)) {
@@ -257,11 +275,11 @@ public abstract class BaseFieldManager extends FieldManager {
 
     validateNotNull(rowId, BlurConstants.ROW_ID);
     validateNotNull(recordId, BlurConstants.RECORD_ID);
-    
-    if (family == null){
-    	fields.add(new Field(BlurConstants.FAMILY, BlurConstants.DEFAULT_FAMILY, ID_TYPE));
-    }else{
-    	fields.add(new Field(BlurConstants.FAMILY, family, ID_TYPE));
+
+    if (family == null) {
+      fields.add(new Field(BlurConstants.FAMILY, BlurConstants.DEFAULT_FAMILY, ID_TYPE));
+    } else {
+      fields.add(new Field(BlurConstants.FAMILY, family, ID_TYPE));
     }
     fields.add(new Field(BlurConstants.ROW_ID, rowId, ID_TYPE));
     fields.add(new Field(BlurConstants.RECORD_ID, recordId, ID_TYPE));
@@ -314,9 +332,9 @@ public abstract class BaseFieldManager extends FieldManager {
   @Override
   public boolean addColumnDefinition(String family, String columnName, String subColumnName, boolean fieldLessIndexed,
       String fieldType, Map<String, String> props) throws IOException {
-	if(family == null){
-		family = BlurConstants.DEFAULT_FAMILY;
-	}
+    if (family == null) {
+      family = BlurConstants.DEFAULT_FAMILY;
+    }
     String baseFieldName = family + "." + columnName;
     String fieldName;
     if (subColumnName != null) {
@@ -557,7 +575,7 @@ public abstract class BaseFieldManager extends FieldManager {
     }
     return fieldTypeDefinition.checkSupportForWildcardQuery();
   }
-  
+
   @Override
   public Boolean checkSupportForRegexQuery(String field) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
@@ -566,7 +584,6 @@ public abstract class BaseFieldManager extends FieldManager {
     }
     return fieldTypeDefinition.checkSupportForRegexQuery();
   }
-
 
   @Override
   public Boolean checkSupportForCustomQuery(String field) throws IOException {
@@ -644,17 +661,17 @@ public abstract class BaseFieldManager extends FieldManager {
   public boolean isStrict() {
     return _strict;
   }
-  
-  @Override
-  public String resolveField(String field){
-	  if (_fieldNameToDefMap.get(field) != null || isBuiltInField(field) || field.equals(_fieldLessField)){
-		  return field;
-	  }
 
-	  String newField = BlurConstants.DEFAULT_FAMILY + "." + field;
-	  if (_fieldNameToDefMap.get(newField) != null){
-		  return newField;
-	  }
-	  return field;
+  @Override
+  public String resolveField(String field) {
+    if (_fieldNameToDefMap.get(field) != null || isBuiltInField(field) || field.equals(_fieldLessField)) {
+      return field;
+    }
+
+    String newField = BlurConstants.DEFAULT_FAMILY + "." + field;
+    if (_fieldNameToDefMap.get(newField) != null) {
+      return newField;
+    }
+    return field;
   }
 }

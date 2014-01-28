@@ -22,12 +22,14 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.blur.analysis.FieldManager;
+import org.apache.blur.utils.BlurConstants;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.Version;
 
 public class BlurQueryParser extends QueryParser {
@@ -163,8 +165,13 @@ public class BlurQueryParser extends QueryParser {
 
   @Override
   protected Query newWildcardQuery(Term t) {
-    if (SUPER.equals(t.field()) && "*".equals(t.text())) {
-      return new MatchAllDocsQuery();
+    if ("*".equals(t.text())) {
+      String fieldName = t.field();
+      if (SUPER.equals(fieldName)) {
+        return new MatchAllDocsQuery();
+      } else {
+        return new TermQuery(new Term(BlurConstants.FIELDS, fieldName));
+      }
     }
     String resolvedField = _fieldManager.resolveField(t.field());
     try {

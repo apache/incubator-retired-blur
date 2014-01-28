@@ -78,6 +78,7 @@ limitations under the License.
 <li><a href="#Struct_FetchResult">FetchResult</a></li>
 <li><a href="#Struct_Facet">Facet</a></li>
 <li><a href="#Struct_BlurQuery">BlurQuery</a></li>
+<li><a href="#Struct_SortField">SortField</a></li>
 <li><a href="#Struct_BlurResult">BlurResult</a></li>
 <li><a href="#Struct_BlurResults">BlurResults</a></li>
 <li><a href="#Struct_RecordMutation">RecordMutation</a></li>
@@ -414,13 +415,23 @@ of a running query can be found or the query can be canceled.
 </td><td>default</td><td>0</td></tr>
 </table><br/>The Blur Query object that contains the query that needs to be executed along
 with the query options.
-<br/></p></section><section><div class="page-header"><h3 id="Struct_BlurResult">Struct: BlurResult</h3></div><p class="lead">
+<br/></p></section><section><div class="page-header"><h3 id="Struct_SortField">Struct: SortField</h3></div><p class="lead">
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>nullValue</td><td><code>bool</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>stringValue</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>intValue</td><td><code>i32</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>4</td><td>longValue</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>5</td><td>doubleValue</td><td><code>double</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>6</td><td>binaryValue</td><td><code>binary</code></td><td></td><td>default</td><td></td></tr>
+</table><br/></p></section><section><div class="page-header"><h3 id="Struct_BlurResult">Struct: BlurResult</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>locationId</td><td><code>string</code></td><td>WARNING: This is an internal only attribute and is not intended for use by clients.
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>score</td><td><code>double</code></td><td>The score for the hit in the query.
 </td><td>default</td><td></td></tr>
 <tr><td>3</td><td>fetchResult</td><td><code><a href="Blur.html#Struct_FetchResult">FetchResult</a></code></td><td>The fetched result if any.
+</td><td>default</td><td></td></tr>
+<tr><td>4</td><td>sortFields</td><td><code>list&lt;<code><a href="Blur.html#Struct_SortField">SortField</a></code>&gt;</code></td><td>The fields used for sorting.
 </td><td>default</td><td></td></tr>
 </table><br/>The BlurResult carries the score, the location id and the fetched result (if any) form each query.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_BlurResults">Struct: BlurResults</h3></div><p class="lead">

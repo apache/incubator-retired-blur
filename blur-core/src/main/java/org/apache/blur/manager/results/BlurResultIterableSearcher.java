@@ -30,11 +30,14 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.utils.BlurIterator;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.Converter;
 import org.apache.blur.utils.IteratorConverter;
+import org.apache.lucene.search.FieldDoc;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Sort;
 
 public class BlurResultIterableSearcher implements BlurResultIterable {
 
@@ -49,13 +52,15 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
   private final boolean _closeSearcher;
   private final boolean _runSlow;
   private final IterablePaging _iterablePaging;
+  private final Sort _sort;
 
   private IndexSearcherClosable _searcher;
   private long _skipTo;
 
   public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard,
       IndexSearcherClosable searcher, Selector selector, boolean closeSearcher, boolean runSlow, int fetchCount,
-      int maxHeapPerRowFetch, TableContext context, Filter filter) throws BlurException {
+      int maxHeapPerRowFetch, TableContext context, Filter filter, Sort sort) throws BlurException {
+    _sort = sort;
     _running = running;
     _query = query;
     _shard = shard;
@@ -64,13 +69,18 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
     _runSlow = runSlow;
     _fetchCount = fetchCount;
     _iterablePaging = new IterablePaging(_running, _searcher, _query, _fetchCount, _totalHitsRef, _progressRef,
-        _runSlow);
+        _runSlow, _sort);
     _iteratorConverter = new IteratorConverter<ScoreDoc, BlurResult, BlurException>(_iterablePaging.iterator(),
         new Converter<ScoreDoc, BlurResult, BlurException>() {
           @Override
           public BlurResult convert(ScoreDoc scoreDoc) throws BlurException {
             String resolveId = resolveId(scoreDoc);
-            return new BlurResult(resolveId, scoreDoc.score, null);
+            if (_sort == null) {
+              return new BlurResult(resolveId, scoreDoc.score, null, null);
+            } else {
+              FieldDoc fieldDoc = (FieldDoc) scoreDoc;
+              return new BlurResult(resolveId, scoreDoc.score, null, BlurUtil.convertToSortFields(fieldDoc.fields));
+            }
           }
         });
     _shardInfo.put(_shard, (long) _totalHitsRef.totalHits());

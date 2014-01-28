@@ -34,7 +34,6 @@ public class BlurResultIterableSimple implements BlurResultIterable {
   private long skipTo;
 
   public BlurResultIterableSimple(String shard, List<BlurResult> hits) {
-    Collections.sort(hits, BlurUtil.HITS_COMPARATOR);
     this.results = hits;
     this.shardInfo = new TreeMap<String, Long>();
     this.shardInfo.put(shard, (long) hits.size());

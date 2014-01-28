@@ -444,12 +444,66 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
+  class SortField < ::Thrift::Union
+    include ::Thrift::Struct_Union
+    class << self
+      def nullValue(val)
+        SortField.new(:nullValue, val)
+      end
+
+      def stringValue(val)
+        SortField.new(:stringValue, val)
+      end
+
+      def intValue(val)
+        SortField.new(:intValue, val)
+      end
+
+      def longValue(val)
+        SortField.new(:longValue, val)
+      end
+
+      def doubleValue(val)
+        SortField.new(:doubleValue, val)
+      end
+
+      def binaryValue(val)
+        SortField.new(:binaryValue, val)
+      end
+    end
+
+    NULLVALUE = 1
+    STRINGVALUE = 2
+    INTVALUE = 3
+    LONGVALUE = 4
+    DOUBLEVALUE = 5
+    BINARYVALUE = 6
+
+    FIELDS = {
+      NULLVALUE => {:type => ::Thrift::Types::BOOL, :name => 'nullValue'},
+      STRINGVALUE => {:type => ::Thrift::Types::STRING, :name => 'stringValue'},
+      INTVALUE => {:type => ::Thrift::Types::I32, :name => 'intValue'},
+      LONGVALUE => {:type => ::Thrift::Types::I64, :name => 'longValue'},
+      DOUBLEVALUE => {:type => ::Thrift::Types::DOUBLE, :name => 'doubleValue'},
+      BINARYVALUE => {:type => ::Thrift::Types::STRING, :name => 'binaryValue', :binary => true}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+      raise(StandardError, 'Union fields are not set.') if get_set_field.nil? || get_value.nil?
+    end
+
+    ::Thrift::Union.generate_accessors self
+  end
+
   # The BlurResult carries the score, the location id and the fetched result (if any) form each query.
   class BlurResult
     include ::Thrift::Struct, ::Thrift::Struct_Union
     LOCATIONID = 1
     SCORE = 2
     FETCHRESULT = 3
+    SORTFIELDS = 4
 
     FIELDS = {
       # WARNING: This is an internal only attribute and is not intended for use by clients.
@@ -457,7 +511,9 @@ module Blur
       # The score for the hit in the query.
       SCORE => {:type => ::Thrift::Types::DOUBLE, :name => 'score'},
       # The fetched result if any.
-      FETCHRESULT => {:type => ::Thrift::Types::STRUCT, :name => 'fetchResult', :class => ::Blur::FetchResult}
+      FETCHRESULT => {:type => ::Thrift::Types::STRUCT, :name => 'fetchResult', :class => ::Blur::FetchResult},
+      # The fields used for sorting.
+      SORTFIELDS => {:type => ::Thrift::Types::LIST, :name => 'sortFields', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::SortField}}
     }
 
     def struct_fields; FIELDS; end

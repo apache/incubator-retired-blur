@@ -96,6 +96,7 @@ import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.Selector;
+import org.apache.blur.thrift.generated.SortField;
 import org.apache.blur.thrift.util.ResetableTMemoryBuffer;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
@@ -1219,6 +1220,11 @@ public class BlurUtil {
       }
     };
     return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class }, handler);
+  }
+
+  public static List<SortField> convertToSortFields(Object[] fields) {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

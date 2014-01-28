@@ -56,10 +56,10 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
   private int skipTo;
   private int gather = -1;
 
-  public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query, int numHitsToCollect,
-      TotalHitsRef totalHitsRef, ProgressRef progressRef, boolean runSlow) throws BlurException {
-    this(running, searcher, query, numHitsToCollect, totalHitsRef, progressRef, runSlow, null);
-  }
+//  public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query, int numHitsToCollect,
+//      TotalHitsRef totalHitsRef, ProgressRef progressRef, boolean runSlow) throws BlurException {
+//    this(running, searcher, query, numHitsToCollect, totalHitsRef, progressRef, runSlow, null);
+//  }
 
   public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query, int numHitsToCollect,
       TotalHitsRef totalHitsRef, ProgressRef progressRef, boolean runSlow, Sort sort) throws BlurException {

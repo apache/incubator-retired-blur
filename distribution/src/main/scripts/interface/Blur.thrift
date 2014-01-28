@@ -452,6 +452,15 @@ struct BlurQuery {
   14:i64 startTime = 0
 }
 
+union SortField {
+  1:bool nullValue,
+  2:string stringValue,
+  3:i32 intValue,
+  4:i64 longValue,
+  5:double doubleValue,
+  6:binary binaryValue
+}
+
 /**
  * The BlurResult carries the score, the location id and the fetched result (if any) form each query.
  */
@@ -467,7 +476,11 @@ struct BlurResult {
   /**
    * The fetched result if any.
    */
-  3:FetchResult fetchResult
+  3:FetchResult fetchResult,
+  /**
+   * The fields used for sorting.
+   */
+  4:list<SortField> sortFields
 }
 
 /**

@@ -675,14 +675,14 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
           case 5: // RECORD_MUTATIONS
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list92 = iprot.readListBegin();
-                struct.recordMutations = new ArrayList<RecordMutation>(_list92.size);
-                for (int _i93 = 0; _i93 < _list92.size; ++_i93)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list100 = iprot.readListBegin();
+                struct.recordMutations = new ArrayList<RecordMutation>(_list100.size);
+                for (int _i101 = 0; _i101 < _list100.size; ++_i101)
                 {
-                  RecordMutation _elem94; // required
-                  _elem94 = new RecordMutation();
-                  _elem94.read(iprot);
-                  struct.recordMutations.add(_elem94);
+                  RecordMutation _elem102; // required
+                  _elem102 = new RecordMutation();
+                  _elem102.read(iprot);
+                  struct.recordMutations.add(_elem102);
                 }
                 iprot.readListEnd();
               }
@@ -725,9 +725,9 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
         oprot.writeFieldBegin(RECORD_MUTATIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.recordMutations.size()));
-          for (RecordMutation _iter95 : struct.recordMutations)
+          for (RecordMutation _iter103 : struct.recordMutations)
           {
-            _iter95.write(oprot);
+            _iter103.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -776,9 +776,9 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
       if (struct.isSetRecordMutations()) {
         {
           oprot.writeI32(struct.recordMutations.size());
-          for (RecordMutation _iter96 : struct.recordMutations)
+          for (RecordMutation _iter104 : struct.recordMutations)
           {
-            _iter96.write(oprot);
+            _iter104.write(oprot);
           }
         }
       }
@@ -802,14 +802,14 @@ public class RowMutation implements org.apache.blur.thirdparty.thrift_0_9_0.TBas
       }
       if (incoming.get(3)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list97 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-          struct.recordMutations = new ArrayList<RecordMutation>(_list97.size);
-          for (int _i98 = 0; _i98 < _list97.size; ++_i98)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list105 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+          struct.recordMutations = new ArrayList<RecordMutation>(_list105.size);
+          for (int _i106 = 0; _i106 < _list105.size; ++_i106)
           {
-            RecordMutation _elem99; // required
-            _elem99 = new RecordMutation();
-            _elem99.read(iprot);
-            struct.recordMutations.add(_elem99);
+            RecordMutation _elem107; // required
+            _elem107 = new RecordMutation();
+            _elem107.read(iprot);
+            struct.recordMutations.add(_elem107);
           }
         }
         struct.setRecordMutationsIsSet(true);

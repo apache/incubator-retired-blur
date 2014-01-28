@@ -48,6 +48,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -81,6 +85,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryBuffer;
 import org.apache.blur.thrift.BException;
+import org.apache.blur.thrift.SortFieldComparator;
 import org.apache.blur.thrift.UserConverter;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
@@ -141,6 +146,8 @@ import com.yammer.metrics.core.MetricName;
 
 public class BlurUtil {
 
+  public final static SortFieldComparator SORT_FIELD_COMPARATOR = new SortFieldComparator();
+  
   private static final Log REQUEST_LOG = LogFactory.getLog("REQUEST_LOG");
   private static final Log RESPONSE_LOG = LogFactory.getLog("RESPONSE_LOG");
 

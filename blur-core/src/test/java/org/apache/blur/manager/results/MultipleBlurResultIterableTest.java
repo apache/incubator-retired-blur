@@ -119,7 +119,7 @@ public class MultipleBlurResultIterableTest {
         for (int i = 0; i < sortFields1.size(); i++) {
           SortField sortField1 = sortFields1.get(i);
           SortField sortField2 = sortFields2.get(i);
-          int compare = sortField1.compareTo(sortField2);
+          int compare = BlurUtil.SORT_FIELD_COMPARATOR.compare(sortField1, sortField2);
           if (compare != 0) {
             return compare;
           }

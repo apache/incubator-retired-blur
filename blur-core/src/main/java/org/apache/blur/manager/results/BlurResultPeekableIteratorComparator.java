@@ -22,6 +22,7 @@ import java.util.List;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.SortField;
+import org.apache.blur.utils.BlurUtil;
 
 public class BlurResultPeekableIteratorComparator implements Comparator<PeekableIterator<BlurResult, BlurException>> {
 
@@ -45,26 +46,29 @@ public class BlurResultPeekableIteratorComparator implements Comparator<Peekable
       int size1 = sortFields1.size();
       int size2 = sortFields2.size();
       if (size1 != size2) {
-        throw new RuntimeException("Result mismatch, sizes of sortfields must match [" + result1 + "] ["
-            + result2 + "]");
+        throw new RuntimeException("Result mismatch, sizes of sortfields must match [" + result1 + "] [" + result2
+            + "]");
       }
       for (int i = 0; i < size1; i++) {
         SortField sortField1 = sortFields1.get(i);
         SortField sortField2 = sortFields2.get(i);
-        int compare = sortField1.compareTo(sortField2);
+        int compare = BlurUtil.SORT_FIELD_COMPARATOR.compare(sortField1, sortField2);
         if (compare != 0) {
           return compare;
         }
       }
-    } else if (sortFields1 == null || sortFields2 == null) {
+    }
+
+    if (sortFields1 == null && sortFields2 == null) {
+      int compare = Double.compare(result2.score, result1.score);
+      if (compare == 0) {
+        return result2.locationId.compareTo(result1.locationId);
+      }
+      return compare;
+    } else {
       throw new RuntimeException("Result mismatch, one of the 2 results have null sortfields [" + result1 + "] ["
           + result2 + "]");
     }
-    int compare = Double.compare(result2.score, result1.score);
-    if (compare == 0) {
-      return result2.locationId.compareTo(result1.locationId);
-    }
-    return compare;
   }
 
 }

@@ -77,8 +77,9 @@ limitations under the License.
 <li><a href="#Struct_FetchRecordResult">FetchRecordResult</a></li>
 <li><a href="#Struct_FetchResult">FetchResult</a></li>
 <li><a href="#Struct_Facet">Facet</a></li>
-<li><a href="#Struct_BlurQuery">BlurQuery</a></li>
 <li><a href="#Struct_SortField">SortField</a></li>
+<li><a href="#Struct_BlurQuery">BlurQuery</a></li>
+<li><a href="#Struct_SortFieldResult">SortFieldResult</a></li>
 <li><a href="#Struct_BlurResult">BlurResult</a></li>
 <li><a href="#Struct_BlurResults">BlurResults</a></li>
 <li><a href="#Struct_RecordMutation">RecordMutation</a></li>
@@ -385,7 +386,12 @@ the shard server level the controller will likely return more than the minimum
 because it sums the answers from the shard servers.
 </td><td>default</td><td>9223372036854775807</td></tr>
 </table><br/>Blur facet.
-<br/></p></section><section><div class="page-header"><h3 id="Struct_BlurQuery">Struct: BlurQuery</h3></div><p class="lead">
+<br/></p></section><section><div class="page-header"><h3 id="Struct_SortField">Struct: SortField</h3></div><p class="lead">
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>family</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>column</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>reverse</td><td><code>bool</code></td><td></td><td>default</td><td></td></tr>
+</table><br/></p></section><section><div class="page-header"><h3 id="Struct_BlurQuery">Struct: BlurQuery</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>query</td><td><code><a href="Blur.html#Struct_Query">Query</a></code></td><td>The query information.
 </td><td>default</td><td></td></tr>
@@ -413,17 +419,25 @@ of a running query can be found or the query can be canceled.
 </td><td>default</td><td>1</td></tr>
 <tr><td>14</td><td>startTime</td><td><code>i64</code></td><td>Sets the start time, if 0 the controller sets the time.
 </td><td>default</td><td>0</td></tr>
+<tr><td>15</td><td>sortFields</td><td><code>list&lt;<code><a href="Blur.html#Struct_SortField">SortField</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
 </table><br/>The Blur Query object that contains the query that needs to be executed along
 with the query options.
-<br/></p></section><section><div class="page-header"><h3 id="Struct_SortField">Struct: SortField</h3></div><p class="lead">
+<br/></p></section><section><div class="page-header"><h3 id="Struct_SortFieldResult">Struct: SortFieldResult</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>nullValue</td><td><code>bool</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>stringValue</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>intValue</td><td><code>i32</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>4</td><td>longValue</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>5</td><td>doubleValue</td><td><code>double</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>6</td><td>binaryValue</td><td><code>binary</code></td><td></td><td>default</td><td></td></tr>
-</table><br/></p></section><section><div class="page-header"><h3 id="Struct_BlurResult">Struct: BlurResult</h3></div><p class="lead">
+<tr><td>1</td><td>nullValue</td><td><code>bool</code></td><td>Carries the null boolean incase the field is null.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>stringValue</td><td><code>string</code></td><td>The string value.
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>intValue</td><td><code>i32</code></td><td>The integer value.
+</td><td>default</td><td></td></tr>
+<tr><td>4</td><td>longValue</td><td><code>i64</code></td><td>The long value.
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>doubleValue</td><td><code>double</code></td><td>The double value.
+</td><td>default</td><td></td></tr>
+<tr><td>6</td><td>binaryValue</td><td><code>binary</code></td><td>The binary value.
+</td><td>default</td><td></td></tr>
+</table><br/>Carries the one value from the sort that allows the merging of results.
+<br/></p></section><section><div class="page-header"><h3 id="Struct_BlurResult">Struct: BlurResult</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>locationId</td><td><code>string</code></td><td>WARNING: This is an internal only attribute and is not intended for use by clients.
 </td><td>default</td><td></td></tr>
@@ -431,7 +445,7 @@ with the query options.
 </td><td>default</td><td></td></tr>
 <tr><td>3</td><td>fetchResult</td><td><code><a href="Blur.html#Struct_FetchResult">FetchResult</a></code></td><td>The fetched result if any.
 </td><td>default</td><td></td></tr>
-<tr><td>4</td><td>sortFields</td><td><code>list&lt;<code><a href="Blur.html#Struct_SortField">SortField</a></code>&gt;</code></td><td>The fields used for sorting.
+<tr><td>4</td><td>sortFieldResults</td><td><code>list&lt;<code><a href="Blur.html#Struct_SortFieldResult">SortFieldResult</a></code>&gt;</code></td><td>The fields used for sorting.
 </td><td>default</td><td></td></tr>
 </table><br/>The BlurResult carries the score, the location id and the fetched result (if any) form each query.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_BlurResults">Struct: BlurResults</h3></div><p class="lead">
@@ -531,6 +545,8 @@ NOTE: This will index the column as a full text field in a default field, so tha
 </ul>
 </td><td>default</td><td></td></tr>
 <tr><td>6</td><td>properties</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td>For any custom field types, you can pass in configuration properties.
+</td><td>default</td><td></td></tr>
+<tr><td>7</td><td>sortable</td><td><code>bool</code></td><td>This will attempt to enable sorting for this column, if the type does not support sorting then an exception will be thrown.
 </td><td>default</td><td></td></tr>
 </table><br/>The ColumnDefinition defines how a given Column should be interpreted (indexed/stored)
 <br/></p></section><section><div class="page-header"><h3 id="Struct_Schema">Struct: Schema</h3></div><p class="lead">

@@ -26,6 +26,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.search.SortField;
 
 public class FieldLessFieldTypeDefinition extends FieldTypeDefinition {
 
@@ -100,5 +101,15 @@ public class FieldLessFieldTypeDefinition extends FieldTypeDefinition {
   @Override
   public boolean checkSupportForCustomQuery() {
     return false;
+  }
+  
+  @Override
+  public boolean checkSupportForSorting() {
+    return false;
+  }
+  
+  @Override
+  public SortField getSortField(boolean reverse) {
+    throw new RuntimeException("Sort not supported.");
   }
 }

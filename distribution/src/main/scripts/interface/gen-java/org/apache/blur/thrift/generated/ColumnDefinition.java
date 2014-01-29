@@ -61,6 +61,7 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FIELD_LESS_INDEXED_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("fieldLessIndexed", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)4);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FIELD_TYPE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("fieldType", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)5);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField PROPERTIES_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("properties", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, (short)6);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SORTABLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("sortable", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)7);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -102,6 +103,10 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
    * For any custom field types, you can pass in configuration properties.
    */
   public Map<String,String> properties; // required
+  /**
+   * This will attempt to enable sorting for this column, if the type does not support sorting then an exception will be thrown.
+   */
+  public boolean sortable; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
@@ -138,7 +143,11 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     /**
      * For any custom field types, you can pass in configuration properties.
      */
-    PROPERTIES((short)6, "properties");
+    PROPERTIES((short)6, "properties"),
+    /**
+     * This will attempt to enable sorting for this column, if the type does not support sorting then an exception will be thrown.
+     */
+    SORTABLE((short)7, "sortable");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -165,6 +174,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
           return FIELD_TYPE;
         case 6: // PROPERTIES
           return PROPERTIES;
+        case 7: // SORTABLE
+          return SORTABLE;
         default:
           return null;
       }
@@ -206,6 +217,7 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
 
   // isset id assignments
   private static final int __FIELDLESSINDEXED_ISSET_ID = 0;
+  private static final int __SORTABLE_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -224,6 +236,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.MapMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING), 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING))));
+    tmpMap.put(_Fields.SORTABLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("sortable", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(ColumnDefinition.class, metaDataMap);
   }
@@ -237,7 +251,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     String subColumnName,
     boolean fieldLessIndexed,
     String fieldType,
-    Map<String,String> properties)
+    Map<String,String> properties,
+    boolean sortable)
   {
     this();
     this.family = family;
@@ -247,6 +262,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     setFieldLessIndexedIsSet(true);
     this.fieldType = fieldType;
     this.properties = properties;
+    this.sortable = sortable;
+    setSortableIsSet(true);
   }
 
   /**
@@ -282,6 +299,7 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       }
       this.properties = __this__properties;
     }
+    this.sortable = other.sortable;
   }
 
   public ColumnDefinition deepCopy() {
@@ -297,6 +315,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     this.fieldLessIndexed = false;
     this.fieldType = null;
     this.properties = null;
+    setSortableIsSet(false);
+    this.sortable = false;
   }
 
   /**
@@ -509,6 +529,35 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     }
   }
 
+  /**
+   * This will attempt to enable sorting for this column, if the type does not support sorting then an exception will be thrown.
+   */
+  public boolean isSortable() {
+    return this.sortable;
+  }
+
+  /**
+   * This will attempt to enable sorting for this column, if the type does not support sorting then an exception will be thrown.
+   */
+  public ColumnDefinition setSortable(boolean sortable) {
+    this.sortable = sortable;
+    setSortableIsSet(true);
+    return this;
+  }
+
+  public void unsetSortable() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SORTABLE_ISSET_ID);
+  }
+
+  /** Returns true if field sortable is set (has been assigned a value) and false otherwise */
+  public boolean isSetSortable() {
+    return EncodingUtils.testBit(__isset_bitfield, __SORTABLE_ISSET_ID);
+  }
+
+  public void setSortableIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SORTABLE_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case FAMILY:
@@ -559,6 +608,14 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       }
       break;
 
+    case SORTABLE:
+      if (value == null) {
+        unsetSortable();
+      } else {
+        setSortable((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -581,6 +638,9 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
 
     case PROPERTIES:
       return getProperties();
+
+    case SORTABLE:
+      return Boolean.valueOf(isSortable());
 
     }
     throw new IllegalStateException();
@@ -605,6 +665,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       return isSetFieldType();
     case PROPERTIES:
       return isSetProperties();
+    case SORTABLE:
+      return isSetSortable();
     }
     throw new IllegalStateException();
   }
@@ -673,6 +735,15 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       if (!(this_present_properties && that_present_properties))
         return false;
       if (!this.properties.equals(that.properties))
+        return false;
+    }
+
+    boolean this_present_sortable = true;
+    boolean that_present_sortable = true;
+    if (this_present_sortable || that_present_sortable) {
+      if (!(this_present_sortable && that_present_sortable))
+        return false;
+      if (this.sortable != that.sortable)
         return false;
     }
 
@@ -752,6 +823,16 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetSortable()).compareTo(typedOther.isSetSortable());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSortable()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.sortable, typedOther.sortable);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -814,6 +895,10 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     } else {
       sb.append(this.properties);
     }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("sortable:");
+    sb.append(this.sortable);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -903,19 +988,27 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
           case 6: // PROPERTIES
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map118 = iprot.readMapBegin();
-                struct.properties = new HashMap<String,String>(2*_map118.size);
-                for (int _i119 = 0; _i119 < _map118.size; ++_i119)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map126 = iprot.readMapBegin();
+                struct.properties = new HashMap<String,String>(2*_map126.size);
+                for (int _i127 = 0; _i127 < _map126.size; ++_i127)
                 {
-                  String _key120; // optional
-                  String _val121; // required
-                  _key120 = iprot.readString();
-                  _val121 = iprot.readString();
-                  struct.properties.put(_key120, _val121);
+                  String _key128; // optional
+                  String _val129; // required
+                  _key128 = iprot.readString();
+                  _val129 = iprot.readString();
+                  struct.properties.put(_key128, _val129);
                 }
                 iprot.readMapEnd();
               }
               struct.setPropertiesIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 7: // SORTABLE
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
+              struct.sortable = iprot.readBool();
+              struct.setSortableIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -962,15 +1055,18 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
         oprot.writeFieldBegin(PROPERTIES_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.properties.size()));
-          for (Map.Entry<String, String> _iter122 : struct.properties.entrySet())
+          for (Map.Entry<String, String> _iter130 : struct.properties.entrySet())
           {
-            oprot.writeString(_iter122.getKey());
-            oprot.writeString(_iter122.getValue());
+            oprot.writeString(_iter130.getKey());
+            oprot.writeString(_iter130.getValue());
           }
           oprot.writeMapEnd();
         }
         oprot.writeFieldEnd();
       }
+      oprot.writeFieldBegin(SORTABLE_FIELD_DESC);
+      oprot.writeBool(struct.sortable);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1007,7 +1103,10 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       if (struct.isSetProperties()) {
         optionals.set(5);
       }
-      oprot.writeBitSet(optionals, 6);
+      if (struct.isSetSortable()) {
+        optionals.set(6);
+      }
+      oprot.writeBitSet(optionals, 7);
       if (struct.isSetFamily()) {
         oprot.writeString(struct.family);
       }
@@ -1026,19 +1125,22 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       if (struct.isSetProperties()) {
         {
           oprot.writeI32(struct.properties.size());
-          for (Map.Entry<String, String> _iter123 : struct.properties.entrySet())
+          for (Map.Entry<String, String> _iter131 : struct.properties.entrySet())
           {
-            oprot.writeString(_iter123.getKey());
-            oprot.writeString(_iter123.getValue());
+            oprot.writeString(_iter131.getKey());
+            oprot.writeString(_iter131.getValue());
           }
         }
+      }
+      if (struct.isSetSortable()) {
+        oprot.writeBool(struct.sortable);
       }
     }
 
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, ColumnDefinition struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(6);
+      BitSet incoming = iprot.readBitSet(7);
       if (incoming.get(0)) {
         struct.family = iprot.readString();
         struct.setFamilyIsSet(true);
@@ -1061,18 +1163,22 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       }
       if (incoming.get(5)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map124 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-          struct.properties = new HashMap<String,String>(2*_map124.size);
-          for (int _i125 = 0; _i125 < _map124.size; ++_i125)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map132 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.properties = new HashMap<String,String>(2*_map132.size);
+          for (int _i133 = 0; _i133 < _map132.size; ++_i133)
           {
-            String _key126; // optional
-            String _val127; // required
-            _key126 = iprot.readString();
-            _val127 = iprot.readString();
-            struct.properties.put(_key126, _val127);
+            String _key134; // optional
+            String _val135; // required
+            _key134 = iprot.readString();
+            _val135 = iprot.readString();
+            struct.properties.put(_key134, _val135);
           }
         }
         struct.setPropertiesIsSet(true);
+      }
+      if (incoming.get(6)) {
+        struct.sortable = iprot.readBool();
+        struct.setSortableIsSet(true);
       }
     }
   }

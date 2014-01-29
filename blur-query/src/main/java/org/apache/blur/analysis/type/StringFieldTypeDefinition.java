@@ -16,6 +16,8 @@ package org.apache.blur.analysis.type;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.blur.analysis.FieldTypeDefinition;
@@ -24,11 +26,16 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StringField;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.SortField.Type;
+import org.apache.lucene.util.BytesRef;
 
 public class StringFieldTypeDefinition extends FieldTypeDefinition {
 
   public static final String NAME = "string";
+  private String _fieldNameForThisInstance;
 
   @Override
   public String getName() {
@@ -37,13 +44,19 @@ public class StringFieldTypeDefinition extends FieldTypeDefinition {
 
   @Override
   public void configure(String fieldNameForThisInstance, Map<String, String> properties, Configuration configuration) {
-
+    _fieldNameForThisInstance = fieldNameForThisInstance;
   }
 
   @Override
   public Iterable<? extends Field> getFieldsForColumn(String family, Column column) {
     String name = getName(family, column.getName());
     Field field = new Field(name, column.getValue(), StringField.TYPE_STORED);
+    if (isSortEnable()) {
+      List<Field> list = new ArrayList<Field>();
+      list.add(field);
+      list.add(new SortedDocValuesField(name, new BytesRef(column.getValue())));
+      return list;
+    }
     return makeIterable(field);
   }
 
@@ -89,9 +102,19 @@ public class StringFieldTypeDefinition extends FieldTypeDefinition {
   public boolean checkSupportForCustomQuery() {
     return false;
   }
-  
+
   @Override
   public boolean checkSupportForRegexQuery() {
     return true;
+  }
+
+  @Override
+  public boolean checkSupportForSorting() {
+    return true;
+  }
+
+  @Override
+  public SortField getSortField(boolean reverse) {
+    return new SortField(_fieldNameForThisInstance, Type.STRING);
   }
 }

@@ -20,7 +20,6 @@ package org.apache.blur.lucene.search;
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -39,12 +38,11 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.FieldComparator;
-import org.apache.lucene.search.FieldComparatorSource;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
@@ -94,10 +92,7 @@ public class TestingPagingCollector {
 
     printHeapSize();
     TermQuery query = new TermQuery(new Term("f1", "value"));
-    // SortField sortfield = new SortField("index", Type.INT, true);
-    FieldComparatorSource comparator = getFieldComparatorSource();
-    SortField sortfield = new SortField("index", comparator);
-    Sort sort = new Sort(sortfield);
+    Sort sort = new Sort(new SortField("index", Type.INT, true));
     IterablePaging paging = new IterablePaging(new AtomicBoolean(true), searcher, query, 100, null, null, false, sort);
     IterablePaging itPaging = paging.skipTo(90).gather(20).totalHits(totalHitsRef).progress(progressRef);
     BlurIterator<ScoreDoc, BlurException> iterator = itPaging.iterator();
@@ -116,17 +111,6 @@ public class TestingPagingCollector {
       }
     }
     printHeapSize();
-  }
-
-  private FieldComparatorSource getFieldComparatorSource() {
-    return new FieldComparatorSource() {
-      @Override
-      public FieldComparator<?> newComparator(String fieldname, int numHits, int sortPos, boolean reversed)
-          throws IOException {
-        // TODO Auto-generated method stub
-        return null;
-      }
-    };
   }
 
   private void printHeapSize() {

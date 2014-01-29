@@ -395,6 +395,12 @@ struct Facet {
   2:i64 minimumNumberOfBlurResults = 9223372036854775807
 }
 
+struct SortField {
+  1:string family,
+  2:string column,
+  3:bool reverse
+}
+
 /**
  * The Blur Query object that contains the query that needs to be executed along 
  * with the query options.
@@ -449,15 +455,38 @@ struct BlurQuery {
   /**
    * Sets the start time, if 0 the controller sets the time.
    */
-  14:i64 startTime = 0
+  14:i64 startTime = 0,
+
+  15:list<SortField> sortFields
 }
 
-union SortField {
+/**
+ * Carries the one value from the sort that allows the merging of results.
+ */
+union SortFieldResult {
+  /**
+   * Carries the null boolean incase the field is null.
+   */
   1:bool nullValue,
+  /**
+   * The string value.
+   */
   2:string stringValue,
+  /**
+   * The integer value.
+   */
   3:i32 intValue,
+  /**
+   * The long value.
+   */
   4:i64 longValue,
+  /**
+   * The double value.
+   */
   5:double doubleValue,
+  /**
+   * The binary value.
+   */
   6:binary binaryValue
 }
 
@@ -480,7 +509,7 @@ struct BlurResult {
   /**
    * The fields used for sorting.
    */
-  4:list<SortField> sortFields
+  4:list<SortFieldResult> sortFieldResults
 }
 
 /**
@@ -662,7 +691,11 @@ struct ColumnDefinition {
   /**
    * For any custom field types, you can pass in configuration properties.
    */
-  6:map<string, string> properties
+  6:map<string, string> properties,
+  /**
+   * This will attempt to enable sorting for this column, if the type does not support sorting then an exception will be thrown.
+   */
+  7:bool sortable
 }
 
 /**

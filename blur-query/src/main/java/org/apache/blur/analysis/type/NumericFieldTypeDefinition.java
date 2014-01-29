@@ -20,6 +20,7 @@ import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.SortField;
 import org.apache.lucene.util.NumericUtils;
 
 public abstract class NumericFieldTypeDefinition extends FieldTypeDefinition {
@@ -72,7 +73,17 @@ public abstract class NumericFieldTypeDefinition extends FieldTypeDefinition {
     return false;
   }
 
+  @Override
+  public boolean checkSupportForSorting() {
+    return false;
+  }
+
   public abstract Query getNewRangeQuery(String field, String part1, String part2, boolean startInclusive,
       boolean endInclusive);
+
+  @Override
+  public SortField getSortField(boolean reverse) {
+    throw new RuntimeException("Should never be called.");
+  }
 
 }

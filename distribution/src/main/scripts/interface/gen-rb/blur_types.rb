@@ -390,6 +390,26 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
+  class SortField
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    FAMILY = 1
+    COLUMN = 2
+    REVERSE = 3
+
+    FIELDS = {
+      FAMILY => {:type => ::Thrift::Types::STRING, :name => 'family'},
+      COLUMN => {:type => ::Thrift::Types::STRING, :name => 'column'},
+      REVERSE => {:type => ::Thrift::Types::BOOL, :name => 'reverse'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   # The Blur Query object that contains the query that needs to be executed along
 # with the query options.
   class BlurQuery
@@ -406,6 +426,7 @@ module Blur
     USERCONTEXT = 12
     CACHERESULT = 13
     STARTTIME = 14
+    SORTFIELDS = 15
 
     FIELDS = {
       # The query information.
@@ -433,7 +454,8 @@ module Blur
       # Enabled by default to cache this result.  False would not cache the result.
       CACHERESULT => {:type => ::Thrift::Types::BOOL, :name => 'cacheResult', :default => true},
       # Sets the start time, if 0 the controller sets the time.
-      STARTTIME => {:type => ::Thrift::Types::I64, :name => 'startTime', :default => 0}
+      STARTTIME => {:type => ::Thrift::Types::I64, :name => 'startTime', :default => 0},
+      SORTFIELDS => {:type => ::Thrift::Types::LIST, :name => 'sortFields', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::SortField}}
     }
 
     def struct_fields; FIELDS; end
@@ -444,31 +466,32 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  class SortField < ::Thrift::Union
+  # Carries the one value from the sort that allows the merging of results.
+  class SortFieldResult < ::Thrift::Union
     include ::Thrift::Struct_Union
     class << self
       def nullValue(val)
-        SortField.new(:nullValue, val)
+        SortFieldResult.new(:nullValue, val)
       end
 
       def stringValue(val)
-        SortField.new(:stringValue, val)
+        SortFieldResult.new(:stringValue, val)
       end
 
       def intValue(val)
-        SortField.new(:intValue, val)
+        SortFieldResult.new(:intValue, val)
       end
 
       def longValue(val)
-        SortField.new(:longValue, val)
+        SortFieldResult.new(:longValue, val)
       end
 
       def doubleValue(val)
-        SortField.new(:doubleValue, val)
+        SortFieldResult.new(:doubleValue, val)
       end
 
       def binaryValue(val)
-        SortField.new(:binaryValue, val)
+        SortFieldResult.new(:binaryValue, val)
       end
     end
 
@@ -480,11 +503,17 @@ module Blur
     BINARYVALUE = 6
 
     FIELDS = {
+      # Carries the null boolean incase the field is null.
       NULLVALUE => {:type => ::Thrift::Types::BOOL, :name => 'nullValue'},
+      # The string value.
       STRINGVALUE => {:type => ::Thrift::Types::STRING, :name => 'stringValue'},
+      # The integer value.
       INTVALUE => {:type => ::Thrift::Types::I32, :name => 'intValue'},
+      # The long value.
       LONGVALUE => {:type => ::Thrift::Types::I64, :name => 'longValue'},
+      # The double value.
       DOUBLEVALUE => {:type => ::Thrift::Types::DOUBLE, :name => 'doubleValue'},
+      # The binary value.
       BINARYVALUE => {:type => ::Thrift::Types::STRING, :name => 'binaryValue', :binary => true}
     }
 
@@ -503,7 +532,7 @@ module Blur
     LOCATIONID = 1
     SCORE = 2
     FETCHRESULT = 3
-    SORTFIELDS = 4
+    SORTFIELDRESULTS = 4
 
     FIELDS = {
       # WARNING: This is an internal only attribute and is not intended for use by clients.
@@ -513,7 +542,7 @@ module Blur
       # The fetched result if any.
       FETCHRESULT => {:type => ::Thrift::Types::STRUCT, :name => 'fetchResult', :class => ::Blur::FetchResult},
       # The fields used for sorting.
-      SORTFIELDS => {:type => ::Thrift::Types::LIST, :name => 'sortFields', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::SortField}}
+      SORTFIELDRESULTS => {:type => ::Thrift::Types::LIST, :name => 'sortFieldResults', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::SortFieldResult}}
     }
 
     def struct_fields; FIELDS; end
@@ -716,6 +745,7 @@ module Blur
     FIELDLESSINDEXED = 4
     FIELDTYPE = 5
     PROPERTIES = 6
+    SORTABLE = 7
 
     FIELDS = {
       # Required. The family that this column exists within.
@@ -739,7 +769,9 @@ module Blur
 # </ul>
       FIELDTYPE => {:type => ::Thrift::Types::STRING, :name => 'fieldType'},
       # For any custom field types, you can pass in configuration properties.
-      PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
+      PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+      # This will attempt to enable sorting for this column, if the type does not support sorting then an exception will be thrown.
+      SORTABLE => {:type => ::Thrift::Types::BOOL, :name => 'sortable'}
     }
 
     def struct_fields; FIELDS; end

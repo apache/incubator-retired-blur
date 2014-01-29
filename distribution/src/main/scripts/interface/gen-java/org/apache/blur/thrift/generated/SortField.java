@@ -49,23 +49,28 @@ import java.util.Arrays;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
-public class SortField extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<SortField, SortField._Fields> {
+public class SortField implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<SortField, SortField._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("SortField");
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField NULL_VALUE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("nullValue", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)1);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField STRING_VALUE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("stringValue", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField INT_VALUE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("intValue", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)3);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField LONG_VALUE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("longValue", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)4);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField DOUBLE_VALUE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("doubleValue", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.DOUBLE, (short)5);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BINARY_VALUE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("binaryValue", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)6);
+
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FAMILY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("family", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COLUMN_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("column", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField REVERSE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("reverse", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)3);
+
+  private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+  static {
+    schemes.put(StandardScheme.class, new SortFieldStandardSchemeFactory());
+    schemes.put(TupleScheme.class, new SortFieldTupleSchemeFactory());
+  }
+
+  public String family; // required
+  public String column; // required
+  public boolean reverse; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
-    NULL_VALUE((short)1, "nullValue"),
-    STRING_VALUE((short)2, "stringValue"),
-    INT_VALUE((short)3, "intValue"),
-    LONG_VALUE((short)4, "longValue"),
-    DOUBLE_VALUE((short)5, "doubleValue"),
-    BINARY_VALUE((short)6, "binaryValue");
+    FAMILY((short)1, "family"),
+    COLUMN((short)2, "column"),
+    REVERSE((short)3, "reverse");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -80,18 +85,12 @@ public class SortField extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<So
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // NULL_VALUE
-          return NULL_VALUE;
-        case 2: // STRING_VALUE
-          return STRING_VALUE;
-        case 3: // INT_VALUE
-          return INT_VALUE;
-        case 4: // LONG_VALUE
-          return LONG_VALUE;
-        case 5: // DOUBLE_VALUE
-          return DOUBLE_VALUE;
-        case 6: // BINARY_VALUE
-          return BINARY_VALUE;
+        case 1: // FAMILY
+          return FAMILY;
+        case 2: // COLUMN
+          return COLUMN;
+        case 3: // REVERSE
+          return REVERSE;
         default:
           return null;
       }
@@ -131,472 +130,327 @@ public class SortField extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<So
     }
   }
 
+  // isset id assignments
+  private static final int __REVERSE_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.NULL_VALUE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("nullValue", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.STRING_VALUE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("stringValue", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.FAMILY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("family", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
-    tmpMap.put(_Fields.INT_VALUE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("intValue", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32)));
-    tmpMap.put(_Fields.LONG_VALUE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("longValue", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
-    tmpMap.put(_Fields.DOUBLE_VALUE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("doubleValue", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.DOUBLE)));
-    tmpMap.put(_Fields.BINARY_VALUE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("binaryValue", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING        , true)));
+    tmpMap.put(_Fields.COLUMN, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("column", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.REVERSE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("reverse", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(SortField.class, metaDataMap);
   }
 
   public SortField() {
-    super();
   }
 
-  public SortField(_Fields setField, Object value) {
-    super(setField, value);
+  public SortField(
+    String family,
+    String column,
+    boolean reverse)
+  {
+    this();
+    this.family = family;
+    this.column = column;
+    this.reverse = reverse;
+    setReverseIsSet(true);
   }
 
+  /**
+   * Performs a deep copy on <i>other</i>.
+   */
   public SortField(SortField other) {
-    super(other);
+    __isset_bitfield = other.__isset_bitfield;
+    if (other.isSetFamily()) {
+      this.family = other.family;
+    }
+    if (other.isSetColumn()) {
+      this.column = other.column;
+    }
+    this.reverse = other.reverse;
   }
+
   public SortField deepCopy() {
     return new SortField(this);
   }
 
-  public static SortField nullValue(boolean value) {
-    SortField x = new SortField();
-    x.setNullValue(value);
-    return x;
-  }
-
-  public static SortField stringValue(String value) {
-    SortField x = new SortField();
-    x.setStringValue(value);
-    return x;
-  }
-
-  public static SortField intValue(int value) {
-    SortField x = new SortField();
-    x.setIntValue(value);
-    return x;
-  }
-
-  public static SortField longValue(long value) {
-    SortField x = new SortField();
-    x.setLongValue(value);
-    return x;
-  }
-
-  public static SortField doubleValue(double value) {
-    SortField x = new SortField();
-    x.setDoubleValue(value);
-    return x;
-  }
-
-  public static SortField binaryValue(ByteBuffer value) {
-    SortField x = new SortField();
-    x.setBinaryValue(value);
-    return x;
-  }
-
-  public static SortField binaryValue(byte[] value) {
-    SortField x = new SortField();
-    x.setBinaryValue(ByteBuffer.wrap(value));
-    return x;
-  }
-
-
   @Override
-  protected void checkType(_Fields setField, Object value) throws ClassCastException {
-    switch (setField) {
-      case NULL_VALUE:
-        if (value instanceof Boolean) {
-          break;
-        }
-        throw new ClassCastException("Was expecting value of type Boolean for field 'nullValue', but got " + value.getClass().getSimpleName());
-      case STRING_VALUE:
-        if (value instanceof String) {
-          break;
-        }
-        throw new ClassCastException("Was expecting value of type String for field 'stringValue', but got " + value.getClass().getSimpleName());
-      case INT_VALUE:
-        if (value instanceof Integer) {
-          break;
-        }
-        throw new ClassCastException("Was expecting value of type Integer for field 'intValue', but got " + value.getClass().getSimpleName());
-      case LONG_VALUE:
-        if (value instanceof Long) {
-          break;
-        }
-        throw new ClassCastException("Was expecting value of type Long for field 'longValue', but got " + value.getClass().getSimpleName());
-      case DOUBLE_VALUE:
-        if (value instanceof Double) {
-          break;
-        }
-        throw new ClassCastException("Was expecting value of type Double for field 'doubleValue', but got " + value.getClass().getSimpleName());
-      case BINARY_VALUE:
-        if (value instanceof ByteBuffer) {
-          break;
-        }
-        throw new ClassCastException("Was expecting value of type ByteBuffer for field 'binaryValue', but got " + value.getClass().getSimpleName());
-      default:
-        throw new IllegalArgumentException("Unknown field id " + setField);
+  public void clear() {
+    this.family = null;
+    this.column = null;
+    setReverseIsSet(false);
+    this.reverse = false;
+  }
+
+  public String getFamily() {
+    return this.family;
+  }
+
+  public SortField setFamily(String family) {
+    this.family = family;
+    return this;
+  }
+
+  public void unsetFamily() {
+    this.family = null;
+  }
+
+  /** Returns true if field family is set (has been assigned a value) and false otherwise */
+  public boolean isSetFamily() {
+    return this.family != null;
+  }
+
+  public void setFamilyIsSet(boolean value) {
+    if (!value) {
+      this.family = null;
     }
   }
 
-  @Override
-  protected Object standardSchemeReadValue(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField field) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
-    _Fields setField = _Fields.findByThriftId(field.id);
-    if (setField != null) {
-      switch (setField) {
-        case NULL_VALUE:
-          if (field.type == NULL_VALUE_FIELD_DESC.type) {
-            Boolean nullValue;
-            nullValue = iprot.readBool();
-            return nullValue;
-          } else {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, field.type);
-            return null;
-          }
-        case STRING_VALUE:
-          if (field.type == STRING_VALUE_FIELD_DESC.type) {
-            String stringValue;
-            stringValue = iprot.readString();
-            return stringValue;
-          } else {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, field.type);
-            return null;
-          }
-        case INT_VALUE:
-          if (field.type == INT_VALUE_FIELD_DESC.type) {
-            Integer intValue;
-            intValue = iprot.readI32();
-            return intValue;
-          } else {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, field.type);
-            return null;
-          }
-        case LONG_VALUE:
-          if (field.type == LONG_VALUE_FIELD_DESC.type) {
-            Long longValue;
-            longValue = iprot.readI64();
-            return longValue;
-          } else {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, field.type);
-            return null;
-          }
-        case DOUBLE_VALUE:
-          if (field.type == DOUBLE_VALUE_FIELD_DESC.type) {
-            Double doubleValue;
-            doubleValue = iprot.readDouble();
-            return doubleValue;
-          } else {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, field.type);
-            return null;
-          }
-        case BINARY_VALUE:
-          if (field.type == BINARY_VALUE_FIELD_DESC.type) {
-            ByteBuffer binaryValue;
-            binaryValue = iprot.readBinary();
-            return binaryValue;
-          } else {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, field.type);
-            return null;
-          }
-        default:
-          throw new IllegalStateException("setField wasn't null, but didn't match any of the case statements!");
+  public String getColumn() {
+    return this.column;
+  }
+
+  public SortField setColumn(String column) {
+    this.column = column;
+    return this;
+  }
+
+  public void unsetColumn() {
+    this.column = null;
+  }
+
+  /** Returns true if field column is set (has been assigned a value) and false otherwise */
+  public boolean isSetColumn() {
+    return this.column != null;
+  }
+
+  public void setColumnIsSet(boolean value) {
+    if (!value) {
+      this.column = null;
+    }
+  }
+
+  public boolean isReverse() {
+    return this.reverse;
+  }
+
+  public SortField setReverse(boolean reverse) {
+    this.reverse = reverse;
+    setReverseIsSet(true);
+    return this;
+  }
+
+  public void unsetReverse() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __REVERSE_ISSET_ID);
+  }
+
+  /** Returns true if field reverse is set (has been assigned a value) and false otherwise */
+  public boolean isSetReverse() {
+    return EncodingUtils.testBit(__isset_bitfield, __REVERSE_ISSET_ID);
+  }
+
+  public void setReverseIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __REVERSE_ISSET_ID, value);
+  }
+
+  public void setFieldValue(_Fields field, Object value) {
+    switch (field) {
+    case FAMILY:
+      if (value == null) {
+        unsetFamily();
+      } else {
+        setFamily((String)value);
       }
-    } else {
-      return null;
-    }
-  }
+      break;
 
-  @Override
-  protected void standardSchemeWriteValue(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
-    switch (setField_) {
-      case NULL_VALUE:
-        Boolean nullValue = (Boolean)value_;
-        oprot.writeBool(nullValue);
-        return;
-      case STRING_VALUE:
-        String stringValue = (String)value_;
-        oprot.writeString(stringValue);
-        return;
-      case INT_VALUE:
-        Integer intValue = (Integer)value_;
-        oprot.writeI32(intValue);
-        return;
-      case LONG_VALUE:
-        Long longValue = (Long)value_;
-        oprot.writeI64(longValue);
-        return;
-      case DOUBLE_VALUE:
-        Double doubleValue = (Double)value_;
-        oprot.writeDouble(doubleValue);
-        return;
-      case BINARY_VALUE:
-        ByteBuffer binaryValue = (ByteBuffer)value_;
-        oprot.writeBinary(binaryValue);
-        return;
-      default:
-        throw new IllegalStateException("Cannot write union with unknown field " + setField_);
-    }
-  }
-
-  @Override
-  protected Object tupleSchemeReadValue(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, short fieldID) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
-    _Fields setField = _Fields.findByThriftId(fieldID);
-    if (setField != null) {
-      switch (setField) {
-        case NULL_VALUE:
-          Boolean nullValue;
-          nullValue = iprot.readBool();
-          return nullValue;
-        case STRING_VALUE:
-          String stringValue;
-          stringValue = iprot.readString();
-          return stringValue;
-        case INT_VALUE:
-          Integer intValue;
-          intValue = iprot.readI32();
-          return intValue;
-        case LONG_VALUE:
-          Long longValue;
-          longValue = iprot.readI64();
-          return longValue;
-        case DOUBLE_VALUE:
-          Double doubleValue;
-          doubleValue = iprot.readDouble();
-          return doubleValue;
-        case BINARY_VALUE:
-          ByteBuffer binaryValue;
-          binaryValue = iprot.readBinary();
-          return binaryValue;
-        default:
-          throw new IllegalStateException("setField wasn't null, but didn't match any of the case statements!");
+    case COLUMN:
+      if (value == null) {
+        unsetColumn();
+      } else {
+        setColumn((String)value);
       }
-    } else {
-      throw new TProtocolException("Couldn't find a field with field id " + fieldID);
+      break;
+
+    case REVERSE:
+      if (value == null) {
+        unsetReverse();
+      } else {
+        setReverse((Boolean)value);
+      }
+      break;
+
     }
   }
 
-  @Override
-  protected void tupleSchemeWriteValue(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
-    switch (setField_) {
-      case NULL_VALUE:
-        Boolean nullValue = (Boolean)value_;
-        oprot.writeBool(nullValue);
-        return;
-      case STRING_VALUE:
-        String stringValue = (String)value_;
-        oprot.writeString(stringValue);
-        return;
-      case INT_VALUE:
-        Integer intValue = (Integer)value_;
-        oprot.writeI32(intValue);
-        return;
-      case LONG_VALUE:
-        Long longValue = (Long)value_;
-        oprot.writeI64(longValue);
-        return;
-      case DOUBLE_VALUE:
-        Double doubleValue = (Double)value_;
-        oprot.writeDouble(doubleValue);
-        return;
-      case BINARY_VALUE:
-        ByteBuffer binaryValue = (ByteBuffer)value_;
-        oprot.writeBinary(binaryValue);
-        return;
-      default:
-        throw new IllegalStateException("Cannot write union with unknown field " + setField_);
+  public Object getFieldValue(_Fields field) {
+    switch (field) {
+    case FAMILY:
+      return getFamily();
+
+    case COLUMN:
+      return getColumn();
+
+    case REVERSE:
+      return Boolean.valueOf(isReverse());
+
     }
+    throw new IllegalStateException();
   }
 
-  @Override
-  protected org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField getFieldDesc(_Fields setField) {
-    switch (setField) {
-      case NULL_VALUE:
-        return NULL_VALUE_FIELD_DESC;
-      case STRING_VALUE:
-        return STRING_VALUE_FIELD_DESC;
-      case INT_VALUE:
-        return INT_VALUE_FIELD_DESC;
-      case LONG_VALUE:
-        return LONG_VALUE_FIELD_DESC;
-      case DOUBLE_VALUE:
-        return DOUBLE_VALUE_FIELD_DESC;
-      case BINARY_VALUE:
-        return BINARY_VALUE_FIELD_DESC;
-      default:
-        throw new IllegalArgumentException("Unknown field id " + setField);
+  /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+  public boolean isSet(_Fields field) {
+    if (field == null) {
+      throw new IllegalArgumentException();
     }
+
+    switch (field) {
+    case FAMILY:
+      return isSetFamily();
+    case COLUMN:
+      return isSetColumn();
+    case REVERSE:
+      return isSetReverse();
+    }
+    throw new IllegalStateException();
   }
 
   @Override
-  protected org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct getStructDesc() {
-    return STRUCT_DESC;
+  public boolean equals(Object that) {
+    if (that == null)
+      return false;
+    if (that instanceof SortField)
+      return this.equals((SortField)that);
+    return false;
+  }
+
+  public boolean equals(SortField that) {
+    if (that == null)
+      return false;
+
+    boolean this_present_family = true && this.isSetFamily();
+    boolean that_present_family = true && that.isSetFamily();
+    if (this_present_family || that_present_family) {
+      if (!(this_present_family && that_present_family))
+        return false;
+      if (!this.family.equals(that.family))
+        return false;
+    }
+
+    boolean this_present_column = true && this.isSetColumn();
+    boolean that_present_column = true && that.isSetColumn();
+    if (this_present_column || that_present_column) {
+      if (!(this_present_column && that_present_column))
+        return false;
+      if (!this.column.equals(that.column))
+        return false;
+    }
+
+    boolean this_present_reverse = true;
+    boolean that_present_reverse = true;
+    if (this_present_reverse || that_present_reverse) {
+      if (!(this_present_reverse && that_present_reverse))
+        return false;
+      if (this.reverse != that.reverse)
+        return false;
+    }
+
+    return true;
   }
 
   @Override
-  protected _Fields enumForId(short id) {
-    return _Fields.findByThriftIdOrThrow(id);
+  public int hashCode() {
+    return 0;
+  }
+
+  public int compareTo(SortField other) {
+    if (!getClass().equals(other.getClass())) {
+      return getClass().getName().compareTo(other.getClass().getName());
+    }
+
+    int lastComparison = 0;
+    SortField typedOther = (SortField)other;
+
+    lastComparison = Boolean.valueOf(isSetFamily()).compareTo(typedOther.isSetFamily());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetFamily()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.family, typedOther.family);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetColumn()).compareTo(typedOther.isSetColumn());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetColumn()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.column, typedOther.column);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetReverse()).compareTo(typedOther.isSetReverse());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetReverse()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.reverse, typedOther.reverse);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    return 0;
   }
 
   public _Fields fieldForId(int fieldId) {
     return _Fields.findByThriftId(fieldId);
   }
 
-
-  public boolean getNullValue() {
-    if (getSetField() == _Fields.NULL_VALUE) {
-      return (Boolean)getFieldValue();
-    } else {
-      throw new RuntimeException("Cannot get field 'nullValue' because union is currently set to " + getFieldDesc(getSetField()).name);
-    }
+  public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
   }
 
-  public void setNullValue(boolean value) {
-    setField_ = _Fields.NULL_VALUE;
-    value_ = value;
-  }
-
-  public String getStringValue() {
-    if (getSetField() == _Fields.STRING_VALUE) {
-      return (String)getFieldValue();
-    } else {
-      throw new RuntimeException("Cannot get field 'stringValue' because union is currently set to " + getFieldDesc(getSetField()).name);
-    }
-  }
-
-  public void setStringValue(String value) {
-    if (value == null) throw new NullPointerException();
-    setField_ = _Fields.STRING_VALUE;
-    value_ = value;
-  }
-
-  public int getIntValue() {
-    if (getSetField() == _Fields.INT_VALUE) {
-      return (Integer)getFieldValue();
-    } else {
-      throw new RuntimeException("Cannot get field 'intValue' because union is currently set to " + getFieldDesc(getSetField()).name);
-    }
-  }
-
-  public void setIntValue(int value) {
-    setField_ = _Fields.INT_VALUE;
-    value_ = value;
-  }
-
-  public long getLongValue() {
-    if (getSetField() == _Fields.LONG_VALUE) {
-      return (Long)getFieldValue();
-    } else {
-      throw new RuntimeException("Cannot get field 'longValue' because union is currently set to " + getFieldDesc(getSetField()).name);
-    }
-  }
-
-  public void setLongValue(long value) {
-    setField_ = _Fields.LONG_VALUE;
-    value_ = value;
-  }
-
-  public double getDoubleValue() {
-    if (getSetField() == _Fields.DOUBLE_VALUE) {
-      return (Double)getFieldValue();
-    } else {
-      throw new RuntimeException("Cannot get field 'doubleValue' because union is currently set to " + getFieldDesc(getSetField()).name);
-    }
-  }
-
-  public void setDoubleValue(double value) {
-    setField_ = _Fields.DOUBLE_VALUE;
-    value_ = value;
-  }
-
-  public byte[] getBinaryValue() {
-    setBinaryValue(org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.rightSize(bufferForBinaryValue()));
-    ByteBuffer b = bufferForBinaryValue();
-    return b == null ? null : b.array();
-  }
-
-  public ByteBuffer bufferForBinaryValue() {
-    if (getSetField() == _Fields.BINARY_VALUE) {
-      return (ByteBuffer)getFieldValue();
-    } else {
-      throw new RuntimeException("Cannot get field 'binaryValue' because union is currently set to " + getFieldDesc(getSetField()).name);
-    }
-  }
-
-  public void setBinaryValue(byte[] value) {
-    setBinaryValue(ByteBuffer.wrap(value));
-  }
-
-  public void setBinaryValue(ByteBuffer value) {
-    if (value == null) throw new NullPointerException();
-    setField_ = _Fields.BINARY_VALUE;
-    value_ = value;
-  }
-
-  public boolean isSetNullValue() {
-    return setField_ == _Fields.NULL_VALUE;
-  }
-
-
-  public boolean isSetStringValue() {
-    return setField_ == _Fields.STRING_VALUE;
-  }
-
-
-  public boolean isSetIntValue() {
-    return setField_ == _Fields.INT_VALUE;
-  }
-
-
-  public boolean isSetLongValue() {
-    return setField_ == _Fields.LONG_VALUE;
-  }
-
-
-  public boolean isSetDoubleValue() {
-    return setField_ == _Fields.DOUBLE_VALUE;
-  }
-
-
-  public boolean isSetBinaryValue() {
-    return setField_ == _Fields.BINARY_VALUE;
-  }
-
-
-  public boolean equals(Object other) {
-    if (other instanceof SortField) {
-      return equals((SortField)other);
-    } else {
-      return false;
-    }
-  }
-
-  public boolean equals(SortField other) {
-    return other != null && getSetField() == other.getSetField() && getFieldValue().equals(other.getFieldValue());
+  public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
   }
 
   @Override
-  public int compareTo(SortField other) {
-    int lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(getSetField(), other.getSetField());
-    if (lastComparison == 0) {
-      return org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(getFieldValue(), other.getFieldValue());
+  public String toString() {
+    StringBuilder sb = new StringBuilder("SortField(");
+    boolean first = true;
+
+    sb.append("family:");
+    if (this.family == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.family);
     }
-    return lastComparison;
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("column:");
+    if (this.column == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.column);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("reverse:");
+    sb.append(this.reverse);
+    first = false;
+    sb.append(")");
+    return sb.toString();
   }
 
-
-  /**
-   * If you'd like this to perform more respectably, use the hashcode generator option.
-   */
-  @Override
-  public int hashCode() {
-    return 0;
+  public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    // check for required fields
+    // check for sub-struct validity
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -607,14 +461,143 @@ public class SortField extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<So
     }
   }
 
-
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
     } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
     }
   }
 
+  private static class SortFieldStandardSchemeFactory implements SchemeFactory {
+    public SortFieldStandardScheme getScheme() {
+      return new SortFieldStandardScheme();
+    }
+  }
+
+  private static class SortFieldStandardScheme extends StandardScheme<SortField> {
+
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, SortField struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
+      iprot.readStructBegin();
+      while (true)
+      {
+        schemeField = iprot.readFieldBegin();
+        if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
+          break;
+        }
+        switch (schemeField.id) {
+          case 1: // FAMILY
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+              struct.family = iprot.readString();
+              struct.setFamilyIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // COLUMN
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+              struct.column = iprot.readString();
+              struct.setColumnIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // REVERSE
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
+              struct.reverse = iprot.readBool();
+              struct.setReverseIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          default:
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      struct.validate();
+    }
+
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, SortField struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      struct.validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (struct.family != null) {
+        oprot.writeFieldBegin(FAMILY_FIELD_DESC);
+        oprot.writeString(struct.family);
+        oprot.writeFieldEnd();
+      }
+      if (struct.column != null) {
+        oprot.writeFieldBegin(COLUMN_FIELD_DESC);
+        oprot.writeString(struct.column);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldBegin(REVERSE_FIELD_DESC);
+      oprot.writeBool(struct.reverse);
+      oprot.writeFieldEnd();
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+  }
+
+  private static class SortFieldTupleSchemeFactory implements SchemeFactory {
+    public SortFieldTupleScheme getScheme() {
+      return new SortFieldTupleScheme();
+    }
+  }
+
+  private static class SortFieldTupleScheme extends TupleScheme<SortField> {
+
+    @Override
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, SortField struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      TTupleProtocol oprot = (TTupleProtocol) prot;
+      BitSet optionals = new BitSet();
+      if (struct.isSetFamily()) {
+        optionals.set(0);
+      }
+      if (struct.isSetColumn()) {
+        optionals.set(1);
+      }
+      if (struct.isSetReverse()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetFamily()) {
+        oprot.writeString(struct.family);
+      }
+      if (struct.isSetColumn()) {
+        oprot.writeString(struct.column);
+      }
+      if (struct.isSetReverse()) {
+        oprot.writeBool(struct.reverse);
+      }
+    }
+
+    @Override
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, SortField struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      TTupleProtocol iprot = (TTupleProtocol) prot;
+      BitSet incoming = iprot.readBitSet(3);
+      if (incoming.get(0)) {
+        struct.family = iprot.readString();
+        struct.setFamilyIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.column = iprot.readString();
+        struct.setColumnIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.reverse = iprot.readBool();
+        struct.setReverseIsSet(true);
+      }
+    }
+  }
 
 }
+

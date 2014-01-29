@@ -56,6 +56,7 @@ public class HdfsFieldManager extends BaseFieldManager {
 
   private static final String FIELD_TYPE = "_fieldType_";
   private static final String FIELD_LESS_INDEXING = "_fieldLessIndexing_";
+  private static final String SORTENABLED = "_sortEnabled_";
   private static final String FAMILY = "_family_";
   private static final String COLUMN_NAME = "_columnName_";
   private static final String SUB_COLUMN_NAME = "_subColumnName_";
@@ -95,7 +96,7 @@ public class HdfsFieldManager extends BaseFieldManager {
 
   @Override
   protected List<String> getFieldNamesToLoad() throws IOException {
-    Tracer trace = Trace.trace("filesystem - getFieldNamesToLoad",Trace.param("storagePath", _storagePath));
+    Tracer trace = Trace.trace("filesystem - getFieldNamesToLoad", Trace.param("storagePath", _storagePath));
     try {
       if (!_fileSystem.exists(_storagePath)) {
         return EMPTY_LIST;
@@ -126,13 +127,15 @@ public class HdfsFieldManager extends BaseFieldManager {
 
   @Override
   protected boolean tryToStore(FieldTypeDefinition fieldTypeDefinition, String fieldName) throws IOException {
-    Tracer trace = Trace.trace("filesystem - tryToStore fieldName",Trace.param("fieldName", fieldName),Trace.param("storagePath", _storagePath));
+    Tracer trace = Trace.trace("filesystem - tryToStore fieldName", Trace.param("fieldName", fieldName),
+        Trace.param("storagePath", _storagePath));
     try {
       // Might want to make this a ZK lock
       _lock.lock();
       try {
         String fieldType = fieldTypeDefinition.getFieldType();
         boolean fieldLessIndexed = fieldTypeDefinition.isFieldLessIndexed();
+        boolean sortEnable = fieldTypeDefinition.isSortEnable();
         LOG.info(
             "Attempting to store new field [{0}] with fieldLessIndexing [{1}] with type [{2}] and properties [{3}]",
             fieldName, fieldLessIndexed, fieldType, fieldTypeDefinition.getProperties());
@@ -142,6 +145,8 @@ public class HdfsFieldManager extends BaseFieldManager {
         setProperty(properties, COLUMN_NAME, fieldTypeDefinition.getColumnName());
         setProperty(properties, SUB_COLUMN_NAME, fieldTypeDefinition.getSubColumnName());
         setProperty(properties, FIELD_LESS_INDEXING, Boolean.toString(fieldLessIndexed));
+        setProperty(properties, SORTENABLED, Boolean.toString(sortEnable));
+
         setProperty(properties, FIELD_TYPE, fieldType);
         Map<String, String> props = fieldTypeDefinition.getProperties();
         if (props != null) {
@@ -203,9 +208,11 @@ public class HdfsFieldManager extends BaseFieldManager {
       properties.load(inputStream);
       inputStream.close();
       boolean fieldLessIndexing = Boolean.parseBoolean(properties.getProperty(FIELD_LESS_INDEXING));
+      boolean sortenabled = Boolean.parseBoolean(properties.getProperty(SORTENABLED));
       String fieldType = properties.getProperty(FIELD_TYPE);
       Map<String, String> props = toMap(properties);
-      FieldTypeDefinition fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexing, fieldType, props);
+      FieldTypeDefinition fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexing, fieldType,
+          sortenabled, props);
       fieldTypeDefinition.setFamily(properties.getProperty(FAMILY));
       fieldTypeDefinition.setColumnName(properties.getProperty(COLUMN_NAME));
       fieldTypeDefinition.setSubColumnName(properties.getProperty(SUB_COLUMN_NAME));
@@ -228,6 +235,7 @@ public class HdfsFieldManager extends BaseFieldManager {
     result.remove(SUB_COLUMN_NAME);
     result.remove(FIELD_TYPE);
     result.remove(FIELD_LESS_INDEXING);
+    result.remove(SORTENABLED);
     return result;
   }
 

@@ -45,11 +45,11 @@ public class HdfsFieldManagerTest extends BaseFieldManagerTest {
   @Test
   public void testStoreMetaData() throws IOException {
     BaseFieldManager memoryFieldManager = newFieldManager(true);
-    memoryFieldManager.addColumnDefinition("fam1", "col1", null, true, "text", null);
-    memoryFieldManager.addColumnDefinition("fam2", "col2", null, false, "string", null);
-    memoryFieldManager.addColumnDefinition("fam2", "col2", "a", false, "text", null);
-    memoryFieldManager.addColumnDefinition("fam2", "col2", "b", false, "text", newMap(e("a", "b")));
-    memoryFieldManager.addColumnDefinition("fam2", "col3", null, false, "int", null);
+    memoryFieldManager.addColumnDefinition("fam1", "col1", null, true, "text", false, null);
+    memoryFieldManager.addColumnDefinition("fam2", "col2", null, false, "string", true, null);
+    memoryFieldManager.addColumnDefinition("fam2", "col2", "a", false, "text", false, null);
+    memoryFieldManager.addColumnDefinition("fam2", "col2", "b", false, "text", false, newMap(e("a", "b")));
+    memoryFieldManager.addColumnDefinition("fam2", "col3", null, false, "int", false, null);
 
     BaseFieldManager memoryFieldManager2 = newFieldManager(false);
     FieldTypeDefinition fieldTypeDefinition1 = memoryFieldManager2.getFieldTypeDefinition("fam1.col1");
@@ -61,12 +61,12 @@ public class HdfsFieldManagerTest extends BaseFieldManagerTest {
     assertNotNull(fieldTypeDefinition2);
     assertFalse(fieldTypeDefinition2.isFieldLessIndexed());
     assertFalse(fieldTypeDefinition2.isNumeric());
-    
+
     FieldTypeDefinition fieldTypeDefinition3 = memoryFieldManager2.getFieldTypeDefinition("fam2.col2.a");
     assertNotNull(fieldTypeDefinition3);
     assertFalse(fieldTypeDefinition3.isFieldLessIndexed());
     assertFalse(fieldTypeDefinition3.isNumeric());
-    
+
     FieldTypeDefinition fieldTypeDefinition4 = memoryFieldManager2.getFieldTypeDefinition("fam2.col2.b");
     assertNotNull(fieldTypeDefinition4);
     assertFalse(fieldTypeDefinition4.isFieldLessIndexed());

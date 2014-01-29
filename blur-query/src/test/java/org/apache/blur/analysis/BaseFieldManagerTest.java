@@ -30,6 +30,8 @@ import org.apache.blur.utils.BlurConstants;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.Field.Store;
 import org.junit.Test;
 
 public class BaseFieldManagerTest {
@@ -39,33 +41,37 @@ public class BaseFieldManagerTest {
   @Test
   public void testFieldManager() throws IOException {
     BaseFieldManager memoryFieldManager = newFieldManager(true);
-    memoryFieldManager.addColumnDefinition("fam1", "col1", null, true, "text", null);
+    memoryFieldManager.addColumnDefinition("fam1", "col1", null, true, "text", false, null);
 
     Record record = new Record();
     record.setFamily("fam1");
     record.setRecordId("1213");
     record.addToColumns(new Column("col1", "value1"));
 
-    List<Field> fields = getFields("fam1", "1", "1213", newTextField("fam1.col1", "value1"),
-        newTextFieldNoStore(_fieldLessField, "value1"));
+    List<Field> fields = getFields("fam1", "1", "1213", newFieldsNoStore(BlurConstants.FIELDS, "fam1.col1"),
+        newTextField("fam1.col1", "value1"), newTextFieldNoStore(_fieldLessField, "value1"));
 
     int c = 0;
     for (Field field : memoryFieldManager.getFields("1", record)) {
       assertFieldEquals(fields.get(c++), field);
     }
   }
-  
+
+  private Field newFieldsNoStore(String name, String value) {
+    return new StringField(name, value, Store.NO);
+  }
+
   @Test
   public void testFieldManagerWithNullFamily() throws IOException {
     BaseFieldManager memoryFieldManager = newFieldManager(true);
-    memoryFieldManager.addColumnDefinition(null, "col1", null, true, "text", null);
+    memoryFieldManager.addColumnDefinition(null, "col1", null, true, "text", false, null);
 
     Record record = new Record();
     record.setRecordId("1213");
     record.addToColumns(new Column("col1", "value1"));
 
-    List<Field> fields = getFields(null, "1", "1213", newTextField(memoryFieldManager.resolveField("col1"), "value1"),
-        newTextFieldNoStore(_fieldLessField, "value1"));
+    List<Field> fields = getFields(null, "1", "1213", newFieldsNoStore(BlurConstants.FIELDS, "_default_.col1"),
+        newTextField(memoryFieldManager.resolveField("col1"), "value1"), newTextFieldNoStore(_fieldLessField, "value1"));
 
     int c = 0;
     for (Field field : memoryFieldManager.getFields("1", record)) {
@@ -76,7 +82,7 @@ public class BaseFieldManagerTest {
   @Test
   public void testFieldManagerMultipleColumnsSameName() throws IOException {
     BaseFieldManager memoryFieldManager = newFieldManager(true);
-    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", null);
+    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", false, null);
 
     Record record = new Record();
     record.setFamily("fam1");
@@ -84,7 +90,8 @@ public class BaseFieldManagerTest {
     record.addToColumns(new Column("col1", "value1"));
     record.addToColumns(new Column("col1", "value2"));
 
-    List<Field> fields = getFields("fam1", "1", "1213", newTextField("fam1.col1", "value1"),
+    List<Field> fields = getFields("fam1", "1", "1213", newFieldsNoStore(BlurConstants.FIELDS, "fam1.col1"),
+        newFieldsNoStore(BlurConstants.FIELDS, "fam1.col1"), newTextField("fam1.col1", "value1"),
         newTextField("fam1.col1", "value2"));
 
     int c = 0;
@@ -97,8 +104,8 @@ public class BaseFieldManagerTest {
   @Test
   public void testFieldManagerMultipleColumnsDifferentNames() throws IOException {
     BaseFieldManager memoryFieldManager = newFieldManager(true);
-    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", null);
-    memoryFieldManager.addColumnDefinition("fam1", "col2", null, true, "text", null);
+    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", false, null);
+    memoryFieldManager.addColumnDefinition("fam1", "col2", null, true, "text", false, null);
 
     Record record = new Record();
     record.setFamily("fam1");
@@ -106,11 +113,14 @@ public class BaseFieldManagerTest {
     record.addToColumns(new Column("col1", "value1"));
     record.addToColumns(new Column("col2", "value2"));
 
-    List<Field> fields = getFields("fam1", "1", "1213", newTextField("fam1.col1", "value1"),
-        newTextField("fam1.col2", "value2"), newTextFieldNoStore(_fieldLessField, "value2"));
+    List<Field> fields = getFields("fam1", "1", "1213", newFieldsNoStore(BlurConstants.FIELDS, "fam1.col1"),
+        newFieldsNoStore(BlurConstants.FIELDS, "fam1.col2"), newTextField("fam1.col1", "value1"),
+        newTextField("fam1.col2", "value2"), newTextFieldNoStore(BlurConstants.SUPER, "value2"));
 
     int c = 0;
-    for (Field field : memoryFieldManager.getFields("1", record)) {
+    List<Field> fields2 = memoryFieldManager.getFields("1", record);
+    System.out.println(fields2);
+    for (Field field : fields2) {
       assertFieldEquals(fields.get(c++), field);
     }
   }
@@ -118,15 +128,16 @@ public class BaseFieldManagerTest {
   @Test
   public void testFieldManagerMultipleColumnsDifferentNamesDifferentFamilies() throws IOException {
     BaseFieldManager memoryFieldManager = newFieldManager(true);
-    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", null);
-    memoryFieldManager.addColumnDefinition("fam2", "col2", null, false, "text", null);
+    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", false, null);
+    memoryFieldManager.addColumnDefinition("fam2", "col2", null, false, "text", false, null);
 
     Record record1 = new Record();
     record1.setFamily("fam1");
     record1.setRecordId("1213");
     record1.addToColumns(new Column("col1", "value1"));
 
-    List<Field> fields1 = getFields("fam1", "1", "1213", newTextField("fam1.col1", "value1"));
+    List<Field> fields1 = getFields("fam1", "1", "1213", newFieldsNoStore(BlurConstants.FIELDS, "fam1.col1"),
+        newTextField("fam1.col1", "value1"));
     int c1 = 0;
     for (Field field : memoryFieldManager.getFields("1", record1)) {
       assertFieldEquals(fields1.get(c1++), field);
@@ -137,25 +148,28 @@ public class BaseFieldManagerTest {
     record2.setRecordId("1213");
     record2.addToColumns(new Column("col2", "value1"));
 
-    List<Field> fields2 = getFields("fam2", "1", "1213", newTextField("fam2.col2", "value1"));
+    List<Field> fields2 = getFields("fam2", "1", "1213", newFieldsNoStore(BlurConstants.FIELDS, "fam2.col2"),
+        newTextField("fam2.col2", "value1"));
     int c2 = 0;
     for (Field field : memoryFieldManager.getFields("1", record2)) {
       assertFieldEquals(fields2.get(c2++), field);
     }
   }
-  
+
   @Test
   public void testFieldManagerMultipleColumnsDifferentNamesNullFamilies() throws IOException {
     BaseFieldManager memoryFieldManager = newFieldManager(true);
-    memoryFieldManager.addColumnDefinition(null, "col1", null, false, "text", null);
-    memoryFieldManager.addColumnDefinition(null, "col2", null, false, "text", null);
+    memoryFieldManager.addColumnDefinition(null, "col1", null, false, "text", false, null);
+    memoryFieldManager.addColumnDefinition(null, "col2", null, false, "text", false, null);
 
     Record record1 = new Record();
     record1.setRecordId("1213");
     record1.addToColumns(new Column("col1", "value1"));
 
-    List<Field> fields1 = getFields(null, "1", "1213", newTextField(memoryFieldManager.resolveField("col1"), "value1"));
-    int c1 = 0;	
+    List<Field> fields1 = getFields(null, "1", "1213",
+        newFieldsNoStore(BlurConstants.FIELDS, BlurConstants.DEFAULT_FAMILY + ".col1"),
+        newTextField(memoryFieldManager.resolveField("col1"), "value1"));
+    int c1 = 0;
     for (Field field : memoryFieldManager.getFields("1", record1)) {
       assertFieldEquals(fields1.get(c1++), field);
     }
@@ -164,7 +178,9 @@ public class BaseFieldManagerTest {
     record2.setRecordId("1213");
     record2.addToColumns(new Column("col2", "value1"));
 
-    List<Field> fields2 = getFields(null, "1", "1213", newTextField(memoryFieldManager.resolveField("col2"), "value1"));
+    List<Field> fields2 = getFields(null, "1", "1213",
+        newFieldsNoStore(BlurConstants.FIELDS, BlurConstants.DEFAULT_FAMILY + ".col2"),
+        newTextField(memoryFieldManager.resolveField("col2"), "value1"));
     int c2 = 0;
     for (Field field : memoryFieldManager.getFields("1", record2)) {
       assertFieldEquals(fields2.get(c2++), field);
@@ -175,7 +191,7 @@ public class BaseFieldManagerTest {
   public void testFieldManagerSubNameWithMainColumnNameNoParent() throws IOException {
     BaseFieldManager memoryFieldManager = newFieldManager(true);
     try {
-      memoryFieldManager.addColumnDefinition("fam1", "col1", "sub1", false, "text", null);
+      memoryFieldManager.addColumnDefinition("fam1", "col1", "sub1", false, "text", false, null);
       fail("Should throw IllegalArgumentException");
     } catch (IllegalArgumentException e) {
     }
@@ -184,9 +200,9 @@ public class BaseFieldManagerTest {
   @Test
   public void testFieldManagerSubNameWithMainColumnNameNoFieldLess() throws IOException {
     BaseFieldManager memoryFieldManager = newFieldManager(true);
-    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", null);
+    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", false, null);
     try {
-      memoryFieldManager.addColumnDefinition("fam1", "col1", "sub1", true, "text", null);
+      memoryFieldManager.addColumnDefinition("fam1", "col1", "sub1", true, "text", false, null);
       fail("Should throw IllegalArgumentException");
     } catch (IllegalArgumentException e) {
     }
@@ -194,10 +210,10 @@ public class BaseFieldManagerTest {
 
   private List<Field> getFields(String family, String rowId, String recordId, Field... fields) {
     List<Field> fieldLst = new ArrayList<Field>();
-    if(family != null){
-    	fieldLst.add(new Field(BlurConstants.FAMILY, family, BaseFieldManager.ID_TYPE));
-    }else{
-    	fieldLst.add(new Field(BlurConstants.FAMILY, BlurConstants.DEFAULT_FAMILY, BaseFieldManager.ID_TYPE));
+    if (family != null) {
+      fieldLst.add(new Field(BlurConstants.FAMILY, family, BaseFieldManager.ID_TYPE));
+    } else {
+      fieldLst.add(new Field(BlurConstants.FAMILY, BlurConstants.DEFAULT_FAMILY, BaseFieldManager.ID_TYPE));
     }
     fieldLst.add(new Field(BlurConstants.ROW_ID, rowId, BaseFieldManager.ID_TYPE));
     fieldLst.add(new Field(BlurConstants.RECORD_ID, recordId, BaseFieldManager.ID_TYPE));
@@ -235,7 +251,7 @@ public class BaseFieldManagerTest {
       protected void tryToLoad(String field) {
 
       }
-      
+
       @Override
       protected List<String> getFieldNamesToLoad() throws IOException {
         return new ArrayList<String>();

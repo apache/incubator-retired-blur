@@ -28,7 +28,7 @@ import java.util.UUID;
 
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
-import org.apache.blur.thrift.generated.SortField;
+import org.apache.blur.thrift.generated.SortFieldResult;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
 import org.junit.Test;
@@ -71,19 +71,19 @@ public class MultipleBlurResultIterableTest {
     iterable.close();
   }
 
-  private Entry<Double, List<SortField>> e(final double score, String s) {
-    final List<SortField> sortFields = new ArrayList<SortField>();
-    SortField sortField = new SortField();
+  private Entry<Double, List<SortFieldResult>> e(final double score, String s) {
+    final List<SortFieldResult> sortFields = new ArrayList<SortFieldResult>();
+    SortFieldResult sortField = new SortFieldResult();
     if (s == null) {
       sortField.setNullValue(true);
     } else {
       sortField.setStringValue(s);
     }
     sortFields.add(sortField);
-    return new Entry<Double, List<SortField>>() {
+    return new Entry<Double, List<SortFieldResult>>() {
 
       @Override
-      public List<SortField> getValue() {
+      public List<SortFieldResult> getValue() {
         return sortFields;
       }
 
@@ -93,16 +93,16 @@ public class MultipleBlurResultIterableTest {
       }
 
       @Override
-      public List<SortField> setValue(List<SortField> value) {
+      public List<SortFieldResult> setValue(List<SortFieldResult> value) {
         return null;
       }
     };
   }
 
   private BlurResultIterable newBlurResultIterableSort(int shard, Random random,
-      Entry<Double, List<SortField>>... entries) {
+      Entry<Double, List<SortFieldResult>>... entries) {
     List<BlurResult> results = new ArrayList<BlurResult>();
-    for (Entry<Double, List<SortField>> entry : entries) {
+    for (Entry<Double, List<SortFieldResult>> entry : entries) {
       String shardName = BlurUtil.getShardName(shard);
       int docId = random.nextInt(Integer.MAX_VALUE);
       Double score = entry.getKey();
@@ -111,14 +111,14 @@ public class MultipleBlurResultIterableTest {
     Collections.sort(results, new Comparator<BlurResult>() {
       @Override
       public int compare(BlurResult o1, BlurResult o2) {
-        List<SortField> sortFields1 = o1.getSortFields();
-        List<SortField> sortFields2 = o2.getSortFields();
+        List<SortFieldResult> sortFields1 = o1.getSortFieldResults();
+        List<SortFieldResult> sortFields2 = o2.getSortFieldResults();
         if (sortFields1.size() != sortFields2.size()) {
           throw new RuntimeException("SortFields must be the same size.");
         }
         for (int i = 0; i < sortFields1.size(); i++) {
-          SortField sortField1 = sortFields1.get(i);
-          SortField sortField2 = sortFields2.get(i);
+          SortFieldResult sortField1 = sortFields1.get(i);
+          SortFieldResult sortField2 = sortFields2.get(i);
           int compare = BlurUtil.SORT_FIELD_COMPARATOR.compare(sortField1, sortField2);
           if (compare != 0) {
             return compare;

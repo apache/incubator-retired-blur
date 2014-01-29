@@ -111,7 +111,7 @@ public class AliasBlurFilterCacheTest {
       }
     };
 
-    fieldManager.addColumnDefinition(null, "bin", null, false, "string", null);
+    fieldManager.addColumnDefinition(null, "bin", null, false, "string", false, null);
     fieldManager.addColumnDefinitionInt("a", "id_i");
     fieldManager.addColumnDefinitionDouble("a", "id_d");
     fieldManager.addColumnDefinitionFloat("a", "id_f");

@@ -88,6 +88,7 @@ import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
+import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.BlurExecutorCompletionService.Cancel;
 import org.apache.blur.utils.BlurIterator;
@@ -119,6 +120,7 @@ import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
@@ -495,9 +497,10 @@ public class IndexManager {
         facetedQuery = userQuery;
       }
 
-      call = new SimpleQueryParallelCall(running, table, status, facetedQuery, readFilter, blurQuery.selector,
+      Sort sort = getSort(blurQuery, fieldManager);
+      call = new SimpleQueryParallelCall(running, table, status, facetedQuery, blurQuery.selector,
           _queriesInternalMeter, shardServerContext, runSlow, _fetchCount, _maxHeapPerRowFetch,
-          context.getSimilarity(), context);
+          context.getSimilarity(), context, sort);
       trace.done();
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
       BlurResultIterable merge = ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
@@ -534,7 +537,38 @@ public class IndexManager {
     }
   }
 
-  private BlurResultIterable fetchDataIfNeeded(final BlurResultIterable iterable, final String table, final Selector selector) {
+  private Sort getSort(BlurQuery blurQuery, FieldManager fieldManager) throws IOException, BlurException {
+    List<org.apache.blur.thrift.generated.SortField> sortFields = blurQuery.getSortFields();
+    if (sortFields == null || sortFields.isEmpty()) {
+      return null;
+    }
+    SortField[] fields = new SortField[sortFields.size()];
+    int i = 0;
+    for (org.apache.blur.thrift.generated.SortField sortField : sortFields) {
+      if (sortField == null) {
+        throw new BException("Sortfields [{0}] can not contain a null.", sortFields);
+      }
+      String fieldName = getFieldName(sortField);
+      SortField field = fieldManager.getSortField(fieldName, sortField.reverse);
+      fields[i++] = field;
+    }
+    return new Sort(fields);
+  }
+
+  private String getFieldName(org.apache.blur.thrift.generated.SortField sortField) throws BlurException {
+    String family = sortField.getFamily();
+    if (family == null) {
+      family = BlurConstants.DEFAULT_FAMILY;
+    }
+    String column = sortField.getColumn();
+    if (column == null) {
+      throw new BException("Column in sortfield [{0}] can not be null.", sortField);
+    }
+    return family + "." + column;
+  }
+
+  private BlurResultIterable fetchDataIfNeeded(final BlurResultIterable iterable, final String table,
+      final Selector selector) {
     if (selector == null) {
       return iterable;
     }
@@ -544,7 +578,7 @@ public class IndexManager {
       public BlurIterator<BlurResult, BlurException> iterator() throws BlurException {
         final BlurIterator<BlurResult, BlurException> iterator = iterable.iterator();
         return new BlurIterator<BlurResult, BlurException>() {
-          
+
           @Override
           public BlurResult next() throws BlurException {
             BlurResult result = iterator.next();
@@ -556,7 +590,7 @@ public class IndexManager {
             result.setFetchResult(fetchResult);
             return result;
           }
-          
+
           @Override
           public boolean hasNext() throws BlurException {
             return iterator.hasNext();
@@ -1245,11 +1279,11 @@ public class IndexManager {
     private final int _maxHeapPerRowFetch;
     private final Similarity _similarity;
     private final TableContext _context;
-    private final Filter _filter;
+    private final Sort _sort;
 
-    public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, Query query, Filter filter,
+    public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, Query query,
         Selector selector, Meter queriesInternalMeter, ShardServerContext shardServerContext, boolean runSlow,
-        int fetchCount, int maxHeapPerRowFetch, Similarity similarity, TableContext context) {
+        int fetchCount, int maxHeapPerRowFetch, Similarity similarity, TableContext context, Sort sort) {
       _running = running;
       _table = table;
       _status = status;
@@ -1262,7 +1296,7 @@ public class IndexManager {
       _maxHeapPerRowFetch = maxHeapPerRowFetch;
       _similarity = similarity;
       _context = context;
-      _filter = filter;
+      _sort = sort;
     }
 
     @Override
@@ -1298,9 +1332,8 @@ public class IndexManager {
         // BlurResultIterableSearcher will close searcher, if shard server
         // context is null.
         trace2 = Trace.trace("query initial search");
-        Sort sort = null;
         return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector,
-            _shardServerContext == null, _runSlow, _fetchCount, _maxHeapPerRowFetch, _context, _filter, sort);
+            _shardServerContext == null, _runSlow, _fetchCount, _maxHeapPerRowFetch, _context, _sort);
       } catch (BlurException e) {
         switch (_status.getQueryStatus().getState()) {
         case INTERRUPTED:

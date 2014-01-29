@@ -703,15 +703,15 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
           case 2: // STR_MAP
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map184 = iprot.readMapBegin();
-                struct.strMap = new HashMap<String,String>(2*_map184.size);
-                for (int _i185 = 0; _i185 < _map184.size; ++_i185)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map192 = iprot.readMapBegin();
+                struct.strMap = new HashMap<String,String>(2*_map192.size);
+                for (int _i193 = 0; _i193 < _map192.size; ++_i193)
                 {
-                  String _key186; // optional
-                  String _val187; // required
-                  _key186 = iprot.readString();
-                  _val187 = iprot.readString();
-                  struct.strMap.put(_key186, _val187);
+                  String _key194; // optional
+                  String _val195; // required
+                  _key194 = iprot.readString();
+                  _val195 = iprot.readString();
+                  struct.strMap.put(_key194, _val195);
                 }
                 iprot.readMapEnd();
               }
@@ -723,15 +723,15 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
           case 3: // LONG_MAP
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map188 = iprot.readMapBegin();
-                struct.longMap = new HashMap<String,Long>(2*_map188.size);
-                for (int _i189 = 0; _i189 < _map188.size; ++_i189)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map196 = iprot.readMapBegin();
+                struct.longMap = new HashMap<String,Long>(2*_map196.size);
+                for (int _i197 = 0; _i197 < _map196.size; ++_i197)
                 {
-                  String _key190; // optional
-                  long _val191; // required
-                  _key190 = iprot.readString();
-                  _val191 = iprot.readI64();
-                  struct.longMap.put(_key190, _val191);
+                  String _key198; // optional
+                  long _val199; // required
+                  _key198 = iprot.readString();
+                  _val199 = iprot.readI64();
+                  struct.longMap.put(_key198, _val199);
                 }
                 iprot.readMapEnd();
               }
@@ -743,15 +743,15 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
           case 4: // DOUBLE_MAP
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map192 = iprot.readMapBegin();
-                struct.doubleMap = new HashMap<String,Double>(2*_map192.size);
-                for (int _i193 = 0; _i193 < _map192.size; ++_i193)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map200 = iprot.readMapBegin();
+                struct.doubleMap = new HashMap<String,Double>(2*_map200.size);
+                for (int _i201 = 0; _i201 < _map200.size; ++_i201)
                 {
-                  String _key194; // optional
-                  double _val195; // required
-                  _key194 = iprot.readString();
-                  _val195 = iprot.readDouble();
-                  struct.doubleMap.put(_key194, _val195);
+                  String _key202; // optional
+                  double _val203; // required
+                  _key202 = iprot.readString();
+                  _val203 = iprot.readDouble();
+                  struct.doubleMap.put(_key202, _val203);
                 }
                 iprot.readMapEnd();
               }
@@ -784,10 +784,10 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
         oprot.writeFieldBegin(STR_MAP_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.strMap.size()));
-          for (Map.Entry<String, String> _iter196 : struct.strMap.entrySet())
+          for (Map.Entry<String, String> _iter204 : struct.strMap.entrySet())
           {
-            oprot.writeString(_iter196.getKey());
-            oprot.writeString(_iter196.getValue());
+            oprot.writeString(_iter204.getKey());
+            oprot.writeString(_iter204.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -797,10 +797,10 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
         oprot.writeFieldBegin(LONG_MAP_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, struct.longMap.size()));
-          for (Map.Entry<String, Long> _iter197 : struct.longMap.entrySet())
+          for (Map.Entry<String, Long> _iter205 : struct.longMap.entrySet())
           {
-            oprot.writeString(_iter197.getKey());
-            oprot.writeI64(_iter197.getValue());
+            oprot.writeString(_iter205.getKey());
+            oprot.writeI64(_iter205.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -810,10 +810,10 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
         oprot.writeFieldBegin(DOUBLE_MAP_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.DOUBLE, struct.doubleMap.size()));
-          for (Map.Entry<String, Double> _iter198 : struct.doubleMap.entrySet())
+          for (Map.Entry<String, Double> _iter206 : struct.doubleMap.entrySet())
           {
-            oprot.writeString(_iter198.getKey());
-            oprot.writeDouble(_iter198.getValue());
+            oprot.writeString(_iter206.getKey());
+            oprot.writeDouble(_iter206.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -856,30 +856,30 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
       if (struct.isSetStrMap()) {
         {
           oprot.writeI32(struct.strMap.size());
-          for (Map.Entry<String, String> _iter199 : struct.strMap.entrySet())
+          for (Map.Entry<String, String> _iter207 : struct.strMap.entrySet())
           {
-            oprot.writeString(_iter199.getKey());
-            oprot.writeString(_iter199.getValue());
+            oprot.writeString(_iter207.getKey());
+            oprot.writeString(_iter207.getValue());
           }
         }
       }
       if (struct.isSetLongMap()) {
         {
           oprot.writeI32(struct.longMap.size());
-          for (Map.Entry<String, Long> _iter200 : struct.longMap.entrySet())
+          for (Map.Entry<String, Long> _iter208 : struct.longMap.entrySet())
           {
-            oprot.writeString(_iter200.getKey());
-            oprot.writeI64(_iter200.getValue());
+            oprot.writeString(_iter208.getKey());
+            oprot.writeI64(_iter208.getValue());
           }
         }
       }
       if (struct.isSetDoubleMap()) {
         {
           oprot.writeI32(struct.doubleMap.size());
-          for (Map.Entry<String, Double> _iter201 : struct.doubleMap.entrySet())
+          for (Map.Entry<String, Double> _iter209 : struct.doubleMap.entrySet())
           {
-            oprot.writeString(_iter201.getKey());
-            oprot.writeDouble(_iter201.getValue());
+            oprot.writeString(_iter209.getKey());
+            oprot.writeDouble(_iter209.getValue());
           }
         }
       }
@@ -895,45 +895,45 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
       }
       if (incoming.get(1)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map202 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-          struct.strMap = new HashMap<String,String>(2*_map202.size);
-          for (int _i203 = 0; _i203 < _map202.size; ++_i203)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map210 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.strMap = new HashMap<String,String>(2*_map210.size);
+          for (int _i211 = 0; _i211 < _map210.size; ++_i211)
           {
-            String _key204; // optional
-            String _val205; // required
-            _key204 = iprot.readString();
-            _val205 = iprot.readString();
-            struct.strMap.put(_key204, _val205);
+            String _key212; // optional
+            String _val213; // required
+            _key212 = iprot.readString();
+            _val213 = iprot.readString();
+            struct.strMap.put(_key212, _val213);
           }
         }
         struct.setStrMapIsSet(true);
       }
       if (incoming.get(2)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map206 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, iprot.readI32());
-          struct.longMap = new HashMap<String,Long>(2*_map206.size);
-          for (int _i207 = 0; _i207 < _map206.size; ++_i207)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map214 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, iprot.readI32());
+          struct.longMap = new HashMap<String,Long>(2*_map214.size);
+          for (int _i215 = 0; _i215 < _map214.size; ++_i215)
           {
-            String _key208; // optional
-            long _val209; // required
-            _key208 = iprot.readString();
-            _val209 = iprot.readI64();
-            struct.longMap.put(_key208, _val209);
+            String _key216; // optional
+            long _val217; // required
+            _key216 = iprot.readString();
+            _val217 = iprot.readI64();
+            struct.longMap.put(_key216, _val217);
           }
         }
         struct.setLongMapIsSet(true);
       }
       if (incoming.get(3)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map210 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.DOUBLE, iprot.readI32());
-          struct.doubleMap = new HashMap<String,Double>(2*_map210.size);
-          for (int _i211 = 0; _i211 < _map210.size; ++_i211)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map218 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.DOUBLE, iprot.readI32());
+          struct.doubleMap = new HashMap<String,Double>(2*_map218.size);
+          for (int _i219 = 0; _i219 < _map218.size; ++_i219)
           {
-            String _key212; // optional
-            double _val213; // required
-            _key212 = iprot.readString();
-            _val213 = iprot.readDouble();
-            struct.doubleMap.put(_key212, _val213);
+            String _key220; // optional
+            double _val221; // required
+            _key220 = iprot.readString();
+            _val221 = iprot.readDouble();
+            struct.doubleMap.put(_key220, _val221);
           }
         }
         struct.setDoubleMapIsSet(true);

@@ -152,13 +152,13 @@ public class BlurClusterTest {
     List<String> shardClusterList = client.shardClusterList();
     assertEquals(1, shardClusterList.size());
     assertEquals(BlurConstants.DEFAULT, shardClusterList.get(0));
-    
+
     Map<String, String> shardServerLayout = client.shardServerLayout("test");
     assertEquals(5, shardServerLayout.size());
-    
+
     Map<String, Map<String, ShardState>> shardServerLayoutState = client.shardServerLayoutState("test");
     assertEquals(5, shardServerLayoutState.size());
-    
+
     List<String> shardServerList = client.shardServerList(BlurConstants.DEFAULT);
     assertEquals(3, shardServerList.size());
   }
@@ -181,7 +181,7 @@ public class BlurClusterTest {
     TableContext tableContext = TableContext.create(client.describe("test"));
     FieldManager fieldManager = tableContext.getFieldManager();
 
-    assertTrue(fieldManager.addColumnDefinition("test-family", "test-column", null, false, "string", null));
+    assertTrue(fieldManager.addColumnDefinition("test-family", "test-column", null, false, "string", false, null));
 
     TableContext.clear();
     Schema newschema = client.schema("test");

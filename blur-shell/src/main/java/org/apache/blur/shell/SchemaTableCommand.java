@@ -47,38 +47,34 @@ public class SchemaTableCommand extends Command implements TableFirstArgCommand 
     }
 
     Schema schema = client.schema(tablename);
-    out.println("table  : "+schema.getTable());
+    out.println("table  : " + schema.getTable());
     Map<String, Map<String, ColumnDefinition>> families = schema.getFamilies();
     Set<String> familyNames = new TreeSet<String>(families.keySet());
     for (String cf : familyNames) {
       if (!familiesToDisplay.isEmpty() && !familiesToDisplay.contains(cf)) {
         continue;
       }
-      out.println("family : " + cf);
+      out.println("family                 : " + cf);
       Map<String, ColumnDefinition> columns = families.get(cf);
       Set<String> columnNames = new TreeSet<String>(columns.keySet());
       for (String c : columnNames) {
         ColumnDefinition columnDefinition = columns.get(c);
-        out.println("\tcolumn   : " + columnDefinition.getColumnName());
+        out.println("\tcolumn             : " + columnDefinition.getColumnName());
         String fieldType = columnDefinition.getFieldType();
         Map<String, String> properties = columnDefinition.getProperties();
         String subColumnName = columnDefinition.getSubColumnName();
         if (subColumnName != null) {
-          out.println("\t\t\tsubName   : " + subColumnName);
-          out.println("\t\t\tfieldType : " + fieldType);
-          if (properties != null) {
-            Map<String, String> props = new TreeMap<String, String>(properties);
-            for (Entry<String, String> e : props.entrySet()) {
-              out.println("\t\t\tprop      : " + e);
-            }
-          }
-        } else {
-          out.println("\t\tfieldType : " + fieldType);
-          if (properties != null) {
-            Map<String, String> props = new TreeMap<String, String>(properties);
-            for (Entry<String, String> e : props.entrySet()) {
-              out.println("\t\tprop      : " + e);
-            }
+          out.println("\t\tsubName          : " + subColumnName);
+        }
+        out.println("\t\tfieldType        : " + fieldType);
+        boolean fieldLessIndexed = columnDefinition.isFieldLessIndexed();
+        out.println("\t\tfieldLessIndexed : " + fieldLessIndexed);
+        boolean sortable = columnDefinition.isSortable();
+        out.println("\t\tsortable         : " + sortable);
+        if (properties != null) {
+          Map<String, String> props = new TreeMap<String, String>(properties);
+          for (Entry<String, String> e : props.entrySet()) {
+            out.println("\t\tprop             : " + e);
           }
         }
       }

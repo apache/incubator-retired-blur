@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
-import org.apache.blur.thrift.generated.SortField;
+import org.apache.blur.thrift.generated.SortFieldResult;
 import org.apache.blur.utils.BlurUtil;
 
 public class BlurResultPeekableIteratorComparator implements Comparator<PeekableIterator<BlurResult, BlurException>> {
@@ -39,8 +39,8 @@ public class BlurResultPeekableIteratorComparator implements Comparator<Peekable
       return -1;
     }
 
-    List<SortField> sortFields1 = result1.getSortFields();
-    List<SortField> sortFields2 = result2.getSortFields();
+    List<SortFieldResult> sortFields1 = result1.getSortFieldResults();
+    List<SortFieldResult> sortFields2 = result2.getSortFieldResults();
     if (sortFields1 != null && sortFields2 != null) {
       // Then we need to do a sort merge
       int size1 = sortFields1.size();
@@ -50,8 +50,8 @@ public class BlurResultPeekableIteratorComparator implements Comparator<Peekable
             + "]");
       }
       for (int i = 0; i < size1; i++) {
-        SortField sortField1 = sortFields1.get(i);
-        SortField sortField2 = sortFields2.get(i);
+        SortFieldResult sortField1 = sortFields1.get(i);
+        SortFieldResult sortField2 = sortFields2.get(i);
         int compare = BlurUtil.SORT_FIELD_COMPARATOR.compare(sortField1, sortField2);
         if (compare != 0) {
           return compare;

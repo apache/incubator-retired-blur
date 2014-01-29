@@ -34,7 +34,6 @@ import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.Converter;
 import org.apache.blur.utils.IteratorConverter;
 import org.apache.lucene.search.FieldDoc;
-import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
@@ -59,7 +58,7 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
 
   public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard,
       IndexSearcherClosable searcher, Selector selector, boolean closeSearcher, boolean runSlow, int fetchCount,
-      int maxHeapPerRowFetch, TableContext context, Filter filter, Sort sort) throws BlurException {
+      int maxHeapPerRowFetch, TableContext context, Sort sort) throws BlurException {
     _sort = sort;
     _running = running;
     _query = query;

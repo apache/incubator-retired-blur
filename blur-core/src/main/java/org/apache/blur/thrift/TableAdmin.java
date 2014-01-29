@@ -428,9 +428,11 @@ public abstract class TableAdmin implements Iface {
     if (fieldType == null) {
       throw new BException("FieldType in ColumnDefinition [{0}] cannot be null.", columnDefinition);
     }
+    boolean sortable = columnDefinition.isSortable();
     Map<String, String> props = columnDefinition.getProperties();
     try {
-      return fieldManager.addColumnDefinition(family, columnName, subColumnName, fieldLessIndexed, fieldType, props);
+      return fieldManager.addColumnDefinition(family, columnName, subColumnName, fieldLessIndexed, fieldType, sortable,
+          props);
     } catch (IOException e) {
       throw new BException(
           "Unknown error while trying to addColumnDefinition on table [{0}] with columnDefinition [{1}]", e, table,
@@ -562,6 +564,7 @@ public abstract class TableAdmin implements Iface {
     columnDefinition.setSubColumnName(fieldTypeDefinition.getSubColumnName());
     columnDefinition.setFieldLessIndexed(fieldTypeDefinition.isFieldLessIndexed());
     columnDefinition.setFieldType(fieldTypeDefinition.getFieldType());
+    columnDefinition.setSortable(fieldTypeDefinition.isSortEnable());
     columnDefinition.setProperties(fieldTypeDefinition.getProperties());
     return columnDefinition;
   }

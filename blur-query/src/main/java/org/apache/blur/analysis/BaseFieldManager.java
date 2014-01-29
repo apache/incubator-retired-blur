@@ -57,6 +57,7 @@ import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.SortField;
 
 public abstract class BaseFieldManager extends FieldManager {
 
@@ -232,7 +233,7 @@ public abstract class BaseFieldManager extends FieldManager {
           throw new IOException("Family [" + family + "] Column [" + column + "] not defined");
         }
         addColumnDefinition(family, name, null, getDefaultMissingFieldLessIndexing(), getDefaultMissingFieldType(),
-            getDefaultMissingFieldProps());
+            false, getDefaultMissingFieldProps());
         fieldTypeDefinition = getFieldTypeDefinition(family, column);
       }
       getAndAddFields(fields, family, column, fieldTypeDefinition);
@@ -331,7 +332,7 @@ public abstract class BaseFieldManager extends FieldManager {
 
   @Override
   public boolean addColumnDefinition(String family, String columnName, String subColumnName, boolean fieldLessIndexed,
-      String fieldType, Map<String, String> props) throws IOException {
+      String fieldType, boolean sortable, Map<String, String> props) throws IOException {
     if (family == null) {
       family = BlurConstants.DEFAULT_FAMILY;
     }
@@ -351,16 +352,17 @@ public abstract class BaseFieldManager extends FieldManager {
     } else {
       fieldName = baseFieldName;
     }
-    return addFieldTypeDefinition(family, columnName, subColumnName, fieldName, fieldLessIndexed, fieldType, props);
+    return addFieldTypeDefinition(family, columnName, subColumnName, fieldName, fieldLessIndexed, fieldType, sortable,
+        props);
   }
 
   private boolean addFieldTypeDefinition(String family, String columnName, String subColumnName, String fieldName,
-      boolean fieldLessIndexed, String fieldType, Map<String, String> props) throws IOException {
+      boolean fieldLessIndexed, String fieldType, boolean sortable, Map<String, String> props) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(fieldName);
     if (fieldTypeDefinition != null) {
       return false;
     }
-    fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexed, fieldType, props);
+    fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexed, fieldType, sortable, props);
     synchronized (_fieldNameToDefMap) {
       for (String alternateFieldName : fieldTypeDefinition.getAlternateFieldNames()) {
         if (_fieldNameToDefMap.containsKey(alternateFieldName)) {
@@ -420,7 +422,7 @@ public abstract class BaseFieldManager extends FieldManager {
   }
 
   protected FieldTypeDefinition newFieldTypeDefinition(String fieldName, boolean fieldLessIndexed, String fieldType,
-      Map<String, String> props) {
+      boolean sortable, Map<String, String> props) {
     if (fieldType == null) {
       throw new IllegalArgumentException("Field type can not be null.");
     }
@@ -443,6 +445,7 @@ public abstract class BaseFieldManager extends FieldManager {
     } else {
       fieldTypeDefinition.configure(fieldName, props, _configuration);
     }
+    fieldTypeDefinition.setSortEnable(sortable);
     fieldTypeDefinition.setFieldLessIndexed(fieldLessIndexed);
     return fieldTypeDefinition;
   }
@@ -486,48 +489,49 @@ public abstract class BaseFieldManager extends FieldManager {
   }
 
   public void addColumnDefinitionGisPointVector(String family, String columnName) throws IOException {
-    addColumnDefinition(family, columnName, null, false, SpatialPointVectorStrategyFieldTypeDefinition.NAME, null);
+    addColumnDefinition(family, columnName, null, false, SpatialPointVectorStrategyFieldTypeDefinition.NAME, false,
+        null);
   }
 
   public void addColumnDefinitionGisRecursivePrefixTree(String family, String columnName) throws IOException {
     Map<String, String> props = new HashMap<String, String>();
     props.put(BaseSpatialFieldTypeDefinition.SPATIAL_PREFIX_TREE, BaseSpatialFieldTypeDefinition.GEOHASH_PREFIX_TREE);
     addColumnDefinition(family, columnName, null, false, SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.NAME,
-        props);
+        false, props);
   }
 
   public void addColumnDefinitionDate(String family, String columnName, String format) throws IOException {
     Map<String, String> props = new HashMap<String, String>();
     props.put(DateFieldTypeDefinition.DATE_FORMAT, format);
-    addColumnDefinition(family, columnName, null, false, DateFieldTypeDefinition.NAME, props);
+    addColumnDefinition(family, columnName, null, false, DateFieldTypeDefinition.NAME, false, props);
   }
 
   public void addColumnDefinitionInt(String family, String columnName) throws IOException {
-    addColumnDefinition(family, columnName, null, false, IntFieldTypeDefinition.NAME, null);
+    addColumnDefinition(family, columnName, null, false, IntFieldTypeDefinition.NAME, false, null);
   }
 
   public void addColumnDefinitionLong(String family, String columnName) throws IOException {
-    addColumnDefinition(family, columnName, null, false, LongFieldTypeDefinition.NAME, null);
+    addColumnDefinition(family, columnName, null, false, LongFieldTypeDefinition.NAME, false, null);
   }
 
   public void addColumnDefinitionFloat(String family, String columnName) throws IOException {
-    addColumnDefinition(family, columnName, null, false, FloatFieldTypeDefinition.NAME, null);
+    addColumnDefinition(family, columnName, null, false, FloatFieldTypeDefinition.NAME, false, null);
   }
 
   public void addColumnDefinitionDouble(String family, String columnName) throws IOException {
-    addColumnDefinition(family, columnName, null, false, DoubleFieldTypeDefinition.NAME, null);
+    addColumnDefinition(family, columnName, null, false, DoubleFieldTypeDefinition.NAME, false, null);
   }
 
   public void addColumnDefinitionString(String family, String columnName) throws IOException {
-    addColumnDefinition(family, columnName, null, false, StringFieldTypeDefinition.NAME, null);
+    addColumnDefinition(family, columnName, null, false, StringFieldTypeDefinition.NAME, false, null);
   }
 
   public void addColumnDefinitionText(String family, String columnName) throws IOException {
-    addColumnDefinition(family, columnName, null, false, TextFieldTypeDefinition.NAME, null);
+    addColumnDefinition(family, columnName, null, false, TextFieldTypeDefinition.NAME, false, null);
   }
 
   public void addColumnDefinitionTextFieldLess(String family, String columnName) throws IOException {
-    addColumnDefinition(family, columnName, null, true, TextFieldTypeDefinition.NAME, null);
+    addColumnDefinition(family, columnName, null, true, TextFieldTypeDefinition.NAME, false, null);
   }
 
   @Override
@@ -626,6 +630,21 @@ public abstract class BaseFieldManager extends FieldManager {
       fieldTypeDefinition = _fieldNameToDefMap.get(field);
     }
     return fieldTypeDefinition;
+  }
+
+  @Override
+  public SortField getSortField(String field, boolean reverse) throws IOException {
+    FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(field);
+    if (fieldTypeDefinition == null) {
+      throw new IOException("Field [" + field + "] is missing.");
+    }
+    if (fieldTypeDefinition.checkSupportForSorting()) {
+      if (fieldTypeDefinition.isSortEnable()) {
+        return fieldTypeDefinition.getSortField(reverse);  
+      }
+      throw new IOException("Field [" + field + "] does not have sorting enabled.");
+    }
+    throw new IOException("Field [" + field + "] does not support sorting.");
   }
 
   @Override

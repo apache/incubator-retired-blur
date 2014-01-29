@@ -18,14 +18,14 @@ package org.apache.blur.thrift;
 
 import java.util.Comparator;
 
-import org.apache.blur.thrift.generated.SortField;
-import org.apache.blur.thrift.generated.SortField._Fields;
+import org.apache.blur.thrift.generated.SortFieldResult;
+import org.apache.blur.thrift.generated.SortFieldResult._Fields;
 import org.apache.hadoop.io.WritableComparator;
 
-public class SortFieldComparator implements Comparator<SortField> {
+public class SortFieldComparator implements Comparator<SortFieldResult> {
 
   @Override
-  public int compare(SortField o1, SortField o2) {
+  public int compare(SortFieldResult o1, SortFieldResult o2) {
     _Fields field = o1.getSetField();
     int lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(field, o2.getSetField());
     if (lastComparison == 0) {

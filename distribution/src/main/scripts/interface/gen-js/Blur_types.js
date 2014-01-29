@@ -1339,6 +1339,7 @@ BlurQuery = function(args) {
   this.cacheResult = true;
   this.startTime = 0;
   this.sortFields = null;
+  this.rowId = null;
   if (args) {
     if (args.query !== undefined) {
       this.query = args.query;
@@ -1378,6 +1379,9 @@ BlurQuery = function(args) {
     }
     if (args.sortFields !== undefined) {
       this.sortFields = args.sortFields;
+    }
+    if (args.rowId !== undefined) {
+      this.rowId = args.rowId;
     }
   }
 };
@@ -1516,6 +1520,13 @@ BlurQuery.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 16:
+      if (ftype == Thrift.Type.STRING) {
+        this.rowId = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -1608,6 +1619,11 @@ BlurQuery.prototype.write = function(output) {
       }
     }
     output.writeListEnd();
+    output.writeFieldEnd();
+  }
+  if (this.rowId !== null && this.rowId !== undefined) {
+    output.writeFieldBegin('rowId', Thrift.Type.STRING, 16);
+    output.writeString(this.rowId);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

@@ -36,6 +36,7 @@ import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
+import org.apache.blur.manager.indexserver.MasterBasedDistributedLayoutFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.TDeserializer;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.TSerializer;
@@ -177,7 +178,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         final String clusterTableKey = getClusterTableKey(cluster, table);
         WatchNodeExistance watchNodeExistance = _enabledWatchNodeExistance.remove(clusterTableKey);
         if (watchNodeExistance != null) {
-          watchNodeExistance.close();  
+          watchNodeExistance.close();
         }
         _tableDescriptorCache.remove(table);
       }
@@ -412,30 +413,30 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     TableDescriptor tableDescriptor = new TableDescriptor();
     try {
       checkIfOpen();
-      
+
       String blurTablePath = ZookeeperPathConstants.getTablePath(cluster, table);
       byte[] bytes = getData(blurTablePath);
-      
+
       if (bytes == null || bytes.length == 0) {
         /*
          * table descriptor is stored in an older format where we manually
-         * serialized each field into a different zookeeper node
-         * so we fetch it using old code and serialize it again with thrift protocol
+         * serialized each field into a different zookeeper node so we fetch it
+         * using old code and serialize it again with thrift protocol
          */
         LOG.info("The schema of Table [{0}] was stored in an older format. Now converting it to the new format", table);
         getOldTableDescriptor(useCache, cluster, table, tableDescriptor);
-        
+
         BlurUtil.removeAll(_zk, blurTablePath);
-        
+
         // store it using thrift protocol
         byte[] newFormatBytes = serializeTableDescriptor(tableDescriptor);
         BlurUtil.createPath(_zk, blurTablePath, newFormatBytes);
-        
+
       } else {
         TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
         deserializer.deserialize(tableDescriptor, bytes);
       }
-    } catch (TException e) { 
+    } catch (TException e) {
       throw new RuntimeException(e);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
@@ -450,10 +451,11 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     return tableDescriptor;
   }
 
-  private TableDescriptor getOldTableDescriptor(boolean useCache, String cluster, String table, TableDescriptor tableDescriptor) {
+  private TableDescriptor getOldTableDescriptor(boolean useCache, String cluster, String table,
+      TableDescriptor tableDescriptor) {
     long s = System.nanoTime();
     try {
-      
+
       NullPointerException npe = null;
       LOOP: for (int i = 0; i < 10; i++) {
         npe = null;
@@ -490,10 +492,10 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       long e = System.nanoTime();
       LOG.debug("trace getOldTableDescriptor took [" + (e - s) / 1000000.0 + " ms]");
     }
-    
+
     return tableDescriptor;
   }
-  
+
   private boolean internalGetReadOnly(String tableReadOnlyPath) throws KeeperException, InterruptedException {
     Stat stat = _zk.exists(tableReadOnlyPath, false);
     if (stat == null) {
@@ -730,7 +732,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         throw new IOException("Table [" + table + "] already exists.");
       }
       BlurUtil.setupFileSystem(uri, shardCount);
-      byte[] bytes = serializeTableDescriptor(tableDescriptor); 
+      byte[] bytes = serializeTableDescriptor(tableDescriptor);
       BlurUtil.createPath(_zk, blurTablePath, bytes);
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -745,14 +747,14 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   private byte[] serializeTableDescriptor(TableDescriptor td) {
-    try{
+    try {
       TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
       return serializer.serialize(td);
     } catch (TException e) {
       throw new RuntimeException(e);
     }
   }
-  
+
   private void assignTableUri(TableDescriptor tableDescriptor) {
     if (tableDescriptor.getTableUri() != null) {
       return;
@@ -828,14 +830,17 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       if (_zk.exists(blurTablePath, false) == null) {
         throw new IOException("Table [" + table + "] does not exist.");
       }
-      if (_zk.exists(ZookeeperPathConstants.getTableEnabledPath(cluster, table), false) != null) {
+      if (tableDescriptor.isEnabled()) {
         throw new IOException("Table [" + table + "] must be disabled before it can be removed.");
       }
       String uri = tableDescriptor.getTableUri();
       BlurUtil.removeAll(_zk, blurTablePath);
+      MasterBasedDistributedLayoutFactory.removeTable(_zk,
+          ZookeeperPathConstants.getShardLayoutPathTableLayout(cluster), table);
       if (deleteIndexFiles) {
         BlurUtil.removeIndexFiles(uri);
       }
+
     } catch (IOException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {

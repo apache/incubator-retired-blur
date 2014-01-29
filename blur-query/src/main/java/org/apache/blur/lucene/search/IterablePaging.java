@@ -56,11 +56,6 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
   private int skipTo;
   private int gather = -1;
 
-//  public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query, int numHitsToCollect,
-//      TotalHitsRef totalHitsRef, ProgressRef progressRef, boolean runSlow) throws BlurException {
-//    this(running, searcher, query, numHitsToCollect, totalHitsRef, progressRef, runSlow, null);
-//  }
-
   public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query, int numHitsToCollect,
       TotalHitsRef totalHitsRef, ProgressRef progressRef, boolean runSlow, Sort sort) throws BlurException {
     _running = running;
@@ -247,8 +242,7 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
     }
   }
 
-  private BlurIterator<ScoreDoc, BlurException> skipHits(PagingIterator iterator)
-      throws BlurException {
+  private BlurIterator<ScoreDoc, BlurException> skipHits(PagingIterator iterator) throws BlurException {
     _progressRef.skipTo.set(skipTo);
     for (int i = 0; i < skipTo && iterator.hasNext(); i++) {
       // eats the hits, and moves the iterator to the desired skip to position.

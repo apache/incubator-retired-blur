@@ -360,7 +360,10 @@ of a running query can be found or the query can be canceled.
 </td><td>default</td><td>1</td></tr>
 <tr><td>14</td><td>startTime</td><td><code>i64</code></td><td>Sets the start time, if 0 the controller sets the time.
 </td><td>default</td><td>0</td></tr>
-<tr><td>15</td><td>sortFields</td><td><code>list&lt;<code><a href="Blur.html#Struct_SortField">SortField</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>15</td><td>sortFields</td><td><code>list&lt;<code><a href="Blur.html#Struct_SortField">SortField</a></code>&gt;</code></td><td>The sortfields are applied in order to sort the results.
+</td><td>default</td><td></td></tr>
+<tr><td>16</td><td>rowId</td><td><code>string</code></td><td>Optional optimization for record queries to run against a single row.  This will allow the query to be executed on one and only one shard in the cluster.
+</td><td>default</td><td></td></tr>
 </table><br/>The Blur Query object that contains the query that needs to be executed along
 with the query options.
 <br/></div><div class="definition"><h3 id="Struct_SortFieldResult">Struct: SortFieldResult</h3>

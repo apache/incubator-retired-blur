@@ -448,11 +448,17 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
         BlurResultIterable hitsIterable = null;
         try {
-          Tracer scatterGatherTrace = Trace.trace("query - satterGather", Trace.param("retries", retries));
-          try {
-            hitsIterable = scatterGather(getCluster(table), command, merger);
-          } finally {
-            scatterGatherTrace.done();
+          String rowId = blurQuery.getRowId();
+          if (rowId == null) {
+            Tracer scatterGatherTrace = Trace.trace("query - scatterGather", Trace.param("retries", retries));
+            try {
+              hitsIterable = scatterGather(tableDescriptor.getCluster(), command, merger);
+            } finally {
+              scatterGatherTrace.done();
+            }
+          } else {
+            String clientHostnamePort = getNode(table, rowId);
+            hitsIterable = _client.execute(clientHostnamePort, command, _maxFetchRetries, _fetchDelay, _maxFetchDelay);
           }
           BlurResults results;
           Tracer convertToBlurResults = Trace.trace("query - convertToBlurResults", Trace.param("retries", retries));
@@ -606,9 +612,14 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     if (results.totalResults >= query.minimumNumberOfResults) {
       return true;
     }
-    int shardInfoSize = results.getShardInfoSize();
-    if (shardInfoSize == shardCount) {
-      return true;
+    if (query.getRowId() == null) {
+      if (results.getShardInfoSize() == shardCount) {
+        return true;
+      }
+    } else {
+      if (results.getShardInfoSize() == 1) {
+        return true;
+      }
     }
     return false;
   }
@@ -933,6 +944,13 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           "Unknown error while trying to terms table [{0}] columnFamily [{1}] columnName [{2}] startWith [{3}] size [{4}]",
           e, table, columnFamily, columnName, startWith, size);
     }
+  }
+
+  private String getNode(String table, String rowId) throws BlurException, TException {
+    Map<String, String> layout = shardServerLayout(table);
+    int numberOfShards = getShardCount(table);
+    String shardName = MutationHelper.getShardName(table, rowId, numberOfShards, _blurPartitioner);
+    return layout.get(shardName);
   }
 
   private String getNode(String table, Selector selector) throws BlurException, TException {

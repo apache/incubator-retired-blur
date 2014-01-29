@@ -123,6 +123,8 @@ public class BlurClusterTest {
     testCreateTable();
     start("testLoadTable");
     testLoadTable();
+    start("testBlurQueryWithRowId");
+    testBlurQueryWithRowId();
     start("testForEmptySchema");
     testForEmptySchema();
     start("testAdminCalls");
@@ -145,6 +147,26 @@ public class BlurClusterTest {
     testCreateDisableAndRemoveTable();
     start("testCreateTableWithCustomType");
     testCreateTableWithCustomType();
+  }
+
+  private void testBlurQueryWithRowId() throws BlurException, TException {
+    Blur.Iface client = getClient();
+    BlurQuery blurQuery = new BlurQuery();
+    Query query = new Query();
+    query.setQuery("*");
+    blurQuery.setQuery(query);
+    BlurResults results1 = client.query("test", blurQuery);
+    assertEquals(numberOfDocs, results1.getTotalResults());
+    String id1 = results1.getResults().iterator().next().getFetchResult().getRowResult().getRow().getId();
+
+    blurQuery.setRowId(id1);
+
+    query.setRowQuery(false);
+    BlurResults results2 = client.query("test", blurQuery);
+    assertEquals(1, results2.getTotalResults());
+    String id2 = results2.getResults().iterator().next().getFetchResult().getRecordResult().getRowid();
+
+    assertEquals(id1, id2);
   }
 
   private void testAdminCalls() throws BlurException, TException {

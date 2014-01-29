@@ -458,6 +458,15 @@ public class IndexManager {
         LOG.error("Unknown error while trying to fetch index readers.", e);
         throw new BException(e.getMessage(), e);
       }
+      String rowId = blurQuery.getRowId();
+      if (rowId != null) {
+        // reduce the index selection down to the only one that would contain the row.
+        Map<String, BlurIndex> map = new HashMap<String, BlurIndex>();
+        String shard = MutationHelper.getShardName(table, rowId, getNumberOfShards(table), _blurPartitioner);
+        BlurIndex index = getBlurIndex(table, shard);
+        map.put(shard, index);
+        blurIndexes = map;
+      }
       Tracer trace = Trace.trace("query setup", Trace.param("table", table));
       ShardServerContext shardServerContext = ShardServerContext.getShardServerContext();
       ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> call;
@@ -466,6 +475,13 @@ public class IndexManager {
       org.apache.blur.thrift.generated.Query simpleQuery = blurQuery.query;
       ReadInterceptor interceptor = context.getReadInterceptor();
       Filter readFilter = interceptor.getFilter();
+      if (rowId != null) {
+        if (simpleQuery.recordFilter == null) {
+          simpleQuery.recordFilter = "+" + BlurConstants.ROW_ID + ":" + rowId;
+        } else {
+          simpleQuery.recordFilter = "+" + BlurConstants.ROW_ID + ":" + rowId + " +(" + simpleQuery.recordFilter + ")";
+        }
+      }
       Filter recordFilterForSearch = QueryParserUtil.parseFilter(table, simpleQuery.recordFilter, false, fieldManager,
           _filterCache, context);
       Filter rowFilterForSearch = QueryParserUtil.parseFilter(table, simpleQuery.rowFilter, true, fieldManager,
@@ -476,6 +492,8 @@ public class IndexManager {
       } else if (recordFilterForSearch != null && readFilter == null) {
         docFilter = recordFilterForSearch;
       } else if (recordFilterForSearch != null && readFilter != null) {
+        // @TODO dangerous call because of the bitsets that booleanfilter
+        // creates.
         BooleanFilter booleanFilter = new BooleanFilter();
         booleanFilter.add(recordFilterForSearch, Occur.MUST);
         booleanFilter.add(readFilter, Occur.MUST);

@@ -175,6 +175,19 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
     }
   }
 
+  public static void removeTable(ZooKeeper zooKeeper, String tableStoragePath, String table) throws InterruptedException, KeeperException {
+    List<String> children = new ArrayList<String>(zooKeeper.getChildren(tableStoragePath, false));
+    for (String child : children) {
+      int index = child.lastIndexOf(SEP);
+      if (index >= 0) {
+        if (child.substring(0, index).equals(table)) {
+          String oldPath = tableStoragePath + "/" + child;
+          zooKeeper.delete(oldPath, -1);
+        }
+      }
+    }
+  }
+
   private void cleanupOldTableLayouts(String table, String newPath) throws KeeperException, InterruptedException {
     List<String> children = new ArrayList<String>(_zooKeeper.getChildren(_tableStoragePath, false));
     for (String child : children) {

@@ -1447,7 +1447,7 @@ sub write {
 
 package Blur::BlurQuery;
 use base qw(Class::Accessor);
-Blur::BlurQuery->mk_accessors( qw( query facets selector useCacheIfPresent start fetch minimumNumberOfResults maxQueryTime uuid userContext cacheResult startTime sortFields ) );
+Blur::BlurQuery->mk_accessors( qw( query facets selector useCacheIfPresent start fetch minimumNumberOfResults maxQueryTime uuid userContext cacheResult startTime sortFields rowId ) );
 
 sub new {
   my $classname = shift;
@@ -1466,6 +1466,7 @@ sub new {
   $self->{cacheResult} = 1;
   $self->{startTime} = 0;
   $self->{sortFields} = undef;
+  $self->{rowId} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{query}) {
       $self->{query} = $vals->{query};
@@ -1505,6 +1506,9 @@ sub new {
     }
     if (defined $vals->{sortFields}) {
       $self->{sortFields} = $vals->{sortFields};
+    }
+    if (defined $vals->{rowId}) {
+      $self->{rowId} = $vals->{rowId};
     }
   }
   return bless ($self, $classname);
@@ -1635,6 +1639,12 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^16$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{rowId});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -1728,6 +1738,11 @@ sub write {
       }
       $xfer += $output->writeListEnd();
     }
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{rowId}) {
+    $xfer += $output->writeFieldBegin('rowId', TType::STRING, 16);
+    $xfer += $output->writeString($self->{rowId});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

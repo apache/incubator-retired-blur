@@ -456,8 +456,14 @@ struct BlurQuery {
    * Sets the start time, if 0 the controller sets the time.
    */
   14:i64 startTime = 0,
-
-  15:list<SortField> sortFields
+  /**
+   * The sortfields are applied in order to sort the results.
+   */
+  15:list<SortField> sortFields,
+  /**
+   * Optional optimization for record queries to run against a single row.  This will allow the query to be executed on one and only one shard in the cluster.
+   */
+  16:string rowId
 }
 
 /**

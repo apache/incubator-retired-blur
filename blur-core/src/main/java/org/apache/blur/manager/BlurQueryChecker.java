@@ -23,7 +23,10 @@ import static org.apache.blur.utils.BlurConstants.BLUR_QUERY_MAX_ROW_FETCH;
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.thrift.BException;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
+import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.utils.BlurConstants;
 
@@ -58,8 +61,9 @@ public class BlurQueryChecker {
    * 
    * @param blurQuery
    *          the {@link BlurQuery} to validate.
+   * @throws BlurException 
    */
-  public void checkQuery(BlurQuery blurQuery) {
+  public void checkQuery(BlurQuery blurQuery) throws BlurException {
     if (blurQuery.selector != null) {
       if (blurQuery.selector.recordOnly) {
         if (blurQuery.fetch > _maxQueryRecordFetch) {
@@ -85,6 +89,13 @@ public class BlurQueryChecker {
           "Number of rows/records requested to be fetched [{0}] is greater than the minimum number of results [{1}]",
           blurQuery.fetch, blurQuery.minimumNumberOfResults);
       blurQuery.fetch = (int) blurQuery.minimumNumberOfResults;
+    }
+    if (blurQuery.getRowId() != null) {
+      Query query = blurQuery.getQuery();
+      if (query.isRowQuery()) {
+        throw new BException("Query [{0}] in BlurQuery [{1}] cannot be a rowquery when rowId is supplied.", query,
+            blurQuery);
+      }
     }
   }
 

@@ -427,6 +427,7 @@ module Blur
     CACHERESULT = 13
     STARTTIME = 14
     SORTFIELDS = 15
+    ROWID = 16
 
     FIELDS = {
       # The query information.
@@ -455,7 +456,10 @@ module Blur
       CACHERESULT => {:type => ::Thrift::Types::BOOL, :name => 'cacheResult', :default => true},
       # Sets the start time, if 0 the controller sets the time.
       STARTTIME => {:type => ::Thrift::Types::I64, :name => 'startTime', :default => 0},
-      SORTFIELDS => {:type => ::Thrift::Types::LIST, :name => 'sortFields', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::SortField}}
+      # The sortfields are applied in order to sort the results.
+      SORTFIELDS => {:type => ::Thrift::Types::LIST, :name => 'sortFields', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::SortField}},
+      # Optional optimization for record queries to run against a single row.  This will allow the query to be executed on one and only one shard in the cluster.
+      ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowId'}
     }
 
     def struct_fields; FIELDS; end

@@ -146,6 +146,14 @@ public abstract class FieldTypeDefinition {
     };
   }
 
+  protected String getFieldName() {
+    if (_subColumnName == null) {
+      return getName(_family, _columnName);
+    } else {
+      return getName(_family, _columnName, _subColumnName);
+    }
+  }
+
   protected String getName(String family, String name) {
     return family + "." + name;
   }

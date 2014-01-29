@@ -25,6 +25,8 @@ import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.SortField.Type;
 
 public class IntFieldTypeDefinition extends NumericFieldTypeDefinition {
 
@@ -57,14 +59,23 @@ public class IntFieldTypeDefinition extends NumericFieldTypeDefinition {
   @Override
   public Iterable<? extends Field> getFieldsForColumn(String family, Column column) {
     String name = getName(family, column.getName());
-    IntField field = new IntField(name, Integer.parseInt(column.getValue()), _typeStored);
+    int value = Integer.parseInt(column.getValue());
+    IntField field = new IntField(name, value, _typeStored);
+    if (isSortEnable()) {
+      return addSort(name, value, field);
+    }
     return makeIterable(field);
   }
 
   @Override
   public Iterable<? extends Field> getFieldsForSubColumn(String family, Column column, String subName) {
     String name = getName(family, column.getName(), subName);
-    return makeIterable(new IntField(name, Integer.parseInt(column.getValue()), _typeNotStored));
+    int value = Integer.parseInt(column.getValue());
+    IntField field = new IntField(name, value, _typeNotStored);
+    if (isSortEnable()) {
+      return addSort(name, value, field);
+    }
+    return makeIterable(field);
   }
 
   @Override
@@ -73,7 +84,12 @@ public class IntFieldTypeDefinition extends NumericFieldTypeDefinition {
     int p2 = parseInt(part2);
     return NumericRangeQuery.newIntRange(field, _precisionStep, p1, p2, startInclusive, endInclusive);
   }
-  
+
+  @Override
+  public SortField getSortField(boolean reverse) {
+    return new SortField(getFieldName(), Type.INT);
+  }
+
   private int parseInt(String number) {
     if (number.toLowerCase().equals(MIN)) {
       return Integer.MIN_VALUE;

@@ -35,7 +35,6 @@ import org.apache.lucene.util.BytesRef;
 public class StringFieldTypeDefinition extends FieldTypeDefinition {
 
   public static final String NAME = "string";
-  private String _fieldNameForThisInstance;
 
   @Override
   public String getName() {
@@ -44,7 +43,6 @@ public class StringFieldTypeDefinition extends FieldTypeDefinition {
 
   @Override
   public void configure(String fieldNameForThisInstance, Map<String, String> properties, Configuration configuration) {
-    _fieldNameForThisInstance = fieldNameForThisInstance;
   }
 
   @Override
@@ -52,10 +50,7 @@ public class StringFieldTypeDefinition extends FieldTypeDefinition {
     String name = getName(family, column.getName());
     Field field = new Field(name, column.getValue(), StringField.TYPE_STORED);
     if (isSortEnable()) {
-      List<Field> list = new ArrayList<Field>();
-      list.add(field);
-      list.add(new SortedDocValuesField(name, new BytesRef(column.getValue())));
-      return list;
+      return addSort(column, name, field);
     }
     return makeIterable(field);
   }
@@ -64,7 +59,17 @@ public class StringFieldTypeDefinition extends FieldTypeDefinition {
   public Iterable<? extends Field> getFieldsForSubColumn(String family, Column column, String subName) {
     String name = getName(family, column.getName(), subName);
     Field field = new Field(name, column.getValue(), StringField.TYPE_NOT_STORED);
+    if (isSortEnable()) {
+      return addSort(column, name, field);
+    }
     return makeIterable(field);
+  }
+
+  private Iterable<? extends Field> addSort(Column column, String name, Field field) {
+    List<Field> list = new ArrayList<Field>();
+    list.add(field);
+    list.add(new SortedDocValuesField(name, new BytesRef(column.getValue())));
+    return list;
   }
 
   @Override
@@ -115,6 +120,6 @@ public class StringFieldTypeDefinition extends FieldTypeDefinition {
 
   @Override
   public SortField getSortField(boolean reverse) {
-    return new SortField(_fieldNameForThisInstance, Type.STRING);
+    return new SortField(getFieldName(), Type.STRING);
   }
 }

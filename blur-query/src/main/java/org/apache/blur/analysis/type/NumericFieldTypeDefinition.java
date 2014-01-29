@@ -16,11 +16,15 @@ package org.apache.blur.analysis.type;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.SortField;
 import org.apache.lucene.util.NumericUtils;
 
 public abstract class NumericFieldTypeDefinition extends FieldTypeDefinition {
@@ -75,15 +79,17 @@ public abstract class NumericFieldTypeDefinition extends FieldTypeDefinition {
 
   @Override
   public boolean checkSupportForSorting() {
-    return false;
+    return true;
+  }
+  
+  protected Iterable<? extends Field> addSort(String name, long value, Field field) {
+    List<Field> list = new ArrayList<Field>();
+    list.add(field);
+    list.add(new NumericDocValuesField(name, value));
+    return list;
   }
 
   public abstract Query getNewRangeQuery(String field, String part1, String part2, boolean startInclusive,
       boolean endInclusive);
-
-  @Override
-  public SortField getSortField(boolean reverse) {
-    throw new RuntimeException("Should never be called.");
-  }
 
 }

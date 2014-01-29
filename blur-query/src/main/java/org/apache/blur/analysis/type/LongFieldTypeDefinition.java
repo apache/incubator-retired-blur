@@ -25,6 +25,8 @@ import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.SortField.Type;
 
 public class LongFieldTypeDefinition extends NumericFieldTypeDefinition {
 
@@ -57,14 +59,23 @@ public class LongFieldTypeDefinition extends NumericFieldTypeDefinition {
   @Override
   public Iterable<? extends Field> getFieldsForColumn(String family, Column column) {
     String name = getName(family, column.getName());
-    LongField field = new LongField(name, Long.parseLong(column.getValue()), _typeStored);
+    long value = Long.parseLong(column.getValue());
+    LongField field = new LongField(name, value, _typeStored);
+    if (isSortEnable()) {
+      return addSort(name, value, field);
+    }
     return makeIterable(field);
   }
 
   @Override
   public Iterable<? extends Field> getFieldsForSubColumn(String family, Column column, String subName) {
     String name = getName(family, column.getName(), subName);
-    return makeIterable(new LongField(name, Long.parseLong(column.getValue()), _typeNotStored));
+    long value = Long.parseLong(column.getValue());
+    LongField field = new LongField(name, value, _typeNotStored);
+    if (isSortEnable()) {
+      return addSort(name, value, field);
+    }
+    return makeIterable(field);
   }
 
   @Override
@@ -72,6 +83,11 @@ public class LongFieldTypeDefinition extends NumericFieldTypeDefinition {
     long p1 = parseLong(part1);
     long p2 = parseLong(part2);
     return NumericRangeQuery.newLongRange(field, _precisionStep, p1, p2, startInclusive, endInclusive);
+  }
+
+  @Override
+  public SortField getSortField(boolean reverse) {
+    return new SortField(getFieldName(), Type.LONG);
   }
 
   private long parseLong(String number) {

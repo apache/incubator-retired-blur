@@ -87,6 +87,9 @@ public class IntFieldTypeDefinition extends NumericFieldTypeDefinition {
 
   @Override
   public SortField getSortField(boolean reverse) {
+    if (reverse) {
+      return new SortField(getFieldName(), Type.INT, reverse);
+    }
     return new SortField(getFieldName(), Type.INT);
   }
 

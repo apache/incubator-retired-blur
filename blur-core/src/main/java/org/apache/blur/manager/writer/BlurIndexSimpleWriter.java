@@ -72,8 +72,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final Lock _writeLock = _lock.writeLock();
   private Thread _optimizeThread;
   private Thread _writerOpener;
-
-  private IndexDeletionPolicyReader _policy;
+  private final IndexDeletionPolicyReader _policy;
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       DirectoryReferenceFileGC gc, final ExecutorService searchExecutor, BlurIndexCloser indexCloser,

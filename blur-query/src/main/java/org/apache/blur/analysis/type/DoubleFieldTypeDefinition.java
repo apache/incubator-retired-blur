@@ -84,13 +84,15 @@ public class DoubleFieldTypeDefinition extends NumericFieldTypeDefinition {
     double p2 = parseDouble(part2);
     return NumericRangeQuery.newDoubleRange(field, _precisionStep, p1, p2, startInclusive, endInclusive);
   }
-  
 
   @Override
   public SortField getSortField(boolean reverse) {
+    if (reverse) {
+      return new SortField(getFieldName(), Type.DOUBLE, reverse);
+    }
     return new SortField(getFieldName(), Type.DOUBLE);
   }
-  
+
   private double parseDouble(String number) {
     if (number.toLowerCase().equals(MIN)) {
       return Double.MIN_VALUE;

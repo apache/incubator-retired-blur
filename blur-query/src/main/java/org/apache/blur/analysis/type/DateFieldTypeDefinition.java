@@ -122,6 +122,9 @@ public class DateFieldTypeDefinition extends NumericFieldTypeDefinition {
 
   @Override
   public SortField getSortField(boolean reverse) {
+    if (reverse) {
+      return new SortField(getFieldName(), Type.LONG, reverse);
+    }
     return new SortField(getFieldName(), Type.LONG);
   }
 

@@ -84,9 +84,12 @@ public class FloatFieldTypeDefinition extends NumericFieldTypeDefinition {
     float p2 = parseFloat(part2);
     return NumericRangeQuery.newFloatRange(field, _precisionStep, p1, p2, startInclusive, endInclusive);
   }
-  
+
   @Override
   public SortField getSortField(boolean reverse) {
+    if (reverse) {
+      return new SortField(getFieldName(), Type.FLOAT, reverse);
+    }
     return new SortField(getFieldName(), Type.FLOAT);
   }
 

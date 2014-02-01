@@ -120,6 +120,9 @@ public class StringFieldTypeDefinition extends FieldTypeDefinition {
 
   @Override
   public SortField getSortField(boolean reverse) {
+    if (reverse) {
+      return new SortField(getFieldName(), Type.STRING, reverse);
+    }
     return new SortField(getFieldName(), Type.STRING);
   }
 }

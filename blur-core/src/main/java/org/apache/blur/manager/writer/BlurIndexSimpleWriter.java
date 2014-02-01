@@ -30,10 +30,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.index.ExitableReader;
+import org.apache.blur.index.IndexDeletionPolicyReader;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.codec.Blur022Codec;
-import org.apache.blur.lucene.store.refcounter.DirectoryReferenceCounter;
 import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.lucene.warmup.TraceableDirectory;
 import org.apache.blur.manager.indexserver.BlurIndexWarmup;
@@ -48,6 +48,7 @@ import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.Directory;
 
@@ -72,6 +73,8 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private Thread _optimizeThread;
   private Thread _writerOpener;
 
+  private IndexDeletionPolicyReader _policy;
+
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       DirectoryReferenceFileGC gc, final ExecutorService searchExecutor, BlurIndexCloser indexCloser,
       BlurIndexRefresher refresher, BlurIndexWarmup indexWarmup) throws IOException {
@@ -89,13 +92,15 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     _conf.setMergeScheduler(mergeScheduler.getMergeScheduler());
+    _policy = new IndexDeletionPolicyReader(new KeepOnlyLastCommitDeletionPolicy());
+    _conf.setIndexDeletionPolicy(_policy);
 
     if (!DirectoryReader.indexExists(directory)) {
       new BlurIndexWriter(directory, _conf).close();
     }
-    DirectoryReferenceCounter referenceCounter = new DirectoryReferenceCounter(directory, gc);
+
     // This directory allows for warm up by adding tracing ability.
-    TraceableDirectory dir = new TraceableDirectory(referenceCounter);
+    TraceableDirectory dir = new TraceableDirectory(directory);
     _directory = dir;
 
     _indexCloser = indexCloser;
@@ -119,11 +124,11 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _writerOpener.start();
   }
 
-  private DirectoryReader wrap(DirectoryReader reader) {
+  private DirectoryReader wrap(DirectoryReader reader) throws IOException {
     if (_makeReaderExitable) {
       reader = new ExitableReader(reader);
     }
-    return reader;
+    return _policy.register(reader);
   }
 
   private Thread getWriterOpener(ShardContext shardContext) {

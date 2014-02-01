@@ -70,6 +70,9 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private IndexImporter _indexImporter;
   private final ReadWriteLock _lock = new ReentrantReadWriteLock();
   private final Lock _writeLock = _lock.writeLock();
+  private final ReadWriteLock _indexRefreshLock = new ReentrantReadWriteLock();
+  private final Lock _indexRefreshWriteLock = _indexRefreshLock.writeLock();
+  private final Lock _indexRefreshReadLock = _indexRefreshLock.writeLock();
   private Thread _optimizeThread;
   private Thread _writerOpener;
   private final IndexDeletionPolicyReader _policy;
@@ -153,8 +156,14 @@ public class BlurIndexSimpleWriter extends BlurIndex {
 
   @Override
   public IndexSearcherClosable getIndexSearcher() throws IOException {
-    final IndexReader indexReader = _indexReader.get();
-    indexReader.incRef();
+    final IndexReader indexReader;
+    _indexRefreshReadLock.lock();
+    try {
+      indexReader = _indexReader.get();
+      indexReader.incRef();
+    } finally {
+      _indexRefreshReadLock.unlock();
+    }
     return new IndexSearcherClosable(indexReader, _searchThreadPool) {
 
       private boolean _closed;
@@ -272,7 +281,13 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       LOG.error("Reader should be new after commit for table [{0}] shard [{1}].", _tableContext.getTable(),
           _shardContext.getShard());
     } else {
-      _indexReader.set(wrap(newReader));
+      DirectoryReader reader = wrap(newReader);
+      _indexRefreshWriteLock.lock();
+      try {
+        _indexReader.set(reader);
+      } finally {
+        _indexRefreshWriteLock.unlock();
+      }
       _indexCloser.close(currentReader);
     }
     trace3.done();

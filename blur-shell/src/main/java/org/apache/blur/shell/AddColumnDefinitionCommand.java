@@ -94,6 +94,8 @@ public class AddColumnDefinitionCommand extends Command implements TableFirstArg
         "Should the column definition be definied as a field less indexing column definition.").create("F"));
     options.addOption(OptionBuilder.withArgName("name value").hasArgs(2)
         .withDescription("Sets the properties for this column definition.").create("p"));
+    options.addOption(OptionBuilder.withDescription(
+        "Should the column definition be definied as a sortable column definition.").create("S"));
 
     CommandLineParser parser = new PosixParser();
     CommandLine cmd = null;

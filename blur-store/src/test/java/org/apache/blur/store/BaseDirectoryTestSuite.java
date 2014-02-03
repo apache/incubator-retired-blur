@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import org.apache.blur.index.IndexDeletionPolicyReader;
 import org.apache.blur.lucene.LuceneVersionConstant;
 import org.apache.blur.store.blockcache.LastModified;
 import org.apache.blur.store.buffer.BufferStore;
@@ -38,6 +39,7 @@ import org.apache.lucene.document.IntField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.TopDocs;
@@ -185,6 +187,9 @@ public abstract class BaseDirectoryTestSuite {
   public void testCreateIndex() throws IOException {
     long s = System.nanoTime();
     IndexWriterConfig conf = new IndexWriterConfig(LuceneVersionConstant.LUCENE_VERSION, new KeywordAnalyzer());
+    IndexDeletionPolicyReader indexDeletionPolicy = new IndexDeletionPolicyReader(
+        new KeepOnlyLastCommitDeletionPolicy());
+    conf.setIndexDeletionPolicy(indexDeletionPolicy);
     FSDirectory control = FSDirectory.open(fileControl);
     Directory dir = getControlDir(control, directory);
     // The serial merge scheduler can be useful for debugging.
@@ -192,16 +197,23 @@ public abstract class BaseDirectoryTestSuite {
     IndexWriter writer = new IndexWriter(dir, conf);
     int numDocs = 10000;
     DirectoryReader reader = null;
+    long gen = 0;
     for (int i = 0; i < 100; i++) {
       if (reader == null) {
         reader = DirectoryReader.open(writer, true);
+        gen = reader.getIndexCommit().getGeneration();
+        indexDeletionPolicy.register(gen);
       } else {
         DirectoryReader old = reader;
         reader = DirectoryReader.openIfChanged(old, writer, true);
         if (reader == null) {
           reader = old;
         } else {
+          long newGen = reader.getIndexCommit().getGeneration();
+          indexDeletionPolicy.register(newGen);
+          indexDeletionPolicy.unregister(gen);
           old.close();
+          gen = newGen;
         }
       }
       assertEquals(i * numDocs, reader.numDocs());

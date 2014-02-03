@@ -17,6 +17,7 @@
  */
 package org.apache.blur.store.blockcache_v2;
 
+import java.io.EOFException;
 import java.io.IOException;
 
 import org.apache.blur.store.buffer.BufferStore;
@@ -224,11 +225,18 @@ public class CacheIndexInput extends IndexInput {
     return _position;
   }
 
+  private void checkEOF() throws EOFException {
+    if (_position >= _fileLength) {
+      throw new EOFException("read past EOF: " + this.toString());
+    }
+  }
+
   @Override
   public void seek(long pos) throws IOException {
     ensureOpen();
     if (pos >= _fileLength) {
-      throw new IOException("Can not seek past end of file [" + pos + "] filelength [" + _fileLength + "]");
+      _position = pos;
+      return;
     }
     if (_position == pos) {
       // Seeking to same position
@@ -287,6 +295,7 @@ public class CacheIndexInput extends IndexInput {
   }
 
   private void tryToFill() throws IOException {
+    checkEOF();
     if (!isCacheValueValid() || remaining() == 0) {
       releaseCache();
       fill();

@@ -180,8 +180,18 @@ public class ZookeeperClusterStatusTest {
 
   @Test
   public void testIsEnabledNoTable() {
-    assertFalse(clusterStatus.isEnabled(false, DEFAULT, "notable"));
-    assertFalse(clusterStatus.isEnabled(true, DEFAULT, "notable"));
+    try {
+      clusterStatus.isEnabled(false, DEFAULT, "notable");
+      fail("should throw exception.");
+    } catch (RuntimeException e) {
+
+    }
+    try {
+      clusterStatus.isEnabled(true, DEFAULT, "notable");
+      fail("should throw exception.");
+    } catch (RuntimeException e) {
+
+    }
   }
 
   @Test

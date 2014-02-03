@@ -39,18 +39,6 @@ public class ZookeeperPathConstants {
     return getBasePath() + "/controller-nodes";
   }
 
-  public static String getTableEnabledPath(String cluster, String table) {
-    return getTablePath(cluster, table) + "/enabled";
-  }
-
-  public static String getTableUriPath(String cluster, String table) {
-    return getTablePath(cluster, table) + "/uri";
-  }
-
-  public static String getTableShardCountPath(String cluster, String table) {
-    return getTablePath(cluster, table) + "/shard-count";
-  }
-
   public static String getOnlineShardsPath(String cluster) {
     return getClusterPath(cluster) + "/online-nodes";
   }
@@ -73,38 +61,6 @@ public class ZookeeperPathConstants {
 
   public static String getRegisteredShardsPath(String cluster) {
     return getClusterPath(cluster) + "/registered-nodes";
-  }
-
-  public static String getLockPath(String cluster, String table) {
-    return getTablePath(cluster, table) + "/locks";
-  }
-
-  public static String getTableBlockCachingFileTypesPath(String cluster, String table) {
-    return getTablePath(cluster, table) + "/blockcachingfiletypes";
-  }
-
-  public static String getTableBlockCachingPath(String cluster, String table) {
-    return getTablePath(cluster, table) + "/blockcaching";
-  }
-
-  public static String getTableSimilarityPath(String cluster, String table) {
-    return getTablePath(cluster, table) + "/similarity";
-  }
-
-  public static String getTableFieldNamesPath(String cluster, String table) {
-    return getTablePath(cluster, table) + "/fieldnames";
-  }
-
-  public static String getTableFieldNamesPath(String cluster, String table, String fieldName) {
-    return getTableFieldNamesPath(cluster, table) + "/" + fieldName;
-  }
-
-  public static String getTableReadOnlyPath(String cluster, String table) {
-    return getTablePath(cluster, table) + "/readonly";
-  }
-
-  public static String getTableColumnsToPreCache(String cluster, String table) {
-    return getTablePath(cluster, table) + "/precache";
   }
 
   public static String getShardLayoutPath(String cluster) {

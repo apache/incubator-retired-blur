@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.blur.store.blockcache.LastModified;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -35,6 +37,8 @@ import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.BytesRef;
 
 public class FastHdfsKeyValueDirectory extends Directory implements LastModified {
+
+  private static final Log LOG = LogFactory.getLog(FastHdfsKeyValueDirectory.class);
 
   private static final String LASTMOD = "/lastmod";
   private static final String LENGTH = "/length";
@@ -76,7 +80,8 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
         if (_store.get(key, value)) {
           _files.put(file, Long.parseLong(value.utf8ToString()));
         } else {
-          throw new IOException("Missing meta data for [" + key.utf8ToString() + "].");
+          _files.put(file, 0L);
+          LOG.warn("Missing meta data for file [{0}], setting length to '0'.", file);
         }
       }
     }

@@ -72,7 +72,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final Lock _writeLock = _lock.writeLock();
   private final ReadWriteLock _indexRefreshLock = new ReentrantReadWriteLock();
   private final Lock _indexRefreshWriteLock = _indexRefreshLock.writeLock();
-  private final Lock _indexRefreshReadLock = _indexRefreshLock.writeLock();
+  private final Lock _indexRefreshReadLock = _indexRefreshLock.readLock();
   private Thread _optimizeThread;
   private Thread _writerOpener;
   private final IndexDeletionPolicyReader _policy;

@@ -86,11 +86,14 @@ public class BlurIndexCloser implements Runnable, Closeable {
       } else {
         LOG.debug("Could not close indexreader [" + reader + "] because of ref count [" + reader.getRefCount() + "].");
       }
-      closeInternal(reader);
     }
   }
 
   private void closeInternal(final IndexReader reader) {
+    if (reader.getRefCount() == 0) {
+      // Already closed.
+      return;
+    }
     executorService.submit(new Runnable() {
       @Override
       public void run() {

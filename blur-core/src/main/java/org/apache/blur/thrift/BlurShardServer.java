@@ -65,6 +65,7 @@ import org.apache.blur.utils.QueryCacheKey;
 public class BlurShardServer extends TableAdmin implements Iface {
 
   private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
+  private static final boolean ENABLE_CACHE = false;
   private IndexManager _indexManager;
   private IndexServer _indexServer;
   private boolean _closed;
@@ -107,17 +108,18 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
       // Note: Querying the Shard Server directly if query.startTime == 0
       BlurUtil.setStartTime(blurQuery);
-
-      if (blurQuery.useCacheIfPresent && selector == null) {
-        // Selector has to be null because we might cache data if it's not.
-        LOG.debug("Using cache for query [{0}] on table [{1}].", blurQuery, table);
-        QueryCacheKey key = QueryCache.getNormalizedBlurQueryKey(table, blurQuery);
-        QueryCacheEntry queryCacheEntry = _queryCache.get(key);
-        if (_queryCache.isValid(queryCacheEntry, _indexServer.getShardListCurrentServerOnly(table))) {
-          LOG.debug("Cache hit for query [{0}] on table [{1}].", blurQuery, table);
-          return queryCacheEntry.getBlurResults(blurQuery);
-        } else {
-          _queryCache.remove(key);
+      if (ENABLE_CACHE) {
+        if (blurQuery.useCacheIfPresent && selector == null) {
+          // Selector has to be null because we might cache data if it's not.
+          LOG.debug("Using cache for query [{0}] on table [{1}].", blurQuery, table);
+          QueryCacheKey key = QueryCache.getNormalizedBlurQueryKey(table, blurQuery);
+          QueryCacheEntry queryCacheEntry = _queryCache.get(key);
+          if (_queryCache.isValid(queryCacheEntry, _indexServer.getShardListCurrentServerOnly(table))) {
+            LOG.debug("Cache hit for query [{0}] on table [{1}].", blurQuery, table);
+            return queryCacheEntry.getBlurResults(blurQuery);
+          } else {
+            _queryCache.remove(key);
+          }
         }
       }
       BlurUtil.setStartTime(original);
@@ -131,7 +133,10 @@ public class BlurShardServer extends TableAdmin implements Iface {
         if (selector != null) {
           return blurResults;
         }
-        return _queryCache.cache(table, original, blurResults);
+        if (ENABLE_CACHE) {
+          return _queryCache.cache(table, original, blurResults);
+        }
+        return blurResults;
       } catch (BlurException e) {
         throw e;
       } catch (Exception e) {

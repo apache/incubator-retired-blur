@@ -395,9 +395,9 @@ public abstract class BaseFieldManager extends FieldManager {
     for (String alternateFieldName : fieldTypeDefinition.getAlternateFieldNames()) {
       _fieldNameToDefMap.put(alternateFieldName, fieldTypeDefinition);
     }
-    String baseFieldName = getBaseFieldName(fieldName);
     String subColumnName = getSubColumnName(fieldName);
     if (subColumnName != null) {
+      String baseFieldName = getBaseFieldName(fieldName);
       Set<String> subColumnNames = _columnToSubColumn.get(baseFieldName);
       if (subColumnNames == null) {
         subColumnNames = getConcurrentSet();
@@ -417,8 +417,7 @@ public abstract class BaseFieldManager extends FieldManager {
   }
 
   private String getBaseFieldName(String fieldName) {
-    int indexOf = fieldName.indexOf('.');
-    return fieldName.substring(0, indexOf);
+    return fieldName.substring(0, fieldName.lastIndexOf('.'));
   }
 
   protected FieldTypeDefinition newFieldTypeDefinition(String fieldName, boolean fieldLessIndexed, String fieldType,
@@ -640,7 +639,7 @@ public abstract class BaseFieldManager extends FieldManager {
     }
     if (fieldTypeDefinition.checkSupportForSorting()) {
       if (fieldTypeDefinition.isSortEnable()) {
-        return fieldTypeDefinition.getSortField(reverse);  
+        return fieldTypeDefinition.getSortField(reverse);
       }
       throw new IOException("Field [" + field + "] does not have sorting enabled.");
     }

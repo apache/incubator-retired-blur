@@ -119,7 +119,6 @@ public class BaseFieldManagerTest {
 
     int c = 0;
     List<Field> fields2 = memoryFieldManager.getFields("1", record);
-    System.out.println(fields2);
     for (Field field : fields2) {
       assertFieldEquals(fields.get(c++), field);
     }
@@ -205,6 +204,25 @@ public class BaseFieldManagerTest {
       memoryFieldManager.addColumnDefinition("fam1", "col1", "sub1", true, "text", false, null);
       fail("Should throw IllegalArgumentException");
     } catch (IllegalArgumentException e) {
+    }
+  }
+
+  @Test
+  public void testFieldManagerSubName() throws IOException {
+    BaseFieldManager memoryFieldManager = newFieldManager(true);
+    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", false, null);
+    memoryFieldManager.addColumnDefinition("fam1", "col1", "sub1", false, "text", false, null);
+
+    Record record = new Record();
+    record.setRecordId("1213");
+    record.setFamily("fam1");
+    record.addToColumns(new Column("col1", "value1"));
+
+    List<Field> fields = getFields("fam1", "1", "1213", newFieldsNoStore(BlurConstants.FIELDS, "fam1.col1"),
+        newTextField("fam1.col1", "value1"), newTextFieldNoStore("fam1.col1.sub1", "value1"));
+    int c = 0;
+    for (Field field : memoryFieldManager.getFields("1", record)) {
+      assertFieldEquals(fields.get(c++), field);
     }
   }
 

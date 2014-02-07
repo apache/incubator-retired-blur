@@ -49,7 +49,7 @@ under the License.
 		<param name="DatePattern" value="'.'yyyyMMdd" />
 		<param name="Append" value="true" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{yyyyMMdd_HH:mm:ss:SSS_z}\t%m\t%t%n" />
+			<param name="ConversionPattern" value="{&quot;ts&quot;:&quot;%d{yyyyMMdd_HH:mm:ss:SSS_z}&quot;,&quot;thread&quot;:&quot;%t&quot;,&quot;reponse&quot;:%m}%n" />
 		</layout>
 	</appender>
 	
@@ -62,7 +62,7 @@ under the License.
 		<param name="DatePattern" value="'.'yyyyMMdd" />
 		<param name="Append" value="true" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{yyyyMMdd_HH:mm:ss:SSS_z}\t%m\t%t%n" />
+			<param name="ConversionPattern" value="{&quot;ts&quot;:&quot;%d{yyyyMMdd_HH:mm:ss:SSS_z}&quot;,&quot;thread&quot;:&quot;%t&quot;,&quot;reponse&quot;:%m}%n" />
 		</layout>
 	</appender>
 	

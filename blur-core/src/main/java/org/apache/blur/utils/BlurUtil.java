@@ -48,10 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -105,6 +101,7 @@ import org.apache.blur.thrift.generated.SortFieldResult;
 import org.apache.blur.thrift.util.ResetableTMemoryBuffer;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
+import org.apache.blur.user.User;
 import org.apache.blur.user.UserContext;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -147,7 +144,7 @@ import com.yammer.metrics.core.MetricName;
 public class BlurUtil {
 
   public final static SortFieldComparator SORT_FIELD_COMPARATOR = new SortFieldComparator();
-  
+
   private static final Log REQUEST_LOG = LogFactory.getLog("REQUEST_LOG");
   private static final Log RESPONSE_LOG = LogFactory.getLog("RESPONSE_LOG");
 
@@ -246,13 +243,14 @@ public class BlurUtil {
         LoggerArgsState loggerArgsState = null;
         Tracer trace = Trace.trace("thrift recv", Trace.param("method", method.getName()),
             Trace.param("connection", tracingConnectionString));
+        User user = UserContext.getUser();
         try {
           if (REQUEST_LOG.isInfoEnabled()) {
             if (argsStr == null) {
               loggerArgsState = _loggerArgsState.get();
               argsStr = getArgsStr(args, name, loggerArgsState);
             }
-            REQUEST_LOG.info(requestId + "\t" + connectionString + "\t" + name + "\t" + argsStr);
+            REQUEST_LOG.info(getRequestLogMessage(requestId, connectionString, argsStr, name, user));
           }
           return method.invoke(t, args);
         } catch (InvocationTargetException e) {
@@ -270,10 +268,9 @@ public class BlurUtil {
               argsStr = getArgsStr(args, name, loggerArgsState);
             }
             if (error) {
-              RESPONSE_LOG.info(requestId + "\t" + connectionString + "\tERROR\t" + name + "\t" + ms + "\t" + argsStr);
+              RESPONSE_LOG.info(getErrorResponseLogMessage(requestId, connectionString, argsStr, name, ms, user));
             } else {
-              RESPONSE_LOG
-                  .info(requestId + "\t" + connectionString + "\tSUCCESS\t" + name + "\t" + ms + "\t" + argsStr);
+              RESPONSE_LOG.info(getSuccessfulResponseLogMessage(requestId, connectionString, argsStr, name, ms, user));
             }
           }
           Histogram histogram = histogramMap.get(name);
@@ -281,71 +278,119 @@ public class BlurUtil {
         }
       }
 
-      private String getArgsStr(Object[] args, String name, LoggerArgsState loggerArgsState) {
-        String argsStr;
-        if (name.equals("mutate")) {
-          RowMutation rowMutation = (RowMutation) args[0];
-          if (rowMutation == null) {
-            argsStr = "[null]";
-          } else {
-            argsStr = "[" + rowMutation.getTable() + "," + rowMutation.getRowId() + "]";
-          }
-        } else if (name.equals("mutateBatch")) {
-          argsStr = "[Batch Update]";
-        } else {
-          argsStr = getArgsStr(args, loggerArgsState);
-        }
-        return argsStr;
-      }
-
-      private String getArgsStr(Object[] args, LoggerArgsState loggerArgsState) {
-        if (args == null) {
-          return null;
-        }
-        StringBuilder builder = loggerArgsState._builder;
-        builder.setLength(0);
-        for (Object o : args) {
-          if (builder.length() == 0) {
-            builder.append('[');
-          } else {
-            builder.append(',');
-          }
-          builder.append(getArgsStr(o, loggerArgsState));
-        }
-        if (builder.length() != 0) {
-          builder.append(']');
-        }
-        return builder.toString();
-      }
-
-      @SuppressWarnings("rawtypes")
-      private String getArgsStr(Object o, LoggerArgsState loggerArgsState) {
-        if (o == null) {
-          return null;
-        }
-        if (o instanceof TBase) {
-          return getArgsStr((TBase) o, loggerArgsState);
-        }
-        return o.toString();
-      }
-
-      @SuppressWarnings("rawtypes")
-      private String getArgsStr(TBase o, LoggerArgsState loggerArgsState) {
-        ResetableTMemoryBuffer buffer = loggerArgsState._buffer;
-        TJSONProtocol tjsonProtocol = loggerArgsState._tjsonProtocol;
-        buffer.resetBuffer();
-        tjsonProtocol.reset();
-        try {
-          o.write(tjsonProtocol);
-        } catch (TException e) {
-          LOG.error("Unknown error tyring to write object [{0}] to json.", e, o);
-        }
-        byte[] array = buffer.getArray();
-        int length = buffer.length();
-        return new String(array, 0, length);
-      }
     };
     return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[] { clazz }, handler);
+  }
+
+  public static String getArgsStr(Object[] args, String methodName, LoggerArgsState loggerArgsState) {
+    String argsStr;
+    if (methodName.equals("mutate")) {
+      RowMutation rowMutation = (RowMutation) args[0];
+      if (rowMutation == null) {
+        argsStr = "[null]";
+      } else {
+        String table = rowMutation.getTable();
+        String rowId = rowMutation.getRowId();
+        if (table != null) {
+          table = "\"" + table + "\"";
+        }
+        if (rowId != null) {
+          rowId = "\"" + rowId + "\"";
+        }
+        argsStr = "[{\"table\":" + table + ",\"rowId\":" + rowId + "}]";
+      }
+    } else if (methodName.equals("mutateBatch")) {
+      argsStr = "[\"Batch Mutate\"]";
+    } else {
+      argsStr = getArgsStr(args, loggerArgsState);
+    }
+    return argsStr;
+  }
+
+  public static String getArgsStr(Object[] args, LoggerArgsState loggerArgsState) {
+    if (args == null) {
+      return null;
+    }
+    StringBuilder builder = loggerArgsState._builder;
+    builder.setLength(0);
+    for (Object o : args) {
+      if (builder.length() == 0) {
+        builder.append('[');
+      } else {
+        builder.append(',');
+      }
+      builder.append(getArgsStr(o, loggerArgsState));
+    }
+    if (builder.length() != 0) {
+      builder.append(']');
+    }
+    return builder.toString();
+  }
+
+  @SuppressWarnings("rawtypes")
+  public static String getArgsStr(Object o, LoggerArgsState loggerArgsState) {
+    if (o == null) {
+      return null;
+    }
+    if (o instanceof TBase) {
+      return getArgsStr((TBase) o, loggerArgsState);
+    }
+    return o.toString();
+  }
+
+  @SuppressWarnings("rawtypes")
+  public static String getArgsStr(TBase o, LoggerArgsState loggerArgsState) {
+    ResetableTMemoryBuffer buffer = loggerArgsState._buffer;
+    TJSONProtocol tjsonProtocol = loggerArgsState._tjsonProtocol;
+    buffer.resetBuffer();
+    tjsonProtocol.reset();
+    try {
+      o.write(tjsonProtocol);
+    } catch (TException e) {
+      LOG.error("Unknown error tyring to write object [{0}] to json.", e, o);
+    }
+    byte[] array = buffer.getArray();
+    int length = buffer.length();
+    return new String(array, 0, length);
+  }
+
+  public static String getRequestLogMessage(String requestId, String connectionString, String argsStr, String name,
+      User user) {
+    String u = "null";
+    if (user != null) {
+      u = "\"" + user.getUsername() + "\"";
+    }
+    return "{\"id\":\"" + requestId + "\", \"con\":\"" + connectionString + "\", \"user\":" + u + ", \"meth\":\""
+        + name + "\", \"args\":" + argsStr + "}";
+  }
+
+  public static String getResponseLogMessage(String requestId, String connectionString, String argsStr, String name,
+      double ms, User user, boolean success) {
+
+    String u = "null";
+    if (user != null) {
+      u = "\"" + user.getUsername() + "\"";
+    }
+    String response;
+    if (success) {
+      response = "OK";
+    } else {
+      response = "ERROR";
+    }
+    return "{\"id\":\"" + requestId + "\", \"response\":\"" + response + "\", \"time\":" + Double.toString(ms)
+        + ", \"con\":\"" + connectionString + "\", \"user\":" + u + ", \"meth\":\"" + name + "\", \"args\":" + argsStr
+        + "}";
+
+  }
+
+  public static String getSuccessfulResponseLogMessage(String requestId, String connectionString, String argsStr,
+      String name, double ms, User user) {
+    return getResponseLogMessage(requestId, connectionString, argsStr, name, ms, user, true);
+  }
+
+  public static String getErrorResponseLogMessage(String requestId, String connectionString, String argsStr,
+      String name, double ms, User user) {
+    return getResponseLogMessage(requestId, connectionString, argsStr, name, ms, user, false);
   }
 
   public static void setupZookeeper(ZooKeeper zookeeper) throws KeeperException, InterruptedException {

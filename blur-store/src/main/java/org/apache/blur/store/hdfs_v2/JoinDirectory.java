@@ -150,11 +150,10 @@ public class JoinDirectory extends Directory implements LastModified {
 
   @Override
   public long getFileModified(String name) throws IOException {
-    return 0;
-    // if (_shortTermStorage.fileExists(name)) {
-    // return ((LastModified) _shortTermStorage).getFileModified(name);
-    // }
-    // return ((LastModified) _longTermStorage).getFileModified(name);
+    if (_shortTermStorage.fileExists(name)) {
+      return ((LastModified) _shortTermStorage).getFileModified(name);
+    }
+    return ((LastModified) _longTermStorage).getFileModified(name);
   }
 
 }

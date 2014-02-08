@@ -256,6 +256,11 @@ public class CacheIndexInputTest {
 
       }
 
+      @Override
+      public void fileClosedForWriting(CacheDirectory directory, String fileName, long fileId) throws IOException {
+        
+      }
+
     };
     return cacheFactory;
   }

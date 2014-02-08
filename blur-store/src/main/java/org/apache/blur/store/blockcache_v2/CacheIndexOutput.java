@@ -129,6 +129,7 @@ public class CacheIndexOutput extends IndexOutput {
     _indexOutput.flush();
     _indexOutput.close();
     _store.putBuffer(_buffer);
+    _cache.fileClosedForWriting(_directory, _fileName, _fileId);
   }
 
   @Override

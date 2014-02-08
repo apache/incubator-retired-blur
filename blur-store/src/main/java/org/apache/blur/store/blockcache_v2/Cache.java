@@ -173,4 +173,17 @@ public abstract class Cache implements Closeable {
    */
   public abstract boolean shouldBeQuiet(CacheDirectory directory, String fileName);
 
+  /**
+   * The cache internals rely on the last modified timestamp of a given file to
+   * know if the file is the same or not. During the writing of a given file the
+   * last moified date is not know, so this method tells the cache that the file
+   * has completed the writing phase and the last modified time should now be
+   * accurate.
+   * 
+   * @param fileId
+   *          the file id.
+   * @throws IOException 
+   */
+  public abstract void fileClosedForWriting(CacheDirectory directory, String fileName, long fileId) throws IOException;
+
 }

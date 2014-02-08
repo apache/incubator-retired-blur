@@ -46,7 +46,6 @@ import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.WatchChildren;
 import org.apache.blur.zookeeper.WatchChildren.OnChange;
 import org.apache.blur.zookeeper.WatchNodeData;
-import org.apache.blur.zookeeper.WatchNodeExistance;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.blur.zookeeper.ZooKeeperLockManager;
 import org.apache.zookeeper.KeeperException;
@@ -62,11 +61,9 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   private final ZooKeeper _zk;
   private final BlurConfiguration _configuration;
   private final AtomicBoolean _running = new AtomicBoolean();
-  private final ConcurrentMap<String, Long> _safeModeMap = new ConcurrentHashMap<String, Long>();
   private final ConcurrentMap<String, List<String>> _onlineShardsNodes = new ConcurrentHashMap<String, List<String>>();
   private final ConcurrentMap<String, Set<String>> _tablesPerCluster = new ConcurrentHashMap<String, Set<String>>();
   private final AtomicReference<Set<String>> _clusters = new AtomicReference<Set<String>>(new HashSet<String>());
-  private final ConcurrentMap<String, Boolean> _enabled = new ConcurrentHashMap<String, Boolean>();
   private final Map<String, TableDescriptor> _tableDescriptorCache = new ConcurrentHashMap<String, TableDescriptor>();
 
   private final WatchChildren _clusterWatcher;
@@ -78,7 +75,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   public ZookeeperClusterStatus(ZooKeeper zooKeeper, BlurConfiguration configuration) {
     _zk = zooKeeper;
     _running.set(true);
-    _clusterWatcher = watchForClusters();
+    _clusterWatcher = new WatchChildren(_zk, ZookeeperPathConstants.getClustersPath());
+    _clusterWatcher.watch(new Clusters());
     _configuration = configuration;
     try {
       Thread.sleep(1000);
@@ -112,7 +110,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         if (!_tableWatchers.containsKey(cluster)) {
           String tablesPath = ZookeeperPathConstants.getTablesPath(cluster);
           ZkUtils.waitUntilExists(_zk, tablesPath);
-          WatchChildren clusterWatcher = new WatchChildren(_zk, tablesPath).watch(new Tables(cluster));
+          WatchChildren clusterWatcher = new WatchChildren(_zk, tablesPath);
+          clusterWatcher.watch(new Tables(cluster));
           _tableWatchers.put(cluster, clusterWatcher);
         }
       }
@@ -126,35 +125,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         } else {
           watcher.close();
         }
-      }
-    }
-  }
-
-  class SafeExistance extends WatchNodeExistance.OnChange {
-
-    private String cluster;
-
-    public SafeExistance(String cluster) {
-      this.cluster = cluster;
-    }
-
-    @Override
-    public void action(Stat stat) {
-      if (stat != null) {
-        WatchNodeData watchNodeData = new WatchNodeData(_zk, ZookeeperPathConstants.getSafemodePath(cluster));
-        watchNodeData.watch(new WatchNodeData.OnChange() {
-          @Override
-          public void action(byte[] data) {
-            if (data == null) {
-              LOG.debug("Safe mode value for cluster [" + cluster + "] is not set.");
-              _safeModeMap.put(cluster, Long.MIN_VALUE);
-            } else {
-              String value = new String(data);
-              LOG.debug("Safe mode value for cluster [" + cluster + "] is [" + value + "].");
-              _safeModeMap.put(cluster, Long.parseLong(value));
-            }
-          }
-        });
       }
     }
   }
@@ -183,23 +153,12 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       for (String table : newTables) {
         final String clusterTableKey = getClusterTableKey(cluster, table);
         WatchNodeData enabledWatcher = new WatchNodeData(_zk, ZookeeperPathConstants.getTablePath(cluster, table));
-        new WatchNodeData.OnChange() {
+        enabledWatcher.watch(new WatchNodeData.OnChange() {
           @Override
           public void action(byte[] data) {
-            if (data == null) {
-              _enabled.remove(clusterTableKey);
-            } else {
-              TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
-              TableDescriptor tableDescriptor = new TableDescriptor();
-              try {
-                deserializer.deserialize(tableDescriptor, data);
-              } catch (TException e) {
-                throw new RuntimeException(e);
-              }
-              _enabled.put(clusterTableKey, tableDescriptor.isEnabled());
-            }
+            _tableDescriptorCache.clear();
           }
-        };
+        });
         if (_enabledWatchNodeExistance.putIfAbsent(clusterTableKey, enabledWatcher) != null) {
           enabledWatcher.close();
         }
@@ -224,10 +183,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       }
       return newTables;
     }
-  }
-
-  private WatchChildren watchForClusters() {
-    return new WatchChildren(_zk, ZookeeperPathConstants.getClustersPath()).watch(new Clusters());
   }
 
   private String getClusterTableKey(String cluster, String table) {
@@ -319,13 +274,13 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   private void watchForOnlineShardNodes(final String cluster) {
-    WatchChildren watch = new WatchChildren(_zk, ZookeeperPathConstants.getOnlineShardsPath(cluster))
-        .watch(new OnChange() {
-          @Override
-          public void action(List<String> children) {
-            _onlineShardsNodes.put(cluster, children);
-          }
-        });
+    WatchChildren watch = new WatchChildren(_zk, ZookeeperPathConstants.getOnlineShardsPath(cluster));
+    watch.watch(new OnChange() {
+      @Override
+      public void action(List<String> children) {
+        _onlineShardsNodes.put(cluster, children);
+      }
+    });
     if (_onlineShardsNodesWatchers.putIfAbsent(cluster, watch) != null) {
       // There was already a watch created. Close the extra watcher.
       watch.close();
@@ -531,7 +486,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         return safeModeCacheEntry._safeMode;
       }
     }
-    long s = System.nanoTime();
     try {
       checkIfOpen();
       String safemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
@@ -546,9 +500,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
-    } finally {
-      long e = System.nanoTime();
-      LOG.debug("trace isInSafeMode took [" + (e - s) / 1000000.0 + " ms]");
     }
   }
 

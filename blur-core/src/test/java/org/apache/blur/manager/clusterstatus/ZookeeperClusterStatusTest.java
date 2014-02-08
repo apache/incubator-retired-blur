@@ -34,13 +34,11 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.ZooKeeperClient;
-import org.apache.zookeeper.CreateMode;
+import org.apache.blur.zookeeper.ZooKeeperLockManager;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.data.Stat;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
 import org.apache.zookeeper.server.quorum.QuorumPeerMain;
 import org.junit.After;
@@ -56,8 +54,10 @@ public class ZookeeperClusterStatusTest {
 
   private static final Log LOG = LogFactory.getLog(ZookeeperClusterStatusTest.class);
   private static MiniCluster miniCluster;
-  private ZooKeeper zooKeeper;
-  private ZookeeperClusterStatus clusterStatus;
+  private ZooKeeper zooKeeper1;
+  private ZooKeeper zooKeeper2;
+  private ZookeeperClusterStatus clusterStatus1;
+  private ZookeeperClusterStatus clusterStatus2;
 
   public static class QuorumPeerMainRun extends QuorumPeerMain {
     @Override
@@ -79,21 +79,32 @@ public class ZookeeperClusterStatusTest {
 
   @Before
   public void setup() throws KeeperException, InterruptedException, IOException {
-    zooKeeper = new ZooKeeperClient(miniCluster.getZkConnectionString(), 30000, new Watcher() {
+    zooKeeper1 = new ZooKeeperClient(miniCluster.getZkConnectionString(), 30000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 
       }
     });
-    BlurUtil.setupZookeeper(zooKeeper, DEFAULT);
-    clusterStatus = new ZookeeperClusterStatus(zooKeeper);
+    BlurUtil.setupZookeeper(zooKeeper1, DEFAULT);
+    zooKeeper2 = new ZooKeeperClient(miniCluster.getZkConnectionString(), 30000, new Watcher() {
+      @Override
+      public void process(WatchedEvent event) {
+
+      }
+    });
+    BlurUtil.setupZookeeper(zooKeeper1, DEFAULT);
+    BlurUtil.setupZookeeper(zooKeeper2, DEFAULT);
+    clusterStatus1 = new ZookeeperClusterStatus(zooKeeper1);
+    clusterStatus2 = new ZookeeperClusterStatus(zooKeeper2);
   }
 
   @After
   public void teardown() throws InterruptedException, KeeperException {
-    rmr(zooKeeper, "/blur");
-    clusterStatus.close();
-    zooKeeper.close();
+    clusterStatus1.close();
+    clusterStatus2.close();
+    rmr(zooKeeper1, "/blur");
+    zooKeeper1.close();
+    zooKeeper2.close();
   }
 
   private static void rmr(ZooKeeper zooKeeper, String path) throws KeeperException, InterruptedException {
@@ -107,67 +118,56 @@ public class ZookeeperClusterStatusTest {
   @Test
   public void testGetClusterList() {
     LOG.warn("testGetClusterList");
-    List<String> clusterList = clusterStatus.getClusterList(false);
+    List<String> clusterList = clusterStatus2.getClusterList(false);
     assertEquals(Arrays.asList(DEFAULT), clusterList);
   }
 
-  // @Test
-  // public void testSafeModeNotSet() throws KeeperException,
-  // InterruptedException {
-  // LOG.warn("testSafeModeNotSet");
-  // assertFalse(clusterStatus.isInSafeMode(false, DEFAULT));
-  // new WaitForAnswerToBeCorrect(20L) {
-  // @Override
-  // public Object run() {
-  // return clusterStatus.isInSafeMode(true, DEFAULT);
-  // }
-  // }.test(false);
-  // }
-  //
-  // @Test
-  // public void testSafeModeSetInPast() throws KeeperException,
-  // InterruptedException {
-  // LOG.warn("testSafeModeSetInPast");
-  // setSafeModeInPast();
-  // assertFalse(clusterStatus.isInSafeMode(false, DEFAULT));
-  // new WaitForAnswerToBeCorrect(20L) {
-  // @Override
-  // public Object run() {
-  // return clusterStatus.isInSafeMode(true, DEFAULT);
-  // }
-  // }.test(false);
-  // }
-  //
-  // @Test
-  // public void testSafeModeSetInFuture() throws KeeperException,
-  // InterruptedException {
-  // LOG.warn("testSafeModeSetInFuture");
-  // setSafeModeInFuture();
-  // assertTrue(clusterStatus.isInSafeMode(false, DEFAULT));
-  // new WaitForAnswerToBeCorrect(20L) {
-  // @Override
-  // public Object run() {
-  // return clusterStatus.isInSafeMode(true, DEFAULT);
-  // }
-  // }.test(true);
-  // }
+  @Test
+  public void testSafeModeNoCache() throws KeeperException, InterruptedException {
+    String safemodePath = ZookeeperPathConstants.getSafemodePath(DEFAULT);
+    ZooKeeperLockManager zooKeeperLockManager = new ZooKeeperLockManager(zooKeeper1, safemodePath);
+    zooKeeperLockManager.lock(DEFAULT);
+    assertTrue(clusterStatus2.isInSafeMode(false, DEFAULT));
+    zooKeeperLockManager.unlock(DEFAULT);
+    assertFalse(clusterStatus2.isInSafeMode(false, DEFAULT));
+  }
+
+  @Test
+  public void testSafeModeCache() throws KeeperException, InterruptedException {
+    String safemodePath = ZookeeperPathConstants.getSafemodePath(DEFAULT);
+    ZooKeeperLockManager zooKeeperLockManager = new ZooKeeperLockManager(zooKeeper1, safemodePath);
+    zooKeeperLockManager.lock(DEFAULT);
+    new WaitForAnswerToBeCorrect(20L) {
+      @Override
+      public Object run() {
+        return clusterStatus2.isInSafeMode(false, DEFAULT);
+      }
+    }.test(true);
+    zooKeeperLockManager.unlock(DEFAULT);
+    new WaitForAnswerToBeCorrect(20L) {
+      @Override
+      public Object run() {
+        return clusterStatus2.isInSafeMode(false, DEFAULT);
+      }
+    }.test(false);
+  }
 
   @Test
   public void testGetClusterNoTable() {
     LOG.warn("testGetCluster");
-    assertNull(clusterStatus.getCluster(false, TEST));
-    assertNull(clusterStatus.getCluster(true, TEST));
+    assertNull(clusterStatus2.getCluster(false, TEST));
+    assertNull(clusterStatus2.getCluster(true, TEST));
   }
 
   @Test
   public void testGetClusterTable() throws KeeperException, InterruptedException {
     LOG.warn("testGetCluster");
     createTable(TEST);
-    assertEquals(DEFAULT, clusterStatus.getCluster(false, TEST));
+    assertEquals(DEFAULT, clusterStatus2.getCluster(false, TEST));
     new WaitForAnswerToBeCorrect(20L) {
       @Override
       public Object run() {
-        return clusterStatus.getCluster(true, TEST);
+        return clusterStatus2.getCluster(true, TEST);
       }
     }.test(DEFAULT);
   }
@@ -175,19 +175,19 @@ public class ZookeeperClusterStatusTest {
   @Test
   public void testGetTableList() throws KeeperException, InterruptedException {
     testGetClusterTable();
-    assertEquals(Arrays.asList(TEST), clusterStatus.getTableList(false));
+    assertEquals(Arrays.asList(TEST), clusterStatus2.getTableList(false));
   }
 
   @Test
   public void testIsEnabledNoTable() {
     try {
-      clusterStatus.isEnabled(false, DEFAULT, "notable");
+      clusterStatus1.isEnabled(false, DEFAULT, "notable");
       fail("should throw exception.");
     } catch (RuntimeException e) {
 
     }
     try {
-      clusterStatus.isEnabled(true, DEFAULT, "notable");
+      clusterStatus1.isEnabled(true, DEFAULT, "notable");
       fail("should throw exception.");
     } catch (RuntimeException e) {
 
@@ -197,19 +197,61 @@ public class ZookeeperClusterStatusTest {
   @Test
   public void testIsEnabledDisabledTable() throws KeeperException, InterruptedException {
     createTable("disabledtable", false);
-    assertFalse(clusterStatus.isEnabled(false, DEFAULT, "disabledtable"));
-    assertFalse(clusterStatus.isEnabled(true, DEFAULT, "disabledtable"));
+    assertFalse(clusterStatus2.isEnabled(false, DEFAULT, "disabledtable"));
+    assertFalse(clusterStatus2.isEnabled(true, DEFAULT, "disabledtable"));
   }
 
   @Test
   public void testIsEnabledEnabledTable() throws KeeperException, InterruptedException {
     createTable("enabledtable", true);
-    assertTrue(clusterStatus.isEnabled(false, DEFAULT, "enabledtable"));
+    assertTrue(clusterStatus2.isEnabled(false, DEFAULT, "enabledtable"));
 
     new WaitForAnswerToBeCorrect(20L) {
       @Override
       public Object run() {
-        return clusterStatus.isEnabled(true, DEFAULT, "enabledtable");
+        return clusterStatus2.isEnabled(true, DEFAULT, "enabledtable");
+      }
+    }.test(true);
+  }
+
+  @Test
+  public void testDisablingTableNoCache() throws KeeperException, InterruptedException {
+    createTable(TEST);
+    assertTrue(clusterStatus2.isEnabled(false, DEFAULT, TEST));
+    clusterStatus1.disableTable(DEFAULT, TEST);
+    assertFalse(clusterStatus2.isEnabled(false, DEFAULT, TEST));
+  }
+
+  @Test
+  public void testDisablingTableCache() throws KeeperException, InterruptedException {
+    createTable(TEST);
+    assertTrue(clusterStatus2.isEnabled(true, DEFAULT, TEST));
+    clusterStatus1.disableTable(DEFAULT, TEST);
+    new WaitForAnswerToBeCorrect(20L) {
+      @Override
+      public Object run() {
+        return clusterStatus2.isEnabled(true, DEFAULT, TEST);
+      }
+    }.test(false);
+  }
+
+  @Test
+  public void testEnablingTableNoCache() throws KeeperException, InterruptedException {
+    createTable(TEST, false);
+    assertFalse(clusterStatus2.isEnabled(false, DEFAULT, TEST));
+    clusterStatus1.enableTable(DEFAULT, TEST);
+    assertTrue(clusterStatus2.isEnabled(false, DEFAULT, TEST));
+  }
+
+  @Test
+  public void testEnablingTableCache() throws KeeperException, InterruptedException {
+    createTable(TEST, false);
+    assertFalse(clusterStatus2.isEnabled(true, DEFAULT, TEST));
+    clusterStatus1.enableTable(DEFAULT, TEST);
+    new WaitForAnswerToBeCorrect(20L) {
+      @Override
+      public Object run() {
+        return clusterStatus2.isEnabled(true, DEFAULT, TEST);
       }
     }.test(true);
   }
@@ -223,9 +265,9 @@ public class ZookeeperClusterStatusTest {
     tableDescriptor.setName(name);
     tableDescriptor.setTableUri("./target/tmp/zk_test_hdfs");
     tableDescriptor.setEnabled(enabled);
-    clusterStatus.createTable(tableDescriptor);
+    clusterStatus1.createTable(tableDescriptor);
     if (enabled) {
-      clusterStatus.enableTable(tableDescriptor.getCluster(), name);
+      clusterStatus1.enableTable(tableDescriptor.getCluster(), name);
     }
   }
 
@@ -257,26 +299,6 @@ public class ZookeeperClusterStatusTest {
         }
       }
     }
-  }
-
-  private void setSafeModeInPast() throws KeeperException, InterruptedException {
-    String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(DEFAULT);
-    Stat stat = zooKeeper.exists(blurSafemodePath, false);
-    byte[] data = Long.toString(System.currentTimeMillis() - 60000).getBytes();
-    if (stat == null) {
-      zooKeeper.create(blurSafemodePath, data, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-    }
-    zooKeeper.setData(blurSafemodePath, data, -1);
-  }
-
-  private void setSafeModeInFuture() throws KeeperException, InterruptedException {
-    String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(DEFAULT);
-    Stat stat = zooKeeper.exists(blurSafemodePath, false);
-    byte[] data = Long.toString(System.currentTimeMillis() + 60000).getBytes();
-    if (stat == null) {
-      zooKeeper.create(blurSafemodePath, data, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-    }
-    zooKeeper.setData(blurSafemodePath, data, -1);
   }
 
 }

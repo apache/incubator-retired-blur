@@ -37,10 +37,10 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -250,15 +250,15 @@ public class BlurUtilsTest {
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
     IndexWriter writer = new IndexWriter(directory, conf);
     Document doc = new Document();
-    doc.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
-    doc.add(new Field("family", "f1", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+    doc.add(new StringField("a", "b", Store.YES));
+    doc.add(new StringField("family", "f1", Store.YES));
 
     Document doc1 = new Document();
-    doc1.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+    doc.add(new StringField("a", "b", Store.YES));
     writer.addDocument(doc);
     writer.addDocument(doc1);
     writer.close();
-    return IndexReader.open(directory);
+    return DirectoryReader.open(directory);
   }
 
   private IndexReader getReaderWithDocsHavingFamily() throws CorruptIndexException, LockObtainFailedException,
@@ -267,16 +267,16 @@ public class BlurUtilsTest {
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
     IndexWriter writer = new IndexWriter(directory, conf);
     Document doc = new Document();
-    doc.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
-    doc.add(new Field("family", "f2", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+    doc.add(new StringField("a", "b", Store.YES));
+    doc.add(new StringField("family", "f2", Store.YES));
 
     Document doc1 = new Document();
-    doc1.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
-    doc1.add(new Field("family", "f1", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+    doc1.add(new StringField("a", "b", Store.YES));
+    doc1.add(new StringField("family", "f1", Store.YES));
     writer.addDocument(doc);
     writer.addDocument(doc1);
     writer.close();
-    return IndexReader.open(directory);
+    return DirectoryReader.open(directory);
   }
 
 }

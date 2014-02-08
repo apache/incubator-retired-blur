@@ -259,9 +259,9 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   }
 
   private WatchChildren watchForShardServerChanges() {
-
     WatchChildren watchOnlineShards = new WatchChildren(_zookeeper,
-        ZookeeperPathConstants.getOnlineShardsPath(_cluster)).watch(new OnChange() {
+        ZookeeperPathConstants.getOnlineShardsPath(_cluster));
+    watchOnlineShards.watch(new OnChange() {
       private List<String> _prevOnlineShards = new ArrayList<String>();
 
       @Override
@@ -482,18 +482,15 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
 
     ShardContext shardContext = ShardContext.create(tableContext, shard);
 
-    Directory dir;
 
     TableDescriptor descriptor = tableContext.getDescriptor();
     boolean blockCacheEnabled = descriptor.isBlockCaching();
     if (blockCacheEnabled) {
       Set<String> blockCacheFileTypes = descriptor.getBlockCachingFileTypes();
-      dir = _blockCacheDirectoryFactory.newDirectory(table, shard, directory, blockCacheFileTypes);
-    } else {
-      dir = directory;
+      directory = _blockCacheDirectoryFactory.newDirectory(table, shard, directory, blockCacheFileTypes);
     }
 
-    BlurIndex index = tableContext.newInstanceBlurIndex(shardContext, dir, _mergeScheduler, _gc, _searchExecutor,
+    BlurIndex index = tableContext.newInstanceBlurIndex(shardContext, directory, _mergeScheduler, _gc, _searchExecutor,
         _indexCloser, _refresher, _warmup);
 
     if (_clusterStatus.isReadOnly(true, _cluster, table)) {

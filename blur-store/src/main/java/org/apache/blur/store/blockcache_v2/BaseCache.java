@@ -200,14 +200,17 @@ public class BaseCache extends Cache implements Closeable {
       long fileModified = directory.getFileModified(fileName);
       FileIdKey oldKey = new FileIdKey(directory.getDirectoryName(), fileName, -1L);
       FileIdKey newKey = new FileIdKey(directory.getDirectoryName(), fileName, fileModified);
-      long currentFileId = _fileNameToId.get(oldKey);
-      if (fileId != currentFileId) {
-        throw new IOException("Something has gone very wrong file ids do not match [" + fileId + "] [" + currentFileId
-            + "] for key [" + oldKey + "]");
+      Long currentFileIdObject = _fileNameToId.get(oldKey);
+      if (currentFileIdObject != null) {
+        long currentFileId = currentFileIdObject;
+        if (fileId != currentFileId) {
+          throw new IOException("Something has gone very wrong file ids do not match [" + fileId + "] ["
+              + currentFileId + "] for key [" + oldKey + "]");
+        }
+        _fileNameToId.put(newKey, fileId);
+        _oldFileNameIdMap.put(fileId, newKey);
+        _fileNameToId.remove(oldKey);
       }
-      _fileNameToId.put(newKey, fileId);
-      _oldFileNameIdMap.put(fileId, newKey);
-      _fileNameToId.remove(oldKey);
     } else {
       throw new FileNotFoundException("File [" + fileName + "] not found in directory [" + directory + "]");
     }

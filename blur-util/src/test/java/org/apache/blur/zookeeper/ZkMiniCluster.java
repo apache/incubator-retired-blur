@@ -174,7 +174,9 @@ public class ZkMiniCluster {
   }
 
   public void shutdownZooKeeper() {
-    zooKeeperServerMain.shutdown();
+    if (zooKeeperServerMain != null) {
+      zooKeeperServerMain.shutdown();
+    }
   }
 
   private static void rm(File file) {

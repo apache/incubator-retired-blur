@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -38,9 +39,21 @@ public class ZkMiniCluster {
 
   private static Log LOG = LogFactory.getLog(ZkMiniCluster.class);
   private Thread serverThread;
-  private ZooKeeperServerMainEmbedded zooKeeperServerMain;
+  private volatile ZooKeeperServerMainEmbedded zooKeeperServerMain;
 
   public String getZkConnectionString() {
+    long s = System.nanoTime();
+    while (zooKeeperServerMain == null) {
+      long now = System.nanoTime();
+      if (s + TimeUnit.SECONDS.toNanos(60) < now) {
+        throw new RuntimeException("ZooKeeper server did not start.");
+      }
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
     return zooKeeperServerMain.getConnectionString();
   }
 

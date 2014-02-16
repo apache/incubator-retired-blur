@@ -100,7 +100,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void createTable(TableDescriptor tableDescriptor) throws BlurException, TException {
     try {
-      TableContext.clear();
+      TableContext.clear(tableDescriptor.getName());
       BlurUtil.validateTableName(tableDescriptor.getName());
       assignClusterIfNull(tableDescriptor);
       _clusterStatus.createTable(tableDescriptor);
@@ -128,7 +128,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void disableTable(String table) throws BlurException, TException {
     try {
-      TableContext.clear();
+      TableContext.clear(table);
       String cluster = _clusterStatus.getCluster(false, table);
       if (cluster == null) {
         throw new BException("Table [" + table + "] not found.");
@@ -145,7 +145,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void enableTable(String table) throws BlurException, TException {
     try {
-      TableContext.clear();
+      TableContext.clear(table);
       String cluster = _clusterStatus.getCluster(false, table);
       if (cluster == null) {
         throw new BException("Table [" + table + "] not found.");
@@ -282,7 +282,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
     try {
-      TableContext.clear();
+      TableContext.clear(table);
       String cluster = _clusterStatus.getCluster(false, table);
       if (cluster == null) {
         throw new BException("Table [" + table + "] not found.");

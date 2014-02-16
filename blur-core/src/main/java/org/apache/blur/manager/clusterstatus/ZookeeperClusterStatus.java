@@ -35,7 +35,6 @@ import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
-import org.apache.blur.manager.indexserver.MasterBasedDistributedLayoutFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.TDeserializer;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.TSerializer;
@@ -635,12 +634,9 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       }
       String uri = tableDescriptor.getTableUri();
       BlurUtil.removeAll(_zk, blurTablePath);
-      MasterBasedDistributedLayoutFactory.removeTable(_zk,
-          ZookeeperPathConstants.getShardLayoutPathTableLayout(cluster), table);
       if (deleteIndexFiles) {
         BlurUtil.removeIndexFiles(uri);
       }
-
     } catch (IOException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {

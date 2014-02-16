@@ -184,7 +184,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
       closeAllIndexes();
       _timerCacheFlush.purge();
       _timerCacheFlush.cancel();
-
+      _watchOnlineShards.close();
       _timerTableWarmer.purge();
       _timerTableWarmer.cancel();
     }
@@ -405,9 +405,9 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
               closed = true;
             }
           }
-        }
-        if (closed) {
-          TableContext.clear();
+          if (closed) {
+            TableContext.clear(table);
+          }
         }
       }
     }, _delay, _delay);
@@ -481,7 +481,6 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     }
 
     ShardContext shardContext = ShardContext.create(tableContext, shard);
-
 
     TableDescriptor descriptor = tableContext.getDescriptor();
     boolean blockCacheEnabled = descriptor.isBlockCaching();

@@ -108,6 +108,10 @@ public class TableContext {
     _cache.clear();
   }
 
+  public static void clear(String table) {
+    _cache.remove(table);
+  }
+
   public static TableContext create(TableDescriptor tableDescriptor) {
     if (tableDescriptor == null) {
       throw new NullPointerException("TableDescriptor can not be null.");
@@ -364,4 +368,5 @@ public class TableContext {
   public ReadInterceptor getReadInterceptor() {
     return _readInterceptor;
   }
+
 }

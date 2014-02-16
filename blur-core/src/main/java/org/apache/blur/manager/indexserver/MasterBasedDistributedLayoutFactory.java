@@ -56,7 +56,6 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
   private final ZooKeeper _zooKeeper;
   private final String _storagePath;
   private final ZooKeeperLockManager _zooKeeperLockManager;
-  private final String _tableStoragePath;
   private final String _locksStoragePath;
   private final ThreadLocal<Random> _random = new ThreadLocal<Random>() {
     @Override
@@ -64,14 +63,14 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
       return new Random();
     }
   };
+  private final String _cluster;
 
   public MasterBasedDistributedLayoutFactory(ZooKeeper zooKeeper, String cluster) {
     _zooKeeper = zooKeeper;
+    _cluster = cluster;
     _storagePath = ZookeeperPathConstants.getShardLayoutPath(cluster);
-    _tableStoragePath = ZookeeperPathConstants.getShardLayoutPathTableLayout(cluster);
     _locksStoragePath = ZookeeperPathConstants.getShardLayoutPathLocks(cluster);
     ZkUtils.mkNodesStr(_zooKeeper, _storagePath);
-    ZkUtils.mkNodesStr(_zooKeeper, _tableStoragePath);
     ZkUtils.mkNodesStr(_zooKeeper, _locksStoragePath);
     _zooKeeperLockManager = new ZooKeeperLockManager(_zooKeeper, _locksStoragePath);
   }
@@ -175,26 +174,14 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
     }
   }
 
-  public static void removeTable(ZooKeeper zooKeeper, String tableStoragePath, String table) throws InterruptedException, KeeperException {
-    List<String> children = new ArrayList<String>(zooKeeper.getChildren(tableStoragePath, false));
+  private void cleanupOldTableLayouts(String table, String newPath) throws KeeperException, InterruptedException {
+    String tableStoragePath = ZookeeperPathConstants.getTablePath(_cluster, table);
+    List<String> children = new ArrayList<String>(_zooKeeper.getChildren(tableStoragePath, false));
     for (String child : children) {
       int index = child.lastIndexOf(SEP);
       if (index >= 0) {
         if (child.substring(0, index).equals(table)) {
           String oldPath = tableStoragePath + "/" + child;
-          zooKeeper.delete(oldPath, -1);
-        }
-      }
-    }
-  }
-
-  private void cleanupOldTableLayouts(String table, String newPath) throws KeeperException, InterruptedException {
-    List<String> children = new ArrayList<String>(_zooKeeper.getChildren(_tableStoragePath, false));
-    for (String child : children) {
-      int index = child.lastIndexOf(SEP);
-      if (index >= 0) {
-        if (child.substring(0, index).equals(table)) {
-          String oldPath = _tableStoragePath + "/" + child;
           if (!oldPath.equals(newPath)) {
             LOG.info("Cleaning up old layouts for table [{0}]", table);
             _zooKeeper.delete(oldPath, -1);
@@ -205,7 +192,9 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
   }
 
   private String findExistingStoragePath(String table) throws KeeperException, InterruptedException {
-    List<String> children = new ArrayList<String>(_zooKeeper.getChildren(_tableStoragePath, false));
+    String tableStoragePath = ZookeeperPathConstants.getTablePath(_cluster, table);
+    ZkUtils.mkNodesStr(_zooKeeper, tableStoragePath);
+    List<String> children = new ArrayList<String>(_zooKeeper.getChildren(tableStoragePath, false));
     String path = null;
     for (String child : children) {
       int index = child.lastIndexOf(SEP);
@@ -217,7 +206,7 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
         }
       }
     }
-    return _tableStoragePath + "/" + path;
+    return tableStoragePath + "/" + path;
   }
 
   private Map<String, String> calculateNewLayout(String table, MasterBasedDistributedLayout existingLayout,
@@ -326,7 +315,8 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
   }
 
   private String getStoragePath(String table) {
-    return _tableStoragePath + "/" + table;
+    String tableStoragePath = ZookeeperPathConstants.getTablePath(_cluster, table);
+    return tableStoragePath + "/" + table;
   }
 
   @SuppressWarnings("serial")

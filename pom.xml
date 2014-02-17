@@ -244,26 +244,25 @@ under the License.
 						<exclude>**/.settings/**</exclude>
 						<exclude>**/target/**</exclude>
 						
-						<!-- These javascript libs are accounted for in the 
-						LICENSE-src file in distribution/src/main/resources -->
-						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/d3/**</exclude>
-						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/backbone/**</exclude>
-						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/flot/**</exclude>
-						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/jquery.*.js</exclude>
-						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/modernizr.js</exclude>
-						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/sorttable.js</exclude>
-						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/underscore.js</exclude>
-						<exclude>contrib/blur-console/blur-admin/vendor/assets/javascripts/datatables.fnReloadAjax.js</exclude>
+						<!-- These javascript libs are added at build time but are not included in the src -->
+						<exclude>contrib/blur-console/ui/app/bower_components/**</exclude>
 						
-						<!-- These css libs are accounted for in the LICENSE file -->
-						<exclude>contrib/blur-console/blur-admin/vendor/assets/stylesheets/jquery*.css</exclude>
-						<exclude>contrib/blur-console/blur-admin/vendor/assets/stylesheets/ui.dynatree.css</exclude>
-						
-						<!-- Ruby gems -->
-						<exclude>contrib/blur-console/blur-admin/vendor/gems/cancan/**</exclude>
-						
-						<!-- Generated during the rail build process in the blur-admin project -->
-						<exclude>contrib/blur-console/blur-admin/Gemfile.lock</exclude>
+						<!-- These files are used for UI testing and are added at development but not included in the src -->
+						<exclude>contrib/blur-console/ui/test/bower_components/**</exclude>
+
+						<!-- JS Libraries that could not be included through bower -->
+						<exclude>contrib/blur-console/ui/app/lib/**</exclude>
+	
+						<!-- Files used for building the UI -->
+						<exclude>contrib/blur-console/ui/node_modules/**</exclude>
+						<exclude>contrib/blur-console/ui/.sass-cache/**</exclude>
+						<exclude>contrib/blur-console/**/.bowerrc</exclude>
+						<exclude>contrib/blur-console/ui/.editorconfig</exclude>
+						<exclude>contrib/blur-console/ui/.jshintrc</exclude>
+						<exclude>contrib/blur-console/ui/package.json</exclude>
+
+						<!-- Legacy blur console -->
+						<exclude>contrib/blur-console-v1/**</exclude>
 						
 						<!-- Contains a list of english words that are used for load testing, adding a header 
 						would make the simple parsers more complex -->

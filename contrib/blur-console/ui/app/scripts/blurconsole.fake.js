@@ -15,7 +15,7 @@ limitations under the License.
 /*global blurconsole:false */
 blurconsole.fake = (function() {
 	'use strict';
-	var getTableList, getNodeList;
+	var getTableList, getNodeList, getQueryPerformance;
 
 	getTableList = function() {
 		return [
@@ -44,8 +44,13 @@ blurconsole.fake = (function() {
 		};
 	};
 
+	getQueryPerformance = function() {
+		return Math.floor((Math.random()*1000) + 1);
+	};
+
 	return {
 		getTableList : getTableList,
-		getNodeList : getNodeList
+		getNodeList : getNodeList,
+		getQueryPerformance : getQueryPerformance
 	};
 }());

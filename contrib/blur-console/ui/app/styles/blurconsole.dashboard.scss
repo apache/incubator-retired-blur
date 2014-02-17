@@ -13,10 +13,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 .simple-chart {
-	min-height : 200;
-	min-width : 200;
-	max-height : 500;
-	max-width : 500;
+	min-height : 200px;
+	min-width : 200px;
+	max-height : 300px;
+	max-width : 300px;
+	margin-left : auto;
+	margin-right : auto;
+}
+
+.wide-chart {
+	min-height : 100px;
+	min-width : 200px;
+	max-height : 200px;
+	max-width : 1000px;
 	margin-left : auto;
 	margin-right : auto;
 }

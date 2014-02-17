@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-/*global blurconsole:false, TAFFY:false */
+/*global blurconsole:false */
 blurconsole.model = (function() {
 	'use strict';
 	var
@@ -21,59 +21,11 @@ blurconsole.model = (function() {
 		},
 		stateMap = {
 			tableNameMap: {},
-			tableDb : TAFFY(),
 			nodeMap : {},
-			nodeDb : TAFFY()
+			queryPerformance : []
 		},
 		isFakeData = true,
-		tableProto, nodeProto, makeTable, makeNode, tables, metrics, initModule, nodePoller, tablePoller;
-
-	tableProto = {
-
-	};
-
-	nodeProto = {
-		isZookeeperNode : function() {
-			return this.type === 'zookeeper';
-		},
-		isControllerNode : function() {
-			return this.type === 'controller';
-		},
-		isShardNode : function() {
-			return this.type === 'shard';
-		}
-	};
-
-	makeTable = function( tableMap ) {
-		var table,
-			name = tableMap.name;
-
-		table = Object.create( tableProto );
-		table.cluster = tableMap.cluster;
-		table.name = name;
-		table.enabled = tableMap.enabled;
-		table.rows = tableMap.rows;
-		table.records = tableMap.records;
-
-		stateMap.tableNameMap[name] = table;
-		stateMap.tableDb.insert( table );
-		return table;
-	};
-
-	makeNode = function( nodeMap ) {
-		var node, key;
-
-		key = nodeMap.type + '-' + nodeMap.name;
-		node = Object.create( nodeProto );
-		node.type = nodeMap.type;
-		node.cluster = nodeMap.cluster;
-		node.name = nodeMap.name;
-		node.online = nodeMap.online;
-
-		stateMap.nodeMap[key] = node;
-		stateMap.nodeDb.insert( node );
-		return node;
-	};
+		tables, metrics, initModule, nodePoller, tablePoller, queryPerformancePoller;
 
 	tables = (function() {
 		var getDb, getNameMap;
@@ -165,7 +117,13 @@ blurconsole.model = (function() {
 		};
 
 		getQueryLoadChartData = function() {
+			var dataArray = [];
 
+			$.each(stateMap.queryPerformance, function(idx, increment) {
+				dataArray.push([idx, increment]);
+			});
+
+			return dataArray;
 		};
 
 		buildPieChartData = function(onlineCount, offlineCount) {
@@ -189,7 +147,8 @@ blurconsole.model = (function() {
 			getControllerChartData : getControllerChartData,
 			getClusters : getClusters,
 			getShardChartData : getShardChartData,
-			getTableChartData : getTableChartData
+			getTableChartData : getTableChartData,
+			getQueryLoadChartData : getQueryLoadChartData
 		};
 	}());
 
@@ -205,10 +164,21 @@ blurconsole.model = (function() {
 		setTimeout(tablePoller, 5000);
 	};
 
+	queryPerformancePoller = function() {
+		if (stateMap.queryPerformance.length === 100) {
+			stateMap.queryPerformance.shift();
+		}
+
+		stateMap.queryPerformance.push(configMap.poller.getQueryPerformance());
+		$.gevent.publish('query-perf-updated');
+		setTimeout(queryPerformancePoller, 1000);
+	};
+
 	initModule = function() {
 		configMap.poller = isFakeData ? blurconsole.fake : blurconsole.data;
 		nodePoller();
 		tablePoller();
+		queryPerformancePoller();
 	};
 	return {
 		initModule : initModule,

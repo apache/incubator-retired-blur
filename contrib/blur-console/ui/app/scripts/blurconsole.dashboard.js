@@ -49,7 +49,7 @@ blurconsole.dashboard = (function () {
 		},
 		jqueryMap = {},
 		setJqueryMap, initModule, unloadModule, updateNodeCharts, adjustChartSize,
-		loadZkPieChart,	loadControllerPieChart, loadShardsPieChart, loadTableColumnChart;
+		loadZkPieChart,	loadControllerPieChart, loadShardsPieChart, loadTableColumnChart, loadQueryPerfLineChart;
 
 	setJqueryMap = function() {
 		var $container = stateMap.$container;
@@ -58,12 +58,15 @@ blurconsole.dashboard = (function () {
 			$zkChartHolder : $('#zookeeperNodes'),
 			$controllerChartHolder : $('#controllerNodes'),
 			$shardChartHolder : $('#shardNodes'),
-			$tableChartHolder : $('#tableCounts')
+			$tableChartHolder : $('#tableCounts'),
+			$queryLoadChartHolder : $('#queryLoad')
 		};
 	};
 
 	unloadModule = function() {
 		$.gevent.unsubscribe(jqueryMap.$container, 'node-status-updated');
+		$.gevent.unsubscribe(jqueryMap.$container, 'tables-updated');
+		$.gevent.unsubscribe(jqueryMap.$container, 'query-perf-updated');
 	};
 
 	updateNodeCharts = function() {
@@ -110,7 +113,6 @@ blurconsole.dashboard = (function () {
 	};
 
 	loadTableColumnChart = function() {
-		console.log(blurconsole.model.metrics.getTableChartData());
 		$.plot(jqueryMap.$tableChartHolder, blurconsole.model.metrics.getTableChartData(), {
 			bars : {
 				show : true,
@@ -123,6 +125,20 @@ blurconsole.dashboard = (function () {
 			},
 			xaxis : {
 				mode : 'categories'
+			}
+		});
+	};
+
+	loadQueryPerfLineChart = function() {
+		$.plot(jqueryMap.$queryLoadChartHolder, [blurconsole.model.metrics.getQueryLoadChartData()], {
+			series : {
+				shadowSize : 0
+			},
+			yaxis : {
+				min : 0
+			},
+			xaxis : {
+				show : false
 			}
 		});
 	};
@@ -156,6 +172,12 @@ blurconsole.dashboard = (function () {
 			'height' : size,
 			'width' : size
 		});
+
+		size = jqueryMap.$queryLoadChartHolder.parent()[0].clientWidth - 150;
+		jqueryMap.$queryLoadChartHolder.css({
+			'height' : size,
+			'width' : size
+		});
 	};
 
 	initModule = function( $container ) {
@@ -164,6 +186,7 @@ blurconsole.dashboard = (function () {
 			setJqueryMap();
 			$.gevent.subscribe(jqueryMap.$container, 'node-status-updated', updateNodeCharts);
 			$.gevent.subscribe(jqueryMap.$container, 'tables-updated', loadTableColumnChart);
+			$.gevent.subscribe(jqueryMap.$container, 'query-perf-updated', loadQueryPerfLineChart);
 			adjustChartSize();
 		});
 		$(window).resize(adjustChartSize);

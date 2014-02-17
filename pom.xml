@@ -260,6 +260,7 @@ under the License.
 						<exclude>contrib/blur-console/ui/.editorconfig</exclude>
 						<exclude>contrib/blur-console/ui/.jshintrc</exclude>
 						<exclude>contrib/blur-console/ui/package.json</exclude>
+						<exclude>contrib/blur-console/ui/**/bower.json</exclude>
 
 						<!-- Legacy blur console -->
 						<exclude>contrib/blur-console-v1/**</exclude>

@@ -18,30 +18,41 @@ blurconsole.fake = (function() {
 	var getTableList, getNodeList, getQueryPerformance;
 
 	getTableList = function() {
-		return [
-			{cluster: 'prodA', name: 'testtable1', enabled: true, rows: 1000, records: 10000},
-			{cluster: 'prodA', name: 'testtable2', enabled: true, rows: 1000, records: 10000},
-			{cluster: 'prodA', name: 'testtable3', enabled: false, rows: 1000, records: 10000},
-			{cluster: 'prodB', name: 'testtable4', enabled: true, rows: 1000, records: 10000},
-			{cluster: 'prodB', name: 'testtable5', enabled: false, rows: 1000, records: 10000},
-		];
+		var clusters = ['prodA', 'prodB'], data = [], i, cluster, rows, records, enabled;
+
+		for (i = 0; i < 5; i++) {
+			cluster = clusters[Math.floor(Math.random()*2)];
+			rows = Math.floor(Math.random()*1000+1);
+			records = Math.floor(Math.random()*10000+1001);
+			enabled = Math.floor(Math.random()*2) === 1;
+
+			data.push({cluster:cluster, name:'testtable'+i, enabled:enabled, rows:rows, records:records});
+
+		}
+		return data;
 	};
 
 	getNodeList = function() {
-		return {
-			controllers: {
-				online: ['controller1.localhost', 'controller2.localhost'],
-				offline: ['controller3.localhost']
-			},
-			clusters: [
-				{name: 'prodA', online: [], offline: ['shard1.localhost']},
-				{name: 'prodB', online: ['shard2.localhost'], offline: ['shard4.localhost']}
-			],
-			zookeepers: {
-				online: ['zookeeper1.localhost'],
-				offline: []
+		var controllers = {online:[], offline:[]},
+			clusters = [{name:'prodA', online:[], offline:[]}, {name:'prodB', online:[], offline:[]}],
+			zookeepers = {online: [], offline:[]},
+			i, state;
+
+		for(i = 0; i < 3; i++) {
+			state = Math.floor(Math.random()*2);
+			if (state === 0) {
+				controllers.online.push('controller' + i + '.localhost');
+				clusters[0].online.push('prodA.shard' + i + '.localhost');
+				clusters[1].online.push('prodB.shard' + i + '.localhost');
+				zookeepers.online.push('zookeeper' + i + '.localhost');
+			} else {
+				controllers.offline.push('controller' + i + '.localhost');
+				clusters[0].offline.push('prodA.shard' + i + '.localhost');
+				clusters[1].offline.push('prodB.shard' + i + '.localhost');
+				zookeepers.offline.push('zookeeper' + i + '.localhost');
 			}
-		};
+		}
+		return {controllers: controllers, clusters: clusters, zookeepers: zookeepers};
 	};
 
 	getQueryPerformance = function() {

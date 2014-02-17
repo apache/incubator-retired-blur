@@ -1,0 +1,108 @@
+<!--
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+ -->
+
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Blur Console</title>
+        <meta name="description" content="System Monitor and Console for Blur">
+        <meta name="viewport" content="width=device-width">
+        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+        <!-- build:css styles/vendor.css -->
+        <!-- bower:css -->
+
+        <!-- endbower -->
+        <!-- endbuild -->
+        <!-- build:css(.tmp) styles/main.css -->
+        <link rel="stylesheet" href="styles/blurconsole.css">
+        <link rel="stylesheet" href="styles/blurconsole.dashboard.css">
+        <!-- endbuild -->
+        <script src="bower_components/modernizr/modernizr.js"></script>
+
+    </head>
+    <body>
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+            <a class="navbar-brand" href="#">Blur Console</a>
+
+        </nav>
+        <nav class="side-nav">
+            <ul>
+                <li title="Dashboard" data-toggle="tooltip" data-placement="right" data-container="body">
+                    <a href="#/dashboard"><i class="glyphicon glyphicon-dashboard"></i></a>
+                </li>
+                <li title="Tables" data-toggle="tooltip" data-placement="right" data-container="body">
+                    <a href="#/tables"><i class="glyphicon glyphicon-list"></i></a>
+                </li>
+                <li title="Queries" data-toggle="tooltip" data-placement="right" data-container="body">
+                    <a href="#/queries"><i class="glyphicon glyphicon-tasks"></i></a>
+                </li>
+                <li title="Search" data-toggle="tooltip" data-placement="right" data-container="body">
+                    <a href="#/search"><i class="glyphicon glyphicon-search"></i></a>
+                </li>
+            </ul>
+        </nav>
+        <!--[if lt IE 10]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+        <div id="blurconsole"></div>
+
+        <!-- build:js scripts/vendor.js -->
+        <!-- bower:js -->
+        <script src="bower_components/jquery/jquery.js"></script>
+        <script src="lib/jquery.uriAnchor.js"></script>
+        <script src="lib/jquery.event.gevent.js"></script>
+        <script src="bower_components/taffydb/taffy.js"></script>
+        <!-- endbower -->
+        <!-- endbuild -->
+
+        <!-- build:js scripts/plugins.js -->
+        <script src="bower_components/sass-bootstrap/js/affix.js"></script>
+        <script src="bower_components/sass-bootstrap/js/alert.js"></script>
+        <script src="bower_components/sass-bootstrap/js/dropdown.js"></script>
+        <script src="bower_components/sass-bootstrap/js/tooltip.js"></script>
+        <script src="bower_components/sass-bootstrap/js/modal.js"></script>
+        <script src="bower_components/sass-bootstrap/js/transition.js"></script>
+        <script src="bower_components/sass-bootstrap/js/button.js"></script>
+        <script src="bower_components/sass-bootstrap/js/popover.js"></script>
+        <script src="bower_components/sass-bootstrap/js/carousel.js"></script>
+        <script src="bower_components/sass-bootstrap/js/scrollspy.js"></script>
+        <script src="bower_components/sass-bootstrap/js/collapse.js"></script>
+        <script src="bower_components/sass-bootstrap/js/tab.js"></script>
+        <script src="bower_components/flot/jquery.flot.js"></script>
+        <script src="bower_components/flot/jquery.flot.pie.js"></script>
+        <script src="bower_components/flot/jquery.flot.categories.js"></script>
+        <script src="bower_components/flot/jquery.flot.stack.js"></script>
+        <!-- endbuild -->
+
+        <!-- build:js({app,.tmp}) scripts/main.js -->
+        <script src="scripts/blurconsole.js"></script>
+        <script src="scripts/blurconsole.utils.js"></script>
+        <script src="scripts/blurconsole.shell.js"></script>
+        <script src="scripts/blurconsole.dashboard.js"></script>
+        <script src="scripts/blurconsole.data.js"></script>
+        <script src="scripts/blurconsole.fake.js"></script>
+        <script src="scripts/blurconsole.model.js"></script>
+        <script type="text/javascript">
+            $(function () { blurconsole.initModule( $('#blurconsole') ); });
+        </script>
+        <!-- endbuild -->
+</body>
+</html>

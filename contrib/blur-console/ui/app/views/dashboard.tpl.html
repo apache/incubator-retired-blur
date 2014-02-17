@@ -1,0 +1,54 @@
+<!--
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+ -->
+
+<div id="slow-query-warnings" class="alert alert-danger hidden">
+	<strong>Heads Up!</strong>
+	Queries have been running for longer than a minute.
+</div>
+
+<div class="row">
+	<div class="col-md-8">
+		<div class="row">
+			<div class="col-md-6 text-center">
+				<h4>Zookeepers</h4>
+				<div id="zookeeperNodes" class="simple-chart"><img src="images/ajax-loader.gif"></div>
+			</div>
+			<div class="col-md-6 text-center">
+				<h4>Controllers</h4>
+				<div id="controllerNodes" class="simple-chart"><img src="images/ajax-loader.gif"></div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12 text-center">
+				<h4>Query Load</h4>
+				<div id="queryLoad"><img src="images/ajax-loader.gif"></div>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div class="row">
+			<div class="col-md-12 text-center">
+				<h4>Shards</h4>
+				<div id="shardNodes"><img src="images/ajax-loader.gif"></div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12 text-center">
+				<h4>Tables</h4>
+				<div id="tableCounts" class="simple-chart"><img src="images/ajax-loader.gif"></div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -210,6 +210,11 @@ public class IndexManagerTest {
       public void createTable(TableDescriptor tableDescriptor) {
         throw new RuntimeException("Not impl");
       }
+
+      @Override
+      public void registerActionOnTableStateChange(Action action) {
+        throw new RuntimeException("Not impl");
+      }
     };
   }
 

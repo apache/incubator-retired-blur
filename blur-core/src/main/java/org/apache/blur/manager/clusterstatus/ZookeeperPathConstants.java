@@ -67,10 +67,6 @@ public class ZookeeperPathConstants {
     return getClusterPath(cluster) + "/layout";
   }
 
-  public static String getShardLayoutPathTableLayout(String cluster) {
-    return getShardLayoutPath(cluster) + "/table_layout";
-  }
-
   public static String getShardLayoutPathLocks(String cluster) {
     return getShardLayoutPath(cluster) + "/locks";
   }

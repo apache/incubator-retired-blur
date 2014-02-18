@@ -28,10 +28,10 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimerTask;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
+import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -100,7 +100,6 @@ import org.apache.blur.utils.ForkJoin.ParallelCall;
 import org.apache.blur.zookeeper.WatchChildren;
 import org.apache.blur.zookeeper.WatchChildren.OnChange;
 import org.apache.blur.zookeeper.WatchNodeExistance;
-import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -183,6 +182,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private ConcurrentMap<String, WatchNodeExistance> _watchForTablesPerClusterExistance = new ConcurrentHashMap<String, WatchNodeExistance>();
   private ConcurrentMap<String, WatchNodeExistance> _watchForOnlineShardsPerClusterExistance = new ConcurrentHashMap<String, WatchNodeExistance>();
   private ConcurrentMap<String, WatchChildren> _watchForTablesPerCluster = new ConcurrentHashMap<String, WatchChildren>();
+  private ConcurrentMap<String, WatchChildren> _watchForTableLayoutChanges = new ConcurrentHashMap<String, WatchChildren>();
   private ConcurrentMap<String, WatchChildren> _watchForOnlineShardsPerCluster = new ConcurrentHashMap<String, WatchChildren>();
   private Timer _preconnectTimer;
 
@@ -194,9 +194,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     watchForClusterChanges();
     List<String> clusterList = _clusterStatus.getClusterList(false);
     for (String cluster : clusterList) {
-      watchForLayoutChanges(cluster);
+      watchForLayoutChangeEvents(cluster);
+      updateLayout(cluster);
     }
-    updateLayout();
     startPreconnectTimer();
   }
 
@@ -255,7 +255,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         }
         for (String cluster : children) {
           try {
-            watchForLayoutChanges(cluster);
+            watchForLayoutChangeEvents(cluster);
           } catch (KeeperException e) {
             LOG.error("Unknown error", e);
             throw new RuntimeException(e);
@@ -268,15 +268,13 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     });
   }
 
-  private void watchForLayoutChanges(final String cluster) throws KeeperException, InterruptedException {
+  private void watchForLayoutChangeEvents(final String cluster) throws KeeperException, InterruptedException {
     WatchNodeExistance we1 = new WatchNodeExistance(_zookeeper, ZookeeperPathConstants.getTablesPath(cluster));
-    final String shardLayoutPathTableLayoutPath = ZookeeperPathConstants.getShardLayoutPathTableLayout(cluster);
-    ZkUtils.mkNodesStr(_zookeeper, shardLayoutPathTableLayoutPath);
     we1.watch(new WatchNodeExistance.OnChange() {
       @Override
       public void action(Stat stat) {
         if (stat != null) {
-          watch(cluster, shardLayoutPathTableLayoutPath, _watchForTablesPerCluster);
+          watchTables(cluster, _watchForTablesPerCluster);
         }
       }
     });
@@ -285,13 +283,17 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
   }
 
-  private void watch(final String cluster, String path, ConcurrentMap<String, WatchChildren> map) {
+  private void watchTables(final String cluster, ConcurrentMap<String, WatchChildren> map) {
+    String path = ZookeeperPathConstants.getTablesPath(cluster);
+    if (map.containsKey(cluster)) {
+      return;
+    }
     WatchChildren watchForTableLayoutChanges = new WatchChildren(_zookeeper, path);
     watchForTableLayoutChanges.watch(new OnChange() {
       @Override
       public void action(List<String> children) {
         LOG.info("Layout change for cluster [{0}].", cluster);
-        updateLayout();
+        updateLayout(cluster);
       }
     });
     if (map.putIfAbsent(cluster, watchForTableLayoutChanges) != null) {
@@ -299,18 +301,15 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
   }
 
-  private synchronized void updateLayout() {
+  private synchronized void updateLayout(String cluster) {
     if (!_clusterStatus.isOpen()) {
       LOG.warn("The cluster status object has been closed.");
       return;
     }
-    List<String> tableList = _clusterStatus.getTableList(false);
+    List<String> tableList = _clusterStatus.getTableList(false, cluster);
     HashMap<String, Map<String, String>> newLayout = new HashMap<String, Map<String, String>>();
     for (String table : tableList) {
-      String cluster = _clusterStatus.getCluster(false, table);
-      if (cluster == null) {
-        continue;
-      }
+      watchTableLayouts(cluster, table, _watchForTableLayoutChanges);
       DistributedLayoutFactory distributedLayoutFactory = getDistributedLayoutFactory(cluster);
       DistributedLayout layout = distributedLayoutFactory.readCurrentLayout(table);
       if (layout != null) {
@@ -322,6 +321,25 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       }
     }
     _shardServerLayout.set(newLayout);
+  }
+
+  private void watchTableLayouts(final String cluster, final String table, ConcurrentMap<String, WatchChildren> map) {
+    String path = ZookeeperPathConstants.getTablePath(cluster, table);
+    String key = cluster + "|" + table;
+    if (map.containsKey(key)) {
+      return;
+    }
+    WatchChildren watchForTableLayoutChanges = new WatchChildren(_zookeeper, path);
+    watchForTableLayoutChanges.watch(new OnChange() {
+      @Override
+      public void action(List<String> children) {
+        LOG.info("Layout change for cluster [{0}] table [{1}].", cluster, table);
+        updateLayout(cluster);
+      }
+    });
+    if (map.putIfAbsent(key, watchForTableLayoutChanges) != null) {
+      watchForTableLayoutChanges.close();
+    }
   }
 
   private synchronized DistributedLayoutFactory getDistributedLayoutFactory(String cluster) {
@@ -375,6 +393,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       close(_watchForOnlineShardsPerCluster.values());
       close(_watchForOnlineShardsPerClusterExistance.values());
       close(_watchForTablesPerCluster.values());
+      close(_watchForTableLayoutChanges.values());
       close(_watchForTablesPerClusterExistance.values());
     }
   }

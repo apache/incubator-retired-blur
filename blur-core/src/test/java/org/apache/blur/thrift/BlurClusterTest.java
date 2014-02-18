@@ -30,7 +30,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -72,6 +71,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.zookeeper.KeeperException;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -112,108 +112,89 @@ public class BlurClusterTest {
     miniCluster.shutdownBlurCluster();
   }
 
+  @After
+  public void tearDown() throws BlurException, TException {
+    Iface client = getClient();
+    List<String> tableList = client.tableList();
+    for (String table : tableList) {
+      client.disableTable(table);
+      client.removeTable(table, true);
+    }
+  }
+
   private Iface getClient() {
     return BlurClient.getClient(miniCluster.getControllerConnectionStr());
   }
 
   @Test
-  public void runClusterIntegrationTests() throws BlurException, TException, IOException, InterruptedException,
-      KeeperException {
-    start("testCreateTable");
-    testCreateTable();
-    start("testLoadTable");
-    testLoadTable();
-    start("testBlurQueryWithRowId");
-    testBlurQueryWithRowId();
-    start("testForEmptySchema");
-    testForEmptySchema();
-    start("testAdminCalls");
-    testAdminCalls();
-    start("testQueryWithSelector");
-    testQueryWithSelector();
-    start("testQueryWithFacets");
-    testQueryWithFacets();
-    start("testBatchFetch");
-    testBatchFetch();
-    start("testLoadTable");
-    testQueryCancel();
-    start("testBackPressureViaQuery");
-    testBackPressureViaQuery();
-    start("testTestShardFailover");
-    testTestShardFailover();
-    start("testTermsList");
-    testTermsList();
-    start("testCreateDisableAndRemoveTable");
-    testCreateDisableAndRemoveTable();
-    start("testCreateTableWithCustomType");
-    testCreateTableWithCustomType();
-  }
-
-  private void testBlurQueryWithRowId() throws BlurException, TException {
+  public void testBlurQueryWithRowId() throws BlurException, TException, InterruptedException, IOException {
+    String tableName = "testBlurQueryWithRowId";
+    createTable(tableName);
+    loadTable(tableName);
     Blur.Iface client = getClient();
     BlurQuery blurQuery = new BlurQuery();
     Query query = new Query();
     query.setQuery("*");
     blurQuery.setQuery(query);
-    BlurResults results1 = client.query("test", blurQuery);
+    BlurResults results1 = client.query(tableName, blurQuery);
     assertEquals(numberOfDocs, results1.getTotalResults());
     String id1 = results1.getResults().iterator().next().getFetchResult().getRowResult().getRow().getId();
 
     blurQuery.setRowId(id1);
 
     query.setRowQuery(false);
-    BlurResults results2 = client.query("test", blurQuery);
+    BlurResults results2 = client.query(tableName, blurQuery);
     assertEquals(1, results2.getTotalResults());
     String id2 = results2.getResults().iterator().next().getFetchResult().getRecordResult().getRowid();
 
     assertEquals(id1, id2);
+    System.out.println("Finished!");
   }
 
-  private void testAdminCalls() throws BlurException, TException {
+  @Test
+  public void testAdminCalls() throws BlurException, TException, IOException, InterruptedException {
+    String tableName = "testAdminCalls";
+    createTable(tableName);
+    loadTable(tableName);
     Blur.Iface client = getClient();
     List<String> shardClusterList = client.shardClusterList();
     assertEquals(1, shardClusterList.size());
     assertEquals(BlurConstants.DEFAULT, shardClusterList.get(0));
 
-    Map<String, String> shardServerLayout = client.shardServerLayout("test");
+    Map<String, String> shardServerLayout = client.shardServerLayout(tableName);
     assertEquals(5, shardServerLayout.size());
 
-    Map<String, Map<String, ShardState>> shardServerLayoutState = client.shardServerLayoutState("test");
+    Map<String, Map<String, ShardState>> shardServerLayoutState = client.shardServerLayoutState(tableName);
     assertEquals(5, shardServerLayoutState.size());
 
     List<String> shardServerList = client.shardServerList(BlurConstants.DEFAULT);
     assertEquals(3, shardServerList.size());
   }
 
-  private void start(String name) {
-    System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-    System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-    System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-    System.out.println("Staring [" + name + "]");
-  }
-
-  private void testForEmptySchema() throws BlurException, TException, IOException {
+  @Test
+  public void testForEmptySchema() throws BlurException, TException, IOException, InterruptedException {
+    String tableName = "testForEmptySchema";
+    createTable(tableName);
     Blur.Iface client = getClient();
-    Schema schema = client.schema("test");
+    Schema schema = client.schema(tableName);
     Map<String, Map<String, ColumnDefinition>> families = schema.getFamilies();
-    assertTrue(!families.isEmpty());
-    int size = families.size();
-    System.out.println(size);
+    assertTrue(families.isEmpty());
 
-    TableContext tableContext = TableContext.create(client.describe("test"));
+    TableContext tableContext = TableContext.create(client.describe(tableName));
     FieldManager fieldManager = tableContext.getFieldManager();
 
     assertTrue(fieldManager.addColumnDefinition("test-family", "test-column", null, false, "string", false, null));
 
     TableContext.clear();
-    Schema newschema = client.schema("test");
+    Schema newschema = client.schema(tableName);
     Map<String, Map<String, ColumnDefinition>> newfamilies = newschema.getFamilies();
     assertTrue(!newfamilies.isEmpty());
     int newsize = newfamilies.size();
-    assertEquals(size + 1, newsize);
+    assertEquals(1, newsize);
   }
 
-  private void testCreateTableWithCustomType() throws IOException, BlurException, TException {
+  @Test
+  public void testCreateTableWithCustomType() throws IOException, BlurException, TException {
     Blur.Iface client = getClient();
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName("test_type");
@@ -232,18 +213,18 @@ public class BlurClusterTest {
     assertEquals(TestType.class.getName(), tableProperties.get("blur.fieldtype.customtype1"));
   }
 
-  public void testCreateTable() throws BlurException, TException, IOException {
+  public void createTable(String tableName) throws BlurException, TException, IOException {
     Blur.Iface client = getClient();
     TableDescriptor tableDescriptor = new TableDescriptor();
-    tableDescriptor.setName("test");
+    tableDescriptor.setName(tableName);
     tableDescriptor.setShardCount(5);
-    tableDescriptor.setTableUri(miniCluster.getFileSystemUri().toString() + "/blur/test");
+    tableDescriptor.setTableUri(miniCluster.getFileSystemUri().toString() + "/blur/" + tableName);
     client.createTable(tableDescriptor);
     List<String> tableList = client.tableList();
-    assertEquals(Arrays.asList("test"), tableList);
+    assertTrue(tableList.contains(tableName));
   }
 
-  public void testLoadTable() throws BlurException, TException, InterruptedException {
+  public void loadTable(String tableName) throws BlurException, TException, InterruptedException {
     Iface client = getClient();
     int maxFacetValue = 100;
     List<RowMutation> mutations = new ArrayList<RowMutation>();
@@ -253,7 +234,7 @@ public class BlurClusterTest {
       RecordMutation mutation = BlurThriftHelper.newRecordMutation("test", rowId,
           BlurThriftHelper.newColumn("test", "value"),
           BlurThriftHelper.newColumn("facet", Integer.toString(random.nextInt(maxFacetValue))));
-      RowMutation rowMutation = BlurThriftHelper.newRowMutation("test", rowId, mutation);
+      RowMutation rowMutation = BlurThriftHelper.newRowMutation(tableName, rowId, mutation);
       mutations.add(rowMutation);
     }
     long s = System.nanoTime();
@@ -266,7 +247,7 @@ public class BlurClusterTest {
     blurQueryRow.setQuery(queryRow);
     blurQueryRow.setUseCacheIfPresent(false);
     blurQueryRow.setCacheResult(false);
-    BlurResults resultsRow = client.query("test", blurQueryRow);
+    BlurResults resultsRow = client.query(tableName, blurQueryRow);
     assertRowResults(resultsRow);
     assertEquals(numberOfDocs, resultsRow.getTotalResults());
 
@@ -275,15 +256,19 @@ public class BlurClusterTest {
     queryRecord.rowQuery = false;
     queryRecord.setQuery("test.test:value");
     blurQueryRecord.setQuery(queryRecord);
-    BlurResults resultsRecord = client.query("test", blurQueryRecord);
+    BlurResults resultsRecord = client.query(tableName, blurQueryRecord);
     assertRecordResults(resultsRecord);
     assertEquals(numberOfDocs, resultsRecord.getTotalResults());
 
-    Schema schema = client.schema("test");
+    Schema schema = client.schema(tableName);
     assertFalse(schema.getFamilies().isEmpty());
   }
 
-  private void testQueryWithSelector() throws BlurException, TException {
+  @Test
+  public void testQueryWithSelector() throws BlurException, TException, IOException, InterruptedException {
+    final String tableName = "testQueryWithSelector";
+    createTable(tableName);
+    loadTable(tableName);
     Iface client = getClient();
     BlurQuery blurQueryRow = new BlurQuery();
     Query queryRow = new Query();
@@ -293,7 +278,7 @@ public class BlurClusterTest {
     blurQueryRow.setCacheResult(false);
     blurQueryRow.setSelector(new Selector());
 
-    BlurResults resultsRow = client.query("test", blurQueryRow);
+    BlurResults resultsRow = client.query(tableName, blurQueryRow);
     // assertRowResults(resultsRow);
     assertEquals(numberOfDocs, resultsRow.getTotalResults());
 
@@ -303,7 +288,11 @@ public class BlurClusterTest {
 
   }
 
-  private void testQueryWithFacets() throws BlurException, TException {
+  @Test
+  public void testQueryWithFacets() throws BlurException, TException, IOException, InterruptedException {
+    final String tableName = "testQueryWithFacets";
+    createTable(tableName);
+    loadTable(tableName);
     Iface client = getClient();
     BlurQuery blurQueryRow = new BlurQuery();
     Query queryRow = new Query();
@@ -317,7 +306,7 @@ public class BlurClusterTest {
       blurQueryRow.addToFacets(new Facet("test.facet:" + i, Long.MAX_VALUE));
     }
 
-    BlurResults resultsRow = client.query("test", blurQueryRow);
+    BlurResults resultsRow = client.query(tableName, blurQueryRow);
     // assertRowResults(resultsRow);
     assertEquals(numberOfDocs, resultsRow.getTotalResults());
 
@@ -327,9 +316,13 @@ public class BlurClusterTest {
 
   }
 
-  public void testBatchFetch() throws BlurException, TException {
+  @Test
+  public void testBatchFetch() throws BlurException, TException, InterruptedException, IOException {
+    String tableName = "testBatchFetch";
+    createTable(tableName);
+    loadTable(tableName);
     final Iface client = getClient();
-    List<String> terms = client.terms("test", null, "rowid", "", (short) 100);
+    List<String> terms = client.terms(tableName, null, "rowid", "", (short) 100);
 
     List<Selector> selectors = new ArrayList<Selector>();
     for (String s : terms) {
@@ -338,7 +331,7 @@ public class BlurClusterTest {
       selectors.add(selector);
     }
 
-    List<FetchResult> fetchRowBatch = client.fetchRowBatch("test", selectors);
+    List<FetchResult> fetchRowBatch = client.fetchRowBatch(tableName, selectors);
     assertEquals(100, fetchRowBatch.size());
 
     int i = 0;
@@ -349,59 +342,75 @@ public class BlurClusterTest {
 
   }
 
-  public void testQueryCancel() throws BlurException, TException, InterruptedException {
-    // This will make each collect in the collectors pause 250 ms per collect
-    // call
-    IndexManager.DEBUG_RUN_SLOW.set(true);
+  @Test
+  public void testQueryCancel() throws BlurException, TException, InterruptedException, IOException {
+    final String tableName = "testQueryCancel";
+    createTable(tableName);
+    loadTable(tableName);
+    try {
+      // This will make each collect in the collectors pause 250 ms per collect
+      // call
+      IndexManager.DEBUG_RUN_SLOW.set(true);
 
-    final Iface client = getClient();
-    final BlurQuery blurQueryRow = new BlurQuery();
-    Query queryRow = new Query();
-    queryRow.setQuery("test.test:value");
-    blurQueryRow.setQuery(queryRow);
-    blurQueryRow.setUseCacheIfPresent(false);
-    blurQueryRow.setCacheResult(false);
-    blurQueryRow.setUuid("1234");
+      final Iface client = getClient();
+      final BlurQuery blurQueryRow = new BlurQuery();
+      Query queryRow = new Query();
+      queryRow.setQuery("test.test:value");
+      blurQueryRow.setQuery(queryRow);
+      blurQueryRow.setUseCacheIfPresent(false);
+      blurQueryRow.setCacheResult(false);
+      blurQueryRow.setUuid("1234");
 
-    final AtomicReference<BlurException> error = new AtomicReference<BlurException>();
-    final AtomicBoolean fail = new AtomicBoolean();
+      final AtomicReference<BlurException> error = new AtomicReference<BlurException>();
+      final AtomicBoolean fail = new AtomicBoolean();
 
-    new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          // This call will take several seconds to execute.
-          client.query("test", blurQueryRow);
-          fail.set(true);
-        } catch (BlurException e) {
-          error.set(e);
-        } catch (TException e) {
-          e.printStackTrace();
-          fail.set(true);
+      new Thread(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            // This call will take several seconds to execute.
+            client.query(tableName, blurQueryRow);
+            fail.set(true);
+          } catch (BlurException e) {
+            error.set(e);
+          } catch (TException e) {
+            e.printStackTrace();
+            fail.set(true);
+          }
         }
+      }).start();
+      Thread.sleep(500);
+      client.cancelQuery(tableName, blurQueryRow.getUuid());
+      BlurException blurException = pollForError(error, 10, TimeUnit.SECONDS, null, fail, -1);
+      if (fail.get()) {
+        fail("Unknown error, failing test.");
       }
-    }).start();
-    Thread.sleep(500);
-    client.cancelQuery("test", blurQueryRow.getUuid());
-    BlurException blurException = pollForError(error, 10, TimeUnit.SECONDS, null, fail, -1);
-    if (fail.get()) {
-      fail("Unknown error, failing test.");
+      assertEquals(blurException.getErrorType(), ErrorType.QUERY_CANCEL);
+    } finally {
+      IndexManager.DEBUG_RUN_SLOW.set(false);
     }
-    assertEquals(blurException.getErrorType(), ErrorType.QUERY_CANCEL);
   }
 
-  public void testBackPressureViaQuery() throws BlurException, TException, InterruptedException {
+  // @Test
+  public void testBackPressureViaQuery() throws BlurException, TException, InterruptedException, IOException {
     // This will make each collect in the collectors pause 250 ms per collect
     // call
-    IndexManager.DEBUG_RUN_SLOW.set(true);
-    runBackPressureViaQuery();
-    Thread.sleep(1000);
-    System.gc();
-    System.gc();
-    Thread.sleep(1000);
+    String tableName = "testAdminCalls";
+    createTable(tableName);
+    loadTable(tableName);
+    try {
+      IndexManager.DEBUG_RUN_SLOW.set(true);
+      runBackPressureViaQuery(tableName);
+      Thread.sleep(1000);
+      System.gc();
+      System.gc();
+      Thread.sleep(1000);
+    } finally {
+      IndexManager.DEBUG_RUN_SLOW.set(false);
+    }
   }
 
-  private void runBackPressureViaQuery() throws InterruptedException {
+  private void runBackPressureViaQuery(final String tableName) throws InterruptedException {
     final Iface client = getClient();
     final BlurQuery blurQueryRow = new BlurQuery();
     Query queryRow = new Query();
@@ -435,7 +444,7 @@ public class BlurClusterTest {
       public void run() {
         try {
           // This call will take several seconds to execute.
-          client.query("test", blurQueryRow);
+          client.query(tableName, blurQueryRow);
           fail.set(true);
         } catch (BlurException e) {
           System.out.println("-------------------");
@@ -509,16 +518,19 @@ public class BlurClusterTest {
     return ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
   }
 
+  @Test
   public void testTestShardFailover() throws BlurException, TException, InterruptedException, IOException,
       KeeperException {
-
+    final String tableName = "testTestShardFailover";
+    createTable(tableName);
+    loadTable(tableName);
     Iface client = getClient();
     BlurQuery blurQuery = new BlurQuery();
     blurQuery.setUseCacheIfPresent(false);
     Query query = new Query();
     query.setQuery("test.test:value");
     blurQuery.setQuery(query);
-    BlurResults results1 = client.query("test", blurQuery);
+    BlurResults results1 = client.query(tableName, blurQuery);
     assertEquals(numberOfDocs, results1.getTotalResults());
     assertRowResults(results1);
 
@@ -528,15 +540,19 @@ public class BlurClusterTest {
     Thread.sleep(TimeUnit.SECONDS.toMillis(1));
 
     // This should block until shards have failed over
-    client.shardServerLayout("test");
+    client.shardServerLayout(tableName);
 
-    assertEquals(numberOfDocs, client.query("test", blurQuery).getTotalResults());
+    assertEquals(numberOfDocs, client.query(tableName, blurQuery).getTotalResults());
 
   }
 
-  public void testTermsList() throws BlurException, TException {
+  @Test
+  public void testTermsList() throws BlurException, TException, IOException, InterruptedException {
+    final String tableName = "testTermsList";
+    createTable(tableName);
+    loadTable(tableName);
     Iface client = getClient();
-    List<String> terms = client.terms("test", "test", "test", null, (short) 10);
+    List<String> terms = client.terms(tableName, "test", "test", null, (short) 10);
     List<String> list = new ArrayList<String>();
     list.add("value");
     assertEquals(list, terms);
@@ -564,6 +580,7 @@ public class BlurClusterTest {
     }
   }
 
+  @Test
   public void testCreateDisableAndRemoveTable() throws IOException, BlurException, TException {
     Iface client = getClient();
     String tableName = UUID.randomUUID().toString();

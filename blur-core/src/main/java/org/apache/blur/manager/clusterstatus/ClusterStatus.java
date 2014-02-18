@@ -23,6 +23,10 @@ import org.apache.blur.thrift.generated.TableDescriptor;
 
 
 public abstract class ClusterStatus {
+  
+  public static abstract class Action {
+    public abstract void action();
+  }
 
   public abstract List<String> getOnlineShardServers(boolean useCache, String cluster);
 
@@ -71,5 +75,7 @@ public abstract class ClusterStatus {
   public abstract void removeTable(String cluster, String table, boolean deleteIndexFiles);
 
   public abstract boolean isOpen();
+
+  public abstract void registerActionOnTableStateChange(Action action);
 
 }

@@ -20,6 +20,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   private final ConcurrentMap<String, WatchChildren> _tableWatchers = new ConcurrentHashMap<String, WatchChildren>();
   private final Map<String, SafeModeCacheEntry> _clusterToSafeMode = new ConcurrentHashMap<String, ZookeeperClusterStatus.SafeModeCacheEntry>();
   private final ConcurrentMap<String, WatchNodeData> _enabledWatchNodeExistance = new ConcurrentHashMap<String, WatchNodeData>();
+  private final Set<Action> _tableStateChange = Collections.newSetFromMap(new ConcurrentHashMap<Action, Boolean>());
 
   public ZookeeperClusterStatus(ZooKeeper zooKeeper, BlurConfiguration configuration) {
     _zk = zooKeeper;
@@ -137,6 +139,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
     @Override
     public void action(List<String> tables) {
+      runActions();
       Set<String> newSet = new HashSet<String>(tables);
       Set<String> oldSet = _tablesPerCluster.put(cluster, newSet);
       Set<String> newTables = getNewTables(newSet, oldSet);
@@ -155,6 +158,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         enabledWatcher.watch(new WatchNodeData.OnChange() {
           @Override
           public void action(byte[] data) {
+            runActions();
             _tableDescriptorCache.clear();
           }
         });
@@ -186,6 +190,12 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   private String getClusterTableKey(String cluster, String table) {
     return cluster + "." + table;
+  }
+
+  private void runActions() {
+    for (Action action : _tableStateChange) {
+      action.action();
+    }
   }
 
   @Override
@@ -652,5 +662,10 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   @Override
   public boolean isOpen() {
     return _running.get();
+  }
+
+  @Override
+  public void registerActionOnTableStateChange(Action action) {
+    _tableStateChange.add(action);
   }
 }

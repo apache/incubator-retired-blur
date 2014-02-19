@@ -310,7 +310,7 @@ under the License.
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<configuration>
-						<argLine>-XX:+UseConcMarkSweepGC</argLine>
+						<argLine>-XX:+UseConcMarkSweepGC -Xmx1g -Xms1g</argLine>
 						<reuseForks>false</reuseForks>
 						<systemPropertyVariables>
 							<blur.tmp.dir>${project.build.directory}/target/tmp</blur.tmp.dir>

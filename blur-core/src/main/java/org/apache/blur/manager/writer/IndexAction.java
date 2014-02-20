@@ -19,18 +19,17 @@ package org.apache.blur.manager.writer;
 import java.io.IOException;
 
 import org.apache.blur.server.IndexSearcherClosable;
-import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.IndexWriter;
 
 public abstract class IndexAction {
 
-  public abstract void doPreCommit(IndexSearcherClosable indexSearcher, BlurIndexWriter writer) throws IOException;
+  public abstract void doPreCommit(IndexSearcherClosable indexSearcher, IndexWriter writer) throws IOException;
 
-  public abstract void doPostCommit(BlurIndexWriter writer) throws IOException;
+  public abstract void doPostCommit(IndexWriter writer) throws IOException;
 
-  public abstract void doPreRollback(BlurIndexWriter writer) throws IOException;
+  public abstract void doPreRollback(IndexWriter writer) throws IOException;
 
-  public abstract void doPostRollback(BlurIndexWriter writer) throws IOException;
+  public abstract void doPostRollback(IndexWriter writer) throws IOException;
 
   public abstract void performMutate(IndexSearcherClosable searcher, IndexWriter writer) throws IOException;
 

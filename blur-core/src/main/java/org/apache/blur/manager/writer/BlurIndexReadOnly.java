@@ -73,8 +73,10 @@ public class BlurIndexReadOnly extends BlurIndex {
   }
 
   @Override
-  public void process(MutatableAction mutatableAction) {
+  public void process(IndexAction indexAction) throws IOException {
     throw new RuntimeException("Read-only shard");
   }
+
+
 
 }

@@ -43,7 +43,6 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.io.Text;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
-import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.CompositeReaderContext;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Fields;
@@ -155,12 +154,12 @@ public class IndexImporter extends TimerTask implements Closeable {
       }
 
       @Override
-      public void doPreCommit(IndexSearcherClosable indexSearcher, BlurIndexWriter writer) throws IOException {
+      public void doPreCommit(IndexSearcherClosable indexSearcher, IndexWriter writer) throws IOException {
 
       }
 
       @Override
-      public void doPostCommit(BlurIndexWriter writer) throws IOException {
+      public void doPostCommit(IndexWriter writer) throws IOException {
         LOG.info("Calling maybeMerge on the index [{0}] for [{1}/{2}]", _dirPath, _shard, _table);
         writer.maybeMerge();
         LOG.info("Cleaning up old directory [{0}] for [{1}/{2}]", _dirPath, _shard, _table);
@@ -169,12 +168,12 @@ public class IndexImporter extends TimerTask implements Closeable {
       }
 
       @Override
-      public void doPreRollback(BlurIndexWriter writer) throws IOException {
+      public void doPreRollback(IndexWriter writer) throws IOException {
         LOG.info("Starting rollback on [{0}/{1}]", _shard, _table);
       }
 
       @Override
-      public void doPostRollback(BlurIndexWriter writer) throws IOException {
+      public void doPostRollback(IndexWriter writer) throws IOException {
         LOG.info("Finished rollback on [{0}/{1}]", _shard, _table);
         String name = _dirPath.getName();
         int lastIndexOf = name.lastIndexOf('.');

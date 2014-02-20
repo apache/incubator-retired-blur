@@ -42,7 +42,6 @@ import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.RowDocumentUtil;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 
@@ -358,22 +357,22 @@ public class MutatableAction extends IndexAction {
   }
 
   @Override
-  public void doPreCommit(IndexSearcherClosable indexSearcher, BlurIndexWriter writer) {
+  public void doPreCommit(IndexSearcherClosable indexSearcher, IndexWriter writer) {
 
   }
 
   @Override
-  public void doPostCommit(BlurIndexWriter writer) {
+  public void doPostCommit(IndexWriter writer) {
 
   }
 
   @Override
-  public void doPreRollback(BlurIndexWriter writer) {
+  public void doPreRollback(IndexWriter writer) {
 
   }
 
   @Override
-  public void doPostRollback(BlurIndexWriter writer) {
+  public void doPostRollback(IndexWriter writer) {
 
   }
 

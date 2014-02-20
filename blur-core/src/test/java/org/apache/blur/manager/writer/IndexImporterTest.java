@@ -26,9 +26,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.analysis.FieldManager;
+import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.store.buffer.BufferStore;
@@ -42,6 +43,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.NoMergePolicy;
@@ -101,14 +103,89 @@ public class IndexImporterTest {
     conf.setMergePolicy(NoMergePolicy.NO_COMPOUND_FILES);
     _commitWriter = new IndexWriter(commitDirectory, conf.clone());
 
+    // Make sure there's an empty index...
+    new IndexWriter(mainDirectory, conf.clone()).close();
     _mainWriter = new IndexWriter(mainDirectory, conf.clone());
     BufferStore.initNewBuffer(128, 128 * 128);
 
-    _indexImporter = new IndexImporter(_mainWriter, new ReentrantReadWriteLock(), shardContext, TimeUnit.MINUTES, 10);
+    _indexImporter = new IndexImporter(getBlurIndex(shardContext, mainDirectory), shardContext, TimeUnit.MINUTES, 10);
+  }
+
+  private BlurIndex getBlurIndex(ShardContext shardContext, final Directory mainDirectory) throws IOException {
+    return new BlurIndex(shardContext, mainDirectory, null, null, null, null, null, null) {
+
+      @Override
+      public void removeSnapshot(String name) throws IOException {
+        throw new RuntimeException("Not Implemented");
+      }
+
+      @Override
+      public void refresh() throws IOException {
+        throw new RuntimeException("Not Implemented");
+      }
+
+      @Override
+      public void process(IndexAction indexAction) throws IOException {
+        final DirectoryReader reader = DirectoryReader.open(mainDirectory);
+        IndexSearcherClosable searcherClosable = new IndexSearcherClosable(reader, null) {
+
+          @Override
+          public Directory getDirectory() {
+            return mainDirectory;
+          }
+
+          @Override
+          public void close() throws IOException {
+            reader.close();
+          }
+        };
+        try {
+          indexAction.performMutate(searcherClosable, _mainWriter);
+          indexAction.doPreCommit(searcherClosable, _mainWriter);
+          _mainWriter.commit();
+          indexAction.doPostCommit(_mainWriter);
+        } catch (IOException e) {
+          indexAction.doPreRollback(_mainWriter);
+          _mainWriter.rollback();
+          indexAction.doPostRollback(_mainWriter);
+        }
+      }
+
+      @Override
+      public void optimize(int numberOfSegmentsPerShard) throws IOException {
+        throw new RuntimeException("Not Implemented");
+      }
+
+      @Override
+      public AtomicBoolean isClosed() {
+        throw new RuntimeException("Not Implemented");
+      }
+
+      @Override
+      public List<String> getSnapshots() throws IOException {
+        throw new RuntimeException("Not Implemented");
+      }
+
+      @Override
+      public IndexSearcherClosable getIndexSearcher() throws IOException {
+        throw new RuntimeException("Not Implemented");
+      }
+
+      @Override
+      public void createSnapshot(String name) throws IOException {
+        throw new RuntimeException("Not Implemented");
+      }
+
+      @Override
+      public void close() throws IOException {
+        throw new RuntimeException("Not Implemented");
+      }
+    };
   }
 
   @After
   public void tearDown() throws IOException {
+    IOUtils.closeQuietly(_commitWriter);
     IOUtils.closeQuietly(_mainWriter);
     IOUtils.closeQuietly(_indexImporter);
     _base.getFileSystem(configuration).delete(_base, true);

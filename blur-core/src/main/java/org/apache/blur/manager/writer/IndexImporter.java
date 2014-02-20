@@ -26,11 +26,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReadWriteLock;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.BlurPartitioner;
+import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.utils.BlurConstants;
@@ -43,6 +43,7 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.io.Text;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.CompositeReaderContext;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Fields;
@@ -56,20 +57,21 @@ import org.apache.lucene.util.BytesRef;
 public class IndexImporter extends TimerTask implements Closeable {
   private final static Log LOG = LogFactory.getLog(IndexImporter.class);
 
-  private final IndexWriter _indexWriter;
-  private final ReadWriteLock _lock;
+  private final BlurIndex _blurIndex;
   private final ShardContext _shardContext;
   private final Timer _timer;
+  private final String _table;
+  private final String _shard;
 
-  public IndexImporter(IndexWriter indexWriter, ReadWriteLock lock, ShardContext shardContext,
-      TimeUnit refreshUnit, long refreshAmount) {
-    _indexWriter = indexWriter;
-    _lock = lock;
+  public IndexImporter(BlurIndex blurIndex, ShardContext shardContext, TimeUnit refreshUnit, long refreshAmount) {
+    _blurIndex = blurIndex;
     _shardContext = shardContext;
     _timer = new Timer("IndexImporter [" + shardContext.getShard() + "/" + shardContext.getTableContext().getTable()
         + "]", true);
     long period = refreshUnit.toMillis(refreshAmount);
     _timer.schedule(this, period, period);
+    _table = _shardContext.getTableContext().getTable();
+    _shard = _shardContext.getShard();
   }
 
   @Override
@@ -121,61 +123,65 @@ public class IndexImporter extends TimerTask implements Closeable {
       if (indexesToImport.isEmpty()) {
         return;
       }
-      String table = _shardContext.getTableContext().getTable();
-      String shard = _shardContext.getShard();
-      for (Directory directory : indexesToImport) {
-        LOG.info("About to import [{0}] into [{1}/{2}]", directory, shard, table);
-      }
-      LOG.info("Obtaining lock on [{0}/{1}]", shard, table);
-      _lock.writeLock().lock();
-      try {
-        for (HdfsDirectory directory : indexesToImport) {
-          LOG.info("Starting import [{0}], commiting on [{1}/{2}]", directory, shard, table);
-          _indexWriter.commit();
-          boolean isSuccess = true;
-          boolean isRollbackDueToException = false;
-          boolean emitDeletes = _indexWriter.numDocs() != 0;
-          try {
-            isSuccess = applyDeletes(directory, _indexWriter, shard, emitDeletes);
-          } catch (IOException e) {
-            LOG.error("Some issue with deleting the old index on [{0}/{1}]", e, shard, table);
-            isSuccess = false;
-            isRollbackDueToException = true;
-          }
-          Path dirPath = directory.getPath();
-          if (isSuccess) {
-            LOG.info("Add index [{0}] [{1}/{2}]", directory, shard, table);
-            _indexWriter.addIndexes(directory);
-            LOG.info("Removing delete markers [{0}] on [{1}/{2}]", directory, shard, table);
-            _indexWriter.deleteDocuments(new Term(BlurConstants.DELETE_MARKER, BlurConstants.DELETE_MARKER_VALUE));
-            LOG.info("Finishing import [{0}], commiting on [{1}/{2}]", directory, shard, table);
-            _indexWriter.commit();
-            _indexWriter.maybeMerge();
-            LOG.info("Cleaning up old directory [{0}] for [{1}/{2}]", dirPath, shard, table);
-            fileSystem.delete(dirPath, true);
-            LOG.info("Import complete on [{0}/{1}]", shard, table);
-          } else {
-            if (!isRollbackDueToException) {
-              LOG.error(
-                  "Index is corrupted, RowIds are found in wrong shard [{0}/{1}], cancelling index import for [{2}]",
-                  shard, table, directory);
-            }
-            LOG.info("Starting rollback on [{0}/{1}]", shard, table);
-            _indexWriter.rollback();
-            LOG.info("Finished rollback on [{0}/{1}]", shard, table);
-            String name = dirPath.getName();
-            int lastIndexOf = name.lastIndexOf('.');
-            String badRowIdsName = name.substring(0, lastIndexOf) + ".bad_rowids";
-            fileSystem.rename(dirPath, new Path(dirPath.getParent(), badRowIdsName));
-          }
-        }
-      } finally {
-        _lock.writeLock().unlock();
-      }
-    } catch (IOException e) {
-      LOG.error("Unknown error while trying to refresh imports.", e);
-    }
 
+      IndexAction indexAction = getIndexAction(indexesToImport, fileSystem);
+      _blurIndex.process(indexAction);
+    } catch (IOException e) {
+      LOG.error("Unknown error while trying to refresh imports on [{1}/{2}].", e, _shard, _table);
+    }
+  }
+
+  private IndexAction getIndexAction(final List<HdfsDirectory> indexesToImport, final FileSystem fileSystem) {
+    return new IndexAction() {
+
+      private Path _dirPath;
+
+      @Override
+      public void performMutate(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
+        for (Directory directory : indexesToImport) {
+          LOG.info("About to import [{0}] into [{1}/{2}]", directory, _shard, _table);
+        }
+        LOG.info("Obtaining lock on [{0}/{1}]", _shard, _table);
+        for (HdfsDirectory directory : indexesToImport) {
+          boolean emitDeletes = searcher.getIndexReader().numDocs() != 0;
+          _dirPath = directory.getPath();
+          applyDeletes(directory, writer, _shard, emitDeletes);
+          LOG.info("Add index [{0}] [{1}/{2}]", directory, _shard, _table);
+          writer.addIndexes(directory);
+          LOG.info("Removing delete markers [{0}] on [{1}/{2}]", directory, _shard, _table);
+          writer.deleteDocuments(new Term(BlurConstants.DELETE_MARKER, BlurConstants.DELETE_MARKER_VALUE));
+          LOG.info("Finishing import [{0}], commiting on [{1}/{2}]", directory, _shard, _table);
+        }
+      }
+
+      @Override
+      public void doPreCommit(IndexSearcherClosable indexSearcher, BlurIndexWriter writer) throws IOException {
+
+      }
+
+      @Override
+      public void doPostCommit(BlurIndexWriter writer) throws IOException {
+        LOG.info("Calling maybeMerge on the index [{0}] for [{1}/{2}]", _dirPath, _shard, _table);
+        writer.maybeMerge();
+        LOG.info("Cleaning up old directory [{0}] for [{1}/{2}]", _dirPath, _shard, _table);
+        fileSystem.delete(_dirPath, true);
+        LOG.info("Import complete on [{0}/{1}]", _shard, _table);
+      }
+
+      @Override
+      public void doPreRollback(BlurIndexWriter writer) throws IOException {
+        LOG.info("Starting rollback on [{0}/{1}]", _shard, _table);
+      }
+
+      @Override
+      public void doPostRollback(BlurIndexWriter writer) throws IOException {
+        LOG.info("Finished rollback on [{0}/{1}]", _shard, _table);
+        String name = _dirPath.getName();
+        int lastIndexOf = name.lastIndexOf('.');
+        String badRowIdsName = name.substring(0, lastIndexOf) + ".bad_rowids";
+        fileSystem.rename(_dirPath, new Path(_dirPath.getParent(), badRowIdsName));
+      }
+    };
   }
 
   private SortedSet<FileStatus> sort(FileStatus[] listStatus) {
@@ -186,7 +192,7 @@ public class IndexImporter extends TimerTask implements Closeable {
     return result;
   }
 
-  private boolean applyDeletes(Directory directory, IndexWriter indexWriter, String shard, boolean emitDeletes)
+  private void applyDeletes(Directory directory, IndexWriter indexWriter, String shard, boolean emitDeletes)
       throws IOException {
     DirectoryReader reader = DirectoryReader.open(directory);
     try {
@@ -208,7 +214,8 @@ public class IndexImporter extends TimerTask implements Closeable {
             key.set(ref.bytes, ref.offset, ref.length);
             int partition = blurPartitioner.getPartition(key, null, numberOfShards);
             if (shardId != partition) {
-              return false;
+              throw new IOException("Index is corrupted, RowIds are found in wrong shard, partition [" + partition
+                  + "] does not shard [" + shardId + "], this can happen when rows are not hashed correctly.");
             }
             if (emitDeletes) {
               indexWriter.deleteDocuments(new Term(BlurConstants.ROW_ID, BytesRef.deepCopyOf(ref)));
@@ -219,6 +226,5 @@ public class IndexImporter extends TimerTask implements Closeable {
     } finally {
       reader.close();
     }
-    return true;
   }
 }

@@ -26,7 +26,6 @@ import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
-import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReaderContext;
@@ -134,6 +133,6 @@ public abstract class BlurIndex {
     return _shardContext;
   }
 
-  public abstract void process(MutatableAction mutatableAction) throws IOException;
+  public abstract void process(IndexAction indexAction) throws IOException;
 
 }

@@ -28,6 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.TaskAttemptID;
@@ -71,13 +72,25 @@ public abstract class AbstractOutputCommitter extends OutputCommitter {
 
   private void commitOrAbortJob(JobContext jobContext, Path shardPath, boolean commit) throws IOException {
     FileSystem fileSystem = shardPath.getFileSystem(jobContext.getConfiguration());
-    FileStatus[] listStatus = fileSystem.listStatus(shardPath);
+    FileStatus[] listStatus = fileSystem.listStatus(shardPath, new PathFilter() {
+      @Override
+      public boolean accept(Path path) {
+        if (path.getName().endsWith(".task_complete")) {
+          return true;
+        }
+        return false;
+      }
+    });
     for (FileStatus fileStatus : listStatus) {
       Path path = fileStatus.getPath();
       String name = path.getName();
       boolean taskComplete = name.endsWith(".task_complete");
       if (fileStatus.isDir()) {
         String taskAttemptName = getTaskAttemptName(name);
+        if (taskAttemptName == null) {
+          LOG.info("Dir name [{0}] not task attempt", name);
+          continue;
+        }
         TaskAttemptID taskAttemptID = TaskAttemptID.forName(taskAttemptName);
         if (taskAttemptID.getJobID().equals(jobContext.getJobID())) {
           if (commit) {
@@ -99,6 +112,9 @@ public abstract class AbstractOutputCommitter extends OutputCommitter {
 
   private String getTaskAttemptName(String name) {
     int lastIndexOf = name.lastIndexOf('.');
+    if (lastIndexOf < 0) {
+      return null;
+    }
     return name.substring(0, lastIndexOf);
   }
 

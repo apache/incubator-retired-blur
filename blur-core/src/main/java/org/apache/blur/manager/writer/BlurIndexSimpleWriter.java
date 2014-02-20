@@ -142,7 +142,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
           synchronized (_writer) {
             _writer.notify();
           }
-          _indexImporter = new IndexImporter(_writer.get(), _lock, _shardContext, TimeUnit.SECONDS, 10);
+          _indexImporter = new IndexImporter(BlurIndexSimpleWriter.this , _shardContext, TimeUnit.SECONDS, 10);
         } catch (IOException e) {
           LOG.error("Unknown error on index writer open.", e);
         }
@@ -294,18 +294,22 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   }
 
   @Override
-  public void process(MutatableAction mutatableAction) throws IOException {
+  public void process(IndexAction indexAction) throws IOException {
     _writeLock.lock();
     waitUntilNotNull(_writer);
     BlurIndexWriter writer = _writer.get();
     IndexSearcherClosable indexSearcher = null;
     try {
       indexSearcher = getIndexSearcher();
-      mutatableAction.performMutate(indexSearcher, writer);
+      indexAction.performMutate(indexSearcher, writer);
+      indexAction.doPreCommit(indexSearcher, writer);
       commit();
+      indexAction.doPostCommit(writer);
     } catch (Exception e) {
+      indexAction.doPreRollback(writer);
       writer.rollback();
       openWriter();
+      indexAction.doPostRollback(writer);
       throw new IOException("Unknown error during mutation", e);
     } finally {
       if (indexSearcher != null) {

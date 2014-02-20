@@ -42,6 +42,7 @@ import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.RowDocumentUtil;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 
@@ -49,7 +50,7 @@ import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
 
-public class MutatableAction {
+public class MutatableAction extends IndexAction {
 
   private static final Meter _writeRecordsMeter;
   private static final Meter _writeRowMeter;
@@ -327,7 +328,8 @@ public class MutatableAction {
     updateRow.replaceColumns(record);
   }
 
-  void performMutate(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
+  @Override
+  public void performMutate(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
     try {
       for (InternalAction internalAction : _actions) {
         internalAction.performAction(searcher, writer);
@@ -353,6 +355,26 @@ public class MutatableAction {
       _actions.add(updateRow);
     }
     return updateRow;
+  }
+
+  @Override
+  public void doPreCommit(IndexSearcherClosable indexSearcher, BlurIndexWriter writer) {
+
+  }
+
+  @Override
+  public void doPostCommit(BlurIndexWriter writer) {
+
+  }
+
+  @Override
+  public void doPreRollback(BlurIndexWriter writer) {
+
+  }
+
+  @Override
+  public void doPostRollback(BlurIndexWriter writer) {
+
   }
 
 }

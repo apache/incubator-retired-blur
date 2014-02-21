@@ -142,7 +142,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
           synchronized (_writer) {
             _writer.notify();
           }
-          _indexImporter = new IndexImporter(BlurIndexSimpleWriter.this , _shardContext, TimeUnit.SECONDS, 10);
+          _indexImporter = new IndexImporter(BlurIndexSimpleWriter.this, _shardContext, TimeUnit.SECONDS, 10);
         } catch (IOException e) {
           LOG.error("Unknown error on index writer open.", e);
         }
@@ -163,6 +163,9 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       indexReader.incRef();
     } finally {
       _indexRefreshReadLock.unlock();
+    }
+    if (indexReader instanceof ExitableReader) {
+      ((ExitableReader) indexReader).reset();
     }
     return new IndexSearcherClosable(indexReader, _searchThreadPool) {
 

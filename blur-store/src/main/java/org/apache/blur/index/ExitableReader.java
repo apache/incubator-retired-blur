@@ -21,7 +21,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.DirectoryReader;
@@ -50,25 +49,25 @@ public class ExitableReader extends FilterDirectoryReader {
   }
 
   public static class ExitableSubReaderWrapper extends SubReaderWrapper {
-    private final AtomicReference<AtomicBoolean> _running;
+    private final ExitObject _exitObject;
 
-    public ExitableSubReaderWrapper(AtomicReference<AtomicBoolean> running) {
-      _running = running;
+    public ExitableSubReaderWrapper(ExitObject exitObject) {
+      _exitObject = exitObject;
     }
 
     @Override
     public AtomicReader wrap(AtomicReader reader) {
-      return new ExitableFilterAtomicReader(reader, _running);
+      return new ExitableFilterAtomicReader(reader, _exitObject);
     }
   }
 
   public static class ExitableFilterAtomicReader extends FilterAtomicReader {
 
-    private final AtomicReference<AtomicBoolean> _running;
+    private final ExitObject _exitObject;
 
-    public ExitableFilterAtomicReader(AtomicReader in, AtomicReference<AtomicBoolean> running) {
+    public ExitableFilterAtomicReader(AtomicReader in, ExitObject exitObject) {
       super(in);
-      _running = running;
+      _exitObject = exitObject;
     }
 
     public AtomicReader getOriginalReader() {
@@ -81,7 +80,7 @@ public class ExitableReader extends FilterDirectoryReader {
       if (fields == null) {
         return null;
       }
-      return new ExitableFields(fields, _running);
+      return new ExitableFields(fields, _exitObject);
     }
 
     @Override
@@ -97,12 +96,12 @@ public class ExitableReader extends FilterDirectoryReader {
 
   public static class ExitableFields extends Fields {
 
-    private final AtomicReference<AtomicBoolean> _running;
+    private final ExitObject _exitObject;
     private final Fields _fields;
 
-    public ExitableFields(Fields fields, AtomicReference<AtomicBoolean> running) {
+    public ExitableFields(Fields fields, ExitObject exitObject) {
       _fields = fields;
-      _running = running;
+      _exitObject = exitObject;
     }
 
     @Override
@@ -111,7 +110,7 @@ public class ExitableReader extends FilterDirectoryReader {
       if (terms == null) {
         return null;
       }
-      return new ExitableTerms(terms, _running);
+      return new ExitableTerms(terms, _exitObject);
     }
 
     @Override
@@ -128,22 +127,22 @@ public class ExitableReader extends FilterDirectoryReader {
 
   public static class ExitableTerms extends Terms {
 
-    private final AtomicReference<AtomicBoolean> _running;
+    private final ExitObject _exitObject;
     private final Terms _terms;
 
-    public ExitableTerms(Terms terms, AtomicReference<AtomicBoolean> running) {
+    public ExitableTerms(Terms terms, ExitObject exitObject) {
       _terms = terms;
-      _running = running;
+      _exitObject = exitObject;
     }
 
     @Override
     public TermsEnum intersect(CompiledAutomaton compiled, BytesRef startTerm) throws IOException {
-      return new ExitableTermsEnum(_terms.intersect(compiled, startTerm), _running);
+      return new ExitableTermsEnum(_terms.intersect(compiled, startTerm), _exitObject);
     }
 
     @Override
     public TermsEnum iterator(TermsEnum reuse) throws IOException {
-      return new ExitableTermsEnum(_terms.iterator(reuse), _running);
+      return new ExitableTermsEnum(_terms.iterator(reuse), _exitObject);
     }
 
     @Override
@@ -197,9 +196,9 @@ public class ExitableReader extends FilterDirectoryReader {
     private long _lastCheck;
     private int count = 0;
 
-    public ExitableTermsEnum(TermsEnum termsEnum, AtomicReference<AtomicBoolean> running) {
+    public ExitableTermsEnum(TermsEnum termsEnum, ExitObject exitObject) {
       _termsEnum = termsEnum;
-      _running = running.get();
+      _running = exitObject.get();
       _lastCheck = System.nanoTime();
       checkAndThrow();
     }
@@ -284,23 +283,27 @@ public class ExitableReader extends FilterDirectoryReader {
 
   }
 
-  private final AtomicReference<AtomicBoolean> _running;
+  private final ExitObject _exitObject;
 
   public ExitableReader(DirectoryReader in) {
-    this(in, new AtomicReference<AtomicBoolean>(new AtomicBoolean(true)));
+    this(in, new ExitObject());
   }
 
-  private ExitableReader(DirectoryReader in, AtomicReference<AtomicBoolean> running) {
-    super(in, new ExitableSubReaderWrapper(running));
-    _running = running;
+  public ExitableReader(DirectoryReader in, ExitObject exitObject) {
+    super(in, new ExitableSubReaderWrapper(exitObject));
+    _exitObject = exitObject;
   }
 
   public AtomicBoolean getRunning() {
-    return _running.get();
+    return _exitObject.get();
   }
 
   public void setRunning(AtomicBoolean running) {
-    _running.set(running);
+    _exitObject.set(running);
+  }
+
+  public void reset() {
+    _exitObject.reset();
   }
 
   @Override

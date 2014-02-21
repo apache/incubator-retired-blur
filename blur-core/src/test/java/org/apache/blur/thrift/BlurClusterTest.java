@@ -347,12 +347,11 @@ public class BlurClusterTest {
     final String tableName = "testQueryCancel";
     createTable(tableName);
     loadTable(tableName);
+    final Iface client = getClient();
     try {
       // This will make each collect in the collectors pause 250 ms per collect
       // call
       IndexManager.DEBUG_RUN_SLOW.set(true);
-
-      final Iface client = getClient();
       final BlurQuery blurQueryRow = new BlurQuery();
       Query queryRow = new Query();
       queryRow.setQuery("test.test:value");
@@ -389,6 +388,8 @@ public class BlurClusterTest {
     } finally {
       IndexManager.DEBUG_RUN_SLOW.set(false);
     }
+    // Tests that the exitable reader was reset.
+    client.terms(tableName, "test", "facet", null, (short) 100);
   }
 
   // @Test

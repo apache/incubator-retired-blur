@@ -47,6 +47,13 @@ under the License.
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
+			<artifactId>blur-core</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-store</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -54,6 +61,13 @@ under the License.
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-util</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.blur</groupId>
+			<artifactId>blur-util</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>

@@ -131,21 +131,23 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   class Tables extends OnChange {
-    private String cluster;
+    private final String _cluster;
+    private final String _tablesPath;
 
     public Tables(String cluster) {
-      this.cluster = cluster;
+      _cluster = cluster;
+      _tablesPath = ZookeeperPathConstants.getTablesPath(cluster);
     }
 
     @Override
     public void action(List<String> tables) {
       runActions();
-      Set<String> newSet = new HashSet<String>(tables);
-      Set<String> oldSet = _tablesPerCluster.put(cluster, newSet);
+      Set<String> newSet = new HashSet<String>(filterTables(_tablesPath, tables));
+      Set<String> oldSet = _tablesPerCluster.put(_cluster, newSet);
       Set<String> newTables = getNewTables(newSet, oldSet);
       Set<String> oldTables = getOldTables(newSet, oldSet);
       for (String table : oldTables) {
-        final String clusterTableKey = getClusterTableKey(cluster, table);
+        final String clusterTableKey = getClusterTableKey(_cluster, table);
         WatchNodeData watch = _enabledWatchNodeExistance.remove(clusterTableKey);
         if (watch != null) {
           watch.close();
@@ -153,8 +155,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         _tableDescriptorCache.remove(table);
       }
       for (String table : newTables) {
-        final String clusterTableKey = getClusterTableKey(cluster, table);
-        WatchNodeData enabledWatcher = new WatchNodeData(_zk, ZookeeperPathConstants.getTablePath(cluster, table));
+        final String clusterTableKey = getClusterTableKey(_cluster, table);
+        WatchNodeData enabledWatcher = new WatchNodeData(_zk, ZookeeperPathConstants.getTablePath(_cluster, table));
         enabledWatcher.watch(new WatchNodeData.OnChange() {
           @Override
           public void action(byte[] data) {
@@ -401,7 +403,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     long s = System.nanoTime();
     try {
       checkIfOpen();
-      return _zk.getChildren(ZookeeperPathConstants.getTablesPath(cluster), false);
+      String tablesPath = ZookeeperPathConstants.getTablesPath(cluster);
+      return filterTables(tablesPath, _zk.getChildren(tablesPath, false));
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
@@ -409,6 +412,28 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     } finally {
       long e = System.nanoTime();
       LOG.debug("trace getTableList took [" + (e - s) / 1000000.0 + " ms]");
+    }
+  }
+
+  private List<String> filterTables(String tablesPath, List<String> tables) {
+    try {
+      List<String> result = new ArrayList<String>();
+      for (String table : tables) {
+        String path = tablesPath + "/" + table;
+        Stat stat = _zk.exists(path, false);
+        if (stat != null) {
+          byte[] data = _zk.getData(path, false, stat);
+          if (data == null) {
+            LOG.info("Empty table node found at [" + path + "]");
+            _zk.delete(path, -1);
+          } else {
+            result.add(table);
+          }
+        }
+      }
+      return result;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 

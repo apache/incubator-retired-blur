@@ -316,21 +316,28 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     Thread thread = new Thread(new Runnable() {
       @Override
       public void run() {
+        runWarmup();
         while (_running.get()) {
+          long s = System.nanoTime();
           synchronized (_warmupLock) {
             try {
               _warmupLock.wait(_delay);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException ex) {
               return;
             }
           }
-          for (int i = 0; i < 10; i++) {
+          long e = System.nanoTime();
+          if ((e - s) < TimeUnit.MILLISECONDS.toNanos(_delay)) {
             runWarmup();
-            synchronized (_warmupLock) {
-              try {
-                _warmupLock.wait(_shortDelay);
-              } catch (InterruptedException e) {
-                return;
+          } else {
+            for (int i = 0; i < 10; i++) {
+              runWarmup();
+              synchronized (_warmupLock) {
+                try {
+                  _warmupLock.wait(_shortDelay);
+                } catch (InterruptedException ex) {
+                  return;
+                }
               }
             }
           }
@@ -386,6 +393,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
 
   private synchronized void runWarmup() {
     try {
+      LOG.debug("Running warmup on the indexes.");
       warmupTables();
     } catch (Throwable t) {
       if (_running.get()) {

@@ -24,6 +24,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
@@ -45,9 +46,11 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSClient.DFSInputStream;
+import org.apache.hadoop.hdfs.server.namenode.LeaseExpiredException;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparator;
+import org.apache.hadoop.ipc.RemoteException;
 import org.apache.lucene.util.BytesRef;
 
 public class HdfsKeyValueStore implements Store {
@@ -157,6 +160,10 @@ public class HdfsKeyValueStore implements Store {
     _writeLock.lock();
     try {
       syncInternal();
+    } catch (RemoteException e) {
+      throw new IOException("Another HDFS KeyStore has likely taken ownership of this key value store.", e);
+    } catch (LeaseExpiredException e) {
+      throw new IOException("Another HDFS KeyStore has likely taken ownership of this key value store.", e);
     } finally {
       _writeLock.unlock();
     }
@@ -165,8 +172,51 @@ public class HdfsKeyValueStore implements Store {
   @Override
   public Iterable<Entry<BytesRef, BytesRef>> scan(BytesRef key) throws IOException {
     ensureOpen();
-    // to do
-    return null;
+    if (key == null) {
+      key = _pointers.firstKey();
+    }
+    ConcurrentNavigableMap<BytesRef, Value> tailMap = _pointers.tailMap(key, true);
+    final Set<Entry<BytesRef, Value>> entrySet = tailMap.entrySet();
+    return new Iterable<Entry<BytesRef, BytesRef>>() {
+      @Override
+      public Iterator<Entry<BytesRef, BytesRef>> iterator() {
+        final Iterator<Entry<BytesRef, Value>> iterator = entrySet.iterator();
+        return new Iterator<Entry<BytesRef, BytesRef>>() {
+
+          @Override
+          public boolean hasNext() {
+            return iterator.hasNext();
+          }
+
+          @Override
+          public Entry<BytesRef, BytesRef> next() {
+            final Entry<BytesRef, Value> e = iterator.next();
+            return new Entry<BytesRef, BytesRef>() {
+
+              @Override
+              public BytesRef setValue(BytesRef value) {
+                throw new RuntimeException("Read only.");
+              }
+
+              @Override
+              public BytesRef getValue() {
+                return e.getValue()._bytesRef;
+              }
+
+              @Override
+              public BytesRef getKey() {
+                return e.getKey();
+              }
+            };
+          }
+
+          @Override
+          public void remove() {
+            throw new RuntimeException("Read only.");
+          }
+        };
+      }
+    };
   }
 
   @Override
@@ -184,6 +234,10 @@ public class HdfsKeyValueStore implements Store {
       if (!path.equals(_outputPath)) {
         cleanupOldFiles();
       }
+    } catch (RemoteException e) {
+      throw new IOException("Another HDFS KeyStore has likely taken ownership of this key value store.", e);
+    } catch (LeaseExpiredException e) {
+      throw new IOException("Another HDFS KeyStore has likely taken ownership of this key value store.", e);
     } finally {
       _writeLock.unlock();
     }
@@ -262,6 +316,10 @@ public class HdfsKeyValueStore implements Store {
       Operation op = getDeleteOperation(OperationType.DELETE, key);
       write(op);
       _pointers.remove(key);
+    } catch (RemoteException e) {
+      throw new IOException("Another HDFS KeyStore has likely taken ownership of this key value store.", e);
+    } catch (LeaseExpiredException e) {
+      throw new IOException("Another HDFS KeyStore has likely taken ownership of this key value store.", e);
     } finally {
       _writeLock.unlock();
     }

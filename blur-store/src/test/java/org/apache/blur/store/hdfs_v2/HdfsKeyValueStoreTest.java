@@ -16,12 +16,12 @@
  */
 package org.apache.blur.store.hdfs_v2;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Map.Entry;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.blur.log.Log;
@@ -139,6 +139,75 @@ public class HdfsKeyValueStoreTest {
     store.put(new BytesRef("a"), new BytesRef(new byte[2000]));
     assertEquals(2, fileSystem.listStatus(_path).length);
     store.close();
+  }
+
+//  @Test
+  public void testTwoKeyStoreInstancesWritingAtTheSameTime() throws IOException {
+    HdfsKeyValueStore store1 = new HdfsKeyValueStore(_configuration, _path);
+    listFiles();
+    store1.put(new BytesRef("a1"), new BytesRef(new byte[2000]));
+    listFiles();
+    HdfsKeyValueStore store2 = new HdfsKeyValueStore(_configuration, _path);
+    listFiles();
+    store2.put(new BytesRef("a1"), new BytesRef(new byte[1000]));
+    listFiles();
+    store1.put(new BytesRef("a2"), new BytesRef(new byte[2000]));
+    listFiles();
+    store2.put(new BytesRef("a2"), new BytesRef(new byte[1000]));
+    listFiles();
+    store1.put(new BytesRef("a3"), new BytesRef(new byte[2000]));
+    listFiles();
+    store2.put(new BytesRef("a3"), new BytesRef(new byte[1000]));
+    listFiles();
+    try {
+      store1.sync();
+      fail();
+    } catch (Exception e) {
+
+    }
+    store2.sync();
+    store1.close();
+    store2.close();
+
+    HdfsKeyValueStore store3 = new HdfsKeyValueStore(_configuration, _path);
+    Iterable<Entry<BytesRef, BytesRef>> scan = store3.scan(null);
+    for (Entry<BytesRef, BytesRef> e : scan) {
+      System.out.println(e.getValue().length);
+    }
+    store3.close();
+  }
+
+  @Test
+  public void testTwoKeyStoreInstancesWritingAtTheSameTimeSmallFiles() throws IOException {
+    HdfsKeyValueStore store1 = new HdfsKeyValueStore(_configuration, _path, 1000);
+    store1.put(new BytesRef("a1"), new BytesRef(new byte[2000]));
+    HdfsKeyValueStore store2 = new HdfsKeyValueStore(_configuration, _path, 1000);
+    store2.put(new BytesRef("a1"), new BytesRef(new byte[1000]));
+    try {
+      store1.put(new BytesRef("a2"), new BytesRef(new byte[2000]));
+      fail();
+    } catch (Exception e) {
+      // Should throw exception
+      store1.close();
+    }
+    store2.put(new BytesRef("a2"), new BytesRef(new byte[1000]));
+    store2.put(new BytesRef("a3"), new BytesRef(new byte[1000]));
+    store2.sync();
+    store2.close();
+
+    HdfsKeyValueStore store3 = new HdfsKeyValueStore(_configuration, _path);
+    Iterable<Entry<BytesRef, BytesRef>> scan = store3.scan(null);
+    for (Entry<BytesRef, BytesRef> e : scan) {
+      System.out.println(e.getValue().length);
+    }
+    store3.close();
+  }
+
+  private void listFiles() throws IOException {
+    FileSystem fileSystem = _path.getFileSystem(_configuration);
+    for (FileStatus status : fileSystem.listStatus(_path)) {
+      System.out.println(status.getPath() + " " + status.getLen());
+    }
   }
 
   private BytesRef toBytesRef(String s) {

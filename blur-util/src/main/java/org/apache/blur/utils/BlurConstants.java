@@ -37,6 +37,10 @@ public class BlurConstants {
   public static final String SUPER = "super";
   public static final String SEP = ".";
   
+  public static final String BLUR_SHARD_INDEX_QUEUE_READER_CLASS = "blur.shard.index.queue.reader.class";
+  public static final String BLUR_SHARD_INDEX_QUEUE_READER_BACKOFF = "blur.shard.index.queue.reader.backoff";
+  public static final String BLUR_SHARD_INDEX_QUEUE_READER_MAX = "blur.shard.index.queue.reader.max";
+  
   public static final String FAST_DECOMPRESSION = "FAST_DECOMPRESSION";
   public static final String FAST = "FAST";
   public static final String HIGH_COMPRESSION = "HIGH_COMPRESSION";

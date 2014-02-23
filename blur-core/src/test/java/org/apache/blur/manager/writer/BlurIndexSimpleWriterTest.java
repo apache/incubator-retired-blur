@@ -63,7 +63,6 @@ public class BlurIndexSimpleWriterTest {
 
   private SharedMergeScheduler _mergeScheduler;
   private String uuid;
-  private BlurIndexRefresher _refresher;
   private BlurIndexCloser _closer;
   private DefaultBlurIndexWarmup _indexWarmup;
 
@@ -78,7 +77,6 @@ public class BlurIndexSimpleWriterTest {
 
     _configuration = new Configuration();
     _service = Executors.newThreadPool("test", 10);
-    _refresher = new BlurIndexRefresher();
     _closer = new BlurIndexCloser();
     _indexWarmup = new DefaultBlurIndexWarmup(1000000);
   }
@@ -107,7 +105,6 @@ public class BlurIndexSimpleWriterTest {
 
   @After
   public void tearDown() throws IOException {
-    _refresher.close();
     _writer.close();
     _mergeScheduler.close();
     _service.shutdownNow();

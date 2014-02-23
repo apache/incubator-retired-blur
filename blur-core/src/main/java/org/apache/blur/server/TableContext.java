@@ -19,6 +19,7 @@ package org.apache.blur.server;
 import static org.apache.blur.utils.BlurConstants.BLUR_FIELDTYPE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLURINDEX_CLASS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_QUEUE_READER_CLASS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_SIMILARITY;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_READ_INTERCEPTOR;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_TIME_BETWEEN_COMMITS;
@@ -49,6 +50,7 @@ import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;
 import org.apache.blur.manager.writer.BlurIndexSimpleWriter;
+import org.apache.blur.manager.writer.QueueReader;
 //import org.apache.blur.manager.writer.BlurNRTIndex;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.thrift.generated.ScoreType;
@@ -362,6 +364,37 @@ public class TableContext {
 
   public ReadInterceptor getReadInterceptor() {
     return _readInterceptor;
+  }
+
+  @SuppressWarnings("unchecked")
+  public QueueReader getQueueReader(BlurIndex blurIndex, ShardContext shardContext) throws IOException {
+    String className = _blurConfiguration.get(BLUR_SHARD_INDEX_QUEUE_READER_CLASS);
+    if (className == null || className.trim().isEmpty()) {
+      return null;
+    }
+    Class<? extends QueueReader> clazz;
+    try {
+      clazz = (Class<? extends QueueReader>) Class.forName(className);
+    } catch (ClassNotFoundException e) {
+      throw new IOException(e);
+    }
+    try {
+      Constructor<? extends QueueReader> constructor = clazz.getConstructor(new Class[] { BlurIndex.class,
+          ShardContext.class });
+      return constructor.newInstance(blurIndex, shardContext);
+    } catch (NoSuchMethodException e) {
+      throw new IOException(e);
+    } catch (SecurityException e) {
+      throw new IOException(e);
+    } catch (InstantiationException e) {
+      throw new IOException(e);
+    } catch (IllegalAccessException e) {
+      throw new IOException(e);
+    } catch (IllegalArgumentException e) {
+      throw new IOException(e);
+    } catch (InvocationTargetException e) {
+      throw new IOException(e);
+    }
   }
 
 }

@@ -460,7 +460,8 @@ public class IndexManager {
       }
       String rowId = blurQuery.getRowId();
       if (rowId != null) {
-        // reduce the index selection down to the only one that would contain the row.
+        // reduce the index selection down to the only one that would contain
+        // the row.
         Map<String, BlurIndex> map = new HashMap<String, BlurIndex>();
         String shard = MutationHelper.getShardName(table, rowId, getNumberOfShards(table), _blurPartitioner);
         BlurIndex index = getBlurIndex(table, shard);
@@ -1207,25 +1208,7 @@ public class IndexManager {
       }
       ShardContext shardContext = blurIndex.getShardContext();
       final MutatableAction mutatableAction = new MutatableAction(shardContext);
-      for (int i = 0; i < mutations.size(); i++) {
-        RowMutation mutation = mutations.get(i);
-        RowMutationType type = mutation.rowMutationType;
-        switch (type) {
-        case REPLACE_ROW:
-          Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);
-          mutatableAction.replaceRow(row);
-          break;
-        case UPDATE_ROW:
-          doUpdateRowMutation(mutation, mutatableAction);
-          break;
-        case DELETE_ROW:
-          mutatableAction.deleteRow(mutation.rowId);
-          break;
-        default:
-          throw new RuntimeException("Not supported [" + type + "]");
-        }
-      }
-
+      mutatableAction.mutate(mutations);
       return _mutateExecutor.submit(new Callable<Void>() {
         @Override
         public Void call() throws Exception {
@@ -1251,32 +1234,6 @@ public class IndexManager {
       list.add(mutation);
     }
     return map;
-  }
-
-  private void doUpdateRowMutation(RowMutation mutation, MutatableAction mutatableAction) throws BlurException,
-      IOException {
-    String rowId = mutation.getRowId();
-
-    for (RecordMutation recordMutation : mutation.getRecordMutations()) {
-      RecordMutationType type = recordMutation.recordMutationType;
-      Record record = recordMutation.getRecord();
-      switch (type) {
-      case DELETE_ENTIRE_RECORD:
-        mutatableAction.deleteRecord(rowId, record.getRecordId());
-        break;
-      case APPEND_COLUMN_VALUES:
-        mutatableAction.appendColumns(rowId, record);
-        break;
-      case REPLACE_ENTIRE_RECORD:
-        mutatableAction.replaceRecord(rowId, record);
-        break;
-      case REPLACE_COLUMNS:
-        mutatableAction.replaceColumns(rowId, record);
-        break;
-      default:
-        throw new RuntimeException("Unsupported record mutation type [" + type + "]");
-      }
-    }
   }
 
   private int getNumberOfShards(String table) {

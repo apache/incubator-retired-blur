@@ -33,11 +33,16 @@ import org.apache.blur.manager.IndexManager;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.thrift.MutationHelper;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.FetchRowResult;
 import org.apache.blur.thrift.generated.Record;
+import org.apache.blur.thrift.generated.RecordMutation;
+import org.apache.blur.thrift.generated.RecordMutationType;
 import org.apache.blur.thrift.generated.Row;
+import org.apache.blur.thrift.generated.RowMutation;
+import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.RowDocumentUtil;
@@ -374,6 +379,54 @@ public class MutatableAction extends IndexAction {
   @Override
   public void doPostRollback(IndexWriter writer) {
 
+  }
+
+  public void mutate(RowMutation mutation) {
+    RowMutationType type = mutation.rowMutationType;
+    switch (type) {
+    case REPLACE_ROW:
+      Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);
+      replaceRow(row);
+      break;
+    case UPDATE_ROW:
+      doUpdateRowMutation(mutation, this);
+      break;
+    case DELETE_ROW:
+      deleteRow(mutation.rowId);
+      break;
+    default:
+      throw new RuntimeException("Not supported [" + type + "]");
+    }
+  }
+
+  private void doUpdateRowMutation(RowMutation mutation, MutatableAction mutatableAction) {
+    String rowId = mutation.getRowId();
+    for (RecordMutation recordMutation : mutation.getRecordMutations()) {
+      RecordMutationType type = recordMutation.recordMutationType;
+      Record record = recordMutation.getRecord();
+      switch (type) {
+      case DELETE_ENTIRE_RECORD:
+        mutatableAction.deleteRecord(rowId, record.getRecordId());
+        break;
+      case APPEND_COLUMN_VALUES:
+        mutatableAction.appendColumns(rowId, record);
+        break;
+      case REPLACE_ENTIRE_RECORD:
+        mutatableAction.replaceRecord(rowId, record);
+        break;
+      case REPLACE_COLUMNS:
+        mutatableAction.replaceColumns(rowId, record);
+        break;
+      default:
+        throw new RuntimeException("Unsupported record mutation type [" + type + "]");
+      }
+    }
+  }
+
+  public void mutate(List<RowMutation> mutations) {
+    for (int i = 0; i < mutations.size(); i++) {
+      mutate(mutations.get(i));
+    }
   }
 
 }

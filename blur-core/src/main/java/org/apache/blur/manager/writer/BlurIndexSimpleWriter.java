@@ -67,6 +67,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final AtomicReference<BlurIndexWriter> _writer = new AtomicReference<BlurIndexWriter>();
   private final boolean _makeReaderExitable = true;
   private IndexImporter _indexImporter;
+  private QueueReader _queueReader;
   private final ReadWriteLock _lock = new ReentrantReadWriteLock();
   private final Lock _writeLock = _lock.writeLock();
   private final ReadWriteLock _indexRefreshLock = new ReentrantReadWriteLock();
@@ -134,6 +135,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
 
   private Thread getWriterOpener(ShardContext shardContext) {
     Thread thread = new Thread(new Runnable() {
+
       @Override
       public void run() {
         try {
@@ -142,6 +144,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
             _writer.notify();
           }
           _indexImporter = new IndexImporter(BlurIndexSimpleWriter.this, _shardContext, TimeUnit.SECONDS, 10);
+          _queueReader = _tableContext.getQueueReader(BlurIndexSimpleWriter.this, _shardContext);
         } catch (IOException e) {
           LOG.error("Unknown error on index writer open.", e);
         }
@@ -206,7 +209,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   @Override
   public void close() throws IOException {
     _isClosed.set(true);
-    IOUtils.cleanup(LOG, _indexImporter, _writer.get(), _indexReader.get());
+    IOUtils.cleanup(LOG, _indexImporter, _queueReader, _writer.get(), _indexReader.get());
   }
 
   @Override

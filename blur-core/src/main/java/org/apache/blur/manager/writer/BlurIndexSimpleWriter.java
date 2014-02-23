@@ -34,7 +34,6 @@ import org.apache.blur.index.IndexDeletionPolicyReader;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.codec.Blur022Codec;
-import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.lucene.warmup.TraceableDirectory;
 import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.server.IndexSearcherClosable;
@@ -78,9 +77,9 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final IndexDeletionPolicyReader _policy;
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
-      DirectoryReferenceFileGC gc, final ExecutorService searchExecutor, BlurIndexCloser indexCloser,
-      BlurIndexRefresher refresher, BlurIndexWarmup indexWarmup) throws IOException {
-    super(shardContext, directory, mergeScheduler, gc, searchExecutor, indexCloser, refresher, indexWarmup);
+      final ExecutorService searchExecutor, BlurIndexCloser indexCloser, BlurIndexWarmup indexWarmup)
+      throws IOException {
+    super(shardContext, directory, mergeScheduler, searchExecutor, indexCloser, indexWarmup);
     _searchThreadPool = searchExecutor;
     _shardContext = shardContext;
     _tableContext = _shardContext.getTableContext();

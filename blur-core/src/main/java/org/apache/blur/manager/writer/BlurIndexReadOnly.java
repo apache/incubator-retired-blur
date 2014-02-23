@@ -28,7 +28,7 @@ public class BlurIndexReadOnly extends BlurIndex {
   private final BlurIndex _blurIndex;
 
   public BlurIndexReadOnly(BlurIndex blurIndex) throws IOException {
-    super(null, null, null, null, null, null, null, null);
+    super(null, null, null, null, null, null);
     _blurIndex = blurIndex;
   }
 
@@ -76,7 +76,5 @@ public class BlurIndexReadOnly extends BlurIndex {
   public void process(IndexAction indexAction) throws IOException {
     throw new RuntimeException("Read-only shard");
   }
-
-
 
 }

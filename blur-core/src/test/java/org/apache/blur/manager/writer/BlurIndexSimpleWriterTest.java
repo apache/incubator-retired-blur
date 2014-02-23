@@ -17,7 +17,8 @@ package org.apache.blur.manager.writer;
  * limitations under the License.
  */
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +28,6 @@ import java.util.concurrent.ExecutorService;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.concurrent.Executors;
-import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
@@ -61,7 +61,6 @@ public class BlurIndexSimpleWriterTest {
   private File _base;
   private Configuration _configuration;
 
-  private DirectoryReferenceFileGC _gc;
   private SharedMergeScheduler _mergeScheduler;
   private String uuid;
   private BlurIndexRefresher _refresher;
@@ -76,7 +75,6 @@ public class BlurIndexSimpleWriterTest {
     _base.mkdirs();
 
     _mergeScheduler = new SharedMergeScheduler(1);
-    _gc = new DirectoryReferenceFileGC();
 
     _configuration = new Configuration();
     _service = Executors.newThreadPool("test", 10);
@@ -104,8 +102,7 @@ public class BlurIndexSimpleWriterTest {
     path.mkdirs();
     FSDirectory directory = FSDirectory.open(path);
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard-" + uuid);
-    _writer = new BlurIndexSimpleWriter(shardContext, directory, _mergeScheduler, _gc, _service, _closer, _refresher,
-        _indexWarmup);
+    _writer = new BlurIndexSimpleWriter(shardContext, directory, _mergeScheduler, _service, _closer, _indexWarmup);
   }
 
   @After
@@ -113,7 +110,6 @@ public class BlurIndexSimpleWriterTest {
     _refresher.close();
     _writer.close();
     _mergeScheduler.close();
-    _gc.close();
     _service.shutdownNow();
     rmr(_base);
   }

@@ -34,7 +34,6 @@ import java.util.concurrent.Executors;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;
 import org.apache.blur.manager.writer.BlurIndexSimpleWriter;
@@ -63,7 +62,6 @@ public class LocalIndexServer extends AbstractIndexServer {
 
   private final Map<String, Map<String, BlurIndex>> _readersMap = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
   private final SharedMergeScheduler _mergeScheduler;
-  private final DirectoryReferenceFileGC _gc;
   private final ExecutorService _searchExecutor;
   private final TableContext _tableContext;
   private final Closer _closer;
@@ -79,7 +77,6 @@ public class LocalIndexServer extends AbstractIndexServer {
     _closer = Closer.create();
     _tableContext = TableContext.create(tableDescriptor);
     _mergeScheduler = _closer.register(new SharedMergeScheduler(3));
-    _gc = _closer.register(new DirectoryReferenceFileGC());
     _searchExecutor = Executors.newCachedThreadPool();
     _closer.register(new CloseableExecutorService(_searchExecutor));
     _ramDir = ramDir;
@@ -161,8 +158,8 @@ public class LocalIndexServer extends AbstractIndexServer {
 
   private BlurIndex openIndex(String table, String shard, Directory dir) throws CorruptIndexException, IOException {
     ShardContext shardContext = ShardContext.create(_tableContext, shard);
-    BlurIndexSimpleWriter index = new BlurIndexSimpleWriter(shardContext, dir, _mergeScheduler, _gc, _searchExecutor,
-        _indexCloser, null, _indexWarmup);
+    BlurIndexSimpleWriter index = new BlurIndexSimpleWriter(shardContext, dir, _mergeScheduler, _searchExecutor,
+        _indexCloser, _indexWarmup);
     return index;
   }
 

@@ -39,7 +39,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.manager.BlurFilterCache;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.clusterstatus.ClusterStatus.Action;
@@ -47,7 +46,6 @@ import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;
 import org.apache.blur.manager.writer.BlurIndexReadOnly;
-import org.apache.blur.manager.writer.BlurIndexRefresher;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
@@ -110,11 +108,9 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   private final Thread _timerCacheFlush;
   private final Object _cleanupLock = new Object();
   private final ExecutorService _openerService;
-  private final DirectoryReferenceFileGC _gc;
   private final WatchChildren _watchOnlineShards;
   private final SharedMergeScheduler _mergeScheduler;
   private final ExecutorService _searchExecutor;
-  private final BlurIndexRefresher _refresher;
   private final BlurIndexCloser _indexCloser;
   private final ExecutorService _warmupExecutor;
   private final ConcurrentMap<String, LayoutEntry> _layout = new ConcurrentHashMap<String, LayoutEntry>();
@@ -154,12 +150,9 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     _closer.register(CloseableExecutorService.close(_searchExecutor));
     _closer.register(CloseableExecutorService.close(_warmupExecutor));
 
-    _gc = _closer.register(new DirectoryReferenceFileGC());
-
     // @TODO allow for configuration of these
     _mergeScheduler = _closer.register(new SharedMergeScheduler(maxMergeThreads));
 
-    _refresher = _closer.register(new BlurIndexRefresher());
     _indexCloser = _closer.register(new BlurIndexCloser());
     _timerCacheFlush = setupFlushCacheTimer();
     _timerCacheFlush.start();
@@ -565,8 +558,8 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
       directory = _blockCacheDirectoryFactory.newDirectory(table, shard, directory, blockCacheFileTypes);
     }
 
-    BlurIndex index = tableContext.newInstanceBlurIndex(shardContext, directory, _mergeScheduler, _gc, _searchExecutor,
-        _indexCloser, _refresher, _warmup);
+    BlurIndex index = tableContext.newInstanceBlurIndex(shardContext, directory, _mergeScheduler, _searchExecutor,
+        _indexCloser, _warmup);
 
     if (_clusterStatus.isReadOnly(true, _cluster, table)) {
       index = new BlurIndexReadOnly(index);

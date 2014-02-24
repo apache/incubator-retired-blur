@@ -382,17 +382,23 @@ under the License.
 		<profile>
 			<id>hadoop-1x</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+				<property>
+					<name>hadoop1</name>
+				</property>
 			</activation>
 			<properties>
 				<hadoop.version>1.2.1</hadoop.version>
 			</properties>
 		</profile>
-
 		<profile>
-			<id>cdh4-mr1</id>
+			<id>hadoop-2.2</id>
+			<activation>
+				<property>
+					<name>hadoop2</name>
+				</property>
+			</activation>
 			<properties>
-				<hadoop.version>2.0.0-mr1-cdh4.3.0</hadoop.version>
+				<hadoop.version>2.2.0</hadoop.version>
 			</properties>
 		</profile>
 	</profiles>

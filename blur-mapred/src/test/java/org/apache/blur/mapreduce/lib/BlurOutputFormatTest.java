@@ -43,8 +43,9 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.TestMapReduceLocal.TrackingTextInputFormat;
+import org.apache.hadoop.mapreduce.TestMapperReducerCleanup.TrackingTextInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.lucene.index.DirectoryReader;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -111,7 +112,7 @@ public class BlurOutputFormatTest {
     Job job = new Job(jobConf, "blur index");
     job.setJarByClass(BlurOutputFormatTest.class);
     job.setMapperClass(CsvBlurMapper.class);
-    job.setInputFormatClass(TrackingTextInputFormat.class);
+    job.setInputFormatClass(TextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
     String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();

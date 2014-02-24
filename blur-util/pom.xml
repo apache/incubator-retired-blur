@@ -192,7 +192,9 @@ under the License.
 		<profile>
 			<id>hadoop-1x</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+				<property>
+					<name>hadoop1</name>
+				</property>
 			</activation>
 			<dependencies>
 				<dependency>
@@ -203,7 +205,12 @@ under the License.
 			</dependencies>
 		</profile>
 		<profile>
-			<id>cdh4-mr1</id>
+			<id>hadoop-2.2</id>
+			<activation>
+				<property>
+					<name>hadoop2</name>
+				</property>
+			</activation>
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>

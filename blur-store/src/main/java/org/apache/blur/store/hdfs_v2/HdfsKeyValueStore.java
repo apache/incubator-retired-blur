@@ -21,6 +21,7 @@ import java.io.DataOutput;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -45,7 +46,6 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdfs.DFSClient.DFSInputStream;
 import org.apache.hadoop.hdfs.server.namenode.LeaseExpiredException;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
@@ -55,6 +55,8 @@ import org.apache.lucene.util.BytesRef;
 
 public class HdfsKeyValueStore implements Store {
 
+  private static final String IN = "in";
+  private static final String GET_FILE_LENGTH = "getFileLength";
   private static final int DEFAULT_MAX = 64 * 1024 * 1024;
   private final Log LOG = LogFactory.getLog(HdfsKeyValueStore.class);
 
@@ -370,8 +372,8 @@ public class HdfsKeyValueStore implements Store {
 
   private long getFileLength(Path path, FSDataInputStream inputStream) throws IOException {
     FileStatus fileStatus = _fileSystem.getFileStatus(path);
-    DFSInputStream dfs = getDFS(inputStream);
-    return Math.max(dfs.getFileLength(), fileStatus.getLen());
+    long dfsLength = getDFSLength(inputStream);
+    return Math.max(dfsLength, fileStatus.getLen());
   }
 
   private void syncInternal() throws IOException {
@@ -417,25 +419,24 @@ public class HdfsKeyValueStore implements Store {
   }
 
   private SortedSet<FileStatus> getList(Path p) throws IOException {
-    FileStatus[] listStatus = _fileSystem.listStatus(p);
-    if (listStatus == null) {
-      return new TreeSet<FileStatus>();
+    if (_fileSystem.exists(p)) {
+      FileStatus[] listStatus = _fileSystem.listStatus(p);
+      if (listStatus != null) {
+        return new TreeSet<FileStatus>(Arrays.asList(listStatus));
+      }
     }
-    return new TreeSet<FileStatus>(Arrays.asList(listStatus));
+    return new TreeSet<FileStatus>();
   }
 
-  private static DFSInputStream getDFS(FSDataInputStream inputStream) throws IOException {
+  private long getDFSLength(FSDataInputStream inputStream) throws IOException {
     try {
-      Field field = FilterInputStream.class.getDeclaredField("in");
+      Field field = FilterInputStream.class.getDeclaredField(IN);
       field.setAccessible(true);
-      return (DFSInputStream) field.get(inputStream);
-    } catch (NoSuchFieldException e) {
-      throw new IOException(e);
-    } catch (SecurityException e) {
-      throw new IOException(e);
-    } catch (IllegalArgumentException e) {
-      throw new IOException(e);
-    } catch (IllegalAccessException e) {
+      Object dfs = field.get(inputStream);
+      Method method = dfs.getClass().getMethod(GET_FILE_LENGTH, new Class[] {});
+      Object length = method.invoke(dfs, new Object[] {});
+      return (Long) length;
+    } catch (Exception e) {
       throw new IOException(e);
     }
   }

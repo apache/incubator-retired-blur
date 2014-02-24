@@ -26,6 +26,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -61,8 +62,10 @@ public class IndexImporter extends TimerTask implements Closeable {
   private final Timer _timer;
   private final String _table;
   private final String _shard;
+  private final AtomicBoolean _running = new AtomicBoolean();
 
   public IndexImporter(BlurIndex blurIndex, ShardContext shardContext, TimeUnit refreshUnit, long refreshAmount) {
+    _running.set(true);
     _blurIndex = blurIndex;
     _shardContext = shardContext;
     _timer = new Timer("IndexImporter [" + shardContext.getShard() + "/" + shardContext.getTableContext().getTable()
@@ -75,8 +78,11 @@ public class IndexImporter extends TimerTask implements Closeable {
 
   @Override
   public void close() throws IOException {
-    _timer.cancel();
-    _timer.purge();
+    if (_running.get()) {
+      _running.set(false);
+      _timer.cancel();
+      _timer.purge();
+    }
   }
 
   @Override
@@ -87,6 +93,9 @@ public class IndexImporter extends TimerTask implements Closeable {
       FileSystem fileSystem = path.getFileSystem(configuration);
       SortedSet<FileStatus> listStatus;
       while (true) {
+        if (!_running.get()) {
+          return;
+        }
         try {
           listStatus = sort(fileSystem.listStatus(path, new PathFilter() {
             @Override

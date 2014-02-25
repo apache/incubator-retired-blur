@@ -60,6 +60,7 @@ public class HdfsFieldManager extends BaseFieldManager {
   private static final String FAMILY = "_family_";
   private static final String COLUMN_NAME = "_columnName_";
   private static final String SUB_COLUMN_NAME = "_subColumnName_";
+  private static final String TYPE_FILE_EXT = ".type";
 
   private static Lock _lock = new Lock() {
     private final java.util.concurrent.locks.Lock _javalock = new ReentrantReadWriteLock().writeLock();
@@ -104,10 +105,10 @@ public class HdfsFieldManager extends BaseFieldManager {
       FileStatus[] listStatus = _fileSystem.listStatus(_storagePath, new PathFilter() {
         @Override
         public boolean accept(Path path) {
-          if (path.getName().endsWith(".tmp")) {
-            return false;
+          if (path.getName().endsWith(TYPE_FILE_EXT)) {
+            return true;
           }
-          return true;
+          return false;
         }
       });
       if (listStatus == null) {
@@ -116,7 +117,7 @@ public class HdfsFieldManager extends BaseFieldManager {
       List<String> fieldNames = new ArrayList<String>();
       for (FileStatus fileStatus : listStatus) {
         if (!fileStatus.isDir()) {
-          fieldNames.add(fileStatus.getPath().getName());
+          fieldNames.add(fileStatus.getPath().getName().replace(TYPE_FILE_EXT, ""));
         }
       }
       return fieldNames;
@@ -188,7 +189,7 @@ public class HdfsFieldManager extends BaseFieldManager {
   }
 
   private Path getFieldPath(String fieldName) {
-    return new Path(_storagePath, fieldName);
+    return new Path(_storagePath, fieldName + TYPE_FILE_EXT);
   }
 
   private String getComments() {

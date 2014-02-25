@@ -1,13 +1,18 @@
 package org.apache.blur.analysis;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
@@ -30,17 +35,37 @@ import org.junit.Test;
  * the License.
  */
 public class HdfsFieldManagerTest extends BaseFieldManagerTest {
+  private static final String DFS_FIELD_MANAGER_PATH = "./target/tmp/HdfsFieldManagerTest/meta";
+  
   @Override
   protected BaseFieldManager newFieldManager(boolean create) throws IOException {
     Configuration config = new Configuration();
-    Path path = new Path("./target/tmp/HdfsFieldManagerTest/meta");
+    Path path = new Path(DFS_FIELD_MANAGER_PATH);
     FileSystem fileSystem = path.getFileSystem(config);
     if (create) {
       fileSystem.delete(path, true);
     }
     return new HdfsFieldManager(_fieldLessField, new KeywordAnalyzer(), path, config);
   }
-
+  
+    @Test
+    public void fieldManagerShouldIgnoreUnknownFiles() throws IOException {
+      BaseFieldManager fieldManager = newFieldManager(true);
+      fieldManager.addColumnDefinition("fam1", "col1", null, true, "text", false, null);
+      FieldTypeDefinition fieldTypeDefinition1 = fieldManager.getFieldTypeDefinition("fam1.col1");
+      
+      assertNotNull(fieldTypeDefinition1);
+      Path path = new Path(DFS_FIELD_MANAGER_PATH, "mydoc.txt");
+      FSDataOutputStream outputStream = path.getFileSystem(new Configuration()).create(path, false);
+      IOUtils.write("Some text..", outputStream);
+      outputStream.close();
+      
+      fieldManager.loadFromStorage();
+      
+      FieldTypeDefinition fieldTypeDefinition2 = fieldManager.getFieldTypeDefinition("fam1.col1");
+      assertNotNull(fieldTypeDefinition2);
+  }
+    
   @SuppressWarnings("unchecked")
   @Test
   public void testStoreMetaData() throws IOException {

@@ -24,20 +24,22 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.blur.store.blockcache.LastModified;
+import org.apache.blur.store.hdfs.HdfsDirectory;
+import org.apache.blur.store.hdfs.HdfsQuickMove;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 
-public class JoinDirectory extends Directory implements LastModified {
+public class JoinDirectory extends Directory implements LastModified, HdfsQuickMove {
 
-  private final Directory _longTermStorage;
+  private final HdfsDirectory _longTermStorage;
   private final Directory _shortTermStorage;
   private final Set<String> _shortTermSyncFiles = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
   private final Set<String> _longTermSyncFiles = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
 
-  public JoinDirectory(Directory longTermStorage, Directory shortTermStorage) throws IOException {
+  public JoinDirectory(HdfsDirectory longTermStorage, Directory shortTermStorage) throws IOException {
     lastModifiedCheck(longTermStorage);
     lastModifiedCheck(shortTermStorage);
     _longTermStorage = longTermStorage;
@@ -154,6 +156,11 @@ public class JoinDirectory extends Directory implements LastModified {
       return ((LastModified) _shortTermStorage).getFileModified(name);
     }
     return ((LastModified) _longTermStorage).getFileModified(name);
+  }
+
+  @Override
+  public HdfsDirectory getQuickMoveDirectory() {
+    return _longTermStorage;
   }
 
 }

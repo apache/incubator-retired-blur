@@ -16,7 +16,7 @@ package org.apache.blur.mapreduce.lib;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -35,8 +35,10 @@ import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.GCWatcher;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
@@ -156,6 +158,14 @@ public class BlurOutputFormatMiniClusterTest {
     client.createTable(tableDescriptor);
 
     BlurOutputFormat.setupJob(job, tableDescriptor);
+    Path tablePath = new Path(tableUri);
+    Path shardPath = new Path(tablePath, BlurUtil.getShardName(0));
+    FileStatus[] listStatus = fileSystem.listStatus(shardPath);
+    assertEquals(2, listStatus.length);
+    System.out.println("======" + listStatus.length);
+    for (FileStatus fileStatus : listStatus) {
+      System.out.println(fileStatus.getPath());
+    }
 
     assertTrue(job.waitForCompletion(true));
     Counters ctrs = job.getCounters();
@@ -169,6 +179,14 @@ public class BlurOutputFormatMiniClusterTest {
       }
       Thread.sleep(5000);
     }
+
+    assertTrue(fileSystem.exists(tablePath));
+    assertFalse(fileSystem.isFile(tablePath));
+
+    FileStatus[] listStatusAfter = fileSystem.listStatus(shardPath);
+
+    assertEquals(9, listStatusAfter.length);
+
   }
 
   private Iface getClient() {

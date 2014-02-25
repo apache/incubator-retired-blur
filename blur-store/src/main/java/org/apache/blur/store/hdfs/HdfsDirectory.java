@@ -55,7 +55,7 @@ import com.yammer.metrics.core.Histogram;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
 
-public class HdfsDirectory extends Directory implements LastModified {
+public class HdfsDirectory extends Directory implements LastModified, HdfsQuickMove {
 
   private static final Log LOG = LogFactory.getLog(HdfsDirectory.class);
 
@@ -330,8 +330,8 @@ public class HdfsDirectory extends Directory implements LastModified {
   public void copy(Directory to, String src, String dest, IOContext context) throws IOException {
     if (to instanceof DirectoryDecorator) {
       copy(((DirectoryDecorator) to).getOriginalDirectory(), src, dest, context);
-    } else if (to instanceof HdfsDirectory) {
-      if (quickMove(to, src, dest, context)) {
+    } else if (to instanceof HdfsQuickMove) {
+      if (quickMove(((HdfsQuickMove) to).getQuickMoveDirectory(), src, dest, context)) {
         return;
       }
     } else {
@@ -365,6 +365,11 @@ public class HdfsDirectory extends Directory implements LastModified {
   private boolean ifSameCluster(HdfsDirectory dest, HdfsDirectory src) {
     // @TODO
     return true;
+  }
+
+  @Override
+  public HdfsDirectory getQuickMoveDirectory() {
+    return this;
   }
 
 }

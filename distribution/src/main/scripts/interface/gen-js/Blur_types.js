@@ -46,6 +46,16 @@ ShardState = {
 'CLOSED' : 4,
 'CLOSING_ERROR' : 5
 };
+Level = {
+'OFF' : 0,
+'FATAL' : 1,
+'ERROR' : 2,
+'WARN' : 3,
+'INFO' : 4,
+'DEBUG' : 5,
+'TRACE' : 6,
+'ALL' : 7
+};
 BlurException = function(args) {
   this.message = null;
   this.stackTraceStr = null;

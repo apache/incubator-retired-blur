@@ -62,6 +62,7 @@ limitations under the License.
 <li><a href="#Enum_RowMutationType">RowMutationType</a></li>
 <li><a href="#Enum_RecordMutationType">RecordMutationType</a></li>
 <li><a href="#Enum_ShardState">ShardState</a></li>
+<li><a href="#Enum_Level">Level</a></li>
 </ul>
 </li>
 <li><a href="#Structs">Data structures</a>
@@ -141,6 +142,8 @@ limitations under the License.
 <li><a href="#Fn_Blur_traceRequestFetch">&nbsp;&nbsp;traceRequestFetch</a></li>
 <li><a href="#Fn_Blur_traceRemove">&nbsp;&nbsp;traceRemove</a></li>
 <li><a href="#Fn_Blur_ping">&nbsp;&nbsp;ping</a></li>
+<li><a href="#Fn_Blur_logging">&nbsp;&nbsp;logging</a></li>
+<li><a href="#Fn_Blur_resetLogging">&nbsp;&nbsp;resetLogging</a></li>
 </ul></li>
 </ul>
 </li>
@@ -244,6 +247,18 @@ limitations under the License.
 <tr><td><code>CLOSING</code></td><td><code>3</code></td></tr>
 <tr><td><code>CLOSED</code></td><td><code>4</code></td></tr>
 <tr><td><code>CLOSING_ERROR</code></td><td><code>5</code></td></tr>
+</table></p></section>
+<section><div class="page-header"><h3 id="Enum_Level">Enumeration: Level</h3></div><p class="lead">
+Logging level enum used to change the logging levels at runtime.
+<br/><br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>OFF</code></td><td><code>0</code></td></tr>
+<tr><td><code>FATAL</code></td><td><code>1</code></td></tr>
+<tr><td><code>ERROR</code></td><td><code>2</code></td></tr>
+<tr><td><code>WARN</code></td><td><code>3</code></td></tr>
+<tr><td><code>INFO</code></td><td><code>4</code></td></tr>
+<tr><td><code>DEBUG</code></td><td><code>5</code></td></tr>
+<tr><td><code>TRACE</code></td><td><code>6</code></td></tr>
+<tr><td><code>ALL</code></td><td><code>7</code></td></tr>
 </table></p></section>
 <hr/><h2 id="Structs">Data structures</h2>
 <section><div class="page-header"><h3 id="Struct_BlurException">Exception: BlurException</h3></div><p class="lead">
@@ -971,6 +986,20 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </table></p></section><section><div class="page-header"><h4 id="Fn_Blur_ping">Function: Blur.ping</h4></div><p class="lead">
 <pre><code>void</code> ping()
 </pre>A way to ping a server to make sure the connection is still valid.
+<br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_logging">Function: Blur.logging</h4></div><p class="lead">
+<pre><code>void</code> logging(<code>string</code> classNameOrLoggerName,
+<code><a href="Blur.html#Enum_Level">Level</a></code> level)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Changes the logging level for the given instance dynamically at runtime.
+<br/><br/><h4 id="Parameters_Blur_logging">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>classNameOrLoggerName</td><td>the className or Logger Name of the Logger to be changed.
+</td></tr>
+<tr><td>level</td><td>the logging level.
+</td></tr>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_resetLogging">Function: Blur.resetLogging</h4></div><p class="lead">
+<pre><code>void</code> resetLogging()
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Resets the logging for this instance to match the log4j file.  NOTE: This will allow for dynamically changing to logging file at runtime.
 <br/></p></section>
 </div>
 </div>

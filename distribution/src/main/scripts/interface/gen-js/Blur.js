@@ -5337,6 +5337,216 @@ Blur_ping_result.prototype.write = function(output) {
   return;
 };
 
+Blur_logging_args = function(args) {
+  this.classNameOrLoggerName = null;
+  this.level = null;
+  if (args) {
+    if (args.classNameOrLoggerName !== undefined) {
+      this.classNameOrLoggerName = args.classNameOrLoggerName;
+    }
+    if (args.level !== undefined) {
+      this.level = args.level;
+    }
+  }
+};
+Blur_logging_args.prototype = {};
+Blur_logging_args.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.classNameOrLoggerName = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.I32) {
+        this.level = input.readI32().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Blur_logging_args.prototype.write = function(output) {
+  output.writeStructBegin('Blur_logging_args');
+  if (this.classNameOrLoggerName !== null && this.classNameOrLoggerName !== undefined) {
+    output.writeFieldBegin('classNameOrLoggerName', Thrift.Type.STRING, 1);
+    output.writeString(this.classNameOrLoggerName);
+    output.writeFieldEnd();
+  }
+  if (this.level !== null && this.level !== undefined) {
+    output.writeFieldBegin('level', Thrift.Type.I32, 2);
+    output.writeI32(this.level);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+Blur_logging_result = function(args) {
+  this.ex = null;
+  if (args instanceof BlurException) {
+    this.ex = args;
+    return;
+  }
+  if (args) {
+    if (args.ex !== undefined) {
+      this.ex = args.ex;
+    }
+  }
+};
+Blur_logging_result.prototype = {};
+Blur_logging_result.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.ex = new BlurException();
+        this.ex.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Blur_logging_result.prototype.write = function(output) {
+  output.writeStructBegin('Blur_logging_result');
+  if (this.ex !== null && this.ex !== undefined) {
+    output.writeFieldBegin('ex', Thrift.Type.STRUCT, 1);
+    this.ex.write(output);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+Blur_resetLogging_args = function(args) {
+};
+Blur_resetLogging_args.prototype = {};
+Blur_resetLogging_args.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    input.skip(ftype);
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Blur_resetLogging_args.prototype.write = function(output) {
+  output.writeStructBegin('Blur_resetLogging_args');
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+Blur_resetLogging_result = function(args) {
+  this.ex = null;
+  if (args instanceof BlurException) {
+    this.ex = args;
+    return;
+  }
+  if (args) {
+    if (args.ex !== undefined) {
+      this.ex = args.ex;
+    }
+  }
+};
+Blur_resetLogging_result.prototype = {};
+Blur_resetLogging_result.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.ex = new BlurException();
+        this.ex.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Blur_resetLogging_result.prototype.write = function(output) {
+  output.writeStructBegin('Blur_resetLogging_result');
+  if (this.ex !== null && this.ex !== undefined) {
+    output.writeFieldBegin('ex', Thrift.Type.STRUCT, 1);
+    this.ex.write(output);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
 BlurClient = function(input, output) {
     this.input = input;
     this.output = (!output) ? input : output;
@@ -6746,5 +6956,73 @@ BlurClient.prototype.recv_ping = function() {
   result.read(this.input);
   this.input.readMessageEnd();
 
+  return;
+};
+BlurClient.prototype.logging = function(classNameOrLoggerName, level) {
+  this.send_logging(classNameOrLoggerName, level);
+  this.recv_logging();
+};
+
+BlurClient.prototype.send_logging = function(classNameOrLoggerName, level) {
+  this.output.writeMessageBegin('logging', Thrift.MessageType.CALL, this.seqid);
+  var args = new Blur_logging_args();
+  args.classNameOrLoggerName = classNameOrLoggerName;
+  args.level = level;
+  args.write(this.output);
+  this.output.writeMessageEnd();
+  return this.output.getTransport().flush();
+};
+
+BlurClient.prototype.recv_logging = function() {
+  var ret = this.input.readMessageBegin();
+  var fname = ret.fname;
+  var mtype = ret.mtype;
+  var rseqid = ret.rseqid;
+  if (mtype == Thrift.MessageType.EXCEPTION) {
+    var x = new Thrift.TApplicationException();
+    x.read(this.input);
+    this.input.readMessageEnd();
+    throw x;
+  }
+  var result = new Blur_logging_result();
+  result.read(this.input);
+  this.input.readMessageEnd();
+
+  if (null !== result.ex) {
+    throw result.ex;
+  }
+  return;
+};
+BlurClient.prototype.resetLogging = function() {
+  this.send_resetLogging();
+  this.recv_resetLogging();
+};
+
+BlurClient.prototype.send_resetLogging = function() {
+  this.output.writeMessageBegin('resetLogging', Thrift.MessageType.CALL, this.seqid);
+  var args = new Blur_resetLogging_args();
+  args.write(this.output);
+  this.output.writeMessageEnd();
+  return this.output.getTransport().flush();
+};
+
+BlurClient.prototype.recv_resetLogging = function() {
+  var ret = this.input.readMessageBegin();
+  var fname = ret.fname;
+  var mtype = ret.mtype;
+  var rseqid = ret.rseqid;
+  if (mtype == Thrift.MessageType.EXCEPTION) {
+    var x = new Thrift.TApplicationException();
+    x.read(this.input);
+    this.input.readMessageEnd();
+    throw x;
+  }
+  var result = new Blur_resetLogging_result();
+  result.read(this.input);
+  this.input.readMessageEnd();
+
+  if (null !== result.ex) {
+    throw result.ex;
+  }
   return;
 };

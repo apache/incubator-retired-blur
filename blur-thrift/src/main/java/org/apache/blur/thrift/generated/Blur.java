@@ -411,6 +411,20 @@ public class Blur {
      */
     public void ping() throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
+    /**
+     * Changes the logging level for the given instance dynamically at runtime.
+     * 
+     * @param classNameOrLoggerName the className or Logger Name of the Logger to be changed.
+     * 
+     * @param level the logging level.
+     */
+    public void logging(String classNameOrLoggerName, Level level) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
+    /**
+     * Resets the logging for this instance to match the log4j file.  NOTE: This will allow for dynamically changing to logging file at runtime.
+     */
+    public void resetLogging() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
   }
 
   public interface AsyncIface {
@@ -494,6 +508,10 @@ public class Blur {
     public void traceRemove(String traceId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.traceRemove_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     public void ping(org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.ping_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
+    public void logging(String classNameOrLoggerName, Level level, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.logging_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
+    public void resetLogging(org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.resetLogging_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
   }
 
@@ -1501,6 +1519,52 @@ public class Blur {
     {
       ping_result result = new ping_result();
       receiveBase(result, "ping");
+      return;
+    }
+
+    public void logging(String classNameOrLoggerName, Level level) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      send_logging(classNameOrLoggerName, level);
+      recv_logging();
+    }
+
+    public void send_logging(String classNameOrLoggerName, Level level) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      logging_args args = new logging_args();
+      args.setClassNameOrLoggerName(classNameOrLoggerName);
+      args.setLevel(level);
+      sendBase("logging", args);
+    }
+
+    public void recv_logging() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      logging_result result = new logging_result();
+      receiveBase(result, "logging");
+      if (result.ex != null) {
+        throw result.ex;
+      }
+      return;
+    }
+
+    public void resetLogging() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      send_resetLogging();
+      recv_resetLogging();
+    }
+
+    public void send_resetLogging() throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      resetLogging_args args = new resetLogging_args();
+      sendBase("resetLogging", args);
+    }
+
+    public void recv_resetLogging() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      resetLogging_result result = new resetLogging_result();
+      receiveBase(result, "resetLogging");
+      if (result.ex != null) {
+        throw result.ex;
+      }
       return;
     }
 
@@ -2842,6 +2906,70 @@ public class Blur {
       }
     }
 
+    public void logging(String classNameOrLoggerName, Level level, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<logging_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      checkReady();
+      logging_call method_call = new logging_call(classNameOrLoggerName, level, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class logging_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
+      private String classNameOrLoggerName;
+      private Level level;
+      public logging_call(String classNameOrLoggerName, Level level, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<logging_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.classNameOrLoggerName = classNameOrLoggerName;
+        this.level = level;
+      }
+
+      public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("logging", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
+        logging_args args = new logging_args();
+        args.setClassNameOrLoggerName(classNameOrLoggerName);
+        args.setLevel(level);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        if (getState() != org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport memoryTransport = new org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_logging();
+      }
+    }
+
+    public void resetLogging(org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<resetLogging_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      checkReady();
+      resetLogging_call method_call = new resetLogging_call(resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class resetLogging_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
+      public resetLogging_call(org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<resetLogging_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+      }
+
+      public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("resetLogging", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
+        resetLogging_args args = new resetLogging_args();
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        if (getState() != org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport memoryTransport = new org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_resetLogging();
+      }
+    }
+
   }
 
   public static class Processor<I extends Iface> extends org.apache.blur.thirdparty.thrift_0_9_0.TBaseProcessor<I> implements org.apache.blur.thirdparty.thrift_0_9_0.TProcessor {
@@ -2895,6 +3023,8 @@ public class Blur {
       processMap.put("traceRequestFetch", new traceRequestFetch());
       processMap.put("traceRemove", new traceRemove());
       processMap.put("ping", new ping());
+      processMap.put("logging", new logging());
+      processMap.put("resetLogging", new resetLogging());
       return processMap;
     }
 
@@ -3843,6 +3973,54 @@ public class Blur {
       public ping_result getResult(I iface, ping_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         ping_result result = new ping_result();
         iface.ping();
+        return result;
+      }
+    }
+
+    public static class logging<I extends Iface> extends org.apache.blur.thirdparty.thrift_0_9_0.ProcessFunction<I, logging_args> {
+      public logging() {
+        super("logging");
+      }
+
+      public logging_args getEmptyArgsInstance() {
+        return new logging_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public logging_result getResult(I iface, logging_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        logging_result result = new logging_result();
+        try {
+          iface.logging(args.classNameOrLoggerName, args.level);
+        } catch (BlurException ex) {
+          result.ex = ex;
+        }
+        return result;
+      }
+    }
+
+    public static class resetLogging<I extends Iface> extends org.apache.blur.thirdparty.thrift_0_9_0.ProcessFunction<I, resetLogging_args> {
+      public resetLogging() {
+        super("resetLogging");
+      }
+
+      public resetLogging_args getEmptyArgsInstance() {
+        return new resetLogging_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public resetLogging_result getResult(I iface, resetLogging_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        resetLogging_result result = new resetLogging_result();
+        try {
+          iface.resetLogging();
+        } catch (BlurException ex) {
+          result.ex = ex;
+        }
         return result;
       }
     }
@@ -37107,6 +37285,1450 @@ public class Blur {
       @Override
       public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, ping_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
+      }
+    }
+
+  }
+
+  public static class logging_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<logging_args, logging_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("logging_args");
+
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField CLASS_NAME_OR_LOGGER_NAME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("classNameOrLoggerName", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField LEVEL_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("level", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)2);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new logging_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new logging_argsTupleSchemeFactory());
+    }
+
+    /**
+     * the className or Logger Name of the Logger to be changed.
+     */
+    public String classNameOrLoggerName; // required
+    /**
+     * the logging level.
+     * 
+     * @see Level
+     */
+    public Level level; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      /**
+       * the className or Logger Name of the Logger to be changed.
+       */
+      CLASS_NAME_OR_LOGGER_NAME((short)1, "classNameOrLoggerName"),
+      /**
+       * the logging level.
+       * 
+       * @see Level
+       */
+      LEVEL((short)2, "level");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // CLASS_NAME_OR_LOGGER_NAME
+            return CLASS_NAME_OR_LOGGER_NAME;
+          case 2: // LEVEL
+            return LEVEL;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.CLASS_NAME_OR_LOGGER_NAME, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("classNameOrLoggerName", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+      tmpMap.put(_Fields.LEVEL, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("level", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.EnumMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.ENUM, Level.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(logging_args.class, metaDataMap);
+    }
+
+    public logging_args() {
+    }
+
+    public logging_args(
+      String classNameOrLoggerName,
+      Level level)
+    {
+      this();
+      this.classNameOrLoggerName = classNameOrLoggerName;
+      this.level = level;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public logging_args(logging_args other) {
+      if (other.isSetClassNameOrLoggerName()) {
+        this.classNameOrLoggerName = other.classNameOrLoggerName;
+      }
+      if (other.isSetLevel()) {
+        this.level = other.level;
+      }
+    }
+
+    public logging_args deepCopy() {
+      return new logging_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.classNameOrLoggerName = null;
+      this.level = null;
+    }
+
+    /**
+     * the className or Logger Name of the Logger to be changed.
+     */
+    public String getClassNameOrLoggerName() {
+      return this.classNameOrLoggerName;
+    }
+
+    /**
+     * the className or Logger Name of the Logger to be changed.
+     */
+    public logging_args setClassNameOrLoggerName(String classNameOrLoggerName) {
+      this.classNameOrLoggerName = classNameOrLoggerName;
+      return this;
+    }
+
+    public void unsetClassNameOrLoggerName() {
+      this.classNameOrLoggerName = null;
+    }
+
+    /** Returns true if field classNameOrLoggerName is set (has been assigned a value) and false otherwise */
+    public boolean isSetClassNameOrLoggerName() {
+      return this.classNameOrLoggerName != null;
+    }
+
+    public void setClassNameOrLoggerNameIsSet(boolean value) {
+      if (!value) {
+        this.classNameOrLoggerName = null;
+      }
+    }
+
+    /**
+     * the logging level.
+     * 
+     * @see Level
+     */
+    public Level getLevel() {
+      return this.level;
+    }
+
+    /**
+     * the logging level.
+     * 
+     * @see Level
+     */
+    public logging_args setLevel(Level level) {
+      this.level = level;
+      return this;
+    }
+
+    public void unsetLevel() {
+      this.level = null;
+    }
+
+    /** Returns true if field level is set (has been assigned a value) and false otherwise */
+    public boolean isSetLevel() {
+      return this.level != null;
+    }
+
+    public void setLevelIsSet(boolean value) {
+      if (!value) {
+        this.level = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case CLASS_NAME_OR_LOGGER_NAME:
+        if (value == null) {
+          unsetClassNameOrLoggerName();
+        } else {
+          setClassNameOrLoggerName((String)value);
+        }
+        break;
+
+      case LEVEL:
+        if (value == null) {
+          unsetLevel();
+        } else {
+          setLevel((Level)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case CLASS_NAME_OR_LOGGER_NAME:
+        return getClassNameOrLoggerName();
+
+      case LEVEL:
+        return getLevel();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case CLASS_NAME_OR_LOGGER_NAME:
+        return isSetClassNameOrLoggerName();
+      case LEVEL:
+        return isSetLevel();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof logging_args)
+        return this.equals((logging_args)that);
+      return false;
+    }
+
+    public boolean equals(logging_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_classNameOrLoggerName = true && this.isSetClassNameOrLoggerName();
+      boolean that_present_classNameOrLoggerName = true && that.isSetClassNameOrLoggerName();
+      if (this_present_classNameOrLoggerName || that_present_classNameOrLoggerName) {
+        if (!(this_present_classNameOrLoggerName && that_present_classNameOrLoggerName))
+          return false;
+        if (!this.classNameOrLoggerName.equals(that.classNameOrLoggerName))
+          return false;
+      }
+
+      boolean this_present_level = true && this.isSetLevel();
+      boolean that_present_level = true && that.isSetLevel();
+      if (this_present_level || that_present_level) {
+        if (!(this_present_level && that_present_level))
+          return false;
+        if (!this.level.equals(that.level))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(logging_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      logging_args typedOther = (logging_args)other;
+
+      lastComparison = Boolean.valueOf(isSetClassNameOrLoggerName()).compareTo(typedOther.isSetClassNameOrLoggerName());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetClassNameOrLoggerName()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.classNameOrLoggerName, typedOther.classNameOrLoggerName);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetLevel()).compareTo(typedOther.isSetLevel());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetLevel()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.level, typedOther.level);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("logging_args(");
+      boolean first = true;
+
+      sb.append("classNameOrLoggerName:");
+      if (this.classNameOrLoggerName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.classNameOrLoggerName);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("level:");
+      if (this.level == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.level);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class logging_argsStandardSchemeFactory implements SchemeFactory {
+      public logging_argsStandardScheme getScheme() {
+        return new logging_argsStandardScheme();
+      }
+    }
+
+    private static class logging_argsStandardScheme extends StandardScheme<logging_args> {
+
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, logging_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // CLASS_NAME_OR_LOGGER_NAME
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+                struct.classNameOrLoggerName = iprot.readString();
+                struct.setClassNameOrLoggerNameIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // LEVEL
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
+                struct.level = Level.findByValue(iprot.readI32());
+                struct.setLevelIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, logging_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.classNameOrLoggerName != null) {
+          oprot.writeFieldBegin(CLASS_NAME_OR_LOGGER_NAME_FIELD_DESC);
+          oprot.writeString(struct.classNameOrLoggerName);
+          oprot.writeFieldEnd();
+        }
+        if (struct.level != null) {
+          oprot.writeFieldBegin(LEVEL_FIELD_DESC);
+          oprot.writeI32(struct.level.getValue());
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class logging_argsTupleSchemeFactory implements SchemeFactory {
+      public logging_argsTupleScheme getScheme() {
+        return new logging_argsTupleScheme();
+      }
+    }
+
+    private static class logging_argsTupleScheme extends TupleScheme<logging_args> {
+
+      @Override
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, logging_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetClassNameOrLoggerName()) {
+          optionals.set(0);
+        }
+        if (struct.isSetLevel()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetClassNameOrLoggerName()) {
+          oprot.writeString(struct.classNameOrLoggerName);
+        }
+        if (struct.isSetLevel()) {
+          oprot.writeI32(struct.level.getValue());
+        }
+      }
+
+      @Override
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, logging_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          struct.classNameOrLoggerName = iprot.readString();
+          struct.setClassNameOrLoggerNameIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.level = Level.findByValue(iprot.readI32());
+          struct.setLevelIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class logging_result implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<logging_result, logging_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("logging_result");
+
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField EX_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("ex", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new logging_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new logging_resultTupleSchemeFactory());
+    }
+
+    public BlurException ex; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      EX((short)1, "ex");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // EX
+            return EX;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.EX, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("ex", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(logging_result.class, metaDataMap);
+    }
+
+    public logging_result() {
+    }
+
+    public logging_result(
+      BlurException ex)
+    {
+      this();
+      this.ex = ex;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public logging_result(logging_result other) {
+      if (other.isSetEx()) {
+        this.ex = new BlurException(other.ex);
+      }
+    }
+
+    public logging_result deepCopy() {
+      return new logging_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.ex = null;
+    }
+
+    public BlurException getEx() {
+      return this.ex;
+    }
+
+    public logging_result setEx(BlurException ex) {
+      this.ex = ex;
+      return this;
+    }
+
+    public void unsetEx() {
+      this.ex = null;
+    }
+
+    /** Returns true if field ex is set (has been assigned a value) and false otherwise */
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setExIsSet(boolean value) {
+      if (!value) {
+        this.ex = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((BlurException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case EX:
+        return getEx();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case EX:
+        return isSetEx();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof logging_result)
+        return this.equals((logging_result)that);
+      return false;
+    }
+
+    public boolean equals(logging_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
+      if (this_present_ex || that_present_ex) {
+        if (!(this_present_ex && that_present_ex))
+          return false;
+        if (!this.ex.equals(that.ex))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(logging_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      logging_result typedOther = (logging_result)other;
+
+      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEx()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.ex, typedOther.ex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("logging_result(");
+      boolean first = true;
+
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class logging_resultStandardSchemeFactory implements SchemeFactory {
+      public logging_resultStandardScheme getScheme() {
+        return new logging_resultStandardScheme();
+      }
+    }
+
+    private static class logging_resultStandardScheme extends StandardScheme<logging_result> {
+
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, logging_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // EX
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
+                struct.ex = new BlurException();
+                struct.ex.read(iprot);
+                struct.setExIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, logging_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.ex != null) {
+          oprot.writeFieldBegin(EX_FIELD_DESC);
+          struct.ex.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class logging_resultTupleSchemeFactory implements SchemeFactory {
+      public logging_resultTupleScheme getScheme() {
+        return new logging_resultTupleScheme();
+      }
+    }
+
+    private static class logging_resultTupleScheme extends TupleScheme<logging_result> {
+
+      @Override
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, logging_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetEx()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetEx()) {
+          struct.ex.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, logging_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.ex = new BlurException();
+          struct.ex.read(iprot);
+          struct.setExIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class resetLogging_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<resetLogging_args, resetLogging_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("resetLogging_args");
+
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new resetLogging_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new resetLogging_argsTupleSchemeFactory());
+    }
+
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+;
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+    public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(resetLogging_args.class, metaDataMap);
+    }
+
+    public resetLogging_args() {
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public resetLogging_args(resetLogging_args other) {
+    }
+
+    public resetLogging_args deepCopy() {
+      return new resetLogging_args(this);
+    }
+
+    @Override
+    public void clear() {
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof resetLogging_args)
+        return this.equals((resetLogging_args)that);
+      return false;
+    }
+
+    public boolean equals(resetLogging_args that) {
+      if (that == null)
+        return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(resetLogging_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      resetLogging_args typedOther = (resetLogging_args)other;
+
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("resetLogging_args(");
+      boolean first = true;
+
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class resetLogging_argsStandardSchemeFactory implements SchemeFactory {
+      public resetLogging_argsStandardScheme getScheme() {
+        return new resetLogging_argsStandardScheme();
+      }
+    }
+
+    private static class resetLogging_argsStandardScheme extends StandardScheme<resetLogging_args> {
+
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, resetLogging_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            default:
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, resetLogging_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class resetLogging_argsTupleSchemeFactory implements SchemeFactory {
+      public resetLogging_argsTupleScheme getScheme() {
+        return new resetLogging_argsTupleScheme();
+      }
+    }
+
+    private static class resetLogging_argsTupleScheme extends TupleScheme<resetLogging_args> {
+
+      @Override
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, resetLogging_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+      }
+
+      @Override
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, resetLogging_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+      }
+    }
+
+  }
+
+  public static class resetLogging_result implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<resetLogging_result, resetLogging_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("resetLogging_result");
+
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField EX_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("ex", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new resetLogging_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new resetLogging_resultTupleSchemeFactory());
+    }
+
+    public BlurException ex; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      EX((short)1, "ex");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // EX
+            return EX;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.EX, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("ex", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(resetLogging_result.class, metaDataMap);
+    }
+
+    public resetLogging_result() {
+    }
+
+    public resetLogging_result(
+      BlurException ex)
+    {
+      this();
+      this.ex = ex;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public resetLogging_result(resetLogging_result other) {
+      if (other.isSetEx()) {
+        this.ex = new BlurException(other.ex);
+      }
+    }
+
+    public resetLogging_result deepCopy() {
+      return new resetLogging_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.ex = null;
+    }
+
+    public BlurException getEx() {
+      return this.ex;
+    }
+
+    public resetLogging_result setEx(BlurException ex) {
+      this.ex = ex;
+      return this;
+    }
+
+    public void unsetEx() {
+      this.ex = null;
+    }
+
+    /** Returns true if field ex is set (has been assigned a value) and false otherwise */
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setExIsSet(boolean value) {
+      if (!value) {
+        this.ex = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((BlurException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case EX:
+        return getEx();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case EX:
+        return isSetEx();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof resetLogging_result)
+        return this.equals((resetLogging_result)that);
+      return false;
+    }
+
+    public boolean equals(resetLogging_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
+      if (this_present_ex || that_present_ex) {
+        if (!(this_present_ex && that_present_ex))
+          return false;
+        if (!this.ex.equals(that.ex))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(resetLogging_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      resetLogging_result typedOther = (resetLogging_result)other;
+
+      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEx()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.ex, typedOther.ex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("resetLogging_result(");
+      boolean first = true;
+
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class resetLogging_resultStandardSchemeFactory implements SchemeFactory {
+      public resetLogging_resultStandardScheme getScheme() {
+        return new resetLogging_resultStandardScheme();
+      }
+    }
+
+    private static class resetLogging_resultStandardScheme extends StandardScheme<resetLogging_result> {
+
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, resetLogging_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // EX
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
+                struct.ex = new BlurException();
+                struct.ex.read(iprot);
+                struct.setExIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, resetLogging_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.ex != null) {
+          oprot.writeFieldBegin(EX_FIELD_DESC);
+          struct.ex.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class resetLogging_resultTupleSchemeFactory implements SchemeFactory {
+      public resetLogging_resultTupleScheme getScheme() {
+        return new resetLogging_resultTupleScheme();
+      }
+    }
+
+    private static class resetLogging_resultTupleScheme extends TupleScheme<resetLogging_result> {
+
+      @Override
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, resetLogging_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetEx()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetEx()) {
+          struct.ex.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, resetLogging_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.ex = new BlurException();
+          struct.ex.read(iprot);
+          struct.setExIsSet(true);
+        }
       }
     }
 

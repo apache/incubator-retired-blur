@@ -70,6 +70,19 @@ module Blur
     VALID_VALUES = Set.new([OPENING, OPEN, OPENING_ERROR, CLOSING, CLOSED, CLOSING_ERROR]).freeze
   end
 
+  module Level
+    OFF = 0
+    FATAL = 1
+    ERROR = 2
+    WARN = 3
+    INFO = 4
+    DEBUG = 5
+    TRACE = 6
+    ALL = 7
+    VALUE_MAP = {0 => "OFF", 1 => "FATAL", 2 => "ERROR", 3 => "WARN", 4 => "INFO", 5 => "DEBUG", 6 => "TRACE", 7 => "ALL"}
+    VALID_VALUES = Set.new([OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL]).freeze
+  end
+
   # BlurException that carries a message plus the original stack
 # trace (if any).
   class BlurException < ::Thrift::Exception

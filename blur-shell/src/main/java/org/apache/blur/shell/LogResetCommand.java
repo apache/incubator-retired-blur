@@ -20,45 +20,45 @@ package org.apache.blur.shell;
 
 import java.io.PrintWriter;
 
-import jline.console.ConsoleReader;
-
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.Level;
 
-public abstract class Command {
-  @SuppressWarnings("serial")
-  public static class CommandException extends Exception {
-    public CommandException(String msg) {
-      super(msg);
+public class LogResetCommand extends Command {
+
+  @Override
+  public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
+      BlurException {
+    if (args.length != 2) {
+      throw new CommandException("Invalid args: " + help());
     }
+
+    Iface clientToNode = BlurClient.getClient(args[1]);
+    clientToNode.resetLogging();
   }
 
-  private ConsoleReader consoleReader;
-
-  abstract public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
-      BlurException;
-
-  public final String help() {
-    return "Usage: " + name() + " " + usage();
+  @Override
+  public String description() {
+    StringBuilder builder = new StringBuilder();
+    for (Level level : Level.values()) {
+      if (builder.length() != 0) {
+        builder.append(", ");
+      }
+      builder.append(level.toString());
+    }
+    return "Reset/reload log configuration of a server.";
   }
 
-  public final String helpWithDescription() {
-    return description() + "\n\n" + "Usage: " + name() + " " + usage();
+  @Override
+  public String usage() {
+    return "<node:port>";
   }
 
-  abstract public String description();
-
-  abstract public String usage();
-
-  abstract public String name();
-
-  public ConsoleReader getConsoleReader() {
-    return consoleReader;
+  @Override
+  public String name() {
+    return "logger-reset";
   }
-
-  public void setConsoleReader(ConsoleReader consoleReader) {
-    this.consoleReader = consoleReader;
-  }
-
 }

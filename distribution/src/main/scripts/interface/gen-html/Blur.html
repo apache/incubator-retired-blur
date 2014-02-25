@@ -24,6 +24,7 @@
 <li><a href="Blur.html#Fn_Blur_fetchRowBatch">fetchRowBatch</a></li>
 <li><a href="Blur.html#Fn_Blur_isInSafeMode">isInSafeMode</a></li>
 <li><a href="Blur.html#Fn_Blur_listSnapshots">listSnapshots</a></li>
+<li><a href="Blur.html#Fn_Blur_logging">logging</a></li>
 <li><a href="Blur.html#Fn_Blur_metrics">metrics</a></li>
 <li><a href="Blur.html#Fn_Blur_mutate">mutate</a></li>
 <li><a href="Blur.html#Fn_Blur_mutateBatch">mutateBatch</a></li>
@@ -36,6 +37,7 @@
 <li><a href="Blur.html#Fn_Blur_recordFrequency">recordFrequency</a></li>
 <li><a href="Blur.html#Fn_Blur_removeSnapshot">removeSnapshot</a></li>
 <li><a href="Blur.html#Fn_Blur_removeTable">removeTable</a></li>
+<li><a href="Blur.html#Fn_Blur_resetLogging">resetLogging</a></li>
 <li><a href="Blur.html#Fn_Blur_schema">schema</a></li>
 <li><a href="Blur.html#Fn_Blur_setUser">setUser</a></li>
 <li><a href="Blur.html#Fn_Blur_shardClusterList">shardClusterList</a></li>
@@ -67,6 +69,7 @@
 <a href="Blur.html#Struct_FetchResult">FetchResult</a><br/>
 <a href="Blur.html#Struct_FetchRowResult">FetchRowResult</a><br/>
 <a href="Blur.html#Struct_HighlightOptions">HighlightOptions</a><br/>
+<a href="Blur.html#Enum_Level">Level</a><br/>
 <a href="Blur.html#Struct_Metric">Metric</a><br/>
 <a href="Blur.html#Struct_Query">Query</a><br/>
 <a href="Blur.html#Enum_QueryState">QueryState</a><br/>
@@ -185,6 +188,18 @@
 <tr><td><code>CLOSING</code></td><td><code>3</code></td></tr>
 <tr><td><code>CLOSED</code></td><td><code>4</code></td></tr>
 <tr><td><code>CLOSING_ERROR</code></td><td><code>5</code></td></tr>
+</table></div>
+<div class="definition"><h3 id="Enum_Level">Enumeration: Level</h3>
+Logging level enum used to change the logging levels at runtime.
+<br/><br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>OFF</code></td><td><code>0</code></td></tr>
+<tr><td><code>FATAL</code></td><td><code>1</code></td></tr>
+<tr><td><code>ERROR</code></td><td><code>2</code></td></tr>
+<tr><td><code>WARN</code></td><td><code>3</code></td></tr>
+<tr><td><code>INFO</code></td><td><code>4</code></td></tr>
+<tr><td><code>DEBUG</code></td><td><code>5</code></td></tr>
+<tr><td><code>TRACE</code></td><td><code>6</code></td></tr>
+<tr><td><code>ALL</code></td><td><code>7</code></td></tr>
 </table></div>
 <hr/><h2 id="Structs">Data structures</h2>
 <div class="definition"><h3 id="Struct_BlurException">Exception: BlurException</h3>
@@ -912,4 +927,18 @@ the shard given the same situation.
 </table></div><div class="definition"><h4 id="Fn_Blur_ping">Function: Blur.ping</h4>
 <pre><code>void</code> ping()
 </pre>A way to ping a server to make sure the connection is still valid.
+<br/></div><div class="definition"><h4 id="Fn_Blur_logging">Function: Blur.logging</h4>
+<pre><code>void</code> logging(<code>string</code> classNameOrLoggerName,
+             <code><a href="Blur.html#Enum_Level">Level</a></code> level)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Changes the logging level for the given instance dynamically at runtime.
+<br/><br/><h4 id="Parameters_Blur_logging">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>classNameOrLoggerName</td><td>the className or Logger Name of the Logger to be changed.
+</td></tr>
+<tr><td>level</td><td>the logging level.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_resetLogging">Function: Blur.resetLogging</h4>
+<pre><code>void</code> resetLogging()
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Resets the logging for this instance to match the log4j file.  NOTE: This will allow for dynamically changing to logging file at runtime.
 <br/></div></div></body></html>

@@ -16,12 +16,17 @@ package org.apache.blur.thrift;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import javax.xml.parsers.FactoryConfigurationError;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.analysis.FieldManager;
@@ -34,6 +39,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ColumnDefinition;
+import org.apache.blur.thrift.generated.Level;
 import org.apache.blur.thrift.generated.Metric;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
@@ -43,6 +49,9 @@ import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.MemoryReporter;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.zookeeper.ZooKeeper;
 
 public abstract class TableAdmin implements Iface {
@@ -577,4 +586,81 @@ public abstract class TableAdmin implements Iface {
   public void ping() throws TException {
 
   }
+
+  @Override
+  public void logging(String classNameOrLoggerName, Level level) throws BlurException, TException {
+    Logger logger;
+    if (classNameOrLoggerName == null) {
+      logger = LogManager.getRootLogger();
+    } else {
+      logger = LogManager.getLogger(classNameOrLoggerName);
+    }
+
+    if (logger == null) {
+      throw new BException("Logger [{0}] not found.", classNameOrLoggerName);
+    }
+    org.apache.log4j.Level current = logger.getLevel();
+    org.apache.log4j.Level newLevel = getLevel(level);
+    LOG.info("Changing Logger [{0}] from logging level [{1}] to [{2}]", logger, current, newLevel);
+    logger.setLevel(newLevel);
+  }
+
+  @Override
+  public void resetLogging() throws BlurException, TException {
+    try {
+      reloadConfig();
+    } catch (MalformedURLException e) {
+      throw new BException("Unknown error while trying to reload log4j config.");
+    } catch (FactoryConfigurationError e) {
+      throw new BException("Unknown error while trying to reload log4j config.");
+    }
+  }
+
+  private void reloadConfig() throws MalformedURLException, FactoryConfigurationError, BException {
+    String blurHome = System.getenv("BLUR_HOME");
+    if (blurHome != null) {
+      File blurHomeFile = new File(blurHome);
+      if (blurHomeFile.exists()) {
+        File log4jFile = new File(new File(blurHomeFile, "conf"), "log4j.xml");
+        if (log4jFile.exists()) {
+          LOG.info("Reseting log4j config from [{0}]", log4jFile);
+          LogManager.resetConfiguration();
+          DOMConfigurator.configure(log4jFile.toURI().toURL());
+          return;
+        }
+      }
+    }
+    URL url = TableAdmin.class.getResource("/log4j.xml");
+    if (url != null) {
+      LOG.info("Reseting log4j config from classpath resource [{0}]", url);
+      LogManager.resetConfiguration();
+      DOMConfigurator.configure(url);
+      return;
+    }
+    throw new BException("Could not locate log4j file to reload, doing nothing.");
+  }
+
+  private org.apache.log4j.Level getLevel(Level level) throws BlurException {
+    switch (level) {
+    case ALL:
+      return org.apache.log4j.Level.ALL;
+    case DEBUG:
+      return org.apache.log4j.Level.DEBUG;
+    case ERROR:
+      return org.apache.log4j.Level.ERROR;
+    case FATAL:
+      return org.apache.log4j.Level.FATAL;
+    case INFO:
+      return org.apache.log4j.Level.INFO;
+    case TRACE:
+      return org.apache.log4j.Level.TRACE;
+    case OFF:
+      return org.apache.log4j.Level.OFF;
+    case WARN:
+      return org.apache.log4j.Level.WARN;
+    default:
+      throw new BException("Level [{0}] not found.", level);
+    }
+  }
+
 }

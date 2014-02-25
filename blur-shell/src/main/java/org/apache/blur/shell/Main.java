@@ -405,28 +405,45 @@ public class Main {
   public static String[] clusterCommands = { "controllers", "shards", "clusterlist", "cluster", "safemodewait", "top" };
   public static String[] shellCommands = { "help", "debug", "timed", "quit", "reset", "user", "whoami", "trace",
       "trace-remove", "trace-list" };
+  public static String[] serverCommands = { "logger", "logger-reset" };
 
   private static class HelpCommand extends Command {
     @Override
     public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
         BlurException {
-      out.println("Available commands:");
 
       Map<String, Command> cmds = new TreeMap<String, Command>(commands);
+      if (args.length == 2) {
+        String commandStr = args[1];
+        out.println(" - " + commandStr + " help -");
+        out.println();
+        Command command = cmds.get(commandStr);
+        if (command == null) {
+          out.println("Command " + commandStr + " not found.");
+          return;
+        }
+        out.println(command.helpWithDescription());
+        out.println();
+        return;
+      }
+
+      out.println("Available commands:");
 
       int bufferLength = getMaxCommandLength(cmds.keySet()) + 2;
       out.println(" - Table commands - ");
-
       printCommandAndHelp(out, cmds, tableCommands, bufferLength);
 
       out.println();
       out.println(" - Data commands - ");
-
       printCommandAndHelp(out, cmds, dataCommands, bufferLength);
 
       out.println();
       out.println(" - Cluster commands - ");
       printCommandAndHelp(out, cmds, clusterCommands, bufferLength);
+
+      out.println();
+      out.println(" - Server commands - ");
+      printCommandAndHelp(out, cmds, serverCommands, bufferLength);
 
       out.println();
       out.println(" - Shell commands - ");
@@ -520,7 +537,7 @@ public class Main {
   }
 
   public static void main(String[] args) throws Throwable {
-    
+
     Trace.setStorage(new LogTraceStorage(new BlurConfiguration()));
 
     args = removeLeadingShellFromScript(args);
@@ -675,6 +692,8 @@ public class Main {
     register(builder, new TraceCommand());
     register(builder, new TraceList());
     register(builder, new TraceRemove());
+    register(builder, new LogCommand());
+    register(builder, new LogResetCommand());
     commands = builder.build();
   }
 

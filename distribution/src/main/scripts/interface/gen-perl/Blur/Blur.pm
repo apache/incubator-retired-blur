@@ -6158,6 +6158,261 @@ sub write {
   return $xfer;
 }
 
+package Blur::Blur_logging_args;
+use base qw(Class::Accessor);
+Blur::Blur_logging_args->mk_accessors( qw( classNameOrLoggerName level ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{classNameOrLoggerName} = undef;
+  $self->{level} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{classNameOrLoggerName}) {
+      $self->{classNameOrLoggerName} = $vals->{classNameOrLoggerName};
+    }
+    if (defined $vals->{level}) {
+      $self->{level} = $vals->{level};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_logging_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{classNameOrLoggerName});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::I32) {
+        $xfer += $input->readI32(\$self->{level});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_logging_args');
+  if (defined $self->{classNameOrLoggerName}) {
+    $xfer += $output->writeFieldBegin('classNameOrLoggerName', TType::STRING, 1);
+    $xfer += $output->writeString($self->{classNameOrLoggerName});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{level}) {
+    $xfer += $output->writeFieldBegin('level', TType::I32, 2);
+    $xfer += $output->writeI32($self->{level});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_logging_result;
+use base qw(Class::Accessor);
+Blur::Blur_logging_result->mk_accessors( qw( ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_logging_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_logging_result');
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_resetLogging_args;
+use base qw(Class::Accessor);
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_resetLogging_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_resetLogging_args');
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_resetLogging_result;
+use base qw(Class::Accessor);
+Blur::Blur_resetLogging_result->mk_accessors( qw( ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_resetLogging_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_resetLogging_result');
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 package Blur::BlurIf;
 
 use strict;
@@ -6452,6 +6707,20 @@ sub traceRemove{
 }
 
 sub ping{
+  my $self = shift;
+
+  die 'implement interface';
+}
+
+sub logging{
+  my $self = shift;
+  my $classNameOrLoggerName = shift;
+  my $level = shift;
+
+  die 'implement interface';
+}
+
+sub resetLogging{
   my $self = shift;
 
   die 'implement interface';
@@ -6761,6 +7030,20 @@ sub ping{
   my ($self, $request) = @_;
 
   return $self->{impl}->ping();
+}
+
+sub logging{
+  my ($self, $request) = @_;
+
+  my $classNameOrLoggerName = ($request->{'classNameOrLoggerName'}) ? $request->{'classNameOrLoggerName'} : undef;
+  my $level = ($request->{'level'}) ? $request->{'level'} : undef;
+  return $self->{impl}->logging($classNameOrLoggerName, $level);
+}
+
+sub resetLogging{
+  my ($self, $request) = @_;
+
+  return $self->{impl}->resetLogging();
 }
 
 package Blur::BlurClient;
@@ -8563,6 +8846,92 @@ sub recv_ping{
 
   return;
 }
+sub logging{
+  my $self = shift;
+  my $classNameOrLoggerName = shift;
+  my $level = shift;
+
+    $self->send_logging($classNameOrLoggerName, $level);
+  $self->recv_logging();
+}
+
+sub send_logging{
+  my $self = shift;
+  my $classNameOrLoggerName = shift;
+  my $level = shift;
+
+  $self->{output}->writeMessageBegin('logging', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_logging_args();
+  $args->{classNameOrLoggerName} = $classNameOrLoggerName;
+  $args->{level} = $level;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_logging{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_logging_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  return;
+}
+sub resetLogging{
+  my $self = shift;
+
+    $self->send_resetLogging();
+  $self->recv_resetLogging();
+}
+
+sub send_resetLogging{
+  my $self = shift;
+
+  $self->{output}->writeMessageBegin('resetLogging', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_resetLogging_args();
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_resetLogging{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_resetLogging_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  return;
+}
 package Blur::BlurProcessor;
 
 use strict;
@@ -9250,6 +9619,40 @@ sub process_ping {
     my $result = new Blur::Blur_ping_result();
     $self->{handler}->ping();
     $output->writeMessageBegin('ping', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_logging {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_logging_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_logging_result();
+    eval {
+      $self->{handler}->logging($args->classNameOrLoggerName, $args->level);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('logging', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_resetLogging {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_resetLogging_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_resetLogging_result();
+    eval {
+      $self->{handler}->resetLogging();
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('resetLogging', TMessageType::REPLY, $seqid);
     $result->write($output);
     $output->writeMessageEnd();
     $output->getTransport()->flush();

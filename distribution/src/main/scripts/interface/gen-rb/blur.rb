@@ -621,6 +621,36 @@ module Blur
         return
       end
 
+      def logging(classNameOrLoggerName, level)
+        send_logging(classNameOrLoggerName, level)
+        recv_logging()
+      end
+
+      def send_logging(classNameOrLoggerName, level)
+        send_message('logging', Logging_args, :classNameOrLoggerName => classNameOrLoggerName, :level => level)
+      end
+
+      def recv_logging()
+        result = receive_message(Logging_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
+      def resetLogging()
+        send_resetLogging()
+        recv_resetLogging()
+      end
+
+      def send_resetLogging()
+        send_message('resetLogging', ResetLogging_args)
+      end
+
+      def recv_resetLogging()
+        result = receive_message(ResetLogging_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
     end
 
     class Processor
@@ -1050,6 +1080,28 @@ module Blur
         result = Ping_result.new()
         @handler.ping()
         write_result(result, oprot, 'ping', seqid)
+      end
+
+      def process_logging(seqid, iprot, oprot)
+        args = read_args(iprot, Logging_args)
+        result = Logging_result.new()
+        begin
+          @handler.logging(args.classNameOrLoggerName, args.level)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'logging', seqid)
+      end
+
+      def process_resetLogging(seqid, iprot, oprot)
+        args = read_args(iprot, ResetLogging_args)
+        result = ResetLogging_result.new()
+        begin
+          @handler.resetLogging()
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'resetLogging', seqid)
       end
 
     end
@@ -2458,6 +2510,76 @@ module Blur
 
       FIELDS = {
 
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class Logging_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      CLASSNAMEORLOGGERNAME = 1
+      LEVEL = 2
+
+      FIELDS = {
+        # the className or Logger Name of the Logger to be changed.
+        CLASSNAMEORLOGGERNAME => {:type => ::Thrift::Types::STRING, :name => 'classNameOrLoggerName'},
+        # the logging level.
+        LEVEL => {:type => ::Thrift::Types::I32, :name => 'level', :enum_class => ::Blur::Level}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+        unless @level.nil? || ::Blur::Level::VALID_VALUES.include?(@level)
+          raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field level!')
+        end
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class Logging_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ResetLogging_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+
+      FIELDS = {
+
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ResetLogging_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
       }
 
       def struct_fields; FIELDS; end

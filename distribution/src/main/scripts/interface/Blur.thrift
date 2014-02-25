@@ -812,6 +812,20 @@ struct User {
 }
 
 /**
+ * Logging level enum used to change the logging levels at runtime.
+ */
+enum Level {
+  OFF,
+  FATAL,
+  ERROR,
+  WARN,
+  INFO,
+  DEBUG,
+  TRACE,
+  ALL
+}
+
+/**
  * The Blur service API.  This API is the same for both controller servers as well as 
  * shards servers.  Each of the methods are documented.
  */
@@ -1196,6 +1210,21 @@ service Blur {
    * A way to ping a server to make sure the connection is still valid.
    */
   void ping()
+
+  /**
+   * Changes the logging level for the given instance dynamically at runtime.
+   */
+  void logging(
+    /** the className or Logger Name of the Logger to be changed. */
+    1:string classNameOrLoggerName, 
+    /** the logging level. */
+    2:Level level
+  ) throws (1:BlurException ex)
+
+  /**
+   * Resets the logging for this instance to match the log4j file.  NOTE: This will allow for dynamically changing to logging file at runtime.
+   */
+  void resetLogging() throws (1:BlurException ex)
 }
 
 

@@ -381,7 +381,11 @@ public class TableContext {
     try {
       Constructor<? extends QueueReader> constructor = clazz.getConstructor(new Class[] { BlurIndex.class,
           ShardContext.class });
-      return constructor.newInstance(blurIndex, shardContext);
+      QueueReader reader = constructor.newInstance(blurIndex, shardContext);
+
+      reader.listen();
+
+      return reader;
     } catch (NoSuchMethodException e) {
       throw new IOException(e);
     } catch (SecurityException e) {

@@ -32,7 +32,7 @@ import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.RowMutation;
 
-public abstract class QueueReader implements Closeable, Runnable {
+public abstract class QueueReader implements Closeable {
 
   private static final Log LOG = LogFactory.getLog(QueueReader.class);
 
@@ -52,38 +52,43 @@ public abstract class QueueReader implements Closeable, Runnable {
     BlurConfiguration configuration = _tableContext.getBlurConfiguration();
     _backOff = configuration.getLong(BLUR_SHARD_INDEX_QUEUE_READER_BACKOFF, 500);
     _max = configuration.getInt(BLUR_SHARD_INDEX_QUEUE_READER_MAX, 500);
-    _daemon = new Thread(this);
-    _daemon.setName("Queue Loader for [" + _tableContext.getTable() + "/" + shardContext.getShard() + "]");
-    _daemon.setDaemon(true);
-    _daemon.start();
-  }
+    _daemon = new Thread(new Runnable() {
 
-  @Override
-  public void run() {
-    List<RowMutation> mutations = new ArrayList<RowMutation>();
-    while (_running.get()) {
-      take(mutations, _max);
-      if (mutations.isEmpty()) {
-        try {
-          Thread.sleep(_backOff);
-        } catch (InterruptedException e) {
-          return;
-        }
-      } else {
-        MutatableAction mutatableAction = new MutatableAction(_shardContext);
-        mutatableAction.mutate(mutations);
-        try {
-          _index.process(mutatableAction);
-          success();
-        } catch (IOException e) {
-          failure();
-          LOG.error("Unknown error during loading of rowmutations from queue [{0}] into table [{1}] and shard [{2}].",
-              this.toString(), _tableContext.getTable(), _shardContext.getShard());
-        } finally {
-          mutations.clear();
+      @Override
+      public void run() {
+        List<RowMutation> mutations = new ArrayList<RowMutation>();
+        while (_running.get()) {
+          take(mutations, _max);
+          if (mutations.isEmpty()) {
+            try {
+              Thread.sleep(_backOff);
+            } catch (InterruptedException e) {
+              return;
+            }
+          } else {
+            MutatableAction mutatableAction = new MutatableAction(_shardContext);
+            mutatableAction.mutate(mutations);
+            try {
+              _index.process(mutatableAction);
+              success();
+            } catch (IOException e) {
+              failure();
+              LOG.error(
+                  "Unknown error during loading of rowmutations from queue [{0}] into table [{1}] and shard [{2}].",
+                  this.toString(), _tableContext.getTable(), _shardContext.getShard());
+            } finally {
+              mutations.clear();
+            }
+          }
         }
       }
-    }
+    });
+    _daemon.setName("Queue Loader for [" + _tableContext.getTable() + "/" + shardContext.getShard() + "]");
+    _daemon.setDaemon(true);
+  }
+
+  public void listen() {
+    _daemon.start();
   }
 
   @Override

@@ -18,6 +18,7 @@ package org.apache.blur.manager.writer;
  */
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -41,6 +42,8 @@ import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.TraceCollector;
 import org.apache.blur.trace.TraceStorage;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.FSDirectory;
 import org.junit.After;
@@ -50,7 +53,7 @@ import org.junit.Test;
 public class BlurIndexSimpleWriterTest {
 
   private static final String TEST_TABLE = "test-table";
-  private static final int TEST_NUMBER_WAIT_VISIBLE = 500;
+  private static final int TEST_NUMBER_WAIT_VISIBLE = 100;
   private static final int TEST_NUMBER = 50000;
 
   private static final File TMPDIR = new File("./target/tmp");
@@ -241,59 +244,42 @@ public class BlurIndexSimpleWriterTest {
     return row;
   }
 
-  // @Test
-  // public void testCreateSnapshot() throws IOException {
-  // setupWriter(configuration, 5, false);
-  // writer.createSnapshot("test_snapshot");
-  // assertTrue(writer.getSnapshots().contains("test_snapshot"));
-  //
-  // // check that the file is persisted
-  // Path snapshotsDirPath = writer.getSnapshotsDirectoryPath();
-  // FileSystem fileSystem = snapshotsDirPath.getFileSystem(new
-  // Configuration());
-  // Path snapshotFilePath = new Path(snapshotsDirPath, "test_snapshot");
-  // assertTrue(fileSystem.exists(snapshotFilePath));
-  //
-  // // create a new writer instance and test whether the snapshots are loaded
-  // properly
-  // writer.close();
-  // setupWriter(configuration, 5, true);
-  // assertTrue(writer.getSnapshots().contains("test_snapshot"));
-  // }
-  //
-  //
-  // @Test
-  // public void testRemoveSnapshots() throws IOException {
-  // setupWriter(configuration, 5, false);
-  // Path snapshotsDirPath = writer.getSnapshotsDirectoryPath();
-  // FileSystem fileSystem = snapshotsDirPath.getFileSystem(new
-  // Configuration());
-  // fileSystem.mkdirs(snapshotsDirPath);
-  //
-  // // create 2 files in snapshots sub-dir
-  // Path snapshotFile1 = new Path(snapshotsDirPath, "test_snapshot1");
-  // Path snapshotFile2 = new Path(snapshotsDirPath, "test_snapshot2");
-  //
-  // BufferedWriter br1 = new BufferedWriter(new
-  // OutputStreamWriter(fileSystem.create(snapshotFile1, true)));
-  // br1.write("segments_1");
-  // br1.close();
-  //
-  // BufferedWriter br2 = new BufferedWriter(new
-  // OutputStreamWriter(fileSystem.create(snapshotFile2, true)));
-  // br2.write("segments_1");
-  // br2.close();
-  //
-  // // re-load the writer to load the snpshots
-  // writer.close();
-  // setupWriter(configuration, 5, true);
-  // assertEquals(writer.getSnapshots().size(), 2);
-  //
-  //
-  // writer.removeSnapshot("test_snapshot2");
-  // assertEquals(writer.getSnapshots().size(), 1);
-  // assertTrue(!writer.getSnapshots().contains("test_snapshot2"));
-  // assertTrue(!fileSystem.exists(snapshotFile2));
-  //
-  // }
+  @Test
+  public void testCreateSnapshot() throws IOException {
+    setupWriter(_configuration, 5, false);
+    _writer.createSnapshot("test_snapshot");
+    assertTrue(_writer.getSnapshots().contains("test_snapshot"));
+
+    // check that the file is persisted
+    Path snapshotsDirPath = _writer.getSnapshotsDirectoryPath();
+    FileSystem fileSystem = snapshotsDirPath.getFileSystem(_configuration);
+    assertTrue(fileSystem.exists(new Path(snapshotsDirPath, "000000000001")));
+
+    // create a new writer instance and test whether the snapshots are loaded
+    // properly
+    _writer.close();
+    setupWriter(_configuration, 5, true);
+    assertTrue(_writer.getSnapshots().contains("test_snapshot"));
+  }
+
+  @Test
+  public void testRemoveSnapshots() throws IOException {
+    setupWriter(_configuration, 5, false);
+    Path snapshotsDirPath = _writer.getSnapshotsDirectoryPath();
+    FileSystem fileSystem = snapshotsDirPath.getFileSystem(new Configuration());
+    fileSystem.mkdirs(snapshotsDirPath);
+
+    _writer.createSnapshot("test_snapshot1");
+    _writer.createSnapshot("test_snapshot2");
+
+    // re-load the writer to load the snpshots
+    _writer.close();
+    setupWriter(_configuration, 5, true);
+    assertEquals(2, _writer.getSnapshots().size());
+
+    _writer.removeSnapshot("test_snapshot2");
+    assertEquals(1, _writer.getSnapshots().size());
+    assertTrue(!_writer.getSnapshots().contains("test_snapshot2"));
+
+  }
 }

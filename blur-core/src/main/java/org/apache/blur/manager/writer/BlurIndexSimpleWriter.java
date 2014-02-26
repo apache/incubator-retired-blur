@@ -19,6 +19,7 @@ package org.apache.blur.manager.writer;
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -41,13 +42,13 @@ import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.Directory;
 
@@ -76,6 +77,8 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private Thread _optimizeThread;
   private Thread _writerOpener;
   private final IndexDeletionPolicyReader _policy;
+  private final SnapshotIndexDeletionPolicy _snapshotIndexDeletionPolicy;
+  private final String _context;
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       final ExecutorService searchExecutor, BlurIndexCloser indexCloser, BlurIndexWarmup indexWarmup)
@@ -84,6 +87,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _searchThreadPool = searchExecutor;
     _shardContext = shardContext;
     _tableContext = _shardContext.getTableContext();
+    _context = _tableContext.getTable() + "/" + shardContext.getShard();
     _fieldManager = _tableContext.getFieldManager();
     Analyzer analyzer = _fieldManager.getAnalyzerForIndex();
     _conf = new IndexWriterConfig(LUCENE_VERSION, analyzer);
@@ -94,7 +98,9 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     _conf.setMergeScheduler(mergeScheduler.getMergeScheduler());
-    _policy = new IndexDeletionPolicyReader(new KeepOnlyLastCommitDeletionPolicy());
+    _snapshotIndexDeletionPolicy = new SnapshotIndexDeletionPolicy(_tableContext.getConfiguration(), new Path(
+        shardContext.getHdfsDirPath(), "generations"));
+    _policy = new IndexDeletionPolicyReader(_snapshotIndexDeletionPolicy);
     _conf.setIndexDeletionPolicy(_policy);
 
     if (!DirectoryReader.indexExists(directory)) {
@@ -255,17 +261,27 @@ public class BlurIndexSimpleWriter extends BlurIndex {
 
   @Override
   public void createSnapshot(String name) throws IOException {
-    throw new RuntimeException("not impl");
+    _writeLock.lock();
+    try {
+      _snapshotIndexDeletionPolicy.createSnapshot(name, _indexReader.get(), _context);
+    } finally {
+      _writeLock.unlock();
+    }
   }
 
   @Override
   public void removeSnapshot(String name) throws IOException {
-    throw new RuntimeException("not impl");
+    _writeLock.lock();
+    try {
+      _snapshotIndexDeletionPolicy.removeSnapshot(name, _context);
+    } finally {
+      _writeLock.unlock();
+    }
   }
 
   @Override
   public List<String> getSnapshots() throws IOException {
-    throw new RuntimeException("not impl");
+    return new ArrayList<String>(_snapshotIndexDeletionPolicy.getSnapshots());
   }
 
   private void commit() throws IOException {
@@ -322,6 +338,10 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       }
       _writeLock.unlock();
     }
+  }
+
+  public Path getSnapshotsDirectoryPath() {
+    return _snapshotIndexDeletionPolicy.getSnapshotsDirectoryPath();
   }
 
 }

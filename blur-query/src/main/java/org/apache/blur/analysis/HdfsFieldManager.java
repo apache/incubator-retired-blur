@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.blur.log.Log;
@@ -44,14 +45,6 @@ public class HdfsFieldManager extends BaseFieldManager {
 
   private static final List<String> EMPTY_LIST = Arrays.asList(new String[] {});
 
-  public static abstract class Lock {
-
-    public abstract void lock();
-
-    public abstract void unlock();
-
-  }
-
   private static final Log LOG = LogFactory.getLog(HdfsFieldManager.class);
 
   private static final String FIELD_TYPE = "_fieldType_";
@@ -62,19 +55,7 @@ public class HdfsFieldManager extends BaseFieldManager {
   private static final String SUB_COLUMN_NAME = "_subColumnName_";
   private static final String TYPE_FILE_EXT = ".type";
 
-  private static Lock _lock = new Lock() {
-    private final java.util.concurrent.locks.Lock _javalock = new ReentrantReadWriteLock().writeLock();
-
-    @Override
-    public void lock() {
-      _javalock.lock();
-    }
-
-    @Override
-    public void unlock() {
-      _javalock.unlock();
-    }
-  };
+  private static final Lock _lock =  new ReentrantReadWriteLock().writeLock();
 
   private final Configuration _configuration;
   private final Path _storagePath;
@@ -117,7 +98,9 @@ public class HdfsFieldManager extends BaseFieldManager {
       List<String> fieldNames = new ArrayList<String>();
       for (FileStatus fileStatus : listStatus) {
         if (!fileStatus.isDir()) {
-          fieldNames.add(fileStatus.getPath().getName().replace(TYPE_FILE_EXT, ""));
+          String fileName = fileStatus.getPath().getName();
+          
+          fieldNames.add(fileName.substring(0, fileName.lastIndexOf(TYPE_FILE_EXT)));
         }
       }
       return fieldNames;
@@ -238,14 +221,6 @@ public class HdfsFieldManager extends BaseFieldManager {
     result.remove(FIELD_LESS_INDEXING);
     result.remove(SORTENABLED);
     return result;
-  }
-
-  public static Lock getLock() {
-    return _lock;
-  }
-
-  public static void setLock(Lock lock) {
-    _lock = lock;
   }
 
 }

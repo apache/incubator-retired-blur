@@ -185,7 +185,7 @@ public class BlurOutputFormatMiniClusterTest {
 
     FileStatus[] listStatusAfter = fileSystem.listStatus(shardPath);
 
-    assertEquals(9, listStatusAfter.length);
+    assertEquals(10, listStatusAfter.length);
 
   }
 

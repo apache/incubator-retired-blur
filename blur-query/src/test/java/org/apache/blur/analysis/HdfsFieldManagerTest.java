@@ -1,6 +1,7 @@
 package org.apache.blur.analysis;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -36,7 +37,7 @@ import org.junit.Test;
  */
 public class HdfsFieldManagerTest extends BaseFieldManagerTest {
   private static final String DFS_FIELD_MANAGER_PATH = "./target/tmp/HdfsFieldManagerTest/meta";
-  
+
   @Override
   protected BaseFieldManager newFieldManager(boolean create) throws IOException {
     Configuration config = new Configuration();
@@ -47,25 +48,50 @@ public class HdfsFieldManagerTest extends BaseFieldManagerTest {
     }
     return new HdfsFieldManager(_fieldLessField, new KeywordAnalyzer(), path, config);
   }
-  
-    @Test
-    public void fieldManagerShouldIgnoreUnknownFiles() throws IOException {
-      BaseFieldManager fieldManager = newFieldManager(true);
-      fieldManager.addColumnDefinition("fam1", "col1", null, true, "text", false, null);
-      FieldTypeDefinition fieldTypeDefinition1 = fieldManager.getFieldTypeDefinition("fam1.col1");
-      
-      assertNotNull(fieldTypeDefinition1);
-      Path path = new Path(DFS_FIELD_MANAGER_PATH, "mydoc.txt");
-      FSDataOutputStream outputStream = path.getFileSystem(new Configuration()).create(path, false);
-      IOUtils.write("Some text..", outputStream);
-      outputStream.close();
-      
-      fieldManager.loadFromStorage();
-      
-      FieldTypeDefinition fieldTypeDefinition2 = fieldManager.getFieldTypeDefinition("fam1.col1");
-      assertNotNull(fieldTypeDefinition2);
+
+  @Test
+  public void fieldManagerShouldIgnoreUnknownFiles() throws IOException {
+    BaseFieldManager fieldManager = newFieldManager(true);
+    fieldManager.addColumnDefinition("unknowntest", "col1", null, true, "text", false, null);
+    FieldTypeDefinition fieldTypeDefinition1 = fieldManager.getFieldTypeDefinition("unknowntest.col1");
+
+    assertNotNull(fieldTypeDefinition1);
+    Path path = new Path(DFS_FIELD_MANAGER_PATH, "mydoc.txt");
+    FSDataOutputStream outputStream = path.getFileSystem(new Configuration()).create(path, false);
+    IOUtils.write("Some text..", outputStream);
+    outputStream.close();
+
+    BaseFieldManager fieldManager2 = newFieldManager(false);
+    fieldManager2.loadFromStorage();
+    FieldTypeDefinition fieldTypeDefinition2 = fieldManager2.getFieldTypeDefinition("unknowntest.col1");
+    assertNotNull(fieldTypeDefinition2);
   }
-    
+
+  @Test
+  public void columnsWithNamesSimilarToOurSuffixShouldntCauseProblems() throws IOException {
+    BaseFieldManager fieldManager = newFieldManager(true);
+    fieldManager.addColumnDefinition("similartest", "typeFoo", null, true, "text", false, null);
+    FieldTypeDefinition fieldTypeDefinition1 = fieldManager.getFieldTypeDefinition("similartest.typeFoo");
+
+    assertNotNull(fieldTypeDefinition1);
+    assertEquals("typeFoo", fieldTypeDefinition1.getColumnName());
+
+    assertTrue(fieldManager.getFieldNames().contains("similartest.typeFoo"));
+    BaseFieldManager fieldManager2 = newFieldManager(false);
+    fieldManager2.loadFromStorage();
+
+    assertTrue("Should have the real field.", fieldManager2.getFieldNames().contains("similartest.typeFoo"));
+    FieldTypeDefinition fieldTypeDefinition2 = fieldManager2.getFieldTypeDefinition("similartest.typeFoo");
+    assertNotNull(fieldTypeDefinition2);
+    assertEquals("typeFoo", fieldTypeDefinition2.getColumnName());
+    assertEquals("similartest", fieldTypeDefinition2.getFamily());
+    assertEquals("text", fieldTypeDefinition2.getFieldType());
+
+    fieldTypeDefinition2 = fieldManager2.getFieldTypeDefinition("similartestFoo");
+
+    assertNull("This one shouldn't exist.", fieldTypeDefinition2);
+  }
+
   @SuppressWarnings("unchecked")
   @Test
   public void testStoreMetaData() throws IOException {

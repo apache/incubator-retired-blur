@@ -98,7 +98,9 @@ public class HdfsFieldManager extends BaseFieldManager {
       List<String> fieldNames = new ArrayList<String>();
       for (FileStatus fileStatus : listStatus) {
         if (!fileStatus.isDir()) {
-          fieldNames.add(fileStatus.getPath().getName().replace(TYPE_FILE_EXT, ""));
+          String fileName = fileStatus.getPath().getName();
+          
+          fieldNames.add(fileName.substring(0, fileName.lastIndexOf(TYPE_FILE_EXT)));
         }
       }
       return fieldNames;

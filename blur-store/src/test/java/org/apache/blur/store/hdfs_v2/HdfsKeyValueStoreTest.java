@@ -55,7 +55,7 @@ public class HdfsKeyValueStoreTest {
 
   @AfterClass
   public static void stopCluster() {
-    shutdownDfs();
+    shutdownDfs(_cluster);
   }
 
   @Before
@@ -141,7 +141,7 @@ public class HdfsKeyValueStoreTest {
     store.close();
   }
 
-//  @Test
+  // @Test
   public void testTwoKeyStoreInstancesWritingAtTheSameTime() throws IOException {
     HdfsKeyValueStore store1 = new HdfsKeyValueStore(_configuration, _path);
     listFiles();
@@ -214,7 +214,7 @@ public class HdfsKeyValueStoreTest {
     return new BytesRef(s);
   }
 
-  public static void startDfs(Configuration conf, boolean format, String path) {
+  public static MiniDFSCluster startDfs(Configuration conf, boolean format, String path) {
     String perm;
     Path p = new Path(new File("./target").getAbsolutePath());
     try {
@@ -230,26 +230,27 @@ public class HdfsKeyValueStoreTest {
     conf.set("dfs.datanode.data.dir.perm", perm);
     System.setProperty("test.build.data", path);
     try {
-      _cluster = new MiniDFSCluster(conf, 1, true, (String[]) null);
-      _cluster.waitActive();
+      MiniDFSCluster cluster = new MiniDFSCluster(conf, 1, true, (String[]) null);
+      cluster.waitActive();
+      return cluster;
     } catch (Exception e) {
       LOG.error("error opening file system", e);
       throw new RuntimeException(e);
     }
   }
 
-  public static void shutdownDfs() {
-    if (_cluster != null) {
+  public static void shutdownDfs(MiniDFSCluster cluster) {
+    if (cluster != null) {
       LOG.info("Shutting down Mini DFS ");
       try {
-        _cluster.shutdown();
+        cluster.shutdown();
       } catch (Exception e) {
         // / Can get a java.lang.reflect.UndeclaredThrowableException thrown
         // here because of an InterruptedException. Don't let exceptions in
         // here be cause of test failure.
       }
       try {
-        FileSystem fs = _cluster.getFileSystem();
+        FileSystem fs = cluster.getFileSystem();
         if (fs != null) {
           LOG.info("Shutting down FileSystem");
           fs.close();

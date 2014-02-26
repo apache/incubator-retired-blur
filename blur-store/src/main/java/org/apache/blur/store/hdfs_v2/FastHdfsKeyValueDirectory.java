@@ -44,6 +44,7 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
   private static final String LENGTH = "/length";
   private static final BytesRef FILES = new BytesRef("FILES");
   private static final String SEP = "|";
+  
   private final Map<String, Long> _files = new ConcurrentHashMap<String, Long>();
   private final HdfsKeyValueStore _store;
   private final int _blockSize = 4096;

@@ -20,6 +20,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.FilterInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -55,10 +56,21 @@ import org.apache.lucene.util.BytesRef;
 
 public class HdfsKeyValueStore implements Store {
 
+  private static final String BLUR_KEY_VALUE = "blur_key_value";
   private static final String IN = "in";
   private static final String GET_FILE_LENGTH = "getFileLength";
   private static final int DEFAULT_MAX = 64 * 1024 * 1024;
-  private final Log LOG = LogFactory.getLog(HdfsKeyValueStore.class);
+  private static final Log LOG = LogFactory.getLog(HdfsKeyValueStore.class);
+  private static final byte[] MAGIC;
+  private static final int VERSION = 1;
+
+  static {
+    try {
+      MAGIC = BLUR_KEY_VALUE.getBytes("UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   static enum OperationType {
     PUT, DELETE
@@ -148,7 +160,7 @@ public class HdfsKeyValueStore implements Store {
     _readWriteLock = new ReentrantReadWriteLock();
     _writeLock = _readWriteLock.writeLock();
     _readLock = _readWriteLock.readLock();
-    _fileStatus.set(getList(_path));
+    _fileStatus.set(getSortedSet(_path));
     if (!_fileStatus.get().isEmpty()) {
       _currentFileCounter.set(Long.parseLong(_fileStatus.get().last().getPath().getName()));
     }
@@ -261,9 +273,13 @@ public class HdfsKeyValueStore implements Store {
   }
 
   public void cleanupOldFiles() throws IOException {
-    FileStatus[] listStatus = _fileSystem.listStatus(_path);
+    SortedSet<FileStatus> fileStatusSet = getSortedSet(_path);
+    Path newestGen = fileStatusSet.last().getPath();
+    if (!newestGen.equals(_outputPath)) {
+      throw new IOException("No longer the owner of [" + _path + "]");
+    }
     Set<Path> existingFiles = new HashSet<Path>();
-    for (FileStatus fileStatus : listStatus) {
+    for (FileStatus fileStatus : fileStatusSet) {
       existingFiles.add(fileStatus.getPath());
     }
     Set<Entry<BytesRef, Value>> entrySet = _pointers.entrySet();
@@ -272,7 +288,6 @@ public class HdfsKeyValueStore implements Store {
       Path p = e.getValue()._path;
       existingFiles.remove(p);
     }
-
     for (Path p : existingFiles) {
       LOG.info("Removing file no longer referenced [{0}]", p);
       _fileSystem.delete(p, false);
@@ -347,6 +362,9 @@ public class HdfsKeyValueStore implements Store {
     String name = buffer(nextSegment);
     _outputPath = new Path(_path, name);
     _output = _fileSystem.create(_outputPath, false);
+    _output.write(MAGIC);
+    _output.writeInt(VERSION);
+    _output.sync();
   }
 
   private String buffer(long number) {
@@ -383,20 +401,30 @@ public class HdfsKeyValueStore implements Store {
 
   private void loadIndex(Path path) throws IOException {
     FSDataInputStream inputStream = _fileSystem.open(path);
-    long fileLength = getFileLength(path, inputStream);
-    Operation operation = new Operation();
-    try {
-      while (inputStream.getPos() < fileLength) {
-        try {
-          operation.readFields(inputStream);
-        } catch (IOException e) {
-          // End of sync point found
-          return;
+    byte[] buf = new byte[MAGIC.length];
+    inputStream.readFully(buf);
+    if (!Arrays.equals(MAGIC, buf)) {
+      throw new IOException("File [" + path + "] not a " + BLUR_KEY_VALUE + " file.");
+    }
+    int version = inputStream.readInt();
+    if (version == 1) {
+      long fileLength = getFileLength(path, inputStream);
+      Operation operation = new Operation();
+      try {
+        while (inputStream.getPos() < fileLength) {
+          try {
+            operation.readFields(inputStream);
+          } catch (IOException e) {
+            // End of sync point found
+            return;
+          }
+          loadIndex(path, operation);
         }
-        loadIndex(path, operation);
+      } finally {
+        inputStream.close();
       }
-    } finally {
-      inputStream.close();
+    } else {
+      throw new IOException("Unknown version [" + version + "]");
     }
   }
 
@@ -418,7 +446,7 @@ public class HdfsKeyValueStore implements Store {
     return new BytesRef(key.getBytes(), 0, key.getLength());
   }
 
-  private SortedSet<FileStatus> getList(Path p) throws IOException {
+  private SortedSet<FileStatus> getSortedSet(Path p) throws IOException {
     if (_fileSystem.exists(p)) {
       FileStatus[] listStatus = _fileSystem.listStatus(p);
       if (listStatus != null) {

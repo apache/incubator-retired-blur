@@ -50,7 +50,7 @@ public class HdfsKeyValueStoreTest {
   @BeforeClass
   public static void startCluster() {
     Configuration conf = new Configuration();
-    startDfs(conf, true, TMPDIR.getAbsolutePath());
+    _cluster = startDfs(conf, true, TMPDIR.getAbsolutePath());
   }
 
   @AfterClass

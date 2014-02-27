@@ -405,7 +405,7 @@ public class Main {
   public static String[] clusterCommands = { "controllers", "shards", "clusterlist", "cluster", "safemodewait", "top" };
   public static String[] shellCommands = { "help", "debug", "timed", "quit", "reset", "user", "whoami", "trace",
       "trace-remove", "trace-list" };
-  public static String[] serverCommands = { "logger", "logger-reset" };
+  public static String[] serverCommands = { "logger", "logger-reset", "remove-shard" };
 
   private static class HelpCommand extends Command {
     @Override
@@ -694,6 +694,7 @@ public class Main {
     register(builder, new TraceRemove());
     register(builder, new LogCommand());
     register(builder, new LogResetCommand());
+    register(builder, new RemoveShardServerCommand());
     commands = builder.build();
   }
 

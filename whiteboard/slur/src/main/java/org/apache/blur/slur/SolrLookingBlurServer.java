@@ -29,12 +29,14 @@ import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
+import org.apache.solr.client.solrj.SolrResponse;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.StreamingResponseCallback;
 import org.apache.solr.client.solrj.beans.DocumentObjectBinder;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.SolrPingResponse;
+import org.apache.solr.client.solrj.response.SolrResponseBase;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.SolrParams;
@@ -70,22 +72,16 @@ public class SolrLookingBlurServer extends SolrServer {
   }
 
   @Override
-  public UpdateResponse add(Collection<SolrInputDocument> docs) throws SolrServerException, IOException {
-    UpdateResponse response = new UpdateResponse();
-
-    try {
-      long start = System.currentTimeMillis();
-      if (docs.size() == 1) {
-        client().mutate(RowMutationHelper.from(docs.iterator().next(), tableName));
-      } else {
-        client().mutateBatch(RowMutationHelper.from(docs, tableName));
+  public UpdateResponse add(final Collection<SolrInputDocument> docs) throws SolrServerException, IOException {
+    return respond(UpdateResponse.class, new Command() {
+      public void process() throws Exception {
+        if (docs.size() == 1) {
+          client().mutate(RowMutationHelper.from(docs.iterator().next(), tableName));
+        } else {
+          client().mutateBatch(RowMutationHelper.from(docs, tableName));
+        }
       }
-      response.setElapsedTime((System.currentTimeMillis() - start));
-    } catch (Exception e) {
-      throw new SolrServerException(e);
-    }
-
-    return response;
+    });
   }
 
   @Override
@@ -140,25 +136,20 @@ public class SolrLookingBlurServer extends SolrServer {
   }
 
   @Override
-  public UpdateResponse deleteById(List<String> ids) throws SolrServerException, IOException {
-    UpdateResponse response = new UpdateResponse();
-    long start = System.currentTimeMillis();
-
-    try {
-      if (ids.size() == 1) {
-        client().mutate(toDeleteMutation(ids.get(0)));
-      } else {
-        List<RowMutation> mutates = Lists.newArrayList();
-        for (String id : ids) {
-          mutates.add(toDeleteMutation(id));
+  public UpdateResponse deleteById(final List<String> ids) throws SolrServerException, IOException {
+    return respond(UpdateResponse.class, new Command() {
+      public void process() throws Exception {
+        if (ids.size() == 1) {
+          client().mutate(toDeleteMutation(ids.get(0)));
+        } else {
+          List<RowMutation> mutates = Lists.newArrayList();
+          for (String id : ids) {
+            mutates.add(toDeleteMutation(id));
+          }
+          client().mutateBatch(mutates);
         }
-        client().mutateBatch(mutates);
       }
-    } catch (Exception e) {
-      throw new SolrServerException("Unable to delete docs by ids.", e);
-    }
-    response.setElapsedTime((System.currentTimeMillis() - start));
-    return response;
+    });
   }
 
   private RowMutation toDeleteMutation(String id) {
@@ -200,17 +191,14 @@ public class SolrLookingBlurServer extends SolrServer {
   }
 
   @Override
-  public UpdateResponse optimize(boolean waitFlush, boolean waitSearcher, int maxSegments) throws SolrServerException,
+  public UpdateResponse optimize(boolean waitFlush, boolean waitSearcher, final int maxSegments)
+      throws SolrServerException,
       IOException {
-    long start = System.currentTimeMillis();
-    try {
-      client().optimize(tableName, maxSegments);
-    } catch (Exception e) {
-      throw new SolrServerException(e);
-    }
-    UpdateResponse response = new UpdateResponse();
-    response.setElapsedTime((System.currentTimeMillis() - start));
-    return response;
+    return respond(UpdateResponse.class, new Command() {
+      public void process() throws Exception {
+        client().optimize(tableName, maxSegments);
+      }
+    });
   }
 
   @Override
@@ -220,15 +208,11 @@ public class SolrLookingBlurServer extends SolrServer {
 
   @Override
   public SolrPingResponse ping() throws SolrServerException, IOException {
-    SolrPingResponse response = new SolrPingResponse();
-    long start = System.currentTimeMillis();
-    try {
-      client().ping();
-    } catch (TException e) {
-      throw new SolrServerException(e);
-    }
-    response.setElapsedTime((System.currentTimeMillis() - start));
-    return response;
+    return respond(SolrPingResponse.class, new Command() {
+      public void process() throws Exception {
+        client().ping();
+      }
+    });
   }
 
   @Override
@@ -254,5 +238,24 @@ public class SolrLookingBlurServer extends SolrServer {
 
   private Iface client() {
     return BlurClient.getClient(connectionString);
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T extends SolrResponseBase> T respond(Class<T> typ, Command command) throws SolrServerException {
+    SolrResponseBase response;
+    long start = System.currentTimeMillis();
+    try {
+      response = typ.newInstance();
+
+      command.process();
+    } catch (Exception e) {
+      throw new SolrServerException("Unable to complete update request.", e);
+    }
+    response.setElapsedTime((System.currentTimeMillis() - start));
+    return (T) response;
+  }
+
+  private abstract static class Command {
+    abstract void process() throws Exception;
   }
 }

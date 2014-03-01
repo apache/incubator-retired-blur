@@ -25,6 +25,8 @@ import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.BlurClientManager;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.RowMutation;
+import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
 import org.apache.solr.client.solrj.SolrServer;
@@ -139,17 +141,42 @@ public class SolrLookingBlurServer extends SolrServer {
 
   @Override
   public UpdateResponse deleteById(List<String> ids) throws SolrServerException, IOException {
-    throw new RuntimeException("Not Implemented.");
+    UpdateResponse response = new UpdateResponse();
+    long start = System.currentTimeMillis();
+
+    try {
+      if (ids.size() == 1) {
+        client().mutate(toDeleteMutation(ids.get(0)));
+      } else {
+        List<RowMutation> mutates = Lists.newArrayList();
+        for (String id : ids) {
+          mutates.add(toDeleteMutation(id));
+        }
+        client().mutateBatch(mutates);
+      }
+    } catch (Exception e) {
+      throw new SolrServerException("Unable to delete docs by ids.", e);
+    }
+    response.setElapsedTime((System.currentTimeMillis() - start));
+    return response;
+  }
+
+  private RowMutation toDeleteMutation(String id) {
+    RowMutation mutate = new RowMutation();
+    mutate.setRowId(id);
+    mutate.setRowMutationType(RowMutationType.DELETE_ROW);
+    mutate.setTable(tableName);
+    return mutate;
   }
 
   @Override
   public UpdateResponse deleteById(String id, int commitWithinMs) throws SolrServerException, IOException {
-    throw new RuntimeException("Not Implemented.");
+    return deleteById(id);
   }
 
   @Override
   public UpdateResponse deleteById(String id) throws SolrServerException, IOException {
-    throw new RuntimeException("Not Implemented.");
+    return deleteById(Lists.newArrayList(id));
   }
 
   @Override
@@ -200,7 +227,7 @@ public class SolrLookingBlurServer extends SolrServer {
     } catch (TException e) {
       throw new SolrServerException(e);
     }
-    response.setElapsedTime((System.currentTimeMillis()-start));
+    response.setElapsedTime((System.currentTimeMillis() - start));
     return response;
   }
 

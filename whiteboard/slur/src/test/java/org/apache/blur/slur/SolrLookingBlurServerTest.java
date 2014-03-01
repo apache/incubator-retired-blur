@@ -152,7 +152,59 @@ public class SolrLookingBlurServerTest {
     assertTotalResults(table, "rowid:2", 1l);
     assertTotalResults(table, "fam.value:1299", 1l);
     assertTotalResults(table, "fam.value:justincase", 0l);
-    
+
+    removeTable(table);
+  }
+
+  @Test
+  public void weShouldBeAbleToDeleteARowById() throws SolrServerException, IOException, BlurException,
+      TException {
+    String table = "weShouldBeAbleToDeleteARowById";
+    createTable(table);
+    SolrServer server = new SolrLookingBlurServer(miniCluster.getControllerConnectionStr(), table);
+    SolrInputDocument doc1 = new SolrInputDocument();
+    doc1.addField("id", "1");
+    doc1.addField("fam.value", "123");
+    SolrInputDocument doc2 = new SolrInputDocument();
+    doc2.addField("id", "2");
+    doc2.addField("fam.value", "124");
+    List<SolrInputDocument> docs = Lists.newArrayList(doc1, doc2);
+
+    server.add(docs);
+
+    assertTotalResults(table, "rowid:1", 1l);
+    assertTotalResults(table, "rowid:2", 1l);
+
+    server.deleteById("1");
+
+    assertTotalResults(table, "rowid:1", 0l);
+    assertTotalResults(table, "rowid:2", 1l);
+
+    removeTable(table);
+  }
+
+  @Test
+  public void weShouldBeAbleToDeleteARowByAListOfIds() throws SolrServerException, IOException, BlurException,
+      TException {
+    String table = "weShouldBeAbleToDeleteARowByAListOfIds";
+    createTable(table);
+    SolrServer server = new SolrLookingBlurServer(miniCluster.getControllerConnectionStr(), table);
+    for (int i = 0; i < 20; i++) {
+      SolrInputDocument doc = new SolrInputDocument();
+      doc.addField("id", i);
+      doc.addField("fam.value", "value" + i);
+      server.add(doc);
+    }
+
+    assertTotalResults(table, "rowid:1", 1l);
+    assertTotalResults(table, "rowid:2", 1l);
+    List<String> ids = Lists.newArrayList("1", "2", "3", "4", "5");
+    server.deleteById(ids);
+
+    for (String id : ids) {
+      assertTotalResults(table, "rowid:" + id, 0l);
+    }
+
     removeTable(table);
   }
 

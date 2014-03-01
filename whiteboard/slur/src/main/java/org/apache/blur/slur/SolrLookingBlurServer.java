@@ -136,7 +136,7 @@ public class SolrLookingBlurServer extends SolrServer {
 
   @Override
   public UpdateResponse deleteById(List<String> ids, int commitWithinMs) throws SolrServerException, IOException {
-    throw new RuntimeException("Not Implemented.");
+    return deleteById(ids);
   }
 
   @Override

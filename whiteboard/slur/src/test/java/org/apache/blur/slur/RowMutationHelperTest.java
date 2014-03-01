@@ -72,6 +72,26 @@ public class RowMutationHelperTest {
     assertEquals("value2", vals.get(1).toString());
   }
 
+  @Test
+  public void documentWithChildDocumentsShouldBeRowWithRecords() {
+    SolrInputDocument doc = new SolrInputDocument();
+    doc.addField("id", "1");
+    
+    List<SolrInputDocument> children = Lists.newArrayList();
+    
+    for(int i = 0; i < 10; i++) {
+      SolrInputDocument child = new SolrInputDocument();
+      child.addField("id", i);
+      child.addField("fam.key", "value" + i);
+      children.add(child);
+    }
+    doc.addChildDocuments(children);
+
+    RowMutation mutate = RowMutationHelper.from(doc, "foo");
+
+    assertEquals("Children should turn into records.", 10, mutate.getRecordMutationsSize());
+  }
+  
   @Test(expected = IllegalArgumentException.class)
   public void docWithChildrenCantItselfHaveFieldValues() {
     SolrInputDocument parent = new SolrInputDocument();

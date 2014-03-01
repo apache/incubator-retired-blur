@@ -34,7 +34,6 @@ public class RowMutationHelper {
   public static List<RowMutation> from(Collection<SolrInputDocument> docs, String table) {
     List<RowMutation> mutations = Lists.newArrayList();
     for(SolrInputDocument d: docs) {
-      System.out.println("DOC: " + d.getFieldValue("id"));
       mutations.add(from(d, table));
     }
     return mutations;
@@ -44,22 +43,25 @@ public class RowMutationHelper {
     validate(doc);
 
     RowMutation mutate = new RowMutation();
-    mutate.setRowId(extractRowId(doc));
+    String rowid = extractId(doc);
+    mutate.setRowId(rowid);
     mutate.setTable(table);
     List<RecordMutation> recordMutations = Lists.newArrayList();
     if (doc.hasChildDocuments()) {
-
+      for(SolrInputDocument child: doc.getChildDocuments()) {
+        recordMutations.add(createRecordMutation(child, extractId(child)));
+      }
     } else {
-      recordMutations.add(createRecordMutation(doc, extractRowId(doc)));
+      recordMutations.add(createRecordMutation(doc, rowid));
     }
     mutate.setRecordMutations(recordMutations);
     return mutate;
   }
 
-  private static String extractRowId(SolrInputDocument doc) {
-    Object id = doc.getFieldValue("id");
+  private static String extractId(SolrInputDocument doc) {
+    Object id = doc.getFieldValue("rowid");
     if (id == null) {
-      id = doc.getFieldValue("rowid");
+      id = doc.getFieldValue("id");
     }
     if (id == null) {
       throw new IllegalArgumentException("Document must either have id or rowid field.");

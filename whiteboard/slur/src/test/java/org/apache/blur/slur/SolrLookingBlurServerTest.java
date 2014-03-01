@@ -108,6 +108,37 @@ public class SolrLookingBlurServerTest {
   }
 
   @Test
+  public void childDocsShouldBecomeRecordsOfRow() throws SolrServerException, IOException, BlurException, TException {
+    String table = "childDocsShouldBecomeRecordsOfRow";
+    createTable(table);
+    SolrServer server = new SolrLookingBlurServer(miniCluster.getControllerConnectionStr(), table);
+    SolrInputDocument doc = new SolrInputDocument();
+    doc.addField("id", "1");
+    
+    List<SolrInputDocument> children = Lists.newArrayList();
+    for(int i = 0; i < 100; i++) {
+      SolrInputDocument child = new SolrInputDocument();
+      child.addField("id", i);
+      child.addField("fam.key", "value" + i);
+      children.add(child);
+    }
+    doc.addChildDocuments(children);
+    
+    server.add(doc);
+
+    TableStats stats = client().tableStats(table);
+
+    assertEquals("We should have one record.", 100, stats.recordCount);
+    assertEquals("We should have one row.", 1, stats.rowCount);
+
+    assertTotalResults(table, "fam.key:value1", 1l);
+    assertTotalRecordResults(table, "recordid:99", 1l);
+
+    removeTable(table);
+  }  
+  
+
+  @Test
   public void docShouldBeDiscoverableWithMultiValuedFields() throws SolrServerException, IOException, BlurException,
       TException {
     String table = "docShouldBeDiscoverableWithMultiValuedFields";
@@ -216,6 +247,18 @@ public class SolrLookingBlurServerTest {
     BlurResults results = client().query(table, bquery);
 
     assertEquals("Should find our row.", expected, results.getTotalResults());
+  }
+  private void assertTotalRecordResults(String table, String q, long expected) throws BlurException, TException {
+    BlurQuery bquery = new BlurQuery();
+    Query query = new Query();
+    query.setQuery(q);
+    query.setRowQuery(false);
+    bquery.setQuery(query);
+   
+    BlurResults results = client().query(table, bquery);
+
+    assertEquals("Should find our record.", expected, results.getTotalResults());
+    
   }
 
   private void removeTable(String table) {

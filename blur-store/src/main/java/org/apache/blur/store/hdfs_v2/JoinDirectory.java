@@ -25,14 +25,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.blur.store.blockcache.LastModified;
 import org.apache.blur.store.hdfs.HdfsDirectory;
-import org.apache.blur.store.hdfs.HdfsQuickMove;
+import org.apache.blur.store.hdfs.HdfsSymlink;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 
-public class JoinDirectory extends Directory implements LastModified, HdfsQuickMove {
+public class JoinDirectory extends Directory implements LastModified, HdfsSymlink {
 
   private final HdfsDirectory _longTermStorage;
   private final Directory _shortTermStorage;
@@ -159,7 +159,7 @@ public class JoinDirectory extends Directory implements LastModified, HdfsQuickM
   }
 
   @Override
-  public HdfsDirectory getQuickMoveDirectory() {
+  public HdfsDirectory getSymlinkDirectory() {
     return _longTermStorage;
   }
 

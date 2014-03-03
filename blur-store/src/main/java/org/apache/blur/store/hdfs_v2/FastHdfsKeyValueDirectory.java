@@ -44,28 +44,10 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
   private static final String LENGTH = "/length";
   private static final BytesRef FILES = new BytesRef("FILES");
   private static final String SEP = "|";
-  
+
   private final Map<String, Long> _files = new ConcurrentHashMap<String, Long>();
   private final HdfsKeyValueStore _store;
   private final int _blockSize = 4096;
-
-  public static void main(String[] args) throws IOException {
-    Configuration configuration = new Configuration();
-    Path path = new Path("hdfs://localhost:9000/blur/fast/shard-00000000/fast");
-    FastHdfsKeyValueDirectory dir = new FastHdfsKeyValueDirectory(configuration, path);
-    HdfsKeyValueStore store = dir._store;
-    store.cleanupOldFiles();
-    String[] listAll = dir.listAll();
-    long total = 0;
-    for (String s : listAll) {
-      long fileLength = dir.fileLength(s);
-      System.out.println(s + " " + fileLength);
-      total += fileLength;
-    }
-    System.out.println("Total [" + total + "]");
-    dir.close();
-
-  }
 
   public FastHdfsKeyValueDirectory(Configuration configuration, Path path) throws IOException {
     _store = new HdfsKeyValueStore(configuration, path);
@@ -178,5 +160,4 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
     }
     throw new FileNotFoundException(name);
   }
-
 }

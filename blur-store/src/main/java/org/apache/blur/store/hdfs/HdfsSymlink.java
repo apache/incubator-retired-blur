@@ -16,8 +16,8 @@
  */
 package org.apache.blur.store.hdfs;
 
-public interface HdfsQuickMove {
+public interface HdfsSymlink {
   
-  HdfsDirectory getQuickMoveDirectory();
+  HdfsDirectory getSymlinkDirectory();
 
 }

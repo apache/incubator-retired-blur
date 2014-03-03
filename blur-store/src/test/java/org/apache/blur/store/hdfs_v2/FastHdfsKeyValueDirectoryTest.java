@@ -16,7 +16,7 @@
  */
 package org.apache.blur.store.hdfs_v2;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;

@@ -19,11 +19,13 @@ package org.apache.blur.manager.writer;
 import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,6 +35,7 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.BlurPartitioner;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
@@ -55,6 +58,12 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.BytesRef;
 
 public class IndexImporter extends TimerTask implements Closeable {
+
+  private static final String BADROWIDS = ".badrowids";
+  private static final String COMMIT = ".commit";
+  private static final String INUSE = ".inuse";
+  private static final String BADINDEX = ".badindex";
+
   private final static Log LOG = LogFactory.getLog(IndexImporter.class);
 
   private final BlurIndex _blurIndex;
@@ -63,6 +72,9 @@ public class IndexImporter extends TimerTask implements Closeable {
   private final String _table;
   private final String _shard;
   private final AtomicBoolean _running = new AtomicBoolean();
+
+  private long _lastCleanup;
+  private final long _cleanupDelay;
 
   public IndexImporter(BlurIndex blurIndex, ShardContext shardContext, TimeUnit refreshUnit, long refreshAmount) {
     _running.set(true);
@@ -74,6 +86,7 @@ public class IndexImporter extends TimerTask implements Closeable {
     _timer.schedule(this, period, period);
     _table = _shardContext.getTableContext().getTable();
     _shard = _shardContext.getShard();
+    _cleanupDelay = TimeUnit.MINUTES.toMillis(10);
   }
 
   @Override
@@ -87,6 +100,14 @@ public class IndexImporter extends TimerTask implements Closeable {
 
   @Override
   public void run() {
+    if (_lastCleanup + _cleanupDelay < System.currentTimeMillis()) {
+      try {
+        cleanupOldDirs();
+      } catch (IOException e) {
+        LOG.error("Unknown error while trying to clean old directories on [{1}/{2}].", e, _shard, _table);
+      }
+      _lastCleanup = System.currentTimeMillis();
+    }
     Path path = _shardContext.getHdfsDirPath();
     Configuration configuration = _shardContext.getTableContext().getConfiguration();
     try {
@@ -100,7 +121,7 @@ public class IndexImporter extends TimerTask implements Closeable {
           listStatus = sort(fileSystem.listStatus(path, new PathFilter() {
             @Override
             public boolean accept(Path path) {
-              if (path != null && path.getName().endsWith(".commit")) {
+              if (path != null && path.getName().endsWith(COMMIT)) {
                 return true;
               }
               return false;
@@ -116,50 +137,53 @@ public class IndexImporter extends TimerTask implements Closeable {
           return;
         }
       }
-      List<HdfsDirectory> indexesToImport = new ArrayList<HdfsDirectory>();
       for (FileStatus fileStatus : listStatus) {
         Path file = fileStatus.getPath();
-        if (fileStatus.isDir() && file.getName().endsWith(".commit")) {
-          HdfsDirectory hdfsDirectory = new HdfsDirectory(configuration, file);
-          if (!DirectoryReader.indexExists(hdfsDirectory)) {
-            LOG.error("Directory found at [{0}] is not a vaild index.", file);
+        if (fileStatus.isDir() && file.getName().endsWith(COMMIT)) {
+          // rename to inuse, if good continue else rename to badindex
+          Path inuse = new Path(file.getParent(), rename(file.getName(), INUSE));
+          if (fileSystem.rename(file, inuse)) {
+            HdfsDirectory hdfsDirectory = new HdfsDirectory(configuration, inuse);
+            if (DirectoryReader.indexExists(hdfsDirectory)) {
+              IndexAction indexAction = getIndexAction(hdfsDirectory, fileSystem);
+              _blurIndex.process(indexAction);
+              return;
+            } else {
+              Path badindex = new Path(file.getParent(), rename(file.getName(), BADINDEX));
+              if (fileSystem.rename(inuse, badindex)) {
+                LOG.error("Directory found at [{0}] is not a vaild index, renaming to [{1}].", inuse, badindex);
+              } else {
+                LOG.fatal("Directory found at [{0}] is not a vaild index, could not rename to [{1}].", inuse, badindex);
+              }
+            }
           } else {
-            indexesToImport.add(hdfsDirectory);
+            LOG.fatal("Could not rename [{0}] to inuse dir.", file);
           }
         }
       }
-      if (indexesToImport.isEmpty()) {
-        return;
-      }
-
-      IndexAction indexAction = getIndexAction(indexesToImport, fileSystem);
-      _blurIndex.process(indexAction);
     } catch (IOException e) {
       LOG.error("Unknown error while trying to refresh imports on [{1}/{2}].", e, _shard, _table);
     }
   }
 
-  private IndexAction getIndexAction(final List<HdfsDirectory> indexesToImport, final FileSystem fileSystem) {
-    return new IndexAction() {
+  private String rename(String name, String newSuffix) {
+    int lastIndexOf = name.lastIndexOf('.');
+    return name.substring(0, lastIndexOf) + newSuffix;
+  }
 
-      private Path _dirPath;
+  private IndexAction getIndexAction(final HdfsDirectory directory, final FileSystem fileSystem) {
+    return new IndexAction() {
 
       @Override
       public void performMutate(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
-        for (Directory directory : indexesToImport) {
-          LOG.info("About to import [{0}] into [{1}/{2}]", directory, _shard, _table);
-        }
-        LOG.info("Obtaining lock on [{0}/{1}]", _shard, _table);
-        for (HdfsDirectory directory : indexesToImport) {
-          boolean emitDeletes = searcher.getIndexReader().numDocs() != 0;
-          _dirPath = directory.getPath();
-          applyDeletes(directory, writer, _shard, emitDeletes);
-          LOG.info("Add index [{0}] [{1}/{2}]", directory, _shard, _table);
-          writer.addIndexes(directory);
-          LOG.info("Removing delete markers [{0}] on [{1}/{2}]", directory, _shard, _table);
-          writer.deleteDocuments(new Term(BlurConstants.DELETE_MARKER, BlurConstants.DELETE_MARKER_VALUE));
-          LOG.info("Finishing import [{0}], commiting on [{1}/{2}]", directory, _shard, _table);
-        }
+        LOG.info("About to import [{0}] into [{1}/{2}]", directory, _shard, _table);
+        boolean emitDeletes = searcher.getIndexReader().numDocs() != 0;
+        applyDeletes(directory, writer, _shard, emitDeletes);
+        LOG.info("Add index [{0}] [{1}/{2}]", directory, _shard, _table);
+        writer.addIndexes(directory);
+        LOG.info("Removing delete markers [{0}] on [{1}/{2}]", directory, _shard, _table);
+        writer.deleteDocuments(new Term(BlurConstants.DELETE_MARKER, BlurConstants.DELETE_MARKER_VALUE));
+        LOG.info("Finishing import [{0}], commiting on [{1}/{2}]", directory, _shard, _table);
       }
 
       @Override
@@ -169,10 +193,6 @@ public class IndexImporter extends TimerTask implements Closeable {
 
       @Override
       public void doPostCommit(IndexWriter writer) throws IOException {
-        LOG.info("Calling maybeMerge on the index [{0}] for [{1}/{2}]", _dirPath, _shard, _table);
-        writer.maybeMerge();
-        LOG.info("Cleaning up old directory [{0}] for [{1}/{2}]", _dirPath, _shard, _table);
-        fileSystem.delete(_dirPath, true);
         LOG.info("Import complete on [{0}/{1}]", _shard, _table);
       }
 
@@ -184,10 +204,9 @@ public class IndexImporter extends TimerTask implements Closeable {
       @Override
       public void doPostRollback(IndexWriter writer) throws IOException {
         LOG.info("Finished rollback on [{0}/{1}]", _shard, _table);
-        String name = _dirPath.getName();
-        int lastIndexOf = name.lastIndexOf('.');
-        String badRowIdsName = name.substring(0, lastIndexOf) + ".bad_rowids";
-        fileSystem.rename(_dirPath, new Path(_dirPath.getParent(), badRowIdsName));
+        Path path = directory.getPath();
+        String name = path.getName();
+        fileSystem.rename(path, new Path(path.getParent(), rename(name, BADROWIDS)));
       }
     };
   }
@@ -234,5 +253,58 @@ public class IndexImporter extends TimerTask implements Closeable {
     } finally {
       reader.close();
     }
+  }
+
+  public void cleanupOldDirs() throws IOException {
+    Path hdfsDirPath = _shardContext.getHdfsDirPath();
+    TableContext tableContext = _shardContext.getTableContext();
+    Configuration configuration = tableContext.getConfiguration();
+    FileSystem fileSystem = hdfsDirPath.getFileSystem(configuration);
+    FileStatus[] inuseSubDirs = fileSystem.listStatus(hdfsDirPath, new PathFilter() {
+      @Override
+      public boolean accept(Path path) {
+        return path.getName().endsWith(INUSE);
+      }
+    });
+    Set<Path> inuseDirs = toSet(inuseSubDirs);
+    Map<Path, Path> inuseFileToDir = toMap(fileSystem, inuseDirs);
+    FileStatus[] listStatus = fileSystem.listStatus(hdfsDirPath, new PathFilter() {
+      @Override
+      public boolean accept(Path path) {
+        return path.getName().endsWith(HdfsDirectory.LNK);
+      }
+    });
+
+    for (FileStatus status : listStatus) {
+      Path realPath = HdfsDirectory.readRealPathDataFromSymlinkPath(fileSystem, status.getPath());
+      Path inuseDir = inuseFileToDir.get(realPath);
+      inuseDirs.remove(inuseDir);
+    }
+
+    for (Path p : inuseDirs) {
+      LOG.info("Deleteing path [{0}] no longer in use.", p);
+      fileSystem.delete(p, true);
+    }
+  }
+
+  private Map<Path, Path> toMap(FileSystem fileSystem, Set<Path> inuseDirs) throws IOException {
+    Map<Path, Path> result = new TreeMap<Path, Path>();
+    for (Path p : inuseDirs) {
+      if (!fileSystem.isFile(p)) {
+        FileStatus[] listStatus = fileSystem.listStatus(p);
+        for (FileStatus status : listStatus) {
+          result.put(status.getPath(), p);
+        }
+      }
+    }
+    return result;
+  }
+
+  private Set<Path> toSet(FileStatus[] dirs) {
+    Set<Path> result = new TreeSet<Path>();
+    for (FileStatus status : dirs) {
+      result.add(status.getPath());
+    }
+    return result;
   }
 }

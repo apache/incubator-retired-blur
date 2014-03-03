@@ -130,7 +130,7 @@ blurconsole.dashboard = (function () {
 	};
 
 	loadQueryPerfLineChart = function() {
-		$.plot(jqueryMap.$queryLoadChartHolder, [blurconsole.model.metrics.getQueryLoadChartData()], {
+		$.plot(jqueryMap.$queryLoadChartHolder, blurconsole.model.metrics.getQueryLoadChartData(), {
 			series : {
 				shadowSize : 0
 			},

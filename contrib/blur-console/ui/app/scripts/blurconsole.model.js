@@ -28,10 +28,51 @@ blurconsole.model = (function() {
 		tables, metrics, initModule, nodePoller, tablePoller, queryPerformancePoller;
 
 	tables = (function() {
-		var getDb, getNameMap;
+		var getClusters, getEnabledTables, getDisabledTables;
 
-		getDb = function() { return stateMap.tableDb; };
-		getNameMap = function() { return stateMap.tableNameMap; };
+		getClusters = function() {
+			return blurconsole.utils.unique($.map(stateMap.tableNameMap, function(table){
+				return table.cluster;
+			}), true);
+		};
+
+		getEnabledTables = function(cluster) {
+			var data = [];
+
+			$.each(stateMap.tableNameMap, function(idx, table) {
+				if (table.cluster === cluster && table.enabled) {
+					data.push({name:table.name, rowCount:table.rows, recordCount:table.records});
+				}
+			});
+
+			return {
+				cols : {
+					name : {
+						index : 1,
+						type : 'string'
+					},
+					rowCount : {
+						index : 2,
+						type : 'number'
+					},
+					recordCount : {
+						index : 3,
+						type : 'number'
+					}
+				},
+				rows: data
+			};
+		};
+
+		getDisabledTables = function(cluster) {
+			console.log(cluster);
+		};
+
+		return {
+			getClusters : getClusters,
+			getEnabledTables : getEnabledTables,
+			getDisabledTables : getDisabledTables
+		};
 	}());
 
 	metrics = (function() {
@@ -117,13 +158,25 @@ blurconsole.model = (function() {
 		};
 
 		getQueryLoadChartData = function() {
-			var dataArray = [];
+			var total = 0,
+				queryArray = [], 
+				meanArray = [],
+				queryData, mean;
 
-			$.each(stateMap.queryPerformance, function(idx, increment) {
-				dataArray.push([idx, increment]);
+			queryData = stateMap.queryPerformance;
+			
+			$.each(queryData, function(idx, increment) {
+				total += increment;
 			});
 
-			return dataArray;
+			mean = queryData.length === 0 ? 0 : total/queryData.length;
+
+			$.each(queryData, function(idx, increment) {
+				queryArray.push([idx, increment]);
+				meanArray.push([idx, mean]);
+			});
+
+			return [queryArray, meanArray];
 		};
 
 		buildPieChartData = function(onlineCount, offlineCount) {
@@ -176,9 +229,11 @@ blurconsole.model = (function() {
 
 	initModule = function() {
 		configMap.poller = isFakeData ? blurconsole.fake : blurconsole.data;
-		nodePoller();
-		tablePoller();
-		queryPerformancePoller();
+		setTimeout(function() {
+			nodePoller();
+			tablePoller();
+			queryPerformancePoller();
+		}, 1000);
 	};
 	return {
 		initModule : initModule,

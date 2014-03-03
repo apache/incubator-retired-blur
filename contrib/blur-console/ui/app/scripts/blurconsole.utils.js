@@ -15,7 +15,7 @@ limitations under the License.
 /*global blurconsole:false */
 blurconsole.utils = (function(){
 	'use strict';
-	var inject;
+	var inject, unique;
 
 	inject = function(collection, initial, block) {
 		if (collection === null || collection.length === 0) {
@@ -30,8 +30,25 @@ blurconsole.utils = (function(){
 		return accumulator;
 	};
 
+	unique = function(collection, sort) {
+		var uniqueList = [];
+
+		$.each(collection, function(idx, item){
+			if (uniqueList.indexOf(item) === -1) {
+				uniqueList.push(item);
+			}
+		});
+
+		if (sort) {
+			uniqueList.sort();
+		}
+
+		return uniqueList;
+	};
+
 	return {
 		inject: inject,
-		reduce: inject
+		reduce: inject,
+		unique: unique
 	};
 }());

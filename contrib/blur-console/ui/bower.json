@@ -2,9 +2,10 @@
   "name": "ui",
   "private": true,
   "dependencies": {
-    "sass-bootstrap": "~3.0.0",
-    "modernizr": "~2.6.2",
-    "jquery": "~1.10.2"
+    "sass-bootstrap": "3.0.2",
+    "modernizr": "2.7.1",
+    "jquery": "1.11.0",
+    "flot":"0.8.2"
   },
   "devDependencies": {}
 }

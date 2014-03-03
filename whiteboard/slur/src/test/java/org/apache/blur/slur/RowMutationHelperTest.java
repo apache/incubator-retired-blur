@@ -16,13 +16,12 @@
  */
 package org.apache.blur.slur;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
-import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.AfterClass;

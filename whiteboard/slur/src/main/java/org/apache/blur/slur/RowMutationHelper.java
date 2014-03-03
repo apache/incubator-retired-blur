@@ -54,7 +54,7 @@ public class RowMutationHelper {
         validateAsRecord(child);
         recordMutations.add(createRecordMutation(child, extractRecordId(child)));
       }
-      
+
     }
     mutate.setRecordMutations(recordMutations);
     return mutate;

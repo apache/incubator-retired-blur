@@ -20,18 +20,14 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.BlurClientManager;
 import org.apache.blur.thrift.generated.Blur.Iface;
-import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
-import org.apache.solr.client.solrj.SolrResponse;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.StreamingResponseCallback;
@@ -40,7 +36,6 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.SolrPingResponse;
 import org.apache.solr.client.solrj.response.SolrResponseBase;
 import org.apache.solr.client.solrj.response.UpdateResponse;
-import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
@@ -227,21 +222,21 @@ public class SolrLookingBlurServer extends SolrServer {
   public QueryResponse query(SolrParams params) throws SolrServerException {
     QueryResponse response = new QueryResponse();
     long start = System.currentTimeMillis();
-    
+
     try {
       BlurQuery blurQuery = BlurQueryHelper.from(params);
       BlurResults results = client().query(tableName, blurQuery);
       NamedList<Object> resp = new NamedList<Object>();
-        
+
       resp.add("response", BlurResultHelper.from(results));
-      
+
       response.setResponse(resp);
     } catch (Exception e) {
       throw new SolrServerException("Unable to complete query", e);
     }
-    
-    response.setElapsedTime((System.currentTimeMillis()-start));
-    
+
+    response.setElapsedTime((System.currentTimeMillis() - start));
+
     return response;
   }
 

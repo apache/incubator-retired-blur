@@ -17,8 +17,8 @@
 package org.apache.blur.slur;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -96,10 +96,10 @@ public class SolrLookingBlurServerTest {
   @Test
   public void childDocsShouldBecomeRecordsOfRow() throws Exception {
     String table = "childDocsShouldBecomeRecordsOfRow";
-    
+
     TestTableCreator.newTable(table)
-    .withRowCount(1).withRecordsPerRow(100)
-    .withRecordColumns("fam.value").create();
+        .withRowCount(1).withRecordsPerRow(100)
+        .withRecordColumns("fam.value").create();
 
     TableStats stats = client().tableStats(table);
 
@@ -142,9 +142,8 @@ public class SolrLookingBlurServerTest {
       TException {
     String table = "multipleDocumentsShouldBeIndexed";
     TestTableCreator.newTable(table)
-                          .withRowCount(100).withRecordsPerRow(1)
-                          .withRecordColumns("fam.value").create();
- 
+        .withRowCount(100).withRecordsPerRow(1)
+        .withRecordColumns("fam.value").create();
 
     assertTotalResults(table, "fam.value:value0-0", 1l);
     assertTotalResults(table, "fam.value:value1-0", 1l);
@@ -160,8 +159,9 @@ public class SolrLookingBlurServerTest {
   public void weShouldBeAbleToDeleteARowById() throws Exception,
       TException {
     String table = "weShouldBeAbleToDeleteARowById";
-    
-    SolrServer server = TestTableCreator.newTable(table).withRowCount(2).withRecordsPerRow(1).withRecordColumns("fam.value").create();
+
+    SolrServer server = TestTableCreator.newTable(table).withRowCount(2).withRecordsPerRow(1)
+        .withRecordColumns("fam.value").create();
 
     assertTotalResults(table, "rowid:0", 1l);
     assertTotalResults(table, "rowid:1", 1l);
@@ -178,9 +178,10 @@ public class SolrLookingBlurServerTest {
   public void weShouldBeAbleToDeleteARowByAListOfIds() throws Exception,
       TException {
     String table = "weShouldBeAbleToDeleteARowByAListOfIds";
-    
-    SolrServer server = TestTableCreator.newTable(table).withRowCount(20).withRecordsPerRow(1).withRecordColumns("fam.value").create();
-    
+
+    SolrServer server = TestTableCreator.newTable(table).withRowCount(20).withRecordsPerRow(1)
+        .withRecordColumns("fam.value").create();
+
     assertTotalResults(table, "rowid:1", 1l);
     assertTotalResults(table, "rowid:2", 1l);
     List<String> ids = Lists.newArrayList("1", "2", "3", "4", "5");
@@ -198,7 +199,7 @@ public class SolrLookingBlurServerTest {
     String table = "basicFullTextQuery";
     SolrServer server = TestTableCreator.newTable(table)
         .withRowCount(1).withRecordsPerRow(2)
-        .withRecordColumns("fam.value", "fam.mvf","fam.mvf").create();
+        .withRecordColumns("fam.value", "fam.mvf", "fam.mvf").create();
 
     SolrQuery query = new SolrQuery("value0-0");
 
@@ -225,8 +226,8 @@ public class SolrLookingBlurServerTest {
 
     String table = "fieldsRequestsShouldTurnIntoSelectors";
     SolrServer server = TestTableCreator.newTable(table)
-                          .withRowCount(1).withRecordsPerRow(2)
-                          .withRecordColumns("fam.value", "fam.mvf").create();
+        .withRowCount(1).withRecordsPerRow(2)
+        .withRecordColumns("fam.value", "fam.mvf").create();
 
     SolrQuery query = new SolrQuery("value0-0");
     query.setFields("fam.value");
@@ -376,7 +377,7 @@ public class SolrLookingBlurServerTest {
         for (int j = 0; j < recordsPerRow; j++) {
           SolrInputDocument child = new SolrInputDocument();
           child.addField(BlurConstants.RECORD_ID, j);
-          
+
           for (String colName : columns) {
             child.addField(colName, "value" + i + "-" + j);
           }

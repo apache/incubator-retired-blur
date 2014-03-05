@@ -29,3 +29,17 @@ limitations under the License.
 	margin-left : auto;
 	margin-right : auto;
 }
+
+.swapper-trigger {
+	cursor : pointer;
+}
+
+.swapper-info {
+	min-height : 200px;
+	min-width : 200px;
+	max-height : 300px;
+	max-width : 300px;
+	margin-left : auto;
+	margin-right : auto;
+	overflow: auto;
+}

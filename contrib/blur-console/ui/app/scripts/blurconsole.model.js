@@ -22,10 +22,11 @@ blurconsole.model = (function() {
 		stateMap = {
 			tableNameMap: {},
 			nodeMap : {},
-			queryPerformance : []
+			queryPerformance : [],
+			queries : {}
 		},
 		isFakeData = true,
-		tables, metrics, initModule, nodePoller, tablePoller, queryPerformancePoller;
+		tables, metrics, nodes, initModule, nodePoller, tablePoller, queryPerformancePoller, queryPoller;
 
 	tables = (function() {
 		var getClusters, getEnabledTables, getDisabledTables;
@@ -75,9 +76,38 @@ blurconsole.model = (function() {
 		};
 	}());
 
+	nodes = (function() {
+		var getOfflineZookeeperNodes, getOfflineControllerNodes, getOfflineShardNodes;
+
+		getOfflineZookeeperNodes = function() {
+			return stateMap.nodeMap.zookeepers.offline;
+		};
+
+		getOfflineControllerNodes = function() {
+			return stateMap.nodeMap.controllers.offline;
+		};
+
+		getOfflineShardNodes = function(clusterName) {
+			var clusterData = $.grep(stateMap.nodeMap.clusters, function(cluster) {
+				return cluster.name === clusterName;
+			});
+
+			if (clusterData.length > 0) {
+				return clusterData[0].offline;
+			}
+			return [];
+		};
+
+		return {
+			getOfflineZookeeperNodes : getOfflineZookeeperNodes,
+			getOfflineControllerNodes : getOfflineControllerNodes,
+			getOfflineShardNodes : getOfflineShardNodes
+		};
+	}());
+
 	metrics = (function() {
 		var getZookeeperChartData, getControllerChartData, getClusters, getShardChartData, getTableChartData,
-			getQueryLoadChartData, buildPieChartData;
+			getQueryLoadChartData, buildPieChartData, getSlowQueryWarnings;
 
 		getZookeeperChartData = function() {
 			return buildPieChartData(stateMap.nodeMap.zookeepers.online.length, stateMap.nodeMap.zookeepers.offline.length);
@@ -195,13 +225,18 @@ blurconsole.model = (function() {
 			return [onlineChart, offlineChart];
 		};
 
+		getSlowQueryWarnings = function() {
+			return stateMap.queries.slowQueries;
+		};
+
 		return {
 			getZookeeperChartData : getZookeeperChartData,
 			getControllerChartData : getControllerChartData,
 			getClusters : getClusters,
 			getShardChartData : getShardChartData,
 			getTableChartData : getTableChartData,
-			getQueryLoadChartData : getQueryLoadChartData
+			getQueryLoadChartData : getQueryLoadChartData,
+			getSlowQueryWarnings : getSlowQueryWarnings
 		};
 	}());
 
@@ -227,17 +262,25 @@ blurconsole.model = (function() {
 		setTimeout(queryPerformancePoller, 1000);
 	};
 
+	queryPoller = function() {
+		stateMap.queries = configMap.poller.getQueries();
+		$.gevent.publish('queries-updated');
+		setTimeout(queryPoller, 5000);
+	};
+
 	initModule = function() {
 		configMap.poller = isFakeData ? blurconsole.fake : blurconsole.data;
 		setTimeout(function() {
 			nodePoller();
 			tablePoller();
 			queryPerformancePoller();
+			queryPoller();
 		}, 1000);
 	};
 	return {
 		initModule : initModule,
 		tables : tables,
-		metrics: metrics
+		metrics: metrics,
+		nodes : nodes
 	};
 }());

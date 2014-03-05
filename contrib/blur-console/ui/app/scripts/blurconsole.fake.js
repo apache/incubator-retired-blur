@@ -15,7 +15,7 @@ limitations under the License.
 /*global blurconsole:false */
 blurconsole.fake = (function() {
 	'use strict';
-	var getTableList, getNodeList, getQueryPerformance;
+	var getTableList, getNodeList, getQueryPerformance, getQueries;
 
 	getTableList = function() {
 		var clusters = ['prodA', 'prodB'], data = [], i, cluster, rows, records, enabled;
@@ -59,9 +59,16 @@ blurconsole.fake = (function() {
 		return Math.floor((Math.random()*1000) + 1);
 	};
 
+	getQueries = function() {
+		return {
+			slowQueries : Math.floor((Math.random()*100) + 1) % 10 === 0
+		};
+	};
+
 	return {
 		getTableList : getTableList,
 		getNodeList : getNodeList,
-		getQueryPerformance : getQueryPerformance
+		getQueryPerformance : getQueryPerformance,
+		getQueries : getQueries
 	};
 }());

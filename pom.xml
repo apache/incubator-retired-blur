@@ -201,7 +201,6 @@ under the License.
 		<module>blur-util</module>
 		<module>blur-gui</module>
 		<module>blur-shell</module>
-		<module>blur-jdbc</module>
 		<module>distribution</module>
 	</modules>
 

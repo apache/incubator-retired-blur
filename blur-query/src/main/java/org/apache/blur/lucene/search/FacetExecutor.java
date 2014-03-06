@@ -23,10 +23,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLongArray;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -90,19 +94,21 @@ public class FacetExecutor {
     final AtomicReader _reader;
     final String _readerStr;
     final int _maxDoc;
+    final Lock[] _locks;
 
     @Override
     public String toString() {
       return "Info scorers length [" + _scorers.length + "] reader[" + _reader + "]";
     }
 
-    Info(AtomicReaderContext context, Scorer[] scorers) {
+    Info(AtomicReaderContext context, Scorer[] scorers, Lock[] locks) {
       AtomicReader reader = context.reader();
       _bitSet = new OpenBitSet(reader.maxDoc());
       _scorers = scorers;
       _reader = reader;
       _readerStr = _reader.toString();
       _maxDoc = _reader.maxDoc();
+      _locks = locks;
     }
 
     void process(AtomicLongArray counts, long[] minimumsBeforeReturning) throws IOException {
@@ -118,14 +124,37 @@ public class FacetExecutor {
           trace.done();
         }
       } else {
-        for (int i = 0; i < _scorers.length; i++) {
-          long min = minimumsBeforeReturning[i];
-          long currentCount = counts.get(i);
-          if (currentCount < min) {
-            runFacet(counts, col, i);
+        BlockingQueue<Integer> ids = new ArrayBlockingQueue<Integer>(_scorers.length + 1);
+        try {
+          populate(ids);
+          while (!ids.isEmpty()) {
+            int id = ids.take();
+            Lock lock = _locks[id];
+            if (lock.tryLock()) {
+              try {
+                long min = minimumsBeforeReturning[id];
+                long currentCount = counts.get(id);
+                if (currentCount < min) {
+                  runFacet(counts, col, id);
+                }
+              } finally {
+                lock.unlock();
+              }
+            } else {
+              ids.put(id);
+            }
           }
+        } catch (Exception e) {
+          throw new IOException(e);
         }
       }
+    }
+
+    private void populate(BlockingQueue<Integer> ids) throws InterruptedException {
+      for (int i = 0; i < _scorers.length; i++) {
+        ids.put(i);
+      }
+
     }
 
     private void runFacet(AtomicLongArray counts, SimpleCollector col, int i) throws IOException {
@@ -148,6 +177,7 @@ public class FacetExecutor {
   private final int _length;
   private final AtomicLongArray _counts;
   private final long[] _minimumsBeforeReturning;
+  private final Lock[] _locks;
   private boolean _processed;
 
   public FacetExecutor(int length) {
@@ -158,6 +188,10 @@ public class FacetExecutor {
     _length = length;
     _counts = counts;
     _minimumsBeforeReturning = minimumsBeforeReturning;
+    _locks = new Lock[_length];
+    for (int i = 0; i < _length; i++) {
+      _locks[i] = new ReentrantReadWriteLock().writeLock();
+    }
   }
 
   public FacetExecutor(int length, long[] minimumsBeforeReturning) {
@@ -171,7 +205,7 @@ public class FacetExecutor {
     Object key = getKey(context);
     Info info = _infoMap.get(key);
     if (info == null) {
-      info = new Info(context, scorers);
+      info = new Info(context, scorers, _locks);
       _infoMap.put(key, info);
     } else {
       AtomicReader reader = context.reader();

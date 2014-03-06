@@ -61,6 +61,7 @@ import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.thrift.util.BlurThriftHelper;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.GCWatcher;
@@ -124,6 +125,37 @@ public class BlurClusterTest {
 
   private Iface getClient() {
     return BlurClient.getClient(miniCluster.getControllerConnectionStr());
+  }
+
+  @Test
+  public void testEnqueue() throws BlurException, TException, InterruptedException, IOException {
+    String tableName = "testEnqueue";
+    createTable(tableName);
+    Blur.Iface client = getClient();
+
+    long s = System.currentTimeMillis();
+    int count = 10000;
+    for (int i = 0; i < count; i++) {
+      String rowId = UUID.randomUUID().toString();
+      RecordMutation mutation = BlurThriftHelper.newRecordMutation("test", rowId,
+          BlurThriftHelper.newColumn("test", "value"));
+      RowMutation rowMutation = BlurThriftHelper.newRowMutation(tableName, rowId, mutation);
+      client.enqueueMutate(rowMutation);
+    }
+    long e = System.currentTimeMillis();
+    double seconds = (e - s) / 1000.0;
+    double rate = count / seconds;
+    System.out.println("Load row in queue at " + rate + "/s");
+
+    for (int i = 0; i < 60; i++) {
+      TableStats stats = client.tableStats(tableName);
+      long rowCount = stats.getRowCount();
+      if (rowCount == count) {
+        return;
+      }
+      Thread.sleep(1000);
+    }
+    fail("Test failed to load all rows.");
   }
 
   @Test

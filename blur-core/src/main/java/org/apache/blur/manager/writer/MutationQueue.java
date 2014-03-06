@@ -20,30 +20,20 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import org.apache.blur.server.ShardContext;
 import org.apache.blur.thrift.generated.RowMutation;
 
-public class QueueReaderBasicInMemory extends ShardQueueReader {
+public class MutationQueue {
 
-  static final BlockingQueue<RowMutation> _queue = new ArrayBlockingQueue<RowMutation>(1000);
+  private BlockingQueue<RowMutation> _queue = new ArrayBlockingQueue<RowMutation>(1000);
 
-  public QueueReaderBasicInMemory(BlurIndex index, ShardContext shardContext) {
-    super(index, shardContext);
+  public void put(List<RowMutation> mutations) throws InterruptedException {
+    for (RowMutation mutation : mutations) {
+      _queue.put(mutation);
+    }
   }
 
-  @Override
   public void take(List<RowMutation> mutations, int max) {
     _queue.drainTo(mutations, max);
-  }
-
-  @Override
-  public void success() {
-
-  }
-
-  @Override
-  public void failure() {
-
   }
 
 }

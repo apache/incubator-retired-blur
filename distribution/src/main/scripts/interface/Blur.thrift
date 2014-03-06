@@ -1012,9 +1012,25 @@ service Blur {
   ) throws (1:BlurException ex)
 
   /**
+   * Enqueue a RowMutation. Note that the effect of the RowMutation will occur at some point in the future, volume and load will play a role in how much time will pass before the mutation goes into effect.
+   */
+  void enqueueMutate(
+    /** the RowMutation.*/
+    1:RowMutation mutation
+  ) throws (1:BlurException ex)
+
+  /**
    * Mutates a group of Rows given the list of RowMutations that are provided.  Note: This is not an atomic operation.
    */
   void mutateBatch(
+    /** the batch of RowMutations.*/
+    1:list<RowMutation> mutations
+  ) throws (1:BlurException ex)
+
+  /**
+   * Enqueue a batch of RowMutations. Note that the effect of the RowMutation will occur at some point in the future, volume and load will play a role in how much time will pass before the mutation goes into effect.
+   */
+  void enqueueMutateBatch(
     /** the batch of RowMutations.*/
     1:list<RowMutation> mutations
   ) throws (1:BlurException ex)

@@ -36,6 +36,7 @@ import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
+import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -185,6 +186,11 @@ public class IndexImporterTest {
 
       @Override
       public void close() throws IOException {
+        throw new RuntimeException("Not Implemented");
+      }
+
+      @Override
+      public void enqueue(List<RowMutation> mutations) {
         throw new RuntimeException("Not Implemented");
       }
     };

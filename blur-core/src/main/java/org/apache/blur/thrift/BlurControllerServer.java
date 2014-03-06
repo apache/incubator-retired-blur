@@ -1065,6 +1065,38 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
   }
 
+  @Override
+  public void enqueueMutate(final RowMutation mutation) throws BlurException, TException {
+    try {
+      checkTable(mutation.table);
+      checkForUpdates(mutation.table);
+      MutationHelper.validateMutation(mutation);
+      String table = mutation.getTable();
+
+      int numberOfShards = getShardCount(table);
+      Map<String, String> tableLayout = _shardServerLayout.get().get(table);
+      if (tableLayout.size() != numberOfShards) {
+        throw new BException("Cannot update data while shard is missing");
+      }
+
+      String shardName = MutationHelper.getShardName(table, mutation.rowId, numberOfShards, _blurPartitioner);
+      String node = tableLayout.get(shardName);
+      _client.execute(node, new BlurCommand<Void>() {
+        @Override
+        public Void call(Client client) throws BlurException, TException {
+          client.enqueueMutate(mutation);
+          return null;
+        }
+      }, _maxMutateRetries, _mutateDelay, _maxMutateDelay);
+    } catch (Exception e) {
+      LOG.error("Unknown error during enqueue mutation of [{0}]", e, mutation);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException("Unknown error during enqueue mutation of [{0}]", e, mutation);
+    }
+  }
+
   private int getShardCount(String table) throws BlurException, TException {
     Integer numberOfShards = _tableShardCountMap.get(table);
     if (numberOfShards == null) {
@@ -1133,6 +1165,75 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         } catch (ExecutionException e) {
           LOG.error("Unknown error during batch mutations", e.getCause());
           throw new BException("Unknown error during batch mutations", e.getCause());
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("Unknown error during batch mutation.", e);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException("Unknown error during mutation.", e);
+    }
+  }
+  
+  @Override
+  public void enqueueMutateBatch(List<RowMutation> mutations) throws BlurException, TException {
+    try {
+      for (RowMutation mutation : mutations) {
+        MutationHelper.validateMutation(mutation);
+      }
+      Map<String, List<RowMutation>> batches = new HashMap<String, List<RowMutation>>();
+      for (RowMutation mutation : mutations) {
+        checkTable(mutation.table);
+        checkForUpdates(mutation.table);
+
+        MutationHelper.validateMutation(mutation);
+        String table = mutation.getTable();
+
+        int numberOfShards = getShardCount(table);
+        Map<String, String> tableLayout = _shardServerLayout.get().get(table);
+        if (tableLayout == null || tableLayout.size() != numberOfShards) {
+          throw new BException("Cannot update data while shard is missing");
+        }
+
+        String shardName = MutationHelper.getShardName(table, mutation.rowId, numberOfShards, _blurPartitioner);
+        String node = tableLayout.get(shardName);
+        List<RowMutation> list = batches.get(node);
+        if (list == null) {
+          list = new ArrayList<RowMutation>();
+          batches.put(node, list);
+        }
+        list.add(mutation);
+      }
+
+      List<Future<Void>> futures = new ArrayList<Future<Void>>();
+
+      for (Entry<String, List<RowMutation>> entry : batches.entrySet()) {
+        final String node = entry.getKey();
+        final List<RowMutation> mutationsLst = entry.getValue();
+        futures.add(_executor.submit(new Callable<Void>() {
+          @Override
+          public Void call() throws Exception {
+            return _client.execute(node, new BlurCommand<Void>() {
+              @Override
+              public Void call(Client client) throws BlurException, TException {
+                client.enqueueMutateBatch(mutationsLst);
+                return null;
+              }
+            }, _maxMutateRetries, _mutateDelay, _maxMutateDelay);
+          }
+        }));
+      }
+
+      for (Future<Void> future : futures) {
+        try {
+          future.get();
+        } catch (InterruptedException e) {
+          LOG.error("Unknown error during batch enqueue mutations", e);
+          throw new BException("Unknown error during batch enqueue mutations", e);
+        } catch (ExecutionException e) {
+          LOG.error("Unknown error during batch enqueue mutations", e.getCause());
+          throw new BException("Unknown error during batch enqueue mutations", e.getCause());
         }
       }
     } catch (Exception e) {

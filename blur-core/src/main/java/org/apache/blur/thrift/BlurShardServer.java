@@ -367,6 +367,23 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
+  public void enqueueMutate(RowMutation mutation) throws BlurException, TException {
+    try {
+      checkTable(_cluster, mutation.table);
+      checkForUpdates(_cluster, mutation.table);
+      resetSearchers();
+      MutationHelper.validateMutation(mutation);
+      _indexManager.enqueue(mutation);
+    } catch (Exception e) {
+      LOG.error("Unknown error during processing of [mutation={0}]", e, mutation);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  @Override
   public void mutateBatch(List<RowMutation> mutations) throws BlurException, TException {
     try {
       resetSearchers();
@@ -376,6 +393,25 @@ public class BlurShardServer extends TableAdmin implements Iface {
         MutationHelper.validateMutation(mutation);
       }
       _indexManager.mutate(mutations);
+    } catch (Exception e) {
+      LOG.error("Unknown error during processing of [mutations={0}]", e, mutations);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  @Override
+  public void enqueueMutateBatch(List<RowMutation> mutations) throws BlurException, TException {
+    try {
+      resetSearchers();
+      for (RowMutation mutation : mutations) {
+        checkTable(_cluster, mutation.table);
+        checkForUpdates(_cluster, mutation.table);
+        MutationHelper.validateMutation(mutation);
+      }
+      _indexManager.enqueue(mutations);
     } catch (Exception e) {
       LOG.error("Unknown error during processing of [mutations={0}]", e, mutations);
       if (e instanceof BlurException) {

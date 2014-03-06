@@ -53,11 +53,11 @@ public class LoadData {
     String connectionString = args[0];
     String table = args[1];
     Iface client = BlurClient.getClient(connectionString);
-    runLoad(client, table, numberRows, numberRecordsPerRow, numberOfFamilies, numberOfColumns, numberOfWords,
+    runLoad(client, false, table, numberRows, numberRecordsPerRow, numberOfFamilies, numberOfColumns, numberOfWords,
         batch, new PrintWriter(System.out));
   }
 
-  public static void runLoad(Iface client, String table, int numberRows, int numberRecordsPerRow,
+  public static void runLoad(Iface client, boolean enqueue, String table, int numberRows, int numberRecordsPerRow,
       int numberOfFamilies, int numberOfColumns, int numberOfWords, int batch, PrintWriter out) throws IOException,
       BlurException, TException {
     loadWords();
@@ -90,18 +90,30 @@ public class LoadData {
         countRecord++;
       }
       if (batch == 1) {
-        client.mutate(mutation);
+        if (enqueue) {
+          client.enqueueMutate(mutation);
+        } else {
+          client.mutate(mutation);
+        }
       } else {
         mutations.add(mutation);
         if (mutations.size() >= batch) {
-          client.mutateBatch(mutations);
+          if (enqueue) {
+            client.enqueueMutateBatch(mutations);
+          } else {
+            client.mutateBatch(mutations);
+          }
           mutations.clear();
         }
       }
       countRow++;
     }
     if (!mutations.isEmpty()) {
-      client.mutateBatch(mutations);
+      if (enqueue) {
+        client.enqueueMutateBatch(mutations);
+      } else {
+        client.mutateBatch(mutations);
+      }
     }
     printPerformance(out, countRow, countRecord, start, s, numberRows);
   }

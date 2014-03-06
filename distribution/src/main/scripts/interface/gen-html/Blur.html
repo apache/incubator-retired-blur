@@ -20,6 +20,8 @@
 <li><a href="Blur.html#Fn_Blur_describe">describe</a></li>
 <li><a href="Blur.html#Fn_Blur_disableTable">disableTable</a></li>
 <li><a href="Blur.html#Fn_Blur_enableTable">enableTable</a></li>
+<li><a href="Blur.html#Fn_Blur_enqueueMutate">enqueueMutate</a></li>
+<li><a href="Blur.html#Fn_Blur_enqueueMutateBatch">enqueueMutateBatch</a></li>
 <li><a href="Blur.html#Fn_Blur_fetchRow">fetchRow</a></li>
 <li><a href="Blur.html#Fn_Blur_fetchRowBatch">fetchRowBatch</a></li>
 <li><a href="Blur.html#Fn_Blur_isInSafeMode">isInSafeMode</a></li>
@@ -737,11 +739,25 @@ the shard server, if any.
 <br/><br/><h4 id="Parameters_Blur_mutate">Parameters</h4>
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>mutation</td><td>the RowMutation.
 </td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_enqueueMutate">Function: Blur.enqueueMutate</h4>
+<pre><code>void</code> enqueueMutate(<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code> mutation)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Enqueue a RowMutation. Note that the effect of the RowMutation will occur at some point in the future, volume and load will play a role in how much time will pass before the mutation goes into effect.
+<br/><br/><h4 id="Parameters_Blur_enqueueMutate">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>mutation</td><td>the RowMutation.
+</td></tr>
 </table></div><div class="definition"><h4 id="Fn_Blur_mutateBatch">Function: Blur.mutateBatch</h4>
 <pre><code>void</code> mutateBatch(<code>list&lt;<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code>&gt;</code> mutations)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Mutates a group of Rows given the list of RowMutations that are provided.  Note: This is not an atomic operation.
 <br/><br/><h4 id="Parameters_Blur_mutateBatch">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>mutations</td><td>the batch of RowMutations.
+</td></tr>
+</table></div><div class="definition"><h4 id="Fn_Blur_enqueueMutateBatch">Function: Blur.enqueueMutateBatch</h4>
+<pre><code>void</code> enqueueMutateBatch(<code>list&lt;<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code>&gt;</code> mutations)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Enqueue a batch of RowMutations. Note that the effect of the RowMutation will occur at some point in the future, volume and load will play a role in how much time will pass before the mutation goes into effect.
+<br/><br/><h4 id="Parameters_Blur_enqueueMutateBatch">Parameters</h4>
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>mutations</td><td>the batch of RowMutations.
 </td></tr>
 </table></div><div class="definition"><h4 id="Fn_Blur_cancelQuery">Function: Blur.cancelQuery</h4>

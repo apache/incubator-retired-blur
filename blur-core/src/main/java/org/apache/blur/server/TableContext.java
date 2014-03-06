@@ -50,7 +50,7 @@ import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;
 import org.apache.blur.manager.writer.BlurIndexSimpleWriter;
-import org.apache.blur.manager.writer.QueueReader;
+import org.apache.blur.manager.writer.ShardQueueReader;
 //import org.apache.blur.manager.writer.BlurNRTIndex;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.thrift.generated.ScoreType;
@@ -367,21 +367,21 @@ public class TableContext {
   }
 
   @SuppressWarnings("unchecked")
-  public QueueReader getQueueReader(BlurIndex blurIndex, ShardContext shardContext) throws IOException {
+  public ShardQueueReader getQueueReader(BlurIndex blurIndex, ShardContext shardContext) throws IOException {
     String className = _blurConfiguration.get(BLUR_SHARD_INDEX_QUEUE_READER_CLASS);
     if (className == null || className.trim().isEmpty()) {
       return null;
     }
-    Class<? extends QueueReader> clazz;
+    Class<? extends ShardQueueReader> clazz;
     try {
-      clazz = (Class<? extends QueueReader>) Class.forName(className);
+      clazz = (Class<? extends ShardQueueReader>) Class.forName(className);
     } catch (ClassNotFoundException e) {
       throw new IOException(e);
     }
     try {
-      Constructor<? extends QueueReader> constructor = clazz.getConstructor(new Class[] { BlurIndex.class,
+      Constructor<? extends ShardQueueReader> constructor = clazz.getConstructor(new Class[] { BlurIndex.class,
           ShardContext.class });
-      QueueReader reader = constructor.newInstance(blurIndex, shardContext);
+      ShardQueueReader reader = constructor.newInstance(blurIndex, shardContext);
 
       reader.listen();
 

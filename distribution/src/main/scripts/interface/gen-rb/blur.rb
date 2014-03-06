@@ -315,6 +315,21 @@ module Blur
         return
       end
 
+      def enqueueMutate(mutation)
+        send_enqueueMutate(mutation)
+        recv_enqueueMutate()
+      end
+
+      def send_enqueueMutate(mutation)
+        send_message('enqueueMutate', EnqueueMutate_args, :mutation => mutation)
+      end
+
+      def recv_enqueueMutate()
+        result = receive_message(EnqueueMutate_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
       def mutateBatch(mutations)
         send_mutateBatch(mutations)
         recv_mutateBatch()
@@ -326,6 +341,21 @@ module Blur
 
       def recv_mutateBatch()
         result = receive_message(MutateBatch_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
+      def enqueueMutateBatch(mutations)
+        send_enqueueMutateBatch(mutations)
+        recv_enqueueMutateBatch()
+      end
+
+      def send_enqueueMutateBatch(mutations)
+        send_message('enqueueMutateBatch', EnqueueMutateBatch_args, :mutations => mutations)
+      end
+
+      def recv_enqueueMutateBatch()
+        result = receive_message(EnqueueMutateBatch_result)
         raise result.ex unless result.ex.nil?
         return
       end
@@ -871,6 +901,17 @@ module Blur
         write_result(result, oprot, 'mutate', seqid)
       end
 
+      def process_enqueueMutate(seqid, iprot, oprot)
+        args = read_args(iprot, EnqueueMutate_args)
+        result = EnqueueMutate_result.new()
+        begin
+          @handler.enqueueMutate(args.mutation)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'enqueueMutate', seqid)
+      end
+
       def process_mutateBatch(seqid, iprot, oprot)
         args = read_args(iprot, MutateBatch_args)
         result = MutateBatch_result.new()
@@ -880,6 +921,17 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'mutateBatch', seqid)
+      end
+
+      def process_enqueueMutateBatch(seqid, iprot, oprot)
+        args = read_args(iprot, EnqueueMutateBatch_args)
+        result = EnqueueMutateBatch_result.new()
+        begin
+          @handler.enqueueMutateBatch(args.mutations)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'enqueueMutateBatch', seqid)
       end
 
       def process_cancelQuery(seqid, iprot, oprot)
@@ -1809,6 +1861,39 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
+    class EnqueueMutate_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      MUTATION = 1
+
+      FIELDS = {
+        # the RowMutation.
+        MUTATION => {:type => ::Thrift::Types::STRUCT, :name => 'mutation', :class => ::Blur::RowMutation}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class EnqueueMutate_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
     class MutateBatch_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
       MUTATIONS = 1
@@ -1827,6 +1912,39 @@ module Blur
     end
 
     class MutateBatch_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class EnqueueMutateBatch_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      MUTATIONS = 1
+
+      FIELDS = {
+        # the batch of RowMutations.
+        MUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'mutations', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::RowMutation}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class EnqueueMutateBatch_result
       include ::Thrift::Struct, ::Thrift::Struct_Union
       EX = 1
 

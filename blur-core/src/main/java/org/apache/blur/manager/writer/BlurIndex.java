@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
+import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReaderContext;
@@ -132,5 +133,7 @@ public abstract class BlurIndex {
   }
 
   public abstract void process(IndexAction indexAction) throws IOException;
+
+  public abstract void enqueue(List<RowMutation> mutations) throws IOException;
 
 }

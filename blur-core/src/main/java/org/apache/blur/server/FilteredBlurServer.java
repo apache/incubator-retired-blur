@@ -234,4 +234,14 @@ public class FilteredBlurServer implements Iface {
     _iface.resetLogging();
   }
 
+  @Override
+  public void enqueueMutate(RowMutation mutation) throws BlurException, TException {
+    _iface.enqueueMutate(mutation);
+  }
+
+  @Override
+  public void enqueueMutateBatch(List<RowMutation> mutations) throws BlurException, TException {
+    _iface.enqueueMutateBatch(mutations);
+  }
+
 }

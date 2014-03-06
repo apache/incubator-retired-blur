@@ -28,32 +28,27 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.server.ShardContext;
-import org.apache.blur.server.TableContext;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.RowMutation;
 
-public abstract class QueueReader implements Closeable {
+public abstract class BaseQueueReader implements Closeable {
 
-  private static final Log LOG = LogFactory.getLog(QueueReader.class);
+  private static final Log LOG = LogFactory.getLog(BaseQueueReader.class);
 
-  protected final ShardContext _shardContext;
-  protected final BlurIndex _index;
   protected final long _backOff;
   protected final Thread _daemon;
   protected final AtomicBoolean _running = new AtomicBoolean();
   protected final int _max;
-  protected final TableContext _tableContext;
+  protected final String _context;
+  protected final BlurConfiguration _configuration;
 
-  public QueueReader(BlurIndex index, ShardContext shardContext) {
+  public BaseQueueReader(BlurConfiguration configuration, String context) {
     _running.set(true);
-    _index = index;
-    _shardContext = shardContext;
-    _tableContext = _shardContext.getTableContext();
-    BlurConfiguration configuration = _tableContext.getBlurConfiguration();
+    _configuration = configuration;
     _backOff = configuration.getLong(BLUR_SHARD_INDEX_QUEUE_READER_BACKOFF, 500);
     _max = configuration.getInt(BLUR_SHARD_INDEX_QUEUE_READER_MAX, 500);
+    _context = context;
     _daemon = new Thread(new Runnable() {
-
       @Override
       public void run() {
         List<RowMutation> mutations = new ArrayList<RowMutation>();
@@ -66,26 +61,25 @@ public abstract class QueueReader implements Closeable {
               return;
             }
           } else {
-            MutatableAction mutatableAction = new MutatableAction(_shardContext);
-            mutatableAction.mutate(mutations);
             try {
-              _index.process(mutatableAction);
-              success();
-            } catch (IOException e) {
+              mutations = MutatableAction.reduceMutates(mutations);
+            } catch (BlurException e) {
+              LOG.error("Unknown error while trying to reduce the number of mutations and prevent data loss.", e);
               failure();
-              LOG.error(
-                  "Unknown error during loading of rowmutations from queue [{0}] into table [{1}] and shard [{2}].",
-                  this.toString(), _tableContext.getTable(), _shardContext.getShard());
-            } finally {
               mutations.clear();
+              return;
             }
+            doMutate(mutations);
           }
         }
       }
     });
-    _daemon.setName("Queue Loader for [" + _tableContext.getTable() + "/" + shardContext.getShard() + "]");
+
+    _daemon.setName("Queue Loader for [" + _context + "]");
     _daemon.setDaemon(true);
   }
+
+  protected abstract void doMutate(List<RowMutation> mutations);
 
   public void listen() {
     _daemon.start();

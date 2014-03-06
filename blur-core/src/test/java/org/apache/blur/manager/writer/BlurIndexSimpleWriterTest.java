@@ -23,6 +23,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -35,7 +36,11 @@ import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
+import org.apache.blur.thrift.generated.RecordMutation;
+import org.apache.blur.thrift.generated.RecordMutationType;
 import org.apache.blur.thrift.generated.Row;
+import org.apache.blur.thrift.generated.RowMutation;
+import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.trace.BaseTraceStorage;
 import org.apache.blur.trace.Trace;
@@ -52,6 +57,7 @@ import org.junit.Test;
 
 public class BlurIndexSimpleWriterTest {
 
+  private static final int TOTAL_ROWS_FOR_TESTS = 10000;
   private static final String TEST_TABLE = "test-table";
   private static final int TEST_NUMBER_WAIT_VISIBLE = 100;
   private static final int TEST_NUMBER = 50000;
@@ -84,19 +90,16 @@ public class BlurIndexSimpleWriterTest {
     _indexWarmup = new DefaultBlurIndexWarmup(1000000);
   }
 
-  private void setupWriter(Configuration configuration, long refresh, boolean reload) throws IOException {
+  private void setupWriter(Configuration configuration) throws IOException {
+    setupWriter(configuration, false);
+  }
+
+  private void setupWriter(Configuration configuration, boolean reload) throws IOException {
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName(TEST_TABLE);
-    /*
-     * if reload is set to true...we create a new writer instance pointing to
-     * the same location as the old one..... so previous writer instances should
-     * be closed
-     */
-
     if (!reload && uuid == null) {
       uuid = UUID.randomUUID().toString();
     }
-
     tableDescriptor.setTableUri(new File(_base, "table-store-" + uuid).toURI().toString());
     TableContext tableContext = TableContext.create(tableDescriptor);
     File path = new File(_base, "index_" + uuid);
@@ -128,7 +131,7 @@ public class BlurIndexSimpleWriterTest {
 
   @Test
   public void testRollbackAndReopen() throws IOException {
-    setupWriter(_configuration, 5, false);
+    setupWriter(_configuration);
     {
       IndexSearcherClosable searcher = _writer.getIndexSearcher();
       IndexReader reader = searcher.getIndexReader();
@@ -164,7 +167,7 @@ public class BlurIndexSimpleWriterTest {
 
   @Test
   public void testBlurIndexWriter() throws IOException {
-    setupWriter(_configuration, 5, false);
+    setupWriter(_configuration);
     long s = System.nanoTime();
     int total = 0;
     TraceStorage oldStorage = Trace.getStorage();
@@ -204,7 +207,7 @@ public class BlurIndexSimpleWriterTest {
 
   @Test
   public void testBlurIndexWriterFaster() throws IOException, InterruptedException {
-    setupWriter(_configuration, 100, false);
+    setupWriter(_configuration);
     IndexSearcherClosable searcher1 = _writer.getIndexSearcher();
     IndexReader reader1 = searcher1.getIndexReader();
     assertEquals(0, reader1.numDocs());
@@ -246,7 +249,7 @@ public class BlurIndexSimpleWriterTest {
 
   @Test
   public void testCreateSnapshot() throws IOException {
-    setupWriter(_configuration, 5, false);
+    setupWriter(_configuration);
     _writer.createSnapshot("test_snapshot");
     assertTrue(_writer.getSnapshots().contains("test_snapshot"));
 
@@ -258,13 +261,13 @@ public class BlurIndexSimpleWriterTest {
     // create a new writer instance and test whether the snapshots are loaded
     // properly
     _writer.close();
-    setupWriter(_configuration, 5, true);
+    setupWriter(_configuration, true);
     assertTrue(_writer.getSnapshots().contains("test_snapshot"));
   }
 
   @Test
   public void testRemoveSnapshots() throws IOException {
-    setupWriter(_configuration, 5, false);
+    setupWriter(_configuration);
     Path snapshotsDirPath = _writer.getSnapshotsDirectoryPath();
     FileSystem fileSystem = snapshotsDirPath.getFileSystem(new Configuration());
     fileSystem.mkdirs(snapshotsDirPath);
@@ -274,12 +277,53 @@ public class BlurIndexSimpleWriterTest {
 
     // re-load the writer to load the snpshots
     _writer.close();
-    setupWriter(_configuration, 5, true);
+    setupWriter(_configuration, true);
     assertEquals(2, _writer.getSnapshots().size());
 
     _writer.removeSnapshot("test_snapshot2");
     assertEquals(1, _writer.getSnapshots().size());
     assertTrue(!_writer.getSnapshots().contains("test_snapshot2"));
+  }
 
+  @Test
+  public void testEnqueue() throws IOException, InterruptedException {
+    setupWriter(_configuration);
+    final String table = _writer.getShardContext().getTableContext().getTable();
+    Thread thread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        for (int i = 0; i < TOTAL_ROWS_FOR_TESTS; i++) {
+          try {
+            _writer.enqueue(Arrays.asList(genRowMutation(table)));
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        }
+      }
+    });
+    thread.start();
+    while (true) {
+      if (_writer.getIndexSearcher().getIndexReader().numDocs() == TOTAL_ROWS_FOR_TESTS) {
+        break;
+      }
+      Thread.sleep(100);
+    }
+    thread.join();
+    // YAY!!! it worked!
+  }
+
+  private RowMutation genRowMutation(String table) {
+    RowMutation rowMutation = new RowMutation();
+    rowMutation.setRowId(Long.toString(random.nextLong()));
+    rowMutation.setTable(table);
+    rowMutation.setRowMutationType(RowMutationType.REPLACE_ROW);
+    Record record = new Record();
+    record.setFamily("testing");
+    record.setRecordId(Long.toString(random.nextLong()));
+    for (int i = 0; i < 10; i++) {
+      record.addToColumns(new Column("col" + i, Long.toString(random.nextLong())));
+    }
+    rowMutation.addToRecordMutations(new RecordMutation(RecordMutationType.REPLACE_ENTIRE_RECORD, record));
+    return rowMutation;
   }
 }

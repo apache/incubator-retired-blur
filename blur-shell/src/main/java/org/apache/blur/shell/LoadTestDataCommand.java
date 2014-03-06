@@ -30,11 +30,12 @@ public class LoadTestDataCommand extends Command implements TableFirstArgCommand
   @Override
   public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
       BlurException {
-    if (args.length != 8) {
+    if (args.length != 9) {
       throw new CommandException("Invalid args: " + help());
     }
     int c = 1;
     String table = args[c++];
+    boolean enqueue = Boolean.parseBoolean(args[c++]);
     int numberRows = Integer.parseInt(args[c++]);
     int numberRecordsPerRow = Integer.parseInt(args[c++]);
     int numberOfFamilies = Integer.parseInt(args[c++]);
@@ -42,7 +43,7 @@ public class LoadTestDataCommand extends Command implements TableFirstArgCommand
     int numberOfWords = Integer.parseInt(args[c++]);
     int batch = Integer.parseInt(args[c++]);
     try {
-      LoadData.runLoad(client, table, numberRows, numberRecordsPerRow, numberOfFamilies, numberOfColumns,
+      LoadData.runLoad(client, enqueue, table, numberRows, numberRecordsPerRow, numberOfFamilies, numberOfColumns,
           numberOfWords, batch, out);
     } catch (IOException e) {
       out.println("Error " + e.getMessage());
@@ -59,7 +60,7 @@ public class LoadTestDataCommand extends Command implements TableFirstArgCommand
 
   @Override
   public String usage() {
-    return "<tablename> <rows> <recordsPerRow> <families> <columnsPerRecord> <wordsPerColumn> <batchSize>";
+    return "<tablename> <queue true/false> <rows> <recordsPerRow> <families> <columnsPerRecord> <wordsPerColumn> <batchSize>";
   }
 
   @Override

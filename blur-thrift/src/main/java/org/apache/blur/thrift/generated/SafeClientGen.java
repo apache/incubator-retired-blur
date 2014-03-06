@@ -125,6 +125,20 @@ public void enableTable(java.lang.String arg0) throws org.apache.blur.thrift.gen
 }
 
 @Override
+public void enqueueMutate(org.apache.blur.thrift.generated.RowMutation arg0) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.enqueueMutate(arg0);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void enqueueMutateBatch(java.util.List arg0) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.enqueueMutateBatch(arg0);
+  } finally {_lock.unlock();}
+}
+
+@Override
 public org.apache.blur.thrift.generated.FetchResult fetchRow(java.lang.String arg0, org.apache.blur.thrift.generated.Selector arg1) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     return super.fetchRow(arg0, arg1);
@@ -149,6 +163,13 @@ public boolean isInSafeMode(java.lang.String arg0) throws org.apache.blur.thrift
 public java.util.Map listSnapshots(java.lang.String arg0) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     return super.listSnapshots(arg0);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void logging(java.lang.String arg0, org.apache.blur.thrift.generated.Level arg1) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.logging(arg0, arg1);
   } finally {_lock.unlock();}
 }
 
@@ -286,6 +307,20 @@ public void recv_enableTable() throws org.apache.blur.thrift.generated.BlurExcep
 }
 
 @Override
+public void recv_enqueueMutate() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.recv_enqueueMutate();
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void recv_enqueueMutateBatch() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.recv_enqueueMutateBatch();
+  } finally {_lock.unlock();}
+}
+
+@Override
 public org.apache.blur.thrift.generated.FetchResult recv_fetchRow() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     return super.recv_fetchRow();
@@ -310,6 +345,13 @@ public boolean recv_isInSafeMode() throws org.apache.blur.thrift.generated.BlurE
 public java.util.Map recv_listSnapshots() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     return super.recv_listSnapshots();
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void recv_logging() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.recv_logging();
   } finally {_lock.unlock();}
 }
 
@@ -394,6 +436,13 @@ public void recv_removeSnapshot() throws org.apache.blur.thrift.generated.BlurEx
 public void recv_removeTable() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.recv_removeTable();
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void recv_resetLogging() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.recv_resetLogging();
   } finally {_lock.unlock();}
 }
 
@@ -503,6 +552,13 @@ public void removeTable(java.lang.String arg0, boolean arg1) throws org.apache.b
 }
 
 @Override
+public void resetLogging() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.resetLogging();
+  } finally {_lock.unlock();}
+}
+
+@Override
 public org.apache.blur.thrift.generated.Schema schema(java.lang.String arg0) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     return super.schema(arg0);
@@ -573,6 +629,20 @@ public void send_enableTable(java.lang.String arg0) throws org.apache.blur.third
 }
 
 @Override
+public void send_enqueueMutate(org.apache.blur.thrift.generated.RowMutation arg0) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.send_enqueueMutate(arg0);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void send_enqueueMutateBatch(java.util.List arg0) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.send_enqueueMutateBatch(arg0);
+  } finally {_lock.unlock();}
+}
+
+@Override
 public void send_fetchRow(java.lang.String arg0, org.apache.blur.thrift.generated.Selector arg1) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.send_fetchRow(arg0, arg1);
@@ -597,6 +667,13 @@ public void send_isInSafeMode(java.lang.String arg0) throws org.apache.blur.thir
 public void send_listSnapshots(java.lang.String arg0) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.send_listSnapshots(arg0);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void send_logging(java.lang.String arg0, org.apache.blur.thrift.generated.Level arg1) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.send_logging(arg0, arg1);
   } finally {_lock.unlock();}
 }
 
@@ -681,6 +758,13 @@ public void send_removeSnapshot(java.lang.String arg0, java.lang.String arg1) th
 public void send_removeTable(java.lang.String arg0, boolean arg1) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.send_removeTable(arg0, arg1);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void send_resetLogging() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.send_resetLogging();
   } finally {_lock.unlock();}
 }
 

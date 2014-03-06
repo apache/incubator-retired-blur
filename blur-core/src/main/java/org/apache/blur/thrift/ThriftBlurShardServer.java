@@ -108,18 +108,23 @@ public class ThriftBlurShardServer extends ThriftServer {
   private static final long _64MB = 64 * 1024 * 1024;
 
   public static void main(String[] args) throws Exception {
-    int serverIndex = getServerIndex(args);
-    LOG.info("Setting up Shard Server");
-    Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
-    BlurConfiguration configuration = new BlurConfiguration();
-    printUlimits();
-    ReporterSetup.setupReporters(configuration);
-    MemoryReporter.enable();
-    setupJvmMetrics();
-    // make this configurable
-    GCWatcher.init(0.75);
-    ThriftServer server = createServer(serverIndex, configuration, false);
-    server.start();
+    try {
+      int serverIndex = getServerIndex(args);
+      LOG.info("Setting up Shard Server");
+      Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
+      BlurConfiguration configuration = new BlurConfiguration();
+      printUlimits();
+      ReporterSetup.setupReporters(configuration);
+      MemoryReporter.enable();
+      setupJvmMetrics();
+      // make this configurable
+      GCWatcher.init(0.75);
+      ThriftServer server = createServer(serverIndex, configuration, false);
+      server.start();
+    } catch (Throwable t) {
+      t.printStackTrace();
+      System.exit(1);
+    }
   }
 
   public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration, boolean randomPort)

@@ -77,15 +77,20 @@ public class ThriftBlurControllerServer extends ThriftServer {
   private static final Log LOG = LogFactory.getLog(ThriftBlurControllerServer.class);
 
   public static void main(String[] args) throws Exception {
-    int serverIndex = getServerIndex(args);
-    LOG.info("Setting up Controller Server");
-    BlurConfiguration configuration = new BlurConfiguration();
-    printUlimits();
-    ReporterSetup.setupReporters(configuration);
-    MemoryReporter.enable();
-    setupJvmMetrics();
-    ThriftServer server = createServer(serverIndex, configuration, false);
-    server.start();
+    try {
+      int serverIndex = getServerIndex(args);
+      LOG.info("Setting up Controller Server");
+      BlurConfiguration configuration = new BlurConfiguration();
+      printUlimits();
+      ReporterSetup.setupReporters(configuration);
+      MemoryReporter.enable();
+      setupJvmMetrics();
+      ThriftServer server = createServer(serverIndex, configuration, false);
+      server.start();
+    } catch (Throwable t) {
+      t.printStackTrace();
+      System.exit(1);
+    }
   }
 
   public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration, boolean randomPort)
@@ -182,7 +187,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     } else {
       httpServer = null;
     }
-    
+
     if (httpServer != null) {
       WebAppContext context = httpServer.getContext();
       context.addServlet(new ServletHolder(new TServlet(new Blur.Processor<Blur.Iface>(iface),

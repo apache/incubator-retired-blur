@@ -16,13 +16,12 @@
  */
 package org.apache.blur.slur;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
-import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.AfterClass;
@@ -43,26 +42,32 @@ public class RowMutationHelperTest {
 
   @Test
   public void basicOneForOneConversion() {
-    SolrInputDocument doc = new SolrInputDocument();
-    doc.addField("fam.key", "value");
-    doc.addField("id", "123");
+    SolrInputDocument parent = new SolrInputDocument();
+    parent.addField("rowid", "123");
 
-    RowMutation mutate = RowMutationHelper.from(doc, "foo");
+    SolrInputDocument child = new SolrInputDocument();
+    child.addField("recordid", "1");
+    child.addField("fam.key", "value");
+
+    parent.addChildDocument(child);
+
+    RowMutation mutate = RowMutationHelper.from(parent, "foo");
 
     assertEquals("Should get our rowid back.", "123", mutate.getRowId());
     assertEquals("Should get a single record.", 1, mutate.getRecordMutationsSize());
-    assertEquals("Should get a simple value back.", "value", getRecordValue("key", mutate));
-    assertEquals("Should properly figure our family.", "fam", getFirstRecord(mutate).getFamily());
     assertEquals("Tablename should be set", "foo", mutate.getTable());
   }
 
   @Test
   public void multivalueFieldsShouldTranslate() {
     SolrInputDocument doc = new SolrInputDocument();
-    doc.addField("id", "123");
-    doc.addField("fam.key", "value1");
-    doc.addField("fam.key", "value2");
+    doc.addField("rowid", "123");
 
+    SolrInputDocument child = new SolrInputDocument();
+    child.addField("recordid", "1");
+    child.addField("fam.key", "value1");
+    child.addField("fam.key", "value2");
+    doc.addChildDocument(child);
     RowMutation mutate = RowMutationHelper.from(doc, "foo");
 
     List<Object> vals = getRecordValues("key", mutate);
@@ -75,13 +80,13 @@ public class RowMutationHelperTest {
   @Test
   public void documentWithChildDocumentsShouldBeRowWithRecords() {
     SolrInputDocument doc = new SolrInputDocument();
-    doc.addField("id", "1");
-    
+    doc.addField("rowid", "1");
+
     List<SolrInputDocument> children = Lists.newArrayList();
-    
-    for(int i = 0; i < 10; i++) {
+
+    for (int i = 0; i < 10; i++) {
       SolrInputDocument child = new SolrInputDocument();
-      child.addField("id", i);
+      child.addField("recordid", i);
       child.addField("fam.key", "value" + i);
       children.add(child);
     }
@@ -90,14 +95,26 @@ public class RowMutationHelperTest {
     RowMutation mutate = RowMutationHelper.from(doc, "foo");
 
     assertEquals("Children should turn into records.", 10, mutate.getRecordMutationsSize());
+    assertEquals("Should get a simple value back.", "value0", getRecordValue("key", mutate));
+    assertEquals("Should properly figure our family.", "fam", getFirstRecord(mutate).getFamily());
   }
-  
+
   @Test(expected = IllegalArgumentException.class)
   public void docWithChildrenCantItselfHaveFieldValues() {
     SolrInputDocument parent = new SolrInputDocument();
+    parent.addField("id", "1");
     parent.addField("fam.key1", "123");
     SolrInputDocument child = new SolrInputDocument();
     parent.addChildDocument(child);
+
+    RowMutationHelper.from(parent, "foo");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void rowsCantDirectlyHaveValues() {
+    SolrInputDocument parent = new SolrInputDocument();
+    parent.addField("id", "1");
+    parent.addField("fam.key1", "123");
 
     RowMutationHelper.from(parent, "foo");
   }
@@ -121,7 +138,7 @@ public class RowMutationHelperTest {
     Record rec = getFirstRecord(mutate);
 
     for (Column col : rec.getColumns()) {
-      
+
       if (col.getName().equals(field)) {
         vals.add(col.getValue());
       }

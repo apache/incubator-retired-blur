@@ -24,6 +24,7 @@ import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RecordMutationType;
 import org.apache.blur.thrift.generated.RowMutation;
+import org.apache.blur.utils.BlurConstants;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 
@@ -33,40 +34,38 @@ public class RowMutationHelper {
 
   public static List<RowMutation> from(Collection<SolrInputDocument> docs, String table) {
     List<RowMutation> mutations = Lists.newArrayList();
-    for(SolrInputDocument d: docs) {
+    for (SolrInputDocument d : docs) {
       mutations.add(from(d, table));
     }
     return mutations;
   }
-  
+
   public static RowMutation from(SolrInputDocument doc, String table) {
-    validate(doc);
+    validateAsRow(doc);
 
     RowMutation mutate = new RowMutation();
-    String rowid = extractId(doc);
+    String rowid = extractRowId(doc);
     mutate.setRowId(rowid);
     mutate.setTable(table);
     List<RecordMutation> recordMutations = Lists.newArrayList();
+
     if (doc.hasChildDocuments()) {
-      for(SolrInputDocument child: doc.getChildDocuments()) {
-        recordMutations.add(createRecordMutation(child, extractId(child)));
+      for (SolrInputDocument child : doc.getChildDocuments()) {
+        validateAsRecord(child);
+        recordMutations.add(createRecordMutation(child, extractRecordId(child)));
       }
-    } else {
-      recordMutations.add(createRecordMutation(doc, rowid));
+
     }
     mutate.setRecordMutations(recordMutations);
     return mutate;
   }
 
-  private static String extractId(SolrInputDocument doc) {
-    Object id = doc.getFieldValue("rowid");
-    if (id == null) {
-      id = doc.getFieldValue("id");
-    }
-    if (id == null) {
-      throw new IllegalArgumentException("Document must either have id or rowid field.");
-    }
-    return id.toString();
+  private static String extractRowId(SolrInputDocument doc) {
+    return doc.getFieldValue(BlurConstants.ROW_ID).toString();
+  }
+
+  private static String extractRecordId(SolrInputDocument doc) {
+    return doc.getFieldValue(BlurConstants.RECORD_ID).toString();
   }
 
   private static RecordMutation createRecordMutation(SolrInputDocument doc, String id) {
@@ -105,12 +104,24 @@ public class RowMutationHelper {
     throw new IllegalArgumentException("Unable to determine column family from document");
   }
 
-  private static void validate(SolrInputDocument doc) {
-    if ((doc.getFieldNames().size() > 1) && (doc.hasChildDocuments())) {
+  private static void validateAsRow(SolrInputDocument doc) {
+    Object rowid = doc.getFieldValue(BlurConstants.ROW_ID);
 
+    if (rowid == null)
+      throw new IllegalArgumentException("Document must have rowid field.");
+
+    for (String field : doc.getFieldNames()) {
+      if (!BlurConstants.ROW_ID.equals(field)) {
+        throw new IllegalArgumentException("Parent documents act as rows and cant have fields.");
+      }
     }
 
   }
 
+  private static void validateAsRecord(SolrInputDocument doc) {
+    Object rowid = doc.getFieldValue(BlurConstants.RECORD_ID);
 
+    if (rowid == null)
+      throw new IllegalArgumentException("Document must have recordid field.");
+  }
 }

@@ -94,6 +94,19 @@ under the License.
 		<pluginManagement>
 			<plugins>
 				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<configuration>
+						<argLine>-XX:+UseConcMarkSweepGC -Xmx1g -Xms1g</argLine>
+						<forkCount>2</forkCount>
+						<forkMode>always</forkMode>
+						<reuseForks>false</reuseForks>
+						<systemPropertyVariables>
+							<blur.tmp.dir>${project.build.directory}/target/tmp</blur.tmp.dir>
+						</systemPropertyVariables>
+					</configuration>
+				</plugin>
+				<plugin>
 					<artifactId>maven-war-plugin</artifactId>
 					<configuration>
 						<archiveClasses>true</archiveClasses>

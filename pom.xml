@@ -310,6 +310,8 @@ under the License.
 					<artifactId>maven-surefire-plugin</artifactId>
 					<configuration>
 						<argLine>-XX:+UseConcMarkSweepGC -Xmx1g -Xms1g</argLine>
+						<forkCount>2</forkCount>
+						<forkMode>always</forkMode>
 						<reuseForks>false</reuseForks>
 						<systemPropertyVariables>
 							<blur.tmp.dir>${project.build.directory}/target/tmp</blur.tmp.dir>

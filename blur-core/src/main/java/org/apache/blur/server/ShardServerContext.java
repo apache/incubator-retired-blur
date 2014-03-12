@@ -20,7 +20,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -39,7 +38,7 @@ public class ShardServerContext extends BlurServerContext implements ServerConte
   private static final Log LOG = LogFactory.getLog(ShardServerContext.class);
 
   private final static Map<Thread, ShardServerContext> _threadsToContext = new ConcurrentHashMap<Thread, ShardServerContext>();
-  private final Map<String, IndexSearcherClosable> _indexSearcherMap = new HashMap<String, IndexSearcherClosable>();
+  private final Map<String, IndexSearcherClosable> _indexSearcherMap = new ConcurrentHashMap<String, IndexSearcherClosable>();
 
   public ShardServerContext(SocketAddress localSocketAddress, SocketAddress remoteSocketAddress) {
     super(localSocketAddress, remoteSocketAddress);

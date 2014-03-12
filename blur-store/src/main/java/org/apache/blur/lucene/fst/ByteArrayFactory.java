@@ -49,7 +49,7 @@ public abstract class ByteArrayFactory {
       if (!(className == null || className.isEmpty())) {
         Class<?> clazz = Class.forName(className);
         Constructor<?> constructor = clazz.getConstructor(new Class[] { BlurConfiguration.class });
-        factory = (ByteArrayFactory) constructor.newInstance(new Object[] { constructor });
+        factory = (ByteArrayFactory) constructor.newInstance(new Object[] { configuration });
       }
     } catch (Exception e) {
       LOG.error("Error while trying create new bytearray factory for lucene bytestore.", e);

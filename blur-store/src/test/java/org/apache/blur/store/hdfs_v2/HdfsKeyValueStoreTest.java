@@ -16,21 +16,19 @@
  */
 package org.apache.blur.store.hdfs_v2;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Map.Entry;
-import java.util.concurrent.ThreadPoolExecutor;
 
-import org.apache.blur.log.Log;
-import org.apache.blur.log.LogFactory;
+import org.apache.blur.HdfsMiniClusterUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.lucene.util.BytesRef;
 import org.junit.AfterClass;
@@ -40,7 +38,6 @@ import org.junit.Test;
 
 public class HdfsKeyValueStoreTest {
 
-  private static final Log LOG = LogFactory.getLog(HdfsKeyValueStoreTest.class);
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp_HdfsKeyValueStoreTest"));
 
   private Configuration _configuration = new Configuration();
@@ -50,12 +47,12 @@ public class HdfsKeyValueStoreTest {
   @BeforeClass
   public static void startCluster() {
     Configuration conf = new Configuration();
-    _cluster = startDfs(conf, true, TMPDIR.getAbsolutePath());
+    _cluster = HdfsMiniClusterUtil.startDfs(conf, true, TMPDIR.getAbsolutePath());
   }
 
   @AfterClass
   public static void stopCluster() {
-    shutdownDfs(_cluster);
+    HdfsMiniClusterUtil.shutdownDfs(_cluster);
   }
 
   @Before
@@ -212,101 +209,6 @@ public class HdfsKeyValueStoreTest {
 
   private BytesRef toBytesRef(String s) {
     return new BytesRef(s);
-  }
-
-  public static MiniDFSCluster startDfs(Configuration conf, boolean format, String path) {
-    String perm;
-    Path p = new Path(new File("./target").getAbsolutePath());
-    try {
-      FileSystem fileSystem = p.getFileSystem(conf);
-      FileStatus fileStatus = fileSystem.getFileStatus(p);
-      FsPermission permission = fileStatus.getPermission();
-      perm = permission.getUserAction().ordinal() + "" + permission.getGroupAction().ordinal() + ""
-          + permission.getOtherAction().ordinal();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    LOG.info("dfs.datanode.data.dir.perm=" + perm);
-    conf.set("dfs.datanode.data.dir.perm", perm);
-    System.setProperty("test.build.data", path);
-    try {
-      MiniDFSCluster cluster = new MiniDFSCluster(conf, 1, true, (String[]) null);
-      cluster.waitActive();
-      return cluster;
-    } catch (Exception e) {
-      LOG.error("error opening file system", e);
-      throw new RuntimeException(e);
-    }
-  }
-
-  public static void shutdownDfs(MiniDFSCluster cluster) {
-    if (cluster != null) {
-      LOG.info("Shutting down Mini DFS ");
-      try {
-        cluster.shutdown();
-      } catch (Exception e) {
-        // / Can get a java.lang.reflect.UndeclaredThrowableException thrown
-        // here because of an InterruptedException. Don't let exceptions in
-        // here be cause of test failure.
-      }
-      try {
-        FileSystem fs = cluster.getFileSystem();
-        if (fs != null) {
-          LOG.info("Shutting down FileSystem");
-          fs.close();
-        }
-        FileSystem.closeAll();
-      } catch (IOException e) {
-        LOG.error("error closing file system", e);
-      }
-
-      // This has got to be one of the worst hacks I have ever had to do.
-      // This is needed to shutdown 2 thread pools that are not shutdown by
-      // themselves.
-      ThreadGroup threadGroup = Thread.currentThread().getThreadGroup();
-      Thread[] threads = new Thread[100];
-      int enumerate = threadGroup.enumerate(threads);
-      for (int i = 0; i < enumerate; i++) {
-        Thread thread = threads[i];
-        if (thread.getName().startsWith("pool")) {
-          if (thread.isAlive()) {
-            thread.interrupt();
-            LOG.info("Stopping ThreadPoolExecutor [" + thread.getName() + "]");
-            Object target = getField(Thread.class, thread, "target");
-            if (target != null) {
-              ThreadPoolExecutor e = (ThreadPoolExecutor) getField(ThreadPoolExecutor.class, target, "this$0");
-              if (e != null) {
-                e.shutdownNow();
-              }
-            }
-            try {
-              LOG.info("Waiting for thread pool to exit [" + thread.getName() + "]");
-              thread.join();
-            } catch (InterruptedException e) {
-              throw new RuntimeException(e);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private static Object getField(Class<?> c, Object o, String fieldName) {
-    try {
-      Field field = c.getDeclaredField(fieldName);
-      field.setAccessible(true);
-      return field.get(o);
-    } catch (NoSuchFieldException e) {
-      try {
-        Field field = o.getClass().getDeclaredField(fieldName);
-        field.setAccessible(true);
-        return field.get(o);
-      } catch (Exception ex) {
-        throw new RuntimeException(ex);
-      }
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
   }
 
 }

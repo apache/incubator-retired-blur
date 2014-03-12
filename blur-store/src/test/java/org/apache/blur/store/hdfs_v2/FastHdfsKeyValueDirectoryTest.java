@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.blur.HdfsMiniClusterUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -49,12 +50,12 @@ public class FastHdfsKeyValueDirectoryTest {
   @BeforeClass
   public static void startCluster() {
     Configuration conf = new Configuration();
-    _cluster = HdfsKeyValueStoreTest.startDfs(conf, true, TMPDIR.getAbsolutePath());
+    _cluster = HdfsMiniClusterUtil.startDfs(conf, true, TMPDIR.getAbsolutePath());
   }
 
   @AfterClass
   public static void stopCluster() {
-    HdfsKeyValueStoreTest.shutdownDfs(_cluster);
+    HdfsMiniClusterUtil.shutdownDfs(_cluster);
   }
 
   @Before

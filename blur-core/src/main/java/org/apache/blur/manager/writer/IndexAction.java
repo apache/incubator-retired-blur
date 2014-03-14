@@ -17,11 +17,14 @@
 package org.apache.blur.manager.writer;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.lucene.index.IndexWriter;
 
 public abstract class IndexAction {
+
+  private AtomicInteger _writesWaiting;
 
   public abstract void doPreCommit(IndexSearcherClosable indexSearcher, IndexWriter writer) throws IOException;
 
@@ -33,4 +36,14 @@ public abstract class IndexAction {
 
   public abstract void performMutate(IndexSearcherClosable searcher, IndexWriter writer) throws IOException;
 
+  public void setWritesWaiting(AtomicInteger writesWaiting) {
+    _writesWaiting = writesWaiting;
+  }
+
+  public boolean isWritersWaiting() {
+    if (_writesWaiting.get() > 0) {
+      return true;
+    }
+    return false;
+  }
 }

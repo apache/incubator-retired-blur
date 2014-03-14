@@ -24,6 +24,8 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -46,6 +48,7 @@ import org.apache.blur.trace.BaseTraceStorage;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.TraceCollector;
 import org.apache.blur.trace.TraceStorage;
+import org.apache.blur.utils.BlurConstants;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -101,6 +104,12 @@ public class BlurIndexSimpleWriterTest {
       uuid = UUID.randomUUID().toString();
     }
     tableDescriptor.setTableUri(new File(_base, "table-store-" + uuid).toURI().toString());
+    Map<String, String> tableProperties = new HashMap<String, String>();
+    tableProperties.put(BlurConstants.BLUR_SHARD_QUEUE_MAX_PAUSE_TIME_WHEN_EMPTY, "500");
+    tableProperties.put(BlurConstants.BLUR_SHARD_QUEUE_MAX_QUEUE_BATCH_SIZE, "500");
+    tableProperties.put(BlurConstants.BLUR_SHARD_QUEUE_MAX_WRITER_LOCK_TIME, "1000");
+
+    tableDescriptor.setTableProperties(tableProperties);
     TableContext tableContext = TableContext.create(tableDescriptor);
     File path = new File(_base, "index_" + uuid);
     path.mkdirs();
@@ -288,11 +297,15 @@ public class BlurIndexSimpleWriterTest {
   @Test
   public void testEnqueue() throws IOException, InterruptedException {
     setupWriter(_configuration);
+    runQueueTest(TOTAL_ROWS_FOR_TESTS, TOTAL_ROWS_FOR_TESTS);
+  }
+
+  private void runQueueTest(final int mutatesToAdd, int numberOfValidDocs) throws IOException, InterruptedException {
     final String table = _writer.getShardContext().getTableContext().getTable();
     Thread thread = new Thread(new Runnable() {
       @Override
       public void run() {
-        for (int i = 0; i < TOTAL_ROWS_FOR_TESTS; i++) {
+        for (int i = 0; i < mutatesToAdd; i++) {
           try {
             _writer.enqueue(Arrays.asList(genRowMutation(table)));
           } catch (IOException e) {
@@ -302,14 +315,16 @@ public class BlurIndexSimpleWriterTest {
       }
     });
     thread.start();
+    long start = System.currentTimeMillis();
     while (true) {
-      if (_writer.getIndexSearcher().getIndexReader().numDocs() == TOTAL_ROWS_FOR_TESTS) {
+      if (_writer.getIndexSearcher().getIndexReader().numDocs() == numberOfValidDocs) {
+        long end = System.currentTimeMillis();
+        System.out.println("[" + TOTAL_ROWS_FOR_TESTS + "] Mutations in [" + (end - start) + " ms]");
         break;
       }
       Thread.sleep(100);
     }
     thread.join();
-    // YAY!!! it worked!
   }
 
   private RowMutation genRowMutation(String table) {

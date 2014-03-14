@@ -24,7 +24,7 @@ import org.apache.blur.thrift.generated.RowMutation;
 
 public class MutationQueue {
 
-  private BlockingQueue<RowMutation> _queue = new ArrayBlockingQueue<RowMutation>(1000);
+  private BlockingQueue<RowMutation> _queue = new ArrayBlockingQueue<RowMutation>(100);
 
   public void put(List<RowMutation> mutations) throws InterruptedException {
     for (RowMutation mutation : mutations) {

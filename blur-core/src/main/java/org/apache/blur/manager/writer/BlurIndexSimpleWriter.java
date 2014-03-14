@@ -21,13 +21,17 @@ import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.index.ExitableReader;
@@ -69,9 +73,9 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final AtomicReference<BlurIndexWriter> _writer = new AtomicReference<BlurIndexWriter>();
   private final boolean _makeReaderExitable = true;
   private IndexImporter _indexImporter;
-  private ShardQueueReader _queueReader;
-  private final ReadWriteLock _lock = new ReentrantReadWriteLock();
-  private final Lock _writeLock = _lock.writeLock();
+  // private ShardQueueReader _queueReader;
+  private final ReentrantReadWriteLock _lock = new ReentrantReadWriteLock();
+  private final WriteLock _writeLock = _lock.writeLock();
   private final ReadWriteLock _indexRefreshLock = new ReentrantReadWriteLock();
   private final Lock _indexRefreshWriteLock = _indexRefreshLock.writeLock();
   private final Lock _indexRefreshReadLock = _indexRefreshLock.readLock();
@@ -80,7 +84,9 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final IndexDeletionPolicyReader _policy;
   private final SnapshotIndexDeletionPolicy _snapshotIndexDeletionPolicy;
   private final String _context;
-  private final MutationQueue _mutationQueue;
+  private final AtomicInteger _writesWaiting = new AtomicInteger();
+  private final BlockingQueue<RowMutation> _queue = new ArrayBlockingQueue<RowMutation>(100);
+  private final MutationQueueProcessor _mutationQueueProcessor;
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       final ExecutorService searchExecutor, BlurIndexCloser indexCloser, BlurIndexWarmup indexWarmup)
@@ -105,7 +111,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _policy = new IndexDeletionPolicyReader(_snapshotIndexDeletionPolicy);
     _conf.setIndexDeletionPolicy(_policy);
 
-    _mutationQueue = new MutationQueue();
+    _mutationQueueProcessor = new MutationQueueProcessor(_queue, this, _shardContext, _writesWaiting);
 
     if (!DirectoryReader.indexExists(directory)) {
       new BlurIndexWriter(directory, _conf).close();
@@ -122,7 +128,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   }
 
   private synchronized void openWriter() {
-    IOUtils.cleanup(LOG, _queueReader, _indexImporter);
+    IOUtils.cleanup(LOG, _indexImporter);
     BlurIndexWriter writer = _writer.get();
     if (writer != null) {
       try {
@@ -155,30 +161,6 @@ public class BlurIndexSimpleWriter extends BlurIndex {
             _writer.notify();
           }
           _indexImporter = new IndexImporter(BlurIndexSimpleWriter.this, _shardContext, TimeUnit.SECONDS, 10);
-          _queueReader = new ShardQueueReader(BlurIndexSimpleWriter.this, _shardContext) {
-
-            private final List<RowMutation> _list = new ArrayList<RowMutation>();
-
-            @Override
-            public void take(List<RowMutation> mutations, int max) {
-              _list.clear();
-              _mutationQueue.take(mutations, max);
-              _list.addAll(mutations);
-              LOG.debug("Number of messages taken [{0}]", _list.size());
-            }
-
-            @Override
-            public void success() {
-
-            }
-
-            @Override
-            public void failure() {
-              // Do something with stored mutations
-            }
-
-          };
-          _queueReader.listen();
         } catch (IOException e) {
           LOG.error("Unknown error on index writer open.", e);
         }
@@ -243,7 +225,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   @Override
   public void close() throws IOException {
     _isClosed.set(true);
-    IOUtils.cleanup(LOG, _indexImporter, _queueReader, _writer.get(), _indexReader.get());
+    IOUtils.cleanup(LOG, _indexImporter, _mutationQueueProcessor, _writer.get(), _indexReader.get());
   }
 
   @Override
@@ -327,7 +309,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     DirectoryReader currentReader = _indexReader.get();
     DirectoryReader newReader = DirectoryReader.openIfChanged(currentReader);
     if (newReader == null) {
-      LOG.error("Reader should be new after commit for table [{0}] shard [{1}].", _tableContext.getTable(),
+      LOG.debug("Reader should be new after commit for table [{0}] shard [{1}].", _tableContext.getTable(),
           _shardContext.getShard());
     } else {
       DirectoryReader reader = wrap(newReader);
@@ -344,7 +326,10 @@ public class BlurIndexSimpleWriter extends BlurIndex {
 
   @Override
   public void process(IndexAction indexAction) throws IOException {
+    _writesWaiting.incrementAndGet();
     _writeLock.lock();
+    _writesWaiting.decrementAndGet();
+    indexAction.setWritesWaiting(_writesWaiting);
     waitUntilNotNull(_writer);
     BlurIndexWriter writer = _writer.get();
     IndexSearcherClosable indexSearcher = null;
@@ -374,11 +359,18 @@ public class BlurIndexSimpleWriter extends BlurIndex {
 
   @Override
   public void enqueue(List<RowMutation> mutations) throws IOException {
+    startQueueIfNeeded();
     try {
-      _mutationQueue.put(mutations);
+      for (RowMutation mutation : mutations) {
+        _queue.put(mutation);
+      }
     } catch (InterruptedException e) {
       throw new IOException(e);
     }
+  }
+
+  private void startQueueIfNeeded() {
+    _mutationQueueProcessor.startIfNotRunning();
   }
 
 }

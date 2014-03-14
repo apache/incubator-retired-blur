@@ -17,6 +17,7 @@
 package org.apache.blur.manager.writer;
 
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_QUEUE_MAX_INMEMORY_LENGTH;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.index.ExitableReader;
 import org.apache.blur.index.IndexDeletionPolicyReader;
@@ -73,7 +75,6 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final AtomicReference<BlurIndexWriter> _writer = new AtomicReference<BlurIndexWriter>();
   private final boolean _makeReaderExitable = true;
   private IndexImporter _indexImporter;
-  // private ShardQueueReader _queueReader;
   private final ReentrantReadWriteLock _lock = new ReentrantReadWriteLock();
   private final WriteLock _writeLock = _lock.writeLock();
   private final ReadWriteLock _indexRefreshLock = new ReentrantReadWriteLock();
@@ -85,7 +86,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final SnapshotIndexDeletionPolicy _snapshotIndexDeletionPolicy;
   private final String _context;
   private final AtomicInteger _writesWaiting = new AtomicInteger();
-  private final BlockingQueue<RowMutation> _queue = new ArrayBlockingQueue<RowMutation>(100);
+  private final BlockingQueue<RowMutation> _queue;
   private final MutationQueueProcessor _mutationQueueProcessor;
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
@@ -110,7 +111,8 @@ public class BlurIndexSimpleWriter extends BlurIndex {
         shardContext.getHdfsDirPath(), "generations"));
     _policy = new IndexDeletionPolicyReader(_snapshotIndexDeletionPolicy);
     _conf.setIndexDeletionPolicy(_policy);
-
+    BlurConfiguration blurConfiguration = _tableContext.getBlurConfiguration();
+    _queue = new ArrayBlockingQueue<RowMutation>(blurConfiguration.getInt(BLUR_SHARD_QUEUE_MAX_INMEMORY_LENGTH, 100));
     _mutationQueueProcessor = new MutationQueueProcessor(_queue, this, _shardContext, _writesWaiting);
 
     if (!DirectoryReader.indexExists(directory)) {

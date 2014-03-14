@@ -108,6 +108,7 @@ public class BlurIndexSimpleWriterTest {
     tableProperties.put(BlurConstants.BLUR_SHARD_QUEUE_MAX_PAUSE_TIME_WHEN_EMPTY, "500");
     tableProperties.put(BlurConstants.BLUR_SHARD_QUEUE_MAX_QUEUE_BATCH_SIZE, "500");
     tableProperties.put(BlurConstants.BLUR_SHARD_QUEUE_MAX_WRITER_LOCK_TIME, "1000");
+    tableProperties.put(BlurConstants.BLUR_SHARD_QUEUE_MAX_INMEMORY_LENGTH, "1000");
 
     tableDescriptor.setTableProperties(tableProperties);
     TableContext tableContext = TableContext.create(tableDescriptor);
@@ -298,6 +299,8 @@ public class BlurIndexSimpleWriterTest {
   public void testEnqueue() throws IOException, InterruptedException {
     setupWriter(_configuration);
     runQueueTest(TOTAL_ROWS_FOR_TESTS, TOTAL_ROWS_FOR_TESTS);
+    runQueueTest(TOTAL_ROWS_FOR_TESTS, TOTAL_ROWS_FOR_TESTS * 2);
+    runQueueTest(TOTAL_ROWS_FOR_TESTS, TOTAL_ROWS_FOR_TESTS * 3);
   }
 
   private void runQueueTest(final int mutatesToAdd, int numberOfValidDocs) throws IOException, InterruptedException {

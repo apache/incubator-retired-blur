@@ -40,6 +40,7 @@ public class BlurConstants {
   public static final String BLUR_SHARD_QUEUE_MAX_PAUSE_TIME_WHEN_EMPTY = "blur.shard.queue.max.pause.time.when.empty";
   public static final String BLUR_SHARD_QUEUE_MAX_WRITER_LOCK_TIME = "blur.shard.queue.max.writer.lock.time";
   public static final String BLUR_SHARD_QUEUE_MAX_QUEUE_BATCH_SIZE = "blur.shard.queue.max.queue.batch.size";
+  public static final String BLUR_SHARD_QUEUE_MAX_INMEMORY_LENGTH = "blur.shard.queue.max.inmemory.length";
 
 //  public static final String BLUR_TABLE_INDEX_QUEUE_READER_CLASS = "blur.table.index.queue.reader.class";
 //  public static final String BLUR_TABLE_INDEX_QUEUE_READER_BACKOFF = "blur.table.index.queue.reader.backoff";

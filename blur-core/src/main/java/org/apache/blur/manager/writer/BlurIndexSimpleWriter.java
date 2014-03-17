@@ -202,7 +202,11 @@ public class BlurIndexSimpleWriter extends BlurIndex {
           indexReader.decRef();
           _closed = true;
         } else {
-          LOG.error("Searcher already closed [{0}].", new Throwable(), this);
+          // Not really sure why some indexes get closed called twice on them.
+          // This is in place to log it.
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Searcher already closed [{0}].", new Throwable(), this);
+          }
         }
       }
     };

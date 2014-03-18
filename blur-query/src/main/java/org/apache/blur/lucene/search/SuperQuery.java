@@ -319,6 +319,13 @@ public class SuperQuery extends AbstractWrapperQuery {
       // if not too costly to calculate.
       return scorer.cost();
     }
+
+    @Override
+    public String toString() {
+      return "SuperScorer [originalQueryStr=" + originalQueryStr + ", scorer=" + scorer + ", scoreType=" + scoreType
+          + "]";
+    }
+
   }
 
   public Query getQuery() {

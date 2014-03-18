@@ -18,6 +18,8 @@ package org.apache.blur.lucene.search;
  */
 import java.io.IOException;
 
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Explanation;
@@ -143,6 +145,8 @@ public class FacetQuery extends AbstractWrapperQuery {
 
   public static class FacetScorer extends Scorer {
 
+    private static final Log LOG = LogFactory.getLog(FacetScorer.class);
+
     private final Scorer _baseScorer;
     private final OpenBitSet _hit;
 
@@ -154,6 +158,10 @@ public class FacetQuery extends AbstractWrapperQuery {
 
     private int processFacets(int doc) throws IOException {
       if (doc == NO_MORE_DOCS) {
+        return doc;
+      }
+      if (doc < 0) {
+        LOG.error("DocId from base scorer < 0 [{0}]", _baseScorer);
         return doc;
       }
       _hit.fastSet(doc);

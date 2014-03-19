@@ -53,8 +53,11 @@ import org.junit.Test;
 
 public class FacetQueryTest {
 
+  private static final boolean TRACE = false;
+
   @Test
   public void testFacetQueryNoSuper() throws IOException, InterruptedException {
+    System.out.println("testFacetQueryNoSuper");
     IndexReader reader = createIndex(10, 0, true);
     BooleanQuery bq = new BooleanQuery();
     bq.add(new TermQuery(new Term("f1", "value")), Occur.SHOULD);
@@ -85,7 +88,8 @@ public class FacetQueryTest {
   }
 
   @Test
-  public void testFacetQueryPerformance() throws IOException, InterruptedException {
+  public void testFacetQueryPerformance1() throws IOException, InterruptedException {
+    System.out.println("testFacetQueryPerformance1");
     BlurConfiguration configuration = new BlurConfiguration();
     Trace.setStorage(new LogTraceStorage(configuration));
     int facetCount = 200;
@@ -106,11 +110,11 @@ public class FacetQueryTest {
         FacetQuery facetQuery = new FacetQuery(new TermQuery(new Term("f1", "value")), facets, facetExecutor);
         long t1 = System.nanoTime();
         indexSearcher.search(facetQuery, 10);
-        if (t == 4) {
+        if (t == 4 && TRACE) {
           Trace.setupTrace("unittest");
         }
         facetExecutor.processFacets(executor);
-        if (t == 4) {
+        if (t == 4 && TRACE) {
           Trace.tearDownTrace();
         }
         executor.shutdown();
@@ -128,7 +132,52 @@ public class FacetQueryTest {
   }
 
   @Test
+  public void testFacetQueryPerformance2() throws IOException, InterruptedException {
+    System.out.println("testFacetQueryPerformance2");
+    BlurConfiguration configuration = new BlurConfiguration();
+    Trace.setStorage(new LogTraceStorage(configuration));
+    int facetCount = 200;
+    int docCount = 1000000;
+    IndexReader reader = createIndex(docCount, facetCount, false);
+
+    Query[] facets = new Query[facetCount];
+    for (int i = 0; i < facetCount; i++) {
+      facets[i] = new TermQuery(new Term("facet" + i, "value"));
+    }
+
+    ExecutorService executor = null;
+    try {
+      for (int t = 0; t < 5; t++) {
+        executor = getThreadPool(20);
+        IndexSearcher indexSearcher = new IndexSearcher(reader, executor);
+        FacetExecutor facetExecutor = new FacetExecutor(facets.length);
+        FacetQuery facetQuery = new FacetQuery(new TermQuery(new Term("f2", "v45")), facets, facetExecutor);
+        long t1 = System.nanoTime();
+        indexSearcher.search(facetQuery, 10);
+        if (t == 4 && TRACE) {
+          Trace.setupTrace("unittest");
+        }
+        facetExecutor.processFacets(executor);
+        if (t == 4 && TRACE) {
+          Trace.tearDownTrace();
+        }
+        executor.shutdown();
+        executor.awaitTermination(10, TimeUnit.SECONDS);
+        long t2 = System.nanoTime();
+        System.out.println((t2 - t1) / 1000000.0);
+
+        for (int i = 0; i < facetExecutor.length(); i++) {
+          assertEquals(1, facetExecutor.get(i));
+        }
+      }
+    } finally {
+      executor.shutdownNow();
+    }
+  }
+
+  @Test
   public void testFacetQueryPerformanceWithMins() throws IOException, InterruptedException {
+    System.out.println("testFacetQueryPerformanceWithMins");
     int facetCount = 200;
     int docCount = 1000000;
     IndexReader reader = createIndex(docCount, facetCount, false);
@@ -160,7 +209,7 @@ public class FacetQueryTest {
         System.out.println((t2 - t1) / 1000000.0);
 
         for (int i = 0; i < facetExecutor.length(); i++) {
-          
+
           assertTrue(facetExecutor.get(i) >= min);
         }
       }

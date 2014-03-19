@@ -39,6 +39,7 @@ import org.apache.blur.trace.Tracer;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.util.OpenBitSet;
 
@@ -59,6 +60,7 @@ public class FacetExecutor {
 
     int _hits;
     final OpenBitSet _bitSet;
+    Scorer _scorer;
 
     SimpleCollector(OpenBitSet bitSet) {
       _bitSet = bitSet;
@@ -68,12 +70,23 @@ public class FacetExecutor {
     public void collect(int doc) throws IOException {
       if (_bitSet.fastGet(doc)) {
         _hits++;
+      } else {
+        int nextSetBit = _bitSet.nextSetBit(doc);
+        if (nextSetBit < 0) {
+          // Move to the end of the scorer.
+          _scorer.advance(DocIdSetIterator.NO_MORE_DOCS);
+        } else {
+          int advance = _scorer.advance(nextSetBit);
+          if (_bitSet.fastGet(advance)) {
+            _hits++;
+          }
+        }
       }
     }
 
     @Override
     public void setScorer(Scorer scorer) throws IOException {
-
+      _scorer = scorer;
     }
 
     @Override
@@ -154,7 +167,6 @@ public class FacetExecutor {
       for (int i = 0; i < _scorers.length; i++) {
         ids.put(i);
       }
-
     }
 
     private void runFacet(AtomicLongArray counts, SimpleCollector col, int i) throws IOException {

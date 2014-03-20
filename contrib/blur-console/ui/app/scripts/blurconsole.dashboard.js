@@ -72,12 +72,15 @@ blurconsole.dashboard = (function () {
 		$.gevent.unsubscribe(jqueryMap.$container, 'node-status-updated');
 		$.gevent.unsubscribe(jqueryMap.$container, 'tables-updated');
 		$.gevent.unsubscribe(jqueryMap.$container, 'query-perf-updated');
+		$.gevent.unsubscribe(jqueryMap.$container, 'queries-updated');
 	};
 
 	updateNodeCharts = function() {
-		loadZkPieChart();
-		loadControllerPieChart();
-		loadShardsPieChart();
+		if (blurconsole.model.nodes.isDataLoaded()) {
+			loadZkPieChart();
+			loadControllerPieChart();
+			loadShardsPieChart();
+		}
 	};
 
 	loadZkPieChart = function() {
@@ -127,20 +130,22 @@ blurconsole.dashboard = (function () {
 	};
 
 	loadTableColumnChart = function() {
-		$.plot(jqueryMap.$tableChartHolder, blurconsole.model.metrics.getTableChartData(), {
-			bars : {
-				show : true,
-				barWidth : 0.6,
-				align : 'center'
-			},
-			yaxis : {
-				min : 0,
-				tickDecimals : 0
-			},
-			xaxis : {
-				mode : 'categories'
-			}
-		});
+		if (blurconsole.model.tables.isDataLoaded()) {
+			$.plot(jqueryMap.$tableChartHolder, blurconsole.model.metrics.getTableChartData(), {
+				bars : {
+					show : true,
+					barWidth : 0.6,
+					align : 'center'
+				},
+				yaxis : {
+					min : 0,
+					tickDecimals : 0
+				},
+				xaxis : {
+					mode : 'categories'
+				}
+			});
+		}
 	};
 
 	loadQueryPerfLineChart = function() {
@@ -208,7 +213,6 @@ blurconsole.dashboard = (function () {
 	};
 
 	checkForSlowQueries = function() {
-		console.log(blurconsole.model.metrics.getSlowQueryWarnings())
 		if (blurconsole.model.metrics.getSlowQueryWarnings()) {
 			$('#slow-query-warnings').removeClass('hidden');
 		} else {
@@ -220,6 +224,10 @@ blurconsole.dashboard = (function () {
 		$container.load ( configMap.view, function() {
 			stateMap.$container = $container;
 			setJqueryMap();
+			updateNodeCharts();
+			loadTableColumnChart();
+			loadQueryPerfLineChart();
+			checkForSlowQueries();
 			$.gevent.subscribe(jqueryMap.$container, 'node-status-updated', updateNodeCharts);
 			$.gevent.subscribe(jqueryMap.$container, 'tables-updated', loadTableColumnChart);
 			$.gevent.subscribe(jqueryMap.$container, 'query-perf-updated', loadQueryPerfLineChart);

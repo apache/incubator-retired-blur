@@ -15,7 +15,7 @@ limitations under the License.
 /*global blurconsole:false */
 blurconsole.utils = (function(){
 	'use strict';
-	var inject, unique;
+	var inject, unique, equals;
 
 	inject = function(collection, initial, block) {
 		if (collection === null || collection.length === 0) {
@@ -46,9 +46,14 @@ blurconsole.utils = (function(){
 		return uniqueList;
 	};
 
+	equals = function(obj1, obj2) {
+		return JSON.stringify(obj1) === JSON.stringify(obj2);
+	};
+
 	return {
 		inject: inject,
 		reduce: inject,
-		unique: unique
+		unique: unique,
+		equals: equals
 	};
 }());

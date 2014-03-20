@@ -18,10 +18,16 @@ blurconsole.tables = (function () {
 	'use strict';
 	var configMap = {
 		view : 'views/tables.tpl.html',
-		tableSettings : {
-			pageSize : 500,
-			pageSizes : null
-		}
+		enabledDef : [
+			{label:'Table Name', key:'name'},
+			{label:'Row Count', key: 'rowCount'},
+			{label:'Record Count', key: 'recordCount'},
+			{label:'Actions', key: function(){ return ''; }}
+		],
+		disabledDef : [
+			{label:'Table Name', key:'name'},
+			{label:'Actions', key: function(){ return ''; }}
+		]
 	},
 	stateMap = { $container : null },
 	jqueryMap = {},
@@ -91,16 +97,13 @@ blurconsole.tables = (function () {
 		}
 
 		$.each(clusters, function(idx, cluster){
-			var clusterPane = $('#' + cluster + '_pane'), enabledSection, disabledSection;
-			clusterPane.find('.enabledSection').WATable({
-
-			});
-			clusterPane.find('.disabledSection').WATable();
+			var clusterPane = $('#' + cluster + '_pane');
+			clusterPane.find('.enabledSection').html(blurconsole.browserUtils.table(configMap.enabledDef, blurconsole.model.tables.getEnabledTables(cluster)));
+			clusterPane.find('.disabledSection').html(blurconsole.browserUtils.table(configMap.enabledDef, blurconsole.model.tables.getDisabledTables(cluster)));
 		});
 	};
 
 	updateTableList = function() {
-		console.log('Updating tables');
 		var clusters = blurconsole.model.tables.getClusters();
 
 		$.each(clusters, function(idx, cluster) {
@@ -109,12 +112,10 @@ blurconsole.tables = (function () {
 			disabledSection = clusterPane.find('.disabledSection');
 
 			if (enabledSection.length > 0) {
-				console.log(blurconsole.model.tables.getEnabledTables(cluster));
-				console.log(enabledSection);
-				enabledSection.data('WATable').setData(blurconsole.model.tables.getEnabledTables(cluster), false, false);
+				enabledSection.html(blurconsole.browserUtils.table(configMap.enabledDef, blurconsole.model.tables.getEnabledTables(cluster)));
 			}
 			if (disabledSection.length > 0) {
-				disabledSection.data('WATable').setData(blurconsole.model.tables.getDisabledTables(cluster), false, false);
+				disabledSection.html(blurconsole.browserUtils.table(configMap.disabledDef, blurconsole.model.tables.getDisabledTables(cluster)));
 			}
 		});
 	};

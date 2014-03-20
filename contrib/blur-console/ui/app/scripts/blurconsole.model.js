@@ -20,8 +20,8 @@ blurconsole.model = (function() {
 			poller : null
 		},
 		stateMap = {
-			tableNameMap: {},
-			nodeMap : {},
+			tableNameMap: null,
+			nodeMap : null,
 			queryPerformance : [],
 			queries : {}
 		},
@@ -29,9 +29,13 @@ blurconsole.model = (function() {
 		tables, metrics, nodes, initModule, nodePoller, tablePoller, queryPerformancePoller, queryPoller;
 
 	tables = (function() {
-		var getClusters, getEnabledTables, getDisabledTables;
+		var getClusters, getEnabledTables, getDisabledTables, isDataLoaded;
 
 		getClusters = function() {
+			if (stateMap.tableNameMap == null) {
+				return [];
+			}
+			
 			return blurconsole.utils.unique($.map(stateMap.tableNameMap, function(table){
 				return table.cluster;
 			}), true);
@@ -46,38 +50,35 @@ blurconsole.model = (function() {
 				}
 			});
 
-			return {
-				cols : {
-					name : {
-						index : 1,
-						type : 'string'
-					},
-					rowCount : {
-						index : 2,
-						type : 'number'
-					},
-					recordCount : {
-						index : 3,
-						type : 'number'
-					}
-				},
-				rows: data
-			};
+			return data;
 		};
 
 		getDisabledTables = function(cluster) {
-			console.log(cluster);
+			var data = [];
+
+			$.each(stateMap.tableNameMap, function(idx, table) {
+				if (table.cluster === cluster && !table.enabled) {
+					data.push({name:table.name, rowCount:table.rows, recordCount:table.records});
+				}
+			});
+
+			return data;
+		};
+
+		isDataLoaded = function() {
+			return stateMap.tableNameMap != null;
 		};
 
 		return {
 			getClusters : getClusters,
 			getEnabledTables : getEnabledTables,
-			getDisabledTables : getDisabledTables
+			getDisabledTables : getDisabledTables,
+			isDataLoaded : isDataLoaded
 		};
 	}());
 
 	nodes = (function() {
-		var getOfflineZookeeperNodes, getOfflineControllerNodes, getOfflineShardNodes;
+		var getOfflineZookeeperNodes, getOfflineControllerNodes, getOfflineShardNodes, isDataLoaded;
 
 		getOfflineZookeeperNodes = function() {
 			return stateMap.nodeMap.zookeepers.offline;
@@ -98,10 +99,15 @@ blurconsole.model = (function() {
 			return [];
 		};
 
+		isDataLoaded = function() {
+			return stateMap.nodeMap != null;
+		};
+
 		return {
 			getOfflineZookeeperNodes : getOfflineZookeeperNodes,
 			getOfflineControllerNodes : getOfflineControllerNodes,
-			getOfflineShardNodes : getOfflineShardNodes
+			getOfflineShardNodes : getOfflineShardNodes,
+			isDataLoaded : isDataLoaded
 		};
 	}());
 
@@ -189,7 +195,7 @@ blurconsole.model = (function() {
 
 		getQueryLoadChartData = function() {
 			var total = 0,
-				queryArray = [], 
+				queryArray = [],
 				meanArray = [],
 				queryData, mean;
 
@@ -241,14 +247,20 @@ blurconsole.model = (function() {
 	}());
 
 	nodePoller = function() {
-		stateMap.nodeMap = configMap.poller.getNodeList();
-		$.gevent.publish('node-status-updated');
+		var tmpNodeMap = configMap.poller.getNodeList();
+		if (!blurconsole.utils.equals(tmpNodeMap, stateMap.nodeMap)) {
+			stateMap.nodeMap = tmpNodeMap;
+			$.gevent.publish('node-status-updated');
+		}
 		setTimeout(nodePoller, 5000);
 	};
 
 	tablePoller = function() {
-		stateMap.tableNameMap = configMap.poller.getTableList();
-		$.gevent.publish('tables-updated');
+		var tmpTableMap = configMap.poller.getTableList();
+		if (!blurconsole.utils.equals(tmpTableMap, stateMap.tableNameMap)) {
+			stateMap.tableNameMap = tmpTableMap;
+			$.gevent.publish('tables-updated');
+		}
 		setTimeout(tablePoller, 5000);
 	};
 
@@ -263,8 +275,11 @@ blurconsole.model = (function() {
 	};
 
 	queryPoller = function() {
-		stateMap.queries = configMap.poller.getQueries();
-		$.gevent.publish('queries-updated');
+		var tmpQueries = configMap.poller.getQueries();
+		if (!blurconsole.utils.equals(tmpQueries, stateMap.queries)) {
+			stateMap.queries = tmpQueries;
+			$.gevent.publish('queries-updated');
+		}
 		setTimeout(queryPoller, 5000);
 	};
 

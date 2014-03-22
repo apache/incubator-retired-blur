@@ -97,10 +97,27 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       FileStatus[] listStatus = _fileSystem.listStatus(_path);
       for (FileStatus fileStatus : listStatus) {
         if (!fileStatus.isDir()) {
-          _fileLengthMap.put(fileStatus.getPath().getName(), fileStatus.getLen());
+          Path p = fileStatus.getPath();
+          String name = p.getName();
+          if (name.endsWith(LNK)) {
+            String resolvedName = getRealFileName(name);
+            Path resolvedPath = getPath(resolvedName);
+            FileStatus resolvedFileStatus = _fileSystem.getFileStatus(resolvedPath);
+            _fileLengthMap.put(resolvedName, resolvedFileStatus.getLen());
+          } else {
+            _fileLengthMap.put(name, fileStatus.getLen());
+          }
         }
       }
     }
+  }
+
+  private String getRealFileName(String name) {
+    if (name.endsWith(LNK)) {
+      int lastIndexOf = name.lastIndexOf(LNK);
+      return name.substring(0, lastIndexOf);
+    }
+    return name;
   }
 
   private MetricsGroup createNewMetricsGroup(String scope) {

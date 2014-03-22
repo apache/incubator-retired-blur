@@ -212,6 +212,12 @@ public class IndexImporterTest {
     assertFalse(_fileSystem.exists(_path));
     assertFalse(_fileSystem.exists(_badRowIdsPath));
     assertTrue(_fileSystem.exists(_badIndexPath));
+    validateIndex();
+  }
+
+  private void validateIndex() throws IOException {
+    HdfsDirectory dir = new HdfsDirectory(_configuration, _shardPath);
+    DirectoryReader.open(dir).close();
   }
 
   @Test
@@ -241,6 +247,7 @@ public class IndexImporterTest {
     }
     _indexImporter.cleanupOldDirs();
     assertFalse(fileSystem.exists(_path));
+    validateIndex();
   }
 
   @Test
@@ -253,6 +260,7 @@ public class IndexImporterTest {
     assertFalse(_fileSystem.exists(_path));
     assertFalse(_fileSystem.exists(_badRowIdsPath));
     assertTrue(_fileSystem.exists(_inUsePath));
+    validateIndex();
   }
 
   @Test
@@ -265,6 +273,7 @@ public class IndexImporterTest {
     assertFalse(_fileSystem.exists(_path));
     assertTrue(_fileSystem.exists(_badRowIdsPath));
     assertFalse(_fileSystem.exists(_inUsePath));
+    validateIndex();
   }
 
   private Record genRecord(String recordId) {

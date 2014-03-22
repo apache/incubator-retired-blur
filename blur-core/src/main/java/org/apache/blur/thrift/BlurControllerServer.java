@@ -29,6 +29,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -63,6 +64,7 @@ import org.apache.blur.manager.results.MergerBlurResultIterable;
 import org.apache.blur.manager.stats.MergerTableStats;
 import org.apache.blur.manager.status.MergerQueryStatusSingle;
 import org.apache.blur.server.ControllerServerContext;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TFramedTransport;
@@ -176,6 +178,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private long _maxFetchDelay = 2000;
   private long _maxMutateDelay = 2000;
   private long _maxDefaultDelay = 2000;
+  private long _preconnectTime = TimeUnit.MINUTES.toMillis(1);
+  private long _preconnectDelay = 15000;
 
   private long _defaultParallelCallTimeout = TimeUnit.MINUTES.toMillis(1);
   private WatchChildren _watchForClusters;
@@ -185,6 +189,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private ConcurrentMap<String, WatchChildren> _watchForTableLayoutChanges = new ConcurrentHashMap<String, WatchChildren>();
   private ConcurrentMap<String, WatchChildren> _watchForOnlineShardsPerCluster = new ConcurrentHashMap<String, WatchChildren>();
   private Timer _preconnectTimer;
+  private Timer _tableContextWarmupTimer;
 
   public void init() throws KeeperException, InterruptedException {
     setupZookeeper();
@@ -198,6 +203,34 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       updateLayout(cluster);
     }
     startPreconnectTimer();
+    startTableContextWarmupTimer();
+  }
+
+  private void startTableContextWarmupTimer() {
+    _tableContextWarmupTimer = new Timer("controller tablecontext warmup", true);
+    _tableContextWarmupTimer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        try {
+          tableContextWarmup();
+        } catch (Exception e) {
+          LOG.error("Unknown error while trying to preconnect to shard servers.", e);
+        }
+      }
+    }, getRandomDelay(_preconnectDelay, _preconnectDelay * 4), TimeUnit.MINUTES.toMillis(1));
+  }
+
+  protected void tableContextWarmup() throws BlurException, TException {
+    for (String table : tableList()) {
+      LOG.debug("Warming the tablecontext for table [{0}]", table);
+      TableDescriptor describe = describe(table);
+      TableContext.create(describe);
+    }
+  }
+
+  private long getRandomDelay(long min, long max) {
+    Random random = new Random();
+    return random.nextInt((int) (max - min)) + min;
   }
 
   private void startPreconnectTimer() {
@@ -211,7 +244,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           LOG.error("Unknown error while trying to preconnect to shard servers.", e);
         }
       }
-    }, TimeUnit.SECONDS.toMillis(5), TimeUnit.SECONDS.toMillis(5));
+    }, _preconnectDelay, _preconnectTime);
   }
 
   private void preconnectClients() {
@@ -389,6 +422,10 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       _closed.set(true);
       _running.set(false);
       _executor.shutdownNow();
+      _preconnectTimer.cancel();
+      _preconnectTimer.purge();
+      _tableContextWarmupTimer.cancel();
+      _tableContextWarmupTimer.purge();
       close(_watchForClusters);
       close(_watchForOnlineShardsPerCluster.values());
       close(_watchForOnlineShardsPerClusterExistance.values());
@@ -1175,7 +1212,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       throw new BException("Unknown error during mutation.", e);
     }
   }
-  
+
   @Override
   public void enqueueMutateBatch(List<RowMutation> mutations) throws BlurException, TException {
     try {

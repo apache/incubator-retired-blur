@@ -244,8 +244,9 @@ public class BlurUtil {
         Tracer trace = Trace.trace("thrift recv", Trace.param("method", method.getName()),
             Trace.param("connection", tracingConnectionString));
         User user = UserContext.getUser();
+        boolean notSetUserMethod = isNotSetUserMethod(name);
         try {
-          if (REQUEST_LOG.isInfoEnabled()) {
+          if (REQUEST_LOG.isInfoEnabled() && notSetUserMethod) {
             if (argsStr == null) {
               loggerArgsState = _loggerArgsState.get();
               argsStr = getArgsStr(args, name, loggerArgsState);
@@ -260,7 +261,7 @@ public class BlurUtil {
           trace.done();
           long end = System.nanoTime();
           double ms = (end - start) / 1000000.0;
-          if (RESPONSE_LOG.isInfoEnabled()) {
+          if (RESPONSE_LOG.isInfoEnabled() && notSetUserMethod) {
             if (argsStr == null) {
               if (loggerArgsState == null) {
                 loggerArgsState = _loggerArgsState.get();
@@ -276,6 +277,13 @@ public class BlurUtil {
           Histogram histogram = histogramMap.get(name);
           histogram.update((end - start) / 1000);
         }
+      }
+
+      private boolean isNotSetUserMethod(String name) {
+        if (name.equals("setUser")) {
+          return false;
+        }
+        return true;
       }
 
     };

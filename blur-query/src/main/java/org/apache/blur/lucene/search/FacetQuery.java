@@ -123,8 +123,10 @@ public class FacetQuery extends AbstractWrapperQuery {
       if (scorer == null) {
         return null;
       }
-      Scorer[] scorers = getScorers(context, true, topScorer, acceptDocs);
-      _executor.addScorers(context, scorers);
+      if (!_executor.scorersAlreadyAdded(context)) {
+        Scorer[] scorers = getScorers(context, true, topScorer, acceptDocs);
+        _executor.addScorers(context, scorers);  
+      }
       return new FacetScorer(scorer, _executor, context);
     }
 

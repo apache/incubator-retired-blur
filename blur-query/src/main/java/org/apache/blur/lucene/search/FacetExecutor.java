@@ -39,13 +39,12 @@ import org.apache.blur.trace.Tracer;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.util.OpenBitSet;
 
 public class FacetExecutor {
 
-  private final Log LOG = LogFactory.getLog(FacetExecutor.class);
+  private static final Log LOG = LogFactory.getLog(FacetExecutor.class);
 
   static Comparator<Entry<Object, Info>> COMPARATOR = new Comparator<Entry<Object, Info>>() {
     @Override
@@ -55,6 +54,10 @@ public class FacetExecutor {
       return r2.maxDoc() - r1.maxDoc();
     }
   };
+
+  static class Finished extends IOException {
+    private static final long serialVersionUID = 1L;
+  }
 
   static class SimpleCollector extends Collector {
 
@@ -73,8 +76,7 @@ public class FacetExecutor {
       } else {
         int nextSetBit = _bitSet.nextSetBit(doc);
         if (nextSetBit < 0) {
-          // Move to the end of the scorer.
-          _scorer.advance(DocIdSetIterator.NO_MORE_DOCS);
+          throw new Finished();
         } else {
           int advance = _scorer.advance(nextSetBit);
           if (_bitSet.fastGet(advance)) {
@@ -101,6 +103,28 @@ public class FacetExecutor {
 
   }
 
+  static class SimpleCollectorExitEarly extends SimpleCollector {
+
+    private long _currentCount;
+    private final long _min;
+
+    SimpleCollectorExitEarly(OpenBitSet bitSet, long currentCount, long min) {
+      super(bitSet);
+      _currentCount = currentCount;
+      _min = min;
+    }
+
+    @Override
+    public void collect(int doc) throws IOException {
+      super.collect(doc);
+      _currentCount++;
+      if (_currentCount >= _min) {
+        throw new Finished();
+      }
+    }
+
+  }
+
   static class Info {
     final OpenBitSet _bitSet;
     final Scorer[] _scorers;
@@ -111,7 +135,7 @@ public class FacetExecutor {
 
     @Override
     public String toString() {
-      return "Info scorers length [" + _scorers.length + "] reader[" + _reader + "]";
+      return "Info scorers length [" + _scorers.length + "] reader [" + _reader + "]";
     }
 
     Info(AtomicReaderContext context, Scorer[] scorers, Lock[] locks) {
@@ -125,12 +149,12 @@ public class FacetExecutor {
     }
 
     void process(AtomicLongArray counts, long[] minimumsBeforeReturning) throws IOException {
-      SimpleCollector col = new SimpleCollector(_bitSet);
       if (minimumsBeforeReturning == null) {
         Tracer trace = Trace.trace("processing facet - segment", Trace.param("reader", _readerStr),
             Trace.param("maxDoc", _maxDoc), Trace.param("minimums", "NONE"), Trace.param("scorers", _scorers.length));
         try {
           for (int i = 0; i < _scorers.length; i++) {
+            SimpleCollector col = new SimpleCollector(_bitSet);
             runFacet(counts, col, i);
           }
         } finally {
@@ -148,6 +172,8 @@ public class FacetExecutor {
                 long min = minimumsBeforeReturning[id];
                 long currentCount = counts.get(id);
                 if (currentCount < min) {
+                  LOG.debug("Running facet, current count [{0}] min [{1}]", currentCount, min);
+                  SimpleCollectorExitEarly col = new SimpleCollectorExitEarly(_bitSet, currentCount, min);
                   runFacet(counts, col, id);
                 }
               } finally {
@@ -175,11 +201,16 @@ public class FacetExecutor {
         Tracer traceInner = Trace.trace("processing facet - segment - scorer", Trace.param("scorer", scorer),
             Trace.param("scorer.cost", scorer.cost()));
         try {
+          // new ExitScorer(scorer).score(col);
           scorer.score(col);
+        } catch (Finished e) {
+          // Do nothing, exiting early.
         } finally {
           traceInner.done();
         }
-        counts.addAndGet(i, col._hits);
+        int hits = col._hits;
+        LOG.debug("Facet [{0}] result [{1}]", i, hits);
+        counts.addAndGet(i, hits);
       }
       col._hits = 0;
     }
@@ -221,9 +252,14 @@ public class FacetExecutor {
       _infoMap.put(key, info);
     } else {
       AtomicReader reader = context.reader();
-      LOG.info("Info about reader context [{0}] alread created, existing Info [{1}] current reader [{2}].", context,
+      LOG.warn("Info about reader context [{0}] already created, existing Info [{1}] current reader [{2}].", context,
           info, reader);
     }
+  }
+
+  public boolean scorersAlreadyAdded(AtomicReaderContext context) {
+    Object key = getKey(context);
+    return _infoMap.containsKey(key);
   }
 
   private Object getKey(AtomicReaderContext context) {
@@ -297,4 +333,5 @@ public class FacetExecutor {
       }
     }
   }
+
 }

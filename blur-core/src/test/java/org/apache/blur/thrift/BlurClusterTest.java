@@ -257,6 +257,10 @@ public class BlurClusterTest {
   }
 
   public void loadTable(String tableName) throws BlurException, TException, InterruptedException {
+    loadTable(tableName, 1);
+  }
+
+  public void loadTable(String tableName, int pass) throws BlurException, TException, InterruptedException {
     Iface client = getClient();
     int maxFacetValue = 100;
     List<RowMutation> mutations = new ArrayList<RowMutation>();
@@ -265,7 +269,8 @@ public class BlurClusterTest {
       String rowId = UUID.randomUUID().toString();
       RecordMutation mutation = BlurThriftHelper.newRecordMutation("test", rowId,
           BlurThriftHelper.newColumn("test", "value"),
-          BlurThriftHelper.newColumn("facet", Integer.toString(random.nextInt(maxFacetValue))));
+          BlurThriftHelper.newColumn("facet", Integer.toString(random.nextInt(maxFacetValue))),
+          BlurThriftHelper.newColumn("facetFixed", "test"));
       RowMutation rowMutation = BlurThriftHelper.newRowMutation(tableName, rowId, mutation);
       mutations.add(rowMutation);
     }
@@ -281,7 +286,7 @@ public class BlurClusterTest {
     blurQueryRow.setCacheResult(false);
     BlurResults resultsRow = client.query(tableName, blurQueryRow);
     assertRowResults(resultsRow);
-    assertEquals(numberOfDocs, resultsRow.getTotalResults());
+    assertEquals(numberOfDocs * pass, resultsRow.getTotalResults());
 
     BlurQuery blurQueryRecord = new BlurQuery();
     Query queryRecord = new Query();
@@ -290,7 +295,7 @@ public class BlurClusterTest {
     blurQueryRecord.setQuery(queryRecord);
     BlurResults resultsRecord = client.query(tableName, blurQueryRecord);
     assertRecordResults(resultsRecord);
-    assertEquals(numberOfDocs, resultsRecord.getTotalResults());
+    assertEquals(numberOfDocs * pass, resultsRecord.getTotalResults());
 
     Schema schema = client.schema(tableName);
     assertFalse(schema.getFamilies().isEmpty());
@@ -342,9 +347,45 @@ public class BlurClusterTest {
     // assertRowResults(resultsRow);
     assertEquals(numberOfDocs, resultsRow.getTotalResults());
 
+    List<Long> facetCounts = resultsRow.getFacetCounts();
+    for (Long l : facetCounts) {
+      assertTrue(l >= 50);
+    }
+
     System.out.println(resultsRow.getFacetCounts());
 
     System.out.println();
+
+  }
+
+  @Test
+  public void testQueryWithFacetsWithMins() throws BlurException, TException, IOException, InterruptedException {
+    final String tableName = "testQueryWithFacetsWithMins";
+    createTable(tableName);
+    int pass = 1;
+    loadTable(tableName, pass);
+    Iface client = getClient();
+    BlurQuery blurQueryRow = new BlurQuery();
+    Query queryRow = new Query();
+    // queryRow.setQuery("test.test:value");
+    queryRow.setQuery("*");
+    blurQueryRow.setQuery(queryRow);
+    blurQueryRow.setUseCacheIfPresent(false);
+    blurQueryRow.setCacheResult(false);
+    blurQueryRow.setSelector(new Selector());
+    blurQueryRow.addToFacets(new Facet("test.facetFixed:test", 50));
+
+    BlurResults resultsRow = client.query(tableName, blurQueryRow);
+    // assertRowResults(resultsRow);
+    System.out.println("Pass [" + pass + "]");
+    assertEquals(numberOfDocs * pass, resultsRow.getTotalResults());
+
+    List<Long> facetCounts = resultsRow.getFacetCounts();
+    for (Long l : facetCounts) {
+      System.out.println("Count [" + l + "]");
+      assertTrue(l >= 50);
+    }
+    pass++;
 
   }
 

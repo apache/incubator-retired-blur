@@ -248,7 +248,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   public synchronized void optimize(final int numberOfSegmentsPerShard) throws IOException {
     final String table = _tableContext.getTable();
     final String shard = _shardContext.getShard();
-    if (_optimizeThread == null || _optimizeThread.isAlive()) {
+    if (_optimizeThread != null && _optimizeThread.isAlive()) {
       LOG.info("Already running an optimize on table [{0}] shard [{1}]", table, shard);
       return;
     }

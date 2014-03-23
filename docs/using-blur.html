@@ -86,6 +86,7 @@
 <li><a href="#shell_command_layout">&nbsp;&nbsp;layout</a></li>
 <li><a href="#shell_command_parse">&nbsp;&nbsp;parse</a></li>
 <li><a href="#shell_command_definecolumn">&nbsp;&nbsp;definecolumn</a></li>
+<li><a href="#shell_command_optimize">&nbsp;&nbsp;optimize</a></li>
 </ul></li>
 <li><a href="#shell_data_commands">Data Commands</a>
 <ul class="nav">
@@ -443,6 +444,9 @@ The following rules are used when interacting with the shell:
 <h4 id="shell_command_definecolumn">definecolumn</h4>
 <p>Description: Defines a new column in the named table. '-F' option is for fieldless searching and the '-S' is for sortability.<br/>
 <pre><code class="bash">definecolumn &lt;table name&gt; &lt;family&gt; &lt;column name&gt; &lt;type&gt; [-s &lt;sub column name&gt;] [-F] [-S] [-p name value]*</code></pre></p>
+<h4 id="shell_command_optimize">optimize</h4>
+<p>Description: Optimize the named table.<br/>
+<pre><code class="bash">optimize &lt;tablename&gt; &lt;number of segments per shard&gt;</code></pre></p>
 <h3 id="shell_data_commands">Data Commands</h3>
 <h4 id="shell_command_query">query</h4>
 <p>Description: Query the named table.<br/>

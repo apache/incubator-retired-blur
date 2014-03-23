@@ -399,7 +399,7 @@ public class Main {
   }
 
   public static String[] tableCommands = { "create", "enable", "disable", "remove", "truncate", "describe", "list",
-      "schema", "stats", "layout", "parse", "definecolumn" };
+      "schema", "stats", "layout", "parse", "definecolumn", "optimize" };
   public static String[] dataCommands = { "query", "get", "mutate", "delete", "highlight", "selector", "terms",
       "create-snapshot", "remove-snapshot", "list-snapshots" };
   public static String[] clusterCommands = { "controllers", "shards", "clusterlist", "cluster", "safemodewait", "top" };
@@ -695,6 +695,7 @@ public class Main {
     register(builder, new LogCommand());
     register(builder, new LogResetCommand());
     register(builder, new RemoveShardServerCommand());
+    register(builder, new OptimizeTableCommand());
     commands = builder.build();
   }
 

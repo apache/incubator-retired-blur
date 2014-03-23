@@ -27,6 +27,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.concurrent.locks.Lock;
@@ -148,12 +149,12 @@ public class FacetExecutor {
       _locks = locks;
     }
 
-    void process(AtomicLongArray counts, long[] minimumsBeforeReturning) throws IOException {
+    void process(AtomicLongArray counts, long[] minimumsBeforeReturning, AtomicBoolean running) throws IOException {
       if (minimumsBeforeReturning == null) {
         Tracer trace = Trace.trace("processing facet - segment", Trace.param("reader", _readerStr),
             Trace.param("maxDoc", _maxDoc), Trace.param("minimums", "NONE"), Trace.param("scorers", _scorers.length));
         try {
-          for (int i = 0; i < _scorers.length; i++) {
+          for (int i = 0; i < _scorers.length && running.get(); i++) {
             SimpleCollector col = new SimpleCollector(_bitSet);
             runFacet(counts, col, i);
           }
@@ -164,7 +165,7 @@ public class FacetExecutor {
         BlockingQueue<Integer> ids = new ArrayBlockingQueue<Integer>(_scorers.length + 1);
         try {
           populate(ids);
-          while (!ids.isEmpty()) {
+          while (!ids.isEmpty() && running.get()) {
             int id = ids.take();
             Lock lock = _locks[id];
             if (lock.tryLock()) {
@@ -221,6 +222,7 @@ public class FacetExecutor {
   private final AtomicLongArray _counts;
   private final long[] _minimumsBeforeReturning;
   private final Lock[] _locks;
+  private final AtomicBoolean _running;
   private boolean _processed;
 
   public FacetExecutor(int length) {
@@ -228,6 +230,14 @@ public class FacetExecutor {
   }
 
   public FacetExecutor(int length, long[] minimumsBeforeReturning, AtomicLongArray counts) {
+    this(length, minimumsBeforeReturning, counts, new AtomicBoolean(true));
+  }
+
+  public FacetExecutor(int length, long[] minimumsBeforeReturning) {
+    this(length, minimumsBeforeReturning, new AtomicLongArray(length));
+  }
+
+  public FacetExecutor(int length, long[] minimumsBeforeReturning, AtomicLongArray counts, AtomicBoolean running) {
     _length = length;
     _counts = counts;
     _minimumsBeforeReturning = minimumsBeforeReturning;
@@ -235,10 +245,7 @@ public class FacetExecutor {
     for (int i = 0; i < _length; i++) {
       _locks[i] = new ReentrantReadWriteLock().writeLock();
     }
-  }
-
-  public FacetExecutor(int length, long[] minimumsBeforeReturning) {
-    this(length, minimumsBeforeReturning, new AtomicLongArray(length));
+    _running = running;
   }
 
   public void addScorers(AtomicReaderContext context, Scorer[] scorers) throws IOException {
@@ -302,24 +309,28 @@ public class FacetExecutor {
     Collections.sort(entries, COMPARATOR);
     if (executor == null) {
       for (Entry<Object, Info> e : entries) {
-        e.getValue().process(_counts, _minimumsBeforeReturning);
+        if (_running.get()) {
+          e.getValue().process(_counts, _minimumsBeforeReturning, _running);
+        }
       }
     } else {
       final AtomicInteger finished = new AtomicInteger();
       for (Entry<Object, Info> e : entries) {
-        final Entry<Object, Info> entry = e;
-        executor.submit(new Runnable() {
-          @Override
-          public void run() {
-            try {
-              entry.getValue().process(_counts, _minimumsBeforeReturning);
-            } catch (IOException e) {
-              throw new RuntimeException(e);
-            } finally {
-              finished.incrementAndGet();
+        if (_running.get()) {
+          final Entry<Object, Info> entry = e;
+          executor.submit(new Runnable() {
+            @Override
+            public void run() {
+              try {
+                entry.getValue().process(_counts, _minimumsBeforeReturning, _running);
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              } finally {
+                finished.incrementAndGet();
+              }
             }
-          }
-        });
+          });
+        }
       }
 
       while (finished.get() < entries.size()) {
@@ -333,5 +344,4 @@ public class FacetExecutor {
       }
     }
   }
-
 }

@@ -344,14 +344,7 @@ public class BlurClusterTest {
     }
 
     BlurResults resultsRow = client.query(tableName, blurQueryRow);
-    // assertRowResults(resultsRow);
     assertEquals(numberOfDocs, resultsRow.getTotalResults());
-
-    List<Long> facetCounts = resultsRow.getFacetCounts();
-    for (Long l : facetCounts) {
-      assertTrue(l >= 50);
-    }
-
     System.out.println(resultsRow.getFacetCounts());
 
     System.out.println();

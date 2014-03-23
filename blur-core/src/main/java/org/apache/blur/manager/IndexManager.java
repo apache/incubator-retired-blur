@@ -39,6 +39,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -199,7 +200,7 @@ public class IndexManager {
     if (facetThreadCount < 1) {
       _facetExecutor = null;
     } else {
-      _facetExecutor = Executors.newThreadPool("facet-execution", facetThreadCount);
+      _facetExecutor = Executors.newThreadPool(new SynchronousQueue<Runnable>(), "facet-execution", facetThreadCount);
     }
 
     _statusManager.setStatusCleanupTimerDelay(statusCleanupTimerDelay);
@@ -504,7 +505,7 @@ public class IndexManager {
       FacetExecutor executor = null;
       if (blurQuery.facets != null) {
         long[] facetMinimums = getFacetMinimums(blurQuery.facets);
-        executor = new FacetExecutor(blurQuery.facets.size(), facetMinimums, facetedCounts);
+        executor = new FacetExecutor(blurQuery.facets.size(), facetMinimums, facetedCounts, running);
         facetedQuery = new FacetQuery(userQuery, getFacetQueries(blurQuery, fieldManager, context, rowFilterForSearch,
             recordFilterForSearch), executor);
       } else {
@@ -1049,7 +1050,7 @@ public class IndexManager {
       doMutates(entry.getKey(), entry.getValue());
     }
   }
-  
+
   public void enqueue(List<RowMutation> mutations) throws BlurException, IOException {
     mutations = MutatableAction.reduceMutates(mutations);
     Map<String, List<RowMutation>> map = getMutatesPerTable(mutations);
@@ -1057,7 +1058,7 @@ public class IndexManager {
       doEnqueue(entry.getKey(), entry.getValue());
     }
   }
-  
+
   private void doEnqueue(final String table, List<RowMutation> mutations) throws IOException, BlurException {
     final Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
     Map<String, List<RowMutation>> mutationsByShard = new HashMap<String, List<RowMutation>>();

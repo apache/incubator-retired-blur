@@ -27,7 +27,6 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.apache.blur.MiniCluster;
-import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -68,7 +67,7 @@ public class MasterBasedDistributedLayoutFactoryTest {
 
       }
     });
-    rmr(_zooKeeper, ZookeeperPathConstants.getShardLayoutPath(cluster));
+    rmr(_zooKeeper, "/blur");
   }
 
   @After

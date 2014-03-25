@@ -40,6 +40,7 @@ import org.apache.blur.trace.Tracer;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.util.OpenBitSet;
 
@@ -80,6 +81,9 @@ public class FacetExecutor {
           throw new Finished();
         } else {
           int advance = _scorer.advance(nextSetBit);
+          if (advance == DocIdSetIterator.NO_MORE_DOCS) {
+            throw new Finished();
+          }
           if (_bitSet.fastGet(advance)) {
             _hits++;
           }
@@ -324,6 +328,7 @@ public class FacetExecutor {
               try {
                 entry.getValue().process(_counts, _minimumsBeforeReturning, _running);
               } catch (IOException e) {
+                LOG.error("Unknown error", e);
                 throw new RuntimeException(e);
               } finally {
                 finished.incrementAndGet();

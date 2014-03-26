@@ -22,16 +22,26 @@ blurconsole.tables = (function () {
 			{label:'Table Name', key:'name'},
 			{label:'Row Count', key: 'rowCount'},
 			{label:'Record Count', key: 'recordCount'},
-			{label:'Actions', key: function(){ return ''; }}
+			{label:'Actions', key: function(row) {
+				var actions = '', table = row.name;
+				actions += '<a href="#" class="schemaTrigger btn btn-default" data-name="' + table + '"><i class="glyphicon glyphicon-list-alt"></i> Schema</a> ';
+				actions += '<a href="#" class="disableTrigger btn btn-danger" data-name="' + table + '"><i class="glyphicon glyphicon-cloud-download"></i> Disable</a> ';
+				return actions;
+			}}
 		],
 		disabledDef : [
 			{label:'Table Name', key:'name'},
-			{label:'Actions', key: function(){ return ''; }}
+			{label:'Actions', key: function(row) {
+				var actions = '', table = row.name;
+				actions += '<a href="#" class="enableTrigger btn btn-default" data-name="' + table + '"><i class="glyphicon glyphicon-cloud-upload"></i> Enable</a> ';
+				actions += '<a href="#" class="deleteTrigger btn btn-danger" data-name="' + table + '"><i class="glyphicon glyphicon-trash"></i> Delete</a> ';
+				return actions;
+			}}
 		]
 	},
 	stateMap = { $container : null },
 	jqueryMap = {},
-	setJqueryMap, initModule, unloadModule, updateTableList, buildTabs, waitForData;
+	setJqueryMap, initModule, unloadModule, updateTableList, buildTabs, waitForData, registerPageEvents, unregisterPageEvents;
 
 	setJqueryMap = function() {
 		var $container = stateMap.$container;
@@ -44,6 +54,7 @@ blurconsole.tables = (function () {
 
 	unloadModule = function() {
 		$.gevent.unsubscribe(jqueryMap.$container, 'tables-updated');
+		unregisterPageEvents();
 	};
 
 	initModule = function($container) {
@@ -52,10 +63,7 @@ blurconsole.tables = (function () {
 			setJqueryMap();
 			$.gevent.subscribe(jqueryMap.$container, 'tables-updated', updateTableList);
 			waitForData();
-			jqueryMap.$tableInfoHolder.on('click', 'ul.nav a', function(e) {
-				e.preventDefault();
-				$(this).tab('show');
-			});
+			registerPageEvents();
 		});
 		return true;
 	};
@@ -99,7 +107,7 @@ blurconsole.tables = (function () {
 		$.each(clusters, function(idx, cluster){
 			var clusterPane = $('#' + cluster + '_pane');
 			clusterPane.find('.enabledSection').html(blurconsole.browserUtils.table(configMap.enabledDef, blurconsole.model.tables.getEnabledTables(cluster)));
-			clusterPane.find('.disabledSection').html(blurconsole.browserUtils.table(configMap.enabledDef, blurconsole.model.tables.getDisabledTables(cluster)));
+			clusterPane.find('.disabledSection').html(blurconsole.browserUtils.table(configMap.disabledDef, blurconsole.model.tables.getDisabledTables(cluster)));
 		});
 	};
 
@@ -118,6 +126,62 @@ blurconsole.tables = (function () {
 				disabledSection.html(blurconsole.browserUtils.table(configMap.disabledDef, blurconsole.model.tables.getDisabledTables(cluster)));
 			}
 		});
+	};
+
+	registerPageEvents = function() {
+		// Tab control
+		jqueryMap.$tableInfoHolder.on('click', 'ul.nav a', function(e) {
+			e.preventDefault();
+			$(this).tab('show');
+		});
+
+		// View Schema
+		jqueryMap.$tableInfoHolder.on('click', 'a.schemaTrigger', function() {
+			$.gevent.publish('schema-show', $(this).data('name'));
+			return false;
+		});
+
+		// Disable Table
+		jqueryMap.$tableInfoHolder.on('click', 'a.disableTrigger', function() {
+			blurconsole.model.tables.disableTable($(this).data('name'));
+			return false;
+		});
+
+		// Enable Table
+		jqueryMap.$tableInfoHolder.on('click', 'a.enableTrigger', function() {
+			blurconsole.model.tables.enableTable($(this).data('name'));
+			return false;
+		});
+
+		// Delete Table
+		jqueryMap.$tableInfoHolder.on('click', 'a.deleteTrigger', function() {
+			var tableName = $(this).data('name');
+			console.log('delete:' + tableName);
+			var modalContent = blurconsole.browserUtils.modal('confirmDelete', 'Confirm Table Deletion', 'You are about to delete table ' + tableName + '.  Are you sure you want to do this? If so, do you also want to delete the underlying table data?', [
+				{classes: 'btn-warning tableOnly', label: 'Table Only'},
+				{classes: 'btn-danger tableAndData', label: 'Table And Data'},
+				{classes: 'btn-default cancel', label: 'Cancel', data: {dismiss:'modal'}}
+			], 'medium');
+
+			var modal = $(modalContent).modal().on('shown.bs.modal', function(e){
+				$(e.currentTarget).on('click', '.tableOnly', function() {
+					blurconsole.model.tables.deleteTable(tableName, false);
+					modal.modal('hide');
+				}).on('click', '.tableAndData', function() {
+					blurconsole.model.tables.deleteTable(tableName, true);
+					modal.modal('hide');
+				});
+			}).on('hidden.bs.modal', function(e) {
+				$(e.currentTarget).remove();
+			});
+			return false;
+		});
+	};
+
+	unregisterPageEvents = function() {
+		if (jqueryMap.$tableInfoHolder) {
+			jqueryMap.$tableInfoHolder.off();
+		}
 	};
 
 	return {

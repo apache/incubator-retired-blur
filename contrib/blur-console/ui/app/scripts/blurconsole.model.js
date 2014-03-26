@@ -29,13 +29,13 @@ blurconsole.model = (function() {
 		tables, metrics, nodes, initModule, nodePoller, tablePoller, queryPerformancePoller, queryPoller;
 
 	tables = (function() {
-		var getClusters, getEnabledTables, getDisabledTables, isDataLoaded;
+		var getClusters, getEnabledTables, getDisabledTables, isDataLoaded, disableTable, enableTable, deleteTable, getSchema, findTerms;
 
 		getClusters = function() {
-			if (stateMap.tableNameMap == null) {
+			if (stateMap.tableNameMap === null) {
 				return [];
 			}
-			
+
 			return blurconsole.utils.unique($.map(stateMap.tableNameMap, function(table){
 				return table.cluster;
 			}), true);
@@ -66,14 +66,41 @@ blurconsole.model = (function() {
 		};
 
 		isDataLoaded = function() {
-			return stateMap.tableNameMap != null;
+			return stateMap.tableNameMap !== null;
+		};
+
+		disableTable = function(tableName) {
+			configMap.poller.disableTable(tableName);
+		};
+
+		enableTable = function(tableName) {
+			configMap.poller.enableTable(tableName);
+		};
+
+		deleteTable = function(tableName, includeFiles) {
+			configMap.poller.deleteTable(tableName, includeFiles);
+		};
+
+		getSchema = function(tableName) {
+			return configMap.poller.getSchema(tableName);
+		};
+
+		findTerms = function(table, family, column, startsWith) {
+			configMap.poller.findTerms(table, family, column, startsWith, function(terms) {
+				$.gevent.publish('terms-updated', terms);
+			});
 		};
 
 		return {
 			getClusters : getClusters,
 			getEnabledTables : getEnabledTables,
 			getDisabledTables : getDisabledTables,
-			isDataLoaded : isDataLoaded
+			isDataLoaded : isDataLoaded,
+			disableTable : disableTable,
+			enableTable : enableTable,
+			deleteTable : deleteTable,
+			getSchema : getSchema,
+			findTerms : findTerms
 		};
 	}());
 
@@ -100,7 +127,7 @@ blurconsole.model = (function() {
 		};
 
 		isDataLoaded = function() {
-			return stateMap.nodeMap != null;
+			return stateMap.nodeMap !== null;
 		};
 
 		return {
@@ -271,7 +298,7 @@ blurconsole.model = (function() {
 
 		stateMap.queryPerformance.push(configMap.poller.getQueryPerformance());
 		$.gevent.publish('query-perf-updated');
-		setTimeout(queryPerformancePoller, 1000);
+		setTimeout(queryPerformancePoller, 5000);
 	};
 
 	queryPoller = function() {

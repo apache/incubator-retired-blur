@@ -1,0 +1,20 @@
+.modal .schemaColumnDef {
+	display: none;
+	&.in {
+		display: block;
+	}
+	strong {
+		width: 140px;
+		display: inline-block;
+	}
+}
+
+.modal .schemaColumnTerms {
+	display: none;
+	.termList {
+		margin-top: 5px;
+		.searchTrigger {
+			cursor: pointer;
+		}
+	}
+}

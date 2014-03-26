@@ -13,15 +13,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-$icon-font-path: "/bower_components/sass-bootstrap/fonts/";
+$icon-font-path: "/bower_components/twbs-bootstrap-sass/vendor/assets/fonts/bootstrap/";
 
-@import 'sass-bootstrap/lib/bootstrap';
+@import 'twbs-bootstrap-sass/vendor/assets/stylesheets/bootstrap';
 
 .browsehappy {
     margin: 0.2em 0;
     background: #ccc;
     color: #000;
     padding: 0.2em 0;
+}
+
+.input-group-btn > .btn {
+  height: $input-height-base;
 }
 
 /* Space out content a bit */

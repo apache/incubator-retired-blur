@@ -22,7 +22,8 @@ blurconsole.shell = (function () {
 	'use strict';
 	var configMap = {
 		anchorSchemaMap : {
-			tab : { dashboard : true, tables : true, queries : true, search : true }
+			tab : { dashboard : true, tables : true, queries : true, search : true },
+			_tab : { query: true }
 		},
 		defaultTab : 'dashboard',
 		allTabs : ['dashboard', 'tables', 'queries', 'search']
@@ -144,6 +145,8 @@ blurconsole.shell = (function () {
 		stateMap.$container = $container;
 		setJqueryMap();
 
+		blurconsole.schema.initModule();
+
 		$('.side-nav li').tooltip();
 
 		jqueryMap.$sideNavTabs.click( onClickTab );
@@ -163,5 +166,8 @@ blurconsole.shell = (function () {
 		}
 	};
 
-	return { initModule: initModule };
+	return {
+		initModule: initModule,
+		changeAnchorPart : changeAnchorPart
+	};
 }());

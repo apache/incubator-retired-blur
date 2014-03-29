@@ -55,6 +55,11 @@ public class PagingPrintWriter {
     flush();
   }
 
+  public void print(String s) throws FinishedException {
+    _printWriter.print(s);
+    flush();
+  }
+
   public void println() throws FinishedException {
     _printWriter.println();
     _line++;

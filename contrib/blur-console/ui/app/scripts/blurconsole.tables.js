@@ -24,7 +24,9 @@ blurconsole.tables = (function () {
 	var configMap = {
 		view : 'views/tables.tpl.html',
 		enabledDef : [
-			{label:'Table Name', key:'name'},
+			{label:'Table Name', key: function(row){
+				return row.name + ' <i class="glyphicon glyphicon-exclamation-sign" data-table="' + row.name + '" style="display:none" title="Activity detected"></i>';
+			}},
 			{label:'Row Count', key: 'rowCount'},
 			{label:'Record Count', key: 'recordCount'},
 			{label:'Actions', key: function(row) {
@@ -46,7 +48,7 @@ blurconsole.tables = (function () {
 	},
 	stateMap = { $container : null },
 	jqueryMap = {},
-	setJqueryMap, initModule, unloadModule, updateTableList, buildTabs, waitForData, registerPageEvents, unregisterPageEvents;
+	setJqueryMap, initModule, unloadModule, updateTableList, buildTabs, waitForData, registerPageEvents, unregisterPageEvents, updateActivityIndicators;
 
 	setJqueryMap = function() {
 		var $container = stateMap.$container;
@@ -59,6 +61,7 @@ blurconsole.tables = (function () {
 
 	unloadModule = function() {
 		$.gevent.unsubscribe(jqueryMap.$container, 'tables-updated');
+		$.gevent.unsubscribe(jqueryMap.$container, 'queries-updated');
 		unregisterPageEvents();
 	};
 
@@ -67,6 +70,7 @@ blurconsole.tables = (function () {
 			stateMap.$container = $container;
 			setJqueryMap();
 			$.gevent.subscribe(jqueryMap.$container, 'tables-updated', updateTableList);
+			$.gevent.subscribe(jqueryMap.$container, 'queries-updated', updateActivityIndicators);
 			waitForData();
 			registerPageEvents();
 		});
@@ -90,7 +94,7 @@ blurconsole.tables = (function () {
 		if (needsTabs) {
 			tabMarkup = '<ul class="nav nav-tabs">';
 			tabMarkup += $.map(clusters, function(cluster, idx) {
-				return '<li class="' + (idx === 0 ? 'active' : '') + '"><a href="#' + cluster + '_pane" data-toggle="tab">' + cluster + '</a></li>';
+				return '<li class="' + (idx === 0 ? 'active' : '') + '"><a href="#' + cluster + '_pane" data-toggle="tab">' + cluster + ' <i class="glyphicon glyphicon-exclamation-sign" style="display:none" title="Activity detected"></i></a></li>';
 			}).join('');
 			tabMarkup += '</ul>';
 
@@ -161,7 +165,6 @@ blurconsole.tables = (function () {
 		// Delete Table
 		jqueryMap.$tableInfoHolder.on('click', 'a.deleteTrigger', function() {
 			var tableName = $(this).data('name');
-			console.log('delete:' + tableName);
 			var modalContent = blurconsole.browserUtils.modal('confirmDelete', 'Confirm Table Deletion', 'You are about to delete table ' + tableName + '.  Are you sure you want to do this? If so, do you also want to delete the underlying table data?', [
 				{classes: 'btn-warning tableOnly', label: 'Table Only'},
 				{classes: 'btn-danger tableAndData', label: 'Table And Data'},
@@ -187,6 +190,30 @@ blurconsole.tables = (function () {
 		if (jqueryMap.$tableInfoHolder) {
 			jqueryMap.$tableInfoHolder.off();
 		}
+	};
+
+	updateActivityIndicators = function() {
+		var clusters = blurconsole.model.tables.getClusters();
+
+		$.each(clusters, function(i, cluster) {
+			var clusterHasActivity = false,
+				tables = blurconsole.model.tables.getEnabledTables(cluster);
+
+			$.each(tables, function(i, table){
+				if (blurconsole.model.queries.tableHasActivity(table.name)) {
+					clusterHasActivity = true;
+					$('i[data-table="' + table.name + '"]').show();
+				} else {
+					$('i[data-table="' + table.name + '"]').hide();
+				}
+			});
+
+			if (clusterHasActivity) {
+				$('a[href="#' + cluster +'_pane"] i').show();
+			} else {
+				$('a[href="#' + cluster +'_pane"] i').hide();
+			}
+		});
 	};
 
 	return {

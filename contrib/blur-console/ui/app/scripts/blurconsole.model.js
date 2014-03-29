@@ -31,7 +31,7 @@ blurconsole.model = (function() {
 			queries : {}
 		},
 		isFakeData = true,
-		tables, metrics, nodes, initModule, nodePoller, tablePoller, queryPerformancePoller, queryPoller;
+		tables, metrics, nodes, queries, initModule, nodePoller, tablePoller, queryPerformancePoller, queryPoller;
 
 	tables = (function() {
 		var getClusters, getEnabledTables, getDisabledTables, isDataLoaded, disableTable, enableTable, deleteTable, getSchema, findTerms;
@@ -232,7 +232,7 @@ blurconsole.model = (function() {
 				queryData, mean;
 
 			queryData = stateMap.queryPerformance;
-			
+
 			$.each(queryData, function(idx, increment) {
 				total += increment;
 			});
@@ -275,6 +275,66 @@ blurconsole.model = (function() {
 			getTableChartData : getTableChartData,
 			getQueryLoadChartData : getQueryLoadChartData,
 			getSlowQueryWarnings : getSlowQueryWarnings
+		};
+	}());
+
+	queries = (function() {
+		var queriesForTable, cancelQuery, tableHasActivity, matchesFilter,
+			states = ['running', 'interrupted', 'complete', 'backpressureinterrupted'];
+
+		queriesForTable = function(table, sort, filter) {
+			var queries = [], qSort, sortField, sortDir;
+
+			qSort = (sort || 'startTime~desc').split('~');
+			sortField = qSort[0];
+			sortDir = qSort.length > 1 ? qSort[1] : 'asc';
+
+			$.each(stateMap.queries.queries, function(i, query){
+				if (query.table === table && matchesFilter(query, filter)) {
+					queries.push(query);
+				}
+			});
+
+			queries.sort(function(a, b){
+				if (sortDir === 'asc') {
+					return a[sortField] > b[sortField];
+				} else {
+					return b[sortField] > b[sortField];
+				}
+			});
+
+			return queries;
+		};
+
+		cancelQuery = function(uuid) {
+			configMap.poller.cancelQuery(uuid);
+		};
+
+		tableHasActivity = function(table) {
+			var hasActivity = false;
+			$.each(stateMap.queries.queries, function(i, query){
+				if (query.table === table) {
+					hasActivity = true;
+					return false;
+				}
+			});
+			return hasActivity;
+		};
+
+		matchesFilter = function(queryData, filterText) {
+			var queryStr = queryData.user + '~~~' + queryData.query + '~~~' + states[queryData.state];
+
+			if (filterText === null || filterText === '') {
+				return true;
+			}
+
+			return queryStr.toLowerCase().indexOf(filterText.toLowerCase()) !== -1;
+		};
+
+		return {
+			queriesForTable : queriesForTable,
+			cancelQuery : cancelQuery,
+			tableHasActivity : tableHasActivity
 		};
 	}());
 
@@ -328,6 +388,7 @@ blurconsole.model = (function() {
 		initModule : initModule,
 		tables : tables,
 		metrics: metrics,
-		nodes : nodes
+		nodes : nodes,
+		queries : queries
 	};
 }());

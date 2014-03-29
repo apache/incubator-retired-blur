@@ -20,7 +20,7 @@ under the License.
 /*global blurconsole:false */
 blurconsole.fake = (function() {
 	'use strict';
-	var getTableList, getNodeList, getQueryPerformance, getQueries, disableTable, enableTable, deleteTable, getSchema, findTerms,
+	var getTableList, getNodeList, getQueryPerformance, getQueries, cancelQuery, disableTable, enableTable, deleteTable, getSchema, findTerms,
 		randomNumber, randomBoolean, randomString;
 
 	getTableList = function() {
@@ -70,10 +70,28 @@ blurconsole.fake = (function() {
 
 	getQueries = function() {
 		console.log('getting fake queries');
+		var queries = [];
+
+		for (var i=0; i < randomNumber(50); i++) {
+			queries.push({
+				uuid: randomString(),
+				user: 'user_' + randomNumber(10, true),
+				query: randomString(),
+				table: 'testtable' + randomNumber(5, true),
+				state: randomNumber(3, true),
+				percent: randomNumber(100, true),
+				startTime: new Date()
+			});
+		}
+
 		return {
 			slowQueries : randomNumber(100) % 10 === 0,
-			
+			queries : queries
 		};
+	};
+
+	cancelQuery = function(uuid) {
+		console.log('Fake sending request to cancel query [' + uuid + ']');
 	};
 
 	disableTable = function(table) {
@@ -167,6 +185,7 @@ blurconsole.fake = (function() {
 		getNodeList : getNodeList,
 		getQueryPerformance : getQueryPerformance,
 		getQueries : getQueries,
+		cancelQuery : cancelQuery,
 		disableTable : disableTable,
 		enableTable : enableTable,
 		deleteTable : deleteTable,

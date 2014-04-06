@@ -39,6 +39,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
@@ -63,7 +64,8 @@ public class TestingPagingCollector {
     ProgressRef progressRef = new ProgressRef();
 
     TermQuery query = new TermQuery(new Term("f1", "value"));
-    IterablePaging paging = new IterablePaging(new AtomicBoolean(true), searcher, query, 100, null, null, false, null);
+    IterablePaging paging = new IterablePaging(new AtomicBoolean(true), searcher, query, 100, null, null, false, null,
+        new DeepPagingCache());
     IterablePaging itPaging = paging.skipTo(90).gather(20).totalHits(totalHitsRef).progress(progressRef);
     BlurIterator<ScoreDoc, BlurException> iterator = itPaging.iterator();
     int position = 90;
@@ -83,6 +85,43 @@ public class TestingPagingCollector {
   }
 
   @Test
+  public void testSimpleSearchPagingThroughAll() throws Exception {
+    int length = 13245;
+    IndexReader reader = getReaderFlatScore(length);
+    IndexSearcher searcher = new IndexSearcher(reader);
+
+    TotalHitsRef totalHitsRef = new TotalHitsRef();
+    ProgressRef progressRef = new ProgressRef();
+
+    long start = System.nanoTime();
+    int position = 0;
+    DeepPagingCache deepPagingCache = new DeepPagingCache(10);
+    OUTER: while (true) {
+      MatchAllDocsQuery query = new MatchAllDocsQuery();
+      IterablePaging paging = new IterablePaging(new AtomicBoolean(true), searcher, query, 100, null, null, false,
+          null, deepPagingCache);
+      IterablePaging itPaging = paging.skipTo(position).totalHits(totalHitsRef).progress(progressRef);
+      BlurIterator<ScoreDoc, BlurException> iterator = itPaging.iterator();
+
+      while (iterator.hasNext()) {
+        ScoreDoc sd = iterator.next();
+        assertEquals(position, progressRef.currentHitPosition());
+        System.out.println("time [" + progressRef.queryTime() + "] " + "total hits [" + totalHitsRef.totalHits() + "] "
+            + "searches [" + progressRef.searchesPerformed() + "] " + "position [" + progressRef.currentHitPosition()
+            + "] " + "doc id [" + sd.doc + "] " + "score [" + sd.score + "]");
+        position++;
+        if (position % 100 == 0) {
+          continue OUTER;
+        }
+      }
+      break OUTER;
+    }
+    long end = System.nanoTime();
+    assertEquals(length, position);
+    System.out.println("Took [" + (end - start) / 1000000.0 + " ms]");
+  }
+
+  @Test
   public void testSimpleSearchPagingWithSorting() throws Exception {
     IndexReader reader = getReaderFlatScore(13245);
     IndexSearcher searcher = new IndexSearcher(reader);
@@ -93,7 +132,8 @@ public class TestingPagingCollector {
     printHeapSize();
     TermQuery query = new TermQuery(new Term("f1", "value"));
     Sort sort = new Sort(new SortField("index", Type.INT, true));
-    IterablePaging paging = new IterablePaging(new AtomicBoolean(true), searcher, query, 100, null, null, false, sort);
+    IterablePaging paging = new IterablePaging(new AtomicBoolean(true), searcher, query, 100, null, null, false, sort,
+        new DeepPagingCache());
     IterablePaging itPaging = paging.skipTo(90).gather(20).totalHits(totalHitsRef).progress(progressRef);
     BlurIterator<ScoreDoc, BlurException> iterator = itPaging.iterator();
     int position = 90;

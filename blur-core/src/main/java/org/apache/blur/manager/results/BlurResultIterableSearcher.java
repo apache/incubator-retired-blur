@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.blur.lucene.search.DeepPagingCache;
 import org.apache.blur.lucene.search.IterablePaging;
 import org.apache.blur.lucene.search.IterablePaging.ProgressRef;
 import org.apache.blur.lucene.search.IterablePaging.TotalHitsRef;
@@ -58,7 +59,7 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
 
   public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard,
       IndexSearcherClosable searcher, Selector selector, boolean closeSearcher, boolean runSlow, int fetchCount,
-      int maxHeapPerRowFetch, TableContext context, Sort sort) throws BlurException {
+      int maxHeapPerRowFetch, TableContext context, Sort sort, DeepPagingCache deepPagingCache) throws BlurException {
     _sort = sort;
     _running = running;
     _query = query;
@@ -68,7 +69,7 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
     _runSlow = runSlow;
     _fetchCount = fetchCount;
     _iterablePaging = new IterablePaging(_running, _searcher, _query, _fetchCount, _totalHitsRef, _progressRef,
-        _runSlow, _sort);
+        _runSlow, _sort, deepPagingCache);
     _iteratorConverter = new IteratorConverter<ScoreDoc, BlurResult, BlurException>(_iterablePaging.iterator(),
         new Converter<ScoreDoc, BlurResult, BlurException>() {
           @Override

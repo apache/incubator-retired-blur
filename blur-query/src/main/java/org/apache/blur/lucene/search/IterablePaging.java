@@ -22,6 +22,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.index.ExitableReader.ExitingReaderException;
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
+import org.apache.blur.lucene.search.DeepPagingCache.DeepPageContainer;
+import org.apache.blur.lucene.search.DeepPagingCache.DeepPageKey;
 import org.apache.blur.lucene.search.StopExecutionCollector.StopExecutionCollectorException;
 import org.apache.blur.thrift.BException;
 import org.apache.blur.thrift.generated.BlurException;
@@ -44,12 +48,18 @@ import org.apache.lucene.search.TopScoreDocCollector;
  */
 public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
 
+  private static final Log LOG = LogFactory.getLog(IterablePaging.class);
+
+  private static final boolean DISABLED = true;
+
+  private final DeepPagingCache _deepPagingCache;
   private final IndexSearcher _searcher;
   private final Query _query;
   private final AtomicBoolean _running;
   private final int _numHitsToCollect;
   private final boolean _runSlow;
   private final Sort _sort;
+  private final DeepPageKey _key;
 
   private TotalHitsRef _totalHitsRef;
   private ProgressRef _progressRef;
@@ -57,7 +67,9 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
   private int gather = -1;
 
   public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query, int numHitsToCollect,
-      TotalHitsRef totalHitsRef, ProgressRef progressRef, boolean runSlow, Sort sort) throws BlurException {
+      TotalHitsRef totalHitsRef, ProgressRef progressRef, boolean runSlow, Sort sort, DeepPagingCache deepPagingCache)
+      throws BlurException {
+    _deepPagingCache = deepPagingCache;
     _running = running;
     _sort = sort;
     try {
@@ -70,6 +82,7 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
     _totalHitsRef = totalHitsRef == null ? new TotalHitsRef() : totalHitsRef;
     _progressRef = progressRef == null ? new ProgressRef() : progressRef;
     _runSlow = runSlow;
+    _key = new DeepPageKey(_query, _sort, _searcher.getIndexReader().getCombinedCoreAndDeletesKey());
   }
 
   public static class TotalHitsRef {
@@ -171,7 +184,32 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
    */
   @Override
   public BlurIterator<ScoreDoc, BlurException> iterator() throws BlurException {
-    return skipHits(new PagingIterator());
+    PagingIterator iterator = new PagingIterator();
+    DeepPageContainer deepPageContainer = getDeepPageContainer(skipTo);
+    if (deepPageContainer == null) {
+      deepPageContainer = new DeepPageContainer();
+    }
+    iterator.after = deepPageContainer.scoreDoc;
+    iterator.counter = deepPageContainer.position;
+    iterator.search();
+    _progressRef.skipTo.set(skipTo);
+    if (skipTo - deepPageContainer.position != 0) {
+      LOG.warn("Skipping [{0}], Key [{1}] was missing, having to execute extra searches.", skipTo
+          - deepPageContainer.position, _key);
+    }
+    for (int i = deepPageContainer.position; i < skipTo && iterator.hasNext(); i++) {
+      // eats the hits, and moves the iterator to the desired skip to position.
+      _progressRef.currentHitPosition.set(i);
+      iterator.next();
+    }
+    return iterator;
+  }
+
+  private DeepPageContainer getDeepPageContainer(int skipTo) {
+    if (DISABLED) {
+      return null;
+    }
+    return _deepPagingCache.lookup(_key, skipTo);
   }
 
   class PagingIterator implements BlurIterator<ScoreDoc, BlurException> {
@@ -180,11 +218,7 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
     private int counter = 0;
     private int offset = 0;
     private int endPosition = gather == -1 ? Integer.MAX_VALUE : skipTo + gather;
-    private ScoreDoc lastScoreDoc;
-
-    PagingIterator() throws BlurException {
-      search();
-    }
+    ScoreDoc after;
 
     void search() throws BlurException {
       long s = System.currentTimeMillis();
@@ -192,10 +226,9 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
       try {
         TopDocsCollector<?> collector;
         if (_sort == null) {
-          collector = TopScoreDocCollector.create(_numHitsToCollect, lastScoreDoc, true);
+          collector = TopScoreDocCollector.create(_numHitsToCollect, after, true);
         } else {
-          collector = TopFieldCollector.create(_sort, _numHitsToCollect, (FieldDoc) lastScoreDoc, true, true, false,
-              true);
+          collector = TopFieldCollector.create(_sort, _numHitsToCollect, (FieldDoc) after, true, true, false, true);
         }
         Collector col = new StopExecutionCollector(collector, _running);
         if (_runSlow) {
@@ -213,12 +246,23 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
         throw new BException("Unknown error during search call", e);
       }
       if (scoreDocs.length > 0) {
-        lastScoreDoc = scoreDocs[scoreDocs.length - 1];
+        after = scoreDocs[scoreDocs.length - 1];
+        addLastScoreDoc();
       } else {
-        lastScoreDoc = null;
+        after = null;
       }
       long e = System.currentTimeMillis();
       _progressRef.queryTime.addAndGet(e - s);
+    }
+
+    private void addLastScoreDoc() {
+      if (DISABLED) {
+        return;
+      }
+      DeepPageContainer deepPageContainer = new DeepPageContainer();
+      deepPageContainer.scoreDoc = after;
+      deepPageContainer.position = counter + scoreDocs.length;
+      _deepPagingCache.add(_key, deepPageContainer);
     }
 
     @Override
@@ -240,16 +284,6 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
     private boolean isCurrentCollectorExhausted() {
       return offset < scoreDocs.length ? false : true;
     }
-  }
-
-  private BlurIterator<ScoreDoc, BlurException> skipHits(PagingIterator iterator) throws BlurException {
-    _progressRef.skipTo.set(skipTo);
-    for (int i = 0; i < skipTo && iterator.hasNext(); i++) {
-      // eats the hits, and moves the iterator to the desired skip to position.
-      _progressRef.currentHitPosition.set(i);
-      iterator.next();
-    }
-    return iterator;
   }
 
 }

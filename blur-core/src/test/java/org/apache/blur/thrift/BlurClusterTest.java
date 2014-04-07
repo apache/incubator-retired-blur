@@ -325,6 +325,44 @@ public class BlurClusterTest {
 
   }
 
+//  @Test
+  public void testQueryWithSelectorForDeepPagingPerformance() throws BlurException, TException, IOException,
+      InterruptedException {
+    final String tableName = "testQueryWithSelectorForDeepPagingPerformance";
+    createTable(tableName);
+    int passes = 10;
+    for (int i = 1; i <= passes; i++) {
+      loadTable(tableName, i);
+    }
+    Iface client = getClient();
+    BlurQuery blurQueryRow = new BlurQuery();
+    Query queryRow = new Query();
+    queryRow.setQuery("test.test:value");
+    blurQueryRow.setQuery(queryRow);
+    blurQueryRow.setUseCacheIfPresent(false);
+    blurQueryRow.setCacheResult(false);
+    blurQueryRow.setSelector(new Selector());
+
+    long start = System.nanoTime();
+    int position = 0;
+    do {
+      blurQueryRow.setStart(position);
+      long s = System.nanoTime();
+      BlurResults resultsRow = client.query(tableName, blurQueryRow);
+      long e = System.nanoTime();
+      System.out.println("RUNNING QUERY.... starting at [" + position + "] took [" + (e - s) / 1000000.0 + " ms]");
+      // assertRowResults(resultsRow);
+      assertEquals(numberOfDocs * passes, resultsRow.getTotalResults());
+
+      for (BlurResult blurResult : resultsRow.getResults()) {
+        System.out.println(blurResult);
+        position++;
+      }
+    } while (position < numberOfDocs * passes);
+    long end = System.nanoTime();
+    System.out.println((end - start) / 1000000.0);
+  }
+
   @Test
   public void testQueryWithFacets() throws BlurException, TException, IOException, InterruptedException {
     final String tableName = "testQueryWithFacets";

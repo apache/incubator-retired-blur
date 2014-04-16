@@ -16,6 +16,7 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
+*/
 /*jshint laxbreak: true */
 /*global blurconsole:false */
 blurconsole.schema = (function () {
@@ -155,7 +156,7 @@ blurconsole.schema = (function () {
 		var terms = Array.prototype.slice.call(arguments, 1);
 		jqueryMap.termList.html('');
 		$.each(terms, function(i, term){
-			jqueryMap.termList.append('<li class="list-group-item">' + term + ' <span class="badge badge-success searchTrigger" title="Search for this value" data-value="' + term + '"><i class="glyphicon glyphicon-search"></i></span></li>');
+			jqueryMap.termList.append('<li class="list-group-item">' + term + ' <span class="badge badge-success searchTrigger" title="Search for this value" data-value="' + term + '" data-table="' + stateMap.table + '"><i class="glyphicon glyphicon-search"></i></span></li>');
 		});
 	};
 
@@ -163,9 +164,11 @@ blurconsole.schema = (function () {
 		blurconsole.shell.changeAnchorPart({
 			tab: 'search',
 			_tab: {
-				query: stateMap.termFamily + '.' + stateMap.termColumn + ':' + $(this).data('value')
+				query: encodeURIComponent(stateMap.termFamily + '.' + stateMap.termColumn + ':' + $(this).data('value')),
+				table: $(this).data('table')
 			}
 		});
+		jqueryMap.modal.modal('hide');
 	};
 
 	initModule = function() {

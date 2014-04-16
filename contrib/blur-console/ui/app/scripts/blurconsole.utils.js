@@ -20,7 +20,7 @@ under the License.
 /*global blurconsole:false */
 blurconsole.utils = (function(){
 	'use strict';
-	var inject, unique, equals;
+	var inject, unique, equals, findFamilies;
 
 	inject = function(collection, initial, block) {
 		if (collection === null || collection.length === 0) {
@@ -55,10 +55,15 @@ blurconsole.utils = (function(){
 		return JSON.stringify(obj1) === JSON.stringify(obj2);
 	};
 
+	findFamilies = function(query) {
+		// Determine regex to find column families in lucene query
+	};
+
 	return {
 		inject: inject,
 		reduce: inject,
 		unique: unique,
-		equals: equals
+		equals: equals,
+		findFamilies: findFamilies
 	};
 }());

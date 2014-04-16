@@ -31,10 +31,10 @@ blurconsole.model = (function() {
 			queries : {}
 		},
 		isFakeData = true,
-		tables, metrics, nodes, queries, initModule, nodePoller, tablePoller, queryPerformancePoller, queryPoller;
+		tables, metrics, nodes, queries, search, initModule, nodePoller, tablePoller, queryPerformancePoller, queryPoller;
 
 	tables = (function() {
-		var getClusters, getEnabledTables, getDisabledTables, isDataLoaded, disableTable, enableTable, deleteTable, getSchema, findTerms;
+		var getClusters, getEnabledTables, getDisabledTables, isDataLoaded, disableTable, enableTable, deleteTable, getSchema, findTerms, getAllEnabledTables;
 
 		getClusters = function() {
 			if (stateMap.tableNameMap === null) {
@@ -68,6 +68,16 @@ blurconsole.model = (function() {
 			});
 
 			return data;
+		};
+
+		getAllEnabledTables = function() {
+			var tableMap = {};
+
+			$.each(getClusters(), function(c, cluster){
+				tableMap[cluster] = getEnabledTables(cluster);
+			});
+
+			return tableMap;
 		};
 
 		isDataLoaded = function() {
@@ -105,7 +115,8 @@ blurconsole.model = (function() {
 			enableTable : enableTable,
 			deleteTable : deleteTable,
 			getSchema : getSchema,
-			findTerms : findTerms
+			findTerms : findTerms,
+			getAllEnabledTables : getAllEnabledTables
 		};
 	}());
 
@@ -335,6 +346,68 @@ blurconsole.model = (function() {
 			queriesForTable : queriesForTable,
 			cancelQuery : cancelQuery,
 			tableHasActivity : tableHasActivity
+		};
+	}());
+
+	search = (function() {
+		var results = {}, families = {}, currentQuery, currentTable, currentArgs = {start: 0, fetch: 10, rowRecordOption: 'rowrow', families: null},
+			runSearch, getResults, getFamilies, loadMoreResults,
+			sendSearch, processResults;
+
+		runSearch = function( query, table, searchArgs ) {
+			currentQuery = query;
+			currentTable = table;
+			currentArgs = $.extend(currentArgs, searchArgs);
+			sendSearch();
+		};
+
+		getResults = function() {
+			return results;
+		};
+
+		getFamilies = function() {
+			return families;
+		};
+
+		loadMoreResults = function(family, start, fetch) {
+			currentArgs.start = start;
+			currentArgs.fetch = fetch;
+			currentArgs.families = [family];
+			sendSearch();
+		};
+
+		sendSearch = function() {
+			configMap.poller.sendSearch(currentQuery, currentTable, currentArgs, processResults);
+		};
+
+		processResults = function(data) {
+			var dataFamilies, dataResults, tmpFamilies = {};
+
+			dataFamilies = data.families;
+			dataResults = data.results;
+
+			if (dataFamilies !== null) {
+				$.each(dataFamilies, function(f, family){
+					tmpFamilies[family] = false;
+				});
+			}
+
+			if (dataResults !== null) {
+				$.each(dataResults, function(family, resultList){
+					tmpFamilies[family] = true;
+					var tmpList = results[family] || [];
+					results[family] = tmpList.concat(resultList);
+				});
+			}
+			families = tmpFamilies;
+			$.gevent.publish('results-updated');
+		};
+
+		return {
+			runSearch: runSearch,
+			getResults: getResults,
+			getFamilies: getFamilies,
+			loadMoreResults: loadMoreResults
 		};
 	}());
 

@@ -28,7 +28,7 @@ blurconsole.shell = (function () {
 	var configMap = {
 		anchorSchemaMap : {
 			tab : { dashboard : true, tables : true, queries : true, search : true },
-			_tab : { query: true }
+			_tab : { query: true, table: true }
 		},
 		defaultTab : 'dashboard',
 		allTabs : ['dashboard', 'tables', 'queries', 'search']

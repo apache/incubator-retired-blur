@@ -81,17 +81,23 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
     try {
       String existingStoragePath = findExistingStoragePath(table);
       if (existingStoragePath == null) {
+        LOG.info("Existing storage path NOT FOUND for table [{0}]", table, existingStoragePath);
         return null;
       }
       Stat stat = _zooKeeper.exists(existingStoragePath, false);
       if (stat != null) {
+        LOG.info("Existing storage path for table [{0}] is [{1}]", table, existingStoragePath);
         LOG.info("Existing layout found for table [{0}]", table);
         byte[] data = _zooKeeper.getData(existingStoragePath, false, stat);
         if (data != null) {
           return fromBytes(data);
+        } else {
+          return null;
         }
+      } else {
+        LOG.info("Existing storage path NOT FOUND for table [{0}] path [{1}]", table, existingStoragePath);
+        return null;
       }
-      return null;
     } catch (Exception e) {
       LOG.error("Unknown error during layout read.", e);
       throw new RuntimeException(e);
@@ -101,6 +107,7 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
   @Override
   public DistributedLayout createDistributedLayout(String table, List<String> shardList, List<String> shardServerList,
       List<String> offlineShardServers) {
+    LOG.info("Creating layout for table [{0}]", table);
     MasterBasedDistributedLayout layout = _cachedLayoutMap.get(table);
     List<String> onlineShardServerList = getOnlineShardServerList(shardServerList, offlineShardServers);
     if (layout == null || layout.isOutOfDate(shardList, onlineShardServerList)) {
@@ -109,6 +116,7 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
       _cachedLayoutMap.put(table, newLayout);
       return newLayout;
     } else {
+      LOG.info("Layout for table [{0}] is up to date.", table);
       return layout;
     }
   }
@@ -205,6 +213,9 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
           }
         }
       }
+    }
+    if (path == null) {
+      return null;
     }
     return tableStoragePath + "/" + path;
   }
@@ -346,6 +357,11 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
       }
       return false;
     }
+  }
+  
+  @Override
+  public Map<String,?> getLayoutCache() {
+    return _cachedLayoutMap;
   }
 
 }

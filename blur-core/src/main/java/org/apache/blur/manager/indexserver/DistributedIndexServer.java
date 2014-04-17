@@ -219,6 +219,12 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
       public DistributedLayout readCurrentLayout(String table) {
         throw new RuntimeException("Not implemented");
       }
+
+      @Override
+      public Map<String, ?> getLayoutCache() {
+        throw new RuntimeException("Not implemented");
+      }
+
     };
   }
 
@@ -445,6 +451,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
 
   private void cleanup() {
     clearMapOfOldTables(_layout);
+    clearMapOfOldTables(_distributedLayoutFactory.getLayoutCache());
     boolean closed = false;
     Map<String, Map<String, BlurIndex>> oldIndexesThatNeedToBeClosed = clearMapOfOldTables(_indexes);
     for (String table : oldIndexesThatNeedToBeClosed.keySet()) {

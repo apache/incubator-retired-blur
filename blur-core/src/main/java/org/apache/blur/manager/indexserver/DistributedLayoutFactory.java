@@ -17,6 +17,7 @@
 package org.apache.blur.manager.indexserver;
 
 import java.util.List;
+import java.util.Map;
 
 public interface DistributedLayoutFactory {
 
@@ -25,4 +26,6 @@ public interface DistributedLayoutFactory {
   
   DistributedLayout readCurrentLayout(String table);
 
+  Map<String, ?> getLayoutCache();
+  
 }

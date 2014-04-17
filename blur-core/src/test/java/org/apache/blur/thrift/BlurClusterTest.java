@@ -325,7 +325,7 @@ public class BlurClusterTest {
 
   }
 
-//  @Test
+  // @Test
   public void testQueryWithSelectorForDeepPagingPerformance() throws BlurException, TException, IOException,
       InterruptedException {
     final String tableName = "testQueryWithSelectorForDeepPagingPerformance";
@@ -661,6 +661,26 @@ public class BlurClusterTest {
     List<String> list = new ArrayList<String>();
     list.add("value");
     assertEquals(list, terms);
+  }
+
+  @Test
+  public void testTrucateRaceCondition() throws BlurException, TException, IOException, InterruptedException {
+    String tableName = "testTrucateRaceCondition";
+    createTable(tableName);
+    loadTable(tableName);
+    List<Connection> connections = BlurClientManager.getConnections(miniCluster.getControllerConnectionStr());
+    Iface client1 = BlurClient.getClient(connections.get(0));
+    Iface client2 = BlurClient.getClient(connections.get(1));
+    TableDescriptor describe = client1.describe(tableName);
+    client1.disableTable(tableName);
+    client1.removeTable(tableName, true);
+    client1.createTable(describe);
+
+    String rowId = UUID.randomUUID().toString();
+    RecordMutation mutation = BlurThriftHelper.newRecordMutation("test", rowId,
+        BlurThriftHelper.newColumn("test", "value"), BlurThriftHelper.newColumn("facetFixed", "test"));
+    RowMutation rowMutation = BlurThriftHelper.newRowMutation(tableName, rowId, mutation);
+    client2.mutate(rowMutation);
   }
 
   private void assertRowResults(BlurResults results) {

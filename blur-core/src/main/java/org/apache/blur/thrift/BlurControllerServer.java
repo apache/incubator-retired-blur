@@ -190,6 +190,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private ConcurrentMap<String, WatchChildren> _watchForOnlineShardsPerCluster = new ConcurrentHashMap<String, WatchChildren>();
   private Timer _preconnectTimer;
   private Timer _tableContextWarmupTimer;
+  private long _tableLayoutTimeoutNanos = TimeUnit.SECONDS.toNanos(30);
 
   public void init() throws KeeperException, InterruptedException {
     setupZookeeper();
@@ -525,7 +526,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           }
           if (!validResults(results, shardCount, blurQuery)) {
             BlurClientManager.sleep(_defaultDelay, _maxDefaultDelay, retries, _maxDefaultRetries);
-            Map<String, String> map = _shardServerLayout.get().get(table);
+            Map<String, String> map = getTableLayout(table);
             LOG.info("Current layout for table [{0}] is [{1}]", table, map);
             continue OUTER;
           }
@@ -874,11 +875,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
     try {
       checkTable(table);
-      Map<String, Map<String, String>> layout = _shardServerLayout.get();
-      Map<String, String> tableLayout = layout.get(table);
-      if (tableLayout == null) {
-        return new HashMap<String, String>();
-      }
+      Map<String, String> tableLayout = getTableLayout(table);
       return tableLayout;
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get shard server layout [{0}]", e, table);
@@ -1079,7 +1076,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       String table = mutation.getTable();
 
       int numberOfShards = getShardCount(table);
-      Map<String, String> tableLayout = _shardServerLayout.get().get(table);
+      Map<String, String> tableLayout = getTableLayout(table);
       if (tableLayout.size() != numberOfShards) {
         throw new BException("Cannot update data while shard is missing");
       }
@@ -1111,7 +1108,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       String table = mutation.getTable();
 
       int numberOfShards = getShardCount(table);
-      Map<String, String> tableLayout = _shardServerLayout.get().get(table);
+      Map<String, String> tableLayout = getTableLayout(table);
       if (tableLayout.size() != numberOfShards) {
         throw new BException("Cannot update data while shard is missing");
       }
@@ -1131,6 +1128,25 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         throw (BlurException) e;
       }
       throw new BException("Unknown error during enqueue mutation of [{0}]", e, mutation);
+    }
+  }
+
+  private Map<String, String> getTableLayout(String table) throws BlurException, TException {
+    final long s = System.nanoTime();
+
+    // wait for up to limit for value to not be null.
+    while (true) {
+      if (s + _tableLayoutTimeoutNanos < System.nanoTime()) {
+        throw new BException("Could not get table [{0}] layout.", table);
+      }
+      Map<String, Map<String, String>> map = _shardServerLayout.get();
+      Map<String, String> layout = map.get(table);
+      if (layout != null) {
+        return layout;
+      } else {
+        String cluster = getCluster(table);
+        updateLayout(cluster);
+      }
     }
   }
 
@@ -1159,7 +1175,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         String table = mutation.getTable();
 
         int numberOfShards = getShardCount(table);
-        Map<String, String> tableLayout = _shardServerLayout.get().get(table);
+        Map<String, String> tableLayout = getTableLayout(table);
         if (tableLayout == null || tableLayout.size() != numberOfShards) {
           throw new BException("Cannot update data while shard is missing");
         }
@@ -1228,7 +1244,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         String table = mutation.getTable();
 
         int numberOfShards = getShardCount(table);
-        Map<String, String> tableLayout = _shardServerLayout.get().get(table);
+        Map<String, String> tableLayout = getTableLayout(table);
         if (tableLayout == null || tableLayout.size() != numberOfShards) {
           throw new BException("Cannot update data while shard is missing");
         }

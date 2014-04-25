@@ -2,6 +2,7 @@
 .project
 .settings
 .idea
+.codio
 *.ipr
 *.iws
 *.iml

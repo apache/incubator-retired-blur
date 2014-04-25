@@ -20,7 +20,7 @@ under the License.
 /*global blurconsole:false */
 blurconsole.fake = (function() {
 	'use strict';
-	var getTableList, getNodeList, getQueryPerformance, getQueries, cancelQuery, disableTable, enableTable, deleteTable, getSchema, findTerms,
+	var getTableList, getNodeList, getQueryPerformance, getQueries, cancelQuery, disableTable, enableTable, deleteTable, getSchema, findTerms, sendSearch,
 		randomNumber, randomBoolean, randomString;
 
 	getTableList = function() {
@@ -146,14 +146,18 @@ blurconsole.fake = (function() {
 			terms.push(randStr);
 		}
 
-		console.log(terms.length);
-
 		terms = terms.sort(function (a, b) {
 			return a.toLowerCase().localeCompare(b.toLowerCase());
 		});
 
 		callback(terms);
 	};
+  
+  sendSearch = function(query, table, args, callback) {
+    console.log('sending fake search [' + query + '] on table [' + table + ']');
+    
+    
+  };
 
 	randomNumber = function(max, includeZero) {
 		var random = Math.random()*max;
@@ -190,6 +194,7 @@ blurconsole.fake = (function() {
 		enableTable : enableTable,
 		deleteTable : deleteTable,
 		getSchema : getSchema,
-		findTerms : findTerms
+		findTerms : findTerms,
+    sendSearch : sendSearch
 	};
 }());

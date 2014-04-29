@@ -33,6 +33,11 @@ under the License.
 	<description>The Blur util module contains mostly utility classes used throughout the Blur project.</description>
 
 	<dependencies>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>${commons-logging.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>org.apache.zookeeper</groupId>
 			<artifactId>zookeeper</artifactId>
@@ -200,37 +205,4 @@ under the License.
 			</plugins>
 		</pluginManagement>
 	</build>
-	
-	<profiles>
-		<profile>
-			<id>hadoop-1x</id>
-			<activation>
-				<property>
-					<name>hadoop1</name>
-				</property>
-			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>org.apache.hadoop</groupId>
-					<artifactId>hadoop-core</artifactId>
-					<version>${hadoop.version}</version>
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
-			<id>hadoop-2.2</id>
-			<activation>
-				<property>
-					<name>hadoop2</name>
-				</property>
-			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>org.apache.hadoop</groupId>
-					<artifactId>hadoop-client</artifactId>
-					<version>${hadoop.version}</version>
-				</dependency>
-			</dependencies>
-		</profile>
-	</profiles>
 </project>

@@ -160,6 +160,11 @@ under the License.
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-core</artifactId>
+					<version>${hadoop.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hadoop</groupId>
 					<artifactId>hadoop-test</artifactId>
 					<version>${hadoop.version}</version>
 					<scope>test</scope>

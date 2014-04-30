@@ -28,6 +28,7 @@ under the License.
 	</parent>
 	<groupId>org.apache.blur</groupId>
 	<artifactId>blur-core</artifactId>
+	<version>${projectVersion}</version>
 	<packaging>jar</packaging>
 	<name>Blur Core</name>
 	<description>The Blur core module contains the majority of the server logic.</description>
@@ -166,6 +167,9 @@ under the License.
 					<name>hadoop1</name>
 				</property>
 			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop1</projectVersion>
+			</properties>
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
@@ -182,6 +186,9 @@ under the License.
 					<name>hadoop2</name>
 				</property>
 			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop2</projectVersion>
+			</properties>
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>

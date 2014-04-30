@@ -28,6 +28,7 @@ under the License.
 	</parent>
 	<groupId>org.apache.blur</groupId>
 	<artifactId>blur-mapred</artifactId>
+	<version>${projectVersion}</version>
 	<packaging>jar</packaging>
 	<name>Blur Map Reduce</name>
 	<description>The Blur Map Reduce module contains the BlurOutputFormat as well as a CSVLoader
@@ -148,6 +149,9 @@ under the License.
 					<name>hadoop1</name>
 				</property>
 			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop1</projectVersion>
+			</properties>
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
@@ -171,6 +175,9 @@ under the License.
 					<name>hadoop2</name>
 				</property>
 			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop2</projectVersion>
+			</properties>
 			<dependencies>
 				<dependency>
 				      <groupId>org.apache.mrunit</groupId>

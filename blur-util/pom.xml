@@ -28,6 +28,7 @@ under the License.
 	</parent>
 	<groupId>org.apache.blur</groupId>
 	<artifactId>blur-util</artifactId>
+	<version>${projectVersion}</version>
 	<packaging>jar</packaging>
 	<name>Blur Util</name>
 	<description>The Blur util module contains mostly utility classes used throughout the Blur project.</description>
@@ -205,4 +206,28 @@ under the License.
 			</plugins>
 		</pluginManagement>
 	</build>
+	<profiles>
+		<profile>
+			<id>hadoop-1x</id>
+			<activation>
+				<property>
+					<name>hadoop1</name>
+				</property>
+			</activation>
+        <properties>
+            <projectVersion>${project.parent.version}-hadoop1</projectVersion>
+        </properties>
+		</profile>
+		<profile>
+			<id>hadoop-2.2</id>
+			<activation>
+				<property>
+					<name>hadoop2</name>
+				</property>
+			</activation>
+        <properties>
+            <projectVersion>${project.parent.version}-hadoop2</projectVersion>
+        </properties>
+		</profile>
+	</profiles>
 </project>

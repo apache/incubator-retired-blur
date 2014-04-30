@@ -28,6 +28,7 @@ under the License.
 	</parent>
 	<groupId>org.apache.blur</groupId>
 	<artifactId>blur-query</artifactId>
+	<version>${projectVersion}</version>
 	<packaging>jar</packaging>
 	<name>Blur Query</name>
 	<description>The Blur query module contains all the analyzers, query object and parsers for Blur.  Also the
@@ -149,4 +150,29 @@ under the License.
 			</plugin>
 		</plugins>
 	</build>
+	
+	<profiles>
+		<profile>
+			<id>hadoop-1x</id>
+			<activation>
+				<property>
+					<name>hadoop1</name>
+				</property>
+			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop1</projectVersion>
+			</properties>
+		</profile>
+		<profile>
+			<id>hadoop-2.2</id>
+			<activation>
+				<property>
+					<name>hadoop2</name>
+				</property>
+			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop2</projectVersion>
+			</properties>
+		</profile>
+	</profiles>	
 </project>

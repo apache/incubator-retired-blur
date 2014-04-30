@@ -28,6 +28,7 @@ under the License.
 	</parent>
 
 	<artifactId>apache-blur</artifactId>
+	<version>${projectVersion}</version>
 	<packaging>pom</packaging>
 	<name>Distribution</name>
 	<description>The Blur distribution module builds the source and binary artifacts.</description>
@@ -44,27 +45,52 @@ under the License.
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
-	
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-assembly-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>distro-assembly</id>
-								<phase>package</phase>
-								<goals>
-									<goal>single</goal>
-								</goals>
-								<configuration>
-									<descriptors>
-										<descriptor>src/assemble/bin.xml</descriptor>
-										<descriptor>src/assemble/src.xml</descriptor>
-									</descriptors>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>distro-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/assemble/bin.xml</descriptor>
+								<descriptor>src/assemble/src.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>hadoop-1x</id>
+			<activation>
+				<property>
+					<name>hadoop1</name>
+				</property>
+			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop1</projectVersion>
+			</properties>
+		</profile>
+		<profile>
+			<id>hadoop-2.2</id>
+			<activation>
+				<property>
+					<name>hadoop2</name>
+				</property>
+			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop2</projectVersion>
+			</properties>
+		</profile>
+	</profiles>
 </project>

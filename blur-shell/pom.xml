@@ -28,6 +28,7 @@ under the License.
 	</parent>
 	<groupId>org.apache.blur</groupId>
 	<artifactId>blur-shell</artifactId>
+	<version>${projectVersion}</version>
 	<packaging>jar</packaging>
 	<name>Blur Shell</name>
 	<description>The Blur shell module contains a shell for interacting with Blur.  All shell commands
@@ -128,7 +129,7 @@ under the License.
           </plugin>
         </plugins>
     </build>
-    
+
 	<profiles>
 		<profile>
 			<id>hadoop-1x</id>
@@ -137,6 +138,9 @@ under the License.
 					<name>hadoop1</name>
 				</property>
 			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop1</projectVersion>
+			</properties>
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
@@ -158,6 +162,9 @@ under the License.
 					<name>hadoop2</name>
 				</property>
 			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop2</projectVersion>
+			</properties>
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>

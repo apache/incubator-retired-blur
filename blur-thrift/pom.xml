@@ -28,6 +28,7 @@ under the License.
 	</parent>
 	<groupId>org.apache.blur</groupId>
 	<artifactId>blur-thrift</artifactId>
+	<version>${projectVersion}</version>
 	<packaging>jar</packaging>
 	<name>Blur Thrift</name>
 	<description>The Blur thrift module contains all the generated Thrift code, as well as a repackaged version
@@ -124,10 +125,10 @@ under the License.
 			</plugin>
 		</plugins>
 	</build>
-	
-	
 
-	
+
+
+
 	<profiles>
 		<profile>
 			<id>hadoop-1x</id>
@@ -136,6 +137,9 @@ under the License.
 					<name>hadoop1</name>
 				</property>
 			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop1</projectVersion>
+			</properties>
 		</profile>
 		<profile>
 			<id>hadoop-2.2</id>
@@ -144,15 +148,17 @@ under the License.
 					<name>hadoop2</name>
 				</property>
 			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop2</projectVersion>
+			</properties>
 			<dependencies>
 				<dependency>
-				    <groupId>javax.servlet</groupId>
-				    <artifactId>servlet-api</artifactId>
-				    <version>${servlet-api.version}</version>
-				    <scope>provided</scope>
+					<groupId>javax.servlet</groupId>
+					<artifactId>servlet-api</artifactId>
+					<version>${servlet-api.version}</version>
+					<scope>provided</scope>
 				</dependency>
 			</dependencies>
 		</profile>
-	</profiles>
-	
+	</profiles>	
 </project>

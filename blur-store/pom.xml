@@ -28,6 +28,7 @@ under the License.
 	</parent>
 	<groupId>org.apache.blur</groupId>
 	<artifactId>blur-store</artifactId>
+	<version>${projectVersion}</version>
 	<packaging>jar</packaging>
 	<name>Blur Store</name>
 	<description>The Blur store module contains all the Lucene directories and block cache for Blur.</description>
@@ -157,6 +158,9 @@ under the License.
 					<name>hadoop1</name>
 				</property>
 			</activation>
+        <properties>
+            <projectVersion>${project.parent.version}-hadoop1</projectVersion>
+        </properties>
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
@@ -178,6 +182,9 @@ under the License.
 					<name>hadoop2</name>
 				</property>
 			</activation>
+        <properties>
+            <projectVersion>${project.parent.version}-hadoop2</projectVersion>
+        </properties>
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>

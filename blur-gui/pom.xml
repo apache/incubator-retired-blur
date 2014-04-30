@@ -28,6 +28,7 @@ under the License.
 	</parent>
 	<groupId>org.apache.blur</groupId>
 	<artifactId>blur-gui</artifactId>
+	<version>${projectVersion}</version>
 	<packaging>war</packaging>
 	<name>Blur GUI</name>
 	<description>The Blur gui module contains the html status pages for each process.</description>
@@ -153,6 +154,9 @@ under the License.
 					<name>hadoop1</name>
 				</property>
 			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop1</projectVersion>
+			</properties>
 		</profile>
 		<profile>
 			<id>hadoop-2.2</id>
@@ -161,6 +165,9 @@ under the License.
 					<name>hadoop2</name>
 				</property>
 			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop2</projectVersion>
+			</properties>
 			<dependencies>
 				<dependency>
 				    <groupId>org.mortbay.jetty</groupId>

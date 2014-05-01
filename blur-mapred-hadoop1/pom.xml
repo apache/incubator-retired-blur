@@ -27,23 +27,16 @@ under the License.
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>org.apache.blur</groupId>
-	<artifactId>blur-mapred</artifactId>
+	<artifactId>blur-mapred-hadoop1</artifactId>
 	<version>${projectVersion}</version>
 	<packaging>jar</packaging>
 	<name>Blur Map Reduce</name>
-	<description>The Blur Map Reduce module contains the BlurOutputFormat as well as a CSVLoader
-		program.</description>
+	<description>The Blur Map Reduce Hadoop1 module contains the testsuite for Hadoop1.</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.apache.zookeeper</groupId>
-			<artifactId>zookeeper</artifactId>
-			<version>${zookeeper.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.blur</groupId>
-			<artifactId>blur-core</artifactId>
+			<artifactId>blur-mapred-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -52,16 +45,6 @@ under the License.
 			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.blur</groupId>
-			<artifactId>blur-store</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.blur</groupId>
-			<artifactId>blur-util</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
@@ -166,37 +149,6 @@ under the License.
 				      <classifier>hadoop1</classifier>
 					  <scope>test</scope>
                 </dependency>
-			</dependencies>
-		</profile>
-		<profile>
-			<id>hadoop-2.2</id>
-			<activation>
-				<property>
-					<name>hadoop2</name>
-				</property>
-			</activation>
-			<properties>
-				<projectVersion>${project.parent.version}-hadoop2</projectVersion>
-			</properties>
-			<dependencies>
-				<dependency>
-				      <groupId>org.apache.mrunit</groupId>
-				      <artifactId>mrunit</artifactId>
-				      <version>${mrunit.version}</version>
-				      <classifier>hadoop1</classifier>
-					  <scope>test</scope>
-                </dependency>
-				<dependency>
-					<groupId>org.apache.hadoop</groupId>
-					<artifactId>hadoop-client</artifactId>
-					<version>${hadoop.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.hadoop</groupId>
-					<artifactId>hadoop-minicluster</artifactId>
-					<version>${hadoop.version}</version>
-					<scope>test</scope>
-				</dependency>
 			</dependencies>
 		</profile>
 	</profiles>

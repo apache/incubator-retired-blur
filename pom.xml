@@ -194,18 +194,6 @@ under the License.
 		<servlet-api.version>2.5</servlet-api.version>
 	</properties>
 
-	<modules>
-		<module>blur-core</module>
-		<module>blur-thrift</module>
-		<module>blur-query</module>
-		<module>blur-store</module>
-		<module>blur-mapred</module>
-		<module>blur-util</module>
-		<module>blur-gui</module>
-		<module>blur-shell</module>
-		<module>distribution</module>
-	</modules>
-
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -392,6 +380,18 @@ under the License.
 			<properties>
 				<hadoop.version>1.2.1</hadoop.version>
 			</properties>
+			<modules>
+				<module>blur-core</module>
+				<module>blur-thrift</module>
+				<module>blur-query</module>
+				<module>blur-store</module>
+				<module>blur-mapred-common</module>
+				<module>blur-mapred-hadoop1</module>
+				<module>blur-util</module>
+				<module>blur-gui</module>
+				<module>blur-shell</module>
+				<module>distribution</module>
+			</modules>
 		</profile>
 		<profile>
 			<id>hadoop-2.2</id>
@@ -403,6 +403,18 @@ under the License.
 			<properties>
 				<hadoop.version>2.2.0</hadoop.version>
 			</properties>
+			<modules>
+				<module>blur-core</module>
+				<module>blur-thrift</module>
+				<module>blur-query</module>
+				<module>blur-store</module>
+				<module>blur-mapred-common</module>
+				<module>blur-mapred-hadoop2</module>
+				<module>blur-util</module>
+				<module>blur-gui</module>
+				<module>blur-shell</module>
+				<module>distribution</module>
+			</modules>
 		</profile>
 	</profiles>
 </project>

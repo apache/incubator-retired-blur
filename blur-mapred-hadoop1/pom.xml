@@ -30,13 +30,19 @@ under the License.
 	<artifactId>blur-mapred-hadoop1</artifactId>
 	<version>${projectVersion}</version>
 	<packaging>jar</packaging>
-	<name>Blur Map Reduce</name>
+	<name>Blur Map Reduce Hadoop1</name>
 	<description>The Blur Map Reduce Hadoop1 module contains the testsuite for Hadoop1.</description>
 
 	<dependencies>
 		<dependency>
+			<groupId>org.apache.zookeeper</groupId>
+			<artifactId>zookeeper</artifactId>
+			<version>${zookeeper.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.blur</groupId>
-			<artifactId>blur-mapred-common</artifactId>
+			<artifactId>blur-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -45,6 +51,16 @@ under the License.
 			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.blur</groupId>
+			<artifactId>blur-store</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.blur</groupId>
+			<artifactId>blur-util</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>

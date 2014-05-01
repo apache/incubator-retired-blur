@@ -64,6 +64,7 @@ public class BlurOutputFormatTest {
 
   @BeforeClass
   public static void setupTest() throws Exception {
+    setupJavaHome();
     System.setProperty("test.build.data", "./target/BlurOutputFormatTest/data");
     TEST_ROOT_DIR = new Path(System.getProperty("test.build.data", "target/tmp/BlurOutputFormatTest_tmp"));
     System.setProperty("hadoop.log.dir", "./target/BlurOutputFormatTest/hadoop_log");
@@ -79,6 +80,13 @@ public class BlurOutputFormatTest {
     conf = mr.getConfig();
 
     BufferStore.initNewBuffer(128, 128 * 128);
+  }
+
+  private static void setupJavaHome() {
+    String str = System.getenv("JAVA_HOME");
+    if (str == null) {
+      throw new RuntimeException("JAVA_HOME not set.");
+    }
   }
 
   @AfterClass
@@ -119,7 +127,8 @@ public class BlurOutputFormatTest {
     job.setInputFormatClass(TextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
-    String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();
+    String tableUri = new Path(TEST_ROOT_DIR + "/out").makeQualified(localFs.getUri(), localFs.getWorkingDirectory())
+        .toString();
     CsvBlurMapper.addColumns(job, "cf1", "col");
 
     TableDescriptor tableDescriptor = new TableDescriptor();
@@ -149,14 +158,14 @@ public class BlurOutputFormatTest {
     FileStatus[] listStatus = fileSystem.listStatus(path);
     for (FileStatus fileStatus : listStatus) {
       Path p = fileStatus.getPath();
-      if (!fileStatus.isFile() && p.getName().endsWith(".commit")) {
+      if (fileStatus.isDirectory() && p.getName().endsWith(".commit")) {
         result.add(p);
       }
     }
     return result;
   }
 
-//  @Test
+  @Test
   public void testBlurOutputFormatOverFlowTest() throws IOException, InterruptedException, ClassNotFoundException {
     localFs.delete(new Path(TEST_ROOT_DIR + "/in"), true);
     localFs.delete(new Path(TEST_ROOT_DIR + "/out"), true);
@@ -170,7 +179,8 @@ public class BlurOutputFormatTest {
     job.setInputFormatClass(TrackingTextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
-    String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();
+    String tableUri = new Path(TEST_ROOT_DIR + "/out").makeQualified(localFs.getUri(), localFs.getWorkingDirectory())
+        .toString();
     CsvBlurMapper.addColumns(job, "cf1", "col");
 
     TableDescriptor tableDescriptor = new TableDescriptor();
@@ -197,7 +207,7 @@ public class BlurOutputFormatTest {
     reader.close();
   }
 
-//  @Test
+  @Test
   public void testBlurOutputFormatOverFlowMultipleReducersTest() throws IOException, InterruptedException,
       ClassNotFoundException {
     localFs.delete(new Path(TEST_ROOT_DIR + "/in"), true);
@@ -212,7 +222,8 @@ public class BlurOutputFormatTest {
     job.setInputFormatClass(TrackingTextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
-    String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();
+    String tableUri = new Path(TEST_ROOT_DIR + "/out").makeQualified(localFs.getUri(), localFs.getWorkingDirectory())
+        .toString();
     CsvBlurMapper.addColumns(job, "cf1", "col");
 
     TableDescriptor tableDescriptor = new TableDescriptor();
@@ -243,7 +254,7 @@ public class BlurOutputFormatTest {
 
   }
 
-//  @Test
+  @Test
   public void testBlurOutputFormatOverFlowMultipleReducersWithReduceMultiplierTest() throws IOException,
       InterruptedException, ClassNotFoundException {
     localFs.delete(new Path(TEST_ROOT_DIR + "/in"), true);
@@ -258,7 +269,8 @@ public class BlurOutputFormatTest {
     job.setInputFormatClass(TrackingTextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
-    String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();
+    String tableUri = new Path(TEST_ROOT_DIR + "/out").makeQualified(localFs.getUri(), localFs.getWorkingDirectory())
+        .toString();
     CsvBlurMapper.addColumns(job, "cf1", "col");
 
     TableDescriptor tableDescriptor = new TableDescriptor();
@@ -323,7 +335,7 @@ public class BlurOutputFormatTest {
   }
 
   // @TODO this test to fail sometimes due to issues in the MR MiniCluster
-  // @Test
+  @Test
   public void testBlurOutputFormatCleanupDuringJobKillTest() throws IOException, InterruptedException,
       ClassNotFoundException {
     localFs.delete(new Path(TEST_ROOT_DIR + "/in"), true);
@@ -339,7 +351,8 @@ public class BlurOutputFormatTest {
     job.setInputFormatClass(TrackingTextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
-    String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();
+    String tableUri = new Path(TEST_ROOT_DIR + "/out").makeQualified(localFs.getUri(), localFs.getWorkingDirectory())
+        .toString();
     CsvBlurMapper.addColumns(job, "cf1", "col");
 
     TableDescriptor tableDescriptor = new TableDescriptor();

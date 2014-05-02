@@ -16,7 +16,9 @@ package org.apache.blur.mapreduce.lib;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -44,8 +46,8 @@ import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.MiniMRCluster;
+import org.apache.hadoop.mapred.MiniMRClientClusterFactory;
+import org.apache.hadoop.mapred.MiniMRYarnClusterAdapter;
 import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -59,9 +61,8 @@ public class BlurOutputFormatMiniClusterTest {
 
   private static Configuration conf = new Configuration();
   private static FileSystem fileSystem;
-  private static MiniMRCluster mr;
+  private static MiniMRYarnClusterAdapter mr;
   private static Path TEST_ROOT_DIR;
-  private static JobConf jobConf;
   private static MiniCluster miniCluster;
   private Path inDir = new Path(TEST_ROOT_DIR + "/in");
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir",
@@ -70,6 +71,7 @@ public class BlurOutputFormatMiniClusterTest {
   @BeforeClass
   public static void setupTest() throws Exception {
     GCWatcher.init(0.60);
+    BlurOutputFormatTest.setupJavaHome();
     LocalFileSystem localFS = FileSystem.getLocal(new Configuration());
     File testDirectory = new File(TMPDIR, "blur-cluster-test").getAbsoluteFile();
     testDirectory.mkdirs();
@@ -101,15 +103,19 @@ public class BlurOutputFormatMiniClusterTest {
     } catch (IOException io) {
       throw new RuntimeException("problem getting local fs", io);
     }
-    mr = new MiniMRCluster(1, miniCluster.getFileSystemUri().toString(), 1);
-    jobConf = mr.createJobConf();
+
+    FileSystem.setDefaultUri(conf, miniCluster.getFileSystemUri());
+    mr = (MiniMRYarnClusterAdapter) MiniMRClientClusterFactory.create(BlurOutputFormatTest.class, 1, conf);
+    mr.start();
+    conf = mr.getConfig();
+    
     BufferStore.initNewBuffer(128, 128 * 128);
   }
 
   @AfterClass
   public static void teardown() {
     if (mr != null) {
-      mr.shutdown();
+      mr.stop();
     }
     miniCluster.shutdownBlurCluster();
     rm(new File("build"));
@@ -140,13 +146,14 @@ public class BlurOutputFormatMiniClusterTest {
     writeRecordsFile("in/part1", 1, 1, 1, 1, "cf1");
     writeRecordsFile("in/part2", 1, 1, 2, 1, "cf1");
 
-    Job job = new Job(jobConf, "blur index");
+    Job job = Job.getInstance(conf, "blur index");
     job.setJarByClass(BlurOutputFormatMiniClusterTest.class);
     job.setMapperClass(CsvBlurMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
-    String tableUri = new Path(TEST_ROOT_DIR + "/blur/" + tableName).toString();
+    String tableUri = new Path(TEST_ROOT_DIR + "/blur/" + tableName).makeQualified(fileSystem.getUri(), fileSystem.getWorkingDirectory())
+        .toString();
     CsvBlurMapper.addColumns(job, "cf1", "col");
 
     TableDescriptor tableDescriptor = new TableDescriptor();

@@ -21,6 +21,8 @@ import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.TableDescriptor;
@@ -62,17 +64,20 @@ import com.google.common.base.Splitter;
 @SuppressWarnings("static-access")
 public class CsvBlurDriver {
 
+  private static final Log LOG = LogFactory.getLog(CsvBlurDriver.class);
+
   public static final String CSVLOADER = "csvloader";
   public static final String MAPRED_COMPRESS_MAP_OUTPUT = "mapred.compress.map.output";
   public static final String MAPRED_MAP_OUTPUT_COMPRESSION_CODEC = "mapred.map.output.compression.codec";
   public static final int DEFAULT_WIDTH = 100;
-  public static final String HEADER = "The \"" +CSVLOADER +
-  		"\" command is used to load delimited into a Blur table.\nThe required options are \"-c\", \"-t\", \"-d\". The " +
-  		"standard format for the contents of a file is:\"rowid,recordid,family,col1,col2,...\". However there are " +
-  		"several options, such as the rowid and recordid can be generated based on the data in the record via the " +
-  		"\"-A\" and \"-a\" options. The family can assigned based on the path via the \"-I\" option. The column " +
-  		"name order can be mapped via the \"-d\" option. Also you can set the input " +
-  		"format to either sequence files vie the \"-S\" option or leave the default text files.";
+  public static final String HEADER = "The \""
+      + CSVLOADER
+      + "\" command is used to load delimited into a Blur table.\nThe required options are \"-c\", \"-t\", \"-d\". The "
+      + "standard format for the contents of a file is:\"rowid,recordid,family,col1,col2,...\". However there are "
+      + "several options, such as the rowid and recordid can be generated based on the data in the record via the "
+      + "\"-A\" and \"-a\" options. The family can assigned based on the path via the \"-I\" option. The column "
+      + "name order can be mapped via the \"-d\" option. Also you can set the input "
+      + "format to either sequence files vie the \"-S\" option or leave the default text files.";
 
   enum COMPRESSION {
     SNAPPY(SnappyCodec.class), GZIP(GzipCodec.class), BZIP(BZip2Codec.class), DEFAULT(DefaultCodec.class);
@@ -180,10 +185,10 @@ public class CsvBlurDriver {
     }
     // processing the 'I' option
     if (cmd.hasOption("I")) {
-    	if(cmd.hasOption("C")){
-    		 System.err.println("'I' and 'C' both parameters can not be used together.");
-             return null;
-    	}
+      if (cmd.hasOption("C")) {
+        System.err.println("'I' and 'C' both parameters can not be used together.");
+        return null;
+      }
       Option[] options = cmd.getOptions();
       for (Option option : options) {
         if (option.getOpt().equals("I")) {
@@ -245,6 +250,10 @@ public class CsvBlurDriver {
       throws IOException {
     Set<Path> pathSet = new HashSet<Path>();
     FileSystem fileSystem = path.getFileSystem(configuration);
+    if (!fileSystem.exists(path)) {
+      LOG.warn("Path not found [{0}]", path);
+      return pathSet;
+    }
     FileStatus[] listStatus = fileSystem.listStatus(path);
     for (FileStatus status : listStatus) {
       if (status.isDirectory()) {
@@ -272,10 +281,20 @@ public class CsvBlurDriver {
             "The file delimiter to be used. (default value ',')  NOTE: For special "
                 + "charactors like the default hadoop separator of ASCII value 1, you can use standard "
                 + "java escaping (\\u0001)").create("s"));
-    options.addOption(OptionBuilder.withArgName("path*").hasArg()
-        .withDescription("The directory to index, the family name is assumed to BE present in the file contents. (hdfs://namenode/input/in1)").create("i"));
-    options.addOption(OptionBuilder.withArgName("family path*").hasArgs()
-        .withDescription("The directory to index with a family name, the family name is assumed to NOT be present in the file contents. (family hdfs://namenode/input/in1)").create("I"));
+    options
+        .addOption(OptionBuilder
+            .withArgName("path*")
+            .hasArg()
+            .withDescription(
+                "The directory to index, the family name is assumed to BE present in the file contents. (hdfs://namenode/input/in1)")
+            .create("i"));
+    options
+        .addOption(OptionBuilder
+            .withArgName("family path*")
+            .hasArgs()
+            .withDescription(
+                "The directory to index with a family name, the family name is assumed to NOT be present in the file contents. (family hdfs://namenode/input/in1)")
+            .create("I"));
     options
         .addOption(OptionBuilder
             .withArgName("auto generate record ids")
@@ -352,58 +371,57 @@ public class CsvBlurDriver {
 
   public static class CsvBlurCombineSequenceFileInputFormat extends CombineFileInputFormat<Writable, Text> {
 
-    
-    private static class SequenceFileRecordReaderWrapper extends RecordReader<Writable, Text>{
-    	
-    	private final RecordReader<Writable,Text> delegate;
-    	private final FileSplit fileSplit;
+    private static class SequenceFileRecordReaderWrapper extends RecordReader<Writable, Text> {
 
-		@SuppressWarnings("unused")
-		public SequenceFileRecordReaderWrapper(CombineFileSplit split,
-            TaskAttemptContext context, Integer index) throws IOException{
-            fileSplit = new FileSplit(split.getPath(index),
-                      split.getOffset(index), split.getLength(index),
-                      split.getLocations());
-            delegate = new SequenceFileInputFormat<Writable,Text>().createRecordReader(fileSplit, context);
-        }
+      private final RecordReader<Writable, Text> delegate;
+      private final FileSplit fileSplit;
 
-        @Override public float getProgress() throws IOException, InterruptedException {
-            return delegate.getProgress();
-        }
+      @SuppressWarnings("unused")
+      public SequenceFileRecordReaderWrapper(CombineFileSplit split, TaskAttemptContext context, Integer index)
+          throws IOException {
+        fileSplit = new FileSplit(split.getPath(index), split.getOffset(index), split.getLength(index),
+            split.getLocations());
+        delegate = new SequenceFileInputFormat<Writable, Text>().createRecordReader(fileSplit, context);
+      }
 
-		@Override
-		public Writable getCurrentKey() throws IOException,
-				InterruptedException {
-			return delegate.getCurrentKey();
-		}
+      @Override
+      public float getProgress() throws IOException, InterruptedException {
+        return delegate.getProgress();
+      }
 
-		@Override
-		public Text getCurrentValue() throws IOException, InterruptedException {
-			return delegate.getCurrentValue();
-		}
+      @Override
+      public Writable getCurrentKey() throws IOException, InterruptedException {
+        return delegate.getCurrentKey();
+      }
 
-		@Override
-		public void initialize(InputSplit arg0, TaskAttemptContext context)
-				throws IOException, InterruptedException {
-			delegate.initialize(fileSplit, context);
-		}
+      @Override
+      public Text getCurrentValue() throws IOException, InterruptedException {
+        return delegate.getCurrentValue();
+      }
 
-		@Override
-		public boolean nextKeyValue() throws IOException, InterruptedException {
-			return delegate.nextKeyValue();
-		}
-		
-		@Override public void close() throws IOException {
-            delegate.close();
-		}
+      @Override
+      public void initialize(InputSplit arg0, TaskAttemptContext context) throws IOException, InterruptedException {
+        delegate.initialize(fileSplit, context);
+      }
+
+      @Override
+      public boolean nextKeyValue() throws IOException, InterruptedException {
+        return delegate.nextKeyValue();
+      }
+
+      @Override
+      public void close() throws IOException {
+        delegate.close();
+      }
 
     }
-    	
+
     @Override
-	public RecordReader<Writable, Text> createRecordReader(
-			InputSplit split, TaskAttemptContext context) throws IOException {
-		return new CombineFileRecordReader<Writable, Text>((CombineFileSplit) split, context, SequenceFileRecordReaderWrapper.class);
-	}
+    public RecordReader<Writable, Text> createRecordReader(InputSplit split, TaskAttemptContext context)
+        throws IOException {
+      return new CombineFileRecordReader<Writable, Text>((CombineFileSplit) split, context,
+          SequenceFileRecordReaderWrapper.class);
+    }
   }
 
 }

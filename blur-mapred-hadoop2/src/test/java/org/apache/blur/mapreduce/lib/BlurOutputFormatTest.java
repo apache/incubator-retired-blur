@@ -82,7 +82,7 @@ public class BlurOutputFormatTest {
     BufferStore.initNewBuffer(128, 128 * 128);
   }
 
-  private static void setupJavaHome() {
+  public static void setupJavaHome() {
     String str = System.getenv("JAVA_HOME");
     if (str == null) {
       throw new RuntimeException("JAVA_HOME not set.");

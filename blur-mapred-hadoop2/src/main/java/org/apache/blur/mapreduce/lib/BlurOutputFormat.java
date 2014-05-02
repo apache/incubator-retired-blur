@@ -36,7 +36,6 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
-import org.apache.hadoop.mapreduce.TaskType;
 import org.apache.hadoop.util.Progressable;
 
 /**
@@ -122,9 +121,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
 
   @Override
   public OutputCommitter getOutputCommitter(TaskAttemptContext context) throws IOException, InterruptedException {
-    TaskAttemptID taskAttemptID = context.getTaskAttemptID();
-    TaskType taskType = taskAttemptID.getTaskType();
-    return new BlurOutputCommitter(taskType, context.getNumReduceTasks());
+    return new BlurOutputCommitter();
   }
 
   public static TableDescriptor getTableDescriptor(Configuration configuration) throws IOException {

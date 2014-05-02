@@ -17,7 +17,6 @@ package org.apache.blur.mapreduce.lib;
  * limitations under the License.
  */
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -30,30 +29,15 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.mapreduce.JobContext;
+import org.apache.hadoop.mapreduce.JobStatus.State;
 import org.apache.hadoop.mapreduce.OutputCommitter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
-import org.apache.hadoop.mapreduce.JobStatus.State;
 import org.apache.hadoop.mapreduce.TaskType;
 
 public class BlurOutputCommitter extends OutputCommitter {
 
   private static final Log LOG = LogFactory.getLog(BlurOutputCommitter.class);
-
-  private Path _newIndex;
-  private Configuration _configuration;
-  private TaskAttemptID _taskAttemptID;
-  private Path _indexPath;
-  private final boolean _runTaskCommit;
-  private TableDescriptor _tableDescriptor;
-
-  public BlurOutputCommitter(TaskType taskType, int numReduceTasks) {
-    if (taskType == TaskType.MAP && numReduceTasks != 0) {
-      _runTaskCommit = false;
-    } else {
-      _runTaskCommit = true;
-    }
-  }
 
   @Override
   public void setupJob(JobContext jobContext) throws IOException {
@@ -173,7 +157,13 @@ public class BlurOutputCommitter extends OutputCommitter {
 
   @Override
   public boolean needsTaskCommit(TaskAttemptContext context) throws IOException {
-    return _runTaskCommit;
+    TaskAttemptID taskAttemptID = context.getTaskAttemptID();
+    TaskType taskType = taskAttemptID.getTaskType();
+    if (taskType == TaskType.MAP && context.getNumReduceTasks() != 0) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   @Override
@@ -181,40 +171,51 @@ public class BlurOutputCommitter extends OutputCommitter {
     LOG.info("Running task setup.");
   }
 
+  private static class Conf {
+    Path _newIndex;
+    Configuration _configuration;
+    TaskAttemptID _taskAttemptID;
+    Path _indexPath;
+    TableDescriptor _tableDescriptor;
+  }
+
   @Override
   public void commitTask(TaskAttemptContext context) throws IOException {
     LOG.info("Running commit task.");
-    setup(context);
-    FileSystem fileSystem = _newIndex.getFileSystem(_configuration);
-    if (fileSystem.exists(_newIndex) && !fileSystem.isFile(_newIndex)) {
-      Path dst = new Path(_indexPath, _taskAttemptID.toString() + ".task_complete");
-      LOG.info("Committing [{0}] to [{1}]", _newIndex, dst);
-      fileSystem.rename(_newIndex, dst);
+    Conf conf = setup(context);
+    FileSystem fileSystem = conf._newIndex.getFileSystem(conf._configuration);
+    if (fileSystem.exists(conf._newIndex) && !fileSystem.isFile(conf._newIndex)) {
+      Path dst = new Path(conf._indexPath, conf._taskAttemptID.toString() + ".task_complete");
+      LOG.info("Committing [{0}] to [{1}]", conf._newIndex, dst);
+      fileSystem.rename(conf._newIndex, dst);
     } else {
-      throw new IOException("Path [" + _newIndex + "] does not exist, can not commit.");
+      throw new IOException("Path [" + conf._newIndex + "] does not exist, can not commit.");
     }
   }
 
   @Override
   public void abortTask(TaskAttemptContext context) throws IOException {
     LOG.info("Running abort task.");
-    setup(context);
-    FileSystem fileSystem = _newIndex.getFileSystem(_configuration);
-    LOG.info("abortTask - Deleting [{0}]", _newIndex);
-    fileSystem.delete(_newIndex, true);
+    Conf conf = setup(context);
+    FileSystem fileSystem = conf._newIndex.getFileSystem(conf._configuration);
+    LOG.info("abortTask - Deleting [{0}]", conf._newIndex);
+    fileSystem.delete(conf._newIndex, true);
   }
 
-  private void setup(TaskAttemptContext context) throws IOException {
-    _configuration = context.getConfiguration();
-    _tableDescriptor = BlurOutputFormat.getTableDescriptor(_configuration);
-    int shardCount = _tableDescriptor.getShardCount();
+  private Conf setup(TaskAttemptContext context) throws IOException {
+    LOG.info("Setting up committer with task attempt [{0}]", context.getTaskAttemptID().toString());
+    Conf conf = new Conf();
+    conf._configuration = context.getConfiguration();
+    conf._tableDescriptor = BlurOutputFormat.getTableDescriptor(conf._configuration);
+    int shardCount = conf._tableDescriptor.getShardCount();
     int attemptId = context.getTaskAttemptID().getTaskID().getId();
     int shardId = attemptId % shardCount;
-    _taskAttemptID = context.getTaskAttemptID();
-    Path tableOutput = BlurOutputFormat.getOutputPath(_configuration);
+    conf._taskAttemptID = context.getTaskAttemptID();
+    Path tableOutput = BlurOutputFormat.getOutputPath(conf._configuration);
     String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, shardId);
-    _indexPath = new Path(tableOutput, shardName);
-    _newIndex = new Path(_indexPath, _taskAttemptID.toString() + ".tmp");
+    conf._indexPath = new Path(tableOutput, shardName);
+    conf._newIndex = new Path(conf._indexPath, conf._taskAttemptID.toString() + ".tmp");
+    return conf;
   }
 
 }

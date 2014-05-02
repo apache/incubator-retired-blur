@@ -36,11 +36,6 @@ under the License.
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
-			<artifactId>blur-mapred</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-shell</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -77,6 +72,13 @@ under the License.
 					<name>hadoop1</name>
 				</property>
 			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.apache.blur</groupId>
+					<artifactId>blur-mapred-hadoop1</artifactId>
+					<version>${project.version}</version>
+				</dependency>
+			</dependencies>
 			<properties>
 				<projectVersion>${project.parent.version}-hadoop1</projectVersion>
 			</properties>
@@ -88,6 +90,13 @@ under the License.
 					<name>hadoop2</name>
 				</property>
 			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.apache.blur</groupId>
+					<artifactId>blur-mapred-hadoop2</artifactId>
+					<version>${project.version}</version>
+				</dependency>
+			</dependencies>
 			<properties>
 				<projectVersion>${project.parent.version}-hadoop2</projectVersion>
 			</properties>

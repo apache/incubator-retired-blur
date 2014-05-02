@@ -68,7 +68,7 @@ under the License.
 	  <exclude>org.eclipse.jdt:core</exclude>
 
       <!-- Removing dup -->
-	  <exclude>org.apache.hadoop:hadoop-core</exclude>
+	  <exclude>org.apache.hadoop:*</exclude>
 
 	  <exclude>org.apache.zookeeper:zookeeper</exclude>
 	  <exclude>org.slf4j:slf4j-api</exclude>

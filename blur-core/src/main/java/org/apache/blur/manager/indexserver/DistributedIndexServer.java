@@ -119,13 +119,16 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   private final Closer _closer;
   private final boolean _warmupDisabled;
   private long _shortDelay = 250;
+  private final int _minimumNumberOfNodes;
 
   public DistributedIndexServer(Configuration configuration, ZooKeeper zookeeper, ClusterStatus clusterStatus,
       BlurIndexWarmup warmup, BlurFilterCache filterCache, BlockCacheDirectoryFactory blockCacheDirectoryFactory,
       DistributedLayoutFactory distributedLayoutFactory, String cluster, String nodeName, long safeModeDelay,
       int shardOpenerThreadCount, int internalSearchThreads, int warmupThreads, int maxMergeThreads,
-      boolean warmupDisabled) throws KeeperException, InterruptedException {
+      boolean warmupDisabled, int minimumNumberOfNodesBeforeExitingSafeMode) throws KeeperException,
+      InterruptedException {
     super(clusterStatus, configuration, nodeName, cluster);
+    _minimumNumberOfNodes = minimumNumberOfNodesBeforeExitingSafeMode;
     _running.set(true);
     _warmupDisabled = warmupDisabled;
     _closer = Closer.create();
@@ -165,7 +168,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     int registerNodeTimeOut = _zookeeper.getSessionTimeout() / 1000 + 4;
 
     SafeMode safeMode = new SafeMode(_zookeeper, safemodePath, onlineShardsPath, TimeUnit.MILLISECONDS, _safeModeDelay,
-        TimeUnit.SECONDS, registerNodeTimeOut);
+        TimeUnit.SECONDS, registerNodeTimeOut, _minimumNumberOfNodes);
     safeMode.registerNode(getNodeName(), BlurUtil.getVersion().getBytes());
 
     _timerTableWarmer = setupTableWarmer();

@@ -39,6 +39,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_MERGE_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SERVER_MINIMUM_BEFORE_SAFEMODE_EXIT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_MAX_READ_BUFFER_BYTES;
@@ -105,6 +106,7 @@ import sun.misc.VM;
 
 public class ThriftBlurShardServer extends ThriftServer {
 
+  
   private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
   private static final boolean enableJsonReporter = false;
   private static final long _64MB = 64 * 1024 * 1024;
@@ -215,9 +217,12 @@ public class ThriftBlurShardServer extends ThriftServer {
     int warmupThreads = configuration.getInt(BLUR_SHARD_WARMUP_THREAD_COUNT, 16);
     int maxMergeThreads = configuration.getInt(BLUR_SHARD_MERGE_THREAD_COUNT, 3);
     boolean warmupDisabled = configuration.getBoolean(BLUR_SHARD_WARMUP_DISABLED, false);
+    int minimumNumberOfNodesBeforeExitingSafeMode = configuration.getInt(
+        BLUR_SHARD_SERVER_MINIMUM_BEFORE_SAFEMODE_EXIT, 0);
     final DistributedIndexServer indexServer = new DistributedIndexServer(config, zooKeeper, clusterStatus,
         indexWarmup, filterCache, blockCacheDirectoryFactory, distributedLayoutFactory, cluster, nodeName,
-        safeModeDelay, shardOpenerThreadCount, internalSearchThreads, warmupThreads, maxMergeThreads, warmupDisabled);
+        safeModeDelay, shardOpenerThreadCount, internalSearchThreads, warmupThreads, maxMergeThreads, warmupDisabled,
+        minimumNumberOfNodesBeforeExitingSafeMode);
 
     BooleanQuery.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
 

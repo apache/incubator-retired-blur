@@ -232,6 +232,7 @@ under the License.
 						<exclude>**/.project</exclude>
 						<exclude>**/.settings/**</exclude>
 						<exclude>**/target/**</exclude>
+                                                <exclude>**/build/**</exclude>
 						
 						<!-- These javascript libs are accounted for in the 
 						LICENSE-src file in distribution/src/main/resources -->
@@ -264,9 +265,9 @@ under the License.
 						<exclude>**/src/main/webapp/js/d3.v2.min.js</exclude>
 						
 						<!-- License and Notice files for Blur -->
-						<exclude>**/src/main/resources/license-notes.txt</exclude>
-						<exclude>**/src/main/resources/NOTICE-bin.base.txt</exclude>
-						<exclude>**/src/main/resources/NOTICE-bin.txt</exclude>
+						<exclude>**/src/main/resources*/license-notes.txt</exclude>
+						<exclude>**/src/main/resources*/NOTICE-bin.base.txt</exclude>
+						<exclude>**/src/main/resources*/NOTICE-bin.txt</exclude>
 						
 						<!-- Default configuration files used by Blur -->
 						<exclude>**/src/main/scripts/conf/controllers</exclude>

@@ -1,0 +1,17 @@
+From the directory of the exploded binary package:
+
+To see if there are files unaccounted for:
+
+comm -3 <(cat ../../../LICENSE | grep ^./ | sort) <(find . -name *.jar | sort)
+
+Some helpful commands:
+
+Find any Apache Licensed jar file listed in our LICENSE that don't include a NOTICE file in the jar itself:
+sort <(grep ALv2 LICENSE | awk '{print $1}') <(for f in `find . -name "*.jar"` ;do echo -n $f && printf ' NOTICE? %s\n' `jar -tf $f | grep NOTICE | wc -l` ;done | grep "NOTICE? 0" | awk '{print $1}') | uniq -d
+
+Update the binary NOTICE file:
+cd ./distribution/src/main/resources/notices
+./generate-notice.sh > ../NOTICE-bin.txt
+
+
+

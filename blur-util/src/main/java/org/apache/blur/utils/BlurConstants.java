@@ -42,9 +42,12 @@ public class BlurConstants {
   public static final String BLUR_SHARD_QUEUE_MAX_QUEUE_BATCH_SIZE = "blur.shard.queue.max.queue.batch.size";
   public static final String BLUR_SHARD_QUEUE_MAX_INMEMORY_LENGTH = "blur.shard.queue.max.inmemory.length";
 
-//  public static final String BLUR_TABLE_INDEX_QUEUE_READER_CLASS = "blur.table.index.queue.reader.class";
-//  public static final String BLUR_TABLE_INDEX_QUEUE_READER_BACKOFF = "blur.table.index.queue.reader.backoff";
-//  public static final String BLUR_TABLE_INDEX_QUEUE_READER_MAX = "blur.table.index.queue.reader.max";
+  // public static final String BLUR_TABLE_INDEX_QUEUE_READER_CLASS =
+  // "blur.table.index.queue.reader.class";
+  // public static final String BLUR_TABLE_INDEX_QUEUE_READER_BACKOFF =
+  // "blur.table.index.queue.reader.backoff";
+  // public static final String BLUR_TABLE_INDEX_QUEUE_READER_MAX =
+  // "blur.table.index.queue.reader.max";
 
   public static final String FAST_DECOMPRESSION = "FAST_DECOMPRESSION";
   public static final String FAST = "FAST";
@@ -113,6 +116,7 @@ public class BlurConstants {
   public static final String BLUR_SHARD_BLOCK_CACHE_V2_FILE_BUFFER_SIZE = "blur.shard.block.cache.v2.fileBufferSize";
   public static final String BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE = "blur.shard.block.cache.v2.cacheBlockSize";
   public static final String BLUR_SHARD_BLURINDEX_CLASS = "blur.shard.blurindex.class";
+  public static final String BLUR_SHARD_SERVER_MINIMUM_BEFORE_SAFEMODE_EXIT = "blur.shard.server.minimum.before.safemode.exit";
 
   public static final String BLUR_FIELDTYPE = "blur.fieldtype.";
 

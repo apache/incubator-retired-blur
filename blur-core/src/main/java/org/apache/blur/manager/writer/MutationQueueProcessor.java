@@ -40,7 +40,8 @@ import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.lucene.index.IndexWriter;
 
 public class MutationQueueProcessor implements Runnable, Closeable {
-
+  
+  private static final long TIMEOUT = TimeUnit.MILLISECONDS.toMillis(100);
   private final Log LOG = LogFactory.getLog(MutationQueueProcessor.class);
 
   private final BlockingQueue<RowMutation> _queue;
@@ -155,7 +156,7 @@ public class MutationQueueProcessor implements Runnable, Closeable {
         if (!_didMutates) {
           synchronized (_queue) {
             try {
-              _queue.wait();
+              _queue.wait(TIMEOUT);
             } catch (InterruptedException e) {
               throw new IOException(e);
             }

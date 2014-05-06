@@ -47,7 +47,20 @@ under the License.
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>distro-assembly</id>
+						<id>distro-assembly-src</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<finalName>apache-blur-${project.parent.version}</finalName>
+							<descriptors>
+								<descriptor>src/assemble/src.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+					<execution>
+						<id>distro-assembly-bin</id>
 						<phase>package</phase>
 						<goals>
 							<goal>single</goal>
@@ -55,7 +68,6 @@ under the License.
 						<configuration>
 							<descriptors>
 								<descriptor>src/assemble/bin.xml</descriptor>
-								<descriptor>src/assemble/src.xml</descriptor>
 							</descriptors>
 						</configuration>
 					</execution>

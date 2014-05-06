@@ -27,7 +27,7 @@ under the License.
   <fileSets>
     <fileSet>
       <directory>${project.parent.basedir}</directory>
-      <outputDirectory>apache-blur-${project.version}-src</outputDirectory>
+      <outputDirectory>apache-blur-${project.parent.version}-src</outputDirectory>
       <excludes>
         <exclude>**/.empty</exclude>
         <exclude>**/target/**</exclude>

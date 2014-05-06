@@ -18,11 +18,15 @@ package org.apache.blur.store.hdfs_v2;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -38,6 +42,8 @@ import org.apache.lucene.util.BytesRef;
 
 public class FastHdfsKeyValueDirectory extends Directory implements LastModified {
 
+  private static final long GC_DELAY = TimeUnit.HOURS.toMillis(1);
+
   private static final Log LOG = LogFactory.getLog(FastHdfsKeyValueDirectory.class);
 
   private static final String LASTMOD = "/lastmod";
@@ -48,8 +54,11 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
   private final Map<String, Long> _files = new ConcurrentHashMap<String, Long>();
   private final HdfsKeyValueStore _store;
   private final int _blockSize = 4096;
+  private final Path _path;
+  private long _lastGc;
 
   public FastHdfsKeyValueDirectory(Configuration configuration, Path path) throws IOException {
+    _path = path;
     _store = new HdfsKeyValueStore(configuration, path);
     BytesRef value = new BytesRef();
     if (_store.get(FILES, value)) {
@@ -63,12 +72,40 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
         if (_store.get(key, value)) {
           _files.put(file, Long.parseLong(value.utf8ToString()));
         } else {
-          _files.put(file, 0L);
+          // _files.put(file, 0L);
           LOG.warn("Missing meta data for file [{0}], setting length to '0'.", file);
         }
       }
     }
     setLockFactory(NoLockFactory.getNoLockFactory());
+    writeFilesNames();
+    gc();
+  }
+
+  public void gc() throws IOException {
+    LOG.info("Running GC over the hdfs kv directory [{0}].", _path);
+    Iterable<Entry<BytesRef, BytesRef>> scan = _store.scan(null);
+    List<BytesRef> toBeDeleted = new ArrayList<BytesRef>();
+    for (Entry<BytesRef, BytesRef> e : scan) {
+      BytesRef bytesRef = e.getKey();
+      if (bytesRef.equals(FILES)) {
+        continue;
+      }
+      String key = bytesRef.utf8ToString();
+      int indexOf = key.indexOf('/');
+      if (indexOf < 0) {
+        LOG.error("Unknown key type in hdfs kv store [" + key + "]");
+      } else {
+        String filename = key.substring(0, indexOf);
+        if (!_files.containsKey(filename)) {
+          toBeDeleted.add(bytesRef);
+        }
+      }
+    }
+    for (BytesRef key : toBeDeleted) {
+      _store.delete(key);
+    }
+    _lastGc = System.currentTimeMillis();
   }
 
   public void writeBlock(String name, long blockId, byte[] b, int offset, int length) throws IOException {
@@ -118,13 +155,16 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
 
   @Override
   public boolean fileExists(String name) throws IOException {
-    return _files.containsKey(name);
+    boolean containsKey = _files.containsKey(name);
+    LOG.debug("FileExists [{0}] [{1}].", name, containsKey);
+    return containsKey;
   }
 
   @Override
   public void deleteFile(String name) throws IOException {
     Long length = _files.remove(name);
     if (length != null) {
+      LOG.debug("Removing file [{0}] with length [{1}].", name, length);
       long blocks = length / _blockSize;
       _store.delete(new BytesRef(name + LENGTH));
       _store.delete(new BytesRef(name + LASTMOD));
@@ -144,7 +184,18 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
 
   @Override
   public void sync(Collection<String> names) throws IOException {
+    writeFilesNames();
     _store.sync();
+    if (shouldPerformGC()) {
+      gc();
+    }
+  }
+
+  private boolean shouldPerformGC() {
+    if (_lastGc + GC_DELAY < System.currentTimeMillis()) {
+      return true;
+    }
+    return false;
   }
 
   @Override

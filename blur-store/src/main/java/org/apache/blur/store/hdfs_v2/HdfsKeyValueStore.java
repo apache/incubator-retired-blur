@@ -16,6 +16,10 @@
  */
 package org.apache.blur.store.hdfs_v2;
 
+import static org.apache.blur.metrics.MetricsConstants.HDFS_KV;
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
+import static org.apache.blur.metrics.MetricsConstants.SIZE;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.FilterInputStream;
@@ -55,6 +59,10 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.ipc.RemoteException;
 import org.apache.lucene.util.BytesRef;
+
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Gauge;
+import com.yammer.metrics.core.MetricName;
 
 public class HdfsKeyValueStore implements Store {
 
@@ -147,6 +155,7 @@ public class HdfsKeyValueStore implements Store {
   private final WriteLock _writeLock;
   private final ReadLock _readLock;
   private final Thread _daemon;
+  private final AtomicLong _size = new AtomicLong();
 
   private final AtomicBoolean _running = new AtomicBoolean(true);
   private final AtomicLong _lastWrite = new AtomicLong();
@@ -176,6 +185,12 @@ public class HdfsKeyValueStore implements Store {
     openWriter();
     _daemon = startDaemon();
     cleanupOldFiles();
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, HDFS_KV, SIZE, path.getParent().toString()), new Gauge<Long>() {
+      @Override
+      public Long value() {
+        return _size.get();
+      }
+    });
   }
 
   private Thread startDaemon() {
@@ -296,7 +311,12 @@ public class HdfsKeyValueStore implements Store {
     try {
       Operation op = getPutOperation(OperationType.PUT, key, value);
       Path path = write(op);
-      _pointers.put(BytesRef.deepCopyOf(key), new Value(BytesRef.deepCopyOf(value), path));
+      BytesRef deepCopyOf = BytesRef.deepCopyOf(value);
+      _size.addAndGet(deepCopyOf.bytes.length);
+      Value old = _pointers.put(BytesRef.deepCopyOf(key), new Value(deepCopyOf, path));
+      if (old != null) {
+        _size.addAndGet(-old._bytesRef.bytes.length);
+      }
       if (!path.equals(_outputPath)) {
         cleanupOldFiles();
       }
@@ -325,9 +345,14 @@ public class HdfsKeyValueStore implements Store {
   }
 
   private void rollFile() throws IOException {
+    logSize();
     LOG.info("Rolling file [" + _outputPath + "]");
     _output.close();
     openWriter();
+  }
+
+  private void logSize() {
+
   }
 
   public void cleanupOldFiles() throws IOException {
@@ -394,7 +419,10 @@ public class HdfsKeyValueStore implements Store {
     try {
       Operation op = getDeleteOperation(OperationType.DELETE, key);
       write(op);
-      _pointers.remove(key);
+      Value old = _pointers.remove(key);
+      if (old != null) {
+        _size.addAndGet(-old._bytesRef.bytes.length);
+      }
     } catch (RemoteException e) {
       throw new IOException("Another HDFS KeyStore has likely taken ownership of this key value store.", e);
     } catch (LeaseExpiredException e) {
@@ -424,6 +452,7 @@ public class HdfsKeyValueStore implements Store {
   }
 
   private void openWriter() throws IOException {
+    logSize();
     long nextSegment = _currentFileCounter.incrementAndGet();
     String name = buffer(nextSegment);
     _outputPath = new Path(_path, name);
@@ -497,16 +526,21 @@ public class HdfsKeyValueStore implements Store {
   }
 
   private void loadIndex(Path path, Operation operation) {
+    Value old;
     switch (operation.type) {
     case PUT:
-      _pointers.put(BytesRef.deepCopyOf(getKey(operation.key)), new Value(BytesRef.deepCopyOf(getKey(operation.value)),
-          path));
-      return;
+      BytesRef deepCopyOf = BytesRef.deepCopyOf(getKey(operation.value));
+      _size.addAndGet(deepCopyOf.bytes.length);
+      old = _pointers.put(BytesRef.deepCopyOf(getKey(operation.key)), new Value(deepCopyOf, path));
+      break;
     case DELETE:
-      _pointers.remove(getKey(operation.key));
-      return;
+      old = _pointers.remove(getKey(operation.key));
+      break;
     default:
       throw new RuntimeException("Not supported [" + operation.type + "]");
+    }
+    if (old != null) {
+      _size.addAndGet(-old._bytesRef.bytes.length);
     }
   }
 

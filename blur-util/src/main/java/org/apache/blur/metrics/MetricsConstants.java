@@ -45,6 +45,7 @@ public class MetricsConstants {
   public static final String REMOVAL = "Removal";
   public static final String MISS = "Miss";
   public static final String CACHE = "Cache";
+  public static final String HDFS_KV = "HDFS-KV";
   public static final String DEEP_PAGING_CACHE = "DeepPagingCache";
   public static final String CACHE_POOL = "CachePool";
   public static final String JVM = "JVM";

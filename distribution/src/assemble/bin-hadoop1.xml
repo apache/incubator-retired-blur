@@ -127,12 +127,12 @@ under the License.
 
   <files>
     <file>
-      <source>${project.build.scriptSourceDirectory}/../resources/NOTICE-bin.txt</source>
+      <source>${project.build.scriptSourceDirectory}/../resources-hadoop1/NOTICE-bin.txt</source>
       <outputDirectory>apache-blur-${project.version}-bin</outputDirectory>
       <destName>NOTICE</destName>
     </file>
     <file>
-      <source>${project.build.scriptSourceDirectory}/../resources/LICENSE-bin.txt</source>
+      <source>${project.build.scriptSourceDirectory}/../resources-hadoop1/LICENSE-bin.txt</source>
       <outputDirectory>apache-blur-${project.version}-bin</outputDirectory>
       <destName>LICENSE</destName>
     </file>

@@ -67,7 +67,7 @@ under the License.
 						</goals>
 						<configuration>
 							<descriptors>
-								<descriptor>src/assemble/bin.xml</descriptor>
+								<descriptor>${bin.assembly.file}</descriptor>
 							</descriptors>
 						</configuration>
 					</execution>
@@ -93,6 +93,7 @@ under the License.
 			</dependencies>
 			<properties>
 				<projectVersion>${project.parent.version}-hadoop1</projectVersion>
+                <bin.assembly.file>src/assemble/bin-hadoop1.xml</bin.assembly.file>
 			</properties>
 		</profile>
 		<profile>
@@ -111,6 +112,7 @@ under the License.
 			</dependencies>
 			<properties>
 				<projectVersion>${project.parent.version}-hadoop2</projectVersion>
+                <bin.assembly.file>src/assemble/bin-hadoop2.xml</bin.assembly.file>
 			</properties>
 		</profile>
 	</profiles>

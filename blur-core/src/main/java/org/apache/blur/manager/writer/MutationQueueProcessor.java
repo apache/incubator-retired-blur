@@ -152,6 +152,15 @@ public class MutationQueueProcessor implements Runnable, Closeable {
           _didMutates = false;
         }
         lst.clear();
+        if (!_didMutates) {
+          synchronized (_queue) {
+            try {
+              _queue.wait();
+            } catch (InterruptedException e) {
+              throw new IOException(e);
+            }
+          }
+        }
       }
     }
 

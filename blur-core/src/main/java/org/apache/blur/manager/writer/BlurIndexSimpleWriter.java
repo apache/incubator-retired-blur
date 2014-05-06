@@ -370,6 +370,9 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       for (RowMutation mutation : mutations) {
         _queue.put(mutation);
       }
+      synchronized (_queue) {
+        _queue.notifyAll();
+      }
     } catch (InterruptedException e) {
       throw new IOException(e);
     }

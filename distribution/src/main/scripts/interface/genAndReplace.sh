@@ -37,5 +37,5 @@ mvn exec:java -Dexec.mainClass="org.apache.blur.doc.CreateBlurApiHtmlPage" -Dexe
 cd $cdir
 cp -r gen-java/* ../../../../../blur-thrift/src/main/java/
 cd ../../../../../blur-thrift
-mvn exec:java -Dexec.mainClass="org.apache.blur.thrift.util.GenerateSafeClient"
+mvn exec:java -Dexec.mainClass="org.apache.blur.thrift.util.GenerateSafeClient" -Dhadoop1
 cd $cdir

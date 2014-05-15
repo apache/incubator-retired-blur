@@ -62,6 +62,7 @@ limitations under the License.
 <li><a href="#Enum_RowMutationType">RowMutationType</a></li>
 <li><a href="#Enum_RecordMutationType">RecordMutationType</a></li>
 <li><a href="#Enum_ShardState">ShardState</a></li>
+<li><a href="#Enum_Level">Level</a></li>
 </ul>
 </li>
 <li><a href="#Structs">Data structures</a>
@@ -77,7 +78,9 @@ limitations under the License.
 <li><a href="#Struct_FetchRecordResult">FetchRecordResult</a></li>
 <li><a href="#Struct_FetchResult">FetchResult</a></li>
 <li><a href="#Struct_Facet">Facet</a></li>
+<li><a href="#Struct_SortField">SortField</a></li>
 <li><a href="#Struct_BlurQuery">BlurQuery</a></li>
+<li><a href="#Struct_SortFieldResult">SortFieldResult</a></li>
 <li><a href="#Struct_BlurResult">BlurResult</a></li>
 <li><a href="#Struct_BlurResults">BlurResults</a></li>
 <li><a href="#Struct_RecordMutation">RecordMutation</a></li>
@@ -117,7 +120,9 @@ limitations under the License.
 <li><a href="#Fn_Blur_fetchRow">&nbsp;&nbsp;fetchRow</a></li>
 <li><a href="#Fn_Blur_fetchRowBatch">&nbsp;&nbsp;fetchRowBatch</a></li>
 <li><a href="#Fn_Blur_mutate">&nbsp;&nbsp;mutate</a></li>
+<li><a href="#Fn_Blur_enqueueMutate">&nbsp;&nbsp;enqueueMutate</a></li>
 <li><a href="#Fn_Blur_mutateBatch">&nbsp;&nbsp;mutateBatch</a></li>
+<li><a href="#Fn_Blur_enqueueMutateBatch">&nbsp;&nbsp;enqueueMutateBatch</a></li>
 <li><a href="#Fn_Blur_cancelQuery">&nbsp;&nbsp;cancelQuery</a></li>
 <li><a href="#Fn_Blur_queryStatusIdList">&nbsp;&nbsp;queryStatusIdList</a></li>
 <li><a href="#Fn_Blur_queryStatusById">&nbsp;&nbsp;queryStatusById</a></li>
@@ -138,6 +143,9 @@ limitations under the License.
 <li><a href="#Fn_Blur_traceRequestList">&nbsp;&nbsp;traceRequestList</a></li>
 <li><a href="#Fn_Blur_traceRequestFetch">&nbsp;&nbsp;traceRequestFetch</a></li>
 <li><a href="#Fn_Blur_traceRemove">&nbsp;&nbsp;traceRemove</a></li>
+<li><a href="#Fn_Blur_ping">&nbsp;&nbsp;ping</a></li>
+<li><a href="#Fn_Blur_logging">&nbsp;&nbsp;logging</a></li>
+<li><a href="#Fn_Blur_resetLogging">&nbsp;&nbsp;resetLogging</a></li>
 </ul></li>
 </ul>
 </li>
@@ -242,6 +250,18 @@ limitations under the License.
 <tr><td><code>CLOSED</code></td><td><code>4</code></td></tr>
 <tr><td><code>CLOSING_ERROR</code></td><td><code>5</code></td></tr>
 </table></p></section>
+<section><div class="page-header"><h3 id="Enum_Level">Enumeration: Level</h3></div><p class="lead">
+Logging level enum used to change the logging levels at runtime.
+<br/><br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>OFF</code></td><td><code>0</code></td></tr>
+<tr><td><code>FATAL</code></td><td><code>1</code></td></tr>
+<tr><td><code>ERROR</code></td><td><code>2</code></td></tr>
+<tr><td><code>WARN</code></td><td><code>3</code></td></tr>
+<tr><td><code>INFO</code></td><td><code>4</code></td></tr>
+<tr><td><code>DEBUG</code></td><td><code>5</code></td></tr>
+<tr><td><code>TRACE</code></td><td><code>6</code></td></tr>
+<tr><td><code>ALL</code></td><td><code>7</code></td></tr>
+</table></p></section>
 <hr/><h2 id="Structs">Data structures</h2>
 <section><div class="page-header"><h3 id="Struct_BlurException">Exception: BlurException</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
@@ -274,9 +294,6 @@ trace (if any).
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>records</td><td><code>list&lt;<code><a href="Blur.html#Struct_Record">Record</a></code>&gt;</code></td><td>The list records within the row.  If paging is used this list will only
 reflect the paged records from the selector.
-</td><td>default</td><td></td></tr>
-<tr><td>3</td><td>recordCount</td><td><code>i32</code></td><td>The total record count for the row.  If paging is used in a selector to page
-through records of a row, this count will reflect the entire row.
 </td><td>default</td><td></td></tr>
 </table><br/>Rows contain a list of records.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_Query">Struct: Query</h3></div><p class="lead">
@@ -321,9 +338,9 @@ The location id of the Record or Row to be fetched.
 </td><td>default</td><td></td></tr>
 <tr><td>4</td><td>recordId</td><td><code>string</code></td><td>The record id of the Record to be fetched, not to be used with location id.  However the row id needs to be provided to locate the correct Row with the requested Record.
 </td><td>default</td><td></td></tr>
-<tr><td>5</td><td>columnFamiliesToFetch</td><td><code>list&lt;<code>string</code>&gt;</code></td><td>The column families to fetch.  If null, fetch all.  If empty, fetch none.
+<tr><td>5</td><td>columnFamiliesToFetch</td><td><code>set&lt;<code>string</code>&gt;</code></td><td>The column families to fetch. If null, fetch all. If empty, fetch none.
 </td><td>default</td><td></td></tr>
-<tr><td>6</td><td>columnsToFetch</td><td><code>map&lt;<code>string</code>, <code>set&lt;<code>string</code>&gt;</code>&gt;</code></td><td>The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
+<tr><td>6</td><td>columnsToFetch</td><td><code>map&lt;<code>string</code>, <code>set&lt;<code>string</code>&gt;</code>&gt;</code></td><td>The columns in the families to fetch. If null, fetch all. If empty, fetch none.
 </td><td>default</td><td></td></tr>
 <tr><td>8</td><td>startRecord</td><td><code>i32</code></td><td>Only valid for Row fetches, the record in the row to start fetching.  If the row contains 1000
 records and you want the first 100, then this value is 0.  If you want records 300-400 then this
@@ -332,15 +349,25 @@ FetchResult.  Used in conjunction with maxRecordsToFetch.
 </td><td>default</td><td>0</td></tr>
 <tr><td>9</td><td>maxRecordsToFetch</td><td><code>i32</code></td><td>Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records
 and you want the first 100, then this value is 100.  If you want records 300-400 then this value
-would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch the first
+would be 100.  Used in conjunction with startRecord. By default this will fetch the first
 1000 records of the row.
 </td><td>default</td><td>1000</td></tr>
 <tr><td>10</td><td>highlightOptions</td><td><code><a href="Blur.html#Struct_HighlightOptions">HighlightOptions</a></code></td><td>The HighlightOptions object controls how the data is highlighted.  If null no highlighting will occur.
+</td><td>default</td><td></td></tr>
+<tr><td>11</td><td>orderOfFamiliesToFetch</td><td><code>list&lt;<code>string</code>&gt;</code></td><td>Can be null, if provided the provided family order will be the order in which the families are returned.
 </td><td>default</td><td></td></tr>
 </table><br/>Select carries the request for information to be retrieved from the stored columns.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_FetchRowResult">Struct: FetchRowResult</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>row</td><td><code><a href="Blur.html#Struct_Row">Row</a></code></td><td>The row fetched.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>startRecord</td><td><code>i32</code></td><td>See Selector startRecord.
+</td><td>default</td><td>-1</td></tr>
+<tr><td>3</td><td>maxRecordsToFetch</td><td><code>i32</code></td><td>See Selector maxRecordsToFetch.
+</td><td>default</td><td>-1</td></tr>
+<tr><td>4</td><td>moreRecordsToFetch</td><td><code>bool</code></td><td>Are there more Records to fetch based on the Selector provided.
+</td><td>default</td><td>0</td></tr>
+<tr><td>5</td><td>totalRecords</td><td><code>i32</code></td><td>The total number of records the Selector found.
 </td><td>default</td><td></td></tr>
 </table><br/>FetchRowResult contains row result from a fetch.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_FetchRecordResult">Struct: FetchRecordResult</h3></div><p class="lead">
@@ -376,7 +403,12 @@ the shard server level the controller will likely return more than the minimum
 because it sums the answers from the shard servers.
 </td><td>default</td><td>9223372036854775807</td></tr>
 </table><br/>Blur facet.
-<br/></p></section><section><div class="page-header"><h3 id="Struct_BlurQuery">Struct: BlurQuery</h3></div><p class="lead">
+<br/></p></section><section><div class="page-header"><h3 id="Struct_SortField">Struct: SortField</h3></div><p class="lead">
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>family</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>column</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>reverse</td><td><code>bool</code></td><td></td><td>default</td><td></td></tr>
+</table><br/></p></section><section><div class="page-header"><h3 id="Struct_BlurQuery">Struct: BlurQuery</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>query</td><td><code><a href="Blur.html#Struct_Query">Query</a></code></td><td>The query information.
 </td><td>default</td><td></td></tr>
@@ -404,8 +436,27 @@ of a running query can be found or the query can be canceled.
 </td><td>default</td><td>1</td></tr>
 <tr><td>14</td><td>startTime</td><td><code>i64</code></td><td>Sets the start time, if 0 the controller sets the time.
 </td><td>default</td><td>0</td></tr>
+<tr><td>15</td><td>sortFields</td><td><code>list&lt;<code><a href="Blur.html#Struct_SortField">SortField</a></code>&gt;</code></td><td>The sortfields are applied in order to sort the results.
+</td><td>default</td><td></td></tr>
+<tr><td>16</td><td>rowId</td><td><code>string</code></td><td>Optional optimization for record queries to run against a single row.  This will allow the query to be executed on one and only one shard in the cluster.
+</td><td>default</td><td></td></tr>
 </table><br/>The Blur Query object that contains the query that needs to be executed along
 with the query options.
+<br/></p></section><section><div class="page-header"><h3 id="Struct_SortFieldResult">Struct: SortFieldResult</h3></div><p class="lead">
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>nullValue</td><td><code>bool</code></td><td>Carries the null boolean incase the field is null.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>stringValue</td><td><code>string</code></td><td>The string value.
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>intValue</td><td><code>i32</code></td><td>The integer value.
+</td><td>default</td><td></td></tr>
+<tr><td>4</td><td>longValue</td><td><code>i64</code></td><td>The long value.
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>doubleValue</td><td><code>double</code></td><td>The double value.
+</td><td>default</td><td></td></tr>
+<tr><td>6</td><td>binaryValue</td><td><code>binary</code></td><td>The binary value.
+</td><td>default</td><td></td></tr>
+</table><br/>Carries the one value from the sort that allows the merging of results.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_BlurResult">Struct: BlurResult</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>locationId</td><td><code>string</code></td><td>WARNING: This is an internal only attribute and is not intended for use by clients.
@@ -413,6 +464,8 @@ with the query options.
 <tr><td>2</td><td>score</td><td><code>double</code></td><td>The score for the hit in the query.
 </td><td>default</td><td></td></tr>
 <tr><td>3</td><td>fetchResult</td><td><code><a href="Blur.html#Struct_FetchResult">FetchResult</a></code></td><td>The fetched result if any.
+</td><td>default</td><td></td></tr>
+<tr><td>4</td><td>sortFieldResults</td><td><code>list&lt;<code><a href="Blur.html#Struct_SortFieldResult">SortFieldResult</a></code>&gt;</code></td><td>The fields used for sorting.
 </td><td>default</td><td></td></tr>
 </table><br/>The BlurResult carries the score, the location id and the fetched result (if any) form each query.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_BlurResults">Struct: BlurResults</h3></div><p class="lead">
@@ -443,14 +496,10 @@ with the query options.
 </td><td>default</td><td></td></tr>
 <tr><td>2</td><td>rowId</td><td><code>string</code></td><td>The row id that the row mutation is to act upon.
 </td><td>default</td><td></td></tr>
-<tr><td>3</td><td>wal</td><td><code>bool</code></td><td>Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
-</td><td>default</td><td>1</td></tr>
 <tr><td>4</td><td>rowMutationType</td><td><code><a href="Blur.html#Enum_RowMutationType">RowMutationType</a></code></td><td>The RowMutationType to define how to mutate the given Row.
 </td><td>default</td><td>UNKNOWN</td></tr>
 <tr><td>5</td><td>recordMutations</td><td><code>list&lt;<code><a href="Blur.html#Struct_RecordMutation">RecordMutation</a></code>&gt;</code></td><td>The RecordMutations if any for this Row.
 </td><td>default</td><td></td></tr>
-<tr><td>6</td><td>waitToBeVisible</td><td><code>bool</code></td><td>On mutate waits for the mutation to be visible to queries and fetch requests.
-</td><td>default</td><td>0</td></tr>
 </table><br/>The RowMutation defines how the given Row is to be mutated.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_CpuTime">Struct: CpuTime</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
@@ -516,6 +565,8 @@ NOTE: This will index the column as a full text field in a default field, so tha
 </ul>
 </td><td>default</td><td></td></tr>
 <tr><td>6</td><td>properties</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td>For any custom field types, you can pass in configuration properties.
+</td><td>default</td><td></td></tr>
+<tr><td>7</td><td>sortable</td><td><code>bool</code></td><td>This will attempt to enable sorting for this column, if the type does not support sorting then an exception will be thrown.
 </td><td>default</td><td></td></tr>
 </table><br/>The ColumnDefinition defines how a given Column should be interpreted (indexed/stored)
 <br/></p></section><section><div class="page-header"><h3 id="Struct_Schema">Struct: Schema</h3></div><p class="lead">
@@ -747,11 +798,25 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 <br/><br/><h4 id="Parameters_Blur_mutate">Parameters</h4>
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>mutation</td><td>the RowMutation.
 </td></tr>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_enqueueMutate">Function: Blur.enqueueMutate</h4></div><p class="lead">
+<pre><code>void</code> enqueueMutate(<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code> mutation)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Enqueue a RowMutation. Note that the effect of the RowMutation will occur at some point in the future, volume and load will play a role in how much time will pass before the mutation goes into effect.
+<br/><br/><h4 id="Parameters_Blur_enqueueMutate">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>mutation</td><td>the RowMutation.
+</td></tr>
 </table></p></section><section><div class="page-header"><h4 id="Fn_Blur_mutateBatch">Function: Blur.mutateBatch</h4></div><p class="lead">
 <pre><code>void</code> mutateBatch(<code>list&lt;<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code>&gt;</code> mutations)
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Mutates a group of Rows given the list of RowMutations that are provided.  Note: This is not an atomic operation.
 <br/><br/><h4 id="Parameters_Blur_mutateBatch">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>mutations</td><td>the batch of RowMutations.
+</td></tr>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_enqueueMutateBatch">Function: Blur.enqueueMutateBatch</h4></div><p class="lead">
+<pre><code>void</code> enqueueMutateBatch(<code>list&lt;<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code>&gt;</code> mutations)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Enqueue a batch of RowMutations. Note that the effect of the RowMutation will occur at some point in the future, volume and load will play a role in how much time will pass before the mutation goes into effect.
+<br/><br/><h4 id="Parameters_Blur_enqueueMutateBatch">Parameters</h4>
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>mutations</td><td>the batch of RowMutations.
 </td></tr>
 </table></p></section><section><div class="page-header"><h4 id="Fn_Blur_cancelQuery">Function: Blur.cancelQuery</h4></div><p class="lead">
@@ -934,7 +999,24 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 <br/><br/><h4 id="Parameters_Blur_traceRemove">Parameters</h4>
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>traceId</td><td>the trace id.
 </td></tr>
-</table></p></section>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_ping">Function: Blur.ping</h4></div><p class="lead">
+<pre><code>void</code> ping()
+</pre>A way to ping a server to make sure the connection is still valid.
+<br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_logging">Function: Blur.logging</h4></div><p class="lead">
+<pre><code>void</code> logging(<code>string</code> classNameOrLoggerName,
+<code><a href="Blur.html#Enum_Level">Level</a></code> level)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Changes the logging level for the given instance dynamically at runtime.
+<br/><br/><h4 id="Parameters_Blur_logging">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>classNameOrLoggerName</td><td>the className or Logger Name of the Logger to be changed.
+</td></tr>
+<tr><td>level</td><td>the logging level.
+</td></tr>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_resetLogging">Function: Blur.resetLogging</h4></div><p class="lead">
+<pre><code>void</code> resetLogging()
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Resets the logging for this instance to match the log4j file.  NOTE: This will allow for dynamically changing to logging file at runtime.
+<br/></p></section>
 </div>
 </div>
 </div>

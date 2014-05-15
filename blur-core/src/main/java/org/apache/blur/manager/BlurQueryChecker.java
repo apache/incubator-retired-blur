@@ -20,11 +20,17 @@ import static org.apache.blur.utils.BlurConstants.BLUR_QUERY_MAX_RECORD_FETCH;
 import static org.apache.blur.utils.BlurConstants.BLUR_QUERY_MAX_RESULTS_FETCH;
 import static org.apache.blur.utils.BlurConstants.BLUR_QUERY_MAX_ROW_FETCH;
 
+import java.util.List;
+
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.thrift.BException;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
+import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.Selector;
+import org.apache.blur.thrift.generated.SortField;
 import org.apache.blur.utils.BlurConstants;
 
 /**
@@ -58,8 +64,9 @@ public class BlurQueryChecker {
    * 
    * @param blurQuery
    *          the {@link BlurQuery} to validate.
+   * @throws BlurException
    */
-  public void checkQuery(BlurQuery blurQuery) {
+  public void checkQuery(BlurQuery blurQuery) throws BlurException {
     if (blurQuery.selector != null) {
       if (blurQuery.selector.recordOnly) {
         if (blurQuery.fetch > _maxQueryRecordFetch) {
@@ -85,6 +92,21 @@ public class BlurQueryChecker {
           "Number of rows/records requested to be fetched [{0}] is greater than the minimum number of results [{1}]",
           blurQuery.fetch, blurQuery.minimumNumberOfResults);
       blurQuery.fetch = (int) blurQuery.minimumNumberOfResults;
+    }
+    Query query = blurQuery.getQuery();
+    if (blurQuery.getRowId() != null) {
+      if (query.isRowQuery()) {
+        throw new BException("Query [{0}] in BlurQuery [{1}] cannot be a rowquery when rowId is supplied.", query,
+            blurQuery);
+      }
+    }
+    List<SortField> sortFields = blurQuery.getSortFields();
+    if (sortFields != null && !sortFields.isEmpty()) {
+      boolean rowQuery = query.isRowQuery();
+      if (rowQuery) {
+        throw new BException("Query [{0}] in BlurQuery [{1}] cannot be a rowquery when sortfields are supplied.",
+            query, blurQuery);
+      }
     }
   }
 

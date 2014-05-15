@@ -18,7 +18,6 @@ package org.apache.blur.manager;
  */
 import static org.apache.blur.metrics.MetricsConstants.BLUR;
 import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
-import static org.apache.blur.thrift.util.BlurThriftHelper.findRecordMutation;
 import static org.apache.blur.utils.BlurConstants.FAMILY;
 import static org.apache.blur.utils.BlurConstants.PRIME_DOC;
 import static org.apache.blur.utils.BlurConstants.RECORD_ID;
@@ -28,9 +27,9 @@ import static org.apache.blur.utils.RowDocumentUtil.getRow;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,8 +39,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.analysis.FieldManager;
@@ -50,6 +51,8 @@ import org.apache.blur.index.ExitableReader;
 import org.apache.blur.index.ExitableReader.ExitingReaderException;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.lucene.search.DeepPagingCache;
+import org.apache.blur.lucene.search.FacetExecutor;
 import org.apache.blur.lucene.search.FacetQuery;
 import org.apache.blur.lucene.search.StopExecutionCollector.StopExecutionCollectorException;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
@@ -59,7 +62,9 @@ import org.apache.blur.manager.results.MergerBlurResultIterable;
 import org.apache.blur.manager.status.QueryStatus;
 import org.apache.blur.manager.status.QueryStatusManager;
 import org.apache.blur.manager.writer.BlurIndex;
+import org.apache.blur.manager.writer.MutatableAction;
 import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.BException;
@@ -67,24 +72,23 @@ import org.apache.blur.thrift.MutationHelper;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
-import org.apache.blur.thrift.generated.Column;
+import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.ErrorType;
+import org.apache.blur.thrift.generated.Facet;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.FetchRowResult;
 import org.apache.blur.thrift.generated.HighlightOptions;
 import org.apache.blur.thrift.generated.QueryState;
-import org.apache.blur.thrift.generated.Record;
-import org.apache.blur.thrift.generated.RecordMutation;
-import org.apache.blur.thrift.generated.RecordMutationType;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.RowMutation;
-import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
+import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.BlurExecutorCompletionService.Cancel;
+import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.ForkJoin;
 import org.apache.blur.utils.ForkJoin.Merger;
@@ -93,19 +97,27 @@ import org.apache.blur.utils.HighlightHelper;
 import org.apache.blur.utils.ResetableDocumentStoredFieldVisitor;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.BaseCompositeReader;
+import org.apache.lucene.index.BaseCompositeReaderUtil;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiFields;
+import org.apache.lucene.index.SegmentReader;
 import org.apache.lucene.index.StoredFieldVisitor;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.queries.BooleanFilter;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.DocIdSet;
+import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
@@ -121,19 +133,26 @@ import com.yammer.metrics.core.TimerContext;
 
 public class IndexManager {
 
-  private static final String NOT_FOUND = "NOT_FOUND";
+  public static final String NOT_FOUND = "NOT_FOUND";
   private static final Log LOG = LogFactory.getLog(IndexManager.class);
 
-  private final Meter _readRecordsMeter;
-  private final Meter _readRowMeter;
-  private final Meter _writeRecordsMeter;
-  private final Meter _writeRowMeter;
+  private static final Meter _readRecordsMeter;
+  private static final Meter _readRowMeter;
+
+  static {
+    MetricName metricName1 = new MetricName(ORG_APACHE_BLUR, BLUR, "Read Records/s");
+    MetricName metricName2 = new MetricName(ORG_APACHE_BLUR, BLUR, "Read Row/s");
+    _readRecordsMeter = Metrics.newMeter(metricName1, "Records/s", TimeUnit.SECONDS);
+    _readRowMeter = Metrics.newMeter(metricName2, "Row/s", TimeUnit.SECONDS);
+  }
+
   private final Meter _queriesExternalMeter;
   private final Meter _queriesInternalMeter;
 
   private final IndexServer _indexServer;
   private final ClusterStatus _clusterStatus;
   private final ExecutorService _executor;
+  private final ExecutorService _facetExecutor;
   private final ExecutorService _mutateExecutor;
 
   private final QueryStatusManager _statusManager = new QueryStatusManager();
@@ -148,30 +167,25 @@ public class IndexManager {
 
   private final int _threadCount;
   private final int _mutateThreadCount;
+  private final DeepPagingCache _deepPagingCache;
 
   public static AtomicBoolean DEBUG_RUN_SLOW = new AtomicBoolean(false);
 
   public IndexManager(IndexServer indexServer, ClusterStatus clusterStatus, BlurFilterCache filterCache,
-      int maxHeapPerRowFetch, int fetchCount, int threadCount, int mutateThreadCount, long statusCleanupTimerDelay) {
+      int maxHeapPerRowFetch, int fetchCount, int threadCount, int mutateThreadCount, long statusCleanupTimerDelay,
+      int facetThreadCount, DeepPagingCache deepPagingCache) {
+    _deepPagingCache = deepPagingCache;
     _indexServer = indexServer;
     _clusterStatus = clusterStatus;
     _filterCache = filterCache;
 
-    MetricName metricName1 = new MetricName(ORG_APACHE_BLUR, BLUR, "Read Records/s");
-    MetricName metricName2 = new MetricName(ORG_APACHE_BLUR, BLUR, "Read Row/s");
-    MetricName metricName3 = new MetricName(ORG_APACHE_BLUR, BLUR, "Write Records/s");
-    MetricName metricName4 = new MetricName(ORG_APACHE_BLUR, BLUR, "Write Row/s");
-    MetricName metricName5 = new MetricName(ORG_APACHE_BLUR, BLUR, "External Queries/s");
-    MetricName metricName6 = new MetricName(ORG_APACHE_BLUR, BLUR, "Internal Queries/s");
-    MetricName metricName7 = new MetricName(ORG_APACHE_BLUR, BLUR, "Fetch Timer");
+    MetricName metricName1 = new MetricName(ORG_APACHE_BLUR, BLUR, "External Queries/s");
+    MetricName metricName2 = new MetricName(ORG_APACHE_BLUR, BLUR, "Internal Queries/s");
+    MetricName metricName3 = new MetricName(ORG_APACHE_BLUR, BLUR, "Fetch Timer");
 
-    _readRecordsMeter = Metrics.newMeter(metricName1, "Records/s", TimeUnit.SECONDS);
-    _readRowMeter = Metrics.newMeter(metricName2, "Row/s", TimeUnit.SECONDS);
-    _writeRecordsMeter = Metrics.newMeter(metricName3, "Records/s", TimeUnit.SECONDS);
-    _writeRowMeter = Metrics.newMeter(metricName4, "Row/s", TimeUnit.SECONDS);
-    _queriesExternalMeter = Metrics.newMeter(metricName5, "External Queries/s", TimeUnit.SECONDS);
-    _queriesInternalMeter = Metrics.newMeter(metricName6, "Internal Queries/s", TimeUnit.SECONDS);
-    _fetchTimer = Metrics.newTimer(metricName7, TimeUnit.MICROSECONDS, TimeUnit.SECONDS);
+    _queriesExternalMeter = Metrics.newMeter(metricName1, "External Queries/s", TimeUnit.SECONDS);
+    _queriesInternalMeter = Metrics.newMeter(metricName2, "Internal Queries/s", TimeUnit.SECONDS);
+    _fetchTimer = Metrics.newTimer(metricName3, TimeUnit.MICROSECONDS, TimeUnit.SECONDS);
 
     if (threadCount == 0) {
       throw new RuntimeException("Thread Count cannot be 0.");
@@ -186,6 +200,12 @@ public class IndexManager {
 
     _executor = Executors.newThreadPool("index-manager", _threadCount);
     _mutateExecutor = Executors.newThreadPool("index-manager-mutate", _mutateThreadCount);
+    if (facetThreadCount < 1) {
+      _facetExecutor = null;
+    } else {
+      _facetExecutor = Executors.newThreadPool(new SynchronousQueue<Runnable>(), "facet-execution", facetThreadCount);
+    }
+
     _statusManager.setStatusCleanupTimerDelay(statusCleanupTimerDelay);
     _statusManager.init();
     LOG.info("Init Complete");
@@ -198,6 +218,9 @@ public class IndexManager {
       _statusManager.close();
       _executor.shutdownNow();
       _mutateExecutor.shutdownNow();
+      if (_facetExecutor != null) {
+        _facetExecutor.shutdownNow();
+      }
       try {
         _indexServer.close();
       } catch (IOException e) {
@@ -235,14 +258,21 @@ public class IndexManager {
 
   public void fetchRow(String table, Selector selector, FetchResult fetchResult) throws BlurException {
     validSelector(selector);
-    BlurIndex index;
-    String shard;
+    TableContext tableContext = getTableContext(table);
+    ReadInterceptor interceptor = tableContext.getReadInterceptor();
+    Filter filter = interceptor.getFilter();
+    BlurIndex index = null;
+    String shard = null;
     Tracer trace = Trace.trace("manager fetch", Trace.param("table", table));
+    IndexSearcherClosable searcher = null;
     try {
       if (selector.getLocationId() == null) {
         // Not looking up by location id so we should resetSearchers.
         ShardServerContext.resetSearchers();
-        populateSelector(table, selector);
+        shard = MutationHelper.getShardName(table, selector.rowId, getNumberOfShards(table), _blurPartitioner);
+        index = getBlurIndex(table, shard);
+        searcher = index.getIndexSearcher();
+        populateSelector(searcher, shard, table, selector);
       }
       String locationId = selector.getLocationId();
       if (locationId.equals(NOT_FOUND)) {
@@ -250,20 +280,11 @@ public class IndexManager {
         fetchResult.setExists(false);
         return;
       }
-      shard = getShard(locationId);
-      Map<String, BlurIndex> blurIndexes = _indexServer.getIndexes(table);
-      if (blurIndexes == null) {
-        LOG.error("Table [{0}] not found", table);
-        // @TODO probably should make a enum for not found on this server so the
-        // controller knows to try another server.
-        throw new BException("Table [" + table + "] not found");
+      if (shard == null) {
+        shard = getShard(locationId);
       }
-      index = blurIndexes.get(shard);
       if (index == null) {
-        LOG.error("Shard [{0}] not found in table [{1}]", shard, table);
-        // @TODO probably should make a enum for not found on this server so the
-        // controller knows to try another server.
-        throw new BException("Shard [" + shard + "] not found in table [" + table + "]");
+        index = getBlurIndex(table, shard);
       }
     } catch (BlurException e) {
       throw e;
@@ -271,7 +292,6 @@ public class IndexManager {
       LOG.error("Unknown error while trying to get the correct index reader for selector [{0}].", e, selector);
       throw new BException(e.getMessage(), e);
     }
-    IndexSearcherClosable searcher = null;
     TimerContext timerContext = _fetchTimer.time();
     boolean usedCache = true;
     try {
@@ -280,26 +300,16 @@ public class IndexManager {
         searcher = shardServerContext.getIndexSearcherClosable(table, shard);
       }
       if (searcher == null) {
+        // Was not pulled from cache, get a fresh one from the index.
         searcher = index.getIndexSearcher();
         usedCache = false;
       }
-
-      TableContext tableContext = getTableContext(table);
       FieldManager fieldManager = tableContext.getFieldManager();
 
       Query highlightQuery = getHighlightQuery(selector, table, fieldManager);
 
       fetchRow(searcher.getIndexReader(), table, shard, selector, fetchResult, highlightQuery, fieldManager,
-          _maxHeapPerRowFetch, tableContext);
-
-      if (fetchResult.rowResult != null) {
-        if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
-          _readRecordsMeter.mark(fetchResult.rowResult.row.records.size());
-        }
-        _readRowMeter.mark();
-      } else if (fetchResult.recordResult != null) {
-        _readRecordsMeter.mark();
-      }
+          _maxHeapPerRowFetch, tableContext, filter);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to fetch row.", e);
       throw new BException(e.getMessage(), e);
@@ -316,6 +326,24 @@ public class IndexManager {
         }
       }
     }
+  }
+
+  private BlurIndex getBlurIndex(String table, String shard) throws BException, IOException {
+    Map<String, BlurIndex> blurIndexes = _indexServer.getIndexes(table);
+    if (blurIndexes == null) {
+      LOG.error("Table [{0}] not found", table);
+      // @TODO probably should make a enum for not found on this server so the
+      // controller knows to try another server.
+      throw new BException("Table [" + table + "] not found");
+    }
+    BlurIndex index = blurIndexes.get(shard);
+    if (index == null) {
+      LOG.error("Shard [{0}] not found in table [{1}]", shard, table);
+      // @TODO probably should make a enum for not found on this server so the
+      // controller knows to try another server.
+      throw new BException("Shard [" + shard + "] not found in table [" + table + "]");
+    }
+    return index;
   }
 
   private Query getHighlightQuery(Selector selector, String table, FieldManager fieldManager) throws ParseException,
@@ -337,17 +365,11 @@ public class IndexManager {
         getScoreType(query.scoreType), context);
   }
 
-  private void populateSelector(String table, Selector selector) throws IOException, BlurException {
+  public static void populateSelector(IndexSearcherClosable searcher, String shardName, String table, Selector selector)
+      throws IOException {
     Tracer trace = Trace.trace("populate selector");
     String rowId = selector.rowId;
     String recordId = selector.recordId;
-    String shardName = MutationHelper.getShardName(table, rowId, getNumberOfShards(table), _blurPartitioner);
-    Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
-    BlurIndex blurIndex = indexes.get(shardName);
-    if (blurIndex == null) {
-      throw new BException("Shard [" + shardName + "] is not being servered by this shardserver.");
-    }
-    IndexSearcherClosable searcher = blurIndex.getIndexSearcher();
     try {
       BooleanQuery query = new BooleanQuery();
       if (selector.recordOnly) {
@@ -372,8 +394,6 @@ public class IndexManager {
         selector.setLocationId(NOT_FOUND);
       }
     } finally {
-      // this will allow for closing of index
-      searcher.close();
       trace.done();
     }
   }
@@ -437,31 +457,81 @@ public class IndexManager {
         LOG.error("Unknown error while trying to fetch index readers.", e);
         throw new BException(e.getMessage(), e);
       }
+      String rowId = blurQuery.getRowId();
+      if (rowId != null) {
+        // reduce the index selection down to the only one that would contain
+        // the row.
+        Map<String, BlurIndex> map = new HashMap<String, BlurIndex>();
+        String shard = MutationHelper.getShardName(table, rowId, getNumberOfShards(table), _blurPartitioner);
+        BlurIndex index = getBlurIndex(table, shard);
+        map.put(shard, index);
+        blurIndexes = map;
+      }
       Tracer trace = Trace.trace("query setup", Trace.param("table", table));
       ShardServerContext shardServerContext = ShardServerContext.getShardServerContext();
       ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> call;
       TableContext context = getTableContext(table);
       FieldManager fieldManager = context.getFieldManager();
       org.apache.blur.thrift.generated.Query simpleQuery = blurQuery.query;
-      Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.recordFilter, false, fieldManager,
+      ReadInterceptor interceptor = context.getReadInterceptor();
+      Filter readFilter = interceptor.getFilter();
+      if (rowId != null) {
+        if (simpleQuery.recordFilter == null) {
+          simpleQuery.recordFilter = "+" + BlurConstants.ROW_ID + ":" + rowId;
+        } else {
+          simpleQuery.recordFilter = "+" + BlurConstants.ROW_ID + ":" + rowId + " +(" + simpleQuery.recordFilter + ")";
+        }
+      }
+      Filter recordFilterForSearch = QueryParserUtil.parseFilter(table, simpleQuery.recordFilter, false, fieldManager,
           _filterCache, context);
-      Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.rowFilter, true, fieldManager, _filterCache,
-          context);
-      Query userQuery = QueryParserUtil.parseQuery(simpleQuery.query, simpleQuery.rowQuery, fieldManager, postFilter,
-          preFilter, getScoreType(simpleQuery.scoreType), context);
-      Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, fieldManager, context, postFilter,
-          preFilter);
+      Filter rowFilterForSearch = QueryParserUtil.parseFilter(table, simpleQuery.rowFilter, true, fieldManager,
+          _filterCache, context);
+      Filter docFilter;
+      if (recordFilterForSearch == null && readFilter != null) {
+        docFilter = readFilter;
+      } else if (recordFilterForSearch != null && readFilter == null) {
+        docFilter = recordFilterForSearch;
+      } else if (recordFilterForSearch != null && readFilter != null) {
+        // @TODO dangerous call because of the bitsets that booleanfilter
+        // creates.
+        BooleanFilter booleanFilter = new BooleanFilter();
+        booleanFilter.add(recordFilterForSearch, Occur.MUST);
+        booleanFilter.add(readFilter, Occur.MUST);
+        docFilter = booleanFilter;
+      } else {
+        docFilter = null;
+      }
+      Query userQuery = QueryParserUtil.parseQuery(simpleQuery.query, simpleQuery.rowQuery, fieldManager,
+          rowFilterForSearch, docFilter, getScoreType(simpleQuery.scoreType), context);
+
+      Query facetedQuery;
+      FacetExecutor executor = null;
+      if (blurQuery.facets != null) {
+        long[] facetMinimums = getFacetMinimums(blurQuery.facets);
+        executor = new FacetExecutor(blurQuery.facets.size(), facetMinimums, facetedCounts, running);
+        facetedQuery = new FacetQuery(userQuery, getFacetQueries(blurQuery, fieldManager, context, rowFilterForSearch,
+            recordFilterForSearch), executor);
+      } else {
+        facetedQuery = userQuery;
+      }
+
+      Sort sort = getSort(blurQuery, fieldManager);
       call = new SimpleQueryParallelCall(running, table, status, facetedQuery, blurQuery.selector,
           _queriesInternalMeter, shardServerContext, runSlow, _fetchCount, _maxHeapPerRowFetch,
-          context.getSimilarity(), context);
+          context.getSimilarity(), context, sort, _deepPagingCache);
       trace.done();
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
-      return ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
+      BlurResultIterable merge = ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
         @Override
         public void cancel() {
           running.set(false);
         }
       }).merge(merger);
+
+      if (executor != null) {
+        executor.processFacets(_facetExecutor);
+      }
+      return fetchDataIfNeeded(merge, table, blurQuery.getSelector());
     } catch (StopExecutionCollectorException e) {
       BlurQueryStatus queryStatus = status.getQueryStatus();
       QueryState state = queryStatus.getState();
@@ -485,6 +555,108 @@ public class IndexManager {
     }
   }
 
+  private Sort getSort(BlurQuery blurQuery, FieldManager fieldManager) throws IOException, BlurException {
+    List<org.apache.blur.thrift.generated.SortField> sortFields = blurQuery.getSortFields();
+    if (sortFields == null || sortFields.isEmpty()) {
+      return null;
+    }
+    SortField[] fields = new SortField[sortFields.size()];
+    int i = 0;
+    for (org.apache.blur.thrift.generated.SortField sortField : sortFields) {
+      if (sortField == null) {
+        throw new BException("Sortfields [{0}] can not contain a null.", sortFields);
+      }
+      String fieldName = getFieldName(sortField);
+      SortField field = fieldManager.getSortField(fieldName, sortField.reverse);
+      fields[i++] = field;
+    }
+    return new Sort(fields);
+  }
+
+  private String getFieldName(org.apache.blur.thrift.generated.SortField sortField) throws BlurException {
+    String family = sortField.getFamily();
+    if (family == null) {
+      family = BlurConstants.DEFAULT_FAMILY;
+    }
+    String column = sortField.getColumn();
+    if (column == null) {
+      throw new BException("Column in sortfield [{0}] can not be null.", sortField);
+    }
+    return family + "." + column;
+  }
+
+  private BlurResultIterable fetchDataIfNeeded(final BlurResultIterable iterable, final String table,
+      final Selector selector) {
+    if (selector == null) {
+      return iterable;
+    }
+    return new BlurResultIterable() {
+
+      @Override
+      public BlurIterator<BlurResult, BlurException> iterator() throws BlurException {
+        final BlurIterator<BlurResult, BlurException> iterator = iterable.iterator();
+        return new BlurIterator<BlurResult, BlurException>() {
+
+          @Override
+          public BlurResult next() throws BlurException {
+            BlurResult result = iterator.next();
+            String locationId = result.getLocationId();
+            FetchResult fetchResult = new FetchResult();
+            Selector s = new Selector(selector);
+            s.setLocationId(locationId);
+            fetchRow(table, s, fetchResult);
+            result.setFetchResult(fetchResult);
+            return result;
+          }
+
+          @Override
+          public boolean hasNext() throws BlurException {
+            return iterator.hasNext();
+          }
+        };
+      }
+
+      @Override
+      public void close() throws IOException {
+        iterable.close();
+      }
+
+      @Override
+      public void skipTo(long skipTo) {
+        iterable.skipTo(skipTo);
+      }
+
+      @Override
+      public long getTotalResults() {
+        return iterable.getTotalResults();
+      }
+
+      @Override
+      public Map<String, Long> getShardInfo() {
+        return iterable.getShardInfo();
+      }
+    };
+  }
+
+  private long[] getFacetMinimums(List<Facet> facets) {
+    long[] mins = new long[facets.size()];
+    boolean smallerThanMaxLong = false;
+    for (int i = 0; i < facets.size(); i++) {
+      Facet facet = facets.get(i);
+      if (facet != null) {
+        long minimumNumberOfBlurResults = facet.getMinimumNumberOfBlurResults();
+        mins[i] = minimumNumberOfBlurResults;
+        if (minimumNumberOfBlurResults < Long.MAX_VALUE) {
+          smallerThanMaxLong = true;
+        }
+      }
+    }
+    if (smallerThanMaxLong) {
+      return mins;
+    }
+    return null;
+  }
+
   public String parseQuery(String table, org.apache.blur.thrift.generated.Query simpleQuery) throws ParseException,
       BlurException {
     TableContext context = getTableContext(table);
@@ -500,14 +672,6 @@ public class IndexManager {
 
   private TableContext getTableContext(final String table) {
     return TableContext.create(_clusterStatus.getTableDescriptor(true, _clusterStatus.getCluster(true, table), table));
-  }
-
-  private Query getFacetedQuery(BlurQuery blurQuery, Query userQuery, AtomicLongArray counts,
-      FieldManager fieldManager, TableContext context, Filter postFilter, Filter preFilter) throws ParseException {
-    if (blurQuery.facets == null) {
-      return userQuery;
-    }
-    return new FacetQuery(userQuery, getFacetQueries(blurQuery, fieldManager, context, postFilter, preFilter), counts);
   }
 
   private Query[] getFacetQueries(BlurQuery blurQuery, FieldManager fieldManager, TableContext context,
@@ -545,109 +709,149 @@ public class IndexManager {
   }
 
   public static void fetchRow(IndexReader reader, String table, String shard, Selector selector,
-      FetchResult fetchResult, Query highlightQuery, int maxHeap, TableContext tableContext)
+      FetchResult fetchResult, Query highlightQuery, int maxHeap, TableContext tableContext, Filter filter)
       throws CorruptIndexException, IOException {
-    fetchRow(reader, table, shard, selector, fetchResult, highlightQuery, null, maxHeap, tableContext);
+    fetchRow(reader, table, shard, selector, fetchResult, highlightQuery, null, maxHeap, tableContext, filter);
   }
 
   public static void fetchRow(IndexReader reader, String table, String shard, Selector selector,
-      FetchResult fetchResult, Query highlightQuery, FieldManager fieldManager, int maxHeap, TableContext tableContext)
-      throws CorruptIndexException, IOException {
-    fetchResult.table = table;
-    String locationId = selector.locationId;
-    int lastSlash = locationId.lastIndexOf('/');
-    int docId = Integer.parseInt(locationId.substring(lastSlash + 1));
-    if (docId >= reader.maxDoc()) {
-      throw new RuntimeException("Location id [" + locationId + "] with docId [" + docId + "] is not valid.");
-    }
-
-    boolean returnIdsOnly = false;
-    if (selector.columnFamiliesToFetch != null && selector.columnsToFetch != null
-        && selector.columnFamiliesToFetch.isEmpty() && selector.columnsToFetch.isEmpty()) {
-      // exit early
-      returnIdsOnly = true;
-    }
-
-    Tracer t1 = Trace.trace("fetchRow - live docs");
-    Bits liveDocs = MultiFields.getLiveDocs(reader);
-    t1.done();
-    ResetableDocumentStoredFieldVisitor fieldVisitor = getFieldSelector(selector);
-    if (selector.isRecordOnly()) {
-      // select only the row for the given data or location id.
-      if (liveDocs != null && !liveDocs.get(docId)) {
-        fetchResult.exists = false;
-        fetchResult.deleted = true;
-        return;
-      } else {
-        fetchResult.exists = true;
-        fetchResult.deleted = false;
-        reader.document(docId, fieldVisitor);
-        Document document = fieldVisitor.getDocument();
-        if (highlightQuery != null && fieldManager != null) {
-          HighlightOptions highlightOptions = selector.getHighlightOptions();
-          String preTag = highlightOptions.getPreTag();
-          String postTag = highlightOptions.getPostTag();
-          try {
-            document = HighlightHelper
-                .highlight(docId, document, highlightQuery, fieldManager, reader, preTag, postTag);
-          } catch (InvalidTokenOffsetsException e) {
-            LOG.error("Unknown error while tring to highlight", e);
-          }
-        }
-        fieldVisitor.reset();
-        fetchResult.recordResult = getRecord(document);
-        return;
+      FetchResult fetchResult, Query highlightQuery, FieldManager fieldManager, int maxHeap, TableContext tableContext,
+      Filter filter) throws CorruptIndexException, IOException {
+    try {
+      fetchResult.table = table;
+      String locationId = selector.locationId;
+      int lastSlash = locationId.lastIndexOf('/');
+      int docId = Integer.parseInt(locationId.substring(lastSlash + 1));
+      if (docId >= reader.maxDoc()) {
+        throw new RuntimeException("Location id [" + locationId + "] with docId [" + docId + "] is not valid.");
       }
-    } else {
-      Tracer trace = Trace.trace("fetchRow - Row read");
-      try {
-        if (liveDocs != null && !liveDocs.get(docId)) {
+
+      boolean returnIdsOnly = false;
+      if (selector.columnFamiliesToFetch != null && selector.columnsToFetch != null
+          && selector.columnFamiliesToFetch.isEmpty() && selector.columnsToFetch.isEmpty()) {
+        // exit early
+        returnIdsOnly = true;
+      }
+
+      Tracer t1 = Trace.trace("fetchRow - live docs");
+      Bits liveDocs = MultiFields.getLiveDocs(reader);
+      t1.done();
+      ResetableDocumentStoredFieldVisitor fieldVisitor = getFieldSelector(selector);
+      if (selector.isRecordOnly()) {
+        // select only the row for the given data or location id.
+        if (isFiltered(docId, reader, filter)) {
+          fetchResult.exists = false;
+          fetchResult.deleted = false;
+          return;
+        } else if (liveDocs != null && !liveDocs.get(docId)) {
           fetchResult.exists = false;
           fetchResult.deleted = true;
           return;
         } else {
           fetchResult.exists = true;
           fetchResult.deleted = false;
-
-          if (returnIdsOnly) {
-            String rowId = selector.getRowId();
-            if (rowId == null) {
-              rowId = getRowId(reader, docId);
+          reader.document(docId, fieldVisitor);
+          Document document = fieldVisitor.getDocument();
+          if (highlightQuery != null && fieldManager != null) {
+            HighlightOptions highlightOptions = selector.getHighlightOptions();
+            String preTag = highlightOptions.getPreTag();
+            String postTag = highlightOptions.getPostTag();
+            try {
+              document = HighlightHelper.highlight(docId, document, highlightQuery, fieldManager, reader, preTag,
+                  postTag);
+            } catch (InvalidTokenOffsetsException e) {
+              LOG.error("Unknown error while tring to highlight", e);
             }
-            Term term = new Term(ROW_ID, rowId);
-            int recordCount = BlurUtil.countDocuments(reader, term);
-            fetchResult.rowResult = new FetchRowResult();
-            fetchResult.rowResult.row = new Row(rowId, null, recordCount);
+          }
+          fieldVisitor.reset();
+          fetchResult.recordResult = getRecord(document);
+          return;
+        }
+      } else {
+        Tracer trace = Trace.trace("fetchRow - Row read");
+        try {
+          if (liveDocs != null && !liveDocs.get(docId)) {
+            fetchResult.exists = false;
+            fetchResult.deleted = true;
+            return;
           } else {
-            List<Document> docs;
-            if (highlightQuery != null && fieldManager != null) {
+            fetchResult.exists = true;
+            fetchResult.deleted = false;
+            if (returnIdsOnly) {
               String rowId = selector.getRowId();
               if (rowId == null) {
                 rowId = getRowId(reader, docId);
               }
-              Term term = new Term(ROW_ID, rowId);
-              HighlightOptions highlightOptions = selector.getHighlightOptions();
-              String preTag = highlightOptions.getPreTag();
-              String postTag = highlightOptions.getPostTag();
-              Tracer docTrace = Trace.trace("fetchRow - Document w/Highlight read");
-              docs = HighlightHelper.highlightDocuments(reader, term, fieldVisitor, selector, highlightQuery,
-                  fieldManager, preTag, postTag);
-              docTrace.done();
+              fetchResult.rowResult = new FetchRowResult();
+              fetchResult.rowResult.row = new Row(rowId, null);
             } else {
+              List<Document> docs;
+              AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
+              AtomicInteger totalRecords = new AtomicInteger();
+              BlurHighlighter highlighter = new BlurHighlighter(highlightQuery, fieldManager, selector);
               Tracer docTrace = Trace.trace("fetchRow - Document read");
               docs = BlurUtil.fetchDocuments(reader, fieldVisitor, selector, maxHeap, table + "/" + shard,
-                  tableContext.getDefaultPrimeDocTerm());
+                  tableContext.getDefaultPrimeDocTerm(), filter, moreDocsToFetch, totalRecords, highlighter);
               docTrace.done();
+              Tracer rowTrace = Trace.trace("fetchRow - Row create");
+              Row row = getRow(docs);
+              if (row == null) {
+                String rowId = selector.getRowId();
+                if (rowId == null) {
+                  rowId = getRowId(reader, docId);
+                }
+                row = new Row(rowId, null);
+              }
+              fetchResult.rowResult = new FetchRowResult(row, selector.getStartRecord(),
+                  selector.getMaxRecordsToFetch(), moreDocsToFetch.get(), totalRecords.get());
+              rowTrace.done();
             }
-            Tracer rowTrace = Trace.trace("fetchRow - Row create");
-            fetchResult.rowResult = new FetchRowResult(getRow(docs));
-            rowTrace.done();
+            return;
           }
-          return;
+        } finally {
+          trace.done();
         }
-      } finally {
-        trace.done();
       }
+    } finally {
+      if (fetchResult.rowResult != null) {
+        if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
+          _readRecordsMeter.mark(fetchResult.rowResult.row.records.size());
+        }
+        _readRowMeter.mark();
+      } else if (fetchResult.recordResult != null) {
+        _readRecordsMeter.mark();
+      }
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private static boolean isFiltered(int notAdjustedDocId, IndexReader reader, Filter filter) throws IOException {
+    if (filter == null) {
+      return false;
+    }
+    if (reader instanceof BaseCompositeReader) {
+      BaseCompositeReader<IndexReader> indexReader = (BaseCompositeReader<IndexReader>) reader;
+      List<? extends IndexReader> sequentialSubReaders = BaseCompositeReaderUtil.getSequentialSubReaders(indexReader);
+      int readerIndex = BaseCompositeReaderUtil.readerIndex(indexReader, notAdjustedDocId);
+      int readerBase = BaseCompositeReaderUtil.readerBase(indexReader, readerIndex);
+      int docId = notAdjustedDocId - readerBase;
+      IndexReader orgReader = sequentialSubReaders.get(readerIndex);
+      SegmentReader sReader = BlurUtil.getSegmentReader(orgReader);
+      if (sReader != null) {
+        SegmentReader segmentReader = (SegmentReader) sReader;
+        DocIdSet docIdSet = filter.getDocIdSet(segmentReader.getContext(), segmentReader.getLiveDocs());
+        DocIdSetIterator iterator = docIdSet.iterator();
+        if (iterator == null) {
+          return true;
+        }
+        if (iterator.advance(docId) == docId) {
+          return false;
+        }
+        return true;
+      }
+      throw new RuntimeException("Reader has to be a SegmentReader [" + orgReader + "]");
+    } else {
+      throw new RuntimeException("Reader has to be a BaseCompositeReader [" + reader + "]");
     }
   }
 
@@ -830,7 +1034,7 @@ public class IndexManager {
 
   public void mutate(final RowMutation mutation) throws BlurException, IOException {
     long s = System.nanoTime();
-    doMutate(mutation);
+    doMutates(Arrays.asList(mutation));
     long e = System.nanoTime();
     LOG.debug("doMutate took [{0} ms] to complete", (e - s) / 1000000.0);
   }
@@ -843,17 +1047,43 @@ public class IndexManager {
   }
 
   private void doMutates(List<RowMutation> mutations) throws BlurException, IOException {
+    mutations = MutatableAction.reduceMutates(mutations);
     Map<String, List<RowMutation>> map = getMutatesPerTable(mutations);
     for (Entry<String, List<RowMutation>> entry : map.entrySet()) {
       doMutates(entry.getKey(), entry.getValue());
     }
   }
 
+  public void enqueue(List<RowMutation> mutations) throws BlurException, IOException {
+    mutations = MutatableAction.reduceMutates(mutations);
+    Map<String, List<RowMutation>> map = getMutatesPerTable(mutations);
+    for (Entry<String, List<RowMutation>> entry : map.entrySet()) {
+      doEnqueue(entry.getKey(), entry.getValue());
+    }
+  }
+
+  private void doEnqueue(final String table, List<RowMutation> mutations) throws IOException, BlurException {
+    final Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
+    Map<String, List<RowMutation>> mutationsByShard = new HashMap<String, List<RowMutation>>();
+    for (int i = 0; i < mutations.size(); i++) {
+      RowMutation mutation = mutations.get(i);
+      String shard = MutationHelper.getShardName(table, mutation.rowId, getNumberOfShards(table), _blurPartitioner);
+      List<RowMutation> list = mutationsByShard.get(shard);
+      if (list == null) {
+        list = new ArrayList<RowMutation>();
+        mutationsByShard.put(shard, list);
+      }
+      list.add(mutation);
+    }
+    for (Entry<String, List<RowMutation>> entry : mutationsByShard.entrySet()) {
+      BlurIndex index = indexes.get(entry.getKey());
+      index.enqueue(entry.getValue());
+    }
+  }
+
   private void doMutates(final String table, List<RowMutation> mutations) throws IOException, BlurException {
     final Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
-
     Map<String, List<RowMutation>> mutationsByShard = new HashMap<String, List<RowMutation>>();
-
     for (int i = 0; i < mutations.size(); i++) {
       RowMutation mutation = mutations.get(i);
       String shard = MutationHelper.getShardName(table, mutation.rowId, getNumberOfShards(table), _blurPartitioner);
@@ -870,13 +1100,7 @@ public class IndexManager {
     for (Entry<String, List<RowMutation>> entry : mutationsByShard.entrySet()) {
       final String shard = entry.getKey();
       final List<RowMutation> value = entry.getValue();
-      futures.add(_mutateExecutor.submit(new Callable<Void>() {
-        @Override
-        public Void call() throws Exception {
-          executeMutates(table, shard, indexes, value);
-          return null;
-        }
-      }));
+      futures.add(executeMutates(table, shard, indexes, value));
     }
 
     for (Future<Void> future : futures) {
@@ -890,42 +1114,28 @@ public class IndexManager {
     }
   }
 
-  private void executeMutates(String table, String shard, Map<String, BlurIndex> indexes, List<RowMutation> mutations)
-      throws BlurException, IOException {
+  private Future<Void> executeMutates(String table, String shard, Map<String, BlurIndex> indexes,
+      List<RowMutation> mutations) throws BlurException, IOException {
     long s = System.nanoTime();
-    boolean waitToBeVisible = false;
-    for (int i = 0; i < mutations.size(); i++) {
-      RowMutation mutation = mutations.get(i);
-      if (mutation.waitToBeVisible) {
-        waitToBeVisible = true;
-      }
-      BlurIndex blurIndex = indexes.get(shard);
+    try {
+      final BlurIndex blurIndex = indexes.get(shard);
       if (blurIndex == null) {
         throw new BException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.");
       }
-
-      boolean waitVisiblity = false;
-      if (i + 1 == mutations.size()) {
-        waitVisiblity = waitToBeVisible;
-      }
-      RowMutationType type = mutation.rowMutationType;
-      switch (type) {
-      case REPLACE_ROW:
-        Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);
-        blurIndex.replaceRow(waitVisiblity, mutation.wal, updateMetrics(row));
-        break;
-      case UPDATE_ROW:
-        doUpdateRowMutation(mutation, blurIndex);
-        break;
-      case DELETE_ROW:
-        blurIndex.deleteRow(waitVisiblity, mutation.wal, mutation.rowId);
-        break;
-      default:
-        throw new RuntimeException("Not supported [" + type + "]");
-      }
+      ShardContext shardContext = blurIndex.getShardContext();
+      final MutatableAction mutatableAction = new MutatableAction(shardContext);
+      mutatableAction.mutate(mutations);
+      return _mutateExecutor.submit(new Callable<Void>() {
+        @Override
+        public Void call() throws Exception {
+          blurIndex.process(mutatableAction);
+          return null;
+        }
+      });
+    } finally {
+      long e = System.nanoTime();
+      LOG.debug("executeMutates took [{0} ms] to complete", (e - s) / 1000000.0);
     }
-    long e = System.nanoTime();
-    LOG.debug("executeMutates took [" + (e - s) / 1000000.0 + " ms] to complete");
   }
 
   private Map<String, List<RowMutation>> getMutatesPerTable(List<RowMutation> mutations) {
@@ -940,140 +1150,6 @@ public class IndexManager {
       list.add(mutation);
     }
     return map;
-  }
-
-  private void doMutate(RowMutation mutation) throws BlurException, IOException {
-    String table = mutation.table;
-    Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
-    MutationHelper.validateMutation(mutation);
-    String shard = MutationHelper.getShardName(table, mutation.rowId, getNumberOfShards(table), _blurPartitioner);
-    BlurIndex blurIndex = indexes.get(shard);
-    if (blurIndex == null) {
-      throw new BException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.");
-    }
-
-    RowMutationType type = mutation.rowMutationType;
-    switch (type) {
-    case REPLACE_ROW:
-      Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);
-      blurIndex.replaceRow(mutation.waitToBeVisible, mutation.wal, updateMetrics(row));
-      break;
-    case UPDATE_ROW:
-      doUpdateRowMutation(mutation, blurIndex);
-      break;
-    case DELETE_ROW:
-      blurIndex.deleteRow(mutation.waitToBeVisible, mutation.wal, mutation.rowId);
-      break;
-    default:
-      throw new RuntimeException("Not supported [" + type + "]");
-    }
-  }
-
-  private Row updateMetrics(Row row) {
-    _writeRowMeter.mark();
-    List<Record> records = row.getRecords();
-    if (records != null) {
-      _writeRecordsMeter.mark(records.size());
-    }
-    return row;
-  }
-
-  private void doUpdateRowMutation(RowMutation mutation, BlurIndex blurIndex) throws BlurException, IOException {
-    FetchResult fetchResult = new FetchResult();
-    Selector selector = new Selector();
-    selector.setRowId(mutation.rowId);
-    fetchRow(mutation.table, selector, fetchResult);
-    Row existingRow;
-    if (fetchResult.exists) {
-      // We will examine the contents of the existing row and add records
-      // onto a new replacement row based on the mutation we have been given.
-      existingRow = fetchResult.rowResult.row;
-    } else {
-      // The row does not exist, create empty new row.
-      existingRow = new Row().setId(mutation.getRowId());
-      existingRow.records = new ArrayList<Record>();
-    }
-    Row newRow = new Row().setId(existingRow.id);
-
-    // Create a local copy of the mutation we can modify
-    RowMutation mutationCopy = mutation.deepCopy();
-
-    // Match existing records against record mutations. Once a record
-    // mutation has been processed, remove it from our local copy.
-    for (Record existingRecord : existingRow.records) {
-      RecordMutation recordMutation = findRecordMutation(mutationCopy, existingRecord);
-      if (recordMutation != null) {
-        mutationCopy.recordMutations.remove(recordMutation);
-        doUpdateRecordMutation(recordMutation, existingRecord, newRow);
-      } else {
-        // Copy existing records over to the new row unmodified if there
-        // is no matching mutation.
-        newRow.addToRecords(existingRecord);
-      }
-    }
-
-    // Examine all remaining record mutations. For any record replacements
-    // we need to create a new record in the table even though an existing
-    // record did not match. Record deletions are also ok here since the
-    // record is effectively already deleted. Other record mutations are
-    // an error and should generate an exception.
-    for (RecordMutation recordMutation : mutationCopy.recordMutations) {
-      RecordMutationType type = recordMutation.recordMutationType;
-      switch (type) {
-      case DELETE_ENTIRE_RECORD:
-        // do nothing as missing record is already in desired state
-        break;
-      case APPEND_COLUMN_VALUES:
-      case REPLACE_ENTIRE_RECORD:
-      case REPLACE_COLUMNS:
-        // If record do not exist, create new record in Row
-        newRow.addToRecords(recordMutation.record);
-        break;
-      default:
-        throw new RuntimeException("Unsupported record mutation type [" + type + "]");
-      }
-    }
-
-    // Finally, replace the existing row with the new row we have built.
-    blurIndex.replaceRow(mutation.waitToBeVisible, mutation.wal, updateMetrics(newRow));
-
-  }
-
-  private static void doUpdateRecordMutation(RecordMutation recordMutation, Record existingRecord, Row newRow) {
-    Record mutationRecord = recordMutation.record;
-    switch (recordMutation.recordMutationType) {
-    case DELETE_ENTIRE_RECORD:
-      return;
-    case APPEND_COLUMN_VALUES:
-      for (Column column : mutationRecord.columns) {
-        if (column.getValue() == null) {
-          continue;
-        }
-        existingRecord.addToColumns(column);
-      }
-      newRow.addToRecords(existingRecord);
-      break;
-    case REPLACE_ENTIRE_RECORD:
-      newRow.addToRecords(mutationRecord);
-      break;
-    case REPLACE_COLUMNS:
-      Set<String> removeColumnNames = new HashSet<String>();
-      for (Column column : mutationRecord.getColumns()) {
-        removeColumnNames.add(column.getName());
-      }
-
-      for (Column column : existingRecord.getColumns()) {
-        // skip columns in existing record that are contained in the mutation
-        // record
-        if (!removeColumnNames.contains(column.getName())) {
-          mutationRecord.addToColumns(column);
-        }
-      }
-      newRow.addToRecords(mutationRecord);
-      break;
-    default:
-      break;
-    }
   }
 
   private int getNumberOfShards(String table) {
@@ -1094,10 +1170,13 @@ public class IndexManager {
     private final int _maxHeapPerRowFetch;
     private final Similarity _similarity;
     private final TableContext _context;
+    private final Sort _sort;
+    private final DeepPagingCache _deepPagingCache;
 
     public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, Query query,
         Selector selector, Meter queriesInternalMeter, ShardServerContext shardServerContext, boolean runSlow,
-        int fetchCount, int maxHeapPerRowFetch, Similarity similarity, TableContext context) {
+        int fetchCount, int maxHeapPerRowFetch, Similarity similarity, TableContext context, Sort sort,
+        DeepPagingCache deepPagingCache) {
       _running = running;
       _table = table;
       _status = status;
@@ -1110,6 +1189,8 @@ public class IndexManager {
       _maxHeapPerRowFetch = maxHeapPerRowFetch;
       _similarity = similarity;
       _context = context;
+      _sort = sort;
+      _deepPagingCache = deepPagingCache;
     }
 
     @Override
@@ -1146,7 +1227,7 @@ public class IndexManager {
         // context is null.
         trace2 = Trace.trace("query initial search");
         return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector,
-            _shardServerContext == null, _runSlow, _fetchCount, _maxHeapPerRowFetch, _context);
+            _shardServerContext == null, _runSlow, _fetchCount, _maxHeapPerRowFetch, _context, _sort, _deepPagingCache);
       } catch (BlurException e) {
         switch (_status.getQueryStatus().getState()) {
         case INTERRUPTED:
@@ -1187,6 +1268,10 @@ public class IndexManager {
         throw new BException(e.getMessage(), e);
       }
     }
+  }
+
+  public void enqueue(RowMutation mutation) throws BlurException, IOException {
+    enqueue(Arrays.asList(mutation));
   }
 
 }

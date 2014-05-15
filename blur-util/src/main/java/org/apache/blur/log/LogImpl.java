@@ -27,73 +27,73 @@ public class LogImpl implements Log {
   }
 
   public void trace(Object message, Object... args) {
-    if (isTraceEnabled()) {
+    if (log.isTraceEnabled()) {
       log.trace(MessageFormat.format(message.toString(), args));
     }
   }
 
   public void trace(Object message, Throwable t, Object... args) {
-    if (isTraceEnabled()) {
+    if (log.isTraceEnabled()) {
       log.trace(MessageFormat.format(message.toString(), args), t);
     }
   }
 
   public void debug(Object message, Object... args) {
-    if (isDebugEnabled()) {
+    if (log.isDebugEnabled()) {
       log.debug(MessageFormat.format(message.toString(), args));
     }
   }
 
   public void debug(Object message, Throwable t, Object... args) {
-    if (isDebugEnabled()) {
+    if (log.isDebugEnabled()) {
       log.debug(MessageFormat.format(message.toString(), args), t);
     }
   }
 
   public void info(Object message, Object... args) {
-    if (isInfoEnabled()) {
+    if (log.isInfoEnabled()) {
       log.info(MessageFormat.format(message.toString(), args));
     }
   }
 
   public void info(Object message, Throwable t, Object... args) {
-    if (isInfoEnabled()) {
+    if (log.isInfoEnabled()) {
       log.info(MessageFormat.format(message.toString(), args), t);
     }
   }
 
   public void warn(Object message, Object... args) {
-    if (isWarnEnabled()) {
+    if (log.isWarnEnabled()) {
       log.warn(MessageFormat.format(message.toString(), args));
     }
   }
 
   public void warn(Object message, Throwable t, Object... args) {
-    if (isWarnEnabled()) {
+    if (log.isWarnEnabled()) {
       log.warn(MessageFormat.format(message.toString(), args), t);
     }
   }
 
   public void error(Object message, Object... args) {
-    if (isErrorEnabled()) {
+    if (log.isErrorEnabled()) {
       log.error(MessageFormat.format(message.toString(), args));
     }
   }
 
   public void error(Object message, Throwable t, Object... args) {
-    if (isErrorEnabled()) {
+    if (log.isErrorEnabled()) {
       log.error(MessageFormat.format(message.toString(), args), t);
     }
   }
 
   public void fatal(Object message, Object... args) {
-    if (isFatalEnabled()) {
+    if (log.isFatalEnabled()) {
       log.fatal(MessageFormat.format(message.toString(), args));
     }
   }
 
   public void fatal(Object message, Throwable t, Object... args) {
-    if (isFatalEnabled()) {
+    if (log.isFatalEnabled()) {
       log.fatal(MessageFormat.format(message.toString(), args), t);
     }
   }

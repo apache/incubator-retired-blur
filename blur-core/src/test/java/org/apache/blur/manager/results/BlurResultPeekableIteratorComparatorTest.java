@@ -29,12 +29,11 @@ import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
 import org.junit.Test;
 
-
 public class BlurResultPeekableIteratorComparatorTest {
 
   @Test
   public void testResultPeekableIteratorComparator() throws BlurException {
-    List<PeekableIterator<BlurResult,BlurException>> results = new ArrayList<PeekableIterator<BlurResult,BlurException>>();
+    List<PeekableIterator<BlurResult, BlurException>> results = new ArrayList<PeekableIterator<BlurResult, BlurException>>();
     results.add(PeekableIterator.wrap(wrap(new ArrayList<BlurResult>(Arrays.asList(newResult("5", 5))).iterator())));
     results.add(PeekableIterator.wrap(wrap(new ArrayList<BlurResult>().iterator())));
     results.add(PeekableIterator.wrap(wrap(new ArrayList<BlurResult>().iterator())));
@@ -45,7 +44,7 @@ public class BlurResultPeekableIteratorComparatorTest {
 
     Collections.sort(results, BlurUtil.HITS_PEEKABLE_ITERATOR_COMPARATOR);
 
-    for (PeekableIterator<BlurResult,BlurException> iterator : results) {
+    for (PeekableIterator<BlurResult, BlurException> iterator : results) {
       System.out.println(iterator.peek());
     }
   }
@@ -55,7 +54,7 @@ public class BlurResultPeekableIteratorComparatorTest {
   }
 
   private BlurResult newResult(String id, double score) {
-    return new BlurResult(id, score, null);
+    return new BlurResult(id, score, null, null);
   }
 
 }

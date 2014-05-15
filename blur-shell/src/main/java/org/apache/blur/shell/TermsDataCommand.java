@@ -57,7 +57,21 @@ public class TermsDataCommand extends Command implements TableFirstArgCommand {
 
   private void doitInternal(PrintWriter outPw, Blur.Iface client, String[] args) throws FinishedException,
       BlurException, TException {
-    PagingPrintWriter out = new PagingPrintWriter(outPw);
+
+    ConsoleReader reader = getConsoleReader();
+    int totalWidth = 200;
+    if (reader != null) {
+      totalWidth = reader.getTerminal().getWidth() - 2;
+    }
+
+    int[] cols = new int[2];
+    cols[0] = 20;
+    cols[1] = totalWidth - cols[0];
+    ColumnBasedPrintWriter out = new ColumnBasedPrintWriter(outPw, cols);
+    if (reader != null) {
+      Terminal terminal = reader.getTerminal();
+      out.setLineLimit(terminal.getHeight() - 2);
+    }
     CommandLine cmd = parse(args, outPw);
     if (cmd == null) {
       return;
@@ -89,20 +103,19 @@ public class TermsDataCommand extends Command implements TableFirstArgCommand {
       checkFreq = true;
     }
 
-    int maxWidth = 100;
-    ConsoleReader reader = getConsoleReader();
-    if (reader != null) {
-      Terminal terminal = reader.getTerminal();
-      maxWidth = terminal.getWidth() - 15;
-      out.setLineLimit(terminal.getHeight() - 2);
-    }
-
-    List<String> terms = client.terms(tablename, family, column, startWith, size);
-    for (int i = 0; i < terms.size(); i++) {
-      if (checkFreq) {
-        out.println(terms.get(i) + "\t" + client.recordFrequency(tablename, family, column, terms.get(i)));
-      } else {
-        out.println(terms.get(i));
+    while (true) {
+      List<String> terms = client.terms(tablename, family, column, startWith, size);
+      for (int i = 0; i < terms.size(); i++) {
+        String term = terms.get(i);
+        if (term.equals(startWith)) {
+          continue;
+        }
+        if (checkFreq) {
+          out.println(client.recordFrequency(tablename, family, column, term), term);
+        } else {
+          out.println(" - ", term);
+        }
+        startWith = term;
       }
     }
   }

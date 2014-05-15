@@ -19,13 +19,17 @@ package org.apache.blur.utils;
 
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.hadoop.conf.Configuration;
@@ -33,10 +37,10 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -163,7 +167,7 @@ public class BlurUtilsTest {
   public void testFetchDocuments() throws CorruptIndexException, LockObtainFailedException, IOException {
     Selector selector = new Selector();
     selector.setLocationId("shard/0");
-    List<String> columnFamiliesToFetch = new ArrayList<String>();
+    Set<String> columnFamiliesToFetch = new HashSet<String>();
     columnFamiliesToFetch.add("f1");
     columnFamiliesToFetch.add("f2");
     selector.setColumnFamiliesToFetch(columnFamiliesToFetch);
@@ -173,9 +177,14 @@ public class BlurUtilsTest {
     // Term("a","b"), resetableDocumentStoredFieldVisitor, selector, 10000000,
     // "test-context", new
     // Term(BlurConstants.PRIME_DOC,BlurConstants.PRIME_DOC_VALUE));
+    AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
+    AtomicInteger totalRecords = new AtomicInteger();
     List<Document> docs = BlurUtil.fetchDocuments(getReader(), resetableDocumentStoredFieldVisitor, selector, 10000000,
-        "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE));
+        "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE), null, moreDocsToFetch,
+        totalRecords, null);
     assertEquals(docs.size(), 1);
+    assertFalse(moreDocsToFetch.get());
+    assertEquals(1, totalRecords.get());
   }
 
   @Test
@@ -183,17 +192,24 @@ public class BlurUtilsTest {
       IOException {
     Selector selector = new Selector();
     selector.setLocationId("shard/0");
-    List<String> columnFamiliesToFetch = new ArrayList<String>();
+    Set<String> columnFamiliesToFetch = new HashSet<String>();
     columnFamiliesToFetch.add("f1");
     columnFamiliesToFetch.add("f2");
     selector.setColumnFamiliesToFetch(columnFamiliesToFetch);
+    selector.addToOrderOfFamiliesToFetch("f1");
+    selector.addToOrderOfFamiliesToFetch("f2");
 
     ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
+    AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
+    AtomicInteger totalRecords = new AtomicInteger();
     List<Document> docs = BlurUtil.fetchDocuments(getReaderWithDocsHavingFamily(), resetableDocumentStoredFieldVisitor,
-        selector, 10000000, "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE));
+        selector, 10000000, "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE), null,
+        moreDocsToFetch, totalRecords, null);
     assertEquals(docs.size(), 2);
     assertEquals(docs.get(0).getField("family").stringValue(), "f1");
     assertEquals(docs.get(1).getField("family").stringValue(), "f2");
+    assertFalse(moreDocsToFetch.get());
+    assertEquals(2, totalRecords.get());
   }
 
   @Test
@@ -201,9 +217,14 @@ public class BlurUtilsTest {
     Selector selector = new Selector();
     selector.setLocationId("shard/0");
     ResetableDocumentStoredFieldVisitor resetableDocumentStoredFieldVisitor = new ResetableDocumentStoredFieldVisitor();
+    AtomicBoolean moreDocsToFetch = new AtomicBoolean(false);
+    AtomicInteger totalRecords = new AtomicInteger();
     List<Document> docs = BlurUtil.fetchDocuments(getReader(), resetableDocumentStoredFieldVisitor, selector, 10000000,
-        "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE));
+        "test-context", new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE), null, moreDocsToFetch,
+        totalRecords, null);
     assertEquals(docs.size(), 2);
+    assertFalse(moreDocsToFetch.get());
+    assertEquals(2, totalRecords.get());
   }
 
   private void rm(File file) {
@@ -229,15 +250,15 @@ public class BlurUtilsTest {
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
     IndexWriter writer = new IndexWriter(directory, conf);
     Document doc = new Document();
-    doc.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
-    doc.add(new Field("family", "f1", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+    doc.add(new StringField("a", "b", Store.YES));
+    doc.add(new StringField("family", "f1", Store.YES));
 
     Document doc1 = new Document();
-    doc1.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+    doc.add(new StringField("a", "b", Store.YES));
     writer.addDocument(doc);
     writer.addDocument(doc1);
     writer.close();
-    return IndexReader.open(directory);
+    return DirectoryReader.open(directory);
   }
 
   private IndexReader getReaderWithDocsHavingFamily() throws CorruptIndexException, LockObtainFailedException,
@@ -246,16 +267,16 @@ public class BlurUtilsTest {
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
     IndexWriter writer = new IndexWriter(directory, conf);
     Document doc = new Document();
-    doc.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
-    doc.add(new Field("family", "f2", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+    doc.add(new StringField("a", "b", Store.YES));
+    doc.add(new StringField("family", "f2", Store.YES));
 
     Document doc1 = new Document();
-    doc1.add(new Field("a", "b", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
-    doc1.add(new Field("family", "f1", Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+    doc1.add(new StringField("a", "b", Store.YES));
+    doc1.add(new StringField("family", "f1", Store.YES));
     writer.addDocument(doc);
     writer.addDocument(doc1);
     writer.close();
-    return IndexReader.open(directory);
+    return DirectoryReader.open(directory);
   }
 
 }

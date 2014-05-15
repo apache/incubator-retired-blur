@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.blur.lucene.codec.Blur021Codec;
 import org.apache.blur.lucene.codec.Blur022Codec;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.hadoop.conf.Configuration;
@@ -38,6 +37,7 @@ import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
+
 /**
  * This class is used to reduce the total number of shards of a table. The main
  * use would be if during an indexing job the number of reducers were increased
@@ -143,6 +143,9 @@ public class TableShardCountCollapser extends Configured implements Tool {
         pathsToDelete[p - 1] = pathToMerge;
       }
       indexWriter.addIndexes(dirs);
+      // Causes rewrite of of index and the symlinked files are
+      // merged/rewritten.
+      indexWriter.forceMerge(1);
       indexWriter.close();
       FileSystem fileSystem = path.getFileSystem(getConf());
       for (Path p : pathsToDelete) {

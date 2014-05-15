@@ -16,6 +16,7 @@ package org.apache.blur.concurrent;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -24,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.blur.trace.Trace;
+import org.apache.blur.user.UserThreadBoundaryProcessor;
 
 public class Executors {
 
@@ -32,8 +34,19 @@ public class Executors {
   }
 
   public static ExecutorService newThreadPool(String prefix, int threadCount, boolean watch) {
-    ThreadPoolExecutor executorService = new ThreadPoolExecutor(threadCount, threadCount, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new BlurThreadFactory(prefix));
+    return newThreadPool(new LinkedBlockingQueue<Runnable>(), prefix, threadCount, watch);
+  }
+
+  public static ExecutorService newThreadPool(BlockingQueue<Runnable> workQueue, String prefix, int threadCount) {
+    return newThreadPool(workQueue, prefix, threadCount, true);
+  }
+
+  public static ExecutorService newThreadPool(BlockingQueue<Runnable> workQueue, String prefix, int threadCount,
+      boolean watch) {
+    BlurThreadPoolExecutor executorService = new BlurThreadPoolExecutor(threadCount, threadCount, 60L,
+        TimeUnit.SECONDS, workQueue, new BlurThreadFactory(prefix));
     executorService.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+    executorService.add(new UserThreadBoundaryProcessor());
     if (watch) {
       return Trace.getExecutorService(ThreadWatcher.instance().watch(executorService));
     }
@@ -41,7 +54,8 @@ public class Executors {
   }
 
   public static ExecutorService newSingleThreadExecutor(String prefix) {
-    return Trace.getExecutorService(java.util.concurrent.Executors.newSingleThreadExecutor(new BlurThreadFactory(prefix)));
+    return Trace.getExecutorService(java.util.concurrent.Executors
+        .newSingleThreadExecutor(new BlurThreadFactory(prefix)));
   }
 
   public static class BlurThreadFactory implements ThreadFactory {

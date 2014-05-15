@@ -26,24 +26,28 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.analysis.FieldManager;
+import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
+import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.search.NRTManager.TrackingIndexWriter;
+import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.Directory;
 import org.junit.After;
 import org.junit.Before;
@@ -53,27 +57,30 @@ public class IndexImporterTest {
 
   private static final Path TMPDIR = new Path("target/tmp");
 
-  private Path base;
-  private Configuration configuration;
-  private IndexWriter commitWriter;
-  private IndexImporter indexImporter;
-  private Random random = new Random();
-  private Path path;
-  private Path badRowIdsPath;
-  private IndexWriter mainWriter;
-  private FileSystem fileSystem;
-
+  private Path _base;
+  private Configuration _configuration;
+  private IndexWriter _commitWriter;
+  private IndexImporter _indexImporter;
+  private Random _random = new Random();
+  private Path _path;
+  private Path _badRowIdsPath;
+  private IndexWriter _mainWriter;
+  private FileSystem _fileSystem;
   private FieldManager _fieldManager;
+  private Path _badIndexPath;
+  private Path _inUsePath;
+  private Path _shardPath;
+  private HdfsDirectory _mainDirectory;
 
   @Before
   public void setup() throws IOException {
     TableContext.clear();
-    configuration = new Configuration();
-    base = new Path(TMPDIR, "blur-index-importer-test");
-    fileSystem = base.getFileSystem(configuration);
-    fileSystem.delete(base, true);
-    fileSystem.mkdirs(base);
-    setupWriter(configuration);
+    _configuration = new Configuration();
+    _base = new Path(TMPDIR, "blur-index-importer-test");
+    _fileSystem = _base.getFileSystem(_configuration);
+    _fileSystem.delete(_base, true);
+    _fileSystem.mkdirs(_base);
+    setupWriter(_configuration);
   }
 
   private void setupWriter(Configuration configuration) throws IOException {
@@ -81,72 +88,192 @@ public class IndexImporterTest {
     tableDescriptor.setName("test-table");
     String uuid = UUID.randomUUID().toString();
 
-    tableDescriptor.setTableUri(new Path(base, "table-table").toUri().toString());
+    tableDescriptor.setTableUri(new Path(_base, "table-table").toUri().toString());
     tableDescriptor.setShardCount(2);
 
     TableContext tableContext = TableContext.create(tableDescriptor);
     ShardContext shardContext = ShardContext.create(tableContext, "shard-00000000");
-    Path tablePath = new Path(base, "table-table");
-    Path shardPath = new Path(tablePath, "shard-00000000");
+    Path tablePath = new Path(_base, "table-table");
+    _shardPath = new Path(tablePath, "shard-00000000");
     String indexDirName = "index_" + uuid;
-    path = new Path(shardPath, indexDirName + ".commit");
-    fileSystem.mkdirs(path);
-    badRowIdsPath = new Path(shardPath, indexDirName + ".bad_rowids");
-    Directory commitDirectory = new HdfsDirectory(configuration, path);
-    Directory mainDirectory = new HdfsDirectory(configuration, shardPath);
+    _path = new Path(_shardPath, indexDirName + ".commit");
+    _fileSystem.mkdirs(_path);
+    _badRowIdsPath = new Path(_shardPath, indexDirName + ".badrowids");
+    _badIndexPath = new Path(_shardPath, indexDirName + ".badindex");
+    _inUsePath = new Path(_shardPath, indexDirName + ".inuse");
+    Directory commitDirectory = new HdfsDirectory(configuration, _path);
+    _mainDirectory = new HdfsDirectory(configuration, _shardPath);
     _fieldManager = tableContext.getFieldManager();
     Analyzer analyzerForIndex = _fieldManager.getAnalyzerForIndex();
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, analyzerForIndex);
-    commitWriter = new IndexWriter(commitDirectory, conf);
+    // conf.setMergePolicy(NoMergePolicy.NO_COMPOUND_FILES);
+    TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
+    mergePolicy.setUseCompoundFile(false);
+    _commitWriter = new IndexWriter(commitDirectory, conf.clone());
 
-    mainWriter = new IndexWriter(mainDirectory, conf);
+    // Make sure there's an empty index...
+    new IndexWriter(_mainDirectory, conf.clone()).close();
+    _mainWriter = new IndexWriter(_mainDirectory, conf.clone());
     BufferStore.initNewBuffer(128, 128 * 128);
 
-    indexImporter = new IndexImporter(new TrackingIndexWriter(mainWriter), new ReentrantReadWriteLock(), shardContext,
-        TimeUnit.MINUTES, 10);
+    _indexImporter = new IndexImporter(getBlurIndex(shardContext, _mainDirectory), shardContext, TimeUnit.MINUTES, 10);
+  }
+
+  private BlurIndex getBlurIndex(ShardContext shardContext, final Directory mainDirectory) throws IOException {
+    return new BlurIndex(shardContext, mainDirectory, null, null, null, null) {
+
+      @Override
+      public void removeSnapshot(String name) throws IOException {
+        throw new RuntimeException("Not Implemented");
+      }
+
+      @Override
+      public void refresh() throws IOException {
+        throw new RuntimeException("Not Implemented");
+      }
+
+      @Override
+      public void process(IndexAction indexAction) throws IOException {
+        final DirectoryReader reader = DirectoryReader.open(mainDirectory);
+        IndexSearcherClosable searcherClosable = new IndexSearcherClosable(reader, null) {
+
+          @Override
+          public Directory getDirectory() {
+            return mainDirectory;
+          }
+
+          @Override
+          public void close() throws IOException {
+            reader.close();
+          }
+        };
+        try {
+          indexAction.performMutate(searcherClosable, _mainWriter);
+          indexAction.doPreCommit(searcherClosable, _mainWriter);
+          _mainWriter.commit();
+          indexAction.doPostCommit(_mainWriter);
+        } catch (IOException e) {
+          indexAction.doPreRollback(_mainWriter);
+          _mainWriter.rollback();
+          indexAction.doPostRollback(_mainWriter);
+        }
+      }
+
+      @Override
+      public void optimize(int numberOfSegmentsPerShard) throws IOException {
+        throw new RuntimeException("Not Implemented");
+      }
+
+      @Override
+      public AtomicBoolean isClosed() {
+        throw new RuntimeException("Not Implemented");
+      }
+
+      @Override
+      public List<String> getSnapshots() throws IOException {
+        throw new RuntimeException("Not Implemented");
+      }
+
+      @Override
+      public IndexSearcherClosable getIndexSearcher() throws IOException {
+        throw new RuntimeException("Not Implemented");
+      }
+
+      @Override
+      public void createSnapshot(String name) throws IOException {
+        throw new RuntimeException("Not Implemented");
+      }
+
+      @Override
+      public void close() throws IOException {
+        throw new RuntimeException("Not Implemented");
+      }
+
+      @Override
+      public void enqueue(List<RowMutation> mutations) {
+        throw new RuntimeException("Not Implemented");
+      }
+    };
   }
 
   @After
   public void tearDown() throws IOException {
-    mainWriter.close();
-    indexImporter.close();
-    base.getFileSystem(configuration).delete(base, true);
+    IOUtils.closeQuietly(_commitWriter);
+    IOUtils.closeQuietly(_mainWriter);
+    IOUtils.closeQuietly(_indexImporter);
+    _base.getFileSystem(_configuration).delete(_base, true);
+  }
+
+  @Test
+  public void testIndexImporterWithBadIndex() throws IOException {
+    _fileSystem.delete(_path, true);
+    _fileSystem.mkdirs(_path);
+    _indexImporter.run();
+    assertFalse(_fileSystem.exists(_path));
+    assertFalse(_fileSystem.exists(_badRowIdsPath));
+    assertTrue(_fileSystem.exists(_badIndexPath));
+    validateIndex();
+  }
+
+  private void validateIndex() throws IOException {
+    HdfsDirectory dir = new HdfsDirectory(_configuration, _shardPath);
+    DirectoryReader.open(dir).close();
+  }
+
+  @Test
+  public void testIndexImporterCheckInuseDirsForCleanup() throws IOException {
+    FileSystem fileSystem = _shardPath.getFileSystem(_configuration);
+
+    List<Field> document1 = _fieldManager.getFields("10", genRecord("1"));
+    _mainWriter.addDocument(document1);
+    _mainWriter.commit();
+
+    List<Field> document2 = _fieldManager.getFields("1", genRecord("1"));
+    _commitWriter.addDocument(document2);
+    _commitWriter.commit();
+    _commitWriter.close();
+    _indexImporter.run();
+
+    assertFalse(_fileSystem.exists(_path));
+    assertFalse(_fileSystem.exists(_badRowIdsPath));
+    assertTrue(_fileSystem.exists(_inUsePath));
+
+    DirectoryReader reader = DirectoryReader.open(_mainDirectory);
+    while (reader.leaves().size() > 1) {
+      reader.close();
+      _mainWriter.forceMerge(1, true);
+      _mainWriter.commit();
+      reader = DirectoryReader.open(_mainDirectory);
+    }
+    _indexImporter.cleanupOldDirs();
+    assertFalse(fileSystem.exists(_path));
+    validateIndex();
   }
 
   @Test
   public void testIndexImporterWithCorrectRowIdShardCombination() throws IOException {
     List<Field> document = _fieldManager.getFields("1", genRecord("1"));
-    commitWriter.addDocument(document);
-    commitWriter.commit();
-    commitWriter.close();
-    indexImporter.run();
-    assertFalse(fileSystem.exists(path));
-    assertFalse(fileSystem.exists(badRowIdsPath));
+    _commitWriter.addDocument(document);
+    _commitWriter.commit();
+    _commitWriter.close();
+    _indexImporter.run();
+    assertFalse(_fileSystem.exists(_path));
+    assertFalse(_fileSystem.exists(_badRowIdsPath));
+    assertTrue(_fileSystem.exists(_inUsePath));
+    validateIndex();
   }
-
-  // private void debug(Path file) throws IOException {
-  // if (!fileSystem.exists(file)) {
-  // return;
-  // }
-  // System.out.println(file);
-  // if (!fileSystem.isFile(file)) {
-  // FileStatus[] listStatus = fileSystem.listStatus(file);
-  // for (FileStatus f : listStatus) {
-  // debug(f.getPath());
-  // }
-  // }
-  // }
 
   @Test
   public void testIndexImporterWithWrongRowIdShardCombination() throws IOException {
-    setupWriter(configuration);
     List<Field> document = _fieldManager.getFields("2", genRecord("1"));
-    commitWriter.addDocument(document);
-    commitWriter.commit();
-    commitWriter.close();
-    indexImporter.run();
-    assertFalse(fileSystem.exists(path));
-    assertTrue(fileSystem.exists(badRowIdsPath));
+    _commitWriter.addDocument(document);
+    _commitWriter.commit();
+    _commitWriter.close();
+    _indexImporter.run();
+    assertFalse(_fileSystem.exists(_path));
+    assertTrue(_fileSystem.exists(_badRowIdsPath));
+    assertFalse(_fileSystem.exists(_inUsePath));
+    validateIndex();
   }
 
   private Record genRecord(String recordId) {
@@ -154,7 +281,7 @@ public class IndexImporterTest {
     record.setFamily("testing");
     record.setRecordId(recordId);
     for (int i = 0; i < 10; i++) {
-      record.addToColumns(new Column("col" + i, Long.toString(random.nextLong())));
+      record.addToColumns(new Column("col" + i, Long.toString(_random.nextLong())));
     }
     return record;
   }

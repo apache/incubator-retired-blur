@@ -18,10 +18,18 @@ package org.apache.blur.server;
  */
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.CollectionTerminatedException;
+import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Scorer;
+import org.apache.lucene.search.Weight;
 import org.apache.lucene.store.Directory;
 
 public abstract class IndexSearcherClosable extends IndexSearcher implements Closeable {
@@ -34,5 +42,35 @@ public abstract class IndexSearcherClosable extends IndexSearcher implements Clo
 
   @Override
   public abstract void close() throws IOException;
+
+  protected void search(List<AtomicReaderContext> leaves, Weight weight, Collector collector) throws IOException {
+
+    // TODO: should we make this
+    // threaded...? the Collector could be sync'd?
+    // always use single thread:
+    for (AtomicReaderContext ctx : leaves) { // search each subreader
+      Tracer trace = Trace.trace("search - internal", Trace.param("AtomicReader", ctx.reader()));
+      try {
+        try {
+          collector.setNextReader(ctx);
+        } catch (CollectionTerminatedException e) {
+          // there is no doc of interest in this reader context
+          // continue with the following leaf
+          continue;
+        }
+        Scorer scorer = weight.scorer(ctx, !collector.acceptsDocsOutOfOrder(), true, ctx.reader().getLiveDocs());
+        if (scorer != null) {
+          try {
+            scorer.score(collector);
+          } catch (CollectionTerminatedException e) {
+            // collection was terminated prematurely
+            // continue with the following leaf
+          }
+        }
+      } finally {
+        trace.done();
+      }
+    }
+  }
 
 }

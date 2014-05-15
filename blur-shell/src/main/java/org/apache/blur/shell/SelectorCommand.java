@@ -21,6 +21,7 @@ package org.apache.blur.shell;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,13 +44,13 @@ public class SelectorCommand extends Command {
       command = args[1];
     }
     if (command == null) {
-      List<String> columnFamiliesToFetch = Main.selector.getColumnFamiliesToFetch();
+      Set<String> columnFamiliesToFetch = Main.selector.getColumnFamiliesToFetch();
       Map<String, Set<String>> columnsToFetch = Main.selector.getColumnsToFetch();
       List<String> names = new ArrayList<String>();
       if (columnFamiliesToFetch != null) {
         names.addAll(columnFamiliesToFetch);
       } else {
-        columnFamiliesToFetch = new ArrayList<String>();
+        columnFamiliesToFetch = new HashSet<String>();
       }
       if (columnsToFetch != null) {
         names.addAll(columnsToFetch.keySet());
@@ -72,7 +73,7 @@ public class SelectorCommand extends Command {
       String family = args[2];
       if (args.length > 3) {
         if (Main.selector.columnsToFetch == null) {
-          Main.selector.columnsToFetch = new HashMap<String, Set<String>>(); 
+          Main.selector.columnsToFetch = new HashMap<String, Set<String>>();
         }
         Set<String> columns = Main.selector.columnsToFetch.get(family);
         if (columns == null) {

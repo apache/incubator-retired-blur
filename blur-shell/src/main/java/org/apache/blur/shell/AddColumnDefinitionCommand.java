@@ -53,6 +53,9 @@ public class AddColumnDefinitionCommand extends Command implements TableFirstArg
     if (cmd.hasOption("F")) {
       columnDefinition.setFieldLessIndexed(true);
     }
+    if (cmd.hasOption("S")) {
+      columnDefinition.setSortable(true);
+    }
     if (cmd.hasOption("p")) {
       Option[] options = cmd.getOptions();
       for (Option option : options) {
@@ -69,12 +72,12 @@ public class AddColumnDefinitionCommand extends Command implements TableFirstArg
 
   @Override
   public String description() {
-    return "Defines a new column in the named table.";
+    return "Defines a new column in the named table. '-F' option is for fieldless searching and the '-S' is for sortability.";
   }
 
   @Override
   public String usage() {
-    return "<table name> <family> <column name> <type> [-s <sub column name>] [-F] [-p name value]*";
+    return "<table name> <family> <column name> <type> [-s <sub column name>] [-F] [-S] [-p name value]*";
   }
 
   @Override
@@ -91,6 +94,8 @@ public class AddColumnDefinitionCommand extends Command implements TableFirstArg
         "Should the column definition be definied as a field less indexing column definition.").create("F"));
     options.addOption(OptionBuilder.withArgName("name value").hasArgs(2)
         .withDescription("Sets the properties for this column definition.").create("p"));
+    options.addOption(OptionBuilder.withDescription(
+        "Should the column definition be definied as a sortable column definition.").create("S"));
 
     CommandLineParser parser = new PosixParser();
     CommandLine cmd = null;

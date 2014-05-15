@@ -22,6 +22,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.TableDescriptor;
 
 
@@ -44,5 +45,12 @@ public class CreateTable {
 
     Iface client = BlurClient.getClient(connectionStr);
     client.createTable(tableDescriptor);
+    ColumnDefinition columnDefinition = new ColumnDefinition();
+    columnDefinition.setColumnName("col1");
+    columnDefinition.setFamily("fam1");
+    columnDefinition.setFieldLessIndexed(false);
+    columnDefinition.setSortable(true);
+    columnDefinition.setFieldType("string");
+    client.addColumnDefinition(tableName, columnDefinition);
   }
 }

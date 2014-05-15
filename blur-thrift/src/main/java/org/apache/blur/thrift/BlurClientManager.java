@@ -45,9 +45,11 @@ import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ErrorType;
+import org.apache.blur.thrift.generated.User;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Trace.TraceId;
 import org.apache.blur.trace.Tracer;
+import org.apache.blur.user.UserContext;
 
 public class BlurClientManager {
 
@@ -143,6 +145,7 @@ public class BlurClientManager {
   @SuppressWarnings("unchecked")
   public static <CLIENT, T> T execute(List<Connection> connections, AbstractCommand<CLIENT, T> command, int maxRetries,
       long backOffTime, long maxBackOffTime) throws BlurException, TException, IOException {
+    Tracer traceSetup = Trace.trace("execute - setup");
     LocalResources localResources = new LocalResources();
     AtomicReference<Client> client = localResources.client;
     Random random = localResources.random;
@@ -155,24 +158,32 @@ public class BlurClientManager {
     Collections.shuffle(shuffledConnections, random);
     boolean allBad = true;
     int connectionErrorCount = 0;
+    traceSetup.done();
     while (true) {
       for (Connection connection : shuffledConnections) {
-        if (isBadConnection(connection)) {
-          continue;
-        }
-        client.set(null);
+        Tracer traceConnectionSetup = Trace.trace("execute - connection setup");
         try {
-          client.set(_clientPool.getClient(connection));
-        } catch (IOException e) {
-          if (handleError(connection, client, retries, command, e, maxRetries, backOffTime, maxBackOffTime)) {
-            throw e;
-          } else {
-            markBadConnection(connection);
+          if (isBadConnection(connection)) {
             continue;
           }
+          client.set(null);
+          try {
+            client.set(_clientPool.getClient(connection));
+          } catch (IOException e) {
+            if (handleError(connection, client, retries, command, e, maxRetries, backOffTime, maxBackOffTime)) {
+              throw e;
+            } else {
+              markBadConnection(connection);
+              continue;
+            }
+          }
+        } finally {
+          traceConnectionSetup.done();
         }
         Tracer trace = null;
         try {
+          User user = UserConverter.toThriftUser(UserContext.getUser());
+          client.get().setUser(user);
           TraceId traceId = Trace.getTraceId();
           if (traceId != null) {
             client.get().startTrace(traceId.getRootId(), traceId.getRequestId());

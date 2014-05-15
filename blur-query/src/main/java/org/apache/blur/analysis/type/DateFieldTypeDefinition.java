@@ -29,9 +29,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.SortField.Type;
 
 public class DateFieldTypeDefinition extends NumericFieldTypeDefinition {
 
@@ -93,6 +96,9 @@ public class DateFieldTypeDefinition extends NumericFieldTypeDefinition {
     List<Field> fields = new ArrayList<Field>();
     fields.add(field);
     fields.add(storedField);
+    if (isSortEnable()) {
+      fields.add(new NumericDocValuesField(name, date));
+    }
     return fields;
   }
 
@@ -100,7 +106,11 @@ public class DateFieldTypeDefinition extends NumericFieldTypeDefinition {
   public Iterable<? extends Field> getFieldsForSubColumn(String family, Column column, String subName) {
     String name = getName(family, column.getName(), subName);
     long date = parseDate(column.getValue());
-    return makeIterable(new LongField(name, date, _typeNotStored));
+    LongField field = new LongField(name, date, _typeNotStored);
+    if (isSortEnable()) {
+      return addSort(name, date, field);
+    }
+    return makeIterable(field);
   }
 
   @Override
@@ -108,6 +118,14 @@ public class DateFieldTypeDefinition extends NumericFieldTypeDefinition {
     long p1 = parseDate(part1);
     long p2 = parseDate(part2);
     return NumericRangeQuery.newLongRange(field, _precisionStep, p1, p2, startInclusive, endInclusive);
+  }
+
+  @Override
+  public SortField getSortField(boolean reverse) {
+    if (reverse) {
+      return new SortField(getFieldName(), Type.LONG, reverse);
+    }
+    return new SortField(getFieldName(), Type.LONG);
   }
 
 }

@@ -17,19 +17,34 @@ package org.apache.blur.utils;
  * limitations under the License.
  */
 import static org.apache.blur.utils.BlurConstants.*;
-import static org.apache.blur.utils.BlurConstants.ROW_ID;
-import static org.apache.blur.utils.BlurConstants.SEP;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.thrift.generated.FetchRecordResult;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexableField;
-
+import org.apache.lucene.index.Term;
 
 public class RowDocumentUtil {
+
+  public static FieldType ID_TYPE;
+  static {
+    ID_TYPE = new FieldType();
+    ID_TYPE.setIndexed(true);
+    ID_TYPE.setTokenized(false);
+    ID_TYPE.setOmitNorms(true);
+    ID_TYPE.setStored(true);
+    ID_TYPE.freeze();
+  }
 
   public static FetchRecordResult getRecord(Document document) {
     FetchRecordResult result = new FetchRecordResult();
@@ -56,7 +71,6 @@ public class RowDocumentUtil {
       if (row.id == null) {
         row.setId(rowId);
       }
-      row.recordCount++;
     }
     if (empty) {
       return null;
@@ -87,5 +101,36 @@ public class RowDocumentUtil {
       }
     }
     return rowId;
+  }
+
+  public static List<List<Field>> getDocs(Row row, FieldManager fieldManager) throws IOException {
+    List<Record> records = row.records;
+    if (records == null) {
+      return null;
+    }
+    int size = records.size();
+    if (size == 0) {
+      return null;
+    }
+    final String rowId = row.id;
+    List<List<Field>> docs = new ArrayList<List<Field>>(size);
+    for (int i = 0; i < size; i++) {
+      Record record = records.get(i);
+      List<Field> fields = getDoc(fieldManager, rowId, record);
+      docs.add(fields);
+    }
+    List<Field> doc = docs.get(0);
+    doc.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
+    return docs;
+  }
+
+  public static List<Field> getDoc(FieldManager fieldManager, final String rowId, Record record) throws IOException {
+    BlurUtil.validateRowIdAndRecord(rowId, record);
+    List<Field> fields = fieldManager.getFields(rowId, record);
+    return fields;
+  }
+
+  public static Term createRowId(String id) {
+    return new Term(BlurConstants.ROW_ID, id);
   }
 }

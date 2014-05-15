@@ -21,22 +21,15 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.server.IndexSearcherClosable;
-import org.apache.blur.thrift.generated.Row;
+import org.apache.blur.thrift.generated.RowMutation;
 
 public class BlurIndexReadOnly extends BlurIndex {
 
   private final BlurIndex _blurIndex;
 
-  public BlurIndexReadOnly(BlurIndex blurIndex) {
+  public BlurIndexReadOnly(BlurIndex blurIndex) throws IOException {
+    super(null, null, null, null, null, null);
     _blurIndex = blurIndex;
-  }
-
-  public void replaceRow(boolean waitToBeVisible, boolean wal, Row row) throws IOException {
-    throw new IOException("Read Only");
-  }
-
-  public void deleteRow(boolean waitToBeVisible, boolean wal, String rowId) throws IOException {
-    throw new IOException("Read Only");
   }
 
   public IndexSearcherClosable getIndexSearcher() throws IOException {
@@ -69,6 +62,16 @@ public class BlurIndexReadOnly extends BlurIndex {
 
   public List<String> getSnapshots() throws IOException {
     return _blurIndex.getSnapshots();
+  }
+
+  @Override
+  public void process(IndexAction indexAction) throws IOException {
+    throw new RuntimeException("Read-only shard");
+  }
+
+  @Override
+  public void enqueue(List<RowMutation> mutations) {
+    throw new RuntimeException("Read-only shard");
   }
 
 }

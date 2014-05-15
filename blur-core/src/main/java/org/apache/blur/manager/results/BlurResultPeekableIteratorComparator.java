@@ -17,9 +17,12 @@ package org.apache.blur.manager.results;
  * limitations under the License.
  */
 import java.util.Comparator;
+import java.util.List;
 
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
+import org.apache.blur.thrift.generated.SortFieldResult;
+import org.apache.blur.utils.BlurUtil;
 
 public class BlurResultPeekableIteratorComparator implements Comparator<PeekableIterator<BlurResult, BlurException>> {
 
@@ -27,6 +30,7 @@ public class BlurResultPeekableIteratorComparator implements Comparator<Peekable
   public int compare(PeekableIterator<BlurResult, BlurException> o1, PeekableIterator<BlurResult, BlurException> o2) {
     BlurResult result1 = o1.peek();
     BlurResult result2 = o2.peek();
+
     if (result1 == null && result2 == null) {
       return 0;
     } else if (result1 == null) {
@@ -34,11 +38,37 @@ public class BlurResultPeekableIteratorComparator implements Comparator<Peekable
     } else if (result2 == null) {
       return -1;
     }
-    int compare = Double.compare(result2.score, result1.score);
-    if (compare == 0) {
-      return result2.locationId.compareTo(result1.locationId);
+
+    List<SortFieldResult> sortFields1 = result1.getSortFieldResults();
+    List<SortFieldResult> sortFields2 = result2.getSortFieldResults();
+    if (sortFields1 != null && sortFields2 != null) {
+      // Then we need to do a sort merge
+      int size1 = sortFields1.size();
+      int size2 = sortFields2.size();
+      if (size1 != size2) {
+        throw new RuntimeException("Result mismatch, sizes of sortfields must match [" + result1 + "] [" + result2
+            + "]");
+      }
+      for (int i = 0; i < size1; i++) {
+        SortFieldResult sortField1 = sortFields1.get(i);
+        SortFieldResult sortField2 = sortFields2.get(i);
+        int compare = BlurUtil.SORT_FIELD_COMPARATOR.compare(sortField1, sortField2);
+        if (compare != 0) {
+          return compare;
+        }
+      }
     }
-    return compare;
+
+    if (sortFields1 == null && sortFields2 == null) {
+      int compare = Double.compare(result2.score, result1.score);
+      if (compare == 0) {
+        return result2.locationId.compareTo(result1.locationId);
+      }
+      return compare;
+    } else {
+      throw new RuntimeException("Result mismatch, one of the 2 results have null sortfields [" + result1 + "] ["
+          + result2 + "]");
+    }
   }
 
 }

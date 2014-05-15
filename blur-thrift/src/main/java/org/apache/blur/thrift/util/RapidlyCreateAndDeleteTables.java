@@ -63,7 +63,6 @@ public class RapidlyCreateAndDeleteTables {
   private static void loadTable(Iface client, String tableName) throws BlurException, TException {
     RowMutation mutation = new RowMutation();
     mutation.table = tableName;
-    mutation.waitToBeVisible = true;
     mutation.rowId = "test";
     mutation.addToRecordMutations(newRecordMutation("test", "test", newColumn("test", "test")));
     mutation.rowMutationType = RowMutationType.REPLACE_ROW;

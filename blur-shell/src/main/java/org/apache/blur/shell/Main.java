@@ -27,15 +27,16 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.shell.Command.CommandException;
 import org.apache.blur.shell.Main.QuitCommand.QuitCommandException;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
@@ -49,8 +50,10 @@ import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Selector;
-import org.apache.blur.thrift.generated.User;
+import org.apache.blur.trace.LogTraceStorage;
 import org.apache.blur.trace.Trace;
+import org.apache.blur.user.User;
+import org.apache.blur.user.UserContext;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -70,8 +73,6 @@ public class Main {
 
   static Map<String, Command> commands;
   static String cluster;
-
-  static User user;
 
   static String getCluster(Iface client) throws BlurException, TException, CommandException {
     return getCluster(client,
@@ -185,7 +186,7 @@ public class Main {
     @Override
     public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
         BlurException {
-      out.println("User [" + user + "]");
+      out.println("User [" + UserContext.getUser() + "]");
     }
 
     @Override
@@ -210,7 +211,7 @@ public class Main {
     public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
         BlurException {
       if (args.length == 1) {
-        user = null;
+        UserContext.reset();
         out.println("User reset.");
         return;
       }
@@ -220,8 +221,8 @@ public class Main {
         String[] parts = args[i].split("\\=");
         attributes.put(parts[0], parts[1]);
       }
-      user = new User(username, attributes);
-      out.println("User set [" + user + "]");
+      UserContext.setUser(new User(username, attributes));
+      out.println("User set [" + UserContext.getUser() + "]");
     }
 
     @Override
@@ -398,34 +399,51 @@ public class Main {
   }
 
   public static String[] tableCommands = { "create", "enable", "disable", "remove", "truncate", "describe", "list",
-      "schema", "stats", "layout", "parse", "definecolumn" };
+      "schema", "stats", "layout", "parse", "definecolumn", "optimize" };
   public static String[] dataCommands = { "query", "get", "mutate", "delete", "highlight", "selector", "terms",
       "create-snapshot", "remove-snapshot", "list-snapshots" };
   public static String[] clusterCommands = { "controllers", "shards", "clusterlist", "cluster", "safemodewait", "top" };
   public static String[] shellCommands = { "help", "debug", "timed", "quit", "reset", "user", "whoami", "trace",
       "trace-remove", "trace-list" };
+  public static String[] serverCommands = { "logger", "logger-reset", "remove-shard" };
 
   private static class HelpCommand extends Command {
     @Override
     public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
         BlurException {
-      out.println("Available commands:");
 
       Map<String, Command> cmds = new TreeMap<String, Command>(commands);
+      if (args.length == 2) {
+        String commandStr = args[1];
+        out.println(" - " + commandStr + " help -");
+        out.println();
+        Command command = cmds.get(commandStr);
+        if (command == null) {
+          out.println("Command " + commandStr + " not found.");
+          return;
+        }
+        out.println(command.helpWithDescription());
+        out.println();
+        return;
+      }
+
+      out.println("Available commands:");
 
       int bufferLength = getMaxCommandLength(cmds.keySet()) + 2;
       out.println(" - Table commands - ");
-
       printCommandAndHelp(out, cmds, tableCommands, bufferLength);
 
       out.println();
       out.println(" - Data commands - ");
-
       printCommandAndHelp(out, cmds, dataCommands, bufferLength);
 
       out.println();
       out.println(" - Cluster commands - ");
       printCommandAndHelp(out, cmds, clusterCommands, bufferLength);
+
+      out.println();
+      out.println(" - Server commands - ");
+      printCommandAndHelp(out, cmds, serverCommands, bufferLength);
 
       out.println();
       out.println(" - Shell commands - ");
@@ -520,6 +538,8 @@ public class Main {
 
   public static void main(String[] args) throws Throwable {
 
+    Trace.setStorage(new LogTraceStorage(new BlurConfiguration()));
+
     args = removeLeadingShellFromScript(args);
 
     setupCommands();
@@ -568,7 +588,6 @@ public class Main {
             } else {
               long start = System.nanoTime();
               try {
-                client.setUser(user);
                 String traceId = null;
                 if (trace) {
                   traceId = UUID.randomUUID().toString();
@@ -673,6 +692,10 @@ public class Main {
     register(builder, new TraceCommand());
     register(builder, new TraceList());
     register(builder, new TraceRemove());
+    register(builder, new LogCommand());
+    register(builder, new LogResetCommand());
+    register(builder, new RemoveShardServerCommand());
+    register(builder, new OptimizeTableCommand());
     commands = builder.build();
   }
 

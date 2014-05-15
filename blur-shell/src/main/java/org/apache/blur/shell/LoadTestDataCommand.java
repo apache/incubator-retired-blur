@@ -35,7 +35,7 @@ public class LoadTestDataCommand extends Command implements TableFirstArgCommand
     }
     int c = 1;
     String table = args[c++];
-    boolean wal = Boolean.parseBoolean(args[c++]);
+    boolean enqueue = Boolean.parseBoolean(args[c++]);
     int numberRows = Integer.parseInt(args[c++]);
     int numberRecordsPerRow = Integer.parseInt(args[c++]);
     int numberOfFamilies = Integer.parseInt(args[c++]);
@@ -43,7 +43,7 @@ public class LoadTestDataCommand extends Command implements TableFirstArgCommand
     int numberOfWords = Integer.parseInt(args[c++]);
     int batch = Integer.parseInt(args[c++]);
     try {
-      LoadData.runLoad(client, table, wal, numberRows, numberRecordsPerRow, numberOfFamilies, numberOfColumns,
+      LoadData.runLoad(client, enqueue, table, numberRows, numberRecordsPerRow, numberOfFamilies, numberOfColumns,
           numberOfWords, batch, out);
     } catch (IOException e) {
       out.println("Error " + e.getMessage());
@@ -60,7 +60,7 @@ public class LoadTestDataCommand extends Command implements TableFirstArgCommand
 
   @Override
   public String usage() {
-    return "<tablename> <write ahead log (true/false)> <rows> <recordsPerRow> <families> <columnsPerRecord> <wordsPerColumn> <batchSize>";
+    return "<tablename> <queue true/false> <rows> <recordsPerRow> <families> <columnsPerRecord> <wordsPerColumn> <batchSize>";
   }
 
   @Override

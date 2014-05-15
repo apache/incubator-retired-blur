@@ -40,7 +40,11 @@ public abstract class Command {
       BlurException;
 
   public final String help() {
-    return description() + " " + "Usage: " + name() + " " + usage();
+    return "Usage: " + name() + " " + usage();
+  }
+
+  public final String helpWithDescription() {
+    return description() + "\n\n" + "Usage: " + name() + " " + usage();
   }
 
   abstract public String description();

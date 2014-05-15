@@ -21,18 +21,13 @@ import java.io.IOException;
 import org.apache.lucene.codecs.compressing.Decompressor;
 import org.apache.lucene.store.DataInput;
 import org.apache.lucene.store.IndexInput;
+import org.apache.lucene.util.ArrayUtil;
 import org.apache.lucene.util.BytesRef;
 
 public class CachedDecompressor extends Decompressor {
 
-  static class Entry {
-    String _inputName;
-    long _position = -1;
-    BytesRef _bytesRef = new BytesRef();
-  }
-
   private final Decompressor _decompressor;
-  private final ThreadLocal<Entry> _cache = new ThreadLocal<Entry>() {
+  private final ThreadLocal<Entry> _entry = new ThreadLocal<Entry>() {
     @Override
     protected Entry initialValue() {
       return new Entry();
@@ -44,20 +39,26 @@ public class CachedDecompressor extends Decompressor {
   }
 
   @Override
-  public void decompress(DataInput in, int originalLength, int offset, int length, BytesRef bytes) throws IOException {
+  public void decompress(final DataInput in, final int originalLength, final int offset, final int length,
+      final BytesRef bytes) throws IOException {
     if (in instanceof IndexInput) {
       IndexInput indexInput = (IndexInput) in;
       String name = indexInput.toString();
-      Entry entry = _cache.get();
       long filePointer = indexInput.getFilePointer();
-      BytesRef cachedRef = entry._bytesRef;
-      if (!name.equals(entry._inputName) || entry._position != filePointer) {
-        cachedRef.grow(originalLength);
-        _decompressor.decompress(in, originalLength, 0, originalLength, cachedRef);
-        entry._inputName = name;
-        entry._position = filePointer;
+
+      Entry entry = _entry.get();
+      if (!entry.isValid(indexInput, name, filePointer)) {
+        entry.setup(indexInput, name, filePointer);
+        entry._cache.grow(originalLength + 7);
+        _decompressor.decompress(indexInput, originalLength, 0, originalLength, entry._cache);
+        entry._cache.length = originalLength;
+        entry._cache.offset = 0;
+        _entry.set(entry);
       }
-      bytes.copyBytes(cachedRef);
+      if (bytes.bytes.length < originalLength + 7) {
+        bytes.bytes = new byte[ArrayUtil.oversize(originalLength + 7, 1)];
+      }
+      System.arraycopy(entry._cache.bytes, entry._cache.offset, bytes.bytes, 0, length + offset);
       bytes.offset = offset;
       bytes.length = length;
     } else {
@@ -67,6 +68,32 @@ public class CachedDecompressor extends Decompressor {
 
   @Override
   public Decompressor clone() {
-    return this;
+    return new CachedDecompressor(_decompressor.clone());
+  }
+
+  static class Entry {
+    IndexInput _indexInput;
+    String _name;
+    long _filePointer = -1;
+    BytesRef _cache = new BytesRef();
+
+    void setup(IndexInput indexInput, String name, long filePointer) {
+      _indexInput = indexInput;
+      _name = name;
+      _filePointer = filePointer;
+    }
+
+    boolean isValid(IndexInput indexInput, String name, long filePointer) {
+      if (_indexInput != indexInput) {
+        return false;
+      }
+      if (!name.equals(_name)) {
+        return false;
+      }
+      if (_filePointer != filePointer) {
+        return false;
+      }
+      return true;
+    }
   }
 }

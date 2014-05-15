@@ -25,6 +25,8 @@ import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.FloatField;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.SortField.Type;
 
 public class FloatFieldTypeDefinition extends NumericFieldTypeDefinition {
 
@@ -57,14 +59,23 @@ public class FloatFieldTypeDefinition extends NumericFieldTypeDefinition {
   @Override
   public Iterable<? extends Field> getFieldsForColumn(String family, Column column) {
     String name = getName(family, column.getName());
-    FloatField field = new FloatField(name, Float.parseFloat(column.getValue()), _typeStored);
+    float value = Float.parseFloat(column.getValue());
+    FloatField field = new FloatField(name, value, _typeStored);
+    if (isSortEnable()) {
+      return addSort(name, Float.floatToRawIntBits(value), field);
+    }
     return makeIterable(field);
   }
 
   @Override
   public Iterable<? extends Field> getFieldsForSubColumn(String family, Column column, String subName) {
     String name = getName(family, column.getName(), subName);
-    return makeIterable(new FloatField(name, Float.parseFloat(column.getValue()), _typeNotStored));
+    float value = Float.parseFloat(column.getValue());
+    FloatField field = new FloatField(name, value, _typeNotStored);
+    if (isSortEnable()) {
+      return addSort(name, Float.floatToRawIntBits(value), field);
+    }
+    return makeIterable(field);
   }
 
   @Override
@@ -72,6 +83,14 @@ public class FloatFieldTypeDefinition extends NumericFieldTypeDefinition {
     float p1 = parseFloat(part1);
     float p2 = parseFloat(part2);
     return NumericRangeQuery.newFloatRange(field, _precisionStep, p1, p2, startInclusive, endInclusive);
+  }
+
+  @Override
+  public SortField getSortField(boolean reverse) {
+    if (reverse) {
+      return new SortField(getFieldName(), Type.FLOAT, reverse);
+    }
+    return new SortField(getFieldName(), Type.FLOAT);
   }
 
   private float parseFloat(String number) {

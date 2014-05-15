@@ -25,6 +25,7 @@ import org.apache.blur.thrift.generated.Record;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.SortField;
 
 public abstract class FieldManager {
 
@@ -53,13 +54,15 @@ public abstract class FieldManager {
    *          for the record for fieldless searching.
    * @param fieldType
    *          the field type name, required.
+   * @param sortable
+   *          makes this column sortable.
    * @param props
    *          the configuration properties for this column and type.
    * @return
    * @throws IOException
    */
   public abstract boolean addColumnDefinition(String family, String columnName, String subColumnName,
-      boolean fieldLessIndexed, String fieldType, Map<String, String> props) throws IOException;
+      boolean fieldLessIndexed, String fieldType, boolean sortable, Map<String, String> props) throws IOException;
 
   /**
    * Gets the analyzer for the indexing process.
@@ -130,7 +133,7 @@ public abstract class FieldManager {
    * @throws IOException
    */
   public abstract Boolean checkSupportForWildcardQuery(String field) throws IOException;
-  
+
   /**
    * Checks if this field supports regex queries.
    * 
@@ -263,14 +266,18 @@ public abstract class FieldManager {
 
   /**
    * Register a {@link FieldTypeDefinition} into this field manager.
-   * @param c the class.
+   * 
+   * @param c
+   *          the class.
    */
   public abstract void registerType(Class<? extends FieldTypeDefinition> c);
-  
+
   public abstract Set<String> getFieldNames() throws IOException;
-  
+
   public abstract String resolveField(String field);
 
   public abstract void loadFromStorage() throws IOException;
+
+  public abstract SortField getSortField(String field, boolean reverse) throws IOException;
 
 }

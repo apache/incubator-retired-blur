@@ -56,6 +56,10 @@ public class FetchRowResult implements org.apache.blur.thirdparty.thrift_0_9_0.T
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("FetchRowResult");
 
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ROW_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("row", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField START_RECORD_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("startRecord", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField MAX_RECORDS_TO_FETCH_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("maxRecordsToFetch", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)3);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField MORE_RECORDS_TO_FETCH_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("moreRecordsToFetch", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)4);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TOTAL_RECORDS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("totalRecords", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -67,13 +71,45 @@ public class FetchRowResult implements org.apache.blur.thirdparty.thrift_0_9_0.T
    * The row fetched.
    */
   public Row row; // required
+  /**
+   * See Selector startRecord.
+   */
+  public int startRecord; // required
+  /**
+   * See Selector maxRecordsToFetch.
+   */
+  public int maxRecordsToFetch; // required
+  /**
+   * Are there more Records to fetch based on the Selector provided.
+   */
+  public boolean moreRecordsToFetch; // required
+  /**
+   * The total number of records the Selector found.
+   */
+  public int totalRecords; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     /**
      * The row fetched.
      */
-    ROW((short)1, "row");
+    ROW((short)1, "row"),
+    /**
+     * See Selector startRecord.
+     */
+    START_RECORD((short)2, "startRecord"),
+    /**
+     * See Selector maxRecordsToFetch.
+     */
+    MAX_RECORDS_TO_FETCH((short)3, "maxRecordsToFetch"),
+    /**
+     * Are there more Records to fetch based on the Selector provided.
+     */
+    MORE_RECORDS_TO_FETCH((short)4, "moreRecordsToFetch"),
+    /**
+     * The total number of records the Selector found.
+     */
+    TOTAL_RECORDS((short)5, "totalRecords");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -90,6 +126,14 @@ public class FetchRowResult implements org.apache.blur.thirdparty.thrift_0_9_0.T
       switch(fieldId) {
         case 1: // ROW
           return ROW;
+        case 2: // START_RECORD
+          return START_RECORD;
+        case 3: // MAX_RECORDS_TO_FETCH
+          return MAX_RECORDS_TO_FETCH;
+        case 4: // MORE_RECORDS_TO_FETCH
+          return MORE_RECORDS_TO_FETCH;
+        case 5: // TOTAL_RECORDS
+          return TOTAL_RECORDS;
         default:
           return null;
       }
@@ -130,32 +174,68 @@ public class FetchRowResult implements org.apache.blur.thirdparty.thrift_0_9_0.T
   }
 
   // isset id assignments
+  private static final int __STARTRECORD_ISSET_ID = 0;
+  private static final int __MAXRECORDSTOFETCH_ISSET_ID = 1;
+  private static final int __MORERECORDSTOFETCH_ISSET_ID = 2;
+  private static final int __TOTALRECORDS_ISSET_ID = 3;
+  private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ROW, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("row", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Row.class)));
+    tmpMap.put(_Fields.START_RECORD, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("startRecord", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32)));
+    tmpMap.put(_Fields.MAX_RECORDS_TO_FETCH, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("maxRecordsToFetch", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32)));
+    tmpMap.put(_Fields.MORE_RECORDS_TO_FETCH, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("moreRecordsToFetch", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.TOTAL_RECORDS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("totalRecords", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(FetchRowResult.class, metaDataMap);
   }
 
   public FetchRowResult() {
+    this.startRecord = -1;
+
+    this.maxRecordsToFetch = -1;
+
+    this.moreRecordsToFetch = false;
+
   }
 
   public FetchRowResult(
-    Row row)
+    Row row,
+    int startRecord,
+    int maxRecordsToFetch,
+    boolean moreRecordsToFetch,
+    int totalRecords)
   {
     this();
     this.row = row;
+    this.startRecord = startRecord;
+    setStartRecordIsSet(true);
+    this.maxRecordsToFetch = maxRecordsToFetch;
+    setMaxRecordsToFetchIsSet(true);
+    this.moreRecordsToFetch = moreRecordsToFetch;
+    setMoreRecordsToFetchIsSet(true);
+    this.totalRecords = totalRecords;
+    setTotalRecordsIsSet(true);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public FetchRowResult(FetchRowResult other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetRow()) {
       this.row = new Row(other.row);
     }
+    this.startRecord = other.startRecord;
+    this.maxRecordsToFetch = other.maxRecordsToFetch;
+    this.moreRecordsToFetch = other.moreRecordsToFetch;
+    this.totalRecords = other.totalRecords;
   }
 
   public FetchRowResult deepCopy() {
@@ -165,6 +245,14 @@ public class FetchRowResult implements org.apache.blur.thirdparty.thrift_0_9_0.T
   @Override
   public void clear() {
     this.row = null;
+    this.startRecord = -1;
+
+    this.maxRecordsToFetch = -1;
+
+    this.moreRecordsToFetch = false;
+
+    setTotalRecordsIsSet(false);
+    this.totalRecords = 0;
   }
 
   /**
@@ -197,6 +285,122 @@ public class FetchRowResult implements org.apache.blur.thirdparty.thrift_0_9_0.T
     }
   }
 
+  /**
+   * See Selector startRecord.
+   */
+  public int getStartRecord() {
+    return this.startRecord;
+  }
+
+  /**
+   * See Selector startRecord.
+   */
+  public FetchRowResult setStartRecord(int startRecord) {
+    this.startRecord = startRecord;
+    setStartRecordIsSet(true);
+    return this;
+  }
+
+  public void unsetStartRecord() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __STARTRECORD_ISSET_ID);
+  }
+
+  /** Returns true if field startRecord is set (has been assigned a value) and false otherwise */
+  public boolean isSetStartRecord() {
+    return EncodingUtils.testBit(__isset_bitfield, __STARTRECORD_ISSET_ID);
+  }
+
+  public void setStartRecordIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __STARTRECORD_ISSET_ID, value);
+  }
+
+  /**
+   * See Selector maxRecordsToFetch.
+   */
+  public int getMaxRecordsToFetch() {
+    return this.maxRecordsToFetch;
+  }
+
+  /**
+   * See Selector maxRecordsToFetch.
+   */
+  public FetchRowResult setMaxRecordsToFetch(int maxRecordsToFetch) {
+    this.maxRecordsToFetch = maxRecordsToFetch;
+    setMaxRecordsToFetchIsSet(true);
+    return this;
+  }
+
+  public void unsetMaxRecordsToFetch() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __MAXRECORDSTOFETCH_ISSET_ID);
+  }
+
+  /** Returns true if field maxRecordsToFetch is set (has been assigned a value) and false otherwise */
+  public boolean isSetMaxRecordsToFetch() {
+    return EncodingUtils.testBit(__isset_bitfield, __MAXRECORDSTOFETCH_ISSET_ID);
+  }
+
+  public void setMaxRecordsToFetchIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __MAXRECORDSTOFETCH_ISSET_ID, value);
+  }
+
+  /**
+   * Are there more Records to fetch based on the Selector provided.
+   */
+  public boolean isMoreRecordsToFetch() {
+    return this.moreRecordsToFetch;
+  }
+
+  /**
+   * Are there more Records to fetch based on the Selector provided.
+   */
+  public FetchRowResult setMoreRecordsToFetch(boolean moreRecordsToFetch) {
+    this.moreRecordsToFetch = moreRecordsToFetch;
+    setMoreRecordsToFetchIsSet(true);
+    return this;
+  }
+
+  public void unsetMoreRecordsToFetch() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __MORERECORDSTOFETCH_ISSET_ID);
+  }
+
+  /** Returns true if field moreRecordsToFetch is set (has been assigned a value) and false otherwise */
+  public boolean isSetMoreRecordsToFetch() {
+    return EncodingUtils.testBit(__isset_bitfield, __MORERECORDSTOFETCH_ISSET_ID);
+  }
+
+  public void setMoreRecordsToFetchIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __MORERECORDSTOFETCH_ISSET_ID, value);
+  }
+
+  /**
+   * The total number of records the Selector found.
+   */
+  public int getTotalRecords() {
+    return this.totalRecords;
+  }
+
+  /**
+   * The total number of records the Selector found.
+   */
+  public FetchRowResult setTotalRecords(int totalRecords) {
+    this.totalRecords = totalRecords;
+    setTotalRecordsIsSet(true);
+    return this;
+  }
+
+  public void unsetTotalRecords() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __TOTALRECORDS_ISSET_ID);
+  }
+
+  /** Returns true if field totalRecords is set (has been assigned a value) and false otherwise */
+  public boolean isSetTotalRecords() {
+    return EncodingUtils.testBit(__isset_bitfield, __TOTALRECORDS_ISSET_ID);
+  }
+
+  public void setTotalRecordsIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __TOTALRECORDS_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case ROW:
@@ -207,6 +411,38 @@ public class FetchRowResult implements org.apache.blur.thirdparty.thrift_0_9_0.T
       }
       break;
 
+    case START_RECORD:
+      if (value == null) {
+        unsetStartRecord();
+      } else {
+        setStartRecord((Integer)value);
+      }
+      break;
+
+    case MAX_RECORDS_TO_FETCH:
+      if (value == null) {
+        unsetMaxRecordsToFetch();
+      } else {
+        setMaxRecordsToFetch((Integer)value);
+      }
+      break;
+
+    case MORE_RECORDS_TO_FETCH:
+      if (value == null) {
+        unsetMoreRecordsToFetch();
+      } else {
+        setMoreRecordsToFetch((Boolean)value);
+      }
+      break;
+
+    case TOTAL_RECORDS:
+      if (value == null) {
+        unsetTotalRecords();
+      } else {
+        setTotalRecords((Integer)value);
+      }
+      break;
+
     }
   }
 
@@ -214,6 +450,18 @@ public class FetchRowResult implements org.apache.blur.thirdparty.thrift_0_9_0.T
     switch (field) {
     case ROW:
       return getRow();
+
+    case START_RECORD:
+      return Integer.valueOf(getStartRecord());
+
+    case MAX_RECORDS_TO_FETCH:
+      return Integer.valueOf(getMaxRecordsToFetch());
+
+    case MORE_RECORDS_TO_FETCH:
+      return Boolean.valueOf(isMoreRecordsToFetch());
+
+    case TOTAL_RECORDS:
+      return Integer.valueOf(getTotalRecords());
 
     }
     throw new IllegalStateException();
@@ -228,6 +476,14 @@ public class FetchRowResult implements org.apache.blur.thirdparty.thrift_0_9_0.T
     switch (field) {
     case ROW:
       return isSetRow();
+    case START_RECORD:
+      return isSetStartRecord();
+    case MAX_RECORDS_TO_FETCH:
+      return isSetMaxRecordsToFetch();
+    case MORE_RECORDS_TO_FETCH:
+      return isSetMoreRecordsToFetch();
+    case TOTAL_RECORDS:
+      return isSetTotalRecords();
     }
     throw new IllegalStateException();
   }
@@ -254,6 +510,42 @@ public class FetchRowResult implements org.apache.blur.thirdparty.thrift_0_9_0.T
         return false;
     }
 
+    boolean this_present_startRecord = true;
+    boolean that_present_startRecord = true;
+    if (this_present_startRecord || that_present_startRecord) {
+      if (!(this_present_startRecord && that_present_startRecord))
+        return false;
+      if (this.startRecord != that.startRecord)
+        return false;
+    }
+
+    boolean this_present_maxRecordsToFetch = true;
+    boolean that_present_maxRecordsToFetch = true;
+    if (this_present_maxRecordsToFetch || that_present_maxRecordsToFetch) {
+      if (!(this_present_maxRecordsToFetch && that_present_maxRecordsToFetch))
+        return false;
+      if (this.maxRecordsToFetch != that.maxRecordsToFetch)
+        return false;
+    }
+
+    boolean this_present_moreRecordsToFetch = true;
+    boolean that_present_moreRecordsToFetch = true;
+    if (this_present_moreRecordsToFetch || that_present_moreRecordsToFetch) {
+      if (!(this_present_moreRecordsToFetch && that_present_moreRecordsToFetch))
+        return false;
+      if (this.moreRecordsToFetch != that.moreRecordsToFetch)
+        return false;
+    }
+
+    boolean this_present_totalRecords = true;
+    boolean that_present_totalRecords = true;
+    if (this_present_totalRecords || that_present_totalRecords) {
+      if (!(this_present_totalRecords && that_present_totalRecords))
+        return false;
+      if (this.totalRecords != that.totalRecords)
+        return false;
+    }
+
     return true;
   }
 
@@ -276,6 +568,46 @@ public class FetchRowResult implements org.apache.blur.thirdparty.thrift_0_9_0.T
     }
     if (isSetRow()) {
       lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.row, typedOther.row);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetStartRecord()).compareTo(typedOther.isSetStartRecord());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetStartRecord()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.startRecord, typedOther.startRecord);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetMaxRecordsToFetch()).compareTo(typedOther.isSetMaxRecordsToFetch());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetMaxRecordsToFetch()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.maxRecordsToFetch, typedOther.maxRecordsToFetch);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetMoreRecordsToFetch()).compareTo(typedOther.isSetMoreRecordsToFetch());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetMoreRecordsToFetch()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.moreRecordsToFetch, typedOther.moreRecordsToFetch);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetTotalRecords()).compareTo(typedOther.isSetTotalRecords());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTotalRecords()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.totalRecords, typedOther.totalRecords);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -307,6 +639,22 @@ public class FetchRowResult implements org.apache.blur.thirdparty.thrift_0_9_0.T
       sb.append(this.row);
     }
     first = false;
+    if (!first) sb.append(", ");
+    sb.append("startRecord:");
+    sb.append(this.startRecord);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("maxRecordsToFetch:");
+    sb.append(this.maxRecordsToFetch);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("moreRecordsToFetch:");
+    sb.append(this.moreRecordsToFetch);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("totalRecords:");
+    sb.append(this.totalRecords);
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -329,6 +677,8 @@ public class FetchRowResult implements org.apache.blur.thirdparty.thrift_0_9_0.T
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
     } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
@@ -362,6 +712,38 @@ public class FetchRowResult implements org.apache.blur.thirdparty.thrift_0_9_0.T
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 2: // START_RECORD
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
+              struct.startRecord = iprot.readI32();
+              struct.setStartRecordIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // MAX_RECORDS_TO_FETCH
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
+              struct.maxRecordsToFetch = iprot.readI32();
+              struct.setMaxRecordsToFetchIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 4: // MORE_RECORDS_TO_FETCH
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
+              struct.moreRecordsToFetch = iprot.readBool();
+              struct.setMoreRecordsToFetchIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 5: // TOTAL_RECORDS
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32) {
+              struct.totalRecords = iprot.readI32();
+              struct.setTotalRecordsIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -382,6 +764,18 @@ public class FetchRowResult implements org.apache.blur.thirdparty.thrift_0_9_0.T
         struct.row.write(oprot);
         oprot.writeFieldEnd();
       }
+      oprot.writeFieldBegin(START_RECORD_FIELD_DESC);
+      oprot.writeI32(struct.startRecord);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(MAX_RECORDS_TO_FETCH_FIELD_DESC);
+      oprot.writeI32(struct.maxRecordsToFetch);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(MORE_RECORDS_TO_FETCH_FIELD_DESC);
+      oprot.writeBool(struct.moreRecordsToFetch);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(TOTAL_RECORDS_FIELD_DESC);
+      oprot.writeI32(struct.totalRecords);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -403,20 +797,60 @@ public class FetchRowResult implements org.apache.blur.thirdparty.thrift_0_9_0.T
       if (struct.isSetRow()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetStartRecord()) {
+        optionals.set(1);
+      }
+      if (struct.isSetMaxRecordsToFetch()) {
+        optionals.set(2);
+      }
+      if (struct.isSetMoreRecordsToFetch()) {
+        optionals.set(3);
+      }
+      if (struct.isSetTotalRecords()) {
+        optionals.set(4);
+      }
+      oprot.writeBitSet(optionals, 5);
       if (struct.isSetRow()) {
         struct.row.write(oprot);
+      }
+      if (struct.isSetStartRecord()) {
+        oprot.writeI32(struct.startRecord);
+      }
+      if (struct.isSetMaxRecordsToFetch()) {
+        oprot.writeI32(struct.maxRecordsToFetch);
+      }
+      if (struct.isSetMoreRecordsToFetch()) {
+        oprot.writeBool(struct.moreRecordsToFetch);
+      }
+      if (struct.isSetTotalRecords()) {
+        oprot.writeI32(struct.totalRecords);
       }
     }
 
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, FetchRowResult struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
         struct.row = new Row();
         struct.row.read(iprot);
         struct.setRowIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.startRecord = iprot.readI32();
+        struct.setStartRecordIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.maxRecordsToFetch = iprot.readI32();
+        struct.setMaxRecordsToFetchIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.moreRecordsToFetch = iprot.readBool();
+        struct.setMoreRecordsToFetchIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.totalRecords = iprot.readI32();
+        struct.setTotalRecordsIsSet(true);
       }
     }
   }

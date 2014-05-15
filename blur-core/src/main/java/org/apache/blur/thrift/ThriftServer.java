@@ -57,7 +57,6 @@ import org.apache.blur.thrift.server.TThreadedSelectorServer;
 import org.apache.blur.thrift.server.TThreadedSelectorServer.Args.AcceptPolicy;
 import org.apache.blur.trace.LogTraceStorage;
 import org.apache.blur.trace.TraceStorage;
-import org.apache.blur.trace.ZooKeeperTraceStorage;
 import org.apache.blur.trace.hdfs.HdfsTraceStorage;
 
 import com.yammer.metrics.Metrics;
@@ -107,9 +106,7 @@ public class ThriftServer {
       throw new RuntimeException("Cannot have both [" + BLUR_ZOOKEEPER_TRACE_PATH + "] and [" + BLUR_HDFS_TRACE_PATH
           + "] set.");
     }
-    if (zKpath != null) {
-      return new ZooKeeperTraceStorage(configuration);
-    } else if (hdfsPath != null) {
+    if (hdfsPath != null) {
       return new HdfsTraceStorage(configuration);
     } else {
       return new LogTraceStorage(configuration);

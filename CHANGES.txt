@@ -1,3 +1,44 @@
+Release 0.2.2 - 2014-05-06
+
+Release Notes - Apache Blur - Version 0.2.2
+
+** Bug
+    * [BLUR-297] - The ShardServerEventHandler class is log noisy when clients disconnect
+    * [BLUR-298] - ZooKeeperClusterStatus has several methods that are not working
+    * [BLUR-299] - Custom types at the system/cluster level aren't registered when the OutputFormat creates the table.
+    * [BLUR-300] - System types need to be registered before the tablecontext is loaded
+    * [BLUR-301] - List command should be sorted
+    * [BLUR-303] - Change class sig for DefaultBlurReducer
+    * [BLUR-305] - Blur CombineInputFormat doesn't work at all
+    * [BLUR-306] - Tables with the same name errors
+    * [BLUR-307] - CsvBlurMapper not does work with combined input format
+    * [BLUR-308] - The MR jobs tmpjars contains more jar than needed
+    * [BLUR-309] - CsvBlurMapper has an extra comma in the error message
+    * [BLUR-310] - Remove the index size gathering code
+    * [BLUR-318] - Bug in TypeDefinitions while having separate analyzers for index and query
+    * [BLUR-319] - Custom TypeDef's can get Blur into a state where one cannot make new tables.
+    * [BLUR-324] - SpatialPointVectorStrategyFieldTypeDefinition is throwing an exception during indexing
+    * [BLUR-325] - The MasterBasedDistributedLayout is not removing the layout when a table is deleted
+    * [BLUR-326] - The thrift call shardServerList is failing
+    * [BLUR-328] - Index curruption during mutateBatch calls
+    * [BLUR-329] - Shard server query cache bug
+    * [BLUR-330] - Remove the ZooKeeper trace store
+    * [BLUR-331] - Large Row Paging issue
+    * [BLUR-332] - FileNotFoundException during stats call
+    * [BLUR-337] - Shard server should fail hard on a bad misconfiguration
+
+** Improvement
+    * [BLUR-302] - start-all script sometimes causes errors 
+    * [BLUR-317] - Enable Changing of Compression alg and chunk size in Codec
+    * [BLUR-323] - Improve error message on CustomFieldTypeDefinition
+    * [BLUR-327] - Schedule a daily optimize of each shard
+    * [BLUR-333] - Remove polling from the index importer
+    * [BLUR-334] - Add sorting
+    * [BLUR-335] - Field existence query
+
+** New Feature
+    * [BLUR-314] - Allow configurable Thrift frame size
+
 Release 0.2.1 - 2013-11-06
 
 Release Notes - Apache Blur - Version 0.2.1

@@ -34,9 +34,9 @@ import java.util.concurrent.Executors;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.manager.writer.BlurIndex;
-import org.apache.blur.manager.writer.BlurNRTIndex;
+import org.apache.blur.manager.writer.BlurIndexCloser;
+import org.apache.blur.manager.writer.BlurIndexSimpleWriter;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
@@ -62,11 +62,12 @@ public class LocalIndexServer extends AbstractIndexServer {
 
   private final Map<String, Map<String, BlurIndex>> _readersMap = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
   private final SharedMergeScheduler _mergeScheduler;
-  private final DirectoryReferenceFileGC _gc;
   private final ExecutorService _searchExecutor;
   private final TableContext _tableContext;
   private final Closer _closer;
   private final boolean _ramDir;
+  private final BlurIndexWarmup _indexWarmup;
+  private final BlurIndexCloser _indexCloser;
 
   public LocalIndexServer(TableDescriptor tableDescriptor) throws IOException {
     this(tableDescriptor, false);
@@ -76,11 +77,12 @@ public class LocalIndexServer extends AbstractIndexServer {
     _closer = Closer.create();
     _tableContext = TableContext.create(tableDescriptor);
     _mergeScheduler = _closer.register(new SharedMergeScheduler(3));
-    _gc = _closer.register(new DirectoryReferenceFileGC());
     _searchExecutor = Executors.newCachedThreadPool();
     _closer.register(new CloseableExecutorService(_searchExecutor));
     _ramDir = ramDir;
+    _indexCloser = _closer.register(new BlurIndexCloser());
     getIndexes(_tableContext.getTable());
+    _indexWarmup = BlurIndexWarmup.getIndexWarmup(_tableContext.getBlurConfiguration());
   }
 
   @Override
@@ -156,7 +158,8 @@ public class LocalIndexServer extends AbstractIndexServer {
 
   private BlurIndex openIndex(String table, String shard, Directory dir) throws CorruptIndexException, IOException {
     ShardContext shardContext = ShardContext.create(_tableContext, shard);
-    BlurNRTIndex index = new BlurNRTIndex(shardContext, _mergeScheduler, dir, _gc, _searchExecutor);
+    BlurIndexSimpleWriter index = new BlurIndexSimpleWriter(shardContext, dir, _mergeScheduler, _searchExecutor,
+        _indexCloser, _indexWarmup);
     return index;
   }
 

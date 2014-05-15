@@ -26,6 +26,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StoredField;
+import org.apache.lucene.search.SortField;
 
 public class StoredFieldTypeDefinition extends FieldTypeDefinition {
 
@@ -78,7 +79,7 @@ public class StoredFieldTypeDefinition extends FieldTypeDefinition {
   public boolean checkSupportForPrefixQuery() {
     return false;
   }
-  
+
   @Override
   public boolean checkSupportForRegexQuery() {
     return false;
@@ -88,10 +89,19 @@ public class StoredFieldTypeDefinition extends FieldTypeDefinition {
   public boolean isNumeric() {
     return false;
   }
-  
+
   @Override
   public boolean checkSupportForCustomQuery() {
     return false;
   }
 
+  @Override
+  public boolean checkSupportForSorting() {
+    return false;
+  }
+  
+  @Override
+  public SortField getSortField(boolean reverse) {
+    throw new RuntimeException("Sort not supported.");
+  }
 }

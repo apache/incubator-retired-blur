@@ -22,13 +22,17 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -53,7 +57,6 @@ import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.indexserver.DistributedLayout;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactory;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactoryImpl;
-import org.apache.blur.manager.indexserver.LayoutMissingException;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.results.BlurResultIterableClient;
 import org.apache.blur.manager.results.LazyBlurResult;
@@ -61,6 +64,7 @@ import org.apache.blur.manager.results.MergerBlurResultIterable;
 import org.apache.blur.manager.stats.MergerTableStats;
 import org.apache.blur.manager.status.MergerQueryStatusSingle;
 import org.apache.blur.server.ControllerServerContext;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TFramedTransport;
@@ -89,7 +93,6 @@ import org.apache.blur.thrift.generated.User;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Trace.TraceId;
 import org.apache.blur.trace.Tracer;
-import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
@@ -119,21 +122,38 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
 
     @Override
-    public <T> T execute(String node, BlurCommand<T> command, int maxRetries, long backOffTime, long maxBackOffTime)
-        throws BlurException, TException, IOException {
-      Tracer trace = Trace.trace("remote call - thrift", Trace.param("node", node));
+    public <T> T execute(final String node, final BlurCommand<T> command, final int maxRetries, final long backOffTime,
+        final long maxBackOffTime) throws BlurException, TException, IOException {
+      Callable<T> callable = Trace.getCallable(new Callable<T>() {
+        @Override
+        public T call() throws Exception {
+          Tracer trace = Trace.trace("remote call - thrift", Trace.param("node", node));
+          try {
+            return BlurClientManager.execute(node + "#" + _timeout, command, maxRetries, backOffTime, maxBackOffTime);
+          } finally {
+            trace.done();
+          }
+        }
+      });
       try {
-        return BlurClientManager.execute(node + "#" + _timeout, command, maxRetries, backOffTime, maxBackOffTime);
-      } finally {
-        trace.done();
+        return callable.call();
+      } catch (BlurException e) {
+        throw e;
+      } catch (TException e) {
+        throw e;
+      } catch (IOException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new BException("Unknown error during remote call to node [" + node + "]", e);
       }
     }
   }
 
   private static final String CONTROLLER_THREAD_POOL = "controller-thread-pool";
   private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
-  private static final Map<String, Set<String>> EMPTY_MAP = new HashMap<String, Set<String>>();
-  private static final List<String> EMPTY_LIST = new ArrayList<String>();
+  private static final Map<String, Set<String>> EMPTY_MAP = Collections
+      .unmodifiableMap(new HashMap<String, Set<String>>());
+  private static final Set<String> EMPTY_SET = Collections.unmodifiableSet(new HashSet<String>());
 
   private ExecutorService _executor;
   private AtomicReference<Map<String, Map<String, String>>> _shardServerLayout = new AtomicReference<Map<String, Map<String, String>>>(
@@ -158,13 +178,19 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private long _maxFetchDelay = 2000;
   private long _maxMutateDelay = 2000;
   private long _maxDefaultDelay = 2000;
+  private long _preconnectTime = TimeUnit.MINUTES.toMillis(1);
+  private long _preconnectDelay = 15000;
 
   private long _defaultParallelCallTimeout = TimeUnit.MINUTES.toMillis(1);
   private WatchChildren _watchForClusters;
   private ConcurrentMap<String, WatchNodeExistance> _watchForTablesPerClusterExistance = new ConcurrentHashMap<String, WatchNodeExistance>();
   private ConcurrentMap<String, WatchNodeExistance> _watchForOnlineShardsPerClusterExistance = new ConcurrentHashMap<String, WatchNodeExistance>();
   private ConcurrentMap<String, WatchChildren> _watchForTablesPerCluster = new ConcurrentHashMap<String, WatchChildren>();
+  private ConcurrentMap<String, WatchChildren> _watchForTableLayoutChanges = new ConcurrentHashMap<String, WatchChildren>();
   private ConcurrentMap<String, WatchChildren> _watchForOnlineShardsPerCluster = new ConcurrentHashMap<String, WatchChildren>();
+  private Timer _preconnectTimer;
+  private Timer _tableContextWarmupTimer;
+  private long _tableLayoutTimeoutNanos = TimeUnit.SECONDS.toNanos(30);
 
   public void init() throws KeeperException, InterruptedException {
     setupZookeeper();
@@ -174,9 +200,74 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     watchForClusterChanges();
     List<String> clusterList = _clusterStatus.getClusterList(false);
     for (String cluster : clusterList) {
-      watchForLayoutChanges(cluster);
+      watchForLayoutChangeEvents(cluster);
+      updateLayout(cluster);
     }
-    updateLayout();
+    startPreconnectTimer();
+    startTableContextWarmupTimer();
+  }
+
+  private void startTableContextWarmupTimer() {
+    _tableContextWarmupTimer = new Timer("controller tablecontext warmup", true);
+    _tableContextWarmupTimer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        try {
+          tableContextWarmup();
+        } catch (Exception e) {
+          LOG.error("Unknown error while trying to preconnect to shard servers.", e);
+        }
+      }
+    }, getRandomDelay(_preconnectDelay, _preconnectDelay * 4), TimeUnit.MINUTES.toMillis(1));
+  }
+
+  protected void tableContextWarmup() throws BlurException, TException {
+    for (String table : tableList()) {
+      LOG.debug("Warming the tablecontext for table [{0}]", table);
+      TableDescriptor describe = describe(table);
+      TableContext.create(describe);
+    }
+  }
+
+  private long getRandomDelay(long min, long max) {
+    Random random = new Random();
+    return random.nextInt((int) (max - min)) + min;
+  }
+
+  private void startPreconnectTimer() {
+    _preconnectTimer = new Timer("controller preconnect clients", true);
+    _preconnectTimer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        try {
+          preconnectClients();
+        } catch (Exception e) {
+          LOG.error("Unknown error while trying to preconnect to shard servers.", e);
+        }
+      }
+    }, _preconnectDelay, _preconnectTime);
+  }
+
+  private void preconnectClients() {
+    if (_clusterStatus != null) {
+      List<String> clusterList = _clusterStatus.getClusterList(true);
+      for (String cluster : clusterList) {
+        List<String> onlineShardServers = _clusterStatus.getOnlineShardServers(true, cluster);
+        for (String shardServer : onlineShardServers) {
+          preconnectClients(shardServer);
+        }
+      }
+    }
+  }
+
+  private void preconnectClients(String shardServer) {
+    try {
+      Iface client = org.apache.blur.thrift.BlurClient.getClient(shardServer);
+      client.ping();
+      LOG.debug("Pinging shard server [{0}]", shardServer);
+    } catch (Exception e) {
+      LOG.error("Error while trying to ping shard server [{0}]", shardServer);
+    }
   }
 
   private void setupZookeeper() throws KeeperException, InterruptedException {
@@ -198,7 +289,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         }
         for (String cluster : children) {
           try {
-            watchForLayoutChanges(cluster);
+            watchForLayoutChangeEvents(cluster);
           } catch (KeeperException e) {
             LOG.error("Unknown error", e);
             throw new RuntimeException(e);
@@ -211,78 +302,78 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     });
   }
 
-  private void watchForLayoutChanges(final String cluster) throws KeeperException, InterruptedException {
+  private void watchForLayoutChangeEvents(final String cluster) throws KeeperException, InterruptedException {
     WatchNodeExistance we1 = new WatchNodeExistance(_zookeeper, ZookeeperPathConstants.getTablesPath(cluster));
     we1.watch(new WatchNodeExistance.OnChange() {
       @Override
       public void action(Stat stat) {
         if (stat != null) {
-          watch(cluster, ZookeeperPathConstants.getTablesPath(cluster), _watchForTablesPerCluster);
+          watchTables(cluster, _watchForTablesPerCluster);
         }
       }
     });
     if (_watchForTablesPerClusterExistance.putIfAbsent(cluster, we1) != null) {
       we1.close();
     }
-
-    WatchNodeExistance we2 = new WatchNodeExistance(_zookeeper, ZookeeperPathConstants.getTablesPath(cluster));
-    we2.watch(new WatchNodeExistance.OnChange() {
-      @Override
-      public void action(Stat stat) {
-        if (stat != null) {
-          watch(cluster, ZookeeperPathConstants.getOnlineShardsPath(cluster), _watchForOnlineShardsPerCluster);
-        }
-      }
-    });
-    if (_watchForOnlineShardsPerClusterExistance.putIfAbsent(cluster, we2) != null) {
-      we2.close();
-    }
   }
 
-  private void watch(String cluster, String path, ConcurrentMap<String, WatchChildren> map) {
-    WatchChildren watchForTables = new WatchChildren(_zookeeper, path);
-    watchForTables.watch(new OnChange() {
+  private void watchTables(final String cluster, ConcurrentMap<String, WatchChildren> map) {
+    String path = ZookeeperPathConstants.getTablesPath(cluster);
+    if (map.containsKey(cluster)) {
+      return;
+    }
+    WatchChildren watchForTableLayoutChanges = new WatchChildren(_zookeeper, path);
+    watchForTableLayoutChanges.watch(new OnChange() {
       @Override
       public void action(List<String> children) {
-        LOG.info("Layout change.");
-        updateLayout();
+        LOG.info("Layout change for cluster [{0}].", cluster);
+        updateLayout(cluster);
       }
     });
-
-    if (map.putIfAbsent(cluster, watchForTables) != null) {
-      watchForTables.close();
+    if (map.putIfAbsent(cluster, watchForTableLayoutChanges) != null) {
+      watchForTableLayoutChanges.close();
     }
   }
 
-  private synchronized void updateLayout() {
+  private synchronized void updateLayout(String cluster) {
     if (!_clusterStatus.isOpen()) {
       LOG.warn("The cluster status object has been closed.");
       return;
     }
-    List<String> tableList = _clusterStatus.getTableList(false);
+    List<String> tableList = _clusterStatus.getTableList(false, cluster);
     HashMap<String, Map<String, String>> newLayout = new HashMap<String, Map<String, String>>();
     for (String table : tableList) {
-      String cluster = _clusterStatus.getCluster(false, table);
-      if (cluster == null) {
-        continue;
-      }
-      List<String> shardServerList = _clusterStatus.getShardServerList(cluster);
-      List<String> offlineShardServers = _clusterStatus.getOfflineShardServers(false, cluster);
-      List<String> shardList = getShardList(cluster, table);
-
+      watchTableLayouts(cluster, table, _watchForTableLayoutChanges);
       DistributedLayoutFactory distributedLayoutFactory = getDistributedLayoutFactory(cluster);
-      try {
-        DistributedLayout layout = distributedLayoutFactory.createDistributedLayout(table, shardList, shardServerList,
-            offlineShardServers, true);
+      DistributedLayout layout = distributedLayoutFactory.readCurrentLayout(table);
+      if (layout != null) {
         Map<String, String> map = layout.getLayout();
         LOG.info("New layout for table [{0}] is [{1}]", table, map);
         newLayout.put(table, map);
-      } catch (LayoutMissingException e) {
+      } else {
         LOG.info("Layout missing for table [{0}]", table);
-        continue;
       }
     }
     _shardServerLayout.set(newLayout);
+  }
+
+  private void watchTableLayouts(final String cluster, final String table, ConcurrentMap<String, WatchChildren> map) {
+    String path = ZookeeperPathConstants.getTablePath(cluster, table);
+    String key = cluster + "|" + table;
+    if (map.containsKey(key)) {
+      return;
+    }
+    WatchChildren watchForTableLayoutChanges = new WatchChildren(_zookeeper, path);
+    watchForTableLayoutChanges.watch(new OnChange() {
+      @Override
+      public void action(List<String> children) {
+        LOG.info("Layout change for cluster [{0}] table [{1}].", cluster, table);
+        updateLayout(cluster);
+      }
+    });
+    if (map.putIfAbsent(key, watchForTableLayoutChanges) != null) {
+      watchForTableLayoutChanges.close();
+    }
   }
 
   private synchronized DistributedLayoutFactory getDistributedLayoutFactory(String cluster) {
@@ -293,15 +384,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       _distributedLayoutFactoryMap.put(cluster, distributedLayoutFactory);
     }
     return distributedLayoutFactory;
-  }
-
-  private List<String> getShardList(String cluster, String table) {
-    List<String> shards = new ArrayList<String>();
-    TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
-    for (int i = 0; i < tableDescriptor.shardCount; i++) {
-      shards.add(BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i));
-    }
-    return shards;
   }
 
   private void registerMyself() {
@@ -341,10 +423,15 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       _closed.set(true);
       _running.set(false);
       _executor.shutdownNow();
+      _preconnectTimer.cancel();
+      _preconnectTimer.purge();
+      _tableContextWarmupTimer.cancel();
+      _tableContextWarmupTimer.purge();
       close(_watchForClusters);
       close(_watchForOnlineShardsPerCluster.values());
       close(_watchForOnlineShardsPerClusterExistance.values());
       close(_watchForTablesPerCluster.values());
+      close(_watchForTableLayoutChanges.values());
       close(_watchForTablesPerClusterExistance.values());
     }
   }
@@ -365,28 +452,29 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public BlurResults query(final String table, final BlurQuery blurQuery) throws BlurException, TException {
-    checkTable(table);
-    String cluster = _clusterStatus.getCluster(true, table);
-    _queryChecker.checkQuery(blurQuery);
-    checkSelectorFetchSize(blurQuery.getSelector());
-    TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
-    int shardCount = tableDescriptor.getShardCount();
-    if (blurQuery.getUuid() == null) {
-      blurQuery.setUuid(UUID.randomUUID().toString());
-    }
+    try {
+      checkTable(table);
+      Tracer trace = Trace.trace("query - setup", Trace.param("table", table), Trace.param("blurQuery", blurQuery));
+      String cluster = _clusterStatus.getCluster(true, table);
+      _queryChecker.checkQuery(blurQuery);
+      checkSelectorFetchSize(blurQuery.getSelector());
+      TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
+      int shardCount = tableDescriptor.getShardCount();
+      if (blurQuery.getUuid() == null) {
+        blurQuery.setUuid(UUID.randomUUID().toString());
+      }
+      BlurUtil.setStartTime(blurQuery);
+      trace.done();
 
-    OUTER: for (int retries = 0; retries < _maxDefaultRetries; retries++) {
-      try {
+      BlurUtil.setStartTime(blurQuery);
+
+      OUTER: for (int retries = 0; retries < _maxDefaultRetries; retries++) {
+        Tracer selectorTrace = Trace.trace("selector - setup", Trace.param("retries", retries));
         final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
-
-        BlurQuery original = new BlurQuery(blurQuery);
-
-        BlurUtil.setStartTime(original);
-
         Selector selector = blurQuery.getSelector();
         if (selector == null) {
           selector = new Selector();
-          selector.setColumnFamiliesToFetch(EMPTY_LIST);
+          selector.setColumnFamiliesToFetch(EMPTY_SET);
           selector.setColumnsToFetch(EMPTY_MAP);
           if (!blurQuery.query.rowQuery) {
             selector.setRecordOnly(true);
@@ -398,6 +486,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           }
         }
         blurQuery.setSelector(null);
+        selectorTrace.done();
 
         BlurCommand<BlurResultIterable> command = new BlurCommand<BlurResultIterable>() {
           @Override
@@ -416,11 +505,28 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
         BlurResultIterable hitsIterable = null;
         try {
-          hitsIterable = scatterGather(getCluster(table), command, merger);
-          BlurResults results = convertToBlurResults(hitsIterable, blurQuery, facetCounts, _executor, selector, table);
+          String rowId = blurQuery.getRowId();
+          if (rowId == null) {
+            Tracer scatterGatherTrace = Trace.trace("query - scatterGather", Trace.param("retries", retries));
+            try {
+              hitsIterable = scatterGather(tableDescriptor.getCluster(), command, merger);
+            } finally {
+              scatterGatherTrace.done();
+            }
+          } else {
+            String clientHostnamePort = getNode(table, rowId);
+            hitsIterable = _client.execute(clientHostnamePort, command, _maxFetchRetries, _fetchDelay, _maxFetchDelay);
+          }
+          BlurResults results;
+          Tracer convertToBlurResults = Trace.trace("query - convertToBlurResults", Trace.param("retries", retries));
+          try {
+            results = convertToBlurResults(hitsIterable, blurQuery, facetCounts, _executor, selector, table);
+          } finally {
+            convertToBlurResults.done();
+          }
           if (!validResults(results, shardCount, blurQuery)) {
             BlurClientManager.sleep(_defaultDelay, _maxDefaultDelay, retries, _maxDefaultRetries);
-            Map<String, String> map = _shardServerLayout.get().get(table);
+            Map<String, String> map = getTableLayout(table);
             LOG.info("Current layout for table [{0}] is [{1}]", table, map);
             continue OUTER;
           }
@@ -430,15 +536,15 @@ public class BlurControllerServer extends TableAdmin implements Iface {
             hitsIterable.close();
           }
         }
-      } catch (Exception e) {
-        if (e instanceof BlurException) {
-          throw (BlurException) e;
-        }
-        LOG.error("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
-        throw new BException("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
       }
+      throw new BException("Query could not be completed.");
+    } catch (Exception e) {
+      LOG.error("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
     }
-    throw new BException("Query could not be completed.");
   }
 
   public BlurResults convertToBlurResults(BlurResultIterable hitsIterable, BlurQuery query,
@@ -532,7 +638,16 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
       // Wait for all parallel calls to finish.
       for (Future<Boolean> future : futures) {
-        future.get();
+        try {
+          future.get();
+        } catch (ExecutionException e) {
+          Throwable throwable = e.getCause();
+          if (throwable instanceof BlurException) {
+            throw (BlurException) throwable;
+          } else {
+            throw new BException("Unknown error during fetch", throwable);
+          }
+        }
       }
 
       // Place fetch results into result object for response.
@@ -554,20 +669,25 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     if (results.totalResults >= query.minimumNumberOfResults) {
       return true;
     }
-    int shardInfoSize = results.getShardInfoSize();
-    if (shardInfoSize == shardCount) {
-      return true;
+    if (query.getRowId() == null) {
+      if (results.getShardInfoSize() == shardCount) {
+        return true;
+      }
+    } else {
+      if (results.getShardInfoSize() == 1) {
+        return true;
+      }
     }
     return false;
   }
 
   @Override
   public FetchResult fetchRow(final String table, final Selector selector) throws BlurException, TException {
-    checkTable(table);
-    checkSelectorFetchSize(selector);
-    IndexManager.validSelector(selector);
     String clientHostnamePort = null;
     try {
+      checkTable(table);
+      checkSelectorFetchSize(selector);
+      IndexManager.validSelector(selector);
       clientHostnamePort = getNode(table, selector);
       return _client.execute(clientHostnamePort, new BlurCommand<FetchResult>() {
         @Override
@@ -578,6 +698,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     } catch (Exception e) {
       LOG.error("Unknown error during fetch of row from table [{0}] selector [{1}] node [{2}]", e, table, selector,
           clientHostnamePort);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
       throw new BException("Unknown error during fetch of row from table [{0}] selector [{1}] node [{2}]", e, table,
           selector, clientHostnamePort);
     }
@@ -585,76 +708,85 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public List<FetchResult> fetchRowBatch(final String table, List<Selector> selectors) throws BlurException, TException {
-    checkTable(table);
-    Map<String, List<Selector>> selectorBatches = new HashMap<String, List<Selector>>();
-    final Map<String, List<Integer>> selectorBatchesIndexes = new HashMap<String, List<Integer>>();
-    int i = 0;
-    for (Selector selector : selectors) {
-      checkSelectorFetchSize(selector);
-      IndexManager.validSelector(selector);
-      String clientHostnamePort = getNode(table, selector);
-      List<Selector> list = selectorBatches.get(clientHostnamePort);
-      List<Integer> indexes = selectorBatchesIndexes.get(clientHostnamePort);
-      if (list == null) {
-        if (indexes != null) {
-          throw new BlurException("This should never happen,", null, ErrorType.UNKNOWN);
-        }
-        list = new ArrayList<Selector>();
-        indexes = new ArrayList<Integer>();
-        selectorBatches.put(clientHostnamePort, list);
-        selectorBatchesIndexes.put(clientHostnamePort, indexes);
-      }
-      list.add(selector);
-      indexes.add(i);
-      i++;
-    }
-
-    List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
-    final AtomicReferenceArray<FetchResult> fetchResults = new AtomicReferenceArray<FetchResult>(new FetchResult[i]);
-    for (Entry<String, List<Selector>> batch : selectorBatches.entrySet()) {
-      final String clientHostnamePort = batch.getKey();
-      final List<Selector> list = batch.getValue();
-      futures.add(_executor.submit(new Callable<Boolean>() {
-        @Override
-        public Boolean call() throws Exception {
-          List<FetchResult> fetchResultList = _client.execute(clientHostnamePort, new BlurCommand<List<FetchResult>>() {
-            @Override
-            public List<FetchResult> call(Client client) throws BlurException, TException {
-              return client.fetchRowBatch(table, list);
-            }
-          }, _maxFetchRetries, _fetchDelay, _maxFetchDelay);
-          List<Integer> indexes = selectorBatchesIndexes.get(clientHostnamePort);
-          for (int i = 0; i < fetchResultList.size(); i++) {
-            int index = indexes.get(i);
-            fetchResults.set(index, fetchResultList.get(i));
+    try {
+      checkTable(table);
+      Map<String, List<Selector>> selectorBatches = new HashMap<String, List<Selector>>();
+      final Map<String, List<Integer>> selectorBatchesIndexes = new HashMap<String, List<Integer>>();
+      int i = 0;
+      for (Selector selector : selectors) {
+        checkSelectorFetchSize(selector);
+        IndexManager.validSelector(selector);
+        String clientHostnamePort = getNode(table, selector);
+        List<Selector> list = selectorBatches.get(clientHostnamePort);
+        List<Integer> indexes = selectorBatchesIndexes.get(clientHostnamePort);
+        if (list == null) {
+          if (indexes != null) {
+            throw new BlurException("This should never happen,", null, ErrorType.UNKNOWN);
           }
-          return Boolean.TRUE;
+          list = new ArrayList<Selector>();
+          indexes = new ArrayList<Integer>();
+          selectorBatches.put(clientHostnamePort, list);
+          selectorBatchesIndexes.put(clientHostnamePort, indexes);
         }
-      }));
-    }
-
-    for (Future<Boolean> future : futures) {
-      try {
-        future.get();
-      } catch (InterruptedException e) {
-        throw new BException("Unknown error during fetching of batch", e);
-      } catch (ExecutionException e) {
-        throw new BException("Unknown error during fetching of batch", e.getCause());
+        list.add(selector);
+        indexes.add(i);
+        i++;
       }
-    }
 
-    List<FetchResult> batchResult = new ArrayList<FetchResult>();
-    for (int c = 0; c < fetchResults.length(); c++) {
-      FetchResult fetchResult = fetchResults.get(c);
-      batchResult.add(fetchResult);
+      List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
+      final AtomicReferenceArray<FetchResult> fetchResults = new AtomicReferenceArray<FetchResult>(new FetchResult[i]);
+      for (Entry<String, List<Selector>> batch : selectorBatches.entrySet()) {
+        final String clientHostnamePort = batch.getKey();
+        final List<Selector> list = batch.getValue();
+        futures.add(_executor.submit(new Callable<Boolean>() {
+          @Override
+          public Boolean call() throws Exception {
+            List<FetchResult> fetchResultList = _client.execute(clientHostnamePort,
+                new BlurCommand<List<FetchResult>>() {
+                  @Override
+                  public List<FetchResult> call(Client client) throws BlurException, TException {
+                    return client.fetchRowBatch(table, list);
+                  }
+                }, _maxFetchRetries, _fetchDelay, _maxFetchDelay);
+            List<Integer> indexes = selectorBatchesIndexes.get(clientHostnamePort);
+            for (int i = 0; i < fetchResultList.size(); i++) {
+              int index = indexes.get(i);
+              fetchResults.set(index, fetchResultList.get(i));
+            }
+            return Boolean.TRUE;
+          }
+        }));
+      }
+
+      for (Future<Boolean> future : futures) {
+        try {
+          future.get();
+        } catch (InterruptedException e) {
+          throw new BException("Unknown error during fetching of batch", e);
+        } catch (ExecutionException e) {
+          throw new BException("Unknown error during fetching of batch", e.getCause());
+        }
+      }
+
+      List<FetchResult> batchResult = new ArrayList<FetchResult>();
+      for (int c = 0; c < fetchResults.length(); c++) {
+        FetchResult fetchResult = fetchResults.get(c);
+        batchResult.add(fetchResult);
+      }
+      return batchResult;
+    } catch (Exception e) {
+      LOG.error("Unknown error during fetch a batch of rows from table [{0}]", e, table);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException("Unknown error during fetch a batch of rows from table [{0}]", e, table);
     }
-    return batchResult;
   }
 
   @Override
   public void cancelQuery(final String table, final String uuid) throws BlurException, TException {
-    checkTable(table);
     try {
+      checkTable(table);
       scatter(getCluster(table), new BlurCommand<Void>() {
         @Override
         public Void call(Client client) throws BlurException, TException {
@@ -664,14 +796,17 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       });
     } catch (Exception e) {
       LOG.error("Unknown error while trying to cancel search table [{0}] uuid [{1}]", e, table, uuid);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
       throw new BException("Unknown error while trying to cancel search table [{0}] uuid [{1}]", e, table, uuid);
     }
   }
 
   @Override
   public List<String> queryStatusIdList(final String table) throws BlurException, TException {
-    checkTable(table);
     try {
+      checkTable(table);
       return scatterGather(getCluster(table), new BlurCommand<List<String>>() {
         @Override
         public List<String> call(Client client) throws BlurException, TException {
@@ -691,14 +826,17 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       });
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get query status ids for table [{0}]", e, table);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
       throw new BException("Unknown error while trying to get query status ids for table [{0}]", e, table);
     }
   }
 
   @Override
   public BlurQueryStatus queryStatusById(final String table, final String uuid) throws BlurException, TException {
-    checkTable(table);
     try {
+      checkTable(table);
       return scatterGather(getCluster(table), new BlurCommand<BlurQueryStatus>() {
         @Override
         public BlurQueryStatus call(Client client) throws BlurException, TException {
@@ -707,14 +845,17 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       }, new MergerQueryStatusSingle(_defaultParallelCallTimeout));
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get query status [{0}]", e, table, uuid);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
       throw new BException("Unknown error while trying to get query status [{0}]", e, table, uuid);
     }
   }
 
   @Override
   public TableStats tableStats(final String table) throws BlurException, TException {
-    checkTable(table);
     try {
+      checkTable(table);
       return scatterGather(getCluster(table), new BlurCommand<TableStats>() {
         @Override
         public TableStats call(Client client) throws BlurException, TException {
@@ -723,19 +864,26 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       }, new MergerTableStats(_defaultParallelCallTimeout));
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get table stats [{0}]", e, table);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
       throw new BException("Unknown error while trying to get table stats [{0}]", e, table);
     }
   }
 
   @Override
   public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
-    checkTable(table);
-    Map<String, Map<String, String>> layout = _shardServerLayout.get();
-    Map<String, String> tableLayout = layout.get(table);
-    if (tableLayout == null) {
-      return new HashMap<String, String>();
+    try {
+      checkTable(table);
+      Map<String, String> tableLayout = getTableLayout(table);
+      return tableLayout;
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to get shard server layout [{0}]", e, table);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException("Unknown error while trying to get shard server layout [{0}]", e, table);
     }
-    return tableLayout;
   }
 
   @Override
@@ -775,6 +923,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       });
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get shard server layout [{0}]", e, table);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
       throw new BException("Unknown error while trying to get shard server layout [{0}]", e, table);
     }
   }
@@ -782,8 +933,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   @Override
   public long recordFrequency(final String table, final String columnFamily, final String columnName, final String value)
       throws BlurException, TException {
-    checkTable(table);
     try {
+      checkTable(table);
       return scatterGather(getCluster(table), new BlurCommand<Long>() {
         @Override
         public Long call(Client client) throws BlurException, TException {
@@ -805,6 +956,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get record frequency [{0}/{1}/{2}/{3}]", e, table, columnFamily,
           columnName, value);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
       throw new BException("Unknown error while trying to get record frequency [{0}/{1}/{2}/{3}]", e, table,
           columnFamily, columnName, value);
     }
@@ -813,8 +967,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   @Override
   public List<String> terms(final String table, final String columnFamily, final String columnName,
       final String startWith, final short size) throws BlurException, TException {
-    checkTable(table);
     try {
+      checkTable(table);
       return scatterGather(getCluster(table), new BlurCommand<List<String>>() {
         @Override
         public List<String> call(Client client) throws BlurException, TException {
@@ -836,10 +990,20 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       LOG.error(
           "Unknown error while trying to terms table [{0}] columnFamily [{1}] columnName [{2}] startWith [{3}] size [{4}]",
           e, table, columnFamily, columnName, startWith, size);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
       throw new BException(
           "Unknown error while trying to terms table [{0}] columnFamily [{1}] columnName [{2}] startWith [{3}] size [{4}]",
           e, table, columnFamily, columnName, startWith, size);
     }
+  }
+
+  private String getNode(String table, String rowId) throws BlurException, TException {
+    Map<String, String> layout = shardServerLayout(table);
+    int numberOfShards = getShardCount(table);
+    String shardName = MutationHelper.getShardName(table, rowId, numberOfShards, _blurPartitioner);
+    return layout.get(shardName);
   }
 
   private String getNode(String table, Selector selector) throws BlurException, TException {
@@ -905,14 +1069,14 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public void mutate(final RowMutation mutation) throws BlurException, TException {
-    checkTable(mutation.table);
-    checkForUpdates(mutation.table);
     try {
+      checkTable(mutation.table);
+      checkForUpdates(mutation.table);
       MutationHelper.validateMutation(mutation);
       String table = mutation.getTable();
 
       int numberOfShards = getShardCount(table);
-      Map<String, String> tableLayout = _shardServerLayout.get().get(table);
+      Map<String, String> tableLayout = getTableLayout(table);
       if (tableLayout.size() != numberOfShards) {
         throw new BException("Cannot update data while shard is missing");
       }
@@ -928,7 +1092,61 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       }, _maxMutateRetries, _mutateDelay, _maxMutateDelay);
     } catch (Exception e) {
       LOG.error("Unknown error during mutation of [{0}]", e, mutation);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
       throw new BException("Unknown error during mutation of [{0}]", e, mutation);
+    }
+  }
+
+  @Override
+  public void enqueueMutate(final RowMutation mutation) throws BlurException, TException {
+    try {
+      checkTable(mutation.table);
+      checkForUpdates(mutation.table);
+      MutationHelper.validateMutation(mutation);
+      String table = mutation.getTable();
+
+      int numberOfShards = getShardCount(table);
+      Map<String, String> tableLayout = getTableLayout(table);
+      if (tableLayout.size() != numberOfShards) {
+        throw new BException("Cannot update data while shard is missing");
+      }
+
+      String shardName = MutationHelper.getShardName(table, mutation.rowId, numberOfShards, _blurPartitioner);
+      String node = tableLayout.get(shardName);
+      _client.execute(node, new BlurCommand<Void>() {
+        @Override
+        public Void call(Client client) throws BlurException, TException {
+          client.enqueueMutate(mutation);
+          return null;
+        }
+      }, _maxMutateRetries, _mutateDelay, _maxMutateDelay);
+    } catch (Exception e) {
+      LOG.error("Unknown error during enqueue mutation of [{0}]", e, mutation);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException("Unknown error during enqueue mutation of [{0}]", e, mutation);
+    }
+  }
+
+  private Map<String, String> getTableLayout(String table) throws BlurException, TException {
+    final long s = System.nanoTime();
+
+    // wait for up to limit for value to not be null.
+    while (true) {
+      if (s + _tableLayoutTimeoutNanos < System.nanoTime()) {
+        throw new BException("Could not get table [{0}] layout.", table);
+      }
+      Map<String, Map<String, String>> map = _shardServerLayout.get();
+      Map<String, String> layout = map.get(table);
+      if (layout != null) {
+        return layout;
+      } else {
+        String cluster = getCluster(table);
+        updateLayout(cluster);
+      }
     }
   }
 
@@ -944,69 +1162,146 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public void mutateBatch(List<RowMutation> mutations) throws BlurException, TException {
-    for (RowMutation mutation : mutations) {
-      MutationHelper.validateMutation(mutation);
-    }
-    Map<String, List<RowMutation>> batches = new HashMap<String, List<RowMutation>>();
-    for (RowMutation mutation : mutations) {
-      checkTable(mutation.table);
-      checkForUpdates(mutation.table);
-
-      MutationHelper.validateMutation(mutation);
-      String table = mutation.getTable();
-
-      int numberOfShards = getShardCount(table);
-      Map<String, String> tableLayout = _shardServerLayout.get().get(table);
-      if (tableLayout.size() != numberOfShards) {
-        throw new BException("Cannot update data while shard is missing");
+    try {
+      for (RowMutation mutation : mutations) {
+        MutationHelper.validateMutation(mutation);
       }
+      Map<String, List<RowMutation>> batches = new HashMap<String, List<RowMutation>>();
+      for (RowMutation mutation : mutations) {
+        checkTable(mutation.table);
+        checkForUpdates(mutation.table);
 
-      String shardName = MutationHelper.getShardName(table, mutation.rowId, numberOfShards, _blurPartitioner);
-      String node = tableLayout.get(shardName);
-      List<RowMutation> list = batches.get(node);
-      if (list == null) {
-        list = new ArrayList<RowMutation>();
-        batches.put(node, list);
-      }
-      list.add(mutation);
-    }
+        MutationHelper.validateMutation(mutation);
+        String table = mutation.getTable();
 
-    List<Future<Void>> futures = new ArrayList<Future<Void>>();
-
-    for (Entry<String, List<RowMutation>> entry : batches.entrySet()) {
-      final String node = entry.getKey();
-      final List<RowMutation> mutationsLst = entry.getValue();
-      futures.add(_executor.submit(new Callable<Void>() {
-        @Override
-        public Void call() throws Exception {
-          return _client.execute(node, new BlurCommand<Void>() {
-            @Override
-            public Void call(Client client) throws BlurException, TException {
-              client.mutateBatch(mutationsLst);
-              return null;
-            }
-          }, _maxMutateRetries, _mutateDelay, _maxMutateDelay);
+        int numberOfShards = getShardCount(table);
+        Map<String, String> tableLayout = getTableLayout(table);
+        if (tableLayout == null || tableLayout.size() != numberOfShards) {
+          throw new BException("Cannot update data while shard is missing");
         }
-      }));
-    }
 
-    for (Future<Void> future : futures) {
-      try {
-        future.get();
-      } catch (InterruptedException e) {
-        LOG.error("Unknown error during batch mutations", e);
-        throw new BException("Unknown error during batch mutations", e);
-      } catch (ExecutionException e) {
-        LOG.error("Unknown error during batch mutations", e.getCause());
-        throw new BException("Unknown error during batch mutations", e.getCause());
+        String shardName = MutationHelper.getShardName(table, mutation.rowId, numberOfShards, _blurPartitioner);
+        String node = tableLayout.get(shardName);
+        List<RowMutation> list = batches.get(node);
+        if (list == null) {
+          list = new ArrayList<RowMutation>();
+          batches.put(node, list);
+        }
+        list.add(mutation);
       }
+
+      List<Future<Void>> futures = new ArrayList<Future<Void>>();
+
+      for (Entry<String, List<RowMutation>> entry : batches.entrySet()) {
+        final String node = entry.getKey();
+        final List<RowMutation> mutationsLst = entry.getValue();
+        futures.add(_executor.submit(new Callable<Void>() {
+          @Override
+          public Void call() throws Exception {
+            return _client.execute(node, new BlurCommand<Void>() {
+              @Override
+              public Void call(Client client) throws BlurException, TException {
+                client.mutateBatch(mutationsLst);
+                return null;
+              }
+            }, _maxMutateRetries, _mutateDelay, _maxMutateDelay);
+          }
+        }));
+      }
+
+      for (Future<Void> future : futures) {
+        try {
+          future.get();
+        } catch (InterruptedException e) {
+          LOG.error("Unknown error during batch mutations", e);
+          throw new BException("Unknown error during batch mutations", e);
+        } catch (ExecutionException e) {
+          LOG.error("Unknown error during batch mutations", e.getCause());
+          throw new BException("Unknown error during batch mutations", e.getCause());
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("Unknown error during batch mutation.", e);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException("Unknown error during mutation.", e);
+    }
+  }
+
+  @Override
+  public void enqueueMutateBatch(List<RowMutation> mutations) throws BlurException, TException {
+    try {
+      for (RowMutation mutation : mutations) {
+        MutationHelper.validateMutation(mutation);
+      }
+      Map<String, List<RowMutation>> batches = new HashMap<String, List<RowMutation>>();
+      for (RowMutation mutation : mutations) {
+        checkTable(mutation.table);
+        checkForUpdates(mutation.table);
+
+        MutationHelper.validateMutation(mutation);
+        String table = mutation.getTable();
+
+        int numberOfShards = getShardCount(table);
+        Map<String, String> tableLayout = getTableLayout(table);
+        if (tableLayout == null || tableLayout.size() != numberOfShards) {
+          throw new BException("Cannot update data while shard is missing");
+        }
+
+        String shardName = MutationHelper.getShardName(table, mutation.rowId, numberOfShards, _blurPartitioner);
+        String node = tableLayout.get(shardName);
+        List<RowMutation> list = batches.get(node);
+        if (list == null) {
+          list = new ArrayList<RowMutation>();
+          batches.put(node, list);
+        }
+        list.add(mutation);
+      }
+
+      List<Future<Void>> futures = new ArrayList<Future<Void>>();
+
+      for (Entry<String, List<RowMutation>> entry : batches.entrySet()) {
+        final String node = entry.getKey();
+        final List<RowMutation> mutationsLst = entry.getValue();
+        futures.add(_executor.submit(new Callable<Void>() {
+          @Override
+          public Void call() throws Exception {
+            return _client.execute(node, new BlurCommand<Void>() {
+              @Override
+              public Void call(Client client) throws BlurException, TException {
+                client.enqueueMutateBatch(mutationsLst);
+                return null;
+              }
+            }, _maxMutateRetries, _mutateDelay, _maxMutateDelay);
+          }
+        }));
+      }
+
+      for (Future<Void> future : futures) {
+        try {
+          future.get();
+        } catch (InterruptedException e) {
+          LOG.error("Unknown error during batch enqueue mutations", e);
+          throw new BException("Unknown error during batch enqueue mutations", e);
+        } catch (ExecutionException e) {
+          LOG.error("Unknown error during batch enqueue mutations", e.getCause());
+          throw new BException("Unknown error during batch enqueue mutations", e.getCause());
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("Unknown error during batch mutation.", e);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException("Unknown error during mutation.", e);
     }
   }
 
   @Override
   public void createSnapshot(final String table, final String name) throws BlurException, TException {
-    checkTable(table);
     try {
+      checkTable(table);
       scatter(getCluster(table), new BlurCommand<Void>() {
         @Override
         public Void call(Client client) throws BlurException, TException {
@@ -1015,18 +1310,18 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         }
       });
     } catch (Exception e) {
+      LOG.error("Unknown error while trying to create a snapshot [{0}] of table [{1}]", e, name, table);
       if (e instanceof BlurException) {
         throw (BlurException) e;
       }
-      LOG.error("Unknown error while trying to create a snapshot [{0}] of table [{1}]", e, name, table);
       throw new BException("Unknown error while trying to create a snapshot [{0}] of table [{1}]", e, name, table);
     }
   }
 
   @Override
   public void removeSnapshot(final String table, final String name) throws BlurException, TException {
-    checkTable(table);
     try {
+      checkTable(table);
       scatter(getCluster(table), new BlurCommand<Void>() {
         @Override
         public Void call(Client client) throws BlurException, TException {
@@ -1035,18 +1330,18 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         }
       });
     } catch (Exception e) {
+      LOG.error("Unknown error while trying to remove a snapshot [{0}] of table [{1}]", e, name, table);
       if (e instanceof BlurException) {
         throw (BlurException) e;
       }
-      LOG.error("Unknown error while trying to remove a snapshot [{0}] of table [{1}]", e, name, table);
       throw new BException("Unknown error while trying to remove a snapshot [{0}] of table [{1}]", e, name, table);
     }
   }
 
   @Override
   public Map<String, List<String>> listSnapshots(final String table) throws BlurException, TException {
-    checkTable(table);
     try {
+      checkTable(table);
       return scatterGather(getCluster(table), new BlurCommand<Map<String, List<String>>>() {
         @Override
         public Map<String, List<String>> call(Client client) throws BlurException, TException {
@@ -1074,10 +1369,10 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         }
       });
     } catch (Exception e) {
+      LOG.error("Unknown error while trying to get the list of snapshots for table [{0}]", e, table);
       if (e instanceof BlurException) {
         throw (BlurException) e;
       }
-      LOG.error("Unknown error while trying to get the list of snapshots for table [{0}]", e, table);
       throw new BException("Unknown error while trying to get the list of snapshots for table [{0}]", e, table);
     }
   }
@@ -1150,6 +1445,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   public void optimize(final String table, final int numberOfSegmentsPerShard) throws BlurException, TException {
     checkTable(table);
     try {
+      checkTable(table);
       scatter(getCluster(table), new BlurCommand<Void>() {
         @Override
         public Void call(Client client) throws BlurException, TException {
@@ -1160,6 +1456,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     } catch (Exception e) {
       LOG.error("Unknown error while trying to optimize [table={0},numberOfSegmentsPerShard={1}]", e, table,
           numberOfSegmentsPerShard);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
       throw new BException("Unknown error while trying to optimize [table={0},numberOfSegmentsPerShard={1}]", e, table,
           numberOfSegmentsPerShard);
     }
@@ -1167,10 +1466,10 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public String parseQuery(final String table, final Query simpleQuery) throws BlurException, TException {
-    checkTable(table);
-    String cluster = getCluster(table);
-    List<String> onlineShardServers = _clusterStatus.getOnlineShardServers(true, cluster);
     try {
+      checkTable(table);
+      String cluster = getCluster(table);
+      List<String> onlineShardServers = _clusterStatus.getOnlineShardServers(true, cluster);
       return BlurClientManager.execute(getConnections(onlineShardServers), new BlurCommand<String>() {
         @Override
         public String call(Client client) throws BlurException, TException {
@@ -1179,6 +1478,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       });
     } catch (Exception e) {
       LOG.error("Unknown error while trying to parse query [table={0},simpleQuery={1}]", e, table, simpleQuery);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
       throw new BException("Unknown error while trying to parse query [table={0},simpleQuery={1}]", e, table,
           simpleQuery);
     }

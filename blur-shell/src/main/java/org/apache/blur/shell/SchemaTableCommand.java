@@ -19,6 +19,8 @@
 package org.apache.blur.shell;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -35,44 +37,51 @@ public class SchemaTableCommand extends Command implements TableFirstArgCommand 
   @Override
   public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
       BlurException {
-    if (args.length != 2) {
+    if (args.length < 2) {
       throw new CommandException("Invalid args: " + help());
     }
     String tablename = args[1];
+    List<String> familiesToDisplay = new ArrayList<String>();
+    for (int i = 2; i < args.length; i++) {
+      familiesToDisplay.add(args[i]);
+    }
 
     Schema schema = client.schema(tablename);
-    out.println(schema);
-    out.println(schema.getTable());
+    out.println("table  : " + schema.getTable());
     Map<String, Map<String, ColumnDefinition>> families = schema.getFamilies();
     Set<String> familyNames = new TreeSet<String>(families.keySet());
     for (String cf : familyNames) {
-      out.println("family : " + cf);
+      if (!familiesToDisplay.isEmpty() && !familiesToDisplay.contains(cf)) {
+        continue;
+      }
+      out.println("family                 : " + cf);
       Map<String, ColumnDefinition> columns = families.get(cf);
       Set<String> columnNames = new TreeSet<String>(columns.keySet());
       for (String c : columnNames) {
         ColumnDefinition columnDefinition = columns.get(c);
-        out.println("\tcolumn   : " + columnDefinition.getColumnName());
+        out.println("\tcolumn             : " + columnDefinition.getColumnName());
         String fieldType = columnDefinition.getFieldType();
         Map<String, String> properties = columnDefinition.getProperties();
         String subColumnName = columnDefinition.getSubColumnName();
         if (subColumnName != null) {
-          out.println("\t\t\tsubName   : " + subColumnName);
-          out.println("\t\t\tfieldType : " + fieldType);
-          if (properties != null) {
-            Map<String, String> props = new TreeMap<String, String>(properties);
-            for (Entry<String, String> e : props.entrySet()) {
-              out.println("\t\t\tprop      : " + e);
-            }
-          }
-        } else {
-          out.println("\t\tfieldType : " + fieldType);
-          if (properties != null) {
-            Map<String, String> props = new TreeMap<String, String>(properties);
-            for (Entry<String, String> e : props.entrySet()) {
-              out.println("\t\tprop      : " + e);
-            }
+          out.println("\t\tsubName          : " + subColumnName);
+        }
+        out.println("\t\tfieldType        : " + fieldType);
+        boolean fieldLessIndexed = columnDefinition.isFieldLessIndexed();
+        out.println("\t\tfieldLessIndexed : " + fieldLessIndexed);
+        boolean sortable = columnDefinition.isSortable();
+        out.println("\t\tsortable         : " + sortable);
+        if (properties != null) {
+          Map<String, String> props = new TreeMap<String, String>(properties);
+          for (Entry<String, String> e : props.entrySet()) {
+            out.println("\t\tprop             : " + e);
           }
         }
+      }
+    }
+    for (String f : familiesToDisplay) {
+      if (!familyNames.contains(f)) {
+        out.println("family : " + f + " NOT FOUND");
       }
     }
   }
@@ -84,7 +93,7 @@ public class SchemaTableCommand extends Command implements TableFirstArgCommand 
 
   @Override
   public String usage() {
-    return "<tablename>";
+    return "<tablename> [<family> ...]";
   }
 
   @Override

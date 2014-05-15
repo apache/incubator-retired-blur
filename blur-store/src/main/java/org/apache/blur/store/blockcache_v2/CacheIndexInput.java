@@ -17,6 +17,7 @@
  */
 package org.apache.blur.store.blockcache_v2;
 
+import java.io.EOFException;
 import java.io.IOException;
 
 import org.apache.blur.store.buffer.BufferStore;
@@ -38,6 +39,7 @@ public class CacheIndexInput extends IndexInput {
   private IndexInput _indexInput;
   private CacheKey _key = new CacheKey();
   private CacheValue _cacheValue;
+  private CacheValue _cacheValueQuietRef;
 
   private long _position;
   private int _blockPosition;
@@ -210,6 +212,11 @@ public class CacheIndexInput extends IndexInput {
       _indexInput.close();
       releaseCache();
     }
+    if (_cacheValueQuietRef != null) {
+      CacheValue ref = _cacheValueQuietRef;
+      _cacheValueQuietRef = null;
+      ref.release();
+    }
   }
 
   @Override
@@ -218,11 +225,18 @@ public class CacheIndexInput extends IndexInput {
     return _position;
   }
 
+  private void checkEOF() throws EOFException {
+    if (_position >= _fileLength) {
+      throw new EOFException("read past EOF: " + this.toString());
+    }
+  }
+
   @Override
   public void seek(long pos) throws IOException {
     ensureOpen();
     if (pos >= _fileLength) {
-      throw new IOException("Can not seek past end of file [" + pos + "] filelength [" + _fileLength + "]");
+      _position = pos;
+      return;
     }
     if (_position == pos) {
       // Seeking to same position
@@ -257,6 +271,10 @@ public class CacheIndexInput extends IndexInput {
     clone._key = _key.clone();
     clone._indexInput = _indexInput.clone();
     clone._quiet = _cache.shouldBeQuiet(_directory, _fileName);
+    if (clone._cacheValue != null) {
+      clone._cacheValue.incRef();
+    }
+    clone._cacheValueQuietRef = null;
     return clone;
   }
 
@@ -277,6 +295,7 @@ public class CacheIndexInput extends IndexInput {
   }
 
   private void tryToFill() throws IOException {
+    checkEOF();
     if (!isCacheValueValid() || remaining() == 0) {
       releaseCache();
       fill();
@@ -287,15 +306,45 @@ public class CacheIndexInput extends IndexInput {
 
   private void releaseCache() {
     if (_cacheValue != null) {
+      _cacheValue.decRef();
       _cacheValue = null;
     }
   }
 
-  private void fill() throws IOException {
+  private void fillQuietly() throws IOException {
     _key.setBlockId(getBlockId());
-    _cacheValue = get(_key);
+    _cacheValue = _cache.getQuietly(_key);
+    if (_cacheValue == null) {
+      if (_cacheValueQuietRef == null) {
+        _cacheValueQuietRef = _cache.newInstance(_directory, _fileName);
+      }
+      _cacheValue = _cacheValueQuietRef;
+      _cacheValue.incRef();
+      long filePosition = getFilePosition();
+      _indexInput.seek(filePosition);
+      byte[] buffer = _store.takeBuffer(_bufferSize);
+      int len = (int) Math.min(_cacheBlockSize, _fileLength - filePosition);
+      int cachePosition = 0;
+      while (len > 0) {
+        int length = Math.min(_bufferSize, len);
+        _indexInput.readBytes(buffer, 0, length);
+        _cacheValue.write(cachePosition, buffer, 0, length);
+        len -= length;
+        cachePosition += length;
+      }
+      _store.putBuffer(buffer);
+    } else {
+      _cacheValue.incRef();
+    }
+    _blockPosition = getBlockPosition();
+  }
+
+  private void fillNormally() throws IOException {
+    _key.setBlockId(getBlockId());
+    _cacheValue = _cache.get(_key);
     if (_cacheValue == null) {
       _cacheValue = _cache.newInstance(_directory, _fileName);
+      _cacheValue.incRef();
       long filePosition = getFilePosition();
       _indexInput.seek(filePosition);
       byte[] buffer = _store.takeBuffer(_bufferSize);
@@ -310,15 +359,18 @@ public class CacheIndexInput extends IndexInput {
       }
       _store.putBuffer(buffer);
       _cache.put(_key.clone(), _cacheValue);
+    } else {
+      _cacheValue.incRef();
     }
     _blockPosition = getBlockPosition();
   }
 
-  private CacheValue get(CacheKey key) {
+  private void fill() throws IOException {
     if (_quiet) {
-      return _cache.getQuietly(key);
+      fillQuietly();
+    } else {
+      fillNormally();
     }
-    return _cache.get(key);
   }
 
   private int getBlockPosition() {

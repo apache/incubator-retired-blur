@@ -81,7 +81,7 @@
               You will at a minimum need the following:
             </p>
             <ul>
-              <li>Java 6 installed (Java 7 has not been tested)</li>
+              <li>Java 6 or Java 7 (Java 7 is recommended)</li>
             </ul>
             <h3>Setup passphraseless ssh</h3>
             <p>These instructions are taken from the Hadoop Quick Start Guide.</p>
@@ -99,22 +99,29 @@ cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys</code></pre>
             <h3>Download Source and Binary Artifacts</h3>
             <p>
 	Both the source and binary artifacts are provided via mirrors here:<br/><br/>
-              <a href="http://www.apache.org/dyn/closer.cgi/incubator/blur/0.2.1-incubating/apache-blur-0.2.1-incubating-src.tar.gz" class="btn btn-large btn-primary">Apache Blur 0.2.1 Source</a>               <a href="http://www.apache.org/dyn/closer.cgi/incubator/blur/0.2.1-incubating/apache-blur-0.2.1-incubating-bin.tar.gz" class="btn btn-large btn-primary">Apache Blur 0.2.1 Binary</a>
+              <a href="http://www.apache.org/dyn/closer.cgi/incubator/blur/0.2.2-incubating/apache-blur-0.2.2-incubating-src.tar.gz" class="btn btn-large btn-primary">Apache Blur 0.2.2 Source</a>               <a href="http://www.apache.org/dyn/closer.cgi/incubator/blur/0.2.2-incubating/apache-blur-0.2.2-incubating-hadoop1-bin.tar.gz" class="btn btn-large btn-primary">Apache Blur 0.2.2 Binary</a>
             </p>
           </section>
           <section>
             <div class="page-header">
-              <h1 id="compile">Compile</h1>
+              <h1 id="compile">Compile Hadoop</h1>
             </div>
             <p class="lead">
               If building from source, the distribution needs to be compiled before use
             </p>
             <p>Clone master</p>
             <pre><code class="bash">git clone https://git-wip-us.apache.org/repos/asf/incubator-blur.git</code></pre>
-            <p>Build the artifacts (if you want to run the tests remove the "-DskipTests")</p>
+            <h4>Hadoop 1</h4>
+            <p>Build the artifacts for Hadoop 1 (if you want to run the tests remove the "-DskipTests")</p>
             <pre><code class="bash">cd incubator-blur/
-mvn install -DskipTests</code></pre>
-            <p>The binary artifact is located <code>distribution/target/apache-blur-0.2.1-incubating-bin.tar.gz</code>.</p>
+mvn install -DskipTests -Dhadoop1</code></pre>
+            <p>The binary artifact is located <code>distribution/target/apache-blur-0.2.2-incubating-hadoop1-bin.tar.gz</code>.</p>
+            <h4>Hadoop 2</h4>
+            <div class="bs-callout bs-callout-info"><h4>Heads Up!</h4><p>While all the tests pass on Hadoop 2, Blur has not be tested at scale on Hadoop 2 and bin/blur-config.sh script will likely require modification to include the correct Hadoop 2 libraries.</p></div>
+            <p>Build the artifacts for Hadoop 2 (if you want to run the tests remove the "-DskipTests")</p>
+			<pre><code class="bash">cd incubator-blur/
+mvn install -DskipTests -Dhadoop2</code></pre>
+			<p>The binary artifact is located <code>distribution/target/apache-blur-0.2.2-incubating-hadoop2-bin.tar.gz</code>.</p>
           </section>
           <section>
             <div class="page-header">
@@ -155,12 +162,12 @@ mvn install -DskipTests</code></pre>
             <p>
               You should see:
             </p>
-            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.2.1-incubating/bin/start-all.sh 
+            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.2.2-incubating/bin/start-all.sh 
 localhost: ZooKeeper starting as process 6650.
 localhost: Shard [0] starting as process 6783.
 localhost: Controller [0] starting as process 6933.</code></pre>
             <p>If you run the start command again you should see:</p>
-            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.2.1-incubating/bin/stop-all.sh 
+            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.2.2-incubating/bin/stop-all.sh 
 localhost: Stopping Controller [0] server with pid [6933].
 localhost: Stopping Shard [0] server with pid [6783].
 localhost: Stopping ZooKeeper with pid [6650].</code></pre>
@@ -189,21 +196,23 @@ localhost: Stopping ZooKeeper with pid [6650].</code></pre>
             </p>
 <h3 id="shell-create">Create Table</h3>
 <p>
+            <pre><code class="bash">blur> #Creates a table called testtable in the hdfs directory of /data/testtable with 11 shards
+blur> create -t testtable -c 11 -l hdfs://namenode/data/testtable
+</code></pre>
+            <div class="bs-callout bs-callout-info"><h4>Note</h4><p>The local directory can be used however the integrity of the data may be compromised.</p></div>
             <pre><code class="bash">blur> #Creates a table called testtable in the local directory of /data/testtable with 11 shards
 blur> create -t testtable -c 11 -l file:///data/testtable
 </code></pre>
 </p>
 <h3 id="shell-mutate">Mutate</h3>
 <p>
-<pre><code class="bash">
-blur> #Adds a row to testtable
+<pre><code class="bash">blur> #Adds a row to testtable
 blur> mutate testtable rowid1 recordid1 fam0 col1:value1
 </code></pre>
 </p>
 <h3 id="shell-query">Query</h3>
 <p>
-<pre><code class="bash">
-blur> #Runs a query on testtable
+<pre><code class="bash">blur> #Runs a query on testtable
 blur> query testtable fam0.col1:value1
  - Results Summary -
     total : 1
@@ -223,16 +232,14 @@ blur> query testtable fam0.col1:value1
 </p>
 <h3 id="shell-enable-highlighting">Enable Highlighting</h3>
 <p>
-<pre><code class="bash">
-blur> #Turns highlighting on
+<pre><code class="bash">blur> #Turns highlighting on
 blur> highlight
 highlight of query command is now on
 </code></pre>
 </p>
 <h3 id="shell-query-highlight">Query with Highlights</h3>
 <p>
-<pre><code class="bash">
-blur> #Runs a query on testtable with highlighting on, notice &lt;&lt;&lt;value1&gt;&gt;&gt; is highlighted 
+<pre><code class="bash">blur> #Runs a query on testtable with highlighting on, notice &lt;&lt;&lt;value1&gt;&gt;&gt; is highlighted 
 blur> query testtable2 fam0.col1:value1
  - Results Summary -
     total : 1

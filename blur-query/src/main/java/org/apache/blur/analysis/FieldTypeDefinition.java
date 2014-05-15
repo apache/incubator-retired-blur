@@ -26,11 +26,13 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.SortField;
 
 public abstract class FieldTypeDefinition {
 
   protected static final Collection<String> EMPTY_COLLECTION = Arrays.asList(new String[] {});
   private boolean _fieldLessIndexed;
+  private boolean _sortEnable;
   private String _family;
   private String _columnName;
   private String _subColumnName;
@@ -144,6 +146,14 @@ public abstract class FieldTypeDefinition {
     };
   }
 
+  protected String getFieldName() {
+    if (_subColumnName == null) {
+      return getName(_family, _columnName);
+    } else {
+      return getName(_family, _columnName, _subColumnName);
+    }
+  }
+
   protected String getName(String family, String name) {
     return family + "." + name;
   }
@@ -165,12 +175,25 @@ public abstract class FieldTypeDefinition {
   public abstract boolean checkSupportForWildcardQuery();
 
   public abstract boolean checkSupportForPrefixQuery();
-  
+
   public abstract boolean checkSupportForRegexQuery();
 
   public abstract boolean isNumeric();
 
   public abstract boolean checkSupportForCustomQuery();
+
+  public abstract boolean checkSupportForSorting();
+
+  public boolean isSortEnable() {
+    return _sortEnable;
+  }
+
+  public void setSortEnable(boolean sortEnable) {
+    if (sortEnable && !checkSupportForSorting()) {
+      throw new RuntimeException("Field type [" + getName() + "] is not sortable.");
+    }
+    _sortEnable = sortEnable;
+  }
 
   public Query getCustomQuery(String text) {
     throw new RuntimeException("Not supported.");
@@ -215,5 +238,7 @@ public abstract class FieldTypeDefinition {
   public void setProperties(Map<String, String> properties) {
     this._properties = properties;
   }
+
+  public abstract SortField getSortField(boolean reverse);
 
 }

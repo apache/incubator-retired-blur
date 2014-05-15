@@ -34,6 +34,7 @@ import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.SegmentInfo;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
+
 public final class Blur022StoredFieldsFormat extends StoredFieldsFormat {
 
   static final String STORED_FIELDS_FORMAT_CHUNK_SIZE = "StoredFieldsFormat.chunkSize";
@@ -52,7 +53,7 @@ public final class Blur022StoredFieldsFormat extends StoredFieldsFormat {
 
     final CompressionMode _compressionMode;
 
-    CachedCompressionMode(CompressionMode compressionMode, Directory directory, SegmentInfo si) {
+    CachedCompressionMode(CompressionMode compressionMode) {
       _compressionMode = compressionMode;
     }
 
@@ -76,7 +77,7 @@ public final class Blur022StoredFieldsFormat extends StoredFieldsFormat {
   @Override
   public StoredFieldsReader fieldsReader(Directory directory, SegmentInfo si, FieldInfos fn, IOContext context)
       throws IOException {
-    CompressionMode compressionMode = new CachedCompressionMode(getCompressionMode(si), directory, si);
+    CompressionMode compressionMode = new CachedCompressionMode(getCompressionMode(si));
     return new CompressingStoredFieldsReader(directory, si, SEGMENT_SUFFIX, fn, context, FORMAT_NAME, compressionMode);
   }
 

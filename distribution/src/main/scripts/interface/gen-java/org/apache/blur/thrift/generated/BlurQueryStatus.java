@@ -954,16 +954,16 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
           case 2: // CPU_TIMES
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map92 = iprot.readMapBegin();
-                struct.cpuTimes = new HashMap<String,CpuTime>(2*_map92.size);
-                for (int _i93 = 0; _i93 < _map92.size; ++_i93)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map116 = iprot.readMapBegin();
+                struct.cpuTimes = new HashMap<String,CpuTime>(2*_map116.size);
+                for (int _i117 = 0; _i117 < _map116.size; ++_i117)
                 {
-                  String _key94; // optional
-                  CpuTime _val95; // required
-                  _key94 = iprot.readString();
-                  _val95 = new CpuTime();
-                  _val95.read(iprot);
-                  struct.cpuTimes.put(_key94, _val95);
+                  String _key118; // optional
+                  CpuTime _val119; // required
+                  _key118 = iprot.readString();
+                  _val119 = new CpuTime();
+                  _val119.read(iprot);
+                  struct.cpuTimes.put(_key118, _val119);
                 }
                 iprot.readMapEnd();
               }
@@ -1036,10 +1036,10 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
         oprot.writeFieldBegin(CPU_TIMES_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.cpuTimes.size()));
-          for (Map.Entry<String, CpuTime> _iter96 : struct.cpuTimes.entrySet())
+          for (Map.Entry<String, CpuTime> _iter120 : struct.cpuTimes.entrySet())
           {
-            oprot.writeString(_iter96.getKey());
-            _iter96.getValue().write(oprot);
+            oprot.writeString(_iter120.getKey());
+            _iter120.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -1112,10 +1112,10 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (struct.isSetCpuTimes()) {
         {
           oprot.writeI32(struct.cpuTimes.size());
-          for (Map.Entry<String, CpuTime> _iter97 : struct.cpuTimes.entrySet())
+          for (Map.Entry<String, CpuTime> _iter121 : struct.cpuTimes.entrySet())
           {
-            oprot.writeString(_iter97.getKey());
-            _iter97.getValue().write(oprot);
+            oprot.writeString(_iter121.getKey());
+            _iter121.getValue().write(oprot);
           }
         }
       }
@@ -1147,16 +1147,16 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
       }
       if (incoming.get(1)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map98 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-          struct.cpuTimes = new HashMap<String,CpuTime>(2*_map98.size);
-          for (int _i99 = 0; _i99 < _map98.size; ++_i99)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map122 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+          struct.cpuTimes = new HashMap<String,CpuTime>(2*_map122.size);
+          for (int _i123 = 0; _i123 < _map122.size; ++_i123)
           {
-            String _key100; // optional
-            CpuTime _val101; // required
-            _key100 = iprot.readString();
-            _val101 = new CpuTime();
-            _val101.read(iprot);
-            struct.cpuTimes.put(_key100, _val101);
+            String _key124; // optional
+            CpuTime _val125; // required
+            _key124 = iprot.readString();
+            _val125 = new CpuTime();
+            _val125.read(iprot);
+            struct.cpuTimes.put(_key124, _val125);
           }
         }
         struct.setCpuTimesIsSet(true);

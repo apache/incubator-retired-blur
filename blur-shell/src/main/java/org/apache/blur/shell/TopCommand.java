@@ -98,6 +98,13 @@ public class TopCommand extends Command {
       throw new CommandException(e.getMessage());
     }
 
+    String cluster;
+    if (args.length != 2) {
+      cluster = Main.getCluster(client, "Invalid args: " + help());
+    } else {
+      cluster = args[1];
+    }
+
     Map<String, String> metricNames = new HashMap<String, String>();
     Map<String, String> helpMap = new HashMap<String, String>();
     Set<Object> keySet = properties.keySet();
@@ -106,6 +113,7 @@ public class TopCommand extends Command {
       if (isShortName(key)) {
         String shortName = getShortName(key, properties);
         String longName = getLongName(getLongNameKey(key), properties);
+        longName = longName.replace("<CLUSTER_NAME>", cluster);
         metricNames.put(shortName, longName);
       } else if (isHelpName(key)) {
         int indexOf = key.indexOf(HELP);
@@ -124,13 +132,6 @@ public class TopCommand extends Command {
     String sizesStr = properties.getProperty("top.sizes");
     Set<String> sizes = new HashSet<String>(Arrays.asList(resolveShortNames(sizesStr.split(","), properties)));
     Set<String> keys = new HashSet<String>(metricNames.values());
-
-    String cluster;
-    if (args.length != 2) {
-      cluster = Main.getCluster(client, "Invalid args: " + help());
-    } else {
-      cluster = args[1];
-    }
 
     ConsoleReader reader = this.getConsoleReader();
     if (reader != null) {

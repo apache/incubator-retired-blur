@@ -36,8 +36,9 @@ public class TableContextTest {
   private File file;
 
   @Before
-  public void setup() {
+  public void setup() throws IOException {
     TableContext.clear();
+    TableContext.setSystemBlurConfiguration(new BlurConfiguration());
     base = new File(TMPDIR, "TableContextTest");
     rm(base);
     file = new File(base, name);
@@ -53,8 +54,8 @@ public class TableContextTest {
 
     FieldManager fieldManager = context.getFieldManager();
     try {
-      fieldManager.addColumnDefinition("fam", "col", null, false, "test", null);
-      fail("should fail because new type is not loaded.");
+      boolean result = fieldManager.addColumnDefinition("fam", "col", null, false, "test", false, null);
+      fail("should fail because new type is not loaded [" + result + "].");
     } catch (IllegalArgumentException e) {
 
     }
@@ -70,7 +71,7 @@ public class TableContextTest {
     TableContext context = TableContext.create(tableDescriptor);
     FieldManager fieldManager = context.getFieldManager();
 
-    fieldManager.addColumnDefinition("fam", "col", null, false, "test", null);
+    fieldManager.addColumnDefinition("fam", "col", null, false, "test", false, null);
   }
 
   @Test
@@ -87,7 +88,7 @@ public class TableContextTest {
     TableContext context = TableContext.create(tableDescriptor);
     FieldManager fieldManager = context.getFieldManager();
 
-    fieldManager.addColumnDefinition("fam", "col", null, false, "test", null);
+    fieldManager.addColumnDefinition("fam", "col", null, false, "test", false, null);
   }
 
   private void rm(File file) {

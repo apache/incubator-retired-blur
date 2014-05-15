@@ -25,6 +25,8 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.SortField.Type;
 
 public class DoubleFieldTypeDefinition extends NumericFieldTypeDefinition {
 
@@ -57,14 +59,23 @@ public class DoubleFieldTypeDefinition extends NumericFieldTypeDefinition {
   @Override
   public Iterable<? extends Field> getFieldsForColumn(String family, Column column) {
     String name = getName(family, column.getName());
-    DoubleField field = new DoubleField(name, Double.parseDouble(column.getValue()), _typeStored);
+    double value = Double.parseDouble(column.getValue());
+    DoubleField field = new DoubleField(name, value, _typeStored);
+    if (isSortEnable()) {
+      return addSort(name, Double.doubleToRawLongBits(value), field);
+    }
     return makeIterable(field);
   }
 
   @Override
   public Iterable<? extends Field> getFieldsForSubColumn(String family, Column column, String subName) {
     String name = getName(family, column.getName(), subName);
-    return makeIterable(new DoubleField(name, Double.parseDouble(column.getValue()), _typeNotStored));
+    double value = Double.parseDouble(column.getValue());
+    DoubleField field = new DoubleField(name, value, _typeNotStored);
+    if (isSortEnable()) {
+      return addSort(name, Double.doubleToRawLongBits(value), field);
+    }
+    return makeIterable(field);
   }
 
   @Override
@@ -73,7 +84,15 @@ public class DoubleFieldTypeDefinition extends NumericFieldTypeDefinition {
     double p2 = parseDouble(part2);
     return NumericRangeQuery.newDoubleRange(field, _precisionStep, p1, p2, startInclusive, endInclusive);
   }
-  
+
+  @Override
+  public SortField getSortField(boolean reverse) {
+    if (reverse) {
+      return new SortField(getFieldName(), Type.DOUBLE, reverse);
+    }
+    return new SortField(getFieldName(), Type.DOUBLE);
+  }
+
   private double parseDouble(String number) {
     if (number.toLowerCase().equals(MIN)) {
       return Double.MIN_VALUE;

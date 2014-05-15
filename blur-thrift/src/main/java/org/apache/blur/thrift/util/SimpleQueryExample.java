@@ -29,6 +29,8 @@ import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.trace.Trace;
+import org.apache.blur.user.User;
+import org.apache.blur.user.UserContext;
 
 public class SimpleQueryExample {
 
@@ -41,6 +43,7 @@ public class SimpleQueryExample {
 
     String uuid = UUID.randomUUID().toString();
     Trace.setupTrace(uuid);
+    UserContext.setUser(new User("me", null));
     final BlurQuery blurQuery = new BlurQuery();
     Query query = new Query();
     blurQuery.setQuery(query);
@@ -52,6 +55,6 @@ public class SimpleQueryExample {
     for (BlurResult result : results.getResults()) {
       System.out.println(result);
     }
-    Trace.tearDownTrace();
+    // Trace.tearDownTrace();
   }
 }

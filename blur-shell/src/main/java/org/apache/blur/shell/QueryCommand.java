@@ -35,6 +35,7 @@ import org.apache.blur.thrift.generated.FetchRowResult;
 import org.apache.blur.thrift.generated.HighlightOptions;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.Query;
+import org.apache.blur.thrift.generated.Selector;
 
 public class QueryCommand extends Command implements TableFirstArgCommand {
   @Override
@@ -66,7 +67,7 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
     Query query = new Query();
     query.setQuery(queryStr);
     blurQuery.setQuery(query);
-    blurQuery.setSelector(Main.selector);
+    blurQuery.setSelector(new Selector(Main.selector));
     blurQuery.setCacheResult(false);
     blurQuery.setUseCacheIfPresent(false);
 
@@ -112,7 +113,7 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
       if (rowResult != null) {
         Row row = rowResult.getRow();
         if (row != null) {
-          GetRowCommand.format(out, row, maxWidth);
+          GetRowCommand.format(out, rowResult, maxWidth);
         }
       }
       lineBreak(out, maxWidth);
@@ -128,7 +129,8 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
     out.println();
   }
 
-  private void printSummary(PagingPrintWriter out, BlurResults blurResults, int maxWidth, long timeInNanos) throws FinishedException {
+  private void printSummary(PagingPrintWriter out, BlurResults blurResults, int maxWidth, long timeInNanos)
+      throws FinishedException {
     long totalResults = blurResults.getTotalResults();
     out.println(" - Results Summary -");
     out.println("    total : " + totalResults);

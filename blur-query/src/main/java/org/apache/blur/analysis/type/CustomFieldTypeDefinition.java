@@ -24,6 +24,7 @@ import org.apache.lucene.sandbox.queries.regex.RegexQuery;
 import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.WildcardQuery;
 
 public abstract class CustomFieldTypeDefinition extends FieldTypeDefinition {
@@ -41,8 +42,8 @@ public abstract class CustomFieldTypeDefinition extends FieldTypeDefinition {
    * @throws @{@link RuntimeException}.
    */
   @Override
-  public final Analyzer getAnalyzerForIndex(String fieldName) {
-    throw new RuntimeException(NOT_SUPPORTED);
+  public Analyzer getAnalyzerForIndex(String fieldName) {
+    throw new RuntimeException(NOT_SUPPORTED + " for field [" + fieldName + "]");
   }
 
   /**
@@ -123,6 +124,16 @@ public abstract class CustomFieldTypeDefinition extends FieldTypeDefinition {
   @Override
   public final boolean checkSupportForCustomQuery() {
     return true;
+  }
+  
+  @Override
+  public boolean checkSupportForSorting() {
+    return false;
+  }
+  
+  @Override
+  public SortField getSortField(boolean reverse) {
+    throw new RuntimeException("Sort not supported.");
   }
 
 }

@@ -23,11 +23,12 @@ under the License.
 	<parent>
 		<groupId>org.apache.blur</groupId>
 		<artifactId>blur</artifactId>
-		<version>0.2.2-incubating-SNAPSHOT</version>
+		<version>0.2.2-incubating</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>apache-blur</artifactId>
+	<version>${projectVersion}</version>
 	<packaging>pom</packaging>
 	<name>Distribution</name>
 	<description>The Blur distribution module builds the source and binary artifacts.</description>
@@ -35,36 +36,84 @@ under the License.
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
-			<artifactId>blur-mapred</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-shell</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
-	
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-assembly-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>distro-assembly</id>
-								<phase>package</phase>
-								<goals>
-									<goal>single</goal>
-								</goals>
-								<configuration>
-									<descriptors>
-										<descriptor>src/assemble/bin.xml</descriptor>
-										<descriptor>src/assemble/src.xml</descriptor>
-									</descriptors>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>distro-assembly-src</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<finalName>apache-blur-${project.parent.version}</finalName>
+							<descriptors>
+								<descriptor>src/assemble/src.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+					<execution>
+						<id>distro-assembly-bin</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>${bin.assembly.file}</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>hadoop-1x</id>
+			<activation>
+				<property>
+					<name>hadoop1</name>
+				</property>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.apache.blur</groupId>
+					<artifactId>blur-mapred-hadoop1</artifactId>
+					<version>${project.version}</version>
+				</dependency>
+			</dependencies>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop1</projectVersion>
+                <bin.assembly.file>src/assemble/bin-hadoop1.xml</bin.assembly.file>
+			</properties>
+		</profile>
+		<profile>
+			<id>hadoop-2.2</id>
+			<activation>
+				<property>
+					<name>hadoop2</name>
+				</property>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.apache.blur</groupId>
+					<artifactId>blur-mapred-hadoop2</artifactId>
+					<version>${project.version}</version>
+				</dependency>
+			</dependencies>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop2</projectVersion>
+                <bin.assembly.file>src/assemble/bin-hadoop2.xml</bin.assembly.file>
+			</properties>
+		</profile>
+	</profiles>
 </project>

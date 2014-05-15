@@ -17,6 +17,7 @@ package org.apache.blur.manager.indexserver;
  * limitations under the License.
  */
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,8 +26,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,15 +39,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.lucene.store.refcounter.DirectoryReferenceFileGC;
 import org.apache.blur.manager.BlurFilterCache;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
+import org.apache.blur.manager.clusterstatus.ClusterStatus.Action;
 import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;
 import org.apache.blur.manager.writer.BlurIndexReadOnly;
-import org.apache.blur.manager.writer.BlurIndexRefresher;
-import org.apache.blur.manager.writer.BlurNRTIndex;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
@@ -56,6 +53,8 @@ import org.apache.blur.server.TableContext;
 import org.apache.blur.store.BlockCacheDirectoryFactory;
 import org.apache.blur.store.hdfs.BlurLockFactory;
 import org.apache.blur.store.hdfs.HdfsDirectory;
+import org.apache.blur.store.hdfs_v2.FastHdfsKeyValueDirectory;
+import org.apache.blur.store.hdfs_v2.JoinDirectory;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
@@ -69,6 +68,7 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.data.Stat;
 
 import com.google.common.io.Closer;
 
@@ -77,6 +77,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   private static final Log LOG = LogFactory.getLog(DistributedIndexServer.class);
   private static final long _delay = TimeUnit.SECONDS.toMillis(10);
   private static final AtomicLong _pauseWarmup = new AtomicLong();
+  private static final Set<String> EMPTY = new HashSet<String>();
 
   static class LayoutEntry {
 
@@ -102,29 +103,34 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
 
   // set internally
   private final AtomicBoolean _running = new AtomicBoolean();
-  private final Timer _timerTableWarmer;
-  private final Timer _timerCacheFlush;
+  private final Thread _timerTableWarmer;
+  private final Object _warmupLock = new Object();
+  private final Thread _timerCacheFlush;
+  private final Object _cleanupLock = new Object();
   private final ExecutorService _openerService;
-  private final DirectoryReferenceFileGC _gc;
   private final WatchChildren _watchOnlineShards;
   private final SharedMergeScheduler _mergeScheduler;
   private final ExecutorService _searchExecutor;
-  private final BlurIndexRefresher _refresher;
   private final BlurIndexCloser _indexCloser;
   private final ExecutorService _warmupExecutor;
   private final ConcurrentMap<String, LayoutEntry> _layout = new ConcurrentHashMap<String, LayoutEntry>();
   private final ConcurrentMap<String, Map<String, BlurIndex>> _indexes = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
   private final ShardStateManager _shardStateManager = new ShardStateManager();
   private final Closer _closer;
-  private final long _balancerTime;
+  private final boolean _warmupDisabled;
+  private long _shortDelay = 250;
+  private final int _minimumNumberOfNodes;
 
   public DistributedIndexServer(Configuration configuration, ZooKeeper zookeeper, ClusterStatus clusterStatus,
       BlurIndexWarmup warmup, BlurFilterCache filterCache, BlockCacheDirectoryFactory blockCacheDirectoryFactory,
       DistributedLayoutFactory distributedLayoutFactory, String cluster, String nodeName, long safeModeDelay,
-      int shardOpenerThreadCount, int internalSearchThreads, int warmupThreads, int maxMergeThreads, long balancerTime)
-      throws KeeperException, InterruptedException {
+      int shardOpenerThreadCount, int internalSearchThreads, int warmupThreads, int maxMergeThreads,
+      boolean warmupDisabled, int minimumNumberOfNodesBeforeExitingSafeMode) throws KeeperException,
+      InterruptedException {
     super(clusterStatus, configuration, nodeName, cluster);
-    _balancerTime = balancerTime;
+    _minimumNumberOfNodes = minimumNumberOfNodesBeforeExitingSafeMode;
+    _running.set(true);
+    _warmupDisabled = warmupDisabled;
     _closer = Closer.create();
     _shardOpenerThreadCount = shardOpenerThreadCount;
     _zookeeper = zookeeper;
@@ -147,14 +153,12 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     _closer.register(CloseableExecutorService.close(_searchExecutor));
     _closer.register(CloseableExecutorService.close(_warmupExecutor));
 
-    _gc = _closer.register(new DirectoryReferenceFileGC());
-
     // @TODO allow for configuration of these
     _mergeScheduler = _closer.register(new SharedMergeScheduler(maxMergeThreads));
 
-    _refresher = _closer.register(new BlurIndexRefresher());
     _indexCloser = _closer.register(new BlurIndexCloser());
     _timerCacheFlush = setupFlushCacheTimer();
+    _timerCacheFlush.start();
 
     registerMyselfAsMemberOfCluster();
     String onlineShardsPath = ZookeeperPathConstants.getOnlineShardsPath(_cluster);
@@ -164,12 +168,28 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     int registerNodeTimeOut = _zookeeper.getSessionTimeout() / 1000 + 4;
 
     SafeMode safeMode = new SafeMode(_zookeeper, safemodePath, onlineShardsPath, TimeUnit.MILLISECONDS, _safeModeDelay,
-        TimeUnit.SECONDS, registerNodeTimeOut);
+        TimeUnit.SECONDS, registerNodeTimeOut, _minimumNumberOfNodes);
     safeMode.registerNode(getNodeName(), BlurUtil.getVersion().getBytes());
 
-    _running.set(true);
     _timerTableWarmer = setupTableWarmer();
+    _timerTableWarmer.start();
     _watchOnlineShards = watchForShardServerChanges();
+    _clusterStatus.registerActionOnTableStateChange(new Action() {
+      @Override
+      public void action() {
+        synchronized (_warmupLock) {
+          _warmupLock.notifyAll();
+        }
+      }
+    });
+    _clusterStatus.registerActionOnTableStateChange(new Action() {
+      @Override
+      public void action() {
+        synchronized (_cleanupLock) {
+          _cleanupLock.notifyAll();
+        }
+      }
+    });
   }
 
   @Override
@@ -178,11 +198,9 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
       _running.set(false);
       _closer.close();
       closeAllIndexes();
-      _timerCacheFlush.purge();
-      _timerCacheFlush.cancel();
-
-      _timerTableWarmer.purge();
-      _timerTableWarmer.cancel();
+      _timerCacheFlush.interrupt();
+      _watchOnlineShards.close();
+      _timerTableWarmer.interrupt();
     }
   }
 
@@ -191,7 +209,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
 
       @Override
       public DistributedLayout createDistributedLayout(String table, List<String> shardList,
-          List<String> shardServerList, List<String> offlineShardServers, boolean readOnly) {
+          List<String> shardServerList, List<String> offlineShardServers) {
         DistributedLayoutManager layoutManager = new DistributedLayoutManager();
         layoutManager.setNodes(shardServerList);
         layoutManager.setNodesOffline(offlineShardServers);
@@ -199,6 +217,17 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
         layoutManager.init();
         return layoutManager;
       }
+
+      @Override
+      public DistributedLayout readCurrentLayout(String table) {
+        throw new RuntimeException("Not implemented");
+      }
+
+      @Override
+      public Map<String, ?> getLayoutCache() {
+        throw new RuntimeException("Not implemented");
+      }
+
     };
   }
 
@@ -250,9 +279,9 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   }
 
   private WatchChildren watchForShardServerChanges() {
-    
     WatchChildren watchOnlineShards = new WatchChildren(_zookeeper,
-        ZookeeperPathConstants.getOnlineShardsPath(_cluster)).watch(new OnChange() {
+        ZookeeperPathConstants.getOnlineShardsPath(_cluster));
+    watchOnlineShards.watch(new OnChange() {
       private List<String> _prevOnlineShards = new ArrayList<String>();
 
       @Override
@@ -281,59 +310,132 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
           LOG.info("Online shard servers changed, clearing layout managers and cache.");
         }
       }
-    }, _balancerTime, TimeUnit.MILLISECONDS);
+    });
     return _closer.register(watchOnlineShards);
   }
 
-  private Timer setupTableWarmer() {
-    Timer timerTableWarmer = new Timer("Table-Warmer", true);
-    timerTableWarmer.schedule(new TimerTask() {
+  private Thread setupTableWarmer() {
+    Thread thread = new Thread(new Runnable() {
       @Override
       public void run() {
-        try {
-          warmup();
-        } catch (Throwable t) {
-          if (_running.get()) {
-            LOG.error("Unknown error", t);
-          } else {
-            LOG.debug("Unknown error", t);
-          }
-        }
-      }
-
-      private void warmup() {
-        if (_running.get()) {
-          List<String> tableList = _clusterStatus.getTableList(false, _cluster);
-          _tableCount.set(tableList.size());
-          long indexCount = 0;
-          AtomicLong segmentCount = new AtomicLong();
-          AtomicLong indexMemoryUsage = new AtomicLong();
-          for (String table : tableList) {
+        runWarmup();
+        while (_running.get()) {
+          long s = System.nanoTime();
+          synchronized (_warmupLock) {
             try {
-              Map<String, BlurIndex> indexes = getIndexes(table);
-              int count = indexes.size();
-              indexCount += count;
-              updateMetrics(indexes, segmentCount, indexMemoryUsage);
-              LOG.debug("Table [{0}] has [{1}] number of shards online in this node.", table, count);
-            } catch (IOException e) {
-              LOG.error("Unknown error trying to warm table [{0}]", e, table);
+              _warmupLock.wait(_delay);
+            } catch (InterruptedException ex) {
+              return;
             }
           }
-          _indexCount.set(indexCount);
-          _segmentCount.set(segmentCount.get());
-          _indexMemoryUsage.set(indexMemoryUsage.get());
+          long e = System.nanoTime();
+          if ((e - s) < TimeUnit.MILLISECONDS.toNanos(_delay)) {
+            runWarmup();
+          } else {
+            for (int i = 0; i < 10; i++) {
+              runWarmup();
+              synchronized (_warmupLock) {
+                try {
+                  _warmupLock.wait(_shortDelay);
+                } catch (InterruptedException ex) {
+                  return;
+                }
+              }
+            }
+          }
         }
       }
+    });
+    thread.setDaemon(true);
+    thread.setName("Table-Warmer");
+    return thread;
+  }
 
-      private void updateMetrics(Map<String, BlurIndex> indexes, AtomicLong segmentCount, AtomicLong indexMemoryUsage)
-          throws IOException {
-        for (BlurIndex index : indexes.values()) {
-          indexMemoryUsage.addAndGet(index.getIndexMemoryUsage());
-          segmentCount.addAndGet(index.getSegmentCount());
+  private Thread setupFlushCacheTimer() {
+    Thread thread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        while (_running.get()) {
+          synchronized (_cleanupLock) {
+            try {
+              _cleanupLock.wait(_delay);
+            } catch (InterruptedException e) {
+              return;
+            }
+          }
+          for (int i = 0; i < 10; i++) {
+            runCleanup();
+            synchronized (_cleanupLock) {
+              try {
+                _cleanupLock.wait(_shortDelay);
+              } catch (InterruptedException e) {
+                return;
+              }
+            }
+          }
         }
       }
-    }, _delay, _delay);
-    return timerTableWarmer;
+    });
+    thread.setDaemon(true);
+    thread.setName("Flush-IndexServer-Caches");
+    return thread;
+  }
+
+  private synchronized void runCleanup() {
+    try {
+      cleanup();
+    } catch (Throwable t) {
+      if (_running.get()) {
+        LOG.error("Unknown error", t);
+      } else {
+        LOG.debug("Unknown error", t);
+      }
+    }
+  }
+
+  private synchronized void runWarmup() {
+    try {
+      LOG.debug("Running warmup on the indexes.");
+      warmupTables();
+    } catch (Throwable t) {
+      if (_running.get()) {
+        LOG.error("Unknown error", t);
+      } else {
+        LOG.debug("Unknown error", t);
+      }
+    }
+  }
+
+  private void warmupTables() {
+    if (_running.get()) {
+      List<String> tableList = _clusterStatus.getTableList(false, _cluster);
+      _tableCount.set(tableList.size());
+      long indexCount = 0;
+      AtomicLong segmentCount = new AtomicLong();
+      AtomicLong indexMemoryUsage = new AtomicLong();
+      for (String table : tableList) {
+        try {
+          Map<String, BlurIndex> indexes = getIndexes(table);
+          int count = indexes.size();
+          indexCount += count;
+          updateMetrics(indexes, segmentCount, indexMemoryUsage);
+          LOG.debug("Table [{0}] has [{1}] number of shards online in this node.", table, count);
+        } catch (IOException e) {
+          LOG.error("Unknown error trying to warm table [{0}]", e, table);
+        }
+      }
+      _indexCount.set(indexCount);
+      _segmentCount.set(segmentCount.get());
+      _indexMemoryUsage.set(indexMemoryUsage.get());
+    }
+  }
+
+  private void updateMetrics(Map<String, BlurIndex> indexes, AtomicLong segmentCount, AtomicLong indexMemoryUsage)
+      throws IOException {
+    for (BlurIndex index : indexes.values()) {
+      indexMemoryUsage.addAndGet(index.getIndexMemoryUsage());
+      segmentCount.addAndGet(index.getSegmentCount());
+    }
   }
 
   private void registerMyselfAsMemberOfCluster() {
@@ -350,59 +452,45 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     }
   }
 
-  private Timer setupFlushCacheTimer() {
-    Timer timerCacheFlush = new Timer("Flush-IndexServer-Caches", true);
-    timerCacheFlush.schedule(new TimerTask() {
-      @Override
-      public void run() {
-        try {
-          cleanup();
-        } catch (Throwable t) {
-          LOG.error("Unknown error", t);
+  private void cleanup() {
+    clearMapOfOldTables(_layout);
+    clearMapOfOldTables(_distributedLayoutFactory.getLayoutCache());
+    boolean closed = false;
+    Map<String, Map<String, BlurIndex>> oldIndexesThatNeedToBeClosed = clearMapOfOldTables(_indexes);
+    for (String table : oldIndexesThatNeedToBeClosed.keySet()) {
+      Map<String, BlurIndex> indexes = oldIndexesThatNeedToBeClosed.get(table);
+      if (indexes == null) {
+        continue;
+      }
+      for (String shard : indexes.keySet()) {
+        BlurIndex index = indexes.get(shard);
+        if (index == null) {
+          continue;
+        }
+        close(index, table, shard);
+        closed = true;
+      }
+    }
+    for (String table : _indexes.keySet()) {
+      Map<String, BlurIndex> shardMap = _indexes.get(table);
+      if (shardMap != null) {
+        Set<String> shards = new HashSet<String>(shardMap.keySet());
+        Set<String> shardsToServe = getShardsToServe(table);
+        shards.removeAll(shardsToServe);
+        if (!shards.isEmpty()) {
+          LOG.info("Need to close indexes for table [{0}] indexes [{1}]", table, shards);
+        }
+        for (String shard : shards) {
+          LOG.info("Closing index for table [{0}] shard [{1}]", table, shard);
+          BlurIndex index = shardMap.remove(shard);
+          close(index, table, shard);
+          closed = true;
         }
       }
-
-      private void cleanup() {
-        clearMapOfOldTables(_layout);
-        boolean closed = false;
-        Map<String, Map<String, BlurIndex>> oldIndexesThatNeedToBeClosed = clearMapOfOldTables(_indexes);
-        for (String table : oldIndexesThatNeedToBeClosed.keySet()) {
-          Map<String, BlurIndex> indexes = oldIndexesThatNeedToBeClosed.get(table);
-          if (indexes == null) {
-            continue;
-          }
-          for (String shard : indexes.keySet()) {
-            BlurIndex index = indexes.get(shard);
-            if (index == null) {
-              continue;
-            }
-            close(index, table, shard);
-            closed = true;
-          }
-        }
-        for (String table : _indexes.keySet()) {
-          Map<String, BlurIndex> shardMap = _indexes.get(table);
-          if (shardMap != null) {
-            Set<String> shards = new HashSet<String>(shardMap.keySet());
-            Set<String> shardsToServe = getShardsToServe(table);
-            shards.removeAll(shardsToServe);
-            if (!shards.isEmpty()) {
-              LOG.info("Need to close indexes for table [{0}] indexes [{1}]", table, shards);
-            }
-            for (String shard : shards) {
-              LOG.info("Closing index for table [{0}] shard [{1}]", table, shard);
-              BlurIndex index = shardMap.remove(shard);
-              close(index, table, shard);
-              closed = true;
-            }
-          }
-        }
-        if (closed) {
-          TableContext.clear();
-        }
+      if (closed) {
+        TableContext.clear(table);
       }
-    }, _delay, _delay);
-    return timerCacheFlush;
+    }
   }
 
   protected void close(BlurIndex index, String table, String shard) {
@@ -456,34 +544,35 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
 
     BlurLockFactory lockFactory = new BlurLockFactory(_configuration, hdfsDirPath, _nodeName, BlurUtil.getPid());
 
-    Directory directory = new HdfsDirectory(_configuration, hdfsDirPath);
-    directory.setLockFactory(lockFactory);
+    HdfsDirectory longTermStorage = new HdfsDirectory(_configuration, hdfsDirPath);
+    longTermStorage.setLockFactory(lockFactory);
+
+    Directory directory;
+    URI uri = hdfsDirPath.toUri();
+    String scheme = uri.getScheme();
+    if (scheme != null && scheme.equals("hdfs")) {
+      LOG.info("Using Fast HDFS directory implementation on shard [{0}] for table [{1}]", shard, table);
+      FastHdfsKeyValueDirectory shortTermStorage = new FastHdfsKeyValueDirectory(_configuration, new Path(hdfsDirPath,
+          "fast"));
+      directory = new JoinDirectory(longTermStorage, shortTermStorage);
+    } else {
+      directory = longTermStorage;
+    }
 
     ShardContext shardContext = ShardContext.create(tableContext, shard);
-
-    Directory dir;
 
     TableDescriptor descriptor = tableContext.getDescriptor();
     boolean blockCacheEnabled = descriptor.isBlockCaching();
     if (blockCacheEnabled) {
       Set<String> blockCacheFileTypes = descriptor.getBlockCachingFileTypes();
-      dir = _blockCacheDirectoryFactory.newDirectory(table, shard, directory, blockCacheFileTypes);
-    } else {
-      dir = directory;
+      directory = _blockCacheDirectoryFactory.newDirectory(table, shard, directory, blockCacheFileTypes);
     }
 
-    BlurIndex index;
-
-    BlurNRTIndex writer = new BlurNRTIndex(shardContext, _mergeScheduler, dir, _gc, _searchExecutor);
-
-    // BlurIndexNRTSimple writer = new BlurIndexNRTSimple(shardContext,
-    // _mergeScheduler, dir, _gc, _searchExecutor,
-    // _indexCloser, _refresher);
+    BlurIndex index = tableContext.newInstanceBlurIndex(shardContext, directory, _mergeScheduler, _searchExecutor,
+        _indexCloser, _warmup);
 
     if (_clusterStatus.isReadOnly(true, _cluster, table)) {
-      index = new BlurIndexReadOnly(writer);
-    } else {
-      index = writer;
+      index = new BlurIndexReadOnly(index);
     }
     _filterCache.opening(table, shard, index);
     TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, _cluster, table);
@@ -492,6 +581,9 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   }
 
   private void warmUp(final BlurIndex index, final TableDescriptor table, final String shard) throws IOException {
+    if (_warmupDisabled) {
+      return;
+    }
     _warmupExecutor.submit(new Runnable() {
       @Override
       public void run() {
@@ -570,7 +662,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
 
   private Set<String> getShardsToServe(String table) {
     if (!isEnabled(table)) {
-      return new HashSet<String>();
+      return EMPTY;
     }
     LayoutEntry layoutEntry = _layout.get(table);
     if (layoutEntry == null) {
@@ -589,8 +681,14 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     List<String> offlineShardServers = new ArrayList<String>(_clusterStatus.getOfflineShardServers(false, cluster));
     List<String> shardList = getShardList(table);
 
+    String shutdownPath = ZookeeperPathConstants.getShutdownPath(cluster);
+    if (isShuttingDown(shutdownPath)) {
+      LOG.info("Cluster shutting down, return empty layout.");
+      return EMPTY;
+    }
+
     DistributedLayout layoutManager = _distributedLayoutFactory.createDistributedLayout(table, shardList,
-        shardServerList, offlineShardServers, false);
+        shardServerList, offlineShardServers);
 
     Map<String, String> layout = layoutManager.getLayout();
     String nodeName = getNodeName();
@@ -602,5 +700,19 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     }
     _layout.put(table, new LayoutEntry(layoutManager, shardsToServeCache));
     return shardsToServeCache;
+  }
+
+  private boolean isShuttingDown(String shutdownPath) {
+    try {
+      Stat stat = _zookeeper.exists(shutdownPath, false);
+      if (stat == null) {
+        return false;
+      }
+      return true;
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

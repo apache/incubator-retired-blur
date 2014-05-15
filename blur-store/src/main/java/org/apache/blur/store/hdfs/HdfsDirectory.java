@@ -22,12 +22,15 @@ import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -53,45 +56,13 @@ import com.yammer.metrics.core.Histogram;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
 
-public class HdfsDirectory extends Directory implements LastModified {
+public class HdfsDirectory extends Directory implements LastModified, HdfsSymlink {
+
+  public static final String LNK = ".lnk";
+
+  private static final String UTF_8 = "UTF-8";
 
   private static final Log LOG = LogFactory.getLog(HdfsDirectory.class);
-
-  public static AtomicInteger fetchImpl = new AtomicInteger(3);
-
-  // static {
-  // Thread thread = new Thread(new Runnable() {
-  // @Override
-  // public void run() {
-  // while (true) {
-  // File file = new File("/tmp/fetch.impl");
-  // if (file.exists()) {
-  // try {
-  // BufferedReader reader = new BufferedReader(new InputStreamReader(new
-  // FileInputStream(file)));
-  // String line = reader.readLine();
-  // String trim = line.trim();
-  // int i = Integer.parseInt(trim);
-  // if (i != fetchImpl.get()) {
-  // LOG.info("Changing fetch impl [" + i + "]");
-  // fetchImpl.set(i);
-  // }
-  // reader.close();
-  // } catch (Exception e) {
-  // LOG.error("Unknown error", e);
-  // }
-  // }
-  // try {
-  // Thread.sleep(5000);
-  // } catch (InterruptedException e) {
-  // return;
-  // }
-  // }
-  // }
-  // });
-  // thread.setDaemon(true);
-  // thread.start();
-  // }
 
   /**
    * We keep the metrics separate per filesystem.
@@ -101,10 +72,15 @@ public class HdfsDirectory extends Directory implements LastModified {
   protected final Path _path;
   protected final FileSystem _fileSystem;
   protected final MetricsGroup _metricsGroup;
+  protected final Map<String, Long> _fileLengthMap = new ConcurrentHashMap<String, Long>();
+  protected final Map<String, Boolean> _symlinkMap = new ConcurrentHashMap<String, Boolean>();
+  protected final Map<String, Path> _symlinkPathMap = new ConcurrentHashMap<String, Path>();
+  protected final Map<Path, FSDataInputStream> _inputMap = new ConcurrentHashMap<Path, FSDataInputStream>();
+  protected final boolean _useCache = true;
 
   public HdfsDirectory(Configuration configuration, Path path) throws IOException {
-    this._path = path;
     _fileSystem = path.getFileSystem(configuration);
+    _path = _fileSystem.makeQualified(path);
     _fileSystem.mkdirs(path);
     setLockFactory(NoLockFactory.getNoLockFactory());
     synchronized (_metricsGroupMap) {
@@ -117,6 +93,31 @@ public class HdfsDirectory extends Directory implements LastModified {
       }
       _metricsGroup = metricsGroup;
     }
+    if (_useCache) {
+      FileStatus[] listStatus = _fileSystem.listStatus(_path);
+      for (FileStatus fileStatus : listStatus) {
+        if (!fileStatus.isDir()) {
+          Path p = fileStatus.getPath();
+          String name = p.getName();
+          if (name.endsWith(LNK)) {
+            String resolvedName = getRealFileName(name);
+            Path resolvedPath = getPath(resolvedName);
+            FileStatus resolvedFileStatus = _fileSystem.getFileStatus(resolvedPath);
+            _fileLengthMap.put(resolvedName, resolvedFileStatus.getLen());
+          } else {
+            _fileLengthMap.put(name, fileStatus.getLen());
+          }
+        }
+      }
+    }
+  }
+
+  private String getRealFileName(String name) {
+    if (name.endsWith(LNK)) {
+      int lastIndexOf = name.lastIndexOf(LNK);
+      return name.substring(0, lastIndexOf);
+    }
+    return name;
   }
 
   private MetricsGroup createNewMetricsGroup(String scope) {
@@ -138,11 +139,12 @@ public class HdfsDirectory extends Directory implements LastModified {
   }
 
   @Override
-  public IndexOutput createOutput(String name, IOContext context) throws IOException {
+  public IndexOutput createOutput(final String name, IOContext context) throws IOException {
     LOG.debug("createOutput [{0}] [{1}] [{2}]", name, context, _path);
     if (fileExists(name)) {
       throw new IOException("File [" + name + "] already exists found.");
     }
+    _fileLengthMap.put(name, 0L);
     final FSDataOutputStream outputStream = openForOutput(name);
     return new BufferedIndexOutput() {
 
@@ -163,7 +165,9 @@ public class HdfsDirectory extends Directory implements LastModified {
       @Override
       public void close() throws IOException {
         super.close();
+        _fileLengthMap.put(name, outputStream.getPos());
         outputStream.close();
+        openForInput(name);
       }
 
       @Override
@@ -191,14 +195,20 @@ public class HdfsDirectory extends Directory implements LastModified {
     }
     FSDataInputStream inputStream = openForInput(name);
     long fileLength = fileLength(name);
-    return new HdfsIndexInput(name, inputStream, fileLength, _metricsGroup, fetchImpl.get(), getPath(name));
+    return new HdfsIndexInput(name, inputStream, fileLength, _metricsGroup, getPath(name));
   }
 
-  protected FSDataInputStream openForInput(String name) throws IOException {
+  protected synchronized FSDataInputStream openForInput(String name) throws IOException {
     Path path = getPath(name);
+    FSDataInputStream inputStream = _inputMap.get(path);
+    if (inputStream != null) {
+      return inputStream;
+    }
     Tracer trace = Trace.trace("filesystem - open", Trace.param("path", path));
     try {
-      return _fileSystem.open(path);
+      inputStream = _fileSystem.open(path);
+      _inputMap.put(path, inputStream);
+      return inputStream;
     } finally {
       trace.done();
     }
@@ -207,6 +217,12 @@ public class HdfsDirectory extends Directory implements LastModified {
   @Override
   public String[] listAll() throws IOException {
     LOG.debug("listAll [{0}]", _path);
+
+    if (_useCache) {
+      Set<String> names = new HashSet<String>(_fileLengthMap.keySet());
+      return names.toArray(new String[names.size()]);
+    }
+
     Tracer trace = Trace.trace("filesystem - list", Trace.param("path", _path));
     try {
       FileStatus[] files = _fileSystem.listStatus(_path, new PathFilter() {
@@ -232,6 +248,9 @@ public class HdfsDirectory extends Directory implements LastModified {
   @Override
   public boolean fileExists(String name) throws IOException {
     LOG.debug("fileExists [{0}] [{1}]", name, _path);
+    if (_useCache) {
+      return _fileLengthMap.containsKey(name);
+    }
     return exists(name);
   }
 
@@ -249,6 +268,9 @@ public class HdfsDirectory extends Directory implements LastModified {
   public void deleteFile(String name) throws IOException {
     LOG.debug("deleteFile [{0}] [{1}]", name, _path);
     if (fileExists(name)) {
+      if (_useCache) {
+        _fileLengthMap.remove(name);
+      }
       delete(name);
     } else {
       throw new FileNotFoundException("File [" + name + "] not found");
@@ -256,8 +278,16 @@ public class HdfsDirectory extends Directory implements LastModified {
   }
 
   protected void delete(String name) throws IOException {
-    Path path = getPath(name);
+    Path path = getPathOrSymlink(name);
+    FSDataInputStream inputStream = _inputMap.remove(path);
     Tracer trace = Trace.trace("filesystem - delete", Trace.param("path", path));
+    if (inputStream != null) {
+      inputStream.close();
+    }
+    if (_useCache) {
+      _symlinkMap.remove(name);
+      _symlinkPathMap.remove(name);
+    }
     try {
       _fileSystem.delete(path, true);
     } finally {
@@ -268,6 +298,14 @@ public class HdfsDirectory extends Directory implements LastModified {
   @Override
   public long fileLength(String name) throws IOException {
     LOG.debug("fileLength [{0}] [{1}]", name, _path);
+    if (_useCache) {
+      Long length = _fileLengthMap.get(name);
+      if (length == null) {
+        throw new FileNotFoundException(name);
+      }
+      return length;
+    }
+
     return length(name);
   }
 
@@ -295,8 +333,69 @@ public class HdfsDirectory extends Directory implements LastModified {
     return _path;
   }
 
-  private Path getPath(String name) {
+  private Path getPath(String name) throws IOException {
+    if (isSymlink(name)) {
+      return getRealFilePathFromSymlink(name);
+    }
     return new Path(_path, name);
+  }
+
+  private Path getPathOrSymlink(String name) throws IOException {
+    if (isSymlink(name)) {
+      return new Path(_path, name + LNK);
+    }
+    return new Path(_path, name);
+  }
+
+  private Path getRealFilePathFromSymlink(String name) throws IOException {
+    // need to cache
+    if (_useCache) {
+      Path path = _symlinkPathMap.get(name);
+      if (path != null) {
+        return path;
+      }
+    }
+    Tracer trace = Trace.trace("filesystem - getRealFilePathFromSymlink", Trace.param("name", name));
+    try {
+      Path linkPath = new Path(_path, name + LNK);
+      Path path = readRealPathDataFromSymlinkPath(_fileSystem, linkPath);
+      if (_useCache) {
+        _symlinkPathMap.put(name, path);
+      }
+      return path;
+    } finally {
+      trace.done();
+    }
+  }
+
+  public static Path readRealPathDataFromSymlinkPath(FileSystem fileSystem, Path linkPath) throws IOException,
+      UnsupportedEncodingException {
+    FileStatus fileStatus = fileSystem.getFileStatus(linkPath);
+    FSDataInputStream inputStream = fileSystem.open(linkPath);
+    byte[] buf = new byte[(int) fileStatus.getLen()];
+    inputStream.readFully(buf);
+    inputStream.close();
+    Path path = new Path(new String(buf, UTF_8));
+    return path;
+  }
+
+  private boolean isSymlink(String name) throws IOException {
+    if (_useCache) {
+      Boolean b = _symlinkMap.get(name);
+      if (b != null) {
+        return b;
+      }
+    }
+    Tracer trace = Trace.trace("filesystem - isSymlink", Trace.param("name", name));
+    try {
+      boolean exists = _fileSystem.exists(new Path(_path, name + LNK));
+      if (_useCache) {
+        _symlinkMap.put(name, exists);
+      }
+      return exists;
+    } finally {
+      trace.done();
+    }
   }
 
   public long getFileModified(String name) throws IOException {
@@ -318,36 +417,40 @@ public class HdfsDirectory extends Directory implements LastModified {
 
   @Override
   public void copy(Directory to, String src, String dest, IOContext context) throws IOException {
-    LOG.warn("DANGEROUS copy [{0}] [{1}] [{2}] [{3}] [{4}]", to, src, dest, context, _path);
     if (to instanceof DirectoryDecorator) {
+      // Unwrap original directory
       copy(((DirectoryDecorator) to).getOriginalDirectory(), src, dest, context);
-    } else if (to instanceof HdfsDirectory) {
-      if (quickMove(to, src, dest, context)) {
+      return;
+    } else if (to instanceof HdfsSymlink) {
+      // Attempt to create a symlink and return.
+      if (createSymLink(((HdfsSymlink) to).getSymlinkDirectory(), src, dest)) {
         return;
       }
-    } else {
-      slowCopy(to, src, dest, context);
-
     }
-  }
-
-  protected void slowCopy(Directory to, String src, String dest, IOContext context) throws IOException {
+    // if all else fails, just copy the file.
     super.copy(to, src, dest, context);
   }
 
-  private boolean quickMove(Directory to, String src, String dest, IOContext context) throws IOException {
-    HdfsDirectory simpleTo = (HdfsDirectory) to;
-    if (ifSameCluster(simpleTo, this)) {
-      Path newDest = simpleTo.getPath(dest);
-      Path oldSrc = getPath(src);
-      return _fileSystem.rename(oldSrc, newDest);
+  private boolean createSymLink(HdfsDirectory to, String src, String dest) throws IOException {
+    Path srcPath = getPath(src);
+    Path destDir = to.getPath();
+    LOG.info("Creating symlink with name [{0}] to [{1}]", dest, srcPath);
+    FSDataOutputStream outputStream = _fileSystem.create(getSymPath(destDir, dest));
+    outputStream.write(srcPath.toString().getBytes(UTF_8));
+    outputStream.close();
+    if (_useCache) {
+      to._fileLengthMap.put(dest, _fileLengthMap.get(src));
     }
-    return false;
+    return true;
   }
 
-  private boolean ifSameCluster(HdfsDirectory dest, HdfsDirectory src) {
-    // @TODO
-    return true;
+  private Path getSymPath(Path destDir, String destFilename) {
+    return new Path(destDir, destFilename + LNK);
+  }
+
+  @Override
+  public HdfsDirectory getSymlinkDirectory() {
+    return this;
   }
 
 }

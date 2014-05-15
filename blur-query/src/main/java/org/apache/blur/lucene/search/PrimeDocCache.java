@@ -22,14 +22,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReader.ReaderClosedListener;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Scorer;
-import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.util.OpenBitSet;
 
 public class PrimeDocCache {
@@ -38,52 +36,50 @@ public class PrimeDocCache {
 
   public static final OpenBitSet EMPTY_BIT_SET = new OpenBitSet();
 
-  private static Map<Term,Map<Object, OpenBitSet>> termPrimeDocMap = new ConcurrentHashMap<Term, Map<Object,OpenBitSet>>();
+  private static Map<Term, Map<Object, OpenBitSet>> termPrimeDocMap = new ConcurrentHashMap<Term, Map<Object, OpenBitSet>>();
 
   /**
    * The way this method is called via warm up methods the likelihood of
    * creating multiple bitsets during a race condition is very low, that's why
    * this method is not synced.
    */
-  public static OpenBitSet getPrimeDocBitSet(Term primeDocTerm, IndexReader reader) throws IOException {
+  public static OpenBitSet getPrimeDocBitSet(Term primeDocTerm, AtomicReader reader) throws IOException {
     Object key = reader.getCoreCacheKey();
     final Map<Object, OpenBitSet> primeDocMap = getPrimeDocMap(primeDocTerm);
     OpenBitSet bitSet = primeDocMap.get(key);
     if (bitSet == null) {
-      reader.addReaderClosedListener(new ReaderClosedListener() {
-        @Override
-        public void onClose(IndexReader reader) {
-          Object key = reader.getCoreCacheKey();
-          LOG.debug("Current size [" + primeDocMap.size() + "] Prime Doc BitSet removing for segment [" + reader + "]");
-          primeDocMap.remove(key);
-        }
-      });
-      LOG.debug("Prime Doc BitSet missing for segment [" + reader + "] current size [" + primeDocMap.size() + "]");
-      final OpenBitSet bs = new OpenBitSet(reader.maxDoc());
-      primeDocMap.put(key, bs);
-      IndexSearcher searcher = new IndexSearcher(reader);
-      searcher.search(new TermQuery(primeDocTerm), new Collector() {
+      synchronized (reader) {
+        reader.addReaderClosedListener(new ReaderClosedListener() {
+          @Override
+          public void onClose(IndexReader reader) {
+            Object key = reader.getCoreCacheKey();
+            LOG.debug("Current size [" + primeDocMap.size() + "] Prime Doc BitSet removing for segment [" + reader
+                + "]");
+            primeDocMap.remove(key);
+          }
+        });
+        LOG.debug("Prime Doc BitSet missing for segment [" + reader + "] current size [" + primeDocMap.size() + "]");
+        final OpenBitSet bs = new OpenBitSet(reader.maxDoc());
 
-        @Override
-        public void setScorer(Scorer scorer) throws IOException {
-
+        DocsEnum termDocsEnum = reader.termDocsEnum(primeDocTerm);
+        if (termDocsEnum == null) {
+          return bs;
         }
-
-        @Override
-        public void setNextReader(AtomicReaderContext atomicReaderContext) throws IOException {
+        int docFreq = reader.docFreq(primeDocTerm);
+        int doc;
+        int count = 0;
+        while ((doc = termDocsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
+          bs.fastSet(doc);
+          count++;
         }
-
-        @Override
-        public void collect(int doc) throws IOException {
-          bs.set(doc);
+        if (count == docFreq) {
+          primeDocMap.put(key, bs);
+        } else {
+          LOG.info("PrimeDoc for reader [{0}] not stored, because count [{1}] and freq [{2}] do not match.", reader,
+              count, docFreq);
         }
-
-        @Override
-        public boolean acceptsDocsOutOfOrder() {
-          return false;
-        }
-      });
-      return bs;
+        return bs;
+      }
     }
     return bitSet;
   }

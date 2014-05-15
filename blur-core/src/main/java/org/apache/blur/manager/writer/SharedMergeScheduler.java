@@ -60,17 +60,13 @@ public class SharedMergeScheduler implements Runnable, Closeable {
   }
 
   private void mergeIndexWriter(IndexWriter writer) {
-    synchronized (_writers) {
-      if (!_writers.contains(writer)) {
-        LOG.debug("Adding writer to merge [{0}]", writer);
-        _writers.add(writer);
-      }
-    }
+    LOG.debug("Adding writer to merge [{0}]", writer);
+    _writers.add(writer);
   }
 
   private void removeWriter(IndexWriter writer) {
-    synchronized (_writers) {
-      _writers.remove(writer);
+    while (_writers.remove(writer)) {
+      // keep looping until all the references are gone
     }
   }
 
@@ -102,17 +98,13 @@ public class SharedMergeScheduler implements Runnable, Closeable {
   public void run() {
     while (_running.get()) {
       try {
-        IndexWriter writer;
-        synchronized (_writers) {
-          writer = _writers.poll();
-        }
+        IndexWriter writer = _writers.poll();
         if (writer == null) {
           synchronized (this) {
             wait(ONE_SECOND);
           }
-        } else if (performMergeWriter(writer)) {
-          // there seems to be more merges to do
-          mergeIndexWriter(writer);
+        } else {
+          performMergeWriter(writer);
         }
       } catch (InterruptedException e) {
         LOG.debug("Merging interrupted, exiting.");
@@ -123,24 +115,25 @@ public class SharedMergeScheduler implements Runnable, Closeable {
     }
   }
 
-  private boolean performMergeWriter(IndexWriter writer) throws IOException {
-    MergePolicy.OneMerge merge = writer.getNextMerge();
-    if (merge == null) {
-      LOG.debug("No merges to run for [{0}]", writer);
-      return false;
+  private void performMergeWriter(IndexWriter writer) throws IOException {
+    while (true) {
+      MergePolicy.OneMerge merge = writer.getNextMerge();
+      if (merge == null) {
+        LOG.debug("No merges to run for [{0}]", writer);
+        return;
+      }
+      long s = System.nanoTime();
+      writer.merge(merge);
+      long e = System.nanoTime();
+      double time = (e - s) / 1000000000.0;
+      double rate = (merge.totalBytesSize() / 1000 / 1000) / time;
+      if (time > 10) {
+        LOG.info("Merge took [{0} s] to complete at rate of [{1} MB/s]", time, rate);
+      } else {
+        LOG.debug("Merge took [{0} s] to complete at rate of [{1} MB/s]", time, rate);
+      }
+      _throughputBytes.mark(merge.totalBytesSize());
     }
-    long s = System.currentTimeMillis();
-    writer.merge(merge);
-    long e = System.currentTimeMillis();
-    double time = (e - s) / 1000.0;
-    double rate = (merge.totalBytesSize() / 1024 / 1024) / time;
-    if (time > 10) {
-      LOG.info("Merge took [{0} s] to complete at rate of [{1} MB/s]", time, rate);
-    } else {
-      LOG.debug("Merge took [{0} s] to complete at rate of [{1} MB/s]", time, rate);
-    }
-    _throughputBytes.mark(merge.totalBytesSize());
-    return true;
   }
 
 }

@@ -96,8 +96,9 @@ public class UnsafeCacheValue extends BaseCacheValue {
       _unsafe.freeMemory(_address);
       _released = true;
       _offHeapMemorySize.addAndGet(0 - _capacity);
-    } else {
-      new Throwable().printStackTrace();
+//    } else {
+      // @TODO this is here to debug against double releases.
+//      new Throwable().printStackTrace();
     }
   }
 }

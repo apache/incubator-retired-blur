@@ -23,11 +23,12 @@ under the License.
 	<parent>
 		<groupId>org.apache.blur</groupId>
 		<artifactId>blur</artifactId>
-		<version>0.2.2-incubating-SNAPSHOT</version>
+		<version>0.2.2-incubating</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>org.apache.blur</groupId>
 	<artifactId>blur-gui</artifactId>
+	<version>${projectVersion}</version>
 	<packaging>war</packaging>
 	<name>Blur GUI</name>
 	<description>The Blur gui module contains the html status pages for each process.</description>
@@ -94,6 +95,19 @@ under the License.
 		<pluginManagement>
 			<plugins>
 				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<configuration>
+						<argLine>-XX:+UseConcMarkSweepGC -Xmx1g -Xms1g</argLine>
+						<forkCount>2</forkCount>
+						<forkMode>always</forkMode>
+						<reuseForks>false</reuseForks>
+						<systemPropertyVariables>
+							<blur.tmp.dir>${project.build.directory}/target/tmp</blur.tmp.dir>
+						</systemPropertyVariables>
+					</configuration>
+				</plugin>
+				<plugin>
 					<artifactId>maven-war-plugin</artifactId>
 					<configuration>
 						<archiveClasses>true</archiveClasses>
@@ -136,11 +150,24 @@ under the License.
 		<profile>
 			<id>hadoop-1x</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+				<property>
+					<name>hadoop1</name>
+				</property>
 			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop1</projectVersion>
+			</properties>
 		</profile>
 		<profile>
-			<id>cdh4-mr1</id>
+			<id>hadoop-2.2</id>
+			<activation>
+				<property>
+					<name>hadoop2</name>
+				</property>
+			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop2</projectVersion>
+			</properties>
 			<dependencies>
 				<dependency>
 				    <groupId>org.mortbay.jetty</groupId>

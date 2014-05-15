@@ -201,7 +201,7 @@ struct Row {
    * The total record count for the row.  If paging is used in a selector to page 
    * through records of a row, this count will reflect the entire row.
    */
-  3:i32 recordCount
+//  3:i32 recordCount
 }
 
 /**
@@ -281,11 +281,11 @@ struct Selector {
    */
   4:string recordId,
   /**
-   * The column families to fetch.  If null, fetch all.  If empty, fetch none.
+   * The column families to fetch. If null, fetch all. If empty, fetch none.
    */
-  5:list<string> columnFamiliesToFetch,
+  5:set<string> columnFamiliesToFetch,
   /**
-   * The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
+   * The columns in the families to fetch. If null, fetch all. If empty, fetch none.
    */
   6:map<string,set<string>> columnsToFetch,
   /**
@@ -298,14 +298,18 @@ struct Selector {
   /**
    * Only valid for Row fetches, the number of records to fetch.  If the row contains 1000 records 
    * and you want the first 100, then this value is 100.  If you want records 300-400 then this value 
-   * would be 100.  Used in conjunction with maxRecordsToFetch. By default this will fetch the first 
+   * would be 100.  Used in conjunction with startRecord. By default this will fetch the first 
    * 1000 records of the row.
    */
   9:i32 maxRecordsToFetch = 1000,
   /**
    * The HighlightOptions object controls how the data is highlighted.  If null no highlighting will occur.
    */
-  10:HighlightOptions highlightOptions
+  10:HighlightOptions highlightOptions,
+  /**
+   * Can be null, if provided the provided family order will be the order in which the families are returned.
+   */
+  11:list<string> orderOfFamiliesToFetch
 }
 
 /**
@@ -315,7 +319,23 @@ struct FetchRowResult {
   /**
    * The row fetched.
    */
-  1:Row row
+  1:Row row,
+  /**
+   * See Selector startRecord.
+   */
+  2:i32 startRecord = -1,
+  /**
+   * See Selector maxRecordsToFetch.
+   */
+  3:i32 maxRecordsToFetch = -1,
+  /**
+   * Are there more Records to fetch based on the Selector provided.
+   */
+  4:bool moreRecordsToFetch = 0,
+  /**
+   * The total number of records the Selector found.
+   */
+  5:i32 totalRecords
 }
 
 /**
@@ -375,6 +395,12 @@ struct Facet {
   2:i64 minimumNumberOfBlurResults = 9223372036854775807
 }
 
+struct SortField {
+  1:string family,
+  2:string column,
+  3:bool reverse
+}
+
 /**
  * The Blur Query object that contains the query that needs to be executed along 
  * with the query options.
@@ -429,7 +455,45 @@ struct BlurQuery {
   /**
    * Sets the start time, if 0 the controller sets the time.
    */
-  14:i64 startTime = 0
+  14:i64 startTime = 0,
+  /**
+   * The sortfields are applied in order to sort the results.
+   */
+  15:list<SortField> sortFields,
+  /**
+   * Optional optimization for record queries to run against a single row.  This will allow the query to be executed on one and only one shard in the cluster.
+   */
+  16:string rowId
+}
+
+/**
+ * Carries the one value from the sort that allows the merging of results.
+ */
+union SortFieldResult {
+  /**
+   * Carries the null boolean incase the field is null.
+   */
+  1:bool nullValue,
+  /**
+   * The string value.
+   */
+  2:string stringValue,
+  /**
+   * The integer value.
+   */
+  3:i32 intValue,
+  /**
+   * The long value.
+   */
+  4:i64 longValue,
+  /**
+   * The double value.
+   */
+  5:double doubleValue,
+  /**
+   * The binary value.
+   */
+  6:binary binaryValue
 }
 
 /**
@@ -447,7 +511,11 @@ struct BlurResult {
   /**
    * The fetched result if any.
    */
-  3:FetchResult fetchResult
+  3:FetchResult fetchResult,
+  /**
+   * The fields used for sorting.
+   */
+  4:list<SortFieldResult> sortFieldResults
 }
 
 /**
@@ -507,21 +575,13 @@ struct RowMutation {
    */
   2:string rowId,
   /**
-   * Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
-   */
-  3:bool wal = 1,
-  /**
    * The RowMutationType to define how to mutate the given Row.
    */
   4:RowMutationType rowMutationType = RowMutationType.REPLACE_ROW,
   /**
    * The RecordMutations if any for this Row.
    */
-  5:list<RecordMutation> recordMutations,
-  /**
-   * On mutate waits for the mutation to be visible to queries and fetch requests.
-   */
-  6:bool waitToBeVisible = 0
+  5:list<RecordMutation> recordMutations
 }
 
 /**
@@ -637,7 +697,11 @@ struct ColumnDefinition {
   /**
    * For any custom field types, you can pass in configuration properties.
    */
-  6:map<string, string> properties
+  6:map<string, string> properties,
+  /**
+   * This will attempt to enable sorting for this column, if the type does not support sorting then an exception will be thrown.
+   */
+  7:bool sortable
 }
 
 /**
@@ -745,6 +809,20 @@ struct User {
   1:string username,
   /** map of user attributes. */
   2:map<string,string> attributes
+}
+
+/**
+ * Logging level enum used to change the logging levels at runtime.
+ */
+enum Level {
+  OFF,
+  FATAL,
+  ERROR,
+  WARN,
+  INFO,
+  DEBUG,
+  TRACE,
+  ALL
 }
 
 /**
@@ -934,9 +1012,25 @@ service Blur {
   ) throws (1:BlurException ex)
 
   /**
+   * Enqueue a RowMutation. Note that the effect of the RowMutation will occur at some point in the future, volume and load will play a role in how much time will pass before the mutation goes into effect.
+   */
+  void enqueueMutate(
+    /** the RowMutation.*/
+    1:RowMutation mutation
+  ) throws (1:BlurException ex)
+
+  /**
    * Mutates a group of Rows given the list of RowMutations that are provided.  Note: This is not an atomic operation.
    */
   void mutateBatch(
+    /** the batch of RowMutations.*/
+    1:list<RowMutation> mutations
+  ) throws (1:BlurException ex)
+
+  /**
+   * Enqueue a batch of RowMutations. Note that the effect of the RowMutation will occur at some point in the future, volume and load will play a role in how much time will pass before the mutation goes into effect.
+   */
+  void enqueueMutateBatch(
     /** the batch of RowMutations.*/
     1:list<RowMutation> mutations
   ) throws (1:BlurException ex)
@@ -1128,6 +1222,25 @@ service Blur {
     1:string traceId
   ) throws (1:BlurException ex)
 
+  /** 
+   * A way to ping a server to make sure the connection is still valid.
+   */
+  void ping()
+
+  /**
+   * Changes the logging level for the given instance dynamically at runtime.
+   */
+  void logging(
+    /** the className or Logger Name of the Logger to be changed. */
+    1:string classNameOrLoggerName, 
+    /** the logging level. */
+    2:Level level
+  ) throws (1:BlurException ex)
+
+  /**
+   * Resets the logging for this instance to match the log4j file.  NOTE: This will allow for dynamically changing to logging file at runtime.
+   */
+  void resetLogging() throws (1:BlurException ex)
 }
 
 

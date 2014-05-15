@@ -91,6 +91,9 @@ public class CacheValueBufferPool implements Closeable {
   }
 
   public void returnToPool(CacheValue cacheValue) {
+    if (cacheValue == null) {
+      return;
+    }
     BlockingQueue<CacheValue> blockingQueue = getPool(cacheValue.length());
     if (!blockingQueue.offer(cacheValue)) {
       _detroyed.mark();

@@ -16,17 +16,16 @@ package org.apache.blur.server;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.ServerContext;
-import org.apache.hadoop.io.IOUtils;
 
 /**
  * The thrift session that will hold index reader references to maintain across
@@ -39,7 +38,7 @@ public class ShardServerContext extends BlurServerContext implements ServerConte
   private static final Log LOG = LogFactory.getLog(ShardServerContext.class);
 
   private final static Map<Thread, ShardServerContext> _threadsToContext = new ConcurrentHashMap<Thread, ShardServerContext>();
-  private final Map<String, IndexSearcherClosable> _indexSearcherMap = new HashMap<String, IndexSearcherClosable>();
+  private final Map<String, IndexSearcherClosable> _indexSearcherMap = new ConcurrentHashMap<String, IndexSearcherClosable>();
 
   public ShardServerContext(SocketAddress localSocketAddress, SocketAddress remoteSocketAddress) {
     super(localSocketAddress, remoteSocketAddress);
@@ -89,9 +88,19 @@ public class ShardServerContext extends BlurServerContext implements ServerConte
     Collection<IndexSearcherClosable> values = _indexSearcherMap.values();
     for (IndexSearcherClosable indexSearcherClosable : values) {
       LOG.debug("Closing [{0}]", indexSearcherClosable);
-      IOUtils.cleanup(LOG, indexSearcherClosable);
+      closeQuietly(indexSearcherClosable);
     }
     _indexSearcherMap.clear();
+  }
+
+  public static void closeQuietly(Closeable closeable) {
+    try {
+      if (closeable != null) {
+        closeable.close();
+      }
+    } catch (IOException e) {
+      LOG.error("Closing [{0}]", closeable);
+    }
   }
 
   /**

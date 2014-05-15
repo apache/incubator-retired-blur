@@ -56,112 +56,82 @@
 <!-- Header for Release Notes -->
 
 
-        Release Notes - Apache Blur - Version 0.2.1
-    
-<h2>        Sub-task
-</h2>
-<ul>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-250'>BLUR-250</a>] -         Create system level third party field types
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-258'>BLUR-258</a>] -         Document how to use BLUR-250
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-262'>BLUR-262</a>] -         Change Block Cache so that merges do not effect the cache
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-277'>BLUR-277</a>] -         Create an API to fetch the list of total Controller Servers in the Controller Cluster.
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-278'>BLUR-278</a>] -         Fix the Blur shell to use the right API to fetch the list of online Controller nodes.
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-284'>BLUR-284</a>] -         Need to add a closing queue for the CacheValue
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-285'>BLUR-285</a>] -         Create a file based bitset filter
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-287'>BLUR-287</a>] -         Configure block cache size in blur-site
-</li>
-</ul>
-            
+        Release Notes - Apache Blur - Version 0.2.2
+                
 <h2>        Bug
 </h2>
 <ul>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-118'>BLUR-118</a>] -         Watch Existence and Poll Watch Existence threads are not going away when a table is disabled or dropped
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-297'>BLUR-297</a>] -         The ShardServerEventHandler class is log noisy when clients disconnect
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-224'>BLUR-224</a>] -         Safemode - registerNode method is hardcoded to 60 second timeout
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-298'>BLUR-298</a>] -         ZooKeeperClusterStatus has several methods that are not working
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-232'>BLUR-232</a>] -         Fix NPE during use of minicluster on ubuntu
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-299'>BLUR-299</a>] -         Custom types at the system/cluster level aren&#39;t registered when the OutputFormat creates the table.
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-235'>BLUR-235</a>] -         Controller startup log refers to shard server
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-300'>BLUR-300</a>] -         System types need to be registered before the tablecontext is loaded
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-236'>BLUR-236</a>] -         Cluster initialization in controller for non-default clusters
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-301'>BLUR-301</a>] -         List command should be sorted
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-242'>BLUR-242</a>] -         Special/Internal fields aren&#39;t keyword analyzed on the query side.
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-303'>BLUR-303</a>] -         Change class sig for DefaultBlurReducer
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-244'>BLUR-244</a>] -         FileNotFoundException during the index import process
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-305'>BLUR-305</a>] -         Blur CombineInputFormat doesn&#39;t work at all
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-245'>BLUR-245</a>] -         There is a deadlock condition that can occur during mutate batch calls.
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-306'>BLUR-306</a>] -         Tables with the same name errors
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-252'>BLUR-252</a>] -         During create table cluster issue
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-307'>BLUR-307</a>] -         CsvBlurMapper not does work with combined input format
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-253'>BLUR-253</a>] -         Index Importer table readonly
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-308'>BLUR-308</a>] -         The MR jobs tmpjars contains more jar than needed
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-255'>BLUR-255</a>] -         Fix javadocs on TableDescriptor for preCacheCols
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-309'>BLUR-309</a>] -         CsvBlurMapper has an extra comma in the error message
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-257'>BLUR-257</a>] -         Fix misspelling in BlurConstants
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-310'>BLUR-310</a>] -         Remove the index size gathering code
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-279'>BLUR-279</a>] -         Compile Error building Blur-mapred class BlurOutputFormat
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-318'>BLUR-318</a>] -         Bug in TypeDefinitions while having separate analyzers for index and query
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-282'>BLUR-282</a>] -         All Lucene IndexInputs in Blur need to have the clone method reviewed
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-319'>BLUR-319</a>] -         Custom TypeDef&#39;s can get Blur into a state where one cannot make new tables.
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-283'>BLUR-283</a>] -         Check that strict types on the table descriptor works as expected
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-324'>BLUR-324</a>] -         SpatialPointVectorStrategyFieldTypeDefinition is throwing an exception during indexing
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-286'>BLUR-286</a>] -         The sample files for a given segment need to follow the segment life cycle
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-325'>BLUR-325</a>] -         The MasterBasedDistributedLayout is not removing the layout when a table is deleted
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-288'>BLUR-288</a>] -         Need to add regex query support in the superparser and types
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-326'>BLUR-326</a>] -         The thrift call shardServerList is failing
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-289'>BLUR-289</a>] -         Table Properties are not being persisted to zookeeper
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-328'>BLUR-328</a>] -         Index curruption during mutateBatch calls
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-293'>BLUR-293</a>] -         Add user object to Thrift API and session on server side
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-329'>BLUR-329</a>] -         Shard server query cache bug
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-330'>BLUR-330</a>] -         Remove the ZooKeeper trace store
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-331'>BLUR-331</a>] -         Large Row Paging issue
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-332'>BLUR-332</a>] -         FileNotFoundException during stats call
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-337'>BLUR-337</a>] -         Shard server should fail hard on a bad misconfiguration
 </li>
 </ul>
                 
 <h2>        Improvement
 </h2>
 <ul>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-183'>BLUR-183</a>] -         Auto disconnect clients that have been idle for a period of time
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-302'>BLUR-302</a>] -         start-all script sometimes causes errors 
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-246'>BLUR-246</a>] -         Change the fetch implementation to type 4
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-317'>BLUR-317</a>] -         Enable Changing of Compression alg and chunk size in Codec
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-249'>BLUR-249</a>] -         Sync performance issue in the IndexInputCloser class
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-323'>BLUR-323</a>] -         Improve error message on CustomFieldTypeDefinition
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-254'>BLUR-254</a>] -         Increase the number of selector threads in the thrift server
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-327'>BLUR-327</a>] -         Schedule a daily optimize of each shard
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-256'>BLUR-256</a>] -         Document how to use facets
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-333'>BLUR-333</a>] -         Remove polling from the index importer
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-259'>BLUR-259</a>] -         Add Full Controller list to ZookeeperClusterStatus
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-334'>BLUR-334</a>] -         Add sorting
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-260'>BLUR-260</a>] -         Rework shard layout strategy
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-261'>BLUR-261</a>] -         Unnecessary explicit reference of superclass method by Child class. 
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-281'>BLUR-281</a>] -         Add metrics into the V2 Block Cache
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-294'>BLUR-294</a>] -         Allow BufferStore to be configured with different buffer sizes
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-335'>BLUR-335</a>] -         Field existence query
 </li>
 </ul>
     
 <h2>        New Feature
 </h2>
 <ul>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-229'>BLUR-229</a>] -         Make V2 of the Block Cache production ready.
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-280'>BLUR-280</a>] -         Make the family field optional on the Record object.
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-291'>BLUR-291</a>] -         Document block cache v2
-</li>
-</ul>
-                                    
-<h2>        Test
-</h2>
-<ul>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-162'>BLUR-162</a>] -         Fix units in ZookeeperClusterStatusTest for safemode call
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-314'>BLUR-314</a>] -         Allow configurable Thrift frame size
 </li>
 </ul>
 

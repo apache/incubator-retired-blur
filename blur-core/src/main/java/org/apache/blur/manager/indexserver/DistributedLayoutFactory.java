@@ -17,10 +17,15 @@
 package org.apache.blur.manager.indexserver;
 
 import java.util.List;
+import java.util.Map;
 
 public interface DistributedLayoutFactory {
 
   DistributedLayout createDistributedLayout(String table, List<String> shardList, List<String> shardServerList,
-      List<String> offlineShardServers, boolean readOnly);
+      List<String> offlineShardServers);
+  
+  DistributedLayout readCurrentLayout(String table);
 
+  Map<String, ?> getLayoutCache();
+  
 }

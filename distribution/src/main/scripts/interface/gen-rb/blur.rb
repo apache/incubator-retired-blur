@@ -315,6 +315,21 @@ module Blur
         return
       end
 
+      def enqueueMutate(mutation)
+        send_enqueueMutate(mutation)
+        recv_enqueueMutate()
+      end
+
+      def send_enqueueMutate(mutation)
+        send_message('enqueueMutate', EnqueueMutate_args, :mutation => mutation)
+      end
+
+      def recv_enqueueMutate()
+        result = receive_message(EnqueueMutate_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
       def mutateBatch(mutations)
         send_mutateBatch(mutations)
         recv_mutateBatch()
@@ -326,6 +341,21 @@ module Blur
 
       def recv_mutateBatch()
         result = receive_message(MutateBatch_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
+      def enqueueMutateBatch(mutations)
+        send_enqueueMutateBatch(mutations)
+        recv_enqueueMutateBatch()
+      end
+
+      def send_enqueueMutateBatch(mutations)
+        send_message('enqueueMutateBatch', EnqueueMutateBatch_args, :mutations => mutations)
+      end
+
+      def recv_enqueueMutateBatch()
+        result = receive_message(EnqueueMutateBatch_result)
         raise result.ex unless result.ex.nil?
         return
       end
@@ -607,6 +637,50 @@ module Blur
         return
       end
 
+      def ping()
+        send_ping()
+        recv_ping()
+      end
+
+      def send_ping()
+        send_message('ping', Ping_args)
+      end
+
+      def recv_ping()
+        result = receive_message(Ping_result)
+        return
+      end
+
+      def logging(classNameOrLoggerName, level)
+        send_logging(classNameOrLoggerName, level)
+        recv_logging()
+      end
+
+      def send_logging(classNameOrLoggerName, level)
+        send_message('logging', Logging_args, :classNameOrLoggerName => classNameOrLoggerName, :level => level)
+      end
+
+      def recv_logging()
+        result = receive_message(Logging_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
+      def resetLogging()
+        send_resetLogging()
+        recv_resetLogging()
+      end
+
+      def send_resetLogging()
+        send_message('resetLogging', ResetLogging_args)
+      end
+
+      def recv_resetLogging()
+        result = receive_message(ResetLogging_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
     end
 
     class Processor
@@ -827,6 +901,17 @@ module Blur
         write_result(result, oprot, 'mutate', seqid)
       end
 
+      def process_enqueueMutate(seqid, iprot, oprot)
+        args = read_args(iprot, EnqueueMutate_args)
+        result = EnqueueMutate_result.new()
+        begin
+          @handler.enqueueMutate(args.mutation)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'enqueueMutate', seqid)
+      end
+
       def process_mutateBatch(seqid, iprot, oprot)
         args = read_args(iprot, MutateBatch_args)
         result = MutateBatch_result.new()
@@ -836,6 +921,17 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'mutateBatch', seqid)
+      end
+
+      def process_enqueueMutateBatch(seqid, iprot, oprot)
+        args = read_args(iprot, EnqueueMutateBatch_args)
+        result = EnqueueMutateBatch_result.new()
+        begin
+          @handler.enqueueMutateBatch(args.mutations)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'enqueueMutateBatch', seqid)
       end
 
       def process_cancelQuery(seqid, iprot, oprot)
@@ -1029,6 +1125,35 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'traceRemove', seqid)
+      end
+
+      def process_ping(seqid, iprot, oprot)
+        args = read_args(iprot, Ping_args)
+        result = Ping_result.new()
+        @handler.ping()
+        write_result(result, oprot, 'ping', seqid)
+      end
+
+      def process_logging(seqid, iprot, oprot)
+        args = read_args(iprot, Logging_args)
+        result = Logging_result.new()
+        begin
+          @handler.logging(args.classNameOrLoggerName, args.level)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'logging', seqid)
+      end
+
+      def process_resetLogging(seqid, iprot, oprot)
+        args = read_args(iprot, ResetLogging_args)
+        result = ResetLogging_result.new()
+        begin
+          @handler.resetLogging()
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'resetLogging', seqid)
       end
 
     end
@@ -1736,6 +1861,39 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
+    class EnqueueMutate_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      MUTATION = 1
+
+      FIELDS = {
+        # the RowMutation.
+        MUTATION => {:type => ::Thrift::Types::STRUCT, :name => 'mutation', :class => ::Blur::RowMutation}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class EnqueueMutate_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
     class MutateBatch_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
       MUTATIONS = 1
@@ -1754,6 +1912,39 @@ module Blur
     end
 
     class MutateBatch_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class EnqueueMutateBatch_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      MUTATIONS = 1
+
+      FIELDS = {
+        # the batch of RowMutations.
+        MUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'mutations', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::RowMutation}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class EnqueueMutateBatch_result
       include ::Thrift::Struct, ::Thrift::Struct_Union
       EX = 1
 
@@ -2402,6 +2593,106 @@ module Blur
     end
 
     class TraceRemove_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class Ping_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+
+      FIELDS = {
+
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class Ping_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+
+      FIELDS = {
+
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class Logging_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      CLASSNAMEORLOGGERNAME = 1
+      LEVEL = 2
+
+      FIELDS = {
+        # the className or Logger Name of the Logger to be changed.
+        CLASSNAMEORLOGGERNAME => {:type => ::Thrift::Types::STRING, :name => 'classNameOrLoggerName'},
+        # the logging level.
+        LEVEL => {:type => ::Thrift::Types::I32, :name => 'level', :enum_class => ::Blur::Level}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+        unless @level.nil? || ::Blur::Level::VALID_VALUES.include?(@level)
+          raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field level!')
+        end
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class Logging_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ResetLogging_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+
+      FIELDS = {
+
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ResetLogging_result
       include ::Thrift::Struct, ::Thrift::Struct_Union
       EX = 1
 

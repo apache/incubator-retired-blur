@@ -25,16 +25,23 @@ import java.util.List;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.TableDescriptor;
 
 public class ListTablesCommand extends Command {
   @Override
   public void doit(PrintWriter out, Blur.Iface client, String[] args) throws CommandException, TException,
       BlurException {
-    
+
     List<String> tableList = client.tableListByCluster(Main.getCluster(client));
+
     Collections.sort(tableList);
-    for (String s : tableList) {
-      out.println(s);
+    for (String table : tableList) {
+      TableDescriptor describe = client.describe(table);
+      if (describe.isEnabled()) {
+        out.println("enabled \t-\t" + table);
+      } else {
+        out.println("disabled\t-\t" + table);
+      }
     }
   }
 

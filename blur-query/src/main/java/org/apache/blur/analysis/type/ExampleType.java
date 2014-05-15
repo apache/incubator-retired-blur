@@ -26,6 +26,7 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
 
 public class ExampleType extends CustomFieldTypeDefinition {
@@ -105,6 +106,11 @@ public class ExampleType extends CustomFieldTypeDefinition {
   @Override
   public Query getCustomQuery(String text) {
     return new TermQuery(new Term(_fieldNameForThisInstance, text));
+  }
+  
+  @Override
+  public SortField getSortField(boolean reverse) {
+    throw new RuntimeException("Sort not supported.");
   }
 
 }

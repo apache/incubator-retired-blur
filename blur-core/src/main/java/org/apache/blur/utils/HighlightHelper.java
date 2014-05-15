@@ -17,16 +17,12 @@ package org.apache.blur.utils;
  * limitations under the License.
  */
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
 import org.apache.blur.analysis.FieldManager;
-import org.apache.blur.log.Log;
-import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.SuperQuery;
-import org.apache.blur.thrift.generated.Selector;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
@@ -37,7 +33,6 @@ import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.PhraseQuery;
@@ -45,7 +40,6 @@ import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
-import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
@@ -57,8 +51,6 @@ import org.apache.lucene.util.BytesRef;
 
 public class HighlightHelper {
 
-  private static final Log LOG = LogFactory.getLog(HighlightHelper.class);
-
   private static final Collection<String> FIELDS_NOT_TO_HIGHLIGHT = new HashSet<String>() {
     private static final long serialVersionUID = 1L;
     {
@@ -68,49 +60,6 @@ public class HighlightHelper {
       add(BlurConstants.FAMILY);
     }
   };
-
-  public static List<Document> highlightDocuments(IndexReader reader, Term term,
-      ResetableDocumentStoredFieldVisitor fieldSelector, Selector selector, Query highlightQuery,
-      FieldManager fieldManager, String preTag, String postTag) throws IOException {
-    IndexSearcher indexSearcher = new IndexSearcher(reader);
-    int docFreq = reader.docFreq(term);
-    BooleanQuery booleanQueryForFamily = null;
-    BooleanQuery booleanQuery = null;
-    if (selector.getColumnFamiliesToFetchSize() > 0) {
-      booleanQueryForFamily = new BooleanQuery();
-      for (String familyName : selector.getColumnFamiliesToFetch()) {
-        booleanQueryForFamily
-            .add(new TermQuery(new Term(BlurConstants.FAMILY, familyName)), BooleanClause.Occur.SHOULD);
-      }
-      booleanQuery = new BooleanQuery();
-      booleanQuery.add(new TermQuery(term), BooleanClause.Occur.MUST);
-      booleanQuery.add(booleanQueryForFamily, BooleanClause.Occur.MUST);
-    }
-    Query query = booleanQuery == null ? new TermQuery(term) : booleanQuery;
-    TopDocs topDocs = indexSearcher.search(query, docFreq);
-    int totalHits = topDocs.totalHits;
-    List<Document> docs = new ArrayList<Document>();
-
-    int start = selector.getStartRecord();
-    int end = selector.getMaxRecordsToFetch() + start;
-
-    for (int i = start; i < end; i++) {
-      if (i >= totalHits) {
-        break;
-      }
-      int doc = topDocs.scoreDocs[i].doc;
-      indexSearcher.doc(doc, fieldSelector);
-      Document document = fieldSelector.getDocument();
-      try {
-        document = highlight(doc, document, highlightQuery, fieldManager, reader, preTag, postTag);
-      } catch (InvalidTokenOffsetsException e) {
-        LOG.error("Unknown error while tring to highlight", e);
-      }
-      docs.add(document);
-      fieldSelector.reset();
-    }
-    return docs;
-  }
 
   /**
    * NOTE: This method will not preserve the correct field types.

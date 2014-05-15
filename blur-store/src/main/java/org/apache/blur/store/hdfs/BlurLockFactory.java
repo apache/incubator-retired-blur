@@ -18,6 +18,8 @@ package org.apache.blur.store.hdfs;
  */
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -41,6 +43,7 @@ public class BlurLockFactory extends LockFactory {
   private final String _baseLockKey;
   private byte[] _lockKey;
   private final Path _dir;
+  private long _checkTime = TimeUnit.SECONDS.toMillis(1);
 
   public BlurLockFactory(Configuration configuration, Path dir, String host, String pid) throws IOException {
     _configuration = configuration;
@@ -52,6 +55,7 @@ public class BlurLockFactory extends LockFactory {
   @Override
   public Lock makeLock(String lockName) {
     final Path lockPath = new Path(_dir, lockName);
+    final AtomicLong _lastCheck = new AtomicLong();
 
     return new Lock() {
       private boolean _set;
@@ -89,6 +93,9 @@ public class BlurLockFactory extends LockFactory {
 
       @Override
       public boolean isLocked() throws IOException {
+        if (_lastCheck.get() + _checkTime >= System.currentTimeMillis()) {
+          return true;
+        }
         Tracer trace = Trace.trace("filesystem - isLocked", Trace.param("lockPath", lockPath));
         try {
           if (!_set) {
@@ -110,6 +117,7 @@ public class BlurLockFactory extends LockFactory {
           inputStream.readFully(buf);
           inputStream.close();
           if (Arrays.equals(_lockKey, buf)) {
+            _lastCheck.set(System.currentTimeMillis());
             return true;
           }
           LOG.info("The lock information has been changed.");

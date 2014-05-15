@@ -27,6 +27,7 @@ import static org.apache.blur.metrics.MetricsConstants.REMOVAL;
 import static org.apache.blur.metrics.MetricsConstants.SIZE;
 
 import java.io.Closeable;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -193,9 +194,34 @@ public class BaseCache extends Cache implements Closeable {
     _fileNameToId.remove(cachedFileName);
   }
 
+  @Override
+  public void fileClosedForWriting(CacheDirectory directory, String fileName, long fileId) throws IOException {
+    if (directory.fileExists(fileName)) {
+      long fileModified = directory.getFileModified(fileName);
+      FileIdKey oldKey = new FileIdKey(directory.getDirectoryName(), fileName, -1L);
+      FileIdKey newKey = new FileIdKey(directory.getDirectoryName(), fileName, fileModified);
+      Long currentFileIdObject = _fileNameToId.get(oldKey);
+      if (currentFileIdObject != null) {
+        long currentFileId = currentFileIdObject;
+        if (fileId != currentFileId) {
+          throw new IOException("Something has gone very wrong file ids do not match [" + fileId + "] ["
+              + currentFileId + "] for key [" + oldKey + "]");
+        }
+        _fileNameToId.put(newKey, fileId);
+        _oldFileNameIdMap.put(fileId, newKey);
+        _fileNameToId.remove(oldKey);
+      }
+    } else {
+      throw new FileNotFoundException("File [" + fileName + "] not found in directory [" + directory + "]");
+    }
+  }
+
   private FileIdKey getCacheFileName(CacheDirectory directory, String fileName) throws IOException {
-    long fileModified = directory.getFileModified(fileName);
-    return new FileIdKey(directory.getDirectoryName(), fileName, fileModified);
+    if (directory.fileExists(fileName)) {
+      long fileModified = directory.getFileModified(fileName);
+      return new FileIdKey(directory.getDirectoryName(), fileName, fileModified);
+    }
+    return new FileIdKey(directory.getDirectoryName(), fileName, -1L);
   }
 
   @Override

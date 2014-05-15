@@ -63,6 +63,7 @@
 	            </li>
                 <li><a href="#simple_query_example">Query Example</a></li>
                 <li><a href="#simple_query_example_data">Query Example with Data</a></li>
+                <li><a href="#simple_query_sorting">Query Example with Sorting</a></li>
                 <li><a href="#simple_faceting_example">Faceting Example</a></li>
                 <li><a href="#simple_fetch_data">Fetch Data</a></li>
                 <li><a href="#simple_mutate_example">Mutate Example</a></li>
@@ -202,6 +203,38 @@ for (BlurResult result : results.getResults()) {
 &nbsp;&nbsp;System.out.println(result);
 }
 </code></pre>
+
+
+
+<h3 id="simple_query_sorting">Query Example with Sorting</h3>
+<p>
+This is an example of how to run a query via the Thrift API and get back search results with
+ data being sorted by the &quot;docs.timestamp&quot; column. All the columns in the records 
+will be returned.
+<div class="bs-callout bs-callout-info"><h4>Note</h4>Sorting is only allowed on Record queries at this point.</div>
+</p>
+<pre><code class="java">Iface client = BlurClient.getClient("controller1:40010,controller2:40010");
+
+Query query = new Query();
+query.setQuery(&quot;+docs.body:\&quot;Hadoop is awesome\&quot;&quot;);
+query.setRowQuery(false);
+
+Selector selector = new Selector();
+selector.setRecordOnly(true);
+
+BlurQuery blurQuery = new BlurQuery();
+blurQuery.setQuery(query);
+blurQuery.setSelector(selector);
+blurQuery.addToSortFields(new SortField(&quot;docs&quot;, &quot;timestamp&quot;, true));
+
+BlurResults results = client.query(&quot;table1&quot;, blurQuery);
+System.out.println(&quot;Total Results: &quot; + results.totalResults);
+for (BlurResult result : results.getResults()) {
+&nbsp;&nbsp;System.out.println(result);
+}
+</code></pre>
+
+
 
 <h3 id="simple_faceting_example">Faceting Example</h3>
 <p>

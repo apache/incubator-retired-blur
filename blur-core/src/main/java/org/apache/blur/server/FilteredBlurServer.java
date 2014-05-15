@@ -29,6 +29,7 @@ import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.FetchResult;
+import org.apache.blur.thrift.generated.Level;
 import org.apache.blur.thrift.generated.Metric;
 import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.RowMutation;
@@ -216,6 +217,31 @@ public class FilteredBlurServer implements Iface {
 
   public void traceRemove(String traceId) throws BlurException, TException {
     _iface.traceRemove(traceId);
+  }
+
+  @Override
+  public void ping() throws TException {
+    _iface.ping();
+  }
+
+  @Override
+  public void logging(String classNameOrLoggerName, Level level) throws BlurException, TException {
+    _iface.logging(classNameOrLoggerName, level);
+  }
+
+  @Override
+  public void resetLogging() throws BlurException, TException {
+    _iface.resetLogging();
+  }
+
+  @Override
+  public void enqueueMutate(RowMutation mutation) throws BlurException, TException {
+    _iface.enqueueMutate(mutation);
+  }
+
+  @Override
+  public void enqueueMutateBatch(List<RowMutation> mutations) throws BlurException, TException {
+    _iface.enqueueMutateBatch(mutations);
   }
 
 }

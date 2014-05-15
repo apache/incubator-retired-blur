@@ -19,6 +19,9 @@ bin=`dirname "$0"`
 bin=`cd "$bin"; pwd`
 
 . "$bin"/blur-config.sh
-
+PROC_NAME="Shutdown"
+nohup "$JAVA_HOME"/bin/java -Dblur.name=SHUTDOWN_PROC -Djava.library.path=$JAVA_LIBRARY_PATH -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=blur-$USER-$PROC_NAME -cp $BLUR_CLASSPATH org.apache.blur.thrift.Shutdown > "$BLUR_LOGS/blur-$USER-$PROC_NAME.out" 2>&1 < /dev/null &
+SHUTDOWN_PID=$!
 $BLUR_HOME/bin/shards.sh $BLUR_HOME/bin/stop-shard-server.sh
+kill -15 $SHUTDOWN_PID
 

@@ -33,7 +33,7 @@ blurconsole.fake = (function() {
 			records = randomNumber(10000)+1000;
 			enabled = randomBoolean();
 
-			data.push({cluster:cluster, name:'testtable'+i, enabled:enabled, rows:rows, records:records});
+			data.push({cluster:cluster, name:'testtable'+i, enabled:enabled, rows:rows, records:records, families: blurconsole.utils.keys(getSchema('testtable'+i))});
 
 		}
 		return data;
@@ -152,12 +152,33 @@ blurconsole.fake = (function() {
 
 		callback(terms);
 	};
-  
-  sendSearch = function(query, table, args, callback) {
-    console.log('sending fake search [' + query + '] on table [' + table + ']');
-    
-    
-  };
+
+	sendSearch = function(query, table, args, callback) {
+		console.log('sending fake search [' + query + '] on table [' + table + ']');
+
+		var fams = args.families, results = {}, total = randomNumber(1000);
+
+		$.each(fams, function(i, fam){
+			var cols = randomNumber(30, true), toFetch = args.fetch;
+			if (total - args.start < toFetch) {
+				toFetch = total - args.start;
+			}
+			results[fam] = [];
+			for (var r = 0; r < randomNumber(toFetch); r++) {
+				var row = {};
+				for (var c=0; c < cols; c++) {
+					row['col'+c] = randomString();
+				}
+				results[fam].push(row);
+			}
+		});
+
+		callback({
+			families: args.families,
+			results: results,
+			total: total
+		});
+	};
 
 	randomNumber = function(max, includeZero) {
 		var random = Math.random()*max;
@@ -195,6 +216,6 @@ blurconsole.fake = (function() {
 		deleteTable : deleteTable,
 		getSchema : getSchema,
 		findTerms : findTerms,
-    sendSearch : sendSearch
+		sendSearch : sendSearch
 	};
 }());

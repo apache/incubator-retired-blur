@@ -152,8 +152,17 @@ module.exports = function (grunt) {
             }
         },
 
-
-
+        // Code coverage options
+        blanket_mocha: {
+            test: {
+                src: ['test/index.html'],
+                options : {
+                    threshold : 60,
+                    log : true,
+                    logErrors: true
+                }
+            }
+        },
 
         // Compiles Sass to CSS and generates necessary files if requested
         compass: {
@@ -397,7 +406,8 @@ module.exports = function (grunt) {
 
         grunt.task.run([
             'connect:test',
-            'mocha'
+            'mocha',
+            'blanket_mocha'
         ]);
     });
 

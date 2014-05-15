@@ -21,11 +21,12 @@ under the License.
 $icon-font-path: "/bower_components/twbs-bootstrap-sass/vendor/assets/fonts/bootstrap/";
 
 @import 'twbs-bootstrap-sass/vendor/assets/stylesheets/bootstrap';
+@import 'colors';
 
 .browsehappy {
     margin: 0.2em 0;
-    background: #ccc;
-    color: #000;
+    background: $silver;
+    color: $black;
     padding: 0.2em 0;
 }
 
@@ -40,9 +41,9 @@ body {
 
 /* Top Navigation */
 nav.navbar-fixed-top {
-    background-color: #4c66a4;
+    background-color: $san-marino;
     .navbar-brand {
-        color: #fff;
+        color: $white;
     }
 }
 
@@ -64,14 +65,14 @@ nav.navbar-fixed-top {
             display: block;
             a {
                 padding: 10px;
-                color: #ccc;
+                color: $silver;
                 margin-right: 0;
                 font-size: 20px;
                 position: relative;
                 display: block;
                 &.active {
-                    background-color: #fff;
-                    color: #000;
+                    background-color: $white;
+                    color: $black;
                 }
             }
         }

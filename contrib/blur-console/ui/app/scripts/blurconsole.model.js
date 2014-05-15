@@ -34,7 +34,7 @@ blurconsole.model = (function() {
 		tables, metrics, nodes, queries, search, initModule, nodePoller, tablePoller, queryPerformancePoller, queryPoller;
 
 	tables = (function() {
-		var getClusters, getEnabledTables, getDisabledTables, isDataLoaded, disableTable, enableTable, deleteTable, getSchema, findTerms, getAllEnabledTables;
+		var getClusters, getEnabledTables, getDisabledTables, isDataLoaded, disableTable, enableTable, deleteTable, getSchema, findTerms, getAllEnabledTables, getFamilies;
 
 		getClusters = function() {
 			if (stateMap.tableNameMap === null) {
@@ -100,6 +100,19 @@ blurconsole.model = (function() {
 			return configMap.poller.getSchema(tableName);
 		};
 
+		getFamilies = function(tableName) {
+			var table;
+
+			$.each(stateMap.tableNameMap, function(idx, t) {
+				if (t.name === tableName) {
+					table = t;
+					return false;
+				}
+			});
+
+			return table.families;
+		};
+
 		findTerms = function(table, family, column, startsWith) {
 			configMap.poller.findTerms(table, family, column, startsWith, function(terms) {
 				$.gevent.publish('terms-updated', terms);
@@ -116,7 +129,8 @@ blurconsole.model = (function() {
 			deleteTable : deleteTable,
 			getSchema : getSchema,
 			findTerms : findTerms,
-			getAllEnabledTables : getAllEnabledTables
+			getAllEnabledTables : getAllEnabledTables,
+			getFamilies : getFamilies
 		};
 	}());
 
@@ -350,14 +364,20 @@ blurconsole.model = (function() {
 	}());
 
 	search = (function() {
-		var results = {}, families = {}, currentQuery, currentTable, currentArgs = {start: 0, fetch: 10, rowRecordOption: 'rowrow', families: null},
-			runSearch, getResults, getFamilies, loadMoreResults,
+		var results = {}, totalRecords = 0, currentQuery, currentTable, currentArgs = {start: 0, fetch: 10, rowRecordOption: 'rowrow', families: null},
+			runSearch, getResults, getFamilies, loadMoreResults, getTotal,
 			sendSearch, processResults;
 
 		runSearch = function( query, table, searchArgs ) {
+			var parsedFamilies = blurconsole.utils.findFamilies(query);
+
 			currentQuery = query;
 			currentTable = table;
 			currentArgs = $.extend(currentArgs, searchArgs);
+			if (parsedFamilies.length > 0) {
+				currentArgs.families = parsedFamilies;
+			}
+			results = {};
 			sendSearch();
 		};
 
@@ -365,13 +385,15 @@ blurconsole.model = (function() {
 			return results;
 		};
 
-		getFamilies = function() {
-			return families;
+		getTotal = function() {
+			return totalRecords;
 		};
 
-		loadMoreResults = function(family, start, fetch) {
-			currentArgs.start = start;
-			currentArgs.fetch = fetch;
+		loadMoreResults = function(family) {
+			var alreadyLoadedResults = results[family];
+
+			currentArgs.start = alreadyLoadedResults ? alreadyLoadedResults.length : 0;
+			currentArgs.fetch = 10;
 			currentArgs.families = [family];
 			sendSearch();
 		};
@@ -381,33 +403,27 @@ blurconsole.model = (function() {
 		};
 
 		processResults = function(data) {
-			var dataFamilies, dataResults, tmpFamilies = {};
+			var dataFamilies, dataResults;
 
 			dataFamilies = data.families;
 			dataResults = data.results;
+			totalRecords = data.total;
 
-			if (dataFamilies !== null) {
-				$.each(dataFamilies, function(f, family){
-					tmpFamilies[family] = false;
-				});
-			}
-
-			if (dataResults !== null) {
+			if (typeof dataResults !== 'undefined' && dataResults !== null) {
 				$.each(dataResults, function(family, resultList){
-					tmpFamilies[family] = true;
 					var tmpList = results[family] || [];
 					results[family] = tmpList.concat(resultList);
 				});
 			}
-			families = tmpFamilies;
-			$.gevent.publish('results-updated');
+			$.gevent.publish('results-updated', [dataFamilies]);
 		};
 
 		return {
 			runSearch: runSearch,
 			getResults: getResults,
 			getFamilies: getFamilies,
-			loadMoreResults: loadMoreResults
+			loadMoreResults: loadMoreResults,
+			getTotal: getTotal
 		};
 	}());
 
@@ -462,6 +478,7 @@ blurconsole.model = (function() {
 		tables : tables,
 		metrics: metrics,
 		nodes : nodes,
-		queries : queries
+		queries : queries,
+		search : search
 	};
 }());

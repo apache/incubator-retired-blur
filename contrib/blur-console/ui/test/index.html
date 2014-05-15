@@ -24,24 +24,36 @@ under the License.
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Mocha Spec Runner</title>
     <link rel="stylesheet" href="bower_components/mocha/mocha.css">
-</head>
-<body>
-    <div id="mocha"></div>
-    <script src="bower_components/mocha/mocha.js"></script>
-    <script>mocha.setup('bdd')</script>
+
     <script src="bower_components/chai/chai.js"></script>
+    <script src="bower_components/mocha/mocha.js"></script>
+
+    <!-- include source files here... -->
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="app/scripts/blurconsole.js"></script>
+    <script src="app/scripts/blurconsole.utils.js"></script>
+
+    <script src="bower_components/blanket/dist/qunit/blanket.js" data-cover-flags="branchTracking" data-cover-only="//scripts/"></script>
+    <script src="../node_modules/grunt-blanket-mocha/support/mocha-blanket.js"></script>
+
     <script>
         var assert = chai.assert;
         var expect = chai.expect;
         var should = chai.should();
-    </script>
 
-    <!-- include source files here... -->
-    <script src="scripts/blurconsole.utils.js"></script>
+        mocha.setup('bdd');
+
+        if (window.PHANTOMJS) {
+            blanket.options("reporter", "../node_modules/grunt-blanket-mocha/support/grunt-reporter.js");
+        }
+    </script>
 
     <!-- include spec files here... -->
     <script src="spec/test.js"></script>
     <script src="spec/utils.js"></script>
+</head>
+<body>
+    <div id="mocha"></div>
 
     <script>mocha.run()</script>
 </body>

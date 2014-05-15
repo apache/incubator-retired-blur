@@ -17,16 +17,15 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-/* global describe, it */
+/* global describe, it, assert, blurconsole */
 
 (function () {
     'use strict';
 
-    var assert = require("assert");
     describe('Test blurconsole.utils', function () {
         describe('inject', function () {
             it('[1,2,3,4,5] should be 15 with simple summing', function () {
-              assert(blurconsole.utils.inject([1,2,3,4,5], 0, function(sum, item){ return sum + item; }));
+                assert(blurconsole.utils.inject([1,2,3,4,5], 0, function(sum, item){ return sum + item; }));
             });
         });
     });

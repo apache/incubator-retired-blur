@@ -20,7 +20,7 @@ under the License.
 
 /**
  * blurconsole.shell.js
- * Shell module for Blur Console 
+ * Shell module for Blur Console
  */
 /* global blurconsole:false, $:false */
 blurconsole.shell = (function () {
@@ -28,7 +28,7 @@ blurconsole.shell = (function () {
 	var configMap = {
 		anchorSchemaMap : {
 			tab : { dashboard : true, tables : true, queries : true, search : true },
-			_tab : { query: true, table: true }
+			_tab : { query: true, table: true, rr: true }
 		},
 		defaultTab : 'dashboard',
 		allTabs : ['dashboard', 'tables', 'queries', 'search']
@@ -58,17 +58,19 @@ blurconsole.shell = (function () {
 	switchView = function ( tab ) {
 		var i;
 
-		for ( i = 0; i < configMap.allTabs.length; i++ ) {
-			if (blurconsole[configMap.allTabs[i]]) {
-				blurconsole[configMap.allTabs[i]].unloadModule();
+		if (stateMap.currentTab !== tab) {
+			for ( i = 0; i < configMap.allTabs.length; i++ ) {
+				if (blurconsole[configMap.allTabs[i]]) {
+					blurconsole[configMap.allTabs[i]].unloadModule();
+				}
 			}
-		}
 
-		stateMap.currentTab = tab;
-		jqueryMap.$sideNavTabs.removeClass('active');
-		jqueryMap.$sideNavTabs.filter('a[href$="' + tab + '"]').addClass('active');
-		if (blurconsole[tab]) {
-			blurconsole[tab].initModule( jqueryMap.$container );
+			stateMap.currentTab = tab;
+			jqueryMap.$sideNavTabs.removeClass('active');
+			jqueryMap.$sideNavTabs.filter('a[href$="' + tab + '"]').addClass('active');
+			if (blurconsole[tab]) {
+				blurconsole[tab].initModule( jqueryMap.$container );
+			}
 		}
 
 		return true;

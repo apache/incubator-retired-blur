@@ -21,22 +21,28 @@ under the License.
 <div id="tableGoneWarning" class="alert alert-warning" style="display:none"><strong>Heads Up!</strong> The table that is currently being used for search is no longer enabled!</div>
 <div class="well">
 	<div class="container-fluid">
-		<div class="col-xs-6">
-			<div class="input-group">
-				<input type="text" class="form-control" placeholder="Query" id="queryField">
-				<span class="input-group-btn">
-        			<button class="btn btn-default" type="button" id="searchTrigger">Go!</button>
-      			</span>
+		<div class="row">
+			<div class="col-xs-6">
+				<div class="input-group">
+					<input type="text" class="form-control" placeholder="Query" id="queryField">
+					<span class="input-group-btn">
+	        			<button class="btn btn-default" type="button" id="searchTrigger">Go!</button>
+	      			</span>
+				</div>
 			</div>
+			<div class="col-xs-2">
+				<select class="form-control" id="tableChooser">
+					<option value="" id="statusOption">Loading Tables....</option>
+				</select>
+			</div>
+			<button class="btn btn-default" type="button" id="searchOptionsTrigger">
+				<i class="glyphicon glyphicon-cog"></i>
+			</button>
+			<span id="searchOptionsDisplay"></span>
 		</div>
-		<div class="col-xs-2">
-			<select class="form-control" id="tableChooser">
-				<option value="" id="statusOption">Loading Tables....</option>
-			</select>
+		<div class="row">
+			<div id="resultCount" class="col-xs-2"></div>
 		</div>
-		<button class="btn btn-default" type="button" id="searchOptionsTrigger">
-			<i class="glyphicon glyphicon-cog"></i>
-		</button>
 	</div>
 </div>
 <div id="results">

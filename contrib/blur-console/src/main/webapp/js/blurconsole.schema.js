@@ -137,7 +137,7 @@ blurconsole.schema = (function () {
 	};
 
 	viewTerms = function() {
-		jqueryMap.termList.html('<div class="center-block"><img src="images/ajax-loader.gif"></div>');
+		jqueryMap.termList.html('<div class="center-block"><img src="img/ajax-loader.gif"></div>');
 		jqueryMap.termSearch.val('');
 		jqueryMap.columnTermsSection.show();
 		var $this = $(this);

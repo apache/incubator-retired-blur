@@ -228,29 +228,37 @@ under the License.
 						<exclude>NOTICE</exclude>
 						<exclude>README</exclude>
 						<exclude>**/README.textile</exclude>
+						<exclude>**/README.md</exclude>
 						<exclude>**/.classpath</exclude>
 						<exclude>**/.project</exclude>
 						<exclude>**/.settings/**</exclude>
+						<exclude>**/.idea/**</exclude>
+						<exclude>**/*.iml</exclude>
 						<exclude>**/target/**</exclude>
                                                 <exclude>**/build/**</exclude>
 						
 						<!-- These javascript libs are added at build time but are not included in the src -->
-						<exclude>contrib/blur-console/ui/app/bower_components/**</exclude>
+						<exclude>contrib/blur-console/src/main/webapp/libs/**</exclude>
+
+						<!-- Generated CSS files -->
+						<exclude>contrib/blur-console/src/main/webapp/css/**</exclude>
 						
 						<!-- These files are used for UI testing and are added at development but not included in the src -->
-						<exclude>contrib/blur-console/ui/test/bower_components/**</exclude>
+						<exclude>contrib/blur-console/src/main/webapp/test/bower_components/**</exclude>
 
 						<!-- JS Libraries that could not be included through bower -->
-						<exclude>contrib/blur-console/ui/app/lib/**</exclude>
+						<exclude>contrib/blur-console/src/main/webapp/js/utils/**</exclude>
 	
 						<!-- Files used for building the UI -->
-						<exclude>contrib/blur-console/ui/node_modules/**</exclude>
-						<exclude>contrib/blur-console/ui/.sass-cache/**</exclude>
+						<exclude>contrib/blur-console/src/main/webapp/node_modules/**</exclude>
+						<exclude>contrib/blur-console/src/main/webapp/.sass-cache/**</exclude>
+						<exclude>contrib/blur-console/src/main/webapp/.tmp/**</exclude>
 						<exclude>contrib/blur-console/**/.bowerrc</exclude>
-						<exclude>contrib/blur-console/ui/.editorconfig</exclude>
-						<exclude>contrib/blur-console/ui/.jshintrc</exclude>
-						<exclude>contrib/blur-console/ui/package.json</exclude>
-						<exclude>contrib/blur-console/ui/**/bower.json</exclude>
+						<exclude>contrib/blur-console/**/.editorconfig</exclude>
+						<exclude>contrib/blur-console/**/.jshintrc</exclude>
+						<exclude>contrib/blur-console/**/package.json</exclude>
+						<exclude>contrib/blur-console/**/bower.json</exclude>
+						<exclude>contrib/blur-console/src/main/scripts/grunt.sh</exclude>
 
 						<!-- Legacy blur console -->
 						<exclude>contrib/blur-console-v1/**</exclude>

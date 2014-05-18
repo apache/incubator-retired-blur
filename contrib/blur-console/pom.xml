@@ -17,7 +17,7 @@
 	<parent>
 		<groupId>org.apache.blur</groupId>
 		<artifactId>blur</artifactId>
-		<version>0.2.2-incubating-SNAPSHOT</version>
+		<version>0.2.2-incubating</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
@@ -26,7 +26,26 @@
 	<packaging>jar</packaging>
 	<name>Blur Console</name>
 
+    <properties>
+        <!-- Default Jetty Configuration Properties -->
+        <jetty-version>9.2.0.M1</jetty-version>
+        <jetty.port>2880</jetty.port>
+        <jetty.maxIdleTime>60000</jetty.maxIdleTime>
+
+        <!-- Library Versions -->
+        <jersey-version>2.8</jersey-version>
+        <atmosphere-version>0.8.5</atmosphere-version>
+
+        <!-- Grunt Execution Target. Valid values are [ development | production ] -->
+        <grunt.target>development</grunt.target>
+
+        <!-- Maven Plugin Versions -->
+        <plugin.maven.exec.version>1.2.1</plugin.maven.exec.version>
+        <plugin.maven.war.version>2.4</plugin.maven.war.version>
+    </properties>
+
 	<dependencies>
+        <!-- Blur Dependencies -->
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-thrift</artifactId>
@@ -37,6 +56,8 @@
 			<artifactId>blur-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
+        <!-- Development and Runtime Libraries -->
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
@@ -52,14 +73,14 @@
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-core</artifactId>
-			<version>0.3.0-incubating-SNAPSHOT</version>
+			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-util</artifactId>
-			<version>0.3.0-incubating-SNAPSHOT</version>
+			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
@@ -72,7 +93,44 @@
 	</dependencies>
 
 	<build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/blur-console-build.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>**/blur-console-build.properties</exclude>
+                </excludes>
+            </resource>
+        </resources>
+
 		<plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -83,21 +141,80 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.2.1</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>java</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<mainClass>org.apache.blur.console.Main</mainClass>
-				</configuration>
-			</plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.apache.blur.console.Main</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 		</plugins>
 	</build>
+
+    <profiles>
+        <profile>
+            <id>hadoop-1x</id>
+            <activation>
+                <property>
+                    <name>hadoop1</name>
+                </property>
+            </activation>
+            <properties>
+                <projectVersion>${project.parent.version}-hadoop1</projectVersion>
+            </properties>
+        </profile>
+        <profile>
+            <id>hadoop-2.2</id>
+            <activation>
+                <property>
+                    <name>hadoop2</name>
+                </property>
+            </activation>
+            <properties>
+                <projectVersion>${project.parent.version}-hadoop2</projectVersion>
+            </properties>
+        </profile>
+        <profile>
+            <id>grunt</id>
+            <activation><os><family>!windows</family></os></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>${plugin.maven.exec.version}</version>
+                        <executions>
+                            <!-- Install all webapp dependencies -->
+                            <execution>
+                                <id>WebApp Dependencies and Minification</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${basedir}/src/main/scripts/grunt.sh</executable>
+                                    <commandlineArgs>${grunt.target}</commandlineArgs>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

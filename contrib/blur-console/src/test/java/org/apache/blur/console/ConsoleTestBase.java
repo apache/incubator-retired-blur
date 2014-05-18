@@ -29,13 +29,13 @@ import org.junit.BeforeClass;
 public class ConsoleTestBase {
 	protected static MiniCluster cluster;
 	protected static String TABLE_PATH = new File("./test-data/test-tables").getAbsolutePath();
-	
+
 	@BeforeClass
 	public static void startup() {
 		cluster = new MiniCluster();
 		cluster.startBlurCluster(new File("./test-data").getAbsolutePath(), 1, 1);
 	}
-	
+
 	@AfterClass
 	public static void shutdown() throws IOException {
 		cluster.shutdownBlurCluster();
@@ -44,7 +44,7 @@ public class ConsoleTestBase {
 			FileUtils.deleteDirectory(file);
 		}
 	}
-	
+
 	protected void setupConfigIfNeeded() throws IOException {
 		if (Config.getBlurConfig() == null) {
 			Config.setupConfig();

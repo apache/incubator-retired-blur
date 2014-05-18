@@ -30,7 +30,6 @@ blurconsole.model = (function() {
 			queryPerformance : [],
 			queries : {}
 		},
-		isFakeData = true,
 		tables, metrics, nodes, queries, search, initModule, nodePoller, tablePoller, queryPerformancePoller, queryPoller;
 
 	tables = (function() {
@@ -465,7 +464,7 @@ blurconsole.model = (function() {
 	};
 
 	initModule = function() {
-		configMap.poller = isFakeData ? blurconsole.fake : blurconsole.data;
+		configMap.poller = window.location.href.indexOf('fakeIt=') > -1 ? blurconsole.fake : blurconsole.data;
 		setTimeout(function() {
 			nodePoller();
 			tablePoller();

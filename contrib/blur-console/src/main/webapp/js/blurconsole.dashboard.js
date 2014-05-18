@@ -113,7 +113,7 @@ blurconsole.dashboard = (function () {
 				clusterInfo = jqueryMap.$shardChartHolder.find('#cluster_' + cluster + '_info');
 
 				if (clusterHolder.length === 0) {
-					var wrapper = $('<div></div>');
+					var wrapper = $('<div class="swapper-parent"></div>');
 					wrapper.append($('<div class="text-center"><strong>' + cluster + '</strong> <small class="text-muted"><i class="glyphicon glyphicon-retweet swapper-trigger" title="Swap Chart/Info"></i></small></div>'));
 					clusterHolder = $('<div id="cluster_'+ cluster + '_chart_holder" class="shardClusterChartHolder simple-chart swapper-chart"></div>');
 					wrapper.append(clusterHolder);
@@ -239,7 +239,9 @@ blurconsole.dashboard = (function () {
 			$.gevent.subscribe(jqueryMap.$container, 'queries-updated', checkForSlowQueries);
 			adjustChartSize();
 			$(document).on('click', '.swapper-trigger', function() {
-				var parent = $(this).closest('div:not(.text-center)');
+			    console.log(this);
+				var parent = $(this).closest('div.swapper-parent');
+				console.log(parent);
 				var chart = parent.find('.swapper-chart');
 				var info = parent.find('.swapper-info');
 

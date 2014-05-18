@@ -61,13 +61,13 @@ public class JettyServer {
 	    final URL warUrl = this.getClass().getClassLoader().getResource(WEBAPPDIR);
 	    final String warUrlString = warUrl.toExternalForm();
 	    server.setHandler(new WebAppContext(warUrlString, CONTEXTPATH));
-	      
+
 	    // for localhost:port/service/dashboard, etc.
 	    final Context context = new Context(server, "/service", Context.SESSIONS);
 	    context.addServlet(new ServletHolder(new DashboardServlet()), "/dashboard/*");
 	    context.addServlet(new ServletHolder(new TablesServlet()), "/tables/*");
 	    context.addServlet(new ServletHolder(new QueriesServlet()), "/queries/*");
-	      
+
 	    try {
 			server.start();
 		} catch (Exception e) {

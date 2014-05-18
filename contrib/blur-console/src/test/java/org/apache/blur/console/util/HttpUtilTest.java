@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Locale;
 
 import javax.servlet.ServletOutputStream;
@@ -104,7 +105,7 @@ public class HttpUtilTest {
 		public void flushBuffer() throws IOException {}
 		@Override
 		public void setStatus(int sc, String sm) {}
-		@Override
+        @Override
 		public void setIntHeader(String name, int value) {}
 		@Override
 		public void setHeader(String name, String value) {}

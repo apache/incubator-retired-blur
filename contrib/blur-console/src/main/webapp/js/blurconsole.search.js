@@ -189,7 +189,7 @@ blurconsole.search = (function () {
 			familyMarkup += '<div class="panel panel-default"><div class="panel-heading">';
 			familyMarkup += '<h4 class="panel-title"><a data-toggle="collapse" data-parent="#results" href="#' + famId + '">' + fam + '</a></h4></div>';
 			familyMarkup += '<div id="' + famId + '" class="panel-collapse collapse' + (parsedFamilies.indexOf(fam) >= 0 ? ' in' : '') + '">';
-			familyMarkup += '<div class="panel-body"><img src="images/ajax-loader.gif"></div></div></div>';
+			familyMarkup += '<div class="panel-body"><img src="img/ajax-loader.gif"></div></div></div>';
 		});
 
 		jqueryMap.$resultsHolder.html(familyMarkup);

@@ -1,0 +1,96 @@
+<!--
+
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+ -->
+
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Blur Console</title>
+        <meta name="description" content="System Monitor and Console for Blur">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" href="css/blurconsole.css">
+        <script src="libs/modernizr/modernizr.js"></script>
+
+    </head>
+    <body>
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+            <a class="navbar-brand" href="#">Blur Console</a>
+
+        </nav>
+        <nav class="side-nav">
+            <ul>
+                <li title="Dashboard" data-toggle="tooltip" data-placement="right" data-container="body">
+                    <a href="#/dashboard"><i class="glyphicon glyphicon-dashboard"></i></a>
+                </li>
+                <li title="Tables" data-toggle="tooltip" data-placement="right" data-container="body">
+                    <a href="#/tables"><i class="glyphicon glyphicon-list"></i></a>
+                </li>
+                <li title="Queries" data-toggle="tooltip" data-placement="right" data-container="body">
+                    <a href="#/queries"><i class="glyphicon glyphicon-tasks"></i></a>
+                </li>
+                <li title="Search" data-toggle="tooltip" data-placement="right" data-container="body">
+                    <a href="#/search"><i class="glyphicon glyphicon-search"></i></a>
+                </li>
+            </ul>
+        </nav>
+        <div id="blurconsole"></div>
+
+        <script src="libs/jquery/dist/jquery.js"></script>
+        <script src="js/utils/jquery.uriAnchor.js"></script>
+        <script src="js/utils/jquery.event.gevent.js"></script>
+
+        <!-- <script src="bower_components/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/affix.js"></script>
+        <script src="bower_components/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/alert.js"></script>
+        <script src="bower_components/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/dropdown.js"></script> -->
+        <script src="libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tooltip.js"></script>
+        <script src="libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/modal.js"></script>
+        <script src="libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/transition.js"></script>
+        <!-- <script src="bower_components/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/button.js"></script> -->
+        <script src="libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/popover.js"></script>
+        <!-- <script src="bower_components/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/carousel.js"></script>
+        <script src="bower_components/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/scrollspy.js"></script> -->
+        <script src="libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/collapse.js"></script>
+        <script src="libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tab.js"></script>
+        <script src="libs/flot/jquery.flot.js"></script>
+        <script src="libs/flot/jquery.flot.pie.js"></script>
+        <script src="libs/flot/jquery.flot.categories.js"></script>
+        <script src="libs/flot/jquery.flot.stack.js"></script>
+
+        <script src="js/blurconsole.js"></script>
+        <script src="js/blurconsole.utils.js"></script>
+        <script src="js/blurconsole.b_utils.js"></script>
+        <script src="js/blurconsole.shell.js"></script>
+        <script src="js/blurconsole.dashboard.js"></script>
+        <script src="js/blurconsole.tables.js"></script>
+        <script src="js/blurconsole.queries.js"></script>
+        <script src="js/blurconsole.search.js"></script>
+        <script src="js/blurconsole.schema.js"></script>
+        <script src="js/blurconsole.data.js"></script>
+        <script src="js/blurconsole.fake.js"></script>
+        <script src="js/blurconsole.model.js"></script>
+        <script type="text/javascript">
+            $(function () { blurconsole.initModule( $('#blurconsole') ); });
+        </script>
+</body>
+</html>

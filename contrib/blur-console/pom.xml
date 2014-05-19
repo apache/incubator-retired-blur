@@ -23,6 +23,7 @@
 
 	<groupId>org.apache.blur</groupId>
 	<artifactId>blur-console</artifactId>
+	<version>${projectVersion}</version>
 	<packaging>jar</packaging>
 	<name>Blur Console</name>
 

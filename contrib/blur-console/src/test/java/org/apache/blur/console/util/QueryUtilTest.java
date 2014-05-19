@@ -18,9 +18,7 @@
 package org.apache.blur.console.util;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 import org.apache.blur.console.ConsoleTestBase;
@@ -80,7 +78,7 @@ public class QueryUtilTest extends ConsoleTestBase {
 		
 		Record record = new Record("abcd", "fam0", Arrays.asList(new Column[]{ new Column("col0", "testvalue")}));
 		RecordMutation recordMutation = new RecordMutation(RecordMutationType.REPLACE_ENTIRE_RECORD, record);
-		RowMutation rowMutation = new RowMutation("queryUnitTable", "12345", false, RowMutationType.REPLACE_ROW, Arrays.asList(new RecordMutation[]{ recordMutation }), true);
+		RowMutation rowMutation = new RowMutation("queryUnitTable", "12345", RowMutationType.REPLACE_ROW, Arrays.asList(new RecordMutation[]{ recordMutation }));
 		client.mutate(rowMutation);
 	}
 	
@@ -88,12 +86,11 @@ public class QueryUtilTest extends ConsoleTestBase {
 	public void testGetQueryStatus() throws BlurException, IOException, TException {
 		Iface client = BlurClient.getClient(cluster.getControllerConnectionStr());
 		QueryUtil.getQueryStatus();
-		
 		BlurQuery query = new BlurQuery(
 				new Query("fam0.col0:*", true, ScoreType.SUPER, null, null), 
 				null, 
 				null, //new Selector(false, null, null, null, null, null, 0, 10, null), 
-				false, 0, 10, 1, 2000, UUID.randomUUID().toString(), "testUser", false, System.currentTimeMillis());
+				false, 0, 10, 1, 2000, UUID.randomUUID().toString(), "testUser", false, System.currentTimeMillis(),null,null);
 		client.query("queryUnitTable", query);
 		
 		QueryUtil.getQueryStatus();

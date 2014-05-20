@@ -268,6 +268,7 @@ under the License.
 						<exclude>**/src/main/resources*/license-notes.txt</exclude>
 						<exclude>**/src/main/resources*/NOTICE-bin.base.txt</exclude>
 						<exclude>**/src/main/resources*/NOTICE-bin.txt</exclude>
+						<exclude>**/src/main/resources*/notices/*.src</exclude>
 						
 						<!-- Default configuration files used by Blur -->
 						<exclude>**/src/main/scripts/conf/controllers</exclude>

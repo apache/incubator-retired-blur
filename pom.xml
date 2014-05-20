@@ -235,7 +235,8 @@ under the License.
 						<exclude>**/.idea/**</exclude>
 						<exclude>**/*.iml</exclude>
 						<exclude>**/target/**</exclude>
-                                                <exclude>**/build/**</exclude>
+            <exclude>**/build/**</exclude>
+            <exclude>**/.codio</exclude>
 						
 						<!-- These javascript libs are added at build time but are not included in the src -->
 						<exclude>**/src/main/webapp/libs/**</exclude>

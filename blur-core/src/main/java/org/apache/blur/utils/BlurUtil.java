@@ -159,14 +159,30 @@ public class BlurUtil {
   public static final Term PRIME_DOC_TERM = new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE);
 
   static class LoggerArgsState {
-    public LoggerArgsState(int size) {
-      _buffer = new ResetableTMemoryBuffer(size);
-      _tjsonProtocol = new TJSONProtocol(_buffer);
-    }
+
+    private static final int MAX_BUFFER_SIZE = 16384;
+    private static final int MAX_BUILDER_SIZE = 16384;
 
     TJSONProtocol _tjsonProtocol;
     ResetableTMemoryBuffer _buffer;
     StringBuilder _builder = new StringBuilder();
+    final int _size;
+
+    LoggerArgsState(int size) {
+      _size = size;
+      _buffer = new ResetableTMemoryBuffer(_size);
+      _tjsonProtocol = new TJSONProtocol(_buffer);
+    }
+
+    void reset() {
+      if (_buffer.getArray().length >= MAX_BUFFER_SIZE) {
+        _buffer = new ResetableTMemoryBuffer(_size);
+        _tjsonProtocol = new TJSONProtocol(_buffer);
+      }
+      if (_builder.length() >= MAX_BUILDER_SIZE) {
+        _builder = new StringBuilder();
+      }
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -276,6 +292,9 @@ public class BlurUtil {
           }
           Histogram histogram = histogramMap.get(name);
           histogram.update((end - start) / 1000);
+          if (loggerArgsState != null) {
+            loggerArgsState.reset();
+          }
         }
       }
 

@@ -17,19 +17,32 @@ package org.apache.blur.console.util;
  * limitations under the License.
  */
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.MiniCluster;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
+import org.apache.blur.utils.GCWatcher;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocalFileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.fs.permission.FsPermission;
 
 public class Config {
+	private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/mini-cluster"));
+	
 	private static int port = 8080;
 	private static BlurConfiguration blurConfig;
 	private static ZookeeperClusterStatus zk;
 	private static String blurConnection;
+	private static MiniCluster cluster;
 
 	public static int getConsolePort() {
 		return port;
@@ -39,7 +52,12 @@ public class Config {
 	}
 	
 	public static void setupConfig() throws IOException {
-		blurConfig = new BlurConfiguration();
+		if (cluster == null) {
+			blurConfig = new BlurConfiguration();
+		} else {
+			blurConfig = new BlurConfiguration(false);
+			blurConfig.set("blur.zookeeper.connection", cluster.getZkConnectionString());
+		}
 		zk = new ZookeeperClusterStatus(blurConfig.get("blur.zookeeper.connection"), blurConfig);
 		blurConnection = buildConnectionString();
 	}
@@ -56,5 +74,39 @@ public class Config {
 		List<String> allControllers = new ArrayList<String>();
 		allControllers = zk.getControllerServerList();
 		return StringUtils.join(allControllers, ",");
+	}
+	
+	public static void shutdownMiniCluster() throws IOException {
+		if (cluster != null) {
+			cluster.shutdownBlurCluster();
+			File file = new File(TMPDIR, "blur-cluster-test");
+			if (file.exists()) {
+				FileUtils.deleteDirectory(file);
+			}
+		}
+	}
+	
+	
+	public static void setupMiniCluster() throws IOException {
+		GCWatcher.init(0.60);
+	    LocalFileSystem localFS = FileSystem.getLocal(new Configuration());
+	    File testDirectory = new File(TMPDIR, "blur-cluster-test").getAbsoluteFile();
+	    testDirectory.mkdirs();
+
+	    Path directory = new Path(testDirectory.getPath());
+	    FsPermission dirPermissions = localFS.getFileStatus(directory).getPermission();
+	    FsAction userAction = dirPermissions.getUserAction();
+	    FsAction groupAction = dirPermissions.getGroupAction();
+	    FsAction otherAction = dirPermissions.getOtherAction();
+
+	    StringBuilder builder = new StringBuilder();
+	    builder.append(userAction.ordinal());
+	    builder.append(groupAction.ordinal());
+	    builder.append(otherAction.ordinal());
+	    String dirPermissionNum = builder.toString();
+	    System.setProperty("dfs.datanode.data.dir.perm", dirPermissionNum);
+	    testDirectory.delete();
+	    cluster = new MiniCluster();
+	    cluster.startBlurCluster(new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true);
 	}
 }

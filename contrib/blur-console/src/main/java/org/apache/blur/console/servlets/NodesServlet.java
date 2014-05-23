@@ -22,41 +22,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.blur.console.util.HttpUtil;
 import org.apache.blur.console.util.NodeUtil;
-import org.apache.blur.console.util.QueryUtil;
-import org.apache.blur.console.util.TableUtil;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
-public class DashboardServlet extends HttpServlet {
+public class NodesServlet extends BaseConsoleServlet {
 	private static final long serialVersionUID = 6522056391102413432L;
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String path = request.getPathInfo();
-		if ("/node/status".equalsIgnoreCase(path)) {
+		if (path == null) {
 			sendNodeStatus(response);
-		} else if ("/table/status".equalsIgnoreCase(path)) {
-			sendTableStatus(response);
-		} else if ("/query/status".equalsIgnoreCase(path)) {
-			sendQueryStatus(response);
 		} else {
 			response.setStatus(404);
 			IOUtils.write("Route [" + path + "] doesn't exist", response.getOutputStream());
 		}
-	}
-	
-	private void sendError(HttpServletResponse response, Exception e) throws IOException {
-		String body = e.getMessage();
-		response.setContentType("application/json");
-		response.setContentLength(body.getBytes().length);
-		response.setStatus(500);
-		IOUtils.write(body, response.getOutputStream());
 	}
 
 	private void sendNodeStatus(HttpServletResponse response) throws IOException {
@@ -74,35 +59,5 @@ public class DashboardServlet extends HttpServlet {
 		}
 
 		HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(nodeData), HttpUtil.JSON);
-	}
-	
-	private void sendTableStatus(HttpServletResponse response) throws IOException {
-		Map<String, Object> tableData = new HashMap<String, Object>();
-
-		try {
-			tableData = TableUtil.getTableStatus();
-		} catch (IOException e) {
-			throw new IOException(e);
-		} catch (Exception e) {
-			sendError(response, e);
-			return;
-		}
-
-		HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(tableData), HttpUtil.JSON);
-	}
-	
-	private void sendQueryStatus(HttpServletResponse response) throws IOException {
-		Map<String, Object> queryData = new HashMap<String, Object>();
-
-		try {
-			queryData = QueryUtil.getQueryStatus();
-		} catch (IOException e) {
-			throw new IOException(e);
-		} catch (Exception e) {
-			sendError(response, e);
-			return;
-		}
-
-		HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(queryData), HttpUtil.JSON);
 	}
 }

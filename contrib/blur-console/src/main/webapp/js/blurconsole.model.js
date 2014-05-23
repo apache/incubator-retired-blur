@@ -30,7 +30,7 @@ blurconsole.model = (function() {
 			queryPerformance : [],
 			queries : {}
 		},
-		tables, metrics, nodes, queries, search, initModule, nodePoller, tablePoller, queryPerformancePoller, queryPoller;
+		tables, metrics, nodes, queries, search, initModule, nodePoller, updateNodes, tablePoller, updateTables, queryPerformancePoller, updateQueryPerformance, queryPoller, updateQueries;
 
 	tables = (function() {
 		var getClusters, getEnabledTables, getDisabledTables, isDataLoaded, disableTable, enableTable, deleteTable, getSchema, findTerms, getAllEnabledTables, getFamilies;
@@ -95,8 +95,8 @@ blurconsole.model = (function() {
 			configMap.poller.deleteTable(tableName, includeFiles);
 		};
 
-		getSchema = function(tableName) {
-			return configMap.poller.getSchema(tableName);
+		getSchema = function(tableName, callback) {
+			configMap.poller.getSchema(tableName, callback);
 		};
 
 		getFamilies = function(tableName) {
@@ -330,7 +330,7 @@ blurconsole.model = (function() {
 			return queries;
 		};
 
-		cancelQuery = function(uuid) {
+		cancelQuery = function(table, uuid) {
 			configMap.poller.cancelQuery(uuid);
 		};
 
@@ -427,37 +427,50 @@ blurconsole.model = (function() {
 	}());
 
 	nodePoller = function() {
-		var tmpNodeMap = configMap.poller.getNodeList();
-		if (!blurconsole.utils.equals(tmpNodeMap, stateMap.nodeMap)) {
-			stateMap.nodeMap = tmpNodeMap;
+		configMap.poller.getNodeList(updateNodes);
+	};
+
+	updateNodes = function(nodes) {
+		if (!blurconsole.utils.equals(nodes, stateMap.nodeMap)) {
+			stateMap.nodeMap = nodes;
 			$.gevent.publish('node-status-updated');
 		}
 		setTimeout(nodePoller, 5000);
 	};
 
 	tablePoller = function() {
-		var tmpTableMap = configMap.poller.getTableList();
-		if (!blurconsole.utils.equals(tmpTableMap, stateMap.tableNameMap)) {
-			stateMap.tableNameMap = tmpTableMap;
+		configMap.poller.getTableList(updateTables);
+	};
+
+	updateTables = function(tables) {
+		if (!blurconsole.utils.equals(tables, stateMap.tableNameMap)) {
+			stateMap.tableNameMap = tables;
 			$.gevent.publish('tables-updated');
 		}
 		setTimeout(tablePoller, 5000);
 	};
 
 	queryPerformancePoller = function() {
+		configMap.poller.getQueryPerformance(updateQueryPerformance);
+	};
+
+	updateQueryPerformance = function(performanceMetric) {
 		if (stateMap.queryPerformance.length === 100) {
 			stateMap.queryPerformance.shift();
 		}
 
-		stateMap.queryPerformance.push(configMap.poller.getQueryPerformance());
+		stateMap.queryPerformance.push(performanceMetric);
 		$.gevent.publish('query-perf-updated');
 		setTimeout(queryPerformancePoller, 5000);
 	};
 
 	queryPoller = function() {
-		var tmpQueries = configMap.poller.getQueries();
-		if (!blurconsole.utils.equals(tmpQueries, stateMap.queries)) {
-			stateMap.queries = tmpQueries;
+		configMap.poller.getQueries(updateQueries);
+	};
+
+	updateQueries = function(queries) {
+		if (!blurconsole.utils.equals(queries, stateMap.queries)) {
+			stateMap.queries = queries;
 			$.gevent.publish('queries-updated');
 		}
 		setTimeout(queryPoller, 5000);

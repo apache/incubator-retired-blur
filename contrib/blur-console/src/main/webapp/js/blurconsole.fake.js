@@ -21,9 +21,9 @@ under the License.
 blurconsole.fake = (function() {
 	'use strict';
 	var getTableList, getNodeList, getQueryPerformance, getQueries, cancelQuery, disableTable, enableTable, deleteTable, getSchema, findTerms, sendSearch,
-		randomNumber, randomBoolean, randomString;
+		buildSchema, randomNumber, randomBoolean, randomString;
 
-	getTableList = function() {
+	getTableList = function(callback) {
 		console.log('getting fake table list');
 		var clusters = ['prodA', 'prodB'], data = [], i, cluster, rows, records, enabled;
 
@@ -33,13 +33,16 @@ blurconsole.fake = (function() {
 			records = randomNumber(10000)+1000;
 			enabled = randomBoolean();
 
-			data.push({cluster:cluster, name:'testtable'+i, enabled:enabled, rows:rows, records:records, families: blurconsole.utils.keys(getSchema('testtable'+i))});
+			data.push({cluster:cluster, name:'testtable'+i, enabled:enabled, rows:rows, records:records, families: blurconsole.utils.keys(buildSchema())});
 
 		}
-		return data;
+
+		setTimeout(function() {
+			callback(data);
+		}, randomNumber(1000));
 	};
 
-	getNodeList = function() {
+	getNodeList = function(callback) {
 		console.log('getting fake node list');
 		var controllers = {online:[], offline:[]},
 			clusters = [{name:'prodA', online:[], offline:[]}, {name:'prodB', online:[], offline:[]}],
@@ -60,15 +63,21 @@ blurconsole.fake = (function() {
 				zookeepers.offline.push('zookeeper' + i + '.localhost');
 			}
 		}
-		return {controllers: controllers, clusters: clusters, zookeepers: zookeepers};
+
+		setTimeout(function(){
+			callback({controllers: controllers, clusters: clusters, zookeepers: zookeepers});
+		}, randomNumber(1000));
 	};
 
-	getQueryPerformance = function() {
+	getQueryPerformance = function(callback) {
 		console.log('getting fake query performance');
-		return randomNumber(1000);
+
+		setTimeout(function(){
+			callback(randomNumber(1000));
+		}, randomNumber(1000));
 	};
 
-	getQueries = function() {
+	getQueries = function(callback) {
 		console.log('getting fake queries');
 		var queries = [];
 
@@ -80,18 +89,20 @@ blurconsole.fake = (function() {
 				table: 'testtable' + randomNumber(5, true),
 				state: randomNumber(3, true),
 				percent: randomNumber(100, true),
-				startTime: new Date()
+				startTime: new Date().getTime()
 			});
 		}
 
-		return {
-			slowQueries : randomNumber(100) % 10 === 0,
-			queries : queries
-		};
+		setTimeout(function(){
+			callback({
+				slowQueries : randomNumber(100) % 10 === 0,
+				queries : queries
+			});
+		}, randomNumber(1000));
 	};
 
-	cancelQuery = function(uuid) {
-		console.log('Fake sending request to cancel query [' + uuid + ']');
+	cancelQuery = function(table, uuid) {
+		console.log('Fake sending request to cancel query [' + uuid + '] on table [' + table + ']');
 	};
 
 	disableTable = function(table) {
@@ -106,8 +117,14 @@ blurconsole.fake = (function() {
 		console.log('Fake sending request to delete table [' + table + '] with files [' + includeFiles + ']');
 	};
 
-	getSchema = function(table) {
+	getSchema = function(table, callback) {
 		console.log('getting fake schema for table [' + table + ']');
+		setTimeout(function() {
+			callback(buildSchema());
+		}, randomNumber(1000));
+	};
+
+	buildSchema = function() {
 		var f, schema = {}, familyCount = randomNumber(20), types = ['string', 'long', 'int', 'date', 'stored', 'customType'];
 
 		for(f=0; f < familyCount; f++) {
@@ -129,7 +146,6 @@ blurconsole.fake = (function() {
 			}
 			schema['fam'+f] = fam;
 		}
-
 		return schema;
 	};
 
@@ -174,7 +190,7 @@ blurconsole.fake = (function() {
 		});
 
 		callback({
-			families: args.families,
+			families: fams,
 			results: results,
 			total: total
 		});

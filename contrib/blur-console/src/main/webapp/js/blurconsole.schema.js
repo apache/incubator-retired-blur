@@ -55,13 +55,16 @@ blurconsole.schema = (function () {
 		},
 		stateMap = {},
 		jqueryMap = {},
-		initModule, showSchema, buildTreeSection, buildInfoSection, viewTerms, findTerms, loadTerms, switchToSearch;
+		initModule, showSchema, popupSchemaView, buildTreeSection, buildInfoSection, viewTerms, findTerms, loadTerms, switchToSearch;
 
 	showSchema = function(event, table) {
 		stateMap.table = table;
 		stateMap.modalId = stateMap.table + '_modal';
-		stateMap.schema = blurconsole.model.tables.getSchema(stateMap.table);
+		blurconsole.model.tables.getSchema(stateMap.table, popupSchemaView);
+	};
 
+	popupSchemaView = function(schema) {
+		stateMap.schema = schema;
 		jqueryMap.contentHolder = $(configMap.mainHtml);
 		jqueryMap.contentHolder.find('.schemaList').html(buildTreeSection());
 		jqueryMap.contentHolder.find('.schemaColumnInfo').append(buildInfoSection());
@@ -120,6 +123,7 @@ blurconsole.schema = (function () {
 			$.each(cols, function(col, def){
 				var colId = blurconsole.browserUtils.cleanId(col);
 				info += '<div class="schemaColumnDef" id="' + famId + '_' + colId + '"><ul class="list-group">';
+				info += '<li class="list-group-item"><strong>Field Name:</strong> ' + col + '</li>';
 				info += '<li class="list-group-item"><strong>Fieldless Searching:</strong> ' + blurconsole.browserUtils.booleanImg(def.fieldLess) + '</li>';
 				info += '<li class="list-group-item"><strong>Field Type:</strong> ' + def.type + '</li>';
 				if (def.extra) {
@@ -165,7 +169,8 @@ blurconsole.schema = (function () {
 			tab: 'search',
 			_tab: {
 				query: encodeURIComponent(stateMap.termFamily + '.' + stateMap.termColumn + ':' + $(this).data('value')),
-				table: $(this).data('table')
+				table: $(this).data('table'),
+				rr: 'rowrow'
 			}
 		});
 		jqueryMap.modal.modal('hide');

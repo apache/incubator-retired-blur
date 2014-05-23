@@ -17,10 +17,9 @@ package org.apache.blur.console;
  * limitations under the License.
  */
 
-import java.net.URL;
-
-import org.apache.blur.console.servlets.DashboardServlet;
+import org.apache.blur.console.servlets.NodesServlet;
 import org.apache.blur.console.servlets.QueriesServlet;
+import org.apache.blur.console.servlets.SearchServlet;
 import org.apache.blur.console.servlets.TablesServlet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,16 +28,21 @@ import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.webapp.WebAppContext;
 
+import java.net.URL;
+
 public class JettyServer {
-	private final static String WEBAPPDIR = "org/apache/blur/console/webapp";
+	private final static String DEV_WEBAPPDIR = "../classes/";
+	private final static String PROD_WEBAPPDIR = "webapp/";
 	private final static String CONTEXTPATH = "/console";
 	private final Log log = LogFactory.getLog(JettyServer.class);
 		
 	private int port;
 	private Server server;
+	private boolean devMode;
 	
-	public JettyServer(int port) {
+	public JettyServer(int port, boolean devMode) {
 		this.port = port;
+		this.devMode = devMode;
 	}
 	
 	public JettyServer start() {
@@ -58,15 +62,16 @@ public class JettyServer {
 		server = new Server(port);
 		
 		// for localhost:port/console/index.html and whatever else is in the webapp directory
-	    final URL warUrl = this.getClass().getClassLoader().getResource(WEBAPPDIR);
+	    final URL warUrl = devMode ? this.getClass().getClassLoader().getResource(DEV_WEBAPPDIR) : this.getClass().getClassLoader().getResource(PROD_WEBAPPDIR);
 	    final String warUrlString = warUrl.toExternalForm();
 	    server.setHandler(new WebAppContext(warUrlString, CONTEXTPATH));
 
 	    // for localhost:port/service/dashboard, etc.
 	    final Context context = new Context(server, "/service", Context.SESSIONS);
-	    context.addServlet(new ServletHolder(new DashboardServlet()), "/dashboard/*");
+	    context.addServlet(new ServletHolder(new NodesServlet()), "/nodes/*");
 	    context.addServlet(new ServletHolder(new TablesServlet()), "/tables/*");
 	    context.addServlet(new ServletHolder(new QueriesServlet()), "/queries/*");
+	    context.addServlet(new ServletHolder(new SearchServlet()), "/search/*");
 
 	    try {
 			server.start();

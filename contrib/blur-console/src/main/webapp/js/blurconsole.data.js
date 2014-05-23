@@ -20,4 +20,90 @@ under the License.
 /*global blurconsole:false */
 blurconsole.data = (function() {
 	'use strict';
+	var getTableList, getNodeList, getQueryPerformance, getQueries, cancelQuery, disableTable, enableTable, deleteTable, getSchema, findTerms, sendSearch;
+
+	getTableList = function(callback) {
+		$.getJSON('/service/tables', callback);
+	};
+
+	getNodeList = function(callback) {
+		$.getJSON('/service/nodes', callback);
+	};
+
+	getQueryPerformance = function(callback) {
+		$.getJSON('/service/queries/performance', callback);
+	};
+
+	getQueries = function(callback) {
+		$.getJSON('/service/queries', callback);
+	};
+
+	cancelQuery = function(table, uuid) {
+		$.ajax('/service/queries/' + uuid + '/cancel', {
+			data: {
+				table: table
+			},
+			error: function(xhr, msg) {
+				$.gevent.publish('query-cancel-error', uuid, msg);
+			}
+		});
+	};
+
+	disableTable = function(table) {
+		$.ajax('/service/tables/' + table + '/disable', {
+			error: function(xhr, msg) {
+				$.gevent.publish('table-disable-error', table, msg);
+			}
+		});
+	};
+
+	enableTable = function(table) {
+		$.ajax('/service/tables/' + table + '/enable', {
+			error: function(xhr, msg) {
+				$.gevent.publish('table-enable-error', table, msg);
+			}
+		});
+	};
+
+	deleteTable = function(table, includeFiles) {
+		$.ajax('/service/tables/' + table + '/delete', {
+			data: {
+				includeFiles: includeFiles
+			},
+			error: function(xhr, msg) {
+				$.gevent.publish('table-delete-error', table, msg);
+			}
+		});
+	};
+
+	getSchema = function(table, callback) {
+		$.getJSON('/service/tables/' + table + '/schema', callback);
+	};
+
+	findTerms = function(table, family, column, startsWith, callback) {
+		$.getJSON('/service/tables/' + table + '/' + family + '/' + column + '/terms', {startsWith: startsWith}, callback);
+	};
+
+	sendSearch = function(query, table, args, callback) {
+		var params = $.extend({table:table, query:query}, args);
+		$.ajax('/service/search', {
+			'type': 'POST',
+			'data': params,
+			'success': callback
+		});
+	};
+
+	return {
+		getTableList : getTableList,
+		getNodeList : getNodeList,
+		getQueryPerformance : getQueryPerformance,
+		getQueries : getQueries,
+		cancelQuery : cancelQuery,
+		disableTable : disableTable,
+		enableTable : enableTable,
+		deleteTable : deleteTable,
+		getSchema : getSchema,
+		findTerms : findTerms,
+		sendSearch : sendSearch
+	};
 }());

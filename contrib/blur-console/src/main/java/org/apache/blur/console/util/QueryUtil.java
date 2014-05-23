@@ -19,129 +19,77 @@ package org.apache.blur.console.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
-import org.apache.blur.thrift.generated.CpuTime;
-import org.apache.blur.thrift.generated.QueryState;
+import org.apache.blur.thrift.generated.Status;
 
 public class QueryUtil {
 	
-	/**
-	 * {
-	 * 	clusters: ['prodA', 'prodB'],
-	 * 	counts: {
-	 * 		'prodA':{
-	 * 			timeToTheMinute: count
-	 *  	}
-	 *  },
-	 *  performance: {
-	 *  	'prodA':{
-	 *  		timeToTheMinute: avgCpuTime
-	 *  	}
-	 *  },
-	 *  slowQueries: count
-	 * }
-	 */
-	public static Map<String, Object> getQueryStatus() throws IOException, BlurException, TException {
+	public static int getCurrentQueryCount() throws IOException, BlurException, TException {
 		Iface client = BlurClient.getClient(Config.getConnectionString());
 		
-		Map<String, Object> queryStatus = new HashMap<String, Object>();
+		int count = 0;
+		List<String> tableList = client.tableList();
+		for (String table : tableList) {
+			List<String> queries = client.queryStatusIdList(table);
+			count += queries.size();
+		}
 		
-		List<String> clusters = client.shardClusterList();
-		queryStatus.put("clusters", clusters);
+		return count;
+	}
+	
+	public static Map<String, Object> getQueries() throws BlurException, TException, IOException {
+		Map<String, Object> queriesInfo = new HashMap<String, Object>();
 		
-		Integer slowQueries = 0;
+		int slow = 0;
 		
-		Calendar slowThreshold = Calendar.getInstance();
-		slowThreshold.add(Calendar.MINUTE, -1);
+		List<Map<String, Object>> queries = new ArrayList<Map<String,Object>>();
 		
-		Map<String, Map<Long, Long>> queryCounts = new HashMap<String, Map<Long, Long>>();
-		Map<String, Map<Long, Double>> queryPerformances = new HashMap<String, Map<Long, Double>>();
+		Iface client = BlurClient.getClient(Config.getConnectionString());
+		List<String> tableList = client.tableList();
 		
-		for (String cluster : clusters) {
-			List<String> tables = client.tableListByCluster(cluster);
-
-			Map<Long, List<Double>> queryPerfs = new TreeMap<Long, List<Double>>();
-			Map<Long, Long> clusterQueries = new TreeMap<Long,Long>();
-			
-			for (String table : tables) {
-				if (client.describe(table).isEnabled()) {
-					List<String> queryIds = client.queryStatusIdList(table);				
+		for (String table : tableList) {
+			List<String> queriesForTable = client.queryStatusIdList(table);
+			for (String id : queriesForTable) {
+				BlurQueryStatus status = client.queryStatusById(table, id);
+				
+				if (Status.FOUND.equals(status.getStatus())) {
+					Map<String, Object> info = new HashMap<String, Object>();
+					info.put("uuid", id);
+					info.put("user", status.getQuery().getUserContext());
+					info.put("query", status.getQuery().getQuery().getQuery());
+					info.put("table", table);
+					info.put("state", status.getState().getValue());
+					info.put("percent", ((double)status.getCompleteShards())/((double)status.getTotalShards())*100);
 					
-					if (queryIds.isEmpty()) {
-						Calendar cal = Calendar.getInstance();
-						cal.set(Calendar.SECOND, 0);
-						cal.set(Calendar.MILLISECOND, 0);
-						clusterQueries.put(cal.getTimeInMillis(), 0L);
-						queryPerfs.put(cal.getTimeInMillis(), new ArrayList<Double>(Arrays.asList(new Double[]{0.0})));
-					} else {
-						for (String queryId : queryIds) {
-							BlurQueryStatus status = client.queryStatusById(table, queryId);
-							
-							Calendar cal = Calendar.getInstance();
-							cal.setTimeInMillis(status.getQuery().getStartTime());
-							cal.set(Calendar.SECOND, 0);
-							cal.set(Calendar.MILLISECOND, 0);
-							
-							if (QueryState.RUNNING.equals(status.getState()) && cal.getTimeInMillis() < slowThreshold.getTimeInMillis()) {
-								slowQueries++;
-							}
-							
-							incrementQueryCount(clusterQueries, cal);
-							collectQueryPerformance(queryPerfs, cal, status);
-						}
+					
+					long startTime = status.getQuery().getStartTime();
+					info.put("startTime", startTime);
+					queries.add(info);
+					
+					if (System.currentTimeMillis() - startTime > 60000) {
+						slow++;
 					}
 				}
 			}
-			Map<Long, Double> clusterQueryPerfs = new TreeMap<Long,Double>();
-			for (Map.Entry<Long, List<Double>> perfEntry : queryPerfs.entrySet()) {
-				double sum = 0.0;
-				for (Double perf : perfEntry.getValue()) {
-					sum += perf;
-				}
-				clusterQueryPerfs.put(perfEntry.getKey(), (sum/perfEntry.getValue().size()));
-			}
-			
-			queryCounts.put(cluster, clusterQueries);
-			queryPerformances.put(cluster, clusterQueryPerfs);
 		}
 		
-		queryStatus.put("counts", queryCounts);
-		queryStatus.put("performance", queryPerformances);
-		queryStatus.put("slowQueries", slowQueries);
+		queriesInfo.put("slowQueries", slow);
+		queriesInfo.put("queries", queries);
 		
-		return queryStatus;
+		return queriesInfo;
 	}
 	
-	private static void incrementQueryCount(Map<Long, Long> queries, Calendar cal) {
-		Long previousCount = queries.get(cal.getTimeInMillis());
-		if (previousCount == null) {
-			previousCount = 0L;
-		}
+	public static void cancelQuery(String table, String uuid) throws IOException, BlurException, TException {
+		Iface client = BlurClient.getClient(Config.getConnectionString());
 		
-		queries.put(cal.getTimeInMillis(), previousCount + 1);
-	}
-	
-	private static void collectQueryPerformance(Map<Long, List<Double>> queries, Calendar cal, BlurQueryStatus status) {
-		List<Double> perfs = queries.get(cal.getTimeInMillis());
-		if (perfs == null) {
-			perfs = new ArrayList<Double>();
-			queries.put(cal.getTimeInMillis(), perfs);
-		}
-		
-		Map<String, CpuTime> cpuTimes = status.getCpuTimes();
-		for (CpuTime cpu : cpuTimes.values()) {
-			perfs.add(cpu.getRealTime()/1000000.0);
-		}
+		client.cancelQuery(table, uuid);
 	}
 }

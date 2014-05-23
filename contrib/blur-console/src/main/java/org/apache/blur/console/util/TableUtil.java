@@ -22,9 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
-import org.apache.blur.console.model.Column;
-import org.apache.blur.console.model.Family;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -35,119 +34,64 @@ import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
 
 public class TableUtil {
-	public static Map<String, Object> getTableStatus() throws IOException, BlurException, TException {
-		Iface client = BlurClient.getClient(Config.getConnectionString());
-		
-		List<String> clusters = client.shardClusterList();
-
-		Map<String, Object> data = new HashMap<String, Object>();
-		List<Map<String, Object>> clusterInfo = new ArrayList<Map<String,Object>>();
-		
-		int clusterCount = 0;
-		for (String cluster : clusters) {
-			Map<String, Object> clusterObj = new HashMap<String, Object>();
-			clusterObj.put("name", cluster);
-
-			List<String> tables = client.tableListByCluster(cluster);
-			
-			List<String> enabledTables = new ArrayList<String>();
-			List<String> disabledTables = new ArrayList<String>();
-			int enabledCount = 0;
-			int disabledCount = 0;
-			
-			for (String table : tables) {
-				boolean enabled = client.describe(table).isEnabled();
-				
-				if (enabled) {
-					enabledTables.add(table);
-					enabledCount++;
-				} else {
-					disabledTables.add(table);
-					disabledCount++;
-				}
-			}
-			
-			clusterObj.put("enabled", enabledTables);
-			clusterObj.put("disabled", disabledTables);
-			
-			List<Object> e = new ArrayList<Object>();
-			e.add(clusterCount);
-			e.add(enabledCount);
-			
-			List<Object> d = new ArrayList<Object>();
-			d.add(clusterCount);
-			d.add(disabledCount);
-
-			clusterInfo.add(clusterObj);
-			clusterCount++;
-		}
-		
-		data.put("tables", clusterInfo);
-		
-		return data;
-	}
 	
-	public static Map<String, Object> getTableSummaries() throws IOException, BlurException, TException {
+	public static List<Map<String, Object>> getTableSummaries() throws IOException, BlurException, TException {
 		Iface client = BlurClient.getClient(Config.getConnectionString());
 		
-		Map<String, List<Map<String, Object>>> tablesByCluster = new HashMap<String, List<Map<String,Object>>>();
+		List<Map<String, Object>> summaries = new ArrayList<Map<String, Object>>();
 		
 		List<String> clusters = client.shardClusterList();
 		
 		for (String cluster : clusters) {
 			List<String> tables = client.tableListByCluster(cluster);
-			List<Map<String, Object>> tableList = new ArrayList<Map<String,Object>>();
 			for (String table : tables) {
 				Map<String, Object> tableInfo = new HashMap<String, Object>();
-				
 				TableDescriptor descriptor = client.describe(table);
 				
+				tableInfo.put("cluster", cluster);
 				tableInfo.put("name", table);
 				tableInfo.put("enabled", descriptor.isEnabled());
 				
 				if (descriptor.isEnabled()) {
 					TableStats stats = client.tableStats(table);
-					tableInfo.put("rowCount", stats.getRowCount());
-					tableInfo.put("recordCount", stats.getRecordCount());
+					tableInfo.put("rows", stats.getRowCount());
+					tableInfo.put("records", stats.getRecordCount());
+					
+					Schema schema = client.schema(table);
+					tableInfo.put("families", new ArrayList<String>(schema.getFamilies().keySet()));
+				} else {
+					tableInfo.put("rows", "?");
+					tableInfo.put("records", "?");
+					tableInfo.put("families", new ArrayList<String>());
 				}
 				
-				tableList.add(tableInfo);
+				summaries.add(tableInfo);
 			}
-			tablesByCluster.put(cluster, tableList);
 		}
 		
-		Map<String, Object> data = new HashMap<String, Object>();
-		
-		data.put("clusters", clusters);
-		data.put("tables", tablesByCluster);
-		
-		return data;
+		return summaries;
 	}
 	
-	public static Object getSchema(String table) throws IOException, BlurException, TException {
+	public static Map<String, Map<String, Map<String, Object>>> getSchema(String table) throws IOException, BlurException, TException {
 		Iface client = BlurClient.getClient(Config.getConnectionString());
 		
 		Schema schema = client.schema(table);
 		
-		List<Family> schemaList = new ArrayList<Family>();
+		Map<String, Map<String, Map<String, Object>>> schemaInfo = new TreeMap<String, Map<String,Map<String, Object>>>();
 		for (Map.Entry<String, Map<String, ColumnDefinition>> famEntry : schema.getFamilies().entrySet()) {
-			Family family = new Family(famEntry.getKey());
-			List<Column> columns = new ArrayList<Column>();
-			family.setColumns(columns);
+			Map<String, Map<String, Object>> columns = new TreeMap<String, Map<String, Object>>();
 			for(Map.Entry<String, ColumnDefinition> colEntry : famEntry.getValue().entrySet()) {
+				Map<String, Object> info = new HashMap<String, Object>();
 				ColumnDefinition def = colEntry.getValue();
-				
-				Column column = new Column(colEntry.getKey());
-				column.setFullTextIndexed(def.isFieldLessIndexed());
-				column.setSubColumn(def.getSubColumnName());
-				column.setType(def.getFieldType());
-				column.setProps(def.getProperties());
-				columns.add(column);
+				info.put("fieldLess", def.isFieldLessIndexed());
+				info.put("type", def.getFieldType());
+				info.put("extra", def.getProperties());
+				columns.put(colEntry.getKey(), info);
 			}
-			schemaList.add(family);
+			schemaInfo.put(famEntry.getKey(), columns);
 		}
 		
-		return schemaList;
+		return schemaInfo;
 	}
 	
 	public static List<String> getTerms(String table, String family, String column, String startWith) throws IOException, BlurException, TException {

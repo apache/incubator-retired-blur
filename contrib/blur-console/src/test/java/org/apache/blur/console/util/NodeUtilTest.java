@@ -19,6 +19,7 @@ package org.apache.blur.console.util;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -39,10 +40,8 @@ public class NodeUtilTest extends ConsoleTestBase {
 	public void testGetControllerStatus() throws BlurException, IOException, TException {
 		Map<String, Object> nodeStatus = NodeUtil.getControllerStatus();
 		
-		List<Map<String, int[][]>> chartData = (List<Map<String, int[][]>>) nodeStatus.get("chart");
-		
-		assertEquals(1, chartData.get(0).get("data")[0][1]);
-		assertEquals(0, chartData.get(1).get("data")[0][1]);
+		assertEquals(2, ((List<String>) nodeStatus.get("online")).size());
+		assertEquals(0, ((List<String>) nodeStatus.get("offline")).size());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -50,10 +49,8 @@ public class NodeUtilTest extends ConsoleTestBase {
 	public void testGetZookeeperStatus() throws BlurException, IOException, TException {
 		Map<String, Object> nodeStatus = NodeUtil.getZookeeperStatus();
 		
-		List<Map<String, int[][]>> chartData = (List<Map<String, int[][]>>) nodeStatus.get("chart");
-		
-		assertEquals(1, chartData.get(0).get("data")[0][1]);
-		assertEquals(0, chartData.get(1).get("data")[0][1]);
+		assertEquals(0, ((HashSet<String>) nodeStatus.get("online")).size());
+		assertEquals(1, ((HashSet<String>) nodeStatus.get("offline")).size());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -61,9 +58,7 @@ public class NodeUtilTest extends ConsoleTestBase {
 	public void testGetClusterStatus() throws BlurException, IOException, TException {
 		List<Map<String, Object>> nodeStatus = NodeUtil.getClusterStatus();
 		
-		List<Map<String, int[][]>> chartData = (List<Map<String, int[][]>>) nodeStatus.get(0).get("chart");
-		
-		assertEquals(0, chartData.get(0).get("data")[0][1]);
-		assertEquals(2, chartData.get(1).get("data")[0][1]);
+		assertEquals(3, ((List<String>) nodeStatus.get(0).get("online")).size());
+		assertEquals(0, ((List<String>) nodeStatus.get(0).get("offline")).size());
 	}
 }

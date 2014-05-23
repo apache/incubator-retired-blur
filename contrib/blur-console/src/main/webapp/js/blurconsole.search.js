@@ -134,7 +134,7 @@ blurconsole.search = (function () {
 
 		drawResultHolders();
 
-		blurconsole.model.search.runSearch(stateMap.$currentQuery, stateMap.$currentTable, {start: 0, fetch: 10});
+		blurconsole.model.search.runSearch(stateMap.$currentQuery, stateMap.$currentTable, {start: 0, fetch: 10, rowRecord: stateMap.$rowRecordOption});
 	};
 
 	getMoreData = function() {
@@ -213,8 +213,12 @@ blurconsole.search = (function () {
 				famId = '#' + blurconsole.browserUtils.cleanId(fam),
 				famHolder = $(famId + ' .panel-body'), table = '', cols;
 
-			cols = blurconsole.utils.keys(famResults[0]);
+			cols = blurconsole.utils.reject(blurconsole.utils.keys(famResults[0]), function(i) {
+				return i === 'rowid' || i === 'recordid';
+			});
 			cols.sort();
+
+			cols = ['rowid', 'recordid'].concat(cols);
 
 			table += '<table class="table table-condensed table-hover table-bordered"><thead><tr>';
 			$.each(cols, function(i, col) {

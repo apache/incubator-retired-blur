@@ -26,7 +26,10 @@ blurconsole.queries = (function () {
 		queryDef : [
 			{label:'User', key:'user'},
 			{label:'Query', key: 'query'},
-			{label:'Time Started', key: 'startTime'},
+			{label:'Time Started', key: function(row){
+				var start = new Date(row.startTime);
+				return start.toTimeString(); //start.getHours() + ':' + start.getMinutes() + ':' + start.getSeconds();
+			}},
 			{label:'State', key: function(row) {
 				var stateInfo = configMap.states[row.state];
 
@@ -38,7 +41,7 @@ blurconsole.queries = (function () {
 			{label:'Actions', key: function(row) {
 				var actions = '';
 				if (row.state === 0) {
-					actions += '<a href="#" class="cancelTrigger btn btn-danger" data-uuid="' + row.uuid + '" data-query="' + row.query + '"><i class="glyphicon glyphicon-ban-circle"></i> Cancel</a> ';
+					actions += '<a href="#" class="cancelTrigger btn btn-danger" data-uuid="' + row.uuid + '" data-query="' + row.query + '" data-table="' + row.table + '"><i class="glyphicon glyphicon-ban-circle"></i> Cancel</a> ';
 				}
 				return actions;
 			}}
@@ -51,7 +54,7 @@ blurconsole.queries = (function () {
 		currentSort : null
 	},
 	jqueryMap = {},
-	setJqueryMap, initModule, unloadModule, drawTableList, drawQueries, registerPageEvents, unregisterPageEvents;
+	setJqueryMap, initModule, unloadModule, drawTableList, drawQueries, registerPageEvents, unregisterPageEvents, waitForData;
 
 	setJqueryMap = function() {
 		var $container = stateMap.$container;
@@ -74,7 +77,7 @@ blurconsole.queries = (function () {
 			return false;
 		});
 		jqueryMap.$queryHolder.on('click', 'a.cancelTrigger', function(){
-			var uuid = $(this).data('uuid'), query = $(this).data('query');
+			var uuid = $(this).data('uuid'), query = $(this).data('query'), table = $(this).data('table');
 			var modalContent = blurconsole.browserUtils.modal('confirmDelete', 'Confirm Query Cancel', 'You are about to cancel the query [' + query + '].  Are you sure you want to do this?', [
 				{classes: 'btn-primary killQuery', label: 'Stop Query'},
 				{classes: 'btn-default cancel', label: 'Cancel', data: {dismiss:'modal'}}
@@ -82,7 +85,7 @@ blurconsole.queries = (function () {
 
 			var modal = $(modalContent).modal().on('shown.bs.modal', function(e){
 				$(e.currentTarget).on('click', '.killQuery', function() {
-					blurconsole.model.queries.cancelQuery(uuid);
+					blurconsole.model.queries.cancelQuery(table, uuid);
 					modal.modal('hide');
 				});
 			}).on('hidden.bs.modal', function(e) {
@@ -153,6 +156,15 @@ blurconsole.queries = (function () {
 		}
 	};
 
+	waitForData = function() {
+		var clusters = blurconsole.model.tables.getClusters();
+		if (clusters && clusters.length > 0) {
+			drawTableList();
+		} else {
+			setTimeout(waitForData, 100);
+		}
+	};
+
 	initModule = function($container) {
 		$container.load(configMap.view, function() {
 			stateMap.$container = $container;
@@ -160,6 +172,7 @@ blurconsole.queries = (function () {
 			$.gevent.subscribe(jqueryMap.$container, 'queries-updated', drawQueries);
 			$.gevent.subscribe(jqueryMap.$container, 'tables-updated', drawTableList);
 			registerPageEvents();
+			waitForData();
 		});
 		return true;
 	};

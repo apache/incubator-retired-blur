@@ -36,6 +36,7 @@ import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.commons.collections.CollectionUtils;
 
 public class NodeUtil {
+	
 	@SuppressWarnings("unchecked")
 	public static Map<String, Object> getControllerStatus() throws IOException {
 		ZookeeperClusterStatus zk = Config.getZookeeper();
@@ -52,10 +53,6 @@ public class NodeUtil {
 
 		data.put("online", onlineControllers);
 		data.put("offline", offlineControllers);
-		
-		if (allControllers.isEmpty()) {
-			data.put("errmsg", "Unable to find any nodes");
-		}
 		
 		return data;
 	}
@@ -75,10 +72,6 @@ public class NodeUtil {
 
 			clusterObj.put("online", onlineShardServers);
 			clusterObj.put("offline", offlineShardServers);
-
-			if (offlineShardServers.isEmpty() && onlineShardServers.isEmpty()) {
-				clusterObj.put("errmsg", "Unable to find any nodes for cluster [" + cluster + "]");
-			}
 
 			data.add(clusterObj);
 		}
@@ -144,10 +137,6 @@ public class NodeUtil {
 		
 		data.put("online", onlineZookeepers);
 		data.put("offline", offlineZookeepers);
-		
-		if (onlineZookeepers.isEmpty() && offlineZookeepers.isEmpty()) {
-			data.put("errmsg", "Unable to find any nodes");
-		}
 		
 		return data;
 	}

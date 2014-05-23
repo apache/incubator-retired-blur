@@ -19,60 +19,57 @@ package org.apache.blur.console.servlets;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.blur.console.util.HttpUtil;
-import org.apache.blur.console.util.NodeUtil;
 import org.apache.blur.console.util.QueryUtil;
-import org.apache.blur.console.util.TableUtil;
-import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.generated.BlurException;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
-public class QueriesServlet extends HttpServlet {
+public class QueriesServlet extends BaseConsoleServlet {
 	private static final long serialVersionUID = -5725846390100596115L;
-//	private static Pattern tableTermsPattern = Pattern.compile("/(.*)/(.*)/terms");
+	private static Pattern queryCancelPattern = Pattern.compile("/(.*)/cancel");
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String path = request.getPathInfo();
 		Matcher m;
-		if ("/status".equalsIgnoreCase(path)) {
-			sendQueryStatus(response);
-		}
-//		else if ((m = tableTermsPattern.matcher(path)).matches()) {
-////			sendTerms(response, m.group(1), m.group(2));
-//		} 
-//		else if ("/query/status".equalsIgnoreCase(path)) {
-//			sendQueryStatus(response);
-//		} 
-		else {
+		if (path == null) {
+			sendQueries(response);
+		} else if ("/performance".equalsIgnoreCase(path)) {
+			sendCurrentQueryCount(response);
+		} else if ((m = queryCancelPattern.matcher(path)).matches()) {
+			cancelQuery(response, m.group(1), request.getParameter("table"));
+		} else {
 			response.setStatus(404);
 			IOUtils.write("Route [" + path + "] doesn't exist", response.getOutputStream());
 		}
 	}
 	
-	private void sendError(HttpServletResponse response, Exception e) throws IOException {
-		String body = e.getMessage();
-		response.setContentType("application/json");
-		response.setContentLength(body.getBytes().length);
-		response.setStatus(500);
-		IOUtils.write(body, response.getOutputStream());
+	private void sendCurrentQueryCount(HttpServletResponse response) throws IOException {
+		int count;
+		try {
+			count = QueryUtil.getCurrentQueryCount();
+		} catch (IOException e) {
+			throw new IOException(e);
+		} catch (Exception e) {
+			sendError(response, e);
+			return;
+		}
+		
+		HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(count), HttpUtil.JSON);
 	}
 	
-	private void sendQueryStatus(HttpServletResponse response) throws IOException {
+	private void sendQueries(HttpServletResponse response) throws IOException {
 		Map<String, Object> queries = new HashMap<String, Object>();
 		try {
-			queries = QueryUtil.getQueryStatus();
+			queries = QueryUtil.getQueries();
 		} catch (IOException e) {
 			throw new IOException(e);
 		} catch (Exception e) {
@@ -81,5 +78,18 @@ public class QueriesServlet extends HttpServlet {
 		}
 		
 		HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(queries), HttpUtil.JSON);
+	}
+	
+	private void cancelQuery(HttpServletResponse response, String uuid, String table) throws IOException {
+		try {
+			QueryUtil.cancelQuery(table, uuid);
+		} catch (IOException e) {
+			throw new IOException(e);
+		} catch (Exception e) {
+			sendError(response, e);
+			return;
+		}
+		
+		sendGenericOk(response);
 	}
 }

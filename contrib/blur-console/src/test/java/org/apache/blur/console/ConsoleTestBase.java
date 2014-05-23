@@ -20,29 +20,21 @@ package org.apache.blur.console;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.blur.MiniCluster;
 import org.apache.blur.console.util.Config;
-import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 public class ConsoleTestBase {
-	protected static MiniCluster cluster;
 	protected static String TABLE_PATH = new File("./test-data/test-tables").getAbsolutePath();
 
 	@BeforeClass
-	public static void startup() {
-		cluster = new MiniCluster();
-		cluster.startBlurCluster(new File("./test-data").getAbsolutePath(), 1, 1);
+	public static void startup() throws IOException {
+		Config.setupMiniCluster();
 	}
 
 	@AfterClass
 	public static void shutdown() throws IOException {
-		cluster.shutdownBlurCluster();
-		File file = new File("./test-data");
-		if (file.exists()) {
-			FileUtils.deleteDirectory(file);
-		}
+		Config.shutdownMiniCluster();
 	}
 
 	protected void setupConfigIfNeeded() throws IOException {

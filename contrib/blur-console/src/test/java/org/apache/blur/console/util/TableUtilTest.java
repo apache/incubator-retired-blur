@@ -37,7 +37,7 @@ public class TableUtilTest extends ConsoleTestBase {
 	public void ensureCleanTables() throws BlurException, TException, IOException {
 		setupConfigIfNeeded();
 		
-		Iface client = BlurClient.getClient(cluster.getControllerConnectionStr());
+		Iface client = BlurClient.getClient(Config.getConnectionString());
 		List<String> tableList = client.tableList();
 		if (!tableList.isEmpty()) {
 			for (String table : tableList) {
@@ -47,21 +47,17 @@ public class TableUtilTest extends ConsoleTestBase {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Test
-	public void testGetTableStatusNoTables() throws BlurException, IOException, TException {
-		Map<String, Object> tableStatus = TableUtil.getTableStatus();
+	public void testGetTableSummariesNoTables() throws BlurException, IOException, TException {
+		List<Map<String, Object>> summaries = TableUtil.getTableSummaries();
 		
-		List<Map<String, List<List<Integer>>>> chartData = (List<Map<String, List<List<Integer>>>>) tableStatus.get("chart");
-		
-		assertEquals(0, chartData.get(0).get("data").get(0).get(1).intValue());
-		assertEquals(0, chartData.get(1).get("data").get(0).get(1).intValue());
+		assertEquals(0, summaries.size());
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testGetTableStatus() throws BlurException, TException, IOException {
-		Iface client = BlurClient.getClient(cluster.getControllerConnectionStr());
+	public void testGetTableSummaries() throws BlurException, TException, IOException {
+		Iface client = BlurClient.getClient(Config.getConnectionString());
 		
 		TableDescriptor td = new TableDescriptor();
 		td.setShardCount(11);
@@ -71,11 +67,13 @@ public class TableUtilTest extends ConsoleTestBase {
 		td.setEnabled(true);
 		client.createTable(td);
 		
-		Map<String, Object> tableStatus = TableUtil.getTableStatus();
+		List<Map<String, Object>> summaries = TableUtil.getTableSummaries();
 		
-		List<Map<String, List<List<Integer>>>> chartData = (List<Map<String, List<List<Integer>>>>) tableStatus.get("chart");
-		
-		assertEquals(1, chartData.get(0).get("data").get(0).get(1).intValue());
-		assertEquals(0, chartData.get(1).get("data").get(0).get(1).intValue());
+		assertEquals(1, summaries.size());
+		assertEquals(0l, summaries.get(0).get("rows"));
+		assertEquals(0l, summaries.get(0).get("records"));
+		assertEquals("default", summaries.get(0).get("cluster"));
+		assertEquals("tableUnitTable", summaries.get(0).get("name"));
+		assertEquals(0, ((List<String>) summaries.get(0).get("families")).size());
 	}
 }

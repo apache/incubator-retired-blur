@@ -1,3 +1,5 @@
+package org.apache.blur.console.servlets;
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,22 +17,29 @@
  * limitations under the License.
  */
 
-package org.apache.blur.console.util;
-
 import java.io.IOException;
 
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 
-public class HttpUtil {
-	public static String JSON = "application/json";
-	public static String TEXT = "plain/text";
-	
-	public static void sendResponse(HttpServletResponse response, String body, String contentType) throws IOException {
-		response.setContentType(contentType);
+public abstract class BaseConsoleServlet extends HttpServlet {
+	private static final long serialVersionUID = -5156028303476799953L;
+
+	protected void sendError(HttpServletResponse response, Exception e) throws IOException {
+		e.printStackTrace();
+		String body = e.getMessage();
+		response.setContentType("application/json");
 		response.setContentLength(body.getBytes().length);
-		response.setStatus(200);
+		response.setStatus(500);
 		IOUtils.write(body, response.getOutputStream());
+	}
+	
+	protected void sendGenericOk(HttpServletResponse response) throws IOException {
+		response.setContentType("text/plain");
+		response.setContentLength(6);
+		response.setStatus(200);
+		IOUtils.write("success", response.getOutputStream());
 	}
 }

@@ -18,11 +18,19 @@ package org.apache.blur.console;
  */
 
 import org.apache.blur.console.util.Config;
+import org.apache.commons.lang.ArrayUtils;
 
 public class Main {
 	public static void main(String[] args) throws Exception {
+		boolean devMode = ArrayUtils.contains(args, "--dev");
+		if (devMode) {
+			Config.setupMiniCluster();
+		}
 		Config.setupConfig();
-		JettyServer server = new JettyServer(Config.getConsolePort()).start();
+		JettyServer server = new JettyServer(Config.getConsolePort(), devMode).start();
 		server.join();
+		if (devMode) {
+			Config.shutdownMiniCluster();
+		}
     }
 }

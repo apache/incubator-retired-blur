@@ -20,22 +20,31 @@ under the License.
 /*global blurconsole:false */
 blurconsole.data = (function() {
 	'use strict';
-	var getTableList, getNodeList, getQueryPerformance, getQueries, cancelQuery, disableTable, enableTable, deleteTable, getSchema, findTerms, sendSearch;
+	var getTableList, getNodeList, getQueryPerformance, getQueries, cancelQuery, disableTable, enableTable, deleteTable, getSchema, findTerms, sendSearch,
+		logError;
 
 	getTableList = function(callback) {
-		$.getJSON('/service/tables', callback);
+		$.getJSON('/service/tables', callback).fail(function(xhr) {
+			logError(xhr.responseText, xhr.status, 'tables', callback);
+		});
 	};
 
 	getNodeList = function(callback) {
-		$.getJSON('/service/nodes', callback);
+		$.getJSON('/service/nodes', callback).fail(function(xhr) {
+			logError(xhr.responseText, xhr.status, 'tables', callback);
+		});
 	};
 
 	getQueryPerformance = function(callback) {
-		$.getJSON('/service/queries/performance', callback);
+		$.getJSON('/service/queries/performance', callback).fail(function(xhr) {
+			logError(xhr.responseText, xhr.status, 'tables', callback);
+		});
 	};
 
 	getQueries = function(callback) {
-		$.getJSON('/service/queries', callback);
+		$.getJSON('/service/queries', callback).fail(function(xhr) {
+			logError(xhr.responseText, xhr.status, 'tables', callback);
+		});
 	};
 
 	cancelQuery = function(table, uuid) {
@@ -43,24 +52,24 @@ blurconsole.data = (function() {
 			data: {
 				table: table
 			},
-			error: function(xhr, msg) {
-				$.gevent.publish('query-cancel-error', uuid, msg);
+			error: function(xhr) {
+				logError(xhr.responseText, xhr.status, 'tables');
 			}
 		});
 	};
 
 	disableTable = function(table) {
 		$.ajax('/service/tables/' + table + '/disable', {
-			error: function(xhr, msg) {
-				$.gevent.publish('table-disable-error', table, msg);
+			error: function(xhr) {
+				logError(xhr.responseText, xhr.status, 'tables');
 			}
 		});
 	};
 
 	enableTable = function(table) {
 		$.ajax('/service/tables/' + table + '/enable', {
-			error: function(xhr, msg) {
-				$.gevent.publish('table-enable-error', table, msg);
+			error: function(xhr) {
+				logError(xhr.responseText, xhr.status, 'tables');
 			}
 		});
 	};
@@ -70,18 +79,22 @@ blurconsole.data = (function() {
 			data: {
 				includeFiles: includeFiles
 			},
-			error: function(xhr, msg) {
-				$.gevent.publish('table-delete-error', table, msg);
+			error: function(xhr) {
+				logError(xhr.responseText, xhr.status, 'tables');
 			}
 		});
 	};
 
 	getSchema = function(table, callback) {
-		$.getJSON('/service/tables/' + table + '/schema', callback);
+		$.getJSON('/service/tables/' + table + '/schema', callback).fail(function(xhr) {
+			logError(xhr.responseText, xhr.status, 'tables');
+		});
 	};
 
 	findTerms = function(table, family, column, startsWith, callback) {
-		$.getJSON('/service/tables/' + table + '/' + family + '/' + column + '/terms', {startsWith: startsWith}, callback);
+		$.getJSON('/service/tables/' + table + '/' + family + '/' + column + '/terms', {startsWith: startsWith}, callback).fail(function(xhr) {
+			logError(xhr.responseText, xhr.status, 'tables');
+		});
 	};
 
 	sendSearch = function(query, table, args, callback) {
@@ -89,8 +102,18 @@ blurconsole.data = (function() {
 		$.ajax('/service/search', {
 			'type': 'POST',
 			'data': params,
-			'success': callback
+			'success': callback,
+			'error': function(xhr) {
+				logError(xhr.responseText, xhr.status, 'tables');
+			}
 		});
+	};
+
+	logError = function(errorMsg, status, module, callback) {
+		blurconsole.model.logs.logError(status + ' - ' + errorMsg, module);
+		if (callback) {
+			callback('error');
+		}
 	};
 
 	return {

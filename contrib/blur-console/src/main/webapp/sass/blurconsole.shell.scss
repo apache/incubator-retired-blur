@@ -18,13 +18,6 @@ specific language governing permissions and limitations
 under the License.
  */
 
-.browsehappy {
-    margin: 0.2em 0;
-    background: $silver;
-    color: $black;
-    padding: 0.2em 0;
-}
-
 .input-group-btn > .btn {
   height: $input-height-base;
 }
@@ -39,6 +32,10 @@ nav.navbar-fixed-top {
     background-color: $san-marino;
     .navbar-brand {
         color: $white;
+    }
+    #view_logging_trigger {
+        margin-right: 20px;
+        margin-top: 14px;
     }
 }
 
@@ -72,4 +69,9 @@ nav.navbar-fixed-top {
             }
         }
     }
+}
+
+#error_log_modal .modal-body {
+    height: 400px;
+    overflow: auto;
 }

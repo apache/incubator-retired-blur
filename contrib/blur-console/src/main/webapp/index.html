@@ -36,7 +36,12 @@ under the License.
     <body>
         <nav class="navbar navbar-inverse navbar-fixed-top">
             <a class="navbar-brand" href="#">Blur Console</a>
-
+            <div class="pull-right">
+                <button type="button" id="view_logging_trigger" class="btn btn-default btn-sm">
+                    Logs
+                    <span class="badge badge-warning"></span>
+                </button>
+            </div>
         </nav>
         <nav class="side-nav">
             <ul>
@@ -60,16 +65,10 @@ under the License.
         <script src="js/utils/jquery.uriAnchor.js"></script>
         <script src="js/utils/jquery.event.gevent.js"></script>
 
-        <!-- <script src="bower_components/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/affix.js"></script>
-        <script src="bower_components/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/alert.js"></script>
-        <script src="bower_components/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/dropdown.js"></script> -->
         <script src="libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tooltip.js"></script>
         <script src="libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/modal.js"></script>
         <script src="libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/transition.js"></script>
-        <!-- <script src="bower_components/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/button.js"></script> -->
         <script src="libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/popover.js"></script>
-        <!-- <script src="bower_components/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/carousel.js"></script>
-        <script src="bower_components/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/scrollspy.js"></script> -->
         <script src="libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/collapse.js"></script>
         <script src="libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tab.js"></script>
         <script src="libs/flot/jquery.flot.js"></script>
@@ -81,6 +80,7 @@ under the License.
         <script src="js/blurconsole.utils.js"></script>
         <script src="js/blurconsole.b_utils.js"></script>
         <script src="js/blurconsole.shell.js"></script>
+        <script src="js/blurconsole.logging.js"></script>
         <script src="js/blurconsole.dashboard.js"></script>
         <script src="js/blurconsole.tables.js"></script>
         <script src="js/blurconsole.queries.js"></script>

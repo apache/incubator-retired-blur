@@ -29,9 +29,10 @@ blurconsole.model = (function() {
 			currentClusters: [],
 			nodeMap : null,
 			queryPerformance : [],
-			queries : {}
+			queries : {},
+			errors: []
 		},
-		tables, metrics, nodes, queries, search, initModule, nodePoller, updateNodes, tablePoller, updateTables, queryPerformancePoller, updateQueryPerformance, queryPoller, updateQueries;
+		tables, metrics, nodes, queries, search, logs, initModule, nodePoller, updateNodes, tablePoller, updateTables, queryPerformancePoller, updateQueryPerformance, queryPoller, updateQueries;
 
 	tables = (function() {
 		var getClusters, getEnabledTables, getDisabledTables, isDataLoaded, disableTable, enableTable, deleteTable, getSchema, findTerms, getAllEnabledTables, getFamilies;
@@ -425,12 +426,37 @@ blurconsole.model = (function() {
 		};
 	}());
 
+	logs = (function() {
+		var logError, clearErrors, getLogs;
+
+		logError = function(error, module) {
+			stateMap.errors.push({error: error, module: module, timestamp: new Date()});
+			$.gevent.publish('logging-updated');
+		};
+
+		clearErrors = function() {
+			delete stateMap.errors;
+			stateMap.errors = [];
+			$.gevent.publish('logging-updated');
+		};
+
+		getLogs = function() {
+			return stateMap.errors;
+		};
+
+		return {
+			logError: logError,
+			clearErrors: clearErrors,
+			getLogs: getLogs
+		};
+	}());
+
 	nodePoller = function() {
 		configMap.poller.getNodeList(updateNodes);
 	};
 
 	updateNodes = function(nodes) {
-		if (!blurconsole.utils.equals(nodes, stateMap.nodeMap)) {
+		if (nodes !== 'error' && !blurconsole.utils.equals(nodes, stateMap.nodeMap)) {
 			stateMap.nodeMap = nodes;
 			$.gevent.publish('node-status-updated');
 		}
@@ -442,11 +468,13 @@ blurconsole.model = (function() {
 	};
 
 	updateTables = function(data) {
-		var tables = data.tables, clusters = data.clusters;
-		if (!blurconsole.utils.equals(tables, stateMap.currentTables) || !blurconsole.utils.equals(clusters, stateMap.currentClusters)) {
-			stateMap.currentTables = tables;
-			stateMap.currentClusters = clusters;
-			$.gevent.publish('tables-updated');
+		if (data !== 'error') {
+			var tables = data.tables, clusters = data.clusters;
+			if (!blurconsole.utils.equals(tables, stateMap.currentTables) || !blurconsole.utils.equals(clusters, stateMap.currentClusters)) {
+				stateMap.currentTables = tables;
+				stateMap.currentClusters = clusters;
+				$.gevent.publish('tables-updated');
+			}
 		}
 		setTimeout(tablePoller, 5000);
 	};
@@ -456,12 +484,14 @@ blurconsole.model = (function() {
 	};
 
 	updateQueryPerformance = function(performanceMetric) {
-		if (stateMap.queryPerformance.length === 100) {
-			stateMap.queryPerformance.shift();
-		}
+		if (performanceMetric !== 'error') {
+			if (stateMap.queryPerformance.length === 100) {
+				stateMap.queryPerformance.shift();
+			}
 
-		stateMap.queryPerformance.push(performanceMetric);
-		$.gevent.publish('query-perf-updated');
+			stateMap.queryPerformance.push(performanceMetric);
+			$.gevent.publish('query-perf-updated');
+		}
 		setTimeout(queryPerformancePoller, 5000);
 	};
 
@@ -470,7 +500,7 @@ blurconsole.model = (function() {
 	};
 
 	updateQueries = function(queries) {
-		if (!blurconsole.utils.equals(queries, stateMap.queries)) {
+		if (queries !== 'error' && !blurconsole.utils.equals(queries, stateMap.queries)) {
 			stateMap.queries = queries;
 			$.gevent.publish('queries-updated');
 		}
@@ -492,6 +522,7 @@ blurconsole.model = (function() {
 		metrics: metrics,
 		nodes : nodes,
 		queries : queries,
-		search : search
+		search : search,
+		logs: logs
 	};
 }());

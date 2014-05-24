@@ -153,6 +153,11 @@ blurconsole.shell = (function () {
 		setJqueryMap();
 
 		blurconsole.schema.initModule();
+		blurconsole.logging.initModule();
+
+		$('#view_logging_trigger').on('click', function() {
+			$.gevent.publish('show-logging');
+		});
 
 		$('.side-nav li').tooltip();
 
@@ -171,6 +176,15 @@ blurconsole.shell = (function () {
 				tab: configMap.defaultTab
 			});
 		}
+
+		$.gevent.subscribe($(document), 'logging-updated', function() {
+			var errors = blurconsole.model.logs.getLogs();
+			if (errors.length === 0) {
+				$('#view_logging_trigger .badge').html('');
+			} else {
+				$('#view_logging_trigger .badge').html(errors.length);
+			}
+		});
 	};
 
 	return {

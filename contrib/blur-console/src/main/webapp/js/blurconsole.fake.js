@@ -38,7 +38,7 @@ blurconsole.fake = (function() {
 		}
 
 		setTimeout(function() {
-			callback(data);
+			callback({'tables':data, 'clusters':clusters});
 		}, randomNumber(1000));
 	};
 

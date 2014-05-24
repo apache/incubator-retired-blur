@@ -25,7 +25,8 @@ blurconsole.model = (function() {
 			poller : null
 		},
 		stateMap = {
-			tableNameMap: null,
+			currentTables: null,
+			currentClusters: [],
 			nodeMap : null,
 			queryPerformance : [],
 			queries : {}
@@ -36,19 +37,17 @@ blurconsole.model = (function() {
 		var getClusters, getEnabledTables, getDisabledTables, isDataLoaded, disableTable, enableTable, deleteTable, getSchema, findTerms, getAllEnabledTables, getFamilies;
 
 		getClusters = function() {
-			if (stateMap.tableNameMap === null) {
+			if (stateMap.currentClusters === null) {
 				return [];
 			}
 
-			return blurconsole.utils.unique($.map(stateMap.tableNameMap, function(table){
-				return table.cluster;
-			}), true);
+			return blurconsole.utils.unique(stateMap.currentClusters, true);
 		};
 
 		getEnabledTables = function(cluster) {
 			var data = [];
 
-			$.each(stateMap.tableNameMap, function(idx, table) {
+			$.each(stateMap.currentTables, function(idx, table) {
 				if (table.cluster === cluster && table.enabled) {
 					data.push({name:table.name, rowCount:table.rows, recordCount:table.records});
 				}
@@ -60,7 +59,7 @@ blurconsole.model = (function() {
 		getDisabledTables = function(cluster) {
 			var data = [];
 
-			$.each(stateMap.tableNameMap, function(idx, table) {
+			$.each(stateMap.currentTables, function(idx, table) {
 				if (table.cluster === cluster && !table.enabled) {
 					data.push({name:table.name, rowCount:table.rows, recordCount:table.records});
 				}
@@ -80,7 +79,7 @@ blurconsole.model = (function() {
 		};
 
 		isDataLoaded = function() {
-			return stateMap.tableNameMap !== null;
+			return stateMap.currentTables !== null;
 		};
 
 		disableTable = function(tableName) {
@@ -102,7 +101,7 @@ blurconsole.model = (function() {
 		getFamilies = function(tableName) {
 			var table;
 
-			$.each(stateMap.tableNameMap, function(idx, t) {
+			$.each(stateMap.currentTables, function(idx, t) {
 				if (t.name === tableName) {
 					table = t;
 					return false;
@@ -197,7 +196,7 @@ blurconsole.model = (function() {
 		};
 
 		getTableChartData = function() {
-			var enabledData = blurconsole.utils.reduce(stateMap.tableNameMap, [], function(accumulator, table){
+			var enabledData = blurconsole.utils.reduce(stateMap.currentTables, [], function(accumulator, table){
 				var currentCluster = $.grep(accumulator, function(item){
 					return item[0] === table.cluster;
 				});
@@ -215,7 +214,7 @@ blurconsole.model = (function() {
 				return accumulator;
 			});
 
-			var disabledData = blurconsole.utils.reduce(stateMap.tableNameMap, [], function(accumulator, table){
+			var disabledData = blurconsole.utils.reduce(stateMap.currentTables, [], function(accumulator, table){
 				var currentCluster = $.grep(accumulator, function(item){
 					return item[0] === table.cluster;
 				});
@@ -442,9 +441,11 @@ blurconsole.model = (function() {
 		configMap.poller.getTableList(updateTables);
 	};
 
-	updateTables = function(tables) {
-		if (!blurconsole.utils.equals(tables, stateMap.tableNameMap)) {
-			stateMap.tableNameMap = tables;
+	updateTables = function(data) {
+		var tables = data.tables, clusters = data.clusters;
+		if (!blurconsole.utils.equals(tables, stateMap.currentTables) || !blurconsole.utils.equals(clusters, stateMap.currentClusters)) {
+			stateMap.currentTables = tables;
+			stateMap.currentClusters = clusters;
 			$.gevent.publish('tables-updated');
 		}
 		setTimeout(tablePoller, 5000);

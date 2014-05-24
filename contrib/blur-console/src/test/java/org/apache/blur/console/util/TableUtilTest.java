@@ -47,14 +47,15 @@ public class TableUtilTest extends ConsoleTestBase {
 		}
 	}
 	
+	@SuppressWarnings("rawtypes")
 	@Test
 	public void testGetTableSummariesNoTables() throws BlurException, IOException, TException {
-		List<Map<String, Object>> summaries = TableUtil.getTableSummaries();
+		Map<String, List> data = TableUtil.getTableSummaries();
 		
-		assertEquals(0, summaries.size());
+		assertEquals(0, data.get("tables").size());
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	public void testGetTableSummaries() throws BlurException, TException, IOException {
 		Iface client = BlurClient.getClient(Config.getConnectionString());
@@ -67,13 +68,13 @@ public class TableUtilTest extends ConsoleTestBase {
 		td.setEnabled(true);
 		client.createTable(td);
 		
-		List<Map<String, Object>> summaries = TableUtil.getTableSummaries();
+		Map<String, List> data = TableUtil.getTableSummaries();
 		
-		assertEquals(1, summaries.size());
-		assertEquals(0l, summaries.get(0).get("rows"));
-		assertEquals(0l, summaries.get(0).get("records"));
-		assertEquals("default", summaries.get(0).get("cluster"));
-		assertEquals("tableUnitTable", summaries.get(0).get("name"));
-		assertEquals(0, ((List<String>) summaries.get(0).get("families")).size());
+		assertEquals(1, data.get("tables").size());
+		assertEquals(0l, ((Map<String, Object>) data.get("tables").get(0)).get("rows"));
+		assertEquals(0l, ((Map<String,Object>) data.get("tables").get(0)).get("records"));
+		assertEquals("default", ((Map<String,Object>) data.get("tables").get(0)).get("cluster"));
+		assertEquals("tableUnitTable", ((Map<String,Object>) data.get("tables").get(0)).get("name"));
+		assertEquals(0, ((List<String>) ((Map<String,Object>) data.get("tables").get(0)).get("families")).size());
 	}
 }

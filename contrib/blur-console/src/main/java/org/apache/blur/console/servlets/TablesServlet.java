@@ -19,6 +19,7 @@ package org.apache.blur.console.servlets;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -63,8 +64,9 @@ public class TablesServlet extends BaseConsoleServlet {
 		}
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private void sendSummaries(HttpServletResponse response) throws IOException {
-		List<Map<String, Object>> tableSummaries = new ArrayList<Map<String,Object>>();
+		Map<String, List> tableSummaries = new HashMap<String, List>();
 		try {
 			tableSummaries = TableUtil.getTableSummaries();
 		} catch (IOException e) {

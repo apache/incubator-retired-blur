@@ -35,7 +35,8 @@ import org.apache.blur.thrift.generated.TableStats;
 
 public class TableUtil {
 	
-	public static List<Map<String, Object>> getTableSummaries() throws IOException, BlurException, TException {
+	@SuppressWarnings("rawtypes")
+	public static Map<String, List> getTableSummaries() throws IOException, BlurException, TException {
 		Iface client = BlurClient.getClient(Config.getConnectionString());
 		
 		List<Map<String, Object>> summaries = new ArrayList<Map<String, Object>>();
@@ -69,7 +70,11 @@ public class TableUtil {
 			}
 		}
 		
-		return summaries;
+		Map<String, List> data = new HashMap<String, List>();
+		data.put("tables", summaries);
+		data.put("clusters", clusters);
+		
+		return data;
 	}
 	
 	public static Map<String, Map<String, Map<String, Object>>> getSchema(String table) throws IOException, BlurException, TException {

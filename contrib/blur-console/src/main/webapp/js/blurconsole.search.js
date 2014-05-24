@@ -255,12 +255,14 @@ blurconsole.search = (function () {
 		$.each(tableMap, function(cluster, tables) {
 			var optGroupString;
 
-			optGroupString = '<optgroup label="' + cluster + '">';
-			$.each(tables, function(t, table){
-				optGroupString += '<option value="' + table.name + '"' + (table.name === stateMap.$currentTable ? ' selected' : '') + '>' + table.name + '</option>';
-			});
-			optGroupString += '</optgroup>';
-			jqueryMap.$tableField.append(optGroupString);
+			if (tables.length > 0) {
+				optGroupString = '<optgroup label="' + cluster + '">';
+				$.each(tables, function(t, table){
+					optGroupString += '<option value="' + table.name + '"' + (table.name === stateMap.$currentTable ? ' selected' : '') + '>' + table.name + '</option>';
+				});
+				optGroupString += '</optgroup>';
+				jqueryMap.$tableField.append(optGroupString);
+			}
 		});
 
 		jqueryMap.$tableSelectorStatusOption.html('Choose Table');

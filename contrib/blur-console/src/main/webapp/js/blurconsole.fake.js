@@ -179,13 +179,31 @@ blurconsole.fake = (function() {
 			if (total - args.start < toFetch) {
 				toFetch = total - args.start;
 			}
-			results[fam] = [];
-			for (var r = 0; r < randomNumber(toFetch); r++) {
-				var row = {};
-				for (var c=0; c < cols; c++) {
-					row['col'+c] = randomString();
+
+			if (args.rowRecordOption === 'recordrecord') {
+				results[fam] = [];
+				for (var recordIndex = 0; recordIndex < randomNumber(toFetch); recordIndex++) {
+					var recordRow = {};
+					recordRow.recordid = randomNumber(1000000).toString();
+					for (var recordColIndex=0; recordColIndex < cols; recordColIndex++) {
+						recordRow['col'+recordColIndex] = randomString();
+					}
+					results[fam].push(recordRow);
 				}
-				results[fam].push(row);
+			} else {
+				results[fam] = {};
+				for (var rowIndex = 0; rowIndex < randomNumber(toFetch); rowIndex++) {
+					var rowid = randomNumber(10000000).toString();
+					results[fam][rowid] = [];
+					for (var rowRecordIndex = 0; rowRecordIndex < randomNumber(10); rowRecordIndex++) {
+						var row = {};
+						row.recordid = randomNumber(1000000).toString();
+						for (var rowRecordColIndex=0; rowRecordColIndex < cols; rowRecordColIndex++) {
+							row['col'+rowRecordColIndex] = randomString();
+						}
+						results[fam][rowid].push(row);
+					}
+				}
 			}
 		});
 

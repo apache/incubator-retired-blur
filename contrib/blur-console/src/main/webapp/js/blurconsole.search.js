@@ -47,7 +47,7 @@ blurconsole.search = (function () {
 	jqueryMap = {},
 	setJqueryMap, initModule, unloadModule, drawResultHolders, drawResults, registerPageEvents, unregisterPageEvents,
 	sendSearch, showOptions, reviewTables, loadTableList, getMoreData, fixPanelWidths, updateOptionPopover, updateOptionDisplay,
-	persistOptions;
+	persistOptions, getColList;
 
 	setJqueryMap = function() {
 		var $container = stateMap.$container;
@@ -211,31 +211,53 @@ blurconsole.search = (function () {
 		$.each(families, function(i, fam) {
 			var famResults = results[fam],
 				famId = '#' + blurconsole.browserUtils.cleanId(fam),
-				famHolder = $(famId + ' .panel-body'), table = '', cols;
+				famHolder = $(famId + ' .panel-body'),
+				table = '<table class="table table-condensed table-hover table-bordered"><thead><tr>',
+				cols, famTotal;
 
-			cols = blurconsole.utils.reject(blurconsole.utils.keys(famResults[0]), function(i) {
-				return i === 'rowid' || i === 'recordid';
-			});
-			cols.sort();
+			if ($.isArray(famResults)) {
+				// Record results
+				cols = getColList(famResults[0]);
 
-			cols = ['rowid', 'recordid'].concat(cols);
-
-			table += '<table class="table table-condensed table-hover table-bordered"><thead><tr>';
-			$.each(cols, function(i, col) {
-				table += '<th>' + col + '</th>';
-			});
-			table += '</tr></thead><tbody>';
-			$.each(famResults, function(i, row) {
-				table += '<tr>';
-				$.each(cols, function(c, col) {
-					table += '<td>' + (row[col] || '') + '</td>';
+				$.each(cols, function(i, col) {
+					table += '<th>' + col + '</th>';
 				});
-				table += '</tr>';
-			});
+				table += '</tr></thead><tbody>';
+				$.each(famResults, function(i, row) {
+					table += '<tr>';
+					$.each(cols, function(c, col) {
+						table += '<td>' + (row[col] || '') + '</td>';
+					});
+					table += '</tr>';
+				});
+				famTotal = famResults.length;
+			} else {
+				// Row results
+				var rowids = blurconsole.utils.keys(famResults);
+				var firstRow = famResults[rowids[0]];
+				cols = getColList(firstRow[0]);
+
+				$.each(cols, function(i, col) {
+					table += '<th>' + col + '</th>';
+				});
+				table += '</tr></thead><tbody>';
+				$.each(famResults, function(rowid, records) {
+					table += '<tr class="row-separator"><td colspan="' + cols.length + '"><strong>rowid:</strong> ' + rowid + ' (<em>' + records.length + ' records</em>)</td></tr>';
+					$.each(records, function(i, rec) {
+						table += '<tr>';
+						$.each(cols, function(c, col) {
+							table += '<td>' + (rec[col] || '') + '</td>';
+						});
+						table += '</tr>';
+					});
+				});
+				famTotal = rowids.length;
+			}
+
 			table += '</tbody></table>';
 
-			if (famResults.length < blurconsole.model.search.getTotal()) {
-				table += '<div class="pull-right"><a href="' + famId + '" class="btn btn-primary nextPage">Load More...</a></div>';
+			if (famTotal < blurconsole.model.search.getTotal()) {
+				table += '<div class="pull-left"><a href="' + famId + '" class="btn btn-primary nextPage">Load More...</a></div>';
 			}
 
 			famHolder.html(table);
@@ -244,6 +266,16 @@ blurconsole.search = (function () {
 			}
 		});
 		fixPanelWidths();
+	};
+
+	getColList = function(row) {
+		var cols = blurconsole.utils.reject(blurconsole.utils.keys(row), function(i) {
+			return i === 'recordid';
+		});
+		cols.sort();
+
+		cols = ['recordid'].concat(cols);
+		return cols;
 	};
 
 	loadTableList = function() {

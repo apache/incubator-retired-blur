@@ -410,8 +410,13 @@ blurconsole.model = (function() {
 
 			if (typeof dataResults !== 'undefined' && dataResults !== null) {
 				$.each(dataResults, function(family, resultList){
-					var tmpList = results[family] || [];
-					results[family] = tmpList.concat(resultList);
+					if (currentArgs.rowRecordOption === 'recordrecord') {
+						var recordList = results[family] || [];
+						results[family] = recordList.concat(resultList);
+					} else {
+						var rowList = results[family] || {};
+						results[family] = $.extend(resultList, rowList);
+					}
 				});
 			}
 			$.gevent.publish('results-updated', [dataFamilies]);

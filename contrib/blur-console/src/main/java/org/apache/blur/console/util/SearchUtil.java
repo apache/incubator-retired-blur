@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
@@ -44,6 +45,31 @@ import org.apache.blur.thrift.generated.Selector;
  */
 
 public class SearchUtil {
+	
+	/**
+	 * Record only results:
+	 * 
+	 * {
+	 * 	famName: [
+	 * 		{
+	 * 			colName: value
+	 * 		}
+	 * 	]
+	 * }
+	 * 
+	 * Row results:
+	 * {
+	 * 	famName: {
+	 * 		rowid: [
+	 * 			{
+	 * 				colName: value
+	 * 			}
+	 * 		]
+	 * 	}
+	 * }
+	 */
+	
+	@SuppressWarnings("unchecked")
 	public static Map<String, Object> search(Map<String, String[]> params) throws IOException, BlurException, TException {
 		Iface client = BlurClient.getClient(Config.getConnectionString());
 		
@@ -54,6 +80,8 @@ public class SearchUtil {
 		String fetch = params.get("fetch")[0];
 		String[] families = params.get("families[]");
 		
+		boolean recordsOnly = "recordrecord".equalsIgnoreCase(rowQuery);
+		
 		BlurQuery blurQuery = new BlurQuery();
 		
 		Query q = new Query(query, "rowrow".equalsIgnoreCase(rowQuery), ScoreType.SUPER, null, null);
@@ -62,7 +90,7 @@ public class SearchUtil {
 		blurQuery.setFetch(Integer.parseInt(fetch));
 		
 		Selector s = new Selector();
-		s.setRecordOnly("recordrecord".equalsIgnoreCase(rowQuery));
+		s.setRecordOnly(recordsOnly);
 		s.setColumnFamiliesToFetch(new HashSet<String>(Arrays.asList(families)));
 		blurQuery.setSelector(s);
 		
@@ -72,11 +100,11 @@ public class SearchUtil {
 		results.put("total", blurResults.getTotalResults());
 		
 		Set<String> fams = new HashSet<String>();
-		Map<String, List<Map<String, Object>>> rows = new HashMap<String, List<Map<String, Object>>>();
+		Map<String, Object> rows = new HashMap<String, Object>();
 		for (BlurResult result : blurResults.getResults()) {
 			FetchResult fetchResult = result.getFetchResult();
 			
-			if ("recordrecord".equalsIgnoreCase(rowQuery)) {
+			if (recordsOnly) {
 				// Record Result
 				FetchRecordResult recordResult = fetchResult.getRecordResult();
 				Record record = recordResult.getRecord();
@@ -84,7 +112,8 @@ public class SearchUtil {
 				String family = record.getFamily();
 				fams.add(family);
 				
-				addRowToFam(family, columnsToMap(record.getColumns(), null, record.getRecordId()), rows);
+				List<Map<String, String>> fam = (List<Map<String, String>>) getFam(family, rows, recordsOnly);
+				fam.add(buildRow(record.getColumns(), record.getRecordId()));
 			} else {
 				// Row Result
 				FetchRowResult rowResult = fetchResult.getRowResult();
@@ -93,7 +122,9 @@ public class SearchUtil {
 					String family = record.getFamily();
 					fams.add(family);
 					
-					addRowToFam(family, columnsToMap(record.getColumns(), row.getId(), record.getRecordId()), rows);
+					Map<String, List<Map<String, String>>> fam = (Map<String, List<Map<String, String>>>) getFam(family, rows, recordsOnly);
+					List<Map<String, String>> rowData = getRow(row.getId(), fam);
+					rowData.add(buildRow(record.getColumns(), record.getRecordId()));
 				}
 			}
 		}
@@ -104,20 +135,8 @@ public class SearchUtil {
 		return results;
 	}
 	
-	private static void addRowToFam(String fam, Map<String, Object> row, Map<String, List<Map<String, Object>>> results) {
-		List<Map<String, Object>> famResults = results.get(fam);
-		
-		if (famResults == null) {
-			famResults = new ArrayList<Map<String,Object>>();
-			results.put(fam, famResults);
-		}
-		
-		famResults.add(row);
-	}
-	
-	private static Map<String, Object> columnsToMap(List<Column> columns, String rowid, String recordid) {
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("rowid", rowid);
+	private static Map<String, String> buildRow(List<Column> columns, String recordid) {
+		Map<String, String> map = new TreeMap<String, String>();
 		map.put("recordid", recordid);
 		
 		for (Column column : columns) {
@@ -125,5 +144,31 @@ public class SearchUtil {
 		}
 		
 		return map;
+	}
+	
+	private static Object getFam(String fam, Map<String, Object> results, boolean recordOnly) {
+		Object famResults = results.get(fam);
+		
+		if (famResults == null) {
+			if (recordOnly) {
+				famResults = new ArrayList<Map<String, String>>();				
+			} else {
+				famResults = new TreeMap<String, List<Map<String, String>>>();
+			}
+			results.put(fam, famResults);
+		}
+		
+		return famResults;
+	}
+	
+	private static List<Map<String, String>> getRow(String rowid, Map<String, List<Map<String, String>>> rows) {
+		List<Map<String, String>> row = rows.get(rowid);
+		
+		if (row == null) {
+			row = new ArrayList<Map<String, String>>();
+			rows.put(rowid, row);
+		}
+		
+		return row;
 	}
 }

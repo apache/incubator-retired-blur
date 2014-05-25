@@ -29,3 +29,12 @@ under the License.
 	padding-left: 30px;
 	font-style: italic;
 }
+
+tr.row-separator {
+	td {
+		background-color: #999;
+	}
+	&:hover td {
+		background-color: #999 !important;
+	}
+}

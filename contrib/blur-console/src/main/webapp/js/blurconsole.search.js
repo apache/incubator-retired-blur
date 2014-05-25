@@ -134,7 +134,7 @@ blurconsole.search = (function () {
 
 		drawResultHolders();
 
-		blurconsole.model.search.runSearch(stateMap.$currentQuery, stateMap.$currentTable, {start: 0, fetch: 10, rowRecord: stateMap.$rowRecordOption});
+		blurconsole.model.search.runSearch(stateMap.$currentQuery, stateMap.$currentTable, {start: 0, fetch: 10, rowRecordOption: stateMap.$rowRecordOption});
 	};
 
 	getMoreData = function() {

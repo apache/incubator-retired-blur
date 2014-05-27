@@ -196,6 +196,12 @@
 			</dependencies>
         </profile>
         <profile>
+            <id>web-war</id>
+            <properties>
+                <grunt.target>production</grunt.target>
+            </properties>
+        </profile>
+        <profile>
             <id>grunt</id>
             <activation><os><family>!windows</family></os></activation>
             <build>

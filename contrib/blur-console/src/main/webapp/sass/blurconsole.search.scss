@@ -30,11 +30,15 @@ under the License.
 	font-style: italic;
 }
 
+#resultInfo {
+	margin-top: 3px;
+}
+
 tr.row-separator {
 	td {
-		background-color: #999;
+		background-color: $dusty-gray;
 	}
 	&:hover td {
-		background-color: #999 !important;
+		background-color: $dusty-gray !important;
 	}
 }

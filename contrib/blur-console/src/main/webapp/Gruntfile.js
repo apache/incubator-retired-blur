@@ -70,7 +70,7 @@ module.exports = function (grunt) {
                     'css/blurconsole.css': 'sass/blurconsole.scss'
                 },
                 options: {
-                    compress: true
+                    style: 'compressed'
                 }
             }
         },

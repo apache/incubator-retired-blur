@@ -44,8 +44,17 @@ under the License.
       <directory>src/main/webapp</directory>
       <outputDirectory>webapp</outputDirectory>
       <!-- Remove unneccessary web files -->
+      <includes>
+          <include>*/**/.css</include>
+          <include>*/**/.js</include>
+          <include>*/**/.gif</include>
+      </includes>
       <excludes>
-      
+      	<exclude>*/node_modules/*</exclude>
+      	<exclude>/src/main/webapp/.sass-cache</exclude>
+      	<exclude>**/libs/chai/*</exclude>
+      	<exclude>**/libs/flot/examples/*</exclude>
+      	<exclude>**/libs/jquery/src/*</exclude>
       </excludes>
     </fileSet>
   </fileSets>

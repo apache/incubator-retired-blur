@@ -47,7 +47,7 @@ blurconsole.search = (function () {
 	jqueryMap = {},
 	setJqueryMap, initModule, unloadModule, drawResultHolders, drawResults, registerPageEvents, unregisterPageEvents,
 	sendSearch, showOptions, reviewTables, loadTableList, getMoreData, fixPanelWidths, updateOptionPopover, updateOptionDisplay,
-	persistOptions, getColList;
+	persistOptions, getColList, popupFacetDialog;
 
 	setJqueryMap = function() {
 		var $container = stateMap.$container;
@@ -59,7 +59,8 @@ blurconsole.search = (function () {
 			$tableWarning : $('#tableGoneWarning'),
 			$resultsHolder : $('#results'),
 			$optionsDisplay : $('#searchOptionsDisplay'),
-			$countHolder : $('#resultCount')
+			$countHolder : $('#resultCount'),
+			$facetTrigger : $('#facetTrigger')
 		};
 	};
 
@@ -76,6 +77,7 @@ blurconsole.search = (function () {
 		});
 		$('#searchOptionsTrigger').on('shown.bs.popover', updateOptionPopover);
 		$(document).on('change', '.popover select', persistOptions);
+		jqueryMap.$facetTrigger.on('click', popupFacetDialog);
 	};
 
 	unregisterPageEvents = function() {
@@ -85,6 +87,7 @@ blurconsole.search = (function () {
 		$('#searchOptionsTrigger').popover('destroy');
 		$('#searchOptionsTrigger').off('shown.bs.popover');
 		$(document).off('change');
+		//jqueryMap.$facetTrigger.off('click');
 	};
 
 	updateOptionDisplay = function() {
@@ -207,6 +210,7 @@ blurconsole.search = (function () {
 	drawResults = function(evt, families) {
 		var results = blurconsole.model.search.getResults();
 		jqueryMap.$countHolder.html('<small>Found ' + blurconsole.model.search.getTotal() + ' total results</small>');
+		//jqueryMap.$facetTrigger.show();
 
 		$.each(families, function(i, fam) {
 			var famResults = results[fam],
@@ -298,6 +302,11 @@ blurconsole.search = (function () {
 		});
 
 		jqueryMap.$tableSelectorStatusOption.html('Choose Table');
+	};
+
+	popupFacetDialog = function() {
+		jqueryMap.facetModal = $(blurconsole.browserUtils.modal('facetDialog', 'Facets for Current Search', 'TBD', null, 'large'));
+		jqueryMap.facetModal.modal();
 	};
 
 	initModule = function($container) {

@@ -19,30 +19,26 @@ package org.apache.blur.console.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.blur.BlurConfiguration;
-import org.apache.blur.MiniCluster;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
-import org.apache.blur.utils.GCWatcher;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocalFileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsAction;
-import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class Config {
 	private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/mini-cluster"));
+	private static final Log log = LogFactory.getLog(Config.class);
 	
 	private static int port = 8080;
 	private static BlurConfiguration blurConfig;
 	private static ZookeeperClusterStatus zk;
 	private static String blurConnection;
-	private static MiniCluster cluster;
+	private static Object cluster;
 
 	public static int getConsolePort() {
 		return port;
@@ -56,7 +52,16 @@ public class Config {
 			blurConfig = new BlurConfiguration();
 		} else {
 			blurConfig = new BlurConfiguration(false);
-			blurConfig.set("blur.zookeeper.connection", cluster.getZkConnectionString());
+			
+			String zkConnection = "";
+			try {
+				Method zkMethod = cluster.getClass().getMethod("getZkConnectionString");
+				zkConnection = (String) zkMethod.invoke(cluster);
+			} catch (Exception e) {
+				log.fatal("Unable get zookeeper connection string", e);
+			}
+			
+			blurConfig.set("blur.zookeeper.connection", zkConnection);
 		}
 		zk = new ZookeeperClusterStatus(blurConfig.get("blur.zookeeper.connection"), blurConfig);
 		blurConnection = buildConnectionString();
@@ -78,7 +83,13 @@ public class Config {
 	
 	public static void shutdownMiniCluster() throws IOException {
 		if (cluster != null) {
-			cluster.shutdownBlurCluster();
+			try {
+				Method method = cluster.getClass().getMethod("shutdownBlurCluster");
+				method.invoke(cluster);
+			} catch (Exception e) {
+				log.fatal("Unable to stop mini cluster through reflection.", e);
+			}
+//			cluster.shutdownBlurCluster();
 			File file = new File(TMPDIR, "blur-cluster-test");
 			if (file.exists()) {
 				FileUtils.deleteDirectory(file);
@@ -87,26 +98,40 @@ public class Config {
 	}
 	
 	
+	@SuppressWarnings("unchecked")
 	public static void setupMiniCluster() throws IOException {
-		GCWatcher.init(0.60);
-	    LocalFileSystem localFS = FileSystem.getLocal(new Configuration());
+//		GCWatcher.init(0.60);
+//	    LocalFileSystem localFS = FileSystem.getLocal(new Configuration());
 	    File testDirectory = new File(TMPDIR, "blur-cluster-test").getAbsoluteFile();
 	    testDirectory.mkdirs();
 
-	    Path directory = new Path(testDirectory.getPath());
-	    FsPermission dirPermissions = localFS.getFileStatus(directory).getPermission();
-	    FsAction userAction = dirPermissions.getUserAction();
-	    FsAction groupAction = dirPermissions.getGroupAction();
-	    FsAction otherAction = dirPermissions.getOtherAction();
-
-	    StringBuilder builder = new StringBuilder();
-	    builder.append(userAction.ordinal());
-	    builder.append(groupAction.ordinal());
-	    builder.append(otherAction.ordinal());
-	    String dirPermissionNum = builder.toString();
-	    System.setProperty("dfs.datanode.data.dir.perm", dirPermissionNum);
+//	    Path directory = new Path(testDirectory.getPath());
+//	    FsPermission dirPermissions = localFS.getFileStatus(directory).getPermission();
+//	    FsAction userAction = dirPermissions.getUserAction();
+//	    FsAction groupAction = dirPermissions.getGroupAction();
+//	    FsAction otherAction = dirPermissions.getOtherAction();
+//
+//	    StringBuilder builder = new StringBuilder();
+//	    builder.append(userAction.ordinal());
+//	    builder.append(groupAction.ordinal());
+//	    builder.append(otherAction.ordinal());
+//	    String dirPermissionNum = builder.toString();
+//	    System.setProperty("dfs.datanode.data.dir.perm", dirPermissionNum);
 	    testDirectory.delete();
-	    cluster = new MiniCluster();
-	    cluster.startBlurCluster(new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true);
+	    try {
+	    	Class clusterClass = Class.forName("org.apache.blur.MiniCluster", false, Config.class.getClassLoader());
+	    
+		    if (clusterClass != null) {
+		    	cluster = clusterClass.newInstance();
+		    	Method startBlurCluster = clusterClass.getDeclaredMethod("startBlurCluster", String.class, int.class, int.class, boolean.class);
+		    	startBlurCluster.invoke(cluster, new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true);
+		    }
+	    } catch (Exception e) {
+	    	log.fatal("Unable to start in dev mode because MiniCluster isn't in classpath", e);
+	    	cluster = null;
+	    }
+//	    cluster = ConstructorUtils.in
+//	    cluster = new MiniCluster();
+//	    cluster.startBlurCluster(new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true);
 	}
 }

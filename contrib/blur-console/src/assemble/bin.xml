@@ -25,14 +25,26 @@ under the License.
   </formats>
   <includeBaseDirectory>false</includeBaseDirectory>
   <dependencySets>
-    <dependencySet>
+    <!-- <dependencySet>
       <unpack>true</unpack>
+      <scope>provided</scope>
       <useTransitiveDependencies>true</useTransitiveDependencies>
       <includes>
         <include>org.apache.blur:blur-thrift</include>
         <include>org.apache.blur:blur-core</include>
         <include>org.codehaus.jackson:*</include>
       </includes>
+    </dependencySet> -->
+    <dependencySet>
+        <unpack>true</unpack>
+        <scope>runtime</scope>
+        <excludes>
+          <exclude>org.apache.blur:blur-core:test-jar</exclude>
+          <exclude>org.apache.blur:blur-util:test-jar</exclude>
+          <exclude>org.apache.hadoop:hadoop-test</exclude>
+          <exclude>org.apache.hadoop:hadoop-client</exclude>
+          <exclude>org.apache.hadoop:hadoop-minicluster</exclude>
+      </excludes>
     </dependencySet>
   </dependencySets>
   <fileSets>
@@ -45,17 +57,25 @@ under the License.
       <outputDirectory>webapp</outputDirectory>
       <!-- Remove unneccessary web files -->
       <includes>
-          <include>*/**/.css</include>
-          <include>*/**/.js</include>
-          <include>*/**/.gif</include>
+          <include>css/**</include>
+          <include>img/**</include>
+          <include>js/**</include>
+          <include>libs/flot/jquery.flot.js</include>
+          <include>libs/flot/jquery.flot.pie.js</include>
+          <include>libs/flot/jquery.flot.categories.js</include>
+          <include>libs/flot/jquery.flot.stack.js</include>
+          <include>libs/jquery/dist/jquery.js</include>
+          <include>libs/modernizr/modernizr.js</include>
+          <include>libs/twbs-bootstrap-sass/vendor/assets/fonts/bootstrap/**</include>
+          <include>libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tooltip.js</include>
+          <include>libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/modal.js</include>
+          <include>libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/transition.js</include>
+          <include>libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/popover.js</include>
+          <include>libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/collapse.js</include>
+          <include>libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tab.js</include>
+          <include>views/**</include>
+          <include>index.html</include>
       </includes>
-      <excludes>
-      	<exclude>*/node_modules/*</exclude>
-      	<exclude>/src/main/webapp/.sass-cache</exclude>
-      	<exclude>**/libs/chai/*</exclude>
-      	<exclude>**/libs/flot/examples/*</exclude>
-      	<exclude>**/libs/jquery/src/*</exclude>
-      </excludes>
     </fileSet>
   </fileSets>
 </assembly>

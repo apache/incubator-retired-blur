@@ -155,6 +155,7 @@ public class BlurConstants {
   public static final String DEFAULT = "default";
   public static final String BLUR_CLUSTER_NAME = "blur.cluster.name";
   public static final String BLUR_CLUSTER;
+  public static final String BLUR_HTTP_STATUS_RUNNING_PORT = "blur.http.status.running.port";
 
   public static final long ZK_WAIT_TIME = TimeUnit.SECONDS.toMillis(5);
   public static final String DELETE_MARKER_VALUE = "delete";

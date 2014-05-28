@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.webapp.WebAppContext;
@@ -30,7 +31,6 @@ import com.yammer.metrics.reporting.MetricsServlet;
 
 /**
  * Starts up a Jetty server to run the utility gui.
- * 
  */
 public class HttpJettyServer {
 
@@ -40,52 +40,30 @@ public class HttpJettyServer {
 
   private WebAppContext context;
 
+  private int _localPort;
+
   /**
-   * @param bindPort
-   *          port of the process that the gui is wrapping
    * @param port
    *          port to run gui on
-   * @param baseControllerPort
-   *          ports that service runs on
-   * @param baseShardPort
-   * @param baseGuiShardPort
-   *          port to run gui on
-   * @param baseGuiControllerPort
-   *          port to run gui on
-   * @param base
-   *          location of webapp to serve
-   * @param bm
-   *          metrics object for using.
    * @throws IOException
    */
-  public HttpJettyServer(int bindPort, int port, int baseControllerPort, int baseShardPort, int baseGuiControllerPort,
-      int baseGuiShardPort, String base) throws IOException {
+  public HttpJettyServer(Class<?> c, int port) throws IOException {
     server = new Server(port);
-
     String logDir = System.getProperty("blur.logs.dir");
     String logFile = System.getProperty("blur.log.file");
     String blurLogFile = logDir + "/" + logFile;
-    System.setProperty("blur.gui.servicing.port", bindPort + "");
-    System.setProperty("blur.base.shard.port", baseShardPort + "");
-    System.setProperty("blur.base.controller.port", baseControllerPort + "");
-    System.setProperty("baseGuiShardPort", baseGuiShardPort + "");
-    System.setProperty("baseGuiControllerPort", baseGuiControllerPort + "");
-    System.setProperty("blur.gui.mode", base);
     LOG.info("System props:" + System.getProperties().toString());
 
     context = new WebAppContext();
-    String warPath = getWarFolder();
+    String warPath = getWarFolder(c);
     context.setWar(warPath);
     context.setContextPath("/");
     context.setParentLoaderPriority(true);
-    // context.addServlet(new ServletHolder(new LiveMetricsServlet()),
-    // "/livemetrics");
     context.addServlet(new ServletHolder(new MetricsServlet()), "/metrics");
     context.addServlet(new ServletHolder(new LogServlet(blurLogFile)), "/logs");
 
-    LOG.info("WEB GUI coming up for resource: " + base);
-    LOG.info("WEB GUI thinks its at: " + warPath);
-    LOG.info("WEB GUI log file being exposed: " + logDir == null ? "STDOUT" : blurLogFile);
+    LOG.info("Http server thinks its at: " + warPath);
+    LOG.info("Http server log file being exposed: " + logDir == null ? "STDOUT" : blurLogFile);
 
     server.setHandler(context);
 
@@ -97,9 +75,23 @@ public class HttpJettyServer {
       } catch (Exception ex) {
         LOG.error("Unknown error while trying to stop server during error on startup.", ex);
       }
-      throw new IOException("cannot start Http server for " + base, e);
+      throw new IOException("Cannot start Http server.", e);
     }
-    LOG.info("WEB GUI up on port: " + port);
+    for (int i = 0; i < 100; i++) {
+      if (server.isRunning()) {
+        break;
+      }
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        return;
+      }
+    }
+    Connector[] connectors = server.getConnectors();
+    for (Connector connector : connectors) {
+      _localPort = connector.getLocalPort();
+    }
+    LOG.info("Http server up on port: " + _localPort);
   }
 
   public WebAppContext getContext() {
@@ -118,21 +110,22 @@ public class HttpJettyServer {
     return null;
   }
 
-  private String getWarFolder() {
+  private String getWarFolder(Class<?> c) {
     String findBlurGuiInClassPath = findBlurGuiInClassPath();
     if (findBlurGuiInClassPath != null) {
       return findBlurGuiInClassPath;
     }
-    String name = getClass().getName().replace('.', '/');
+    String name = c.getName().replace('.', '/');
     String classResource = "/" + name + ".class";
-    String pathToClassResource = getClass().getResource(classResource).toString();
+    String pathToClassResource = c.getResource(classResource).toString();
     pathToClassResource = pathToClassResource.replace('/', File.separatorChar);
     int indexOfJar = pathToClassResource.indexOf(".jar");
     if (indexOfJar < 0) {
       int index = pathToClassResource.indexOf(name);
       String pathToClasses = pathToClassResource.substring(0, index);
-      int indexOfProjectName = pathToClasses.indexOf("/blur-gui/");
-      return pathToClasses.substring(0, indexOfProjectName) + "/blur-gui/src/main/webapp";
+      int indexOfProjectName = pathToClasses.indexOf("/target/");
+      String str = pathToClasses.substring(0, indexOfProjectName) + "/src/main/webapp";
+      return str;
     }
     return null;
   }
@@ -147,6 +140,10 @@ public class HttpJettyServer {
         e.printStackTrace();
       }
     }
+  }
+
+  public int getLocalPort() {
+    return _localPort;
   }
 
 }

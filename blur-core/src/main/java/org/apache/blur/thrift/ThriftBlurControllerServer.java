@@ -36,9 +36,8 @@ import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_THRIFT_ACCEPT_
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_THRIFT_MAX_READ_BUFFER_BYTES;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_THRIFT_SELECTOR_THREADS;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
-import static org.apache.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
+import static org.apache.blur.utils.BlurConstants.BLUR_HTTP_STATUS_RUNNING_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST;
-import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
@@ -176,14 +175,11 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     int baseGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_CONTROLLER_PORT));
     final HttpJettyServer httpServer;
-    if (baseGuiPort > 0) {
+    if (baseGuiPort >= 0) {
       int webServerPort = baseGuiPort + serverIndex;
-      // TODO: this got ugly, there has to be a better way to handle all these
-      // params
-      // without reversing the mvn dependancy and making blur-gui on top.
-      httpServer = new HttpJettyServer(bindPort, webServerPort, configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1),
-          configuration.getInt(BLUR_SHARD_BIND_PORT, -1), configuration.getInt(BLUR_GUI_CONTROLLER_PORT, -1),
-          configuration.getInt(BLUR_GUI_SHARD_PORT, -1), "controller");
+      httpServer = new HttpJettyServer(HttpJettyServer.class, webServerPort);
+      int port = httpServer.getLocalPort();
+      configuration.setInt(BLUR_HTTP_STATUS_RUNNING_PORT, port);
     } else {
       httpServer = null;
     }

@@ -101,7 +101,7 @@ blurconsole.schema = (function () {
 		$.each(stateMap.schema, function(family, cols){
 			var famId = blurconsole.browserUtils.cleanId(family);
 			tree += '<div class="panel panel-default"><div class="panel-heading">';
-			tree += '<h4 class="panel-title"><a data-toggle="collapse" data-parent=".schemaList" href="#' + famId + '">' + family + '</a></h4></div>';
+			tree += '<h4 class="panel-title" data-toggle="collapse" data-parent=".schemaList" data-target="#' + famId + '">' + family + '</h4></div>';
 			tree += '<div id="' + famId + '" class="panel-collapse collapse"><div class="panel-body"><ul class="list-group">';
 			$.each(cols, function(col, def) {
 				var colId = blurconsole.browserUtils.cleanId(col);

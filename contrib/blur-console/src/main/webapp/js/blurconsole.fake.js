@@ -130,7 +130,11 @@ blurconsole.fake = (function() {
 		for(f=0; f < familyCount; f++) {
 			var c, fam = {}, columnCount = randomNumber(30);
 			for(c=0; c < columnCount; c++) {
-				fam['col'+c] = {
+				var col_name = 'col' + c;
+				if(randomNumber(10) === 1) {
+					col_name += ".sub";
+				}
+				fam[col_name] = {
 					'fieldLess' : randomBoolean(),
 					'type' : types[randomNumber(6, true)],
 					'extra' : null
@@ -141,7 +145,7 @@ blurconsole.fake = (function() {
 					for (e=0; e < extraPropCount; e++) {
 						props['extra'+e] = 'val'+e;
 					}
-					fam['col'+c].extra = props;
+					fam[col_name].extra = props;
 				}
 			}
 			schema['fam'+f] = fam;

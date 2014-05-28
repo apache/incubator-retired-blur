@@ -106,10 +106,11 @@ blurconsole.schema = (function () {
 			$.each(cols, function(col, def) {
 				var colId = blurconsole.browserUtils.cleanId(col);
 				tree += '<li class="list-group-item schemaColumn"><a href="#' + famId + '_' + colId + '">' + col + '';
+				tree += '</a><div class="pull-right">';
 				if (def.type !== 'stored') {
 					tree += ' <span class="badge">searchable</span>';
 				}
-				tree += '</a><div class="pull-right"><i class="glyphicon glyphicon-chevron-right"></i></div></li>';
+				tree += '<i class="glyphicon glyphicon-chevron-right"></i></div></li>';
 			});
 			tree += '</ul></div></div></div>';
 		});

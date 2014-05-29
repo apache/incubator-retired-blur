@@ -132,7 +132,7 @@ blurconsole.fake = (function() {
 			for(c=0; c < columnCount; c++) {
 				var col_name = 'col' + c;
 				if(randomNumber(10) === 1) {
-					col_name += ".sub";
+					col_name += '.sub';
 				}
 				fam[col_name] = {
 					'fieldLess' : randomBoolean(),

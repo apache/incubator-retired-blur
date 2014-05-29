@@ -143,7 +143,7 @@ blurconsole.shell = (function () {
 	onClickTab = function ( ) {
 		var target = $(this);
 		changeAnchorPart({
-			tab : target.attr('href').substring(2)
+			tab : target.attr('href').split('=')[1]
 		});
 		return false;
 	};

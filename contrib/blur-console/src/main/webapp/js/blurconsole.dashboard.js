@@ -55,9 +55,9 @@ blurconsole.dashboard = (function () {
 			controllerNodes: 'chart'
 		},
 		jqueryMap = {},
-		setJqueryMap, initModule, unloadModule, updateNodeCharts, adjustChartSize,
+		setJqueryMap, initModule, unloadModule, updateNodeCharts, adjustChartsSizes, adjustChartSize,
 		loadZkPieChart,	loadControllerPieChart, loadShardsPieChart, loadTableColumnChart, loadQueryPerfLineChart,
-		buildNodeTable, checkForSlowQueries;
+		buildNodeTable, checkForSlowQueries, updateAllCharts;
 
 	setJqueryMap = function() {
 		var $container = stateMap.$container;
@@ -78,6 +78,12 @@ blurconsole.dashboard = (function () {
 		$.gevent.unsubscribe(jqueryMap.$container, 'tables-updated');
 		$.gevent.unsubscribe(jqueryMap.$container, 'query-perf-updated');
 		$.gevent.unsubscribe(jqueryMap.$container, 'queries-updated');
+	};
+
+	updateAllCharts = function() {
+		updateNodeCharts();
+		loadTableColumnChart();
+		loadQueryPerfLineChart();
 	};
 
 	updateNodeCharts = function() {
@@ -180,20 +186,22 @@ blurconsole.dashboard = (function () {
 		return $(table);
 	};
 
-	adjustChartSize = function() {
+	adjustChartSize = function(holder) {
+		var size;
+		size = jqueryMap[holder].parent()[0].clientWidth - 150;
+		jqueryMap[holder].css({
+			'height' : size,
+			'width' : size
+		});
+	};
+
+	adjustChartsSizes = function() {
 		var size, shardCharts;
 
-		size = jqueryMap.$zkChartHolder.parent()[0].clientWidth - 150;
-		jqueryMap.$zkChartHolder.css({
-			'height' : size,
-			'width' : size
-		});
-
-		size = jqueryMap.$controllerChartHolder.parent()[0].clientWidth - 150;
-		jqueryMap.$controllerChartHolder.css({
-			'height' : size,
-			'width' : size
-		});
+		adjustChartSize('$zkChartHolder');
+		adjustChartSize('$controllerChartHolder');
+		adjustChartSize('$tableChartHolder');
+		adjustChartSize('$queryLoadChartHolder');
 
 		size = jqueryMap.$shardChartHolder.parent()[0].clientWidth - 150;
 		shardCharts = jqueryMap.$shardChartHolder.find('.shardClusterChartHolder');
@@ -203,18 +211,7 @@ blurconsole.dashboard = (function () {
 				'width' : size
 			});
 		});
-
-		size = jqueryMap.$tableChartHolder.parent()[0].clientWidth - 150;
-		jqueryMap.$tableChartHolder.css({
-			'height' : size,
-			'width' : size
-		});
-
-		size = jqueryMap.$queryLoadChartHolder.parent()[0].clientWidth - 150;
-		jqueryMap.$queryLoadChartHolder.css({
-			'height' : size,
-			'width' : size
-		});
+		updateAllCharts();
 	};
 
 	checkForSlowQueries = function() {
@@ -229,15 +226,13 @@ blurconsole.dashboard = (function () {
 		$container.load ( configMap.view, function() {
 			stateMap.$container = $container;
 			setJqueryMap();
-			updateNodeCharts();
-			loadTableColumnChart();
-			loadQueryPerfLineChart();
+			updateAllCharts();
 			checkForSlowQueries();
 			$.gevent.subscribe(jqueryMap.$container, 'node-status-updated', updateNodeCharts);
 			$.gevent.subscribe(jqueryMap.$container, 'tables-updated', loadTableColumnChart);
 			$.gevent.subscribe(jqueryMap.$container, 'query-perf-updated', loadQueryPerfLineChart);
 			$.gevent.subscribe(jqueryMap.$container, 'queries-updated', checkForSlowQueries);
-			adjustChartSize();
+			adjustChartsSizes();
 			$(document).on('click', '.swapper-trigger', function() {
 			    console.log(this);
 				var parent = $(this).closest('div.swapper-parent');
@@ -248,9 +243,8 @@ blurconsole.dashboard = (function () {
 				chart.toggleClass('hidden');
 				info.toggleClass('hidden');
 			});
-			
 		});
-		$(window).resize(adjustChartSize);
+		$(window).resize(adjustChartsSizes);
 		return true;
 	};
 

@@ -96,12 +96,12 @@ blurconsole.dashboard = (function () {
 
 	loadZkPieChart = function() {
 		$.plot(jqueryMap.$zkChartHolder, blurconsole.model.metrics.getZookeeperChartData(), configMap.pieOptions);
-		jqueryMap.$zkInfoHolder.html(buildNodeTable(blurconsole.model.nodes.getOfflineZookeeperNodes()));
+		jqueryMap.$zkInfoHolder.html(buildNodeTable(blurconsole.model.nodes.getOnlineZookeeperNodes(), blurconsole.model.nodes.getOfflineZookeeperNodes()));
 	};
 
 	loadControllerPieChart = function() {
 		$.plot(jqueryMap.$controllerChartHolder, blurconsole.model.metrics.getControllerChartData(), configMap.pieOptions);
-		jqueryMap.$controllerInfoHolder.html(buildNodeTable(blurconsole.model.nodes.getOfflineControllerNodes()));
+		jqueryMap.$controllerInfoHolder.html(buildNodeTable(blurconsole.model.nodes.getOnlineControllerNodes(), blurconsole.model.nodes.getOfflineControllerNodes()));
 	};
 
 	loadShardsPieChart = function() {
@@ -135,7 +135,7 @@ blurconsole.dashboard = (function () {
 				}
 
 				$.plot(clusterHolder, clusterData, configMap.pieOptions);
-				clusterInfo.html(buildNodeTable(blurconsole.model.nodes.getOfflineShardNodes(cluster)));
+				clusterInfo.html(buildNodeTable([], blurconsole.model.nodes.getOfflineShardNodes(cluster)));
 			}
 		});
 	};
@@ -173,16 +173,24 @@ blurconsole.dashboard = (function () {
 		});
 	};
 
-	buildNodeTable = function(data) {
+	buildNodeTable = function(online, offline) {
 		var table = '<table class="table table-condensed"><thead><tr><th>Offline Node</th></tr></thead><tbody>';
-		if (data.length === 0) {
+		if (offline.length === 0) {
 			table += '<tr><td>Everything is Online!</td></tr>';
 		} else {
-			$.each(data, function(idx, node) {
+			$.each(offline, function(idx, node) {
 				table += '<tr><td>' + node + '</td></tr>';
 			});
 		}
 		table += '</tbody></table>';
+
+		if (online.length > 0) {
+			table += '<table class="table table-condensed"><thead><tr><th>Online Node</th></tr></thead><tbody>';
+			$.each(online, function(idx, node) {
+				table += '<tr><td>' + node + '</td></tr>';
+			});
+			table += '</tbody></table>';
+		}
 		return $(table);
 	};
 

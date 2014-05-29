@@ -134,35 +134,50 @@ blurconsole.model = (function() {
 	}());
 
 	nodes = (function() {
-		var getOfflineZookeeperNodes, getOfflineControllerNodes, getOfflineShardNodes, isDataLoaded;
+		var getOnlineZookeeperNodes = function() {
+			return stateMap.nodeMap.zookeepers.online;
+		};
 
-		getOfflineZookeeperNodes = function() {
+		var getOfflineZookeeperNodes = function() {
 			return stateMap.nodeMap.zookeepers.offline;
 		};
 
-		getOfflineControllerNodes = function() {
+		var getOnlineControllerNodes = function() {
+			return stateMap.nodeMap.controllers.online;
+		};
+
+		var getOfflineControllerNodes = function() {
 			return stateMap.nodeMap.controllers.offline;
 		};
 
-		getOfflineShardNodes = function(clusterName) {
+		var _getClusterData = function(clusterName) {
 			var clusterData = $.grep(stateMap.nodeMap.clusters, function(cluster) {
 				return cluster.name === clusterName;
 			});
-
-			if (clusterData.length > 0) {
-				return clusterData[0].offline;
-			}
-			return [];
+			return clusterData.length > 0 ? clusterData[0] : null;
 		};
 
-		isDataLoaded = function() {
+		var getOfflineShardNodes = function(clusterName) {
+			var clusterData = _getClusterData(clusterName);
+			return clusterData ? clusterData.offline : [];
+		};
+
+		var getOnlineShardNodes = function(clusterName) {
+			var clusterData = _getClusterData(clusterName);
+			return clusterData ? clusterData.online : [];
+		};
+
+		var isDataLoaded = function() {
 			return stateMap.nodeMap !== null;
 		};
 
 		return {
+			getOnlineZookeeperNodes : getOnlineZookeeperNodes,
 			getOfflineZookeeperNodes : getOfflineZookeeperNodes,
 			getOfflineControllerNodes : getOfflineControllerNodes,
+			getOnlineControllerNodes : getOnlineControllerNodes,
 			getOfflineShardNodes : getOfflineShardNodes,
+			getOnlineShardNodes : getOnlineShardNodes,
 			isDataLoaded : isDataLoaded
 		};
 	}());

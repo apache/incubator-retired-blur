@@ -30,7 +30,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLongArray;
 
-import org.apache.blur.BlurConfiguration;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -564,10 +563,6 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   public void setDataFetchThreadCount(int dataFetchThreadCount) {
     _dataFetchThreadCount = dataFetchThreadCount;
-  }
-
-  public void setConfiguration(BlurConfiguration conf) {
-    _configuration = conf;
   }
 
   @Override

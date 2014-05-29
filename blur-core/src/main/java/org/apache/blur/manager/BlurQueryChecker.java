@@ -71,21 +71,21 @@ public class BlurQueryChecker {
       if (blurQuery.selector.recordOnly) {
         if (blurQuery.fetch > _maxQueryRecordFetch) {
           LOG.warn("Number of records requested to be fetched [{0}] is greater than the max allowed [{1}]",
-              _maxQueryRecordFetch);
-          blurQuery.fetch = (int) blurQuery.minimumNumberOfResults;
+              blurQuery.fetch, _maxQueryRecordFetch);
+          blurQuery.fetch = _maxQueryRecordFetch;
         }
       } else {
         if (blurQuery.fetch > _maxQueryRowFetch) {
           LOG.warn("Number of rows requested to be fetched [{0}] is greater than the max allowed [{1}]",
-              _maxQueryRowFetch);
-          blurQuery.fetch = (int) blurQuery.minimumNumberOfResults;
+              blurQuery.fetch, _maxQueryRowFetch);
+          blurQuery.fetch = _maxQueryRowFetch;
         }
       }
     }
     if (blurQuery.fetch > _maxQueryResultsFetch) {
       LOG.warn("Number of results requested to be fetched [{0}] is greater than the max allowed [{1}]",
-          _maxQueryResultsFetch);
-      blurQuery.fetch = (int) blurQuery.minimumNumberOfResults;
+          blurQuery.fetch, _maxQueryResultsFetch);
+      blurQuery.fetch = _maxQueryResultsFetch;
     }
     if (blurQuery.fetch > blurQuery.minimumNumberOfResults) {
       LOG.warn(

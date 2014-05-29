@@ -17,10 +17,10 @@
 
 cat ../NOTICE-bin.base.txt
 
-for f in `ls *.NOTICE` 
+for f in `ls *.src` 
 do
  if [ -s $f ]; then 
-   echo ================== NOTICE for: $f | sed -e 's/\.NOTICE//'
+   echo ================== NOTICE for: $f | sed -e 's/\.src//'
    cat $f
    echo 
  fi

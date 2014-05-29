@@ -18,10 +18,9 @@ package org.apache.blur.thrift;
  */
 import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER;
 import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER_NAME;
-import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_REMOTE_FETCH_COUNT;
-import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
+import static org.apache.blur.utils.BlurConstants.BLUR_HTTP_STATUS_RUNNING_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_INDEXMANAGER_FACET_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_INDEXMANAGER_MUTATE_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT;
@@ -106,7 +105,6 @@ import sun.misc.VM;
 
 public class ThriftBlurShardServer extends ThriftServer {
 
-  
   private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
   private static final boolean enableJsonReporter = false;
   private static final long _64MB = 64 * 1024 * 1024;
@@ -152,12 +150,9 @@ public class ThriftBlurShardServer extends ThriftServer {
     final HttpJettyServer httpServer;
     if (baseGuiPort > 0) {
       int webServerPort = baseGuiPort + serverIndex;
-
-      // TODO: this got ugly, there has to be a better way to handle all these
-      // params without reversing the mvn dependancy and making blur-gui on top.
-      httpServer = new HttpJettyServer(bindPort, webServerPort, configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1),
-          configuration.getInt(BLUR_SHARD_BIND_PORT, -1), configuration.getInt(BLUR_GUI_CONTROLLER_PORT, -1),
-          configuration.getInt(BLUR_GUI_SHARD_PORT, -1), "shard");
+      httpServer = new HttpJettyServer(HttpJettyServer.class, webServerPort);
+      int port = httpServer.getLocalPort();
+      configuration.setInt(BLUR_HTTP_STATUS_RUNNING_PORT, port);
     } else {
       httpServer = null;
     }
@@ -250,7 +245,6 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.setZookeeper(zooKeeper);
     shardServer.setClusterStatus(clusterStatus);
     shardServer.setQueryChecker(queryChecker);
-    shardServer.setConfiguration(configuration);
     shardServer.setMaxRecordsPerRowFetchRequest(configuration.getInt(BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST, 1000));
     shardServer.setConfiguration(configuration);
     shardServer.init();

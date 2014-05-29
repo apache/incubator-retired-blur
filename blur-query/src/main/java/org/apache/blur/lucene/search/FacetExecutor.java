@@ -327,9 +327,8 @@ public class FacetExecutor {
             public void run() {
               try {
                 entry.getValue().process(_counts, _minimumsBeforeReturning, _running);
-              } catch (IOException e) {
+              } catch (Throwable e) {
                 LOG.error("Unknown error", e);
-                throw new RuntimeException(e);
               } finally {
                 finished.incrementAndGet();
               }

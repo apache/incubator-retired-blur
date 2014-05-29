@@ -95,7 +95,7 @@ blurconsole.fake = (function() {
 
 		setTimeout(function(){
 			callback({
-				slowQueries : randomNumber(100) % 10 === 0,
+				slowQueries : randomNumber(10) === 1,
 				queries : queries
 			});
 		}, randomNumber(1000));

@@ -216,9 +216,9 @@ blurconsole.dashboard = (function () {
 
 	checkForSlowQueries = function() {
 		if (blurconsole.model.metrics.getSlowQueryWarnings()) {
-			$('#slow-query-warnings').removeClass('hidden');
+			$('#slow-query-warnings').slideDown();
 		} else {
-			$('#slow-query-warnings').addClass('hidden');
+			$('#slow-query-warnings').slideUp();
 		}
 	};
 

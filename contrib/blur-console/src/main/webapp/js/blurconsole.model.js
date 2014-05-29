@@ -391,7 +391,15 @@ blurconsole.model = (function() {
 		loadMoreResults = function(family) {
 			var alreadyLoadedResults = results[family];
 
-			currentArgs.start = alreadyLoadedResults ? alreadyLoadedResults.length : 0;
+			if (typeof alreadyLoadedResults === 'undefined' || alreadyLoadedResults === null) {
+				currentArgs.start = 0;
+			} else if ($.isArray(alreadyLoadedResults)) {
+				currentArgs.start = alreadyLoadedResults.length;
+			} else {
+				currentArgs.start = blurconsole.utils.keys(alreadyLoadedResults).length;
+			}
+
+			// currentArgs.start = alreadyLoadedResults ? alreadyLoadedResults.length : 0;
 			currentArgs.fetch = 10;
 			currentArgs.families = [family];
 			sendSearch();
@@ -410,13 +418,8 @@ blurconsole.model = (function() {
 
 			if (typeof dataResults !== 'undefined' && dataResults !== null) {
 				$.each(dataResults, function(family, resultList){
-					if (currentArgs.rowRecordOption === 'recordrecord') {
-						var recordList = results[family] || [];
-						results[family] = recordList.concat(resultList);
-					} else {
-						var rowList = results[family] || {};
-						results[family] = $.extend(resultList, rowList);
-					}
+					var dataList = results[family] || [];
+					results[family] = dataList.concat(resultList);
 				});
 			}
 			$.gevent.publish('results-updated', [dataFamilies]);

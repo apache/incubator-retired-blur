@@ -62,6 +62,11 @@ blurconsole.utils = (function(){
 	findFamilies = function(query) {
 		// Determine regex to find column families in lucene query
 		var matches = query.match(/[^ \(\)\+\-]+(\w+)\.\w+:/g);
+
+		if (matches === null) {
+			return [];
+		}
+
 		var families = [];
 		$.each(matches, function(idx, match) {
 			families.push(match.split('.')[0]);

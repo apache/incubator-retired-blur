@@ -160,6 +160,7 @@ blurconsole.queries = (function () {
 		var clusters = blurconsole.model.tables.getClusters();
 		if (clusters && clusters.length > 0) {
 			drawTableList();
+			drawQueries();
 		} else {
 			setTimeout(waitForData, 100);
 		}

@@ -202,7 +202,7 @@ blurconsole.search = (function () {
 	fixPanelWidths = function() {
 		var allPanels = jqueryMap.$resultsHolder.find('.panel-collapse');
 		if (allPanels.length > 0) {
-			var width = $(allPanels[0]).width();
+			var width = $(allPanels[0]).parent().width() - 30;
 			allPanels.width(width);
 		}
 	};
@@ -212,70 +212,91 @@ blurconsole.search = (function () {
 		jqueryMap.$countHolder.html('<small>Found ' + blurconsole.model.search.getTotal() + ' total results</small>');
 		//jqueryMap.$facetTrigger.show();
 
-		$.each(families, function(i, fam) {
-			var famResults = results[fam],
-				famId = '#' + blurconsole.browserUtils.cleanId(fam),
-				famHolder = $(famId + ' .panel-body'),
-				table = '<table class="table table-condensed table-hover table-bordered"><thead><tr>',
-				cols, famTotal;
+		if (typeof families !== 'undefined' && families !== null) {
+			$.each(families, function(i, fam) {
+				var famResults = results[fam],
+					famId = '#' + blurconsole.browserUtils.cleanId(fam),
+					famHolder = $(famId + ' .panel-body'),
+					table = '<table class="table table-condensed table-hover table-bordered"><thead><tr>',
+					cols;
 
-			if ($.isArray(famResults)) {
-				// Record results
-				cols = getColList(famResults[0]);
+				if (famResults.length === 0) {
+					famHolder.html('<div class="alert alert-info">No Data Found</div>');
+				} else {
+					if (blurconsole.utils.keys(famResults[0]).indexOf('rowid') === -1 ) {
+						// Record results
+						cols = getColList(famResults[0]);
 
-				$.each(cols, function(i, col) {
-					table += '<th>' + col + '</th>';
-				});
-				table += '</tr></thead><tbody>';
-				$.each(famResults, function(i, row) {
-					table += '<tr>';
-					$.each(cols, function(c, col) {
-						table += '<td>' + (row[col] || '') + '</td>';
-					});
-					table += '</tr>';
-				});
-				famTotal = famResults.length;
-			} else {
-				// Row results
-				var rowids = blurconsole.utils.keys(famResults);
-				var firstRow = famResults[rowids[0]];
-				cols = getColList(firstRow[0]);
-
-				$.each(cols, function(i, col) {
-					table += '<th>' + col + '</th>';
-				});
-				table += '</tr></thead><tbody>';
-				$.each(famResults, function(rowid, records) {
-					table += '<tr class="row-separator"><td colspan="' + cols.length + '"><strong>rowid:</strong> ' + rowid + ' (<em>' + records.length + ' records</em>)</td></tr>';
-					$.each(records, function(i, rec) {
-						table += '<tr>';
-						$.each(cols, function(c, col) {
-							table += '<td>' + (rec[col] || '') + '</td>';
+						$.each(cols, function(i, col) {
+							table += '<th>' + col + '</th>';
 						});
-						table += '</tr>';
-					});
-				});
-				famTotal = rowids.length;
-			}
+						table += '</tr></thead><tbody>';
+						$.each(famResults, function(i, row) {
+							table += '<tr>';
+							$.each(cols, function(c, col) {
+								table += '<td>' + (row[col] || '') + '</td>';
+							});
+							table += '</tr>';
+						});
+					} else {
+						// Row results
+						$.each(famResults, function(i, row){
+							if (row.records.length > 0) {
+								var tmpCols = getColList(row.records[0]);
+								if (tmpCols.length > 0) {
+									cols = tmpCols;
+									return false;
+								}
+							}
+						});
 
-			table += '</tbody></table>';
+						cols = cols || [];
 
-			if (famTotal < blurconsole.model.search.getTotal()) {
-				table += '<div class="pull-left"><a href="' + famId + '" class="btn btn-primary nextPage">Load More...</a></div>';
-			}
+						$.each(cols, function(i, col) {
+							table += '<th>' + col + '</th>';
+						});
+						table += '</tr></thead><tbody>';
+						$.each(famResults, function(r, row) {
+							table += '<tr class="row-separator"><td colspan="' + (cols.length === 0 ? 1 : cols.length) + '">' + (r+1) + '. <strong>rowid:</strong> ' + row.rowid + ' (<em>' + (row.records === null ? 0 : row.records.length) + ' records</em>)</td></tr>';
+							if (row.records === null || row.records.length === 0) {
+								table += '<tr><td colspan="' + (cols.length === 0 ? 1 : cols.length) + '"><em>No Data Found</em></td></tr>';
+							} else {
+								$.each(row.records, function(i, rec) {
+									table += '<tr>';
+									$.each(cols, function(c, col) {
+										table += '<td>' + (rec[col] || '') + '</td>';
+									});
+									table += '</tr>';
+								});
+							}
+						});
+					}
 
-			famHolder.html(table);
-			if (!$(famId).hasClass('loaded')) {
-				$(famId).addClass('loaded');
-			}
-		});
-		fixPanelWidths();
+					table += '</tbody></table>';
+
+					if (famResults.length < blurconsole.model.search.getTotal()) {
+						table += '<div class="pull-left"><a href="' + famId + '" class="btn btn-primary nextPage">Load More...</a></div>';
+					}
+
+					famHolder.html(table);
+				}
+				if (!$(famId).hasClass('loaded')) {
+					$(famId).addClass('loaded');
+				}
+			});
+			fixPanelWidths();
+		}
 	};
 
 	getColList = function(row) {
 		var cols = blurconsole.utils.reject(blurconsole.utils.keys(row), function(i) {
 			return i === 'recordid';
 		});
+
+		if (cols.length === 0) {
+			return [];
+		}
+
 		cols.sort();
 
 		cols = ['recordid'].concat(cols);

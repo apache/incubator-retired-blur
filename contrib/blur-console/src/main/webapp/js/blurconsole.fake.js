@@ -176,46 +176,60 @@ blurconsole.fake = (function() {
 	sendSearch = function(query, table, args, callback) {
 		console.log('sending fake search [' + query + '] on table [' + table + ']');
 
-		var fams = args.families, results = {}, total = randomNumber(1000);
+		var fams = args.families, results = {}, total = (fams !== null && fams.indexOf('rowid') >= 0) ? 1 : randomNumber(1000);
 
-		$.each(fams, function(i, fam){
-			var cols = randomNumber(30, true), toFetch = args.fetch;
-			if (total - args.start < toFetch) {
-				toFetch = total - args.start;
-			}
-
-			if (args.rowRecordOption === 'recordrecord') {
-				results[fam] = [];
-				for (var recordIndex = 0; recordIndex < randomNumber(toFetch); recordIndex++) {
-					var recordRow = {};
-					recordRow.recordid = randomNumber(1000000).toString();
-					for (var recordColIndex=0; recordColIndex < cols; recordColIndex++) {
-						recordRow['col'+recordColIndex] = randomString();
-					}
-					results[fam].push(recordRow);
+		if (fams !== null) {
+			$.each(fams, function(i, fam){
+				var cols = randomNumber(30, true), toFetch = (fams !== null && fams.indexOf('rowid') >= 0)? 1 : args.fetch;
+				if (total - args.start < toFetch) {
+					toFetch = total - args.start;
 				}
-			} else {
-				results[fam] = {};
-				for (var rowIndex = 0; rowIndex < randomNumber(toFetch); rowIndex++) {
-					var rowid = randomNumber(10000000).toString();
-					results[fam][rowid] = [];
-					for (var rowRecordIndex = 0; rowRecordIndex < randomNumber(10); rowRecordIndex++) {
-						var row = {};
-						row.recordid = randomNumber(1000000).toString();
-						for (var rowRecordColIndex=0; rowRecordColIndex < cols; rowRecordColIndex++) {
-							row['col'+rowRecordColIndex] = randomString();
+
+				if (args.rowRecordOption === 'recordrecord') {
+					results[fam] = [];
+					for (var recordIndex = 0; recordIndex < randomNumber(toFetch); recordIndex++) {
+						var recordRow = {};
+						recordRow.recordid = randomNumber(1000000).toString();
+						for (var recordColIndex=0; recordColIndex < cols; recordColIndex++) {
+							recordRow['col'+recordColIndex] = randomString();
 						}
-						results[fam][rowid].push(row);
+						results[fam].push(recordRow);
+					}
+				} else {
+					results[fam] = {};
+					for (var rowIndex = 0; rowIndex < randomNumber(toFetch); rowIndex++) {
+						var rowid = randomNumber(10000000).toString();
+						results[fam][rowid] = [];
+						for (var rowRecordIndex = 0; rowRecordIndex < randomNumber(10); rowRecordIndex++) {
+							var row = {};
+							row.recordid = randomNumber(1000000).toString();
+							for (var rowRecordColIndex=0; rowRecordColIndex < cols; rowRecordColIndex++) {
+								row['col'+rowRecordColIndex] = randomString();
+							}
+							results[fam][rowid].push(row);
+						}
 					}
 				}
-			}
-		});
+			});
+		}
 
-		callback({
-			families: fams,
-			results: results,
-			total: total
-		});
+		if (fams === null || fams.length === 0) {
+			callback({
+				total: total
+			});
+		} else if (fams.indexOf('rowid') >= 0) {
+			callback({
+				total: total,
+				results: results,
+				families: fams
+			});
+		} else {
+			callback({
+				families: fams,
+				results: results,
+				total: total
+			});
+		}
 	};
 
 	randomNumber = function(max, includeZero) {

@@ -22,26 +22,41 @@ under the License.
  * blurconsole.overrides.js
  * File to override globals
  */
-/*global console:false */
+/*global console:true, blurconsole:false */
+
 if (typeof console === 'undefined') {
-  console = {
-    log: function() {
-      if(typeof blurconsole !== 'undefined' && typeof blurconsole.model !== 'undefined' && typeof blurconsole.model.logs !== 'undefined') {
-        var args = Array.prototype.slice.call(arguments);
-        blurconsole.model.logs.logError(args.join(' '), 'javascript');
-      }
-    },
-    info: function() {
-      return console.log.apply(null, arguments);
-    },
-    warn: function() {
-      return console.log.apply(null, arguments);
-    },
-    error: function() {
-      return console.log.apply(null, arguments);
-    },
-    debug: function() {
-      return console.log.apply(null, arguments);
-    }
-  }
+    console = (function() {
+        'use strict';
+
+        var log = function() {
+            if(typeof blurconsole !== 'undefined' && typeof blurconsole.model !== 'undefined' && typeof blurconsole.model.logs !== 'undefined') {
+                var args = Array.prototype.slice.call(arguments);
+                blurconsole.model.logs.logError(args.join(' '), 'javascript');
+            }
+        };
+
+        var info = function() {
+            return console.log.apply(null, arguments);
+        };
+
+        var warn = function() {
+            return console.log.apply(null, arguments);
+        };
+
+        var error = function() {
+            return console.log.apply(null, arguments);
+        };
+
+        var debug = function() {
+            return console.log.apply(null, arguments);
+        };
+
+        return {
+            log: log,
+            info: info,
+            warn: warn,
+            error: error,
+            debug: debug
+        };
+    }());
 }

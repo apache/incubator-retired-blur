@@ -62,7 +62,6 @@ public class JettyServer {
 		server = new Server(port);
 		
 		// for localhost:port/console/index.html and whatever else is in the webapp directory
-		System.out.println(this.getClass().getClassLoader().getResource(DEV_WEBAPPDIR).toString());
 	    final URL warUrl = devMode ? this.getClass().getClassLoader().getResource(DEV_WEBAPPDIR) : this.getClass().getClassLoader().getResource(PROD_WEBAPPDIR);
 	    final String warUrlString = warUrl.toExternalForm();
 	    server.setHandler(new WebAppContext(warUrlString, CONTEXTPATH));

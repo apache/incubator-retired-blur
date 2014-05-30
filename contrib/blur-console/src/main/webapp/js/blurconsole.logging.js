@@ -21,6 +21,8 @@ under the License.
 /*global blurconsole:false */
 blurconsole.logging = (function () {
 	'use strict';
+
+	//------------------------ Configuration and State -----------------------
 	var configMap = {
 		emptyLogMsg: 'No Errors! Yay!',
 		mainHtml: '<div class="log_display"></div>',
@@ -31,35 +33,29 @@ blurconsole.logging = (function () {
 	},
 	jqueryMap = {
 		modal: null
-	},
-	initModule, showLogging, clearLogging, drawLogs;
-
-	initModule = function() {
-		$.gevent.subscribe($(document), 'show-logging', showLogging);
-		$.gevent.subscribe($(document), 'logging-updated', drawLogs);
 	};
 
-	showLogging = function() {
+	//------------------ Event Handling and DOM Methods -------------
+	function _showLogging() {
 		if (jqueryMap.modal === null) {
 			jqueryMap.modal = $(blurconsole.browserUtils.modal('error_log_modal', 'Error Logs', configMap.mainHtml, configMap.buttons, 'large'));
 			jqueryMap.modal.modal()
 			.on('shown.bs.modal', function(){
 				jqueryMap.logHolder = $('.log_display', jqueryMap.modal);
-				console.log(jqueryMap.logHolder);
-				drawLogs();
+				_drawLogs();
 			})
-			.on('click', '#clear-log-button', clearLogging);
+			.on('click', '#clear-log-button', _clearLogging);
 		} else {
 			jqueryMap.modal.modal('show');
 		}
-	};
+	}
 
-	clearLogging = function() {
+	function _clearLogging() {
 		jqueryMap.logHolder.html(configMap.emptyLogMsg);
 		blurconsole.model.logs.clearErrors();
-	};
+	}
 
-	drawLogs = function() {
+	function _drawLogs() {
 		var errors = blurconsole.model.logs.getLogs();
 
 		if (jqueryMap.logHolder) {
@@ -77,7 +73,13 @@ blurconsole.logging = (function () {
 				jqueryMap.logHolder.html(errorList);
 			}
 		}
-	};
+	}
+
+	//------------------ Public API ---------------------------------
+	function initModule() {
+		$.gevent.subscribe($(document), 'show-logging', _showLogging);
+		$.gevent.subscribe($(document), 'logging-updated', _drawLogs);
+	}
 
 	return {
 		initModule : initModule

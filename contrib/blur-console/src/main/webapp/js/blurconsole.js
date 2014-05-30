@@ -24,10 +24,12 @@ under the License.
  */
 var blurconsole = (function () {
 	'use strict';
-	var initModule = function ( $container ) {
+
+	//---------------------- Public API -------------------------
+	function initModule( $container ) {
 		blurconsole.model.initModule();
 		blurconsole.shell.initModule( $container );
-	};
+	}
 
 	return { initModule: initModule };
 }());

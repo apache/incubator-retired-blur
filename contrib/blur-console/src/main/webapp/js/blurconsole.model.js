@@ -20,6 +20,8 @@ under the License.
 /*global blurconsole:false */
 blurconsole.model = (function() {
 	'use strict';
+
+	//----------------------- Configuration and State ------------------
 	var
 		configMap = {
 			poller : null
@@ -31,21 +33,20 @@ blurconsole.model = (function() {
 			queryPerformance : [],
 			queries : {},
 			errors: []
-		},
-		tables, metrics, nodes, queries, search, logs, initModule, nodePoller, updateNodes, tablePoller, updateTables, queryPerformancePoller, updateQueryPerformance, queryPoller, updateQueries;
+		};
 
-	tables = (function() {
-		var getClusters, getEnabledTables, getDisabledTables, isDataLoaded, disableTable, enableTable, deleteTable, getSchema, findTerms, getAllEnabledTables, getFamilies;
-
-		getClusters = function() {
+	//----------------------- Models ----------------------------------
+	var tables = (function() {
+		//-------------- Public API -----------------
+		function getClusters() {
 			if (stateMap.currentClusters === null) {
 				return [];
 			}
 
 			return blurconsole.utils.unique(stateMap.currentClusters, true);
-		};
+		}
 
-		getEnabledTables = function(cluster) {
+		function getEnabledTables(cluster) {
 			var data = [];
 
 			$.each(stateMap.currentTables, function(idx, table) {
@@ -55,9 +56,9 @@ blurconsole.model = (function() {
 			});
 
 			return data;
-		};
+		}
 
-		getDisabledTables = function(cluster) {
+		function getDisabledTables(cluster) {
 			var data = [];
 
 			$.each(stateMap.currentTables, function(idx, table) {
@@ -67,9 +68,9 @@ blurconsole.model = (function() {
 			});
 
 			return data;
-		};
+		}
 
-		getAllEnabledTables = function() {
+		function getAllEnabledTables() {
 			var tableMap = {};
 
 			$.each(getClusters(), function(c, cluster){
@@ -77,29 +78,29 @@ blurconsole.model = (function() {
 			});
 
 			return tableMap;
-		};
+		}
 
-		isDataLoaded = function() {
+		function isDataLoaded() {
 			return stateMap.currentTables !== null;
-		};
+		}
 
-		disableTable = function(tableName) {
+		function disableTable(tableName) {
 			configMap.poller.disableTable(tableName);
-		};
+		}
 
-		enableTable = function(tableName) {
+		function enableTable(tableName) {
 			configMap.poller.enableTable(tableName);
-		};
+		}
 
-		deleteTable = function(tableName, includeFiles) {
+		function deleteTable(tableName, includeFiles) {
 			configMap.poller.deleteTable(tableName, includeFiles);
-		};
+		}
 
-		getSchema = function(tableName, callback) {
+		function getSchema(tableName, callback) {
 			configMap.poller.getSchema(tableName, callback);
-		};
+		}
 
-		getFamilies = function(tableName) {
+		function getFamilies(tableName) {
 			var table;
 
 			$.each(stateMap.currentTables, function(idx, t) {
@@ -110,13 +111,13 @@ blurconsole.model = (function() {
 			});
 
 			return table.families;
-		};
+		}
 
-		findTerms = function(table, family, column, startsWith) {
+		function findTerms(table, family, column, startsWith) {
 			configMap.poller.findTerms(table, family, column, startsWith, function(terms) {
 				$.gevent.publish('terms-updated', terms);
 			});
-		};
+		}
 
 		return {
 			getClusters : getClusters,
@@ -133,43 +134,45 @@ blurconsole.model = (function() {
 		};
 	}());
 
-	nodes = (function() {
-		var getOnlineZookeeperNodes = function() {
-			return stateMap.nodeMap.zookeepers.online;
-		};
-
-		var getOfflineZookeeperNodes = function() {
-			return stateMap.nodeMap.zookeepers.offline;
-		};
-
-		var getOnlineControllerNodes = function() {
-			return stateMap.nodeMap.controllers.online;
-		};
-
-		var getOfflineControllerNodes = function() {
-			return stateMap.nodeMap.controllers.offline;
-		};
-
-		var _getClusterData = function(clusterName) {
+	var nodes = (function() {
+		//------------- Private Methods -----------------
+		function _getClusterData(clusterName) {
 			var clusterData = $.grep(stateMap.nodeMap.clusters, function(cluster) {
 				return cluster.name === clusterName;
 			});
 			return clusterData.length > 0 ? clusterData[0] : null;
-		};
+		}
 
-		var getOfflineShardNodes = function(clusterName) {
+		//------------- Public API ----------------------
+		function getOnlineZookeeperNodes() {
+			return stateMap.nodeMap.zookeepers.online;
+		}
+
+		function getOfflineZookeeperNodes() {
+			return stateMap.nodeMap.zookeepers.offline;
+		}
+
+		function getOnlineControllerNodes() {
+			return stateMap.nodeMap.controllers.online;
+		}
+
+		function getOfflineControllerNodes() {
+			return stateMap.nodeMap.controllers.offline;
+		}
+
+		function getOfflineShardNodes(clusterName) {
 			var clusterData = _getClusterData(clusterName);
 			return clusterData ? clusterData.offline : [];
-		};
+		}
 
-		var getOnlineShardNodes = function(clusterName) {
+		function getOnlineShardNodes(clusterName) {
 			var clusterData = _getClusterData(clusterName);
 			return clusterData ? clusterData.online : [];
-		};
+		}
 
-		var isDataLoaded = function() {
+		function isDataLoaded() {
 			return stateMap.nodeMap !== null;
-		};
+		}
 
 		return {
 			getOnlineZookeeperNodes : getOnlineZookeeperNodes,
@@ -182,36 +185,51 @@ blurconsole.model = (function() {
 		};
 	}());
 
-	metrics = (function() {
-		var getZookeeperChartData, getControllerChartData, getClusters, getShardChartData, getTableChartData,
-			getQueryLoadChartData, buildPieChartData, getSlowQueryWarnings;
+	var metrics = (function() {
+		//------------- Private Methods ------------------
+		function _buildPieChartData(onlineCount, offlineCount) {
+			var onlineChart = {
+				'label':'Online',
+				'color':'#66CDCC',
+				'data':[[0,onlineCount]]
+			};
 
-		getZookeeperChartData = function() {
-			return buildPieChartData(stateMap.nodeMap.zookeepers.online.length, stateMap.nodeMap.zookeepers.offline.length);
-		};
+			var offlineChart = {
+				'label':'Offline',
+				'color':'#FF1919',
+				'data':[[0,offlineCount]]
+			};
 
-		getControllerChartData = function() {
-			return buildPieChartData(stateMap.nodeMap.controllers.online.length, stateMap.nodeMap.controllers.offline.length);
-		};
+			return [onlineChart, offlineChart];
+		}
 
-		getClusters = function() {
+		//------------- Public API -----------------------
+		function getZookeeperChartData() {
+			return _buildPieChartData(stateMap.nodeMap.zookeepers.online.length, stateMap.nodeMap.zookeepers.offline.length);
+		}
+
+		function getControllerChartData() {
+			return _buildPieChartData(stateMap.nodeMap.controllers.online.length, stateMap.nodeMap.controllers.offline.length);
+		}
+
+		function getClusters() {
 			return $.map(stateMap.nodeMap.clusters, function(cluster) {
 				return cluster.name;
 			});
-		};
+		}
 
-		getShardChartData = function(clusterName) {
+		function getShardChartData(clusterName) {
 			var clusterData = $.grep(stateMap.nodeMap.clusters, function(cluster) {
 				return cluster.name === clusterName;
 			});
 
 			if (clusterData.length > 0) {
-				return buildPieChartData(clusterData[0].online.length, clusterData[0].offline.length);
+				return _buildPieChartData(clusterData[0].online.length, clusterData[0].offline.length);
 			}
 			return null;
-		};
+		}
 
-		getTableChartData = function() {
+		function getTableChartData() {
 			var enabledData = blurconsole.utils.reduce(stateMap.currentTables, [], function(accumulator, table){
 				var currentCluster = $.grep(accumulator, function(item){
 					return item[0] === table.cluster;
@@ -262,9 +280,9 @@ blurconsole.model = (function() {
 					'stack' : true
 				}
 			];
-		};
+		}
 
-		getQueryLoadChartData = function() {
+		function getQueryLoadChartData() {
 			var total = 0,
 				queryArray = [],
 				meanArray = [],
@@ -283,28 +301,12 @@ blurconsole.model = (function() {
 				meanArray.push([idx, mean]);
 			});
 
-			return [queryArray, meanArray];
-		};
+			return [{label: 'Queries', data: queryArray}, {label:'Average', data:meanArray}];
+		}
 
-		buildPieChartData = function(onlineCount, offlineCount) {
-			var onlineChart = {
-				'label':'Online',
-				'color':'#66CDCC',
-				'data':[[0,onlineCount]]
-			};
-
-			var offlineChart = {
-				'label':'Offline',
-				'color':'#FF1919',
-				'data':[[0,offlineCount]]
-			};
-
-			return [onlineChart, offlineChart];
-		};
-
-		getSlowQueryWarnings = function() {
+		function getSlowQueryWarnings() {
 			return stateMap.queries.slowQueries;
-		};
+		}
 
 		return {
 			getZookeeperChartData : getZookeeperChartData,
@@ -317,11 +319,22 @@ blurconsole.model = (function() {
 		};
 	}());
 
-	queries = (function() {
-		var queriesForTable, cancelQuery, tableHasActivity, matchesFilter,
-			states = ['running', 'interrupted', 'complete', 'backpressureinterrupted'];
+	var queries = (function() {
+		var states = ['running', 'interrupted', 'complete', 'backpressureinterrupted'];
 
-		queriesForTable = function(table, sort, filter) {
+		//-------------- Private Methods -------------------
+		function _matchesFilter(queryData, filterText) {
+			var queryStr = queryData.user + '~~~' + queryData.query + '~~~' + states[queryData.state];
+
+			if (filterText === null || filterText === '') {
+				return true;
+			}
+
+			return queryStr.toLowerCase().indexOf(filterText.toLowerCase()) !== -1;
+		}
+
+		//-------------- Public API -----------------------
+		function queriesForTable(table, sort, filter) {
 			var queries = [], qSort, sortField, sortDir;
 
 			qSort = (sort || 'startTime~desc').split('~');
@@ -329,7 +342,7 @@ blurconsole.model = (function() {
 			sortDir = qSort.length > 1 ? qSort[1] : 'asc';
 
 			$.each(stateMap.queries.queries, function(i, query){
-				if (query.table === table && matchesFilter(query, filter)) {
+				if (query.table === table && _matchesFilter(query, filter)) {
 					queries.push(query);
 				}
 			});
@@ -343,13 +356,13 @@ blurconsole.model = (function() {
 			});
 
 			return queries;
-		};
+		}
 
-		cancelQuery = function(table, uuid) {
+		function cancelQuery(table, uuid) {
 			configMap.poller.cancelQuery(uuid);
-		};
+		}
 
-		tableHasActivity = function(table) {
+		function tableHasActivity(table) {
 			var hasActivity = false;
 			$.each(stateMap.queries.queries, function(i, query){
 				if (query.table === table) {
@@ -358,17 +371,7 @@ blurconsole.model = (function() {
 				}
 			});
 			return hasActivity;
-		};
-
-		matchesFilter = function(queryData, filterText) {
-			var queryStr = queryData.user + '~~~' + queryData.query + '~~~' + states[queryData.state];
-
-			if (filterText === null || filterText === '') {
-				return true;
-			}
-
-			return queryStr.toLowerCase().indexOf(filterText.toLowerCase()) !== -1;
-		};
+		}
 
 		return {
 			queriesForTable : queriesForTable,
@@ -377,12 +380,30 @@ blurconsole.model = (function() {
 		};
 	}());
 
-	search = (function() {
-		var results = {}, totalRecords = 0, currentQuery, currentTable, currentArgs = {start: 0, fetch: 10, rowRecordOption: 'rowrow', families: null},
-			runSearch, getResults, getFamilies, loadMoreResults, getTotal,
-			sendSearch, processResults;
+	var search = (function() {
+		var results = {}, totalRecords = 0, currentQuery, currentTable, currentArgs = {start: 0, fetch: 10, rowRecordOption: 'rowrow', families: null};
 
-		runSearch = function( query, table, searchArgs ) {
+		//-------------- Private Methods -------------------------
+		function _sendSearch() {
+			configMap.poller.sendSearch(currentQuery, currentTable, currentArgs, _processResults);
+		}
+
+		function _processResults(data) {
+			var dataFamilies = data.families;
+			var dataResults = data.results;
+			totalRecords = data.total;
+
+			if (typeof dataResults !== 'undefined' && dataResults !== null) {
+				$.each(dataResults, function(family, resultList){
+					var dataList = results[family] || [];
+					results[family] = dataList.concat(resultList);
+				});
+			}
+			$.gevent.publish('results-updated', [dataFamilies]);
+		}
+
+		//-------------- Public API ------------------------------
+		function runSearch( query, table, searchArgs ) {
 			var parsedFamilies = blurconsole.utils.findFamilies(query);
 
 			currentQuery = query;
@@ -392,18 +413,18 @@ blurconsole.model = (function() {
 				currentArgs.families = parsedFamilies;
 			}
 			results = {};
-			sendSearch();
-		};
+			_sendSearch();
+		}
 
-		getResults = function() {
+		function getResults() {
 			return results;
-		};
+		}
 
-		getTotal = function() {
+		function getTotal() {
 			return totalRecords;
-		};
+		}
 
-		loadMoreResults = function(family) {
+		function loadMoreResults(family) {
 			var alreadyLoadedResults = results[family];
 
 			if (typeof alreadyLoadedResults === 'undefined' || alreadyLoadedResults === null) {
@@ -417,55 +438,33 @@ blurconsole.model = (function() {
 			// currentArgs.start = alreadyLoadedResults ? alreadyLoadedResults.length : 0;
 			currentArgs.fetch = 10;
 			currentArgs.families = [family];
-			sendSearch();
-		};
-
-		sendSearch = function() {
-			configMap.poller.sendSearch(currentQuery, currentTable, currentArgs, processResults);
-		};
-
-		processResults = function(data) {
-			var dataFamilies, dataResults;
-
-			dataFamilies = data.families;
-			dataResults = data.results;
-			totalRecords = data.total;
-
-			if (typeof dataResults !== 'undefined' && dataResults !== null) {
-				$.each(dataResults, function(family, resultList){
-					var dataList = results[family] || [];
-					results[family] = dataList.concat(resultList);
-				});
-			}
-			$.gevent.publish('results-updated', [dataFamilies]);
-		};
+			_sendSearch();
+		}
 
 		return {
 			runSearch: runSearch,
 			getResults: getResults,
-			getFamilies: getFamilies,
 			loadMoreResults: loadMoreResults,
 			getTotal: getTotal
 		};
 	}());
 
-	logs = (function() {
-		var logError, clearErrors, getLogs;
-
-		logError = function(error, module) {
+	var logs = (function() {
+		//------------- Public API -------------------
+		function logError(error, module) {
 			stateMap.errors.push({error: error, module: module, timestamp: new Date()});
 			$.gevent.publish('logging-updated');
-		};
+		}
 
-		clearErrors = function() {
+		function clearErrors() {
 			delete stateMap.errors;
 			stateMap.errors = [];
 			$.gevent.publish('logging-updated');
-		};
+		}
 
-		getLogs = function() {
+		function getLogs() {
 			return stateMap.errors;
-		};
+		}
 
 		return {
 			logError: logError,
@@ -474,23 +473,33 @@ blurconsole.model = (function() {
 		};
 	}());
 
-	nodePoller = function() {
-		configMap.poller.getNodeList(updateNodes);
-	};
+	//----------------------- Private Methods -------------------------
+	function _nodePoller() {
+		configMap.poller.getNodeList(_updateNodes);
+	}
 
-	updateNodes = function(nodes) {
+	function _tablePoller() {
+		configMap.poller.getTableList(_updateTables);
+	}
+
+	function _queryPerformancePoller() {
+		configMap.poller.getQueryPerformance(_updateQueryPerformance);
+	}
+
+	function _queryPoller() {
+		configMap.poller.getQueries(_updateQueries);
+	}
+
+	//----------------------- Event Handlers --------------------------
+	function _updateNodes(nodes) {
 		if (nodes !== 'error' && !blurconsole.utils.equals(nodes, stateMap.nodeMap)) {
 			stateMap.nodeMap = nodes;
 			$.gevent.publish('node-status-updated');
 		}
-		setTimeout(nodePoller, 5000);
-	};
+		setTimeout(_nodePoller, 5000);
+	}
 
-	tablePoller = function() {
-		configMap.poller.getTableList(updateTables);
-	};
-
-	updateTables = function(data) {
+	function _updateTables(data) {
 		if (data !== 'error') {
 			var tables = data.tables, clusters = data.clusters;
 			if (!blurconsole.utils.equals(tables, stateMap.currentTables) || !blurconsole.utils.equals(clusters, stateMap.currentClusters)) {
@@ -499,14 +508,10 @@ blurconsole.model = (function() {
 				$.gevent.publish('tables-updated');
 			}
 		}
-		setTimeout(tablePoller, 5000);
-	};
+		setTimeout(_tablePoller, 5000);
+	}
 
-	queryPerformancePoller = function() {
-		configMap.poller.getQueryPerformance(updateQueryPerformance);
-	};
-
-	updateQueryPerformance = function(performanceMetric) {
+	function _updateQueryPerformance(performanceMetric) {
 		if (performanceMetric !== 'error') {
 			if (stateMap.queryPerformance.length === 100) {
 				stateMap.queryPerformance.shift();
@@ -515,30 +520,28 @@ blurconsole.model = (function() {
 			stateMap.queryPerformance.push(performanceMetric);
 			$.gevent.publish('query-perf-updated');
 		}
-		setTimeout(queryPerformancePoller, 5000);
-	};
+		setTimeout(_queryPerformancePoller, 5000);
+	}
 
-	queryPoller = function() {
-		configMap.poller.getQueries(updateQueries);
-	};
-
-	updateQueries = function(queries) {
+	function _updateQueries(queries) {
 		if (queries !== 'error' && !blurconsole.utils.equals(queries, stateMap.queries)) {
 			stateMap.queries = queries;
 			$.gevent.publish('queries-updated');
 		}
-		setTimeout(queryPoller, 5000);
-	};
+		setTimeout(_queryPoller, 5000);
+	}
 
-	initModule = function() {
+	//----------------------- Public API ------------------------------
+	function initModule() {
 		configMap.poller = window.location.href.indexOf('fakeIt=') > -1 ? blurconsole.fake : blurconsole.data;
 		setTimeout(function() {
-			nodePoller();
-			tablePoller();
-			queryPerformancePoller();
-			queryPoller();
+			_nodePoller();
+			_tablePoller();
+			_queryPerformancePoller();
+			_queryPoller();
 		}, 1000);
-	};
+	}
+
 	return {
 		initModule : initModule,
 		tables : tables,

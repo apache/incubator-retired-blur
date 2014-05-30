@@ -21,6 +21,8 @@ under the License.
 /*global blurconsole:false */
 blurconsole.tables = (function () {
 	'use strict';
+    
+    //------------------------ Configuration and State ----------------------
 	var configMap = {
 		view : 'views/tables.tpl.html',
 		enabledDef : [
@@ -47,97 +49,27 @@ blurconsole.tables = (function () {
 		]
 	},
 	stateMap = { $container : null },
-	jqueryMap = {},
-	setJqueryMap, initModule, unloadModule, updateTableList, buildTabs, waitForData, registerPageEvents, unregisterPageEvents, updateActivityIndicators;
+	jqueryMap = {};
 
-	setJqueryMap = function() {
+    //----------------------------- Private Methods ----------------------------
+	function _setJqueryMap() {
 		var $container = stateMap.$container;
 		jqueryMap = {
 			$container : $container,
 			$tableInfoHolder : $('#tableInfoHolder'),
 			$tables : {}
 		};
-	};
+	}
 
-	unloadModule = function() {
-		$.gevent.unsubscribe(jqueryMap.$container, 'tables-updated');
-		$.gevent.unsubscribe(jqueryMap.$container, 'queries-updated');
-		unregisterPageEvents();
-	};
-
-	initModule = function($container) {
-		$container.load(configMap.view, function() {
-			stateMap.$container = $container;
-			setJqueryMap();
-			$.gevent.subscribe(jqueryMap.$container, 'tables-updated', updateTableList);
-			$.gevent.subscribe(jqueryMap.$container, 'queries-updated', updateActivityIndicators);
-			waitForData();
-			registerPageEvents();
-		});
-		return true;
-	};
-
-	waitForData = function() {
+	function _waitForData() {
 		if (blurconsole.model.tables.getClusters().length > 0) {
-			buildTabs();
+			_buildTabs();
 		} else {
-			setTimeout(waitForData, 100);
+			setTimeout(_waitForData, 100);
 		}
-	};
-
-	buildTabs = function() {
-		var clusters, tabMarkup, paneMarkup, needsTabs;
-
-		clusters = blurconsole.model.tables.getClusters();
-		needsTabs = clusters.length > 1;
-
-		if (needsTabs) {
-			tabMarkup = '<ul class="nav nav-tabs">';
-			tabMarkup += $.map(clusters, function(cluster, idx) {
-				return '<li class="' + (idx === 0 ? 'active' : '') + '"><a href="#' + cluster + '_pane" data-toggle="tab">' + cluster + ' <i class="glyphicon glyphicon-exclamation-sign" style="display:none" title="Activity detected"></i></a></li>';
-			}).join('');
-			tabMarkup += '</ul>';
-
-			jqueryMap.$tableInfoHolder.html($(tabMarkup));
-		}
-
-		paneMarkup = needsTabs ? '<div class="tab-content">' : '';
-		paneMarkup += $.map(clusters, function(cluster, idx) {
-			return '<div id="' + cluster + '_pane" class="tab-pane' + (idx === 0 ? ' active' : '') + '"><h3>Enabled Tables</h3><div class="enabledSection"></div><h3>Disabled Tables</h3><div class="disabledSection"></div></div>';
-		}).join('');
-		paneMarkup += needsTabs ? '</div>' : '';
-
-		if (needsTabs) {
-			jqueryMap.$tableInfoHolder.append(paneMarkup);
-		} else {
-			jqueryMap.$tableInfoHolder.html(paneMarkup);
-		}
-
-		$.each(clusters, function(idx, cluster){
-			var clusterPane = $('#' + cluster + '_pane');
-			clusterPane.find('.enabledSection').html(blurconsole.browserUtils.table(configMap.enabledDef, blurconsole.model.tables.getEnabledTables(cluster)));
-			clusterPane.find('.disabledSection').html(blurconsole.browserUtils.table(configMap.disabledDef, blurconsole.model.tables.getDisabledTables(cluster)));
-		});
-	};
-
-	updateTableList = function() {
-		var clusters = blurconsole.model.tables.getClusters();
-
-		$.each(clusters, function(idx, cluster) {
-			var clusterPane = $('#' + cluster + '_pane'), enabledSection, disabledSection;
-			enabledSection = clusterPane.find('.enabledSection');
-			disabledSection = clusterPane.find('.disabledSection');
-
-			if (enabledSection.length > 0) {
-				enabledSection.html(blurconsole.browserUtils.table(configMap.enabledDef, blurconsole.model.tables.getEnabledTables(cluster)));
-			}
-			if (disabledSection.length > 0) {
-				disabledSection.html(blurconsole.browserUtils.table(configMap.disabledDef, blurconsole.model.tables.getDisabledTables(cluster)));
-			}
-		});
-	};
-
-	registerPageEvents = function() {
+	}
+    
+    function _registerPageEvents() {
 		// Tab control
 		jqueryMap.$tableInfoHolder.on('click', 'ul.nav a', function(e) {
 			e.preventDefault();
@@ -184,15 +116,66 @@ blurconsole.tables = (function () {
 			});
 			return false;
 		});
-	};
+	}
 
-	unregisterPageEvents = function() {
+	function _unregisterPageEvents() {
 		if (jqueryMap.$tableInfoHolder) {
 			jqueryMap.$tableInfoHolder.off();
 		}
-	};
+	}
+    
+    //------------------------- Event Handling and DOM Methods ---------------------------
+	function _buildTabs() {
+		var clusters = blurconsole.model.tables.getClusters();
+		var needsTabs = clusters.length > 1;
 
-	updateActivityIndicators = function() {
+		if (needsTabs) {
+			var tabMarkup = '<ul class="nav nav-tabs">';
+			tabMarkup += $.map(clusters, function(cluster, idx) {
+				return '<li class="' + (idx === 0 ? 'active' : '') + '"><a href="#' + cluster + '_pane" data-toggle="tab">' + cluster + ' <i class="glyphicon glyphicon-exclamation-sign" style="display:none" title="Activity detected"></i></a></li>';
+			}).join('');
+			tabMarkup += '</ul>';
+
+			jqueryMap.$tableInfoHolder.html($(tabMarkup));
+		}
+
+		var paneMarkup = needsTabs ? '<div class="tab-content">' : '';
+		paneMarkup += $.map(clusters, function(cluster, idx) {
+			return '<div id="' + cluster + '_pane" class="tab-pane' + (idx === 0 ? ' active' : '') + '"><h3>Enabled Tables</h3><div class="enabledSection"></div><h3>Disabled Tables</h3><div class="disabledSection"></div></div>';
+		}).join('');
+		paneMarkup += needsTabs ? '</div>' : '';
+
+		if (needsTabs) {
+			jqueryMap.$tableInfoHolder.append(paneMarkup);
+		} else {
+			jqueryMap.$tableInfoHolder.html(paneMarkup);
+		}
+
+		$.each(clusters, function(idx, cluster){
+			var clusterPane = $('#' + cluster + '_pane');
+			clusterPane.find('.enabledSection').html(blurconsole.browserUtils.table(configMap.enabledDef, blurconsole.model.tables.getEnabledTables(cluster)));
+			clusterPane.find('.disabledSection').html(blurconsole.browserUtils.table(configMap.disabledDef, blurconsole.model.tables.getDisabledTables(cluster)));
+		});
+	}
+
+	function _updateTableList() {
+		var clusters = blurconsole.model.tables.getClusters();
+
+		$.each(clusters, function(idx, cluster) {
+			var clusterPane = $('#' + cluster + '_pane'), enabledSection, disabledSection;
+			enabledSection = clusterPane.find('.enabledSection');
+			disabledSection = clusterPane.find('.disabledSection');
+
+			if (enabledSection.length > 0) {
+				enabledSection.html(blurconsole.browserUtils.table(configMap.enabledDef, blurconsole.model.tables.getEnabledTables(cluster)));
+			}
+			if (disabledSection.length > 0) {
+				disabledSection.html(blurconsole.browserUtils.table(configMap.disabledDef, blurconsole.model.tables.getDisabledTables(cluster)));
+			}
+		});
+	}
+	
+	function _updateActivityIndicators() {
 		var clusters = blurconsole.model.tables.getClusters();
 
 		$.each(clusters, function(i, cluster) {
@@ -214,7 +197,26 @@ blurconsole.tables = (function () {
 				$('a[href="#' + cluster +'_pane"] i').hide();
 			}
 		});
-	};
+	}
+    
+    //-------------------------- Public API ------------------------------
+    function unloadModule() {
+		$.gevent.unsubscribe(jqueryMap.$container, 'tables-updated');
+		$.gevent.unsubscribe(jqueryMap.$container, 'queries-updated');
+		_unregisterPageEvents();
+	}
+
+	function initModule($container) {
+		$container.load(configMap.view, function() {
+			stateMap.$container = $container;
+			_setJqueryMap();
+			$.gevent.subscribe(jqueryMap.$container, 'tables-updated', _updateTableList);
+			$.gevent.subscribe(jqueryMap.$container, 'queries-updated', _updateActivityIndicators);
+			_waitForData();
+			_registerPageEvents();
+		});
+		return true;
+	}
 
 	return {
 		initModule : initModule,

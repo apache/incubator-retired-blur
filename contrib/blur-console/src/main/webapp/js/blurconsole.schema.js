@@ -21,6 +21,8 @@ under the License.
 /*global blurconsole:false */
 blurconsole.schema = (function () {
 	'use strict';
+    
+    //----------------------------- Configuration and State -------------------------
 	var
 		configMap = {
 			mainHtml: String()
@@ -54,20 +56,25 @@ blurconsole.schema = (function () {
 				+ '</div>'
 		},
 		stateMap = {},
-		jqueryMap = {},
-		initModule, showSchema, popupSchemaView, buildTreeSection, buildInfoSection, viewTerms, findTerms, loadTerms, switchToSearch;
+		jqueryMap = {};
 
-	showSchema = function(event, table) {
+    //------------------------------ Private Methods -----------------------------------------------------
+    function _findTerms() {
+		blurconsole.model.tables.findTerms(stateMap.table, stateMap.termFamily, stateMap.termColumn, jqueryMap.termSearch.val());
+	}
+    
+    //------------------------------ Event Handling and DOM Methods --------------------------------------
+	function _showSchema(event, table) {
 		stateMap.table = table;
 		stateMap.modalId = stateMap.table + '_modal';
-		blurconsole.model.tables.getSchema(stateMap.table, popupSchemaView);
-	};
+		blurconsole.model.tables.getSchema(stateMap.table, _popupSchemaView);
+	}
 
-	popupSchemaView = function(schema) {
+	function _popupSchemaView(schema) {
 		stateMap.schema = schema;
 		jqueryMap.contentHolder = $(configMap.mainHtml);
-		jqueryMap.contentHolder.find('.schemaList').html(buildTreeSection());
-		jqueryMap.contentHolder.find('.schemaColumnInfo').append(buildInfoSection());
+		jqueryMap.contentHolder.find('.schemaList').html(_buildTreeSection());
+		jqueryMap.contentHolder.find('.schemaColumnInfo').append(_buildInfoSection());
 
 		jqueryMap.modal = $(blurconsole.browserUtils.modal(stateMap.modalId, 'Schema Definition for ' + stateMap.table, jqueryMap.contentHolder, null, 'large'));
 		jqueryMap.modal.modal()
@@ -91,12 +98,12 @@ blurconsole.schema = (function () {
 			jqueryMap.columnTermsSection.hide();
 			return false;
 		})
-		.on('click', 'a.termsTrigger', viewTerms)
-		.on('click', '.schemaColumnTerms button', findTerms)
-		.on('click', '.searchTrigger', switchToSearch);
-	};
+		.on('click', 'a.termsTrigger', _viewTerms)
+		.on('click', '.schemaColumnTerms button', _findTerms)
+		.on('click', '.searchTrigger', _switchToSearch);
+	}
 
-	buildTreeSection = function() {
+	function _buildTreeSection() {
 		var tree = '';
 		$.each(stateMap.schema, function(family, cols){
 			var famId = blurconsole.browserUtils.cleanId(family);
@@ -115,9 +122,9 @@ blurconsole.schema = (function () {
 			tree += '</ul></div></div></div>';
 		});
 		return tree;
-	};
+	}
 
-	buildInfoSection = function() {
+	function _buildInfoSection() {
 		var info = '';
 		$.each(stateMap.schema, function(family, cols){
 			var famId = blurconsole.browserUtils.cleanId(family);
@@ -139,48 +146,45 @@ blurconsole.schema = (function () {
 			});
 		});
 		return info;
-	};
+	}
 
-	viewTerms = function() {
+	function _viewTerms(evt) {
 		jqueryMap.termList.html('<div class="center-block"><img src="img/ajax-loader.gif"></div>');
 		jqueryMap.termSearch.val('');
 		jqueryMap.columnTermsSection.show();
-		var $this = $(this);
+		var $this = $(evt.currentTarget);
 
 		stateMap.termFamily = $this.data('fam');
 		stateMap.termColumn = $this.data('col');
 
 		jqueryMap.termSearchButton.trigger('click');
-	};
+	}
 
-	findTerms = function() {
-		blurconsole.model.tables.findTerms(stateMap.table, stateMap.termFamily, stateMap.termColumn, jqueryMap.termSearch.val());
-	};
-
-	loadTerms = function() {
+	function _loadTerms() {
 		var terms = Array.prototype.slice.call(arguments, 1);
 		jqueryMap.termList.html('');
 		$.each(terms, function(i, term){
 			jqueryMap.termList.append('<li class="list-group-item">' + term + ' <span class="badge badge-success searchTrigger" title="Search for this value" data-value="' + term + '" data-table="' + stateMap.table + '"><i class="glyphicon glyphicon-search"></i></span></li>');
 		});
-	};
+	}
 
-	switchToSearch = function(){
+	function _switchToSearch(evt){
 		blurconsole.shell.changeAnchorPart({
 			tab: 'search',
 			_tab: {
-				query: encodeURIComponent(stateMap.termFamily + '.' + stateMap.termColumn + ':' + $(this).data('value')),
-				table: $(this).data('table'),
+				query: encodeURIComponent(stateMap.termFamily + '.' + stateMap.termColumn + ':' + $(evt.currentTarget).data('value')),
+				table: $(evt.currentTarget).data('table'),
 				rr: 'rowrow'
 			}
 		});
 		jqueryMap.modal.modal('hide');
-	};
+	}
 
-	initModule = function() {
-		$.gevent.subscribe($(document), 'schema-show', showSchema);
-		$.gevent.subscribe($(document), 'terms-updated', loadTerms);
-	};
+    //----------------------------- Public API ----------------------------
+	function initModule() {
+		$.gevent.subscribe($(document), 'schema-show', _showSchema);
+		$.gevent.subscribe($(document), 'terms-updated', _loadTerms);
+	}
 
 	return {
 		initModule : initModule

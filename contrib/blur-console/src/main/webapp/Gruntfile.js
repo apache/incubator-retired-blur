@@ -81,7 +81,7 @@ module.exports = function (grunt) {
                 jshintrc: true,
             },
             development: {
-                src: ['js/**/*\.js']
+                src: ['js/**/*\.js', '!js/utils/**/*\.js']
             },
             ci: {
                 src: ['js/**/*\.js'],

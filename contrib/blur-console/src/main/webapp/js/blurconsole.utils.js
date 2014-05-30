@@ -20,9 +20,9 @@ under the License.
 /*global blurconsole:false */
 blurconsole.utils = (function(){
 	'use strict';
-	var inject, unique, equals, keys, findFamilies, reject;
-
-	inject = function(collection, initial, block) {
+    
+    //-------------------------- Public API ----------------------------
+	function inject(collection, initial, block) {
 		if (collection === null || collection.length === 0) {
 			return initial;
 		}
@@ -33,9 +33,9 @@ blurconsole.utils = (function(){
 		});
 
 		return accumulator;
-	};
+	}
 
-	unique = function(collection, sort) {
+	function unique(collection, sort) {
 		var uniqueList = [];
 
 		$.each(collection, function(idx, item){
@@ -49,17 +49,17 @@ blurconsole.utils = (function(){
 		}
 
 		return uniqueList;
-	};
+	}
 
-	equals = function(obj1, obj2) {
+	function equals(obj1, obj2) {
 		return JSON.stringify(obj1) === JSON.stringify(obj2);
-	};
+	}
 
-	keys = function(map) {
+	function keys(map) {
 		return $.map(map, function(v, key){ return key; });
-	};
+	}
 
-	findFamilies = function(query) {
+	function findFamilies(query) {
 		// Determine regex to find column families in lucene query
 		var matches = query.match(/[^ \(\)\+\-]+(\w+)\.\w+:/g);
 
@@ -72,9 +72,9 @@ blurconsole.utils = (function(){
 			families.push(match.split('.')[0]);
 		});
 		return families;
-	};
+	}
 
-	reject = function(collection, block) {
+	function reject(collection, block) {
 		var newArray = [];
 		$.each(collection, function(i, item){
 			if (!block(item)) {
@@ -82,7 +82,7 @@ blurconsole.utils = (function(){
 			}
 		});
 		return newArray;
-	};
+	}
 
 	return {
 		inject: inject,

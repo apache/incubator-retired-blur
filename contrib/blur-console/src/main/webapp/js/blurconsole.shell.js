@@ -25,6 +25,8 @@ under the License.
 /* global blurconsole:false, $:false */
 blurconsole.shell = (function () {
 	'use strict';
+    
+    //---------------------------- Configuration and State ----------------------------
 	var configMap = {
 		anchorSchemaMap : {
 			tab : { dashboard : true, tables : true, queries : true, search : true },
@@ -38,28 +40,24 @@ blurconsole.shell = (function () {
 		currentTab : null,
 		anchorMap  : {}
 	},
-	jqueryMap = {},
-	copyAnchorMap, setJqueryMap, switchView,
-	changeAnchorPart, onHashChange,
-	onClickTab, initModule;
-
-	copyAnchorMap = function () {
-		return $.extend( true, {}, stateMap.anchorMap );
-	};
-
-	setJqueryMap = function () {
+	jqueryMap = {};
+    
+    //---------------------------- Private Methods -------------------------
+    function _setJqueryMap() {
 		var $container = stateMap.$container;
 		jqueryMap = {
 			$container   : $container,
 			$sideNavTabs : $('.side-nav a')
 		};
-	};
-
-	switchView = function ( tab ) {
-		var i;
-
+	}
+    
+    function _copyAnchorMap() {
+		return $.extend( true, {}, stateMap.anchorMap );
+	}
+    
+    function _switchView( tab ) {
 		if (stateMap.currentTab !== tab) {
-			for ( i = 0; i < configMap.allTabs.length; i++ ) {
+			for ( var i = 0; i < configMap.allTabs.length; i++ ) {
 				if (blurconsole[configMap.allTabs[i]]) {
 					blurconsole[configMap.allTabs[i]].unloadModule();
 				}
@@ -74,19 +72,59 @@ blurconsole.shell = (function () {
 		}
 
 		return true;
-	};
+	}
+    
+    //---------------------------- Event Handlers and DOM Methods ----------
+    function _onHashChange() {
+		var anchorMapPrevious = _copyAnchorMap(), anchorMapProposed;
 
-	changeAnchorPart = function ( argMap ) {
-		var anchorMapRevise = copyAnchorMap(),
-			boolReturn = true,
-			keyName, keyNameDep;
+		try {
+            anchorMapProposed = $.uriAnchor.makeAnchorMap();
+        } catch ( error ) {
+			$.uriAnchor.setAnchor( anchorMapPrevious, null, true );
+			return false;
+		}
+
+		stateMap.anchorMap = anchorMapProposed;
+
+		var _sTabPrevious = anchorMapPrevious._s_tab; // jshint ignore:line
+		var _sTabProposed = anchorMapProposed._s_tab; // jshint ignore:line
+
+		if ( ! anchorMapPrevious || _sTabPrevious !== _sTabProposed ){
+			var sTabProposed = anchorMapProposed.tab;
+			switch ( sTabProposed ) {
+				case 'dashboard':
+				case 'tables':
+				case 'queries':
+				case 'search':
+					_switchView( sTabProposed );
+					break;
+				default:
+					$.uriAnchor.setAnchor( anchorMapPrevious, null, true );
+			}
+		}
+
+		return false;
+	}
+    
+    function _onClickTab(evt) {
+		var target = $(evt.currentTarget);
+		changeAnchorPart({
+			tab : target.attr('href').split('=')[1]
+		});
+		return false;
+	}
+    
+    //---------------------------- Public API ------------------------------
+	function changeAnchorPart( argMap ) {
+		var anchorMapRevise = _copyAnchorMap(), boolReturn = true;
 
 		KEYVAL:
-		for ( keyName in argMap ) {
+		for ( var keyName in argMap ) {
 			if ( argMap.hasOwnProperty( keyName ) ) {
 				if ( keyName.indexOf( '_' ) === 0 ) { continue KEYVAL; }
 				anchorMapRevise[keyName] = argMap[keyName];
-				keyNameDep = '_' + keyName;
+				var keyNameDep = '_' + keyName;
 				if ( argMap[keyNameDep] ) {
 					anchorMapRevise[keyNameDep] = argMap[keyNameDep];
 				} else {
@@ -104,53 +142,11 @@ blurconsole.shell = (function () {
 		}
 
 		return boolReturn;
-	};
+	}
 
-	onHashChange = function () {
-		var anchorMapPrevious = copyAnchorMap(),
-			anchorMapProposed,
-			_sTabPrevious, _sTabProposed,
-			sTabProposed;
-
-		try { anchorMapProposed = $.uriAnchor.makeAnchorMap(); }
-		catch ( error ) {
-			$.uriAnchor.setAnchor( anchorMapPrevious, null, true );
-			return false;
-		}
-
-		stateMap.anchorMap = anchorMapProposed;
-
-		_sTabPrevious = anchorMapPrevious._s_tab; // jshint ignore:line
-		_sTabProposed = anchorMapProposed._s_tab; // jshint ignore:line
-
-		if ( ! anchorMapPrevious || _sTabPrevious !== _sTabProposed ){
-			sTabProposed = anchorMapProposed.tab;
-			switch ( sTabProposed ) {
-				case 'dashboard':
-				case 'tables':
-				case 'queries':
-				case 'search':
-					switchView( sTabProposed );
-					break;
-				default:
-					$.uriAnchor.setAnchor( anchorMapPrevious, null, true );
-			}
-		}
-
-		return false;
-	};
-
-	onClickTab = function ( ) {
-		var target = $(this);
-		changeAnchorPart({
-			tab : target.attr('href').split('=')[1]
-		});
-		return false;
-	};
-
-	initModule = function( $container ) {
+	function initModule( $container ) {
 		stateMap.$container = $container;
-		setJqueryMap();
+		_setJqueryMap();
 
 		blurconsole.schema.initModule();
 		blurconsole.logging.initModule();
@@ -161,13 +157,13 @@ blurconsole.shell = (function () {
 
 		$('.side-nav li').tooltip();
 
-		jqueryMap.$sideNavTabs.click( onClickTab );
+		jqueryMap.$sideNavTabs.click( _onClickTab );
 
 		$.uriAnchor.configModule({
 			schema_map : configMap.anchorSchemaMap // jshint ignore:line
 		});
 
-		$(window).bind('hashchange', onHashChange).trigger('hashchange');
+		$(window).bind('hashchange', _onHashChange).trigger('hashchange');
 
 		var startupMap = $.uriAnchor.makeAnchorMap();
 
@@ -185,7 +181,7 @@ blurconsole.shell = (function () {
 				$('#view_logging_trigger .badge').html(errors.length);
 			}
 		});
-	};
+	}
 
 	return {
 		initModule: initModule,

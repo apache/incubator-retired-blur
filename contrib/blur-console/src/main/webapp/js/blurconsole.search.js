@@ -19,6 +19,8 @@ under the License.
 /*global blurconsole:false, confirm:false */
 blurconsole.search = (function () {
 	'use strict';
+    
+    //----------------------------- Configuration and State --------------------------------
 	var configMap = {
 		view : 'views/search.tpl.html',
 		superQueryMap: {
@@ -44,12 +46,10 @@ blurconsole.search = (function () {
 		$filter : null,
 		$rowRecordOption : 'rowrow'
 	},
-	jqueryMap = {},
-	setJqueryMap, initModule, unloadModule, drawResultHolders, drawResults, registerPageEvents, unregisterPageEvents,
-	sendSearch, showOptions, reviewTables, loadTableList, getMoreData, fixPanelWidths, updateOptionPopover, updateOptionDisplay,
-	persistOptions, getColList, popupFacetDialog;
-
-	setJqueryMap = function() {
+	jqueryMap = {};
+    
+    //----------------- Private Methods ----------------------------------
+	function _setJqueryMap() {
 		var $container = stateMap.$container;
 		jqueryMap = {
 			$container : $container,
@@ -62,12 +62,12 @@ blurconsole.search = (function () {
 			$countHolder : $('#resultCount'),
 			$facetTrigger : $('#facetTrigger')
 		};
-	};
+	}
 
-	registerPageEvents = function() {
-		$('#searchTrigger').on('click', sendSearch);
-		$('#results').on('shown.bs.collapse', '.panel-collapse:not(.loaded)', getMoreData);
-		$('#results').on('click', '.nextPage', getMoreData);
+	function _registerPageEvents() {
+		$('#searchTrigger').on('click', _sendSearch);
+		$('#results').on('shown.bs.collapse', '.panel-collapse:not(.loaded)', _getMoreData);
+		$('#results').on('click', '.nextPage', _getMoreData);
 		$('#searchOptionsTrigger').popover({
 			html: true,
 			placement: 'bottom',
@@ -75,12 +75,12 @@ blurconsole.search = (function () {
 			container: 'body',
 			content: configMap.optionsHtml
 		});
-		$('#searchOptionsTrigger').on('shown.bs.popover', updateOptionPopover);
-		$(document).on('change', '.popover select', persistOptions);
-		jqueryMap.$facetTrigger.on('click', popupFacetDialog);
-	};
+		$('#searchOptionsTrigger').on('shown.bs.popover', _updateOptionPopover);
+		$(document).on('change', '.popover select', _persistOptions);
+		jqueryMap.$facetTrigger.on('click', _popupFacetDialog);
+	}
 
-	unregisterPageEvents = function() {
+	function _unregisterPageEvents() {
 		$('#searchTrigger').off('click');
 		$('#results').off('shown.bs.collapse');
 		$('#results').off('click');
@@ -88,23 +88,37 @@ blurconsole.search = (function () {
 		$('#searchOptionsTrigger').off('shown.bs.popover');
 		$(document).off('change');
 		//jqueryMap.$facetTrigger.off('click');
-	};
+	}
+    
+    function _getColList(row) {
+		var cols = blurconsole.utils.reject(blurconsole.utils.keys(row), function(i) {
+			return i === 'recordid';
+		});
 
-	updateOptionDisplay = function() {
+		if (cols.length === 0) {
+			return [];
+		}
+
+		cols.sort();
+
+		cols = ['recordid'].concat(cols);
+		return cols;
+	}
+    
+    //------------------------------ Event Handlers and DOM Methods ---------------------
+	function _updateOptionDisplay() {
 		var displayText = '';
-
 		displayText += configMap.superQueryMap[stateMap.$rowRecordOption];
-
 		jqueryMap.$optionsDisplay.html(displayText);
-	};
+	}
 
-	updateOptionPopover = function() {
+	function _updateOptionPopover() {
 		if ($('#superQuery').length > 0) {
 			$('#superQuery').val(stateMap.$rowRecordOption);
 		}
-	};
+	}
 
-	persistOptions = function() {
+	function _persistOptions() {
 		var resendSearch = false;
 		if (jqueryMap.$resultsHolder.children().length > 0) {
 			if (confirm('You have existing results on the screen, changing the search options will erase your results.  Continue?')) {
@@ -116,13 +130,13 @@ blurconsole.search = (function () {
 		}
 		stateMap.$rowRecordOption = $('#superQuery').val();
 		if (resendSearch) {
-			sendSearch();
+			_sendSearch();
 		}
-		updateOptionDisplay();
+		_updateOptionDisplay();
 		$('#searchOptionsTrigger').popover('hide');
-	};
+	}
 
-	sendSearch = function() {
+	function _sendSearch() {
 		stateMap.$currentTable = jqueryMap.$tableField.val();
 		stateMap.$currentQuery = jqueryMap.$queryField.val();
 
@@ -134,27 +148,21 @@ blurconsole.search = (function () {
 				rr: stateMap.$rowRecordOption
 			}
 		});
-
-		drawResultHolders();
-
+		_drawResultHolders();
 		blurconsole.model.search.runSearch(stateMap.$currentQuery, stateMap.$currentTable, {start: 0, fetch: 10, rowRecordOption: stateMap.$rowRecordOption});
-	};
+	}
 
-	getMoreData = function() {
-		var family = $(this).attr('href') ? $(this).attr('href').substring(1) : $(this).attr('id');
+	function _getMoreData(evt) {
+		var family = $(evt.currentTarget).attr('href') ? $(evt.currentTarget).attr('href').substring(1) : $(evt.currentTarget).attr('id');
 		blurconsole.model.search.loadMoreResults(family);
 		return false;
-	};
+	}
 
-	showOptions = function() {
-
-	};
-
-	reviewTables = function() {
-		var tableFound = false, tableMap;
+	function _reviewTables() {
+		var tableFound = false;
 
 		if (stateMap.$currentTable) {
-			tableMap = blurconsole.model.tables.getAllEnabledTables();
+			var tableMap = blurconsole.model.tables.getAllEnabledTables();
 			$.each(tableMap, function(cluster, tables){
 				var tableList = $.map(tables, function(t){ return t.name; });
 				if (tableList.indexOf(stateMap.$currentTable) > -1) {
@@ -165,27 +173,27 @@ blurconsole.search = (function () {
 
 		if (tableFound) {
 			jqueryMap.$tableWarning.hide();
-			loadTableList();
+			_loadTableList();
 		} else if (stateMap.$currentTable) {
 			jqueryMap.$tableWarning.show();
 		} else {
-			loadTableList();
+			_loadTableList();
 		}
-	};
+	}
 
-	drawResultHolders = function() {
-		var familyMarkup = '', allFamilies, extraFamilies = [], parsedFamilies = blurconsole.utils.findFamilies(stateMap.$currentQuery), sortedFamilies;
+	function _drawResultHolders() {
+		var familyMarkup = '', parsedFamilies = blurconsole.utils.findFamilies(stateMap.$currentQuery);
 
 		jqueryMap.$resultsHolder.html('');
 
 		// Redraw families
-		allFamilies = blurconsole.model.tables.getFamilies(stateMap.$currentTable);
-		extraFamilies = blurconsole.utils.reject(allFamilies, function(fam){ return parsedFamilies.indexOf(fam) >= 0; });
+		var allFamilies = blurconsole.model.tables.getFamilies(stateMap.$currentTable);
+		var extraFamilies = blurconsole.utils.reject(allFamilies, function(fam){ return parsedFamilies.indexOf(fam) >= 0; });
 
 		parsedFamilies.sort();
 		extraFamilies.sort();
 
-		sortedFamilies = parsedFamilies.concat(extraFamilies);
+		var sortedFamilies = parsedFamilies.concat(extraFamilies);
 
 		$.each(sortedFamilies, function(i, fam) {
 			var famId = blurconsole.browserUtils.cleanId(fam);
@@ -196,18 +204,18 @@ blurconsole.search = (function () {
 		});
 
 		jqueryMap.$resultsHolder.html(familyMarkup);
-		fixPanelWidths();
-	};
+		_fixPanelWidths();
+	}
 
-	fixPanelWidths = function() {
+	function _fixPanelWidths() {
 		var allPanels = jqueryMap.$resultsHolder.find('.panel-collapse');
 		if (allPanels.length > 0) {
 			var width = $(allPanels[0]).parent().width() - 30;
 			allPanels.width(width);
 		}
-	};
+	}
 
-	drawResults = function(evt, families) {
+	function _drawResults(evt, families) {
 		var results = blurconsole.model.search.getResults();
 		jqueryMap.$countHolder.html('<small>Found ' + blurconsole.model.search.getTotal() + ' total results</small>');
 		//jqueryMap.$facetTrigger.show();
@@ -225,7 +233,7 @@ blurconsole.search = (function () {
 				} else {
 					if (blurconsole.utils.keys(famResults[0]).indexOf('rowid') === -1 ) {
 						// Record results
-						cols = getColList(famResults[0]);
+						cols = _getColList(famResults[0]);
 
 						$.each(cols, function(i, col) {
 							table += '<th>' + col + '</th>';
@@ -242,7 +250,7 @@ blurconsole.search = (function () {
 						// Row results
 						$.each(famResults, function(i, row){
 							if (row.records.length > 0) {
-								var tmpCols = getColList(row.records[0]);
+								var tmpCols = _getColList(row.records[0]);
 								if (tmpCols.length > 0) {
 									cols = tmpCols;
 									return false;
@@ -284,26 +292,11 @@ blurconsole.search = (function () {
 					$(famId).addClass('loaded');
 				}
 			});
-			fixPanelWidths();
+			_fixPanelWidths();
 		}
-	};
+	}
 
-	getColList = function(row) {
-		var cols = blurconsole.utils.reject(blurconsole.utils.keys(row), function(i) {
-			return i === 'recordid';
-		});
-
-		if (cols.length === 0) {
-			return [];
-		}
-
-		cols.sort();
-
-		cols = ['recordid'].concat(cols);
-		return cols;
-	};
-
-	loadTableList = function() {
+	function _loadTableList() {
 		var tableMap = blurconsole.model.tables.getAllEnabledTables();
 
 		jqueryMap.$tableSelectorStatusOption.html('Loading Tables...');
@@ -323,21 +316,22 @@ blurconsole.search = (function () {
 		});
 
 		jqueryMap.$tableSelectorStatusOption.html('Choose Table');
-	};
+	}
 
-	popupFacetDialog = function() {
+	function _popupFacetDialog() {
 		jqueryMap.facetModal = $(blurconsole.browserUtils.modal('facetDialog', 'Facets for Current Search', 'TBD', null, 'large'));
 		jqueryMap.facetModal.modal();
-	};
+	}
 
-	initModule = function($container) {
+    //--------------------------------- Public API ------------------------------------------
+	function initModule($container) {
 		$container.load(configMap.view, function() {
 			stateMap.$container = $container;
-			setJqueryMap();
-			$.gevent.subscribe(jqueryMap.$container, 'tables-updated', reviewTables);
-			$.gevent.subscribe(jqueryMap.$container, 'results-updated', drawResults);
-			registerPageEvents();
-			loadTableList();
+			_setJqueryMap();
+			$.gevent.subscribe(jqueryMap.$container, 'tables-updated', _reviewTables);
+			$.gevent.subscribe(jqueryMap.$container, 'results-updated', _drawResults);
+			_registerPageEvents();
+			_loadTableList();
 
 			var startupMap = $.uriAnchor.makeAnchorMap();
 
@@ -349,16 +343,16 @@ blurconsole.search = (function () {
 				stateMap.$rowRecordOption = startupMap._tab.rr;
 			}
 
-			updateOptionDisplay();
+			_updateOptionDisplay();
 			stateMap.loaded = true;
 		});
 		return true;
-	};
+	}
 
-	unloadModule = function() {
+	function unloadModule() {
 		$.gevent.unsubscribe(jqueryMap.$container, 'tables-updated');
-		unregisterPageEvents();
-	};
+		_unregisterPageEvents();
+	}
 
 	return {
 		initModule : initModule,

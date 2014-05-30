@@ -228,7 +228,7 @@ blurconsole.search = (function () {
 					table = '<table class="table table-condensed table-hover table-bordered"><thead><tr>',
 					cols;
 
-				if (famResults.length === 0) {
+				if (typeof famResults === 'undefined' || famResults.length === 0) {
 					famHolder.html('<div class="alert alert-info">No Data Found</div>');
 				} else {
 					if (blurconsole.utils.keys(famResults[0]).indexOf('rowid') === -1 ) {

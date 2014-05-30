@@ -28,28 +28,28 @@ if (typeof console === 'undefined') {
     console = (function() {
         'use strict';
 
-        var log = function() {
+        function log() {
             if(typeof blurconsole !== 'undefined' && typeof blurconsole.model !== 'undefined' && typeof blurconsole.model.logs !== 'undefined') {
                 var args = Array.prototype.slice.call(arguments);
                 blurconsole.model.logs.logError(args.join(' '), 'javascript');
             }
-        };
+        }
 
-        var info = function() {
+        function info() {
             return console.log.apply(null, arguments);
-        };
+        }
 
-        var warn = function() {
+        function warn() {
             return console.log.apply(null, arguments);
-        };
+        }
 
-        var error = function() {
+        function error() {
             return console.log.apply(null, arguments);
-        };
+        }
 
-        var debug = function() {
+        function debug() {
             return console.log.apply(null, arguments);
-        };
+        }
 
         return {
             log: log,

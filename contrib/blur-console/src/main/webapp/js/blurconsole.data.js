@@ -20,34 +20,31 @@ under the License.
 /*global blurconsole:false */
 blurconsole.data = (function() {
 	'use strict';
-	var getTableList, getNodeList, getQueryPerformance, getQueries, cancelQuery, disableTable, enableTable, deleteTable, getSchema, findTerms, sendSearch,
-		logError;
 
-	getTableList = function(callback) {
+	function getTableList(callback) {
 		$.getJSON('/service/tables', callback).fail(function(xhr) {
 			logError(xhr.responseText, xhr.status, 'tables', callback);
 		});
-	};
+	}
 
-	getNodeList = function(callback) {
+	function getNodeList(callback) {
 		$.getJSON('/service/nodes', callback).fail(function(xhr) {
 			logError(xhr.responseText, xhr.status, 'tables', callback);
 		});
-	};
-
-	getQueryPerformance = function(callback) {
+	}
+	function getQueryPerformance(callback) {
 		$.getJSON('/service/queries/performance', callback).fail(function(xhr) {
 			logError(xhr.responseText, xhr.status, 'tables', callback);
 		});
-	};
+	}
 
-	getQueries = function(callback) {
+	function getQueries(callback) {
 		$.getJSON('/service/queries', callback).fail(function(xhr) {
 			logError(xhr.responseText, xhr.status, 'tables', callback);
 		});
-	};
+	}
 
-	cancelQuery = function(table, uuid) {
+	function cancelQuery(table, uuid) {
 		$.ajax('/service/queries/' + uuid + '/cancel', {
 			data: {
 				table: table
@@ -56,25 +53,25 @@ blurconsole.data = (function() {
 				logError(xhr.responseText, xhr.status, 'tables');
 			}
 		});
-	};
+	}
 
-	disableTable = function(table) {
+	function disableTable(table) {
 		$.ajax('/service/tables/' + table + '/disable', {
 			error: function(xhr) {
 				logError(xhr.responseText, xhr.status, 'tables');
 			}
 		});
-	};
+	}
 
-	enableTable = function(table) {
+	function enableTable (table){
 		$.ajax('/service/tables/' + table + '/enable', {
 			error: function(xhr) {
 				logError(xhr.responseText, xhr.status, 'tables');
 			}
 		});
-	};
+	}
 
-	deleteTable = function(table, includeFiles) {
+	function deleteTable (table, includeFiles) {
 		$.ajax('/service/tables/' + table + '/delete', {
 			data: {
 				includeFiles: includeFiles
@@ -83,21 +80,21 @@ blurconsole.data = (function() {
 				logError(xhr.responseText, xhr.status, 'tables');
 			}
 		});
-	};
+	}
 
-	getSchema = function(table, callback) {
+	function getSchema(table, callback) {
 		$.getJSON('/service/tables/' + table + '/schema', callback).fail(function(xhr) {
 			logError(xhr.responseText, xhr.status, 'tables');
 		});
-	};
+	}
 
-	findTerms = function(table, family, column, startsWith, callback) {
+	function findTerms (table, family, column, startsWith, callback) {
 		$.getJSON('/service/tables/' + table + '/' + family + '/' + column + '/terms', {startsWith: startsWith}, callback).fail(function(xhr) {
 			logError(xhr.responseText, xhr.status, 'tables');
 		});
-	};
+	}
 
-	sendSearch = function(query, table, args, callback) {
+	function sendSearch(query, table, args, callback) {
 		var params = $.extend({table:table, query:query}, args);
 		$.ajax('/service/search', {
 			'type': 'POST',
@@ -107,14 +104,14 @@ blurconsole.data = (function() {
 				logError(xhr.responseText, xhr.status, 'tables');
 			}
 		});
-	};
+	}
 
-	logError = function(errorMsg, status, module, callback) {
+	function logError (errorMsg, status, module, callback) {
 		blurconsole.model.logs.logError(status + ' - ' + errorMsg, module);
 		if (callback) {
 			callback('error');
 		}
-	};
+	}
 
 	return {
 		getTableList : getTableList,

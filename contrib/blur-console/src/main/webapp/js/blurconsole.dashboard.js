@@ -25,6 +25,7 @@ under the License.
 /*global blurconsole:false */
 blurconsole.dashboard = (function () {
 	'use strict';
+	//------------------- Configuration and State -------------------------
 	var
 		configMap = {
 			view: 'views/dashboard.tpl.html',
@@ -54,12 +55,10 @@ blurconsole.dashboard = (function () {
 			zookeeperNodes: 'chart',
 			controllerNodes: 'chart'
 		},
-		jqueryMap = {},
-		setJqueryMap, initModule, unloadModule, updateNodeCharts, adjustChartsSizes, adjustChartSize,
-		loadZkPieChart,	loadControllerPieChart, loadShardsPieChart, loadTableColumnChart, loadQueryPerfLineChart,
-		buildNodeTable, checkForSlowQueries, updateAllCharts;
+		jqueryMap = {};
 
-	setJqueryMap = function() {
+	//--------------------- Utilities ---------------------
+	function _setJqueryMap() {
 		var $container = stateMap.$container;
 		jqueryMap = {
 			$container : $container,
@@ -71,59 +70,70 @@ blurconsole.dashboard = (function () {
 			$tableChartHolder : $('#tableCounts'),
 			$queryLoadChartHolder : $('#queryLoad')
 		};
-	};
+	}
 
-	unloadModule = function() {
-		$.gevent.unsubscribe(jqueryMap.$container, 'node-status-updated');
-		$.gevent.unsubscribe(jqueryMap.$container, 'tables-updated');
-		$.gevent.unsubscribe(jqueryMap.$container, 'query-perf-updated');
-		$.gevent.unsubscribe(jqueryMap.$container, 'queries-updated');
-	};
+	function _registerPageEvents() {
+		$(document).on('click', '.swapper-trigger', _swapNodeChartAndData);
+		$(window).on('resize', _adjustChartsSizes);
+	}
 
-	updateAllCharts = function() {
-		updateNodeCharts();
-		loadTableColumnChart();
-		loadQueryPerfLineChart();
-	};
+	function _unregisterPageEvents() {
+		$(document).off('click', '.swapper-trigger');
+		$(window).off('resize');
+	}
 
-	updateNodeCharts = function() {
+	//----------------------- Event Handlers and DOM Modifiers ------------------
+	function _updateAllCharts() {
+		_updateNodeCharts();
+		_loadTableColumnChart();
+		_loadQueryPerfLineChart();
+	}
+
+	function _updateNodeCharts() {
 		if (blurconsole.model.nodes.isDataLoaded()) {
-			loadZkPieChart();
-			loadControllerPieChart();
-			loadShardsPieChart();
+			_loadZkPieChart();
+			_loadControllerPieChart();
+			_loadShardsPieChart();
 		}
-	};
+	}
 
-	loadZkPieChart = function() {
+	function _swapNodeChartAndData(evt) {
+		var parent = $(evt.currentTarget).closest('div.swapper-parent');
+		var chart = parent.find('.swapper-chart');
+		var info = parent.find('.swapper-info');
+
+		chart.toggleClass('hidden');
+		info.toggleClass('hidden');
+	}
+
+	function _loadZkPieChart() {
 		$.plot(jqueryMap.$zkChartHolder, blurconsole.model.metrics.getZookeeperChartData(), configMap.pieOptions);
-		jqueryMap.$zkInfoHolder.html(buildNodeTable(blurconsole.model.nodes.getOnlineZookeeperNodes(), blurconsole.model.nodes.getOfflineZookeeperNodes()));
-	};
+		jqueryMap.$zkInfoHolder.html(_buildNodeTable(blurconsole.model.nodes.getOnlineZookeeperNodes(), blurconsole.model.nodes.getOfflineZookeeperNodes()));
+	}
 
-	loadControllerPieChart = function() {
+	function _loadControllerPieChart() {
 		$.plot(jqueryMap.$controllerChartHolder, blurconsole.model.metrics.getControllerChartData(), configMap.pieOptions);
-		jqueryMap.$controllerInfoHolder.html(buildNodeTable(blurconsole.model.nodes.getOnlineControllerNodes(), blurconsole.model.nodes.getOfflineControllerNodes()));
-	};
+		jqueryMap.$controllerInfoHolder.html(_buildNodeTable(blurconsole.model.nodes.getOnlineControllerNodes(), blurconsole.model.nodes.getOfflineControllerNodes()));
+	}
 
-	loadShardsPieChart = function() {
+	function _loadShardsPieChart() {
 		if (jqueryMap.$shardChartHolder.find('img').length > 0) {
 			jqueryMap.$shardChartHolder.html('');
 		}
 
 		$.each(blurconsole.model.metrics.getClusters(), function(idx, cluster) {
-			var clusterData, clusterHolder, clusterInfo, parentSize;
-
-			clusterData = blurconsole.model.metrics.getShardChartData(cluster);
+			var clusterData = blurconsole.model.metrics.getShardChartData(cluster);
 
 			if (clusterData) {
-				clusterHolder = jqueryMap.$shardChartHolder.find('#cluster_' + cluster + '_chart_holder');
-				clusterInfo = jqueryMap.$shardChartHolder.find('#cluster_' + cluster + '_info');
+				var clusterHolder = jqueryMap.$shardChartHolder.find('#cluster_' + cluster + '_chart_holder');
+				var clusterInfo = jqueryMap.$shardChartHolder.find('#cluster_' + cluster + '_info');
 
 				if (clusterHolder.length === 0) {
 					var wrapper = $('<div class="swapper-parent"></div>');
 					wrapper.append($('<div class="text-center"><strong>' + cluster + '</strong> <small class="text-muted"><i class="glyphicon glyphicon-retweet swapper-trigger" title="Swap Chart/Info"></i></small></div>'));
 					clusterHolder = $('<div id="cluster_'+ cluster + '_chart_holder" class="shardClusterChartHolder simple-chart swapper-chart"></div>');
 					wrapper.append(clusterHolder);
-					parentSize = jqueryMap.$shardChartHolder.parent()[0].clientWidth - 150;
+					var parentSize = jqueryMap.$shardChartHolder.parent()[0].clientWidth - 150;
 					clusterHolder.css({
 						'height' : parentSize,
 						'width' : parentSize
@@ -135,12 +145,12 @@ blurconsole.dashboard = (function () {
 				}
 
 				$.plot(clusterHolder, clusterData, configMap.pieOptions);
-				clusterInfo.html(buildNodeTable([], blurconsole.model.nodes.getOfflineShardNodes(cluster)));
+				clusterInfo.html(_buildNodeTable([], blurconsole.model.nodes.getOfflineShardNodes(cluster)));
 			}
 		});
-	};
+	}
 
-	loadTableColumnChart = function() {
+	function _loadTableColumnChart() {
 		if (blurconsole.model.tables.isDataLoaded()) {
 			$.plot(jqueryMap.$tableChartHolder, blurconsole.model.metrics.getTableChartData(), {
 				bars : {
@@ -157,9 +167,9 @@ blurconsole.dashboard = (function () {
 				}
 			});
 		}
-	};
+	}
 
-	loadQueryPerfLineChart = function() {
+	function _loadQueryPerfLineChart() {
 		$.plot(jqueryMap.$queryLoadChartHolder, blurconsole.model.metrics.getQueryLoadChartData(), {
 			series : {
 				shadowSize : 0
@@ -171,9 +181,9 @@ blurconsole.dashboard = (function () {
 				show : false
 			}
 		});
-	};
+	}
 
-	buildNodeTable = function(online, offline) {
+	function _buildNodeTable(online, offline) {
 		var table = '<table class="table table-condensed"><thead><tr><th>Offline Node</th></tr></thead><tbody>';
 		if (offline.length === 0) {
 			table += '<tr><td>Everything is Online!</td></tr>';
@@ -192,69 +202,67 @@ blurconsole.dashboard = (function () {
 			table += '</tbody></table>';
 		}
 		return $(table);
-	};
+	}
 
-	adjustChartSize = function(holder) {
+	function _adjustChartSize(holder) {
 		var size;
 		size = jqueryMap[holder].parent()[0].clientWidth - 150;
 		jqueryMap[holder].css({
 			'height' : size,
 			'width' : size
 		});
-	};
+	}
 
-	adjustChartsSizes = function() {
-		var size, shardCharts;
+	function _adjustChartsSizes() {
+		_adjustChartSize('$zkChartHolder');
+		_adjustChartSize('$controllerChartHolder');
+		_adjustChartSize('$tableChartHolder');
+		_adjustChartSize('$queryLoadChartHolder');
 
-		adjustChartSize('$zkChartHolder');
-		adjustChartSize('$controllerChartHolder');
-		adjustChartSize('$tableChartHolder');
-		adjustChartSize('$queryLoadChartHolder');
-
-		size = jqueryMap.$shardChartHolder.parent()[0].clientWidth - 150;
-		shardCharts = jqueryMap.$shardChartHolder.find('.shardClusterChartHolder');
+		var size = jqueryMap.$shardChartHolder.parent()[0].clientWidth - 150;
+		var shardCharts = jqueryMap.$shardChartHolder.find('.shardClusterChartHolder');
 		shardCharts.each(function(){
 			$(this).css({
 				'height' : size,
 				'width' : size
 			});
 		});
-		updateAllCharts();
-	};
+		_updateAllCharts();
+	}
 
-	checkForSlowQueries = function() {
+	function _checkForSlowQueries() {
 		if (blurconsole.model.metrics.getSlowQueryWarnings()) {
 			$('#slow-query-warnings').slideDown();
 		} else {
 			$('#slow-query-warnings').slideUp();
 		}
-	};
+	}
 
-	initModule = function( $container ) {
+	//----------------------- Public API ----------------------------
+
+	function initModule( $container ) {
 		$container.load ( configMap.view, function() {
 			stateMap.$container = $container;
-			setJqueryMap();
-			updateAllCharts();
-			checkForSlowQueries();
-			$.gevent.subscribe(jqueryMap.$container, 'node-status-updated', updateNodeCharts);
-			$.gevent.subscribe(jqueryMap.$container, 'tables-updated', loadTableColumnChart);
-			$.gevent.subscribe(jqueryMap.$container, 'query-perf-updated', loadQueryPerfLineChart);
-			$.gevent.subscribe(jqueryMap.$container, 'queries-updated', checkForSlowQueries);
-			adjustChartsSizes();
-			$(document).on('click', '.swapper-trigger', function() {
-			    console.log(this);
-				var parent = $(this).closest('div.swapper-parent');
-				console.log(parent);
-				var chart = parent.find('.swapper-chart');
-				var info = parent.find('.swapper-info');
-
-				chart.toggleClass('hidden');
-				info.toggleClass('hidden');
-			});
+			_setJqueryMap();
+			_updateAllCharts();
+			_checkForSlowQueries();
+			$.gevent.subscribe(jqueryMap.$container, 'node-status-updated', _updateNodeCharts);
+			$.gevent.subscribe(jqueryMap.$container, 'tables-updated', _loadTableColumnChart);
+			$.gevent.subscribe(jqueryMap.$container, 'query-perf-updated', _loadQueryPerfLineChart);
+			$.gevent.subscribe(jqueryMap.$container, 'queries-updated', _checkForSlowQueries);
+			_adjustChartsSizes();
+			_registerPageEvents();
 		});
-		$(window).resize(adjustChartsSizes);
 		return true;
-	};
+	}
+
+	function unloadModule() {
+		$.gevent.unsubscribe(jqueryMap.$container, 'node-status-updated');
+		$.gevent.unsubscribe(jqueryMap.$container, 'tables-updated');
+		$.gevent.unsubscribe(jqueryMap.$container, 'query-perf-updated');
+		$.gevent.unsubscribe(jqueryMap.$container, 'queries-updated');
+		_unregisterPageEvents();
+	}
 
 	return {
 		initModule   : initModule,

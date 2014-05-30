@@ -20,9 +20,8 @@ under the License.
 /*global blurconsole:false */
 blurconsole.browserUtils = (function(){
 	'use strict';
-	var table, modal, cleanId, booleanImg;
 
-	table = function(def, data) {
+	function table(def, data) {
 		var tableMarkup;
 
 		tableMarkup = '<table class="table table-bordered table-condensed table-hover table-striped"><thead><tr>';
@@ -55,9 +54,9 @@ blurconsole.browserUtils = (function(){
 
 		tableMarkup += '</tbody></table>';
 		return tableMarkup;
-	};
+	}
 
-	modal = function(id, title, content, buttons, size) {
+	function modal(id, title, content, buttons, size) {
 		var mSize, markup, mButtons = buttons;
 
 		switch(size) {
@@ -91,7 +90,7 @@ blurconsole.browserUtils = (function(){
 						markup += 'data-' + key + '="' + dataAttr + '" ';
 					});
 				}
-				
+
 				markup += '>' + button.label + '</button> ';
 			});
 			markup += '</div>';
@@ -100,18 +99,18 @@ blurconsole.browserUtils = (function(){
 		markup += '</div></div></div>';
 
 		return markup;
-	};
+	}
 
-	cleanId = function(str) {
+	function cleanId(str) {
 		return str.replace(/([;&,\.\+\*\~':"\!\^#$%@\[\]\(\)=>\|])/g, '_');
-	};
+	}
 
-	booleanImg = function(val) {
+	function booleanImg(val) {
 		if (val && (val === true || val === 'yes' || val === 'true')) {
 			return '<div class="label label-success"><i class="glyphicon glyphicon-ok-sign"></i></div>';
 		}
 		return '<div class="label label-danger"><i class="glyphicon glyphicon-minus-sign"></i></div>';
-	};
+	}
 
 	return {
 		table: table,

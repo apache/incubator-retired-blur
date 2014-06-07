@@ -26,6 +26,7 @@ import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.Selector;
+import org.apache.blur.thrift.generated.User;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -54,33 +55,7 @@ public class SearchUtil {
 	private static final String ROW_ROW_OPTION = "rowrow";
 	private static final String RECORD_RECORD_OPTION = "recordrecord";
 	
-	/**
-	 * Record only results:
-	 * 
-	 * {
-	 * 	famName: [
-	 * 		{
-	 * 			colName: value
-	 * 		}
-	 * 	]
-	 * }
-	 * 
-	 * Row results:
-	 * {
-	 * 	famName: [ 
-	 * 		{
-	 * 			rowid: rowid,
-	 * 			records: [
-	 * 				{
-	 * 					colName: value
-	 * 				}
-	 * 			]
-	 * 		}
-	 * 	]
-	 * }
-	 */
-	
-	public static Map<String, Object> search(Map<String, String[]> params) throws IOException, BlurException, TException {
+	public static Map<String, Object> search(Map<String, String[]> params, String remoteHost) throws IOException, BlurException, TException {
 		String table = params.get("table")[0];
 		String query = params.get("query")[0];
 		String rowQuery = params.get("rowRecordOption")[0];
@@ -89,23 +64,24 @@ public class SearchUtil {
 		String[] families = params.get("families[]");
 		
 		if (families == null || families.length == 0) {
-			return fullTextSearch(table, query);
+			return fullTextSearch(table, query, remoteHost);
 		}
 		
 		if (ArrayUtils.contains(families, "rowid")) {
-			return fetchRow(table, query, families);
+			return fetchRow(table, query, families, remoteHost);
 		}
 		
 		if (ArrayUtils.contains(families, "recordid")) {
 			return fetchRecord(table, query, families);
 		}
 		
-		return searchAndFetch(table, query, rowQuery, start, fetch, families);
+		return searchAndFetch(table, query, rowQuery, start, fetch, families, remoteHost);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private static Map<String, Object> searchAndFetch(String table, String query, String rowQuery, String start, String fetch, String[] families) throws IOException, BlurException, TException {
+	private static Map<String, Object> searchAndFetch(String table, String query, String rowQuery, String start, String fetch, String[] families, String remoteHost) throws IOException, BlurException, TException {
 		Iface client = BlurClient.getClient(Config.getConnectionString());
+		setUser(client, remoteHost);
 		
 		boolean recordsOnly = RECORD_RECORD_OPTION.equalsIgnoreCase(rowQuery);
 		
@@ -166,8 +142,9 @@ public class SearchUtil {
 		return results;
 	}
 	
-	private static Map<String, Object> fullTextSearch(String table, String query) throws IOException, BlurException, TException {
+	private static Map<String, Object> fullTextSearch(String table, String query, String remoteHost) throws IOException, BlurException, TException {
 		Iface client = BlurClient.getClient(Config.getConnectionString());
+		setUser(client, remoteHost);
 		
 		BlurQuery blurQuery = new BlurQuery();
 		
@@ -181,8 +158,10 @@ public class SearchUtil {
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private static Map<String, Object> fetchRow(String table, String query, String[] families) throws IOException, BlurException, TException {
+	private static Map<String, Object> fetchRow(String table, String query, String[] families, String remoteHost) throws IOException, BlurException, TException {
 		Iface client = BlurClient.getClient(Config.getConnectionString());
+		setUser(client, remoteHost);
+		
 		Selector selector = new Selector();
 		String rowid = StringUtils.remove(query, "rowid:");
 		selector.setRowId(rowid);
@@ -257,5 +236,11 @@ public class SearchUtil {
 		}
 		
 		return row;
+	}
+	
+	private static void setUser(Iface client, String username) throws TException {
+		if (Config.getUserProperties() != null) {
+			client.setUser(new User(username, Config.getUserProperties()));
+		}
 	}
 }

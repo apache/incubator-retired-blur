@@ -38,17 +38,18 @@ public class SearchServlet extends BaseConsoleServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String path = request.getPathInfo();
 		if (path == null) {
-			sendSearch(response, request.getParameterMap());
+			String remoteHost = request.getRemoteHost();
+			sendSearch(response, request.getParameterMap(), remoteHost);
 		} else {
 			response.setStatus(404);
 			IOUtils.write("Route [" + path + "] doesn't exist", response.getOutputStream());
 		}
 	}
 	
-	private void sendSearch(HttpServletResponse response, Map<String, String[]> params) throws IOException {
+	private void sendSearch(HttpServletResponse response, Map<String, String[]> params, String remoteHost) throws IOException {
 		Map<String, Object> results = new HashMap<String, Object>();
 		try {
-			results = SearchUtil.search(params);
+			results = SearchUtil.search(params, remoteHost);
 		} catch (IOException e) {
 			throw new IOException(e);
 		} catch (Exception e) {

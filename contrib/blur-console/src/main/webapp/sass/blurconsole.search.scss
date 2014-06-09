@@ -35,10 +35,10 @@ under the License.
 }
 
 tr.row-separator {
-	td {
+	th {
 		background-color: $dusty-gray;
 	}
-	&:hover td {
+	&:hover th {
 		background-color: $dusty-gray !important;
 	}
 }

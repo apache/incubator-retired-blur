@@ -26,7 +26,6 @@ import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.user.UserContext;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -62,16 +61,12 @@ public class SearchUtil {
 		String fetch = params.get("fetch")[0];
 		String[] families = params.get("families[]");
 		
-		if (families == null || families.length == 0) {
-			return fullTextSearch(table, query, remoteHost);
-		}
-		
-		if (ArrayUtils.contains(families, "rowid")) {
+		if (query.indexOf("rowid:") >= 0) {
 			return fetchRow(table, query, families, remoteHost);
 		}
 		
-		if (ArrayUtils.contains(families, "recordid")) {
-			return fetchRecord(table, query, families, remoteHost);
+		if (families == null || families.length == 0) {
+			return fullTextSearch(table, query, remoteHost);
 		}
 		
 		return searchAndFetch(table, query, rowQuery, start, fetch, families, remoteHost);
@@ -187,39 +182,6 @@ public class SearchUtil {
 					ResultRow rowData = getRow(row.getId(), fam);
 					rowData.getRecords().add(buildRow(record.getColumns(), record.getRecordId()));
 				}
-			}
-			results.put(DATA_KEY, rows);
-			results.put(FAMILY_KEY, new HashSet<String>(Arrays.asList(families)));
-			
-			return results;
-		} finally {
-			UserContext.reset();
-		}
-	}
-	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static Map<String, Object> fetchRecord(String table, String query, String[] families, String remoteHost) throws IOException, BlurException, TException {
-		try {
-			Iface client = Config.getClient(remoteHost);
-			
-			Selector selector = new Selector();
-			String recordId = StringUtils.remove(query, "recordid:");
-			selector.setRecordId(recordId);
-			selector.setRecordOnly(true);
-			selector.setColumnFamiliesToFetch(new HashSet<String>(Arrays.asList(families)));
-			
-			FetchResult fetchRow = client.fetchRow(table, selector);
-			
-			Map<String, Object> results = new HashMap<String, Object>();
-			results.put(TOTAL_KEY, fetchRow.getRecordResult().getRecord() == null ? 0 : 1);
-			
-			Map<String, List> rows = new HashMap<String, List>();
-			Record record = fetchRow.getRecordResult().getRecord();
-			if (record != null) {
-				String family = record.getFamily();
-					
-				List<Map<String, String>> fam = (List<Map<String, String>>) getFam(family, rows, true);
-				fam.add(buildRow(record.getColumns(), record.getRecordId()));
 			}
 			results.put(DATA_KEY, rows);
 			results.put(FAMILY_KEY, new HashSet<String>(Arrays.asList(families)));

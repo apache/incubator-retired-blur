@@ -208,27 +208,27 @@ blurconsole.fake = (function() {
 						results[fam].push(recordRow);
 					}
 				} else {
-					results[fam] = {};
+					results[fam] = [];
 					for (var rowIndex = 0; rowIndex < _randomNumber(toFetch); rowIndex++) {
 						var rowid = _randomNumber(10000000).toString();
-						results[fam][rowid] = [];
+						results[fam][rowIndex] = {rowid: rowid, records: []};
 						for (var rowRecordIndex = 0; rowRecordIndex < _randomNumber(10); rowRecordIndex++) {
 							var row = {};
 							row.recordid = _randomNumber(1000000).toString();
 							for (var rowRecordColIndex=0; rowRecordColIndex < cols; rowRecordColIndex++) {
 								row['col'+rowRecordColIndex] = _randomString();
 							}
-							results[fam][rowid].push(row);
+							results[fam][rowIndex]['records'].push(row);
 						}
 					}
 				}
 			});
 		}
 
-		if (fams === null || fams.length === 0) {
-			_sendCallback(callback, { total: total });
-		} else if (fams.indexOf('rowid') >= 0) {
+		if (fams.indexOf('rowid') >= 0) {
 			_sendCallback(callback, { total: total, results: results, families: fams });
+		} else if (fams === null || fams.length === 0) {
+			_sendCallback(callback, { total: total });
 		} else {
 			_sendCallback(callback, { families: fams, results: results, total: total });
 		}

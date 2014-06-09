@@ -409,11 +409,12 @@ blurconsole.model = (function() {
 			currentQuery = query;
 			currentTable = table;
 			currentArgs = $.extend(currentArgs, searchArgs);
-			if (parsedFamilies.length > 0) {
-				currentArgs.families = parsedFamilies;
-			}
+			currentArgs.families = parsedFamilies;
 			results = {};
-			_sendSearch();
+
+			if (query.indexOf('rowid:') === -1 && query.indexOf('recordid:') === -1) {
+				_sendSearch();
+			}
 		}
 
 		function getResults() {

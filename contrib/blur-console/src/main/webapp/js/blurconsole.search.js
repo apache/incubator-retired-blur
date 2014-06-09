@@ -149,6 +149,7 @@ blurconsole.search = (function () {
 			}
 		});
 		_drawResultHolders();
+		jqueryMap.$countHolder.html('');
 		blurconsole.model.search.runSearch(stateMap.$currentQuery, stateMap.$currentTable, {start: 0, fetch: 10, rowRecordOption: stateMap.$rowRecordOption});
 	}
 
@@ -224,15 +225,16 @@ blurconsole.search = (function () {
 			$.each(families, function(i, fam) {
 				var famResults = results[fam],
 					famId = '#' + blurconsole.browserUtils.cleanId(fam),
-					famHolder = $(famId + ' .panel-body'),
-					table = '<table class="table table-condensed table-hover table-bordered"><thead><tr>',
-					cols;
+					famHolder = $(famId + ' .panel-body');
 
 				if (typeof famResults === 'undefined' || famResults.length === 0) {
 					famHolder.html('<div class="alert alert-info">No Data Found</div>');
 				} else {
+					var table;
+					var cols;
 					if (blurconsole.utils.keys(famResults[0]).indexOf('rowid') === -1 ) {
 						// Record results
+						table = '<table class="table table-condensed table-hover table-bordered"><thead><tr>';
 						cols = _getColList(famResults[0]);
 
 						$.each(cols, function(i, col) {
@@ -246,6 +248,7 @@ blurconsole.search = (function () {
 							});
 							table += '</tr>';
 						});
+						table += '</tbody></table>';
 					} else {
 						// Row results
 						$.each(famResults, function(i, row){
@@ -259,13 +262,17 @@ blurconsole.search = (function () {
 						});
 
 						cols = cols || [];
+						table = '';
 
-						$.each(cols, function(i, col) {
-							table += '<th>' + col + '</th>';
-						});
-						table += '</tr></thead><tbody>';
 						$.each(famResults, function(r, row) {
-							table += '<tr class="row-separator"><td colspan="' + (cols.length === 0 ? 1 : cols.length) + '">' + (r+1) + '. <strong>rowid:</strong> ' + row.rowid + ' (<em>' + (row.records === null ? 0 : row.records.length) + ' records</em>)</td></tr>';
+							table += '<table class="table table-condensed table-hover table-bordered"><thead>';
+							table += '<tr class="row-separator"><th colspan="' + (cols.length === 0 ? 1 : cols.length) + '">' + (r+1) + '. <strong>rowid:</strong> ' + row.rowid + ' (<em>' + (row.records === null ? 0 : row.records.length) + ' records</em>)</th></tr>';
+							table += '<tr>';
+							$.each(cols, function(i, col) {
+								table += '<th>' + col + '</th>';
+							});
+							table += '</tr></thead><tbody>';
+
 							if (row.records === null || row.records.length === 0) {
 								table += '<tr><td colspan="' + (cols.length === 0 ? 1 : cols.length) + '"><em>No Data Found</em></td></tr>';
 							} else {
@@ -277,10 +284,9 @@ blurconsole.search = (function () {
 									table += '</tr>';
 								});
 							}
+							table += '</tbody></table>';
 						});
 					}
-
-					table += '</tbody></table>';
 
 					if (famResults.length < blurconsole.model.search.getTotal()) {
 						table += '<div class="pull-left"><a href="' + famId + '" class="btn btn-primary nextPage">Load More...</a></div>';

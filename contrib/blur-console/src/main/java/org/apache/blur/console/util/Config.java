@@ -26,13 +26,15 @@ import java.util.Map;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
+import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.user.User;
+import org.apache.blur.user.UserContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
@@ -52,9 +54,6 @@ public class Config {
 	}
 	public static BlurConfiguration getBlurConfig() {
 		return blurConfig;
-	}
-	public static Map<String, String> getUserProperties() {
-		return globalUserProperties;
 	}
 	
 	public static void setupConfig() throws IOException {
@@ -146,5 +145,15 @@ public class Config {
 	    	log.fatal("Unable to start in dev mode because MiniCluster isn't in classpath", e);
 	    	cluster = null;
 	    }
+	}
+	
+	public static Iface getClient(String username) throws IOException {
+		Iface client = BlurClient.getClient(getConnectionString());
+		
+		if (globalUserProperties != null) {
+			UserContext.setUser(new User(username, globalUserProperties));
+		}
+		
+		return client;
 	}
 }

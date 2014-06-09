@@ -11,7 +11,6 @@ import java.util.TreeMap;
 
 import org.apache.blur.console.model.ResultRow;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -26,7 +25,7 @@ import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.Selector;
-import org.apache.blur.thrift.generated.User;
+import org.apache.blur.user.UserContext;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -72,7 +71,7 @@ public class SearchUtil {
 		}
 		
 		if (ArrayUtils.contains(families, "recordid")) {
-			return fetchRecord(table, query, families);
+			return fetchRecord(table, query, families, remoteHost);
 		}
 		
 		return searchAndFetch(table, query, rowQuery, start, fetch, families, remoteHost);
@@ -80,118 +79,155 @@ public class SearchUtil {
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static Map<String, Object> searchAndFetch(String table, String query, String rowQuery, String start, String fetch, String[] families, String remoteHost) throws IOException, BlurException, TException {
-		Iface client = BlurClient.getClient(Config.getConnectionString());
-		setUser(client, remoteHost);
-		
-		boolean recordsOnly = RECORD_RECORD_OPTION.equalsIgnoreCase(rowQuery);
-		
-		BlurQuery blurQuery = new BlurQuery();
-		
-		Query q = new Query(query, ROW_ROW_OPTION.equalsIgnoreCase(rowQuery), ScoreType.SUPER, null, null);
-		blurQuery.setQuery(q);
-		blurQuery.setStart(Long.parseLong(start));
-		blurQuery.setFetch(Integer.parseInt(fetch));
-		
-		Selector s = new Selector();
-		s.setRecordOnly(recordsOnly);
-		s.setColumnFamiliesToFetch(new HashSet<String>(Arrays.asList(families)));
-		blurQuery.setSelector(s);
-		
-		BlurResults blurResults = client.query(table, blurQuery);
-		
-		Map<String, Object> results = new HashMap<String, Object>();
-		results.put(TOTAL_KEY, blurResults.getTotalResults());
-		
-		Map<String, List> rows = new HashMap<String, List>();
-		for (BlurResult result : blurResults.getResults()) {
-			FetchResult fetchResult = result.getFetchResult();
+		try {
+			Iface client = Config.getClient(remoteHost);
 			
-			if (recordsOnly) {
-				// Record Result
-				FetchRecordResult recordResult = fetchResult.getRecordResult();
-				Record record = recordResult.getRecord();
+			boolean recordsOnly = RECORD_RECORD_OPTION.equalsIgnoreCase(rowQuery);
+			
+			BlurQuery blurQuery = new BlurQuery();
+			
+			Query q = new Query(query, ROW_ROW_OPTION.equalsIgnoreCase(rowQuery), ScoreType.SUPER, null, null);
+			blurQuery.setQuery(q);
+			blurQuery.setStart(Long.parseLong(start));
+			blurQuery.setFetch(Integer.parseInt(fetch));
+			
+			Selector s = new Selector();
+			s.setRecordOnly(recordsOnly);
+			s.setColumnFamiliesToFetch(new HashSet<String>(Arrays.asList(families)));
+			blurQuery.setSelector(s);
+			
+			BlurResults blurResults = client.query(table, blurQuery);
+			
+			Map<String, Object> results = new HashMap<String, Object>();
+			results.put(TOTAL_KEY, blurResults.getTotalResults());
+			
+			Map<String, List> rows = new HashMap<String, List>();
+			for (BlurResult result : blurResults.getResults()) {
+				FetchResult fetchResult = result.getFetchResult();
 				
-				String family = record.getFamily();
-				
-				List<Map<String, String>> fam = (List<Map<String, String>>) getFam(family, rows, recordsOnly);
-				fam.add(buildRow(record.getColumns(), record.getRecordId()));
-			} else {
-				// Row Result
-				FetchRowResult rowResult = fetchResult.getRowResult();
-				Row row = rowResult.getRow();
-				if (row.getRecords() == null || row.getRecords().size() == 0) {
-					for(String family : families) {
-						List<ResultRow> fam = (List<ResultRow>) getFam(family, rows, recordsOnly);
-						getRow(row.getId(), fam);
-					}
+				if (recordsOnly) {
+					// Record Result
+					FetchRecordResult recordResult = fetchResult.getRecordResult();
+					Record record = recordResult.getRecord();
+					
+					String family = record.getFamily();
+					
+					List<Map<String, String>> fam = (List<Map<String, String>>) getFam(family, rows, recordsOnly);
+					fam.add(buildRow(record.getColumns(), record.getRecordId()));
 				} else {
-					for (Record record : row.getRecords()) {
-						String family = record.getFamily();
-						
-						List<ResultRow> fam = (List<ResultRow>) getFam(family, rows, recordsOnly);
-						ResultRow rowData = getRow(row.getId(), fam);
-						rowData.getRecords().add(buildRow(record.getColumns(), record.getRecordId()));
+					// Row Result
+					FetchRowResult rowResult = fetchResult.getRowResult();
+					Row row = rowResult.getRow();
+					if (row.getRecords() == null || row.getRecords().size() == 0) {
+						for(String family : families) {
+							List<ResultRow> fam = (List<ResultRow>) getFam(family, rows, recordsOnly);
+							getRow(row.getId(), fam);
+						}
+					} else {
+						for (Record record : row.getRecords()) {
+							String family = record.getFamily();
+							
+							List<ResultRow> fam = (List<ResultRow>) getFam(family, rows, recordsOnly);
+							ResultRow rowData = getRow(row.getId(), fam);
+							rowData.getRecords().add(buildRow(record.getColumns(), record.getRecordId()));
+						}
 					}
 				}
 			}
+			
+			results.put(FAMILY_KEY, new HashSet<String>(Arrays.asList(families)));
+			results.put(DATA_KEY, rows);
+			
+			return results;
+		} finally {
+			UserContext.reset();
 		}
-		
-		results.put(FAMILY_KEY, new HashSet<String>(Arrays.asList(families)));
-		results.put(DATA_KEY, rows);
-		
-		return results;
 	}
 	
 	private static Map<String, Object> fullTextSearch(String table, String query, String remoteHost) throws IOException, BlurException, TException {
-		Iface client = BlurClient.getClient(Config.getConnectionString());
-		setUser(client, remoteHost);
-		
-		BlurQuery blurQuery = new BlurQuery();
-		
-		Query q = new Query(query, true, ScoreType.SUPER, null, null);
-		blurQuery.setQuery(q);
-		BlurResults blurResults = client.query(table, blurQuery);
-		
-		Map<String, Object> results = new HashMap<String, Object>();
-		results.put(TOTAL_KEY, blurResults.getTotalResults());
-		return results;
+		try {
+			Iface client = Config.getClient(remoteHost);
+			
+			BlurQuery blurQuery = new BlurQuery();
+			
+			Query q = new Query(query, true, ScoreType.SUPER, null, null);
+			blurQuery.setQuery(q);
+			BlurResults blurResults = client.query(table, blurQuery);
+			
+			Map<String, Object> results = new HashMap<String, Object>();
+			results.put(TOTAL_KEY, blurResults.getTotalResults());
+			return results;
+		} finally {
+			UserContext.reset();
+		}
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static Map<String, Object> fetchRow(String table, String query, String[] families, String remoteHost) throws IOException, BlurException, TException {
-		Iface client = BlurClient.getClient(Config.getConnectionString());
-		setUser(client, remoteHost);
-		
-		Selector selector = new Selector();
-		String rowid = StringUtils.remove(query, "rowid:");
-		selector.setRowId(rowid);
-		selector.setColumnFamiliesToFetch(new HashSet<String>(Arrays.asList(families)));
-		
-		FetchResult fetchRow = client.fetchRow(table, selector);
-		
-		Map<String, Object> results = new HashMap<String, Object>();
-		results.put(TOTAL_KEY, fetchRow.getRowResult().getRow() == null ? 0 : 1);
-		
-		Map<String, List> rows = new HashMap<String, List>();
-		Row row = fetchRow.getRowResult().getRow();
-		if (row != null) {
-			for (Record record : row.getRecords()) {
-				String family = record.getFamily();
-				
-				List<ResultRow> fam = (List<ResultRow>) getFam(family, rows, false);
-				ResultRow rowData = getRow(row.getId(), fam);
-				rowData.getRecords().add(buildRow(record.getColumns(), record.getRecordId()));
+		try {
+			Iface client = Config.getClient(remoteHost);
+			
+			Selector selector = new Selector();
+			String rowid = StringUtils.remove(query, "rowid:");
+			selector.setRowId(rowid);
+			selector.setColumnFamiliesToFetch(new HashSet<String>(Arrays.asList(families)));
+			
+			FetchResult fetchRow = client.fetchRow(table, selector);
+			
+			Map<String, Object> results = new HashMap<String, Object>();
+			results.put(TOTAL_KEY, fetchRow.getRowResult().getRow() == null ? 0 : 1);
+			
+			Map<String, List> rows = new HashMap<String, List>();
+			Row row = fetchRow.getRowResult().getRow();
+			if (row != null) {
+				for (Record record : row.getRecords()) {
+					String family = record.getFamily();
+					
+					List<ResultRow> fam = (List<ResultRow>) getFam(family, rows, false);
+					ResultRow rowData = getRow(row.getId(), fam);
+					rowData.getRecords().add(buildRow(record.getColumns(), record.getRecordId()));
+				}
 			}
+			results.put(DATA_KEY, rows);
+			results.put(FAMILY_KEY, new HashSet<String>(Arrays.asList(families)));
+			
+			return results;
+		} finally {
+			UserContext.reset();
 		}
-		results.put(DATA_KEY, rows);
-		results.put(FAMILY_KEY, new HashSet<String>(Arrays.asList(families)));
-		
-		return null;
 	}
 	
-	private static Map<String, Object> fetchRecord(String table, String query, String[] families) throws IOException {
-//		Iface client = BlurClient.getClient(Config.getConnectionString());
-		return null;
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private static Map<String, Object> fetchRecord(String table, String query, String[] families, String remoteHost) throws IOException, BlurException, TException {
+		try {
+			Iface client = Config.getClient(remoteHost);
+			
+			Selector selector = new Selector();
+			String recordId = StringUtils.remove(query, "recordid:");
+			selector.setRecordId(recordId);
+			selector.setRecordOnly(true);
+			selector.setColumnFamiliesToFetch(new HashSet<String>(Arrays.asList(families)));
+			
+			FetchResult fetchRow = client.fetchRow(table, selector);
+			
+			Map<String, Object> results = new HashMap<String, Object>();
+			results.put(TOTAL_KEY, fetchRow.getRecordResult().getRecord() == null ? 0 : 1);
+			
+			Map<String, List> rows = new HashMap<String, List>();
+			Record record = fetchRow.getRecordResult().getRecord();
+			if (record != null) {
+				String family = record.getFamily();
+					
+				List<Map<String, String>> fam = (List<Map<String, String>>) getFam(family, rows, true);
+				fam.add(buildRow(record.getColumns(), record.getRecordId()));
+			}
+			results.put(DATA_KEY, rows);
+			results.put(FAMILY_KEY, new HashSet<String>(Arrays.asList(families)));
+			
+			return results;
+		} finally {
+			UserContext.reset();
+		}
 	}
 	
 	private static Map<String, String> buildRow(List<Column> columns, String recordid) {
@@ -236,11 +272,5 @@ public class SearchUtil {
 		}
 		
 		return row;
-	}
-	
-	private static void setUser(Iface client, String username) throws TException {
-		if (Config.getUserProperties() != null) {
-			client.setUser(new User(username, Config.getUserProperties()));
-		}
 	}
 }

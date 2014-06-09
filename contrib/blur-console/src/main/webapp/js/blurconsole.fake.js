@@ -186,7 +186,7 @@ blurconsole.fake = (function() {
 	}
 
 	function getSchema(table, callback) {
-		//console.log('getting fake schema for table [' + table + ']');
+		console.log('getting fake schema for table [' + table + ']');
 		if(!frozen || !schema){
 			schema = _buildSchema();
 		}

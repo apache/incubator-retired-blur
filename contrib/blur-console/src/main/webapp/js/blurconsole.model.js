@@ -32,7 +32,8 @@ blurconsole.model = (function() {
 			nodeMap : null,
 			queryPerformance : [],
 			queries : {},
-			errors: []
+			errors: [],
+			schema: {}
 		};
 
 	//----------------------- Models ----------------------------------
@@ -97,7 +98,18 @@ blurconsole.model = (function() {
 		}
 
 		function getSchema(tableName, callback) {
-			configMap.poller.getSchema(tableName, callback);
+			if(stateMap.schema && stateMap.schema.tableName === tableName && new Date() - stateMap.schema.date < 60000) {
+				setTimeout(function(){
+					callback(stateMap.schema.data);
+				}, 0);
+			} else {
+				configMap.poller.getSchema(tableName, function(schema) {
+					stateMap.schema.tableName = tableName;
+					stateMap.schema.data = schema;
+					stateMap.schema.date = new Date();
+					callback(schema);
+				});
+			}
 		}
 
 		function getFamilies(tableName) {

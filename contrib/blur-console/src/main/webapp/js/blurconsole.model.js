@@ -109,14 +109,15 @@ blurconsole.model = (function() {
 					return false;
 				}
 			});
-
-			return table.families;
+			if(table) {
+				return table.families;
+			} else {
+				return [];
+			}
 		}
 
-		function findTerms(table, family, column, startsWith) {
-			configMap.poller.findTerms(table, family, column, startsWith, function(terms) {
-				$.gevent.publish('terms-updated', terms);
-			});
+		function findTerms(table, family, column, startsWith, callback) {
+			configMap.poller.findTerms(table, family, column, startsWith, callback);
 		}
 
 		return {
@@ -534,7 +535,12 @@ blurconsole.model = (function() {
 
 	//----------------------- Public API ------------------------------
 	function initModule() {
-		configMap.poller = window.location.href.indexOf('fakeIt=') > -1 ? blurconsole.fake : blurconsole.data;
+		if(window.location.href.indexOf('fakeIt=') > -1) {
+			blurconsole.fake.initModule();
+			configMap.poller = blurconsole.fake;
+		} else {
+			configMap.poller = blurconsole.data;
+		}
 		setTimeout(function() {
 			_nodePoller();
 			_tablePoller();

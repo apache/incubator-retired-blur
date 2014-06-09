@@ -20,6 +20,8 @@ under the License.
 /*global blurconsole:false */
 blurconsole.fake = (function() {
 	'use strict';
+	var frozen = false;
+	var tableList, schema, nodeList, queries;
 
 	//----------------------- Private Methods ----------------------
 	function _randomNumber(max, includeZero) {
@@ -82,67 +84,89 @@ blurconsole.fake = (function() {
 		}, _randomNumber(1000));
 	}
 
+	function _toggleFreeze() {
+		var button = $('#fake_freeze');
+		if(button.html() === 'Freeze'){
+			frozen = true;
+			button.html('Unfreeze');
+			console.log('Fake data frozen');
+		} else {
+			frozen = false;
+			button.html('Freeze');
+			console.log('Fake data resumed');
+		}
+	}
+
 	//-------------------------- Public API ---------------------------
 	function getTableList(callback) {
-		console.log('getting fake table list');
-		var clusters = ['prodA', 'prodB'], data = [];
+		//console.log('getting fake table list');
+		if(!frozen || !tableList) {
+			var clusters = ['prodA', 'prodB'], data = [];
 
-		for (var i = 0; i < 5; i++) {
-			var cluster = clusters[_randomNumber(2, true)];
-			var rows = _randomNumber(1000);
-			var records = _randomNumber(10000)+1000;
-			var enabled = _randomBoolean();
+			for (var i = 0; i < 5; i++) {
+				var cluster = clusters[_randomNumber(2, true)];
+				var rows = _randomNumber(1000);
+				var records = _randomNumber(10000)+1000;
+				var enabled = _randomBoolean();
 
-			data.push({cluster:cluster, name:'testtable'+i, enabled:enabled, rows:rows, records:records, families: blurconsole.utils.keys(_buildSchema())});
+				data.push({cluster:cluster, name:'testtable'+i, enabled:enabled, rows:rows, records:records, families: blurconsole.utils.keys(_buildSchema())});
 
+			}
+			tableList = {'tables':data, 'clusters':clusters};
 		}
-		_sendCallback(callback, {'tables':data, 'clusters':clusters});
+		_sendCallback(callback, tableList);
 	}
 
 	function getNodeList(callback) {
-		console.log('getting fake node list');
-		var controllers = {online:[], offline:[]},
-			clusters = [{name:'prodA', online:[], offline:[]}, {name:'prodB', online:[], offline:[]}],
-			zookeepers = {online: [], offline:[]};
+		//console.log('getting fake node list');
+		if(!frozen || !nodeList) {
+			var controllers = {online:[], offline:[]},
+				clusters = [{name:'prodA', online:[], offline:[]}, {name:'prodB', online:[], offline:[]}],
+				zookeepers = {online: [], offline:[]};
 
-		for(var i = 0; i < 3; i++) {
-			var state = _randomBoolean();
-			if (state) {
-				controllers.online.push('controller' + i + '.localhost');
-				clusters[0].online.push('prodA.shard' + i + '.localhost');
-				clusters[1].online.push('prodB.shard' + i + '.localhost');
-				zookeepers.online.push('zookeeper' + i + '.localhost');
-			} else {
-				controllers.offline.push('controller' + i + '.localhost');
-				clusters[0].offline.push('prodA.shard' + i + '.localhost');
-				clusters[1].offline.push('prodB.shard' + i + '.localhost');
-				zookeepers.offline.push('zookeeper' + i + '.localhost');
+			for(var i = 0; i < 3; i++) {
+				var state = _randomBoolean();
+				if (state) {
+					controllers.online.push('controller' + i + '.localhost');
+					clusters[0].online.push('prodA.shard' + i + '.localhost');
+					clusters[1].online.push('prodB.shard' + i + '.localhost');
+					zookeepers.online.push('zookeeper' + i + '.localhost');
+				} else {
+					controllers.offline.push('controller' + i + '.localhost');
+					clusters[0].offline.push('prodA.shard' + i + '.localhost');
+					clusters[1].offline.push('prodB.shard' + i + '.localhost');
+					zookeepers.offline.push('zookeeper' + i + '.localhost');
+				}
 			}
+			nodeList = {controllers: controllers, clusters: clusters, zookeepers: zookeepers};
 		}
-		_sendCallback(callback, {controllers: controllers, clusters: clusters, zookeepers: zookeepers});
+		_sendCallback(callback, nodeList);
 	}
 
 	function getQueryPerformance(callback) {
-		console.log('getting fake query performance');
+		//console.log('getting fake query performance');
 		_sendCallback(callback, _randomNumber(1000, true));
 	}
 
 	function getQueries(callback) {
-		console.log('getting fake queries');
-		var queries = [];
+		//console.log('getting fake queries');
+		if(!frozen || !queries) {
+			var randomQueries = [];
 
-		for (var i=0; i < _randomNumber(50); i++) {
-			queries.push({
-				uuid: _randomString(),
-				user: 'user_' + _randomNumber(10, true),
-				query: _randomString(),
-				table: 'testtable' + _randomNumber(5, true),
-				state: _randomNumber(3, true),
-				percent: _randomNumber(100, true),
-				startTime: new Date().getTime()
-			});
+			for (var i=0; i < _randomNumber(50); i++) {
+				randomQueries.push({
+					uuid: _randomString(),
+					user: 'user_' + _randomNumber(10, true),
+					query: _randomString(),
+					table: 'testtable' + _randomNumber(5, true),
+					state: _randomNumber(3, true),
+					percent: _randomNumber(100, true),
+					startTime: new Date().getTime()
+				});
+			}
+			queries = { slowQueries : _randomNumber(10) === 1, queries : randomQueries };
 		}
-		_sendCallback(callback, { slowQueries : _randomNumber(10) === 1, queries : queries });
+		_sendCallback(callback, queries);
 	}
 
 	function cancelQuery(table, uuid) {
@@ -162,13 +186,15 @@ blurconsole.fake = (function() {
 	}
 
 	function getSchema(table, callback) {
-		console.log('getting fake schema for table [' + table + ']');
-		_sendCallback(callback, _buildSchema());
+		//console.log('getting fake schema for table [' + table + ']');
+		if(!frozen || !schema){
+			schema = _buildSchema();
+		}
+		_sendCallback(callback, schema);
 	}
 
 	function findTerms(table, family, column, startsWith, callback) {
 		console.log('getting fake terms from [' + table + '] for family [' + family + '] and column [' + column + '] starting with [' + startsWith + ']');
-
 		var terms = [];
 
 		for (var i = 0; i < 10; i++) {
@@ -233,8 +259,13 @@ blurconsole.fake = (function() {
 			_sendCallback(callback, { families: fams, results: results, total: total });
 		}
 	}
+	function initModule() {
+		$('nav.navbar .pull-right').append('<button type="button" id="fake_freeze" class="btn btn-default btn-sm">Freeze</button>');
+		$('#fake_freeze').click(_toggleFreeze);
+	}
 
 	return {
+		initModule: initModule,
 		getTableList : getTableList,
 		getNodeList : getNodeList,
 		getQueryPerformance : getQueryPerformance,

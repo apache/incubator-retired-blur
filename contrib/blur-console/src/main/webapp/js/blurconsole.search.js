@@ -64,8 +64,108 @@ blurconsole.search = (function () {
 		};
 	}
 
+	function _parseQueryForTypeahead(query) {
+		var ret = {
+			family: null,
+			column: null,
+			term: null,
+			mode: null
+		};
+		query = query.toLowerCase();
+		var dotIndex = query.lastIndexOf('.');
+		var colonIndex = query.lastIndexOf(':');
+		var lParenIndex = query.lastIndexOf('(');
+		var rParenIndex = query.lastIndexOf(')');
+		var inParen = lParenIndex > -1 && lParenIndex > rParenIndex;
+		var spaceIndex = query.lastIndexOf(' ');
+		var lastIndex = Math.max(0,dotIndex,colonIndex,lParenIndex,rParenIndex,spaceIndex);
+		if(dotIndex === lastIndex) { // column mode
+			ret.family = query.substring(spaceIndex+1, dotIndex);
+			ret.column = query.substring(dotIndex+1);
+			ret.mode = 'column';
+		} else if(colonIndex === lastIndex || (inParen && lParenIndex === colonIndex+1)) { // term mode
+			var familyStart = query.lastIndexOf(' ', dotIndex);
+			if(familyStart === -1) {
+				familyStart = 0;
+			}
+			ret.family = query.substring(familyStart, dotIndex);
+			ret.column = query.substring(dotIndex+1, colonIndex);
+			ret.term = query.substring(lastIndex+1);
+			ret.mode = 'term';
+		} else if(query.length === 1 || query.length -1 !== lastIndex) { // family mode
+			ret.family = query.substring(spaceIndex+1);
+			ret.mode = 'family';
+		}
+		if(ret.family) {
+			ret.family = ret.family.replace(/[\.\:\(\)\+\- ]/g,'');
+		}
+		if(ret.term) {
+			ret.term = ret.term.replace(/[\+\-]/g,'');
+		}
+		return ret;
+	}
+
+	var _queryTypeaheadDataset = {
+		name:'query-dataset',
+		source: function _queryTypeaheadSource(query, cb) {
+			function buildSuggestionObject(query, hint, value) {
+				return {value:query.substring(0,query.lastIndexOf(hint)) + value, display:value};
+			}
+			var table = $('#tableChooser').val();
+			if(table && table !== '' && blurconsole.model.tables.isDataLoaded()) {
+				query = query.toLowerCase();
+				var parsedQuery = _parseQueryForTypeahead(query);
+				console.log(parsedQuery.mode);
+				switch(parsedQuery.mode) {
+				case 'family':
+					var families = blurconsole.model.tables.getFamilies(table);
+					families = $.map(families, function(fam) {
+						if(fam.indexOf(parsedQuery.family) === 0) {
+							return buildSuggestionObject(query, parsedQuery.family, fam);
+						}
+					});
+					cb(families);
+					break;
+				case 'column':
+					blurconsole.model.tables.getSchema(table, function(schema) {
+						var columnMap = schema[parsedQuery.family];
+						if(columnMap) {
+							var columns = $.map(columnMap, function(data, col) {
+								if(col.indexOf(parsedQuery.column) === 0) {
+									return buildSuggestionObject(query, parsedQuery.column, col);
+								}
+							});
+							cb(columns);
+						}
+					});
+					break;
+				case 'term':
+					if(parsedQuery.term.length > 0) {
+						blurconsole.model.tables.findTerms(table, parsedQuery.family, parsedQuery.column, parsedQuery.term, function(terms){
+							terms = $.map(terms, function(suggestedTerm){
+								return buildSuggestionObject(query, parsedQuery.term, suggestedTerm);
+							});
+							cb(terms);
+						});
+					} else {
+						cb(null);
+					}
+					break;
+				default:
+					cb(null);
+				}
+			}
+		},
+		templates: {
+			suggestion: function(suggestion) {
+				return '<p>' + suggestion.display + '</p>';
+			}
+		}
+	};
+
 	function _registerPageEvents() {
 		$('#searchTrigger').on('click', _sendSearch);
+		$('#queryField').typeahead({}, _queryTypeaheadDataset);
 		$('#results').on('shown.bs.collapse', '.panel-collapse:not(.loaded)', _getMoreData);
 		$('#results').on('click', '.nextPage', _getMoreData);
 		$('#searchOptionsTrigger').popover({
@@ -82,6 +182,7 @@ blurconsole.search = (function () {
 
 	function _unregisterPageEvents() {
 		$('#searchTrigger').off('click');
+		$('#queryField').typeahead('destroy');
 		$('#results').off('shown.bs.collapse');
 		$('#results').off('click');
 		$('#searchOptionsTrigger').popover('destroy');

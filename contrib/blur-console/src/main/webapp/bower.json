@@ -6,7 +6,8 @@
     "twbs-bootstrap-sass": "3.1.1",
     "modernizr": "2.7.1",
     "jquery": "1.11.0",
-    "flot":"0.8.2"
+    "flot":"0.8.2",
+    "typeahead.js":"0.10.2"
   },
   "devDependencies": {
     "mocha": "~1.18.0",

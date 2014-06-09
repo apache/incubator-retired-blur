@@ -42,3 +42,11 @@ tr.row-separator {
 		background-color: $dusty-gray !important;
 	}
 }
+
+.input-group .twitter-typeahead {
+	float: left;
+	width: 100%;
+	.form-control {
+	  border-radius: 4px 0px 0px 4px;
+	}
+}

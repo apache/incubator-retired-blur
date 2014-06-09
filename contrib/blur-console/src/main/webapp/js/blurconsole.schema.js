@@ -58,12 +58,12 @@ blurconsole.schema = (function () {
 		stateMap = {},
 		jqueryMap = {};
 
-    //------------------------------ Private Methods -----------------------------------------------------
-    function _findTerms() {
-		blurconsole.model.tables.findTerms(stateMap.table, stateMap.termFamily, stateMap.termColumn, jqueryMap.termSearch.val());
+	//------------------------------ Private Methods -----------------------------------------------------
+	function _findTerms() {
+		blurconsole.model.tables.findTerms(stateMap.table, stateMap.termFamily, stateMap.termColumn, jqueryMap.termSearch.val(), _loadTerms);
 	}
-    
-    //------------------------------ Event Handling and DOM Methods --------------------------------------
+
+	//------------------------------ Event Handling and DOM Methods --------------------------------------
 	function _showSchema(event, table) {
 		stateMap.table = table;
 		stateMap.modalId = stateMap.table + '_modal';
@@ -160,8 +160,7 @@ blurconsole.schema = (function () {
 		jqueryMap.termSearchButton.trigger('click');
 	}
 
-	function _loadTerms() {
-		var terms = Array.prototype.slice.call(arguments, 1);
+	function _loadTerms(terms) {
 		jqueryMap.termList.html('');
 		$.each(terms, function(i, term){
 			jqueryMap.termList.append('<li class="list-group-item">' + term + ' <span class="badge badge-success searchTrigger" title="Search for this value" data-value="' + term + '" data-table="' + stateMap.table + '"><i class="glyphicon glyphicon-search"></i></span></li>');
@@ -183,7 +182,6 @@ blurconsole.schema = (function () {
     //----------------------------- Public API ----------------------------
 	function initModule() {
 		$.gevent.subscribe($(document), 'schema-show', _showSchema);
-		$.gevent.subscribe($(document), 'terms-updated', _loadTerms);
 	}
 
 	return {

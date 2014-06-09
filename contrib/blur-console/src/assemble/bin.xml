@@ -73,6 +73,7 @@ under the License.
           <include>libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/popover.js</include>
           <include>libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/collapse.js</include>
           <include>libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tab.js</include>
+          <include>libs/typeahead.js/dist/typeahead.jquery.js</include>
           <include>views/**</include>
           <include>index.html</include>
       </includes>

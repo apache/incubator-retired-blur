@@ -45,6 +45,11 @@ under the License.
           <exclude>org.apache.hadoop:hadoop-client</exclude>
           <exclude>org.apache.hadoop:hadoop-minicluster</exclude>
       </excludes>
+      <unpackOptions>
+        <excludes>
+            <exclude>**/blur-site.properties</exclude>
+        </excludes>
+      </unpackOptions>
     </dependencySet>
   </dependencySets>
   <fileSets>

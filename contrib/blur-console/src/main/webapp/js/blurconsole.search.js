@@ -60,7 +60,9 @@ blurconsole.search = (function () {
 			$resultsHolder : $('#results'),
 			$optionsDisplay : $('#searchOptionsDisplay'),
 			$countHolder : $('#resultCount'),
-			$facetTrigger : $('#facetTrigger')
+			$facetTrigger : $('#facetTrigger'),
+			$optionsTrigger: $('#searchOptionsTrigger'),
+			$searchTrigger : $('#searchTrigger')
 		};
 	}
 
@@ -164,33 +166,41 @@ blurconsole.search = (function () {
 	};
 
 	function _registerPageEvents() {
-		$('#searchTrigger').on('click', _sendSearch);
-		$('#queryField').typeahead({}, _queryTypeaheadDataset);
-		$('#results').on('shown.bs.collapse', '.panel-collapse:not(.loaded)', _getMoreData);
-		$('#results').on('click', '.nextPage', _getMoreData);
-		$('#searchOptionsTrigger').popover({
+		jqueryMap.$searchTrigger.on('click', _sendSearch);
+		jqueryMap.$queryField.typeahead({}, _queryTypeaheadDataset);
+		jqueryMap.$queryField.on('keyup', function(evt) {
+			if (evt.keyCode === 13) {
+				_sendSearch();
+			}
+		});
+		jqueryMap.$resultsHolder.on('shown.bs.collapse', '.panel-collapse:not(.loaded)', _getMoreData);
+		jqueryMap.$resultsHolder.on('click', '.nextPage', _getMoreData);
+		jqueryMap.$optionsTrigger.popover({
 			html: true,
 			placement: 'bottom',
 			title: 'Extra Search Options',
 			container: 'body',
 			content: configMap.optionsHtml
 		});
-		$('#searchOptionsTrigger').on('shown.bs.popover', _updateOptionPopover);
+		jqueryMap.$optionsTrigger.on('shown.bs.popover', _updateOptionPopover);
 		$(document).on('change', '.popover select', _persistOptions);
 		jqueryMap.$facetTrigger.on('click', _popupFacetDialog);
 	}
 
 	function _unregisterPageEvents() {
-		$('#searchTrigger').off('click');
-		$('#queryField').typeahead('destroy');
-		$('#results').off('shown.bs.collapse');
-		$('#results').off('click');
-		$('#searchOptionsTrigger').popover('destroy');
-		$('#searchOptionsTrigger').off('shown.bs.popover');
-		$(document).off('change');
-		//jqueryMap.$facetTrigger.off('click');
+		if (jqueryMap.$searchTrigger) {
+			jqueryMap.$searchTrigger.off('click');
+			jqueryMap.$queryField.typeahead('destroy');
+			jqueryMap.$queryField.off('keyup');
+			jqueryMap.$resultsHolder.off('shown.bs.collapse');
+			jqueryMap.$resultsHolder.off('click');
+			jqueryMap.$optionsTrigger.popover('destroy');
+			jqueryMap.$optionsTrigger.off('shown.bs.popover');
+			$(document).off('change');
+			//jqueryMap.$facetTrigger.off('click');
+		}
 	}
-    
+
     function _getColList(row) {
 		var cols = blurconsole.utils.reject(blurconsole.utils.keys(row), function(i) {
 			return i === 'recordid';
@@ -205,7 +215,7 @@ blurconsole.search = (function () {
 		cols = ['recordid'].concat(cols);
 		return cols;
 	}
-    
+
     //------------------------------ Event Handlers and DOM Methods ---------------------
 	function _updateOptionDisplay() {
 		var displayText = '';

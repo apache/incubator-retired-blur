@@ -2,6 +2,7 @@ build/
 libs/*
 css/*
 jsc/*
+script
 test/reports
 .tmp
 .sass-cache

@@ -31,6 +31,7 @@ module.exports = function (grunt) {
     // Define the configuration for all the tasks
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
+        banner: grunt.file.read('banner'),
 
         clean: ['css'],
 
@@ -75,6 +76,38 @@ module.exports = function (grunt) {
             }
         },
 
+        uglify: {
+            js: {
+                options: {
+                    sourceMap: true,
+                    sourceMapIncludeSources: true,
+                    banner:'/*\n<%= banner %>\n*/',
+                    compress: {
+                        drop_console: true
+                    }
+                },
+                files: {
+                    'script/ugly.js': [
+                        'libs/jquery/dist/jquery.js',
+                        'js/utils/*\.js',
+                        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tooltip.js',
+                        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/modal.js',
+                        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/transition.js',
+                        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/popover.js',
+                        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/collapse.js',
+                        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tab.js',
+                        'libs/flot/jquery.flot.js',
+                        'libs/flot/jquery.flot.pie.js',
+                        'libs/flot/jquery.flot.categories.js',
+                        'libs/flot/jquery.flot.stack.js',
+                        'libs/typeahead.js/dist/typeahead.jquery.js',
+                        'js/blurconsole.js',
+                        'js/*\.js'
+                    ]
+                }
+            }
+        },
+
         // Make sure code styles are up to par and there are no obvious mistakes
         jshint: {
             options: {
@@ -105,9 +138,9 @@ module.exports = function (grunt) {
                 files: ['sass/**/*.scss', 'libs/**/*.css', 'libs/**/*.scss'],
                 tasks: ['sass:development', 'notify:css']
             },
-            lint: {
+            js: {
                 files: ['js/**/*.js'],
-                tasks: ['jshint:development']
+                tasks: ['jshint:development', 'combine:js', 'uglify:js']
             },
             livereload: {
                 options: {
@@ -179,6 +212,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-notify');
     grunt.loadNpmTasks('grunt-mocha-selenium');
     grunt.loadNpmTasks('grunt-karma');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
 
     var initialHintSrc = grunt.config('jshint.development.src');
     grunt.event.on('watch', function(action, filepath){
@@ -193,8 +227,8 @@ module.exports = function (grunt) {
     grunt.registerTask('test:unit', 'Run JavaScript Unit Tests', ['karma']);
     grunt.registerTask('test:style', 'Run JavaScript CodeStyle reports', ['jshint:ci'/*, 'plato:ci' */]);
     grunt.registerTask('style:development', 'Run JavaScript CodeStyle reports', ['jshint:development']);
-    grunt.registerTask('development', 'Build sass for development', ['sass:development']);
-    grunt.registerTask('production', 'Build sass for production', ['sass:production']);
-    grunt.registerTask('serve', 'Run development server', ['clean','sass:development', 'connect:livereload','watch']);
-    grunt.registerTask('default', ['clean', 'development', 'style:development', 'watch']);
+    grunt.registerTask('development', 'Build for development', ['sass:development', 'uglify:js']);
+    grunt.registerTask('production', 'Build for production', ['sass:production', 'uglify:js']);
+    grunt.registerTask('serve', 'Run development server', ['clean','sass:development', 'uglify:js', 'connect:livereload','watch']);
+    grunt.registerTask('default', ['clean', 'style:development', 'development', 'watch']);
 };

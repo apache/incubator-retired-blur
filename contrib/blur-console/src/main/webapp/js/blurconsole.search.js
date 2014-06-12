@@ -314,7 +314,7 @@ blurconsole.search = (function () {
 		$.each(sortedFamilies, function(i, fam) {
 			var famId = blurconsole.browserUtils.cleanId(fam);
 			familyMarkup += '<div class="panel panel-default"><div class="panel-heading">';
-			familyMarkup += '<h4 class="panel-title"><a data-toggle="collapse" data-parent="#results" href="#' + famId + '">' + fam + '</a></h4></div>';
+			familyMarkup += '<h4 class="panel-title" data-toggle="collapse" data-parent="#results" data-target="#' + famId + '">' + fam + '</h4></div>';
 			familyMarkup += '<div id="' + famId + '" class="panel-collapse collapse' + (parsedFamilies.indexOf(fam) >= 0 ? ' in' : '') + '">';
 			familyMarkup += '<div class="panel-body"><img src="img/ajax-loader.gif"></div></div></div>';
 		});

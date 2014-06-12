@@ -19,6 +19,9 @@ under the License.
  */
 
 #results {
+	.panel-heading {
+		cursor: pointer;
+	}
 	.panel-collapse {
 		padding: 5px;
 		overflow-x: auto;

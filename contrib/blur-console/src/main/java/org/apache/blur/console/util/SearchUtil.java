@@ -174,7 +174,7 @@ public class SearchUtil {
 			
 			Map<String, List> rows = new HashMap<String, List>();
 			Row row = fetchRow.getRowResult().getRow();
-			if (row != null) {
+			if (row != null && row.getRecords() != null) {
 				for (Record record : row.getRecords()) {
 					String family = record.getFamily();
 					

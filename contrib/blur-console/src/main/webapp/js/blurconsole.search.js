@@ -113,7 +113,7 @@ blurconsole.search = (function () {
 			function buildSuggestionObject(query, hint, value) {
 				return {value:query.substring(0,query.lastIndexOf(hint)) + value, display:value};
 			}
-			var table = $('#tableChooser').val();
+			var table = stateMap.$currentTable;
 			if(table && table !== '' && blurconsole.model.tables.isDataLoaded()) {
 				query = query.toLowerCase();
 				var parsedQuery = _parseQueryForTypeahead(query);
@@ -185,6 +185,9 @@ blurconsole.search = (function () {
 		jqueryMap.$optionsTrigger.on('shown.bs.popover', _updateOptionPopover);
 		$(document).on('change', '.popover select', _persistOptions);
 		jqueryMap.$facetTrigger.on('click', _popupFacetDialog);
+		jqueryMap.$tableField.on('change', function(evt) {
+			stateMap.$currentTable = $(evt.currentTarget).val();
+		});
 	}
 
 	function _unregisterPageEvents() {
@@ -197,6 +200,7 @@ blurconsole.search = (function () {
 			jqueryMap.$optionsTrigger.popover('destroy');
 			jqueryMap.$optionsTrigger.off('shown.bs.popover');
 			$(document).off('change');
+			jqueryMap.$tableField.off('change');
 			//jqueryMap.$facetTrigger.off('click');
 		}
 	}
@@ -416,7 +420,6 @@ blurconsole.search = (function () {
 	function _loadTableList() {
 		var tableMap = blurconsole.model.tables.getAllEnabledTables();
 
-		jqueryMap.$tableSelectorStatusOption.html('Loading Tables...');
 		jqueryMap.$tableField.find('optgroup').remove();
 
 		$.each(tableMap, function(cluster, tables) {
@@ -432,7 +435,10 @@ blurconsole.search = (function () {
 			}
 		});
 
-		jqueryMap.$tableSelectorStatusOption.html('Choose Table');
+		if (jqueryMap.$tableSelectorStatusOption && blurconsole.utils.keys(tableMap).length > 0) {
+			jqueryMap.$tableSelectorStatusOption.remove();
+			jqueryMap.$tableSelectorStatusOption = null;
+		}
 	}
 
 	function _popupFacetDialog() {

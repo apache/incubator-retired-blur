@@ -33,7 +33,9 @@
     "karma-script-launcher": "~0.1.0",
     "load-grunt-tasks": "~0.2.0",
     "time-grunt": "~0.2.0",
-    "grunt-contrib-connect": "~0.5.0"
+    "grunt-contrib-connect": "~0.5.0",
+    "node-version-assets": "~0.2.0",
+    "grunt-contrib-copy": "~0.5.0"
   },
   "scripts": {
     "test": "karma start --single-run"

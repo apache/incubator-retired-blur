@@ -19,12 +19,16 @@ under the License.
  */
 
 #results {
+	.panel {
+		display:inline-block;
+		margin-right: 10px;
+		min-width: 100%;
+	}
 	.panel-heading {
 		cursor: pointer;
 	}
 	.panel-collapse {
 		padding: 5px;
-		overflow-x: auto;
 	}
 }
 

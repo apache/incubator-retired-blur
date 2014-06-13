@@ -320,15 +320,6 @@ blurconsole.search = (function () {
 		});
 
 		jqueryMap.$resultsHolder.html(familyMarkup);
-		_fixPanelWidths();
-	}
-
-	function _fixPanelWidths() {
-		var allPanels = jqueryMap.$resultsHolder.find('.panel-collapse');
-		if (allPanels.length > 0) {
-			var width = $(allPanels[0]).parent().width() - 30;
-			allPanels.width(width);
-		}
 	}
 
 	function _drawResults(evt, families) {
@@ -413,7 +404,6 @@ blurconsole.search = (function () {
 					$(famId).addClass('loaded');
 				}
 			});
-			_fixPanelWidths();
 		}
 	}
 

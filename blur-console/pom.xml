@@ -211,7 +211,7 @@
         </profile>
         <profile>
             <id>grunt</id>
-            <activation><os><family>!windows</family></os></activation>
+            <activation><property><name>env.BLUR_CONSOLE_DEV</name></property></activation>
             <build>
                 <plugins>
                     <plugin>

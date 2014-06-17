@@ -15,6 +15,9 @@ In order to contribute to the development of this component the following tools/
 
 ### UI Development
 
+To turn on the development profile:
+export BLUR_CONSOLE_DEV=true
+
 The UI code lives in the ui directory.  This directory has been setup like a standard javascript based application would be.  The goal of this is to allow for rapid development of the UI components while flushing out the service API.  The UI portion has been built so that the system can be run with fake data to mock out the actual Apache Blur integration.
 
 To get up and running to work on the UI component you can follow these steps:

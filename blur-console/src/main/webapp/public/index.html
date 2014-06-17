@@ -1,0 +1,67 @@
+<!--
+
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+ -->
+
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Blur Console</title>
+        <meta name="description" content="System Monitor and Console for Blur">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" href="css/blurconsole.9c5692891382a5b44b51b02ec2798ef3.css">
+        <script src="js/modernizr.js"></script>
+    </head>
+    <body>
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+            <a class="navbar-brand" href="#">Blur Console</a>
+            <div class="pull-right">
+                <button type="button" id="view_logging_trigger" class="btn btn-default btn-sm">
+                    Logs
+                    <span class="badge badge-warning"></span>
+                </button>
+            </div>
+        </nav>
+        <nav class="side-nav">
+            <ul>
+                <li title="Dashboard" data-toggle="tooltip" data-placement="right" data-container="body">
+                    <a href="#!tab=dashboard"><i class="glyphicon glyphicon-dashboard"></i></a>
+                </li>
+                <li title="Tables" data-toggle="tooltip" data-placement="right" data-container="body">
+                    <a href="#!tab=tables"><i class="glyphicon glyphicon-list"></i></a>
+                </li>
+                <li title="Queries" data-toggle="tooltip" data-placement="right" data-container="body">
+                    <a href="#!tab=queries"><i class="glyphicon glyphicon-tasks"></i></a>
+                </li>
+                <li title="Search" data-toggle="tooltip" data-placement="right" data-container="body">
+                    <a href="#!tab=search"><i class="glyphicon glyphicon-search"></i></a>
+                </li>
+            </ul>
+        </nav>
+        <div id="blurconsole"></div>
+        <script src="js/blurconsole.fdfdf622e539d17c4daa4b622d866cd2.js"></script>
+        <script type="text/javascript">
+            $(function () { blurconsole.initModule( $('#blurconsole') ); });
+        </script>
+    </body>
+</html>

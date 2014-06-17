@@ -135,7 +135,7 @@
                         </manifest>
                     </archive>
                     <descriptors>
-                        <descriptor>src/assemble/bin.xml</descriptor>
+                        <descriptor>src/assemble/webapp.xml</descriptor>
                     </descriptors>
                 </configuration>
                 <executions>

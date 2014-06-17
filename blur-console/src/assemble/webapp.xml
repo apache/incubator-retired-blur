@@ -19,39 +19,11 @@ under the License.
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	    xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
-  <id>bin</id>
+  <id>webapp</id>
   <formats>
     <format>jar</format>
   </formats>
   <includeBaseDirectory>false</includeBaseDirectory>
-  <dependencySets>
-    <!-- <dependencySet>
-      <unpack>true</unpack>
-      <scope>provided</scope>
-      <useTransitiveDependencies>true</useTransitiveDependencies>
-      <includes>
-        <include>org.apache.blur:blur-thrift</include>
-        <include>org.apache.blur:blur-core</include>
-        <include>org.codehaus.jackson:*</include>
-      </includes>
-    </dependencySet> -->
-    <dependencySet>
-        <unpack>true</unpack>
-        <scope>runtime</scope>
-        <excludes>
-          <exclude>org.apache.blur:blur-core:test-jar</exclude>
-          <exclude>org.apache.blur:blur-util:test-jar</exclude>
-          <exclude>org.apache.hadoop:hadoop-test</exclude>
-          <exclude>org.apache.hadoop:hadoop-client</exclude>
-          <exclude>org.apache.hadoop:hadoop-minicluster</exclude>
-      </excludes>
-      <unpackOptions>
-        <excludes>
-            <exclude>**/blur-site.properties</exclude>
-        </excludes>
-      </unpackOptions>
-    </dependencySet>
-  </dependencySets>
   <fileSets>
     <fileSet>
       <directory>target/classes</directory>

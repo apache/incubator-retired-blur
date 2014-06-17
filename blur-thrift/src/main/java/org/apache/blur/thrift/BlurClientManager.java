@@ -139,8 +139,14 @@ public class BlurClientManager {
     AtomicInteger retries = new AtomicInteger();
     AtomicReference<Blur.Client> client = new AtomicReference<Client>();
     List<Connection> shuffledConnections = new ArrayList<Connection>();
-    Random random = new Random();
   }
+
+  private static ThreadLocal<Random> _random = new ThreadLocal<Random>() {
+    @Override
+    protected Random initialValue() {
+      return new Random();
+    }
+  };
 
   @SuppressWarnings("unchecked")
   public static <CLIENT, T> T execute(List<Connection> connections, AbstractCommand<CLIENT, T> command, int maxRetries,
@@ -148,14 +154,13 @@ public class BlurClientManager {
     Tracer traceSetup = Trace.trace("execute - setup");
     LocalResources localResources = new LocalResources();
     AtomicReference<Client> client = localResources.client;
-    Random random = localResources.random;
     AtomicInteger retries = localResources.retries;
     List<Connection> shuffledConnections = localResources.shuffledConnections;
 
     retries.set(0);
     shuffledConnections.addAll(connections);
 
-    Collections.shuffle(shuffledConnections, random);
+    Collections.shuffle(shuffledConnections, _random.get());
     boolean allBad = true;
     int connectionErrorCount = 0;
     traceSetup.done();
@@ -230,9 +235,10 @@ public class BlurClientManager {
       }
       if (allBad) {
         connectionErrorCount++;
-        LOG.error("All connections are bad [" + connectionErrorCount + "].");
+        LOG.error("All connections are bad [{0}] for [{1}].", connectionErrorCount, connections);
         if (connectionErrorCount >= maxRetries) {
-          throw new BadConnectionException("Could not connect to controller/shard server. All connections are bad.");
+          throw new BadConnectionException("Could not connect to controller/shard server [" + connections
+              + "]. All connections are bad.");
         }
         try {
           Thread.sleep(1000);

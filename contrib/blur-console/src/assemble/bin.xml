@@ -58,30 +58,8 @@ under the License.
       <outputDirectory></outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>src/main/webapp</directory>
+      <directory>src/main/webapp/public</directory>
       <outputDirectory>webapp</outputDirectory>
-      <!-- Remove unneccessary web files -->
-      <includes>
-          <include>css/**</include>
-          <include>img/**</include>
-          <include>js/**</include>
-          <include>libs/flot/jquery.flot.js</include>
-          <include>libs/flot/jquery.flot.pie.js</include>
-          <include>libs/flot/jquery.flot.categories.js</include>
-          <include>libs/flot/jquery.flot.stack.js</include>
-          <include>libs/jquery/dist/jquery.js</include>
-          <include>libs/modernizr/modernizr.js</include>
-          <include>libs/twbs-bootstrap-sass/vendor/assets/fonts/bootstrap/**</include>
-          <include>libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tooltip.js</include>
-          <include>libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/modal.js</include>
-          <include>libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/transition.js</include>
-          <include>libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/popover.js</include>
-          <include>libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/collapse.js</include>
-          <include>libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tab.js</include>
-          <include>libs/typeahead.js/dist/typeahead.jquery.js</include>
-          <include>views/**</include>
-          <include>index.html</include>
-      </includes>
     </fileSet>
   </fileSets>
 </assembly>

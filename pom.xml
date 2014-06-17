@@ -248,7 +248,10 @@ under the License.
 						<!-- exclude>contrib/blur-console/src/main/webapp/test/bower_components/**</exclude -->
 
 						<!-- JS Libraries that could not be included through bower -->
-						<exclude>**/src/main/webapp/js/utils/**</exclude>
+						<exclude>**/src/main/webapp/js/utils/*</exclude>
+						<exclude>**/src/main/webapp/public/js/modernizr.js</exclude>
+						<exclude>**/src/main/webapp/public/css/*.map</exclude>
+						<exclude>**/src/main/webapp/public/css/glyphicons*</exclude>
 	
 						<!-- Files used for building the UI -->
 						<exclude>**/src/main/webapp/node_modules/**</exclude>

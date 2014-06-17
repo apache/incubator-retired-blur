@@ -28,11 +28,30 @@ module.exports = function (grunt) {
     // Time how long tasks take. Can help when optimizing build times
     require('time-grunt')(grunt);
 
+    var all_js_files = [
+        'libs/jquery/dist/jquery.js',
+        'js/utils/*\.js',
+        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tooltip.js',
+        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/modal.js',
+        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/transition.js',
+        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/popover.js',
+        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/collapse.js',
+        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tab.js',
+        'libs/flot/jquery.flot.js',
+        'libs/flot/jquery.flot.pie.js',
+        'libs/flot/jquery.flot.categories.js',
+        'libs/flot/jquery.flot.stack.js',
+        'libs/typeahead.js/dist/typeahead.jquery.js',
+        'js/blurconsole.js',
+        'js/*\.js'
+    ];
+
     // Define the configuration for all the tasks
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
+        banner: grunt.file.read('banner'),
 
-        clean: ['css'],
+        clean: ['public'],
 
         bower: {
             install: {
@@ -62,15 +81,31 @@ module.exports = function (grunt) {
             },
             development: {
                 files: {
-                    'css/blurconsole.css': 'sass/blurconsole.scss'
+                    'public/css/blurconsole.css': 'sass/blurconsole.scss'
                 }
             },
             production: {
                 files: {
-                    'css/blurconsole.css': 'sass/blurconsole.scss'
+                    'public/css/blurconsole.css': 'sass/blurconsole.scss'
                 },
                 options: {
                     style: 'compressed'
+                }
+            }
+        },
+
+        uglify: {
+            js: {
+                options: {
+                    sourceMap: true,
+                    sourceMapIncludeSources: true,
+                    banner:'/*\n<%= banner %>\n*/',
+                    compress: {
+                        drop_console: true
+                    }
+                },
+                files: {
+                    'public/js/blurconsole.js': all_js_files
                 }
             }
         },
@@ -103,11 +138,15 @@ module.exports = function (grunt) {
             },
             css: {
                 files: ['sass/**/*.scss', 'libs/**/*.css', 'libs/**/*.scss'],
-                tasks: ['sass:development', 'notify:css']
+                tasks: ['sass:development', 'version-assets-css-map', 'version-assets-css', 'notify:css']
             },
-            lint: {
+            js: {
                 files: ['js/**/*.js'],
-                tasks: ['jshint:development']
+                tasks: ['jshint:development', 'uglify:js', 'version-assets-js-map', 'version-assets-js']
+            },
+            html: {
+                files: ['index.html', 'views/*.html'],
+                tasks: ['copy:main', 'version-assets']
             },
             livereload: {
                 options: {
@@ -160,7 +199,8 @@ module.exports = function (grunt) {
                 port: 3000,
                 livereload: 4000,
                 // Change this to '0.0.0.0' to access the server from outside
-                hostname: '0.0.0.0'
+                hostname: '0.0.0.0',
+                base: 'public'
             },
             livereload: {
                 options: {
@@ -168,6 +208,16 @@ module.exports = function (grunt) {
                 }
             }
         },
+
+        copy: {
+            main: {
+                files: [
+                    {expand: true, src: ['index.html','img/*','views/*'], dest: 'public/'},
+                    {expand: true, flatten: true, src: ['libs/modernizr/modernizr.js'], dest: 'public/js'},
+                    {expand: true, flatten: true, src: ['libs/twbs-bootstrap-sass/vendor/assets/fonts/bootstrap/*'], dest: 'public/css'}
+                ]
+            }
+        }
     });
 
     grunt.loadNpmTasks('grunt-bower-task');
@@ -179,6 +229,8 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-notify');
     grunt.loadNpmTasks('grunt-mocha-selenium');
     grunt.loadNpmTasks('grunt-karma');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-copy');
 
     var initialHintSrc = grunt.config('jshint.development.src');
     grunt.event.on('watch', function(action, filepath){
@@ -193,8 +245,45 @@ module.exports = function (grunt) {
     grunt.registerTask('test:unit', 'Run JavaScript Unit Tests', ['karma']);
     grunt.registerTask('test:style', 'Run JavaScript CodeStyle reports', ['jshint:ci'/*, 'plato:ci' */]);
     grunt.registerTask('style:development', 'Run JavaScript CodeStyle reports', ['jshint:development']);
-    grunt.registerTask('development', 'Build sass for development', ['sass:development']);
-    grunt.registerTask('production', 'Build sass for production', ['sass:production']);
-    grunt.registerTask('serve', 'Run development server', ['clean','sass:development', 'connect:livereload','watch']);
-    grunt.registerTask('default', ['clean', 'development', 'style:development', 'watch']);
+    grunt.registerTask('development', 'Build for development', ['clean', 'sass:development', 'uglify:js', 'copy:main', 'version-assets']);
+    grunt.registerTask('production', 'Build for production', ['clean', 'sass:production', 'uglify:js', 'copy:main', 'version-assets']);
+    grunt.registerTask('serve', 'Run development server', ['clean','development', 'connect:livereload','watch']);
+    grunt.registerTask('default', ['clean', 'style:development', 'development', 'watch']);
+    grunt.registerTask('version-assets-css-map', function() {
+        var Version = require("node-version-assets");
+        var versionInstance = new Version({
+            assets: ['public/css/blurconsole.css.map'],
+            grepFiles: ['public/css/blurconsole.css'],
+            keepOriginal: true
+        });
+        versionInstance.run(this.async());
+    });
+    grunt.registerTask('version-assets-js-map', function() {
+        var Version = require("node-version-assets");
+        var versionInstance = new Version({
+            assets: ['public/js/blurconsole.js.map'],
+            grepFiles: ['public/js/blurconsole.js'],
+            keepOriginal: true
+        });
+        versionInstance.run(this.async());
+    });
+    grunt.registerTask('version-assets-js', function() {
+        var Version = require("node-version-assets");
+        var versionInstance = new Version({
+            assets: ['public/js/blurconsole.js'],
+            grepFiles: ['public/index.html'],
+            keepOriginal: true
+        });
+        versionInstance.run(this.async());
+    });
+    grunt.registerTask('version-assets-css', function() {
+        var Version = require("node-version-assets");
+        var versionInstance = new Version({
+            assets: ['public/css/blurconsole.css'],
+            grepFiles: ['public/index.html'],
+            keepOriginal: true
+        });
+        versionInstance.run(this.async());
+    });
+    grunt.registerTask('version-assets', 'version the static assets just created', ['version-assets-js-map', 'version-assets-js', 'version-assets-css-map', 'version-assets-css']);
 };

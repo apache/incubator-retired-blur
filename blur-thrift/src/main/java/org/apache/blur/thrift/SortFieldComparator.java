@@ -16,6 +16,7 @@
  */
 package org.apache.blur.thrift;
 
+import java.nio.ByteBuffer;
 import java.util.Comparator;
 
 import org.apache.blur.thrift.generated.SortFieldResult;
@@ -43,7 +44,7 @@ public class SortFieldComparator implements Comparator<SortFieldResult> {
       case INT_VALUE: // DOUBLE_VALUE
         return ((Integer) obj1).compareTo((Integer) obj2);
       case BINARY_VALUE: // BINARY_VALUE
-        return compare((byte[]) obj1, (byte[]) obj2);
+        return compare((ByteBuffer) obj1, (ByteBuffer) obj2);
       default:
         throw new RuntimeException("Unsupported type of [" + field + "]");
       }
@@ -51,7 +52,11 @@ public class SortFieldComparator implements Comparator<SortFieldResult> {
     return lastComparison;
   }
 
-  public int compare(byte[] b1, byte[] b2) {
+  public static int compare(ByteBuffer b1, ByteBuffer b2) {
+    return compareBytes(b1.array(), b1.arrayOffset(), b1.limit(), b2.array(), b2.arrayOffset(), b2.limit());
+  }
+
+  public static int compare(byte[] b1, byte[] b2) {
     return compareBytes(b1, 0, b1.length, b2, 0, b2.length);
   }
 

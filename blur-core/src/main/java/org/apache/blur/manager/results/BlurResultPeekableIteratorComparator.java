@@ -57,6 +57,7 @@ public class BlurResultPeekableIteratorComparator implements Comparator<Peekable
           return compare;
         }
       }
+      return 0;
     }
 
     if (sortFields1 == null && sortFields2 == null) {

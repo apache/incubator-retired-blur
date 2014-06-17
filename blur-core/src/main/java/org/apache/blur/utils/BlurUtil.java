@@ -38,6 +38,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -1331,8 +1332,42 @@ public class BlurUtil {
   }
 
   public static List<SortFieldResult> convertToSortFields(Object[] fields) {
-    // TODO Auto-generated method stub
-    return null;
+    if (fields == null) {
+      return null;
+    }
+    if (fields.length == 0) {
+      return Arrays.asList();
+    }
+    List<SortFieldResult> result = new ArrayList<SortFieldResult>();
+    for (Object o : fields) {
+      result.add(convertToSortField(o));
+    }
+    return result;
+  }
+
+  public static SortFieldResult convertToSortField(Object o) {
+    if (o == null) {
+      return SortFieldResult.nullValue(true);
+    } else if (o instanceof BytesRef) {
+      return SortFieldResult.binaryValue(getBytes((BytesRef) o));
+    } else if (o instanceof String) {
+      return SortFieldResult.stringValue((String) o);
+    } else if (o instanceof Double) {
+      return SortFieldResult.doubleValue((Double) o);
+    } else if (o instanceof Integer) {
+      return SortFieldResult.intValue((Integer) o);
+    } else if (o instanceof Long) {
+      return SortFieldResult.longValue((Long) o);
+    } else if (o instanceof byte[]) {
+      return SortFieldResult.binaryValue((byte[]) o);
+    }
+    throw new RuntimeException("Object [" + o + "] is not supported");
+  }
+
+  private static byte[] getBytes(BytesRef ref) {
+    byte[] buf = new byte[ref.length];
+    System.arraycopy(ref.bytes, ref.offset, buf, 0, ref.length);
+    return buf;
   }
 
 }

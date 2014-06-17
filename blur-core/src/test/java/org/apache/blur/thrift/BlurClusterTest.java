@@ -50,16 +50,19 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
+import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.Facet;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.Query;
+import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
+import org.apache.blur.thrift.generated.SortField;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.thrift.util.BlurThriftHelper;
@@ -274,6 +277,13 @@ public class BlurClusterTest {
       RowMutation rowMutation = BlurThriftHelper.newRowMutation(tableName, rowId, mutation);
       mutations.add(rowMutation);
     }
+    ColumnDefinition columnDefinition = new ColumnDefinition();
+    columnDefinition.setFamily("test");
+    columnDefinition.setColumnName("facet");
+    columnDefinition.setFieldLessIndexed(true);
+    columnDefinition.setFieldType("string");
+    columnDefinition.setSortable(true);
+    client.addColumnDefinition(tableName, columnDefinition);
     long s = System.nanoTime();
     client.mutateBatch(mutations);
     long e = System.nanoTime();
@@ -323,6 +333,68 @@ public class BlurClusterTest {
       System.out.println(blurResult);
     }
 
+  }
+
+  @Test
+  public void testSortedQueryWithSelector() throws BlurException, TException, IOException, InterruptedException {
+    final String tableName = "testSortedQueryWithSelector";
+    createTable(tableName);
+    loadTable(tableName);
+
+    Iface client = getClient();
+
+    BlurQuery blurQueryRow = new BlurQuery();
+    Query queryRow = new Query();
+    queryRow.setQuery("test.test:value");
+    queryRow.setRowQuery(false);
+    blurQueryRow.setQuery(queryRow);
+    blurQueryRow.addToSortFields(new SortField("test", "facet", false));
+
+    blurQueryRow.setUseCacheIfPresent(false);
+    blurQueryRow.setCacheResult(false);
+    Selector selector = new Selector();
+    selector.setRecordOnly(true);
+    blurQueryRow.setSelector(selector);
+
+    BlurResults resultsRow = client.query(tableName, blurQueryRow);
+    long totalResults = resultsRow.getTotalResults();
+
+    assertEquals(numberOfDocs, resultsRow.getTotalResults());
+
+    String lastValue = null;
+    long totalFetched = 0;
+    do {
+      for (BlurResult blurResult : resultsRow.getResults()) {
+        FetchResult fetchResult = blurResult.getFetchResult();
+        Record record = fetchResult.getRecordResult().getRecord();
+        if (lastValue == null) {
+          lastValue = getColumnValue(record, "facet");
+        } else {
+          String currentValue = getColumnValue(record, "facet");
+          if (currentValue.compareTo(lastValue) < 0) {
+            fail("Current Value of [" + currentValue + "] can not be less than lastValue of [" + lastValue + "]");
+          }
+          lastValue = currentValue;
+        }
+        totalFetched++;
+      }
+      int size = resultsRow.getResults().size();
+      totalResults -= size;
+      if (totalResults > 0) {
+        blurQueryRow.setStart(blurQueryRow.getStart() + size);
+        resultsRow = client.query(tableName, blurQueryRow);
+      }
+    } while (totalResults > 0);
+    assertEquals(numberOfDocs, totalFetched);
+  }
+
+  private String getColumnValue(Record record, String columnName) {
+    for (Column col : record.getColumns()) {
+      if (col.getName().equals(columnName)) {
+        return col.getValue();
+      }
+    }
+    return null;
   }
 
   // @Test

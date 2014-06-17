@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.log.Log;
@@ -52,11 +53,11 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.NoMergePolicy;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.NoLockFactory;
+import org.apache.lucene.store.SimpleFSDirectory;
 
 public class GenericBlurRecordWriter {
 
@@ -123,12 +124,11 @@ public class GenericBlurRecordWriter {
     mergePolicy.setUseCompoundFile(false);
 
     _overFlowConf = _conf.clone();
-    _overFlowConf.setMergePolicy(NoMergePolicy.NO_COMPOUND_FILES);
 
     if (_indexLocally) {
       String localDirPath = System.getProperty(JAVA_IO_TMPDIR);
       _localPath = new File(localDirPath, UUID.randomUUID().toString() + ".tmp");
-      HdfsDirectory directory = new HdfsDirectory(_configuration, new Path(_localPath.toURI()));
+      SimpleFSDirectory directory = new SimpleFSDirectory(_localPath);
       _localDir = new ProgressableDirectory(directory, getProgressable());
       _writer = new IndexWriter(_localDir, _conf.clone());
     } else {
@@ -139,12 +139,27 @@ public class GenericBlurRecordWriter {
   }
 
   private Progressable getProgressable() {
+    final Progressable prg = BlurOutputFormat.getProgressable();
     return new Progressable() {
+
+      private Progressable _progressable = prg;
+      private long _lastWarn = 0;
+
       @Override
       public void progress() {
-        Progressable progressable = BlurOutputFormat.getProgressable();
-        if (progressable != null) {
-          progressable.progress();
+        if (_progressable != null) {
+          _progressable.progress();
+        } else {
+          Progressable progressable = BlurOutputFormat.getProgressable();
+          if (progressable != null) {
+            _progressable = progressable;
+          } else {
+            long now = System.nanoTime();
+            if (_lastWarn + TimeUnit.SECONDS.toNanos(10) < now) {
+              LOG.warn("Progress not being reported.");
+              _lastWarn = System.nanoTime();
+            }
+          }
         }
       }
     };
@@ -214,8 +229,8 @@ public class GenericBlurRecordWriter {
     if (_localTmpWriter == null) {
       String localDirPath = System.getProperty(JAVA_IO_TMPDIR);
       _localTmpPath = new File(localDirPath, UUID.randomUUID().toString() + ".tmp");
-      HdfsDirectory directory = new HdfsDirectory(_configuration, new Path(_localTmpPath.toURI()));
-      _localTmpDir = new ProgressableDirectory(directory, BlurOutputFormat.getProgressable());
+      SimpleFSDirectory directory = new SimpleFSDirectory(_localTmpPath);
+      _localTmpDir = new ProgressableDirectory(directory, getProgressable());
       _localTmpWriter = new IndexWriter(_localTmpDir, _overFlowConf.clone());
       // The local tmp writer has merging disabled so the first document in is
       // going to be doc 0.
@@ -260,6 +275,7 @@ public class GenericBlurRecordWriter {
       _writer.addIndexes(reader);
       reader.close();
       resetLocalTmp();
+      _writer.maybeMerge();
       if (_countersSetup) {
         _rowOverFlowCount.increment(1);
       }

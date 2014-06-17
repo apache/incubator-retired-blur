@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.log.Log;
@@ -52,17 +53,17 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.NoMergePolicy;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.NoLockFactory;
+import org.apache.lucene.store.SimpleFSDirectory;
 
 public class GenericBlurRecordWriter {
 
   private static final Log LOG = LogFactory.getLog(GenericBlurRecordWriter.class);
   private static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
+  private static final Counter NULL_COUNTER = new NullCounter();
 
   private final Text _prevKey = new Text();
   private final Map<String, List<Field>> _documents = new TreeMap<String, List<Field>>();
@@ -77,38 +78,39 @@ public class GenericBlurRecordWriter {
   private final Path _newIndex;
   private final boolean _indexLocally;
   private final boolean _optimizeInFlight;
-  private Counter _columnCount;
-  private Counter _fieldCount;
-  private Counter _recordCount;
-  private Counter _rowCount;
-  private Counter _recordDuplicateCount;
-  private Counter _rowOverFlowCount;
-  private Counter _rowDeleteCount;
-  private RateCounter _recordRateCounter;
-  private RateCounter _rowRateCounter;
-  private RateCounter _copyRateCounter;
+  private Counter _columnCount = NULL_COUNTER;
+  private Counter _fieldCount = NULL_COUNTER;
+  private Counter _recordCount = NULL_COUNTER;
+  private Counter _rowCount = NULL_COUNTER;
+  private Counter _recordDuplicateCount = NULL_COUNTER;
+  private Counter _rowOverFlowCount = NULL_COUNTER;
+  private Counter _rowDeleteCount = NULL_COUNTER;
+  private RateCounter _recordRateCounter = new RateCounter(NULL_COUNTER);
+  private RateCounter _rowRateCounter = new RateCounter(NULL_COUNTER);
+  private RateCounter _copyRateCounter = new RateCounter(NULL_COUNTER);
   private boolean _countersSetup = false;
   private IndexWriter _localTmpWriter;
   private boolean _usingLocalTmpindex;
   private File _localTmpPath;
   private ProgressableDirectory _localTmpDir;
   private String _deletedRowId;
+  private Configuration _configuration;
 
   public GenericBlurRecordWriter(Configuration configuration, int attemptId, String tmpDirName) throws IOException {
+    _configuration = configuration;
+    _indexLocally = BlurOutputFormat.isIndexLocally(_configuration);
+    _optimizeInFlight = BlurOutputFormat.isOptimizeInFlight(_configuration);
 
-    _indexLocally = BlurOutputFormat.isIndexLocally(configuration);
-    _optimizeInFlight = BlurOutputFormat.isOptimizeInFlight(configuration);
-
-    TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
+    TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(_configuration);
     int shardCount = tableDescriptor.getShardCount();
     int shardId = attemptId % shardCount;
 
-    _maxDocumentBufferSize = BlurOutputFormat.getMaxDocumentBufferSize(configuration);
-    Path tableOutput = BlurOutputFormat.getOutputPath(configuration);
+    _maxDocumentBufferSize = BlurOutputFormat.getMaxDocumentBufferSize(_configuration);
+    Path tableOutput = BlurOutputFormat.getOutputPath(_configuration);
     String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, shardId);
     Path indexPath = new Path(tableOutput, shardName);
     _newIndex = new Path(indexPath, tmpDirName);
-    _finalDir = new ProgressableDirectory(new HdfsDirectory(configuration, _newIndex), getProgressable());
+    _finalDir = new ProgressableDirectory(new HdfsDirectory(_configuration, _newIndex), getProgressable());
     _finalDir.setLockFactory(NoLockFactory.getNoLockFactory());
 
     TableContext tableContext = TableContext.create(tableDescriptor);
@@ -122,12 +124,12 @@ public class GenericBlurRecordWriter {
     mergePolicy.setUseCompoundFile(false);
 
     _overFlowConf = _conf.clone();
-    _overFlowConf.setMergePolicy(NoMergePolicy.NO_COMPOUND_FILES);
 
     if (_indexLocally) {
       String localDirPath = System.getProperty(JAVA_IO_TMPDIR);
       _localPath = new File(localDirPath, UUID.randomUUID().toString() + ".tmp");
-      _localDir = new ProgressableDirectory(FSDirectory.open(_localPath), getProgressable());
+      SimpleFSDirectory directory = new SimpleFSDirectory(_localPath);
+      _localDir = new ProgressableDirectory(directory, getProgressable());
       _writer = new IndexWriter(_localDir, _conf.clone());
     } else {
       _localPath = null;
@@ -137,12 +139,27 @@ public class GenericBlurRecordWriter {
   }
 
   private Progressable getProgressable() {
+    final Progressable prg = BlurOutputFormat.getProgressable();
     return new Progressable() {
+
+      private Progressable _progressable = prg;
+      private long _lastWarn = 0;
+
       @Override
       public void progress() {
-        Progressable progressable = BlurOutputFormat.getProgressable();
-        if (progressable != null) {
-          progressable.progress();
+        if (_progressable != null) {
+          _progressable.progress();
+        } else {
+          Progressable progressable = BlurOutputFormat.getProgressable();
+          if (progressable != null) {
+            _progressable = progressable;
+          } else {
+            long now = System.nanoTime();
+            if (_lastWarn + TimeUnit.SECONDS.toNanos(10) < now) {
+              LOG.warn("Progress not being reported.");
+              _lastWarn = System.nanoTime();
+            }
+          }
         }
       }
     };
@@ -212,7 +229,8 @@ public class GenericBlurRecordWriter {
     if (_localTmpWriter == null) {
       String localDirPath = System.getProperty(JAVA_IO_TMPDIR);
       _localTmpPath = new File(localDirPath, UUID.randomUUID().toString() + ".tmp");
-      _localTmpDir = new ProgressableDirectory(FSDirectory.open(_localTmpPath), BlurOutputFormat.getProgressable());
+      SimpleFSDirectory directory = new SimpleFSDirectory(_localTmpPath);
+      _localTmpDir = new ProgressableDirectory(directory, getProgressable());
       _localTmpWriter = new IndexWriter(_localTmpDir, _overFlowConf.clone());
       // The local tmp writer has merging disabled so the first document in is
       // going to be doc 0.
@@ -257,6 +275,7 @@ public class GenericBlurRecordWriter {
       _writer.addIndexes(reader);
       reader.close();
       resetLocalTmp();
+      _writer.maybeMerge();
       if (_countersSetup) {
         _rowOverFlowCount.increment(1);
       }

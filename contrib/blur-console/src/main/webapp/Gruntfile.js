@@ -253,7 +253,8 @@ module.exports = function (grunt) {
         var Version = require("node-version-assets");
         var versionInstance = new Version({
             assets: ['public/css/blurconsole.css.map'],
-            grepFiles: ['public/css/blurconsole.css']
+            grepFiles: ['public/css/blurconsole.css'],
+            keepOriginal: true
         });
         versionInstance.run(this.async());
     });
@@ -261,7 +262,8 @@ module.exports = function (grunt) {
         var Version = require("node-version-assets");
         var versionInstance = new Version({
             assets: ['public/js/blurconsole.js.map'],
-            grepFiles: ['public/js/blurconsole.js']
+            grepFiles: ['public/js/blurconsole.js'],
+            keepOriginal: true
         });
         versionInstance.run(this.async());
     });
@@ -269,7 +271,8 @@ module.exports = function (grunt) {
         var Version = require("node-version-assets");
         var versionInstance = new Version({
             assets: ['public/js/blurconsole.js'],
-            grepFiles: ['public/index.html']
+            grepFiles: ['public/index.html'],
+            keepOriginal: true
         });
         versionInstance.run(this.async());
     });
@@ -277,7 +280,8 @@ module.exports = function (grunt) {
         var Version = require("node-version-assets");
         var versionInstance = new Version({
             assets: ['public/css/blurconsole.css'],
-            grepFiles: ['public/index.html']
+            grepFiles: ['public/index.html'],
+            keepOriginal: true
         });
         versionInstance.run(this.async());
     });

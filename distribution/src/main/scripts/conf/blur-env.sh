@@ -41,6 +41,9 @@ export BLUR_MANAGE_ZK=true
 # JAVA JVM OPTIONS for the zookeepers servers, jvm tuning parameters are placed here.
 export BLUR_ZK_JVM_OPTIONS="-Xmx128m -Djava.net.preferIPv4Stack=true "
 
+# JAVA JVM OPTIONS for the console servers, jvm tuning parameters are placed here.
+export BLUR_CONSOLE_JVM_OPTIONS="-Xmx1024m -Djava.net.preferIPv4Stack=true "
+
 # JAVA JVM OPTIONS for the shard servers, jvm tuning parameters are placed here.
 export BLUR_COMMAND="-Xmx1024m -Djava.net.preferIPv4Stack=true"
 

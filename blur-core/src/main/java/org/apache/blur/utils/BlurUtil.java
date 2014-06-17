@@ -59,7 +59,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongArray;
-import java.util.regex.Pattern;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.index.ExitableReader.ExitableFilterAtomicReader;
@@ -152,7 +151,6 @@ public class BlurUtil {
   private static final Class<?>[] EMPTY_PARAMETER_TYPES = new Class[] {};
   private static final Log LOG = LogFactory.getLog(BlurUtil.class);
   private static final String UNKNOWN = "UNKNOWN";
-  private static Pattern validator = Pattern.compile("^[a-zA-Z0-9\\_\\-]+$");
 
   public static final Comparator<? super PeekableIterator<BlurResult, BlurException>> HITS_PEEKABLE_ITERATOR_COMPARATOR = new BlurResultPeekableIteratorComparator();
   public static final Comparator<? super BlurResult> HITS_COMPARATOR = new BlurResultComparator();
@@ -1124,28 +1122,59 @@ public class BlurUtil {
   }
 
   public static void validateRowIdAndRecord(String rowId, Record record) {
-    if (!validator.matcher(record.family).matches()) {
+    if (!validate(record.family)) {
       throw new IllegalArgumentException("Invalid column family name [ " + record.family
           + " ]. It should contain only this pattern [A-Za-z0-9_-]");
     }
 
     for (Column column : record.getColumns()) {
-      if (!validator.matcher(column.name).matches()) {
+      if (!validate(column.name)) {
         throw new IllegalArgumentException("Invalid column name [ " + column.name
             + " ]. It should contain only this pattern [A-Za-z0-9_-]");
       }
     }
   }
 
+  public static boolean validate(String s) {
+    int length = s.length();
+    for (int i = 0; i < length; i++) {
+      char c = s.charAt(i);
+      if (!validate(c)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean validate(char c) {
+    if (c >= 'a' && c <= 'z') {
+      return true;
+    }
+    if (c >= 'A' && c <= 'Z') {
+      return true;
+    }
+    if (c >= '0' && c <= '9') {
+      return true;
+    }
+    switch (c) {
+    case '_':
+      return true;
+    case '-':
+      return true;
+    default:
+      return false;
+    }
+  }
+
   public static void validateTableName(String tableName) {
-    if (!validator.matcher(tableName).matches()) {
+    if (!validate(tableName)) {
       throw new IllegalArgumentException("Invalid table name [ " + tableName
           + " ]. It should contain only this pattern [A-Za-z0-9_-]");
     }
   }
 
   public static void validateShardName(String shardName) {
-    if (!validator.matcher(shardName).matches()) {
+    if (!validate(shardName)) {
       throw new IllegalArgumentException("Invalid shard name [ " + shardName
           + " ]. It should contain only this pattern [A-Za-z0-9_-]");
     }

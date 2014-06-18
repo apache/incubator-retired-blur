@@ -24,13 +24,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 
 public class HttpUtil {
-	public static String JSON = "application/json";
-	public static String TEXT = "plain/text";
-	
-	public static void sendResponse(HttpServletResponse response, String body, String contentType) throws IOException {
-		response.setContentType(contentType);
-		response.setContentLength(body.getBytes().length);
-		response.setStatus(200);
-		IOUtils.write(body, response.getOutputStream());
+	public static final String JSON = "application/json";
+	public static final String TEXT = "plain/text";
+
+	public static void sendResponse(HttpServletResponse res, String body, String contentType) throws IOException {
+		res.setContentType(contentType);
+		res.setContentLength(body.getBytes().length);
+		res.setStatus(HttpServletResponse.SC_OK);
+		IOUtils.write(body, res.getOutputStream());
 	}
 }

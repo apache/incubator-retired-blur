@@ -36,16 +36,16 @@ import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.commons.collections.CollectionUtils;
 
 public class NodeUtil {
-	
+
 	@SuppressWarnings("unchecked")
 	public static Map<String, Object> getControllerStatus() throws IOException {
 		ZookeeperClusterStatus zk = Config.getZookeeper();
-		
+
 		List<String> allControllers = new ArrayList<String>();
 		List<String> oControllers = new ArrayList<String>();
 		allControllers = zk.getOnlineControllerList();
 		oControllers = zk.getControllerServerList();
-		
+
 		Collection<String> onlineControllers = CollectionUtils.intersection(allControllers, oControllers);
 		Collection<String> offlineControllers = CollectionUtils.subtract(allControllers, oControllers);
 
@@ -53,14 +53,14 @@ public class NodeUtil {
 
 		data.put("online", onlineControllers);
 		data.put("offline", offlineControllers);
-		
+
 		return data;
 	}
 
 	public static List<Map<String, Object>> getClusterStatus() throws IOException {
 		ZookeeperClusterStatus zk = Config.getZookeeper();
 
-		List<Map<String, Object>> data = new ArrayList<Map<String,Object>>();
+		List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
 		List<String> clusters = zk.getClusterList(false);
 
 		for (String cluster : clusters) {
@@ -83,7 +83,7 @@ public class NodeUtil {
 		String[] connections = Config.getBlurConfig().get("blur.zookeeper.connection").split(",");
 		Set<String> onlineZookeepers = new HashSet<String>();
 		Set<String> offlineZookeepers = new HashSet<String>();
-		
+
 		for (String connection : connections) {
 			Socket socket = null;
 			InputStream response = null;
@@ -132,12 +132,12 @@ public class NodeUtil {
 				}
 			}
 		}
-		
+
 		Map<String, Object> data = new HashMap<String, Object>();
-		
+
 		data.put("online", onlineZookeepers);
 		data.put("offline", offlineZookeepers);
-		
+
 		return data;
 	}
 }

@@ -34,13 +34,13 @@ public class NodesServlet extends BaseConsoleServlet {
 	private static final long serialVersionUID = 6522056391102413432L;
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String path = request.getPathInfo();
+	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+		String path = req.getPathInfo();
 		if (path == null) {
-			sendNodeStatus(response);
+			sendNodeStatus(res);
 		} else {
-			response.setStatus(404);
-			IOUtils.write("Route [" + path + "] doesn't exist", response.getOutputStream());
+			res.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			IOUtils.write("Route [" + path + "] doesn't exist", res.getOutputStream());
 		}
 	}
 

@@ -32,14 +32,15 @@ public abstract class BaseConsoleServlet extends HttpServlet {
 		String body = e.getMessage();
 		response.setContentType("application/json");
 		response.setContentLength(body.getBytes().length);
-		response.setStatus(500);
+		response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		IOUtils.write(body, response.getOutputStream());
 	}
-	
+
 	protected void sendGenericOk(HttpServletResponse response) throws IOException {
+        String responseBody = "success";
 		response.setContentType("text/plain");
-		response.setContentLength(6);
-		response.setStatus(200);
-		IOUtils.write("success", response.getOutputStream());
+		response.setContentLength(responseBody.getBytes().length);
+		response.setStatus(HttpServletResponse.SC_OK);
+		IOUtils.write(responseBody, response.getOutputStream());
 	}
 }

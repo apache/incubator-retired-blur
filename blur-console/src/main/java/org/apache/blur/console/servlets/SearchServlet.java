@@ -35,28 +35,28 @@ public class SearchServlet extends BaseConsoleServlet {
 	private static final long serialVersionUID = 8236015799570635548L;
 
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String path = request.getPathInfo();
+	protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+		String path = req.getPathInfo();
 		if (path == null) {
-			String remoteHost = request.getRemoteHost();
-			sendSearch(response, request.getParameterMap(), remoteHost);
+			String remoteHost = req.getRemoteHost();
+			search(res, req.getParameterMap(), remoteHost);
 		} else {
-			response.setStatus(404);
-			IOUtils.write("Route [" + path + "] doesn't exist", response.getOutputStream());
+			res.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			IOUtils.write("Route [" + path + "] doesn't exist", res.getOutputStream());
 		}
 	}
-	
-	private void sendSearch(HttpServletResponse response, Map<String, String[]> params, String remoteHost) throws IOException {
+
+	private void search(HttpServletResponse res, Map<String, String[]> params, String remoteHost) throws IOException {
 		Map<String, Object> results = new HashMap<String, Object>();
 		try {
 			results = SearchUtil.search(params, remoteHost);
 		} catch (IOException e) {
 			throw new IOException(e);
 		} catch (Exception e) {
-			sendError(response, e);
+			sendError(res, e);
 			return;
 		}
-		
-		HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(results), HttpUtil.JSON);
+
+		HttpUtil.sendResponse(res, new ObjectMapper().writeValueAsString(results), HttpUtil.JSON);
 	}
 }

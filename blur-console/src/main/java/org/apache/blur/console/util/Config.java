@@ -41,7 +41,8 @@ import org.codehaus.jackson.type.TypeReference;
 public class Config {
 	private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/mini-cluster"));
 	private static final Log log = LogFactory.getLog(Config.class);
-	
+    private static final int DEFAULT_PORT = 8080;
+
 	private static int port;
 	private static BlurConfiguration blurConfig;
 	private static ZookeeperClusterStatus zk;
@@ -55,13 +56,13 @@ public class Config {
 	public static BlurConfiguration getBlurConfig() {
 		return blurConfig;
 	}
-	
+
 	public static void setupConfig() throws IOException {
 		if (cluster == null) {
 			blurConfig = new BlurConfiguration();
 		} else {
 			blurConfig = new BlurConfiguration(false);
-			
+
 			String zkConnection = "";
 			try {
 				Method zkMethod = cluster.getClass().getMethod("getZkConnectionString");
@@ -69,48 +70,48 @@ public class Config {
 			} catch (Exception e) {
 				log.fatal("Unable get zookeeper connection string", e);
 			}
-			
+
 			blurConfig.set("blur.zookeeper.connection", zkConnection);
 		}
 		zk = new ZookeeperClusterStatus(blurConfig.get("blur.zookeeper.connection"), blurConfig);
 		blurConnection = buildConnectionString();
-		port = blurConfig.getInt("blur.console.port", 8080);
+		port = blurConfig.getInt("blur.console.port", DEFAULT_PORT);
 		parseSecurity();
 	}
-	
+
 	private static void parseSecurity() {
 		String securityFile = blurConfig.get("blur.console.security.file");
-		
+
 		if (securityFile != null) {
-			JsonFactory factory = new JsonFactory(); 
-		    ObjectMapper mapper = new ObjectMapper(factory); 
-		    File from = new File(securityFile); 
-		    TypeReference<Map<String,String>> typeRef 
-		            = new TypeReference<Map<String,String>>() {};
+			JsonFactory factory = new JsonFactory();
+		    ObjectMapper mapper = new ObjectMapper(factory);
+		    File from = new File(securityFile);
+		    TypeReference<Map<String, String>> typeRef
+		            = new TypeReference<Map<String, String>>() { };
 
 		    try {
 				globalUserProperties = mapper.readValue(from, typeRef);
 			} catch (Exception e) {
 				log.error("Unable to parse security file.  Search may not work right.", e);
 				globalUserProperties = null;
-			} 
+			}
 		}
 	}
-	
+
 	public static String getConnectionString() throws IOException {
 		return blurConnection;
 	}
-	
+
 	public static ZookeeperClusterStatus getZookeeper() {
 		return zk;
 	}
-	
+
 	private static String buildConnectionString() {
 		List<String> allControllers = new ArrayList<String>();
 		allControllers = zk.getControllerServerList();
 		return StringUtils.join(allControllers, ",");
 	}
-	
+
 	public static void shutdownMiniCluster() throws IOException {
 		if (cluster != null) {
 			try {
@@ -125,8 +126,8 @@ public class Config {
 			}
 		}
 	}
-	
-	
+
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static void setupMiniCluster() throws IOException {
 	    File testDirectory = new File(TMPDIR, "blur-cluster-test").getAbsoluteFile();
@@ -135,7 +136,7 @@ public class Config {
 	    testDirectory.delete();
 	    try {
 	    	Class clusterClass = Class.forName("org.apache.blur.MiniCluster", false, Config.class.getClassLoader());
-	    
+
 		    if (clusterClass != null) {
 		    	cluster = clusterClass.newInstance();
 		    	Method startBlurCluster = clusterClass.getDeclaredMethod("startBlurCluster", String.class, int.class, int.class, boolean.class);
@@ -146,14 +147,14 @@ public class Config {
 	    	cluster = null;
 	    }
 	}
-	
+
 	public static Iface getClient(String username) throws IOException {
 		Iface client = BlurClient.getClient(getConnectionString());
-		
+
 		if (globalUserProperties != null) {
 			UserContext.setUser(new User(username, globalUserProperties));
 		}
-		
+
 		return client;
 	}
 }

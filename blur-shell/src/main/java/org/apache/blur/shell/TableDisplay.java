@@ -20,7 +20,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.util.Random;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,8 +42,8 @@ public class TableDisplay implements Closeable {
 
     ConsoleReader reader = new ConsoleReader();
     TableDisplay tableDisplay = new TableDisplay(reader);
-    tableDisplay.setSeperator(" ");
-    Random random = new Random();
+    tableDisplay.setSeperator("|");
+//    Random random = new Random();
     int maxX = 20;
     int maxY = 100;
     tableDisplay.setHeader(0, "");
@@ -55,19 +55,46 @@ public class TableDisplay implements Closeable {
       tableDisplay.set(0, i, i);
     }
 
-    try {
-      int i = 0;
-      while (true) {
-        if (i >= 100000) {
-          i = 0;
+    final AtomicBoolean running = new AtomicBoolean(true);
+
+    tableDisplay.addKeyHook(new Runnable() {
+      @Override
+      public void run() {
+        synchronized (running) {
+          running.set(false);
+          running.notifyAll();
         }
-        tableDisplay.set(random.nextInt(maxX) + 1, random.nextInt(maxY), random.nextLong());
-        Thread.sleep(1);
-        i++;
+      }
+    }, 'q');
+
+    try {
+      // int i = 0;
+      // while (true) {
+      // if (i >= 100000) {
+      // i = 0;
+      // }
+      // tableDisplay.set(random.nextInt(maxX) + 1, random.nextInt(maxY),
+      // random.nextLong());
+      // Thread.sleep(3000);
+      // i++;
+      // }
+      for (int x = 0; x < maxX; x++) {
+        for (int y = 0; y < maxY; y++) {
+          tableDisplay.set(x, y, x + "," + y);
+        }
+      }
+      while (running.get()) {
+        synchronized (running) {
+          running.wait(1000);
+        }
       }
     } finally {
       tableDisplay.close();
     }
+  }
+
+  public void addKeyHook(Runnable runnable, int c) {
+    _keyHookMap.put(c, runnable);
   }
 
   private static final String SEP = "|";
@@ -75,13 +102,14 @@ public class TableDisplay implements Closeable {
   private final ConcurrentMap<Key, Object> _values = new ConcurrentHashMap<TableDisplay.Key, Object>();
   private final ConcurrentMap<Integer, String> _header = new ConcurrentHashMap<Integer, String>();
   private final ConcurrentMap<Integer, Integer> _maxWidth = new ConcurrentHashMap<Integer, Integer>();
-  private final AtomicBoolean _running = new AtomicBoolean();
+  private final AtomicBoolean _running = new AtomicBoolean(true);
   private final Timer _timer;
   private final Canvas _canvas;
   private int _maxY;
   private int _maxX;
   private String _seperator = SEP;
   private final Thread _inputReaderThread;
+  private final Map<Integer, Runnable> _keyHookMap = new ConcurrentHashMap<Integer, Runnable>();
 
   public void setSeperator(String seperator) {
     _seperator = seperator;
@@ -107,7 +135,7 @@ public class TableDisplay implements Closeable {
         try {
           InputStream input = _reader.getInput();
           int read;
-          while ((read = input.read()) != -1) {
+          while ((read = input.read()) != -1 && _running.get()) {
             if (read == 27) {
               if (input.read() == 91) {
                 read = input.read();
@@ -131,6 +159,11 @@ public class TableDisplay implements Closeable {
                 default:
                   break;
                 }
+              }
+            } else {
+              Runnable runnable = _keyHookMap.get(read);
+              if (runnable != null) {
+                runnable.run();
               }
             }
           }
@@ -244,14 +277,14 @@ public class TableDisplay implements Closeable {
   }
 
   private void setMaxY(int y) {
-    if (_maxY < y) {
-      _maxY = y;
+    if (_maxY < y + 1) {
+      _maxY = y + 1;
     }
   }
 
   private void setMaxX(int x) {
-    if (_maxX < x) {
-      _maxX = x;
+    if (_maxX < x + 1) {
+      _maxX = x + 1;
     }
   }
 
@@ -347,7 +380,8 @@ public class TableDisplay implements Closeable {
     }
 
     public void endLine() {
-      if (_line + _posY < _height && _line >= _posY) {
+      int pos = _line - _posY;
+      if (pos >= 0 && pos < _height) {
         int end = _posX + _width;
         _builder.append(_lineBuilder.substring(_posX, Math.min(_lineBuilder.length(), end)));
         _builder.append('\n');

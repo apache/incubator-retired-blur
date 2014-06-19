@@ -18,10 +18,7 @@ package org.apache.blur.mapreduce.lib;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -66,18 +63,19 @@ public class GenericBlurRecordWriter {
   private static final Counter NULL_COUNTER = new NullCounter();
 
   private final Text _prevKey = new Text();
-  private final Map<String, List<Field>> _documents = new TreeMap<String, List<Field>>();
+
   private final IndexWriter _writer;
   private final FieldManager _fieldManager;
   private final Directory _finalDir;
   private final Directory _localDir;
   private final File _localPath;
-  private final int _maxDocumentBufferSize;
+  // private final int _maxDocumentBufferSize;
   private final IndexWriterConfig _conf;
   private final IndexWriterConfig _overFlowConf;
   private final Path _newIndex;
   private final boolean _indexLocally;
   private final boolean _optimizeInFlight;
+  private final DocumentBufferStrategy _documentBufferStrategy;
   private Counter _columnCount = NULL_COUNTER;
   private Counter _fieldCount = NULL_COUNTER;
   private Counter _recordCount = NULL_COUNTER;
@@ -98,6 +96,7 @@ public class GenericBlurRecordWriter {
 
   public GenericBlurRecordWriter(Configuration configuration, int attemptId, String tmpDirName) throws IOException {
     _configuration = configuration;
+    _documentBufferStrategy = BlurOutputFormat.getDocumentBufferStrategy(_configuration);
     _indexLocally = BlurOutputFormat.isIndexLocally(_configuration);
     _optimizeInFlight = BlurOutputFormat.isOptimizeInFlight(_configuration);
 
@@ -105,7 +104,6 @@ public class GenericBlurRecordWriter {
     int shardCount = tableDescriptor.getShardCount();
     int shardId = attemptId % shardCount;
 
-    _maxDocumentBufferSize = BlurOutputFormat.getMaxDocumentBufferSize(_configuration);
     Path tableOutput = BlurOutputFormat.getOutputPath(_configuration);
     String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, shardId);
     Path indexPath = new Path(tableOutput, shardName);
@@ -203,7 +201,7 @@ public class GenericBlurRecordWriter {
       _columnCount.increment(record.getColumns().size());
     }
     List<Field> document = RowDocumentUtil.getDoc(_fieldManager, blurRecord.getRowId(), record);
-    List<Field> dup = _documents.put(recordId, document);
+    List<Field> dup = _documentBufferStrategy.add(recordId, document);
     if (_countersSetup) {
       if (dup != null) {
         _recordDuplicateCount.increment(1);
@@ -216,13 +214,14 @@ public class GenericBlurRecordWriter {
   }
 
   private void flushToTmpIndexIfNeeded() throws IOException {
-    if (_documents.size() > _maxDocumentBufferSize) {
+    if (_documentBufferStrategy.isFull()) {
+      LOG.info("Document Buffer is full overflow to disk.");
       flushToTmpIndex();
     }
   }
 
   private void flushToTmpIndex() throws IOException {
-    if (_documents.isEmpty()) {
+    if (_documentBufferStrategy.isEmpty()) {
       return;
     }
     _usingLocalTmpindex = true;
@@ -235,13 +234,17 @@ public class GenericBlurRecordWriter {
       // The local tmp writer has merging disabled so the first document in is
       // going to be doc 0.
       // Therefore the first document added is the prime doc
-      List<List<Field>> docs = new ArrayList<List<Field>>(_documents.values());
+      List<List<Field>> docs = _documentBufferStrategy.getAndClearBuffer();
       docs.get(0).add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
-      _localTmpWriter.addDocuments(docs);
+      for (List<Field> doc : docs) {
+        _localTmpWriter.addDocument(doc);
+      }
     } else {
-      _localTmpWriter.addDocuments(_documents.values());
+      List<List<Field>> docs = _documentBufferStrategy.getAndClearBuffer();
+      for (List<Field> doc : docs) {
+        _localTmpWriter.addDocument(doc);
+      }
     }
-    _documents.clear();
   }
 
   private void resetLocalTmp() {
@@ -280,7 +283,7 @@ public class GenericBlurRecordWriter {
         _rowOverFlowCount.increment(1);
       }
     } else {
-      if (_documents.isEmpty()) {
+      if (_documentBufferStrategy.isEmpty()) {
         if (_deletedRowId != null) {
           _writer.addDocument(getDeleteDoc());
           if (_countersSetup) {
@@ -288,13 +291,12 @@ public class GenericBlurRecordWriter {
           }
         }
       } else {
-        List<List<Field>> docs = new ArrayList<List<Field>>(_documents.values());
+        List<List<Field>> docs = _documentBufferStrategy.getAndClearBuffer();
         docs.get(0).add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
         _writer.addDocuments(docs);
         if (_countersSetup) {
-          _recordRateCounter.mark(_documents.size());
+          _recordRateCounter.mark(docs.size());
         }
-        _documents.clear();
       }
     }
     _deletedRowId = null;

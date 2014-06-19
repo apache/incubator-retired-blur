@@ -19,6 +19,7 @@ package org.apache.blur.mapreduce.lib;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
@@ -65,11 +66,12 @@ import org.apache.hadoop.util.Progressable;
  * 
  */
 public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
-
   public static final String BLUR_OUTPUT_REDUCER_MULTIPLIER = "blur.output.reducer.multiplier";
   public static final String BLUR_OUTPUT_OPTIMIZEINFLIGHT = "blur.output.optimizeinflight";
   public static final String BLUR_OUTPUT_INDEXLOCALLY = "blur.output.indexlocally";
   public static final String BLUR_OUTPUT_MAX_DOCUMENT_BUFFER_SIZE = "blur.output.max.document.buffer.size";
+  public static final String BLUR_OUTPUT_MAX_DOCUMENT_BUFFER_HEAP_SIZE = "blur.output.max.document.buffer.heap.size";
+  public static final String BLUR_OUTPUT_DOCUMENT_BUFFER_STRATEGY = "blur.output.document.buffer.strategy";
   public static final String BLUR_TABLE_DESCRIPTOR = "blur.table.descriptor";
   public static final String BLUR_OUTPUT_PATH = "blur.output.path";
 
@@ -121,7 +123,7 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
 
   @Override
   public OutputCommitter getOutputCommitter(TaskAttemptContext context) throws IOException, InterruptedException {
-    return new BlurOutputCommitter(context.getTaskAttemptID().isMap(), context.getNumReduceTasks());
+    return new BlurOutputCommitter();
   }
 
   public static TableDescriptor getTableDescriptor(Configuration configuration) throws IOException {
@@ -235,6 +237,36 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
 
   public static int getMaxDocumentBufferSize(Configuration configuration) {
     return configuration.getInt(BLUR_OUTPUT_MAX_DOCUMENT_BUFFER_SIZE, 1000);
+  }
+
+  public static int getMaxDocumentBufferHeapSize(Configuration configuration) {
+    return configuration.getInt(BLUR_OUTPUT_MAX_DOCUMENT_BUFFER_HEAP_SIZE, 32 * 1024 * 1024);
+  }
+
+  public static void setMaxDocumentBufferHeapSize(Configuration configuration, int maxDocumentBufferHeapSize) {
+    configuration.setInt(BLUR_OUTPUT_MAX_DOCUMENT_BUFFER_HEAP_SIZE, maxDocumentBufferHeapSize);
+  }
+
+  public static void setMaxDocumentBufferHeapSize(Job job, int maxDocumentBufferHeapSize) {
+    setMaxDocumentBufferHeapSize(job.getConfiguration(), maxDocumentBufferHeapSize);
+  }
+
+  public static DocumentBufferStrategy getDocumentBufferStrategy(Configuration configuration) {
+    Class<? extends DocumentBufferStrategy> clazz = configuration.getClass(BLUR_OUTPUT_DOCUMENT_BUFFER_STRATEGY, DocumentBufferStrategyFixedSize.class, DocumentBufferStrategy.class);
+    try {
+      Constructor<? extends DocumentBufferStrategy> constructor = clazz.getConstructor(new Class[]{Configuration.class});
+      return constructor.newInstance(new Object[]{configuration});
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+  
+  public static void setDocumentBufferStrategy(Job job, Class<? extends DocumentBufferStrategy> documentBufferStrategyClass) {
+    setDocumentBufferStrategy(job.getConfiguration(), documentBufferStrategyClass);
+  }
+  
+  public static void setDocumentBufferStrategy(Configuration configuration, Class<? extends DocumentBufferStrategy> documentBufferStrategyClass) {
+    configuration.setClass(BLUR_OUTPUT_DOCUMENT_BUFFER_STRATEGY, documentBufferStrategyClass, DocumentBufferStrategy.class);
   }
 
   public static void setOutputPath(Job job, Path path) {

@@ -220,6 +220,8 @@ public class BlurOutputFormatTest {
 
     BlurOutputFormat.setupJob(job, tableDescriptor);
     BlurOutputFormat.setIndexLocally(job, false);
+    BlurOutputFormat.setDocumentBufferStrategy(job, DocumentBufferStrategyHeapSize.class);
+    BlurOutputFormat.setMaxDocumentBufferHeapSize(job, 128 * 1024);
 
     assertTrue(job.waitForCompletion(true));
     Counters ctrs = job.getCounters();

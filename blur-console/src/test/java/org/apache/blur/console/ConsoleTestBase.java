@@ -25,21 +25,28 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 public class ConsoleTestBase {
-	protected static String TABLE_PATH = new File("./test-data/test-tables").getAbsolutePath();
+  protected static String TABLE_PATH = new File("./target/tmp/test-data/test-tables").getAbsolutePath();
+  private static boolean _managing;
 
-	@BeforeClass
-	public static void startup() throws IOException {
-		Config.setupMiniCluster();
-	}
+  @BeforeClass
+  public static void startup() throws IOException {
+    if (!Config.isClusterSetup()) {
+      Config.setupMiniCluster();
+      _managing = true;
+    }
 
-	@AfterClass
-	public static void shutdown() throws IOException {
-		Config.shutdownMiniCluster();
-	}
+  }
 
-	protected void setupConfigIfNeeded() throws IOException {
-		if (Config.getBlurConfig() == null) {
-			Config.setupConfig();
-		}
-	}
+  @AfterClass
+  public static void shutdown() throws IOException {
+    if (_managing) {
+      Config.shutdownMiniCluster();
+    }
+  }
+
+  protected void setupConfigIfNeeded() throws IOException {
+    if (Config.getBlurConfig() == null) {
+      Config.setupConfig();
+    }
+  }
 }

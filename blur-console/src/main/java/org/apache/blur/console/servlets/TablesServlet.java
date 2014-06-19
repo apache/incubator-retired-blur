@@ -43,29 +43,29 @@ public class TablesServlet extends BaseConsoleServlet {
 	private static Pattern tableTermsPattern = Pattern.compile("/(.*)/(.*)/(.*)/terms");
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String path = request.getPathInfo();
+	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+		String path = req.getPathInfo();
 		Matcher m;
 		if (path == null) {
-			sendSummaries(response);
+			summary(res);
 		} else if ((m = tableSchemaPattern.matcher(path)).matches()) {
-			sendSchema(response, m.group(1));
+			schema(res, m.group(1));
 		} else if ((m = tableTermsPattern.matcher(path)).matches()) {
-			sendTerms(response, m.group(1), m.group(2), m.group(3), request.getParameter("startsWith"));
+			terms(res, m.group(1), m.group(2), m.group(3), req.getParameter("startsWith"));
 		} else if ((m = tableEnablePattern.matcher(path)).matches()) {
-			enableTable(response, m.group(1));
+			enable(res, m.group(1));
 		} else if ((m = tableDisablePattern.matcher(path)).matches()) {
-			disableTable(response, m.group(1));
+			disable(res, m.group(1));
 		} else if ((m = tableDeletePattern.matcher(path)).matches()) {
-			deleteTable(response, m.group(1), request.getParameter("includeFiles"));
+			delete(res, m.group(1), req.getParameter("includeFiles"));
 		} else {
-			response.setStatus(404);
-			IOUtils.write("Route [" + path + "] doesn't exist", response.getOutputStream());
+			res.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			IOUtils.write("Route [" + path + "] doesn't exist", res.getOutputStream());
 		}
 	}
-	
+
 	@SuppressWarnings("rawtypes")
-	private void sendSummaries(HttpServletResponse response) throws IOException {
+	private void summary(HttpServletResponse response) throws IOException {
 		Map<String, List> tableSummaries = new HashMap<String, List>();
 		try {
 			tableSummaries = TableUtil.getTableSummaries();
@@ -75,11 +75,11 @@ public class TablesServlet extends BaseConsoleServlet {
 			sendError(response, e);
 			return;
 		}
-		
+
 		HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(tableSummaries), HttpUtil.JSON);
 	}
-	
-	private void sendSchema(HttpServletResponse response, String table) throws IOException{
+
+	private void schema(HttpServletResponse response, String table) throws IOException {
 		Object schema;
 		try {
 			schema = TableUtil.getSchema(table);
@@ -89,25 +89,25 @@ public class TablesServlet extends BaseConsoleServlet {
 			sendError(response, e);
 			return;
 		}
-		
+
 		HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(schema), HttpUtil.JSON);
 	}
-	
-	private void sendTerms(HttpServletResponse response, String table, String family, String column, String startsWith) throws IOException {
+
+	private void terms(HttpServletResponse res, String table, String family, String column, String startsWith) throws IOException {
 		List<String> terms = new ArrayList<String>();
 		try {
 			terms = TableUtil.getTerms(table, family, column, startsWith);
 		} catch (IOException e) {
 			throw new IOException(e);
 		} catch (Exception e) {
-			sendError(response, e);
+			sendError(res, e);
 			return;
 		}
-		
-		HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(terms), HttpUtil.JSON);
+
+		HttpUtil.sendResponse(res, new ObjectMapper().writeValueAsString(terms), HttpUtil.JSON);
 	}
-	
-	private void enableTable(HttpServletResponse response, String table) throws IOException {
+
+	private void enable(HttpServletResponse response, String table) throws IOException {
 		try {
 			TableUtil.enableTable(table);
 		} catch (IOException e) {
@@ -118,8 +118,8 @@ public class TablesServlet extends BaseConsoleServlet {
 		}
 		sendGenericOk(response);
 	}
-	
-	private void disableTable(HttpServletResponse response, String table) throws IOException {
+
+	private void disable(HttpServletResponse response, String table) throws IOException {
 		try {
 			TableUtil.disableTable(table);
 		} catch (IOException e) {
@@ -130,8 +130,8 @@ public class TablesServlet extends BaseConsoleServlet {
 		}
 		sendGenericOk(response);
 	}
-	
-	private void deleteTable(HttpServletResponse response, String table, String includeFiles) throws IOException {
+
+	private void delete(HttpServletResponse response, String table, String includeFiles) throws IOException {
 		try {
 			TableUtil.deleteTable(table, Boolean.parseBoolean(includeFiles));
 		} catch (IOException e) {

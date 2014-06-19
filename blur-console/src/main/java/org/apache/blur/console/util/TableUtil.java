@@ -27,37 +27,36 @@ import java.util.TreeMap;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
-import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
 
 public class TableUtil {
-	
+
 	@SuppressWarnings("rawtypes")
-	public static Map<String, List> getTableSummaries() throws IOException, BlurException, TException {
+	public static Map<String, List> getTableSummaries() throws IOException, TException {
 		Iface client = BlurClient.getClient(Config.getConnectionString());
-		
+
 		List<Map<String, Object>> summaries = new ArrayList<Map<String, Object>>();
-		
+
 		List<String> clusters = client.shardClusterList();
-		
+
 		for (String cluster : clusters) {
 			List<String> tables = client.tableListByCluster(cluster);
 			for (String table : tables) {
 				Map<String, Object> tableInfo = new HashMap<String, Object>();
 				TableDescriptor descriptor = client.describe(table);
-				
+
 				tableInfo.put("cluster", cluster);
 				tableInfo.put("name", table);
 				tableInfo.put("enabled", descriptor.isEnabled());
-				
+
 				if (descriptor.isEnabled()) {
 					TableStats stats = client.tableStats(table);
 					tableInfo.put("rows", stats.getRowCount());
 					tableInfo.put("records", stats.getRecordCount());
-					
+
 					Schema schema = client.schema(table);
 					tableInfo.put("families", new ArrayList<String>(schema.getFamilies().keySet()));
 				} else {
@@ -65,27 +64,27 @@ public class TableUtil {
 					tableInfo.put("records", "?");
 					tableInfo.put("families", new ArrayList<String>());
 				}
-				
+
 				summaries.add(tableInfo);
 			}
 		}
-		
+
 		Map<String, List> data = new HashMap<String, List>();
 		data.put("tables", summaries);
 		data.put("clusters", clusters);
-		
+
 		return data;
 	}
-	
-	public static Map<String, Map<String, Map<String, Object>>> getSchema(String table) throws IOException, BlurException, TException {
+
+	public static Map<String, Map<String, Map<String, Object>>> getSchema(String table) throws IOException, TException {
 		Iface client = BlurClient.getClient(Config.getConnectionString());
-		
+
 		Schema schema = client.schema(table);
-		
-		Map<String, Map<String, Map<String, Object>>> schemaInfo = new TreeMap<String, Map<String,Map<String, Object>>>();
+
+		Map<String, Map<String, Map<String, Object>>> schemaInfo = new TreeMap<String, Map<String, Map<String, Object>>>();
 		for (Map.Entry<String, Map<String, ColumnDefinition>> famEntry : schema.getFamilies().entrySet()) {
 			Map<String, Map<String, Object>> columns = new TreeMap<String, Map<String, Object>>();
-			for(Map.Entry<String, ColumnDefinition> colEntry : famEntry.getValue().entrySet()) {
+			for (Map.Entry<String, ColumnDefinition> colEntry : famEntry.getValue().entrySet()) {
 				Map<String, Object> info = new HashMap<String, Object>();
 				ColumnDefinition def = colEntry.getValue();
 				info.put("fieldLess", def.isFieldLessIndexed());
@@ -95,29 +94,29 @@ public class TableUtil {
 			}
 			schemaInfo.put(famEntry.getKey(), columns);
 		}
-		
+
 		return schemaInfo;
 	}
-	
-	public static List<String> getTerms(String table, String family, String column, String startWith) throws IOException, BlurException, TException {
+
+	public static List<String> getTerms(String table, String family, String column, String startWith) throws IOException, TException {
 		Iface client = BlurClient.getClient(Config.getConnectionString());
-		
-		return client.terms(table, family, column, startWith, (short)10);
+
+		return client.terms(table, family, column, startWith, (short) 10);
 	}
-	
-	public static void disableTable(String table) throws BlurException, TException, IOException {
+
+	public static void disableTable(String table) throws TException, IOException {
 		Iface client = BlurClient.getClient(Config.getConnectionString());
-		
+
 		client.disableTable(table);
 	}
-	public static void enableTable(String table) throws BlurException, TException, IOException {
+	public static void enableTable(String table) throws TException, IOException {
 		Iface client = BlurClient.getClient(Config.getConnectionString());
-		
+
 		client.enableTable(table);
 	}
-	public static void deleteTable(String table, boolean includeFiles) throws BlurException, TException, IOException {
+	public static void deleteTable(String table, boolean includeFiles) throws TException, IOException {
 		Iface client = BlurClient.getClient(Config.getConnectionString());
-		
+
 		client.removeTable(table, includeFiles);
 	}
 }

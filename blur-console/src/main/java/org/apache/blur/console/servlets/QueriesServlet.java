@@ -37,21 +37,21 @@ public class QueriesServlet extends BaseConsoleServlet {
 	private static Pattern queryCancelPattern = Pattern.compile("/(.*)/cancel");
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String path = request.getPathInfo();
+	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+		String path = req.getPathInfo();
 		Matcher m;
 		if (path == null) {
-			sendQueries(response);
+			sendQueries(res);
 		} else if ("/performance".equalsIgnoreCase(path)) {
-			sendCurrentQueryCount(response);
+			sendCurrentQueryCount(res);
 		} else if ((m = queryCancelPattern.matcher(path)).matches()) {
-			cancelQuery(response, m.group(1), request.getParameter("table"));
+			cancelQuery(res, m.group(1), req.getParameter("table"));
 		} else {
-			response.setStatus(404);
-			IOUtils.write("Route [" + path + "] doesn't exist", response.getOutputStream());
+			res.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			IOUtils.write("Route [" + path + "] doesn't exist", res.getOutputStream());
 		}
 	}
-	
+
 	private void sendCurrentQueryCount(HttpServletResponse response) throws IOException {
 		int count;
 		try {
@@ -62,10 +62,10 @@ public class QueriesServlet extends BaseConsoleServlet {
 			sendError(response, e);
 			return;
 		}
-		
+
 		HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(count), HttpUtil.JSON);
 	}
-	
+
 	private void sendQueries(HttpServletResponse response) throws IOException {
 		Map<String, Object> queries = new HashMap<String, Object>();
 		try {
@@ -76,10 +76,10 @@ public class QueriesServlet extends BaseConsoleServlet {
 			sendError(response, e);
 			return;
 		}
-		
+
 		HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(queries), HttpUtil.JSON);
 	}
-	
+
 	private void cancelQuery(HttpServletResponse response, String uuid, String table) throws IOException {
 		try {
 			QueryUtil.cancelQuery(table, uuid);
@@ -89,7 +89,7 @@ public class QueriesServlet extends BaseConsoleServlet {
 			sendError(response, e);
 			return;
 		}
-		
+
 		sendGenericOk(response);
 	}
 }

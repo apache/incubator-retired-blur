@@ -284,6 +284,7 @@ under the License.
 						
 						<!-- Default configuration files used by Blur -->
 						<exclude>**/src/main/scripts/conf/controllers</exclude>
+                                                <exclude>**/src/main/scripts/conf/consoles</exclude>
 						<exclude>**/src/main/scripts/conf/default_zoo.cfg</exclude>
 						<exclude>**/src/main/scripts/conf/shards</exclude>
 						<exclude>**/src/main/scripts/conf/zookeepers</exclude>

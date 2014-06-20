@@ -20,7 +20,7 @@ under the License.
 /*global blurconsole:false */
 blurconsole.queries = (function() {
     'use strict';
-  
+
     //------------------------ Configuration and State --------------------
     var configMap = {
         view: 'views/queries.tpl.html',
@@ -55,7 +55,7 @@ blurconsole.queries = (function() {
         currentSort: null
     },
     jqueryMap = {};
-  
+
     //----------------------------------- Private methods ----------------------------
 
     function _setJqueryMap() {
@@ -150,7 +150,7 @@ blurconsole.queries = (function() {
                             panelContent += ' active';
                             _drawQueries();
                         }
-                        panelContent += '">' + table.name + '</a>';
+                        panelContent += '">' + table.name + ' <i class="glyphicon glyphicon-exclamation-sign" data-table="' + table.name + '" style="display:none"></i></a>';
                     });
                     panelContent += '</div>';
                 } else {
@@ -171,14 +171,35 @@ blurconsole.queries = (function() {
             jqueryMap.$queryHolder.html('<div class="alert alert-info">Select a table on the left to see the current queries</div>');
         }
     }
-  
+
+    function _updateActivityIndicators() {
+        var clusters = blurconsole.model.tables.getClusters();
+
+        $.each(clusters, function(i, cluster) {
+            var clusterHasActivity = false,
+                tables = blurconsole.model.tables.getEnabledTables(cluster);
+
+            $.each(tables, function(i, table){
+                if (blurconsole.model.queries.tableHasActivity(table.name)) {
+                    clusterHasActivity = true;
+                    $('i[data-table="' + table.name + '"]').show();
+                } else {
+                    $('i[data-table="' + table.name + '"]').hide();
+                }
+            });
+        });
+    }
+
     //-------------------------- Public API ---------------------------------
 
     function initModule($container) {
         $container.load(configMap.view, function() {
             stateMap.$container = $container;
             _setJqueryMap();
-            $.gevent.subscribe(jqueryMap.$container, 'queries-updated', _drawQueries);
+            $.gevent.subscribe(jqueryMap.$container, 'queries-updated', function() {
+                _drawQueries();
+                _updateActivityIndicators();
+            });
             $.gevent.subscribe(jqueryMap.$container, 'tables-updated', _drawTableList);
             _registerPageEvents();
             _waitForData();

@@ -20,9 +20,10 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,6 +37,11 @@ public class TableDisplay implements Closeable {
 
     // System.out.println("\u001B[1mfoo\u001B[0m@bar\u001B[32m@baz\u001B[0m>");
 
+    // \u001B[0m normal
+    // \u001B[33m yellow
+
+    // System.out.println("\u001B[33mCOLUMN\u001B[0mnormal");
+    //
     // for (int i = 0; i < 100; i++) {
     // System.out.println("\u001B[0m" + i + "\u001B[" + i + "mfoo");
     // }
@@ -43,7 +49,7 @@ public class TableDisplay implements Closeable {
     ConsoleReader reader = new ConsoleReader();
     TableDisplay tableDisplay = new TableDisplay(reader);
     tableDisplay.setSeperator("|");
-//    Random random = new Random();
+    // Random random = new Random();
     int maxX = 20;
     int maxY = 100;
     tableDisplay.setHeader(0, "");
@@ -80,7 +86,11 @@ public class TableDisplay implements Closeable {
       // }
       for (int x = 0; x < maxX; x++) {
         for (int y = 0; y < maxY; y++) {
-          tableDisplay.set(x, y, x + "," + y);
+          if (x == 7 && y == 7) {
+            tableDisplay.set(x, y, highlight(x + "," + y));
+          } else {
+            tableDisplay.set(x, y, x + "," + y);
+          }
         }
       }
       while (running.get()) {
@@ -93,6 +103,11 @@ public class TableDisplay implements Closeable {
     }
   }
 
+  private static String highlight(String s) {
+    // return s;
+    return "\u001B[33m" + s + "\u001B[0m";
+  }
+
   public void addKeyHook(Runnable runnable, int c) {
     _keyHookMap.put(c, runnable);
   }
@@ -103,7 +118,7 @@ public class TableDisplay implements Closeable {
   private final ConcurrentMap<Integer, String> _header = new ConcurrentHashMap<Integer, String>();
   private final ConcurrentMap<Integer, Integer> _maxWidth = new ConcurrentHashMap<Integer, Integer>();
   private final AtomicBoolean _running = new AtomicBoolean(true);
-  private final Timer _timer;
+  private final Thread _paintThread;
   private final Canvas _canvas;
   private int _maxY;
   private int _maxX;
@@ -117,25 +132,36 @@ public class TableDisplay implements Closeable {
 
   public TableDisplay(ConsoleReader reader) {
     _reader = reader;
-    _timer = new Timer("Render Thread", true);
     _canvas = new Canvas(_reader);
-    _timer.schedule(new TimerTask() {
+    _paintThread = new Thread(new Runnable() {
       @Override
       public void run() {
-        try {
-          render(_canvas);
-        } catch (IOException e) {
-          e.printStackTrace();
+        while (_running.get()) {
+          synchronized (_canvas) {
+            try {
+              render(_canvas);
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
+            try {
+              _canvas.wait();
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            }
+          }
         }
       }
-    }, 100, 250);
+    });
+    _paintThread.setDaemon(true);
+    _paintThread.setName("Render Thread");
+    _paintThread.start();
     _inputReaderThread = new Thread(new Runnable() {
       @Override
       public void run() {
         try {
           InputStream input = _reader.getInput();
           int read;
-          while ((read = input.read()) != -1 && _running.get()) {
+          while (_running.get() && (read = input.read()) != -1) {
             if (read == 27) {
               if (input.read() == 91) {
                 read = input.read();
@@ -166,6 +192,7 @@ public class TableDisplay implements Closeable {
                 runnable.run();
               }
             }
+            paint();
           }
         } catch (IOException e) {
           e.printStackTrace();
@@ -223,7 +250,7 @@ public class TableDisplay implements Closeable {
 
   private void buffer(Canvas canvas, String value, int width) {
     canvas.append(value);
-    width -= value.length();
+    width -= getVisibleLength(value);
     while (width > 0) {
       canvas.append(' ');
       width--;
@@ -233,6 +260,7 @@ public class TableDisplay implements Closeable {
   public void setHeader(int x, String name) {
     _header.put(x, name);
     setMaxWidth(x, name);
+    paint();
   }
 
   public void set(int x, int y, Object value) {
@@ -244,12 +272,19 @@ public class TableDisplay implements Closeable {
     setMaxX(x);
     setMaxY(y);
     setMaxWidth(x, value);
+    paint();
+  }
+
+  private void paint() {
+    synchronized (_canvas) {
+      _canvas.notify();
+    }
   }
 
   private void setMaxWidth(int x, Object value) {
     if (value != null) {
       String s = getString(value);
-      int length = s.length();
+      int length = getVisibleLength(s);
       while (true) {
         Integer width = _maxWidth.get(x);
         if (width == null) {
@@ -267,6 +302,26 @@ public class TableDisplay implements Closeable {
         }
       }
     }
+  }
+
+  private int getVisibleLength(String s) {
+    int length = 0;
+    boolean color = false;
+    for (int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+      if (color) {
+        if (c == 'm') {
+          color = false;
+        }
+      } else {
+        if (c == 27) {
+          color = true;
+        } else {
+          length++;
+        }
+      }
+    }
+    return length;
   }
 
   private String getString(Object value) {
@@ -296,8 +351,6 @@ public class TableDisplay implements Closeable {
   public void close() throws IOException {
     if (_running.get()) {
       _running.set(false);
-      _timer.cancel();
-      _timer.purge();
       _inputReaderThread.interrupt();
     }
   }
@@ -354,10 +407,107 @@ public class TableDisplay implements Closeable {
     }
   }
 
+  public static class LineBuilder {
+
+    static class LineBuilderPart {
+      String _visible;
+      String _notVisible;
+    }
+
+    private List<LineBuilderPart> _parts = new ArrayList<LineBuilderPart>();
+    private boolean _readingColor;
+    private StringBuilder _currentNotVisible = new StringBuilder();
+    private StringBuilder _currentVisible = new StringBuilder();
+
+    public void reset() {
+      _currentNotVisible.setLength(0);
+      _currentVisible.setLength(0);
+      _parts.clear();
+    }
+
+    public void close() {
+      startNewPart();
+    }
+
+    public int visibleLength() {
+      int l = 0;
+      for (LineBuilderPart p : _parts) {
+        l += p._visible.length();
+      }
+      return l;
+    }
+
+    public String substring(int start, int end) {
+      StringBuilder b = new StringBuilder();
+      Iterator<LineBuilderPart> iterator = _parts.iterator();
+      LineBuilderPart current = iterator.next();
+      int partPos = 0;
+      boolean currentPartHasEmittedNonVisible = false;
+      for (int i = 0; i < end; i++) {
+        if (partPos >= current._visible.length()) {
+          current = iterator.next();
+          partPos = 0;
+          currentPartHasEmittedNonVisible = false;
+        }
+        if (isVisible(i, start, end)) {
+          if (!currentPartHasEmittedNonVisible) {
+            b.append(current._notVisible);
+            currentPartHasEmittedNonVisible = true;
+          }
+          b.append(current._visible.charAt(partPos));
+        }
+        partPos++;
+      }
+      return b.toString();
+    }
+
+    private boolean isVisible(int i, int start, int end) {
+      if (i >= start && i < end) {
+        return true;
+      }
+      return false;
+    }
+
+    public void append(char c) {
+      if (_readingColor) {
+        if (c == 'm') {
+          _readingColor = false;
+          _currentNotVisible.append(c);
+        } else {
+          _currentNotVisible.append(c);
+        }
+      } else {
+        if (c == 27) {
+          startNewPart();
+          _readingColor = true;
+          _currentNotVisible.append(c);
+        } else {
+          _currentVisible.append(c);
+        }
+      }
+    }
+
+    private void startNewPart() {
+      LineBuilderPart part = new LineBuilderPart();
+      part._notVisible = _currentNotVisible.toString();
+      part._visible = _currentVisible.toString();
+      _parts.add(part);
+      _currentNotVisible.setLength(0);
+      _currentVisible.setLength(0);
+    }
+
+    public void append(String s) {
+      for (int i = 0; i < s.length(); i++) {
+        append(s.charAt(i));
+      }
+    }
+
+  }
+
   static class Canvas {
 
-    private final StringBuilder _builder = new StringBuilder();
-    private final StringBuilder _lineBuilder = new StringBuilder();
+    private final StringBuilder _screenBuilder = new StringBuilder();
+    private final LineBuilder _lineBuilder = new LineBuilder();
     private final ConsoleReader _reader;
     private int _height;
     private int _width;
@@ -372,7 +522,7 @@ public class TableDisplay implements Closeable {
 
     public void reset() {
       _line = 0;
-      _builder.setLength(0);
+      _screenBuilder.setLength(0);
       Terminal terminal = _reader.getTerminal();
       _height = terminal.getHeight() - 2;
       _width = terminal.getWidth() - 2;
@@ -380,14 +530,19 @@ public class TableDisplay implements Closeable {
     }
 
     public void endLine() {
+      _lineBuilder.close();
       int pos = _line - _posY;
       if (pos >= 0 && pos < _height) {
         int end = _posX + _width;
-        _builder.append(_lineBuilder.substring(_posX, Math.min(_lineBuilder.length(), end)));
-        _builder.append('\n');
+        int s = _posX;
+        int e = Math.min(_lineBuilder.visibleLength(), end);
+        if (e > s) {
+          _screenBuilder.append(_lineBuilder.substring(s, e));
+        }
+        _screenBuilder.append('\n');
       }
       _line++;
-      _lineBuilder.setLength(0);
+      _lineBuilder.reset();
     }
 
     public void startLine() {
@@ -399,15 +554,13 @@ public class TableDisplay implements Closeable {
     }
 
     public void append(String s) {
-      for (int i = 0; i < s.length(); i++) {
-        append(s.charAt(i));
-      }
+      _lineBuilder.append(s);
     }
 
     public void write() throws IOException {
       _reader.clearScreen();
       Writer writer = _reader.getOutput();
-      writer.write(_builder.toString());
+      writer.write(_screenBuilder.toString());
       writer.flush();
     }
 

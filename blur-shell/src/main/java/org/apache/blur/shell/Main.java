@@ -696,7 +696,7 @@ public class Main {
     register(builder, new LogResetCommand());
     register(builder, new RemoveShardServerCommand());
     register(builder, new OptimizeTableCommand());
-    register(builder, new QueryCommand2());
+    register(builder, new QueryCommand());
     commands = builder.build();
   }
 

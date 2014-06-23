@@ -50,7 +50,7 @@ import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.commons.cli.CommandLine;
 
-public class QueryCommand2 extends Command implements TableFirstArgCommand {
+public class QueryCommand extends Command implements TableFirstArgCommand {
 
   static enum RenderType {
     ROW_MULTI_FAMILY, ROW_SINGLE_FAMILY

@@ -664,7 +664,7 @@ public class Main {
     register(builder, new DescribeTableCommand());
     register(builder, new TableStatsCommand());
     register(builder, new SchemaTableCommand());
-    register(builder, new QueryCommand());
+    register(builder, new QueryCommandOld());
     register(builder, new GetRowCommand());
     register(builder, new DeleteRowCommand());
     register(builder, new MutateRowCommand());

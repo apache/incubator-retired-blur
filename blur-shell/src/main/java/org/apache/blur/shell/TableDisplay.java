@@ -126,6 +126,11 @@ public class TableDisplay implements Closeable {
   private final Thread _inputReaderThread;
   private final Map<Integer, Runnable> _keyHookMap = new ConcurrentHashMap<Integer, Runnable>();
   private final AtomicBoolean _stopReadingInput = new AtomicBoolean(false);
+  private String _description = "";
+
+  public void setDescription(String description) {
+    _description = description;
+  }
 
   public void setSeperator(String seperator) {
     _seperator = seperator;
@@ -207,6 +212,8 @@ public class TableDisplay implements Closeable {
 
   private void render(Canvas canvas) throws IOException {
     canvas.reset();
+    canvas.append(_description);
+    canvas.endLine();
     buildHeaderOutput(canvas);
     buildTableOutput(canvas);
     canvas.write();
@@ -530,7 +537,7 @@ public class TableDisplay implements Closeable {
       _line = 0;
       _screenBuilder.setLength(0);
       Terminal terminal = _reader.getTerminal();
-      _height = terminal.getHeight() - 2;
+      _height = terminal.getHeight() - 3;
       _width = terminal.getWidth() - 2;
       _leftRightMoveSize = _width / 4;
     }

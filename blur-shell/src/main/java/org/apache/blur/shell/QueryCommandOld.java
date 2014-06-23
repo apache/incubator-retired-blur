@@ -37,7 +37,7 @@ import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.Selector;
 
-public class QueryCommand extends Command implements TableFirstArgCommand {
+public class QueryCommandOld extends Command implements TableFirstArgCommand {
   @Override
   public void doit(PrintWriter outPw, Blur.Iface client, String[] args) throws CommandException, TException,
       BlurException {
@@ -152,6 +152,6 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
 
   @Override
   public String name() {
-    return "query";
+    return "query-old";
   }
 }

@@ -24,11 +24,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import jline.console.ConsoleReader;
 
@@ -41,6 +43,7 @@ import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.ErrorType;
+import org.apache.blur.thrift.generated.FetchRecordResult;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.FetchRowResult;
 import org.apache.blur.thrift.generated.Record;
@@ -48,6 +51,13 @@ import org.apache.blur.thrift.generated.Row;
 import org.apache.commons.cli.CommandLine;
 
 public class QueryCommand2 extends Command implements TableFirstArgCommand {
+
+  static enum RenderType {
+    ROW_MULTI_FAMILY, ROW_SINGLE_FAMILY
+  }
+
+  private int _width;
+
   @Override
   public void doit(PrintWriter outPw, Blur.Iface client, String[] args) throws CommandException, TException,
       BlurException {
@@ -68,24 +78,38 @@ public class QueryCommand2 extends Command implements TableFirstArgCommand {
       TException {
     String tablename = args[1];
     CommandLine commandLine = QueryCommandHelper.parse(args, out);
+    if (commandLine == null) {
+      return;
+    }
     BlurQuery blurQuery = QueryCommandHelper.getBlurQuery(commandLine);
     if (Main.debug) {
       out.println(blurQuery);
+    }
+    _width = 100;
+    if (commandLine.hasOption(QueryCommandHelper.WIDTH)) {
+      _width = Integer.parseInt(commandLine.getOptionValue(QueryCommandHelper.WIDTH));
     }
     ConsoleReader reader = getConsoleReader();
     if (reader == null) {
       throw new BlurException("This command can only be run with a proper jline environment.", null, ErrorType.UNKNOWN);
     }
+
+    long s = System.nanoTime();
+    BlurResults blurResults = client.query(tablename, blurQuery);
+    long e = System.nanoTime();
+    long timeInNanos = e - s;
+    if (blurResults.getTotalResults() == 0) {
+      out.println("No results found in [" + timeInNanos / 1000000.0 + " ms].");
+      return;
+    }
+
     String prompt = reader.getPrompt();
     reader.setPrompt("");
     final TableDisplay tableDisplay = new TableDisplay(reader);
+    tableDisplay.setDescription(blurResults.getTotalResults() + " results found in [" + timeInNanos / 1000000.0
+        + " ms].");
     tableDisplay.setSeperator(" ");
     try {
-
-      long s = System.nanoTime();
-      BlurResults blurResults = client.query(tablename, blurQuery);
-      long e = System.nanoTime();
-      long timeInNanos = e - s;
 
       final AtomicBoolean viewing = new AtomicBoolean(true);
 
@@ -100,7 +124,17 @@ public class QueryCommand2 extends Command implements TableFirstArgCommand {
         }
       }, 'q');
 
-      renderRowMultiFamily(tableDisplay, blurResults);
+      RenderType type = getRenderRype(blurResults);
+      switch (type) {
+      case ROW_MULTI_FAMILY:
+        renderRowMultiFamily(tableDisplay, blurResults);
+        break;
+      case ROW_SINGLE_FAMILY:
+        renderRowSingleFamily(tableDisplay, blurResults);
+        break;
+      default:
+        break;
+      }
 
       while (viewing.get()) {
         synchronized (viewing) {
@@ -114,24 +148,24 @@ public class QueryCommand2 extends Command implements TableFirstArgCommand {
     } finally {
       try {
         tableDisplay.close();
-      } catch (IOException e) {
+      } catch (IOException ex) {
         if (Main.debug) {
-          e.printStackTrace();
+          ex.printStackTrace();
         }
       }
       try {
         Thread.sleep(100);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ex) {
         if (Main.debug) {
-          e.printStackTrace();
+          ex.printStackTrace();
         }
       }
       try {
         reader.setPrompt("");
         reader.clearScreen();
-      } catch (IOException e) {
+      } catch (IOException ex) {
         if (Main.debug) {
-          e.printStackTrace();
+          ex.printStackTrace();
         }
       }
       out.write("\u001B[0m");
@@ -140,48 +174,141 @@ public class QueryCommand2 extends Command implements TableFirstArgCommand {
     }
   }
 
-  private void renderRowMultiFamily(TableDisplay tableDisplay, BlurResults blurResults) {
+  private RenderType getRenderRype(BlurResults blurResults) {
+    Set<String> families = new HashSet<String>();
+    for (BlurResult blurResult : blurResults.getResults()) {
+      families.addAll(getFamily(blurResult.getFetchResult()));
+    }
+    if (families.size() > 1) {
+      return RenderType.ROW_MULTI_FAMILY;
+    }
+    return RenderType.ROW_SINGLE_FAMILY;
+  }
+
+  private Set<String> getFamily(FetchResult fetchResult) {
+    Set<String> result = new HashSet<String>();
+    FetchRowResult rowResult = fetchResult.getRowResult();
+    if (rowResult == null) {
+      FetchRecordResult recordResult = fetchResult.getRecordResult();
+      Record record = recordResult.getRecord();
+      result.add(record.getFamily());
+    } else {
+      Row row = rowResult.getRow();
+      List<Record> records = row.getRecords();
+      if (records != null) {
+        for (Record record : records) {
+          result.add(record.getFamily());
+        }
+      }
+    }
+    return result;
+  }
+
+  private void renderRowSingleFamily(TableDisplay tableDisplay, BlurResults blurResults) {
     int line = 0;
+    tableDisplay.setHeader(0, highlight(getTruncatedVersion("rowid")));
+    tableDisplay.setHeader(1, highlight(getTruncatedVersion("recordid")));
+    List<String> columnsLabels = new ArrayList<String>();
+    for (BlurResult blurResult : blurResults.getResults()) {
+      FetchResult fetchResult = blurResult.getFetchResult();
+      FetchRowResult rowResult = fetchResult.getRowResult();
+      if (rowResult == null) {
+        FetchRecordResult recordResult = fetchResult.getRecordResult();
+        String rowid = recordResult.getRowid();
+        Record record = recordResult.getRecord();
+        String family = record.getFamily();
+        if (record.getColumns() != null) {
+          for (Column column : record.getColumns()) {
+            addToTableDisplay(columnsLabels, tableDisplay, line, rowid, family, record.getRecordId(), column);
+          }
+        }
+        line++;
+      } else {
+        Row row = rowResult.getRow();
+        List<Record> records = row.getRecords();
+        if (records != null) {
+          for (Record record : records) {
+            if (record.getColumns() != null) {
+              for (Column column : record.getColumns()) {
+                addToTableDisplay(columnsLabels, tableDisplay, line, row.getId(), record.getFamily(),
+                    record.getRecordId(), column);
+              }
+            }
+            line++;
+          }
+        }
+      }
+    }
+  }
 
-    tableDisplay.setHeader(0, white("rowid"));
-    tableDisplay.setHeader(1, white("recordid"));
+  private void addToTableDisplay(List<String> columnsLabels, TableDisplay tableDisplay, int line, String rowId,
+      String family, String recordId, Column column) {
+    String name = family + "." + column.getName();
+    int indexOf = columnsLabels.indexOf(name);
+    if (indexOf < 0) {
+      indexOf = columnsLabels.size();
+      columnsLabels.add(name);
+      tableDisplay.setHeader(indexOf + 2, highlight(getTruncatedVersion(name)));
+    }
+    tableDisplay.set(0, line, white(getTruncatedVersion(rowId)));
+    tableDisplay.set(1, line, white(getTruncatedVersion(recordId)));
+    tableDisplay.set(indexOf + 2, line, white(getTruncatedVersion(column.getValue())));
+  }
 
+  private String getTruncatedVersion(String s) {
+    if (s.length() > _width) {
+      return s.substring(0, _width - 3) + "...";
+    }
+    return s;
+  }
+
+  private void renderRowMultiFamily(TableDisplay tableDisplay, BlurResults blurResults) {
+    AtomicInteger line = new AtomicInteger();
+    tableDisplay.setHeader(0, highlight(getTruncatedVersion("rowid")));
+    tableDisplay.setHeader(1, highlight(getTruncatedVersion("recordid")));
     Map<String, List<String>> columnOrder = new HashMap<String, List<String>>();
-
     for (BlurResult result : blurResults.getResults()) {
       FetchResult fetchResult = result.getFetchResult();
       FetchRowResult rowResult = fetchResult.getRowResult();
       if (rowResult != null) {
         Row row = rowResult.getRow();
         String id = row.getId();
-        tableDisplay.set(0, line, white(id));
+        tableDisplay.set(0, line.get(), white(getTruncatedVersion(id)));
         List<Record> records = order(row.getRecords());
         String currentFamily = "#";
         for (Record record : records) {
-          int c = 2;
-          List<String> orderedColumns = getOrderColumnValues(record, columnOrder);
-          String family = record.getFamily();
-          tableDisplay.set(1, line, white(record.getRecordId()));
-          if (!family.equals(currentFamily)) {
-            List<String> list = columnOrder.get(family);
-            for (int i = 0; i < list.size(); i++) {
-              tableDisplay.set(i + c, line, highlight(family + "." + list.get(i)));
-            }
-            currentFamily = family;
-            line++;
-          }
-          for (String oc : orderedColumns) {
-            if (oc != null) {
-              tableDisplay.set(c, line, white(oc));
-            }
-            c++;
-          }
-          line++;
+          currentFamily = displayRecordInRowMultiFamilyView(tableDisplay, line, columnOrder, currentFamily, record);
         }
       } else {
-        throw new RuntimeException("impl");
+        String currentFamily = "#";
+        FetchRecordResult recordResult = fetchResult.getRecordResult();
+        Record record = recordResult.getRecord();
+        currentFamily = displayRecordInRowMultiFamilyView(tableDisplay, line, columnOrder, currentFamily, record);
       }
     }
+  }
+
+  private String displayRecordInRowMultiFamilyView(final TableDisplay tableDisplay, final AtomicInteger line,
+      final Map<String, List<String>> columnOrder, final String currentFamily, final Record record) {
+    int c = 2;
+    List<String> orderedColumns = getOrderColumnValues(record, columnOrder);
+    String family = record.getFamily();
+    tableDisplay.set(1, line.get(), white(getTruncatedVersion(record.getRecordId())));
+    if (!family.equals(currentFamily)) {
+      List<String> list = columnOrder.get(family);
+      for (int i = 0; i < list.size(); i++) {
+        tableDisplay.set(i + c, line.get(), highlight(getTruncatedVersion(family + "." + list.get(i))));
+      }
+      line.incrementAndGet();
+    }
+    for (String oc : orderedColumns) {
+      if (oc != null) {
+        tableDisplay.set(c, line.get(), white(getTruncatedVersion(oc)));
+      }
+      c++;
+    }
+    line.incrementAndGet();
+    return family;
   }
 
   private String white(String s) {
@@ -273,36 +400,18 @@ public class QueryCommand2 extends Command implements TableFirstArgCommand {
     return map;
   }
 
-  private void lineBreak(PagingPrintWriter out, int maxWidth) throws FinishedException {
-    for (int i = 0; i < maxWidth; i++) {
-      out.print('-');
-    }
-    out.println();
-  }
-
-  private void printSummary(PagingPrintWriter out, BlurResults blurResults, int maxWidth, long timeInNanos)
-      throws FinishedException {
-    long totalResults = blurResults.getTotalResults();
-    out.println(" - Results Summary -");
-    out.println("    total : " + totalResults);
-    out.println("    time  : " + (timeInNanos / 1000000.0) + " ms");
-    if (Main.debug) {
-      out.println("shardinfo: " + blurResults.getShardInfo());
-    }
-  }
-
   @Override
   public String description() {
-    return "Query the named table.";
+    return "Query the named table.  Run -h for full argument list.";
   }
 
   @Override
   public String usage() {
-    return "<tablename> <query>";
+    return "<tablename> <query> [<options>]";
   }
 
   @Override
   public String name() {
-    return "query2";
+    return "query";
   }
 }

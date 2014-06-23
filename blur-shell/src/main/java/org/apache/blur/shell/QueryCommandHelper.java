@@ -41,17 +41,18 @@ import org.apache.commons.cli.PosixParser;
 
 public class QueryCommandHelper {
   
-  private static final String SORT = "sort";
-  private static final String FACET = "facet";
-  private static final String ROW_ID = "rowId";
-  private static final String MINIMUM_NUMBER_OF_RESULTS = "minimumNumberOfResults";
-  private static final String MAX_QUERY_TIME = "maxQueryTime";
-  private static final String FETCH = "fetch";
-  private static final String START = "start";
-  private static final String DISABLE_ROW_QUERY = "disableRowQuery";
-  private static final String SCORE_TYPE = "scoreType";
-  private static final String RECORD_FILTER = "recordFilter";
-  private static final String ROW_FILTER = "rowFilter";
+  public static final String WIDTH = "width";
+  public static final String SORT = "sort";
+  public static final String FACET = "facet";
+  public static final String ROW_ID = "rowId";
+  public static final String MINIMUM_NUMBER_OF_RESULTS = "min";
+  public static final String MAX_QUERY_TIME = "max";
+  public static final String FETCH = "fetch";
+  public static final String START = "start";
+  public static final String DISABLE_ROW_QUERY = "disableRowQuery";
+  public static final String SCORE_TYPE = "scoreType";
+  public static final String RECORD_FILTER = "recordFilter";
+  public static final String ROW_FILTER = "rowFilter";
 
   @SuppressWarnings("unchecked")
   public static BlurQuery getBlurQuery(CommandLine commandLine) {
@@ -90,7 +91,11 @@ public class QueryCommandHelper {
 
     BlurQuery blurQuery = new BlurQuery();
     blurQuery.setQuery(query);
-    blurQuery.setSelector(new Selector(Main.selector));
+    Selector selector = new Selector(Main.selector);
+    if (!query.isRowQuery()) {
+      selector.setRecordOnly(true);
+    }
+    blurQuery.setSelector(selector);
     blurQuery.setCacheResult(false);
     blurQuery.setUseCacheIfPresent(false);
 
@@ -229,6 +234,16 @@ public class QueryCommandHelper {
         .hasArgs()
         .withDescription("Specify a sort to be applied to this query <family> <column> [<reverse>].")
         .create(SORT));
+    options.addOption(
+        OptionBuilder
+        .withDescription("Displays help for this command.")
+        .create("h"));
+    options.addOption(
+        OptionBuilder
+        .withArgName(WIDTH)
+        .hasArgs()
+        .withDescription("Specify max column width for display.")
+        .create(WIDTH));
     
     CommandLineParser parser = new PosixParser();
     CommandLine cmd = null;

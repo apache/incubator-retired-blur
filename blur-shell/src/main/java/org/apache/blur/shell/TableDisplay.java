@@ -125,6 +125,7 @@ public class TableDisplay implements Closeable {
   private String _seperator = SEP;
   private final Thread _inputReaderThread;
   private final Map<Integer, Runnable> _keyHookMap = new ConcurrentHashMap<Integer, Runnable>();
+  private final AtomicBoolean _stopReadingInput = new AtomicBoolean(false);
 
   public void setSeperator(String seperator) {
     _seperator = seperator;
@@ -161,7 +162,7 @@ public class TableDisplay implements Closeable {
         try {
           InputStream input = _reader.getInput();
           int read;
-          while (_running.get() && (read = input.read()) != -1) {
+          while (!_stopReadingInput.get() && _running.get() && (read = input.read()) != -1) {
             if (read == 27) {
               if (input.read() == 91) {
                 read = input.read();
@@ -352,6 +353,11 @@ public class TableDisplay implements Closeable {
     if (_running.get()) {
       _running.set(false);
       _inputReaderThread.interrupt();
+      try {
+        _inputReaderThread.join();
+      } catch (InterruptedException e) {
+        throw new IOException(e);
+      }
     }
   }
 
@@ -584,5 +590,9 @@ public class TableDisplay implements Closeable {
       _posY++;
     }
 
+  }
+
+  public void setStopReadingInput(boolean b) {
+    _stopReadingInput.set(true);
   }
 }

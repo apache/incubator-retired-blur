@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import jline.Terminal;
 import jline.console.ConsoleReader;
 
 import org.apache.blur.shell.PagingPrintWriter.FinishedException;
@@ -44,11 +43,9 @@ import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.FetchRowResult;
-import org.apache.blur.thrift.generated.HighlightOptions;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
-import org.apache.blur.thrift.generated.Query;
-import org.apache.blur.thrift.generated.Selector;
+import org.apache.commons.cli.CommandLine;
 
 public class QueryCommand2 extends Command implements TableFirstArgCommand {
   @Override
@@ -57,10 +54,9 @@ public class QueryCommand2 extends Command implements TableFirstArgCommand {
     if (args.length < 3) {
       throw new CommandException("Invalid args: " + help());
     }
-    PagingPrintWriter out = new PagingPrintWriter(outPw);
 
     try {
-      doItInternal(client, args, out);
+      doItInternal(client, args, outPw);
     } catch (FinishedException e) {
       if (Main.debug) {
         e.printStackTrace();
@@ -68,37 +64,21 @@ public class QueryCommand2 extends Command implements TableFirstArgCommand {
     }
   }
 
-  private void doItInternal(Blur.Iface client, String[] args, PagingPrintWriter out) throws FinishedException,
-      BlurException, TException {
+  private void doItInternal(Blur.Iface client, String[] args, PrintWriter out) throws FinishedException, BlurException,
+      TException {
     String tablename = args[1];
-    String queryStr = "";
-    for (int i = 2; i < args.length; i++) {
-      queryStr += args[i] + " ";
-    }
-
-    BlurQuery blurQuery = new BlurQuery();
-    Query query = new Query();
-    query.setQuery(queryStr);
-    blurQuery.setQuery(query);
-    blurQuery.setSelector(new Selector(Main.selector));
-    blurQuery.setCacheResult(false);
-    blurQuery.setUseCacheIfPresent(false);
-
-    if (Main.highlight) {
-      blurQuery.getSelector().setHighlightOptions(new HighlightOptions());
-    }
-
+    CommandLine commandLine = QueryCommandHelper.parse(args, out);
+    BlurQuery blurQuery = QueryCommandHelper.getBlurQuery(commandLine);
     if (Main.debug) {
       out.println(blurQuery);
     }
-
     ConsoleReader reader = getConsoleReader();
     if (reader == null) {
       throw new BlurException("This command can only be run with a proper jline environment.", null, ErrorType.UNKNOWN);
     }
     String prompt = reader.getPrompt();
     reader.setPrompt("");
-    TableDisplay tableDisplay = new TableDisplay(reader);
+    final TableDisplay tableDisplay = new TableDisplay(reader);
     tableDisplay.setSeperator(" ");
     try {
 
@@ -115,55 +95,13 @@ public class QueryCommand2 extends Command implements TableFirstArgCommand {
           synchronized (viewing) {
             viewing.set(false);
             viewing.notify();
+            tableDisplay.setStopReadingInput(true);
           }
         }
       }, 'q');
 
-      int line = 0;
+      renderRowMultiFamily(tableDisplay, blurResults);
 
-      tableDisplay.setHeader(0, "rowid");
-      tableDisplay.setHeader(1, "family");
-      tableDisplay.setHeader(2, "recordid");
-
-      Map<String, List<String>> columnOrder = new HashMap<String, List<String>>();
-
-      for (BlurResult result : blurResults.getResults()) {
-        FetchResult fetchResult = result.getFetchResult();
-        FetchRowResult rowResult = fetchResult.getRowResult();
-        if (rowResult != null) {
-          Row row = rowResult.getRow();
-          String id = row.getId();
-          tableDisplay.set(0, line, id);
-          List<Record> records = order(row.getRecords());
-          String currentFamily = "#";
-          for (Record record : records) {
-            int c = 3;
-            List<String> orderedColumns = getOrderColumnValues(record, columnOrder);
-            String family = record.getFamily();
-            if (!family.equals(currentFamily)) {
-              tableDisplay.set(1, line, family);
-              List<String> list = columnOrder.get(family);
-              for (int i = 0; i < list.size(); i++) {
-                tableDisplay.set(i + c, line, highlight(list.get(i)));
-              }
-              currentFamily = family;
-              line++;
-            }
-
-            tableDisplay.set(2, line, record.getRecordId());
-
-            for (String oc : orderedColumns) {
-              if (oc != null) {
-                tableDisplay.set(c, line, oc);
-              }
-              c++;
-            }
-            line++;
-          }
-        } else {
-          throw new RuntimeException("impl");
-        }
-      }
       while (viewing.get()) {
         synchronized (viewing) {
           try {
@@ -174,17 +112,84 @@ public class QueryCommand2 extends Command implements TableFirstArgCommand {
         }
       }
     } finally {
-      reader.setPrompt(prompt);
       try {
         tableDisplay.close();
-      } catch (IOException ex) {
-        ex.printStackTrace();
+      } catch (IOException e) {
+        if (Main.debug) {
+          e.printStackTrace();
+        }
+      }
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        if (Main.debug) {
+          e.printStackTrace();
+        }
+      }
+      try {
+        reader.setPrompt("");
+        reader.clearScreen();
+      } catch (IOException e) {
+        if (Main.debug) {
+          e.printStackTrace();
+        }
+      }
+      out.write("\u001B[0m");
+      out.flush();
+      reader.setPrompt(prompt);
+    }
+  }
+
+  private void renderRowMultiFamily(TableDisplay tableDisplay, BlurResults blurResults) {
+    int line = 0;
+
+    tableDisplay.setHeader(0, white("rowid"));
+    tableDisplay.setHeader(1, white("recordid"));
+
+    Map<String, List<String>> columnOrder = new HashMap<String, List<String>>();
+
+    for (BlurResult result : blurResults.getResults()) {
+      FetchResult fetchResult = result.getFetchResult();
+      FetchRowResult rowResult = fetchResult.getRowResult();
+      if (rowResult != null) {
+        Row row = rowResult.getRow();
+        String id = row.getId();
+        tableDisplay.set(0, line, white(id));
+        List<Record> records = order(row.getRecords());
+        String currentFamily = "#";
+        for (Record record : records) {
+          int c = 2;
+          List<String> orderedColumns = getOrderColumnValues(record, columnOrder);
+          String family = record.getFamily();
+          tableDisplay.set(1, line, white(record.getRecordId()));
+          if (!family.equals(currentFamily)) {
+            List<String> list = columnOrder.get(family);
+            for (int i = 0; i < list.size(); i++) {
+              tableDisplay.set(i + c, line, highlight(family + "." + list.get(i)));
+            }
+            currentFamily = family;
+            line++;
+          }
+          for (String oc : orderedColumns) {
+            if (oc != null) {
+              tableDisplay.set(c, line, white(oc));
+            }
+            c++;
+          }
+          line++;
+        }
+      } else {
+        throw new RuntimeException("impl");
       }
     }
   }
 
+  private String white(String s) {
+    return "\u001B[0m" + s;
+  }
+
   private String highlight(String s) {
-    return "\u001B[33m" + s + "\u001B[0m";
+    return "\u001B[33m" + s;
   }
 
   private List<Record> order(List<Record> records) {

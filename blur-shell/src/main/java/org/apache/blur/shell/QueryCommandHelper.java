@@ -20,6 +20,7 @@ package org.apache.blur.shell;
 
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -32,155 +33,203 @@ import org.apache.blur.thrift.generated.SortField;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
 public class QueryCommandHelper {
+  
+  private static final String SORT = "sort";
+  private static final String FACET = "facet";
+  private static final String ROW_ID = "rowId";
+  private static final String MINIMUM_NUMBER_OF_RESULTS = "minimumNumberOfResults";
+  private static final String MAX_QUERY_TIME = "maxQueryTime";
+  private static final String FETCH = "fetch";
+  private static final String START = "start";
+  private static final String DISABLE_ROW_QUERY = "disableRowQuery";
+  private static final String SCORE_TYPE = "scoreType";
+  private static final String RECORD_FILTER = "recordFilter";
+  private static final String ROW_FILTER = "rowFilter";
+
+  @SuppressWarnings("unchecked")
+  public static BlurQuery getBlurQuery(CommandLine commandLine) {
+    List<String> argList = commandLine.getArgList();
+    Option[] options = commandLine.getOptions();
+
+    Query query = new Query();
+    // Start at 2 because 1st arg is command 2nd is table
+    query.setQuery(join(argList.subList(2, argList.size()), " "));
+    if (commandLine.hasOption(DISABLE_ROW_QUERY)) {
+      query.setRowQuery(false);
+    }
+    if (commandLine.hasOption(SCORE_TYPE)) {
+      String scoreTypeStr = commandLine.getOptionValue(SCORE_TYPE);
+      ScoreType scoreType = ScoreType.valueOf(scoreTypeStr.toUpperCase());
+      query.setScoreType(scoreType);
+    }
+    if (commandLine.hasOption(RECORD_FILTER)) {
+      String recordFilter = commandLine.getOptionValue(RECORD_FILTER);
+      query.setRecordFilter(recordFilter);
+    }
+    if (commandLine.hasOption(ROW_FILTER)) {
+      String rowFilter = commandLine.getOptionValue(ROW_FILTER);
+      query.setRecordFilter(rowFilter);
+    }
+
+    // String recordFilter;
+    // String rowFilter;
+    // String rowId;
+    // long start;
+    // int fetch;
+    // long maxQueryTime;
+    // long minimumNumberOfResults;
+    // List<Facet> facets;
+    // List<SortField> sortFields;
+
+    BlurQuery blurQuery = new BlurQuery();
+    blurQuery.setQuery(query);
+    blurQuery.setSelector(new Selector(Main.selector));
+    blurQuery.setCacheResult(false);
+    blurQuery.setUseCacheIfPresent(false);
+
+    if (commandLine.hasOption(START)) {
+      String startStr = commandLine.getOptionValue(START);
+      blurQuery.setStart(Long.parseLong(startStr));
+    }
+    if (commandLine.hasOption(FETCH)) {
+      String fetchStr = commandLine.getOptionValue(FETCH);
+      blurQuery.setFetch(Integer.parseInt(fetchStr));
+    }
+    if (commandLine.hasOption(MAX_QUERY_TIME)) {
+      String maxQueryTimeStr = commandLine.getOptionValue(MAX_QUERY_TIME);
+      blurQuery.setMaxQueryTime(Long.parseLong(maxQueryTimeStr));
+    }
+    if (commandLine.hasOption(MINIMUM_NUMBER_OF_RESULTS)) {
+      String minNumbResultsStr = commandLine.getOptionValue(MINIMUM_NUMBER_OF_RESULTS);
+      blurQuery.setMinimumNumberOfResults(Long.parseLong(minNumbResultsStr));
+    }
+    if (commandLine.hasOption(ROW_ID)) {
+      String rowId = commandLine.getOptionValue(ROW_FILTER);
+      blurQuery.setRowId(rowId);
+    }
+    List<Facet> facets = new ArrayList<Facet>();
+    for (Option option : options) {
+      if (option.getOpt().equals(FACET)) {
+        List<String> valuesList = option.getValuesList();
+        Facet facet = new Facet();
+        facet.setQueryStr(join(valuesList, " "));
+        facets.add(facet);
+      }
+    }
+    if (!facets.isEmpty()) {
+      blurQuery.setFacets(facets);
+    }
+
+    List<SortField> sortFields = new ArrayList<SortField>();
+    for (Option option : options) {
+      if (option.getOpt().equals(SORT)) {
+        List<String> valuesList = option.getValuesList();
+        if (valuesList.size() == 2) {
+          sortFields.add(new SortField(valuesList.get(0), valuesList.get(1), false));
+        } else if (valuesList.size() == 3) {
+          sortFields.add(new SortField(valuesList.get(0), valuesList.get(1), Boolean.parseBoolean(valuesList.get(2))));
+        } else {
+          throw new RuntimeException("Sort take 2 or 3 parameters.");
+        }
+      }
+    }
+    if (!sortFields.isEmpty()) {
+      blurQuery.setSortFields(sortFields);
+    }
+
+    if (Main.highlight) {
+      blurQuery.getSelector().setHighlightOptions(new HighlightOptions());
+    }
+
+    return blurQuery;
+  } 
+
+  private static String join(List<String> argList, String sep) {
+    StringBuilder builder = new StringBuilder();
+    for (String s : argList) {
+      if (builder.length() != 0) {
+        builder.append(sep);
+      }
+      builder.append(s);
+    }
+    return builder.toString();
+  }
+
   @SuppressWarnings("static-access")
   public static CommandLine parse(String[] otherArgs, Writer out) {
     Options options = new Options();
     options.addOption(
         OptionBuilder
         .withDescription("Disables row query. (Enabled by default)")
-        .create("R"));
-    options.addOption(
-        OptionBuilder
-        .withDescription("Disables row query. (Enabled by default)")
-        .create("R"));
-    
-    String queryStr;
-    boolean rowQuery;
-    ScoreType scoreType;
-    String recordFilter;
-    String rowFilter;
-    String rowId;
-    long start;
-    int fetch;
-    long maxQueryTime;
-    long minimumNumberOfResults;
-    List<Facet> facets;
-    List<SortField> sortFields;
-    
-    
-    Query query = new Query();
-    query.setQuery(queryStr);
-    query.setRecordFilter(recordFilter);
-    query.setRowFilter(rowFilter);
-    query.setRowQuery(rowQuery);
-    query.setScoreType(scoreType);
-    
-    BlurQuery blurQuery = new BlurQuery();
-    blurQuery.setQuery(query);
-    blurQuery.setSelector(new Selector(Main.selector));
-    blurQuery.setCacheResult(false);
-    blurQuery.setUseCacheIfPresent(false);
-    blurQuery.setFacets(facets);
-    blurQuery.setFetch(fetch);
-    blurQuery.setMaxQueryTime(maxQueryTime);
-    blurQuery.setMinimumNumberOfResults(minimumNumberOfResults);
-    blurQuery.setRowId(rowId);
-    blurQuery.setSortFields(sortFields);
-    blurQuery.setStart(start);
-
-    if (Main.highlight) {
-      blurQuery.getSelector().setHighlightOptions(new HighlightOptions());
-    }
-    
-    
-
-    
-    options.addOption(
-        OptionBuilder
-        .withDescription("Disables the table when it is created. (Enabled by default)")
-        .create("d"));
-    
-    options.addOption(
-        OptionBuilder
-        .withDescription("Enabled strict types on a table. (Disabled by default)")
-        .create("s"));
-    
-    options.addOption(
-        OptionBuilder
-        .withDescription("Enables a read only table. (Disabled by default)")
-        .create("r"));
-    
-    options.addOption(
-        OptionBuilder
-        .isRequired()
-        .hasArg()
-        .withArgName("tablename")
-        .withDescription("* The table name.")
-        .create("t"));
-    
-    options.addOption(
-        OptionBuilder
-        .isRequired()
-        .hasArg()
-        .withArgName("shard count")
-        .withDescription("* The number of shards in the table.")
-        .create("c"));
-    
+        .create(DISABLE_ROW_QUERY));
     options.addOption(
         OptionBuilder
         .hasArg()
-        .withArgName("uri")
-        .withDescription("The location of the table. (Example hdfs://namenode/blur/tables/table)")
-        .create("l"));
-    
+        .withArgName(SCORE_TYPE)
+        .withDescription("Specify the scoring type.")
+        .create(SCORE_TYPE));
     options.addOption(
         OptionBuilder
-        .withArgName("filetype")
-        .hasOptionalArgs()
-        .withDescription("Sets the filetypes (.tim, .tis, .doc, etc.) to be cached in the block cache. (All by default)")
-        .create("B"));
-    
-    options.addOption(
-        OptionBuilder
-        .withDescription("If table is not strict, disables the missing field, fieldless indexing. (Enabled by default)")
-        .create("mfi"));
-    
-    options.addOption(
-        OptionBuilder
-        .withArgName("field type")
-        .hasArg()
-        .withDescription("If table is not strict, sets the field type for the missing field. (text by default)")
-        .create("mft"));
-    
-    options.addOption(
-        OptionBuilder
-        .withArgName("name value")
-        .hasArgs(2)
-        .withDescription("If table is not strict, sets the properties for the missing field.")
-        .create("mfp"));
-    
-    options.addOption(
-        OptionBuilder
-        .withArgName("name value")
-        .hasArgs(2)
-        .withDescription("Sets the properties for this table descriptor.")
-        .create("p"));
-    
-    options.addOption(
-        OptionBuilder
-        .withArgName("column name*")
         .hasArgs()
-        .withDescription("Sets what columns to pre cache during warmup. (By default all columns are cached)")
-        .create("P"));
-    
+        .withArgName(ROW_FILTER)
+        .withDescription("Specify row filter.")
+        .create(ROW_FILTER));
     options.addOption(
         OptionBuilder
-        .withArgName("classname")
+        .hasArgs()
+        .withArgName(RECORD_FILTER)
+        .withDescription("Specify record filter.")
+        .create(RECORD_FILTER));
+    options.addOption(
+        OptionBuilder
         .hasArg()
-        .withDescription("Sets the similarity class for the table. (By org.apache.blur.lucene.search.FairSimilarity is used)")
-        .create("S"));
-    
+        .withArgName(START)
+        .withDescription("Specify the starting position (paging).")
+        .create(START));
     options.addOption(
         OptionBuilder
-        .withDescription("Displays help for this command.")
-        .create("h"));
-
+        .hasArg()
+        .withArgName(FETCH)
+        .withDescription("Specify the number of elements to fetch in a single page.")
+        .create(FETCH));
+    options.addOption(
+        OptionBuilder
+        .hasArg()
+        .withArgName(MAX_QUERY_TIME)
+        .withDescription("Specify the maximum amount of time to allow query to execute.")
+        .create(MAX_QUERY_TIME));
+    options.addOption(
+        OptionBuilder
+        .hasArg()
+        .withArgName(MINIMUM_NUMBER_OF_RESULTS)
+        .withDescription("Specify the minimum number of results required before returning from query.")
+        .create(MINIMUM_NUMBER_OF_RESULTS));
+    options.addOption(
+        OptionBuilder
+        .hasArg()
+        .withArgName(ROW_ID)
+        .withDescription("Specify the rowId to execute the query against (this reduces the spray to other shards).")
+        .create(ROW_ID));
+    options.addOption(
+        OptionBuilder
+        .withArgName(FACET)
+        .hasArgs()
+        .withDescription("Specify facet to be executed with this query.")
+        .create(FACET));
+    options.addOption(
+        OptionBuilder
+        .withArgName(SORT)
+        .hasArgs()
+        .withDescription("Specify a sort to be applied to this query <family> <column> [<reverse>].")
+        .create(SORT));
+    
     CommandLineParser parser = new PosixParser();
     CommandLine cmd = null;
     try {
@@ -188,14 +237,14 @@ public class QueryCommandHelper {
       if (cmd.hasOption("h")) {
         HelpFormatter formatter = new HelpFormatter();
         PrintWriter pw = new PrintWriter(out, true);
-        formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "create", null, options,
+        formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "query", null, options,
             HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null, false);
         return null;
       }
     } catch (ParseException e) {
       HelpFormatter formatter = new HelpFormatter();
       PrintWriter pw = new PrintWriter(out, true);
-      formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "create", null, options,
+      formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "query", null, options,
           HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null, false);
       return null;
     }

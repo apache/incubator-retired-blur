@@ -27,7 +27,7 @@ blurconsole.utils = (function(){
 			return initial;
 		}
 
-		var accumulator = initial || collection[0];
+		var accumulator = initial == null ? collection[0] : initial;
 		$.each(collection, function(idx, item) {
 			accumulator = block(accumulator, item);
 		});

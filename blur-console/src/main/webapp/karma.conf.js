@@ -19,67 +19,81 @@ under the License.
 */
 
 module.exports = function(config) {
-    // karma start --coverage [coverageType]
-    // http://karma-runner.github.io/0.8/config/converage.html
+  config.set({
 
-    var karmaConfig = {
-        basePath: '',
-        frameworks: ['mocha'],
-        files: [
-            // Source
-            {pattern: 'js/**/*.js', included: false},
+    // base path that will be used to resolve all patterns (eg. files, exclude)
+    basePath: '',
 
-            // Images
-            {pattern: 'img/**/*.*', included: false},
 
-            // Included libs
-            'libs/jquery/jquery.js',
+    // frameworks to use
+    // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
+    frameworks: ['mocha', 'chai', 'sinon'],
 
-            // Libraries
-            {pattern: 'libs/**/*.js', included: false},
 
-            // Test Files
-            {pattern: 'test/unit/spec/**/*.js', included: false},
+    // list of files / patterns to load in the browser
+    files: [
+      'libs/jquery/dist/jquery.js',
+      'js/utils/*\.js',
+      'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tooltip.js',
+      'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/modal.js',
+      'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/transition.js',
+      'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/popover.js',
+      'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/collapse.js',
+      'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tab.js',
+      'libs/flot/jquery.flot.js',
+      'libs/flot/jquery.flot.pie.js',
+      'libs/flot/jquery.flot.categories.js',
+      'libs/flot/jquery.flot.stack.js',
+      'libs/typeahead.js/dist/typeahead.jquery.js',
+      'js/blurconsole.js',
+      'js/*\.js',
+      'test/**/*Test.js'
+    ],
 
-            // Test Mocks
-            {pattern: 'test/unit/mocks/**/*.js', included: false},
-            {pattern: 'test/unit/utils/**/*.js', included: false},
 
-            // Test Runner
-            'test/unit/runner/testRunner.js'
-        ],
-        exclude: [],
-        reporters: ['dots'],
-        port: 9876,
-        colors: true,
-        logLevel: config.LOG_WARN,
-        autoWatch: true,
-        browsers: ['Chrome', 'Firefox'],
-        captureTimeout: 60000,
-        singleRun: false
+    // list of files to exclude
+    exclude: [
+      
+    ],
+
+
+    // preprocess matching files before serving them to the browser
+    // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
+    preprocessors: {
+        'js/*.js': ['coverage']
     },
-    coverageType = 'html',
-    coverage = process.argv.filter(function(a, index) {
-        if (a == '--coverage') {
-            if ((index + 1) < process.argv.length) {
-                coverageType = process.argv[index + 1];
-            }
-            return true;
-        }
-        return false;
-    }).length;
 
-    if (coverage) {
-        karmaConfig.preprocessors = {
-            'js/*.js': 'coverage',
-            'js/**/*.js': 'coverage'
-        };
-        karmaConfig.reporters.push('coverage');
-        karmaConfig.coverageReporter = {
-            type: coverageType,
-            dir: 'build/coverage/'
-        };
-    }
 
-    config.set(karmaConfig);
+    // test results reporter to use
+    // possible values: 'dots', 'progress'
+    // available reporters: https://npmjs.org/browse/keyword/karma-reporter
+    reporters: ['progress', 'coverage'],
+
+
+    // web server port
+    port: 9876,
+
+
+    // enable / disable colors in the output (reporters and logs)
+    colors: true,
+
+
+    // level of logging
+    // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
+    logLevel: config.LOG_INFO,
+
+
+    // enable / disable watching file and executing tests whenever any file changes
+    autoWatch: true,
+
+
+    // start these browsers
+    // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
+    browsers: ['PhantomJS'],
+
+
+    // Continuous Integration mode
+    // if true, Karma captures browsers, runs the tests and exits
+    singleRun: false
+  });
 };

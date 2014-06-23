@@ -35,7 +35,13 @@
     "time-grunt": "~0.2.0",
     "grunt-contrib-connect": "~0.5.0",
     "node-version-assets": "~0.2.0",
-    "grunt-contrib-copy": "~0.5.0"
+    "grunt-contrib-copy": "~0.5.0",
+    "karma-html2js-preprocessor": "~0.1.0",
+    "karma-jasmine": "~0.1.4",
+    "mocha": "~1.15.1",
+    "karma-chai": "0.0.2",
+    "karma-sinon": "~1.0.0",
+    "karma-coverage": "~0.1.0"
   },
   "scripts": {
     "test": "karma start --single-run"

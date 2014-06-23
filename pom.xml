@@ -240,6 +240,7 @@ under the License.
 
 						<!-- These javascript libs are added at build time but are not included in the src -->
 						<exclude>**/src/main/webapp/libs/**</exclude>
+						<exclude>**/node_modules/**</exclude>
 
 						<!-- Generated CSS files -->
 						<exclude>**/src/main/webapp/public/css/**</exclude>

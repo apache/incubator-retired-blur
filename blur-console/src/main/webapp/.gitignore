@@ -1,7 +1,4 @@
-build/
 libs/*
-jsc/*
-public/*
-test/reports
 .tmp
 .sass-cache
+coverage

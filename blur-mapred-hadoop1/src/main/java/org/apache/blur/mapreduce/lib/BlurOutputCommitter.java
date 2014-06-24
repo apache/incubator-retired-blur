@@ -38,20 +38,13 @@ public class BlurOutputCommitter extends AbstractOutputCommitter {
   private Configuration _configuration;
   private TaskAttemptID _taskAttemptID;
   private Path _indexPath;
-  private final boolean _runTaskCommit;
   private TableDescriptor _tableDescriptor;
-
-  public BlurOutputCommitter() {
-    _runTaskCommit = true;
-  }
-
-  public BlurOutputCommitter(boolean isMap, int numberOfReducers) {
-    _runTaskCommit = isMap && numberOfReducers != 0 ? false : true;
-  }
 
   @Override
   public boolean needsTaskCommit(TaskAttemptContext context) throws IOException {
-    return _runTaskCommit;
+    int numReduceTasks = context.getNumReduceTasks();
+    TaskAttemptID taskAttemptID = context.getTaskAttemptID();
+    return taskAttemptID.isMap() && numReduceTasks != 0 ? false : true;
   }
 
   @Override

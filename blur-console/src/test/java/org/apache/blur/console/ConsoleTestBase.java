@@ -34,7 +34,22 @@ public class ConsoleTestBase {
       Config.setupMiniCluster();
       _managing = true;
     }
+    File file = new File("test-data");
+    if (file.exists()) {
+      rmr(file);
+    }
+  }
 
+  private static void rmr(File file) {
+    if (!file.exists()) {
+      return;
+    }
+    if (file.isDirectory()) {
+      for (File f : file.listFiles()) {
+        rmr(f);
+      }
+    }
+    file.delete();
   }
 
   @AfterClass

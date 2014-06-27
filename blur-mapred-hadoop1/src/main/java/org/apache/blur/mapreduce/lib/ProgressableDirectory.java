@@ -18,13 +18,12 @@ package org.apache.blur.mapreduce.lib;
  */
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Map;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.store.BufferedIndexInput;
-import org.apache.lucene.store.DataInput;
+import org.apache.lucene.store.BufferedIndexOutput;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
@@ -146,8 +145,7 @@ public class ProgressableDirectory extends Directory {
     return _directory.toString();
   }
 
-  @SuppressWarnings("deprecation")
-  static class ProgressableIndexOutput extends IndexOutput {
+  static class ProgressableIndexOutput extends BufferedIndexOutput {
 
     private Progressable _progressable;
     private IndexOutput _indexOutput;
@@ -158,26 +156,9 @@ public class ProgressableDirectory extends Directory {
     }
 
     @Override
-    public void close() throws IOException {
-      _indexOutput.close();
+    protected void flushBuffer(byte[] b, int offset, int len) throws IOException {
+      _indexOutput.writeBytes(b, offset, len);
       _progressable.progress();
-    }
-
-    @Override
-    public void copyBytes(DataInput input, long numBytes) throws IOException {
-      _indexOutput.copyBytes(input, numBytes);
-      _progressable.progress();
-    }
-
-    @Override
-    public void flush() throws IOException {
-      _indexOutput.flush();
-      _progressable.progress();
-    }
-
-    @Override
-    public long getFilePointer() {
-      return _indexOutput.getFilePointer();
     }
 
     @Override
@@ -186,57 +167,10 @@ public class ProgressableDirectory extends Directory {
     }
 
     @Override
-    public void seek(long pos) throws IOException {
-      _indexOutput.seek(pos);
+    public void close() throws IOException {
+      super.close();
+      _indexOutput.close();
       _progressable.progress();
-    }
-
-    @Override
-    public void setLength(long length) throws IOException {
-      _indexOutput.setLength(length);
-      _progressable.progress();
-    }
-
-    @Override
-    public String toString() {
-      return _indexOutput.toString();
-    }
-
-    @Override
-    public void writeByte(byte b) throws IOException {
-      _indexOutput.writeByte(b);
-    }
-
-    @Override
-    public void writeBytes(byte[] b, int offset, int length) throws IOException {
-      _indexOutput.writeBytes(b, offset, length);
-      _progressable.progress();
-    }
-
-    @Override
-    public void writeBytes(byte[] b, int length) throws IOException {
-      _indexOutput.writeBytes(b, length);
-      _progressable.progress();
-    }
-
-    @Override
-    public void writeInt(int i) throws IOException {
-      _indexOutput.writeInt(i);
-    }
-
-    @Override
-    public void writeLong(long i) throws IOException {
-      _indexOutput.writeLong(i);
-    }
-
-    @Override
-    public void writeString(String s) throws IOException {
-      _indexOutput.writeString(s);
-    }
-
-    @Override
-    public void writeStringStringMap(Map<String, String> map) throws IOException {
-      _indexOutput.writeStringStringMap(map);
     }
 
   }

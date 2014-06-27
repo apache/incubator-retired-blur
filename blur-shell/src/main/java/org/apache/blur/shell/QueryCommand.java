@@ -106,8 +106,8 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
     String prompt = reader.getPrompt();
     reader.setPrompt("");
     final TableDisplay tableDisplay = new TableDisplay(reader);
-    tableDisplay.setDescription(blurResults.getTotalResults() + " results found in [" + timeInNanos / 1000000.0
-        + " ms].");
+    tableDisplay.setDescription(white(blurResults.getTotalResults() + " results found in [" + timeInNanos / 1000000.0
+        + " ms]."));
     tableDisplay.setSeperator(" ");
     try {
 
@@ -293,7 +293,6 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
     int c = 2;
     List<String> orderedColumns = getOrderColumnValues(record, columnOrder);
     String family = record.getFamily();
-    tableDisplay.set(1, line.get(), white(getTruncatedVersion(record.getRecordId())));
     if (!family.equals(currentFamily)) {
       List<String> list = columnOrder.get(family);
       for (int i = 0; i < list.size(); i++) {
@@ -301,6 +300,7 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
       }
       line.incrementAndGet();
     }
+    tableDisplay.set(1, line.get(), white(getTruncatedVersion(record.getRecordId())));
     for (String oc : orderedColumns) {
       if (oc != null) {
         tableDisplay.set(c, line.get(), white(getTruncatedVersion(oc)));

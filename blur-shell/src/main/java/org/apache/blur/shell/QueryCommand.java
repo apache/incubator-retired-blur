@@ -107,7 +107,7 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
     reader.setPrompt("");
     final TableDisplay tableDisplay = new TableDisplay(reader);
     tableDisplay.setDescription(white(blurResults.getTotalResults() + " results found in [" + timeInNanos / 1000000.0
-        + " ms]."));
+        + " ms].  " + getFetchMetaData(blurResults)));
     tableDisplay.setSeperator(" ");
     try {
 
@@ -174,6 +174,63 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
     }
   }
 
+  private String getFetchMetaData(BlurResults blurResults) {
+    AtomicInteger rowCount = new AtomicInteger();
+    AtomicInteger recordCount = new AtomicInteger();
+    AtomicInteger columnCount = new AtomicInteger();
+    AtomicInteger columnSize = new AtomicInteger();
+
+    for (BlurResult blurResult : blurResults.getResults()) {
+      FetchResult fetchResult = blurResult.getFetchResult();
+      FetchRecordResult recordResult = fetchResult.getRecordResult();
+      if (recordResult != null) {
+        Record record = recordResult.getRecord();
+        count(record, recordCount, columnCount, columnSize);
+      }
+      FetchRowResult rowResult = fetchResult.getRowResult();
+      if (rowResult != null) {
+        Row row = rowResult.getRow();
+        count(row, rowCount, recordCount, columnCount, columnSize);
+      }
+    }
+
+    StringBuilder builder = new StringBuilder();
+    builder.append("Row [" + rowCount + "] ");
+    builder.append("Record [" + recordCount + "] ");
+    builder.append("Column [" + columnCount + "] ");
+    builder.append("Data (bytes) [" + columnSize + "]");
+    return builder.toString();
+  }
+
+  private void count(Row row, AtomicInteger rowCount, AtomicInteger recordCount, AtomicInteger columnCount,
+      AtomicInteger columnSize) {
+    rowCount.incrementAndGet();
+    List<Record> records = row.getRecords();
+    if (records != null) {
+      for (Record r : records) {
+        count(r, recordCount, columnCount, columnSize);
+      }
+    }
+  }
+
+  private void count(Record record, AtomicInteger recordCount, AtomicInteger columnCount, AtomicInteger columnSize) {
+    recordCount.incrementAndGet();
+    List<Column> columns = record.getColumns();
+    if (columns != null) {
+      for (Column column : columns) {
+        count(column, columnCount, columnSize);
+      }
+    }
+  }
+
+  private void count(Column column, AtomicInteger columnCount, AtomicInteger columnSize) {
+    columnCount.incrementAndGet();
+    String name = column.getName();
+    String value = column.getValue();
+    columnSize.addAndGet(name.length() * 2);
+    columnSize.addAndGet(value.length() * 2);
+  }
+
   private RenderType getRenderRype(BlurResults blurResults) {
     Set<String> families = new HashSet<String>();
     for (BlurResult blurResult : blurResults.getResults()) {
@@ -206,9 +263,11 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
 
   private void renderRowSingleFamily(TableDisplay tableDisplay, BlurResults blurResults) {
     int line = 0;
-    tableDisplay.setHeader(0, highlight(getTruncatedVersion("rowid")));
-    tableDisplay.setHeader(1, highlight(getTruncatedVersion("recordid")));
+    tableDisplay.setHeader(0, highlight(getTruncatedVersion("result#")));
+    tableDisplay.setHeader(1, highlight(getTruncatedVersion("rowid")));
+    tableDisplay.setHeader(2, highlight(getTruncatedVersion("recordid")));
     List<String> columnsLabels = new ArrayList<String>();
+    int result = 0;
     for (BlurResult blurResult : blurResults.getResults()) {
       FetchResult fetchResult = blurResult.getFetchResult();
       FetchRowResult rowResult = fetchResult.getRowResult();
@@ -219,7 +278,7 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
         String family = record.getFamily();
         if (record.getColumns() != null) {
           for (Column column : record.getColumns()) {
-            addToTableDisplay(columnsLabels, tableDisplay, line, rowid, family, record.getRecordId(), column);
+            addToTableDisplay(result, columnsLabels, tableDisplay, line, rowid, family, record.getRecordId(), column);
           }
         }
         line++;
@@ -230,7 +289,7 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
           for (Record record : records) {
             if (record.getColumns() != null) {
               for (Column column : record.getColumns()) {
-                addToTableDisplay(columnsLabels, tableDisplay, line, row.getId(), record.getFamily(),
+                addToTableDisplay(result, columnsLabels, tableDisplay, line, row.getId(), record.getFamily(),
                     record.getRecordId(), column);
               }
             }
@@ -238,21 +297,23 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
           }
         }
       }
+      result++;
     }
   }
 
-  private void addToTableDisplay(List<String> columnsLabels, TableDisplay tableDisplay, int line, String rowId,
-      String family, String recordId, Column column) {
+  private void addToTableDisplay(int result, List<String> columnsLabels, TableDisplay tableDisplay, int line,
+      String rowId, String family, String recordId, Column column) {
     String name = family + "." + column.getName();
     int indexOf = columnsLabels.indexOf(name);
     if (indexOf < 0) {
       indexOf = columnsLabels.size();
       columnsLabels.add(name);
-      tableDisplay.setHeader(indexOf + 2, highlight(getTruncatedVersion(name)));
+      tableDisplay.setHeader(indexOf + 3, highlight(getTruncatedVersion(name)));
     }
-    tableDisplay.set(0, line, white(getTruncatedVersion(rowId)));
-    tableDisplay.set(1, line, white(getTruncatedVersion(recordId)));
-    tableDisplay.set(indexOf + 2, line, white(getTruncatedVersion(column.getValue())));
+    tableDisplay.set(0, line, white(getTruncatedVersion(Integer.toString(result))));
+    tableDisplay.set(1, line, white(getTruncatedVersion(rowId)));
+    tableDisplay.set(2, line, white(getTruncatedVersion(recordId)));
+    tableDisplay.set(indexOf + 3, line, white(getTruncatedVersion(column.getValue())));
   }
 
   private String getTruncatedVersion(String s) {
@@ -264,33 +325,39 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
 
   private void renderRowMultiFamily(TableDisplay tableDisplay, BlurResults blurResults) {
     AtomicInteger line = new AtomicInteger();
-    tableDisplay.setHeader(0, highlight(getTruncatedVersion("rowid")));
-    tableDisplay.setHeader(1, highlight(getTruncatedVersion("recordid")));
+    tableDisplay.setHeader(0, highlight(getTruncatedVersion("result#")));
+    tableDisplay.setHeader(1, highlight(getTruncatedVersion("rowid")));
+    tableDisplay.setHeader(2, highlight(getTruncatedVersion("recordid")));
     Map<String, List<String>> columnOrder = new HashMap<String, List<String>>();
-    for (BlurResult result : blurResults.getResults()) {
-      FetchResult fetchResult = result.getFetchResult();
+    int result = 0;
+    for (BlurResult blurResult : blurResults.getResults()) {
+      FetchResult fetchResult = blurResult.getFetchResult();
       FetchRowResult rowResult = fetchResult.getRowResult();
       if (rowResult != null) {
         Row row = rowResult.getRow();
         String id = row.getId();
-        tableDisplay.set(0, line.get(), white(getTruncatedVersion(id)));
+        tableDisplay.set(1, line.get(), white(getTruncatedVersion(id)));
         List<Record> records = order(row.getRecords());
         String currentFamily = "#";
         for (Record record : records) {
-          currentFamily = displayRecordInRowMultiFamilyView(tableDisplay, line, columnOrder, currentFamily, record);
+          currentFamily = displayRecordInRowMultiFamilyView(result, tableDisplay, line, columnOrder, currentFamily,
+              record);
         }
       } else {
         String currentFamily = "#";
         FetchRecordResult recordResult = fetchResult.getRecordResult();
         Record record = recordResult.getRecord();
-        currentFamily = displayRecordInRowMultiFamilyView(tableDisplay, line, columnOrder, currentFamily, record);
+        currentFamily = displayRecordInRowMultiFamilyView(result, tableDisplay, line, columnOrder, currentFamily,
+            record);
       }
+      result++;
     }
   }
 
-  private String displayRecordInRowMultiFamilyView(final TableDisplay tableDisplay, final AtomicInteger line,
-      final Map<String, List<String>> columnOrder, final String currentFamily, final Record record) {
-    int c = 2;
+  private String displayRecordInRowMultiFamilyView(int result, final TableDisplay tableDisplay,
+      final AtomicInteger line, final Map<String, List<String>> columnOrder, final String currentFamily,
+      final Record record) {
+    int c = 3;
     List<String> orderedColumns = getOrderColumnValues(record, columnOrder);
     String family = record.getFamily();
     if (!family.equals(currentFamily)) {
@@ -298,15 +365,17 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
       for (int i = 0; i < list.size(); i++) {
         tableDisplay.set(i + c, line.get(), highlight(getTruncatedVersion(family + "." + list.get(i))));
       }
+      tableDisplay.set(0, line.get(), white(Integer.toString(result)));
       line.incrementAndGet();
     }
-    tableDisplay.set(1, line.get(), white(getTruncatedVersion(record.getRecordId())));
+    tableDisplay.set(2, line.get(), white(getTruncatedVersion(record.getRecordId())));
     for (String oc : orderedColumns) {
       if (oc != null) {
         tableDisplay.set(c, line.get(), white(getTruncatedVersion(oc)));
       }
       c++;
     }
+    tableDisplay.set(0, line.get(), white(Integer.toString(result)));
     line.incrementAndGet();
     return family;
   }

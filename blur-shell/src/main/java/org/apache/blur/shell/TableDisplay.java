@@ -202,6 +202,7 @@ public class TableDisplay implements Closeable {
                 case 66:
                   // down
                   _canvas.moveDown();
+                  break;
                 case 53:
                   // up
                   _canvas.pageUp();

@@ -43,6 +43,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
@@ -94,7 +95,7 @@ public class SuperParserTest {
     fieldManager.addColumnDefinitionDouble("a", "id_d");
     fieldManager.addColumnDefinitionFloat("a", "id_f");
     fieldManager.addColumnDefinitionLong("a", "id_l");
-    fieldManager.addColumnDefinitionDate("a", "id_date","yyyy-MM-dd");
+    fieldManager.addColumnDefinitionDate("a", "id_date", "yyyy-MM-dd");
     fieldManager.addColumnDefinitionGisRecursivePrefixTree("a", "id_gis");
     return fieldManager;
   }
@@ -368,7 +369,7 @@ public class SuperParserTest {
     boolean equals = q1.equals(q);
     assertTrue(equals);
   }
-  
+
   @Test
   public void test29() throws ParseException {
     SpatialContext ctx = SpatialContext.GEO;
@@ -377,13 +378,13 @@ public class SuperParserTest {
     RecursivePrefixTreeStrategy strategy = new RecursivePrefixTreeStrategy(grid, "a.id_gis");
     Circle circle = ctx.makeCircle(-80.0, 33.0, DistanceUtils.dist2Degrees(10, DistanceUtils.EARTH_MEAN_RADIUS_KM));
     SpatialArgs args = new SpatialArgs(SpatialOperation.Intersects, circle);
-    
+
     Query q1 = sq(strategy.makeQuery(args));
     Query q = parseSq("a.id_gis:\"Intersects(Circle(33.000000,-80.000000 d=10.0km))\"");
     boolean equals = q1.equals(q);
     assertTrue(equals);
   }
-  
+
   @Test
   public void test30() throws ParseException {
     SpatialContext ctx = SpatialContext.GEO;
@@ -392,13 +393,13 @@ public class SuperParserTest {
     RecursivePrefixTreeStrategy strategy = new RecursivePrefixTreeStrategy(grid, "a.id_gis");
     Circle circle = ctx.makeCircle(-80.0, 33.0, DistanceUtils.dist2Degrees(10, DistanceUtils.EARTH_MEAN_RADIUS_MI));
     SpatialArgs args = new SpatialArgs(SpatialOperation.Intersects, circle);
-    
+
     Query q1 = sq(strategy.makeQuery(args));
     Query q = parseSq("a.id_gis:\"Intersects(Circle(33.000000,-80.000000 d=10.0m))\"");
     boolean equals = q1.equals(q);
     assertTrue(equals);
   }
-  
+
   @Test
   public void test31() throws ParseException, java.text.ParseException {
     Query q = parseSq("a.id_date:2013-09-13");
@@ -408,7 +409,7 @@ public class SuperParserTest {
     Query q1 = sq(rq_i("a.id_date", converted, converted));
     assertQuery(q1, q);
   }
-  
+
   @Test
   public void test32() throws ParseException, java.text.ParseException {
     Query q = parseSq("a.id_date:[2013-09-13 TO 2013-11-13]");
@@ -420,7 +421,7 @@ public class SuperParserTest {
     Query q1 = sq(rq_i("a.id_date", t1, t2));
     assertQuery(q1, q);
   }
-  
+
   @Test
   public void test33() throws ParseException, java.text.ParseException {
     Query q = parseSq("a.id_date:{2013-09-13 TO 2013-11-13}");
@@ -432,33 +433,62 @@ public class SuperParserTest {
     Query q1 = sq(rq_e("a.id_date", t1, t2));
     assertQuery(q1, q);
   }
-  
+
   @Test
   public void test34() throws ParseException {
     Query q = parseSq("rowid:123-456");
     Query q1 = sq(tq("rowid", "123-456"));
     assertQuery(q1, q);
   }
-  
+
   @Test
   public void test35() throws ParseException {
     Query q = parseSq("family:123-456");
     Query q1 = sq(tq("family", "123-456"));
     assertQuery(q1, q);
   }
-  
+
   @Test
   public void test36() throws ParseException {
     Query q = parseSq("recordid:123-456");
     Query q1 = sq(tq("recordid", "123-456"));
     assertQuery(q1, q);
   }
-  
+
   @Test
   public void test37() throws ParseException {
     Query q = parseSq("bin:cool");
     Query q1 = sq(tq("_default_.bin", "cool"));
     assertQuery(q1, q);
+  }
+
+  @Test
+  public void test38() throws ParseException {
+    Query q = parseSq("-<f.c:a> -<f.c:b>");
+    Query q1 = sq(tq("f.c", "a"));
+    Query q2 = sq(tq("f.c", "b"));
+    Query q3 = new TermQuery(new Term("_primedoc_", "true"));
+    BooleanQuery bq = bq(bc_n(q1), bc_n(q2), bc(q3));
+    assertQuery(bq, q);
+  }
+  
+  @Test
+  public void test39() throws ParseException {
+    Query q = parseSq("<-f.c:a> <-f.c:b>");
+    Query q1 = sq(bq(bc_n(tq("f.c", "a")), bc(new MatchAllDocsQuery())));
+    Query q2 = sq(bq(bc_n(tq("f.c", "b")), bc(new MatchAllDocsQuery())));
+    BooleanQuery bq = bq(bc(q1), bc(q2));
+    assertQuery(bq, q);
+  }
+  
+  @Test
+  public void test40() throws ParseException {
+    Query q = parseSq("-<-f.c:a> -<-f.c:b>");
+    Query q1 = sq(bq(bc_n(tq("f.c", "a")), bc(new MatchAllDocsQuery())));
+    Query q2 = sq(bq(bc_n(tq("f.c", "b")), bc(new MatchAllDocsQuery())));
+    Query q3 = new TermQuery(new Term("_primedoc_", "true"));
+    BooleanQuery bq = bq(bc_n(q1), bc_n(q2), bc(q3));
+    assertQuery(bq, q);
   }
 
   public static BooleanClause bc_m(Query q) {
@@ -550,7 +580,7 @@ public class SuperParserTest {
   private Query rq_i(String field, long min, long max) {
     return NumericRangeQuery.newLongRange(field, min, max, true, true);
   }
-  
+
   private Query rq_e(String field, long min, long max) {
     return NumericRangeQuery.newLongRange(field, min, max, false, false);
   }
@@ -564,7 +594,7 @@ public class SuperParserTest {
   }
 
   private SuperQuery sq(Query q) {
-    return new SuperQuery(q, ScoreType.SUPER, new Term("_primedoc_"));
+    return new SuperQuery(q, ScoreType.SUPER, new Term("_primedoc_", "true"));
   }
 
   private TermQuery tq(String field, String text) {
@@ -573,7 +603,7 @@ public class SuperParserTest {
 
   private Query parseSq(String qstr) throws ParseException {
     SuperParser superParser = new SuperParser(LUCENE_VERSION, _fieldManager, true, null, ScoreType.SUPER, new Term(
-        "_primedoc_"));
+        "_primedoc_", "true"));
     return superParser.parse(qstr);
   }
 

@@ -30,8 +30,10 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.util.Version;
 
 public class SuperParser extends BlurQueryParser {
@@ -105,7 +107,36 @@ public class SuperParser extends BlurQueryParser {
       builder.append(queryStr.substring(_lastEnd));
     }
     Query query = super.parse(builder.toString());
-    return reprocess(replaceRealQueries(query, subQueries));
+    return fixNegatives(reprocess(replaceRealQueries(query, subQueries)));
+  }
+
+  private Query fixNegatives(Query query) {
+    if (query instanceof SuperQuery) {
+      SuperQuery superQuery = (SuperQuery) query;
+      fixNegatives(superQuery.getQuery());
+    } else if (query instanceof BooleanQuery) {
+      BooleanQuery booleanQuery = (BooleanQuery) query;
+      for (BooleanClause clause : booleanQuery.clauses()) {
+        fixNegatives(clause.getQuery());
+      }
+      if (containsAllNegativeQueries(booleanQuery)) {
+        if (containsSuperQueries(booleanQuery)) {
+          booleanQuery.add(new TermQuery(_defaultPrimeDocTerm), Occur.SHOULD);
+        } else {
+          booleanQuery.add(new MatchAllDocsQuery(), Occur.SHOULD);
+        }
+      }
+    }
+    return query;
+  }
+
+  private boolean containsAllNegativeQueries(BooleanQuery booleanQuery) {
+    for (BooleanClause clause : booleanQuery.clauses()) {
+      if (clause.getOccur() == Occur.MUST || clause.getOccur() == Occur.SHOULD) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private static void match(String source, Group group) throws ParseException {

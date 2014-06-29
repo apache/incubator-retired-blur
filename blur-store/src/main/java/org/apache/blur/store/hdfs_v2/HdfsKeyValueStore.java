@@ -75,6 +75,7 @@ public class HdfsKeyValueStore implements Store {
   private static final int VERSION = 1;
   private static final long MAX_OPEN_FOR_WRITING = TimeUnit.MINUTES.toMillis(1);
   private static final long DAEMON_POLL_TIME = TimeUnit.SECONDS.toMillis(5);
+  private static final int VERSION_LENGTH = 4;
 
   static {
     try {
@@ -133,7 +134,7 @@ public class HdfsKeyValueStore implements Store {
     public int compare(BytesRef b1, BytesRef b2) {
       return WritableComparator.compareBytes(b1.bytes, b1.offset, b1.length, b2.bytes, b2.offset, b2.length);
     }
-  };
+  };;
 
   static class Value {
     Value(BytesRef bytesRef, Path path) {
@@ -174,6 +175,7 @@ public class HdfsKeyValueStore implements Store {
     _path = path;
     _configuration.setBoolean("fs.hdfs.impl.disable.cache", true);
     _fileSystem = FileSystem.get(_path.toUri(), _configuration);
+    _fileSystem.mkdirs(_path);
     _readWriteLock = new ReentrantReadWriteLock();
     _writeLock = _readWriteLock.writeLock();
     _readLock = _readWriteLock.readLock();
@@ -181,10 +183,9 @@ public class HdfsKeyValueStore implements Store {
     if (!_fileStatus.get().isEmpty()) {
       _currentFileCounter.set(Long.parseLong(_fileStatus.get().last().getPath().getName()));
     }
+    removeAnyTruncatedFiles();
     loadIndexes();
-    openWriter();
     _daemon = startDaemon();
-    cleanupOldFiles();
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, HDFS_KV, SIZE, path.getParent().toString()), new Gauge<Long>() {
       @Override
       public Long value() {
@@ -193,10 +194,35 @@ public class HdfsKeyValueStore implements Store {
     });
   }
 
+  private void removeAnyTruncatedFiles() throws IOException {
+    for (FileStatus fileStatus : _fileStatus.get()) {
+      Path path = fileStatus.getPath();
+      FSDataInputStream inputStream = _fileSystem.open(path);
+      long len = getFileLength(path, inputStream);
+      inputStream.close();
+      if (len < MAGIC.length + VERSION_LENGTH) {
+        // Remove invalid file
+        LOG.warn("Removing file [{0}] because length of [{1}] is less than MAGIC plus version length of [{2}]", path,
+            len, MAGIC.length + VERSION_LENGTH);
+        _fileSystem.delete(path, false);
+      }
+    }
+  }
+
   private Thread startDaemon() {
     Thread thread = new Thread(new Runnable() {
       @Override
       public void run() {
+        _writeLock.lock();
+        try {
+          try {
+            cleanupOldFiles();
+          } catch (IOException e) {
+            LOG.error("Unknown error while trying to clean up old files.", e);
+          }
+        } finally {
+          _writeLock.unlock();
+        }
         while (_running.get()) {
           _writeLock.lock();
           try {
@@ -317,9 +343,6 @@ public class HdfsKeyValueStore implements Store {
       if (old != null) {
         _size.addAndGet(-old._bytesRef.bytes.length);
       }
-      if (!path.equals(_outputPath)) {
-        cleanupOldFiles();
-      }
     } catch (RemoteException e) {
       throw new IOException("Another HDFS KeyStore has likely taken ownership of this key value store.", e);
     } catch (LeaseExpiredException e) {
@@ -345,14 +368,9 @@ public class HdfsKeyValueStore implements Store {
   }
 
   private void rollFile() throws IOException {
-    logSize();
     LOG.info("Rolling file [" + _outputPath + "]");
     _output.close();
     openWriter();
-  }
-
-  private void logSize() {
-
   }
 
   public void cleanupOldFiles() throws IOException {
@@ -452,7 +470,6 @@ public class HdfsKeyValueStore implements Store {
   }
 
   private void openWriter() throws IOException {
-    logSize();
     long nextSegment = _currentFileCounter.incrementAndGet();
     String name = buffer(nextSegment);
     _outputPath = new Path(_path, name);

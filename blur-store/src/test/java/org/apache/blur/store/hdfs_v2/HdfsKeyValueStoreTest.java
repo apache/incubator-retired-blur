@@ -120,6 +120,7 @@ public class HdfsKeyValueStoreTest {
   public void testFileRolling() throws IOException {
     HdfsKeyValueStore store = new HdfsKeyValueStore(_configuration, _path, 1000);
     FileSystem fileSystem = _path.getFileSystem(_configuration);
+    store.put(new BytesRef("a"), new BytesRef(""));
     assertEquals(1, fileSystem.listStatus(_path).length);
     store.put(new BytesRef("a"), new BytesRef(new byte[2000]));
     assertEquals(2, fileSystem.listStatus(_path).length);
@@ -129,11 +130,13 @@ public class HdfsKeyValueStoreTest {
   @Test
   public void testFileGC() throws IOException {
     HdfsKeyValueStore store = new HdfsKeyValueStore(_configuration, _path, 1000);
+    store.put(new BytesRef("a"), new BytesRef(""));
     FileSystem fileSystem = _path.getFileSystem(_configuration);
     assertEquals(1, fileSystem.listStatus(_path).length);
     store.put(new BytesRef("a"), new BytesRef(new byte[2000]));
     assertEquals(2, fileSystem.listStatus(_path).length);
     store.put(new BytesRef("a"), new BytesRef(new byte[2000]));
+    store.cleanupOldFiles();
     assertEquals(2, fileSystem.listStatus(_path).length);
     store.close();
   }

@@ -310,10 +310,10 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
       columnsLabels.add(name);
       tableDisplay.setHeader(indexOf + 3, highlight(getTruncatedVersion(name)));
     }
-    tableDisplay.set(0, line, white(getTruncatedVersion(Integer.toString(result))));
-    tableDisplay.set(1, line, white(getTruncatedVersion(rowId)));
-    tableDisplay.set(2, line, white(getTruncatedVersion(recordId)));
-    tableDisplay.set(indexOf + 3, line, white(getTruncatedVersion(column.getValue())));
+    tableDisplay.set(0, line, white(getTruncatedVersion(toStringBinary(Integer.toString(result)))));
+    tableDisplay.set(1, line, white(getTruncatedVersion(toStringBinary(rowId))));
+    tableDisplay.set(2, line, white(getTruncatedVersion(toStringBinary(recordId))));
+    tableDisplay.set(indexOf + 3, line, white(getTruncatedVersion(toStringBinary(column.getValue()))));
   }
 
   private String getTruncatedVersion(String s) {
@@ -336,7 +336,7 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
       if (rowResult != null) {
         Row row = rowResult.getRow();
         String id = row.getId();
-        tableDisplay.set(1, line.get(), white(getTruncatedVersion(id)));
+        tableDisplay.set(1, line.get(), white(getTruncatedVersion(toStringBinary(id))));
         List<Record> records = order(row.getRecords());
         String currentFamily = "#";
         for (Record record : records) {
@@ -354,6 +354,11 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
     }
   }
 
+  private String toStringBinary(String id) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
   private String displayRecordInRowMultiFamilyView(int result, final TableDisplay tableDisplay,
       final AtomicInteger line, final Map<String, List<String>> columnOrder, final String currentFamily,
       final Record record) {
@@ -363,19 +368,19 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
     if (!family.equals(currentFamily)) {
       List<String> list = columnOrder.get(family);
       for (int i = 0; i < list.size(); i++) {
-        tableDisplay.set(i + c, line.get(), highlight(getTruncatedVersion(family + "." + list.get(i))));
+        tableDisplay.set(i + c, line.get(), highlight(getTruncatedVersion(toStringBinary(family + "." + list.get(i)))));
       }
-      tableDisplay.set(0, line.get(), white(Integer.toString(result)));
+      tableDisplay.set(0, line.get(), white(toStringBinary(Integer.toString(result))));
       line.incrementAndGet();
     }
-    tableDisplay.set(2, line.get(), white(getTruncatedVersion(record.getRecordId())));
+    tableDisplay.set(2, line.get(), white(getTruncatedVersion(toStringBinary(record.getRecordId()))));
     for (String oc : orderedColumns) {
       if (oc != null) {
-        tableDisplay.set(c, line.get(), white(getTruncatedVersion(oc)));
+        tableDisplay.set(c, line.get(), white(getTruncatedVersion(toStringBinary(oc))));
       }
       c++;
     }
-    tableDisplay.set(0, line.get(), white(Integer.toString(result)));
+    tableDisplay.set(0, line.get(), white(toStringBinary(Integer.toString(result))));
     line.incrementAndGet();
     return family;
   }

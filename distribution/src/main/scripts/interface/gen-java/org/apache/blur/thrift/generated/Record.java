@@ -567,14 +567,14 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
           case 3: // COLUMNS
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list0 = iprot.readListBegin();
-                struct.columns = new ArrayList<Column>(_list0.size);
-                for (int _i1 = 0; _i1 < _list0.size; ++_i1)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list10 = iprot.readListBegin();
+                struct.columns = new ArrayList<Column>(_list10.size);
+                for (int _i11 = 0; _i11 < _list10.size; ++_i11)
                 {
-                  Column _elem2; // required
-                  _elem2 = new Column();
-                  _elem2.read(iprot);
-                  struct.columns.add(_elem2);
+                  Column _elem12; // required
+                  _elem12 = new Column();
+                  _elem12.read(iprot);
+                  struct.columns.add(_elem12);
                 }
                 iprot.readListEnd();
               }
@@ -612,9 +612,9 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
         oprot.writeFieldBegin(COLUMNS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.columns.size()));
-          for (Column _iter3 : struct.columns)
+          for (Column _iter13 : struct.columns)
           {
-            _iter3.write(oprot);
+            _iter13.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -657,9 +657,9 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
       if (struct.isSetColumns()) {
         {
           oprot.writeI32(struct.columns.size());
-          for (Column _iter4 : struct.columns)
+          for (Column _iter14 : struct.columns)
           {
-            _iter4.write(oprot);
+            _iter14.write(oprot);
           }
         }
       }
@@ -679,14 +679,14 @@ public class Record implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Rec
       }
       if (incoming.get(2)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list5 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-          struct.columns = new ArrayList<Column>(_list5.size);
-          for (int _i6 = 0; _i6 < _list5.size; ++_i6)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list15 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+          struct.columns = new ArrayList<Column>(_list15.size);
+          for (int _i16 = 0; _i16 < _list15.size; ++_i16)
           {
-            Column _elem7; // required
-            _elem7 = new Column();
-            _elem7.read(iprot);
-            struct.columns.add(_elem7);
+            Column _elem17; // required
+            _elem17 = new Column();
+            _elem17.read(iprot);
+            struct.columns.add(_elem17);
           }
         }
         struct.setColumnsIsSet(true);

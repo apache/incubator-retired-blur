@@ -28,6 +28,7 @@ import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.CpuTime;
 import org.apache.blur.thrift.generated.QueryState;
+import org.apache.blur.thrift.generated.User;
 
 /**
  * This class is accessed by multiple threads (one for each shard) executing the
@@ -40,6 +41,7 @@ public class QueryStatus implements Comparable<QueryStatus> {
       .isCurrentThreadCpuTimeSupported();
 
   private final BlurQuery _blurQuery;
+  private final User _user;
   private final String _table;
   private final long _startingTime;
   private boolean _finished = false;
@@ -52,13 +54,14 @@ public class QueryStatus implements Comparable<QueryStatus> {
   private final AtomicBoolean _running;
   private final Map<String, CpuTime> _cpuTimes = new ConcurrentHashMap<String, CpuTime>();
 
-  public QueryStatus(long ttl, String table, BlurQuery blurQuery, AtomicBoolean running) {
+  public QueryStatus(long ttl, String table, BlurQuery blurQuery, AtomicBoolean running, User user) {
     _ttl = ttl;
     _table = table;
     _blurQuery = blurQuery;
     _startingTime = blurQuery.getStartTime();
     _running = running;
     _state.set(QueryState.RUNNING);
+    _user = user;
   }
 
   public QueryStatus attachThread(String shardName) {
@@ -108,6 +111,7 @@ public class QueryStatus implements Comparable<QueryStatus> {
       queryStatus.uuid = queryStatus.query.uuid;
     }
     queryStatus.cpuTimes = _cpuTimes;
+    queryStatus.user = _user;
     return queryStatus;
   }
 

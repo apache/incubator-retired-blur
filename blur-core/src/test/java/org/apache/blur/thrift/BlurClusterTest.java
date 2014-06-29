@@ -30,6 +30,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -48,6 +49,7 @@ import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
+import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.Column;
@@ -56,6 +58,7 @@ import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.Facet;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.Query;
+import org.apache.blur.thrift.generated.QueryState;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RowMutation;
@@ -66,6 +69,8 @@ import org.apache.blur.thrift.generated.SortField;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.thrift.util.BlurThriftHelper;
+import org.apache.blur.user.User;
+import org.apache.blur.user.UserContext;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.GCWatcher;
 import org.apache.hadoop.conf.Configuration;
@@ -516,6 +521,48 @@ public class BlurClusterTest {
       i++;
     }
 
+  }
+
+  @Test
+  public void testQueryStatus() throws BlurException, TException, InterruptedException, IOException {
+    final String tableName = "testQueryStatus";
+    createTable(tableName);
+    loadTable(tableName);
+    final Iface client = getClient();
+    final BlurQuery blurQueryRow = new BlurQuery();
+    Query queryRow = new Query();
+    queryRow.setQuery("test.test:value");
+    blurQueryRow.setQuery(queryRow);
+    blurQueryRow.setUseCacheIfPresent(false);
+    blurQueryRow.setCacheResult(false);
+    String uuid = "5678";
+    blurQueryRow.setUuid(uuid);
+    final User user = new User("testuser", new HashMap<String, String>());
+    
+    try {
+      IndexManager.DEBUG_RUN_SLOW.set(true);
+      new Thread(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            UserContext.setUser(user);
+            // This call will take several seconds to execute.
+            client.query(tableName, blurQueryRow);
+          } catch (BlurException e) {
+//            e.printStackTrace();
+          } catch (TException e) {
+            e.printStackTrace();
+          }
+        }
+      }).start();
+      Thread.sleep(500);
+      BlurQueryStatus queryStatusById = client.queryStatusById(tableName, uuid);
+      assertEquals(user.getUsername(), queryStatusById.getUser().getUsername());
+      assertEquals(queryStatusById.getState(), QueryState.RUNNING);
+      client.cancelQuery(tableName, uuid);
+    } finally {
+      IndexManager.DEBUG_RUN_SLOW.set(false);
+    }
   }
 
   @Test

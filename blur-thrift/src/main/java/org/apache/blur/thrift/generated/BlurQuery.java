@@ -117,6 +117,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   public String uuid; // required
   /**
    * Sets a user context, only used for logging at this point.
+   * @Deprecated use setUser method on Blur service.
    */
   public String userContext; // required
   /**
@@ -178,6 +179,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     UUID((short)11, "uuid"),
     /**
      * Sets a user context, only used for logging at this point.
+     * @Deprecated use setUser method on Blur service.
      */
     USER_CONTEXT((short)12, "userContext"),
     /**
@@ -738,6 +740,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
 
   /**
    * Sets a user context, only used for logging at this point.
+   * @Deprecated use setUser method on Blur service.
    */
   public String getUserContext() {
     return this.userContext;
@@ -745,6 +748,7 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
 
   /**
    * Sets a user context, only used for logging at this point.
+   * @Deprecated use setUser method on Blur service.
    */
   public BlurQuery setUserContext(String userContext) {
     this.userContext = userContext;
@@ -1564,14 +1568,14 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
           case 3: // FACETS
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list50 = iprot.readListBegin();
-                struct.facets = new ArrayList<Facet>(_list50.size);
-                for (int _i51 = 0; _i51 < _list50.size; ++_i51)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list60 = iprot.readListBegin();
+                struct.facets = new ArrayList<Facet>(_list60.size);
+                for (int _i61 = 0; _i61 < _list60.size; ++_i61)
                 {
-                  Facet _elem52; // required
-                  _elem52 = new Facet();
-                  _elem52.read(iprot);
-                  struct.facets.add(_elem52);
+                  Facet _elem62; // required
+                  _elem62 = new Facet();
+                  _elem62.read(iprot);
+                  struct.facets.add(_elem62);
                 }
                 iprot.readListEnd();
               }
@@ -1664,14 +1668,14 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
           case 15: // SORT_FIELDS
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list53 = iprot.readListBegin();
-                struct.sortFields = new ArrayList<SortField>(_list53.size);
-                for (int _i54 = 0; _i54 < _list53.size; ++_i54)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list63 = iprot.readListBegin();
+                struct.sortFields = new ArrayList<SortField>(_list63.size);
+                for (int _i64 = 0; _i64 < _list63.size; ++_i64)
                 {
-                  SortField _elem55; // required
-                  _elem55 = new SortField();
-                  _elem55.read(iprot);
-                  struct.sortFields.add(_elem55);
+                  SortField _elem65; // required
+                  _elem65 = new SortField();
+                  _elem65.read(iprot);
+                  struct.sortFields.add(_elem65);
                 }
                 iprot.readListEnd();
               }
@@ -1712,9 +1716,9 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         oprot.writeFieldBegin(FACETS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.facets.size()));
-          for (Facet _iter56 : struct.facets)
+          for (Facet _iter66 : struct.facets)
           {
-            _iter56.write(oprot);
+            _iter66.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1760,9 +1764,9 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         oprot.writeFieldBegin(SORT_FIELDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.sortFields.size()));
-          for (SortField _iter57 : struct.sortFields)
+          for (SortField _iter67 : struct.sortFields)
           {
-            _iter57.write(oprot);
+            _iter67.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1840,9 +1844,9 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       if (struct.isSetFacets()) {
         {
           oprot.writeI32(struct.facets.size());
-          for (Facet _iter58 : struct.facets)
+          for (Facet _iter68 : struct.facets)
           {
-            _iter58.write(oprot);
+            _iter68.write(oprot);
           }
         }
       }
@@ -1879,9 +1883,9 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       if (struct.isSetSortFields()) {
         {
           oprot.writeI32(struct.sortFields.size());
-          for (SortField _iter59 : struct.sortFields)
+          for (SortField _iter69 : struct.sortFields)
           {
-            _iter59.write(oprot);
+            _iter69.write(oprot);
           }
         }
       }
@@ -1901,14 +1905,14 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       }
       if (incoming.get(1)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list60 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-          struct.facets = new ArrayList<Facet>(_list60.size);
-          for (int _i61 = 0; _i61 < _list60.size; ++_i61)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list70 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+          struct.facets = new ArrayList<Facet>(_list70.size);
+          for (int _i71 = 0; _i71 < _list70.size; ++_i71)
           {
-            Facet _elem62; // required
-            _elem62 = new Facet();
-            _elem62.read(iprot);
-            struct.facets.add(_elem62);
+            Facet _elem72; // required
+            _elem72 = new Facet();
+            _elem72.read(iprot);
+            struct.facets.add(_elem72);
           }
         }
         struct.setFacetsIsSet(true);
@@ -1956,14 +1960,14 @@ public class BlurQuery implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       }
       if (incoming.get(12)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list63 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-          struct.sortFields = new ArrayList<SortField>(_list63.size);
-          for (int _i64 = 0; _i64 < _list63.size; ++_i64)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list73 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+          struct.sortFields = new ArrayList<SortField>(_list73.size);
+          for (int _i74 = 0; _i74 < _list73.size; ++_i74)
           {
-            SortField _elem65; // required
-            _elem65 = new SortField();
-            _elem65.read(iprot);
-            struct.sortFields.add(_elem65);
+            SortField _elem75; // required
+            _elem75 = new SortField();
+            _elem75.read(iprot);
+            struct.sortFields.add(_elem75);
           }
         }
         struct.setSortFieldsIsSet(true);

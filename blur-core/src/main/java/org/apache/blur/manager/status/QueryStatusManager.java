@@ -32,6 +32,7 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.QueryState;
+import org.apache.blur.thrift.generated.User;
 import org.apache.blur.utils.GCAction;
 import org.apache.blur.utils.GCWatcher;
 
@@ -69,8 +70,8 @@ public class QueryStatusManager {
     statusCleanupTimer.purge();
   }
 
-  public QueryStatus newQueryStatus(String table, BlurQuery blurQuery, int maxNumberOfThreads, AtomicBoolean running) {
-    QueryStatus queryStatus = new QueryStatus(statusCleanupTimerDelay, table, blurQuery, running);
+  public QueryStatus newQueryStatus(String table, BlurQuery blurQuery, int maxNumberOfThreads, AtomicBoolean running, User user) {
+    QueryStatus queryStatus = new QueryStatus(statusCleanupTimerDelay, table, blurQuery, running, user);
     currentQueryStatusCollection.put(queryStatus, CONSTANT_VALUE);
     return queryStatus;
   }

@@ -18,6 +18,8 @@
 cdir=`dirname "$0"`
 cdir=`cd "$cdir"; pwd`
 
+HADOOP_VERSION=hadoop1
+
 cd $cdir
 rm ../../../../../blur-thrift/src/main/java/org/apache/blur/thrift/generated/*
 rm -r gen-java/ gen-perl/ gen-rb/ gen-html/
@@ -33,9 +35,23 @@ done
 GEN_HTML=$cdir/gen-html/Blur.html
 OUTPUT_HTML=$cdir/../../../../../docs/Blur.html
 cd ../../../../../blur-util
-mvn exec:java -Dexec.mainClass="org.apache.blur.doc.CreateBlurApiHtmlPage" -Dexec.args="$GEN_HTML $OUTPUT_HTML"
+mvn clean install -D${HADOOP_VERSION} -DskipTests
+mvn exec:java -D${HADOOP_VERSION} -Dexec.mainClass="org.apache.blur.doc.CreateBlurApiHtmlPage" -Dexec.args="$GEN_HTML $OUTPUT_HTML"
+mvn clean -D${HADOOP_VERSION} -DskipTests
 cd $cdir
 cp -r gen-java/* ../../../../../blur-thrift/src/main/java/
 cd ../../../../../blur-thrift
-mvn exec:java -Dexec.mainClass="org.apache.blur.thrift.util.GenerateSafeClient" -Dhadoop1
+cp src/main/resources/org/apache/blur/thrift/generated/SafeClientGen.java.base src/main/java/org/apache/blur/thrift/generated/SafeClientGen.java
+mvn clean install -D${HADOOP_VERSION} -DskipTests
+mvn exec:java -D${HADOOP_VERSION} -Dexec.mainClass="org.apache.blur.thrift.util.GenerateSafeClient" -Dhadoop1
+mvn clean -D${HADOOP_VERSION} -DskipTests
 cd $cdir
+echo "-----------------------------------------------"
+echo "-----------------------------------------------"
+echo "-----------------------------------------------"
+echo "-----------------------------------------------"
+echo "You will need to run 'mvn install -DskipTests'."
+echo "-----------------------------------------------"
+echo "-----------------------------------------------"
+echo "-----------------------------------------------"
+echo "-----------------------------------------------"

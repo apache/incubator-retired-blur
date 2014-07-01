@@ -127,6 +127,8 @@ public class TableDisplay implements Closeable {
   private final Map<Integer, Runnable> _keyHookMap = new ConcurrentHashMap<Integer, Runnable>();
   private final AtomicBoolean _stopReadingInput = new AtomicBoolean(false);
   private String _description = "";
+  private volatile long _lastPaint = 0;
+  private volatile boolean _dirty = true;
 
   public void setDescription(String description) {
     _description = description;
@@ -143,16 +145,29 @@ public class TableDisplay implements Closeable {
       @Override
       public void run() {
         while (_running.get()) {
+          long now = System.currentTimeMillis();
           synchronized (_canvas) {
-            try {
-              render(_canvas);
-            } catch (IOException e) {
-              e.printStackTrace();
+            if (_lastPaint + 1000 < now) {
+              try {
+                render(_canvas);
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
+              _lastPaint = System.currentTimeMillis();
+              _dirty = false;
             }
-            try {
-              _canvas.wait();
-            } catch (InterruptedException e) {
-              e.printStackTrace();
+            if (_dirty) {
+              try {
+                _canvas.wait(1000);
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+              }
+            } else {
+              try {
+                _canvas.wait();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+              }
             }
           }
         }
@@ -188,9 +203,18 @@ public class TableDisplay implements Closeable {
                   // down
                   _canvas.moveDown();
                   break;
+                case 53:
+                  // up
+                  _canvas.pageUp();
+                  break;
+                case 54:
+                  // down
+                  _canvas.pageDown();
+                  break;
                 default:
                   break;
                 }
+                _lastPaint = 0;
               }
             } else {
               Runnable runnable = _keyHookMap.get(read);
@@ -212,24 +236,25 @@ public class TableDisplay implements Closeable {
 
   private void render(Canvas canvas) throws IOException {
     canvas.reset();
-    canvas.append(_description);
-    canvas.endLine();
+    canvas.resetHeader();
+    canvas.appendHeader(_description);
+    canvas.endHeader();
     buildHeaderOutput(canvas);
     buildTableOutput(canvas);
     canvas.write();
   }
 
   private void buildHeaderOutput(Canvas canvas) {
-    canvas.startLine();
+    canvas.startHeader();
     for (int x = 0; x < _maxX; x++) {
       if (x != 0) {
-        canvas.append(_seperator);
+        canvas.appendHeader(_seperator);
       }
       Object value = _header.get(x);
       int widthForColumn = getWidthForColumn(x);
-      buffer(canvas, getString(value), widthForColumn);
+      bufferHeader(canvas, getString(value), widthForColumn);
     }
-    canvas.endLine();
+    canvas.endHeader();
   }
 
   private void buildTableOutput(Canvas canvas) {
@@ -256,6 +281,15 @@ public class TableDisplay implements Closeable {
     return width;
   }
 
+  private void bufferHeader(Canvas canvas, String value, int width) {
+    canvas.appendHeader(value);
+    width -= getVisibleLength(value);
+    while (width > 0) {
+      canvas.appendHeader(' ');
+      width--;
+    }
+  }
+  
   private void buffer(Canvas canvas, String value, int width) {
     canvas.append(value);
     width -= getVisibleLength(value);
@@ -286,6 +320,7 @@ public class TableDisplay implements Closeable {
   private void paint() {
     synchronized (_canvas) {
       _canvas.notify();
+      _dirty = true;
     }
   }
 
@@ -521,6 +556,8 @@ public class TableDisplay implements Closeable {
 
     private final StringBuilder _screenBuilder = new StringBuilder();
     private final LineBuilder _lineBuilder = new LineBuilder();
+    private final StringBuilder _headerScreenBuilder = new StringBuilder();
+    private final LineBuilder _headerLineBuilder = new LineBuilder();
     private final ConsoleReader _reader;
     private int _height;
     private int _width;
@@ -528,9 +565,15 @@ public class TableDisplay implements Closeable {
     private volatile int _posX = 0;
     private volatile int _posY = 0;
     private int _leftRightMoveSize;
+    private int _headerLine;
 
     public Canvas(ConsoleReader reader) {
       _reader = reader;
+    }
+
+    public void resetHeader() {
+      _headerLine = 0;
+      _headerScreenBuilder.setLength(0);
     }
 
     public void reset() {
@@ -545,7 +588,7 @@ public class TableDisplay implements Closeable {
     public void endLine() {
       _lineBuilder.close();
       int pos = _line - _posY;
-      if (pos >= 0 && pos < _height) {
+      if (pos >= 0 && pos < (_height - _headerLine)) {
         int end = _posX + _width;
         int s = _posX;
         int e = Math.min(_lineBuilder.visibleLength(), end);
@@ -558,8 +601,33 @@ public class TableDisplay implements Closeable {
       _lineBuilder.reset();
     }
 
+    public void endHeader() {
+      _headerLineBuilder.close();
+      int end = _posX + _width;
+      int s = _posX;
+      int e = Math.min(_headerLineBuilder.visibleLength(), end);
+      if (e > s) {
+        _headerScreenBuilder.append(_headerLineBuilder.substring(s, e));
+      }
+      _headerScreenBuilder.append('\n');
+      _headerLineBuilder.reset();
+      _headerLine++;
+    }
+
     public void startLine() {
 
+    }
+
+    public void startHeader() {
+
+    }
+
+    public void appendHeader(char c) {
+      _headerLineBuilder.append(c);
+    }
+
+    public void appendHeader(String s) {
+      _headerLineBuilder.append(s);
     }
 
     public void append(char c) {
@@ -573,6 +641,7 @@ public class TableDisplay implements Closeable {
     public void write() throws IOException {
       _reader.clearScreen();
       Writer writer = _reader.getOutput();
+      writer.write(_headerScreenBuilder.toString());
       writer.write(_screenBuilder.toString());
       writer.flush();
     }
@@ -595,6 +664,18 @@ public class TableDisplay implements Closeable {
 
     public void moveDown() {
       _posY++;
+    }
+
+    public void pageUp() {
+      if (_posY < _height) {
+        _posY = 0;
+      } else {
+        _posY -= _height;
+      }
+    }
+
+    public void pageDown() {
+      _posY += _height;
     }
 
   }

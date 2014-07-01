@@ -64,6 +64,7 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField STATE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("state", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)5);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField UUID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("uuid", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)6);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField STATUS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("status", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, (short)7);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField USER_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("user", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)8);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -107,6 +108,10 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
    * @see Status
    */
   public Status status; // required
+  /**
+   * The user executing the given query.
+   */
+  public User user; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
@@ -145,7 +150,11 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
      * 
      * @see Status
      */
-    STATUS((short)7, "status");
+    STATUS((short)7, "status"),
+    /**
+     * The user executing the given query.
+     */
+    USER((short)8, "user");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -174,6 +183,8 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
           return UUID;
         case 7: // STATUS
           return STATUS;
+        case 8: // USER
+          return USER;
         default:
           return null;
       }
@@ -236,6 +247,8 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     tmpMap.put(_Fields.STATUS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("status", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.EnumMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.ENUM, Status.class)));
+    tmpMap.put(_Fields.USER, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("user", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, User.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(BlurQueryStatus.class, metaDataMap);
   }
@@ -250,7 +263,8 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
     int totalShards,
     QueryState state,
     String uuid,
-    Status status)
+    Status status,
+    User user)
   {
     this();
     this.query = query;
@@ -262,6 +276,7 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
     this.state = state;
     this.uuid = uuid;
     this.status = status;
+    this.user = user;
   }
 
   /**
@@ -298,6 +313,9 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
     if (other.isSetStatus()) {
       this.status = other.status;
     }
+    if (other.isSetUser()) {
+      this.user = new User(other.user);
+    }
   }
 
   public BlurQueryStatus deepCopy() {
@@ -315,6 +333,7 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
     this.state = null;
     this.uuid = null;
     this.status = null;
+    this.user = null;
   }
 
   /**
@@ -552,6 +571,36 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
     }
   }
 
+  /**
+   * The user executing the given query.
+   */
+  public User getUser() {
+    return this.user;
+  }
+
+  /**
+   * The user executing the given query.
+   */
+  public BlurQueryStatus setUser(User user) {
+    this.user = user;
+    return this;
+  }
+
+  public void unsetUser() {
+    this.user = null;
+  }
+
+  /** Returns true if field user is set (has been assigned a value) and false otherwise */
+  public boolean isSetUser() {
+    return this.user != null;
+  }
+
+  public void setUserIsSet(boolean value) {
+    if (!value) {
+      this.user = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case QUERY:
@@ -610,6 +659,14 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
       }
       break;
 
+    case USER:
+      if (value == null) {
+        unsetUser();
+      } else {
+        setUser((User)value);
+      }
+      break;
+
     }
   }
 
@@ -636,6 +693,9 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
     case STATUS:
       return getStatus();
 
+    case USER:
+      return getUser();
+
     }
     throw new IllegalStateException();
   }
@@ -661,6 +721,8 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
       return isSetUuid();
     case STATUS:
       return isSetStatus();
+    case USER:
+      return isSetUser();
     }
     throw new IllegalStateException();
   }
@@ -738,6 +800,15 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (!(this_present_status && that_present_status))
         return false;
       if (!this.status.equals(that.status))
+        return false;
+    }
+
+    boolean this_present_user = true && this.isSetUser();
+    boolean that_present_user = true && that.isSetUser();
+    if (this_present_user || that_present_user) {
+      if (!(this_present_user && that_present_user))
+        return false;
+      if (!this.user.equals(that.user))
         return false;
     }
 
@@ -827,6 +898,16 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetUser()).compareTo(typedOther.isSetUser());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetUser()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.user, typedOther.user);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -894,6 +975,14 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
       sb.append(this.status);
     }
     first = false;
+    if (!first) sb.append(", ");
+    sb.append("user:");
+    if (this.user == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.user);
+    }
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -903,6 +992,9 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
     // check for sub-struct validity
     if (query != null) {
       query.validate();
+    }
+    if (user != null) {
+      user.validate();
     }
   }
 
@@ -954,16 +1046,16 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
           case 2: // CPU_TIMES
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map116 = iprot.readMapBegin();
-                struct.cpuTimes = new HashMap<String,CpuTime>(2*_map116.size);
-                for (int _i117 = 0; _i117 < _map116.size; ++_i117)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map126 = iprot.readMapBegin();
+                struct.cpuTimes = new HashMap<String,CpuTime>(2*_map126.size);
+                for (int _i127 = 0; _i127 < _map126.size; ++_i127)
                 {
-                  String _key118; // optional
-                  CpuTime _val119; // required
-                  _key118 = iprot.readString();
-                  _val119 = new CpuTime();
-                  _val119.read(iprot);
-                  struct.cpuTimes.put(_key118, _val119);
+                  String _key128; // optional
+                  CpuTime _val129; // required
+                  _key128 = iprot.readString();
+                  _val129 = new CpuTime();
+                  _val129.read(iprot);
+                  struct.cpuTimes.put(_key128, _val129);
                 }
                 iprot.readMapEnd();
               }
@@ -1012,6 +1104,15 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 8: // USER
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
+              struct.user = new User();
+              struct.user.read(iprot);
+              struct.setUserIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1036,10 +1137,10 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
         oprot.writeFieldBegin(CPU_TIMES_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.cpuTimes.size()));
-          for (Map.Entry<String, CpuTime> _iter120 : struct.cpuTimes.entrySet())
+          for (Map.Entry<String, CpuTime> _iter130 : struct.cpuTimes.entrySet())
           {
-            oprot.writeString(_iter120.getKey());
-            _iter120.getValue().write(oprot);
+            oprot.writeString(_iter130.getKey());
+            _iter130.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -1064,6 +1165,11 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (struct.status != null) {
         oprot.writeFieldBegin(STATUS_FIELD_DESC);
         oprot.writeI32(struct.status.getValue());
+        oprot.writeFieldEnd();
+      }
+      if (struct.user != null) {
+        oprot.writeFieldBegin(USER_FIELD_DESC);
+        struct.user.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -1105,17 +1211,20 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (struct.isSetStatus()) {
         optionals.set(6);
       }
-      oprot.writeBitSet(optionals, 7);
+      if (struct.isSetUser()) {
+        optionals.set(7);
+      }
+      oprot.writeBitSet(optionals, 8);
       if (struct.isSetQuery()) {
         struct.query.write(oprot);
       }
       if (struct.isSetCpuTimes()) {
         {
           oprot.writeI32(struct.cpuTimes.size());
-          for (Map.Entry<String, CpuTime> _iter121 : struct.cpuTimes.entrySet())
+          for (Map.Entry<String, CpuTime> _iter131 : struct.cpuTimes.entrySet())
           {
-            oprot.writeString(_iter121.getKey());
-            _iter121.getValue().write(oprot);
+            oprot.writeString(_iter131.getKey());
+            _iter131.getValue().write(oprot);
           }
         }
       }
@@ -1134,12 +1243,15 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (struct.isSetStatus()) {
         oprot.writeI32(struct.status.getValue());
       }
+      if (struct.isSetUser()) {
+        struct.user.write(oprot);
+      }
     }
 
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, BlurQueryStatus struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(7);
+      BitSet incoming = iprot.readBitSet(8);
       if (incoming.get(0)) {
         struct.query = new BlurQuery();
         struct.query.read(iprot);
@@ -1147,16 +1259,16 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
       }
       if (incoming.get(1)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map122 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-          struct.cpuTimes = new HashMap<String,CpuTime>(2*_map122.size);
-          for (int _i123 = 0; _i123 < _map122.size; ++_i123)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map132 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+          struct.cpuTimes = new HashMap<String,CpuTime>(2*_map132.size);
+          for (int _i133 = 0; _i133 < _map132.size; ++_i133)
           {
-            String _key124; // optional
-            CpuTime _val125; // required
-            _key124 = iprot.readString();
-            _val125 = new CpuTime();
-            _val125.read(iprot);
-            struct.cpuTimes.put(_key124, _val125);
+            String _key134; // optional
+            CpuTime _val135; // required
+            _key134 = iprot.readString();
+            _val135 = new CpuTime();
+            _val135.read(iprot);
+            struct.cpuTimes.put(_key134, _val135);
           }
         }
         struct.setCpuTimesIsSet(true);
@@ -1180,6 +1292,11 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
       if (incoming.get(6)) {
         struct.status = Status.findByValue(iprot.readI32());
         struct.setStatusIsSet(true);
+      }
+      if (incoming.get(7)) {
+        struct.user = new User();
+        struct.user.read(iprot);
+        struct.setUserIsSet(true);
       }
     }
   }

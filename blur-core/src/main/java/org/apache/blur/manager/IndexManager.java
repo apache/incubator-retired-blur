@@ -69,6 +69,7 @@ import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.BException;
 import org.apache.blur.thrift.MutationHelper;
+import org.apache.blur.thrift.UserConverter;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
@@ -85,6 +86,8 @@ import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
+import org.apache.blur.user.User;
+import org.apache.blur.user.UserContext;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.BlurExecutorCompletionService.Cancel;
@@ -447,7 +450,9 @@ public class IndexManager {
       throws Exception {
     boolean runSlow = DEBUG_RUN_SLOW.get();
     final AtomicBoolean running = new AtomicBoolean(true);
-    final QueryStatus status = _statusManager.newQueryStatus(table, blurQuery, _threadCount, running);
+    User user = UserContext.getUser();
+    final QueryStatus status = _statusManager.newQueryStatus(table, blurQuery, _threadCount, running,
+        UserConverter.toThriftUser(user));
     _queriesExternalMeter.mark();
     try {
       Map<String, BlurIndex> blurIndexes;

@@ -148,6 +148,17 @@ enum ShardState {
 }
 
 /**
+ * The user object is used to pass user context to server
+ * side session.
+ */
+struct User {
+  /** username. */
+  1:string username,
+  /** map of user attributes. */
+  2:map<string,string> attributes
+}
+
+/**
  * Column is the lowest storage element in Blur, it stores a single name and value pair.
  */
 struct Column {
@@ -446,6 +457,7 @@ struct BlurQuery {
   11:string uuid,
   /**
    * Sets a user context, only used for logging at this point.
+   * @Deprecated use setUser method on Blur service.
    */
   12:string userContext,
   /**
@@ -631,11 +643,15 @@ struct BlurQueryStatus {
   /**
    * The uuid of the query.
    */
-  6:string uuid
+  6:string uuid,
   /**
    * The status of the query NOT_FOUND if uuid is not found else FOUND
    */
-  7:Status status
+  7:Status status,
+  /**
+   * The user executing the given query.
+   */
+  8:User user
 }
 
 /**
@@ -798,17 +814,6 @@ struct Metric {
   3:map<string,i64> longMap,
   /** map of double values emitted by the Metric. */
   4:map<string,double> doubleMap
-}
-
-/**
- * The user object is used to pass user context to server
- * side session.
- */
-struct User {
-  /** username. */
-  1:string username,
-  /** map of user attributes. */
-  2:map<string,string> attributes
 }
 
 /**

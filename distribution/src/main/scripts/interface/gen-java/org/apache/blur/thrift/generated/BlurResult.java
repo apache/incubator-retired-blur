@@ -668,14 +668,14 @@ public class BlurResult implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
           case 4: // SORT_FIELD_RESULTS
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list66 = iprot.readListBegin();
-                struct.sortFieldResults = new ArrayList<SortFieldResult>(_list66.size);
-                for (int _i67 = 0; _i67 < _list66.size; ++_i67)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list76 = iprot.readListBegin();
+                struct.sortFieldResults = new ArrayList<SortFieldResult>(_list76.size);
+                for (int _i77 = 0; _i77 < _list76.size; ++_i77)
                 {
-                  SortFieldResult _elem68; // required
-                  _elem68 = new SortFieldResult();
-                  _elem68.read(iprot);
-                  struct.sortFieldResults.add(_elem68);
+                  SortFieldResult _elem78; // required
+                  _elem78 = new SortFieldResult();
+                  _elem78.read(iprot);
+                  struct.sortFieldResults.add(_elem78);
                 }
                 iprot.readListEnd();
               }
@@ -716,9 +716,9 @@ public class BlurResult implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
         oprot.writeFieldBegin(SORT_FIELD_RESULTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.sortFieldResults.size()));
-          for (SortFieldResult _iter69 : struct.sortFieldResults)
+          for (SortFieldResult _iter79 : struct.sortFieldResults)
           {
-            _iter69.write(oprot);
+            _iter79.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -767,9 +767,9 @@ public class BlurResult implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
       if (struct.isSetSortFieldResults()) {
         {
           oprot.writeI32(struct.sortFieldResults.size());
-          for (SortFieldResult _iter70 : struct.sortFieldResults)
+          for (SortFieldResult _iter80 : struct.sortFieldResults)
           {
-            _iter70.write(oprot);
+            _iter80.write(oprot);
           }
         }
       }
@@ -794,14 +794,14 @@ public class BlurResult implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
       }
       if (incoming.get(3)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list71 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-          struct.sortFieldResults = new ArrayList<SortFieldResult>(_list71.size);
-          for (int _i72 = 0; _i72 < _list71.size; ++_i72)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list81 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+          struct.sortFieldResults = new ArrayList<SortFieldResult>(_list81.size);
+          for (int _i82 = 0; _i82 < _list81.size; ++_i82)
           {
-            SortFieldResult _elem73; // required
-            _elem73 = new SortFieldResult();
-            _elem73.read(iprot);
-            struct.sortFieldResults.add(_elem73);
+            SortFieldResult _elem83; // required
+            _elem83 = new SortFieldResult();
+            _elem83.read(iprot);
+            struct.sortFieldResults.add(_elem83);
           }
         }
         struct.setSortFieldResultsIsSet(true);

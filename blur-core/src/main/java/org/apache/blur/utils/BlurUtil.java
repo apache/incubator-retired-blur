@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
@@ -142,6 +143,8 @@ import com.yammer.metrics.core.Histogram;
 import com.yammer.metrics.core.MetricName;
 
 public class BlurUtil {
+
+  private static final String UTF_8 = "UTF-8";
 
   public final static SortFieldComparator SORT_FIELD_COMPARATOR = new SortFieldComparator();
 
@@ -1368,6 +1371,30 @@ public class BlurUtil {
     byte[] buf = new byte[ref.length];
     System.arraycopy(ref.bytes, ref.offset, buf, 0, ref.length);
     return buf;
+  }
+
+  public static String toStringBinary(final byte[] b, int off, int len) {
+    StringBuilder result = new StringBuilder();
+    String str = toString(b, off, len);
+    for (int i = 0; i < str.length(); ++i) {
+      int ch = str.charAt(i) & 0xFF;
+      if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')
+          || " `~!@#$%^&*()-_=+[]{}\\|;:'\",.<>/? ".indexOf(ch) >= 0) {
+        result.append(str.charAt(i));
+      } else {
+        result.append(String.format("\\x%02X", ch));
+      }
+    }
+    return result.toString();
+
+  }
+
+  public static String toString(byte[] b, int off, int len) {
+    try {
+      return new String(b, off, len, UTF_8);
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

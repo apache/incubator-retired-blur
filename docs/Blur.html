@@ -68,6 +68,7 @@ limitations under the License.
 <li><a href="#Structs">Data structures</a>
 <ul class="nav">
 <li><a href="#Struct_BlurException">BlurException</a></li>
+<li><a href="#Struct_User">User</a></li>
 <li><a href="#Struct_Column">Column</a></li>
 <li><a href="#Struct_Record">Record</a></li>
 <li><a href="#Struct_Row">Row</a></li>
@@ -92,7 +93,6 @@ limitations under the License.
 <li><a href="#Struct_Schema">Schema</a></li>
 <li><a href="#Struct_TableDescriptor">TableDescriptor</a></li>
 <li><a href="#Struct_Metric">Metric</a></li>
-<li><a href="#Struct_User">User</a></li>
 </ul>
 </li>
 <li><a href="#Svc_Blur">Service</a>
@@ -272,6 +272,14 @@ Logging level enum used to change the logging levels at runtime.
 <tr><td>3</td><td>errorType</td><td><code><a href="Blur.html#Enum_ErrorType">ErrorType</a></code></td><td></td><td>default</td><td></td></tr>
 </table><br/>BlurException that carries a message plus the original stack
 trace (if any).
+<br/></p></section><section><div class="page-header"><h3 id="Struct_User">Struct: User</h3></div><p class="lead">
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>username</td><td><code>string</code></td><td>username.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>attributes</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td>map of user attributes.
+</td><td>default</td><td></td></tr>
+</table><br/>The user object is used to pass user context to server
+side session.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_Column">Struct: Column</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>name</td><td><code>string</code></td><td>The name of the column.
@@ -431,6 +439,7 @@ configured amount of time.
 of a running query can be found or the query can be canceled.
 </td><td>default</td><td></td></tr>
 <tr><td>12</td><td>userContext</td><td><code>string</code></td><td>Sets a user context, only used for logging at this point.
+@Deprecated use setUser method on Blur service.
 </td><td>default</td><td></td></tr>
 <tr><td>13</td><td>cacheResult</td><td><code>bool</code></td><td>Enabled by default to cache this result.  False would not cache the result.
 </td><td>default</td><td>1</td></tr>
@@ -528,6 +537,8 @@ the controller will aggregate all the shard server totals together.
 </td><td>default</td><td></td></tr>
 <tr><td>7</td><td>status</td><td><code><a href="Blur.html#Enum_Status">Status</a></code></td><td>The status of the query NOT_FOUND if uuid is not found else FOUND
 </td><td>default</td><td></td></tr>
+<tr><td>8</td><td>user</td><td><code><a href="Blur.html#Struct_User">User</a></code></td><td>The user executing the given query.
+</td><td>default</td><td></td></tr>
 </table><br/>The BlurQueryStatus object hold the status of BlurQueries.  The state of the query
 (QueryState), the number of shards the query is executing against, the number of
 shards that are complete, etc.
@@ -622,14 +633,6 @@ be family dot column, "family.column".
 <tr><td>4</td><td>doubleMap</td><td><code>map&lt;<code>string</code>, <code>double</code>&gt;</code></td><td>map of double values emitted by the Metric.
 </td><td>default</td><td></td></tr>
 </table><br/>The Metric will hold all the information for a given Metric.
-<br/></p></section><section><div class="page-header"><h3 id="Struct_User">Struct: User</h3></div><p class="lead">
-<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>username</td><td><code>string</code></td><td>username.
-</td><td>default</td><td></td></tr>
-<tr><td>2</td><td>attributes</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td>map of user attributes.
-</td><td>default</td><td></td></tr>
-</table><br/>The user object is used to pass user context to server
-side session.
 <br/></p></section><hr/><h2 id="Services">Services</h2>
 <h3 id="Svc_Blur">Service: Blur</h3>
 The Blur service API.  This API is the same for both controller servers as well as

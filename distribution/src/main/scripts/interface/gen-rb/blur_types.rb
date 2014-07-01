@@ -110,6 +110,28 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
+  # The user object is used to pass user context to server
+# side session.
+  class User
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    USERNAME = 1
+    ATTRIBUTES = 2
+
+    FIELDS = {
+      # username.
+      USERNAME => {:type => ::Thrift::Types::STRING, :name => 'username'},
+      # map of user attributes.
+      ATTRIBUTES => {:type => ::Thrift::Types::MAP, :name => 'attributes', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   # Column is the lowest storage element in Blur, it stores a single name and value pair.
   class Column
     include ::Thrift::Struct, ::Thrift::Struct_Union
@@ -464,6 +486,7 @@ module Blur
 # of a running query can be found or the query can be canceled.
       UUID => {:type => ::Thrift::Types::STRING, :name => 'uuid'},
       # Sets a user context, only used for logging at this point.
+# @Deprecated use setUser method on Blur service.
       USERCONTEXT => {:type => ::Thrift::Types::STRING, :name => 'userContext'},
       # Enabled by default to cache this result.  False would not cache the result.
       CACHERESULT => {:type => ::Thrift::Types::BOOL, :name => 'cacheResult', :default => true},
@@ -690,6 +713,7 @@ module Blur
     STATE = 5
     UUID = 6
     STATUS = 7
+    USER = 8
 
     FIELDS = {
       # The original query.
@@ -709,7 +733,9 @@ module Blur
       # The uuid of the query.
       UUID => {:type => ::Thrift::Types::STRING, :name => 'uuid'},
       # The status of the query NOT_FOUND if uuid is not found else FOUND
-      STATUS => {:type => ::Thrift::Types::I32, :name => 'status', :enum_class => ::Blur::Status}
+      STATUS => {:type => ::Thrift::Types::I32, :name => 'status', :enum_class => ::Blur::Status},
+      # The user executing the given query.
+      USER => {:type => ::Thrift::Types::STRUCT, :name => 'user', :class => ::Blur::User}
     }
 
     def struct_fields; FIELDS; end
@@ -899,28 +925,6 @@ module Blur
       LONGMAP => {:type => ::Thrift::Types::MAP, :name => 'longMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::I64}},
       # map of double values emitted by the Metric.
       DOUBLEMAP => {:type => ::Thrift::Types::MAP, :name => 'doubleMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::DOUBLE}}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  # The user object is used to pass user context to server
-# side session.
-  class User
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    USERNAME = 1
-    ATTRIBUTES = 2
-
-    FIELDS = {
-      # username.
-      USERNAME => {:type => ::Thrift::Types::STRING, :name => 'username'},
-      # map of user attributes.
-      ATTRIBUTES => {:type => ::Thrift::Types::MAP, :name => 'attributes', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
     }
 
     def struct_fields; FIELDS; end

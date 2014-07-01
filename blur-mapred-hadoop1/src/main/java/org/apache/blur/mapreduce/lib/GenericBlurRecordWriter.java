@@ -142,11 +142,16 @@ public class GenericBlurRecordWriter {
 
       private Progressable _progressable = prg;
       private long _lastWarn = 0;
+      private boolean _progressSetupLogged = false;
 
       @Override
       public void progress() {
         if (_progressable != null) {
           _progressable.progress();
+          if (!_progressSetupLogged) {
+            LOG.info("Progress has been setup correctly.");
+            _progressSetupLogged = true;
+          }
         } else {
           Progressable progressable = BlurOutputFormat.getProgressable();
           if (progressable != null) {

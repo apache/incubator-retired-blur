@@ -47,8 +47,7 @@ public class QueriesServlet extends BaseConsoleServlet {
 		} else if ((m = queryCancelPattern.matcher(path)).matches()) {
 			cancelQuery(res, m.group(1), req.getParameter("table"));
 		} else {
-			res.setStatus(HttpServletResponse.SC_NOT_FOUND);
-			IOUtils.write("Route [" + path + "] doesn't exist", res.getOutputStream());
+			sendNotFound(res, req.getRequestURI());
 		}
 	}
 

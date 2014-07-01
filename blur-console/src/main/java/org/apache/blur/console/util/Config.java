@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.console.providers.AllAllowedProvider;
+import org.apache.blur.console.providers.IProvider;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -49,7 +51,8 @@ public class Config {
 	private static ZookeeperClusterStatus zk;
 	private static String blurConnection;
 	private static Object cluster;
-	private static Map<String, String> globalUserProperties;
+	private static Map<String, Map<String, String>> globalUserProperties;
+    private static IProvider provider;
 
 	public static int getConsolePort() {
 		return port;
@@ -78,6 +81,7 @@ public class Config {
 		blurConnection = buildConnectionString();
 		port = blurConfig.getInt("blur.console.port", DEFAULT_PORT);
 		parseSecurity();
+        setupProvider();
 	}
 
 	private static void parseSecurity() {
@@ -87,8 +91,8 @@ public class Config {
 			JsonFactory factory = new JsonFactory();
 		    ObjectMapper mapper = new ObjectMapper(factory);
 		    File from = new File(securityFile);
-		    TypeReference<Map<String, String>> typeRef
-		            = new TypeReference<Map<String, String>>() { };
+		    TypeReference<Map<String, Map<String, String>>> typeRef
+		            = new TypeReference<Map<String, Map<String, String>>>() { };
 
 		    try {
 				globalUserProperties = mapper.readValue(from, typeRef);
@@ -98,6 +102,22 @@ public class Config {
 			}
 		}
 	}
+
+    private static void setupProvider() {
+        String providerClassName = blurConfig.get("blur.console.auth.provider", "org.apache.blur.console.providers.AllAllowedProvider");
+
+        try {
+            Class providerClass = Class.forName(providerClassName, false, Config.class.getClassLoader());
+
+            if (providerClass != null) {
+                provider = (IProvider) providerClass.newInstance();
+                provider.setupProvider(blurConfig);
+            }
+        } catch (Exception e) {
+            log.fatal("Unable to setup provider [" + providerClassName + "]. Reverting to default.");
+            provider = new AllAllowedProvider();
+        }
+    }
 
 	public static String getConnectionString() throws IOException {
 		return blurConnection;
@@ -149,17 +169,21 @@ public class Config {
 	    }
 	}
 
-	public static Iface getClient(String username) throws IOException {
+	public static Iface getClient(String username, String securityUser) throws IOException {
 		Iface client = BlurClient.getClient(getConnectionString());
 
-		if (globalUserProperties != null) {
-			UserContext.setUser(new User(username, globalUserProperties));
+		if (globalUserProperties != null && globalUserProperties.get(securityUser) != null) {
+			UserContext.setUser(new User(username, globalUserProperties.get(securityUser)));
 		}
 
 		return client;
 	}
 
-  public static boolean isClusterSetup() {
-    return cluster != null;
-  }
+    public static boolean isClusterSetup() {
+        return cluster != null;
+    }
+
+    public static IProvider getProvider() {
+        return provider;
+    }
 }

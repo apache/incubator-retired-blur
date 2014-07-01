@@ -17,10 +17,7 @@ package org.apache.blur.console;
  * limitations under the License.
  */
 
-import org.apache.blur.console.servlets.NodesServlet;
-import org.apache.blur.console.servlets.QueriesServlet;
-import org.apache.blur.console.servlets.SearchServlet;
-import org.apache.blur.console.servlets.TablesServlet;
+import org.apache.blur.console.servlets.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mortbay.jetty.Server;
@@ -74,6 +71,7 @@ public class JettyServer {
 
 	    // for localhost:port/service/dashboard, etc.
 	    final Context context = new Context(server, "/service", Context.SESSIONS);
+        context.addServlet(new ServletHolder(new AuthServlet()), "/auth/*");
 	    context.addServlet(new ServletHolder(new NodesServlet()), "/nodes/*");
 	    context.addServlet(new ServletHolder(new TablesServlet()), "/tables/*");
 	    context.addServlet(new ServletHolder(new QueriesServlet()), "/queries/*");

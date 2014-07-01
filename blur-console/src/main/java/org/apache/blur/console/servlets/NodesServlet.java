@@ -39,8 +39,7 @@ public class NodesServlet extends BaseConsoleServlet {
 		if (path == null) {
 			sendNodeStatus(res);
 		} else {
-			res.setStatus(HttpServletResponse.SC_NOT_FOUND);
-			IOUtils.write("Route [" + path + "] doesn't exist", res.getOutputStream());
+			sendNotFound(res, req.getRequestURI());
 		}
 	}
 

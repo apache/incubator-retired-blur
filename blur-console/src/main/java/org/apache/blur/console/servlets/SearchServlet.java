@@ -41,8 +41,7 @@ public class SearchServlet extends BaseConsoleServlet {
 			String remoteHost = req.getRemoteHost();
 			search(res, req.getParameterMap(), remoteHost);
 		} else {
-			res.setStatus(HttpServletResponse.SC_NOT_FOUND);
-			IOUtils.write("Route [" + path + "] doesn't exist", res.getOutputStream());
+			sendNotFound(res, req.getRequestURI());
 		}
 	}
 

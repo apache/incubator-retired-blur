@@ -53,28 +53,29 @@ public class SearchUtil {
 	private static final String RECORD_RECORD_OPTION = "recordrecord";
 
 	public static Map<String, Object> search(Map<String, String[]> params, String remoteHost) throws IOException, TException {
-		String table = params.get("table")[0];
-		String query = params.get("query")[0];
-		String rowQuery = params.get("rowRecordOption")[0];
-		String start = params.get("start")[0];
-		String fetch = params.get("fetch")[0];
+		String table = HttpUtil.getFirstParam(params.get("table"));
+		String query = HttpUtil.getFirstParam(params.get("query"));
+		String rowQuery = HttpUtil.getFirstParam(params.get("rowRecordOption"));
+		String start = HttpUtil.getFirstParam(params.get("start"));
+		String fetch = HttpUtil.getFirstParam(params.get("fetch"));
 		String[] families = params.get("families[]");
+        String securityUser = HttpUtil.getFirstParam(params.get("securityUser"));
 
 		if (query.indexOf("rowid:") >= 0) {
-			return fetchRow(table, query, families, remoteHost);
+			return fetchRow(table, query, families, remoteHost, securityUser);
 		}
 
 		if (families == null || families.length == 0) {
-			return fullTextSearch(table, query, remoteHost);
+			return fullTextSearch(table, query, remoteHost, securityUser);
 		}
 
-		return searchAndFetch(table, query, rowQuery, start, fetch, families, remoteHost);
+		return searchAndFetch(table, query, rowQuery, start, fetch, families, remoteHost, securityUser);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private static Map<String, Object> searchAndFetch(String table, String query, String rowQuery, String start, String fetch, String[] families, String remoteHost) throws IOException, TException {
+	private static Map<String, Object> searchAndFetch(String table, String query, String rowQuery, String start, String fetch, String[] families, String remoteHost, String securityUser) throws IOException, TException {
 		try {
-			Iface client = Config.getClient(remoteHost);
+			Iface client = Config.getClient(remoteHost, securityUser);
 
 			boolean recordsOnly = RECORD_RECORD_OPTION.equalsIgnoreCase(rowQuery);
 
@@ -84,6 +85,7 @@ public class SearchUtil {
 			blurQuery.setQuery(q);
 			blurQuery.setStart(Long.parseLong(start));
 			blurQuery.setFetch(Integer.parseInt(fetch));
+            blurQuery.setUserContext(remoteHost);
 
 			Selector s = new Selector();
 			s.setRecordOnly(recordsOnly);
@@ -138,14 +140,15 @@ public class SearchUtil {
 		}
 	}
 
-	private static Map<String, Object> fullTextSearch(String table, String query, String remoteHost) throws IOException, TException {
+	private static Map<String, Object> fullTextSearch(String table, String query, String remoteHost, String securityUser) throws IOException, TException {
 		try {
-			Iface client = Config.getClient(remoteHost);
+			Iface client = Config.getClient(remoteHost, securityUser);
 
 			BlurQuery blurQuery = new BlurQuery();
 
 			Query q = new Query(query, true, ScoreType.SUPER, null, null);
 			blurQuery.setQuery(q);
+            blurQuery.setUserContext(remoteHost);
 			BlurResults blurResults = client.query(table, blurQuery);
 
 			Map<String, Object> results = new HashMap<String, Object>();
@@ -157,9 +160,9 @@ public class SearchUtil {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private static Map<String, Object> fetchRow(String table, String query, String[] families, String remoteHost) throws IOException, TException {
+	private static Map<String, Object> fetchRow(String table, String query, String[] families, String remoteHost, String securityUser) throws IOException, TException {
 		try {
-			Iface client = Config.getClient(remoteHost);
+			Iface client = Config.getClient(remoteHost, securityUser);
 
 			Selector selector = new Selector();
 			String rowid = StringUtils.remove(query, "rowid:");

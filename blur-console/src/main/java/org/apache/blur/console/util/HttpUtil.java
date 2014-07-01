@@ -33,4 +33,11 @@ public class HttpUtil {
 		res.setStatus(HttpServletResponse.SC_OK);
 		IOUtils.write(body, res.getOutputStream());
 	}
+
+    public static String getFirstParam(String[] param) {
+        if (param == null || param.length == 0) {
+            return "";
+        }
+        return param[0];
+    }
 }

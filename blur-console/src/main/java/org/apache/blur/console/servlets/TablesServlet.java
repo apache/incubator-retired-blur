@@ -31,7 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.blur.console.util.HttpUtil;
 import org.apache.blur.console.util.TableUtil;
-import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
 public class TablesServlet extends BaseConsoleServlet {
@@ -59,8 +58,7 @@ public class TablesServlet extends BaseConsoleServlet {
 		} else if ((m = tableDeletePattern.matcher(path)).matches()) {
 			delete(res, m.group(1), req.getParameter("includeFiles"));
 		} else {
-			res.setStatus(HttpServletResponse.SC_NOT_FOUND);
-			IOUtils.write("Route [" + path + "] doesn't exist", res.getOutputStream());
+			sendNotFound(res, req.getRequestURI());
 		}
 	}
 

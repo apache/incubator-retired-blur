@@ -64,7 +64,7 @@ public class AuthServlet extends BaseConsoleServlet {
         Map<String, Object> responseData = new HashMap<String, Object>();
 
         if (provider.isLoginRequired()) {
-            String authToken = HttpUtil.getFirstParam(request.getParameterMap().get(AUTH_TOKEN));
+            String authToken = HttpUtil.getFirstParam((String[])request.getParameterMap().get(AUTH_TOKEN));
 
             if (StringUtils.isNotBlank(authToken) && provider.getUser(authToken, request) != null) {
                 responseData.put(LOGIN_STATUS_FIELD, true);

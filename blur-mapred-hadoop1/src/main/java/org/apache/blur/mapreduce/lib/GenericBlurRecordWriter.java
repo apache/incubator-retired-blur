@@ -60,7 +60,7 @@ public class GenericBlurRecordWriter {
 
   private static final Log LOG = LogFactory.getLog(GenericBlurRecordWriter.class);
   private static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
-  private static final Counter NULL_COUNTER = new NullCounter();
+  private static final Counter NULL_COUNTER = NullCounter.getNullCounter();
 
   private final Text _prevKey = new Text();
 

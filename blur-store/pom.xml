@@ -152,7 +152,7 @@ under the License.
 	
 	<profiles>
 		<profile>
-			<id>hadoop-1x</id>
+			<id>hadoop1</id>
 			<activation>
 				<property>
 					<name>hadoop1</name>
@@ -176,7 +176,31 @@ under the License.
 			</dependencies>
 		</profile>
 		<profile>
-			<id>hadoop-2.2</id>
+			<id>hadoop2-mr1</id>
+			<activation>
+				<property>
+					<name>hadoop2-mr1</name>
+				</property>
+			</activation>
+        <properties>
+            <projectVersion>${project.parent.version}-hadoop2-mr1</projectVersion>
+        </properties>
+			<dependencies>
+				<dependency>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-client</artifactId>
+					<version>${hadoop.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-minicluster</artifactId>
+					<version>${hadoop.version}</version>
+					<scope>test</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>hadoop2</id>
 			<activation>
 				<property>
 					<name>hadoop2</name>

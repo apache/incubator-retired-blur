@@ -84,7 +84,7 @@ under the License.
 
 	<profiles>
 		<profile>
-			<id>hadoop-1x</id>
+			<id>hadoop1</id>
 			<activation>
 				<property>
 					<name>hadoop1</name>
@@ -103,7 +103,26 @@ under the License.
 			</properties>
 		</profile>
 		<profile>
-			<id>hadoop-2.2</id>
+			<id>hadoop2-mr1</id>
+			<activation>
+				<property>
+					<name>hadoop2-mr1</name>
+				</property>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.apache.blur</groupId>
+					<artifactId>blur-mapred-hadoop1</artifactId>
+					<version>${project.version}</version>
+				</dependency>
+			</dependencies>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop2-mr1</projectVersion>
+                <bin.assembly.file>src/assemble/bin-hadoop2.xml</bin.assembly.file>
+			</properties>
+		</profile>
+		<profile>
+			<id>hadoop2</id>
 			<activation>
 				<property>
 					<name>hadoop2</name>

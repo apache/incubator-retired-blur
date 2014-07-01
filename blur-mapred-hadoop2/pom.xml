@@ -142,7 +142,7 @@ under the License.
 	
 	<profiles>
 		<profile>
-			<id>hadoop-2.2</id>
+			<id>hadoop2</id>
 			<activation>
 				<property>
 					<name>hadoop2</name>

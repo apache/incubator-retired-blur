@@ -153,7 +153,7 @@ under the License.
 	
 	<profiles>
 		<profile>
-			<id>hadoop-1x</id>
+			<id>hadoop1</id>
 			<activation>
 				<property>
 					<name>hadoop1</name>
@@ -164,7 +164,18 @@ under the License.
 			</properties>
 		</profile>
 		<profile>
-			<id>hadoop-2.2</id>
+			<id>hadoop2-mr1</id>
+			<activation>
+				<property>
+					<name>hadoop2-mr1</name>
+				</property>
+			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop2-mr1</projectVersion>
+			</properties>
+		</profile>
+		<profile>
+			<id>hadoop2</id>
 			<activation>
 				<property>
 					<name>hadoop2</name>

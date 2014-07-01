@@ -142,7 +142,7 @@ under the License.
 	
 	<profiles>
 		<profile>
-			<id>hadoop-1x</id>
+			<id>hadoop1</id>
 			<activation>
 				<property>
 					<name>hadoop1</name>
@@ -150,6 +150,32 @@ under the License.
 			</activation>
 			<properties>
 				<projectVersion>${project.parent.version}-hadoop1</projectVersion>
+			</properties>
+			<dependencies>
+				<dependency>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-test</artifactId>
+					<version>${hadoop.version}</version>
+					<scope>test</scope>
+				</dependency>
+				<dependency>
+				      <groupId>org.apache.mrunit</groupId>
+				      <artifactId>mrunit</artifactId>
+				      <version>${mrunit.version}</version>
+				      <classifier>hadoop1</classifier>
+					  <scope>test</scope>
+                </dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>hadoop2-mr1</id>
+			<activation>
+				<property>
+					<name>hadoop2-mr1</name>
+				</property>
+			</activation>
+			<properties>
+				<projectVersion>${project.parent.version}-hadoop2-mr1</projectVersion>
 			</properties>
 			<dependencies>
 				<dependency>

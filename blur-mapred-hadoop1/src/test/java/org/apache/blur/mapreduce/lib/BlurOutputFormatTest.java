@@ -56,15 +56,14 @@ public class BlurOutputFormatTest {
   private static Configuration conf = new Configuration();
   private static FileSystem localFs;
   private static MiniMRCluster mr;
-  private static Path TEST_ROOT_DIR;
+  private static final Path TEST_ROOT_DIR = new Path("./target/tmp/BlurOutputFormatTest_tmp");
   private static JobConf jobConf;
-  private Path outDir = new Path(TEST_ROOT_DIR + "/out");
-  private Path inDir = new Path(TEST_ROOT_DIR + "/in");
+  private static final Path outDir = new Path(TEST_ROOT_DIR + "/out");
+  private static final Path inDir = new Path(TEST_ROOT_DIR + "/in");
 
   @BeforeClass
   public static void setupTest() throws Exception {
     System.setProperty("test.build.data", "./target/BlurOutputFormatTest/data");
-    TEST_ROOT_DIR = new Path(System.getProperty("test.build.data", "target/tmp/BlurOutputFormatTest_tmp"));
     System.setProperty("hadoop.log.dir", "./target/BlurOutputFormatTest/hadoop_log");
     try {
       localFs = FileSystem.getLocal(conf);
@@ -97,18 +96,18 @@ public class BlurOutputFormatTest {
   }
 
   @Before
-  public void setup() {
+  public void setup() throws IllegalArgumentException, IOException {
     TableContext.clear();
+    assertTrue(localFs.delete(new Path(TEST_ROOT_DIR + "/in"), true));
+    assertTrue(localFs.delete(new Path(TEST_ROOT_DIR + "/out"), true));
   }
 
   @Test
   public void testBlurOutputFormat() throws IOException, InterruptedException, ClassNotFoundException {
-    localFs.delete(inDir, true);
-    localFs.delete(outDir, true);
     writeRecordsFile("in/part1", 1, 1, 1, 1, "cf1");
     writeRecordsFile("in/part2", 1, 1, 2, 1, "cf1");
 
-    Job job = new Job(jobConf, "blur index");
+    Job job = new Job(new Configuration(jobConf), "blur index");
     job.setJarByClass(BlurOutputFormatTest.class);
     job.setMapperClass(CsvBlurMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
@@ -153,13 +152,10 @@ public class BlurOutputFormatTest {
 
   @Test
   public void testBlurOutputFormatOverFlowTest() throws IOException, InterruptedException, ClassNotFoundException {
-    localFs.delete(new Path(TEST_ROOT_DIR + "/in"), true);
-    localFs.delete(new Path(TEST_ROOT_DIR + "/out"), true);
-
     writeRecordsFile("in/part1", 1, 50, 1, 1500, "cf1"); // 1500 * 50 = 75,000
     writeRecordsFile("in/part2", 1, 50, 2000, 100, "cf1"); // 100 * 50 = 5,000
 
-    Job job = new Job(jobConf, "blur index");
+    Job job = new Job(new Configuration(jobConf), "blur index");
     job.setJarByClass(BlurOutputFormatTest.class);
     job.setMapperClass(CsvBlurMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
@@ -195,13 +191,10 @@ public class BlurOutputFormatTest {
   @Test
   public void testBlurOutputFormatOverFlowMultipleReducersTest() throws IOException, InterruptedException,
       ClassNotFoundException {
-    localFs.delete(new Path(TEST_ROOT_DIR + "/in"), true);
-    localFs.delete(new Path(TEST_ROOT_DIR + "/out"), true);
-
     writeRecordsFile("in/part1", 1, 50, 1, 1500, "cf1"); // 1500 * 50 = 75,000
     writeRecordsFile("in/part2", 1, 50, 2000, 100, "cf1"); // 100 * 50 = 5,000
 
-    Job job = new Job(jobConf, "blur index");
+    Job job = new Job(new Configuration(jobConf), "blur index");
     job.setJarByClass(BlurOutputFormatTest.class);
     job.setMapperClass(CsvBlurMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
@@ -243,13 +236,10 @@ public class BlurOutputFormatTest {
   @Test
   public void testBlurOutputFormatOverFlowMultipleReducersWithReduceMultiplierTest() throws IOException,
       InterruptedException, ClassNotFoundException {
-    localFs.delete(new Path(TEST_ROOT_DIR + "/in"), true);
-    localFs.delete(new Path(TEST_ROOT_DIR + "/out"), true);
-
     writeRecordsFile("in/part1", 1, 50, 1, 1500, "cf1"); // 1500 * 50 = 75,000
     writeRecordsFile("in/part2", 1, 50, 2000, 100, "cf1"); // 100 * 50 = 5,000
 
-    Job job = new Job(jobConf, "blur index");
+    Job job = new Job(new Configuration(jobConf), "blur index");
     job.setJarByClass(BlurOutputFormatTest.class);
     job.setMapperClass(CsvBlurMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
@@ -291,12 +281,10 @@ public class BlurOutputFormatTest {
   @Test(expected = IllegalArgumentException.class)
   public void testBlurOutputFormatValidateReducerCount() throws IOException, InterruptedException,
       ClassNotFoundException {
-    localFs.delete(new Path(TEST_ROOT_DIR + "/in"), true);
-    localFs.delete(new Path(TEST_ROOT_DIR + "/out"), true);
     writeRecordsFile("in/part1", 1, 1, 1, 1, "cf1");
     writeRecordsFile("in/part2", 1, 1, 2, 1, "cf1");
 
-    Job job = new Job(jobConf, "blur index");
+    Job job = new Job(new Configuration(jobConf), "blur index");
     job.setJarByClass(BlurOutputFormatTest.class);
     job.setMapperClass(CsvBlurMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
@@ -323,14 +311,11 @@ public class BlurOutputFormatTest {
   // @Test
   public void testBlurOutputFormatCleanupDuringJobKillTest() throws IOException, InterruptedException,
       ClassNotFoundException {
-    localFs.delete(new Path(TEST_ROOT_DIR + "/in"), true);
-    localFs.delete(new Path(TEST_ROOT_DIR + "/out"), true);
-
     writeRecordsFile("in/part1", 1, 50, 1, 1500, "cf1"); // 1500 * 50 = 75,000
     writeRecordsFile("in/part2", 1, 5000, 2000, 100, "cf1"); // 100 * 5000 =
                                                              // 500,000
 
-    Job job = new Job(jobConf, "blur index");
+    Job job = new Job(new Configuration(jobConf), "blur index");
     job.setJarByClass(BlurOutputFormatTest.class);
     job.setMapperClass(CsvBlurMapper.class);
     job.setInputFormatClass(TextInputFormat.class);

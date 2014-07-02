@@ -194,7 +194,7 @@ under the License.
 				      <groupId>org.apache.mrunit</groupId>
 				      <artifactId>mrunit</artifactId>
 				      <version>${mrunit.version}</version>
-				      <classifier>hadoop1</classifier>
+				      <classifier>hadoop2</classifier>
 					  <scope>test</scope>
                 </dependency>
 			</dependencies>

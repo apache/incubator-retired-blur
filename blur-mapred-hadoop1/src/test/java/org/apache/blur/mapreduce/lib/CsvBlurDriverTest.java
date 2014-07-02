@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -31,14 +32,27 @@ import org.apache.blur.mapreduce.lib.CsvBlurDriver.ControllerPool;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.SnappyCodec;
 import org.apache.hadoop.mapreduce.Job;
+import org.junit.Before;
 import org.junit.Test;
 
 public class CsvBlurDriverTest {
 
   protected String tableUri = "file:///tmp/tmppath";
   protected int shardCount = 13;
+
+  @Before
+  public void setup() throws IOException {
+    Configuration configuration = new Configuration();
+    Path path1 = new Path("file:///tmp/test1");
+    Path path2 = new Path("file:///tmp/test2");
+    FileSystem fileSystem = path1.getFileSystem(configuration);
+    fileSystem.mkdirs(path1);
+    fileSystem.mkdirs(path2);
+  }
 
   @Test
   public void testCsvBlurDriverTestFail1() throws Exception {

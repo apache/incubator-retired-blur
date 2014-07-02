@@ -33,7 +33,8 @@ public class NullCounter {
       // Try hadoop 1 version
       try {
         Class<?> clazz2 = Class.forName("org.apache.hadoop.mapreduce.Counter");
-        Constructor<?> constructor = clazz2.getConstructor(new Class[] {});
+        Constructor<?> constructor = clazz2.getDeclaredConstructor(new Class[] {});
+        constructor.setAccessible(true);
         return (Counter) constructor.newInstance(new Object[] {});
       } catch (ClassNotFoundException e2) {
         throw new RuntimeException(e2);

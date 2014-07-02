@@ -98,8 +98,12 @@ public class BlurOutputFormatTest {
   @Before
   public void setup() throws IllegalArgumentException, IOException {
     TableContext.clear();
-    assertTrue(localFs.delete(new Path(TEST_ROOT_DIR + "/in"), true));
-    assertTrue(localFs.delete(new Path(TEST_ROOT_DIR + "/out"), true));
+    if (localFs.exists(inDir)) {
+      assertTrue(localFs.delete(inDir, true));
+    }
+    if (localFs.exists(outDir)) {
+      assertTrue(localFs.delete(outDir, true));
+    }
   }
 
   @Test

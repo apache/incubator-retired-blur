@@ -31,12 +31,12 @@ module.exports = function (grunt) {
     var all_js_files = [
         'libs/jquery/dist/jquery.js',
         'js/utils/*\.js',
-        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tooltip.js',
-        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/modal.js',
-        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/transition.js',
-        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/popover.js',
-        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/collapse.js',
-        'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tab.js',
+        'libs/bootstrap/js/tooltip.js',
+        'libs/bootstrap/js/modal.js',
+        'libs/bootstrap/js/transition.js',
+        'libs/bootstrap/js/popover.js',
+        'libs/bootstrap/js/collapse.js',
+        'libs/bootstrap/js/tab.js',
         'libs/flot/jquery.flot.js',
         'libs/flot/jquery.flot.pie.js',
         'libs/flot/jquery.flot.categories.js',
@@ -75,6 +75,10 @@ module.exports = function (grunt) {
         less: {
             options: {
                 sourceMap: true,
+                sourceMapFilename: 'public/css/blurconsole.css.map',
+                sourceMapURL: '/css/blurconsole.css.map',
+                sourceMapBasepath: 'public',
+                sourceMapRootpath: '/',
                 dumpLineNumbers: true,
                 paths: ['libs']
             },
@@ -89,28 +93,6 @@ module.exports = function (grunt) {
                 },
                 options: {
                     compress: true
-                }
-            }
-        },
-
-        // Compiles Sass to CSS and generates necessary files if requested
-        sass: {
-            options: {
-                sourcemap: true,
-                lineNumbers: true,
-                loadPath: ['libs']
-            },
-            development: {
-                files: {
-                    'public/css/blurconsole.css': 'sass/blurconsole.scss'
-                }
-            },
-            production: {
-                files: {
-                    'public/css/blurconsole.css': 'sass/blurconsole.scss'
-                },
-                options: {
-                    style: 'compressed'
                 }
             }
         },

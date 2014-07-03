@@ -10,7 +10,6 @@ The development for this tool is done in two pieces the UI (Javascript) and the 
 In order to contribute to the development of this component the following tools/languages will need to be available:
 
 * Java
-* Ruby (1.9.x or higher)
 * Node (0.10.x or higher) - This will come with npm
 
 ### UI Development
@@ -18,7 +17,7 @@ In order to contribute to the development of this component the following tools/
 To turn on the development profile:
 export BLUR_CONSOLE_DEV=true
 
-The UI code lives in the ui directory.  This directory has been setup like a standard javascript based application would be.  The goal of this is to allow for rapid development of the UI components while flushing out the service API.  The UI portion has been built so that the system can be run with fake data to mock out the actual Apache Blur integration.
+The UI code lives in the srce/main/webapp directory.  This directory has been setup like a standard javascript based application would be.  The goal of this is to allow for rapid development of the UI components while flushing out the service API.  The UI portion has been built so that the system can be run with fake data to mock out the actual Apache Blur integration.
 
 To get up and running to work on the UI component you can follow these steps:
 
@@ -30,32 +29,24 @@ To get up and running to work on the UI component you can follow these steps:
 
 		npm install -g grunt-cli
 
-3. Install compass (this will install sass a stylesheet compiler)
-
-		gem install compass
-
-4. Install project build/test dependencies (from the ui directory)
+4. Install project build/test dependencies (from the src/main/webapp directory)
 		
 		npm install
 
-5. Install js dependencies (from the ui directory)
+5. Install js dependencies (from the src/main/webapp directory)
 		
-		bower install
+		grunt deps
 
-Once the dependencies and build tools are installed the following commands can be used (from the ui directory):
+Once the dependencies and build tools are installed the following commands can be used (from the src/main/webapp directory):
 
 * Run tests
 		
 		grunt test
 
-* Start development server (server will be available on port 9000)
+* Start development server (server will be available on port 3000)
 		
 		grunt serve
 
 ### Services Development
 
 The services code lives at the root of the console directory and is a basic maven project.
-
-## Packing for distribution
-
-TODO: Need to still figure this out

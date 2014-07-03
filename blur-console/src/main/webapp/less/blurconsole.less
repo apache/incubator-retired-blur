@@ -18,8 +18,14 @@ specific language governing permissions and limitations
 under the License.
  */
 
-$silver: #CCC;
-$black: #000;
-$san-marino: #4c66a4;
-$white: #FFF;
-$dusty-gray: #999;
+@import 'bootstrap/less/bootstrap';
+
+@icon-font-path: "fonts/";
+
+@import 'colors';
+@import 'blurconsole.shell.less';
+@import 'blurconsole.dashboard.less';
+@import 'blurconsole.schema.less';
+@import 'blurconsole.queries.less';
+@import 'blurconsole.search.less';
+@import 'typeahead';

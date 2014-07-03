@@ -72,6 +72,27 @@ module.exports = function (grunt) {
             }
         },
 
+        less: {
+            options: {
+                sourceMap: true,
+                dumpLineNumbers: true,
+                paths: ['libs']
+            },
+            development: {
+                files: {
+                    'public/css/blurconsole.css': 'less/blurconsole.less'
+                }
+            },
+            production: {
+                files: {
+                    'public/css/blurconsole.css': 'less/blurconsole.less'
+                },
+                options: {
+                    compress: true
+                }
+            }
+        },
+
         // Compiles Sass to CSS and generates necessary files if requested
         sass: {
             options: {
@@ -215,7 +236,7 @@ module.exports = function (grunt) {
                 files: [
                     {expand: true, src: ['index.html','img/*','views/*'], dest: 'public/'},
                     {expand: true, flatten: true, src: ['libs/modernizr/modernizr.js'], dest: 'public/js'},
-                    {expand: true, flatten: true, src: ['libs/twbs-bootstrap-sass/vendor/assets/fonts/bootstrap/*'], dest: 'public/css'}
+                    {expand: true, flatten: true, src: ['libs/bootstrap/fonts/*'], dest: 'public/css/fonts'}
                 ]
             }
         }
@@ -224,7 +245,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-bower-task');
     grunt.loadNpmTasks('grunt-exec');
     grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-contrib-sass');
+    grunt.loadNpmTasks('grunt-contrib-less');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-notify');
@@ -246,8 +267,8 @@ module.exports = function (grunt) {
     grunt.registerTask('test:unit', 'Run JavaScript Unit Tests', ['karma']);
     grunt.registerTask('test:style', 'Run JavaScript CodeStyle reports', ['jshint:ci'/*, 'plato:ci' */]);
     grunt.registerTask('style:development', 'Run JavaScript CodeStyle reports', ['jshint:development']);
-    grunt.registerTask('development', 'Build for development', ['clean', 'sass:development', 'uglify:js', 'copy:main', 'version-assets']);
-    grunt.registerTask('production', 'Build for production', ['clean', 'sass:production', 'uglify:js', 'copy:main', 'version-assets']);
+    grunt.registerTask('development', 'Build for development', ['clean', 'less:development', 'uglify:js', 'copy:main', 'version-assets']);
+    grunt.registerTask('production', 'Build for production', ['clean', 'less:production', 'uglify:js', 'copy:main', 'version-assets']);
     grunt.registerTask('serve', 'Run development server', ['clean','development', 'connect:livereload','watch']);
     grunt.registerTask('default', ['clean', 'style:development', 'development', 'watch']);
     grunt.registerTask('version-assets-css-map', function() {

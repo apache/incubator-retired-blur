@@ -19,7 +19,7 @@ under the License.
  */
 
 .input-group-btn > .btn {
-  height: $input-height-base;
+  height: @input-height-base;
 }
 
 /* Space out content a bit */
@@ -29,9 +29,9 @@ body {
 
 /* Top Navigation */
 nav.navbar-fixed-top {
-    background-color: $san-marino;
+    background-color: @navbar-background;
     .navbar-brand {
-        color: $white;
+        color: @navbar-color;
     }
     .pull-right button.btn {
         margin-right: 20px;
@@ -46,7 +46,7 @@ nav.navbar-fixed-top {
         width: 40px;
         overflow-y: hidden;
         white-space: nowrap;
-        background-color: #232937;
+        background-color: @sidebar-background;
         height: 100%;
         top: 50px;
         left: 0;
@@ -57,14 +57,14 @@ nav.navbar-fixed-top {
             display: block;
             a {
                 padding: 10px;
-                color: $silver;
+                color: @sidebar-color;
                 margin-right: 0;
                 font-size: 20px;
                 position: relative;
                 display: block;
                 &.active {
-                    background-color: $white;
-                    color: $black;
+                    background-color: @sidebar-background-hover;
+                    color: @sidebar-color-hover;
                 }
             }
         }

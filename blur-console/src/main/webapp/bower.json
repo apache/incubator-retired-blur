@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
-    "twbs-bootstrap-sass": "3.1.1",
+    "bootstrap": "3.2.0",
     "modernizr": "2.7.1",
     "jquery": "1.11.0",
     "flot":"0.8.2",

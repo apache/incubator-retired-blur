@@ -18,42 +18,31 @@ specific language governing permissions and limitations
 under the License.
  */
 
-#results {
-	.panel {
-		display:inline-block;
-		margin-right: 10px;
-		min-width: 100%;
-	}
-	.panel-heading {
-		cursor: pointer;
-	}
-	.panel-collapse {
-		padding: 5px;
-	}
-}
+.twitter-typeahead {
+    .tt-hint {
+        color: @typeahead-tint;
+    }
 
-#resultCount {
-	padding-left: 30px;
-	font-style: italic;
-}
+    .tt-dropdown-menu {
+        width: 422px;
+        padding: 8px 0;
+        background-color: @typeahead-background;
+        border: 1px solid @typeahead-border;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        box-shadow: 0 5px 10px rgba(0,0,0,.2);
+    }
 
-#resultInfo {
-	margin-top: 3px;
-}
+    .tt-suggestion {
+        padding: 3px 10px;
+    }
 
-tr.row-separator {
-	th {
-		background-color: $dusty-gray;
-	}
-	&:hover th {
-		background-color: $dusty-gray !important;
-	}
-}
+    .tt-suggestion.tt-cursor {
+        color: @typeahead-highlight-color;
+        background-color: @typeahead-highlight-background;
+    }
 
-.input-group .twitter-typeahead {
-	float: left;
-	width: 100%;
-	.form-control {
-	  border-radius: 4px 0px 0px 4px;
-	}
+    .tt-suggestion p {
+        margin: 0;
+    }
 }

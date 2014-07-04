@@ -20,6 +20,7 @@ package org.apache.blur.shell;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,6 +49,7 @@ import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.FetchRowResult;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.Row;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.commons.cli.CommandLine;
 
 public class QueryCommand extends Command implements TableFirstArgCommand {
@@ -355,8 +357,13 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
   }
 
   private String toStringBinary(String id) {
-    // TODO Auto-generated method stub
-    return null;
+    byte[] bs;
+    try {
+      bs = id.getBytes("UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
+    return BlurUtil.toStringBinary(bs, 0, bs.length);
   }
 
   private String displayRecordInRowMultiFamilyView(int result, final TableDisplay tableDisplay,

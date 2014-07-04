@@ -19,6 +19,7 @@ package org.apache.blur.trace.hdfs;
 import static org.apache.blur.utils.BlurConstants.BLUR_HDFS_TRACE_PATH;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -38,10 +39,10 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class HdfsTraceStorage extends TraceStorage {
-
-  private static final String UTF_8 = "UTF-8";
 
   private final static Log LOG = LogFactory.getLog(HdfsTraceStorage.class);
 
@@ -97,18 +98,28 @@ public class HdfsTraceStorage extends TraceStorage {
       requestId = "";
     }
     Path tracePath = getTracePath(storeId);
-    String json = collector.toJson();
-    storeJson(new Path(tracePath, getRequestIdPathName(requestId, random)), json);
+    JSONObject jsonObject;
+    try {
+      jsonObject = collector.toJsonObject();
+    } catch (JSONException e) {
+      throw new IOException(e);
+    }
+    storeJson(new Path(tracePath, getRequestIdPathName(requestId, random)), jsonObject);
   }
 
   private String getRequestIdPathName(String requestId, Random random) {
     return requestId + "_" + random.nextLong();
   }
 
-  public void storeJson(Path storePath, String json) throws IOException {
+  public void storeJson(Path storePath, JSONObject jsonObject) throws IOException {
     FSDataOutputStream outputStream = _fileSystem.create(storePath, false);
-    outputStream.write(json.getBytes(UTF_8));
-    outputStream.close();
+    try {
+      OutputStreamWriter writer = new OutputStreamWriter(outputStream);
+      jsonObject.write(writer);
+      writer.close();
+    } catch (JSONException e) {
+      throw new IOException(e);
+    }
   }
 
   private Path getTracePath(String traceId) {

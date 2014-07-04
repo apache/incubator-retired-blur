@@ -23,6 +23,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.trace.Trace.TraceId;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class TraceCollector {
 
@@ -60,19 +63,21 @@ public class TraceCollector {
     return "TraceCollector [_id=" + _id + ", _traces=" + _traces + "]";
   }
 
-  public String toJson() {
-    StringBuilder builder = new StringBuilder();
-    boolean first = true;
+  public JSONObject toJsonObject() throws JSONException {
+    JSONArray tracesArray = new JSONArray();
     for (TracerImpl t : _traces) {
-      if (!first) {
-        builder.append(",\n");
-      }
-      builder.append("    ").append(t.toJson());
-      first = false;
+      tracesArray.put(t.toJsonObject());
     }
-    return "{\n  \"id\":" + _id.toJson() + ",\n  \"nodeName\":\"" + (_nodeName == null ? "unknown" : _nodeName)
-        + "\",\n  \"pid\":\"" + _pid + "\",\n  \"thread\":\"" + _threadName + "\",\n  \"created\":" + _now
-        + ",\n  \"totalTime\":" + (_finished - _started) + ",\n  \"traces\":[\n" + builder.toString() + "  ]\n}";
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("id", _id.toJsonObject());
+    jsonObject.put("nodeName", (_nodeName == null ? "unknown" : _nodeName));
+    jsonObject.put("pid", _pid);
+    jsonObject.put("thread", _threadName);
+    jsonObject.put("created", _now);
+    jsonObject.put("totalTime", (_finished - _started));
+    jsonObject.put("thread", _threadName);
+    jsonObject.put("traces", tracesArray);
+    return jsonObject;
   }
 
   public TraceId getId() {

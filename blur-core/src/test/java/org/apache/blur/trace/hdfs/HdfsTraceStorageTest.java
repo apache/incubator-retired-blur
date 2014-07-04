@@ -31,6 +31,8 @@ import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -85,7 +87,7 @@ public class HdfsTraceStorageTest {
   }
 
   @Test
-  public void testStorage() throws IOException {
+  public void testStorage() throws IOException, JSONException {
     Random random = new Random();
     createTraceData(random);
     createTraceData(random);
@@ -98,7 +100,7 @@ public class HdfsTraceStorageTest {
       assertEquals(4, requestIds.size());
       for (String requestId : requestIds) {
         String contents = _storage.getRequestContentsJson(traceId, requestId);
-        assertEquals("{" + requestId + "}", contents);
+        assertEquals("{\"id\":" + requestId + "}", contents);
       }
     }
 
@@ -106,22 +108,22 @@ public class HdfsTraceStorageTest {
     assertEquals(2, _storage.getTraceIds().size());
   }
 
-  private void createTraceData(Random random) throws IOException {
+  private void createTraceData(Random random) throws IOException, JSONException {
     String traceId = Long.toString(Math.abs(random.nextLong()));
     Path path = new Path(configuration.get(BLUR_HDFS_TRACE_PATH));
     Path tracePath = new Path(path, traceId);
     Path storePath = new Path(tracePath, traceId + "_" + Long.toString(Math.abs(random.nextLong())));
-    _storage.storeJson(storePath, "{" + traceId + "}");
+    _storage.storeJson(storePath, new JSONObject("{\"id\":" + traceId + "}"));
     writeRequest(random, tracePath);
     writeRequest(random, tracePath);
     writeRequest(random, tracePath);
   }
 
-  private void writeRequest(Random random, Path tracePath) throws IOException {
+  private void writeRequest(Random random, Path tracePath) throws IOException, JSONException {
     String requestId = Long.toString(random.nextLong());
     Path storePath = new Path(tracePath, requestId + "_" + Long.toString(Math.abs(random.nextLong())));
     System.out.println(storePath);
-    _storage.storeJson(storePath, "{" + requestId + "}");
+    _storage.storeJson(storePath, new JSONObject("{\"id\":" + requestId + "}"));
   }
 
 }

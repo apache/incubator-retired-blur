@@ -81,6 +81,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.QueryWrapperFilter;
 import org.apache.lucene.search.TermQuery;
+import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -297,7 +298,11 @@ public class IndexManagerTest {
 
       @Override
       public void store(TraceCollector collector) {
-        System.out.println(collector.toJson());
+        try {
+          System.out.println(collector.toJsonObject());
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
     });
 

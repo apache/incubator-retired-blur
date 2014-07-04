@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.trace.Trace.TraceId;
+import org.json.JSONException;
 import org.junit.Test;
 
 public class TraceTest {
@@ -71,7 +72,11 @@ public class TraceTest {
     Trace.setStorage(new BaseTraceStorage(new BlurConfiguration()) {
       @Override
       public void store(TraceCollector collector) {
-        System.out.println(collector.toJson());
+        try {
+          System.out.println(collector.toJsonObject());
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
         TraceId id = collector.getId();
         assertEquals("test", id.getRootId());
         assertEquals(5, collector.getTraces().size());

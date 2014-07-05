@@ -618,6 +618,11 @@ public class IndexManager {
           public boolean hasNext() throws BlurException {
             return iterator.hasNext();
           }
+
+          @Override
+          public long getPosition() throws BlurException {
+            return iterator.getPosition();
+          }
         };
       }
 

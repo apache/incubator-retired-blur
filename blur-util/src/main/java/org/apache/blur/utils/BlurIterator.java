@@ -25,5 +25,7 @@ public interface BlurIterator<T, E extends Exception> {
   public boolean hasNext() throws E;
 
   public T next() throws E;
+  
+  public long getPosition() throws E;
 
 }

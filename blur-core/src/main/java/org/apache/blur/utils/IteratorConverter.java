@@ -22,22 +22,27 @@ package org.apache.blur.utils;
  */
 public class IteratorConverter<F, T, E extends Exception> implements BlurIterator<T, E> {
 
-  private Converter<F, T, E> converter;
-  private BlurIterator<F,E> iterator;
+  private Converter<F, T, E> _converter;
+  private BlurIterator<F,E> _iterator;
 
   public IteratorConverter(BlurIterator<F,E> iterator, Converter<F, T, E> converter) {
-    this.converter = converter;
-    this.iterator = iterator;
+    _converter = converter;
+    _iterator = iterator;
   }
 
   @Override
   public boolean hasNext() throws E {
-    return iterator.hasNext();
+    return _iterator.hasNext();
   }
 
   @Override
   public T next() throws E {
-      return converter.convert(iterator.next());
+      return _converter.convert(_iterator.next());
+  }
+
+  @Override
+  public long getPosition() throws E {
+    return _iterator.getPosition();
   }
 
 }

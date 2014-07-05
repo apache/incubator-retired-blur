@@ -552,7 +552,9 @@ public class BlurUtil {
     results.setTotalResults(hitsIterable.getTotalResults());
     results.setShardInfo(hitsIterable.getShardInfo());
     if (query.minimumNumberOfResults > 0) {
+      Tracer trace = Trace.trace("convertToHits - skipTo", Trace.param("start", query.start));
       hitsIterable.skipTo(query.start);
+      trace.done();
       BlurIterator<BlurResult, BlurException> iterator = hitsIterable.iterator();
       for (int count = 0; count < query.fetch && iterator.hasNext(); count++) {
         results.addToResults(iterator.next());
@@ -1191,6 +1193,8 @@ public class BlurUtil {
   public static <T, E extends Exception> BlurIterator<T, E> convert(final Iterator<T> iterator) {
     return new BlurIterator<T, E>() {
 
+      private long _position = 0;
+
       @Override
       public boolean hasNext() throws E {
         return iterator.hasNext();
@@ -1198,7 +1202,13 @@ public class BlurUtil {
 
       @Override
       public T next() throws E {
+        _position++;
         return iterator.next();
+      }
+
+      @Override
+      public long getPosition() throws E {
+        return _position;
       }
     };
   }

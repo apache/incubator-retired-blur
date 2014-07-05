@@ -105,7 +105,7 @@ public class Trace {
     _tracer.set(collector);
   }
 
-  public static Parameter param(Object name, Object value) {
+  public static Parameter param(String name, Object value) {
     if (name == null) {
       name = "null";
     }

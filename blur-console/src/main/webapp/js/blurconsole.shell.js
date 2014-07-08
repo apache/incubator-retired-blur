@@ -43,7 +43,7 @@ blurconsole.shell = (function () {
   jqueryMap = {};
     
     //---------------------------- Private Methods -------------------------
-    function _setJqueryMap() {
+  function _setJqueryMap() {
     var $container = stateMap.$container;
     jqueryMap = {
       $container   : $container,
@@ -51,11 +51,11 @@ blurconsole.shell = (function () {
     };
   }
     
-    function _copyAnchorMap() {
+  function _copyAnchorMap() {
     return $.extend( true, {}, stateMap.anchorMap );
   }
     
-    function _switchView( tab ) {
+  function _switchView( tab ) {
     if (stateMap.currentTab !== tab) {
       for ( var i = 0; i < configMap.allTabs.length; i++ ) {
         if (blurconsole[configMap.allTabs[i]]) {
@@ -75,12 +75,12 @@ blurconsole.shell = (function () {
   }
     
     //---------------------------- Event Handlers and DOM Methods ----------
-    function _onHashChange() {
+  function _onHashChange() {
     var anchorMapPrevious = _copyAnchorMap(), anchorMapProposed;
 
     try {
-            anchorMapProposed = $.uriAnchor.makeAnchorMap();
-        } catch ( error ) {
+      anchorMapProposed = $.uriAnchor.makeAnchorMap();
+    } catch ( error ) {
       $.uriAnchor.setAnchor( anchorMapPrevious, null, true );
       return false;
     }
@@ -107,7 +107,7 @@ blurconsole.shell = (function () {
     return false;
   }
     
-    function _onClickTab(evt) {
+  function _onClickTab(evt) {
     var target = $(evt.currentTarget);
     changeAnchorPart({
       tab : target.attr('href').split('=')[1]

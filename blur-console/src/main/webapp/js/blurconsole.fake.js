@@ -244,7 +244,7 @@ blurconsole.fake = (function() {
               for (var rowRecordColIndex=0; rowRecordColIndex < cols; rowRecordColIndex++) {
                 row['col'+rowRecordColIndex] = _randomString();
               }
-              results[fam][rowIndex]['records'].push(row);
+              results[fam][rowIndex].records.push(row);
             }
           }
         }

@@ -205,7 +205,7 @@ blurconsole.search = (function () {
     }
   }
 
-    function _getColList(row) {
+  function _getColList(row) {
     var cols = blurconsole.utils.reject(blurconsole.utils.keys(row), function(i) {
       return i === 'recordid';
     });

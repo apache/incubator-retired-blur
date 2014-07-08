@@ -69,7 +69,7 @@ blurconsole.tables = (function () {
     }
   }
     
-    function _registerPageEvents() {
+  function _registerPageEvents() {
     // Tab control
     jqueryMap.$tableInfoHolder.on('click', 'ul.nav a', function(e) {
       e.preventDefault();
@@ -200,7 +200,7 @@ blurconsole.tables = (function () {
   }
     
     //-------------------------- Public API ------------------------------
-    function unloadModule() {
+  function unloadModule() {
     $.gevent.unsubscribe(jqueryMap.$container, 'tables-updated');
     $.gevent.unsubscribe(jqueryMap.$container, 'queries-updated');
     _unregisterPageEvents();

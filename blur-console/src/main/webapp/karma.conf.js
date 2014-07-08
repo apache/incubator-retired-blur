@@ -32,19 +32,19 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'libs/jquery/dist/jquery.js',
+      'libs/jquery/jquery.js',
       'js/utils/*\.js',
-      'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tooltip.js',
-      'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/modal.js',
-      'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/transition.js',
-      'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/popover.js',
-      'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/collapse.js',
-      'libs/twbs-bootstrap-sass/vendor/assets/javascripts/bootstrap/tab.js',
+      'libs/bootstrap/js/tooltip.js',
+      'libs/bootstrap/js/modal.js',
+      'libs/bootstrap/js/transition.js',
+      'libs/bootstrap/js/popover.js',
+      'libs/bootstrap/js/collapse.js',
+      'libs/bootstrap/js/tab.js',
       'libs/flot/jquery.flot.js',
       'libs/flot/jquery.flot.pie.js',
       'libs/flot/jquery.flot.categories.js',
       'libs/flot/jquery.flot.stack.js',
-      'libs/typeahead.js/dist/typeahead.jquery.js',
+      'libs/typeahead/typeahead.jquery.js',
       'js/blurconsole.js',
       'js/*\.js',
       'test/**/*Test.js'

@@ -27,18 +27,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public abstract class BaseConsoleServlet extends HttpServlet {
-	private static final long serialVersionUID = -5156028303476799953L;
+  private static final long serialVersionUID = -5156028303476799953L;
     private static final Log log = LogFactory.getLog(BaseConsoleServlet.class);
     private static final String UNAUTHORIZED = "User is unauthorized to perform this action";
 
-	protected void sendError(HttpServletResponse response, Exception e) throws IOException {
-		log.error("Error processing request.", e);
-		String body = e.getMessage();
-		response.setContentType("application/json");
-		response.setContentLength(body.getBytes().length);
-		response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-		IOUtils.write(body, response.getOutputStream());
-	}
+  protected void sendError(HttpServletResponse response, Exception e) throws IOException {
+    log.error("Error processing request.", e);
+    String body = e.getMessage();
+    response.setContentType("application/json");
+    response.setContentLength(body.getBytes().length);
+    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    IOUtils.write(body, response.getOutputStream());
+  }
 
     protected void sendUnauthorized(HttpServletResponse response) throws IOException {
         response.setContentType("application/json");
@@ -47,13 +47,13 @@ public abstract class BaseConsoleServlet extends HttpServlet {
         IOUtils.write(UNAUTHORIZED, response.getOutputStream());
     }
 
-	protected void sendGenericOk(HttpServletResponse response) throws IOException {
+  protected void sendGenericOk(HttpServletResponse response) throws IOException {
         String responseBody = "success";
-		response.setContentType("text/plain");
-		response.setContentLength(responseBody.getBytes().length);
-		response.setStatus(HttpServletResponse.SC_OK);
-		IOUtils.write(responseBody, response.getOutputStream());
-	}
+    response.setContentType("text/plain");
+    response.setContentLength(responseBody.getBytes().length);
+    response.setStatus(HttpServletResponse.SC_OK);
+    IOUtils.write(responseBody, response.getOutputStream());
+  }
 
     protected void sendNotFound(HttpServletResponse response, String path) throws IOException {
         response.setStatus(HttpServletResponse.SC_NOT_FOUND);

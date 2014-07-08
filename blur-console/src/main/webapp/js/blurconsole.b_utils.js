@@ -19,103 +19,103 @@ under the License.
 */
 /*global blurconsole:false */
 blurconsole.browserUtils = (function(){
-	'use strict';
+  'use strict';
 
-	function table(def, data) {
-		var tableMarkup;
+  function table(def, data) {
+    var tableMarkup;
 
-		tableMarkup = '<table class="table table-bordered table-condensed table-hover table-striped"><thead><tr>';
+    tableMarkup = '<table class="table table-bordered table-condensed table-hover table-striped"><thead><tr>';
 
-		// Add headers
-		$.each(def, function(idx, colDef){
-			tableMarkup += '<th>' + colDef.label + '</th>';
-		});
+    // Add headers
+    $.each(def, function(idx, colDef){
+      tableMarkup += '<th>' + colDef.label + '</th>';
+    });
 
-		tableMarkup += '</tr></thead><tbody>';
+    tableMarkup += '</tr></thead><tbody>';
 
-		// Add content
-		if (data && data.length > 0) {
-			$.each(data, function(ir, row){
-				tableMarkup += '<tr>';
-				$.each(def, function(ic, col) {
-					tableMarkup += '<td>';
-					if ($.isFunction(col.key)) {
-						tableMarkup += col.key(row);
-					} else {
-						tableMarkup += row[col.key];
-					}
-					tableMarkup += '</td>';
-				});
-				tableMarkup += '</tr>';
-			});
-		} else {
-			tableMarkup += '<tr><td colspan="' + def.length + '">There are no items here</td></tr>';
-		}
+    // Add content
+    if (data && data.length > 0) {
+      $.each(data, function(ir, row){
+        tableMarkup += '<tr>';
+        $.each(def, function(ic, col) {
+          tableMarkup += '<td>';
+          if ($.isFunction(col.key)) {
+            tableMarkup += col.key(row);
+          } else {
+            tableMarkup += row[col.key];
+          }
+          tableMarkup += '</td>';
+        });
+        tableMarkup += '</tr>';
+      });
+    } else {
+      tableMarkup += '<tr><td colspan="' + def.length + '">There are no items here</td></tr>';
+    }
 
-		tableMarkup += '</tbody></table>';
-		return tableMarkup;
-	}
+    tableMarkup += '</tbody></table>';
+    return tableMarkup;
+  }
 
-	function modal(id, title, content, buttons, size) {
-		var mSize, markup, mButtons = buttons;
+  function modal(id, title, content, buttons, size) {
+    var mSize, markup, mButtons = buttons;
 
-		switch(size) {
-		case 'large':
-			mSize = 'modal-lg';
-			break;
-		case 'medium':
-			mSize = 'modal-md';
-			break;
-		default:
-			mSize = 'modal-sm';
-		}
+    switch(size) {
+    case 'large':
+      mSize = 'modal-lg';
+      break;
+    case 'medium':
+      mSize = 'modal-md';
+      break;
+    default:
+      mSize = 'modal-sm';
+    }
 
-		markup = '<div class="modal fade" id="' + id + '">';
-		markup += '<div class="modal-dialog ' + mSize + '">';
-		markup += '<div class="modal-content">';
-		markup += '<div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title">' + title + '</h4></div>';
-		markup += '<div class="modal-body">' + ($.type(content) === 'string' ? content : $(content).html()) + '</div>';
+    markup = '<div class="modal fade" id="' + id + '">';
+    markup += '<div class="modal-dialog ' + mSize + '">';
+    markup += '<div class="modal-content">';
+    markup += '<div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title">' + title + '</h4></div>';
+    markup += '<div class="modal-body">' + ($.type(content) === 'string' ? content : $(content).html()) + '</div>';
 
-		if (mButtons) {
-			if (!$.isArray(mButtons)) {
-				mButtons = [mButtons];
-			}
+    if (mButtons) {
+      if (!$.isArray(mButtons)) {
+        mButtons = [mButtons];
+      }
 
-			markup += '<div class="modal-footer">';
-			$.each(mButtons, function(i, button) {
-				markup += '<button type="button" class="btn ' + button.classes + '" id="' + button.id + '" ';
+      markup += '<div class="modal-footer">';
+      $.each(mButtons, function(i, button) {
+        markup += '<button type="button" class="btn ' + button.classes + '" id="' + button.id + '" ';
 
-				if (button.data) {
-					$.each(button.data, function(key, dataAttr) {
-						markup += 'data-' + key + '="' + dataAttr + '" ';
-					});
-				}
+        if (button.data) {
+          $.each(button.data, function(key, dataAttr) {
+            markup += 'data-' + key + '="' + dataAttr + '" ';
+          });
+        }
 
-				markup += '>' + button.label + '</button> ';
-			});
-			markup += '</div>';
-		}
+        markup += '>' + button.label + '</button> ';
+      });
+      markup += '</div>';
+    }
 
-		markup += '</div></div></div>';
+    markup += '</div></div></div>';
 
-		return markup;
-	}
+    return markup;
+  }
 
-	function cleanId(str) {
-		return str.replace(/([;&,\.\+\*\~':"\!\^#$%@\[\]\(\)=>\|])/g, '_');
-	}
+  function cleanId(str) {
+    return str.replace(/([;&,\.\+\*\~':"\!\^#$%@\[\]\(\)=>\|])/g, '_');
+  }
 
-	function booleanImg(val) {
-		if (val && (val === true || val === 'yes' || val === 'true')) {
-			return '<div class="label label-success"><i class="glyphicon glyphicon-ok-sign"></i></div>';
-		}
-		return '<div class="label label-danger"><i class="glyphicon glyphicon-minus-sign"></i></div>';
-	}
+  function booleanImg(val) {
+    if (val && (val === true || val === 'yes' || val === 'true')) {
+      return '<div class="label label-success"><i class="glyphicon glyphicon-ok-sign"></i></div>';
+    }
+    return '<div class="label label-danger"><i class="glyphicon glyphicon-minus-sign"></i></div>';
+  }
 
-	return {
-		table: table,
-		modal : modal,
-		cleanId : cleanId,
-		booleanImg : booleanImg
-	};
+  return {
+    table: table,
+    modal : modal,
+    cleanId : cleanId,
+    booleanImg : booleanImg
+  };
 }());

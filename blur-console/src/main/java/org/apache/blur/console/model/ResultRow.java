@@ -22,27 +22,27 @@ import java.util.List;
 import java.util.Map;
 
 public class ResultRow {
-	private String rowid;
-	private List<Map<String, String>> records = new ArrayList<Map<String, String>>();
+  private String rowid;
+  private List<Map<String, String>> records = new ArrayList<Map<String, String>>();
 
-	public ResultRow() {
+  public ResultRow() {
 
-	}
+  }
 
-	public ResultRow(String rowid) {
-		this.rowid = rowid;
-	}
+  public ResultRow(String rowid) {
+    this.rowid = rowid;
+  }
 
-	public String getRowid() {
-		return rowid;
-	}
-	public void setRowid(String rowid) {
-		this.rowid = rowid;
-	}
-	public List<Map<String, String>> getRecords() {
-		return records;
-	}
-	public void setRecords(List<Map<String, String>> records) {
-		this.records = records;
-	}
+  public String getRowid() {
+    return rowid;
+  }
+  public void setRowid(String rowid) {
+    this.rowid = rowid;
+  }
+  public List<Map<String, String>> getRecords() {
+    return records;
+  }
+  public void setRecords(List<Map<String, String>> records) {
+    this.records = records;
+  }
 }

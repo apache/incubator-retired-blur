@@ -44,56 +44,56 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class QueryUtilTest extends ConsoleTestBase {
-	@Before
-	public void setup() throws IOException, BlurException, TException {
-		setupConfigIfNeeded();
-		
-		Iface client = BlurClient.getClient(Config.getConnectionString());
-		
-		if (!client.tableList().contains("queryUnitTable")) {
-			TableDescriptor td = new TableDescriptor();
-			td.setShardCount(11);
-			td.setTableUri("file://" + TABLE_PATH + "/queryUnitTable");
-			td.setCluster("default");
-			td.setName("queryUnitTable");
-			td.setEnabled(true);
-			client.createTable(td);
-			
-			Record record = new Record("abcd", "fam0", Arrays.asList(new Column[]{ new Column("col0", "testvalue")}));
-			RecordMutation recordMutation = new RecordMutation(RecordMutationType.REPLACE_ENTIRE_RECORD, record);
-			RowMutation rowMutation = new RowMutation("queryUnitTable", "12345", RowMutationType.REPLACE_ROW, Arrays.asList(new RecordMutation[]{ recordMutation }));
-			client.mutate(rowMutation);
-		}
-	}
-	
-	@Test
-	public void testGetCurrentQueryCount() throws BlurException, IOException, TException {
-		Iface client = BlurClient.getClient(Config.getConnectionString());
-		BlurQuery query = new BlurQuery(
-				new Query("fam0.col0:*", true, ScoreType.SUPER, null, null), 
-				null, 
-				null, //new Selector(false, null, null, null, null, null, 0, 10, null), 
-				false, 0, 10, 1, 2000, UUID.randomUUID().toString(), "testUser", false, System.currentTimeMillis(),null,null);
-		client.query("queryUnitTable", query);
-		
-		assertEquals(1, QueryUtil.getCurrentQueryCount());
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Test
-	public void testGetQueries() throws IOException, BlurException, TException {
-		Iface client = BlurClient.getClient(Config.getConnectionString());
-		BlurQuery query = new BlurQuery(
-				new Query("fam0.col0:*", true, ScoreType.SUPER, null, null), 
-				null, 
-				null, //new Selector(false, null, null, null, null, null, 0, 10, null), 
-				false, 0, 10, 1, 2000, UUID.randomUUID().toString(), "testUser", false, System.currentTimeMillis(),null,null);
-		client.query("queryUnitTable", query);
-		
-		Map<String, Object> queries = QueryUtil.getQueries();
-		
-		assertEquals(0, queries.get("slowQueries"));
-		assertEquals(2, ((List<Map<String, Object>>) queries.get("queries")).size());
-		assertEquals("testUser", ((List<Map<String, Object>>)queries.get("queries")).get(0).get("user"));
-	}
+  @Before
+  public void setup() throws IOException, BlurException, TException {
+    setupConfigIfNeeded();
+    
+    Iface client = BlurClient.getClient(Config.getConnectionString());
+    
+    if (!client.tableList().contains("queryUnitTable")) {
+      TableDescriptor td = new TableDescriptor();
+      td.setShardCount(11);
+      td.setTableUri("file://" + TABLE_PATH + "/queryUnitTable");
+      td.setCluster("default");
+      td.setName("queryUnitTable");
+      td.setEnabled(true);
+      client.createTable(td);
+      
+      Record record = new Record("abcd", "fam0", Arrays.asList(new Column[]{ new Column("col0", "testvalue")}));
+      RecordMutation recordMutation = new RecordMutation(RecordMutationType.REPLACE_ENTIRE_RECORD, record);
+      RowMutation rowMutation = new RowMutation("queryUnitTable", "12345", RowMutationType.REPLACE_ROW, Arrays.asList(new RecordMutation[]{ recordMutation }));
+      client.mutate(rowMutation);
+    }
+  }
+  
+  @Test
+  public void testGetCurrentQueryCount() throws BlurException, IOException, TException {
+    Iface client = BlurClient.getClient(Config.getConnectionString());
+    BlurQuery query = new BlurQuery(
+        new Query("fam0.col0:*", true, ScoreType.SUPER, null, null), 
+        null, 
+        null, //new Selector(false, null, null, null, null, null, 0, 10, null), 
+        false, 0, 10, 1, 2000, UUID.randomUUID().toString(), "testUser", false, System.currentTimeMillis(),null,null);
+    client.query("queryUnitTable", query);
+    
+    assertEquals(1, QueryUtil.getCurrentQueryCount());
+  }
+  
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testGetQueries() throws IOException, BlurException, TException {
+    Iface client = BlurClient.getClient(Config.getConnectionString());
+    BlurQuery query = new BlurQuery(
+        new Query("fam0.col0:*", true, ScoreType.SUPER, null, null), 
+        null, 
+        null, //new Selector(false, null, null, null, null, null, 0, 10, null), 
+        false, 0, 10, 1, 2000, UUID.randomUUID().toString(), "testUser", false, System.currentTimeMillis(),null,null);
+    client.query("queryUnitTable", query);
+    
+    Map<String, Object> queries = QueryUtil.getQueries();
+    
+    assertEquals(0, queries.get("slowQueries"));
+    assertEquals(2, ((List<Map<String, Object>>) queries.get("queries")).size());
+    assertEquals("testUser", ((List<Map<String, Object>>)queries.get("queries")).get(0).get("user"));
+  }
 }

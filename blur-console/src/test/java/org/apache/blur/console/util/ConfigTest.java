@@ -30,30 +30,30 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ConfigTest extends ConsoleTestBase {
-	
-	@Before
-	public void setup() throws IOException {
-		Config.setupConfig();
-	}
+  
+  @Before
+  public void setup() throws IOException {
+    Config.setupConfig();
+  }
 
-	@Test
-	public void testGetConsolePort() {
-		assertEquals(8080, Config.getConsolePort());
-	}
+  @Test
+  public void testGetConsolePort() {
+    assertEquals(8080, Config.getConsolePort());
+  }
 
-	@Test
-	public void testGetBlurConfig() {
-		BlurConfiguration blurConfig = Config.getBlurConfig();
-		assertNotNull(blurConfig);
-	}
+  @Test
+  public void testGetBlurConfig() {
+    BlurConfiguration blurConfig = Config.getBlurConfig();
+    assertNotNull(blurConfig);
+  }
 
-	@Test
-	public void testGetConnectionString() throws IOException {
-		assertTrue(StringUtils.contains(Config.getConnectionString(), InetAddress.getLocalHost().getHostName()));
-	}
-	
-	@Test
-	public void testGetZookeeper() {
-		assertNotNull(Config.getZookeeper());
-	}
+  @Test
+  public void testGetConnectionString() throws IOException {
+    assertTrue(StringUtils.contains(Config.getConnectionString(), InetAddress.getLocalHost().getHostName()));
+  }
+  
+  @Test
+  public void testGetZookeeper() {
+    assertNotNull(Config.getZookeeper());
+  }
 }

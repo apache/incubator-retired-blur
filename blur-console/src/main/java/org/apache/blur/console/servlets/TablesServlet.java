@@ -34,110 +34,110 @@ import org.apache.blur.console.util.TableUtil;
 import org.codehaus.jackson.map.ObjectMapper;
 
 public class TablesServlet extends BaseConsoleServlet {
-	private static final long serialVersionUID = -5725846390100596115L;
-	private static Pattern tableSchemaPattern = Pattern.compile("/(.*)/schema");
-	private static Pattern tableEnablePattern = Pattern.compile("/(.*)/enable");
-	private static Pattern tableDisablePattern = Pattern.compile("/(.*)/disable");
-	private static Pattern tableDeletePattern = Pattern.compile("/(.*)/delete");
-	private static Pattern tableTermsPattern = Pattern.compile("/(.*)/(.*)/(.*)/terms");
+  private static final long serialVersionUID = -5725846390100596115L;
+  private static Pattern tableSchemaPattern = Pattern.compile("/(.*)/schema");
+  private static Pattern tableEnablePattern = Pattern.compile("/(.*)/enable");
+  private static Pattern tableDisablePattern = Pattern.compile("/(.*)/disable");
+  private static Pattern tableDeletePattern = Pattern.compile("/(.*)/delete");
+  private static Pattern tableTermsPattern = Pattern.compile("/(.*)/(.*)/(.*)/terms");
 
-	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-		String path = req.getPathInfo();
-		Matcher m;
-		if (path == null) {
-			summary(res);
-		} else if ((m = tableSchemaPattern.matcher(path)).matches()) {
-			schema(res, m.group(1));
-		} else if ((m = tableTermsPattern.matcher(path)).matches()) {
-			terms(res, m.group(1), m.group(2), m.group(3), req.getParameter("startsWith"));
-		} else if ((m = tableEnablePattern.matcher(path)).matches()) {
-			enable(res, m.group(1));
-		} else if ((m = tableDisablePattern.matcher(path)).matches()) {
-			disable(res, m.group(1));
-		} else if ((m = tableDeletePattern.matcher(path)).matches()) {
-			delete(res, m.group(1), req.getParameter("includeFiles"));
-		} else {
-			sendNotFound(res, req.getRequestURI());
-		}
-	}
+  @Override
+  protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+    String path = req.getPathInfo();
+    Matcher m;
+    if (path == null) {
+      summary(res);
+    } else if ((m = tableSchemaPattern.matcher(path)).matches()) {
+      schema(res, m.group(1));
+    } else if ((m = tableTermsPattern.matcher(path)).matches()) {
+      terms(res, m.group(1), m.group(2), m.group(3), req.getParameter("startsWith"));
+    } else if ((m = tableEnablePattern.matcher(path)).matches()) {
+      enable(res, m.group(1));
+    } else if ((m = tableDisablePattern.matcher(path)).matches()) {
+      disable(res, m.group(1));
+    } else if ((m = tableDeletePattern.matcher(path)).matches()) {
+      delete(res, m.group(1), req.getParameter("includeFiles"));
+    } else {
+      sendNotFound(res, req.getRequestURI());
+    }
+  }
 
-	@SuppressWarnings("rawtypes")
-	private void summary(HttpServletResponse response) throws IOException {
-		Map<String, List> tableSummaries = new HashMap<String, List>();
-		try {
-			tableSummaries = TableUtil.getTableSummaries();
-		} catch (IOException e) {
-			throw new IOException(e);
-		} catch (Exception e) {
-			sendError(response, e);
-			return;
-		}
+  @SuppressWarnings("rawtypes")
+  private void summary(HttpServletResponse response) throws IOException {
+    Map<String, List> tableSummaries = new HashMap<String, List>();
+    try {
+      tableSummaries = TableUtil.getTableSummaries();
+    } catch (IOException e) {
+      throw new IOException(e);
+    } catch (Exception e) {
+      sendError(response, e);
+      return;
+    }
 
-		HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(tableSummaries), HttpUtil.JSON);
-	}
+    HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(tableSummaries), HttpUtil.JSON);
+  }
 
-	private void schema(HttpServletResponse response, String table) throws IOException {
-		Object schema;
-		try {
-			schema = TableUtil.getSchema(table);
-		} catch (IOException e) {
-			throw new IOException(e);
-		} catch (Exception e) {
-			sendError(response, e);
-			return;
-		}
+  private void schema(HttpServletResponse response, String table) throws IOException {
+    Object schema;
+    try {
+      schema = TableUtil.getSchema(table);
+    } catch (IOException e) {
+      throw new IOException(e);
+    } catch (Exception e) {
+      sendError(response, e);
+      return;
+    }
 
-		HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(schema), HttpUtil.JSON);
-	}
+    HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(schema), HttpUtil.JSON);
+  }
 
-	private void terms(HttpServletResponse res, String table, String family, String column, String startsWith) throws IOException {
-		List<String> terms = new ArrayList<String>();
-		try {
-			terms = TableUtil.getTerms(table, family, column, startsWith);
-		} catch (IOException e) {
-			throw new IOException(e);
-		} catch (Exception e) {
-			sendError(res, e);
-			return;
-		}
+  private void terms(HttpServletResponse res, String table, String family, String column, String startsWith) throws IOException {
+    List<String> terms = new ArrayList<String>();
+    try {
+      terms = TableUtil.getTerms(table, family, column, startsWith);
+    } catch (IOException e) {
+      throw new IOException(e);
+    } catch (Exception e) {
+      sendError(res, e);
+      return;
+    }
 
-		HttpUtil.sendResponse(res, new ObjectMapper().writeValueAsString(terms), HttpUtil.JSON);
-	}
+    HttpUtil.sendResponse(res, new ObjectMapper().writeValueAsString(terms), HttpUtil.JSON);
+  }
 
-	private void enable(HttpServletResponse response, String table) throws IOException {
-		try {
-			TableUtil.enableTable(table);
-		} catch (IOException e) {
-			throw new IOException(e);
-		} catch (Exception e) {
-			sendError(response, e);
-			return;
-		}
-		sendGenericOk(response);
-	}
+  private void enable(HttpServletResponse response, String table) throws IOException {
+    try {
+      TableUtil.enableTable(table);
+    } catch (IOException e) {
+      throw new IOException(e);
+    } catch (Exception e) {
+      sendError(response, e);
+      return;
+    }
+    sendGenericOk(response);
+  }
 
-	private void disable(HttpServletResponse response, String table) throws IOException {
-		try {
-			TableUtil.disableTable(table);
-		} catch (IOException e) {
-			throw new IOException(e);
-		} catch (Exception e) {
-			sendError(response, e);
-			return;
-		}
-		sendGenericOk(response);
-	}
+  private void disable(HttpServletResponse response, String table) throws IOException {
+    try {
+      TableUtil.disableTable(table);
+    } catch (IOException e) {
+      throw new IOException(e);
+    } catch (Exception e) {
+      sendError(response, e);
+      return;
+    }
+    sendGenericOk(response);
+  }
 
-	private void delete(HttpServletResponse response, String table, String includeFiles) throws IOException {
-		try {
-			TableUtil.deleteTable(table, Boolean.parseBoolean(includeFiles));
-		} catch (IOException e) {
-			throw new IOException(e);
-		} catch (Exception e) {
-			sendError(response, e);
-			return;
-		}
-		sendGenericOk(response);
-	}
+  private void delete(HttpServletResponse response, String table, String includeFiles) throws IOException {
+    try {
+      TableUtil.deleteTable(table, Boolean.parseBoolean(includeFiles));
+    } catch (IOException e) {
+      throw new IOException(e);
+    } catch (Exception e) {
+      sendError(response, e);
+      return;
+    }
+    sendGenericOk(response);
+  }
 }

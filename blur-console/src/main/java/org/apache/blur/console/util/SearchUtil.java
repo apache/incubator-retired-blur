@@ -45,196 +45,196 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class SearchUtil {
-	private static final String TOTAL_KEY = "total";
-	private static final String DATA_KEY = "results";
-	private static final String FAMILY_KEY = "families";
+  private static final String TOTAL_KEY = "total";
+  private static final String DATA_KEY = "results";
+  private static final String FAMILY_KEY = "families";
 
-	private static final String ROW_ROW_OPTION = "rowrow";
-	private static final String RECORD_RECORD_OPTION = "recordrecord";
+  private static final String ROW_ROW_OPTION = "rowrow";
+  private static final String RECORD_RECORD_OPTION = "recordrecord";
 
-	public static Map<String, Object> search(Map<String, String[]> params, String remoteHost) throws IOException, TException {
-		String table = HttpUtil.getFirstParam(params.get("table"));
-		String query = HttpUtil.getFirstParam(params.get("query"));
-		String rowQuery = HttpUtil.getFirstParam(params.get("rowRecordOption"));
-		String start = HttpUtil.getFirstParam(params.get("start"));
-		String fetch = HttpUtil.getFirstParam(params.get("fetch"));
-		String[] families = params.get("families[]");
-        String securityUser = HttpUtil.getFirstParam(params.get("securityUser"));
+  public static Map<String, Object> search(Map<String, String[]> params, String remoteHost) throws IOException, TException {
+    String table = HttpUtil.getFirstParam(params.get("table"));
+    String query = HttpUtil.getFirstParam(params.get("query"));
+    String rowQuery = HttpUtil.getFirstParam(params.get("rowRecordOption"));
+    String start = HttpUtil.getFirstParam(params.get("start"));
+    String fetch = HttpUtil.getFirstParam(params.get("fetch"));
+    String[] families = params.get("families[]");
+    String securityUser = HttpUtil.getFirstParam(params.get("securityUser"));
 
-		if (query.indexOf("rowid:") >= 0) {
-			return fetchRow(table, query, families, remoteHost, securityUser);
-		}
+    if (query.indexOf("rowid:") >= 0) {
+      return fetchRow(table, query, families, remoteHost, securityUser);
+    }
 
-		if (families == null || families.length == 0) {
-			return fullTextSearch(table, query, remoteHost, securityUser);
-		}
+    if (families == null || families.length == 0) {
+      return fullTextSearch(table, query, remoteHost, securityUser);
+    }
 
-		return searchAndFetch(table, query, rowQuery, start, fetch, families, remoteHost, securityUser);
-	}
+    return searchAndFetch(table, query, rowQuery, start, fetch, families, remoteHost, securityUser);
+  }
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private static Map<String, Object> searchAndFetch(String table, String query, String rowQuery, String start, String fetch, String[] families, String remoteHost, String securityUser) throws IOException, TException {
-		try {
-			Iface client = Config.getClient(remoteHost, securityUser);
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  private static Map<String, Object> searchAndFetch(String table, String query, String rowQuery, String start, String fetch, String[] families, String remoteHost, String securityUser) throws IOException, TException {
+    try {
+      Iface client = Config.getClient(remoteHost, securityUser);
 
-			boolean recordsOnly = RECORD_RECORD_OPTION.equalsIgnoreCase(rowQuery);
+      boolean recordsOnly = RECORD_RECORD_OPTION.equalsIgnoreCase(rowQuery);
 
-			BlurQuery blurQuery = new BlurQuery();
+      BlurQuery blurQuery = new BlurQuery();
 
-			Query q = new Query(query, ROW_ROW_OPTION.equalsIgnoreCase(rowQuery), ScoreType.SUPER, null, null);
-			blurQuery.setQuery(q);
-			blurQuery.setStart(Long.parseLong(start));
-			blurQuery.setFetch(Integer.parseInt(fetch));
-            blurQuery.setUserContext(remoteHost);
+      Query q = new Query(query, ROW_ROW_OPTION.equalsIgnoreCase(rowQuery), ScoreType.SUPER, null, null);
+      blurQuery.setQuery(q);
+      blurQuery.setStart(Long.parseLong(start));
+      blurQuery.setFetch(Integer.parseInt(fetch));
+      blurQuery.setUserContext(remoteHost);
 
-			Selector s = new Selector();
-			s.setRecordOnly(recordsOnly);
-			s.setColumnFamiliesToFetch(new HashSet<String>(Arrays.asList(families)));
-			blurQuery.setSelector(s);
+      Selector s = new Selector();
+      s.setRecordOnly(recordsOnly);
+      s.setColumnFamiliesToFetch(new HashSet<String>(Arrays.asList(families)));
+      blurQuery.setSelector(s);
 
-			BlurResults blurResults = client.query(table, blurQuery);
+      BlurResults blurResults = client.query(table, blurQuery);
 
-			Map<String, Object> results = new HashMap<String, Object>();
-			results.put(TOTAL_KEY, blurResults.getTotalResults());
+      Map<String, Object> results = new HashMap<String, Object>();
+      results.put(TOTAL_KEY, blurResults.getTotalResults());
 
-			Map<String, List> rows = new HashMap<String, List>();
-			for (BlurResult result : blurResults.getResults()) {
-				FetchResult fetchResult = result.getFetchResult();
+      Map<String, List> rows = new HashMap<String, List>();
+      for (BlurResult result : blurResults.getResults()) {
+        FetchResult fetchResult = result.getFetchResult();
 
-				if (recordsOnly) {
-					// Record Result
-					FetchRecordResult recordResult = fetchResult.getRecordResult();
-					Record record = recordResult.getRecord();
+        if (recordsOnly) {
+          // Record Result
+          FetchRecordResult recordResult = fetchResult.getRecordResult();
+          Record record = recordResult.getRecord();
 
-					String family = record.getFamily();
+          String family = record.getFamily();
 
-					List<Map<String, String>> fam = (List<Map<String, String>>) getFam(family, rows, recordsOnly);
-					fam.add(buildRow(record.getColumns(), record.getRecordId()));
-				} else {
-					// Row Result
-					FetchRowResult rowResult = fetchResult.getRowResult();
-					Row row = rowResult.getRow();
-					if (row.getRecords() == null || row.getRecords().size() == 0) {
-						for (String family : families) {
-							List<ResultRow> fam = (List<ResultRow>) getFam(family, rows, recordsOnly);
-							getRow(row.getId(), fam);
-						}
-					} else {
-						for (Record record : row.getRecords()) {
-							String family = record.getFamily();
+          List<Map<String, String>> fam = (List<Map<String, String>>) getFam(family, rows, recordsOnly);
+          fam.add(buildRow(record.getColumns(), record.getRecordId()));
+        } else {
+          // Row Result
+          FetchRowResult rowResult = fetchResult.getRowResult();
+          Row row = rowResult.getRow();
+          if (row.getRecords() == null || row.getRecords().size() == 0) {
+            for (String family : families) {
+              List<ResultRow> fam = (List<ResultRow>) getFam(family, rows, recordsOnly);
+              getRow(row.getId(), fam);
+            }
+          } else {
+            for (Record record : row.getRecords()) {
+              String family = record.getFamily();
 
-							List<ResultRow> fam = (List<ResultRow>) getFam(family, rows, recordsOnly);
-							ResultRow rowData = getRow(row.getId(), fam);
-							rowData.getRecords().add(buildRow(record.getColumns(), record.getRecordId()));
-						}
-					}
-				}
-			}
+              List<ResultRow> fam = (List<ResultRow>) getFam(family, rows, recordsOnly);
+              ResultRow rowData = getRow(row.getId(), fam);
+              rowData.getRecords().add(buildRow(record.getColumns(), record.getRecordId()));
+            }
+          }
+        }
+      }
 
-			results.put(FAMILY_KEY, new HashSet<String>(Arrays.asList(families)));
-			results.put(DATA_KEY, rows);
+      results.put(FAMILY_KEY, new HashSet<String>(Arrays.asList(families)));
+      results.put(DATA_KEY, rows);
 
-			return results;
-		} finally {
-			UserContext.reset();
-		}
-	}
+      return results;
+    } finally {
+      UserContext.reset();
+    }
+  }
 
-	private static Map<String, Object> fullTextSearch(String table, String query, String remoteHost, String securityUser) throws IOException, TException {
-		try {
-			Iface client = Config.getClient(remoteHost, securityUser);
+  private static Map<String, Object> fullTextSearch(String table, String query, String remoteHost, String securityUser) throws IOException, TException {
+    try {
+      Iface client = Config.getClient(remoteHost, securityUser);
 
-			BlurQuery blurQuery = new BlurQuery();
+      BlurQuery blurQuery = new BlurQuery();
 
-			Query q = new Query(query, true, ScoreType.SUPER, null, null);
-			blurQuery.setQuery(q);
-            blurQuery.setUserContext(remoteHost);
-			BlurResults blurResults = client.query(table, blurQuery);
+      Query q = new Query(query, true, ScoreType.SUPER, null, null);
+      blurQuery.setQuery(q);
+      blurQuery.setUserContext(remoteHost);
+      BlurResults blurResults = client.query(table, blurQuery);
 
-			Map<String, Object> results = new HashMap<String, Object>();
-			results.put(TOTAL_KEY, blurResults.getTotalResults());
-			return results;
-		} finally {
-			UserContext.reset();
-		}
-	}
+      Map<String, Object> results = new HashMap<String, Object>();
+      results.put(TOTAL_KEY, blurResults.getTotalResults());
+      return results;
+    } finally {
+      UserContext.reset();
+    }
+  }
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private static Map<String, Object> fetchRow(String table, String query, String[] families, String remoteHost, String securityUser) throws IOException, TException {
-		try {
-			Iface client = Config.getClient(remoteHost, securityUser);
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  private static Map<String, Object> fetchRow(String table, String query, String[] families, String remoteHost, String securityUser) throws IOException, TException {
+    try {
+      Iface client = Config.getClient(remoteHost, securityUser);
 
-			Selector selector = new Selector();
-			String rowid = StringUtils.remove(query, "rowid:");
-			selector.setRowId(rowid);
-			selector.setColumnFamiliesToFetch(new HashSet<String>(Arrays.asList(families)));
+      Selector selector = new Selector();
+      String rowid = StringUtils.remove(query, "rowid:");
+      selector.setRowId(rowid);
+      selector.setColumnFamiliesToFetch(new HashSet<String>(Arrays.asList(families)));
 
-			FetchResult fetchRow = client.fetchRow(table, selector);
+      FetchResult fetchRow = client.fetchRow(table, selector);
 
-			Map<String, Object> results = new HashMap<String, Object>();
-			results.put(TOTAL_KEY, fetchRow.getRowResult().getRow() == null ? 0 : 1);
+      Map<String, Object> results = new HashMap<String, Object>();
+      results.put(TOTAL_KEY, fetchRow.getRowResult().getRow() == null ? 0 : 1);
 
-			Map<String, List> rows = new HashMap<String, List>();
-			Row row = fetchRow.getRowResult().getRow();
-			if (row != null && row.getRecords() != null) {
-				for (Record record : row.getRecords()) {
-					String family = record.getFamily();
+      Map<String, List> rows = new HashMap<String, List>();
+      Row row = fetchRow.getRowResult().getRow();
+      if (row != null && row.getRecords() != null) {
+        for (Record record : row.getRecords()) {
+          String family = record.getFamily();
 
-					List<ResultRow> fam = (List<ResultRow>) getFam(family, rows, false);
-					ResultRow rowData = getRow(row.getId(), fam);
-					rowData.getRecords().add(buildRow(record.getColumns(), record.getRecordId()));
-				}
-			}
-			results.put(DATA_KEY, rows);
-			results.put(FAMILY_KEY, new HashSet<String>(Arrays.asList(families)));
+          List<ResultRow> fam = (List<ResultRow>) getFam(family, rows, false);
+          ResultRow rowData = getRow(row.getId(), fam);
+          rowData.getRecords().add(buildRow(record.getColumns(), record.getRecordId()));
+        }
+      }
+      results.put(DATA_KEY, rows);
+      results.put(FAMILY_KEY, new HashSet<String>(Arrays.asList(families)));
 
-			return results;
-		} finally {
-			UserContext.reset();
-		}
-	}
+      return results;
+    } finally {
+      UserContext.reset();
+    }
+  }
 
-	private static Map<String, String> buildRow(List<Column> columns, String recordid) {
-		Map<String, String> map = new TreeMap<String, String>();
-		map.put("recordid", recordid);
+  private static Map<String, String> buildRow(List<Column> columns, String recordid) {
+    Map<String, String> map = new TreeMap<String, String>();
+    map.put("recordid", recordid);
 
-		for (Column column : columns) {
-			map.put(column.getName(), column.getValue());
-		}
+    for (Column column : columns) {
+      map.put(column.getName(), column.getValue());
+    }
 
-		return map;
-	}
+    return map;
+  }
 
-	@SuppressWarnings("rawtypes")
-	private static List getFam(String fam, Map<String, List> results, boolean recordOnly) {
-		List famResults = results.get(fam);
+  @SuppressWarnings("rawtypes")
+  private static List getFam(String fam, Map<String, List> results, boolean recordOnly) {
+    List famResults = results.get(fam);
 
-		if (famResults == null) {
-			if (recordOnly) {
-				famResults = new ArrayList<Map<String, String>>();
-			} else {
-				famResults = new ArrayList<ResultRow>();
-			}
-			results.put(fam, famResults);
-		}
+    if (famResults == null) {
+      if (recordOnly) {
+        famResults = new ArrayList<Map<String, String>>();
+      } else {
+        famResults = new ArrayList<ResultRow>();
+      }
+      results.put(fam, famResults);
+    }
 
-		return famResults;
-	}
+    return famResults;
+  }
 
-	private static ResultRow getRow(String rowid, List<ResultRow> rows) {
-		ResultRow row = null;
-		for (ResultRow r : rows) {
-			if (r.getRowid().equals(rowid)) {
-				row = r;
-				break;
-			}
-		}
+  private static ResultRow getRow(String rowid, List<ResultRow> rows) {
+    ResultRow row = null;
+    for (ResultRow r : rows) {
+      if (r.getRowid().equals(rowid)) {
+        row = r;
+        break;
+      }
+    }
 
-		if (row == null) {
-			row = new ResultRow(rowid);
-			rows.add(row);
-		}
+    if (row == null) {
+      row = new ResultRow(rowid);
+      rows.add(row);
+    }
 
-		return row;
-	}
+    return row;
+  }
 }

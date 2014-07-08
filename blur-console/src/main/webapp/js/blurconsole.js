@@ -23,13 +23,13 @@ under the License.
  * Root namespace module
  */
 var blurconsole = (function () {
-	'use strict';
+  'use strict';
 
-	//---------------------- Public API -------------------------
-	function initModule( $container ) {
-		blurconsole.model.initModule();
-		blurconsole.shell.initModule( $container );
-	}
+  //---------------------- Public API -------------------------
+  function initModule( $container ) {
+    blurconsole.model.initModule();
+    blurconsole.shell.initModule( $container );
+  }
 
-	return { initModule: initModule };
+  return { initModule: initModule };
 }());

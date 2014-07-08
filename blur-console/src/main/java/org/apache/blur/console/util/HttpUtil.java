@@ -24,15 +24,15 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 
 public class HttpUtil {
-	public static final String JSON = "application/json";
-	public static final String TEXT = "plain/text";
+  public static final String JSON = "application/json";
+  public static final String TEXT = "plain/text";
 
-	public static void sendResponse(HttpServletResponse res, String body, String contentType) throws IOException {
-		res.setContentType(contentType);
-		res.setContentLength(body.getBytes().length);
-		res.setStatus(HttpServletResponse.SC_OK);
-		IOUtils.write(body, res.getOutputStream());
-	}
+  public static void sendResponse(HttpServletResponse res, String body, String contentType) throws IOException {
+    res.setContentType(contentType);
+    res.setContentLength(body.getBytes().length);
+    res.setStatus(HttpServletResponse.SC_OK);
+    IOUtils.write(body, res.getOutputStream());
+  }
 
     public static String getFirstParam(String[] param) {
         if (param == null || param.length == 0) {

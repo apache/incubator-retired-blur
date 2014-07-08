@@ -37,107 +37,107 @@ import org.apache.commons.collections.CollectionUtils;
 
 public class NodeUtil {
 
-	@SuppressWarnings("unchecked")
-	public static Map<String, Object> getControllerStatus() throws IOException {
-		ZookeeperClusterStatus zk = Config.getZookeeper();
+  @SuppressWarnings("unchecked")
+  public static Map<String, Object> getControllerStatus() throws IOException {
+    ZookeeperClusterStatus zk = Config.getZookeeper();
 
-		List<String> allControllers = new ArrayList<String>();
-		List<String> oControllers = new ArrayList<String>();
-		allControllers = zk.getOnlineControllerList();
-		oControllers = zk.getControllerServerList();
+    List<String> allControllers = new ArrayList<String>();
+    List<String> oControllers = new ArrayList<String>();
+    allControllers = zk.getOnlineControllerList();
+    oControllers = zk.getControllerServerList();
 
-		Collection<String> onlineControllers = CollectionUtils.intersection(allControllers, oControllers);
-		Collection<String> offlineControllers = CollectionUtils.subtract(allControllers, oControllers);
+    Collection<String> onlineControllers = CollectionUtils.intersection(allControllers, oControllers);
+    Collection<String> offlineControllers = CollectionUtils.subtract(allControllers, oControllers);
 
-		Map<String, Object> data = new HashMap<String, Object>();
+    Map<String, Object> data = new HashMap<String, Object>();
 
-		data.put("online", onlineControllers);
-		data.put("offline", offlineControllers);
+    data.put("online", onlineControllers);
+    data.put("offline", offlineControllers);
 
-		return data;
-	}
+    return data;
+  }
 
-	public static List<Map<String, Object>> getClusterStatus() throws IOException {
-		ZookeeperClusterStatus zk = Config.getZookeeper();
+  public static List<Map<String, Object>> getClusterStatus() throws IOException {
+    ZookeeperClusterStatus zk = Config.getZookeeper();
 
-		List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
-		List<String> clusters = zk.getClusterList(false);
+    List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+    List<String> clusters = zk.getClusterList(false);
 
-		for (String cluster : clusters) {
-			Map<String, Object> clusterObj = new HashMap<String, Object>();
-			clusterObj.put("name", cluster);
+    for (String cluster : clusters) {
+      Map<String, Object> clusterObj = new HashMap<String, Object>();
+      clusterObj.put("name", cluster);
 
-			List<String> offlineShardServers = zk.getOfflineShardServers(false, cluster);
-			List<String> onlineShardServers = zk.getOnlineShardServers(false, cluster);
+      List<String> offlineShardServers = zk.getOfflineShardServers(false, cluster);
+      List<String> onlineShardServers = zk.getOnlineShardServers(false, cluster);
 
-			clusterObj.put("online", onlineShardServers);
-			clusterObj.put("offline", offlineShardServers);
+      clusterObj.put("online", onlineShardServers);
+      clusterObj.put("offline", offlineShardServers);
 
-			data.add(clusterObj);
-		}
+      data.add(clusterObj);
+    }
 
-		return data;
-	}
+    return data;
+  }
 
-	public static Map<String, Object> getZookeeperStatus() throws IOException {
-		String[] connections = Config.getBlurConfig().get("blur.zookeeper.connection").split(",");
-		Set<String> onlineZookeepers = new HashSet<String>();
-		Set<String> offlineZookeepers = new HashSet<String>();
+  public static Map<String, Object> getZookeeperStatus() throws IOException {
+    String[] connections = Config.getBlurConfig().get("blur.zookeeper.connection").split(",");
+    Set<String> onlineZookeepers = new HashSet<String>();
+    Set<String> offlineZookeepers = new HashSet<String>();
 
-		for (String connection : connections) {
-			Socket socket = null;
-			InputStream response = null;
-			OutputStream question = null;
-			try {
-				URI parsedConnection = new URI("my://" + connection);
-				String host = parsedConnection.getHost();
-				int port = parsedConnection.getPort() >= 0 ? parsedConnection.getPort() : 2181;
-				byte[] reqBytes = new byte[4];
-				ByteBuffer req = ByteBuffer.wrap(reqBytes);
-				req.putInt(ByteBuffer.wrap("ruok".getBytes()).getInt());
-				socket = new Socket();
-				socket.setSoLinger(false, 10);
-				socket.setSoTimeout(20000);
-				parsedConnection.getPort();
-				socket.connect(new InetSocketAddress(host, port));
+    for (String connection : connections) {
+      Socket socket = null;
+      InputStream response = null;
+      OutputStream question = null;
+      try {
+        URI parsedConnection = new URI("my://" + connection);
+        String host = parsedConnection.getHost();
+        int port = parsedConnection.getPort() >= 0 ? parsedConnection.getPort() : 2181;
+        byte[] reqBytes = new byte[4];
+        ByteBuffer req = ByteBuffer.wrap(reqBytes);
+        req.putInt(ByteBuffer.wrap("ruok".getBytes()).getInt());
+        socket = new Socket();
+        socket.setSoLinger(false, 10);
+        socket.setSoTimeout(20000);
+        parsedConnection.getPort();
+        socket.connect(new InetSocketAddress(host, port));
 
-				response = socket.getInputStream();
-				question = socket.getOutputStream();
+        response = socket.getInputStream();
+        question = socket.getOutputStream();
 
-				question.write(reqBytes);
+        question.write(reqBytes);
 
-				byte[] resBytes = new byte[4];
+        byte[] resBytes = new byte[4];
 
-				response.read(resBytes);
-				String status = new String(resBytes);
-				if (status.equals("imok")) {
-					onlineZookeepers.add(connection);
-				} else {
-					offlineZookeepers.add(connection);
-				}
-				socket.close();
-				response.close();
-				question.close();
-			} catch (Exception e) {
-				offlineZookeepers.add(connection);
-			} finally {
-				if (socket != null) {
-					socket.close();
-				}
-				if (response != null) {
-					response.close();
-				}
-				if (question != null) {
-					question.close();
-				}
-			}
-		}
+        response.read(resBytes);
+        String status = new String(resBytes);
+        if (status.equals("imok")) {
+          onlineZookeepers.add(connection);
+        } else {
+          offlineZookeepers.add(connection);
+        }
+        socket.close();
+        response.close();
+        question.close();
+      } catch (Exception e) {
+        offlineZookeepers.add(connection);
+      } finally {
+        if (socket != null) {
+          socket.close();
+        }
+        if (response != null) {
+          response.close();
+        }
+        if (question != null) {
+          question.close();
+        }
+      }
+    }
 
-		Map<String, Object> data = new HashMap<String, Object>();
+    Map<String, Object> data = new HashMap<String, Object>();
 
-		data.put("online", onlineZookeepers);
-		data.put("offline", offlineZookeepers);
+    data.put("online", onlineZookeepers);
+    data.put("offline", offlineZookeepers);
 
-		return data;
-	}
+    return data;
+  }
 }

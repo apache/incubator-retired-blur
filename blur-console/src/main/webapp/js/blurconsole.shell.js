@@ -24,167 +24,167 @@ under the License.
  */
 /* global blurconsole:false, $:false */
 blurconsole.shell = (function () {
-	'use strict';
+  'use strict';
     
     //---------------------------- Configuration and State ----------------------------
-	var configMap = {
-		anchorSchemaMap : {
-			tab : { dashboard : true, tables : true, queries : true, search : true },
-			_tab : { query: true, table: true, rr: true }
-		},
-		defaultTab : 'dashboard',
-		allTabs : ['dashboard', 'tables', 'queries', 'search']
-	},
-	stateMap = {
-		$container : null,
-		currentTab : null,
-		anchorMap  : {}
-	},
-	jqueryMap = {};
+  var configMap = {
+    anchorSchemaMap : {
+      tab : { dashboard : true, tables : true, queries : true, search : true },
+      _tab : { query: true, table: true, rr: true }
+    },
+    defaultTab : 'dashboard',
+    allTabs : ['dashboard', 'tables', 'queries', 'search']
+  },
+  stateMap = {
+    $container : null,
+    currentTab : null,
+    anchorMap  : {}
+  },
+  jqueryMap = {};
     
     //---------------------------- Private Methods -------------------------
     function _setJqueryMap() {
-		var $container = stateMap.$container;
-		jqueryMap = {
-			$container   : $container,
-			$sideNavTabs : $('.side-nav a')
-		};
-	}
+    var $container = stateMap.$container;
+    jqueryMap = {
+      $container   : $container,
+      $sideNavTabs : $('.side-nav a')
+    };
+  }
     
     function _copyAnchorMap() {
-		return $.extend( true, {}, stateMap.anchorMap );
-	}
+    return $.extend( true, {}, stateMap.anchorMap );
+  }
     
     function _switchView( tab ) {
-		if (stateMap.currentTab !== tab) {
-			for ( var i = 0; i < configMap.allTabs.length; i++ ) {
-				if (blurconsole[configMap.allTabs[i]]) {
-					blurconsole[configMap.allTabs[i]].unloadModule();
-				}
-			}
+    if (stateMap.currentTab !== tab) {
+      for ( var i = 0; i < configMap.allTabs.length; i++ ) {
+        if (blurconsole[configMap.allTabs[i]]) {
+          blurconsole[configMap.allTabs[i]].unloadModule();
+        }
+      }
 
-			stateMap.currentTab = tab;
-			jqueryMap.$sideNavTabs.removeClass('active');
-			jqueryMap.$sideNavTabs.filter('a[href$="' + tab + '"]').addClass('active');
-			if (blurconsole[tab]) {
-				blurconsole[tab].initModule( jqueryMap.$container );
-			}
-		}
+      stateMap.currentTab = tab;
+      jqueryMap.$sideNavTabs.removeClass('active');
+      jqueryMap.$sideNavTabs.filter('a[href$="' + tab + '"]').addClass('active');
+      if (blurconsole[tab]) {
+        blurconsole[tab].initModule( jqueryMap.$container );
+      }
+    }
 
-		return true;
-	}
+    return true;
+  }
     
     //---------------------------- Event Handlers and DOM Methods ----------
     function _onHashChange() {
-		var anchorMapPrevious = _copyAnchorMap(), anchorMapProposed;
+    var anchorMapPrevious = _copyAnchorMap(), anchorMapProposed;
 
-		try {
+    try {
             anchorMapProposed = $.uriAnchor.makeAnchorMap();
         } catch ( error ) {
-			$.uriAnchor.setAnchor( anchorMapPrevious, null, true );
-			return false;
-		}
+      $.uriAnchor.setAnchor( anchorMapPrevious, null, true );
+      return false;
+    }
 
-		stateMap.anchorMap = anchorMapProposed;
+    stateMap.anchorMap = anchorMapProposed;
 
-		var _sTabPrevious = anchorMapPrevious._s_tab; // jshint ignore:line
-		var _sTabProposed = anchorMapProposed._s_tab; // jshint ignore:line
+    var _sTabPrevious = anchorMapPrevious._s_tab; // jshint ignore:line
+    var _sTabProposed = anchorMapProposed._s_tab; // jshint ignore:line
 
-		if ( ! anchorMapPrevious || _sTabPrevious !== _sTabProposed ){
-			var sTabProposed = anchorMapProposed.tab;
-			switch ( sTabProposed ) {
-				case 'dashboard':
-				case 'tables':
-				case 'queries':
-				case 'search':
-					_switchView( sTabProposed );
-					break;
-				default:
-					$.uriAnchor.setAnchor( anchorMapPrevious, null, true );
-			}
-		}
+    if ( ! anchorMapPrevious || _sTabPrevious !== _sTabProposed ){
+      var sTabProposed = anchorMapProposed.tab;
+      switch ( sTabProposed ) {
+        case 'dashboard':
+        case 'tables':
+        case 'queries':
+        case 'search':
+          _switchView( sTabProposed );
+          break;
+        default:
+          $.uriAnchor.setAnchor( anchorMapPrevious, null, true );
+      }
+    }
 
-		return false;
-	}
+    return false;
+  }
     
     function _onClickTab(evt) {
-		var target = $(evt.currentTarget);
-		changeAnchorPart({
-			tab : target.attr('href').split('=')[1]
-		});
-		return false;
-	}
+    var target = $(evt.currentTarget);
+    changeAnchorPart({
+      tab : target.attr('href').split('=')[1]
+    });
+    return false;
+  }
     
     //---------------------------- Public API ------------------------------
-	function changeAnchorPart( argMap ) {
-		var anchorMapRevise = _copyAnchorMap(), boolReturn = true;
+  function changeAnchorPart( argMap ) {
+    var anchorMapRevise = _copyAnchorMap(), boolReturn = true;
 
-		KEYVAL:
-		for ( var keyName in argMap ) {
-			if ( argMap.hasOwnProperty( keyName ) ) {
-				if ( keyName.indexOf( '_' ) === 0 ) { continue KEYVAL; }
-				anchorMapRevise[keyName] = argMap[keyName];
-				var keyNameDep = '_' + keyName;
-				if ( argMap[keyNameDep] ) {
-					anchorMapRevise[keyNameDep] = argMap[keyNameDep];
-				} else {
-					delete anchorMapRevise[keyNameDep];
-					delete anchorMapRevise['_s' + keyNameDep];
-				}
-			}
-		}
+    KEYVAL:
+    for ( var keyName in argMap ) {
+      if ( argMap.hasOwnProperty( keyName ) ) {
+        if ( keyName.indexOf( '_' ) === 0 ) { continue KEYVAL; }
+        anchorMapRevise[keyName] = argMap[keyName];
+        var keyNameDep = '_' + keyName;
+        if ( argMap[keyNameDep] ) {
+          anchorMapRevise[keyNameDep] = argMap[keyNameDep];
+        } else {
+          delete anchorMapRevise[keyNameDep];
+          delete anchorMapRevise['_s' + keyNameDep];
+        }
+      }
+    }
 
-		try {
-			$.uriAnchor.setAnchor( anchorMapRevise );
-		} catch ( error ) {
-			$.uriAnchor.setAnchor( stateMap.anchorMap, null, true );
-			boolReturn = false;
-		}
+    try {
+      $.uriAnchor.setAnchor( anchorMapRevise );
+    } catch ( error ) {
+      $.uriAnchor.setAnchor( stateMap.anchorMap, null, true );
+      boolReturn = false;
+    }
 
-		return boolReturn;
-	}
+    return boolReturn;
+  }
 
-	function initModule( $container ) {
-		stateMap.$container = $container;
-		_setJqueryMap();
+  function initModule( $container ) {
+    stateMap.$container = $container;
+    _setJqueryMap();
 
-		blurconsole.schema.initModule();
-		blurconsole.logging.initModule();
+    blurconsole.schema.initModule();
+    blurconsole.logging.initModule();
 
-		$('#view_logging_trigger').on('click', function() {
-			$.gevent.publish('show-logging');
-		});
+    $('#view_logging_trigger').on('click', function() {
+      $.gevent.publish('show-logging');
+    });
 
-		$('.side-nav li').tooltip();
+    $('.side-nav li').tooltip();
 
-		jqueryMap.$sideNavTabs.click( _onClickTab );
+    jqueryMap.$sideNavTabs.click( _onClickTab );
 
-		$.uriAnchor.configModule({
-			schema_map : configMap.anchorSchemaMap // jshint ignore:line
-		});
+    $.uriAnchor.configModule({
+      schema_map : configMap.anchorSchemaMap // jshint ignore:line
+    });
 
-		$(window).bind('hashchange', _onHashChange).trigger('hashchange');
+    $(window).bind('hashchange', _onHashChange).trigger('hashchange');
 
-		var startupMap = $.uriAnchor.makeAnchorMap();
+    var startupMap = $.uriAnchor.makeAnchorMap();
 
-		if ( !startupMap.tab ) {
-			changeAnchorPart({
-				tab: configMap.defaultTab
-			});
-		}
+    if ( !startupMap.tab ) {
+      changeAnchorPart({
+        tab: configMap.defaultTab
+      });
+    }
 
-		$.gevent.subscribe($(document), 'logging-updated', function() {
-			var errors = blurconsole.model.logs.getLogs();
-			if (errors.length === 0) {
-				$('#view_logging_trigger .badge').html('');
-			} else {
-				$('#view_logging_trigger .badge').html(errors.length);
-			}
-		});
-	}
+    $.gevent.subscribe($(document), 'logging-updated', function() {
+      var errors = blurconsole.model.logs.getLogs();
+      if (errors.length === 0) {
+        $('#view_logging_trigger .badge').html('');
+      } else {
+        $('#view_logging_trigger .badge').html(errors.length);
+      }
+    });
+  }
 
-	return {
-		initModule: initModule,
-		changeAnchorPart : changeAnchorPart
-	};
+  return {
+    initModule: initModule,
+    changeAnchorPart : changeAnchorPart
+  };
 }());

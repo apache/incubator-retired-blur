@@ -20,7 +20,6 @@ package org.apache.blur.console;
 import org.apache.blur.console.servlets.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.jasper.tagplugins.jstl.core.Url;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;

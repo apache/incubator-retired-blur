@@ -17,6 +17,7 @@ package org.apache.blur.console.util;
  * limitations under the License.
  */
 
+
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.console.providers.AllAllowedProvider;
 import org.apache.blur.console.providers.IProvider;
@@ -37,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -92,9 +94,7 @@ public class Config {
       JsonFactory factory = new JsonFactory();
       ObjectMapper mapper = new ObjectMapper(factory);
       File from = new File(securityFile);
-      TypeReference<Map<String, Map<String, String>>> typeRef
-          = new TypeReference<Map<String, Map<String, String>>>() {
-      };
+      TypeReference<Map<String, Map<String, String>>> typeRef = new TypeReference<Map<String, Map<String, String>>>(){};
 
       try {
         globalUserProperties = mapper.readValue(from, typeRef);
@@ -187,5 +187,14 @@ public class Config {
 
   public static IProvider getProvider() {
     return provider;
+  }
+
+  public static Collection<String> getSecurityUserNames() {
+    if(globalUserProperties != null) {
+      return globalUserProperties.keySet();
+    } else {
+      return new ArrayList<String>();
+    }
+
   }
 }

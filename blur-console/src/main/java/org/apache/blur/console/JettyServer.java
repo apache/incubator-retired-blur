@@ -20,11 +20,14 @@ package org.apache.blur.console;
 import org.apache.blur.console.servlets.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.jasper.tagplugins.jstl.core.Url;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.webapp.WebAppContext;
 
+import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 public class JettyServer {
@@ -32,8 +35,8 @@ public class JettyServer {
   private Server server;
   private boolean devMode;
 
-  private static final String DEV_WEBAPPDIR = "../classes/";
-  private static final String PROD_WEBAPPDIR = "webapp/";
+  private static final String DEV_WEBAPPDIR = "src/main/webapp/public/";
+  private static final String PROD_WEBAPPDIR = "webapp/public/";
   private static final String CONTEXTPATH = "/console";
 
   private final Log log = LogFactory.getLog(JettyServer.class);
@@ -43,7 +46,7 @@ public class JettyServer {
     this.devMode = devMode;
   }
 
-  public JettyServer start() {
+  public JettyServer start() throws MalformedURLException {
     createServer();
     return this;
   }
@@ -56,16 +59,16 @@ public class JettyServer {
     }
   }
 
-  private void createServer() {
+  private void createServer() throws MalformedURLException {
     server = new Server(port);
 
     // for localhost:port/console/index.html and whatever else is in the webapp directory
     URL warUrl = null;
-    if (devMode) {
-      warUrl = this.getClass().getClassLoader().getResource(DEV_WEBAPPDIR);
-    } else {
-      warUrl = this.getClass().getClassLoader().getResource(PROD_WEBAPPDIR);
-    }
+      if (devMode) {
+          warUrl = new URL("file://" + new File(DEV_WEBAPPDIR).getAbsolutePath());
+      } else {
+          warUrl = this.getClass().getClassLoader().getResource(PROD_WEBAPPDIR);
+      }
     String warUrlString = warUrl.toExternalForm();
     server.setHandler(new WebAppContext(warUrlString, CONTEXTPATH));
 
@@ -77,6 +80,7 @@ public class JettyServer {
     context.addServlet(new ServletHolder(new QueriesServlet()), "/queries/*");
     context.addServlet(new ServletHolder(new SearchServlet()), "/search/*");
 
+    System.out.println("started server on http://localhost:" + port + CONTEXTPATH);
     try {
       server.start();
     } catch (Exception e) {

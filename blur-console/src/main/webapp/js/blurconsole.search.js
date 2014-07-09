@@ -19,8 +19,8 @@ under the License.
 /*global blurconsole:false, confirm:false */
 blurconsole.search = (function () {
   'use strict';
-    
-    //----------------------------- Configuration and State --------------------------------
+
+  //----------------------------- Configuration and State --------------------------------
   var configMap = {
     view : 'views/search.tpl.html',
     superQueryMap: {
@@ -29,12 +29,14 @@ blurconsole.search = (function () {
       'recordrecord' : 'Search Record / Retrieve Record'
     },
     optionsHtml:
+      '<div class="form-group">' +
       '<label for="superQuery">Search & Retrieve</label>' +
-      '<select id="superQuery">' +
-        '<option value="rowrow">Search Row / Retrieve Row</option>' +
-        '<option value="recordrow">Search Record / Retrieve Row</option>' +
-        '<option value="recordrecord">Search Record / Retrieve Record</option>' +
-      '</select>'
+      '<select id="superQuery" class="form-control"></select>' +
+      '</div>' +
+      '<div class="form-group">' +
+      '<label for="user">User</label>' +
+      '<select id="user" class="form-control"></select>' +
+      '</div>'
   },
   stateMap = {
     $container : null,
@@ -44,11 +46,12 @@ blurconsole.search = (function () {
     $start : 0,
     $fetch : 10,
     $filter : null,
-    $rowRecordOption : 'rowrow'
+    $rowRecordOption : 'rowrow',
+    $userOption : null
   },
   jqueryMap = {};
-    
-    //----------------- Private Methods ----------------------------------
+
+  //----------------- Private Methods ----------------------------------
   function _setJqueryMap() {
     var $container = stateMap.$container;
     jqueryMap = {
@@ -220,7 +223,7 @@ blurconsole.search = (function () {
     return cols;
   }
 
-    //------------------------------ Event Handlers and DOM Methods ---------------------
+  //------------------------------ Event Handlers and DOM Methods ---------------------
   function _updateOptionDisplay() {
     var displayText = '';
     displayText += configMap.superQueryMap[stateMap.$rowRecordOption];
@@ -228,8 +231,26 @@ blurconsole.search = (function () {
   }
 
   function _updateOptionPopover() {
-    if ($('#superQuery').length > 0) {
-      $('#superQuery').val(stateMap.$rowRecordOption);
+    var superQuery = $('#superQuery');
+    if (superQuery.length > 0) {
+      $.each(configMap.superQueryMap, function(key,value) {
+        superQuery.append('<option value="'+key+'">'+value+'</option>');
+      });
+      superQuery.val(stateMap.$rowRecordOption);
+    }
+    var user = $('#user');
+    if (user.length > 0) {
+      blurconsole.model.security.userNames(function(names) {
+        if(names.length === 0) {
+          user.closest('.form-group').remove();
+        } else {
+          user.append('<option value=""></option>');
+          $.each(names, function(index, name) {
+            user.append('<option>'+name+'</option>');
+          });
+          user.val(stateMap.$userOption);
+        }
+      });
     }
   }
 
@@ -240,10 +261,12 @@ blurconsole.search = (function () {
         resendSearch = true;
       } else {
         $('#superQuery').val(stateMap.$rowRecordOption);
+        $('#user').val(stateMap.$userOption);
         return false;
       }
     }
     stateMap.$rowRecordOption = $('#superQuery').val();
+    stateMap.$userOption = $('#user').val();
     if (resendSearch) {
       _sendSearch();
     }
@@ -260,12 +283,13 @@ blurconsole.search = (function () {
       _tab: {
         query: encodeURIComponent(stateMap.$currentQuery),
         table: stateMap.$currentTable,
-        rr: stateMap.$rowRecordOption
+        rr: stateMap.$rowRecordOption,
+        user: stateMap.$userOption
       }
     });
     _drawResultHolders();
     jqueryMap.$countHolder.html('');
-    blurconsole.model.search.runSearch(stateMap.$currentQuery, stateMap.$currentTable, {start: 0, fetch: 10, rowRecordOption: stateMap.$rowRecordOption});
+    blurconsole.model.search.runSearch(stateMap.$currentQuery, stateMap.$currentTable, {start: 0, fetch: 10, rowRecordOption: stateMap.$rowRecordOption, securityUser: stateMap.$userOption});
   }
 
   function _getMoreData(evt) {
@@ -436,7 +460,7 @@ blurconsole.search = (function () {
     jqueryMap.facetModal.modal();
   }
 
-    //--------------------------------- Public API ------------------------------------------
+  //--------------------------------- Public API ------------------------------------------
   function initModule($container) {
     $container.load(configMap.view, function() {
       stateMap.$container = $container;
@@ -454,6 +478,7 @@ blurconsole.search = (function () {
         stateMap.$currentTable = startupMap._tab.table;
         jqueryMap.$tableField.val(stateMap.$currentTable);
         stateMap.$rowRecordOption = startupMap._tab.rr;
+        stateMap.$userOption = startupMap._tab.user;
       }
 
       _updateOptionDisplay();

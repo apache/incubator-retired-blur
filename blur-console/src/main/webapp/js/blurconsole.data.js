@@ -115,6 +115,14 @@ blurconsole.data = (function() {
     });
   }
 
+  function getSecurityUserNames(callback) {
+    $.getJSON('/service/auth/securityUsers', function(data) {
+      callback(data.securityUserNames);
+    }).fail(function(xhr) {
+      _logError(xhr.responseText, xhr.status, 'securityUsers');
+    });
+  }
+
   return {
     getTableList : getTableList,
     getNodeList : getNodeList,
@@ -126,6 +134,7 @@ blurconsole.data = (function() {
     deleteTable : deleteTable,
     getSchema : getSchema,
     findTerms : findTerms,
-    sendSearch : sendSearch
+    sendSearch : sendSearch,
+    getSecurityUserNames : getSecurityUserNames
   };
 }());

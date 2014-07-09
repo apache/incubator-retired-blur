@@ -40,9 +40,10 @@ public class AuthServlet extends BaseConsoleServlet {
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     String path = req.getPathInfo();
-
     if (path == null) {
       checkCurrentAuth(req, resp);
+    } else if ("/securityUsers".equalsIgnoreCase(path)) {
+      getSecurityUsers(req, resp);
     } else {
       sendNotFound(resp, req.getRequestURI());
     }
@@ -51,12 +52,17 @@ public class AuthServlet extends BaseConsoleServlet {
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     String path = req.getPathInfo();
-
     if ("login".equalsIgnoreCase(path)) {
       loginUser(req, resp);
     } else {
       sendNotFound(resp, req.getRequestURI());
     }
+  }
+
+  private void getSecurityUsers(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    Map<String, Object> responseData = new HashMap<String, Object>();
+    responseData.put("securityUserNames", Config.getSecurityUserNames());
+    HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(responseData), HttpUtil.JSON);
   }
 
   private void checkCurrentAuth(HttpServletRequest request, HttpServletResponse response) throws IOException {

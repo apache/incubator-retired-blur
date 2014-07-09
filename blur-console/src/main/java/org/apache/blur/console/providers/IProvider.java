@@ -24,17 +24,25 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 public interface IProvider {
-    public static final String INPUT_FIELD = "input";
-    public static final String PASSWORD_FIELD = "password";
-    public static final String BROWSER_PROVIDED = "browser";
+  public static final String INPUT_FIELD = "input";
+  public static final String PASSWORD_FIELD = "password";
+  public static final String BROWSER_PROVIDED = "browser";
 
-    public User login(HttpServletRequest request);
-    public User getUser(String token);
-    public User getUser(String token, HttpServletRequest request);
-    public boolean isValidToken(String token, HttpServletRequest request);
-    public boolean userHasRole(User user, String role);
-    public void setupProvider(BlurConfiguration config);
-    public Map<String, Map<String, Object>> getLoginFields();
-    public boolean isLoginRequired();
-    public boolean isRetryAllowed();
+  public User login(HttpServletRequest request);
+
+  public User getUser(String token);
+
+  public User getUser(String token, HttpServletRequest request);
+
+  public boolean isValidToken(String token, HttpServletRequest request);
+
+  public boolean userHasRole(User user, String role);
+
+  public void setupProvider(BlurConfiguration config);
+
+  public Map<String, Map<String, Object>> getLoginFields();
+
+  public boolean isLoginRequired();
+
+  public boolean isRetryAllowed();
 }

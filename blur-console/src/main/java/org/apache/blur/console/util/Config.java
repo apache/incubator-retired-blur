@@ -17,13 +17,6 @@ package org.apache.blur.console.util;
  * limitations under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.console.providers.AllAllowedProvider;
 import org.apache.blur.console.providers.IProvider;
@@ -40,11 +33,18 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 public class Config {
 
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/mini-cluster"));
   private static final Log log = LogFactory.getLog(Config.class);
-    private static final int DEFAULT_PORT = 8080;
+  private static final int DEFAULT_PORT = 8080;
 
   private static int port;
   private static BlurConfiguration blurConfig;
@@ -52,11 +52,12 @@ public class Config {
   private static String blurConnection;
   private static Object cluster;
   private static Map<String, Map<String, String>> globalUserProperties;
-    private static IProvider provider;
+  private static IProvider provider;
 
   public static int getConsolePort() {
     return port;
   }
+
   public static BlurConfiguration getBlurConfig() {
     return blurConfig;
   }
@@ -81,7 +82,7 @@ public class Config {
     blurConnection = buildConnectionString();
     port = blurConfig.getInt("blur.console.port", DEFAULT_PORT);
     parseSecurity();
-        setupProvider();
+    setupProvider();
   }
 
   private static void parseSecurity() {
@@ -89,12 +90,13 @@ public class Config {
 
     if (securityFile != null) {
       JsonFactory factory = new JsonFactory();
-        ObjectMapper mapper = new ObjectMapper(factory);
-        File from = new File(securityFile);
-        TypeReference<Map<String, Map<String, String>>> typeRef
-                = new TypeReference<Map<String, Map<String, String>>>() { };
+      ObjectMapper mapper = new ObjectMapper(factory);
+      File from = new File(securityFile);
+      TypeReference<Map<String, Map<String, String>>> typeRef
+          = new TypeReference<Map<String, Map<String, String>>>() {
+      };
 
-        try {
+      try {
         globalUserProperties = mapper.readValue(from, typeRef);
       } catch (Exception e) {
         log.error("Unable to parse security file.  Search may not work right.", e);
@@ -103,21 +105,21 @@ public class Config {
     }
   }
 
-    private static void setupProvider() {
-        String providerClassName = blurConfig.get("blur.console.auth.provider", "org.apache.blur.console.providers.AllAllowedProvider");
+  private static void setupProvider() {
+    String providerClassName = blurConfig.get("blur.console.auth.provider", "org.apache.blur.console.providers.AllAllowedProvider");
 
-        try {
-            Class providerClass = Class.forName(providerClassName, false, Config.class.getClassLoader());
+    try {
+      Class providerClass = Class.forName(providerClassName, false, Config.class.getClassLoader());
 
-            if (providerClass != null) {
-                provider = (IProvider) providerClass.newInstance();
-                provider.setupProvider(blurConfig);
-            }
-        } catch (Exception e) {
-            log.fatal("Unable to setup provider [" + providerClassName + "]. Reverting to default.");
-            provider = new AllAllowedProvider();
-        }
+      if (providerClass != null) {
+        provider = (IProvider) providerClass.newInstance();
+        provider.setupProvider(blurConfig);
+      }
+    } catch (Exception e) {
+      log.fatal("Unable to setup provider [" + providerClassName + "]. Reverting to default.");
+      provider = new AllAllowedProvider();
     }
+  }
 
   public static String getConnectionString() throws IOException {
     return blurConnection;
@@ -149,24 +151,24 @@ public class Config {
   }
 
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public static void setupMiniCluster() throws IOException {
-      File testDirectory = new File(TMPDIR, "blur-cluster-test").getAbsoluteFile();
-      testDirectory.mkdirs();
+    File testDirectory = new File(TMPDIR, "blur-cluster-test").getAbsoluteFile();
+    testDirectory.mkdirs();
 
-      testDirectory.delete();
-      try {
-        Class clusterClass = Class.forName("org.apache.blur.MiniCluster", false, Config.class.getClassLoader());
+    testDirectory.delete();
+    try {
+      Class clusterClass = Class.forName("org.apache.blur.MiniCluster", false, Config.class.getClassLoader());
 
-        if (clusterClass != null) {
-          cluster = clusterClass.newInstance();
-          Method startBlurCluster = clusterClass.getDeclaredMethod("startBlurCluster", String.class, int.class, int.class, boolean.class);
-          startBlurCluster.invoke(cluster, new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true);
-        }
-      } catch (Exception e) {
-        log.fatal("Unable to start in dev mode because MiniCluster isn't in classpath", e);
-        cluster = null;
+      if (clusterClass != null) {
+        cluster = clusterClass.newInstance();
+        Method startBlurCluster = clusterClass.getDeclaredMethod("startBlurCluster", String.class, int.class, int.class, boolean.class);
+        startBlurCluster.invoke(cluster, new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true);
       }
+    } catch (Exception e) {
+      log.fatal("Unable to start in dev mode because MiniCluster isn't in classpath", e);
+      cluster = null;
+    }
   }
 
   public static Iface getClient(String username, String securityUser) throws IOException {
@@ -179,11 +181,11 @@ public class Config {
     return client;
   }
 
-    public static boolean isClusterSetup() {
-        return cluster != null;
-    }
+  public static boolean isClusterSetup() {
+    return cluster != null;
+  }
 
-    public static IProvider getProvider() {
-        return provider;
-    }
+  public static IProvider getProvider() {
+    return provider;
+  }
 }

@@ -17,12 +17,12 @@
 
 package org.apache.blur.console;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.apache.blur.console.util.Config;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
+import java.io.File;
+import java.io.IOException;
 
 public class ConsoleTestBase {
   protected static String TABLE_PATH = new File("./target/tmp/test-data/test-tables").getAbsolutePath();

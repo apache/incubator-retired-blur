@@ -36,12 +36,15 @@ public class ResultRow {
   public String getRowid() {
     return rowid;
   }
+
   public void setRowid(String rowid) {
     this.rowid = rowid;
   }
+
   public List<Map<String, String>> getRecords() {
     return records;
   }
+
   public void setRecords(List<Map<String, String>> records) {
     this.records = records;
   }

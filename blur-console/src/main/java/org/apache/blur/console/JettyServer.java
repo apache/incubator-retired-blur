@@ -32,11 +32,11 @@ public class JettyServer {
   private Server server;
   private boolean devMode;
 
-    private static final String DEV_WEBAPPDIR = "../classes/";
-    private static final String PROD_WEBAPPDIR = "webapp/";
-    private static final String CONTEXTPATH = "/console";
+  private static final String DEV_WEBAPPDIR = "../classes/";
+  private static final String PROD_WEBAPPDIR = "webapp/";
+  private static final String CONTEXTPATH = "/console";
 
-    private final Log log = LogFactory.getLog(JettyServer.class);
+  private final Log log = LogFactory.getLog(JettyServer.class);
 
   public JettyServer(int port, boolean devMode) {
     this.port = port;
@@ -60,24 +60,24 @@ public class JettyServer {
     server = new Server(port);
 
     // for localhost:port/console/index.html and whatever else is in the webapp directory
-      URL warUrl = null;
-        if (devMode) {
-            warUrl = this.getClass().getClassLoader().getResource(DEV_WEBAPPDIR);
-        } else {
-            warUrl = this.getClass().getClassLoader().getResource(PROD_WEBAPPDIR);
-        }
-      String warUrlString = warUrl.toExternalForm();
-      server.setHandler(new WebAppContext(warUrlString, CONTEXTPATH));
+    URL warUrl = null;
+    if (devMode) {
+      warUrl = this.getClass().getClassLoader().getResource(DEV_WEBAPPDIR);
+    } else {
+      warUrl = this.getClass().getClassLoader().getResource(PROD_WEBAPPDIR);
+    }
+    String warUrlString = warUrl.toExternalForm();
+    server.setHandler(new WebAppContext(warUrlString, CONTEXTPATH));
 
-      // for localhost:port/service/dashboard, etc.
-      final Context context = new Context(server, "/service", Context.SESSIONS);
-        context.addServlet(new ServletHolder(new AuthServlet()), "/auth/*");
-      context.addServlet(new ServletHolder(new NodesServlet()), "/nodes/*");
-      context.addServlet(new ServletHolder(new TablesServlet()), "/tables/*");
-      context.addServlet(new ServletHolder(new QueriesServlet()), "/queries/*");
-      context.addServlet(new ServletHolder(new SearchServlet()), "/search/*");
+    // for localhost:port/service/dashboard, etc.
+    final Context context = new Context(server, "/service", Context.SESSIONS);
+    context.addServlet(new ServletHolder(new AuthServlet()), "/auth/*");
+    context.addServlet(new ServletHolder(new NodesServlet()), "/nodes/*");
+    context.addServlet(new ServletHolder(new TablesServlet()), "/tables/*");
+    context.addServlet(new ServletHolder(new QueriesServlet()), "/queries/*");
+    context.addServlet(new ServletHolder(new SearchServlet()), "/search/*");
 
-      try {
+    try {
       server.start();
     } catch (Exception e) {
       log.error("Error starting Blur Console Jetty Server.  Exiting", e);

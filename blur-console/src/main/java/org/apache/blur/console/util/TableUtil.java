@@ -17,13 +17,6 @@
 
 package org.apache.blur.console.util;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -31,6 +24,9 @@ import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
+
+import java.io.IOException;
+import java.util.*;
 
 public class TableUtil {
 
@@ -109,11 +105,13 @@ public class TableUtil {
 
     client.disableTable(table);
   }
+
   public static void enableTable(String table) throws TException, IOException {
     Iface client = BlurClient.getClient(Config.getConnectionString());
 
     client.enableTable(table);
   }
+
   public static void deleteTable(String table, boolean includeFiles) throws TException, IOException {
     Iface client = BlurClient.getClient(Config.getConnectionString());
 

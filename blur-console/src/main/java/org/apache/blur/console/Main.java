@@ -32,5 +32,5 @@ public class Main {
     if (devMode) {
       Config.shutdownMiniCluster();
     }
-    }
+  }
 }

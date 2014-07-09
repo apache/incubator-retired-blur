@@ -1,31 +1,14 @@
 package org.apache.blur.console.util;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
 import org.apache.blur.console.model.ResultRow;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur.Iface;
-import org.apache.blur.thrift.generated.BlurQuery;
-import org.apache.blur.thrift.generated.BlurResult;
-import org.apache.blur.thrift.generated.BlurResults;
-import org.apache.blur.thrift.generated.Column;
-import org.apache.blur.thrift.generated.FetchRecordResult;
-import org.apache.blur.thrift.generated.FetchResult;
-import org.apache.blur.thrift.generated.FetchRowResult;
-import org.apache.blur.thrift.generated.Query;
-import org.apache.blur.thrift.generated.Record;
-import org.apache.blur.thrift.generated.Row;
-import org.apache.blur.thrift.generated.ScoreType;
-import org.apache.blur.thrift.generated.Selector;
+import org.apache.blur.thrift.generated.*;
 import org.apache.blur.user.UserContext;
 import org.apache.commons.lang.StringUtils;
+
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -34,9 +17,9 @@ import org.apache.commons.lang.StringUtils;
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -72,7 +55,7 @@ public class SearchUtil {
     return searchAndFetch(table, query, rowQuery, start, fetch, families, remoteHost, securityUser);
   }
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @SuppressWarnings({"unchecked", "rawtypes"})
   private static Map<String, Object> searchAndFetch(String table, String query, String rowQuery, String start, String fetch, String[] families, String remoteHost, String securityUser) throws IOException, TException {
     try {
       Iface client = Config.getClient(remoteHost, securityUser);
@@ -159,7 +142,7 @@ public class SearchUtil {
     }
   }
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @SuppressWarnings({"unchecked", "rawtypes"})
   private static Map<String, Object> fetchRow(String table, String query, String[] families, String remoteHost, String securityUser) throws IOException, TException {
     try {
       Iface client = Config.getClient(remoteHost, securityUser);

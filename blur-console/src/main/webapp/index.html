@@ -19,49 +19,57 @@ under the License.
  -->
 
 <!doctype html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>Blur Console</title>
-        <meta name="description" content="System Monitor and Console for Blur">
-        <meta name="viewport" content="width=device-width">
-        <link rel="stylesheet" href="css/blurconsole.css">
-        <script src="js/modernizr.js"></script>
-    </head>
-    <body>
-        <nav class="navbar navbar-inverse navbar-fixed-top">
-            <a class="navbar-brand" href="#">Blur Console</a>
-            <div class="pull-right">
-                <button type="button" id="view_logging_trigger" class="btn btn-default btn-sm">
-                    Logs
-                    <span class="badge badge-warning"></span>
-                </button>
-            </div>
-        </nav>
-        <nav class="side-nav">
-            <ul>
-                <li title="Dashboard" data-toggle="tooltip" data-placement="right" data-container="body">
-                    <a href="#!tab=dashboard"><i class="glyphicon glyphicon-dashboard"></i></a>
-                </li>
-                <li title="Tables" data-toggle="tooltip" data-placement="right" data-container="body">
-                    <a href="#!tab=tables"><i class="glyphicon glyphicon-list"></i></a>
-                </li>
-                <li title="Queries" data-toggle="tooltip" data-placement="right" data-container="body">
-                    <a href="#!tab=queries"><i class="glyphicon glyphicon-tasks"></i></a>
-                </li>
-                <li title="Search" data-toggle="tooltip" data-placement="right" data-container="body">
-                    <a href="#!tab=search"><i class="glyphicon glyphicon-search"></i></a>
-                </li>
-            </ul>
-        </nav>
-        <div id="blurconsole"></div>
-        <script src="js/blurconsole.js"></script>
-        <script type="text/javascript">
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Blur Console</title>
+    <meta name="description" content="System Monitor and Console for Blur">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="css/blurconsole.css">
+    <script src="js/modernizr.js"></script>
+  </head>
+  <body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <a class="navbar-brand" href="#">Blur Console</a>
+
+      <div class="pull-right">
+        <button type="button" id="view_logging_trigger" class="btn btn-default btn-sm">
+          Logs
+          <span class="badge badge-warning"></span>
+        </button>
+      </div>
+    </nav>
+    <nav class="side-nav">
+      <ul>
+        <li title="Dashboard" data-toggle="tooltip" data-placement="right" data-container="body">
+          <a href="#!tab=dashboard"><i class="glyphicon glyphicon-dashboard"></i></a>
+        </li>
+        <li title="Tables" data-toggle="tooltip" data-placement="right" data-container="body">
+          <a href="#!tab=tables"><i class="glyphicon glyphicon-list"></i></a>
+        </li>
+        <li title="Queries" data-toggle="tooltip" data-placement="right" data-container="body">
+          <a href="#!tab=queries"><i class="glyphicon glyphicon-tasks"></i></a>
+        </li>
+        <li title="Search" data-toggle="tooltip" data-placement="right" data-container="body">
+          <a href="#!tab=search"><i class="glyphicon glyphicon-search"></i></a>
+        </li>
+      </ul>
+    </nav>
+    <div id="blurconsole"></div>
+    <script src="js/blurconsole.js"></script>
+    <script type="text/javascript">
             $(function () { blurconsole.initModule( $('#blurconsole') ); });
-        </script>
-    </body>
+
+
+
+    </script>
+  </body>
 </html>

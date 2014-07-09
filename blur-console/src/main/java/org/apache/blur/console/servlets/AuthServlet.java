@@ -32,73 +32,73 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AuthServlet extends BaseConsoleServlet {
-    private static final String LOGIN_STATUS_FIELD = "loggedIn";
-    private static final String LOGIN_FIELDS_FIELD = "requiredFields";
-    private static final String LOGIN_RETRY_ALLOWED = "retryAllowed";
-    private static final String AUTH_TOKEN = "authToken";
+  private static final String LOGIN_STATUS_FIELD = "loggedIn";
+  private static final String LOGIN_FIELDS_FIELD = "requiredFields";
+  private static final String LOGIN_RETRY_ALLOWED = "retryAllowed";
+  private static final String AUTH_TOKEN = "authToken";
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String path = req.getPathInfo();
+  @Override
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    String path = req.getPathInfo();
 
-        if (path == null) {
-            checkCurrentAuth(req, resp);
-        } else {
-            sendNotFound(resp, req.getRequestURI());
-        }
+    if (path == null) {
+      checkCurrentAuth(req, resp);
+    } else {
+      sendNotFound(resp, req.getRequestURI());
+    }
+  }
+
+  @Override
+  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    String path = req.getPathInfo();
+
+    if ("login".equalsIgnoreCase(path)) {
+      loginUser(req, resp);
+    } else {
+      sendNotFound(resp, req.getRequestURI());
+    }
+  }
+
+  private void checkCurrentAuth(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    IProvider provider = Config.getProvider();
+    Map<String, Object> responseData = new HashMap<String, Object>();
+
+    if (provider.isLoginRequired()) {
+      String authToken = HttpUtil.getFirstParam((String[]) request.getParameterMap().get(AUTH_TOKEN));
+
+      if (StringUtils.isNotBlank(authToken) && provider.getUser(authToken, request) != null) {
+        responseData.put(LOGIN_STATUS_FIELD, true);
+      } else {
+        responseData.put(LOGIN_STATUS_FIELD, false);
+        responseData.put(LOGIN_FIELDS_FIELD, provider.getLoginFields());
+      }
+    } else {
+      responseData.put(LOGIN_STATUS_FIELD, true);
     }
 
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String path = req.getPathInfo();
+    HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(responseData), HttpUtil.JSON);
+  }
 
-        if ("login".equalsIgnoreCase(path)) {
-            loginUser(req, resp);
-        } else {
-            sendNotFound(resp, req.getRequestURI());
-        }
+  private void loginUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    Map<String, Object> data = new HashMap<String, Object>();
+
+    IProvider provider = Config.getProvider();
+
+    User user = provider.login(request);
+
+    if (user == null) {
+      data.put(LOGIN_STATUS_FIELD, false);
+
+      boolean retry = provider.isRetryAllowed();
+      data.put(LOGIN_RETRY_ALLOWED, retry);
+      if (retry) {
+        data.put(LOGIN_FIELDS_FIELD, provider.getLoginFields());
+      }
+    } else {
+      data.put(AUTH_TOKEN, user.getAuthToken());
+      data.put("roles", user.getRoles());
     }
 
-    private void checkCurrentAuth(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        IProvider provider = Config.getProvider();
-        Map<String, Object> responseData = new HashMap<String, Object>();
-
-        if (provider.isLoginRequired()) {
-            String authToken = HttpUtil.getFirstParam((String[])request.getParameterMap().get(AUTH_TOKEN));
-
-            if (StringUtils.isNotBlank(authToken) && provider.getUser(authToken, request) != null) {
-                responseData.put(LOGIN_STATUS_FIELD, true);
-            } else {
-                responseData.put(LOGIN_STATUS_FIELD, false);
-                responseData.put(LOGIN_FIELDS_FIELD, provider.getLoginFields());
-            }
-        } else {
-            responseData.put(LOGIN_STATUS_FIELD, true);
-        }
-
-        HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(responseData), HttpUtil.JSON);
-    }
-
-    private void loginUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Map<String, Object> data = new HashMap<String, Object>();
-
-        IProvider provider = Config.getProvider();
-
-        User user = provider.login(request);
-
-        if (user == null) {
-            data.put(LOGIN_STATUS_FIELD, false);
-
-            boolean retry = provider.isRetryAllowed();
-            data.put(LOGIN_RETRY_ALLOWED, retry);
-            if (retry) {
-                data.put(LOGIN_FIELDS_FIELD, provider.getLoginFields());
-            }
-        } else {
-            data.put(AUTH_TOKEN, user.getAuthToken());
-            data.put("roles", user.getRoles());
-        }
-
-        HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(data), HttpUtil.JSON);
-    }
+    HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(data), HttpUtil.JSON);
+  }
 }

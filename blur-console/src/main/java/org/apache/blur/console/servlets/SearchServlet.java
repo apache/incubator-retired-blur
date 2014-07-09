@@ -17,18 +17,16 @@ package org.apache.blur.console.servlets;
  * limitations under the License.
  */
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.blur.console.util.HttpUtil;
+import org.apache.blur.console.util.SearchUtil;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.blur.console.util.HttpUtil;
-import org.apache.blur.console.util.SearchUtil;
-import org.apache.commons.io.IOUtils;
-import org.codehaus.jackson.map.ObjectMapper;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class SearchServlet extends BaseConsoleServlet {

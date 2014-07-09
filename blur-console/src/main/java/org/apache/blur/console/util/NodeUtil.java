@@ -17,6 +17,9 @@
 
 package org.apache.blur.console.util;
 
+import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
+import org.apache.commons.collections.CollectionUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -24,16 +27,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
-import org.apache.commons.collections.CollectionUtils;
+import java.util.*;
 
 public class NodeUtil {
 

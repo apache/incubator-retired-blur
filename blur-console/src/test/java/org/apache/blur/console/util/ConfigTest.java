@@ -16,21 +16,19 @@
  */
 package org.apache.blur.console.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.net.InetAddress;
-
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.console.ConsoleTestBase;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.net.InetAddress;
+
+import static org.junit.Assert.*;
+
 public class ConfigTest extends ConsoleTestBase {
-  
+
   @Before
   public void setup() throws IOException {
     Config.setupConfig();
@@ -51,7 +49,7 @@ public class ConfigTest extends ConsoleTestBase {
   public void testGetConnectionString() throws IOException {
     assertTrue(StringUtils.contains(Config.getConnectionString(), InetAddress.getLocalHost().getHostName()));
   }
-  
+
   @Test
   public void testGetZookeeper() {
     assertNotNull(Config.getZookeeper());

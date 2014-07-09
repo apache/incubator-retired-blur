@@ -17,11 +17,10 @@
 
 package org.apache.blur.console.util;
 
-import java.io.IOException;
+import org.apache.commons.io.IOUtils;
 
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.IOUtils;
+import java.io.IOException;
 
 public class HttpUtil {
   public static final String JSON = "application/json";
@@ -34,10 +33,10 @@ public class HttpUtil {
     IOUtils.write(body, res.getOutputStream());
   }
 
-    public static String getFirstParam(String[] param) {
-        if (param == null || param.length == 0) {
-            return "";
-        }
-        return param[0];
+  public static String getFirstParam(String[] param) {
+    if (param == null || param.length == 0) {
+      return "";
     }
+    return param[0];
+  }
 }

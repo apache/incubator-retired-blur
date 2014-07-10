@@ -121,8 +121,8 @@ module.exports = function (grunt) {
                 interrupt: false
             },
             css: {
-                files: ['sass/**/*.scss', 'libs/**/*.css', 'libs/**/*.scss'],
-                tasks: ['sass:development', 'version-assets-css-map', 'version-assets-css', 'notify:css']
+                files: ['less/**/*.less', 'libs/**/*.css', 'libs/**/*.less'],
+                tasks: ['less:development', 'version-assets-css-map', 'version-assets-css', 'notify:css']
             },
             js: {
                 files: ['js/**/*.js'],

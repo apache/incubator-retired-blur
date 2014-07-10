@@ -54,6 +54,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.FSDirectory;
+import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -189,7 +190,11 @@ public class BlurIndexSimpleWriterTest {
 
       @Override
       public void store(TraceCollector collector) {
-        System.out.println(collector.toJson());
+        try {
+          System.out.println(collector.toJsonObject());
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
     });
     Trace.setupTrace("test");

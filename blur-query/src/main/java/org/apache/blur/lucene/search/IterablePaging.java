@@ -50,7 +50,7 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
 
   private static final Log LOG = LogFactory.getLog(IterablePaging.class);
 
-  private static final boolean DISABLED = true;
+  private static final boolean DISABLED = false;
 
   private final DeepPagingCache _deepPagingCache;
   private final IndexSearcher _searcher;
@@ -283,6 +283,11 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
 
     private boolean isCurrentCollectorExhausted() {
       return offset < scoreDocs.length ? false : true;
+    }
+
+    @Override
+    public long getPosition() throws BlurException {
+      return counter;
     }
   }
 

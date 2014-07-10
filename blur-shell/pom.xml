@@ -37,6 +37,11 @@ under the License.
     <dependencies>
         <dependency>
             <groupId>org.apache.blur</groupId>
+            <artifactId>blur-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.blur</groupId>
             <artifactId>blur-thrift</artifactId>
             <version>${project.version}</version>
 

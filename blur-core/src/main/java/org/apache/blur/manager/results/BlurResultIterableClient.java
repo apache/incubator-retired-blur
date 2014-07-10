@@ -139,12 +139,12 @@ public class BlurResultIterableClient implements BlurResultIterable {
 
   public class SearchIterator implements BlurIterator<BlurResult, BlurException> {
 
-    private int position = 0;
-    private int relposition = 0;
+    private long _position = 0;
+    private int _relposition = 0;
 
     @Override
     public boolean hasNext() {
-      if (position < _originalQuery.minimumNumberOfResults && position < _totalResults) {
+      if (_position < _originalQuery.minimumNumberOfResults && _position < _totalResults) {
         return true;
       }
       return false;
@@ -152,12 +152,17 @@ public class BlurResultIterableClient implements BlurResultIterable {
 
     @Override
     public BlurResult next() throws BlurException {
-      if (relposition >= _results.results.size()) {
+      if (_relposition >= _results.results.size()) {
         performSearch();
-        relposition = 0;
+        _relposition = 0;
       }
-      position++;
-      return _results.results.get(relposition++);
+      _position++;
+      return _results.results.get(_relposition++);
+    }
+
+    @Override
+    public long getPosition() throws BlurException {
+      return _position;
     }
   }
 

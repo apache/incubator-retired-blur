@@ -19,6 +19,7 @@ package org.apache.blur.trace;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.blur.trace.Trace.Parameter;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class TracerImpl implements Tracer {
@@ -84,46 +85,36 @@ public class TracerImpl implements Tracer {
     return _threadName;
   }
 
-  public String toJson() {
-    StringBuilder builder = new StringBuilder();
-    builder.append("{");
-    builder.append("\"id\":").append(_id).append(",");
-    builder.append("\"scope\":").append(_traceScope).append(",");
-    builder.append("\"name\":\"").append(_name).append("\",");
-    builder.append("\"thread\":\"").append(_threadName).append("\",");
-    builder.append("\"took\":").append((_ended - _start)).append(",");
-    builder.append("\"started\":").append(_start).append(",");
-    builder.append("\"ended\":").append(_ended);
-    if (_parameters != null) {
-      builder.append(",");
-      builder.append("\"parameters\":[").append(getParametersJson()).append("]");
-    }
+  public JSONObject toJsonObject() throws JSONException {
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("id", _id);
+    jsonObject.put("scope", _traceScope);
+    jsonObject.put("name", _name);
+    jsonObject.put("thread", _threadName);
+    jsonObject.put("took", (_ended - _start));
+    jsonObject.put("started", _start);
+    jsonObject.put("ended", _ended);
     if (_traceCollector != null) {
-      builder.append(",");
-      builder.append("\"collector\":\n").append(_traceCollector.toJson()).append("");
+      jsonObject.put("collector", _traceCollector.toJsonObject());
     }
-    builder.append("}");
-    return builder.toString();
+    if (_parameters != null) {
+      jsonObject.put("parameters", getParametersJsonObject());
+    }
+    return jsonObject;
   }
 
-  private String getParametersJson() {
-    StringBuilder builder = new StringBuilder();
+  private JSONObject getParametersJsonObject() throws JSONException {
+    JSONObject jsonObject = new JSONObject();
     for (Parameter parameter : _parameters) {
-      if (builder.length() != 0) {
-        builder.append(',');
-      }
-      builder.append("{\"").append(toJsonString(parameter._name)).append("\":\"")
-          .append(toJsonString(parameter._value)).append("\"}");
+      jsonObject.put(toString(parameter._name), parameter._value);
     }
-    return builder.toString();
+    return jsonObject;
   }
 
-  private String toJsonString(Object o) {
+  private String toString(Object o) {
     if (o == null) {
       return null;
     }
-    String str = o.toString();
-    return JSONObject.quote(str);
+    return o.toString();
   }
-
 }

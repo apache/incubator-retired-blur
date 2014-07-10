@@ -27,6 +27,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class Trace {
 
   private static final String REQUEST_ID = "requestId";
@@ -48,8 +51,11 @@ public class Trace {
       return _requestId;
     }
 
-    public String toJson() {
-      return "{\"rootId\":\"" + _rootId + "\",\"requestId\":\"" + _requestId + "\"}";
+    public JSONObject toJsonObject() throws JSONException {
+      JSONObject jsonObject = new JSONObject();
+      jsonObject.put("rootId", _rootId);
+      jsonObject.put("requestId", _requestId);
+      return jsonObject;
     }
   }
 
@@ -99,7 +105,7 @@ public class Trace {
     _tracer.set(collector);
   }
 
-  public static Parameter param(Object name, Object value) {
+  public static Parameter param(String name, Object value) {
     if (name == null) {
       name = "null";
     }

@@ -21,6 +21,8 @@ import java.io.IOException;
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class LogTraceStorage extends BaseTraceStorage {
 
@@ -32,13 +34,17 @@ public class LogTraceStorage extends BaseTraceStorage {
 
   @Override
   public void store(TraceCollector collector) {
-    String json = collector.toJson();
-    LOG.info("Trace Complete [{0}]", json);
+    try {
+      JSONObject jsonObject = collector.toJsonObject();
+      LOG.info("Trace Complete [{0}]", jsonObject.toString());
+    } catch (JSONException e) {
+      LOG.error("Unknown error", e);
+    }
   }
 
   @Override
   public void close() throws IOException {
-    
+
   }
 
 }

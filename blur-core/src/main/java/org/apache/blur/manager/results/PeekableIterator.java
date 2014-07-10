@@ -2,7 +2,6 @@ package org.apache.blur.manager.results;
 
 import org.apache.blur.utils.BlurIterator;
 
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -27,13 +26,13 @@ public class PeekableIterator<T, E extends Exception> implements BlurIterator<T,
 
   private final BlurIterator<T, E> _iterator;
   private T _current;
-  
-  private PeekableIterator(BlurIterator<T, E> iterator,T current) {
+
+  private PeekableIterator(BlurIterator<T, E> iterator, T current) {
     _iterator = iterator;
     _current = current;
   }
-  
-  public static<T,E extends Exception> PeekableIterator<T, E> wrap(BlurIterator<T, E> iterator) throws E {
+
+  public static <T, E extends Exception> PeekableIterator<T, E> wrap(BlurIterator<T, E> iterator) throws E {
     if (iterator.hasNext()) {
       return new PeekableIterator<T, E>(iterator, iterator.next());
     }
@@ -66,6 +65,11 @@ public class PeekableIterator<T, E extends Exception> implements BlurIterator<T,
     T result = _current;
     _current = next;
     return result;
+  }
+
+  @Override
+  public long getPosition() throws E {
+    return _iterator.getPosition() - 1;
   }
 
 }

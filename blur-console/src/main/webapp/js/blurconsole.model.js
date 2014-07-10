@@ -423,6 +423,11 @@ blurconsole.model = (function() {
       currentQuery = query;
       currentTable = table;
       currentArgs = $.extend(currentArgs, searchArgs);
+      if (parsedFamilies === null || parsedFamilies.length === 0) {
+        var fams = tables.getFamilies(table);
+        fams.sort();
+        parsedFamilies = [fams[0]];
+      }
       currentArgs.families = parsedFamilies;
       results = {};
 

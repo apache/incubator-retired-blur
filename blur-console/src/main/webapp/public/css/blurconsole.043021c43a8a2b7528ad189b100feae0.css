@@ -6412,11 +6412,6 @@ under the License.
 #results .panel-collapse {
   padding: 5px;
 }
-#results .tab-content {
-  padding: 5px;
-  border-left: 1px solid #dddddd;
-  border-bottom: 1px solid #dddddd;
-}
 #resultCount {
   padding-left: 30px;
   font-style: italic;
@@ -6425,10 +6420,10 @@ under the License.
   margin-top: 3px;
 }
 tr.row-separator th {
-  background-color: #cccccc;
+  background-color: #999999;
 }
 tr.row-separator:hover th {
-  background-color: #cccccc !important;
+  background-color: #999999 !important;
 }
 .input-group .twitter-typeahead {
   float: left;

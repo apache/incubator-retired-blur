@@ -17,46 +17,44 @@ package org.apache.blur.console.servlets;
  * limitations under the License.
  */
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.blur.console.util.HttpUtil;
+import org.apache.blur.console.util.NodeUtil;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.blur.console.util.HttpUtil;
-import org.apache.blur.console.util.NodeUtil;
-import org.apache.commons.io.IOUtils;
-import org.codehaus.jackson.map.ObjectMapper;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class NodesServlet extends BaseConsoleServlet {
-	private static final long serialVersionUID = 6522056391102413432L;
+  private static final long serialVersionUID = 6522056391102413432L;
 
-	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-		String path = req.getPathInfo();
-		if (path == null) {
-			sendNodeStatus(res);
-		} else {
-			sendNotFound(res, req.getRequestURI());
-		}
-	}
+  @Override
+  protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+    String path = req.getPathInfo();
+    if (path == null) {
+      sendNodeStatus(res);
+    } else {
+      sendNotFound(res, req.getRequestURI());
+    }
+  }
 
-	private void sendNodeStatus(HttpServletResponse response) throws IOException {
-		Map<String, Object> nodeData = new HashMap<String, Object>();
+  private void sendNodeStatus(HttpServletResponse response) throws IOException {
+    Map<String, Object> nodeData = new HashMap<String, Object>();
 
-		try {
-			nodeData.put("zookeepers", NodeUtil.getZookeeperStatus());
-			nodeData.put("controllers", NodeUtil.getControllerStatus());
-			nodeData.put("clusters", NodeUtil.getClusterStatus());
-		} catch (IOException e) {
-			throw new IOException(e);
-		} catch (Exception e) {
-			sendError(response, e);
-			return;
-		}
+    try {
+      nodeData.put("zookeepers", NodeUtil.getZookeeperStatus());
+      nodeData.put("controllers", NodeUtil.getControllerStatus());
+      nodeData.put("clusters", NodeUtil.getClusterStatus());
+    } catch (IOException e) {
+      throw new IOException(e);
+    } catch (Exception e) {
+      sendError(response, e);
+      return;
+    }
 
-		HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(nodeData), HttpUtil.JSON);
-	}
+    HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(nodeData), HttpUtil.JSON);
+  }
 }

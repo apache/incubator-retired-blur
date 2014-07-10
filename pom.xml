@@ -253,12 +253,11 @@ under the License.
 						<exclude>**/src/main/webapp/node_modules/**</exclude>
 						<exclude>**/src/main/webapp/.sass-cache/**</exclude>
 						<exclude>**/src/main/webapp/.tmp/**</exclude>
-						<exclude>**/.bowerrc</exclude>
 						<exclude>**/.editorconfig</exclude>
 						<exclude>**/.jshintrc</exclude>
 						<exclude>**/package.json</exclude>
-						<exclude>**/bower.json</exclude>
 						<exclude>**/src/main/scripts/grunt.sh</exclude>
+						<exclude>**/src/main/webapp/coverage/**</exclude>
 
 						<!-- Legacy blur console -->
 						<exclude>contrib/blur-console-v1/**</exclude>

@@ -17,78 +17,78 @@
 
 package org.apache.blur.console.util;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.Status;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class QueryUtil {
 
-	public static int getCurrentQueryCount() throws IOException, TException {
-		Iface client = BlurClient.getClient(Config.getConnectionString());
+  public static int getCurrentQueryCount() throws IOException, TException {
+    Iface client = BlurClient.getClient(Config.getConnectionString());
 
-		int count = 0;
-		List<String> tableList = client.tableList();
-		for (String table : tableList) {
-			List<String> queries = client.queryStatusIdList(table);
-			count += queries.size();
-		}
+    int count = 0;
+    List<String> tableList = client.tableList();
+    for (String table : tableList) {
+      List<String> queries = client.queryStatusIdList(table);
+      count += queries.size();
+    }
 
-		return count;
-	}
+    return count;
+  }
 
-	public static Map<String, Object> getQueries() throws TException, IOException {
-		Map<String, Object> queriesInfo = new HashMap<String, Object>();
+  public static Map<String, Object> getQueries() throws TException, IOException {
+    Map<String, Object> queriesInfo = new HashMap<String, Object>();
 
-		int slow = 0;
+    int slow = 0;
 
-		List<Map<String, Object>> queries = new ArrayList<Map<String, Object>>();
+    List<Map<String, Object>> queries = new ArrayList<Map<String, Object>>();
 
-		Iface client = BlurClient.getClient(Config.getConnectionString());
-		List<String> tableList = client.tableList();
+    Iface client = BlurClient.getClient(Config.getConnectionString());
+    List<String> tableList = client.tableList();
 
-		for (String table : tableList) {
-			List<String> queriesForTable = client.queryStatusIdList(table);
-			for (String id : queriesForTable) {
-				BlurQueryStatus status = client.queryStatusById(table, id);
+    for (String table : tableList) {
+      List<String> queriesForTable = client.queryStatusIdList(table);
+      for (String id : queriesForTable) {
+        BlurQueryStatus status = client.queryStatusById(table, id);
 
-				if (Status.FOUND.equals(status.getStatus())) {
-					Map<String, Object> info = new HashMap<String, Object>();
-					info.put("uuid", id);
-					info.put("user", status.getQuery().getUserContext());
-					info.put("query", status.getQuery().getQuery().getQuery());
-					info.put("table", table);
-					info.put("state", status.getState().getValue());
-					info.put("percent", ((double) status.getCompleteShards()) / ((double) status.getTotalShards()) * 100);
+        if (Status.FOUND.equals(status.getStatus())) {
+          Map<String, Object> info = new HashMap<String, Object>();
+          info.put("uuid", id);
+          info.put("user", status.getQuery().getUserContext());
+          info.put("query", status.getQuery().getQuery().getQuery());
+          info.put("table", table);
+          info.put("state", status.getState().getValue());
+          info.put("percent", ((double) status.getCompleteShards()) / ((double) status.getTotalShards()) * 100);
 
 
-					long startTime = status.getQuery().getStartTime();
-					info.put("startTime", startTime);
-					queries.add(info);
+          long startTime = status.getQuery().getStartTime();
+          info.put("startTime", startTime);
+          queries.add(info);
 
-					if (System.currentTimeMillis() - startTime > 60000) {
-						slow++;
-					}
-				}
-			}
-		}
+          if (System.currentTimeMillis() - startTime > 60000) {
+            slow++;
+          }
+        }
+      }
+    }
 
-		queriesInfo.put("slowQueries", slow);
-		queriesInfo.put("queries", queries);
+    queriesInfo.put("slowQueries", slow);
+    queriesInfo.put("queries", queries);
 
-		return queriesInfo;
-	}
+    return queriesInfo;
+  }
 
-	public static void cancelQuery(String table, String uuid) throws IOException, TException {
-		Iface client = BlurClient.getClient(Config.getConnectionString());
+  public static void cancelQuery(String table, String uuid) throws IOException, TException {
+    Iface client = BlurClient.getClient(Config.getConnectionString());
 
-		client.cancelQuery(table, uuid);
-	}
+    client.cancelQuery(table, uuid);
+  }
 }

@@ -19,43 +19,50 @@ under the License.
  -->
 
 <div id="slow-query-warnings" class="alert alert-danger" style="display:none;">
-	<strong>Heads Up!</strong>
-	Queries have been running for longer than a minute.
+  <strong>Heads Up!</strong>
+  Queries have been running for longer than a minute.
 </div>
 
 <div class="row-fluid">
-	<div class="col-sm-8">
-		<div class="row">
-			<div class="col-sm-6 text-center swapper-parent">
-					<h4>Zookeepers <small><i class="glyphicon glyphicon-retweet swapper-trigger" title="Swap Chart/Info"></i></small></h4>
-					<div id="zookeeperNodes" class="simple-chart swapper-chart"><img src="img/ajax-loader.gif"></div>
-					<div id="zookeeperInfo" class="swapper-info hidden"></div>
-			</div>
-			<div class="col-sm-6 text-center swapper-parent">
-				<h4>Controllers <small><i class="glyphicon glyphicon-retweet swapper-trigger" title="Swap Chart/Info"></i></small></h4>
-				<div id="controllerNodes" class="simple-chart swapper-chart"><img src="img/ajax-loader.gif"></div>
-				<div id="controllerInfo" class="swapper-info hidden"></div>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-sm-12 text-center">
-				<h4>Query Load</h4>
-				<div id="queryLoad" class="wide-chart"><img src="img/ajax-loader.gif"></div>
-			</div>
-		</div>
-	</div>
-	<div class="col-sm-4">
-		<div class="row">
-			<div class="col-sm-12 text-center">
-				<h4>Shards</h4>
-				<div id="shardNodes"><img src="img/ajax-loader.gif"></div>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-sm-12 text-center">
-				<h4>Tables</h4>
-				<div id="tableCounts" class="simple-chart"><img src="img/ajax-loader.gif"></div>
-			</div>
-		</div>
-	</div>
+  <div class="col-sm-8">
+    <div class="row">
+      <div class="col-sm-6 text-center swapper-parent">
+        <h4>Zookeepers
+          <small><i class="glyphicon glyphicon-retweet swapper-trigger" title="Swap Chart/Info"></i></small>
+        </h4>
+        <div id="zookeeperNodes" class="simple-chart swapper-chart"><img src="img/ajax-loader.gif"></div>
+        <div id="zookeeperInfo" class="swapper-info hidden"></div>
+      </div>
+      <div class="col-sm-6 text-center swapper-parent">
+        <h4>Controllers
+          <small><i class="glyphicon glyphicon-retweet swapper-trigger" title="Swap Chart/Info"></i></small>
+        </h4>
+        <div id="controllerNodes" class="simple-chart swapper-chart"><img src="img/ajax-loader.gif"></div>
+        <div id="controllerInfo" class="swapper-info hidden"></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-12 text-center">
+        <h4>Query Load</h4>
+
+        <div id="queryLoad" class="wide-chart"><img src="img/ajax-loader.gif"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="row">
+      <div class="col-sm-12 text-center">
+        <h4>Shards</h4>
+
+        <div id="shardNodes"><img src="img/ajax-loader.gif"></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-12 text-center">
+        <h4>Tables</h4>
+
+        <div id="tableCounts" class="simple-chart"><img src="img/ajax-loader.gif"></div>
+      </div>
+    </div>
+  </div>
 </div>

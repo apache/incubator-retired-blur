@@ -1,5 +1,1 @@
 test-data
-src/main/webapp/libs/*
-src/main/webapp/node_modules/*
-src/main/webapp/css/*
-src/main/webapp/test/bower_components/*

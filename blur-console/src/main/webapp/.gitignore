@@ -1,4 +1,4 @@
-libs/*
 .tmp
 .sass-cache
 coverage
+node_modules

@@ -29,7 +29,7 @@ module.exports = function (grunt) {
     require('time-grunt')(grunt);
 
     var all_js_files = [
-        'libs/jquery/dist/jquery.js',
+        'libs/jquery/jquery.js',
         'js/utils/*\.js',
         'libs/bootstrap/js/tooltip.js',
         'libs/bootstrap/js/modal.js',
@@ -41,7 +41,7 @@ module.exports = function (grunt) {
         'libs/flot/jquery.flot.pie.js',
         'libs/flot/jquery.flot.categories.js',
         'libs/flot/jquery.flot.stack.js',
-        'libs/typeahead.js/dist/typeahead.jquery.js',
+        'libs/typeahead/typeahead.jquery.js',
         'js/blurconsole.js',
         'js/*\.js'
     ];
@@ -52,25 +52,6 @@ module.exports = function (grunt) {
         banner: grunt.file.read('banner'),
 
         clean: ['public'],
-
-        bower: {
-            install: {
-                options: {
-                    targetDir: './libs',
-                    install: true,
-                    copy: false,
-                    quiet: true
-                }
-            },
-            prune: {
-                options: {
-                    targetDir: './libs',
-                    copy: false,
-                    offline: true,
-                    quiet: true
-                }
-            }
-        },
 
         less: {
             options: {
@@ -224,7 +205,7 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.loadNpmTasks('grunt-bower-task');
+    // grunt.loadNpmTasks('grunt-bower-task');
     grunt.loadNpmTasks('grunt-exec');
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-less');
@@ -242,7 +223,7 @@ module.exports = function (grunt) {
         grunt.config('jshint.development.src', matchingHint);
     });
 
-    grunt.registerTask('deps', 'Install Webapp Dependencies', ['bower:install', 'bower:prune']);
+    // grunt.registerTask('deps', 'Install Webapp Dependencies', ['bower:install', 'bower:prune']);
     grunt.registerTask('test:functional:chrome', 'Run JavaScript Functional Tests in Chrome', ['mochaSelenium:chrome']);
     grunt.registerTask('test:functional:firefox', 'Run JavaScript Functional Tests in Firefox', ['mochaSelenium:firefox']);
     grunt.registerTask('test:functional', 'Run JavaScript Functional Tests', ['test:functional:chrome', 'test:functional:firefox']);

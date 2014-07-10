@@ -21,27 +21,19 @@ The UI code lives in the srce/main/webapp directory.  This directory has been se
 
 To get up and running to work on the UI component you can follow these steps:
 
-1. Install bower (js package manager)
-
-		npm install -g bower
-
-2. Install grunt-cli (node build manager)
+1. Install grunt-cli (node build manager)
 
 		npm install -g grunt-cli
 
-4. Install project build/test dependencies (from the src/main/webapp directory)
+2. Install project build/test dependencies (from the src/main/webapp directory)
 		
 		npm install
-
-5. Install js dependencies (from the src/main/webapp directory)
-		
-		grunt deps
 
 Once the dependencies and build tools are installed the following commands can be used (from the src/main/webapp directory):
 
 * Run tests
 		
-		grunt test
+		grunt test:unit
 
 * Start development server (server will be available on port 3000)
 		

@@ -19,113 +19,122 @@ under the License.
 */
 /*global blurconsole:false */
 blurconsole.data = (function() {
-	'use strict';
+  'use strict';
 
-	//------------------- Private methods --------------------------
-	function _logError (errorMsg, status, module, callback) {
-		blurconsole.model.logs.logError(status + ' - ' + errorMsg, module);
-		if (callback) {
-			callback('error');
-		}
-	}
+  //------------------- Private methods --------------------------
+  function _logError (errorMsg, status, module, callback) {
+    blurconsole.model.logs.logError(status + ' - ' + errorMsg, module);
+    if (callback) {
+      callback('error');
+    }
+  }
 
-	//------------------- Public API -------------------------------
-	function getTableList(callback) {
-		$.getJSON('/service/tables', callback).fail(function(xhr) {
-			_logError(xhr.responseText, xhr.status, 'tables', callback);
-		});
-	}
+  //------------------- Public API -------------------------------
+  function getTableList(callback) {
+    $.getJSON('/service/tables', callback).fail(function(xhr) {
+      _logError(xhr.responseText, xhr.status, 'tables', callback);
+    });
+  }
 
-	function getNodeList(callback) {
-		$.getJSON('/service/nodes', callback).fail(function(xhr) {
-			_logError(xhr.responseText, xhr.status, 'tables', callback);
-		});
-	}
-	function getQueryPerformance(callback) {
-		$.getJSON('/service/queries/performance', callback).fail(function(xhr) {
-			_logError(xhr.responseText, xhr.status, 'tables', callback);
-		});
-	}
+  function getNodeList(callback) {
+    $.getJSON('/service/nodes', callback).fail(function(xhr) {
+      _logError(xhr.responseText, xhr.status, 'tables', callback);
+    });
+  }
+  function getQueryPerformance(callback) {
+    $.getJSON('/service/queries/performance', callback).fail(function(xhr) {
+      _logError(xhr.responseText, xhr.status, 'tables', callback);
+    });
+  }
 
-	function getQueries(callback) {
-		$.getJSON('/service/queries', callback).fail(function(xhr) {
-			_logError(xhr.responseText, xhr.status, 'tables', callback);
-		});
-	}
+  function getQueries(callback) {
+    $.getJSON('/service/queries', callback).fail(function(xhr) {
+      _logError(xhr.responseText, xhr.status, 'tables', callback);
+    });
+  }
 
-	function cancelQuery(table, uuid) {
-		$.ajax('/service/queries/' + uuid + '/cancel', {
-			data: {
-				table: table
-			},
-			error: function(xhr) {
-				_logError(xhr.responseText, xhr.status, 'tables');
-			}
-		});
-	}
+  function cancelQuery(table, uuid) {
+    $.ajax('/service/queries/' + uuid + '/cancel', {
+      data: {
+        table: table
+      },
+      error: function(xhr) {
+        _logError(xhr.responseText, xhr.status, 'tables');
+      }
+    });
+  }
 
-	function disableTable(table) {
-		$.ajax('/service/tables/' + table + '/disable', {
-			error: function(xhr) {
-				_logError(xhr.responseText, xhr.status, 'tables');
-			}
-		});
-	}
+  function disableTable(table) {
+    $.ajax('/service/tables/' + table + '/disable', {
+      error: function(xhr) {
+        _logError(xhr.responseText, xhr.status, 'tables');
+      }
+    });
+  }
 
-	function enableTable (table){
-		$.ajax('/service/tables/' + table + '/enable', {
-			error: function(xhr) {
-				_logError(xhr.responseText, xhr.status, 'tables');
-			}
-		});
-	}
+  function enableTable (table){
+    $.ajax('/service/tables/' + table + '/enable', {
+      error: function(xhr) {
+        _logError(xhr.responseText, xhr.status, 'tables');
+      }
+    });
+  }
 
-	function deleteTable (table, includeFiles) {
-		$.ajax('/service/tables/' + table + '/delete', {
-			data: {
-				includeFiles: includeFiles
-			},
-			error: function(xhr) {
-				_logError(xhr.responseText, xhr.status, 'tables');
-			}
-		});
-	}
+  function deleteTable (table, includeFiles) {
+    $.ajax('/service/tables/' + table + '/delete', {
+      data: {
+        includeFiles: includeFiles
+      },
+      error: function(xhr) {
+        _logError(xhr.responseText, xhr.status, 'tables');
+      }
+    });
+  }
 
-	function getSchema(table, callback) {
-		$.getJSON('/service/tables/' + table + '/schema', callback).fail(function(xhr) {
-			_logError(xhr.responseText, xhr.status, 'tables');
-		});
-	}
+  function getSchema(table, callback) {
+    $.getJSON('/service/tables/' + table + '/schema', callback).fail(function(xhr) {
+      _logError(xhr.responseText, xhr.status, 'tables');
+    });
+  }
 
-	function findTerms (table, family, column, startsWith, callback) {
-		$.getJSON('/service/tables/' + table + '/' + family + '/' + column + '/terms', {startsWith: startsWith}, callback).fail(function(xhr) {
-			_logError(xhr.responseText, xhr.status, 'tables');
-		});
-	}
+  function findTerms (table, family, column, startsWith, callback) {
+    $.getJSON('/service/tables/' + table + '/' + family + '/' + column + '/terms', {startsWith: startsWith}, callback).fail(function(xhr) {
+      _logError(xhr.responseText, xhr.status, 'tables');
+    });
+  }
 
-	function sendSearch(query, table, args, callback) {
-		var params = $.extend({table:table, query:query}, args);
-		$.ajax('/service/search', {
-			'type': 'POST',
-			'data': params,
-			'success': callback,
-			'error': function(xhr) {
-				_logError(xhr.responseText, xhr.status, 'tables');
-			}
-		});
-	}
+  function sendSearch(query, table, args, callback) {
+    var params = $.extend({table:table, query:query}, args);
+    $.ajax('/service/search', {
+      'type': 'POST',
+      'data': params,
+      'success': callback,
+      'error': function(xhr) {
+        _logError(xhr.responseText, xhr.status, 'tables');
+      }
+    });
+  }
 
-	return {
-		getTableList : getTableList,
-		getNodeList : getNodeList,
-		getQueryPerformance : getQueryPerformance,
-		getQueries : getQueries,
-		cancelQuery : cancelQuery,
-		disableTable : disableTable,
-		enableTable : enableTable,
-		deleteTable : deleteTable,
-		getSchema : getSchema,
-		findTerms : findTerms,
-		sendSearch : sendSearch
-	};
+  function getSecurityUserNames(callback) {
+    $.getJSON('/service/auth/securityUsers', function(data) {
+      callback(data.securityUserNames);
+    }).fail(function(xhr) {
+      _logError(xhr.responseText, xhr.status, 'securityUsers');
+    });
+  }
+
+  return {
+    getTableList : getTableList,
+    getNodeList : getNodeList,
+    getQueryPerformance : getQueryPerformance,
+    getQueries : getQueries,
+    cancelQuery : cancelQuery,
+    disableTable : disableTable,
+    enableTable : enableTable,
+    deleteTable : deleteTable,
+    getSchema : getSchema,
+    findTerms : findTerms,
+    sendSearch : sendSearch,
+    getSecurityUserNames : getSecurityUserNames
+  };
 }());

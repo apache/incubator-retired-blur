@@ -17,46 +17,45 @@ package org.apache.blur.console.servlets;
  * limitations under the License.
  */
 
-import java.io.IOException;
-
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 public abstract class BaseConsoleServlet extends HttpServlet {
-	private static final long serialVersionUID = -5156028303476799953L;
-    private static final Log log = LogFactory.getLog(BaseConsoleServlet.class);
-    private static final String UNAUTHORIZED = "User is unauthorized to perform this action";
+  private static final long serialVersionUID = -5156028303476799953L;
+  private static final Log log = LogFactory.getLog(BaseConsoleServlet.class);
+  private static final String UNAUTHORIZED = "User is unauthorized to perform this action";
 
-	protected void sendError(HttpServletResponse response, Exception e) throws IOException {
-		log.error("Error processing request.", e);
-		String body = e.getMessage();
-		response.setContentType("application/json");
-		response.setContentLength(body.getBytes().length);
-		response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-		IOUtils.write(body, response.getOutputStream());
-	}
+  protected void sendError(HttpServletResponse response, Exception e) throws IOException {
+    log.error("Error processing request.", e);
+    String body = e.getMessage();
+    response.setContentType("application/json");
+    response.setContentLength(body.getBytes().length);
+    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    IOUtils.write(body, response.getOutputStream());
+  }
 
-    protected void sendUnauthorized(HttpServletResponse response) throws IOException {
-        response.setContentType("application/json");
-        response.setContentLength(UNAUTHORIZED.getBytes().length);
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        IOUtils.write(UNAUTHORIZED, response.getOutputStream());
-    }
+  protected void sendUnauthorized(HttpServletResponse response) throws IOException {
+    response.setContentType("application/json");
+    response.setContentLength(UNAUTHORIZED.getBytes().length);
+    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    IOUtils.write(UNAUTHORIZED, response.getOutputStream());
+  }
 
-	protected void sendGenericOk(HttpServletResponse response) throws IOException {
-        String responseBody = "success";
-		response.setContentType("text/plain");
-		response.setContentLength(responseBody.getBytes().length);
-		response.setStatus(HttpServletResponse.SC_OK);
-		IOUtils.write(responseBody, response.getOutputStream());
-	}
+  protected void sendGenericOk(HttpServletResponse response) throws IOException {
+    String responseBody = "success";
+    response.setContentType("text/plain");
+    response.setContentLength(responseBody.getBytes().length);
+    response.setStatus(HttpServletResponse.SC_OK);
+    IOUtils.write(responseBody, response.getOutputStream());
+  }
 
-    protected void sendNotFound(HttpServletResponse response, String path) throws IOException {
-        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-        IOUtils.write("URL [" + path + "] doesn't exist", response.getOutputStream());
-    }
+  protected void sendNotFound(HttpServletResponse response, String path) throws IOException {
+    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+    IOUtils.write("URL [" + path + "] doesn't exist", response.getOutputStream());
+  }
 }

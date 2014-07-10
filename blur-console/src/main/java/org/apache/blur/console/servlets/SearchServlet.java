@@ -17,45 +17,43 @@ package org.apache.blur.console.servlets;
  * limitations under the License.
  */
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.blur.console.util.HttpUtil;
+import org.apache.blur.console.util.SearchUtil;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.blur.console.util.HttpUtil;
-import org.apache.blur.console.util.SearchUtil;
-import org.apache.commons.io.IOUtils;
-import org.codehaus.jackson.map.ObjectMapper;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class SearchServlet extends BaseConsoleServlet {
-	private static final long serialVersionUID = 8236015799570635548L;
+  private static final long serialVersionUID = 8236015799570635548L;
 
-	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-		String path = req.getPathInfo();
-		if (path == null) {
-			String remoteHost = req.getRemoteHost();
-			search(res, req.getParameterMap(), remoteHost);
-		} else {
-			sendNotFound(res, req.getRequestURI());
-		}
-	}
+  @Override
+  protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+    String path = req.getPathInfo();
+    if (path == null) {
+      String remoteHost = req.getRemoteHost();
+      search(res, req.getParameterMap(), remoteHost);
+    } else {
+      sendNotFound(res, req.getRequestURI());
+    }
+  }
 
-	private void search(HttpServletResponse res, Map<String, String[]> params, String remoteHost) throws IOException {
-		Map<String, Object> results = new HashMap<String, Object>();
-		try {
-			results = SearchUtil.search(params, remoteHost);
-		} catch (IOException e) {
-			throw new IOException(e);
-		} catch (Exception e) {
-			sendError(res, e);
-			return;
-		}
+  private void search(HttpServletResponse res, Map<String, String[]> params, String remoteHost) throws IOException {
+    Map<String, Object> results = new HashMap<String, Object>();
+    try {
+      results = SearchUtil.search(params, remoteHost);
+    } catch (IOException e) {
+      throw new IOException(e);
+    } catch (Exception e) {
+      sendError(res, e);
+      return;
+    }
 
-		HttpUtil.sendResponse(res, new ObjectMapper().writeValueAsString(results), HttpUtil.JSON);
-	}
+    HttpUtil.sendResponse(res, new ObjectMapper().writeValueAsString(results), HttpUtil.JSON);
+  }
 }

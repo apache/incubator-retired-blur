@@ -18,457 +18,482 @@ under the License.
 */
 /*global blurconsole:false, confirm:false */
 blurconsole.search = (function () {
-	'use strict';
-    
-    //----------------------------- Configuration and State --------------------------------
-	var configMap = {
-		view : 'views/search.tpl.html',
-		superQueryMap: {
-			'rowrow' : 'Search Row / Retrieve Row',
-			'recordrow' : 'Search Record / Retrieve Row',
-			'recordrecord' : 'Search Record / Retrieve Record'
-		},
-		optionsHtml:
-			'<label for="superQuery">Search & Retrieve</label>' +
-			'<select id="superQuery">' +
-				'<option value="rowrow">Search Row / Retrieve Row</option>' +
-				'<option value="recordrow">Search Record / Retrieve Row</option>' +
-				'<option value="recordrecord">Search Record / Retrieve Record</option>' +
-			'</select>'
-	},
-	stateMap = {
-		$container : null,
-		$currentTable : null,
-		$currentQuery : null,
-		$schemaForCurrentTable : null,
-		$start : 0,
-		$fetch : 10,
-		$filter : null,
-		$rowRecordOption : 'rowrow'
-	},
-	jqueryMap = {};
-    
-    //----------------- Private Methods ----------------------------------
-	function _setJqueryMap() {
-		var $container = stateMap.$container;
-		jqueryMap = {
-			$container : $container,
-			$queryField : $('#queryField'),
-			$tableField : $('#tableChooser'),
-			$tableSelectorStatusOption : $('#statusOption'),
-			$tableWarning : $('#tableGoneWarning'),
-			$resultsHolder : $('#results'),
-			$optionsDisplay : $('#searchOptionsDisplay'),
-			$countHolder : $('#resultCount'),
-			$facetTrigger : $('#facetTrigger'),
-			$optionsTrigger: $('#searchOptionsTrigger'),
-			$searchTrigger : $('#searchTrigger')
-		};
-	}
+  'use strict';
 
-	function _parseQueryForTypeahead(query) {
-		var ret = {
-			family: null,
-			column: null,
-			term: null,
-			mode: null
-		};
-		query = query.toLowerCase();
-		var dotIndex = query.lastIndexOf('.');
-		var colonIndex = query.lastIndexOf(':');
-		var lParenIndex = query.lastIndexOf('(');
-		var rParenIndex = query.lastIndexOf(')');
-		var inParen = lParenIndex > -1 && lParenIndex > rParenIndex;
-		var spaceIndex = query.lastIndexOf(' ');
-		var lastIndex = Math.max(0,dotIndex,colonIndex,lParenIndex,rParenIndex,spaceIndex);
-		if(dotIndex === lastIndex) { // column mode
-			ret.family = query.substring(spaceIndex+1, dotIndex);
-			ret.column = query.substring(dotIndex+1);
-			ret.mode = 'column';
-		} else if(colonIndex === lastIndex || (inParen && lParenIndex === colonIndex+1)) { // term mode
-			var familyStart = query.lastIndexOf(' ', dotIndex);
-			if(familyStart === -1) {
-				familyStart = 0;
-			}
-			ret.family = query.substring(familyStart, dotIndex);
-			ret.column = query.substring(dotIndex+1, colonIndex);
-			ret.term = query.substring(lastIndex+1);
-			ret.mode = 'term';
-		} else if(query.length === 1 || query.length -1 !== lastIndex) { // family mode
-			ret.family = query.substring(spaceIndex+1);
-			ret.mode = 'family';
-		}
-		if(ret.family) {
-			ret.family = ret.family.replace(/[\.\:\(\)\+\- ]/g,'');
-		}
-		if(ret.term) {
-			ret.term = ret.term.replace(/[\+\-]/g,'');
-		}
-		return ret;
-	}
+  //----------------------------- Configuration and State --------------------------------
+  var configMap = {
+    view : 'views/search.tpl.html',
+    superQueryMap: {
+      'rowrow' : 'Search Row / Retrieve Row',
+      'recordrow' : 'Search Record / Retrieve Row',
+      'recordrecord' : 'Search Record / Retrieve Record'
+    },
+    optionsHtml:
+      '<div class="form-group">' +
+      '<label for="superQuery">Search & Retrieve</label>' +
+      '<select id="superQuery" class="form-control"></select>' +
+      '</div>' +
+      '<div class="form-group">' +
+      '<label for="user">User</label>' +
+      '<select id="user" class="form-control"></select>' +
+      '</div>'
+  },
+  stateMap = {
+    $container : null,
+    $currentTable : null,
+    $currentQuery : null,
+    $schemaForCurrentTable : null,
+    $start : 0,
+    $fetch : 10,
+    $filter : null,
+    $rowRecordOption : 'rowrow',
+    $userOption : null
+  },
+  jqueryMap = {};
 
-	var _queryTypeaheadDataset = {
-		name:'query-dataset',
-		source: function _queryTypeaheadSource(query, cb) {
-			function buildSuggestionObject(query, hint, value) {
-				return {value:query.substring(0,query.lastIndexOf(hint)) + value, display:value};
-			}
-			var table = stateMap.$currentTable;
-			if(table && table !== '' && blurconsole.model.tables.isDataLoaded()) {
-				query = query.toLowerCase();
-				var parsedQuery = _parseQueryForTypeahead(query);
-				console.log(parsedQuery.mode);
-				switch(parsedQuery.mode) {
-				case 'family':
-					var families = blurconsole.model.tables.getFamilies(table);
-					families = $.map(families, function(fam) {
-						if(fam.indexOf(parsedQuery.family) === 0) {
-							return buildSuggestionObject(query, parsedQuery.family, fam);
-						}
-					});
-					cb(families);
-					break;
-				case 'column':
-					blurconsole.model.tables.getSchema(table, function(schema) {
-						var columnMap = schema[parsedQuery.family];
-						if(columnMap) {
-							var columns = $.map(columnMap, function(data, col) {
-								if(col.indexOf(parsedQuery.column) === 0) {
-									return buildSuggestionObject(query, parsedQuery.column, col);
-								}
-							});
-							cb(columns);
-						}
-					});
-					break;
-				case 'term':
-					if(parsedQuery.term.length > 0) {
-						blurconsole.model.tables.findTerms(table, parsedQuery.family, parsedQuery.column, parsedQuery.term, function(terms){
-							terms = $.map(terms, function(suggestedTerm){
-								return buildSuggestionObject(query, parsedQuery.term, suggestedTerm);
-							});
-							cb(terms);
-						});
-					} else {
-						cb(null);
-					}
-					break;
-				default:
-					cb(null);
-				}
-			}
-		},
-		templates: {
-			suggestion: function(suggestion) {
-				return '<p>' + suggestion.display + '</p>';
-			}
-		}
-	};
+  //----------------- Private Methods ----------------------------------
+  function _setJqueryMap() {
+    var $container = stateMap.$container;
+    jqueryMap = {
+      $container : $container,
+      $queryField : $('#queryField'),
+      $tableField : $('#tableChooser'),
+      $tableSelectorStatusOption : $('#statusOption'),
+      $tableWarning : $('#tableGoneWarning'),
+      $resultsHolder : $('#results'),
+      $optionsDisplay : $('#searchOptionsDisplay'),
+      $countHolder : $('#resultCount'),
+      $facetTrigger : $('#facetTrigger'),
+      $optionsTrigger: $('#searchOptionsTrigger'),
+      $searchTrigger : $('#searchTrigger')
+    };
+  }
 
-	function _registerPageEvents() {
-		jqueryMap.$searchTrigger.on('click', _sendSearch);
-		jqueryMap.$queryField.typeahead({}, _queryTypeaheadDataset);
-		jqueryMap.$queryField.on('keyup', function(evt) {
-			if (evt.keyCode === 13) {
-				_sendSearch();
-			}
-		});
-		jqueryMap.$resultsHolder.on('shown.bs.collapse', '.panel-collapse:not(.loaded)', _getMoreData);
-		jqueryMap.$resultsHolder.on('click', '.nextPage', _getMoreData);
-		jqueryMap.$optionsTrigger.popover({
-			html: true,
-			placement: 'bottom',
-			title: 'Extra Search Options',
-			container: 'body',
-			content: configMap.optionsHtml
-		});
-		jqueryMap.$optionsTrigger.on('shown.bs.popover', _updateOptionPopover);
-		$(document).on('change', '.popover select', _persistOptions);
-		jqueryMap.$facetTrigger.on('click', _popupFacetDialog);
-		jqueryMap.$tableField.on('change', function(evt) {
-			stateMap.$currentTable = $(evt.currentTarget).val();
-		});
-	}
+  function _parseQueryForTypeahead(query) {
+    var ret = {
+      family: null,
+      column: null,
+      term: null,
+      mode: null
+    };
+    query = query.toLowerCase();
+    var dotIndex = query.lastIndexOf('.');
+    var colonIndex = query.lastIndexOf(':');
+    var lParenIndex = query.lastIndexOf('(');
+    var rParenIndex = query.lastIndexOf(')');
+    var inParen = lParenIndex > -1 && lParenIndex > rParenIndex;
+    var spaceIndex = query.lastIndexOf(' ');
+    var lastIndex = Math.max(0,dotIndex,colonIndex,lParenIndex,rParenIndex,spaceIndex);
+    if(dotIndex === lastIndex) { // column mode
+      ret.family = query.substring(spaceIndex+1, dotIndex);
+      ret.column = query.substring(dotIndex+1);
+      ret.mode = 'column';
+    } else if(colonIndex === lastIndex || (inParen && lParenIndex === colonIndex+1)) { // term mode
+      var familyStart = query.lastIndexOf(' ', dotIndex);
+      if(familyStart === -1) {
+        familyStart = 0;
+      }
+      ret.family = query.substring(familyStart, dotIndex);
+      ret.column = query.substring(dotIndex+1, colonIndex);
+      ret.term = query.substring(lastIndex+1);
+      ret.mode = 'term';
+    } else if(query.length === 1 || query.length -1 !== lastIndex) { // family mode
+      ret.family = query.substring(spaceIndex+1);
+      ret.mode = 'family';
+    }
+    if(ret.family) {
+      ret.family = ret.family.replace(/[\.\:\(\)\+\- ]/g,'');
+    }
+    if(ret.term) {
+      ret.term = ret.term.replace(/[\+\-]/g,'');
+    }
+    return ret;
+  }
 
-	function _unregisterPageEvents() {
-		if (jqueryMap.$searchTrigger) {
-			jqueryMap.$searchTrigger.off('click');
-			jqueryMap.$queryField.typeahead('destroy');
-			jqueryMap.$queryField.off('keyup');
-			jqueryMap.$resultsHolder.off('shown.bs.collapse');
-			jqueryMap.$resultsHolder.off('click');
-			jqueryMap.$optionsTrigger.popover('destroy');
-			jqueryMap.$optionsTrigger.off('shown.bs.popover');
-			$(document).off('change');
-			jqueryMap.$tableField.off('change');
-			//jqueryMap.$facetTrigger.off('click');
-		}
-	}
+  var _queryTypeaheadDataset = {
+    name:'query-dataset',
+    source: function _queryTypeaheadSource(query, cb) {
+      function buildSuggestionObject(query, hint, value) {
+        return {value:query.substring(0,query.lastIndexOf(hint)) + value, display:value};
+      }
+      var table = stateMap.$currentTable;
+      if(table && table !== '' && blurconsole.model.tables.isDataLoaded()) {
+        query = query.toLowerCase();
+        var parsedQuery = _parseQueryForTypeahead(query);
+        console.log(parsedQuery.mode);
+        switch(parsedQuery.mode) {
+        case 'family':
+          var families = blurconsole.model.tables.getFamilies(table);
+          families = $.map(families, function(fam) {
+            if(fam.indexOf(parsedQuery.family) === 0) {
+              return buildSuggestionObject(query, parsedQuery.family, fam);
+            }
+          });
+          cb(families);
+          break;
+        case 'column':
+          blurconsole.model.tables.getSchema(table, function(schema) {
+            var columnMap = schema[parsedQuery.family];
+            if(columnMap) {
+              var columns = $.map(columnMap, function(data, col) {
+                if(col.indexOf(parsedQuery.column) === 0) {
+                  return buildSuggestionObject(query, parsedQuery.column, col);
+                }
+              });
+              cb(columns);
+            }
+          });
+          break;
+        case 'term':
+          if(parsedQuery.term.length > 0) {
+            blurconsole.model.tables.findTerms(table, parsedQuery.family, parsedQuery.column, parsedQuery.term, function(terms){
+              terms = $.map(terms, function(suggestedTerm){
+                return buildSuggestionObject(query, parsedQuery.term, suggestedTerm);
+              });
+              cb(terms);
+            });
+          } else {
+            cb(null);
+          }
+          break;
+        default:
+          cb(null);
+        }
+      }
+    },
+    templates: {
+      suggestion: function(suggestion) {
+        return '<p>' + suggestion.display + '</p>';
+      }
+    }
+  };
 
-    function _getColList(row) {
-		var cols = blurconsole.utils.reject(blurconsole.utils.keys(row), function(i) {
-			return i === 'recordid';
-		});
+  function _registerPageEvents() {
+    jqueryMap.$searchTrigger.on('click', _sendSearch);
+    jqueryMap.$queryField.typeahead({}, _queryTypeaheadDataset);
+    jqueryMap.$queryField.on('keyup', function(evt) {
+      if (evt.keyCode === 13) {
+        _sendSearch();
+      }
+    });
+    jqueryMap.$resultsHolder.on('shown.bs.collapse', '.panel-collapse:not(.loaded)', _getMoreData);
+    jqueryMap.$resultsHolder.on('click', '.nextPage', _getMoreData);
+    jqueryMap.$optionsTrigger.popover({
+      html: true,
+      placement: 'bottom',
+      title: 'Extra Search Options',
+      container: 'body',
+      content: configMap.optionsHtml
+    });
+    jqueryMap.$optionsTrigger.on('shown.bs.popover', _updateOptionPopover);
+    $(document).on('change', '.popover select', _persistOptions);
+    jqueryMap.$facetTrigger.on('click', _popupFacetDialog);
+    jqueryMap.$tableField.on('change', function(evt) {
+      stateMap.$currentTable = $(evt.currentTarget).val();
+    });
+  }
 
-		if (cols.length === 0) {
-			return [];
-		}
+  function _unregisterPageEvents() {
+    if (jqueryMap.$searchTrigger) {
+      jqueryMap.$searchTrigger.off('click');
+      jqueryMap.$queryField.typeahead('destroy');
+      jqueryMap.$queryField.off('keyup');
+      jqueryMap.$resultsHolder.off('shown.bs.collapse');
+      jqueryMap.$resultsHolder.off('click');
+      jqueryMap.$optionsTrigger.popover('destroy');
+      jqueryMap.$optionsTrigger.off('shown.bs.popover');
+      $(document).off('change');
+      jqueryMap.$tableField.off('change');
+      //jqueryMap.$facetTrigger.off('click');
+    }
+  }
 
-		cols.sort();
+  function _getColList(row) {
+    var cols = blurconsole.utils.reject(blurconsole.utils.keys(row), function(i) {
+      return i === 'recordid';
+    });
 
-		cols = ['recordid'].concat(cols);
-		return cols;
-	}
+    if (cols.length === 0) {
+      return [];
+    }
 
-    //------------------------------ Event Handlers and DOM Methods ---------------------
-	function _updateOptionDisplay() {
-		var displayText = '';
-		displayText += configMap.superQueryMap[stateMap.$rowRecordOption];
-		jqueryMap.$optionsDisplay.html(displayText);
-	}
+    cols.sort();
 
-	function _updateOptionPopover() {
-		if ($('#superQuery').length > 0) {
-			$('#superQuery').val(stateMap.$rowRecordOption);
-		}
-	}
+    cols = ['recordid'].concat(cols);
+    return cols;
+  }
 
-	function _persistOptions() {
-		var resendSearch = false;
-		if (jqueryMap.$resultsHolder.children().length > 0) {
-			if (confirm('You have existing results on the screen, changing the search options will erase your results.  Continue?')) {
-				resendSearch = true;
-			} else {
-				$('#superQuery').val(stateMap.$rowRecordOption);
-				return false;
-			}
-		}
-		stateMap.$rowRecordOption = $('#superQuery').val();
-		if (resendSearch) {
-			_sendSearch();
-		}
-		_updateOptionDisplay();
-		$('#searchOptionsTrigger').popover('hide');
-	}
+  //------------------------------ Event Handlers and DOM Methods ---------------------
+  function _updateOptionDisplay() {
+    var displayText = '';
+    displayText += configMap.superQueryMap[stateMap.$rowRecordOption];
+    jqueryMap.$optionsDisplay.html(displayText);
+  }
 
-	function _sendSearch() {
-		stateMap.$currentTable = jqueryMap.$tableField.val();
-		stateMap.$currentQuery = jqueryMap.$queryField.val();
+  function _updateOptionPopover() {
+    var superQuery = $('#superQuery');
+    if (superQuery.length > 0) {
+      $.each(configMap.superQueryMap, function(key,value) {
+        superQuery.append('<option value="'+key+'">'+value+'</option>');
+      });
+      superQuery.val(stateMap.$rowRecordOption);
+    }
+    var user = $('#user');
+    if (user.length > 0) {
+      blurconsole.model.security.userNames(function(names) {
+        if(names.length === 0) {
+          user.closest('.form-group').remove();
+        } else {
+          user.append('<option value=""></option>');
+          $.each(names, function(index, name) {
+            user.append('<option>'+name+'</option>');
+          });
+          user.val(stateMap.$userOption);
+        }
+      });
+    }
+  }
 
-		blurconsole.shell.changeAnchorPart({
-			tab: 'search',
-			_tab: {
-				query: encodeURIComponent(stateMap.$currentQuery),
-				table: stateMap.$currentTable,
-				rr: stateMap.$rowRecordOption
-			}
-		});
-		_drawResultHolders();
-		jqueryMap.$countHolder.html('');
-		blurconsole.model.search.runSearch(stateMap.$currentQuery, stateMap.$currentTable, {start: 0, fetch: 10, rowRecordOption: stateMap.$rowRecordOption});
-	}
+  function _persistOptions() {
+    var resendSearch = false;
+    if (jqueryMap.$resultsHolder.children().length > 0) {
+      if (confirm('You have existing results on the screen, changing the search options will erase your results.  Continue?')) {
+        resendSearch = true;
+      } else {
+        $('#superQuery').val(stateMap.$rowRecordOption);
+        $('#user').val(stateMap.$userOption);
+        return false;
+      }
+    }
+    stateMap.$rowRecordOption = $('#superQuery').val();
+    stateMap.$userOption = $('#user').val();
+    if (resendSearch) {
+      _sendSearch();
+    }
+    _updateOptionDisplay();
+    $('#searchOptionsTrigger').popover('hide');
+  }
 
-	function _getMoreData(evt) {
-		var family = $(evt.currentTarget).attr('href') ? $(evt.currentTarget).attr('href').substring(1) : $(evt.currentTarget).attr('id');
-		blurconsole.model.search.loadMoreResults(family);
-		return false;
-	}
+  function _sendSearch() {
+    stateMap.$currentTable = jqueryMap.$tableField.val();
+    stateMap.$currentQuery = jqueryMap.$queryField.val();
 
-	function _reviewTables() {
-		var tableFound = false;
+    blurconsole.shell.changeAnchorPart({
+      tab: 'search',
+      _tab: {
+        query: encodeURIComponent(stateMap.$currentQuery),
+        table: stateMap.$currentTable,
+        rr: stateMap.$rowRecordOption,
+        user: stateMap.$userOption
+      }
+    });
+    _drawResultHolders();
+    jqueryMap.$countHolder.html('');
+    blurconsole.model.search.runSearch(stateMap.$currentQuery, stateMap.$currentTable, {start: 0, fetch: 10, rowRecordOption: stateMap.$rowRecordOption, securityUser: stateMap.$userOption});
+  }
 
-		if (stateMap.$currentTable) {
-			var tableMap = blurconsole.model.tables.getAllEnabledTables();
-			$.each(tableMap, function(cluster, tables){
-				var tableList = $.map(tables, function(t){ return t.name; });
-				if (tableList.indexOf(stateMap.$currentTable) > -1) {
-					tableFound = true;
-				}
-			});
-		}
+  function _getMoreData(evt) {
+    var family = $(evt.currentTarget).attr('href') ? $(evt.currentTarget).attr('href').substring(1) : $(evt.currentTarget).attr('id');
+    blurconsole.model.search.loadMoreResults(family);
+    return false;
+  }
 
-		if (tableFound) {
-			jqueryMap.$tableWarning.hide();
-			_loadTableList();
-		} else if (stateMap.$currentTable) {
-			jqueryMap.$tableWarning.show();
-		} else {
-			_loadTableList();
-		}
-	}
+  function _reviewTables() {
+    var tableFound = false;
 
-	function _drawResultHolders() {
-		var familyMarkup = '', parsedFamilies = blurconsole.utils.findFamilies(stateMap.$currentQuery);
+    if (stateMap.$currentTable) {
+      var tableMap = blurconsole.model.tables.getAllEnabledTables();
+      $.each(tableMap, function(cluster, tables){
+        var tableList = $.map(tables, function(t){ return t.name; });
+        if (tableList.indexOf(stateMap.$currentTable) > -1) {
+          tableFound = true;
+        }
+      });
+    }
 
-		jqueryMap.$resultsHolder.html('');
+    if (tableFound) {
+      jqueryMap.$tableWarning.hide();
+      _loadTableList();
+    } else if (stateMap.$currentTable) {
+      jqueryMap.$tableWarning.show();
+    } else {
+      _loadTableList();
+    }
+  }
 
-		// Redraw families
-		var allFamilies = blurconsole.model.tables.getFamilies(stateMap.$currentTable);
-		var extraFamilies = blurconsole.utils.reject(allFamilies, function(fam){ return parsedFamilies.indexOf(fam) >= 0; });
+  function _drawResultHolders() {
+    var familyMarkup = '', parsedFamilies = blurconsole.utils.findFamilies(stateMap.$currentQuery);
 
-		parsedFamilies.sort();
-		extraFamilies.sort();
+    jqueryMap.$resultsHolder.html('');
 
-		var sortedFamilies = parsedFamilies.concat(extraFamilies);
+    // Redraw families
+    var allFamilies = blurconsole.model.tables.getFamilies(stateMap.$currentTable);
+    var extraFamilies = blurconsole.utils.reject(allFamilies, function(fam){ return parsedFamilies.indexOf(fam) >= 0; });
 
-		$.each(sortedFamilies, function(i, fam) {
-			var famId = blurconsole.browserUtils.cleanId(fam);
-			familyMarkup += '<div class="panel panel-default"><div class="panel-heading">';
-			familyMarkup += '<h4 class="panel-title" data-toggle="collapse" data-parent="#results" data-target="#' + famId + '">' + fam + '</h4></div>';
-			familyMarkup += '<div id="' + famId + '" class="panel-collapse collapse' + (parsedFamilies.indexOf(fam) >= 0 ? ' in' : '') + '">';
-			familyMarkup += '<div class="panel-body"><img src="img/ajax-loader.gif"></div></div></div>';
-		});
+    parsedFamilies.sort();
+    extraFamilies.sort();
 
-		jqueryMap.$resultsHolder.html(familyMarkup);
-	}
+    var sortedFamilies = parsedFamilies.concat(extraFamilies);
 
-	function _drawResults(evt, families) {
-		var results = blurconsole.model.search.getResults();
-		jqueryMap.$countHolder.html('<small>Found ' + blurconsole.model.search.getTotal() + ' total results</small>');
-		//jqueryMap.$facetTrigger.show();
+    $.each(sortedFamilies, function(i, fam) {
+      var famId = blurconsole.browserUtils.cleanId(fam);
+      familyMarkup += '<div class="panel panel-default"><div class="panel-heading">';
+      familyMarkup += '<h4 class="panel-title" data-toggle="collapse" data-parent="#results" data-target="#' + famId + '">' + fam + '</h4></div>';
+      familyMarkup += '<div id="' + famId + '" class="panel-collapse collapse' + (parsedFamilies.indexOf(fam) >= 0 ? ' in' : '') + '">';
+      familyMarkup += '<div class="panel-body"><img src="img/ajax-loader.gif"></div></div></div>';
+    });
 
-		if (typeof families !== 'undefined' && families !== null) {
-			$.each(families, function(i, fam) {
-				var famResults = results[fam],
-					famId = '#' + blurconsole.browserUtils.cleanId(fam),
-					famHolder = $(famId + ' .panel-body');
+    jqueryMap.$resultsHolder.html(familyMarkup);
+  }
 
-				if (typeof famResults === 'undefined' || famResults.length === 0) {
-					famHolder.html('<div class="alert alert-info">No Data Found</div>');
-				} else {
-					var table;
-					var cols;
-					if (blurconsole.utils.keys(famResults[0]).indexOf('rowid') === -1 ) {
-						// Record results
-						table = '<table class="table table-condensed table-hover table-bordered"><thead><tr>';
-						cols = _getColList(famResults[0]);
+  function _drawResults(evt, families) {
+    var results = blurconsole.model.search.getResults();
+    jqueryMap.$countHolder.html('<small>Found ' + blurconsole.model.search.getTotal() + ' total results</small>');
+    //jqueryMap.$facetTrigger.show();
 
-						$.each(cols, function(i, col) {
-							table += '<th>' + col + '</th>';
-						});
-						table += '</tr></thead><tbody>';
-						$.each(famResults, function(i, row) {
-							table += '<tr>';
-							$.each(cols, function(c, col) {
-								table += '<td>' + (row[col] || '') + '</td>';
-							});
-							table += '</tr>';
-						});
-						table += '</tbody></table>';
-					} else {
-						// Row results
-						$.each(famResults, function(i, row){
-							if (row.records.length > 0) {
-								var tmpCols = _getColList(row.records[0]);
-								if (tmpCols.length > 0) {
-									cols = tmpCols;
-									return false;
-								}
-							}
-						});
+    if (typeof families !== 'undefined' && families !== null) {
+      $.each(families, function(i, fam) {
+        var famResults = results[fam],
+          famId = '#' + blurconsole.browserUtils.cleanId(fam),
+          famHolder = $(famId + ' .panel-body');
 
-						cols = cols || [];
-						table = '';
+        if (typeof famResults === 'undefined' || famResults.length === 0) {
+          famHolder.html('<div class="alert alert-info">No Data Found</div>');
+        } else {
+          var table;
+          var cols;
+          if (blurconsole.utils.keys(famResults[0]).indexOf('rowid') === -1 ) {
+            // Record results
+            table = '<table class="table table-condensed table-hover table-bordered"><thead><tr>';
+            cols = _getColList(famResults[0]);
 
-						$.each(famResults, function(r, row) {
-							table += '<table class="table table-condensed table-hover table-bordered"><thead>';
-							table += '<tr class="row-separator"><th colspan="' + (cols.length === 0 ? 1 : cols.length) + '">' + (r+1) + '. <strong>rowid:</strong> ' + row.rowid + ' (<em>' + (row.records === null ? 0 : row.records.length) + ' records</em>)</th></tr>';
-							table += '<tr>';
-							$.each(cols, function(i, col) {
-								table += '<th>' + col + '</th>';
-							});
-							table += '</tr></thead><tbody>';
+            $.each(cols, function(i, col) {
+              table += '<th>' + col + '</th>';
+            });
+            table += '</tr></thead><tbody>';
+            $.each(famResults, function(i, row) {
+              table += '<tr>';
+              $.each(cols, function(c, col) {
+                table += '<td>' + (row[col] || '') + '</td>';
+              });
+              table += '</tr>';
+            });
+            table += '</tbody></table>';
+          } else {
+            // Row results
+            $.each(famResults, function(i, row){
+              if (row.records.length > 0) {
+                var tmpCols = _getColList(row.records[0]);
+                if (tmpCols.length > 0) {
+                  cols = tmpCols;
+                  return false;
+                }
+              }
+            });
 
-							if (row.records === null || row.records.length === 0) {
-								table += '<tr><td colspan="' + (cols.length === 0 ? 1 : cols.length) + '"><em>No Data Found</em></td></tr>';
-							} else {
-								$.each(row.records, function(i, rec) {
-									table += '<tr>';
-									$.each(cols, function(c, col) {
-										table += '<td>' + (rec[col] || '') + '</td>';
-									});
-									table += '</tr>';
-								});
-							}
-							table += '</tbody></table>';
-						});
-					}
+            cols = cols || [];
+            table = '';
 
-					if (famResults.length < blurconsole.model.search.getTotal()) {
-						table += '<div class="pull-left"><a href="' + famId + '" class="btn btn-primary nextPage">Load More...</a></div>';
-					}
+            $.each(famResults, function(r, row) {
+              table += '<table class="table table-condensed table-hover table-bordered"><thead>';
+              table += '<tr class="row-separator"><th colspan="' + (cols.length === 0 ? 1 : cols.length) + '">' + (r+1) + '. <strong>rowid:</strong> ' + row.rowid + ' (<em>' + (row.records === null ? 0 : row.records.length) + ' records</em>)</th></tr>';
+              table += '<tr>';
+              $.each(cols, function(i, col) {
+                table += '<th>' + col + '</th>';
+              });
+              table += '</tr></thead><tbody>';
 
-					famHolder.html(table);
-				}
-				if (!$(famId).hasClass('loaded')) {
-					$(famId).addClass('loaded');
-				}
-			});
-		}
-	}
+              if (row.records === null || row.records.length === 0) {
+                table += '<tr><td colspan="' + (cols.length === 0 ? 1 : cols.length) + '"><em>No Data Found</em></td></tr>';
+              } else {
+                $.each(row.records, function(i, rec) {
+                  table += '<tr>';
+                  $.each(cols, function(c, col) {
+                    table += '<td>' + (rec[col] || '') + '</td>';
+                  });
+                  table += '</tr>';
+                });
+              }
+              table += '</tbody></table>';
+            });
+          }
 
-	function _loadTableList() {
-		var tableMap = blurconsole.model.tables.getAllEnabledTables();
+          if (famResults.length < blurconsole.model.search.getTotal()) {
+            table += '<div class="pull-left"><a href="' + famId + '" class="btn btn-primary nextPage">Load More...</a></div>';
+          }
 
-		jqueryMap.$tableField.find('optgroup').remove();
+          famHolder.html(table);
+        }
+        if (!$(famId).hasClass('loaded')) {
+          $(famId).addClass('loaded');
+        }
+      });
+    }
+  }
 
-		$.each(tableMap, function(cluster, tables) {
-			var optGroupString;
+  function _loadTableList() {
+    var tableMap = blurconsole.model.tables.getAllEnabledTables();
 
-			if (tables.length > 0) {
-				optGroupString = '<optgroup label="' + cluster + '">';
-				$.each(tables, function(t, table){
-					optGroupString += '<option value="' + table.name + '"' + (table.name === stateMap.$currentTable ? ' selected' : '') + '>' + table.name + '</option>';
-				});
-				optGroupString += '</optgroup>';
-				jqueryMap.$tableField.append(optGroupString);
-			}
-		});
+    jqueryMap.$tableField.find('optgroup').remove();
 
-		if (jqueryMap.$tableSelectorStatusOption && blurconsole.utils.keys(tableMap).length > 0) {
-			jqueryMap.$tableSelectorStatusOption.remove();
-			jqueryMap.$tableSelectorStatusOption = null;
-		}
-	}
+    $.each(tableMap, function(cluster, tables) {
+      var optGroupString;
 
-	function _popupFacetDialog() {
-		jqueryMap.facetModal = $(blurconsole.browserUtils.modal('facetDialog', 'Facets for Current Search', 'TBD', null, 'large'));
-		jqueryMap.facetModal.modal();
-	}
+      if (tables.length > 0) {
+        optGroupString = '<optgroup label="' + cluster + '">';
+        $.each(tables, function(t, table){
+          optGroupString += '<option value="' + table.name + '"' + (table.name === stateMap.$currentTable ? ' selected' : '') + '>' + table.name + '</option>';
+        });
+        optGroupString += '</optgroup>';
+        jqueryMap.$tableField.append(optGroupString);
+      }
+    });
 
-    //--------------------------------- Public API ------------------------------------------
-	function initModule($container) {
-		$container.load(configMap.view, function() {
-			stateMap.$container = $container;
-			_setJqueryMap();
-			$.gevent.subscribe(jqueryMap.$container, 'tables-updated', _reviewTables);
-			$.gevent.subscribe(jqueryMap.$container, 'results-updated', _drawResults);
-			_registerPageEvents();
-			_loadTableList();
+    if (jqueryMap.$tableSelectorStatusOption && blurconsole.utils.keys(tableMap).length > 0) {
+      jqueryMap.$tableSelectorStatusOption.remove();
+      jqueryMap.$tableSelectorStatusOption = null;
+    }
+  }
 
-			var startupMap = $.uriAnchor.makeAnchorMap();
+  function _popupFacetDialog() {
+    jqueryMap.facetModal = $(blurconsole.browserUtils.modal('facetDialog', 'Facets for Current Search', 'TBD', null, 'large'));
+    jqueryMap.facetModal.modal();
+  }
 
-			if (startupMap._tab) {
-				stateMap.$currentQuery = startupMap._tab.query;
-				jqueryMap.$queryField.val(stateMap.$currentQuery);
-				stateMap.$currentTable = startupMap._tab.table;
-				jqueryMap.$tableField.val(stateMap.$currentTable);
-				stateMap.$rowRecordOption = startupMap._tab.rr;
-			}
+  //--------------------------------- Public API ------------------------------------------
+  function initModule($container) {
+    $container.load(configMap.view, function() {
+      stateMap.$container = $container;
+      _setJqueryMap();
+      $.gevent.subscribe(jqueryMap.$container, 'tables-updated', _reviewTables);
+      $.gevent.subscribe(jqueryMap.$container, 'results-updated', _drawResults);
+      _registerPageEvents();
+      _loadTableList();
 
-			_updateOptionDisplay();
-			stateMap.loaded = true;
-		});
-		return true;
-	}
+      var startupMap = $.uriAnchor.makeAnchorMap();
 
-	function unloadModule() {
-		$.gevent.unsubscribe(jqueryMap.$container, 'tables-updated');
-		_unregisterPageEvents();
-	}
+      if (startupMap._tab) {
+        stateMap.$currentQuery = startupMap._tab.query;
+        jqueryMap.$queryField.val(stateMap.$currentQuery);
+        stateMap.$currentTable = startupMap._tab.table;
+        jqueryMap.$tableField.val(stateMap.$currentTable);
+        stateMap.$rowRecordOption = startupMap._tab.rr;
+        stateMap.$userOption = startupMap._tab.user;
+      }
 
-	return {
-		initModule : initModule,
-		unloadModule : unloadModule
-	};
+      _updateOptionDisplay();
+      stateMap.loaded = true;
+    });
+    return true;
+  }
+
+  function unloadModule() {
+    $.gevent.unsubscribe(jqueryMap.$container, 'tables-updated');
+    _unregisterPageEvents();
+  }
+
+  return {
+    initModule : initModule,
+    unloadModule : unloadModule
+  };
 }());

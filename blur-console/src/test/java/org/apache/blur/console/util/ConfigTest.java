@@ -16,44 +16,42 @@
  */
 package org.apache.blur.console.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.net.InetAddress;
-
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.console.ConsoleTestBase;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.net.InetAddress;
+
+import static org.junit.Assert.*;
+
 public class ConfigTest extends ConsoleTestBase {
-	
-	@Before
-	public void setup() throws IOException {
-		Config.setupConfig();
-	}
 
-	@Test
-	public void testGetConsolePort() {
-		assertEquals(8080, Config.getConsolePort());
-	}
+  @Before
+  public void setup() throws IOException {
+    Config.setupConfig();
+  }
 
-	@Test
-	public void testGetBlurConfig() {
-		BlurConfiguration blurConfig = Config.getBlurConfig();
-		assertNotNull(blurConfig);
-	}
+  @Test
+  public void testGetConsolePort() {
+    assertEquals(8080, Config.getConsolePort());
+  }
 
-	@Test
-	public void testGetConnectionString() throws IOException {
-		assertTrue(StringUtils.contains(Config.getConnectionString(), InetAddress.getLocalHost().getHostName()));
-	}
-	
-	@Test
-	public void testGetZookeeper() {
-		assertNotNull(Config.getZookeeper());
-	}
+  @Test
+  public void testGetBlurConfig() {
+    BlurConfiguration blurConfig = Config.getBlurConfig();
+    assertNotNull(blurConfig);
+  }
+
+  @Test
+  public void testGetConnectionString() throws IOException {
+    assertTrue(StringUtils.contains(Config.getConnectionString(), InetAddress.getLocalHost().getHostName()));
+  }
+
+  @Test
+  public void testGetZookeeper() {
+    assertNotNull(Config.getZookeeper());
+  }
 }

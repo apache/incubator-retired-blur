@@ -22,53 +22,51 @@ import org.apache.blur.console.model.User;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 public class AllAllowedProvider implements IProvider {
 
-    @Override
-    public User login(HttpServletRequest request) {
-        return null;
-    }
+  @Override
+  public User login(HttpServletRequest request) {
+    return null;
+  }
 
-    @Override
-    public User getUser(String token) {
-        return null;
-    }
+  @Override
+  public User getUser(String token) {
+    return null;
+  }
 
-    @Override
-    public User getUser(String token, HttpServletRequest request) {
-        return null;
-    }
+  @Override
+  public User getUser(String token, HttpServletRequest request) {
+    return null;
+  }
 
-    @Override
-    public boolean isValidToken(String token, HttpServletRequest request) {
-        return true;
-    }
+  @Override
+  public boolean isValidToken(String token, HttpServletRequest request) {
+    return true;
+  }
 
-    @Override
-    public boolean userHasRole(User user, String role) {
-        return false;
-    }
+  @Override
+  public boolean userHasRole(User user, String role) {
+    return false;
+  }
 
-    @Override
-    public void setupProvider(BlurConfiguration config) {
+  @Override
+  public void setupProvider(BlurConfiguration config) {
 
-    }
+  }
 
-    @Override
-    public Map<String, Map<String, Object>> getLoginFields() {
-        return null;
-    }
+  @Override
+  public Map<String, Map<String, Object>> getLoginFields() {
+    return null;
+  }
 
-    @Override
-    public boolean isLoginRequired() {
-        return false;
-    }
+  @Override
+  public boolean isLoginRequired() {
+    return false;
+  }
 
-    @Override
-    public boolean isRetryAllowed() {
-        return false;
-    }
+  @Override
+  public boolean isRetryAllowed() {
+    return false;
+  }
 }

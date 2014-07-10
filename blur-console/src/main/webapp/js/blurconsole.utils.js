@@ -19,78 +19,78 @@ under the License.
 */
 /*global blurconsole:false */
 blurconsole.utils = (function(){
-	'use strict';
+  'use strict';
     
     //-------------------------- Public API ----------------------------
-	function inject(collection, initial, block) {
-		if (collection === null || collection.length === 0) {
-			return initial;
-		}
+  function inject(collection, initial, block) {
+    if (collection === null || collection.length === 0) {
+      return initial;
+    }
 
-		var accumulator = initial == null ? collection[0] : initial;
-		$.each(collection, function(idx, item) {
-			accumulator = block(accumulator, item);
-		});
+    var accumulator = initial === null ? collection[0] : initial;
+    $.each(collection, function(idx, item) {
+      accumulator = block(accumulator, item);
+    });
 
-		return accumulator;
-	}
+    return accumulator;
+  }
 
-	function unique(collection, sort) {
-		var uniqueList = [];
+  function unique(collection, sort) {
+    var uniqueList = [];
 
-		$.each(collection, function(idx, item){
-			if (uniqueList.indexOf(item) === -1) {
-				uniqueList.push(item);
-			}
-		});
+    $.each(collection, function(idx, item){
+      if (uniqueList.indexOf(item) === -1) {
+        uniqueList.push(item);
+      }
+    });
 
-		if (sort) {
-			uniqueList.sort();
-		}
+    if (sort) {
+      uniqueList.sort();
+    }
 
-		return uniqueList;
-	}
+    return uniqueList;
+  }
 
-	function equals(obj1, obj2) {
-		return JSON.stringify(obj1) === JSON.stringify(obj2);
-	}
+  function equals(obj1, obj2) {
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
+  }
 
-	function keys(map) {
-		return $.map(map, function(v, key){ return key; });
-	}
+  function keys(map) {
+    return $.map(map, function(v, key){ return key; });
+  }
 
-	function findFamilies(query) {
-		// Determine regex to find column families in lucene query
-		var matches = query.match(/[^ \(\)\+\-]+(\w+)\.\w+:/g);
+  function findFamilies(query) {
+    // Determine regex to find column families in lucene query
+    var matches = query.match(/[^ \(\)\+\-]+(\w+)\.\w+:/g);
 
-		if (matches === null) {
-			return [];
-		}
+    if (matches === null) {
+      return [];
+    }
 
-		var families = [];
-		$.each(matches, function(idx, match) {
-			families.push(match.split('.')[0]);
-		});
-		return families;
-	}
+    var families = [];
+    $.each(matches, function(idx, match) {
+      families.push(match.split('.')[0]);
+    });
+    return families;
+  }
 
-	function reject(collection, block) {
-		var newArray = [];
-		$.each(collection, function(i, item){
-			if (!block(item)) {
-				newArray.push(item);
-			}
-		});
-		return newArray;
-	}
+  function reject(collection, block) {
+    var newArray = [];
+    $.each(collection, function(i, item){
+      if (!block(item)) {
+        newArray.push(item);
+      }
+    });
+    return newArray;
+  }
 
-	return {
-		inject: inject,
-		reduce: inject,
-		unique: unique,
-		equals: equals,
-		keys: keys,
-		findFamilies: findFamilies,
-		reject: reject
-	};
+  return {
+    inject: inject,
+    reduce: inject,
+    unique: unique,
+    equals: equals,
+    keys: keys,
+    findFamilies: findFamilies,
+    reject: reject
+  };
 }());

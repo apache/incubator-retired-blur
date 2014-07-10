@@ -182,16 +182,18 @@ public class GenericBlurRecordWriter {
 
   private void setupCounter() {
     GetCounter getCounter = BlurOutputFormat.getGetCounter();
-    _fieldCount = getCounter.getCounter(BlurCounters.LUCENE_FIELD_COUNT);
-    _columnCount = getCounter.getCounter(BlurCounters.COLUMN_COUNT);
-    _recordCount = getCounter.getCounter(BlurCounters.RECORD_COUNT);
-    _recordDuplicateCount = getCounter.getCounter(BlurCounters.RECORD_DUPLICATE_COUNT);
-    _rowCount = getCounter.getCounter(BlurCounters.ROW_COUNT);
-    _rowDeleteCount = getCounter.getCounter(BlurCounters.ROW_DELETE_COUNT);
-    _rowOverFlowCount = getCounter.getCounter(BlurCounters.ROW_OVERFLOW_COUNT);
-    _recordRateCounter = new RateCounter(getCounter.getCounter(BlurCounters.RECORD_RATE));
-    _rowRateCounter = new RateCounter(getCounter.getCounter(BlurCounters.ROW_RATE));
-    _copyRateCounter = new RateCounter(getCounter.getCounter(BlurCounters.COPY_RATE));
+    if (getCounter != null) {
+      _fieldCount = getCounter.getCounter(BlurCounters.LUCENE_FIELD_COUNT);
+      _columnCount = getCounter.getCounter(BlurCounters.COLUMN_COUNT);
+      _recordCount = getCounter.getCounter(BlurCounters.RECORD_COUNT);
+      _recordDuplicateCount = getCounter.getCounter(BlurCounters.RECORD_DUPLICATE_COUNT);
+      _rowCount = getCounter.getCounter(BlurCounters.ROW_COUNT);
+      _rowDeleteCount = getCounter.getCounter(BlurCounters.ROW_DELETE_COUNT);
+      _rowOverFlowCount = getCounter.getCounter(BlurCounters.ROW_OVERFLOW_COUNT);
+      _recordRateCounter = new RateCounter(getCounter.getCounter(BlurCounters.RECORD_RATE));
+      _rowRateCounter = new RateCounter(getCounter.getCounter(BlurCounters.ROW_RATE));
+      _copyRateCounter = new RateCounter(getCounter.getCounter(BlurCounters.COPY_RATE));
+    }
   }
 
   private void add(BlurMutate value) throws IOException {

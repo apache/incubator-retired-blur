@@ -6412,6 +6412,11 @@ under the License.
 #results .panel-collapse {
   padding: 5px;
 }
+#results .tab-content {
+  padding: 5px;
+  border-left: 1px solid #dddddd;
+  border-bottom: 1px solid #dddddd;
+}
 #resultCount {
   padding-left: 30px;
   font-style: italic;
@@ -6473,4 +6478,4 @@ under the License.
 .twitter-typeahead .tt-suggestion p {
   margin: 0;
 }
-/*# sourceMappingURL=/css/blurconsole.css.85b4970e6cc85ff19b38ea3992343cc9.map */
+/*# sourceMappingURL=/css/blurconsole.css.db643f2fc2dc56a029b94937c9325b71.map */

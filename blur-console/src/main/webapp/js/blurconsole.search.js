@@ -177,6 +177,7 @@ blurconsole.search = (function () {
       }
     });
     jqueryMap.$resultsHolder.on('shown.bs.collapse', '.panel-collapse:not(.loaded)', _getMoreData);
+    jqueryMap.$resultsHolder.on('shown.bs.tab', 'a[data-toggle="tab"]:not(.loaded)', _getMoreData);
     jqueryMap.$resultsHolder.on('click', '.nextPage', _getMoreData);
     jqueryMap.$optionsTrigger.popover({
       html: true,
@@ -191,6 +192,7 @@ blurconsole.search = (function () {
     jqueryMap.$tableField.on('change', function(evt) {
       stateMap.$currentTable = $(evt.currentTarget).val();
     });
+    jqueryMap.$resultsHolder.on('click', 'a.fetchRow', _fetchRow);
   }
 
   function _unregisterPageEvents() {
@@ -199,6 +201,7 @@ blurconsole.search = (function () {
       jqueryMap.$queryField.typeahead('destroy');
       jqueryMap.$queryField.off('keyup');
       jqueryMap.$resultsHolder.off('shown.bs.collapse');
+      jqueryMap.$resultsHolder.off('shown.bs.tab');
       jqueryMap.$resultsHolder.off('click');
       jqueryMap.$optionsTrigger.popover('destroy');
       jqueryMap.$optionsTrigger.off('shown.bs.popover');
@@ -287,9 +290,24 @@ blurconsole.search = (function () {
         user: stateMap.$userOption
       }
     });
+
+    if (stateMap.$currentQuery.indexOf('rowid:') >= 0) {
+      stateMap.$currentDisplay = 'fetch';
+    } else {
+      stateMap.$currentDisplay = 'search';
+    }
+
     _drawResultHolders();
     jqueryMap.$countHolder.html('');
     blurconsole.model.search.runSearch(stateMap.$currentQuery, stateMap.$currentTable, {start: 0, fetch: 10, rowRecordOption: stateMap.$rowRecordOption, securityUser: stateMap.$userOption});
+  }
+
+  function _fetchRow(evt) {
+    var rowid = $(evt.currentTarget).attr('href');
+
+    jqueryMap.$queryField.val('rowid:' + rowid);
+    _sendSearch();
+    return false;
   }
 
   function _getMoreData(evt) {
@@ -322,7 +340,15 @@ blurconsole.search = (function () {
   }
 
   function _drawResultHolders() {
-    var familyMarkup = '', parsedFamilies = blurconsole.utils.findFamilies(stateMap.$currentQuery);
+    if (stateMap.$currentDisplay === 'fetch') {
+      _drawFetchHolder();
+    } else {
+      _drawSearchHolder();
+    }
+  }
+
+  function _drawSearchHolder() {
+    var familyMarkup = '<ul class="nav nav-tabs">', parsedFamilies = blurconsole.utils.findFamilies(stateMap.$currentQuery);
 
     jqueryMap.$resultsHolder.html('');
 
@@ -337,9 +363,36 @@ blurconsole.search = (function () {
 
     $.each(sortedFamilies, function(i, fam) {
       var famId = blurconsole.browserUtils.cleanId(fam);
+      familyMarkup += '<li class="' + (i === 0 ? 'active' : '') + '"><a href="#' + famId + '" data-toggle="tab" data-fam="#' + famId + '">' + fam + '</a></li>';
+    });
+
+    familyMarkup += '</ul><div class="tab-content">';
+
+    $.each(sortedFamilies, function(i, fam) {
+      var famId = blurconsole.browserUtils.cleanId(fam);
+      familyMarkup += '<div class="clearfix tab-pane ' + (i === 0 ? 'active' : '') + '" id="' + famId + '"><img src="img/ajax-loader.gif"></div>';
+    });
+
+    familyMarkup += '</div>';
+
+    jqueryMap.$resultsHolder.html(familyMarkup);
+  }
+
+  function _drawFetchHolder() {
+    var familyMarkup = '';
+
+    jqueryMap.$resultsHolder.html('');
+
+    // Redraw families
+    var allFamilies = blurconsole.model.tables.getFamilies(stateMap.$currentTable);
+
+    allFamilies.sort();
+
+    $.each(allFamilies, function(i, fam) {
+      var famId = blurconsole.browserUtils.cleanId(fam);
       familyMarkup += '<div class="panel panel-default"><div class="panel-heading">';
       familyMarkup += '<h4 class="panel-title" data-toggle="collapse" data-parent="#results" data-target="#' + famId + '">' + fam + '</h4></div>';
-      familyMarkup += '<div id="' + famId + '" class="panel-collapse collapse' + (parsedFamilies.indexOf(fam) >= 0 ? ' in' : '') + '">';
+      familyMarkup += '<div id="' + famId + '" class="panel-collapse collapse">';
       familyMarkup += '<div class="panel-body"><img src="img/ajax-loader.gif"></div></div></div>';
     });
 
@@ -355,7 +408,7 @@ blurconsole.search = (function () {
       $.each(families, function(i, fam) {
         var famResults = results[fam],
           famId = '#' + blurconsole.browserUtils.cleanId(fam),
-          famHolder = $(famId + ' .panel-body');
+          famHolder = stateMap.$currentDisplay === 'fetch' ? $(famId + ' .panel-body') : $(famId);
 
         if (typeof famResults === 'undefined' || famResults.length === 0) {
           famHolder.html('<div class="alert alert-info">No Data Found</div>');
@@ -396,7 +449,7 @@ blurconsole.search = (function () {
 
             $.each(famResults, function(r, row) {
               table += '<table class="table table-condensed table-hover table-bordered"><thead>';
-              table += '<tr class="row-separator"><th colspan="' + (cols.length === 0 ? 1 : cols.length) + '">' + (r+1) + '. <strong>rowid:</strong> ' + row.rowid + ' (<em>' + (row.records === null ? 0 : row.records.length) + ' records</em>)</th></tr>';
+              table += '<tr class="row-separator"><th colspan="' + (cols.length === 0 ? 1 : cols.length) + '">' + (r+1) + '. <strong>rowid:</strong> <a href="' + row.rowid + '" class="fetchRow">' + row.rowid + '</a> (<em>' + (row.records === null ? 0 : row.records.length) + ' records</em>)</th></tr>';
               table += '<tr>';
               $.each(cols, function(i, col) {
                 table += '<th>' + col + '</th>';
@@ -424,8 +477,15 @@ blurconsole.search = (function () {
 
           famHolder.html(table);
         }
-        if (!$(famId).hasClass('loaded')) {
-          $(famId).addClass('loaded');
+
+        if (stateMap.$currentDisplay === 'fetch') {
+          if (!$(famId).hasClass('loaded')) {
+            $(famId).addClass('loaded');
+          }
+        } else {
+          if (!$('a[data-fam="' + famId + '"]').hasClass('loaded')) {
+            $('a[data-fam="' + famId + '"]').addClass('loaded');
+          }
         }
       });
     }

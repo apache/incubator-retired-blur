@@ -216,6 +216,17 @@ blurconsole.fake = (function() {
 
     var fams = args.families, results = {}, total = (fams !== null && fams.indexOf('rowid') >= 0) ? 1 : _randomNumber(1000);
 
+    if (fams === null || fams.length === 0) {
+      $.each(tableList.tables, function(i, t) {
+        if (t.name === table) {
+          var tFams = t.families;
+          tFams.sort();
+          fams = [tFams[0]];
+          return false;
+        }
+      });
+    }
+
     if (fams !== null) {
       $.each(fams, function(i, fam){
         var cols = _randomNumber(30, true), toFetch = (fams !== null && fams.indexOf('rowid') >= 0)? 1 : args.fetch;
@@ -253,8 +264,6 @@ blurconsole.fake = (function() {
 
     if (fams.indexOf('rowid') >= 0) {
       _sendCallback(callback, { total: total, results: results, families: fams });
-    } else if (fams === null || fams.length === 0) {
-      _sendCallback(callback, { total: total });
     } else {
       _sendCallback(callback, { families: fams, results: results, total: total });
     }

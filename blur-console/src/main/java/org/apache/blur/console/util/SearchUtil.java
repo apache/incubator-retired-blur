@@ -48,10 +48,6 @@ public class SearchUtil {
       return fetchRow(table, query, families, remoteHost, securityUser);
     }
 
-    if (families == null || families.length == 0) {
-      return fullTextSearch(table, query, remoteHost, securityUser);
-    }
-
     return searchAndFetch(table, query, rowQuery, start, fetch, families, remoteHost, securityUser);
   }
 

@@ -1,3 +1,7 @@
+Release 0.2.3 - 2014-07-11
+
+** Apache Blur 0.2.3 is a re-release of 0.2.2 with a few bug fixes and a new version of Apache Blur Console.
+
 Release 0.2.2 - 2014-05-06
 
 Release Notes - Apache Blur - Version 0.2.2

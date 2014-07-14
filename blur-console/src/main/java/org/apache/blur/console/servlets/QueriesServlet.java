@@ -17,6 +17,7 @@ package org.apache.blur.console.servlets;
  * limitations under the License.
  */
 
+import org.apache.blur.console.model.User;
 import org.apache.blur.console.util.HttpUtil;
 import org.apache.blur.console.util.QueryUtil;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -39,17 +40,17 @@ public class QueriesServlet extends BaseConsoleServlet {
     String path = req.getPathInfo();
     Matcher m;
     if (path == null) {
-      sendQueries(res);
+      sendQueries(req, res);
     } else if ("/performance".equalsIgnoreCase(path)) {
-      sendCurrentQueryCount(res);
+      sendCurrentQueryCount(req, res);
     } else if ((m = queryCancelPattern.matcher(path)).matches()) {
-      cancelQuery(res, m.group(1), req.getParameter("table"));
+      cancelQuery(req, res, m.group(1));
     } else {
       sendNotFound(res, req.getRequestURI());
     }
   }
 
-  private void sendCurrentQueryCount(HttpServletResponse response) throws IOException {
+  private void sendCurrentQueryCount(HttpServletRequest request, HttpServletResponse response) throws IOException {
     int count;
     try {
       count = QueryUtil.getCurrentQueryCount();
@@ -63,7 +64,7 @@ public class QueriesServlet extends BaseConsoleServlet {
     HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(count), HttpUtil.JSON);
   }
 
-  private void sendQueries(HttpServletResponse response) throws IOException {
+  private void sendQueries(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Map<String, Object> queries = new HashMap<String, Object>();
     try {
       queries = QueryUtil.getQueries();
@@ -77,7 +78,9 @@ public class QueriesServlet extends BaseConsoleServlet {
     HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(queries), HttpUtil.JSON);
   }
 
-  private void cancelQuery(HttpServletResponse response, String uuid, String table) throws IOException {
+  private void cancelQuery(HttpServletRequest request, HttpServletResponse response, String uuid) throws IOException {
+    authorize(request, User.MANAGER_ROLE);
+    String table = request.getParameter("table");
     try {
       QueryUtil.cancelQuery(table, uuid);
     } catch (IOException e) {

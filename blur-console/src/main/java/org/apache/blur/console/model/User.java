@@ -17,53 +17,45 @@ package org.apache.blur.console.model;
  * limitations under the License.
  */
 
-import java.util.List;
+import java.util.Collection;
 
 public class User {
-  protected String authToken;
+
+  public static final String ADMIN_ROLE = "admin"; // can do everything
+  public static final String SEARCHER_ROLE = "searcher"; // reader + can query
+  public static final String MANAGER_ROLE = "manager"; // searcher + destructive actions
+
   protected String name;
+
   protected String email;
-  protected String password;
-  protected List<String> roles;
 
-  public String getAuthToken() {
-    return authToken;
-  }
-
-  public void setAuthToken(String authToken) {
-    this.authToken = authToken;
-  }
+  protected Collection<String> roles;
 
   public String getName() {
     return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   public String getEmail() {
     return email;
   }
 
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
-
-  public List<String> getRoles() {
+  public Collection<String> getRoles() {
     return roles;
   }
 
-  public void setRoles(List<String> roles) {
-    this.roles = roles;
+  public boolean hasRole(String role) {
+    if(roles != null && !roles.isEmpty()) {
+      if (roles.contains(ADMIN_ROLE)) {
+        return true;
+      }
+      if(MANAGER_ROLE.equals(role) && roles.contains(MANAGER_ROLE)) {
+        return true;
+      }
+      if(SEARCHER_ROLE.equals(role) && (roles.contains(MANAGER_ROLE) || roles.contains(SEARCHER_ROLE))) {
+        return true;
+      }
+    }
+    return false;
   }
 
 }

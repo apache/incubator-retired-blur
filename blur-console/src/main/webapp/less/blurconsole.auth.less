@@ -16,23 +16,12 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
-*/
-
-/*
- * blur.js
- * Root namespace module
  */
-var blurconsole = (function () {
-  'use strict';
 
-  //---------------------- Public API -------------------------
-  function initModule( $container ) {
-    $container.on('userLoggedIn', function() {
-      blurconsole.model.initModule();
-      blurconsole.shell.initModule( $container );
-    });
-    blurconsole.auth.initModule($container);
-  }
-
-  return { initModule: initModule };
-}());
+.auth_container {
+  margin-left: 100px;
+  margin-right: 100px;
+  border-radius: 10px;
+  font-size: 18px;
+  box-shadow: 1px 1px 15px #888888;
+}

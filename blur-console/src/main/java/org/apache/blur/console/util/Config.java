@@ -19,8 +19,7 @@ package org.apache.blur.console.util;
 
 
 import org.apache.blur.BlurConfiguration;
-import org.apache.blur.console.providers.AllAllowedProvider;
-import org.apache.blur.console.providers.IProvider;
+import org.apache.blur.console.providers.BaseProvider;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -37,10 +36,7 @@ import org.codehaus.jackson.type.TypeReference;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Config {
 
@@ -54,7 +50,7 @@ public class Config {
   private static String blurConnection;
   private static Object cluster;
   private static Map<String, Map<String, String>> globalUserProperties;
-  private static IProvider provider;
+  private static BaseProvider provider;
 
   public static int getConsolePort() {
     return port;
@@ -64,27 +60,40 @@ public class Config {
     return blurConfig;
   }
 
-  public static void setupConfig() throws IOException {
+  public static void setupConfig() throws Exception {
     if (cluster == null) {
       blurConfig = new BlurConfiguration();
-    } else {
+    } else { // in dev mode
       blurConfig = new BlurConfiguration(false);
-
-      String zkConnection = "";
-      try {
-        Method zkMethod = cluster.getClass().getMethod("getZkConnectionString");
-        zkConnection = (String) zkMethod.invoke(cluster);
-      } catch (Exception e) {
-        log.fatal("Unable get zookeeper connection string", e);
-      }
-
-      blurConfig.set("blur.zookeeper.connection", zkConnection);
+      setDevelopmentZookeeperConnection();
+      setDevelopmentProperties();
     }
     zk = new ZookeeperClusterStatus(blurConfig.get("blur.zookeeper.connection"), blurConfig);
     blurConnection = buildConnectionString();
     port = blurConfig.getInt("blur.console.port", DEFAULT_PORT);
     parseSecurity();
     setupProvider();
+  }
+
+  private static void setDevelopmentZookeeperConnection() {
+    String zkConnection = "";
+    try {
+      Method zkMethod = cluster.getClass().getMethod("getZkConnectionString");
+      zkConnection = (String) zkMethod.invoke(cluster);
+    } catch (Exception e) {
+      log.fatal("Unable get zookeeper connection string", e);
+    }
+
+    blurConfig.set("blur.zookeeper.connection", zkConnection);
+  }
+
+  private static void setDevelopmentProperties() {
+    Properties properties = System.getProperties();
+    for (String name : properties.stringPropertyNames()) {
+      if (name.startsWith("blur.")) {
+        blurConfig.set(name, properties.getProperty(name));
+      }
+    }
   }
 
   private static void parseSecurity() {
@@ -94,7 +103,8 @@ public class Config {
       JsonFactory factory = new JsonFactory();
       ObjectMapper mapper = new ObjectMapper(factory);
       File from = new File(securityFile);
-      TypeReference<Map<String, Map<String, String>>> typeRef = new TypeReference<Map<String, Map<String, String>>>(){};
+      TypeReference<Map<String, Map<String, String>>> typeRef = new TypeReference<Map<String, Map<String, String>>>() {
+      };
 
       try {
         globalUserProperties = mapper.readValue(from, typeRef);
@@ -105,20 +115,17 @@ public class Config {
     }
   }
 
-  private static void setupProvider() {
+  private static void setupProvider() throws Exception {
     String providerClassName = blurConfig.get("blur.console.auth.provider", "org.apache.blur.console.providers.AllAllowedProvider");
 
-    try {
-      Class providerClass = Class.forName(providerClassName, false, Config.class.getClassLoader());
 
-      if (providerClass != null) {
-        provider = (IProvider) providerClass.newInstance();
-        provider.setupProvider(blurConfig);
-      }
-    } catch (Exception e) {
-      log.fatal("Unable to setup provider [" + providerClassName + "]. Reverting to default.");
-      provider = new AllAllowedProvider();
+    Class providerClass = Class.forName(providerClassName, false, Config.class.getClassLoader());
+
+    if (providerClass != null) {
+      provider = (BaseProvider) providerClass.newInstance();
+      provider.setupProvider(blurConfig);
     }
+
   }
 
   public static String getConnectionString() throws IOException {
@@ -185,12 +192,12 @@ public class Config {
     return cluster != null;
   }
 
-  public static IProvider getProvider() {
+  public static BaseProvider getProvider() {
     return provider;
   }
 
   public static Collection<String> getSecurityUserNames() {
-    if(globalUserProperties != null) {
+    if (globalUserProperties != null) {
       return globalUserProperties.keySet();
     } else {
       return new ArrayList<String>();

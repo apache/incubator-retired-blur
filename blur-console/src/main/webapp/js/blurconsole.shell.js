@@ -68,6 +68,10 @@ blurconsole.shell = (function () {
       jqueryMap.$sideNavTabs.filter('a[href$="' + tab + '"]').addClass('active');
       if (blurconsole[tab]) {
         blurconsole[tab].initModule( jqueryMap.$container );
+      } else {
+        changeAnchorPart({
+          tab : 'dashboard'
+        });
       }
     }
 
@@ -150,6 +154,19 @@ blurconsole.shell = (function () {
 
     blurconsole.schema.initModule();
     blurconsole.logging.initModule();
+
+    $('#dashboard_tab').show();
+    $('#tables_tab').show();
+    $('#queries_tab').show();
+
+    if(blurconsole.auth.hasRole('searcher')) {
+      $('#search_tab').show();
+    } else {
+      configMap.allTabs.splice(configMap.allTabs.indexOf('search'), 1);
+      configMap.anchorSchemaMap.tab.search = false;
+      blurconsole.search = null;
+      $('#search_tab').remove();
+    }
 
     $('#view_logging_trigger').on('click', function() {
       $.gevent.publish('show-logging');

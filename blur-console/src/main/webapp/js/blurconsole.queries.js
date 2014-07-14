@@ -41,7 +41,7 @@ blurconsole.queries = (function() {
       } },
       { label: 'Actions', key: function(row) {
         var actions = '';
-        if(row.state === 0) {
+        if(row.state === 0 && blurconsole.auth.hasRole('manager')) {
           actions += '<a href="#" class="cancelTrigger btn btn-danger" data-uuid="' + row.uuid + '" data-query="' + row.query + '" data-table="' + row.table + '"><i class="glyphicon glyphicon-ban-circle"></i> Cancel</a> ';
         }
         return actions;

@@ -57,7 +57,7 @@ module.exports = function (grunt) {
             options: {
                 sourceMap: true,
                 sourceMapFilename: 'public/css/blurconsole.css.map',
-                sourceMapURL: '/css/blurconsole.css.map',
+                sourceMapURL: 'blurconsole.css.map',
                 sourceMapBasepath: 'public',
                 sourceMapRootpath: '/',
                 dumpLineNumbers: true,

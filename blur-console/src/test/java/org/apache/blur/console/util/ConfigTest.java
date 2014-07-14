@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
 public class ConfigTest extends ConsoleTestBase {
 
   @Before
-  public void setup() throws IOException {
+  public void setup() throws Exception {
     Config.setupConfig();
   }
 

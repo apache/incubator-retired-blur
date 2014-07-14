@@ -18,31 +18,28 @@ package org.apache.blur.console.servlets;
  */
 
 import org.apache.blur.console.model.User;
-import org.apache.blur.console.providers.IProvider;
+import org.apache.blur.console.providers.BaseProvider;
 import org.apache.blur.console.util.Config;
 import org.apache.blur.console.util.HttpUtil;
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class AuthServlet extends BaseConsoleServlet {
   private static final String LOGIN_STATUS_FIELD = "loggedIn";
-  private static final String LOGIN_FIELDS_FIELD = "requiredFields";
-  private static final String LOGIN_RETRY_ALLOWED = "retryAllowed";
-  private static final String AUTH_TOKEN = "authToken";
+  private static final String LOGIN_FORM_FIELD = "formHtml";
+  private static final String USER_FIELD = "user";
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     String path = req.getPathInfo();
-    if (path == null) {
-      checkCurrentAuth(req, resp);
-    } else if ("/securityUsers".equalsIgnoreCase(path)) {
+    if ("/securityUsers".equalsIgnoreCase(path)) {
       getSecurityUsers(req, resp);
     } else {
       sendNotFound(resp, req.getRequestURI());
@@ -52,7 +49,7 @@ public class AuthServlet extends BaseConsoleServlet {
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     String path = req.getPathInfo();
-    if ("login".equalsIgnoreCase(path)) {
+    if ("/login".equalsIgnoreCase(path)) {
       loginUser(req, resp);
     } else {
       sendNotFound(resp, req.getRequestURI());
@@ -65,46 +62,26 @@ public class AuthServlet extends BaseConsoleServlet {
     HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(responseData), HttpUtil.JSON);
   }
 
-  private void checkCurrentAuth(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    IProvider provider = Config.getProvider();
+  private void loginUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Map<String, Object> responseData = new HashMap<String, Object>();
-
-    if (provider.isLoginRequired()) {
-      String authToken = HttpUtil.getFirstParam((String[]) request.getParameterMap().get(AUTH_TOKEN));
-
-      if (StringUtils.isNotBlank(authToken) && provider.getUser(authToken, request) != null) {
-        responseData.put(LOGIN_STATUS_FIELD, true);
-      } else {
-        responseData.put(LOGIN_STATUS_FIELD, false);
-        responseData.put(LOGIN_FIELDS_FIELD, provider.getLoginFields());
+    HttpSession session = request.getSession();
+    User user = (User) session.getAttribute("user");
+    BaseProvider provider = Config.getProvider();
+    if(user == null) {
+      user = provider.login(request);
+    }
+    if (user == null) {
+      responseData.put(LOGIN_STATUS_FIELD, false);
+      String form = provider.getLoginForm();
+      if (form != null) {
+        responseData.put(LOGIN_FORM_FIELD, form);
       }
     } else {
       responseData.put(LOGIN_STATUS_FIELD, true);
+      responseData.put(USER_FIELD, user);
+      session.setAttribute("user", user);
     }
 
     HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(responseData), HttpUtil.JSON);
-  }
-
-  private void loginUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    Map<String, Object> data = new HashMap<String, Object>();
-
-    IProvider provider = Config.getProvider();
-
-    User user = provider.login(request);
-
-    if (user == null) {
-      data.put(LOGIN_STATUS_FIELD, false);
-
-      boolean retry = provider.isRetryAllowed();
-      data.put(LOGIN_RETRY_ALLOWED, retry);
-      if (retry) {
-        data.put(LOGIN_FIELDS_FIELD, provider.getLoginFields());
-      }
-    } else {
-      data.put(AUTH_TOKEN, user.getAuthToken());
-      data.put("roles", user.getRoles());
-    }
-
-    HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(data), HttpUtil.JSON);
   }
 }

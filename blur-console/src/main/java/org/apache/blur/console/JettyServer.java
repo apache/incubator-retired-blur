@@ -17,12 +17,13 @@ package org.apache.blur.console;
  * limitations under the License.
  */
 
+import org.apache.blur.console.filters.LoggedInFilter;
 import org.apache.blur.console.servlets.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
-import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.webapp.WebAppContext;
 
 import java.io.File;
@@ -73,11 +74,12 @@ public class JettyServer {
 
     // for localhost:port/service/dashboard, etc.
     final Context context = new Context(server, "/service", Context.SESSIONS);
-    context.addServlet(new ServletHolder(new AuthServlet()), "/auth/*");
-    context.addServlet(new ServletHolder(new NodesServlet()), "/nodes/*");
-    context.addServlet(new ServletHolder(new TablesServlet()), "/tables/*");
-    context.addServlet(new ServletHolder(new QueriesServlet()), "/queries/*");
-    context.addServlet(new ServletHolder(new SearchServlet()), "/search/*");
+    context.addServlet(AuthServlet.class, "/auth/*");
+    context.addServlet(NodesServlet.class, "/nodes/*");
+    context.addServlet(TablesServlet.class, "/tables/*");
+    context.addServlet(QueriesServlet.class, "/queries/*");
+    context.addServlet(SearchServlet.class, "/search/*");
+    context.addFilter(LoggedInFilter.class, "/*", Handler.REQUEST);
 
     System.out.println("started server on http://localhost:" + port + CONTEXTPATH);
     try {

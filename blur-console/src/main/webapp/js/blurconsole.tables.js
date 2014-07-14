@@ -34,7 +34,9 @@ blurconsole.tables = (function () {
       {label:'Actions', key: function(row) {
         var actions = '', table = row.name;
         actions += '<a href="#" class="schemaTrigger btn btn-default" data-name="' + table + '"><i class="glyphicon glyphicon-list-alt"></i> Schema</a> ';
-        actions += '<a href="#" class="disableTrigger btn btn-danger" data-name="' + table + '"><i class="glyphicon glyphicon-cloud-download"></i> Disable</a> ';
+        if(blurconsole.auth.hasRole('manager')) {
+          actions += '<a href="#" class="disableTrigger btn btn-danger" data-name="' + table + '"><i class="glyphicon glyphicon-cloud-download"></i> Disable</a> ';
+        }
         return actions;
       }}
     ],
@@ -42,8 +44,10 @@ blurconsole.tables = (function () {
       {label:'Table Name', key:'name'},
       {label:'Actions', key: function(row) {
         var actions = '', table = row.name;
-        actions += '<a href="#" class="enableTrigger btn btn-default" data-name="' + table + '"><i class="glyphicon glyphicon-cloud-upload"></i> Enable</a> ';
-        actions += '<a href="#" class="deleteTrigger btn btn-danger" data-name="' + table + '"><i class="glyphicon glyphicon-trash"></i> Delete</a> ';
+        if(blurconsole.auth.hasRole('manager')) {
+          actions += '<a href="#" class="enableTrigger btn btn-default" data-name="' + table + '"><i class="glyphicon glyphicon-cloud-upload"></i> Enable</a> ';
+          actions += '<a href="#" class="deleteTrigger btn btn-danger" data-name="' + table + '"><i class="glyphicon glyphicon-trash"></i> Delete</a> ';
+        }
         return actions;
       }}
     ]

@@ -34,7 +34,7 @@ import static org.junit.Assert.assertEquals;
 public class TableUtilTest extends ConsoleTestBase {
 
   @Before
-  public void ensureCleanTables() throws BlurException, TException, IOException {
+  public void ensureCleanTables() throws Exception {
     setupConfigIfNeeded();
 
     Iface client = BlurClient.getClient(Config.getConnectionString());
@@ -49,7 +49,7 @@ public class TableUtilTest extends ConsoleTestBase {
 
   @SuppressWarnings("rawtypes")
   @Test
-  public void testGetTableSummariesNoTables() throws BlurException, IOException, TException {
+  public void testGetTableSummariesNoTables() throws Exception {
     Map<String, List> data = TableUtil.getTableSummaries();
 
     assertEquals(0, data.get("tables").size());
@@ -57,7 +57,7 @@ public class TableUtilTest extends ConsoleTestBase {
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   @Test
-  public void testGetTableSummaries() throws BlurException, TException, IOException {
+  public void testGetTableSummaries() throws Exception {
     Iface client = BlurClient.getClient(Config.getConnectionString());
 
     TableDescriptor td = new TableDescriptor();

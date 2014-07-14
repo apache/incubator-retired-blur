@@ -59,7 +59,7 @@ public class ConsoleTestBase {
     }
   }
 
-  protected void setupConfigIfNeeded() throws IOException {
+  protected void setupConfigIfNeeded() throws Exception {
     if (Config.getBlurConfig() == null) {
       Config.setupConfig();
     }

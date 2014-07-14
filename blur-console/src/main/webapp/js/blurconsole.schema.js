@@ -139,7 +139,7 @@ blurconsole.schema = (function () {
             info += '<li class="list-group-item"><strong>' + key + ':</strong> ' + value + '</li>';
           });
         }
-        if (def.type !== 'stored') {
+        if (def.type !== 'stored' && blurconsole.auth.hasRole('searcher')) {
           info += '<li class="list-group-item"><a href="#" class="termsTrigger" data-fam="' + family + '" data-col="' + col + '">View Terms</a></li>';
         }
         info += '</ul></div>';

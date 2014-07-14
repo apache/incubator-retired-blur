@@ -17,6 +17,7 @@ package org.apache.blur.console.servlets;
  * limitations under the License.
  */
 
+import org.apache.blur.console.model.User;
 import org.apache.blur.console.util.HttpUtil;
 import org.apache.blur.console.util.NodeUtil;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -35,13 +36,13 @@ public class NodesServlet extends BaseConsoleServlet {
   protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
     String path = req.getPathInfo();
     if (path == null) {
-      sendNodeStatus(res);
+      sendNodeStatus(req, res);
     } else {
       sendNotFound(res, req.getRequestURI());
     }
   }
 
-  private void sendNodeStatus(HttpServletResponse response) throws IOException {
+  private void sendNodeStatus(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Map<String, Object> nodeData = new HashMap<String, Object>();
 
     try {

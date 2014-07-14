@@ -17,6 +17,7 @@ package org.apache.blur.console.servlets;
  * limitations under the License.
  */
 
+import org.apache.blur.console.model.User;
 import org.apache.blur.console.util.HttpUtil;
 import org.apache.blur.console.util.TableUtil;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -45,24 +46,24 @@ public class TablesServlet extends BaseConsoleServlet {
     String path = req.getPathInfo();
     Matcher m;
     if (path == null) {
-      summary(res);
+      summary(req, res);
     } else if ((m = tableSchemaPattern.matcher(path)).matches()) {
-      schema(res, m.group(1));
+      schema(req, res, m.group(1));
     } else if ((m = tableTermsPattern.matcher(path)).matches()) {
-      terms(res, m.group(1), m.group(2), m.group(3), req.getParameter("startsWith"));
+      terms(req, res, m.group(1), m.group(2), m.group(3), req.getParameter("startsWith"));
     } else if ((m = tableEnablePattern.matcher(path)).matches()) {
-      enable(res, m.group(1));
+      enable(req, res, m.group(1));
     } else if ((m = tableDisablePattern.matcher(path)).matches()) {
-      disable(res, m.group(1));
+      disable(req, res, m.group(1));
     } else if ((m = tableDeletePattern.matcher(path)).matches()) {
-      delete(res, m.group(1), req.getParameter("includeFiles"));
+      delete(req, res, m.group(1), req.getParameter("includeFiles"));
     } else {
       sendNotFound(res, req.getRequestURI());
     }
   }
 
   @SuppressWarnings("rawtypes")
-  private void summary(HttpServletResponse response) throws IOException {
+  private void summary(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Map<String, List> tableSummaries = new HashMap<String, List>();
     try {
       tableSummaries = TableUtil.getTableSummaries();
@@ -76,7 +77,7 @@ public class TablesServlet extends BaseConsoleServlet {
     HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(tableSummaries), HttpUtil.JSON);
   }
 
-  private void schema(HttpServletResponse response, String table) throws IOException {
+  private void schema(HttpServletRequest request, HttpServletResponse response, String table) throws IOException {
     Object schema;
     try {
       schema = TableUtil.getSchema(table);
@@ -90,7 +91,8 @@ public class TablesServlet extends BaseConsoleServlet {
     HttpUtil.sendResponse(response, new ObjectMapper().writeValueAsString(schema), HttpUtil.JSON);
   }
 
-  private void terms(HttpServletResponse res, String table, String family, String column, String startsWith) throws IOException {
+  private void terms(HttpServletRequest request, HttpServletResponse res, String table, String family, String column, String startsWith) throws IOException {
+    authorize(request, User.SEARCHER_ROLE);
     List<String> terms = new ArrayList<String>();
     try {
       terms = TableUtil.getTerms(table, family, column, startsWith);
@@ -104,7 +106,8 @@ public class TablesServlet extends BaseConsoleServlet {
     HttpUtil.sendResponse(res, new ObjectMapper().writeValueAsString(terms), HttpUtil.JSON);
   }
 
-  private void enable(HttpServletResponse response, String table) throws IOException {
+  private void enable(HttpServletRequest request, HttpServletResponse response, String table) throws IOException {
+    authorize(request, User.MANAGER_ROLE);
     try {
       TableUtil.enableTable(table);
     } catch (IOException e) {
@@ -116,7 +119,8 @@ public class TablesServlet extends BaseConsoleServlet {
     sendGenericOk(response);
   }
 
-  private void disable(HttpServletResponse response, String table) throws IOException {
+  private void disable(HttpServletRequest request, HttpServletResponse response, String table) throws IOException {
+    authorize(request, User.MANAGER_ROLE);
     try {
       TableUtil.disableTable(table);
     } catch (IOException e) {
@@ -128,7 +132,8 @@ public class TablesServlet extends BaseConsoleServlet {
     sendGenericOk(response);
   }
 
-  private void delete(HttpServletResponse response, String table, String includeFiles) throws IOException {
+  private void delete(HttpServletRequest request, HttpServletResponse response, String table, String includeFiles) throws IOException {
+    authorize(request, User.MANAGER_ROLE);
     try {
       TableUtil.deleteTable(table, Boolean.parseBoolean(includeFiles));
     } catch (IOException e) {

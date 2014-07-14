@@ -1,4 +1,4 @@
-package org.apache.blur.console.providers;
+package org.apache.blur.console.filters;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -17,29 +17,5 @@ package org.apache.blur.console.providers;
  * limitations under the License.
  */
 
-import org.apache.blur.BlurConfiguration;
-import org.apache.blur.console.model.User;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
-import java.util.List;
-
-public class AllAllowedProvider extends BaseProvider {
-  private static class AllAllowedUser extends User {
-
-    private String password;
-
-    public AllAllowedUser() {
-      this.name = "User";
-      this.roles = Arrays.asList(ADMIN_ROLE);
-    }
-
-    private boolean checkPassword(String passwd) {
-      return password.equals(passwd);
-    }
-  }
-  @Override
-  public User login(HttpServletRequest request) {
-    return new AllAllowedUser();
-  }
+public class ForbiddenException extends RuntimeException {
 }

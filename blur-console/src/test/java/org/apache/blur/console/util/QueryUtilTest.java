@@ -35,7 +35,7 @@ import static org.junit.Assert.assertEquals;
 
 public class QueryUtilTest extends ConsoleTestBase {
   @Before
-  public void setup() throws IOException, BlurException, TException {
+  public void setup() throws Exception {
     setupConfigIfNeeded();
 
     Iface client = BlurClient.getClient(Config.getConnectionString());

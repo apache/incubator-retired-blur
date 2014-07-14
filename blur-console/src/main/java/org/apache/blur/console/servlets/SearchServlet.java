@@ -17,6 +17,7 @@ package org.apache.blur.console.servlets;
  * limitations under the License.
  */
 
+import org.apache.blur.console.model.User;
 import org.apache.blur.console.util.HttpUtil;
 import org.apache.blur.console.util.SearchUtil;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -36,14 +37,16 @@ public class SearchServlet extends BaseConsoleServlet {
   protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
     String path = req.getPathInfo();
     if (path == null) {
-      String remoteHost = req.getRemoteHost();
-      search(res, req.getParameterMap(), remoteHost);
+      search(req, res);
     } else {
       sendNotFound(res, req.getRequestURI());
     }
   }
 
-  private void search(HttpServletResponse res, Map<String, String[]> params, String remoteHost) throws IOException {
+  private void search(HttpServletRequest req, HttpServletResponse res) throws IOException {
+    authorize(req, User.SEARCHER_ROLE);
+    Map<String, String[]> params =req.getParameterMap();
+    String remoteHost =req.getRemoteHost();
     Map<String, Object> results = new HashMap<String, Object>();
     try {
       results = SearchUtil.search(params, remoteHost);

@@ -31,7 +31,7 @@ import static org.junit.Assert.assertEquals;
 
 public class NodeUtilTest extends ConsoleTestBase {
   @Before
-  public void setup() throws BlurException, TException, IOException {
+  public void setup() throws Exception {
     setupConfigIfNeeded();
   }
 

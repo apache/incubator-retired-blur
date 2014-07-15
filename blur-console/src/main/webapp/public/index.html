@@ -33,7 +33,7 @@ under the License.
     <title>Blur Console</title>
     <meta name="description" content="System Monitor and Console for Blur">
     <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" href="css/blurconsole.043021c43a8a2b7528ad189b100feae0.css">
+    <link rel="stylesheet" href="css/blurconsole.ce84634243c8f1ae9316b4d6727db4c1.css">
     <script src="js/modernizr.js"></script>
   </head>
   <body>
@@ -49,22 +49,22 @@ under the License.
     </nav>
     <nav class="side-nav">
       <ul>
-        <li title="Dashboard" data-toggle="tooltip" data-placement="right" data-container="body">
+        <li id="dashboard_tab" style="display:none;" title="Dashboard" data-toggle="tooltip" data-placement="right" data-container="body">
           <a href="#!tab=dashboard"><i class="glyphicon glyphicon-dashboard"></i></a>
         </li>
-        <li title="Tables" data-toggle="tooltip" data-placement="right" data-container="body">
+        <li id="tables_tab" style="display:none;" title="Tables" data-toggle="tooltip" data-placement="right" data-container="body">
           <a href="#!tab=tables"><i class="glyphicon glyphicon-list"></i></a>
         </li>
-        <li title="Queries" data-toggle="tooltip" data-placement="right" data-container="body">
+        <li id="queries_tab" style="display:none;" title="Queries" data-toggle="tooltip" data-placement="right" data-container="body">
           <a href="#!tab=queries"><i class="glyphicon glyphicon-tasks"></i></a>
         </li>
-        <li title="Search" data-toggle="tooltip" data-placement="right" data-container="body">
+        <li id="search_tab" style="display:none;" title="Search" data-toggle="tooltip" data-placement="right" data-container="body">
           <a href="#!tab=search"><i class="glyphicon glyphicon-search"></i></a>
         </li>
       </ul>
     </nav>
     <div id="blurconsole"></div>
-    <script src="js/blurconsole.274d4197822ef71e4cc7823715431b37.js"></script>
+    <script src="js/blurconsole.25eca61b3a7b87b9a6006e16995fef28.js"></script>
     <script type="text/javascript">
       $(function () { blurconsole.initModule( $('#blurconsole') ); });
     </script>

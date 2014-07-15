@@ -6220,6 +6220,32 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
  */
+.auth_container {
+  margin-left: 100px;
+  margin-right: 100px;
+  border-radius: 10px;
+  font-size: 18px;
+  box-shadow: 1px 1px 15px #888888;
+}
+/*
+
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+ */
 .input-group-btn > .btn {
   height: 34px;
 }
@@ -6254,6 +6280,7 @@ nav.navbar-fixed-top .pull-right button.btn {
 .side-nav ul li {
   position: relative;
   display: block;
+  cursor: pointer;
 }
 .side-nav ul li a {
   padding: 10px;
@@ -6412,6 +6439,11 @@ under the License.
 #results .panel-collapse {
   padding: 5px;
 }
+#results .tab-content {
+  padding: 5px;
+  border-left: 1px solid #dddddd;
+  border-bottom: 1px solid #dddddd;
+}
 #resultCount {
   padding-left: 30px;
   font-style: italic;
@@ -6420,10 +6452,10 @@ under the License.
   margin-top: 3px;
 }
 tr.row-separator th {
-  background-color: #999999;
+  background-color: #cccccc;
 }
 tr.row-separator:hover th {
-  background-color: #999999 !important;
+  background-color: #cccccc !important;
 }
 .input-group .twitter-typeahead {
   float: left;
@@ -6473,4 +6505,4 @@ under the License.
 .twitter-typeahead .tt-suggestion p {
   margin: 0;
 }
-/*# sourceMappingURL=/css/blurconsole.css.db643f2fc2dc56a029b94937c9325b71.map */
+/*# sourceMappingURL=blurconsole.css.ceee80d855b1fef6ff77eff6d731dee1.map */

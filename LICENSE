@@ -202,21 +202,59 @@
    limitations under the License.
    
 ==========================================================================
-The Apache License, Version 2.0 applies to the following libraries: Bootstrap,
-Backbone Extension, Bootstrap Modal Helper
+The Apache License, Version 2.0 applies to the following libraries:
+
+excanvas
+blur-console/src/main/webapp/libs/flot/excanvas
+Copyright 2006 Google Inc.
+
+Bootstrap 2
+docs/resources/js/bootstrap.min.js
+Copyright 2013 Twitter, Inc.
+
 ==========================================================================
-This product bundles the following, which is available under the MIT License: jQuery
+The MIT License applies to the following libraries:
 
-Copyright 2013 jQuery Foundation and other contributors
-http://jquery.com/
+Bootstrap 3
+blur-console/src/main/webapp/libs/bootstrap
+Copyright 2011-2014 Twitter, Inc.
+https://github.com/twbs/bootstrap/blob/master/LICENSE
 
-==========================================================================
-This product bundles the following, which is available under the MIT License: Respond.js 
+Flot
+blur-console/src/main/webapp/libs/flot
+Released under the MIT license by Ole Laursen, October 2009.
 
-Copyright (C) 2012 by Ryan Van Etten
+jQuery
+blur-console/src/main/webapp/libs/jquery
+blur-gui/src/main/webapp/js/jquery
+docs/resources/js/jquery
+Copyright 2005, 2014 jQuery Foundation, Inc. and other contributors
+http://jquery.org/license
+
+Modernizr
+blur-console/src/main/webapp/libs/modernizr
+Copyright (c) Faruk Ates, Paul Irish, Alex Sexton
+www.modernizr.com/license/
+
+typeahead.js
+blur-console/src/main/webapp/libs/typeahead
+Copyright 2013-2014 Twitter, Inc. and other contributors; Licensed MIT
+
+jquery.event.gevent
+blur-console/src/main/webapp/js/util/jquery.event.gevent.js
+Copyright (c) 2013 Michael S. Mikowski
+
+jquery.uriAnchor
+blur-console/src/main/webapp/js/util/jquery.uriAnchor.js
+Copyright (c) 2013 Michael S. Mikowski
+
+respond
+docs/resources/js/respond.min.js
+Copyright (c) 2012 Scott Jehl
 
 ==========================================================================
 The following license applies to the following libraries: d3
+blur-gui/src/main/webapp/js/d3
 --------------------------------------------------------------------------
 Copyright (c) 2013, Michael Bostock
 All rights reserved.
@@ -244,61 +282,4 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
 OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-==========================================================================
-This product bundles the following, which is available under the MIT License: 
-dynatree jQuery plugin 
---------------------------------------------------------------------------
-Copyright (c) 2006-2012  Martin Wendt (http://wwWendt.de)
-
-==========================================================================
-This product bundles the following, which is available under the MIT License: Underscore.js
---------------------------------------------------------------------------
-
-Copyright (c) 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative
-Reporters & Editors
-
-==========================================================================
-This product bundles the following, which is available under the MIT License: SortTable 
---------------------------------------------------------------------------
-Copyright (c) 1997-date Stuart Langridge
-
-==========================================================================
-This product bundles the following, which is available under the MIT License: Modernizr 
---------------------------------------------------------------------------
-Copyright (c) 2009–2013
-
-==========================================================================
-This product bundles the following, which is available under the MIT License: Flot 
---------------------------------------------------------------------------
-Copyright (c) 2007-2013 IOLA and Ole Laursen
-
-==========================================================================
-This product bundles the following, which is available under the MIT License:  jQuery timepicker addon 
---------------------------------------------------------------------------
-Copyright (c) 2009 Trent Richardson, http://trentrichardson.com/Impromptu/
-
-==========================================================================
-The following license applies to the following libraries: DataTables
---------------------------------------------------------------------------
-Copyright (c) 2008-2013, Allan Jardine
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
-Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-Neither the name of Allan Jardine nor SpryMedia may be used to endorse or promote products derived from this software without specific prior written permission.
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-==========================================================================
-This product bundles the following, which is available under the MIT License: jQuery 
-Context Menu Plugin 
---------------------------------------------------------------------------
-Copyright (c) A Beautiful Site, LLC.
-
-==========================================================================
-This product bundles the following, which is available under the MIT License: Backbone.js
---------------------------------------------------------------------------
-(c) 2010-2012 Jeremy Ashkenas, DocumentCloud Inc.
 

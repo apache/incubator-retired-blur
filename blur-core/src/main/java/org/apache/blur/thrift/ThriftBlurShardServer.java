@@ -121,7 +121,7 @@ public class ThriftBlurShardServer extends ThriftServer {
       setupJvmMetrics();
       // make this configurable
       GCWatcher.init(0.75);
-      ThriftServer server = createServer(serverIndex, configuration, false);
+      ThriftServer server = createServer(serverIndex, configuration);
       server.start();
     } catch (Throwable t) {
       t.printStackTrace();
@@ -129,21 +129,21 @@ public class ThriftBlurShardServer extends ThriftServer {
     }
   }
 
-  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration, boolean randomPort)
+  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration)
       throws Exception {
     Configuration config = new Configuration();
     TableContext.setSystemBlurConfiguration(configuration);
     TableContext.setSystemConfiguration(config);
 
     String bindAddress = configuration.get(BLUR_SHARD_BIND_ADDRESS);
-    int bindPort = configuration.getInt(BLUR_SHARD_BIND_PORT, -1);
-    bindPort += serverIndex;
-    if (randomPort) {
-      bindPort = 0;
+    int configBindPort = configuration.getInt(BLUR_SHARD_BIND_PORT, -1);
+    int instanceBindPort = configBindPort + serverIndex;
+    if (configBindPort == 0) {
+      instanceBindPort = 0;
     }
-    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress, bindPort);
-    if (randomPort) {
-      bindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
+    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress, instanceBindPort);
+    if (configBindPort == 0) {
+      instanceBindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
     }
 
     int baseGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT));
@@ -180,11 +180,11 @@ public class ThriftBlurShardServer extends ThriftServer {
     } else {
       throw new RuntimeException("Unknown block cache version [" + blockCacheVersion + "] can be [v1,v2]");
     }
-    LOG.info("Shard Server using index [{0}] bind address [{1}] random port assignment [{2}]", serverIndex, bindAddress
-        + ":" + bindPort, randomPort);
+    LOG.info("Shard Server using index [{0}] bind address [{1}]", serverIndex, bindAddress
+        + ":" + instanceBindPort);
 
     String nodeNameHostName = getNodeName(configuration, BLUR_SHARD_HOSTNAME);
-    String nodeName = nodeNameHostName + ":" + bindPort;
+    String nodeName = nodeNameHostName + ":" + instanceBindPort;
     String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);

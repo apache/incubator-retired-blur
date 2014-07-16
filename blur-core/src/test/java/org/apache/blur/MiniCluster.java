@@ -24,6 +24,8 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_SLAB_COU
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
+import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_PORT;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,7 +44,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransportException;
@@ -63,6 +64,7 @@ import org.apache.blur.thrift.util.BlurThriftHelper;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.ZkMiniCluster;
 import org.apache.blur.zookeeper.ZooKeeperClient;
+import org.apache.blur.zookeeper.ZookeeperPathConstants;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -262,9 +264,12 @@ public class MiniCluster {
 
   public void startControllers(BlurConfiguration configuration, int num, boolean randomPort) {
     BlurConfiguration localConf = getBlurConfiguration(configuration);
+    if(randomPort) {
+    	localConf.setInt(BLUR_CONTROLLER_BIND_PORT, 0);
+    }
     for (int i = 0; i < num; i++) {
       try {
-        ThriftServer server = ThriftBlurControllerServer.createServer(i, localConf, randomPort);
+        ThriftServer server = ThriftBlurControllerServer.createServer(i, localConf);
         controllers.add(server);
         startServer(server);
       } catch (Exception e) {
@@ -281,6 +286,9 @@ public class MiniCluster {
 
   public void startShards(final BlurConfiguration configuration, int num, final boolean randomPort) {
     final BlurConfiguration localConf = getBlurConfiguration(configuration);
+    if(randomPort) {
+    	localConf.setInt(BLUR_SHARD_BIND_PORT, 0);
+    }
     ExecutorService executorService = Executors.newFixedThreadPool(num);
     List<Future<ThriftServer>> futures = new ArrayList<Future<ThriftServer>>();
     for (int i = 0; i < num; i++) {
@@ -288,7 +296,7 @@ public class MiniCluster {
       futures.add(executorService.submit(new Callable<ThriftServer>() {
         @Override
         public ThriftServer call() throws Exception {
-          return ThriftBlurShardServer.createServer(index, localConf, randomPort);
+          return ThriftBlurShardServer.createServer(index, localConf);
         }
       }));
     }

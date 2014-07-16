@@ -84,7 +84,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
       ReporterSetup.setupReporters(configuration);
       MemoryReporter.enable();
       setupJvmMetrics();
-      ThriftServer server = createServer(serverIndex, configuration, false);
+      ThriftServer server = createServer(serverIndex, configuration);
       server.start();
     } catch (Throwable t) {
       t.printStackTrace();
@@ -92,25 +92,25 @@ public class ThriftBlurControllerServer extends ThriftServer {
     }
   }
 
-  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration, boolean randomPort)
+  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration)
       throws Exception {
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
     String bindAddress = configuration.get(BLUR_CONTROLLER_BIND_ADDRESS);
-    int bindPort = configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1);
-    bindPort += serverIndex;
-    if (randomPort) {
-      bindPort = 0;
+    int configBindPort = configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1);
+    int instanceBindPort = configBindPort + serverIndex;
+    if (configBindPort == 0) {
+      instanceBindPort = 0;
     }
-    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress, bindPort);
-    if (randomPort) {
-      bindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
+    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress, instanceBindPort);
+    if (configBindPort == 0) {
+      instanceBindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
     }
 
-    LOG.info("Controller Server using index [{0}] bind address [{1}] random port assignment [{2}]", serverIndex,
-        bindAddress + ":" + bindPort, randomPort);
+    LOG.info("Controller Server using index [{0}] bind address [{1}]", serverIndex,
+        bindAddress + ":" + instanceBindPort);
 
     String nodeName = getNodeName(configuration, BLUR_CONTROLLER_HOSTNAME);
-    nodeName = nodeName + ":" + bindPort;
+    nodeName = nodeName + ":" + instanceBindPort;
     String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);

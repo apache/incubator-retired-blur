@@ -99,7 +99,7 @@ public class Main {
 
   private static class CliShellOptions {
 
-    private String _controllerConnectionString;
+    private Iface _client;
     private boolean _shell;
     private String[] _args;
     private String _command;
@@ -108,8 +108,8 @@ public class Main {
       return _shell;
     }
 
-    public String getControllerConnectionString() {
-      return _controllerConnectionString;
+    public Iface getClient() {
+      return _client;
     }
 
     public String getCommand() {
@@ -120,8 +120,8 @@ public class Main {
       return _args;
     }
 
-    public void setControllerConnectionString(String controllerConnectionString) {
-      this._controllerConnectionString = controllerConnectionString;
+    public void setClient(Iface client) {
+      this._client = client;
     }
 
     public void setShell(boolean shell) {
@@ -550,12 +550,12 @@ public class Main {
     }
 
     try {
-      Blur.Iface client = BlurClient.getClient(cliShellOptions.getControllerConnectionString());
+      Blur.Iface client = cliShellOptions.getClient();
       if (cliShellOptions.isShell()) {
         ConsoleReader reader = new ConsoleReader();
         PrintWriter out = new PrintWriter(reader.getOutput());
         setConsoleReader(commands, reader);
-        setPrompt(client, reader, cliShellOptions.getControllerConnectionString(), out);
+        setPrompt(client, reader, out);
 
         List<Completer> completors = new LinkedList<Completer>();
 
@@ -621,7 +621,7 @@ public class Main {
                   out.println("Last command took " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) + "ms");
                 }
               }
-              setPrompt(client, reader, cliShellOptions.getControllerConnectionString(), out);
+              setPrompt(client, reader, out);
             }
           }
         } finally {
@@ -704,18 +704,13 @@ public class Main {
     builder.put(command.name(), command);
   }
 
-  private static void setPrompt(Iface client, ConsoleReader reader, String connectionStr, PrintWriter out)
+  private static void setPrompt(Iface client, ConsoleReader reader, PrintWriter out)
       throws BlurException, TException, CommandException, IOException {
     List<String> shardClusterList;
     try {
-      shardClusterList = BlurClientManager.execute(connectionStr, new BlurCommand<List<String>>() {
-        @Override
-        public List<String> call(Client client) throws BlurException, TException {
-          return client.shardClusterList();
-        }
-      }, 0, 0, 0);
-    } catch (BadConnectionException e) {
-      out.println(e.getMessage() + " Connection (" + connectionStr + ")");
+      shardClusterList = client.shardClusterList();
+    } catch (BlurException e) {
+      out.println("Unable to retrieve cluster information - " + e.getMessage());
       out.flush();
       if (debug) {
         e.printStackTrace(out);
@@ -751,13 +746,7 @@ public class Main {
   private static CliShellOptions getCliShellOptions(String[] args) throws IOException {
     CliShellOptions cliShellOptions = new CliShellOptions();
     if (args.length == 0) {
-      String controllerConnectionString = loadControllerConnectionString();
-      if (controllerConnectionString == null) {
-        System.err
-            .println("Could not locate controller connection string in the blu-site.properties file and it was not passed in via command line args.");
-        return null;
-      }
-      cliShellOptions.setControllerConnectionString(controllerConnectionString);
+      cliShellOptions.setClient(BlurClient.getClient());
       cliShellOptions.setShell(true);
       return cliShellOptions;
     } else {
@@ -773,7 +762,7 @@ public class Main {
               + message + "]");
           return null;
         }
-        cliShellOptions.setControllerConnectionString(arg0);
+        cliShellOptions.setClient(BlurClient.getClient(arg0));
         if (args.length > 1) {
           // there's might be a command after the connection string
           cliShellOptions.setShell(false);
@@ -794,13 +783,7 @@ public class Main {
           return cliShellOptions;
         }
       } else {
-        String controllerConnectionString = loadControllerConnectionString();
-        if (controllerConnectionString == null) {
-          System.err
-              .println("Could not locate controller connection string in the blur-site.properties file and it was not passed in via command line args.");
-          return null;
-        }
-        cliShellOptions.setControllerConnectionString(controllerConnectionString);
+        cliShellOptions.setClient(BlurClient.getClient());
         // command was found at arg0
         cliShellOptions.setShell(false);
         cliShellOptions.setArgs(args);
@@ -814,28 +797,6 @@ public class Main {
     for (Entry<String, Command> c : cmds.entrySet()) {
       c.getValue().setConsoleReader(reader);
     }
-  }
-
-  private static String loadControllerConnectionString() throws IOException {
-    StringBuilder builder = new StringBuilder();
-    InputStream inputStream = Main.class.getResourceAsStream("/controllers");
-    if (inputStream == null) {
-      return null;
-    }
-    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-    String line;
-    while ((line = bufferedReader.readLine()) != null) {
-      if (builder.length() != 0) {
-        builder.append(',');
-      }
-      String trim = line.trim();
-      if (trim.startsWith("#")) {
-        continue;
-      }
-      builder.append(trim).append(":40010");
-    }
-    bufferedReader.close();
-    return builder.toString();
   }
 
 }

@@ -88,6 +88,14 @@ public class BlurConfiguration implements Cloneable {
   public String get(String name) {
     return get(name, null);
   }
+  
+  public String getExpected(String name) {
+	  String val = get(name);
+	  if (val == null || val.trim().isEmpty()) {
+	      throw new IllegalArgumentException("Property [" + name + "] is missing or blank.");
+	    }
+	    return val;
+  }
 
   public String get(String name, String defaultValue) {
     String property = _properties.getProperty(name, defaultValue);

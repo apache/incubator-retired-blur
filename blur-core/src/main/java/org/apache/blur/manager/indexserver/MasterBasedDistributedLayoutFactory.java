@@ -38,9 +38,9 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.blur.zookeeper.ZooKeeperLockManager;
+import org.apache.blur.zookeeper.ZookeeperPathConstants;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;

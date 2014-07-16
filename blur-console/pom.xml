@@ -134,6 +134,11 @@
 					</execution>
 				</executions>
 			</plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>3.3</version>
+      </plugin>
 	      <plugin>
 	        <artifactId>maven-assembly-plugin</artifactId>
 	        <configuration>

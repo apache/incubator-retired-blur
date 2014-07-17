@@ -655,56 +655,56 @@ Licensing of XZ for Java
 The Apache License, Version 2.0 applies to the following libraries:
 
 excanvas
-blur-console/src/main/webapp/libs/flot/excanvas
+./blur-console/src/main/webapp/libs/flot/excanvas
 Copyright 2006 Google Inc.
 
 Bootstrap 2
-docs/resources/js/bootstrap.min.js
+./docs/resources/js/bootstrap.min.js
 Copyright 2013 Twitter, Inc.
 
 ==========================================================================
 The MIT License applies to the following libraries:
 
 Bootstrap 3
-blur-console/src/main/webapp/libs/bootstrap
+./blur-console/src/main/webapp/libs/bootstrap
 Copyright 2011-2014 Twitter, Inc.
 https://github.com/twbs/bootstrap/blob/master/LICENSE
 
 Flot
-blur-console/src/main/webapp/libs/flot
+./blur-console/src/main/webapp/libs/flot
 Released under the MIT license by Ole Laursen, October 2009.
 
 jQuery
-blur-console/src/main/webapp/libs/jquery
-blur-gui/src/main/webapp/js/jquery
-docs/resources/js/jquery
+./blur-console/src/main/webapp/libs/jquery
+./blur-gui/src/main/webapp/js/jquery
+./docs/resources/js/jquery
 Copyright 2005, 2014 jQuery Foundation, Inc. and other contributors
 http://jquery.org/license
 
 Modernizr
-blur-console/src/main/webapp/libs/modernizr
+./blur-console/src/main/webapp/libs/modernizr
 Copyright (c) Faruk Ates, Paul Irish, Alex Sexton
 www.modernizr.com/license/
 
 typeahead.js
-blur-console/src/main/webapp/libs/typeahead
+./blur-console/src/main/webapp/libs/typeahead
 Copyright 2013-2014 Twitter, Inc. and other contributors; Licensed MIT
 
 jquery.event.gevent
-blur-console/src/main/webapp/js/util/jquery.event.gevent.js
+./blur-console/src/main/webapp/js/util/jquery.event.gevent.js
 Copyright (c) 2013 Michael S. Mikowski
 
 jquery.uriAnchor
-blur-console/src/main/webapp/js/util/jquery.uriAnchor.js
+./blur-console/src/main/webapp/js/util/jquery.uriAnchor.js
 Copyright (c) 2013 Michael S. Mikowski
 
 respond
-docs/resources/js/respond.min.js
+./docs/resources/js/respond.min.js
 Copyright (c) 2012 Scott Jehl
 
 ==========================================================================
 The following license applies to the following libraries: d3
-blur-gui/src/main/webapp/js/d3
+./blur-gui/src/main/webapp/js/d3
 --------------------------------------------------------------------------
 Copyright (c) 2013, Michael Bostock
 All rights reserved.

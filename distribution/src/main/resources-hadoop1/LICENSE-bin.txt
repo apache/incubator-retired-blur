@@ -800,39 +800,153 @@ limitations under the License.
 The Apache License, Version 2.0 applies to the following libraries:
 
 excanvas
-./blur-console/src/main/webapp/libs/flot/excanvas
+./blur-console/src/main/webapp/libs/flot/excanvas.js
 Copyright 2006 Google Inc.
 
-Bootstrap 2
+Bootstrap v3.0.0
+./docs/resources/js/docs.js
 ./docs/resources/js/bootstrap.min.js
+./docs/resources/css/bootstrap.min.css
+./docs/resources/css/bs-docs.css
+./blur-gui/src/main/webapp/css/bootstrap.min.css
+./blur-gui/src/main/webapp/css/bs-docs.css
 Copyright 2013 Twitter, Inc.
+
+Apache Thrift v0.9.0
+./blur-gui/src/main/webapp/js/thrift.js
+./distribution/src/main/scripts/interface/gen-html/style.css
 
 ==========================================================================
 The MIT License applies to the following libraries:
 
 Bootstrap 3
-./blur-console/src/main/webapp/libs/bootstrap
+./blur-console/src/main/webapp/libs/bootstrap/fonts/glyphicons-halflings-regular.eot
+./blur-console/src/main/webapp/libs/bootstrap/fonts/glyphicons-halflings-regular.svg
+./blur-console/src/main/webapp/libs/bootstrap/fonts/glyphicons-halflings-regular.ttf
+./blur-console/src/main/webapp/libs/bootstrap/fonts/glyphicons-halflings-regular.woff
+./blur-console/src/main/webapp/libs/bootstrap/js/affix.js
+./blur-console/src/main/webapp/libs/bootstrap/js/alert.js
+./blur-console/src/main/webapp/libs/bootstrap/js/button.js
+./blur-console/src/main/webapp/libs/bootstrap/js/carousel.js
+./blur-console/src/main/webapp/libs/bootstrap/js/collapse.js
+./blur-console/src/main/webapp/libs/bootstrap/js/dropdown.js
+./blur-console/src/main/webapp/libs/bootstrap/js/modal.js
+./blur-console/src/main/webapp/libs/bootstrap/js/popover.js
+./blur-console/src/main/webapp/libs/bootstrap/js/scrollspy.js
+./blur-console/src/main/webapp/libs/bootstrap/js/tab.js
+./blur-console/src/main/webapp/libs/bootstrap/js/tooltip.js
+./blur-console/src/main/webapp/libs/bootstrap/js/transition.js
+./blur-console/src/main/webapp/libs/bootstrap/less/alerts.less
+./blur-console/src/main/webapp/libs/bootstrap/less/badges.less
+./blur-console/src/main/webapp/libs/bootstrap/less/bootstrap.less
+./blur-console/src/main/webapp/libs/bootstrap/less/breadcrumbs.less
+./blur-console/src/main/webapp/libs/bootstrap/less/button-groups.less
+./blur-console/src/main/webapp/libs/bootstrap/less/buttons.less
+./blur-console/src/main/webapp/libs/bootstrap/less/carousel.less
+./blur-console/src/main/webapp/libs/bootstrap/less/close.less
+./blur-console/src/main/webapp/libs/bootstrap/less/code.less
+./blur-console/src/main/webapp/libs/bootstrap/less/component-animations.less
+./blur-console/src/main/webapp/libs/bootstrap/less/dropdowns.less
+./blur-console/src/main/webapp/libs/bootstrap/less/forms.less
+./blur-console/src/main/webapp/libs/bootstrap/less/glyphicons.less
+./blur-console/src/main/webapp/libs/bootstrap/less/grid.less
+./blur-console/src/main/webapp/libs/bootstrap/less/input-groups.less
+./blur-console/src/main/webapp/libs/bootstrap/less/jumbotron.less
+./blur-console/src/main/webapp/libs/bootstrap/less/labels.less
+./blur-console/src/main/webapp/libs/bootstrap/less/list-group.less
+./blur-console/src/main/webapp/libs/bootstrap/less/media.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/alerts.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/background-variant.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/border-radius.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/buttons.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/center-block.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/clearfix.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/forms.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/gradients.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/grid-framework.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/grid.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/hide-text.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/image.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/labels.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/list-group.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/nav-divider.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/nav-vertical-align.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/opacity.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/pagination.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/panels.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/progress-bar.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/reset-filter.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/resize.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/responsive-visibility.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/size.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/tab-focus.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/table-row.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/text-emphasis.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/text-overflow.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins/vendor-prefixes.less
+./blur-console/src/main/webapp/libs/bootstrap/less/mixins.less
+./blur-console/src/main/webapp/libs/bootstrap/less/modals.less
+./blur-console/src/main/webapp/libs/bootstrap/less/navbar.less
+./blur-console/src/main/webapp/libs/bootstrap/less/navs.less
+./blur-console/src/main/webapp/libs/bootstrap/less/normalize.less
+./blur-console/src/main/webapp/libs/bootstrap/less/pager.less
+./blur-console/src/main/webapp/libs/bootstrap/less/pagination.less
+./blur-console/src/main/webapp/libs/bootstrap/less/panels.less
+./blur-console/src/main/webapp/libs/bootstrap/less/popovers.less
+./blur-console/src/main/webapp/libs/bootstrap/less/print.less
+./blur-console/src/main/webapp/libs/bootstrap/less/progress-bars.less
+./blur-console/src/main/webapp/libs/bootstrap/less/responsive-embed.less
+./blur-console/src/main/webapp/libs/bootstrap/less/responsive-utilities.less
+./blur-console/src/main/webapp/libs/bootstrap/less/scaffolding.less
+./blur-console/src/main/webapp/libs/bootstrap/less/tables.less
+./blur-console/src/main/webapp/libs/bootstrap/less/theme.less
+./blur-console/src/main/webapp/libs/bootstrap/less/thumbnails.less
+./blur-console/src/main/webapp/libs/bootstrap/less/tooltip.less
+./blur-console/src/main/webapp/libs/bootstrap/less/type.less
+./blur-console/src/main/webapp/libs/bootstrap/less/utilities.less
+./blur-console/src/main/webapp/libs/bootstrap/less/variables.less
+./blur-console/src/main/webapp/libs/bootstrap/less/wells.less
+
 Copyright 2011-2014 Twitter, Inc.
 https://github.com/twbs/bootstrap/blob/master/LICENSE
 
 Flot
-./blur-console/src/main/webapp/libs/flot
+./blur-console/src/main/webapp/libs/flot/excanvas.js
+./blur-console/src/main/webapp/libs/flot/jquery.colorhelpers.js
+./blur-console/src/main/webapp/libs/flot/jquery.flot.canvas.js
+./blur-console/src/main/webapp/libs/flot/jquery.flot.categories.js
+./blur-console/src/main/webapp/libs/flot/jquery.flot.crosshair.js
+./blur-console/src/main/webapp/libs/flot/jquery.flot.errorbars.js
+./blur-console/src/main/webapp/libs/flot/jquery.flot.fillbetween.js
+./blur-console/src/main/webapp/libs/flot/jquery.flot.image.js
+./blur-console/src/main/webapp/libs/flot/jquery.flot.js
+./blur-console/src/main/webapp/libs/flot/jquery.flot.navigate.js
+./blur-console/src/main/webapp/libs/flot/jquery.flot.pie.js
+./blur-console/src/main/webapp/libs/flot/jquery.flot.resize.js
+./blur-console/src/main/webapp/libs/flot/jquery.flot.selection.js
+./blur-console/src/main/webapp/libs/flot/jquery.flot.stack.js
+./blur-console/src/main/webapp/libs/flot/jquery.flot.symbol.js
+./blur-console/src/main/webapp/libs/flot/jquery.flot.threshold.js
+./blur-console/src/main/webapp/libs/flot/jquery.flot.time.js
+
 Released under the MIT license by Ole Laursen, October 2009.
 
 jQuery
-./blur-console/src/main/webapp/libs/jquery
-./blur-gui/src/main/webapp/js/jquery
-./docs/resources/js/jquery
+./blur-console/src/main/webapp/libs/jquery/jquery.js
+./blur-gui/src/main/webapp/js/jquery-1.9.1.min.js
+./docs/resources/js/jquery-2.0.3.min.js
 Copyright 2005, 2014 jQuery Foundation, Inc. and other contributors
 http://jquery.org/license
 
 Modernizr
-./blur-console/src/main/webapp/libs/modernizr
+./blur-console/src/main/webapp/libs/modernizr/modernizr.js
+./blur-console/src/main/webapp/public/js/modernizr.js
 Copyright (c) Faruk Ates, Paul Irish, Alex Sexton
 www.modernizr.com/license/
 
 typeahead.js
-./blur-console/src/main/webapp/libs/typeahead
+./blur-console/src/main/webapp/libs/typeahead/typeahead.jquery.js
+
 Copyright 2013-2014 Twitter, Inc. and other contributors; Licensed MIT
 
 jquery.event.gevent
@@ -849,7 +963,8 @@ Copyright (c) 2012 Scott Jehl
 
 ==========================================================================
 The following license applies to the following libraries: d3
-./blur-gui/src/main/webapp/js/d3
+./blur-gui/src/main/webapp/js/d3.v2.js
+./blur-gui/src/main/webapp/js/d3.v2.min.js
 --------------------------------------------------------------------------
 Copyright (c) 2013, Michael Bostock
 All rights reserved.

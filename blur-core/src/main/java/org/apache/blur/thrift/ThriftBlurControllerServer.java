@@ -93,8 +93,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     }
   }
 
-  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration)
-      throws Exception {
+  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration) throws Exception {
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
     String bindAddress = configuration.get(BLUR_CONTROLLER_BIND_ADDRESS);
     int configBindPort = configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1);
@@ -102,13 +101,14 @@ public class ThriftBlurControllerServer extends ThriftServer {
     if (configBindPort == 0) {
       instanceBindPort = 0;
     }
-    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress, instanceBindPort);
+    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress,
+        instanceBindPort);
     if (configBindPort == 0) {
       instanceBindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
     }
 
-    LOG.info("Controller Server using index [{0}] bind address [{1}]", serverIndex,
-        bindAddress + ":" + instanceBindPort);
+    LOG.info("Controller Server using index [{0}] bind address [{1}]", serverIndex, bindAddress + ":"
+        + instanceBindPort);
 
     String nodeName = getNodeName(configuration, BLUR_CONTROLLER_HOSTNAME);
     nodeName = nodeName + ":" + instanceBindPort;
@@ -176,11 +176,11 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     int configGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_CONTROLLER_PORT));
     int instanceGuiPort = configGuiPort + serverIndex;
-    
-    if(configGuiPort == 0) {
-  	  instanceGuiPort = 0;
+
+    if (configGuiPort == 0) {
+      instanceGuiPort = 0;
     }
-    
+
     final HttpJettyServer httpServer;
     if (configGuiPort >= 0) {
       httpServer = new HttpJettyServer(HttpJettyServer.class, instanceGuiPort);

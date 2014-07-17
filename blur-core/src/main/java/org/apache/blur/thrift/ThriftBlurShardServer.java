@@ -130,8 +130,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     }
   }
 
-  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration)
-      throws Exception {
+  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration) throws Exception {
     Configuration config = new Configuration();
     TableContext.setSystemBlurConfiguration(configuration);
     TableContext.setSystemConfiguration(config);
@@ -142,11 +141,11 @@ public class ThriftBlurShardServer extends ThriftServer {
     if (configBindPort == 0) {
       instanceBindPort = 0;
     }
-    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress, instanceBindPort);
+    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress,
+        instanceBindPort);
     if (configBindPort == 0) {
       instanceBindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
     }
-
 
     Set<Entry<String, String>> set = configuration.getProperties().entrySet();
     for (Entry<String, String> e : set) {
@@ -171,8 +170,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     } else {
       throw new RuntimeException("Unknown block cache version [" + blockCacheVersion + "] can be [v1,v2]");
     }
-    LOG.info("Shard Server using index [{0}] bind address [{1}]", serverIndex, bindAddress
-        + ":" + instanceBindPort);
+    LOG.info("Shard Server using index [{0}] bind address [{1}]", serverIndex, bindAddress + ":" + instanceBindPort);
 
     String nodeNameHostName = getNodeName(configuration, BLUR_SHARD_HOSTNAME);
     String nodeName = nodeNameHostName + ":" + instanceBindPort;
@@ -252,11 +250,11 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     int configGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT));
     int instanceGuiPort = configGuiPort + serverIndex;
-    
-    if(configGuiPort == 0) {
+
+    if (configGuiPort == 0) {
       instanceGuiPort = 0;
     }
-    
+
     final HttpJettyServer httpServer;
     if (configGuiPort >= 0) {
       httpServer = new HttpJettyServer(HttpJettyServer.class, instanceGuiPort);

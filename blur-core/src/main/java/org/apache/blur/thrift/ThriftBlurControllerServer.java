@@ -173,11 +173,16 @@ public class ThriftBlurControllerServer extends ThriftServer {
     server.setSelectorThreads(configuration.getInt(BLUR_CONTROLLER_THRIFT_SELECTOR_THREADS, 2));
     server.setMaxFrameSize(configuration.getInt(BLUR_THRIFT_MAX_FRAME_SIZE, 16384000));
 
-    int baseGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_CONTROLLER_PORT));
+    int configGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_CONTROLLER_PORT));
+    int instanceGuiPort = configGuiPort + serverIndex;
+    
+    if(configGuiPort == 0) {
+  	  instanceGuiPort = 0;
+    }
+    
     final HttpJettyServer httpServer;
-    if (baseGuiPort >= 0) {
-      int webServerPort = baseGuiPort + serverIndex;
-      httpServer = new HttpJettyServer(HttpJettyServer.class, webServerPort);
+    if (configGuiPort >= 0) {
+      httpServer = new HttpJettyServer(HttpJettyServer.class, instanceGuiPort);
       int port = httpServer.getLocalPort();
       configuration.setInt(BLUR_HTTP_STATUS_RUNNING_PORT, port);
     } else {

@@ -146,16 +146,6 @@ public class ThriftBlurShardServer extends ThriftServer {
       instanceBindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
     }
 
-    int baseGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT));
-    final HttpJettyServer httpServer;
-    if (baseGuiPort > 0) {
-      int webServerPort = baseGuiPort + serverIndex;
-      httpServer = new HttpJettyServer(HttpJettyServer.class, webServerPort);
-      int port = httpServer.getLocalPort();
-      configuration.setInt(BLUR_HTTP_STATUS_RUNNING_PORT, port);
-    } else {
-      httpServer = null;
-    }
 
     Set<Entry<String, String>> set = configuration.getProperties().entrySet();
     for (Entry<String, String> e : set) {
@@ -258,6 +248,22 @@ public class ThriftBlurShardServer extends ThriftServer {
     iface = BlurUtil.runWithUser(iface, false);
     iface = BlurUtil.runTrace(iface, false);
     iface = BlurUtil.lastChanceErrorHandling(iface, Iface.class);
+
+    int configGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT));
+    int instanceGuiPort = configGuiPort + serverIndex;
+    
+    if(configGuiPort == 0) {
+      instanceGuiPort = 0;
+    }
+    
+    final HttpJettyServer httpServer;
+    if (configGuiPort >= 0) {
+      httpServer = new HttpJettyServer(HttpJettyServer.class, instanceGuiPort);
+      int port = httpServer.getLocalPort();
+      configuration.setInt(BLUR_HTTP_STATUS_RUNNING_PORT, port);
+    } else {
+      httpServer = null;
+    }
     if (httpServer != null) {
       WebAppContext context = httpServer.getContext();
       context.addServlet(new ServletHolder(new TServlet(new Blur.Processor<Blur.Iface>(iface),

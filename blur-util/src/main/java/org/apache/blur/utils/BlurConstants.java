@@ -145,7 +145,8 @@ public class BlurConstants {
   public static final String BLUR_LUCENE_FST_BYTEARRAY_FACTORY = "blur.lucene.fst.bytearray.factory";
 
   public static final String BLUR_THRIFT_MAX_FRAME_SIZE = "blur.thrift.max.frame.size";
-
+  public static final int BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE = 16384000;
+  
   public static final String BLUR_SHARD_FILTERED_SERVER_CLASS = "blur.shard.filtered.server.class";
   public static final String BLUR_CONTROLLER_FILTERED_SERVER_CLASS = "blur.controller.filtered.server.class";
 

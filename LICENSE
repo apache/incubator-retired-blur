@@ -355,11 +355,11 @@ typeahead.js
 Copyright 2013-2014 Twitter, Inc. and other contributors; Licensed MIT
 
 jquery.event.gevent
-./blur-console/src/main/webapp/js/util/jquery.event.gevent.js
+./blur-console/src/main/webapp/js/utils/jquery.event.gevent.js
 Copyright (c) 2013 Michael S. Mikowski
 
 jquery.uriAnchor
-./blur-console/src/main/webapp/js/util/jquery.uriAnchor.js
+./blur-console/src/main/webapp/js/utils/jquery.uriAnchor.js
 Copyright (c) 2013 Michael S. Mikowski
 
 respond

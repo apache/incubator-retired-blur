@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.apache.blur.MiniCluster;
+import org.apache.blur.zookeeper.ZooKeeperClient;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -40,7 +41,6 @@ import org.junit.Test;
 
 @SuppressWarnings("unchecked")
 public class MasterBasedDistributedLayoutFactoryTest {
-
   private static String path = "./target/test-zk-MasterBasedDistributedLayoutFactoryTest";
   private static MiniCluster miniCluster;
 
@@ -61,7 +61,7 @@ public class MasterBasedDistributedLayoutFactoryTest {
 
   @Before
   public void setup() throws IOException, KeeperException, InterruptedException {
-    _zooKeeper = new ZooKeeper(miniCluster.getZkConnectionString(), 20000, new Watcher() {
+    _zooKeeper = new ZooKeeperClient(miniCluster.getZkConnectionString(), 50000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 

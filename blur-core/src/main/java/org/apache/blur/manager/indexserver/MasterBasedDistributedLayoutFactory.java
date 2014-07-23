@@ -127,8 +127,8 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
     return list;
   }
 
-  private MasterBasedDistributedLayout newLayout(String table, List<String> onlineShardServerList,
-      List<String> shardServerList) {
+  private MasterBasedDistributedLayout newLayout(String table, List<String> shardList,
+      List<String> onlineShardServerList) {
     try {
       _zooKeeperLockManager.lock(table);
       LOG.info("Checking for existing layout for table [{0}]", table);
@@ -146,7 +146,7 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
         if (data != null) {
           MasterBasedDistributedLayout storedLayout = fromBytes(data);
           LOG.info("Checking if layout is out of date for table [{0}]", table);
-          if (!storedLayout.isOutOfDate(onlineShardServerList, shardServerList)) {
+          if (!storedLayout.isOutOfDate(shardList, onlineShardServerList)) {
             LOG.info("Layout is up-to-date for table [{0}]", table);
             return storedLayout;
           }
@@ -157,10 +157,10 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
       }
       LOG.info("Calculating new layout for table [{0}]", table);
       // recreate
-      Map<String, String> newCalculatedLayout = calculateNewLayout(table, existingLayout, onlineShardServerList,
-          shardServerList);
-      MasterBasedDistributedLayout layout = new MasterBasedDistributedLayout(newCalculatedLayout,
-          onlineShardServerList, shardServerList);
+      Map<String, String> newCalculatedLayout = calculateNewLayout(table, existingLayout, shardList,
+          onlineShardServerList);
+      MasterBasedDistributedLayout layout = new MasterBasedDistributedLayout(newCalculatedLayout, shardList,
+          onlineShardServerList);
       LOG.info("New layout created for table [{0}]", table);
       String newPath = _zooKeeper.create(getStoragePath(table) + SEP, toBytes(layout), Ids.OPEN_ACL_UNSAFE,
           CreateMode.PERSISTENT_SEQUENTIAL);
@@ -358,9 +358,9 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
       return false;
     }
   }
-  
+
   @Override
-  public Map<String,?> getLayoutCache() {
+  public Map<String, ?> getLayoutCache() {
     return _cachedLayoutMap;
   }
 

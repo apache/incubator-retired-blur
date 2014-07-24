@@ -16,14 +16,22 @@
  */
 package org.apache.blur.server.platform;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.AdhocByteCodeCommandRequest;
 import org.apache.blur.thrift.generated.AdhocByteCodeCommandResponse;
@@ -32,8 +40,11 @@ import org.apache.blur.thrift.generated.BlurCommandRequest;
 import org.apache.blur.thrift.generated.BlurCommandResponse;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Value;
+import org.apache.commons.io.IOUtils;
 
 public class CommandClient {
+
+  private static final Log LOG = LogFactory.getLog(CommandClient.class);
 
   private final Iface _client;
 
@@ -61,7 +72,7 @@ public class CommandClient {
 
   private void packCommandAndClasses(AdhocByteCodeCommandRequest request, Object[] args, Object command)
       throws IOException {
-    request.setClassData(getClassData(getClass()));
+    request.setClassData(getClassData(command.getClass()));
     request.setInstanceData(CommandUtils.toBytesViaSerialization(command));
     request.setArguments(getArgs(args));
   }
@@ -78,10 +89,55 @@ public class CommandClient {
     return values;
   }
 
-  private Map<String, ByteBuffer> getClassData(Class<? extends CommandClient> clazz) {
+  private Map<String, ByteBuffer> getClassData(Class<?> clazz) throws IOException {
     String name = clazz.getName();
-    NOT IMPL
-    return null;
+    String r = "/" + name.replace('.', '/') + ".class";
+    URL url = getClass().getResource(r);
+    Map<String, ByteBuffer> map = new HashMap<String, ByteBuffer>();
+    packClassInfo(url, r, map);
+    return map;
   }
 
+  private void packClassInfo(URL url, String baseName, Map<String, ByteBuffer> map) throws IOException {
+    try {
+      URI uri = url.toURI();
+      String path = uri.toString();
+      LOG.info("Using path [{0}] to find class data to pack.", path);
+      if (path.endsWith(baseName)) {
+        String root = path.replace(baseName, "");
+        URI rootUri = new URI(root);
+        if (rootUri.getScheme().equals("file")) {
+          File file = new File(rootUri);
+          pack(rootUri, root, file, map);
+          return;
+        }
+      }
+      throw new IOException("Something bad has happened url [" + url + "] baseName [" + baseName + "]");
+    } catch (URISyntaxException e) {
+      throw new IOException(e);
+    }
+
+  }
+
+  private void pack(URI rootUri, String root, File file, Map<String, ByteBuffer> map) throws IOException {
+    if (file.isDirectory()) {
+      for (File f : file.listFiles()) {
+        pack(rootUri, root, f, map);
+      }
+    } else {
+      URI uri = file.toURI();
+      String classUri = uri.toString();
+      String classResourcePath = classUri.replace(root, "");
+      InputStream inputStream = getClass().getResourceAsStream(classResourcePath);
+      byte[] classData = IOUtils.toByteArray(inputStream);
+      inputStream.close();
+      String className = getClassName(classResourcePath);
+      LOG.info("Packing class [{0}] at uri [{1}].", className, classUri);
+      map.put(className, ByteBuffer.wrap(classData));
+    }
+  }
+
+  private String getClassName(String classResourcePath) {
+    return classResourcePath.substring(1).replace(".class", "").replace('/', '.');
+  }
 }

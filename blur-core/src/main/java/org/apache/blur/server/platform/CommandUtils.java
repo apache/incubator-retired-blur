@@ -23,11 +23,18 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamClass;
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper;
 import org.apache.blur.thrift.BException;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Value;
 import org.apache.blur.thrift.generated.ValueType;
+import org.codehaus.janino.ByteArrayClassLoader;
 
 public class CommandUtils {
 
@@ -56,6 +63,28 @@ public class CommandUtils {
     } finally {
       inputStream.close();
     }
+  }
+
+  public static Object[] getArgs(ClassLoader classLoader, List<Value> arguments) throws BlurException, IOException {
+    Object[] args = new Object[arguments.size()];
+    int i = 0;
+    for (Value argument : arguments) {
+      args[i++] = CommandUtils.toObject(classLoader, argument);
+    }
+    return args;
+  }
+
+  public static ClassLoader getClassLoader(Map<String, ByteBuffer> classData) {
+    Map<String, byte[]> classDataMap = getClassDataMap(classData);
+    return new ByteArrayClassLoader(classDataMap);
+  }
+
+  public static Map<String, byte[]> getClassDataMap(Map<String, ByteBuffer> classData) {
+    Map<String, byte[]> map = new HashMap<String, byte[]>();
+    for (Entry<String, ByteBuffer> e : classData.entrySet()) {
+      map.put(e.getKey(), TBaseHelper.byteBufferToByteArray(e.getValue()));
+    }
+    return map;
   }
 
   public static <T> T toObject(ClassLoader classLoader, Value value) throws BlurException, IOException {

@@ -80,6 +80,7 @@ import org.apache.blur.metrics.JSONReporter;
 import org.apache.blur.metrics.ReporterSetup;
 import org.apache.blur.server.ShardServerEventHandler;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.server.platform.CommandShardServer;
 import org.apache.blur.store.BlockCacheDirectoryFactory;
 import org.apache.blur.store.BlockCacheDirectoryFactoryV1;
 import org.apache.blur.store.BlockCacheDirectoryFactoryV2;
@@ -239,7 +240,10 @@ public class ThriftBlurShardServer extends ThriftServer {
         fetchCount, indexManagerThreadCount, mutateThreadCount, statusCleanupTimerDelay, facetThreadCount,
         deepPagingCache);
 
+    final CommandShardServer commandShardServer = new CommandShardServer(indexServer);
+    
     final BlurShardServer shardServer = new BlurShardServer();
+    shardServer.setCommandShardServer(commandShardServer);
     shardServer.setIndexServer(indexServer);
     shardServer.setIndexManager(indexManager);
     shardServer.setZookeeper(zooKeeper);
@@ -289,7 +293,7 @@ public class ThriftBlurShardServer extends ThriftServer {
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
         quietClose(traceStorage, refresher, server, shardServer, indexManager, indexServer, threadWatcher,
-            clusterStatus, zooKeeper, httpServer);
+            clusterStatus, zooKeeper, httpServer, commandShardServer);
       }
     };
     server.setShutdown(shutdown);

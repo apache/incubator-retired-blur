@@ -17,8 +17,8 @@
 package org.apache.blur.server.platform;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,7 +29,9 @@ import java.util.concurrent.Future;
 
 import org.apache.blur.manager.writer.BlurIndex;
 
-public abstract class Command<T1, T2> {
+public abstract class Command<T1, T2> implements Serializable {
+
+  private static final long serialVersionUID = 8496197672871317639L;
 
   private ExecutorService _executorService;
   private Object[] _args;
@@ -47,18 +49,15 @@ public abstract class Command<T1, T2> {
   }
 
   public T2 process(Map<String, Map<String, BlurIndex>> indexes) throws CommandException, IOException {
-    List<Future<Map<TableShardKey, T1>>> futures = new ArrayList<Future<Map<TableShardKey, T1>>>();
+    List<Future<T1>> futures = new ArrayList<Future<T1>>();
     for (Entry<String, Map<String, BlurIndex>> tableEntry : indexes.entrySet()) {
-      String table = tableEntry.getKey();
       Map<String, BlurIndex> shards = tableEntry.getValue();
       for (Entry<String, BlurIndex> shardEntry : shards.entrySet()) {
-        String shard = shardEntry.getKey();
         final BlurIndex blurIndex = shardEntry.getValue();
-        final TableShardKey tableShardKey = new TableShardKey(table, shard);
-        futures.add(_executorService.submit(new Callable<Map<TableShardKey, T1>>() {
+        futures.add(_executorService.submit(new Callable<T1>() {
           @Override
-          public Map<TableShardKey, T1> call() throws Exception {
-            return processShard(tableShardKey, blurIndex);
+          public T1 call() throws Exception {
+            return Command.this.call(blurIndex);
           }
         }));
       }
@@ -66,10 +65,10 @@ public abstract class Command<T1, T2> {
 
     CommandException commandException = new CommandException();
     boolean error = false;
-    Map<TableShardKey, T1> results = new HashMap<TableShardKey, T1>();
-    for (Future<Map<TableShardKey, T1>> future : futures) {
+    List<T1> results = new ArrayList<T1>();
+    for (Future<T1> future : futures) {
       try {
-        results.putAll(future.get());
+        results.add(future.get());
       } catch (InterruptedException e) {
         commandException.addSuppressed(e);
         error = true;
@@ -81,13 +80,14 @@ public abstract class Command<T1, T2> {
     if (error) {
       throw commandException;
     }
-    return merge(results);
+    return mergeIntermediate(results);
 
   }
 
-  public abstract T2 merge(Map<TableShardKey, T1> results) throws IOException;
+  public abstract T2 mergeFinal(List<T2> results) throws IOException;
 
-  public abstract Map<TableShardKey, T1> processShard(TableShardKey tableShardKey, BlurIndex blurIndex)
-      throws IOException;
+  public abstract T2 mergeIntermediate(List<T1> results) throws IOException;
+
+  public abstract T1 call(BlurIndex blurIndex) throws IOException;
 
 }

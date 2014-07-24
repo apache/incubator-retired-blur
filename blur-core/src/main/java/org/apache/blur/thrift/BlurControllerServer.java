@@ -65,6 +65,7 @@ import org.apache.blur.manager.stats.MergerTableStats;
 import org.apache.blur.manager.status.MergerQueryStatusSingle;
 import org.apache.blur.server.ControllerServerContext;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.server.platform.CommandControllerServer;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TFramedTransport;
@@ -193,6 +194,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private Timer _preconnectTimer;
   private Timer _tableContextWarmupTimer;
   private long _tableLayoutTimeoutNanos = TimeUnit.SECONDS.toNanos(30);
+
+  private CommandControllerServer _commandControllerServer = new CommandControllerServer();
 
   public void init() throws KeeperException, InterruptedException {
     setupZookeeper();
@@ -1443,6 +1446,10 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     _client = client;
   }
 
+  public void setCommandControllerServer(CommandControllerServer commandControllerServer) {
+    _commandControllerServer = commandControllerServer;
+  }
+
   @Override
   public void optimize(final String table, final int numberOfSegmentsPerShard) throws BlurException, TException {
     checkTable(table);
@@ -1510,8 +1517,39 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public BlurCommandResponse execute(BlurCommandRequest request) throws BlurException, TException {
-    throw new BException("Not implemented.");
+  public BlurCommandResponse execute(final BlurCommandRequest request) throws BlurException, TException {
+    try {
+      // @TODO pass cluster
+      return scatterGather("default", new BlurCommand<BlurCommandResponse>() {
+        @Override
+        public BlurCommandResponse call(Client client) throws BlurException, TException {
+          return client.execute(request);
+        }
+      }, new Merger<BlurCommandResponse>() {
+        @Override
+        public BlurCommandResponse merge(BlurExecutorCompletionService<BlurCommandResponse> service)
+            throws BlurException {
+          List<BlurCommandResponse> results = new ArrayList<BlurCommandResponse>();
+          while (service.getRemainingCount() > 0) {
+            Future<BlurCommandResponse> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true);
+            if (future != null) {
+              results.add(service.getResultThrowException(future));
+            }
+          }
+          try {
+            return _commandControllerServer.merge(request, results);
+          } catch (IOException e) {
+            throw new BException("Unknown ioexception", e);
+          }
+        }
+      });
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to run execute", e);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException("Unknown error while trying to run execute", e);
+    }
   }
 
 }

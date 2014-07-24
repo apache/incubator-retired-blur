@@ -201,8 +201,9 @@ public class BlurUtil {
           } else if (targetException instanceof TException) {
             throw targetException;
           } else {
+            targetException.printStackTrace();
             throw new BException(
-                "Unknown error during call on method [{0}], this means that the method is handling exceptions correctly.",
+                "Unknown error during call on method [{0}], this means that the method is handling exceptions incorrectly.",
                 targetException, method.getName());
           }
         }
@@ -293,10 +294,15 @@ public class BlurUtil {
             }
           }
           Histogram histogram = histogramMap.get(name);
-          histogram.update((end - start) / 1000);
+          if (histogram == null) {
+            LOG.warn("Histogram missing for [{0}]", name);
+          } else {
+            histogram.update((end - start) / 1000);
+          }
           if (loggerArgsState != null) {
             loggerArgsState.reset();
           }
+
         }
       }
 

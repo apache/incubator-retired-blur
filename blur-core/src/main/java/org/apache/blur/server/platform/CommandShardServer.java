@@ -16,18 +16,18 @@
  */
 package org.apache.blur.server.platform;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.writer.BlurIndex;
-import org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper;
 import org.apache.blur.thrift.BException;
 import org.apache.blur.thrift.generated.AdhocByteCodeCommandRequest;
 import org.apache.blur.thrift.generated.AdhocByteCodeCommandResponse;
@@ -35,9 +35,8 @@ import org.apache.blur.thrift.generated.BlurCommandRequest;
 import org.apache.blur.thrift.generated.BlurCommandResponse;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Value;
-import org.codehaus.janino.ByteArrayClassLoader;
 
-public class CommandShardServer {
+public class CommandShardServer implements Closeable {
 
   private final IndexServer _indexServer;
   private final ExecutorService _executorService;
@@ -45,6 +44,10 @@ public class CommandShardServer {
   public CommandShardServer(IndexServer indexServer, ExecutorService executorService) {
     _indexServer = indexServer;
     _executorService = executorService;
+  }
+
+  public CommandShardServer(IndexServer indexServer) {
+    this(indexServer, Executors.newCachedThreadPool());
   }
 
   public <T1, T2> T2 execute(Set<String> tables, Command<T1, T2> command, Set<String> tablesToExecute, Object... args)
@@ -67,7 +70,8 @@ public class CommandShardServer {
   public BlurCommandResponse execute(Set<String> tables, BlurCommandRequest request) throws BlurException, IOException,
       CommandException {
     // @TODO deal with different command types.
-    Set<String> tablesToInvoke = request.getTablesToInvoke();
+    Set<String> tablesToInvoke = new HashSet<String>();
+    tablesToInvoke.add("test");
     Object fieldValue = request.getFieldValue();
     BlurCommandResponse blurCommandResponse = new BlurCommandResponse();
     if (fieldValue instanceof AdhocByteCodeCommandRequest) {
@@ -85,8 +89,8 @@ public class CommandShardServer {
     // @TODO handle libraries
 
     Map<String, ByteBuffer> classData = commandRequest.getClassData();
-    ClassLoader classLoader = getClassLoader(classData);
-    Object[] args = getArgs(classLoader, commandRequest.getArguments());
+    ClassLoader classLoader = CommandUtils.getClassLoader(classData);
+    Object[] args = CommandUtils.getArgs(classLoader, commandRequest.getArguments());
     Command<?, ?> command = CommandUtils.toObjectViaSerialization(classLoader, commandRequest.getInstanceData());
     Object object = execute(tables, command, tablesToInvoke, args);
     Value value = CommandUtils.toValue(object);
@@ -96,26 +100,9 @@ public class CommandShardServer {
     return adhocByteCodeCommandResponse;
   }
 
-  private ClassLoader getClassLoader(Map<String, ByteBuffer> classData) {
-    Map<String, byte[]> classDataMap = getClassDataMap(classData);
-    return new ByteArrayClassLoader(classDataMap);
-  }
-
-  private Map<String, byte[]> getClassDataMap(Map<String, ByteBuffer> classData) {
-    Map<String, byte[]> map = new HashMap<String, byte[]>();
-    for (Entry<String, ByteBuffer> e : classData.entrySet()) {
-      map.put(e.getKey(), TBaseHelper.byteBufferToByteArray(e.getValue()));
-    }
-    return map;
-  }
-
-  private Object[] getArgs(ClassLoader classLoader, List<Value> arguments) throws BlurException, IOException {
-    Object[] args = new Object[arguments.size()];
-    int i = 0;
-    for (Value argument : arguments) {
-      args[i++] = CommandUtils.toObject(classLoader, argument);
-    }
-    return args;
+  @Override
+  public void close() throws IOException {
+    _executorService.shutdownNow();
   }
 
 }

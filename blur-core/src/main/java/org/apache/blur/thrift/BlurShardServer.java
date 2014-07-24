@@ -596,13 +596,18 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public BlurCommandResponse execute(BlurCommandRequest request) throws BlurException, TException {
-    List<String> tableList = tableList();
     try {
+      List<String> tableList = tableList();
       return _commandShardServer.execute(new HashSet<String>(tableList), request);
     } catch (IOException e) {
+      LOG.error("Unknown error.", e);
       throw new BException("Unknown error.", e);
     } catch (CommandException e) {
+      LOG.error("Unknown error.", e);
       throw new BException("Unknown error.", e);
+    } catch (Throwable t) {
+      LOG.error("Unknown error.", t);
+      throw new BException("Unknown error.", t);
     }
   }
 }

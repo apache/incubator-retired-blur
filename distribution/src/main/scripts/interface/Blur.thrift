@@ -830,11 +830,53 @@ enum Level {
   ALL
 }
 
+enum ValueType {
+  STRING,
+  INTEGER,
+  LONG,
+  DOUBLE,
+  FLOAT,
+  BINARY,
+  WRITABLE,
+  SERIALIZABLE
+}
+
+struct Value {
+  1:ValueType type,
+  2:binary value
+}
+
+struct AdhocByteCodeCommandRequest {
+  1:list<Value> arguments,
+  2:binary instanceData,
+  3:map<string,binary> classData,
+  4:list<string> libraries
+}
+
+struct AdhocByteCodeCommandResponse {
+  1:Value result
+}
+
+union BlurCommandRequest {
+  1:set<string> tablesToInvoke,
+  2:AdhocByteCodeCommandRequest adhocByteCodeCommandRequest
+}
+
+union BlurCommandResponse {
+  1:AdhocByteCodeCommandResponse adhocByteCodeCommandResponse
+}
+
+service BlurPlatform {
+
+  BlurCommandResponse execute(1:BlurCommandRequest request) throws (1:BlurException ex)
+
+}
+
 /**
  * The Blur service API.  This API is the same for both controller servers as well as 
  * shards servers.  Each of the methods are documented.
  */
-service Blur {
+service Blur extends BlurPlatform {
 
   //Table Commands
 

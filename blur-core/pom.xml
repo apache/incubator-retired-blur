@@ -39,6 +39,11 @@ under the License.
 
 	<dependencies>
 		<dependency>
+			<groupId>janino</groupId>
+			<artifactId>janino</artifactId>
+			<version>${janino.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-thrift</artifactId>
 			<version>${project.version}</version>

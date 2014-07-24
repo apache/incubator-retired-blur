@@ -5,11 +5,12 @@
 #
 
 require 'thrift'
+require 'blur_platform'
 require 'blur_types'
 
 module Blur
   module Blur
-    class Client
+    class Client < ::Blur::BlurPlatform::Client 
       include ::Thrift::Client
 
       def createTable(tableDescriptor)
@@ -683,7 +684,7 @@ module Blur
 
     end
 
-    class Processor
+    class Processor < ::Blur::BlurPlatform::Processor 
       include ::Thrift::Processor
 
       def process_createTable(seqid, iprot, oprot)

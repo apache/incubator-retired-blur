@@ -83,6 +83,19 @@ module Blur
     VALID_VALUES = Set.new([OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL]).freeze
   end
 
+  module ValueType
+    STRING = 0
+    INTEGER = 1
+    LONG = 2
+    DOUBLE = 3
+    FLOAT = 4
+    BINARY = 5
+    WRITABLE = 6
+    SERIALIZABLE = 7
+    VALUE_MAP = {0 => "STRING", 1 => "INTEGER", 2 => "LONG", 3 => "DOUBLE", 4 => "FLOAT", 5 => "BINARY", 6 => "WRITABLE", 7 => "SERIALIZABLE"}
+    VALID_VALUES = Set.new([STRING, INTEGER, LONG, DOUBLE, FLOAT, BINARY, WRITABLE, SERIALIZABLE]).freeze
+  end
+
   # BlurException that carries a message plus the original stack
 # trace (if any).
   class BlurException < ::Thrift::Exception
@@ -933,6 +946,117 @@ module Blur
     end
 
     ::Thrift::Struct.generate_accessors self
+  end
+
+  class Value
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TYPE = 1
+    VALUE = 2
+
+    FIELDS = {
+      TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::Blur::ValueType},
+      VALUE => {:type => ::Thrift::Types::STRING, :name => 'value', :binary => true}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+      unless @type.nil? || ::Blur::ValueType::VALID_VALUES.include?(@type)
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
+      end
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class AdhocByteCodeCommandRequest
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    ARGUMENTS = 1
+    INSTANCEDATA = 2
+    CLASSDATA = 3
+    LIBRARIES = 4
+
+    FIELDS = {
+      ARGUMENTS => {:type => ::Thrift::Types::LIST, :name => 'arguments', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Value}},
+      INSTANCEDATA => {:type => ::Thrift::Types::STRING, :name => 'instanceData', :binary => true},
+      CLASSDATA => {:type => ::Thrift::Types::MAP, :name => 'classData', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING, :binary => true}},
+      LIBRARIES => {:type => ::Thrift::Types::LIST, :name => 'libraries', :element => {:type => ::Thrift::Types::STRING}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class AdhocByteCodeCommandResponse
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RESULT = 1
+
+    FIELDS = {
+      RESULT => {:type => ::Thrift::Types::STRUCT, :name => 'result', :class => ::Blur::Value}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class BlurCommandRequest < ::Thrift::Union
+    include ::Thrift::Struct_Union
+    class << self
+      def tablesToInvoke(val)
+        BlurCommandRequest.new(:tablesToInvoke, val)
+      end
+
+      def adhocByteCodeCommandRequest(val)
+        BlurCommandRequest.new(:adhocByteCodeCommandRequest, val)
+      end
+    end
+
+    TABLESTOINVOKE = 1
+    ADHOCBYTECODECOMMANDREQUEST = 2
+
+    FIELDS = {
+      TABLESTOINVOKE => {:type => ::Thrift::Types::SET, :name => 'tablesToInvoke', :element => {:type => ::Thrift::Types::STRING}},
+      ADHOCBYTECODECOMMANDREQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'adhocByteCodeCommandRequest', :class => ::Blur::AdhocByteCodeCommandRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+      raise(StandardError, 'Union fields are not set.') if get_set_field.nil? || get_value.nil?
+    end
+
+    ::Thrift::Union.generate_accessors self
+  end
+
+  class BlurCommandResponse < ::Thrift::Union
+    include ::Thrift::Struct_Union
+    class << self
+      def adhocByteCodeCommandResponse(val)
+        BlurCommandResponse.new(:adhocByteCodeCommandResponse, val)
+      end
+    end
+
+    ADHOCBYTECODECOMMANDRESPONSE = 1
+
+    FIELDS = {
+      ADHOCBYTECODECOMMANDRESPONSE => {:type => ::Thrift::Types::STRUCT, :name => 'adhocByteCodeCommandResponse', :class => ::Blur::AdhocByteCodeCommandResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+      raise(StandardError, 'Union fields are not set.') if get_set_field.nil? || get_value.nil?
+    end
+
+    ::Thrift::Union.generate_accessors self
   end
 
 end

@@ -192,6 +192,7 @@ under the License.
 		<mrunit.version>0.9.0-incubating</mrunit.version>
 		<httpclient.version>4.1.3</httpclient.version>
 		<servlet-api.version>2.5</servlet-api.version>
+		<janino.version>2.5.10</janino.version>
 	</properties>
 
 	<dependencies>

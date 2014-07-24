@@ -20,8 +20,10 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_QUERYCACH
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIMETOLIVE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_DATA_FETCH_THREAD_COUNT;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -39,8 +41,12 @@ import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.ShardServerContext;
+import org.apache.blur.server.platform.CommandException;
+import org.apache.blur.server.platform.CommandShardServer;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurCommandRequest;
+import org.apache.blur.thrift.generated.BlurCommandResponse;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
@@ -75,6 +81,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   private ExecutorService _dataFetch;
   private String _cluster = BlurConstants.BLUR_CLUSTER;
   private int _dataFetchThreadCount = 32;
+  private CommandShardServer _commandShardServer;
 
   public void init() throws BlurException {
     _queryCache = new QueryCache("shard-cache", _maxQueryCacheElements, _maxTimeToLive);
@@ -448,6 +455,10 @@ public class BlurShardServer extends TableAdmin implements Iface {
     _indexServer = indexServer;
   }
 
+  public void setCommandShardServer(CommandShardServer commandShardServer) {
+    _commandShardServer = commandShardServer;
+  }
+
   @Override
   public BlurQueryStatus queryStatusById(String table, String uuid) throws BlurException, TException {
     try {
@@ -583,4 +594,15 @@ public class BlurShardServer extends TableAdmin implements Iface {
     return false;
   }
 
+  @Override
+  public BlurCommandResponse execute(BlurCommandRequest request) throws BlurException, TException {
+    List<String> tableList = tableList();
+    try {
+      return _commandShardServer.execute(new HashSet<String>(tableList), request);
+    } catch (IOException e) {
+      throw new BException("Unknown error.", e);
+    } catch (CommandException e) {
+      throw new BException("Unknown error.", e);
+    }
+  }
 }

@@ -73,6 +73,8 @@ import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransport;
 import org.apache.blur.thrift.commands.BlurCommand;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurCommandRequest;
+import org.apache.blur.thrift.generated.BlurCommandResponse;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
@@ -1505,6 +1507,11 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     ControllerServerContext context = ControllerServerContext.getControllerServerContext();
     context.setTraceRootId(rootId);
     context.setTraceRequestId(requestId);
+  }
+
+  @Override
+  public BlurCommandResponse execute(BlurCommandRequest request) throws BlurException, TException {
+    throw new BException("Not implemented.");
   }
 
 }

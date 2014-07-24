@@ -52,6 +52,15 @@ use constant INFO => 4;
 use constant DEBUG => 5;
 use constant TRACE => 6;
 use constant ALL => 7;
+package Blur::ValueType;
+use constant STRING => 0;
+use constant INTEGER => 1;
+use constant LONG => 2;
+use constant DOUBLE => 3;
+use constant FLOAT => 4;
+use constant BINARY => 5;
+use constant WRITABLE => 6;
+use constant SERIALIZABLE => 7;
 package Blur::BlurException;
 use base qw(Thrift::TException);
 use base qw(Class::Accessor);
@@ -3812,6 +3821,493 @@ sub write {
       }
       $xfer += $output->writeMapEnd();
     }
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Value;
+use base qw(Class::Accessor);
+Blur::Value->mk_accessors( qw( type value ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{type} = undef;
+  $self->{value} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{type}) {
+      $self->{type} = $vals->{type};
+    }
+    if (defined $vals->{value}) {
+      $self->{value} = $vals->{value};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Value';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::I32) {
+        $xfer += $input->readI32(\$self->{type});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{value});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Value');
+  if (defined $self->{type}) {
+    $xfer += $output->writeFieldBegin('type', TType::I32, 1);
+    $xfer += $output->writeI32($self->{type});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{value}) {
+    $xfer += $output->writeFieldBegin('value', TType::STRING, 2);
+    $xfer += $output->writeString($self->{value});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::AdhocByteCodeCommandRequest;
+use base qw(Class::Accessor);
+Blur::AdhocByteCodeCommandRequest->mk_accessors( qw( arguments instanceData classData libraries ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{arguments} = undef;
+  $self->{instanceData} = undef;
+  $self->{classData} = undef;
+  $self->{libraries} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{arguments}) {
+      $self->{arguments} = $vals->{arguments};
+    }
+    if (defined $vals->{instanceData}) {
+      $self->{instanceData} = $vals->{instanceData};
+    }
+    if (defined $vals->{classData}) {
+      $self->{classData} = $vals->{classData};
+    }
+    if (defined $vals->{libraries}) {
+      $self->{libraries} = $vals->{libraries};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'AdhocByteCodeCommandRequest';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::LIST) {
+        {
+          my $_size206 = 0;
+          $self->{arguments} = [];
+          my $_etype209 = 0;
+          $xfer += $input->readListBegin(\$_etype209, \$_size206);
+          for (my $_i210 = 0; $_i210 < $_size206; ++$_i210)
+          {
+            my $elem211 = undef;
+            $elem211 = new Blur::Value();
+            $xfer += $elem211->read($input);
+            push(@{$self->{arguments}},$elem211);
+          }
+          $xfer += $input->readListEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{instanceData});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^3$/ && do{      if ($ftype == TType::MAP) {
+        {
+          my $_size212 = 0;
+          $self->{classData} = {};
+          my $_ktype213 = 0;
+          my $_vtype214 = 0;
+          $xfer += $input->readMapBegin(\$_ktype213, \$_vtype214, \$_size212);
+          for (my $_i216 = 0; $_i216 < $_size212; ++$_i216)
+          {
+            my $key217 = '';
+            my $val218 = '';
+            $xfer += $input->readString(\$key217);
+            $xfer += $input->readString(\$val218);
+            $self->{classData}->{$key217} = $val218;
+          }
+          $xfer += $input->readMapEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^4$/ && do{      if ($ftype == TType::LIST) {
+        {
+          my $_size219 = 0;
+          $self->{libraries} = [];
+          my $_etype222 = 0;
+          $xfer += $input->readListBegin(\$_etype222, \$_size219);
+          for (my $_i223 = 0; $_i223 < $_size219; ++$_i223)
+          {
+            my $elem224 = undef;
+            $xfer += $input->readString(\$elem224);
+            push(@{$self->{libraries}},$elem224);
+          }
+          $xfer += $input->readListEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('AdhocByteCodeCommandRequest');
+  if (defined $self->{arguments}) {
+    $xfer += $output->writeFieldBegin('arguments', TType::LIST, 1);
+    {
+      $xfer += $output->writeListBegin(TType::STRUCT, scalar(@{$self->{arguments}}));
+      {
+        foreach my $iter225 (@{$self->{arguments}}) 
+        {
+          $xfer += ${iter225}->write($output);
+        }
+      }
+      $xfer += $output->writeListEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{instanceData}) {
+    $xfer += $output->writeFieldBegin('instanceData', TType::STRING, 2);
+    $xfer += $output->writeString($self->{instanceData});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{classData}) {
+    $xfer += $output->writeFieldBegin('classData', TType::MAP, 3);
+    {
+      $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{classData}}));
+      {
+        while( my ($kiter226,$viter227) = each %{$self->{classData}}) 
+        {
+          $xfer += $output->writeString($kiter226);
+          $xfer += $output->writeString($viter227);
+        }
+      }
+      $xfer += $output->writeMapEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{libraries}) {
+    $xfer += $output->writeFieldBegin('libraries', TType::LIST, 4);
+    {
+      $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{libraries}}));
+      {
+        foreach my $iter228 (@{$self->{libraries}}) 
+        {
+          $xfer += $output->writeString($iter228);
+        }
+      }
+      $xfer += $output->writeListEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::AdhocByteCodeCommandResponse;
+use base qw(Class::Accessor);
+Blur::AdhocByteCodeCommandResponse->mk_accessors( qw( result ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{result} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{result}) {
+      $self->{result} = $vals->{result};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'AdhocByteCodeCommandResponse';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{result} = new Blur::Value();
+        $xfer += $self->{result}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('AdhocByteCodeCommandResponse');
+  if (defined $self->{result}) {
+    $xfer += $output->writeFieldBegin('result', TType::STRUCT, 1);
+    $xfer += $self->{result}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::BlurCommandRequest;
+use base qw(Class::Accessor);
+Blur::BlurCommandRequest->mk_accessors( qw( tablesToInvoke adhocByteCodeCommandRequest ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{tablesToInvoke} = undef;
+  $self->{adhocByteCodeCommandRequest} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{tablesToInvoke}) {
+      $self->{tablesToInvoke} = $vals->{tablesToInvoke};
+    }
+    if (defined $vals->{adhocByteCodeCommandRequest}) {
+      $self->{adhocByteCodeCommandRequest} = $vals->{adhocByteCodeCommandRequest};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'BlurCommandRequest';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::SET) {
+        {
+          my $_size229 = 0;
+          $self->{tablesToInvoke} = {};
+          my $_etype232 = 0;
+          $xfer += $input->readSetBegin(\$_etype232, \$_size229);
+          for (my $_i233 = 0; $_i233 < $_size229; ++$_i233)
+          {
+            my $elem234 = undef;
+            $xfer += $input->readString(\$elem234);
+            $self->{tablesToInvoke}->{$elem234} = 1;
+          }
+          $xfer += $input->readSetEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{adhocByteCodeCommandRequest} = new Blur::AdhocByteCodeCommandRequest();
+        $xfer += $self->{adhocByteCodeCommandRequest}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('BlurCommandRequest');
+  if (defined $self->{tablesToInvoke}) {
+    $xfer += $output->writeFieldBegin('tablesToInvoke', TType::SET, 1);
+    {
+      $xfer += $output->writeSetBegin(TType::STRING, scalar(@{$self->{tablesToInvoke}}));
+      {
+        foreach my $iter235 (@{$self->{tablesToInvoke}})
+        {
+          $xfer += $output->writeString($iter235);
+        }
+      }
+      $xfer += $output->writeSetEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{adhocByteCodeCommandRequest}) {
+    $xfer += $output->writeFieldBegin('adhocByteCodeCommandRequest', TType::STRUCT, 2);
+    $xfer += $self->{adhocByteCodeCommandRequest}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::BlurCommandResponse;
+use base qw(Class::Accessor);
+Blur::BlurCommandResponse->mk_accessors( qw( adhocByteCodeCommandResponse ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{adhocByteCodeCommandResponse} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{adhocByteCodeCommandResponse}) {
+      $self->{adhocByteCodeCommandResponse} = $vals->{adhocByteCodeCommandResponse};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'BlurCommandResponse';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{adhocByteCodeCommandResponse} = new Blur::AdhocByteCodeCommandResponse();
+        $xfer += $self->{adhocByteCodeCommandResponse}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('BlurCommandResponse');
+  if (defined $self->{adhocByteCodeCommandResponse}) {
+    $xfer += $output->writeFieldBegin('adhocByteCodeCommandResponse', TType::STRUCT, 1);
+    $xfer += $self->{adhocByteCodeCommandResponse}->write($output);
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

@@ -18,22 +18,15 @@ package org.apache.blur.server.platform;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 import org.apache.blur.manager.writer.BlurIndex;
 
 public abstract class Command<T1, T2> implements Serializable {
 
-  private static final long serialVersionUID = 8496197672871317639L;
+  private static final long serialVersionUID = 1L;
 
-  private ExecutorService _executorService;
   private Object[] _args;
 
   public Object[] getArgs() {
@@ -44,50 +37,19 @@ public abstract class Command<T1, T2> implements Serializable {
     _args = args;
   }
 
-  public void setExecutorService(ExecutorService executorService) {
-    _executorService = executorService;
-  }
-
-  public T2 process(Map<String, Map<String, BlurIndex>> indexes) throws CommandException, IOException {
-    List<Future<T1>> futures = new ArrayList<Future<T1>>();
-    for (Entry<String, Map<String, BlurIndex>> tableEntry : indexes.entrySet()) {
-      Map<String, BlurIndex> shards = tableEntry.getValue();
-      for (Entry<String, BlurIndex> shardEntry : shards.entrySet()) {
-        final BlurIndex blurIndex = shardEntry.getValue();
-        futures.add(_executorService.submit(new Callable<T1>() {
-          @Override
-          public T1 call() throws Exception {
-            return Command.this.call(blurIndex);
-          }
-        }));
-      }
-    }
-
-    CommandException commandException = new CommandException();
-    boolean error = false;
-    List<T1> results = new ArrayList<T1>();
-    for (Future<T1> future : futures) {
-      try {
-        results.add(future.get());
-      } catch (InterruptedException e) {
-        commandException.addSuppressed(e);
-        error = true;
-      } catch (ExecutionException e) {
-        commandException.addSuppressed(e.getCause());
-        error = true;
-      }
-    }
-    if (error) {
-      throw commandException;
-    }
-    return mergeIntermediate(results);
-
-  }
-
   public abstract T2 mergeFinal(List<T2> results) throws IOException;
 
   public abstract T2 mergeIntermediate(List<T1> results) throws IOException;
 
   public abstract T1 call(BlurIndex blurIndex) throws IOException;
+
+  public Callable<T1> createCallable(final BlurIndex blurIndex) {
+    return new Callable<T1>() {
+      @Override
+      public T1 call() throws Exception {
+        return Command.this.call(blurIndex);
+      }
+    };
+  }
 
 }

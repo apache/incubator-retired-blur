@@ -19,11 +19,17 @@ package org.apache.blur.server.platform;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.writer.BlurIndex;
@@ -52,8 +58,40 @@ public class CommandShardServer implements Closeable {
   public <T1, T2> T2 execute(Set<String> tables, Command<T1, T2> command, Set<String> tablesToExecute, Object... args)
       throws CommandException, IOException {
     command.setArgs(args);
-    command.setExecutorService(_executorService);
-    return command.process(getBlurIndexes(tables, tablesToExecute));
+    return execute(command, getBlurIndexes(tables, tablesToExecute));
+  }
+
+  private <T1, T2> T2 execute(Command<T1, T2> command, Map<String, Map<String, BlurIndex>> indexes) throws IOException,
+      CommandException {
+    List<Future<T1>> futures = new ArrayList<Future<T1>>();
+    for (Entry<String, Map<String, BlurIndex>> tableEntry : indexes.entrySet()) {
+      Map<String, BlurIndex> shards = tableEntry.getValue();
+      for (Entry<String, BlurIndex> shardEntry : shards.entrySet()) {
+        final BlurIndex blurIndex = shardEntry.getValue();
+        Callable<T1> callable = command.createCallable(blurIndex);
+        futures.add(_executorService.submit(callable));
+      }
+    }
+
+    CommandException commandException = new CommandException();
+    boolean error = false;
+    List<T1> results = new ArrayList<T1>();
+    for (Future<T1> future : futures) {
+      try {
+        results.add(future.get());
+      } catch (InterruptedException e) {
+        commandException.addSuppressed(e);
+        error = true;
+      } catch (ExecutionException e) {
+        commandException.addSuppressed(e.getCause());
+        error = true;
+      }
+    }
+    if (error) {
+      throw commandException;
+    }
+    return command.mergeIntermediate(results);
+
   }
 
   private Map<String, Map<String, BlurIndex>> getBlurIndexes(Set<String> tables, Set<String> tablesToExecute)
@@ -81,7 +119,8 @@ public class CommandShardServer implements Closeable {
     return blurCommandResponse;
   }
 
-  public AdHocByteCodeCommandResponse execute(Set<String> tables, AdHocByteCodeCommandRequest commandRequest) throws BlurException, IOException, CommandException {
+  public AdHocByteCodeCommandResponse execute(Set<String> tables, AdHocByteCodeCommandRequest commandRequest)
+      throws BlurException, IOException, CommandException {
     // @TODO handle libraries
     Set<String> tablesToInvoke = commandRequest.getTablesToInvoke();
     Map<String, ByteBuffer> classData = commandRequest.getClassData();
